@@ -16,6 +16,18 @@
       "shell": {
         "all": false,
         "open": true
+      },
+      "fs": {
+        "all": true
+      },
+      "path": {
+        "all": true
+      },
+      "http": {
+        "all": true,
+        "scope": [
+          "https://api.warframe.market/**"
+        ]
       }
     },
     "bundle": {

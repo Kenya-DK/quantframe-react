@@ -1,53 +1,92 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/tauri";
-import "./App.css";
+import './App.css'
+import { AuthContextProvider } from './contexts/auth.context'
+import AppRoutes from './layouts/routes'
+import i18n from "i18next";
+import { en } from './lang/en'
+import { dk } from './lang/dk'
+import { initReactI18next } from "react-i18next";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { ModalsProvider } from '@mantine/modals';
+import { createStyles } from '@mantine/core';
+import { PromptModal } from './components/modals/prompt.modal';
+import { settings, user } from './store';
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+})
+i18n
+  .use(initReactI18next)
+  .init({
+    resources: {
+      en: { translation: en },
+      dk: { translation: dk },
+    },
+    lng: "en",
+    fallbackLng: "en",
+    interpolation: { escapeValue: false }
+  });
 
-function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+const useStyles = createStyles(() => ({
+  header: {
+    borderBottom: `1px gray solid `,
+    padding: 10,
+  },
+}));
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    setGreetMsg(await invoke("greet", { name }));
+const modals = {
+  prompt: PromptModal
+  /* ...other modals */
+};
+declare module '@mantine/modals' {
+  export interface MantineModalsOverride {
+    modals: typeof modals;
   }
-
-  return (
-    <div className="container">
-      <h1>Welcome to Tauri!</h1>
-
-      <div className="row">
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-
-      <p>{greetMsg}</p>
-    </div>
-  );
 }
 
-export default App;
+// @ts-ignore
+window.debug = async () => {
+  const config = structuredClone(await settings.get())
+  const currentUser = structuredClone(await user.get())
+  // @ts-ignore
+  delete config.user_password
+  // @ts-ignore
+  delete config.access_token
+
+  console.group('Debug')
+  console.log(`pathname: ${window.location.pathname}`)
+  console.log(`settings: ${JSON.stringify(config, null, 2)}`)
+  // console.log('cache:', cache.items)
+  console.log('user', currentUser)
+
+  console.groupEnd()
+}
+
+function App() {
+  const { classes } = useStyles();
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ModalsProvider
+        modals={modals}
+
+        modalProps={{
+          centered: true,
+          classNames: classes,
+          onClose() {
+            console.log("Modal closed");
+          },
+        }}>
+        <AuthContextProvider>
+          <AppRoutes />
+        </AuthContextProvider>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </ModalsProvider>
+    </QueryClientProvider>
+  )
+}
+
+export default App
