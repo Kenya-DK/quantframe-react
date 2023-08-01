@@ -3,14 +3,14 @@ import { Outlet } from "react-router-dom";
 import { useContext, useState } from 'react';
 import { AppShell, useMantineTheme } from '@mantine/core';
 import Hedder from "./header";
-import { AuthContext } from "$contexts/index";
+import { TauriContext } from "$contexts/index";
 import { useLocalStorage } from "@mantine/hooks";
 
 export default function MainLayout() {
   const theme = useMantineTheme();
   const [opened, setOpened] = useState(false);
   const [hideSidebar, setHideSidebar] = useLocalStorage<boolean>({ key: "sidebar-opened", defaultValue: false });
-  const authState = useContext(AuthContext)
+  const { user } = useContext(TauriContext)
   return (
     <AppShell
       styles={{
@@ -20,7 +20,7 @@ export default function MainLayout() {
       }}
       navbarOffsetBreakpoint="sm"
       asideOffsetBreakpoint="sm"
-      header={<Hedder user={authState.user} opened={opened} onOpenedClick={() => setOpened((o) => !o)} hideSidebar={hideSidebar} setHideSidebar={setHideSidebar} />}
+      header={<Hedder user={user} opened={opened} onOpenedClick={() => setOpened((o) => !o)} hideSidebar={hideSidebar} setHideSidebar={setHideSidebar} />}
     >
       <Outlet />
     </AppShell>

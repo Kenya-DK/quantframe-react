@@ -4,7 +4,7 @@ import api from "@api/index";
 import { notifications } from "@mantine/notifications";
 import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
-import { AuthContext } from "$contexts/index";
+import { TauriContext } from "$contexts/index";
 import { useMutation } from "@tanstack/react-query";
 import i18next from "i18next";
 import { useTranslatePage } from "@hooks/index";
@@ -14,11 +14,11 @@ import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
 export default function LoginPage() {
   const useTraLogin = (key: string, context?: { [key: string]: any }) => useTranslatePage(`auth.${key}`, { ...context })
-  const { user, updateUser } = useContext(AuthContext);
+  const { updateUser } = useContext(TauriContext);
 
   const navigate = useNavigate();
   const logInMutation = useMutation((data: { email: string, password: string }) => api.auth.login(data.email, data.password), {
-    onSuccess: async (data: Wfm.User) => {
+    onSuccess: async (data: Wfm.UserDto) => {
       updateUser(data)
       notifications.show({
         title: i18next.t('success.auth.login_title'),

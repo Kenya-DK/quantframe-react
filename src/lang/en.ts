@@ -11,6 +11,7 @@ export const en = {
   },
   layout: {
     header: {
+      title: "QuantFrame",
       profile: {
         logout: "Log Out",
       }

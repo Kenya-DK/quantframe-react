@@ -1,11 +1,11 @@
 import { Box } from "@mantine/core";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { Wfm, Settings } from '$types/index';
-import useStorage from "../hooks/useStorage.hook";
+import { useStorage, settings as sStore, user as uStore } from "../hooks/useStorage.hook";
 type TauriContextProps = {
   loading: boolean;
-  user: Wfm.User;
-  updateUser: (user: Wfm.User) => void;
+  user: Wfm.UserDto;
+  updateUser: (user: Wfm.UserDto) => void;
   settings: Settings;
   updateSettings: (user: Settings) => void;
 }
@@ -15,25 +15,9 @@ type TauriContextProviderProps = {
 
 export const TauriContext = createContext<TauriContextProps>({
   loading: true,
-  user: {
-    banned: false,
-    id: '',
-    avatar: '',
-    ingame_name: '',
-    locale: 'en',
-    platform: 'pc',
-    region: 'en',
-    role: 'user',
-  },
+  user: uStore.defaults,
   updateUser: () => { },
-  settings: {
-    mastery_rank: 2, // Trading is unlocked at MR2
-    user_email: '',
-    user_password: '',
-    access_token: undefined,
-    budget: 0,
-    current_plat: 0,
-  },
+  settings: sStore.defaults,
   updateSettings: () => { },
 });
 
@@ -41,20 +25,32 @@ export const useTauriContext = () => useContext(TauriContext);
 
 export const TauriContextProvider = ({ children }: TauriContextProviderProps) => {
   const [loading] = useState(true);
-  const [user, setUser] = useStorage<Wfm.User>("user", useContext(TauriContext).user);
-  const [settings, setSettings] = useStorage<Settings>("settings", useContext(TauriContext).settings);
+  const [user, setUser] = useStorage<Wfm.UserDto>(uStore.name, useContext(TauriContext).user);
+  const [settings, setSettings] = useStorage<Settings>(sStore.name, useContext(TauriContext).settings);
 
-  const handleUpdateUser = (userData: Partial<Wfm.User>) => {
+  const handleUpdateUser = (userData: Partial<Wfm.UserDto>) => {
     setUser({ ...user, ...userData });
   }
 
   const handleUpdateSettings = (settingsData: Partial<Settings>) => {
     setSettings({ ...settings, ...settingsData });
   }
+
+  useEffect(() => {
+    setInterval(async () => {
+      handleUpdateUser({
+        ingame_name: Math.random().toString(36).substring(7),
+      })
+    }, 1000)
+  }, [])
+
   return (
     <TauriContext.Provider value={{ loading, user, updateUser: handleUpdateUser, settings, updateSettings: handleUpdateSettings }}>
       <Box>
         {children}
+        <pre>{
+          JSON.stringify(user, null, 2)
+        }</pre>
       </Box>
     </TauriContext.Provider>
   )

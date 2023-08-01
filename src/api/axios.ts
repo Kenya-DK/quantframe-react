@@ -4,7 +4,7 @@ import axios from 'axios'
 import axiosTauriAdapter from 'axios-tauri-adapter'
 import { APP_NAME, PLATFORMS } from '$types/index'
 import { TokenBucket } from './rateLimiter'
-import { settings } from '@store/index'
+import { settings } from '../hooks'
 
 const HEADERS = {
   'Content-Type': 'application/json; utf-8',
