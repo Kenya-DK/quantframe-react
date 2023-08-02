@@ -33,11 +33,13 @@ export namespace Wfm {
     patreon_badge: string;
   }
 
-  export type ItemDto = {
+  export interface ItemDto {
     id: string,
     item_name: string,
     url_name: string,
     thumb: string,
+    // Get from warframe items npm package
+    category: string,
   }
 
   // Order stuff below

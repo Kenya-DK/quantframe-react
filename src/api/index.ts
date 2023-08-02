@@ -2,6 +2,7 @@ import { axiosInstance } from './axios'
 
 import { Wfm } from '../types'
 import { settings, cache } from "@store/index";
+const WarframeItems = require('warframe-items')
 // Docs https://warframe.market/api_docs
 
 const api = {
@@ -23,14 +24,25 @@ const api = {
       const { tradableItems } = await cache.get();
       // If cache is older than 24 hours then refresh it
       if (tradableItems.createdAt + 1000 * 60 * 60 * 24 < Date.now()) {
-        const { data } = await axiosInstance.get('/items', {});
+        const { data: { payload: { items } } } = await axiosInstance.get('/items', {});
+        // I Use this to find the category names for the warframe market api.
+        const wfItems = new WarframeItems({ category: ['All'] });
+
+        const wfmItems = items.map((item: Wfm.ItemDto) => {
+          const wfmItem = wfItems.find((i: any) => i.marketInfo?.id === item.id || i.name === item.item_name)
+          return {
+            ...item,
+            category: wfmItem?.category || "Unknown",
+          }
+        });
+
         await cache.update({
           tradableItems: {
             createdAt: Date.now(),
-            items: data.payload.items
+            items: wfmItems
           }
         });
-        return data.payload.items
+        return wfmItems
       }
       return tradableItems.items
     },

@@ -3,8 +3,19 @@ export interface InventoryEntryDto {
   item_id: string;
   item_url: string;
   item_name: string;
-  mod_rank: number;
+  rank: number;
   price: number;
   listed_price?: number | null;
   owned: number;
+}
+export interface TransactionEntryDto {
+  id?: number;
+  item_id: string;
+  item_type: string;
+  item_url: string;
+  item_name: string;
+  rank: number;
+  price: number;
+  datetime: string;
+  transactionType: string;
 }

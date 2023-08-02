@@ -8,6 +8,8 @@ import { useDatabaseContext } from '../contexts';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHammer, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import { modals } from '@mantine/modals';
+import { Wfm } from '../types';
+import { useState } from 'react';
 
 interface PurchaseNewItemProps {
   onSumit: (type: string, id: string, quantity: number, price: number, mod_rank: number) => void;
@@ -15,6 +17,7 @@ interface PurchaseNewItemProps {
 const PurchaseNewItem = (props: PurchaseNewItemProps) => {
   const { onSumit } = props;
   const useTranslateSearch = (key: string, context?: { [key: string]: any }) => useTranslateComponent(`inventory.${key}`, { ...context })
+  const [selectedItem, setSelectedItem] = useState<Wfm.ItemDto | null>(null);
   const roleForm = useForm({
     initialValues: {
       price: 0,
@@ -34,7 +37,10 @@ const PurchaseNewItem = (props: PurchaseNewItemProps) => {
       })}>
         <Stack justify='center' spacing="md">
           <Group grow >
-            <SearchItemField value={roleForm.values.item} onChange={(value) => roleForm.setFieldValue('item', value)} />
+            <SearchItemField value={roleForm.values.item} onChange={(value) => {
+              setSelectedItem(value);
+              roleForm.setFieldValue('item', value.id)
+            }} />
             <NumberInput
               required
               label={useTranslateSearch('price')}
@@ -53,15 +59,17 @@ const PurchaseNewItem = (props: PurchaseNewItemProps) => {
               onChange={(value) => roleForm.setFieldValue('quantity', Number(value))}
               error={roleForm.errors.quantity && 'Invalid identifier'}
             /> */}
-            {/* <NumberInput
-              required
-              label={useTranslateSearch('rank')}
-              description={useTranslateSearch('rank_description')}
-              value={roleForm.values.rank}
-              min={0}
-              onChange={(value) => roleForm.setFieldValue('rank', Number(value))}
-              error={roleForm.errors.rank && 'Invalid identifier'}
-            /> */}
+            {(selectedItem?.category == "Mods" || selectedItem?.category == "Arcanes") &&
+              <NumberInput
+                required
+                label={useTranslateSearch('rank')}
+                description={useTranslateSearch('rank_description')}
+                value={roleForm.values.rank}
+                min={0}
+                onChange={(value) => roleForm.setFieldValue('rank', Number(value))}
+                error={roleForm.errors.rank && 'Invalid identifier'}
+              />
+            }
           </Group>
           <Group mt={5} position="center">
             <Button type="submit" onClick={() => roleForm.setFieldValue('type', "buy")} disabled={roleForm.values.item.length <= 0} radius="xl">
