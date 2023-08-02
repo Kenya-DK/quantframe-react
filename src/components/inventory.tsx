@@ -1,13 +1,16 @@
 
-import { Button, Container, Grid, Group, NumberInput } from '@mantine/core';
+import { ActionIcon, Box, Button, Divider, Group, NumberInput, Tooltip, Text, Stack } from '@mantine/core';
 import { useTranslateComponent } from '@hooks/index';
 import { useForm } from '@mantine/form';
 import { SearchItemField } from './searchItemField';
 import { DataTable } from 'mantine-datatable';
-import { useState } from 'react';
+import { useDatabaseContext } from '../contexts';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHammer, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { modals } from '@mantine/modals';
 
 interface PurchaseNewItemProps {
-  onSumit: (data: any) => void;
+  onSumit: (type: string, id: string, quantity: number, price: number, mod_rank: number) => void;
 }
 const PurchaseNewItem = (props: PurchaseNewItemProps) => {
   const { onSumit } = props;
@@ -16,6 +19,7 @@ const PurchaseNewItem = (props: PurchaseNewItemProps) => {
     initialValues: {
       price: 0,
       item: "",
+      quantity: 1,
       rank: 0,
       type: "buy"
     },
@@ -24,9 +28,11 @@ const PurchaseNewItem = (props: PurchaseNewItemProps) => {
     },
   });
   return (
-    <form method="post" onSubmit={roleForm.onSubmit(async (d) => { onSumit(d); })}>
-      <Grid>
-        <Grid.Col span={12} md={6}>
+    <Group grow position="center" >
+      <form method="post" onSubmit={roleForm.onSubmit(async (d) => {
+        onSumit(d.type, d.item, d.quantity, d.price, d.rank);
+      })}>
+        <Stack justify='center' spacing="md">
           <Group grow >
             <SearchItemField value={roleForm.values.item} onChange={(value) => roleForm.setFieldValue('item', value)} />
             <NumberInput
@@ -38,7 +44,16 @@ const PurchaseNewItem = (props: PurchaseNewItemProps) => {
               onChange={(value) => roleForm.setFieldValue('price', Number(value))}
               error={roleForm.errors.price && 'Invalid identifier'}
             />
-            <NumberInput
+            {/* <NumberInput
+              required
+              label={useTranslateSearch('quantity')}
+              description={useTranslateSearch('quantity_description')}
+              value={roleForm.values.quantity}
+              min={1}
+              onChange={(value) => roleForm.setFieldValue('quantity', Number(value))}
+              error={roleForm.errors.quantity && 'Invalid identifier'}
+            /> */}
+            {/* <NumberInput
               required
               label={useTranslateSearch('rank')}
               description={useTranslateSearch('rank_description')}
@@ -46,26 +61,25 @@ const PurchaseNewItem = (props: PurchaseNewItemProps) => {
               min={0}
               onChange={(value) => roleForm.setFieldValue('rank', Number(value))}
               error={roleForm.errors.rank && 'Invalid identifier'}
-            />
+            /> */}
           </Group>
           <Group mt={5} position="center">
             <Button type="submit" onClick={() => roleForm.setFieldValue('type', "buy")} disabled={roleForm.values.item.length <= 0} radius="xl">
-              {useTranslateSearch('buy')}
+              {useTranslateSearch('buttons.buy')}
             </Button>
             <Button type="submit" onClick={() => roleForm.setFieldValue('type', "sell")} disabled={roleForm.values.item.length <= 0} radius="xl">
-              {useTranslateSearch('sell')}
+              {useTranslateSearch('buttons.sell')}
             </Button>
           </Group>
-        </Grid.Col>
-      </Grid>
-    </form>
+        </Stack>
+      </form>
+    </Group>
   );
 }
-interface ItemsProps {
-  items: any[];
-}
-const Items = (props: ItemsProps) => {
-  const { items } = props;
+const Items = () => {
+  const useTranslateDataGrid = (key: string, context?: { [key: string]: any }) => useTranslateComponent(`inventory.datagrid.${key}`, { ...context })
+  const useTranslateDataGridColumns = (key: string, context?: { [key: string]: any }) => useTranslateDataGrid(`columns.${key}`, { ...context })
+  const { invantory, deleteInvantoryEntryById } = useDatabaseContext();
   return (
     <DataTable
       sx={{ marginTop: "20px" }}
@@ -73,45 +87,74 @@ const Items = (props: ItemsProps) => {
       withBorder
       striped
 
-      records={items}
+      records={invantory}
       // define columns
       columns={[
         {
-          accessor: 'item',
-          title: ('columns.name'),
+          accessor: 'item_name',
+          title: useTranslateDataGridColumns('name'),
           width: 120,
         },
         {
           accessor: 'price',
-          title: ('columns.price'),
+          title: useTranslateDataGridColumns('price'),
           width: 64,
         },
         {
           accessor: 'listed_price',
-          title: ('columns.listed_price'),
+          title: useTranslateDataGridColumns('listed_price'),
           width: 64,
         },
         {
           accessor: 'owned',
-          title: ('columns.owned'),
+          title: useTranslateDataGridColumns('owned'),
           width: 64,
         },
         {
           accessor: 'actions',
           width: 100,
-          title: ('components.dataTable.columns.actions'),
-          render: ({ }) =>
-            <Group>
-              <Group mr={10} position="center">
-                <NumberInput
-                  required
-                  size='sm'
-                  min={0}
-                  rightSection={<Button color="blue" radius="sx">
-                    Sell
-                  </Button>}
-                />
-              </Group>
+          title: useTranslateDataGridColumns('actions.title'),
+          render: ({ id }) =>
+            <Group grow position="center" >
+              <NumberInput
+                required
+                size='sm'
+                min={0}
+                rightSectionWidth={75}
+                rightSection={
+                  <Group spacing={"5px"} mr={0}>
+                    <Divider orientation="vertical" />
+                    <Tooltip label={useTranslateDataGridColumns('actions.sell')}>
+                      <ActionIcon color="green.7" variant="filled" onClick={async () => {
+
+                      }} >
+                        <FontAwesomeIcon icon={faHammer} />
+                      </ActionIcon>
+                    </Tooltip>
+                    <Tooltip label={useTranslateDataGridColumns('actions.delete.title')}>
+                      <ActionIcon color="red.7" variant="filled" onClick={async () => {
+                        modals.openConfirmModal({
+                          title: useTranslateDataGridColumns('actions.delete.title'),
+                          children: (<Text>
+                            {useTranslateDataGridColumns('actions.delete.message', { name: id })}
+                          </Text>),
+                          labels: {
+                            confirm: useTranslateDataGridColumns('actions.delete.buttons.confirm'),
+                            cancel: useTranslateDataGridColumns('actions.delete.buttons.cancel')
+                          },
+                          confirmProps: { color: 'red' },
+                          onConfirm: async () => {
+                            if (!id) return;
+                            await deleteInvantoryEntryById(id);
+                          }
+                        })
+                      }} >
+                        <FontAwesomeIcon icon={faTrashCan} />
+                      </ActionIcon>
+                    </Tooltip>
+                  </Group>
+                }
+              />
             </Group>
         },
       ]}
@@ -120,13 +163,13 @@ const Items = (props: ItemsProps) => {
 }
 
 export const Inventory = () => {
-  const [items, setItems] = useState<any[]>([]);
+  const { createInvantoryEntry } = useDatabaseContext();
   return (
-    <Container >
-      <PurchaseNewItem onSumit={(item) => {
-        setItems([...items, item]);
+    <Box >
+      <PurchaseNewItem onSumit={(__type: string, id: string, quantity: number, price: number, mod_rank: number) => {
+        createInvantoryEntry(id, quantity, price, mod_rank);
       }} />
-      <Items items={items} />
-    </Container>
+      <Items />
+    </Box>
   );
 }

@@ -18,10 +18,10 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "paths": {
-      "$components/*": [
+      "@components/*": [
         "src/components/*"
       ],
-      "$contexts/*": [
+      "@contexts/*": [
         "src/contexts/*"
       ],
       "@hooks/*": [

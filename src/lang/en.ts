@@ -2,6 +2,44 @@ export const en = {
   components: {
     forms: {
     },
+    searchItemField: {
+      title: "Search item",
+      description: "Search for an item",
+      placeholder: "Search item",
+      no_results: "No results",
+    },
+    inventory: {
+      price: "Price",
+      price_description: "Price per unit",
+      quantity: "Quantity",
+      quantity_description: "Quantity of items",
+      rank: "Mod Rank",
+      rank_description: "Rank of the mod",
+      buttons: {
+        buy: "Buy",
+        sell: "Sell",
+      },
+      datagrid: {
+        columns: {
+          name: "Name",
+          price: "Price",
+          listed_price: "Listed Price",
+          owned: "Owned",
+          actions: {
+            title: "Actions",
+            sell: "Sell",
+            delete: {
+              title: "Delete",
+              message: "Are you sure you want to delete this item?",
+              buttons: {
+                confirm: "Delete",
+                cancel: "Cancel",
+              }
+            }
+          },
+        }
+      }
+    },
     modals: {
       prompt: {
         confirmLabel: "Confirm",

@@ -4,7 +4,7 @@ import api from "@api/index";
 import { notifications } from "@mantine/notifications";
 import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
-import { TauriContext } from "$contexts/index";
+import { TauriContext } from "@contexts/index";
 import { useMutation } from "@tanstack/react-query";
 import i18next from "i18next";
 import { useTranslatePage } from "@hooks/index";

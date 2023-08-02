@@ -1,8 +1,7 @@
 import { axiosInstance } from './axios'
 
 import { Wfm } from '../types'
-import { settings } from '../hooks';
-
+import { settings, cache } from "@store/index";
 // Docs https://warframe.market/api_docs
 
 const api = {
@@ -21,8 +20,30 @@ const api = {
   },
   items: {
     async list(): Promise<Wfm.ItemDto[]> {
-      const { data } = await axiosInstance.post('/items', {});
-      return data.payload.items
+      const { tradableItems } = await cache.get();
+      // If cache is older than 24 hours then refresh it
+      if (tradableItems.createdAt + 1000 * 60 * 60 * 24 < Date.now()) {
+        const { data } = await axiosInstance.get('/items', {});
+        await cache.update({
+          tradableItems: {
+            createdAt: Date.now(),
+            items: data.payload.items
+          }
+        });
+        return data.payload.items
+      }
+      return tradableItems.items
+    },
+    async findByName(name: string): Promise<Wfm.ItemDto | undefined> {
+      const items = await this.list();
+      return items.find(item => item.item_name === name);
+    },
+    async findById(id: string): Promise<Wfm.ItemDto | undefined> {
+      return this.list().then(items => items.find(item => item.id === id))
+    },
+    async findByUrlName(url_name: string): Promise<Wfm.ItemDto | undefined> {
+      const items = await this.list();
+      return items.find(item => item.url_name === url_name);
     }
   },
 }

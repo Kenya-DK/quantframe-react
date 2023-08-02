@@ -6,9 +6,9 @@ export default defineConfig(async () => ({
   plugins: [react()],
   resolve: {
     alias: {
-      "$components": resolve(__dirname, "./src/components"),
-      "$contexts": resolve(__dirname, "./src/contexts"),
       "$types": resolve(__dirname, "./src/types"),
+      "@components": resolve(__dirname, "./src/components"),
+      "@contexts": resolve(__dirname, "./src/contexts"),
       "@hooks": resolve(__dirname, "./src/hooks"),
       "@api": resolve(__dirname, "./src/api"),
       "@utils": resolve(__dirname, "./src/utils"),

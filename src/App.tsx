@@ -1,5 +1,5 @@
 import './App.css'
-import { TauriContextProvider } from './contexts/tauri.context'
+import { DatabaseContextProvider, TauriContextProvider } from './contexts/index'
 import AppRoutes from './layouts/routes'
 import i18n from "i18next";
 import { en } from './lang/en'
@@ -10,6 +10,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { ModalsProvider } from '@mantine/modals';
 import { createStyles } from '@mantine/core';
 import { PromptModal } from './components/modals/prompt.modal';
+import { settings, user, cache } from './store';
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -47,6 +48,27 @@ declare module '@mantine/modals' {
   }
 }
 
+
+
+// @ts-ignore
+window.debug = async () => {
+  const config = structuredClone(await settings.get())
+  const cached = structuredClone(await cache.get())
+  const currentUser = structuredClone(await user.get())
+
+  // @ts-ignore
+  delete config.user_password
+  // @ts-ignore
+  delete config.access_token
+
+  console.group('Debug')
+  console.log(`pathname: ${window.location.pathname}`)
+  console.log(`settings: ${JSON.stringify(config, null, 2)}`)
+  console.log('cache:', cached.tradableItems)
+  console.log('user', currentUser)
+  console.groupEnd()
+}
+
 function App() {
   const { classes } = useStyles();
   return (
@@ -62,7 +84,9 @@ function App() {
           },
         }}>
         <TauriContextProvider>
-          <AppRoutes />
+          <DatabaseContextProvider>
+            <AppRoutes />
+          </DatabaseContextProvider>
         </TauriContextProvider>
         <ReactQueryDevtools initialIsOpen={false} />
       </ModalsProvider>

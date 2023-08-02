@@ -1,7 +1,8 @@
-import { Box } from "@mantine/core";
-import { createContext, useContext, useEffect, useState } from "react";
+import { Box, Button } from "@mantine/core";
+import { createContext, useContext, useState } from "react";
 import { Wfm, Settings } from '$types/index';
-import { useStorage, settings as sStore, user as uStore } from "../hooks/useStorage.hook";
+import { settings as sStore, user as uStore, cache } from "@store/index";
+import { useStorage } from "../hooks/useStorage.hook";
 type TauriContextProps = {
   loading: boolean;
   user: Wfm.UserDto;
@@ -36,18 +37,16 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
     setSettings({ ...settings, ...settingsData });
   }
 
-  useEffect(() => {
-    setInterval(async () => {
-      handleUpdateUser({
-        ingame_name: Math.random().toString(36).substring(7),
-      })
-    }, 1000)
-  }, [])
-
   return (
     <TauriContext.Provider value={{ loading, user, updateUser: handleUpdateUser, settings, updateSettings: handleUpdateSettings }}>
       <Box>
         {children}
+        <Button onClick={async () => {
+          await sStore.reset()
+          await uStore.reset()
+          await cache.reset()
+          window.location.reload()
+        }}>Clear Data</Button>
         <pre>{
           JSON.stringify(user, null, 2)
         }</pre>

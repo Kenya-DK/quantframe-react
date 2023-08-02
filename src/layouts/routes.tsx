@@ -11,8 +11,6 @@ import PNotFoundPage from './notFound'
 // Auth routes
 import PLogin from '../pages/auth/login'
 import AuthenticatedGate from '../components/AuthenticatedGate'
-console.log("AppRoutes");
-
 export default function AppRoutes() {
   return (
     <BrowserRouter>

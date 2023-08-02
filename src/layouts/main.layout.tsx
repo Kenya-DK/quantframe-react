@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom";
 import { useContext, useState } from 'react';
 import { AppShell, useMantineTheme } from '@mantine/core';
 import Hedder from "./header";
-import { TauriContext } from "$contexts/index";
+import { TauriContext } from "@contexts/index";
 import { useLocalStorage } from "@mantine/hooks";
 
 export default function MainLayout() {

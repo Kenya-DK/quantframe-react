@@ -10,10 +10,9 @@ interface SearchItemFieldProps {
 }
 
 export const SearchItemField = (props: SearchItemFieldProps) => {
-  const useTranslateSearch = (key: string, context?: { [key: string]: any }) => useTranslateComponent(`searchfield.${key}`, { ...context })
+  const useTranslateSearch = (key: string, context?: { [key: string]: any }) => useTranslateComponent(`searchItemField.${key}`, { ...context })
   const { value, onChange } = props;
   const [items, setItems] = useState<any[]>([]);
-
 
   useQuery({
     queryKey: ['warframes'],
@@ -24,6 +23,7 @@ export const SearchItemField = (props: SearchItemFieldProps) => {
   })
   return (
     <Select
+      w={300}
       label={useTranslateSearch('title')}
       placeholder={useTranslateSearch('placeholder')}
       description={useTranslateSearch('description')}
@@ -32,7 +32,7 @@ export const SearchItemField = (props: SearchItemFieldProps) => {
       limit={10}
       required
       maxDropdownHeight={400}
-      nothingFound={useTranslateSearch('nothingFound')}
+      nothingFound={useTranslateSearch('no_results')}
       value={value}
       onChange={(value) => onChange(value ?? "")}
       filter={(value, item) =>
