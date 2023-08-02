@@ -40,6 +40,7 @@ export namespace Wfm {
     thumb: string,
     // Get from warframe items npm package
     category: string,
+    max_rank: number,
   }
 
   // Order stuff below

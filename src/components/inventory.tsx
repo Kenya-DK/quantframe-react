@@ -39,7 +39,7 @@ const PurchaseNewItem = (props: PurchaseNewItemProps) => {
           <Group grow >
             <SearchItemField value={roleForm.values.item} onChange={(value) => {
               setSelectedItem(value);
-              roleForm.setFieldValue('item', value.id)
+              roleForm.setFieldValue('item', value.url_name)
             }} />
             <NumberInput
               required
@@ -66,6 +66,7 @@ const PurchaseNewItem = (props: PurchaseNewItemProps) => {
                 description={useTranslateSearch('rank_description')}
                 value={roleForm.values.rank}
                 min={0}
+                max={selectedItem?.max_rank}
                 onChange={(value) => roleForm.setFieldValue('rank', Number(value))}
                 error={roleForm.errors.rank && 'Invalid identifier'}
               />

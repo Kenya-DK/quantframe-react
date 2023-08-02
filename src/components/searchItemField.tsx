@@ -37,7 +37,7 @@ export const SearchItemField = (props: SearchItemFieldProps) => {
       value={value}
       onChange={async (value) => {
         if (!value) return;
-        const item = await api.items.findById(value);
+        const item = await api.items.findByUrlName(value);
         if (!item) return;
         onChange(item)
       }}

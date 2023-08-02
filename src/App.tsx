@@ -11,6 +11,8 @@ import { ModalsProvider } from '@mantine/modals';
 import { createStyles } from '@mantine/core';
 import { PromptModal } from './components/modals/prompt.modal';
 import { settings, user, cache } from './store';
+import { FileSystem } from '@utils/fileSystem';
+
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -55,6 +57,7 @@ window.debug = async () => {
   const config = structuredClone(await settings.get())
   const cached = structuredClone(await cache.get())
   const currentUser = structuredClone(await user.get())
+  console.log(await FileSystem.readTextFile("allItemData.csv"));
 
   // @ts-ignore
   delete config.user_password

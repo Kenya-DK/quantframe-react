@@ -3,10 +3,10 @@ import Database from 'tauri-plugin-sql-api'
 import { createContext, useContext, useEffect, useState } from "react";
 import { InventoryEntryDto, TransactionEntryDto, SQL_LITE_DB_PATH } from '$types/index'
 import api from "../../api";
-import Inventory from './invantory';
+import Inventorys from './invantorys';
 import Transaction from './transactions';
 export const db = await Database.load(SQL_LITE_DB_PATH)
-const tableInvantory = new Inventory();
+const tableInvantory = new Inventorys();
 const tableTransaction = new Transaction();
 
 type DatabaseContextProps = {
@@ -40,6 +40,7 @@ export const DatabaseContextProvider = ({ children }: DatabaseContextProviderPro
       return [index, newInvantory[index], newInvantory];
     return [index, undefined, newInvantory];
   };
+
   const createInvantoryEntry = async (id: string, quantity: number, price: number, rank: number) => {
     if (price <= 0) throw new Error("Price must be greater than 0");
 
@@ -47,12 +48,13 @@ export const DatabaseContextProvider = ({ children }: DatabaseContextProviderPro
     if (!item) throw new Error(`Item with id ${id} not found`);
 
     // Update database and get new entry
-    const entry = await tableInvantory.create(item, quantity, price, rank);
+    const [found, entry] = await tableInvantory.create(item, quantity, price, rank);
 
     // Check if item already exists
-    if (entry.id) updateInvantoryById(entry.id, entry);
+    if (found) updateInvantoryById(entry.id || 0, entry);
     else setInvantory([...invantory, entry]);
   };
+
   const deleteInvantoryEntryById = async (id: number) => {
     const newInvantory = [...invantory];
     const index = newInvantory.findIndex((item) => item.id === id);
@@ -62,6 +64,7 @@ export const DatabaseContextProvider = ({ children }: DatabaseContextProviderPro
       await tableInvantory.delete(id);
     }
   };
+
   const updateInvantoryById = async (id: number, input: Partial<InventoryEntryDto>) => {
     const [index, item, newInvantory] = await getInvantoryById(id);
     if (!item) throw new Error(`Item with id ${id} not found`);
@@ -71,6 +74,7 @@ export const DatabaseContextProvider = ({ children }: DatabaseContextProviderPro
     newInvantory[index] = { ...newInvantory[index], ...entry };
     setInvantory(newInvantory);
   };
+
   // Transaction Functions
   const [transactions, setTransactions] = useState<TransactionEntryDto[]>([]);
 

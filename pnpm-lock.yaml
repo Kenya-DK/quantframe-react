@@ -86,9 +86,6 @@ dependencies:
   tauri-plugin-store-api:
     specifier: github:tauri-apps/tauri-plugin-store#v1
     version: github.com/tauri-apps/tauri-plugin-store/a65ce9bfb168a9a3cd7ed4102b9f22770cc3abfa
-  warframe-items:
-    specifier: ^1.1260.95
-    version: 1.1260.95
 
 devDependencies:
   '@tauri-apps/cli':
@@ -1995,10 +1992,6 @@ packages:
   /void-elements@3.1.0:
     resolution: {integrity: sha512-Dhxzh5HZuiHQhbvTW9AMetFfBHDMYpo23Uo9btPXgdYP+3T5S+p+jgNy7spra+veYhBP2dCSgxR/i2Y02h5/6w==}
     engines: {node: '>=0.10.0'}
-    dev: false
-
-  /warframe-items@1.1260.95:
-    resolution: {integrity: sha512-fgOlxKtRELU+LKZaEv58cxw76rlaygfY3oBZ6lYD14m+he8B8avF5VQtOPUHG7W5FIsdjMKEktZZi6ERVMwh5Q==}
     dev: false
 
   /yallist@3.1.1:
