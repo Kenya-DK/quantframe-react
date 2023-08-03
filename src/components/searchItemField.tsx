@@ -17,7 +17,7 @@ export const SearchItemField = (props: SearchItemFieldProps) => {
 
   useQuery({
     queryKey: ['warframes'],
-    queryFn: () => api.items.list(),
+    queryFn: () => api.items.getTradableItems(),
     onSuccess: (data) => {
       setItems(data.map((warframe) => ({ ...warframe, label: warframe.item_name, value: warframe.url_name })) || []);
     }

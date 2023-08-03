@@ -1,9 +1,10 @@
 import { axiosInstance } from './axios'
 
-import { Wfm } from '../types'
-import { settings, cache } from "@store/index";
+import { PriceHistoryDto, Wfm } from '../types'
+import { settings, user, cache } from "@store/index";
+import PriceScraper from './priceScraper';
 // Docs https://warframe.market/api_docs
-
+const chachTime = 1000 * 60 * 60 * 24 // 24 hours
 const api = {
   auth: {
     async login(email: string, password: string): Promise<Wfm.UserDto> {
@@ -19,46 +20,70 @@ const api = {
     }
   },
   items: {
-    async list(): Promise<Wfm.ItemDto[]> {
+    async getTradableItems(): Promise<Wfm.ItemDto[]> {
       const { tradableItems } = await cache.get();
       // If cache is older than 24 hours then refresh it
-      if (tradableItems.createdAt + 1000 * 60 * 60 * 24 < Date.now()) {
-
-        const { data: { payload: { items } } } = await axiosInstance.get('/items', {});
-        // I Use this to find the category names for the warframe market api.
-        const data = await fetch('https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/All.json');
-        const wfItems = await data.json();
-
-        const wfmItems = items.map((item: Wfm.ItemDto) => {
-          const wfmItem = wfItems.find((i: any) => i.marketInfo?.id === item.id || i.name === item.item_name)
-          return {
-            ...item,
-            category: wfmItem?.category || "Unknown",
-            max_rank: wfmItem?.fusionLimit || (wfmItem?.levelStats?.length - 1) || 0,
-          }
-        });
-
-        await cache.update({
-          tradableItems: {
-            createdAt: Date.now(),
-            items: wfmItems
-          }
-        });
-        return wfmItems
-      }
+      if (tradableItems.createdAt + chachTime < Date.now())
+        return api.items.updateTradableItems()
       return tradableItems.items
     },
+    async updateTradableItems(): Promise<Wfm.ItemDto[]> {
+      const { data: { payload: { items } } } = await axiosInstance.get('/items', {});
+      await cache.update({
+        tradableItems: {
+          createdAt: Date.now(),
+          items: items
+        }
+      });
+      return items
+    },
     async findByName(name: string): Promise<Wfm.ItemDto | undefined> {
-      const items = await this.list();
+      const items = await this.getTradableItems();
       return items.find(item => item.item_name === name);
     },
     async findById(id: string): Promise<Wfm.ItemDto | undefined> {
-      return this.list().then(items => items.find(item => item.id === id))
+      return this.getTradableItems().then(items => items.find(item => item.id === id))
     },
     async findByUrlName(url_name: string): Promise<Wfm.ItemDto | undefined> {
-      const items = await this.list();
+      const items = await this.getTradableItems();
       return items.find(item => item.url_name === url_name);
+    },
+  },
+  itemprices: {
+    async priceHistory(): Promise<PriceHistoryDto[]> {
+      const { priceHistory } = await cache.get();
+      // If cache is older than 24 hours then refresh it
+      if (priceHistory.createdAt + chachTime < Date.now())
+        return await api.itemprices.updatePriceHistory()
+      return priceHistory.items
+    },
+    async updatePriceHistory() {
+      const priceHistorys = await PriceScraper.list(7);
+      await cache.update({
+        priceHistory: {
+          createdAt: Date.now(),
+          items: priceHistorys
+        }
+      });
+      return priceHistorys
     }
+  },
+  orders: {
+    async getOrders(): Promise<Wfm.OrderDto[]> {
+      const { ingame_name } = await user.get();
+      const { data: { payload: { items } } } = await axiosInstance.get(`profile/${ingame_name}/orders`, {});
+
+      return items as Wfm.OrderDto[]
+    },
+    async deleteOrder(id: string) {
+      const { ingame_name } = await user.get();
+      // TODO: Update in database
+      await axiosInstance.delete(`profile/${ingame_name}/orders/${id}`, {});
+    },
+    async deleteAllOrders() {
+      const promises = (await this.getOrders()).map(order => this.deleteOrder(order.id))
+      await Promise.all(promises);
+    },
   },
 }
 

@@ -68,4 +68,7 @@ export default class Inventorys {
     return await db.execute(`DELETE FROM ${Inventorys.name} WHERE id = $1`, [id]);
   }
 
+  async updateListedPrice(id: number, listed_price: number) {
+    return await this.updateById(id, { listed_price });
+  }
 }
