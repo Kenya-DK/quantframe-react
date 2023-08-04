@@ -1,14 +1,21 @@
+import axios from 'axios'
+// @ts-ignore no type definitions for this package
+import axiosTauriAdapter from 'axios-tauri-adapter'
 import { PriceHistoryDto } from "../types"
 import { groupBy } from "../utils"
 
+import api from "."
+const axiosInstance = axios.create({
+  adapter: axiosTauriAdapter,
+  baseURL: 'https://relics.run',
+})
 export default class PriceScraper {
   public constructor() { }
   private static getPriceHistory = async (platform: string, dayStr: string) => {
-    const url = platform != "pc" ? `https://relics.run/history/${platform}/price_history_${dayStr}.json` : `https://relics.run/history/price_history_${dayStr}.json`
-    const res = await fetch(url)
-    if (res.status.toString()[0] !== "2") return null
-    const json = await res.json()
-    return json as Record<string, PriceHistoryDto[]>
+    const url = platform != "pc" ? `history/${platform}/price_history_${dayStr}.json` : `history/price_history_${dayStr}.json`
+    const { data, status } = await axiosInstance.get(url, {})
+    if (status.toString()[0] !== "2") return null
+    return data as Record<string, PriceHistoryDto[]>
   }
 
   private static isValidPriceHistorys = (priceHistory: PriceHistoryDto[]) => {
@@ -24,8 +31,7 @@ export default class PriceScraper {
 
   public static list = async (priceHistoryDays: number): Promise<PriceHistoryDto[]> => {
     type Item = { item_name: string, url_name: string }
-    const wfmItem = await fetch(`https://api.warframe.market/v1/items`)
-    const wfmItemJson = (await wfmItem.json()).payload.items as Item[]
+    const wfmItemJson = await api.items.getTradableItems();
     const itemNameList = wfmItemJson.filter(x => !x.url_name.includes("relic")).map((item: Item) => item.url_name)
     const urlLookup: Record<string, string> = {};
     wfmItemJson.forEach((item: Item) => { urlLookup[item.item_name] = item.url_name; });

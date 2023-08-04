@@ -29,13 +29,23 @@ const api = {
     },
     async updateTradableItems(): Promise<Wfm.ItemDto[]> {
       const { data: { payload: { items } } } = await axiosInstance.get('/items', {});
+      const data = await fetch('https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/All.json');
+      const wfItems = await data.json();
+      const wfmItems = items.map((item: Wfm.ItemDto) => {
+        const wfmItem = wfItems.find((i: any) => i.marketInfo?.id === item.id || i.name === item.item_name)
+        return {
+          ...item,
+          category: wfmItem?.category || "Unknown",
+          max_rank: wfmItem?.fusionLimit || (wfmItem?.levelStats?.length - 1) || 0,
+        }
+      });
       await cache.update({
         tradableItems: {
           createdAt: Date.now(),
-          items: items
+          items: wfmItems
         }
       });
-      return items
+      return wfmItems
     },
     async findByName(name: string): Promise<Wfm.ItemDto | undefined> {
       const items = await this.getTradableItems();
@@ -50,15 +60,15 @@ const api = {
     },
   },
   itemprices: {
-    async priceHistory(): Promise<PriceHistoryDto[]> {
+    async priceHistory(days: number = 7): Promise<PriceHistoryDto[]> {
       const { priceHistory } = await cache.get();
       // If cache is older than 24 hours then refresh it
       if (priceHistory.createdAt + chachTime < Date.now())
-        return await api.itemprices.updatePriceHistory()
+        return await api.itemprices.updatePriceHistory(days)
       return priceHistory.items
     },
-    async updatePriceHistory() {
-      const priceHistorys = await PriceScraper.list(7);
+    async updatePriceHistory(days: number = 7): Promise<PriceHistoryDto[]> {
+      const priceHistorys = await PriceScraper.list(days);
       await cache.update({
         priceHistory: {
           createdAt: Date.now(),
@@ -71,9 +81,11 @@ const api = {
   orders: {
     async getOrders(): Promise<Wfm.OrderDto[]> {
       const { ingame_name } = await user.get();
-      const { data: { payload: { items } } } = await axiosInstance.get(`profile/${ingame_name}/orders`, {});
+      const { data } = await axiosInstance.get(`profile/${ingame_name}/orders`);
 
-      return items as Wfm.OrderDto[]
+      console.log(data);
+
+      return []
     },
     async deleteOrder(id: string) {
       const { ingame_name } = await user.get();
@@ -81,7 +93,8 @@ const api = {
       await axiosInstance.delete(`profile/${ingame_name}/orders/${id}`, {});
     },
     async deleteAllOrders() {
-      const promises = (await this.getOrders()).map(order => this.deleteOrder(order.id))
+      const orders = await this.getOrders();
+      const promises = orders.map(order => this.deleteOrder(order.id))
       await Promise.all(promises);
     },
   },
