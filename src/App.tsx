@@ -1,6 +1,4 @@
 import './App.css'
-import { DatabaseContextProvider, TauriContextProvider } from './contexts/index'
-import AppRoutes from './layouts/routes'
 import i18n from "i18next";
 import { en } from './lang/en'
 import { dk } from './lang/dk'
@@ -11,7 +9,8 @@ import { ModalsProvider } from '@mantine/modals';
 import { createStyles } from '@mantine/core';
 import { PromptModal } from './components/modals/prompt.modal';
 import { settings, user, cache } from './store';
-import { FileSystem } from '@utils/fileSystem';
+import AppRoutes from './layouts/routes';
+import { StatsScraperContextProvider, LiveScraperContextProvider, DatabaseContextProvider, TauriContextProvider, WhisperScraperContextProvider } from './contexts';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -57,7 +56,6 @@ window.debug = async () => {
   const config = structuredClone(await settings.get())
   const cached = structuredClone(await cache.get())
   const currentUser = structuredClone(await user.get())
-  console.log(await FileSystem.readTextFile("allItemData.csv"));
 
   // @ts-ignore
   delete config.user_password
@@ -65,10 +63,11 @@ window.debug = async () => {
   delete config.access_token
 
   console.group('Debug')
-  console.log(`pathname: ${window.location.pathname}`)
-  console.log(`settings: ${JSON.stringify(config, null, 2)}`)
-  console.log('cache:', cached.tradableItems)
-  console.log('user', currentUser)
+  console.log(`Pathname: ${window.location.pathname}`)
+  console.log(`Settings: ${JSON.stringify(config, null, 2)}`)
+  console.log('Cache Tradable Items:', cached.tradableItems)
+  console.log('Cache Price Historys:', cached.priceHistory)
+  console.log('User', currentUser)
   console.groupEnd()
 }
 
@@ -88,7 +87,13 @@ function App() {
         }}>
         <TauriContextProvider>
           <DatabaseContextProvider>
-            <AppRoutes />
+            <StatsScraperContextProvider>
+              <LiveScraperContextProvider>
+                <WhisperScraperContextProvider>
+                  <AppRoutes />
+                </WhisperScraperContextProvider>
+              </LiveScraperContextProvider>
+            </StatsScraperContextProvider>
           </DatabaseContextProvider>
         </TauriContextProvider>
         <ReactQueryDevtools initialIsOpen={false} />

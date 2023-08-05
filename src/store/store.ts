@@ -2,11 +2,17 @@ import { merge } from 'lodash'
 import { Store } from "tauri-plugin-store-api";
 import { SETTINGS_FILE, Cache, Settings, Wfm } from "../types";
 export const store = new Store(SETTINGS_FILE)
-
 class Persist<T> {
-  constructor(public name: string, public defaults: T) { }
+  private cache: T | null;
+  constructor(public name: string, public defaults: T) {
+    this.cache = null
+  }
   async get(): Promise<T> {
-    return await store.get<T>(this.name) || this.defaults
+    if (this.cache)
+      return this.cache;
+    else
+      this.cache = await store.get<T>(this.name) || this.defaults;
+    return this.cache;
   }
   async set(key: keyof T, value: typeof this.defaults[typeof key]) {
     const currentSettings = await store.get<T>(this.name)
@@ -14,17 +20,20 @@ class Persist<T> {
     currentSettings[key] = value
     const promise = store.set(this.name, currentSettings)
     await store.save()
+    this.cache = currentSettings;
     return promise
   }
   async update(newSettings: Partial<T>) {
     const currentSettings = await store.get<T>(this.name)
     const promise = store.set(this.name, merge(this.defaults, currentSettings, newSettings))
     await store.save()
+    this.cache = await store.get<T>(this.name)
     return promise
   }
   async reset() {
     const promise = store.set(this.name, this.defaults)
     await store.save()
+    this.cache = this.defaults;
     return promise
   }
 }
@@ -40,7 +49,7 @@ export const settings = new Persist<Settings>('settings', {
 
 export const user = new Persist<Wfm.UserDto>('user', {
   banned: false,
-  id: 'sdffds',
+  id: '',
   avatar: '',
   ingame_name: '',
   locale: 'en',

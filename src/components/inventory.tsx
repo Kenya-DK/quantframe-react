@@ -92,10 +92,8 @@ const Items = () => {
   return (
     <DataTable
       sx={{ marginTop: "20px" }}
-      height={"75vh"}
-      withBorder
       striped
-
+      height={"50%"}
       records={invantory}
       // define columns
       columns={[
