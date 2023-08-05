@@ -1,14 +1,22 @@
-import { Box, Button } from "@mantine/core";
 import { createContext, useContext, useState } from "react";
 import { Wfm, Settings } from '$types/index';
-import { settings as sStore, user as uStore, cache } from "@store/index";
+import { settings as sStore, user as uStore } from "@store/index";
 import { useStorage } from "../hooks/useStorage.hook";
+import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/api/notification';
+let permissionGranted = await isPermissionGranted();
+if (!permissionGranted) {
+  const permission = await requestPermission();
+  permissionGranted = permission === 'granted';
+}
+
+
 type TauriContextProps = {
   loading: boolean;
   user: Wfm.UserDto;
   updateUser: (user: Wfm.UserDto) => void;
   settings: Settings;
   updateSettings: (user: Settings) => void;
+  sendNotification: (title: string, body: string) => void;
 }
 type TauriContextProviderProps = {
   children: React.ReactNode;
@@ -20,6 +28,7 @@ export const TauriContext = createContext<TauriContextProps>({
   updateUser: () => { },
   settings: sStore.defaults,
   updateSettings: () => { },
+  sendNotification: () => { },
 });
 
 export const useTauriContext = () => useContext(TauriContext);
@@ -36,21 +45,20 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
   const handleUpdateSettings = (settingsData: Partial<Settings>) => {
     setSettings({ ...settings, ...settingsData });
   }
-
+  const handleSendNotification = async (title: string, body: string) => {
+    if (permissionGranted) {
+      sendNotification({ title: title, body: body });
+    }
+  }
   return (
-    <TauriContext.Provider value={{ loading, user, updateUser: handleUpdateUser, settings, updateSettings: handleUpdateSettings }}>
-      <Box>
-        {children}
-        <Button onClick={async () => {
-          await sStore.reset()
-          await uStore.reset()
-          await cache.reset()
-          window.location.reload()
-        }}>Clear Data</Button>
-        <pre>{
-          JSON.stringify(user, null, 2)
-        }</pre>
-      </Box>
+    <TauriContext.Provider value={{ loading, user, updateUser: handleUpdateUser, settings, updateSettings: handleUpdateSettings, sendNotification: handleSendNotification }}>
+      {children}
+      {/* <Button onClick={async () => {
+        await sStore.reset()
+        await uStore.reset()
+        await cache.reset()
+        window.location.reload()
+      }}>Clear Data</Button> */}
     </TauriContext.Provider>
   )
 }

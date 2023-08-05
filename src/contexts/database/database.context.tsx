@@ -1,9 +1,9 @@
-import { Box } from "@mantine/core";
 import { createContext, useContext, useEffect, useState } from "react";
 import { InventoryEntryDto, TransactionEntryDto, SQL_LITE_DB_PATH } from '$types/index'
 import api from "../../api";
 import Inventorys from './invantorys';
 import Transaction from './transactions';
+import Database from "tauri-plugin-sql-api";
 export const db = await Database.load(SQL_LITE_DB_PATH)
 const tableInvantory = new Inventorys();
 const tableTransaction = new Transaction();
@@ -41,10 +41,10 @@ export const DatabaseContextProvider = ({ children }: DatabaseContextProviderPro
   };
 
   const createInvantoryEntry = async (id: string, quantity: number, price: number, rank: number) => {
-    // if (price <= 0) throw new Error("Price must be greater than 0");
+    if (price <= 0) throw new Error("Price must be greater than 0");
 
-    // const item = await api.items.findByUrlName(id);
-    // if (!item) throw new Error(`Item with id ${id} not found`);
+    const item = await api.items.findByUrlName(id);
+    if (!item) throw new Error(`Item with id ${id} not found`);
 
     // Update database and get new entry
     const [found, entry] = await tableInvantory.create(item, quantity, price, rank);
@@ -55,23 +55,23 @@ export const DatabaseContextProvider = ({ children }: DatabaseContextProviderPro
   };
 
   const deleteInvantoryEntryById = async (id: number) => {
-    // const newInvantory = [...invantory];
-    // const index = newInvantory.findIndex((item) => item.id === id);
-    // if (index !== -1) {
-    //   newInvantory.splice(index, 1);
-    //   setInvantory(newInvantory);
-    //   await tableInvantory.delete(id);
-    // }
+    const newInvantory = [...invantory];
+    const index = newInvantory.findIndex((item) => item.id === id);
+    if (index !== -1) {
+      newInvantory.splice(index, 1);
+      setInvantory(newInvantory);
+      await tableInvantory.delete(id);
+    }
   };
 
   const updateInvantoryById = async (id: number, input: Partial<InventoryEntryDto>) => {
-    // const [index, item, newInvantory] = await getInvantoryById(id);
-    // if (!item) throw new Error(`Item with id ${id} not found`);
-    // if (input.price && input.price <= 0) throw new Error("Price must be greater than 0");
-    // // Update database and get new entry
-    // const entry = await tableInvantory.updateById(id, input);
-    // newInvantory[index] = { ...newInvantory[index], ...entry };
-    // setInvantory(newInvantory);
+    const [index, item, newInvantory] = await getInvantoryById(id);
+    if (!item) throw new Error(`Item with id ${id} not found`);
+    if (input.price && input.price <= 0) throw new Error("Price must be greater than 0");
+    // Update database and get new entry
+    const entry = await tableInvantory.updateById(id, input);
+    newInvantory[index] = { ...newInvantory[index], ...entry };
+    setInvantory(newInvantory);
   };
 
   // Transaction Functions
@@ -80,17 +80,15 @@ export const DatabaseContextProvider = ({ children }: DatabaseContextProviderPro
   useEffect(() => {
     (async () => {
       // Load invantory
-      // setInvantory(await tableInvantory.list());
-      // // Load transactions
-      // setTransactions(await tableTransaction.list());
+      setInvantory(await tableInvantory.list());
+      // Load transactions
+      setTransactions(await tableTransaction.list());
     })();
   }, [])
 
   return (
     <DatabaseContext.Provider value={{ invantory, updateInvantoryById, createInvantoryEntry, deleteInvantoryEntryById, transactions }}>
-      <Box>
-        {children}
-      </Box>
+      {children}
     </DatabaseContext.Provider>
   )
 }
