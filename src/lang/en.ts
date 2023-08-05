@@ -47,6 +47,12 @@ export const en = {
       }
     },
   },
+  context: {
+    wisper: {
+      title: "Wisper",
+      message: "Wisper {{name}}",
+    },
+  },
   layout: {
     header: {
       title: "QuantFrame",

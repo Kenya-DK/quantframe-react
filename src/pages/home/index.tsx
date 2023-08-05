@@ -1,5 +1,6 @@
 import { Grid } from "@mantine/core";
 import { Inventory } from "../../components/inventory";
+import { TransactionControl } from "../../components/transactionControl";
 
 export default function HomePage() {
   return (
@@ -8,6 +9,7 @@ export default function HomePage() {
         <Inventory />
       </Grid.Col>
       <Grid.Col md={6}>
+        <TransactionControl />
       </Grid.Col>
     </Grid>
   );

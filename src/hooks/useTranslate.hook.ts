@@ -14,3 +14,5 @@ export const useTranslateModal = (key: string, context?: { [key: string]: any })
 
 export const useTranslateSuccess = (key: string, context?: { [key: string]: any }) => i18next.t(`success.${key}`, { ...context }) as string
 export const useTranslateError = (key: string, context?: { [key: string]: any }) => i18next.t(`error.${key}`, { ...context }) as string
+
+export const useTranslateContext = (key: string, context?: { [key: string]: any }) => i18next.t(`context.${key}`, { ...context }) as string
