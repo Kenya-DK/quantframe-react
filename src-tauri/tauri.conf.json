@@ -37,7 +37,8 @@
       "http": {
         "all": true,
         "scope": [
-          "https://api.warframe.market/**"
+          "https://api.warframe.market/**",
+          "https://relics.run/**"
         ]
       }
     },
