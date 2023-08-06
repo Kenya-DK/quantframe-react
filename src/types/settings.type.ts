@@ -1,5 +1,4 @@
 import { Wfm } from ".";
-
 export interface Settings {
   mastery_rank: 2, // Trading is unlocked at MR2
   user_email: '',
@@ -18,7 +17,6 @@ export interface TradableItemsCache extends CacheBase {
 }
 export interface Cache {
   tradableItems: TradableItemsCache,
-  priceHistory: PriceHistoryCache,
 }
 export interface PriceHistoryDto {
   name: string;

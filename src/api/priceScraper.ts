@@ -3,6 +3,8 @@ import axios from 'axios'
 import axiosTauriAdapter from 'axios-tauri-adapter'
 import { PriceHistoryDto } from "../types"
 import { groupBy } from "../utils"
+import { writeTextFile, copyFile, BaseDirectory, exists, removeFile } from '@tauri-apps/api/fs';
+import * as Papa from 'papaparse';
 
 import api from "."
 const axiosInstance = axios.create({
@@ -30,6 +32,8 @@ export default class PriceScraper {
   }
 
   public static list = async (priceHistoryDays: number): Promise<PriceHistoryDto[]> => {
+    if (await exists('pricehistory.csv', { dir: BaseDirectory.AppConfig }))
+      await copyFile('pricehistory.csv', "pricehistoryBackop.csv", { dir: BaseDirectory.AppConfig });
     type Item = { item_name: string, url_name: string }
     const wfmItemJson = await api.items.getTradableItems();
     const itemNameList = wfmItemJson.filter(x => !x.url_name.includes("relic")).map((item: Item) => item.url_name)
@@ -80,7 +84,10 @@ export default class PriceScraper {
 
     // Sort by name
     rows = rows.sort((a, b) => a.name > b.name ? 1 : -1)
-
+    const csv = Papa.unparse(rows);
+    await writeTextFile('pricehistory.csv', csv, { dir: BaseDirectory.AppConfig });
+    if (await exists('pricehistoryBackop.csv', { dir: BaseDirectory.AppConfig }))
+      await removeFile('pricehistoryBackop.csv', { dir: BaseDirectory.AppConfig });
     return rows
   }
 }

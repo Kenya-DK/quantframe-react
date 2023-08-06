@@ -12,6 +12,7 @@ use tauri::Window;
 struct Payload {
     name: String,
 }
+
 #[derive(Clone)]
 pub struct WhisperScraper {
     is_running: Arc<AtomicBool>,
@@ -111,6 +112,7 @@ impl WhisperScraper {
 
         *last_file_size = current_file_size;
 
+        println!("new_lines: {:?}", new_lines);
         Ok(new_lines)
     }
     fn match_pattern(input: &str) -> Result<(bool, Option<String>), regex::Error> {

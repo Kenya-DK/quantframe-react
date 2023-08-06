@@ -60,21 +60,8 @@ const api = {
     },
   },
   itemprices: {
-    async priceHistory(days: number = 7): Promise<PriceHistoryDto[]> {
-      const { priceHistory } = await cache.get();
-      // If cache is older than 24 hours then refresh it
-      if (priceHistory.createdAt + chachTime < Date.now())
-        return await api.itemprices.updatePriceHistory(days)
-      return priceHistory.items
-    },
     async updatePriceHistory(days: number = 7): Promise<PriceHistoryDto[]> {
       const priceHistorys = await PriceScraper.list(days);
-      await cache.update({
-        priceHistory: {
-          createdAt: Date.now(),
-          items: priceHistorys
-        }
-      });
       return priceHistorys
     }
   },

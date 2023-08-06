@@ -24,14 +24,13 @@
         "all": true
       },
       "fs": {
-        "readFile": true,
         "writeFile": true,
         "exists": true,
-        "createDir": true,
         "readDir": true,
+        "copyFile": true,
+        "removeFile": true,
         "scope": [
-          "$RESOURCE/*",
-          "$APPLOCALDATA/**"
+          "$APPDATA/**"
         ]
       },
       "http": {

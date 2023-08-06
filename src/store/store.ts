@@ -61,5 +61,4 @@ export const user = new Persist<Wfm.UserDto>('user', {
 
 export const cache = new Persist<Cache>('cache', {
   tradableItems: { createdAt: 0, items: [] },
-  priceHistory: { createdAt: 0, items: [] },
 })
