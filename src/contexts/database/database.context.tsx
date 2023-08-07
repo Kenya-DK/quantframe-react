@@ -13,6 +13,7 @@ type DatabaseContextProps = {
   createInvantoryEntry: (id: string, quantity: number, price: number, mod_rank: number) => Promise<void>;
   deleteInvantoryEntryById: (id: number) => Promise<void>;
   updateInvantoryById: (id: number, input: Partial<InventoryEntryDto>) => Promise<void>;
+  updateInvantoryListingPriceById: (id: number, listed_price: number) => Promise<void>;
   transactions: TransactionEntryDto[];
 }
 type DatabaseContextProviderProps = {
@@ -24,7 +25,8 @@ export const DatabaseContext = createContext<DatabaseContextProps>({
   transactions: [],
   createInvantoryEntry: async () => { },
   deleteInvantoryEntryById: async () => { },
-  updateInvantoryById: async () => { }
+  updateInvantoryById: async () => { },
+  updateInvantoryListingPriceById: async () => { },
 });
 
 export const useDatabaseContext = () => useContext(DatabaseContext);
@@ -74,6 +76,12 @@ export const DatabaseContextProvider = ({ children }: DatabaseContextProviderPro
     setInvantory(newInvantory);
   };
 
+  const updateInvantoryListingPriceById = async (id: number, listed_price: number) => {
+    updateInvantoryById(id, { listed_price });
+  };
+
+
+
   // Transaction Functions
   const [transactions, setTransactions] = useState<TransactionEntryDto[]>([]);
 
@@ -87,7 +95,7 @@ export const DatabaseContextProvider = ({ children }: DatabaseContextProviderPro
   }, [])
 
   return (
-    <DatabaseContext.Provider value={{ invantory, updateInvantoryById, createInvantoryEntry, deleteInvantoryEntryById, transactions }}>
+    <DatabaseContext.Provider value={{ invantory, updateInvantoryById, updateInvantoryListingPriceById, createInvantoryEntry, deleteInvantoryEntryById, transactions }}>
       {children}
     </DatabaseContext.Provider>
   )
