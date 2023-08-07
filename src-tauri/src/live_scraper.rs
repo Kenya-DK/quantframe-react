@@ -1,6 +1,10 @@
+extern crate polars_core;
 use crate::structs::PriceHistoryDto;
 use crate::structs::Response;
 use crate::structs::Settings;
+
+use polars_core::prelude::*;
+use std::io::Cursor;
 use std::error::Error;
 extern crate csv;
 use hyper::{Client, Uri};
@@ -24,16 +28,18 @@ pub struct LiveScraper {
     settings: Option<Settings>,
     csv_path: String,
     csv_backop_path: String,
+    database_path: String,
 }
 
 impl LiveScraper {
-    pub fn new(window: Window, token: String, csv_path: String, csv_backop_path: String) -> Self {
+    pub fn new(window: Window, token: String, csv_path: String, csv_backop_path: String,database_path:String) -> Self {
         LiveScraper {
             is_running: Arc::new(AtomicBool::new(false)),
             window,
             token,
             csv_path,
             csv_backop_path,
+            database_path,
             settings: None,
         }
     }
@@ -60,6 +66,41 @@ impl LiveScraper {
         });
     }
 
+    pub fn get_price_historys(&self) -> PolarsResult<DataFrame> {
+        // Try to read from "allItemDataBackup.csv", and if it fails, read from "allItemData.csv".
+        let file = File::open(self.csv_backop_path)
+        .or_else(|_| File::open(self.csv_path))?;
+
+        let df = CsvReader::new(file)
+            .infer_schema(None)
+            .has_header(true)
+            .finish();
+    }
+        fn get_week_increase(&self,row_name: &str) -> Result<f64> {
+            // Try to read from "allItemDataBackup.csv", and if it fails, read from "allItemData.csv".
+            let file = File::open("allItemDataBackup.csv")
+                .or_else(|_| File::open("allItemData.csv"))?;
+        
+            let df = self.get_price_historys()?;
+        
+            // Filter the DataFrame based on the "name" and "order_type" conditions
+            let week_df = df.filter(
+                    (col("name").eq(lit(row_name)))
+                    & (col("order_type").eq(lit("closed")))
+                )?
+                .select(&["avg_price"])?; // Select only the avg_price column
+        
+            // Assuming the filtered DataFrame has at least 7 rows
+            if week_df.height() >= 7 {
+                let first_avg_price: f64 = week_df.select_at_idx(0).unwrap().get(0).unwrap().get_f64().unwrap();
+                let seventh_avg_price: f64 = week_df.select_at_idx(6).unwrap().get(0).unwrap().get_f64().unwrap();
+                let change = first_avg_price - seventh_avg_price;
+                Ok(change)
+            } else {
+                Err(PolarsError::Other("Not enough rows to calculate the change".into()))
+            }
+        }
+    }
     pub fn stop_loop(&self) {
         self.is_running.store(false, Ordering::SeqCst);
     }

@@ -63,12 +63,17 @@ fn main() {
                 let app_path = roaming_path.join("quantframe");
                 let csv_path = app_path.join("pricehistory.csv");
                 let csv_backop_path = app_path.join("pricehistoryBackop.csv");
+                
+                // Get database path
+                let db_path = app_path.join("quantframe.sqlite");
+                
                 // Create an instance of LiveScraper
                 let live_scraper = Arc::new(Mutex::new(LiveScraper::new(
                     window,
                     String::from(""),
                     csv_path.to_str().unwrap().to_string(),
                     csv_backop_path.to_str().unwrap().to_string(),
+                    db_path.to_str().unwrap().to_string(),
                 )));
 
                 // Manage the state
