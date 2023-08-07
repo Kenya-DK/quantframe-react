@@ -1,11 +1,11 @@
-extern crate polars_core;
 use crate::structs::PriceHistoryDto;
 use crate::structs::Response;
 use crate::structs::Settings;
 
-use polars_core::prelude::*;
-use std::io::Cursor;
+use polars::prelude::*;
 use std::error::Error;
+use std::fs::File;
+use std::io::Cursor;
 extern crate csv;
 use hyper::{Client, Uri};
 use hyper_tls::HttpsConnector;
@@ -32,7 +32,13 @@ pub struct LiveScraper {
 }
 
 impl LiveScraper {
-    pub fn new(window: Window, token: String, csv_path: String, csv_backop_path: String,database_path:String) -> Self {
+    pub fn new(
+        window: Window,
+        token: String,
+        csv_path: String,
+        csv_backop_path: String,
+        database_path: String,
+    ) -> Self {
         LiveScraper {
             is_running: Arc::new(AtomicBool::new(false)),
             window,
@@ -66,39 +72,45 @@ impl LiveScraper {
         });
     }
 
-    pub fn get_price_historys(&self) -> PolarsResult<DataFrame> {
+    pub fn get_price_historys(&self) -> Result<DataFrame, PolarsError> {
         // Try to read from "allItemDataBackup.csv", and if it fails, read from "allItemData.csv".
-        let file = File::open(self.csv_backop_path)
-        .or_else(|_| File::open(self.csv_path))?;
+        let file = File::open(&self.csv_backop_path).or_else(|_| File::open(&self.csv_path))?;
 
-        let df = CsvReader::new(file)
+        // Parse the CSV file into a DataFrame
+        CsvReader::new(file)
             .infer_schema(None)
             .has_header(true)
-            .finish();
+            .finish()
     }
-        fn get_week_increase(&self,row_name: &str) -> Result<f64> {
-            // Try to read from "allItemDataBackup.csv", and if it fails, read from "allItemData.csv".
-            let file = File::open("allItemDataBackup.csv")
-                .or_else(|_| File::open("allItemData.csv"))?;
-        
-            let df = self.get_price_historys()?;
-        
-            // Filter the DataFrame based on the "name" and "order_type" conditions
-            let week_df = df.filter(
-                    (col("name").eq(lit(row_name)))
-                    & (col("order_type").eq(lit("closed")))
-                )?
-                .select(&["avg_price"])?; // Select only the avg_price column
-        
-            // Assuming the filtered DataFrame has at least 7 rows
-            if week_df.height() >= 7 {
-                let first_avg_price: f64 = week_df.select_at_idx(0).unwrap().get(0).unwrap().get_f64().unwrap();
-                let seventh_avg_price: f64 = week_df.select_at_idx(6).unwrap().get(0).unwrap().get_f64().unwrap();
-                let change = first_avg_price - seventh_avg_price;
-                Ok(change)
-            } else {
-                Err(PolarsError::Other("Not enough rows to calculate the change".into()))
-            }
+
+    fn get_week_increase(&self, row_name: &str) -> Result<f64, PolarsError> {
+        let df = self.get_price_historys()?;
+
+        // Filter the DataFrame based on the "name" and "order_type" conditions
+        let week_df = df
+            .lazy()
+            .filter(
+                col("name")
+                    .eq(lit(row_name))
+                    .and(col("order_type").eq(lit("closed"))),
+            )
+            .select(&[col("avg_price")])
+            .collect()?;
+
+        // Assuming the filtered DataFrame has at least 7 rows
+        if week_df.height() >= 7 {
+            let first_avg_price_series = week_df.column("avg_price")?;
+            let first_avg_price_array = first_avg_price_series.f64()?;
+            let first_avg_price = first_avg_price_array.get(0).unwrap(); // Now a f64
+
+            let seventh_avg_price_series = week_df.column("avg_price")?;
+            let seventh_avg_price_array = seventh_avg_price_series.f64()?;
+            let seventh_avg_price = seventh_avg_price_array.get(6).unwrap(); // Now a f64
+
+            let change = first_avg_price - seventh_avg_price;
+            Ok(change)
+        } else {
+            Ok(0.0)
         }
     }
     pub fn stop_loop(&self) {
@@ -110,13 +122,102 @@ impl LiveScraper {
         self.is_running.load(Ordering::SeqCst)
     }
 
+    pub fn get_buy_sell_overlap(&self) -> Result<DataFrame, PolarsError> {
+        let df = self.get_price_historys()?;
+
+        // Drop the "datetime" and "item_id" columns
+        let averaged_df = df.drop("datetime")?.drop("item_id")?;
+
+        // Create a lazy DataFrame
+        let lazy_df = averaged_df.lazy();
+
+        // Group by the "name" and "order_type" columns, and compute the mean of the other columns
+        let averaged_df = lazy_df
+            .groupby(&["name", "order_type"])
+            .agg(&[
+                // List the other columns you want to average
+                col("volume").mean().alias("volume"),
+                col("min_price").mean().alias("min_price"),
+                col("max_price").mean().alias("max_price"),
+                col("range").mean().alias("range"),
+                col("median").mean().alias("median"),
+                col("avg_price").mean().alias("avg_price"),
+                col("mod_rank").mean().alias("mod_rank"),
+            ])
+            .collect()?;
+
+        let inventory_names = vec!["zhuge_prime_barrel", "vulkar_wraith"]; // Add your inventory names here
+        let volume_threshold = 1; // Change according to your config
+        let range_threshold = 10; // Change according to your config
+
+        // Apply filters based on volume, range, name, and order_type
+        let name_expr = inventory_names
+            .into_iter()
+            .map(|name| col("name").eq(lit(name)))
+            .fold(lit(false), |acc, x| acc.or(x));
+
+        let mask = (col("volume")
+            .gt(lit(volume_threshold))
+            .and(col("range").gt(lit(range_threshold))))
+        .or(name_expr)
+        .and(col("order_type").eq(lit("closed")));
+
+        let filtered_df = averaged_df.clone().lazy().filter(mask).collect().unwrap();
+
+        // Sort by "range" in descending order
+        let mut sorted_df = filtered_df
+            .lazy()
+            .sort(
+                "range",
+                SortOptions {
+                    descending: true,
+                    nulls_last: false,
+                    multithreaded: false,
+                },
+            )
+            .collect()
+            .unwrap();
+
+        let name_column = sorted_df.column("name")?;
+        let week_price_shifts: Vec<f64> = name_column
+            .utf8()?
+            .into_iter()
+            .filter_map(|opt_name| opt_name.map(|name| self.get_week_increase(name).unwrap_or(0.0)))
+            .collect();
+
+        // Create a new Series with the calculated week price shifts
+        let week_price_shift_series = Series::new("weekPriceShift", week_price_shifts);
+        let mut sorted_df = sorted_df.with_column(week_price_shift_series)?;
+
+        Ok(sorted_df.clone())
+        // if sorted_df.height() == 0 {
+        //     Ok(DataFrame::new(vec![
+        //         Series::new("name", &[] as &[&str]),
+        //         Series::new("minSell", &[] as &[f64]),
+        //         Series::new("maxBuy", &[] as &[f64]),
+        //         Series::new("overlap", &[] as &[f64]),
+        //         Series::new("closedVol", &[] as &[f64]),
+        //         Series::new("closedMin", &[] as &[f64]),
+        //         Series::new("closedMax", &[] as &[f64]),
+        //         Series::new("closedAvg", &[] as &[f64]),
+        //         Series::new("closedMedian", &[] as &[f64]),
+        //         Series::new("priceShift", &[] as &[f64]),
+        //         Series::new("mod_rank", &[] as &[i32]),
+        //         Series::new("item_id", &[] as &[&str]),
+        //     ]));
+        // }
+        // sorted_df.ad
+    }
+
     // Http Request to Warframe Market API
     pub async fn run(&self) -> Result<(), Box<dyn Error>> {
-        let records = self.get_csv()?;
+        let records = self.get_buy_sell_overlap()?;
+        println!("{:?}", records);
+        // let records = self.get_csv()?;
 
-        for record in &records {
-            println!("{:?}", record);
-        }
+        // for record in &records {
+        //     println!("{:?}", record);
+        // }
 
         // let url = "https://api.warframe.market/v1/items";
         // let response: Result<Response<ResponseWFMPayload>, String> =
@@ -159,18 +260,5 @@ impl LiveScraper {
         let data: T = from_str(&json_str).map_err(|e| e.to_string())?;
 
         Ok(Response { data })
-    }
-    pub fn get_csv(&self) -> Result<Vec<PriceHistoryDto>, Box<dyn Error>> {
-        println!("Get csv");
-        println!("{}", &self.csv_path);
-        let mut reader = csv::Reader::from_path(&self.csv_path)?;
-        let mut result = Vec::new();
-
-        for record in reader.deserialize() {
-            let record: PriceHistoryDto = record?;
-            result.push(record);
-        }
-
-        Ok(result)
     }
 }

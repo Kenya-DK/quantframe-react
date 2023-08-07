@@ -24,7 +24,7 @@ hyper = "0.14.27"
 hyper-tls = "0.5"
 tokio = { version = "1", features = ["full"] }
 csv = "1.1.6"
-polars-core = "0.10.0"
+polars = { version = "0.30.0", features = ["lazy"] }
 
 [dependencies.tauri-plugin-sql]
 git = "https://github.com/tauri-apps/plugins-workspace"
