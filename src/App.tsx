@@ -66,7 +66,6 @@ window.debug = async () => {
   console.log(`Pathname: ${window.location.pathname}`)
   console.log(`Settings: ${JSON.stringify(config, null, 2)}`)
   console.log('Cache Tradable Items:', cached.tradableItems)
-  console.log('Cache Price Historys:', cached.priceHistory)
   console.log('User', currentUser)
   console.groupEnd()
 }
