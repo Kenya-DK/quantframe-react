@@ -17,7 +17,19 @@ const api = {
     },
     async logout() {
       await settings.set('access_token', undefined)
-    }
+    },
+    isTokenValid: async (): Promise<boolean> => {
+      const res = await api.orders.createOrder({
+        item: "56783f24cbfa8f0432dd89a2",
+        order_type: "buy",
+        platinum: 1,
+        quantity: 1,
+        visible: false,
+      });
+      if (!res) return false
+      await api.orders.deleteOrder(res.id);
+      return true
+    },
   },
   items: {
     async getTradableItems(): Promise<Wfm.ItemDto[]> {
@@ -58,6 +70,10 @@ const api = {
       const items = await this.getTradableItems();
       return items.find(item => item.url_name === url_name);
     },
+    async getItemDetails(url_name: string): Promise<Wfm.ItemDetailsDto> {
+      const { data } = await axiosInstance.get(`items/${url_name}`, {});
+      return data.payload.item
+    }
   },
   itemprices: {
     async updatePriceHistory(days: number = 7): Promise<PriceHistoryDto[]> {
@@ -73,6 +89,15 @@ const api = {
       console.log(data);
 
       return []
+    },
+    async createOrder(order: Wfm.CreateOrderDto): Promise<Wfm.OrderDto | undefined> {
+      const { ingame_name } = await user.get();
+      try {
+        const { data } = await axiosInstance.post(`profile/${ingame_name}/orders`, order);
+        return data.payload.order
+      } catch (error) {
+        return undefined;
+      }
     },
     async deleteOrder(id: string) {
       const { ingame_name } = await user.get();

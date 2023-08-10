@@ -42,13 +42,25 @@ export namespace Wfm {
     category: string,
     max_rank: number,
   }
-
+  export interface ItemDetailsDto extends ItemDto {
+    tags: string[];
+    icon: string;
+    icon_format: string;
+    set_root: boolean;
+    mastery_level: number;
+    url_name: string;
+    sub_icon: null | string;
+    trading_tax: number;
+    quantity_for_set?: number;
+    ducats: number;
+  }
   // Order stuff below
+  export type OrderType = 'sell' | 'buy';
   export interface OrderDto {
     id: string;
     platinum: number;
     quantity: number;
-    order_type: string;
+    order_type: OrderType;
     platform: string;
     region: string;
     creation_date: string;
@@ -85,13 +97,18 @@ export namespace Wfm {
 
   export interface LangItemNameDto {
     item_name: string;
+    description?: string;
+    wiki_link?: string;
   }
 
   export type CreateOrderDto = {
-    id: string,
-    item_name: string,
-    url_name: string,
-    thumb: string,
+    item: string,
+    order_type: OrderType,
+    platinum: number,
+    quantity: number,
+    visible: boolean,
+    rank?: number,
+    subtype?: string,
   }
 
 }
