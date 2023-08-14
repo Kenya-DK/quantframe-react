@@ -9,6 +9,7 @@ export interface Settings {
   avg_price_cap: number;
   price_shift_threshold: number;
   blacklist: string[];
+  whitelist: string[];
 }
 
 export interface CacheBase {

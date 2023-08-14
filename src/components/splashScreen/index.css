@@ -1,0 +1,61 @@
+.cover {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+  /* opacity: 0;
+
+  animation: fade-out 4s */
+  /*infinite*/
+  ;
+}
+
+.cover.hide {
+  opacity: 0;
+  animation: fade-out 4s
+    /*infinite*/
+  ;
+}
+
+.cover #icon {
+  --size: 100px;
+  position: absolute;
+  width: var(--size);
+}
+
+.cover.hide #icon {
+  animation: zoom-in 2s;
+  animation-delay: 2s;
+}
+
+@keyframes zoom-in {
+  50% {
+    width: var(--size);
+  }
+
+  60% {
+    width: calc(var(--size) * 0.9);
+  }
+
+  100% {
+    width: 250%;
+  }
+}
+
+@keyframes fade-out {
+
+  0%,
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.content {
+  width: 100%;
+}

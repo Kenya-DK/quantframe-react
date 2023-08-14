@@ -1,9 +1,10 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect } from "react";
 import { Wfm, Settings } from '$types/index';
 import { settings as sStore, user as uStore } from "@store/index";
 import { useStorage } from "../hooks/useStorage.hook";
 import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/api/notification';
 import { Button } from "@mantine/core";
+import { SplashScreen } from "../components/splashScreen";
 let permissionGranted = await isPermissionGranted();
 if (!permissionGranted) {
   const permission = await requestPermission();
@@ -14,9 +15,9 @@ if (!permissionGranted) {
 type TauriContextProps = {
   loading: boolean;
   user: Wfm.UserDto;
-  updateUser: (user: Wfm.UserDto) => void;
+  updateUser: (user: Partial<Wfm.UserDto>) => void;
   settings: Settings;
-  updateSettings: (user: Settings) => void;
+  updateSettings: (user: Partial<Settings>) => void;
   sendNotification: (title: string, body: string) => void;
 }
 type TauriContextProviderProps = {
@@ -35,9 +36,8 @@ export const TauriContext = createContext<TauriContextProps>({
 export const useTauriContext = () => useContext(TauriContext);
 
 export const TauriContextProvider = ({ children }: TauriContextProviderProps) => {
-  const [loading] = useState(true);
-  const [user, setUser] = useStorage<Wfm.UserDto>(uStore.name, useContext(TauriContext).user);
-  const [settings, setSettings] = useStorage<Settings>(sStore.name, useContext(TauriContext).settings);
+  const [user, loadingUser, setUser] = useStorage<Wfm.UserDto>(uStore.name, useContext(TauriContext).user);
+  const [settings, loadingSetting, setSettings] = useStorage<Settings>(sStore.name, useContext(TauriContext).settings);
 
   const handleUpdateUser = (userData: Partial<Wfm.UserDto>) => {
     setUser({ ...user, ...userData });
@@ -52,6 +52,14 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
     }
   }
 
+  useEffect(() => {
+    if (loadingUser && loadingSetting) {
+
+    }
+  }, [loadingUser, loadingSetting]);
+
+
+
   // useEffect(() => {
   //   if (settings.access_token) {
   //     api.auth.isTokenValid().then(async (res) => {
@@ -63,7 +71,8 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
   //   }
   // }, [settings.access_token]);
   return (
-    <TauriContext.Provider value={{ loading, user, updateUser: handleUpdateUser, settings, updateSettings: handleUpdateSettings, sendNotification: handleSendNotification }}>
+    <TauriContext.Provider value={{ loading: (loadingSetting || loadingUser), user, updateUser: handleUpdateUser, settings, updateSettings: handleUpdateSettings, sendNotification: handleSendNotification }}>
+      <SplashScreen opened={loadingSetting || loadingUser} />
       {children}
       <Button onClick={async () => {
         await sStore.reset()

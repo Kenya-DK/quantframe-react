@@ -1,10 +1,15 @@
-import { Avatar, Burger, Group, Header, Menu, createStyles, rem, Container, ActionIcon, Text } from "@mantine/core";
+import { Avatar, Burger, Group, Header, Menu, createStyles, rem, Container, ActionIcon, Text, Title } from "@mantine/core";
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateLayout } from "@hooks/index";
-import { Wfm } from "$types/index";
+import { SettingsModal } from "@components/modals/settings.modal";
+import { Settings, Wfm } from "$types/index";
 import packageJson from '../../package.json'
+import { faGear } from "@fortawesome/free-solid-svg-icons/faGear";
+import { modals } from "@mantine/modals";
+import { useTauriContext } from "../contexts";
+
 interface TopMenuProps {
   opened: boolean;
   user: Wfm.UserDto | undefined;
@@ -32,6 +37,7 @@ const useStyles = createStyles((theme) => ({
 
 export default function Hedder({ user, opened, onOpenedClick }: TopMenuProps) {
   const { classes } = useStyles();
+  const { settings, updateSettings } = useTauriContext();
   const [, setUserMenuOpened] = useState(false);
   const useTranslateHedder = (key: string, context?: { [key: string]: any }) => useTranslateLayout(`header.${key}`, { ...context })
   return (
@@ -39,9 +45,9 @@ export default function Hedder({ user, opened, onOpenedClick }: TopMenuProps) {
       <Container className={classes.inner} fluid>
         <Group>
           <Burger opened={opened} onClick={() => onOpenedClick()} className={classes.burger} size="sm" />
-          <Text size="xl" weight={700} style={{ marginLeft: 10 }}>
+          <Title order={3} style={{ marginLeft: 10 }}>
             {useTranslateHedder("title")}
-          </Text>
+          </Title>
           <Text size="sm" style={{ marginLeft: 3 }}>
             v{packageJson.version}
           </Text>
@@ -65,6 +71,15 @@ export default function Hedder({ user, opened, onOpenedClick }: TopMenuProps) {
                   {user.ingame_name}
                 </Menu.Item>
                 <Menu.Divider />
+                <Menu.Item icon={<FontAwesomeIcon icon={faGear} />} onClick={async () => {
+                  modals.open({
+                    size: "100%",
+                    withCloseButton: false,
+                    children: < SettingsModal settings={settings} onSubmit={(set: Partial<Settings>) => updateSettings(set)} />,
+                  })
+                }}>
+                  {useTranslateHedder("profile.logout")}
+                </Menu.Item>
                 <Menu.Item icon={<FontAwesomeIcon icon={faRightFromBracket} />}>
                   {useTranslateHedder("profile.logout")}
                 </Menu.Item>
