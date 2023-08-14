@@ -1,8 +1,11 @@
 use crate::structs::GlobleError;
+use once_cell::sync::Lazy;
+use std::sync::Mutex;
 use polars::prelude::*;
 use reqwest::{Client, Method, Url};
 use serde::Deserialize;
 use serde_json::Value;
+use crate::wfm_client;
 use std::{
     collections::HashMap,
     fs::{self, File},
@@ -11,6 +14,11 @@ use std::{
 };
 extern crate chrono;
 use chrono::Duration;
+
+pub static CSV_PATH: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("".to_string()));
+pub static CSV_BACKOP_PATH: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("".to_string()));
+pub static WINDOW: Lazy<Mutex<Option<Window>>> = Lazy::new(|| Mutex::new(None));
+
 
 /// Returns a vector of strings representing the last `x` days, including today.
 /// Each string is formatted as "YYYY-MM-DD".
@@ -24,6 +32,21 @@ fn last_x_days(x: i64) -> Vec<String> {
                 .to_string()
         })
         .collect()
+}
+
+/// Reads the price history data from a CSV file and returns it as a DataFrame.
+/// If the backup file is available, it is used instead of the main file.
+pub fn get_price_historys(&self) -> Result<DataFrame, PolarsError> {
+    let csv_path = CSV_PATH.lock().unwrap();
+    let csv_backop_path = CSV_BACKOP_PATH.lock().unwrap();
+    // Try to read from "allItemDataBackup.csv", and if it fails, read from "allItemData.csv".
+    let file = File::open(csv_backop_path).or_else(|_| File::open(csv_path))?;
+
+    // Parse the CSV file into a DataFrame
+    CsvReader::new(file)
+        .infer_schema(None)
+        .has_header(true)
+        .finish()
 }
 
 /// Returns a JSON object containing price data for the given platform and day.
@@ -94,9 +117,35 @@ fn is_valid_price_data(item_datas: &Vec<Value>) -> bool {
     }
 }
 
+/// Returns a map of item names to their corresponding IDs, based on the `items` list.
+/// The map is represented as a `HashMap` with `String` keys and values.
+fn get_items_map_url_map() -> Result<Map<String, String>, GlobleError> {
+    let items = wfm_client::get_tradable_items()?;
+
+    // Filter items where url_name does not contain "relic"
+    let filtered_items: Vec<Item> = items
+        .into_iter()
+        .filter(|item| !item.url_name.contains("relic"))
+        .collect();
+
+    let item_map: std::collections::HashMap<String, String> = 
+        filtered_items.iter()
+            .map(|item| (item.item_name.clone(), item.url_name.clone()))
+            .collect();
+    Ok(item_map)
+}
+
+
 pub async fn generate(platform: &str) -> Result<(), GlobleError> {
+    let csv_path = Path::new(CSV_PATH.lock().unwrap()) ;
+    let csv_backop_path = Path::new(CSV_BACKOP_PATH.lock().unwrap());
+    if path.exists() {
+        fs::copy(csv_path, csv_backop_path)?
+    }
     let last_days = last_x_days(2).clone();
     let mut dataframes: Vec<DataFrame> = Vec::new();
+    let url_map = get_items_map_url_map()?;
+
     for day in last_days.clone() {
         let items = get_price_by_day(platform, &day).await;
         match items {
@@ -108,6 +157,12 @@ pub async fn generate(platform: &str) -> Result<(), GlobleError> {
                             if !is_valid_price_data(array) {
                                 continue;
                             }
+
+                            let name_vec: Vec<String> = array
+                                .iter()
+                                .filter_map(|name| url_map.get(&item_name))
+                                .collect();
+
                             let order_type_vec: Vec<Option<String>> = array
                                 .iter()
                                 .map(|item_data| {
@@ -160,8 +215,9 @@ pub async fn generate(platform: &str) -> Result<(), GlobleError> {
                                 .collect();
 
                             println!(
-                                "Item: {}, datetime_vec: {}, volume_vec: {}, order_type_vec: {}, min_price_vec: {}, max_price_vec: {}",
+                                "Item: {},Name Vec: {}, Datetime Vec: {}, Volume Vec: {}, OrderType Vec: {}, MinPrice Vec: {}, MaxPrice Vec: {}",
                                 item_name,
+                                name_vec.clone().len(),
                                 datetime_vec.clone().len(),
                                 volume_vec.clone().len(),
                                 order_type_vec.clone().len(),
@@ -169,6 +225,7 @@ pub async fn generate(platform: &str) -> Result<(), GlobleError> {
                                 max_price_vec.clone().len()
                             );
                             let df = DataFrame::new_no_checks(vec![
+                                Series::new("name", name_vec),
                                 Series::new("datetime", datetime_vec),
                                 Series::new("volume", volume_vec),
                                 Series::new("order_type", order_type_vec),
@@ -208,22 +265,16 @@ pub async fn generate(platform: &str) -> Result<(), GlobleError> {
             },
         )
         .collect()?;
-    dump_dataframe(&mut sorted_df, "big_df.csv")?;
-    Ok(())
-}
 
-fn dump_dataframe(df: &mut DataFrame, name: &str) -> Result<(), GlobleError> {
-    let mut log_path = PathBuf::from("logs");
-    // Create the directory if it does not exist
-    if !log_path.exists() {
-        fs::create_dir_all(&log_path)?;
-    }
-    log_path.push(name);
-    let output_file: File = File::create(log_path)?;
+    // Cerate a csv file with the sorted DataFrame of price data
+    let output_file: File = File::create(csv_path)?;
     let writer = BufWriter::new(output_file);
     // Write the DataFrame to a CSV file
     CsvWriter::new(writer).finish(df)?;
 
-    println!("{} generated", name);
+    // Delete the backup file if it exists
+    if csv_backop_path.exists() {
+        fs::remove_file(csv_backop_path)?;
+    }
     Ok(())
 }

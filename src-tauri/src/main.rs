@@ -16,6 +16,10 @@ mod database;
 mod price_scraper;
 mod wfm_client;
 
+use price_scraper::CSV_PATH;
+use price_scraper::CSV_BACKOP_PATH;
+use price_scraper::WINDOW as PS_WINDOW;
+
 use database::DB_PATH;
 use database::WINDOW as DB_WINDOW;
 
@@ -83,6 +87,12 @@ fn main() {
                 let app_path = roaming_path.join("quantframe");
                 let csv_path = app_path.join("pricehistory.csv");
                 let csv_backop_path = app_path.join("pricehistoryBackop.csv");
+                
+                *CSV_PATH.lock().unwrap() = csv_path.clone().to_str().unwrap().to_string();
+                *CSV_BACKOP_PATH.lock().unwrap() = csv_backop_path.clone().to_str().unwrap().to_string();
+
+                *PS_WINDOW.lock().unwrap() = Some(window.clone());
+
 
                 // Get database path
                 let db_path = app_path.join("quantframe.sqlite");
@@ -94,10 +104,7 @@ fn main() {
                 let live_scraper = Arc::new(Mutex::new(LiveScraper::new(
                     window.clone(),
                     String::from(""),
-                    String::from(""),
-                    csv_path.to_str().unwrap().to_string(),
-                    csv_backop_path.to_str().unwrap().to_string(),
-                    db_path.to_str().unwrap().to_string(),
+                    String::from("")
                 )));
 
                 // Manage the state
