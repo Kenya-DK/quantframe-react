@@ -1,4 +1,5 @@
 use crate::database;
+use crate::price_scraper;
 use crate::structs::GlobleError;
 use crate::structs::OrderItem;
 use crate::structs::Settings;
@@ -30,15 +31,11 @@ pub struct LiveScraper {
     window: Window,
     token: String,
     in_game_name: String,
-    settings: Option<Settings>
+    settings: Option<Settings>,
 }
 
 impl LiveScraper {
-    pub fn new(
-        window: Window,
-        token: String,
-        in_game_name: String,
-    ) -> Self {
+    pub fn new(window: Window, token: String, in_game_name: String) -> Self {
         LiveScraper {
             is_running: Arc::new(AtomicBool::new(false)),
             window,
@@ -90,7 +87,6 @@ impl LiveScraper {
             .unwrap();
         Ok(())
     }
-
 
     fn get_sell_map_by_ordre_type(
         &self,
@@ -192,7 +188,7 @@ impl LiveScraper {
     }
 
     pub fn get_itemid_byurl(&self, url_name: &str) -> Result<String, GlobleError> {
-        let df = self.get_price_historys()?;
+        let df = price_scraper::get_price_historys()?;
         let item_id_column = df
             .clone()
             .lazy()
@@ -251,7 +247,7 @@ impl LiveScraper {
     }
 
     pub fn get_buy_sell_overlap(&self) -> Result<DataFrame, GlobleError> {
-        let df = self.get_price_historys()?;
+        let df = price_scraper::get_price_historys()?;
         let volume_threshold = self.settings.as_ref().unwrap().volume_threshold; // Change according to your config
         let range_threshold = self.settings.as_ref().unwrap().range_threshold; // Change according to your config
         let avg_price_cap = self.settings.as_ref().unwrap().avg_price_cap; // assuming config contains the Rust value for avgPriceCap
@@ -330,8 +326,7 @@ impl LiveScraper {
         }
 
         // Pre-filter DataFrame based on "order_type" == "closed"
-        let closed_df = self
-            .get_price_historys()?
+        let closed_df = price_scraper::get_price_historys()?
             .lazy()
             .filter(col("order_type").eq(lit("closed")))
             .collect()?;
@@ -770,7 +765,7 @@ impl LiveScraper {
         // TODO: Delete this
         println!(
             "Buyers: {:?}, Sellers: {:?}, Price Range {:?}, Item avg price {:?}",
-            buyers, sellers, price_range,item_avg_price
+            buyers, sellers, price_range, item_avg_price
         );
 
         // if buyers == 0 && item_avg_price > 25.0 {
