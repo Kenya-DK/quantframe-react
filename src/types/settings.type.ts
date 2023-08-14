@@ -4,8 +4,11 @@ export interface Settings {
   user_email: '',
   user_password: '',
   access_token: string | undefined,
-  budget: 0,
-  current_plat: 0,
+  volume_threshold: number;
+  range_threshold: number;
+  avg_price_cap: number;
+  price_shift_threshold: number;
+  blacklist: string[];
 }
 
 export interface CacheBase {

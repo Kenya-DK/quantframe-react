@@ -43,8 +43,11 @@ export const settings = new Persist<Settings>('settings', {
   user_email: '',
   user_password: '',
   access_token: undefined,
-  budget: 0,
-  current_plat: 0,
+  volume_threshold: 1,
+  range_threshold: 10,
+  avg_price_cap: 600,
+  price_shift_threshold: -1,
+  blacklist: [],
 })
 
 export const user = new Persist<Wfm.UserDto>('user', {

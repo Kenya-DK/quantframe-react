@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
-import api from '@api/index';
+import { user } from "@store/index";
+import { invoke } from "@tauri-apps/api";
 type StatsScraperContextProps = {
   isRunning: boolean;
   run: () => void;
@@ -17,18 +17,22 @@ export const StatsScraperContext = createContext<StatsScraperContextProps>({
 export const useStatsScraperContext = () => useContext(StatsScraperContext);
 
 export const StatsScraperContextProvider = ({ children }: StatsScraperContextProviderProps) => {
-  const { isFetching, refetch } = useQuery({
-    queryKey: ['statsScraper'],
-    queryFn: () => api.itemprices.updatePriceHistory(7),
-    enabled: false,
-  })
+  // const { isFetching, refetch } = useQuery({
+  //   queryKey: ['statsScraper'],
+  //   queryFn: () => api.itemprices.updatePriceHistory(7),
+  //   enabled: false,
+  // })
 
   const handleRun = async () => {
-    await refetch();
+    // await refetch();
+    const { platform } = await user.get();;
+    await invoke("generate_price_history", {
+      platform
+    })
   }
 
   return (
-    <StatsScraperContext.Provider value={{ isRunning: isFetching, run: handleRun }}>
+    <StatsScraperContext.Provider value={{ isRunning: false, run: handleRun }}>
       {children}
     </StatsScraperContext.Provider>
   )

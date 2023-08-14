@@ -1,9 +1,9 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { Wfm, Settings } from '$types/index';
 import { settings as sStore, user as uStore } from "@store/index";
 import { useStorage } from "../hooks/useStorage.hook";
 import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/api/notification';
-import api from "@api/index";
+import { Button } from "@mantine/core";
 let permissionGranted = await isPermissionGranted();
 if (!permissionGranted) {
   const permission = await requestPermission();
@@ -52,25 +52,25 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
     }
   }
 
-  useEffect(() => {
-    if (settings.access_token) {
-      api.auth.isTokenValid().then(async (res) => {
-        if (!res) {
-          await uStore.reset();
-          window.location.reload();
-        }
-      })
-    }
-  }, [settings.access_token]);
+  // useEffect(() => {
+  //   if (settings.access_token) {
+  //     api.auth.isTokenValid().then(async (res) => {
+  //       if (!res) {
+  //         await uStore.reset();
+  //         window.location.reload();
+  //       }
+  //     })
+  //   }
+  // }, [settings.access_token]);
   return (
     <TauriContext.Provider value={{ loading, user, updateUser: handleUpdateUser, settings, updateSettings: handleUpdateSettings, sendNotification: handleSendNotification }}>
       {children}
-      {/* <Button onClick={async () => {
+      <Button onClick={async () => {
         await sStore.reset()
         await uStore.reset()
-        await cache.reset()
+        // await cache.reset()
         window.location.reload()
-      }}>Clear Data</Button> */}
+      }}>Clear Data</Button>
     </TauriContext.Provider>
   )
 }

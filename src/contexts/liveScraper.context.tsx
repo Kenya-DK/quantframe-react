@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import { listen } from "@tauri-apps/api/event";
-import { settings } from "@store/index";
+import { settings, user } from "@store/index";
 import { useDatabaseContext } from ".";
 type LiveScraperContextProps = {
   isRunning: boolean;
@@ -22,21 +22,17 @@ export const LiveScraperContextProvider = ({ children }: LiveScraperContextProvi
   const [isRunning, setIsRunning] = useState(false)
   const { updateInvantoryListingPriceById } = useDatabaseContext();
   const handleToggle = async () => {
-    const { access_token } = await settings.get();
+    const data = await settings.get();
+    const {ingame_name} = await user.get();
     const running = !isRunning;
     setIsRunning(running);
     await invoke("toggle_live_scraper", {
-      token: access_token,
+      token: data.access_token,
       settings: {
-
-        field1: "test",
-        field2: 324
+        ...data,
+        in_game_name: ingame_name
       }
     })
-    // if (running)
-    //   liveScraper.start();
-    // else
-    //   liveScraper.stop();
   }
   useEffect(() => {
     //listen to a event
