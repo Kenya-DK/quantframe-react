@@ -43,9 +43,7 @@ impl WhisperScraper {
         let handle = thread::spawn(move || {
             let mut is_starting = false;
             while is_running.load(Ordering::SeqCst) {
-                println!("Loop whisper scraper is running...");
                 let new_lines_result = scraper.read_new_lines();
-
                 match new_lines_result {
                     Ok(new_lines) => {
                         for line in new_lines {
@@ -111,8 +109,6 @@ impl WhisperScraper {
         }
 
         *last_file_size = current_file_size;
-
-        println!("new_lines: {:?}", new_lines);
         Ok(new_lines)
     }
     fn match_pattern(input: &str) -> Result<(bool, Option<String>), regex::Error> {

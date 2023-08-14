@@ -1,7 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use crate::structs::Settings;
-use directories::{BaseDirs, ProjectDirs};
+use directories::BaseDirs;
 use std::env;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
@@ -11,6 +11,13 @@ mod whisper_scraper;
 use whisper_scraper::WhisperScraper; // add this line
 mod live_scraper;
 use live_scraper::LiveScraper;
+
+mod database;
+mod price_scraper;
+mod wfm_client;
+
+use database::DB_PATH;
+use database::WINDOW as DB_WINDOW;
 
 #[tauri::command]
 fn toggle_whisper_scraper(whisper_scraper: tauri::State<'_, Arc<Mutex<WhisperScraper>>>) {
@@ -30,16 +37,29 @@ fn toggle_live_scraper(
     settings: Settings,
 ) {
     let mut live_scraper = live_scraper.lock().unwrap();
-
-    println!("token: {}", token);
-    println!("obj: {:?}", settings.field1);
-    println!("obj: {:?}", settings.field2);
-
     if live_scraper.is_running() {
         live_scraper.stop_loop();
     } else {
-        live_scraper.start_loop(token, settings);
+        match live_scraper.start_loop(token, settings) {
+            Ok(_) => {}
+            Err(e) => {
+                println!("Error while starting live scraper {:?}", e);
+            }
+        }
     }
+}
+
+#[tauri::command]
+async fn generate_price_history(platform: String) {
+    tauri::async_runtime::spawn(async move {
+        let runner = price_scraper::generate(platform.as_str()).await;
+        match runner {
+            Ok(_) => {}
+            Err(e) => {
+                println!("Error while generating price history {:?}", e);
+            }
+        }
+    });
 }
 
 fn main() {
@@ -66,10 +86,14 @@ fn main() {
 
                 // Get database path
                 let db_path = app_path.join("quantframe.sqlite");
+                *DB_PATH.lock().unwrap() = db_path.clone().to_str().unwrap().to_string();
+
+                *DB_WINDOW.lock().unwrap() = Some(window.clone());
 
                 // Create an instance of LiveScraper
                 let live_scraper = Arc::new(Mutex::new(LiveScraper::new(
-                    window,
+                    window.clone(),
+                    String::from(""),
                     String::from(""),
                     csv_path.to_str().unwrap().to_string(),
                     csv_backop_path.to_str().unwrap().to_string(),
@@ -84,7 +108,8 @@ fn main() {
         .plugin(tauri_plugin_store::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
             toggle_whisper_scraper,
-            toggle_live_scraper
+            toggle_live_scraper,
+            generate_price_history
         ])
         .plugin(tauri_plugin_sql::Builder::default().build())
         .run(tauri::generate_context!())

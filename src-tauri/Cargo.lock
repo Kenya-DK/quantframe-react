@@ -545,8 +545,11 @@ checksum = "ec837a71355b28f6556dbd569b37b3f363091c0bd4b2e735674521b4c5fd9bc5"
 dependencies = [
  "android-tzdata",
  "iana-time-zone",
+ "js-sys",
  "num-traits",
  "serde",
+ "time 0.1.45",
+ "wasm-bindgen",
  "winapi",
 ]
 
@@ -1140,6 +1143,18 @@ name = "event-listener"
 version = "2.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0206175f82b8d6bf6652ff7d71a1e27fd2e4efde587fd368662814d6ec1d9ce0"
+
+[[package]]
+name = "fallible-iterator"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4443176a9f2c162692bd3d352d745ef9413eec5782a80d8fd6f8a1ac692a07f7"
+
+[[package]]
+name = "fallible-streaming-iterator"
+version = "0.1.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7360491ce676a36bf9bb3c56c1aa791658183a54d2744120f27285738d90465a"
 
 [[package]]
 name = "fast-float"
@@ -2327,7 +2342,7 @@ dependencies = [
  "dirs-next",
  "objc-foundation",
  "objc_id",
- "time",
+ "time 0.3.25",
 ]
 
 [[package]]
@@ -3091,7 +3106,7 @@ dependencies = [
  "line-wrap",
  "quick-xml 0.29.0",
  "serde",
- "time",
+ "time 0.3.25",
 ]
 
 [[package]]
@@ -3427,12 +3442,14 @@ dependencies = [
 name = "quantframe-react"
 version = "0.0.0"
 dependencies = [
+ "chrono",
  "csv",
  "directories",
- "hyper",
- "hyper-tls",
+ "once_cell",
  "polars",
  "regex",
+ "reqwest",
+ "rusqlite",
  "serde",
  "serde_json",
  "tauri",
@@ -3762,6 +3779,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "rusqlite"
+version = "0.29.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "549b9d036d571d42e6e85d1c1425e2ac83491075078ca9a15be021c56b1641f2"
+dependencies = [
+ "bitflags 2.3.3",
+ "fallible-iterator",
+ "fallible-streaming-iterator",
+ "hashlink",
+ "libsqlite3-sys",
+ "smallvec",
+]
+
+[[package]]
 name = "rustc-demangle"
 version = "0.1.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4020,7 +4051,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_with_macros",
- "time",
+ "time 0.3.25",
 ]
 
 [[package]]
@@ -4314,7 +4345,7 @@ dependencies = [
  "smallvec",
  "sqlformat",
  "thiserror",
- "time",
+ "time 0.3.25",
  "tokio",
  "tokio-stream",
  "tracing",
@@ -4399,7 +4430,7 @@ dependencies = [
  "sqlx-core",
  "stringprep",
  "thiserror",
- "time",
+ "time 0.3.25",
  "tracing",
  "whoami",
 ]
@@ -4439,7 +4470,7 @@ dependencies = [
  "sqlx-core",
  "stringprep",
  "thiserror",
- "time",
+ "time 0.3.25",
  "tracing",
  "whoami",
 ]
@@ -4462,7 +4493,7 @@ dependencies = [
  "percent-encoding",
  "serde",
  "sqlx-core",
- "time",
+ "time 0.3.25",
  "tracing",
  "url",
 ]
@@ -4793,7 +4824,7 @@ dependencies = [
  "sha2",
  "tauri-utils",
  "thiserror",
- "time",
+ "time 0.3.25",
  "uuid",
  "walkdir",
 ]
@@ -4824,7 +4855,7 @@ dependencies = [
  "sqlx",
  "tauri",
  "thiserror",
- "time",
+ "time 0.3.25",
  "tokio",
 ]
 
@@ -4988,6 +5019,17 @@ checksum = "3fdd6f064ccff2d6567adcb3873ca630700f00b5ad3f060c25b5dcfd9a4ce152"
 dependencies = [
  "cfg-if",
  "once_cell",
+]
+
+[[package]]
+name = "time"
+version = "0.1.45"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1b797afad3f312d1c66a56d11d0316f916356d11bd158fbc6ca6389ff6bf805a"
+dependencies = [
+ "libc",
+ "wasi 0.10.0+wasi-snapshot-preview1",
+ "winapi",
 ]
 
 [[package]]
@@ -5394,6 +5436,12 @@ name = "wasi"
 version = "0.9.0+wasi-snapshot-preview1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cccddf32554fecc6acb585f82a32a72e28b48f8c4c1883ddfeeeaa96f7d8e519"
+
+[[package]]
+name = "wasi"
+version = "0.10.0+wasi-snapshot-preview1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1a143597ca7c7793eff794def352d41792a93c481eb1042423ff7ff72ba2c31f"
 
 [[package]]
 name = "wasi"

@@ -1,16 +1,72 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-pub struct Response<T> {
-    pub data: T,
+#[derive(Debug)]
+pub enum GlobleError {
+    ReqwestError(reqwest::Error),
+    SerdeError(usize, usize),
+    PolarsError(String),
+    IoError(std::io::Error),
+    ParseIntError(std::num::ParseIntError),
+    ParseFloatError(std::num::ParseFloatError),
+    ParseBoolError(std::str::ParseBoolError),
+    DabaseError(rusqlite::Error),
+    ParseError(String),
+    TooManyRequests(String),
+    OtherError(String),
+    HttpError(reqwest::StatusCode, String, String),
+
 }
-#[derive(Deserialize, Debug)]
-pub struct ResponseWFMPayload {
-    pub payload: Payload,
+impl From<rusqlite::Error> for GlobleError {
+    fn from(e: rusqlite::Error) -> Self {
+        GlobleError::DabaseError(e)
+    }
 }
 
-#[derive(Deserialize, Debug)]
-pub struct Payload {
-    pub items: Vec<Item>,
+impl From<reqwest::Error> for GlobleError {
+    fn from(e: reqwest::Error) -> Self {
+        GlobleError::ReqwestError(e)
+    }
+}
+impl From<serde_json::Error> for GlobleError {
+    fn from(e: serde_json::Error) -> Self {
+        GlobleError::SerdeError(e.line(), e.column())
+    }
+}
+impl From<polars::error::PolarsError> for GlobleError {
+    fn from(e: polars::error::PolarsError) -> Self {
+        println!("{:?}", e);
+        GlobleError::PolarsError(e.to_string())
+    }
+}
+impl From<std::io::Error> for GlobleError {
+    fn from(e: std::io::Error) -> Self {
+        GlobleError::IoError(e)
+    }
+}
+impl From<std::num::ParseIntError> for GlobleError {
+    fn from(e: std::num::ParseIntError) -> Self {
+        GlobleError::ParseIntError(e)
+    }
+}
+impl From<std::num::ParseFloatError> for GlobleError {
+    fn from(e: std::num::ParseFloatError) -> Self {
+        GlobleError::ParseFloatError(e)
+    }
+}
+impl From<std::str::ParseBoolError> for GlobleError {
+    fn from(e: std::str::ParseBoolError) -> Self {
+        GlobleError::ParseBoolError(e)
+    }
+}
+impl From<String> for GlobleError {
+    fn from(e: String) -> Self {
+        GlobleError::ParseError(e)
+    }
+}
+impl From<&str> for GlobleError {
+    fn from(e: &str) -> Self {
+        GlobleError::ParseError(e.to_string())
+    }
 }
 
 #[derive(Deserialize, Debug)]
@@ -20,121 +76,166 @@ pub struct Item {
     pub url_name: String,
     pub thumb: String,
 }
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct Order {
     #[serde(rename = "id")]
     pub id: String,
-  
     #[serde(rename = "platinum")]
     pub platinum: i64,
-  
-    #[serde(rename = "quantity")]
-    pub quantity: i64,
-  
-    #[serde(rename = "order_type")]
-    pub order_type: String,
-  
-    #[serde(rename = "platform")]
-    pub platform: String,
-  
-    #[serde(rename = "region")]
-    pub region: String,
-  
-    #[serde(rename = "creation_date")]
-    pub creation_date: String,
-  
+    #[serde(rename = "visible")]
+    pub visible: bool,
+
     #[serde(rename = "last_update")]
     pub last_update: String,
-  
-    #[serde(rename = "subtype")]
-    pub  subtype: String,
-  
-    #[serde(rename = "visible")]
-    pub  visible: bool,
-  
+
+    #[serde(rename = "region")]
+    pub region: String,
+
+    #[serde(rename = "platform")]
+    pub platform: String,
+
+    #[serde(rename = "creation_date")]
+    pub creation_date: String,
+
+    #[serde(rename = "order_type")]
+    pub order_type: String,
+
+    #[serde(rename = "quantity")]
+    pub quantity: i64,
+
     #[serde(rename = "item")]
-    pub  item: OrderItem,
+    pub item: OrderItem,
 }
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Debug, Clone, Deserialize)]
 pub struct OrderItem {
-  #[serde(rename = "id")]
-  pub id: String,
+    #[serde(rename = "id")]
+    pub id: String,
 
-  #[serde(rename = "url_name")]
-  pub url_name: String,
+    #[serde(rename = "url_name")]
+    pub url_name: String,
+    #[serde(rename = "icon")]
+    pub icon: String,
 
-  #[serde(rename = "icon")]
-  pub  icon: String,
+    #[serde(rename = "icon_format")]
+    pub icon_format: String,
 
-  #[serde(rename = "icon_format")]
-  pub  icon_format: String,
+    #[serde(rename = "thumb")]
+    pub thumb: String,
 
-  #[serde(rename = "thumb")]
-  pub  thumb: String,
+    #[serde(rename = "sub_icon")]
+    pub sub_icon: Option<String>,
 
-  #[serde(rename = "sub_icon")]
-  pub sub_icon: String,
+    #[serde(rename = "mod_max_rank")]
+    pub mod_max_rank: Option<i64>,
 
-  #[serde(rename = "mod_max_rank")]
-  pub mod_max_rank: i64,
+    #[serde(rename = "subtypes")]
+    pub subtypes: Option<Vec<String>>,
 
-  #[serde(rename = "subtypes")]
-  pub subtypes: Vec<String>,
+    #[serde(rename = "tags")]
+    pub tags: Vec<String>,
 
-  #[serde(rename = "tags")]
-  pub tags: Vec<String>,
+    #[serde(rename = "ducats")]
+    pub ducats: Option<i64>,
 
-  #[serde(rename = "ducats")]
-  pub ducats: i64,
+    #[serde(rename = "quantity_for_set")]
+    pub quantity_for_set: Option<i64>,
 
-  #[serde(rename = "quantity_for_set")]
-  pub quantity_for_set: i64,
-
-  #[serde(rename = "en")]
-  pub en: OrderItemTranslation,
+    #[serde(rename = "en")]
+    pub en: OrderItemTranslation,
 }
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Debug, Clone, Deserialize)]
 pub struct OrderItemTranslation {
-  #[serde(rename = "item_name")]
-  item_name: String,
+    #[serde(rename = "item_name")]
+    item_name: String,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Ordres {
     #[serde(rename = "sell_orders")]
     pub sell_orders: Vec<Order>,
     #[serde(rename = "buy_orders")]
-    pub buy_orders: Vec<Order>
+    pub buy_orders: Vec<Order>,
 }
 #[derive(Deserialize, Clone)]
 pub struct Settings {
-    pub field1: String,
-    pub field2: i32,
+    pub volume_threshold: i32,
+    pub range_threshold: i32,
+    pub avg_price_cap: i32,
+    pub price_shift_threshold: i32,
+    pub blacklist: Vec<String>,
+    pub in_game_name: String,
     // more fields...
 }
-
+#[derive(Deserialize, Clone, Debug)]
 pub struct Invantory {
     pub id: i32,
     pub item_id: String,
     pub item_url: String,
     pub item_name: String,
     pub rank: i32,
-    pub price: i32,
-    pub listed_price: i32,
+    pub price: f64,
+    pub listed_price: Option<i32>,
     pub owned: i32,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct PriceHistoryDto {
-    pub name: String,
-    pub datetime: String,
+/// Generated by https://quicktype.io
+extern crate serde_json;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct OrderByItem {
+    #[serde(rename = "order_type")]
     pub order_type: String,
-    pub volume: u32,
-    pub min_price: u32,
-    pub max_price: u32,
-    pub range: u32,
-    pub median: f64,
-    pub avg_price: f64,
-    pub mod_rank: Option<u32>,
-    pub item_id: String,
+
+    #[serde(rename = "quantity")]
+    pub quantity: i64,
+
+    #[serde(rename = "platinum")]
+    pub platinum: i64,
+
+    #[serde(rename = "mod_rank")]
+    pub mod_rank: Option<i64>,
+
+    #[serde(rename = "user")]
+    pub user: User,
+    #[serde(rename = "platform")]
+    pub platform: String,
+
+    #[serde(rename = "creation_date")]
+    pub creation_date: String,
+
+    #[serde(rename = "last_update")]
+    pub last_update: String,
+
+    #[serde(rename = "visible")]
+    pub visible: bool,
+
+    #[serde(rename = "id")]
+    pub id: String,
+
+    #[serde(rename = "region")]
+    pub region: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct User {
+    #[serde(rename = "reputation")]
+    pub reputation: i64,
+
+    // #[serde(rename = "locale")]
+    // pub locale: String,
+
+    // #[serde(rename = "avatar")]
+    // pub avatar: String,
+
+    // #[serde(rename = "last_seen")]
+    // pub last_seen: String,
+    #[serde(rename = "ingame_name")]
+    pub ingame_name: String,
+
+    #[serde(rename = "id")]
+    pub id: String,
+    // #[serde(rename = "region")]
+    // pub region: String,
+    #[serde(rename = "status")]
+    pub status: String,
 }
