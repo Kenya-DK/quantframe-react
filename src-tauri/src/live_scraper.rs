@@ -30,10 +30,7 @@ pub struct LiveScraper {
     window: Window,
     token: String,
     in_game_name: String,
-    settings: Option<Settings>,
-    csv_path: String,
-    csv_backop_path: String,
-    database_path: String,
+    settings: Option<Settings>
 }
 
 impl LiveScraper {
@@ -41,18 +38,12 @@ impl LiveScraper {
         window: Window,
         token: String,
         in_game_name: String,
-        csv_path: String,
-        csv_backop_path: String,
-        database_path: String,
     ) -> Self {
         LiveScraper {
             is_running: Arc::new(AtomicBool::new(false)),
             window,
             token,
             in_game_name,
-            csv_path,
-            csv_backop_path,
-            database_path,
             settings: None,
         }
     }
@@ -100,16 +91,7 @@ impl LiveScraper {
         Ok(())
     }
 
-    pub fn get_price_historys(&self) -> Result<DataFrame, PolarsError> {
-        // Try to read from "allItemDataBackup.csv", and if it fails, read from "allItemData.csv".
-        let file = File::open(&self.csv_backop_path).or_else(|_| File::open(&self.csv_path))?;
 
-        // Parse the CSV file into a DataFrame
-        CsvReader::new(file)
-            .infer_schema(None)
-            .has_header(true)
-            .finish()
-    }
     fn get_sell_map_by_ordre_type(
         &self,
         df_filtered: &DataFrame,
