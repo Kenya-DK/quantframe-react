@@ -13,15 +13,15 @@ mod live_scraper;
 use live_scraper::LiveScraper;
 
 mod database;
+mod helper;
 mod price_scraper;
 mod wfm_client;
 
+use helper::WINDOW as HE_WINDOW;
 use price_scraper::CSV_BACKOP_PATH;
 use price_scraper::CSV_PATH;
-use price_scraper::WINDOW as PS_WINDOW;
 
 use database::DB_PATH;
-use database::WINDOW as DB_WINDOW;
 
 #[tauri::command]
 fn toggle_whisper_scraper(whisper_scraper: tauri::State<'_, Arc<Mutex<WhisperScraper>>>) {
@@ -54,9 +54,9 @@ fn toggle_live_scraper(
 }
 
 #[tauri::command]
-async fn generate_price_history(platform: String) {
+async fn generate_price_history(platform: String, days: i64) {
     tauri::async_runtime::spawn(async move {
-        let runner = price_scraper::generate(platform.as_str()).await;
+        let runner = price_scraper::generate(platform.as_str(), days).await;
         match runner {
             Ok(_) => {}
             Err(e) => {
@@ -78,8 +78,7 @@ fn main() {
                 let warfream_path = local_path.join("Warframe");
                 let log_path = warfream_path.join("EE.log");
                 // Create an instance of WhisperScraper
-                let whisper_scraper =
-                    Arc::new(Mutex::new(WhisperScraper::new(window.clone(), log_path)));
+                let whisper_scraper = Arc::new(Mutex::new(WhisperScraper::new(log_path)));
                 app.manage(whisper_scraper);
 
                 // App path for csv file
@@ -92,17 +91,14 @@ fn main() {
                 *CSV_BACKOP_PATH.lock().unwrap() =
                     csv_backop_path.clone().to_str().unwrap().to_string();
 
-                *PS_WINDOW.lock().unwrap() = Some(window.clone());
+                *HE_WINDOW.lock().unwrap() = Some(window.clone());
 
                 // Get database path
                 let db_path = app_path.join("quantframe.sqlite");
                 *DB_PATH.lock().unwrap() = db_path.clone().to_str().unwrap().to_string();
 
-                *DB_WINDOW.lock().unwrap() = Some(window.clone());
-
                 // Create an instance of LiveScraper
                 let live_scraper = Arc::new(Mutex::new(LiveScraper::new(
-                    window.clone(),
                     String::from(""),
                     String::from(""),
                 )));

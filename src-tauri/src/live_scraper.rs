@@ -28,17 +28,15 @@ use tauri::Window;
 #[derive(Clone)]
 pub struct LiveScraper {
     is_running: Arc<AtomicBool>,
-    window: Window,
     token: String,
     in_game_name: String,
     settings: Option<Settings>,
 }
 
 impl LiveScraper {
-    pub fn new(window: Window, token: String, in_game_name: String) -> Self {
+    pub fn new(token: String, in_game_name: String) -> Self {
         LiveScraper {
             is_running: Arc::new(AtomicBool::new(false)),
-            window,
             token,
             in_game_name,
             settings: None,

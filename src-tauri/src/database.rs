@@ -6,7 +6,6 @@ use tauri::Window;
 use crate::structs::Invantory;
 
 pub static DB_PATH: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("".to_string()));
-pub static WINDOW: Lazy<Mutex<Option<Window>>> = Lazy::new(|| Mutex::new(None));
 
 pub fn get_connection() -> rusqlite::Result<Connection> {
     let db_path = DB_PATH.lock().unwrap();

@@ -1,4 +1,6 @@
+use crate::helper;
 use regex::Regex;
+use serde_json::json;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Seek, SeekFrom}; // Add Seek here
 use std::path::PathBuf;
@@ -6,7 +8,6 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
-use tauri::Window;
 
 #[derive(Clone, serde::Serialize)]
 struct Payload {
@@ -16,17 +17,15 @@ struct Payload {
 #[derive(Clone)]
 pub struct WhisperScraper {
     is_running: Arc<AtomicBool>,
-    window: Window,
     log_path: PathBuf,
     last_file_size: Arc<Mutex<u64>>,
     handle: Arc<Mutex<Option<JoinHandle<()>>>>,
 }
 
 impl WhisperScraper {
-    pub fn new(window: Window, log_path: PathBuf) -> Self {
+    pub fn new(log_path: PathBuf) -> Self {
         Self {
             is_running: Arc::new(AtomicBool::new(false)),
-            window,
             log_path,
             last_file_size: Arc::new(Mutex::new(0)),
             handle: Arc::new(Mutex::new(None)),
@@ -35,7 +34,6 @@ impl WhisperScraper {
 
     pub fn start_loop(&mut self) {
         let is_running = Arc::clone(&self.is_running);
-        let window = self.window.clone();
         let scraper = self.clone();
 
         self.is_running.store(true, Ordering::SeqCst);
@@ -50,14 +48,10 @@ impl WhisperScraper {
                             match WhisperScraper::match_pattern(&line) {
                                 Ok((matched, group1)) => {
                                     if matched && is_starting {
-                                        window
-                                            .emit(
-                                                "newWhisper",
-                                                Payload {
-                                                    name: group1.unwrap(),
-                                                },
-                                            )
-                                            .unwrap();
+                                        helper::send_message_to_window(
+                                            "mesage_from_player",
+                                            Some(json!({"name": group1.unwrap()})),
+                                        );
                                     }
                                 }
                                 Err(err) => println!("Error: {}", err),

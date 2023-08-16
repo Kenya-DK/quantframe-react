@@ -14,7 +14,6 @@ pub enum GlobleError {
     TooManyRequests(String),
     OtherError(String),
     HttpError(reqwest::StatusCode, String, String),
-
 }
 impl From<rusqlite::Error> for GlobleError {
     fn from(e: rusqlite::Error) -> Self {

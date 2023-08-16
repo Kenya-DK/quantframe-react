@@ -1,10 +1,11 @@
+use crate::helper;
 use crate::structs::{GlobleError, Item};
 use crate::wfm_client;
 use once_cell::sync::Lazy;
 use polars::prelude::*;
 use reqwest::{Client, Method, Url};
 use serde::Deserialize;
-use serde_json::Value;
+use serde_json::{json, Value};
 use std::collections::HashSet;
 use std::path::Path;
 use std::{
@@ -14,13 +15,11 @@ use std::{
     path::PathBuf,
 };
 use std::{iter::Map, sync::Mutex};
-use tauri::Window;
 extern crate chrono;
 use chrono::Duration;
 
 pub static CSV_PATH: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("".to_string()));
 pub static CSV_BACKOP_PATH: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("".to_string()));
-pub static WINDOW: Lazy<Mutex<Option<Window>>> = Lazy::new(|| Mutex::new(None));
 
 /// Returns the path to the CSV file as a string.
 /// The path is stored in a global variable that is locked to prevent concurrent access.
@@ -104,24 +103,40 @@ async fn get_price_by_day(platform: &str, day: &str) -> Result<Value, GlobleErro
 /// Returns true if the given vector of item data is valid for price scraping, false otherwise.
 /// A valid item data vector must have at least one element, and the first element must have either 3 or 6 keys.
 /// The first element must also have a "mod_rank" key.
-fn is_valid_price_data(item_datas: &Vec<Value>) -> bool {
+fn is_valid_price_data(name: &str, item_datas: &Vec<Value>) -> bool {
     if item_datas.len() == 0 {
+        // Log the response
+        custom_logger::write_to(
+            "wfmAPICalls.log",
+            &format!("{}\t Length of item_datas is 0", name),
+        );
         return false;
     }
-    match item_datas[0].get("mod_rank") {
-        Some(_mod_rank) => {
-            if item_datas.len() == 6 {
-                return true;
-            }
-            return false;
-        }
-        None => {
-            if item_datas.len() == 3 {
-                return true;
-            }
-            return true;
-        }
+    // Check if the first element has a "mod_rank" key
+    let is_mod = match item_datas[0].get("mod_rank") {
+        Some(_mod_rank) => true,
+        None => false,
+    };
+
+    if is_mod && item_datas.len() == 6 {
+        custom_logger::write_to(
+            "wfmAPICalls.log",
+            &format!("{}\t Is Mod with length {}", name, item_datas.len()),
+        );
+        return true;
     }
+    if !is_mod && item_datas.len() == 3 {
+        custom_logger::write_to(
+            "wfmAPICalls.log",
+            &format!("{}\t Is not Mod with length {}", name, item_datas.len()),
+        );
+        return true;
+    }
+    custom_logger::write_to(
+        "wfmAPICalls.log",
+        &format!("{}\t Is not valid with length {}", name, item_datas.len()),
+    );
+    return false;
 }
 
 /// Returns a map of item names to their corresponding IDs, based on the `items` list.
@@ -170,7 +185,12 @@ fn merge_dataframes(frames: Vec<DataFrame>) -> Result<DataFrame, GlobleError> {
     // Construct a DataFrame from the merged data
     Ok(DataFrame::new(combined_series)?)
 }
-pub async fn generate(platform: &str) -> Result<(), GlobleError> {
+
+pub async fn generate(platform: &str, days: i64) -> Result<(), GlobleError> {
+    println!(
+        "Generating csv file for platform: {}, for {}",
+        platform, days
+    );
     let csv_path_str = get_csv_path();
     let csv_backop_path_str = get_csv_backup_path();
     let csv_path: &Path = Path::new(&csv_path_str);
@@ -179,7 +199,7 @@ pub async fn generate(platform: &str) -> Result<(), GlobleError> {
         println!("Backuping csv file: {}", csv_path_str);
         fs::copy(csv_path, csv_backop_path)?;
     }
-    let last_days = last_x_days(8).clone();
+    let last_days = last_x_days(days).clone();
     let mut dataframes: Vec<DataFrame> = Vec::new();
     let (url_map, id_map) = get_items_map_url_map().await?;
 
@@ -195,19 +215,25 @@ pub async fn generate(platform: &str) -> Result<(), GlobleError> {
                     continue;
                 }
                 found_data += 1;
+                helper::send_message_to_window(
+                    "price_scraper_update_progress",
+                    Some(json!({"current": found_data, "total": days, "day": day})),
+                );
                 if let Value::Object(map) = &items {
                     for (item_name, item_data_list) in map {
                         if let Value::Array(array) = item_data_list {
-                            if !is_valid_price_data(array) {
+                            if !is_valid_price_data(&item_name, array) {
                                 // println!("Invalid price data for item: {}", item_name);
                                 continue;
                             }
 
+                            // Get the url_name and id for the item
                             let url_name = url_map
                                 .get(item_name)
                                 .unwrap_or(&"not_found".to_string())
                                 .clone();
 
+                            // Get the id for the item
                             let id = id_map
                                 .get(&url_name)
                                 .unwrap_or(&"not_found".to_string())
@@ -221,31 +247,9 @@ pub async fn generate(platform: &str) -> Result<(), GlobleError> {
                             let id_vec: Vec<Option<String>> =
                                 array.iter().map(|_item_data| Some(id.clone())).collect();
 
-                            // let order_type_vec: Vec<Option<String>> = array
-                            //     .iter()
-                            //     .map(|item_data| {
-                            //         item_data
-                            //             .get("order_type")
-                            //             .and_then(|v| v.as_str())
-                            //             .filter(|&s| s != "closed")
-                            //             .map(String::from)
-                            //     })
-                            //     .collect();
-
-                            // let order_type_vec: Vec<Option<String>> = array
-                            //     .iter()
-                            //     .map(|item_data| {
-                            //         item_data
-                            //             .get("order_type")
-                            //             .and_then(|v| v.as_str())
-                            //             .filter(|&s| s != "closed")
-                            //             .map(String::from)
-                            //     })
-                            //     .collect();
-
-                            let order_type_vec: Vec<String> = array
+                            let order_type_vec: Vec<Option<String>> = array
                                 .iter()
-                                .filter_map(|item_data| {
+                                .map(|item_data| {
                                     item_data
                                         .get("order_type")
                                         .and_then(|v| v.as_str())
@@ -253,9 +257,9 @@ pub async fn generate(platform: &str) -> Result<(), GlobleError> {
                                 })
                                 .collect();
 
-                            let volume_vec: Vec<i64> = array
+                            let volume_vec: Vec<Option<i64>> = array
                                 .iter()
-                                .filter_map(|item_data| {
+                                .map(|item_data| {
                                     item_data
                                         .get("volume")
                                         .and_then(|v| v.as_i64())
@@ -263,9 +267,9 @@ pub async fn generate(platform: &str) -> Result<(), GlobleError> {
                                 })
                                 .collect();
 
-                            let datetime_vec: Vec<String> = array
+                            let datetime_vec: Vec<Option<String>> = array
                                 .iter()
-                                .filter_map(|item_data| {
+                                .map(|item_data| {
                                     item_data
                                         .get("datetime")
                                         .and_then(|v| v.as_str())
@@ -273,55 +277,59 @@ pub async fn generate(platform: &str) -> Result<(), GlobleError> {
                                 })
                                 .collect();
 
-                            let max_price_vec: Vec<i64> = array
+                            let max_price_vec: Vec<Option<f64>> = array
                                 .iter()
-                                .filter_map(|item_data| {
-                                    item_data
-                                        .get("max_price")
-                                        .and_then(|v| v.as_i64())
-                                        .map(i64::from)
+                                .map(|item_data| {
+                                    item_data.get("max_price").and_then(|v| v.as_f64())
                                 })
                                 .collect();
 
-                            let min_price_vec: Vec<i64> = array
+                            let min_price_vec: Vec<Option<f64>> = array
                                 .iter()
-                                .filter_map(|item_data| {
-                                    item_data
-                                        .get("min_price")
-                                        .and_then(|v| v.as_i64())
-                                        .map(i64::from)
+                                .map(|item_data| {
+                                    item_data.get("min_price").and_then(|v| v.as_f64())
                                 })
                                 .collect();
 
-                            // println!(
-                            //     "Day: {}, Item: {}, Name Vec: {}, Datetime Vec: {}, Volume Vec: {}, OrderType Vec: {}, MinPrice Vec: {}, MaxPrice Vec: {}",
-                            //     day,
-                            //     item_name,
-                            //     name_vec.clone().len(),
-                            //     datetime_vec.clone().len(),
-                            //     volume_vec.clone().len(),
-                            //     order_type_vec.clone().len(),
-                            //     min_price_vec.clone().len(),
-                            //     max_price_vec.clone().len()
-                            // );
-                            let mut df = DataFrame::new_no_checks(vec![
+                            let avg_price_vec: Vec<Option<f64>> = array
+                                .iter()
+                                .map(|item_data| {
+                                    item_data.get("avg_price").and_then(|v| v.as_f64())
+                                })
+                                .collect();
+
+                            let mod_rank_vec: Vec<Option<i64>> = array
+                                .iter()
+                                .map(|item_data| item_data.get("mod_rank").and_then(|v| v.as_i64()))
+                                .collect();
+
+                            let median_vec: Vec<Option<f64>> = array
+                                .iter()
+                                .map(|item_data| item_data.get("median").and_then(|v| v.as_f64()))
+                                .collect();
+
+                            let df = DataFrame::new_no_checks(vec![
                                 Series::new("name", name_vec),
                                 Series::new("datetime", datetime_vec),
-                                Series::new("volume", volume_vec),
                                 Series::new("order_type", order_type_vec),
+                                Series::new("volume", volume_vec),
+                                Series::new("min_price", min_price_vec),
+                                Series::new("max_price", max_price_vec),
+                                Series::new("avg_price", avg_price_vec),
+                                Series::new("mod_rank", mod_rank_vec),
+                                Series::new("median", median_vec),
                                 Series::new("item_id", id_vec),
-                                // Series::new("min_price", min_price_vec),
-                                // Series::new("max_price", max_price_vec),
                             ]);
-                            dump_dataframe(&mut df, format!("{}{}.csv", day.as_str(),item_name).as_str())?;
+                            // dump_dataframe(&mut df, format!("{}.csv", item_name).as_str())?;
 
-                            // let df: DataFrame = df
-                            //     .clone()
-                            //     .lazy()
-                            //     .fill_nan(lit(0.0).alias("max_price"))
-                            //     .fill_nan(lit(0.0).alias("min_price"))
-                            //     .with_column((col("max_price") - col("min_price")).alias("range"))
-                            //     .collect()?;
+                            let mut df: DataFrame = df
+                                .clone()
+                                .lazy()
+                                .fill_nan(lit(0.0).alias("max_price"))
+                                .fill_nan(lit(0.0).alias("min_price"))
+                                .with_column((col("max_price") - col("min_price")).alias("range"))
+                                .collect()?;
+                            // dump_dataframe(&mut df, format!("{} {}.csv", day, item_name).as_str())?;
                             dataframes.push(df);
                         }
                     }
@@ -332,55 +340,78 @@ pub async fn generate(platform: &str) -> Result<(), GlobleError> {
             }
         }
     }
-    print!("1");
-    let big_df = merge_dataframes(dataframes)?;
+    let mut full_df = merge_dataframes(dataframes)?;
+    helper::send_message_to_window(
+        "price_scraper_update_complete",
+        Some(json!({"total_items": full_df.height()})),
+    );
+    dump_dataframe(&mut full_df, "full_df.csv")?;
 
-    let mut sorted_df = big_df
-        .lazy()
-        .sort(
-            "name",
-            SortOptions {
-                descending: false,
-                nulls_last: false,
-                multithreaded: false,
-            },
-        )
-        .collect()?;
-    dump_dataframe(&mut sorted_df, "beforegroupname.csv")?;
+    // let mut sorted_df = full_df
+    //     .lazy()
+    //     .filter(col("mod_rank").gt(lit(0)))
+    //     .sort(
+    //         "name",
+    //         SortOptions {
+    //             descending: false,
+    //             nulls_last: false,
+    //             multithreaded: false,
+    //         },
+    //     )
+    //     .collect()?;
 
-    print!("2");
-    let mut groupby = sorted_df
-        .clone()
+    // dump_dataframe(&mut sorted_df, "sorted_df.csv")?;
+    // Group by name and get the average price
+    let mut group_by_name = full_df
         .lazy()
         .groupby(&["name"])
         .agg(&[
             // List the other columns you want to average
-            col("datetime").count().alias("datetime"),
+            col("name").count().alias("name_count"),
         ])
         .collect()?;
-    dump_dataframe(&mut groupby, "groupby.csv")?;
 
-    print!("3");
-    let names = groupby
+    dump_dataframe(&mut group_by_name, "group_by_name.csv")?;
+
+    // Get the names of the items that are popular
+
+    let popular_items = group_by_name
         .clone()
         .lazy()
-        .filter(col("datetime").eq(lit(21)))
+        .filter(col("name_count").gt_eq(21))
         .collect()?;
-    dump_dataframe(&mut groupby, "names.csv")?;
 
-    let names = names
+    let popular_items = popular_items
         .column("name")?
         .utf8()?
         .into_iter()
         .filter_map(|opt_name| opt_name)
         .collect::<Vec<_>>();
 
+    custom_logger::write_to("popular_items.txt", format!("{:?}", popular_items).as_str());
+
+    // Filter the big dataframe by the popular items
+    let popular_expr = popular_items
+        .iter()
+        .fold(lit(false), |acc, item| acc.or(col("name").eq(lit(*item))));
+
+    // let mut popular_df = sorted_df.clone().lazy().filter(popular_expr).collect()?;
+
+    // dump_dataframe(&mut popular_df, "popular_df.csv")?;
+
+    // let names = names
+    //     .column("name")?
+    //     .utf8()?
+    //     .into_iter()
+    //     .filter_map(|opt_name| opt_name)
+    //     .collect::<Vec<_>>();
+
     // .column("name")?
     // .utf8()
     // .into_iter()
     // .filter_map(|opt_name| Some(opt_name))
     // .collect::<Vec<_>>();
-    println!("Names: {:?}", names);
+    // println!("Names: {:?}", names);
     // let mask = groupby.column("datetime")?.eq(&21.into());
     // let names = groupby.filter(&mask)?.select("name")?;
 
@@ -410,4 +441,31 @@ pub fn dump_dataframe(df: &mut DataFrame, name: &str) -> Result<(), GlobleError>
     // Write the DataFrame to a CSV file
     CsvWriter::new(writer).finish(df)?;
     Ok(())
+}
+
+mod custom_logger {
+    use std::fs::{self, OpenOptions};
+    use std::io::prelude::*;
+    use std::path::PathBuf;
+
+    pub fn write_to(filename: &str, content: &str) {
+        let mut log_path = PathBuf::from("logs");
+        // Create the directory if it does not exist
+        if !log_path.exists() {
+            fs::create_dir_all(&log_path).unwrap();
+        }
+        log_path.push(filename);
+        if !log_path.exists() {
+            fs::File::create(&log_path).unwrap();
+        }
+        let mut file = OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open(log_path)
+            .unwrap();
+
+        if let Err(e) = writeln!(file, "{}", content) {
+            eprintln!("Couldn't write to file: {}", e);
+        }
+    }
 }
