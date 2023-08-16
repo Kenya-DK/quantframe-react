@@ -5,6 +5,7 @@ import { AppShell, useMantineTheme } from '@mantine/core';
 import Hedder from "./header";
 import { TauriContext } from "@contexts/index";
 import { useLocalStorage } from "@mantine/hooks";
+import SideBar from "./sidebar";
 
 export default function MainLayout() {
   const theme = useMantineTheme();
@@ -21,6 +22,7 @@ export default function MainLayout() {
       navbarOffsetBreakpoint="sm"
       asideOffsetBreakpoint="sm"
       header={<Hedder user={user} opened={opened} onOpenedClick={() => setOpened((o) => !o)} hideSidebar={hideSidebar} setHideSidebar={setHideSidebar} />}
+      navbar={<SideBar />}
     >
       <Outlet />
     </AppShell>

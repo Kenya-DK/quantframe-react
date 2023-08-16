@@ -44,9 +44,20 @@ export const en = {
       prompt: {
         confirmLabel: "Confirm",
         cancelLabel: "Cancel",
-      }
+      },
+      settings: {
+        volume_threshold: "Volume Threshold",
+        volume_threshold_description: "Volume threshold for the sound",
+        range_threshold: "Range Threshold",
+        range_threshold_description: "Range threshold for the sound",
+        avg_price_cap: "Average Price Cap",
+        avg_price_cap_description: "Average price cap for the sound",
+        price_shift_threshold: "Price Shift Threshold",
+        price_shift_threshold_description: "Price shift threshold for the sound",
+      },
     },
   },
+
   context: {
     wisper: {
       title: "Wisper",

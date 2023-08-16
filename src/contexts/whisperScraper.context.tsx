@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
-import { listen } from "@tauri-apps/api/event";
 import { useTauriContext } from ".";
 import { useTranslateContext } from "../hooks";
+import { OnTauriEvent } from "../utils";
 
 type WhisperScraperContextProps = {
   isRunning: boolean;
@@ -35,18 +35,12 @@ export const WhisperScraperContextProvider = ({ children }: WhisperScraperContex
     // await invoke("toggle_live_scraper")
   }
   useEffect(() => {
-    //listen to a event
-    const unlisten = listen("newWhisper", (data: { payload: { name: string } }) => {
-      const { name } = data.payload;
+    OnTauriEvent("mesage_from_player", (data: { name: string }) => {
+      const { name } = data;
       sendNotification(useTranslateWhisper("title"), (useTranslateWhisper("message", { name })));
+
     });
-
-    // invoke a Rust function to start a loop for periodically emitting event.
-    // start_backend_emitting_loop();
-
-    return () => {
-      unlisten.then(f => f());
-    }
+    return () => { }
   }, []);
   return (
     <WhisperScraperContext.Provider value={{ isStarting, isRunning, toggle: handleToggle }}>

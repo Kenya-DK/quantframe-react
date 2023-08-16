@@ -1,3 +1,5 @@
+export * from './tauri';
+
 type GroupBy<T> = Record<string, T[]>;
 
 export const groupBy = <T, K extends keyof T>(key: K, array: T[]): GroupBy<T> => {
@@ -7,4 +9,5 @@ export const groupBy = <T, K extends keyof T>(key: K, array: T[]): GroupBy<T> =>
     return acc;
   }, {} as GroupBy<T>);
 
-} 
+}
+

@@ -3,7 +3,7 @@ import { user } from "@store/index";
 import { invoke } from "@tauri-apps/api";
 type StatsScraperContextProps = {
   isRunning: boolean;
-  run: () => void;
+  run: (days: number) => void;
 }
 type StatsScraperContextProviderProps = {
   children: React.ReactNode;
@@ -23,11 +23,12 @@ export const StatsScraperContextProvider = ({ children }: StatsScraperContextPro
   //   enabled: false,
   // })
 
-  const handleRun = async () => {
+  const handleRun = async (days: number) => {
     // await refetch();
     const { platform } = await user.get();;
     await invoke("generate_price_history", {
-      platform
+      platform,
+      days
     })
   }
 
