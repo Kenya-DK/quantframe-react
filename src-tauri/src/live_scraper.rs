@@ -246,10 +246,11 @@ impl LiveScraper {
 
     pub fn get_buy_sell_overlap(&self) -> Result<DataFrame, GlobleError> {
         let df = price_scraper::get_price_historys()?;
-        let volume_threshold = self.settings.as_ref().unwrap().volume_threshold; // Change according to your config
-        let range_threshold = self.settings.as_ref().unwrap().range_threshold; // Change according to your config
-        let avg_price_cap = self.settings.as_ref().unwrap().avg_price_cap; // assuming config contains the Rust value for avgPriceCap
-        let price_shift_threshold = self.settings.as_ref().unwrap().price_shift_threshold; // assuming config contains the Rust value for priceShiftThreshold
+        // Load the settings from the config file
+        let volume_threshold = self.settings.as_ref().unwrap().volume_threshold;
+        let range_threshold = self.settings.as_ref().unwrap().range_threshold;
+        let avg_price_cap = self.settings.as_ref().unwrap().avg_price_cap;
+        let price_shift_threshold = self.settings.as_ref().unwrap().price_shift_threshold;
 
         // Drop the "datetime" and "item_id" columns
         let averaged_df = df.drop("datetime")?.drop("item_id")?;
@@ -271,6 +272,7 @@ impl LiveScraper {
                 col("mod_rank").mean().alias("mod_rank"),
             ])
             .collect()?;
+        
         // Call the database to get the inventory names
         let inventory_names = match database::get_inventory_names() {
             Ok(names) => names,

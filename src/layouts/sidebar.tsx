@@ -1,7 +1,8 @@
 import { createStyles, rem, Tooltip, UnstyledButton, Navbar, Stack } from "@mantine/core";
 import { ReactNode, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChartSimple, faGlobe, faHome } from "@fortawesome/free-solid-svg-icons";
+import { faChartSimple, faDesktop, faGlobe, faHome } from "@fortawesome/free-solid-svg-icons";
+import { useTranslateLayout } from "../hooks";
 
 interface NavbarLinkProps {
   icon: ReactNode;
@@ -45,12 +46,13 @@ const useStyles = createStyles((theme) => ({
 
 export default function SideBar({ }) {
   const [active, setActive] = useState(2);
-
+  const useTranslate = (key: string, context?: { [key: string]: any }) => useTranslateLayout(`navigation.${key}`, { ...context })
   const mockdata = [
-    { icon: <FontAwesomeIcon icon={faHome} />, label: 'Home' },
-    { icon: <FontAwesomeIcon icon={faGlobe} />, label: 'Live Trading' },
-    { icon: <FontAwesomeIcon icon={faChartSimple} />, label: 'Statistics' },
-    { icon: <FontAwesomeIcon icon={faChartSimple} />, label: 'Warframe Market' },
+    { icon: <FontAwesomeIcon icon={faHome} />, label: useTranslate("home") },
+    { icon: <FontAwesomeIcon icon={faGlobe} />, label: useTranslate("live_trading") },
+    { icon: <FontAwesomeIcon icon={faChartSimple} />, label: useTranslate("statistics") },
+    { icon: <FontAwesomeIcon icon={faChartSimple} />, label: useTranslate("warframe_market") },
+    { icon: <FontAwesomeIcon icon={faDesktop} />, label: useTranslate("debug") },
   ];
   const links = mockdata.map((link, index) => (
     <NavbarLink

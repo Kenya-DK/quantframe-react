@@ -9,7 +9,7 @@ import { faGear } from "@fortawesome/free-solid-svg-icons/faGear";
 import { modals } from "@mantine/modals";
 import { useTauriContext } from "../contexts";
 import { Logo } from "../components/logo";
-import Clock from "../components/Clock";
+import Clock from "../components/clock";
 
 interface TopMenuProps {
   opened: boolean;

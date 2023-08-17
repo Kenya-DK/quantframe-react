@@ -40,6 +40,15 @@ export const en = {
         }
       }
     },
+    transactioncontrol: {
+      title: "Transaction Control",
+      price_scraper_start: "Start Price Scraper",
+      price_scraper_running: "Price Scraper Running",
+      live_trading_start: "Start Live Trading",
+      live_trading_stop: "Stop Live Trading",
+      wisper_start: "Start Wisper",
+      wisper_stop: "Stop Wisper",
+    },
     modals: {
       prompt: {
         confirmLabel: "Confirm",
@@ -73,6 +82,10 @@ export const en = {
     },
     navigation: {
       home: "Home",
+      live_trading: "Live Trading",
+      statistics: "Statistics",
+      warframe_market: "Warframe Market",
+      debug: "Debug",
     },
   },
   pages: {

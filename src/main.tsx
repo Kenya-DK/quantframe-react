@@ -27,7 +27,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         ],
       }
     }}>
-    <Notifications position="top-right" />
+    <Notifications position="bottom-right" />
     <App />
   </MantineProvider>
   //</React.StrictMode>,
