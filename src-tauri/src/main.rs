@@ -13,6 +13,7 @@ mod live_scraper;
 use live_scraper::LiveScraper;
 
 mod database;
+mod logger;
 mod helper;
 mod price_scraper;
 mod wfm_client;
@@ -47,6 +48,11 @@ fn toggle_live_scraper(
         match live_scraper.start_loop(token, settings) {
             Ok(_) => {}
             Err(e) => {
+                helper::send_message_to_window(
+                    "live_scraper_error",
+                    Some(json!({"error": e})),
+                );
+                live_scraper.stop_loop();
                 println!("Error while starting live scraper {:?}", e);
             }
         }
@@ -60,6 +66,10 @@ async fn generate_price_history(platform: String, days: i64) {
         match runner {
             Ok(_) => {}
             Err(e) => {
+                helper::send_message_to_window(
+                    "price_scraper_error",
+                    Some(json!({"error": e})),
+                );
                 println!("Error while generating price history {:?}", e);
             }
         }

@@ -35,8 +35,8 @@ pub fn get_csv_backup_path() -> String {
     locked_csv_backup_path.clone()
 }
 
-/// Returns a vector of strings representing the last `x` days, including today.
-/// Each string is formatted as "YYYY-MM-DD".
+/// Returns a vector of strings representing the dates of the last `x` days, including today.
+/// The dates are formatted as "YYYY-MM-DD".
 fn last_x_days(x: i64) -> Vec<String> {
     let today = chrono::Local::now().naive_local();
     (0..x)
@@ -46,6 +46,7 @@ fn last_x_days(x: i64) -> Vec<String> {
                 .format("%Y-%m-%d")
                 .to_string()
         })
+        .rev()
         .collect()
 }
 

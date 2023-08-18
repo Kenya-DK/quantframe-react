@@ -49,12 +49,19 @@ impl WhisperScraper {
                                 Ok((matched, group1)) => {
                                     if matched && is_starting {
                                         helper::send_message_to_window(
-                                            "mesage_from_player",
+                                            "whisper_scraper_mesage_from_player",
                                             Some(json!({"name": group1.unwrap()})),
                                         );
                                     }
                                 }
-                                Err(err) => println!("Error: {}", err),
+                                Err(err) => {
+                                    helper::send_message_to_window(
+                                        "whisper_scraper_error",
+                                        Some(json!({"error": e})),
+                                    );
+                                    self.stop_loop();
+                                    println!("Error: {}", err)
+                                },
                             }
                         }
                     }
