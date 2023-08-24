@@ -46,9 +46,11 @@ export const settings = new Persist<Settings>('settings', {
   volume_threshold: 1,
   range_threshold: 10,
   avg_price_cap: 600,
+  max_total_price_cap: 100000,
   price_shift_threshold: -1,
   blacklist: [],
   whitelist: [],
+  strict_whitelist: false,
 })
 
 export const user = new Persist<Wfm.UserDto>('user', {

@@ -1,6 +1,7 @@
-use std::{error::Error, io::Cursor};
-
-use crate::structs::{GlobleError, Item, Order, OrderByItem, Ordres};
+use crate::{
+    helper, logger,
+    structs::{GlobleError, Item, Order, OrderByItem, Ordres},
+};
 use polars::{prelude::*, series::Series};
 
 use reqwest::{Client, Method, Url};
@@ -8,6 +9,7 @@ use serde::de::DeserializeOwned;
 use serde_json::{json, Value};
 
 static API_ENDPOINT: &str = "https://api.warframe.market/v1/";
+static LOG_FILE: &str = "wfmAPICalls.log";
 
 async fn send_request<T: DeserializeOwned>(
     method: Method,
@@ -16,6 +18,8 @@ async fn send_request<T: DeserializeOwned>(
     payload_key: Option<&str>,
     body: Option<Value>,
 ) -> Result<T, GlobleError> {
+    // Sleep for 1 seconds before sending a new request, to avoid 429 error
+    tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
     let client = Client::new();
     let new_url = format!("{}{}", API_ENDPOINT, url);
 
@@ -79,7 +83,7 @@ async fn post<T: DeserializeOwned>(
     Ok(payload)
 }
 
- async fn delete<T: DeserializeOwned>(
+async fn delete<T: DeserializeOwned>(
     url: &str,
     jwt_token: &str,
     payload_key: Option<&str>,
@@ -88,7 +92,7 @@ async fn post<T: DeserializeOwned>(
     Ok(payload)
 }
 
- async fn put<T: DeserializeOwned>(
+async fn put<T: DeserializeOwned>(
     url: &str,
     jwt_token: &str,
     payload_key: Option<&str>,
@@ -108,7 +112,8 @@ pub async fn get_tradable_items(jwt_token: &str) -> Result<Vec<Item>, GlobleErro
 // Create order on warframe market
 pub async fn post_ordre(
     jwt_token: &str,
-    item: &str,
+    item_name: &str,
+    item_id: &str,
     order_type: &str,
     platinum: i64,
     quantity: i64,
@@ -117,7 +122,7 @@ pub async fn post_ordre(
 ) -> Result<Order, GlobleError> {
     // Construct any JSON body
     let mut body = json!({
-        "item": item,
+        "item": item_id,
         "order_type": order_type,
         "platinum": platinum,
         "quantity": quantity,
@@ -127,8 +132,21 @@ pub async fn post_ordre(
     if let Some(rank) = rank {
         body["rank"] = json!(rank);
     }
-    let order: Order = post("profile/orders", jwt_token, Some("order"), body).await?;
-    Ok(order)
+    match post("profile/orders", jwt_token, Some("order"), body).await {
+        Ok(order) => {
+            logger::info("WarframeMarket:PostOrder", format!("Created Order: {}, Item Name: {}, Item Id: {},  Platinum: {}, Quantity: {}, Visible: {}", order_type, item_name, item_id ,platinum ,quantity ,visible).as_str(), true, Some(LOG_FILE));
+            Ok(order)
+        }
+        Err(e) => {
+            logger::error(
+                "WarframeMarket:PostOrder",
+                format!("{:?}", e).as_str(),
+                true,
+                Some(LOG_FILE),
+            );
+            Err(e)
+        }
+    }
 }
 // Get orders from warframe market
 pub async fn get_user_ordres(jwt_token: &str, ingame_name: &str) -> Result<Ordres, GlobleError> {
@@ -206,6 +224,22 @@ pub async fn get_ordres_by_item(jwt_token: &str, item: &str) -> Result<DataFrame
     Ok(orders_df)
 }
 
+/// Converts an Order object to a DataFrame object and returns it.
+/// The `order` argument is an Order object containing data to be converted to a DataFrame.
+/// The resulting DataFrame has columns for "id", "visible", "url_name", "platinum", "platform", "quantity", "last_update", and "creation_date".
+pub fn convet_order_to_datafream(order: Order) -> Result<DataFrame, GlobleError> {
+    let orders_df = DataFrame::new_no_checks(vec![
+        Series::new("id", vec![order.id.clone()]),
+        Series::new("visible", vec![order.visible.clone()]),
+        Series::new("url_name", vec![order.item.url_name.clone()]),
+        Series::new("platinum", vec![order.platinum.clone()]),
+        Series::new("platform", vec![order.platform.clone()]),
+        Series::new("quantity", vec![order.quantity.clone()]),
+        Series::new("last_update", vec![order.last_update.clone()]),
+        Series::new("creation_date", vec![order.creation_date.clone()]),
+    ]);
+    Ok(orders_df)
+}
 // Get orders from a specific user
 pub async fn get_ordres_data_frames(
     jwt_token: &str,
@@ -243,6 +277,34 @@ pub async fn get_ordres_data_frames(
                 .map(|order| order.platinum.clone())
                 .collect::<Vec<_>>(),
         ),
+        Series::new(
+            "platform",
+            buy_orders
+                .iter()
+                .map(|order| order.platform.clone())
+                .collect::<Vec<_>>(),
+        ),
+        Series::new(
+            "quantity",
+            buy_orders
+                .iter()
+                .map(|order| order.quantity.clone())
+                .collect::<Vec<_>>(),
+        ),
+        Series::new(
+            "last_update",
+            buy_orders
+                .iter()
+                .map(|order| order.last_update.clone())
+                .collect::<Vec<_>>(),
+        ),
+        Series::new(
+            "creation_date",
+            buy_orders
+                .iter()
+                .map(|order| order.creation_date.clone())
+                .collect::<Vec<_>>(),
+        ),
     ]);
     let sell_orders = current_orders.sell_orders.clone();
     let my_sell_orders_df = DataFrame::new_no_checks(vec![
@@ -274,6 +336,34 @@ pub async fn get_ordres_data_frames(
                 .map(|order| order.platinum.clone())
                 .collect::<Vec<_>>(),
         ),
+        Series::new(
+            "platform",
+            buy_orders
+                .iter()
+                .map(|order| order.platform.clone())
+                .collect::<Vec<_>>(),
+        ),
+        Series::new(
+            "quantity",
+            buy_orders
+                .iter()
+                .map(|order| order.quantity.clone())
+                .collect::<Vec<_>>(),
+        ),
+        Series::new(
+            "last_update",
+            buy_orders
+                .iter()
+                .map(|order| order.last_update.clone())
+                .collect::<Vec<_>>(),
+        ),
+        Series::new(
+            "creation_date",
+            buy_orders
+                .iter()
+                .map(|order| order.creation_date.clone())
+                .collect::<Vec<_>>(),
+        ),
     ]);
     Ok((my_buy_orders_df, my_sell_orders_df))
 }
@@ -285,6 +375,9 @@ pub async fn update_order_listing(
     platinum: i64,
     quantity: i64,
     visible: bool,
+    item_name: &str,
+    item_id: &str,
+    order_type: &str,
 ) -> Result<Order, GlobleError> {
     // Construct any JSON body
     let body = json!({
@@ -293,14 +386,54 @@ pub async fn update_order_listing(
         "visible": visible
     });
     let url = format!("profile/orders/{}", order_id);
-    let order: Order = put(&url, jwt_token, Some("order"), body).await?;
-
-    Ok(order)
+    match put(&url, jwt_token, Some("order"), body).await {
+        Ok(order) => {
+            logger::info("WarframeMarket:UpdateOrderListing", format!("Updated Order Id: {}, Item Name: {}, Item Id: {}, Platinum: {}, Quantity: {}, Visible: {}, Type: {}", order_id, item_name, item_id,platinum ,quantity ,visible, order_type).as_str(), true, Some(LOG_FILE));
+            Ok(order)
+        }
+        Err(e) => {
+            logger::error(
+                "WarframeMarket:UpdateOrderListing",
+                format!("{:?}", e).as_str(),
+                true,
+                Some(LOG_FILE),
+            );
+            Err(e)
+        }
+    }
 }
 
 // Delete order from warframe market
-pub async fn delete_order(jwt_token: &str, order_id: &str) -> Result<String, GlobleError> {
+pub async fn delete_order(
+    jwt_token: &str,
+    order_id: &str,
+    item_name: &str,
+    item_id: &str,
+    order_type: &str,
+) -> Result<String, GlobleError> {
     let url = format!("profile/orders/{}", order_id);
-    let order_id: String = delete(&url, jwt_token, Some("order_id")).await?;
-    Ok(order_id)
+    match delete(&url, jwt_token, Some("order_id")).await {
+        Ok(order_id) => {
+            logger::info(
+                "WarframeMarket:DeleteOrder",
+                format!(
+                    "Deleted order: {}, Item Name: {}, Item Id: {}, Type: {}",
+                    order_id, item_name, item_id, order_type
+                )
+                .as_str(),
+                true,
+                Some(LOG_FILE),
+            );
+            Ok(order_id)
+        }
+        Err(e) => {
+            logger::error(
+                "WarframeMarket:DeleteOrder",
+                format!("{:?}", e).as_str(),
+                true,
+                None,
+            );
+            Err(e)
+        }
+    }
 }

@@ -1,13 +1,12 @@
-import { Avatar, Group, Header, Menu, createStyles, rem, Container, ActionIcon } from "@mantine/core";
+import { Avatar, Group, Header, Menu, createStyles, rem, Container, ActionIcon, useMantineTheme } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateLayout } from "@hooks/index";
-import { SettingsModal } from "@components/modals/settings.modal";
-import { Settings, Wfm } from "$types/index";
+import { SettingsModal } from "@components/modals/settings";
+import { Wfm } from "$types/index";
 import { faGear } from "@fortawesome/free-solid-svg-icons/faGear";
 import { modals } from "@mantine/modals";
-import { useTauriContext } from "../contexts";
 import { Logo } from "../components/logo";
 import Clock from "../components/clock";
 
@@ -37,8 +36,8 @@ const useStyles = createStyles((theme) => ({
 }));
 
 export default function Hedder({ user }: TopMenuProps) {
+  const theme = useMantineTheme();
   const { classes } = useStyles();
-  const { settings, updateSettings } = useTauriContext();
   const [, setUserMenuOpened] = useState(false);
   const [avatar, setAvatar] = useState<string | undefined>(undefined);
 
@@ -53,7 +52,7 @@ export default function Hedder({ user }: TopMenuProps) {
       <Container className={classes.inner} fluid>
         <Group>
           <Group position="left" grow>
-            <Logo title={useTranslateHedder("title")} color={"#bcb51b"} />
+            <Logo title={useTranslateHedder("title")} color={theme.colors.blue[7]} />
           </Group>
         </Group>
         <Clock />
@@ -80,10 +79,10 @@ export default function Hedder({ user }: TopMenuProps) {
                   modals.open({
                     size: "100%",
                     withCloseButton: false,
-                    children: < SettingsModal settings={settings} onSubmit={(set: Partial<Settings>) => updateSettings(set)} />,
+                    children: < SettingsModal />,
                   })
                 }}>
-                  {useTranslateHedder("profile.logout")}
+                  {useTranslateHedder("profile.settings")}
                 </Menu.Item>
                 <Menu.Item icon={<FontAwesomeIcon icon={faRightFromBracket} />}>
                   {useTranslateHedder("profile.logout")}

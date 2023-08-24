@@ -1,27 +1,26 @@
 use crate::database;
+use crate::helper;
+use crate::helper::ColumnType;
+use crate::helper::ColumnValue;
+use crate::helper::ColumnValues;
+use crate::logger;
 use crate::price_scraper;
+use crate::settings::Settings2;
 use crate::structs::GlobleError;
-use crate::structs::OrderItem;
+use crate::structs::Order;
 use crate::structs::Settings;
 use crate::wfm_client;
-use std::collections::HashMap;
-use std::collections::HashSet;
-use std::fs;
-use std::path::Path;
-use std::path::PathBuf;
-
 use polars::prelude::*;
-use std::error::Error;
-use std::fs::File;
+use serde_json::json;
+use std::collections::HashSet;
+use tauri::Manager;
+use tokio::sync::Mutex;
 extern crate csv;
-use serde::de::DeserializeOwned;
-use serde_json::from_str;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc,
 };
 use std::time::Duration;
-use tauri::Window;
 
 // Structs for the Warframe Market API
 
@@ -43,196 +42,59 @@ impl LiveScraper {
         }
     }
 
-    pub fn start_loop(&mut self, token: String, settings: Settings) -> Result<(), GlobleError> {
-        println!("Start loop live scraper");
+    pub fn start_loop(
+        &mut self,
+        token: String,
+        settings: Settings,
+    ) -> Result<(), GlobleError> {
         self.token = token;
-        self.settings = Some(settings);
         self.in_game_name = self.settings.as_ref().unwrap().in_game_name.clone();
 
         self.is_running.store(true, Ordering::SeqCst);
         let is_running = Arc::clone(&self.is_running);
-
+        let forced_stop = Arc::clone(&self.is_running);
         let scraper = self.clone();
+
         tauri::async_runtime::spawn(async move {
             // A loop that takes output from the async process and sends it
             // to the webview via a Tauri Event
-            while is_running.load(Ordering::SeqCst) {
-                println!("Loop live scraper is running...");
+            logger::info_con("LiveScraper", "Loop live scraper is started");
+            match scraper.delete_all_orders().await {
+                Ok(_) => {
+                    logger::info_con("LiveScraper:DeleteAllOrders", "Delete all orders success");
+                }
+                Err(e) => {
+                    logger::error_con("LiveScraper:DeleteAllOrders", format!("{:?}", e).as_str());
+                    helper::send_message_to_window(
+                        "live_scraper_error",
+                        Some(json!({ "error": format!("{:?}", e) })),
+                    );
+
+                    forced_stop.store(false, Ordering::SeqCst);
+                    eprint!("{:?}", e);
+                }
+            }
+
+            while is_running.load(Ordering::SeqCst) && forced_stop.load(Ordering::SeqCst) {
+                logger::info_con("LiveScraper", "Loop live scraper is running...");
                 match scraper.run().await {
                     Ok(_) => {}
                     Err(e) => {
-                        println!("Error: {:?}", e);
+                        logger::error_con("LiveScraper", format!("{:?}", e).as_str());
+                        helper::send_message_to_window(
+                            "live_scraper_error",
+                            Some(json!({ "error": format!("{:?}", e) })),
+                        );
+
+                        forced_stop.store(false, Ordering::SeqCst);
+                        eprint!("{:?}", e);
                     }
                 }
                 tokio::time::sleep(Duration::from_secs(1)).await;
             }
+            logger::info_con("LiveScraper", "Loop live scraper is stopped");
         });
         Ok(())
-    }
-
-    pub fn dump_dataframe(&self, df: &DataFrame, name: &str) -> Result<(), GlobleError> {
-        let mut log_path = PathBuf::from("logs");
-        // Create the directory if it does not exist
-        if !log_path.exists() {
-            fs::create_dir_all(&log_path)?;
-        }
-        log_path.push(name);
-        let mut output_file: File = File::create(log_path).unwrap();
-
-        // Write the DataFrame to a CSV file
-        CsvWriter::new(&mut output_file)
-            .finish(&mut df.clone())
-            .unwrap();
-        Ok(())
-    }
-
-    fn get_sell_map_by_ordre_type(
-        &self,
-        df_filtered: &DataFrame,
-        unique_names: &[&str],
-        order_type: &str,
-        col_name: &str,
-    ) -> Result<Vec<f64>, GlobleError> {
-        let sell_df = df_filtered
-            .clone()
-            .lazy()
-            .filter(col("order_type").eq(lit(order_type)))
-            .collect()?;
-
-        // Create a HashMap to map names to min_sell values
-        let mut min_sell_map = HashMap::new();
-        for name in unique_names.iter() {
-            let filtered_sell_df = sell_df
-                .clone()
-                .lazy()
-                .filter(col("name").eq(lit(*name)))
-                .select(&[col(col_name)])
-                .collect()?;
-
-            if let Ok(min_price_series) = filtered_sell_df.column(col_name) {
-                if let Ok(min_price_array) = min_price_series.f64() {
-                    if let Some(min_price) = min_price_array.get(0) {
-                        min_sell_map.insert(*name, min_price);
-                    }
-                }
-            }
-        }
-        let min_sell_values = unique_names
-            .iter()
-            .map(|name| *min_sell_map.get(name).unwrap_or(&f64::NAN))
-            .collect::<Vec<_>>();
-        Ok(min_sell_values)
-    }
-
-    fn get_week_increase(&self, df: &DataFrame, row_name: &str) -> Result<f64, GlobleError> {
-        // Filter the pre-filtered DataFrame based on the "name"
-        let week_df = df
-            .clone()
-            .lazy()
-            .filter(col("name").eq(lit(row_name)))
-            .select(&[col("avg_price")])
-            .collect()?;
-
-        // Assuming the filtered DataFrame has at least 7 rows
-        if week_df.height() >= 7 {
-            let first_avg_price_series = week_df.column("avg_price")?;
-            let first_avg_price_array = first_avg_price_series.f64()?;
-            let first_avg_price = first_avg_price_array.get(0).unwrap(); // Now a f64
-
-            let seventh_avg_price_series = week_df.column("avg_price")?;
-            let seventh_avg_price_array = seventh_avg_price_series.f64()?;
-            let seventh_avg_price = seventh_avg_price_array.get(6).unwrap(); // Now a f64
-
-            let change = first_avg_price - seventh_avg_price;
-            Ok(change)
-        } else {
-            Ok(0.0)
-        }
-    }
-
-    fn combine_column(
-        &self,
-        df_filter: &DataFrame,
-        names: &[String],
-        col_name: &str,
-    ) -> Result<Vec<Option<f64>>, GlobleError> {
-        // Convert the DataFrame to a Lazy DataFrame
-        let lazy_df_filter = df_filter.clone().lazy();
-
-        // Create a mutable HashMap to store the volume values
-        let mut closed_vol_map = HashMap::new();
-
-        // Iterate through the names and fetch the volume for each
-        for name in names {
-            let name_str = name.to_string();
-            // Clone the Lazy DataFrame for each iteration
-            let lazy_df_clone = lazy_df_filter.clone();
-            let filtered_df = lazy_df_clone
-                .filter(col("name").eq(lit(name_str.clone())))
-                .collect()?;
-            let volume_series = filtered_df.column(col_name)?;
-            let volume_array = volume_series.f64()?;
-            let volume_value = volume_array.get(0);
-            closed_vol_map.insert(name_str, volume_value);
-        }
-
-        // Create a Vec from the HashMap, preserving the order of the original `names`
-        let closed_vol_values: Vec<Option<f64>> = names
-            .iter()
-            .map(|name| *closed_vol_map.get(name).unwrap_or(&None))
-            .collect();
-
-        Ok(closed_vol_values)
-    }
-
-    pub fn get_itemid_byurl(&self, url_name: &str) -> Result<String, GlobleError> {
-        let df = price_scraper::get_price_historys()?;
-        let item_id_column = df
-            .clone()
-            .lazy()
-            .filter(col("name").eq(lit(url_name)))
-            .select(&[col("item_id")])
-            .collect()?;
-
-        let volume_series = item_id_column.column("item_id")?;
-        let volume_array = volume_series.utf8()?;
-        let volume_value = volume_array.get(0).unwrap_or("");
-        Ok(volume_value.to_string())
-    }
-    pub fn get_item_avg_price(
-        &self,
-        buy_sell_overlap: &DataFrame,
-        url_name: &str,
-    ) -> Result<f64, GlobleError> {
-        let item_id_column = buy_sell_overlap
-            .clone()
-            .lazy()
-            .filter(col("name").eq(lit(url_name)))
-            .select(&[col("closedAvg")])
-            .collect()?;
-
-        let volume_series = item_id_column.column("closedAvg")?;
-        let volume_array = volume_series.f64()?;
-        let volume_value = volume_array.get(0).unwrap_or(0.0);
-        Ok(volume_value)
-    }
-
-    pub fn get_item_rank(
-        &self,
-        buy_sell_overlap: &DataFrame,
-        url_name: &str,
-    ) -> Result<Option<f64>, GlobleError> {
-        let item_id_column = buy_sell_overlap
-            .clone()
-            .lazy()
-            .filter(col("name").eq(lit(url_name)))
-            .select(&[col("mod_rank")])
-            .collect()?;
-
-        let volume_series = item_id_column.column("mod_rank")?;
-        let volume_array = volume_series.f64()?;
-        let volume_value = volume_array.get(0);
-        Ok(volume_value)
     }
 
     pub fn stop_loop(&self) {
@@ -244,22 +106,90 @@ impl LiveScraper {
         self.is_running.load(Ordering::SeqCst)
     }
 
+    /// Returns the percentage increase or decrease in median price for the given row name over the past week.
+    /// The `df` argument is a DataFrame containing the relevant data.
+    /// The `row_name` argument is a string representing the name of the row to calculate the increase for.
+    /// The DataFrame is pre-filtered based on "order_type" == "closed" and "name" == `row_name`.
+    /// The DataFrame is then sorted by the "datetime" column and the median price for the past week is calculated.
+    /// If the filtered DataFrame has at least 7 rows, the percentage change in median price is calculated and returned.
+    /// If the filtered DataFrame has less than 7 rows, 0.0 is returned.
+    fn get_week_increase(&self, df: &DataFrame, row_name: &str) -> Result<f64, GlobleError> {
+        // Pre-filter DataFrame based on "order_type" == "closed"
+        let week_df = df
+            .clone()
+            .lazy()
+            .filter(
+                col("order_type")
+                    .eq(lit("closed"))
+                    .and(col("name").eq(lit(row_name))),
+            )
+            .collect()?;
+
+        // Sort the DataFrame by "datetime" column
+        let week_df = helper::sort_dataframe(week_df, "datetime", true)?;
+
+        // Assuming the filtered DataFrame has at least 7 rows
+        if week_df.height() >= 7 {
+            let avg_price_series = week_df.column("median")?;
+            let avg_price_array = avg_price_series.f64()?;
+            let first_avg_price = avg_price_array.get(0).unwrap(); // Now a f64
+            let last_avg_price = avg_price_array.get(6).unwrap(); // Now a f64
+
+            let change = first_avg_price - last_avg_price;
+            Ok(change)
+        } else {
+            Ok(0.0)
+        }
+    }
+
+    pub async fn delete_all_orders(&self) -> Result<(), GlobleError> {
+        let (current_buy_orders_df, current_sell_orders_df) =
+            wfm_client::get_ordres_data_frames(&self.token, &self.in_game_name).await?;
+
+        let buy_ids = match helper::get_column_values(
+            current_buy_orders_df.clone(),
+            None,
+            "id",
+            helper::ColumnType::String,
+        )? {
+            helper::ColumnValues::String(values) => values,
+            _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+        };
+        let sell_ids = match helper::get_column_values(
+            current_sell_orders_df.clone(),
+            None,
+            "id",
+            helper::ColumnType::String,
+        )? {
+            helper::ColumnValues::String(values) => values,
+            _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+        };
+        // Combine buy and sell ids
+        let mut ids = buy_ids.clone();
+        ids.extend(sell_ids);
+
+        // Delete all orders
+        for id in ids {
+            // println!("Deleting order: {}", id);
+            wfm_client::delete_order(&self.token, &id, "None", "None", "Any").await?;
+        }
+        Ok(())
+    }
+
     pub fn get_buy_sell_overlap(&self) -> Result<DataFrame, GlobleError> {
+        println!("{:?}", self.settings.as_ref().unwrap());
         let df = price_scraper::get_price_historys()?;
-        // Load the settings from the config file
         let volume_threshold = self.settings.as_ref().unwrap().volume_threshold;
         let range_threshold = self.settings.as_ref().unwrap().range_threshold;
         let avg_price_cap = self.settings.as_ref().unwrap().avg_price_cap;
         let price_shift_threshold = self.settings.as_ref().unwrap().price_shift_threshold;
-
-        // Drop the "datetime" and "item_id" columns
-        let averaged_df = df.drop("datetime")?.drop("item_id")?;
-
-        // Create a lazy DataFrame
-        let lazy_df = averaged_df.lazy();
+        let strict_whitelist = self.settings.as_ref().unwrap().strict_whitelist;
+        let whitelist = self.settings.as_ref().unwrap().whitelist.clone();
 
         // Group by the "name" and "order_type" columns, and compute the mean of the other columns
-        let averaged_df = lazy_df
+        let mut averaged_df = df
+            .clone()
+            .lazy()
             .groupby(&["name", "order_type"])
             .agg(&[
                 // List the other columns you want to average
@@ -270,45 +200,39 @@ impl LiveScraper {
                 col("median").mean().alias("median"),
                 col("avg_price").mean().alias("avg_price"),
                 col("mod_rank").mean().alias("mod_rank"),
+                col("item_id").first().alias("item_id"),
             ])
             .collect()?;
-        
-        // Call the database to get the inventory names
-        let inventory_names = match database::get_inventory_names() {
-            Ok(names) => names,
-            Err(e) => {
-                println!("Error: {}", e);
-                return Ok(averaged_df);
-            }
-        };
-        let name_expr = inventory_names
+
+        logger::log_dataframe(&mut averaged_df, "live_scraper_averaged_df.csv");
+
+        // Call the database to get the inventory names and DataFrame
+        let inventory_names = database::get_inventory_names()?;
+        let inventory_names_s = Series::new("desired_column_name", inventory_names);
+
+        // Filters the DataFrame based on the given predicates and returns a new DataFrame.
+        // The `volume_threshold` and `range_threshold` arguments are used to filter by volume and range.
+        // The `inventory_names_s` argument is used to filter by name.
+        // The `closed` order type is used to filter by order type.
+        let filtered_df = averaged_df
             .clone()
-            .into_iter()
-            .map(|name| col("name").eq(lit(name)))
-            .fold(lit(false), |acc, x| acc.or(x));
-
-        let mask = (col("volume")
-            .gt(lit(volume_threshold))
-            .and(col("range").gt(lit(range_threshold))))
-        .or(name_expr)
-        .and(col("order_type").eq(lit("closed")));
-
-        let filtered_df = averaged_df.clone().lazy().filter(mask).collect().unwrap();
-
-        // Sort by "range" in descending order
-        let mut sorted_df = filtered_df
             .lazy()
-            .sort(
-                "range",
-                SortOptions {
-                    descending: true,
-                    nulls_last: false,
-                    multithreaded: false,
-                },
+            .filter(
+                col("order_type").eq(lit("closed")).and(
+                    col("volume")
+                        .gt(lit(volume_threshold))
+                        .and(col("range").gt(lit(range_threshold)))
+                        .or(col("name").is_in(lit(inventory_names_s.clone()))),
+                ),
             )
             .collect()?;
 
-        if sorted_df.height() == 0 {
+        // Sort by "range" in descending order
+        let mut filtered_df = helper::sort_dataframe(filtered_df, "range", true)?;
+        logger::log_dataframe(&mut filtered_df, "live_scraper_filtered_df.csv");
+
+        // If the DataFrame is empty, return an empty DataFrame
+        if filtered_df.height() == 0 {
             return Ok(DataFrame::new(vec![
                 Series::new("name", &[] as &[&str]),
                 Series::new("minSell", &[] as &[f64]),
@@ -325,377 +249,111 @@ impl LiveScraper {
             ])?);
         }
 
-        // Pre-filter DataFrame based on "order_type" == "closed"
-        let closed_df = price_scraper::get_price_historys()?
-            .lazy()
-            .filter(col("order_type").eq(lit("closed")))
-            .collect()?;
+        // Get the "name" column from the DataFrame
+        let name_column = filtered_df.column("name")?;
 
-        let name_column = sorted_df.column("name")?;
+        // Create a new Series with the calculated week price shifts
         let week_price_shifts: Vec<f64> = name_column
             .utf8()?
             .into_iter()
             .filter_map(|opt_name| {
-                opt_name.map(|name| self.get_week_increase(&closed_df, name).unwrap_or(0.0))
+                opt_name.map(|name| self.get_week_increase(&df, name).unwrap_or(0.0))
             })
             .collect();
 
-        // Create a new Series with the calculated week price shifts
-        let week_price_shift_series = Series::new("weekPriceShift", week_price_shifts);
-        let sorted_df = sorted_df.with_column(week_price_shift_series).cloned()?;
+        let mut filtered_df = filtered_df
+            .with_column(Series::new("weekPriceShift", week_price_shifts))
+            .cloned()?;
+        logger::log_dataframe(&mut filtered_df, "live_scraper_weekPriceShift.csv");
 
-        let inventory_names_clone = inventory_names.clone(); // Clone the vector
-
-        let inventory_names_expr = inventory_names_clone
-            .iter()
-            .map(|name| col("name").eq(lit(name.as_str())))
-            .fold(lit(false), |acc, x| acc.or(x));
-
-        let filter_condition = (col("avg_price")
-            .lt(lit(avg_price_cap))
-            .and(col("weekPriceShift").gt_eq(lit(price_shift_threshold))))
-        .or(inventory_names_expr);
-        let df_filter = sorted_df.lazy().filter(filter_condition).collect()?;
-
-        let names = df_filter
-            .column("name")?
-            .utf8()?
-            .into_iter()
-            .filter_map(|opt_name| opt_name)
-            .collect::<HashSet<_>>();
-
-        let names_set: HashSet<String> = names.into_iter().map(|name| name.to_string()).collect();
-        let name_column = averaged_df.column("name")?.utf8()?;
-        let mask: BooleanChunked = name_column
-            .into_iter()
-            .map(|name| name.map(|n| names_set.contains(n)).unwrap_or(false))
-            .collect();
-
-        let df_filtered = averaged_df.filter(&mask)?;
-
-        if df_filtered.column("name")?.unique()?.len() == 0 {
-            return Ok(DataFrame::new(vec![
-                Series::new("name", &[] as &[&str]),
-                Series::new("minSell", &[] as &[f64]),
-                Series::new("maxBuy", &[] as &[f64]),
-                Series::new("overlap", &[] as &[f64]),
-                Series::new("closedVol", &[] as &[f64]),
-                Series::new("closedMin", &[] as &[f64]),
-                Series::new("closedMax", &[] as &[f64]),
-                Series::new("closedAvg", &[] as &[f64]),
-                Series::new("closedMedian", &[] as &[f64]),
-                Series::new("priceShift", &[] as &[f64]),
-                Series::new("mod_rank", &[] as &[i32]),
-                Series::new("item_id", &[] as &[&str]),
-            ])?);
+        // Handle the whitelist if it is strict or not
+        let whitelist_s = Series::new("whitelist", whitelist);
+        if strict_whitelist {
+            filtered_df = filtered_df
+                .lazy()
+                .filter(col("name").is_in(lit(whitelist_s)))
+                .collect()?;
+        } else {
+            filtered_df = filtered_df
+                .lazy()
+                .filter(
+                    col("avg_price")
+                        .lt(lit(avg_price_cap))
+                        .and(col("weekPriceShift").gt_eq(lit(price_shift_threshold)))
+                        .or(col("name").is_in(lit(inventory_names_s)))
+                        .or(col("name").is_in(lit(whitelist_s))),
+                )
+                .collect()?;
         }
 
-        let unique_names = df_filter
-            .column("name")?
-            .utf8()?
-            .into_iter()
-            .filter_map(|opt_name| opt_name)
-            .collect::<HashSet<_>>()
-            .into_iter()
-            .collect::<Vec<_>>();
+        // Extract unique names from filtered_df into a HashSet
+        let name_set: HashSet<String> = HashSet::from_iter(
+            match helper::get_column_values(filtered_df.clone(), None, "name", ColumnType::String)?
+            {
+                ColumnValues::String(values) => values,
+                _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+            },
+        );
+        let unique_names = name_set.into_iter().collect::<Vec<_>>();
 
         let unique_names_series = Series::new("name", unique_names.clone());
+        let mut df_filtered = averaged_df
+            .clone()
+            .lazy()
+            .filter(col("name").is_in(lit(unique_names_series.clone())))
+            .collect()?;
+        logger::log_dataframe(&mut df_filtered, "live_scraper_dffiltered.csv");
 
-        let mut buy_sell_overlap = DataFrame::new(vec![unique_names_series])?;
+        // Start the creation of the buy_sell_overlap DataFrame
+        let buy_sell_overlap = DataFrame::new(vec![unique_names_series])?;
 
-        let min_sell_values = self.get_sell_map_by_ordre_type(
-            &df_filtered.clone(),
-            &unique_names,
-            "sell",
-            "min_price",
+        // Get Order type "sell" and "buy" into separate DataFrames
+        let mut order_sell_df = helper::filter_and_extract(
+            df_filtered.clone(),
+            Some(col("order_type").eq(lit("sell"))),
+            vec!["name", "min_price"],
         )?;
+        let order_sell_df = order_sell_df.rename("min_price", "minSell")?;
 
-        buy_sell_overlap = buy_sell_overlap
-            .with_column(Series::new("minSell", min_sell_values))?
-            .clone();
-
-        let max_sell_values = self.get_sell_map_by_ordre_type(
-            &df_filtered.clone(),
-            &unique_names,
-            "buy",
-            "max_price",
+        let mut order_buy_df = helper::filter_and_extract(
+            df_filtered.clone(),
+            Some(col("order_type").eq(lit("buy"))),
+            vec!["name", "max_price"],
         )?;
+        let order_buy_df = order_buy_df.rename("max_price", "maxBuy")?;
 
-        buy_sell_overlap = buy_sell_overlap
-            .with_column(Series::new("maxBuy", max_sell_values))?
-            .clone();
+        // Remove unnecessary columns
+        let filtered_df = filtered_df.drop_many(&["range", "order_type"]);
 
-        let max_buy = buy_sell_overlap.column("maxBuy")?.f64()?;
-        let min_sell = buy_sell_overlap.column("minSell")?.f64()?;
-
-        // We need to make sure both ChunkedArrays are of the same type to perform arithmetic
-        let overlap: ChunkedArray<Float64Type> = max_buy
-            .into_iter()
-            .zip(min_sell.into_iter())
-            .map(|(max, min)| match (max, min) {
-                (Some(max), Some(min)) => Some(max - min),
-                _ => None, // Handle NaN or missing values as you see fit
-            })
-            .collect();
-
-        let overlap_series = Series::new("overlap", overlap);
-
-        // Add the new "overlap" column to the DataFrame
-        let buy_sell_overlap = buy_sell_overlap.with_column(overlap_series)?;
-
-        // ----------------------------------------------------------------
-        let names = buy_sell_overlap
-            .column("name")?
-            .utf8()?
-            .into_iter()
-            .filter_map(|opt_name| opt_name.map(|name| name.to_string()))
-            .collect::<Vec<_>>();
-
-        // Add the new "closedVol" column to the DataFrame
-        let buy_sell_overlap = buy_sell_overlap.with_column(Series::new(
-            "closedVol",
-            self.combine_column(&df_filter, &names, "volume")?,
-        ))?;
-        let buy_sell_overlap = buy_sell_overlap.with_column(Series::new(
-            "closedMin",
-            self.combine_column(&df_filter, &names, "min_price")?,
-        ))?;
-        let buy_sell_overlap = buy_sell_overlap.with_column(Series::new(
-            "closedMax",
-            self.combine_column(&df_filter, &names, "max_price")?,
-        ))?;
-        let buy_sell_overlap = buy_sell_overlap.with_column(Series::new(
-            "closedAvg",
-            self.combine_column(&df_filter, &names, "avg_price")?,
-        ))?;
-        let buy_sell_overlap = buy_sell_overlap.with_column(Series::new(
-            "closedMedian",
-            self.combine_column(&df_filter, &names, "median")?,
-        ))?;
-        let buy_sell_overlap = buy_sell_overlap.with_column(Series::new(
-            "priceShift",
-            self.combine_column(&df_filter, &names, "weekPriceShift")?,
-        ))?;
-        let buy_sell_overlap = buy_sell_overlap.with_column(Series::new(
-            "mod_rank",
-            self.combine_column(&df_filter, &names, "mod_rank")?,
-        ))?;
-
+        // Join the DataFrames together
         let buy_sell_overlap = buy_sell_overlap
-            .with_column(self.add_item_ids(&df.clone(), &mut buy_sell_overlap.clone())?)?;
-        Ok(buy_sell_overlap.clone())
-    }
-    fn add_item_ids(
-        &self,
-        df: &DataFrame,
-        buy_sell_overlap: &DataFrame,
-    ) -> Result<Series, GlobleError> {
-        // Assuming "name" is of type String
-        // Assuming "name" is of type String
-        let names: Vec<String> = buy_sell_overlap
-            .column("name")?
-            .utf8()?
-            .into_iter()
-            .filter_map(|name| name.map(|n| n.to_string()))
-            .collect();
+            .inner_join(&order_sell_df, ["name"], ["name"])?
+            .inner_join(&order_buy_df, ["name"], ["name"])?
+            .inner_join(&filtered_df, ["name"], ["name"])?;
 
-        let mut item_id_values: Vec<Option<String>> = Vec::new();
-
-        for name in &names {
-            // Create the filter expression
-            let filter_expr = col("name").eq(lit(name.to_owned()));
-
-            // Apply the filter and collect the result
-            let filtered_df = df
-                .clone()
-                .lazy()
-                .filter(filter_expr)
-                .select(&[col("item_id")])
-                .collect()?;
-
-            // Extract the value from the DataFrame
-            let item_id_value = filtered_df
-                .column("item_id")?
-                .utf8()?
-                .get(0)
-                .map(|value| value.to_owned());
-
-            // Append to the result vector
-            item_id_values.push(item_id_value);
-        }
-
-        let item_id_series = Series::new("item_id", item_id_values);
-
-        Ok(item_id_series)
-    }
-
-    // Http Request to Warframe Market API
-    pub async fn run(&self) -> Result<(), GlobleError> {
-        let buy_sell_overlap = self.get_buy_sell_overlap()?;
-        self.dump_dataframe(&buy_sell_overlap, "buy_sell_overlap.csv")?;
-
-        // let interesting_items = buy_sell_overlap
-        //     .column("name")?
-        //     .utf8()?
-        //     .into_iter()
-        //     .filter_map(|opt_name| opt_name)
-        //     .collect::<HashSet<_>>();
-
-        // TODO: Remove this
-        //Create a new hash set with the items you want to track
-        let mut interesting_items = HashSet::new();
-        interesting_items.insert("fulmin_prime_set");
-
-        let (mut my_buy_orders_df, my_sell_orders_df) =
-            wfm_client::get_ordres_data_frames(&self.token, &self.in_game_name).await?;
-
-        if my_buy_orders_df.height() != 0 {
-            let closed_avg_series: Result<Vec<_>, polars::prelude::PolarsError> = my_buy_orders_df
-                .column("url_name")?
-                .utf8()?
-                .into_iter()
-                .map(|opt_name| {
-                    opt_name.map_or(Ok(0.0), |name| {
-                        // Clone the DataFrame before using it in the closure
-                        let selected_df = buy_sell_overlap
-                            .clone()
-                            .lazy()
-                            .filter(col("name").eq(lit(name)))
-                            .select(&[col("closedAvg")])
-                            .collect()?;
-                        let buy_selected_df = my_buy_orders_df
-                            .clone()
-                            .lazy()
-                            .filter(col("url_name").eq(lit(name)))
-                            .select(&[col("platinum")])
-                            .collect()?;
-                        let maybe_first_row_df = selected_df.head(Some(1));
-                        let buy_maybe_first_row_df = buy_selected_df.head(Some(1));
-                        // Check if maybe_first_row_df is empty
-                        let (rows, _) = maybe_first_row_df.shape();
-                        if rows == 0 {
-                            return Ok(0.0);
-                        } else {
-                            let closed_avg = maybe_first_row_df
-                                .column("closedAvg")?
-                                .f64()?
-                                .get(0)
-                                .unwrap_or(0.0);
-
-                            let platinum = buy_maybe_first_row_df
-                                .column("platinum")?
-                                .i64()?
-                                .get(0)
-                                .unwrap_or(0);
-                            return Ok(closed_avg - platinum as f64);
-                        }
-                    })
-                })
-                .collect();
-            let closed_avg_series = closed_avg_series?;
-            let potential_profit_series = Series::new("potential_profit", closed_avg_series);
-            my_buy_orders_df = my_buy_orders_df
-                .with_column(potential_profit_series)
-                .cloned()?;
-        }
-        self.dump_dataframe(&my_buy_orders_df, "my_buy_orders_df.csv")?;
-        self.dump_dataframe(&my_sell_orders_df, "my_sell_orders_df.csv")?;
-
-        let inventorys =
-            database::get_inventorys("SELECT * FROM Inventorys WHERE owned > 0").await?;
-        // Loop through all to all interesting items
-        for item in interesting_items {
-            if self.is_running() == false {
-                break;
-            }
-            let item_orders_df = wfm_client::get_ordres_by_item(&self.token, item).await?;
-            // // Check if item_orders_df is empty and skip if it is
-            if item_orders_df.height() == 0 {
-                continue;
-            }
-            let item_id = self.get_itemid_byurl(item)?;
-            let item_rank = self.get_item_rank(&buy_sell_overlap, item)?;
-
-            let asd = self
-                .compare_live_orders_when_buying(
-                    &item,
-                    &buy_sell_overlap,
-                    &my_buy_orders_df,
-                    &item_orders_df,
-                    &item_id,
-                    item_rank,
-                )
-                .await?;
-
-            self.dump_dataframe(&item_orders_df, &format!("interesting_item_{}.csv", item))?;
-        }
-        Ok(())
-    }
-
-    pub async fn restructure_live_order_df(
-        &self,
-        live_item_orders: &DataFrame,
-        in_game_name: &str,
-    ) -> Result<(DataFrame, DataFrame, i64, i64, i64), GlobleError> {
-        let buy_orders_df = live_item_orders
+        // Calculate the overlap
+        let mut buy_sell_overlap: DataFrame = buy_sell_overlap
             .clone()
             .lazy()
-            .filter(
-                col("username")
-                    .neq(lit(in_game_name))
-                    .and(col("order_type").eq(lit("buy"))), // Add this line
-            )
-            .sort(
-                "platinum",
-                SortOptions {
-                    descending: false,
-                    nulls_last: false,
-                    multithreaded: false,
-                },
-            )
+            .fill_nan(lit(0.0).alias("maxBuy"))
+            .fill_nan(lit(0.0).alias("minSell"))
+            .with_column((col("maxBuy") - col("minSell")).alias("overlap"))
             .collect()?;
 
-        let sell_orders_df = live_item_orders
-            .clone()
-            .lazy()
-            .filter(
-                col("username")
-                    .neq(lit(in_game_name))
-                    .and(col("order_type").eq(lit("sell"))), // Add this line
-            )
-            .sort(
-                "platinum",
-                SortOptions {
-                    descending: true,
-                    nulls_last: false,
-                    multithreaded: false,
-                },
-            )
-            .collect()?;
+        // Rename the columns
+        let buy_sell_overlap = buy_sell_overlap
+            .rename("volume", "closedVol")?
+            .rename("min_price", "closedMin")?
+            .rename("max_price", "closedMax")?
+            .rename("avg_price", "closedAvg")?
+            .rename("median", "closedMedian")?
+            .rename("weekPriceShift", "priceShift")?;
 
-        let mut lowest_price = 0;
-        let mut highest_price = 0;
-
-        let buyers = buy_orders_df.height() as i64;
-        let sellers = sell_orders_df.height() as i64;
-
-        if buyers > 0 {
-            lowest_price = buy_orders_df.column("platinum")?.i64()?.get(0).unwrap_or(0);
-        }
-
-        if sellers > 0 {
-            highest_price = sell_orders_df
-                .column("platinum")?
-                .i64()?
-                .get(0)
-                .unwrap_or(0);
-        }
-
-        let range = highest_price - lowest_price;
-        // new DataFrame
-        Ok((buy_orders_df, sell_orders_df, buyers, sellers, range))
+        logger::log_dataframe(buy_sell_overlap, "live_scraper_buy_sell_overlap.csv");
+        return Ok(buy_sell_overlap.clone());
     }
-    pub async fn get_my_order_information(
+
+    async fn get_my_order_information(
         &self,
         item_name: &str,
         df: &DataFrame,
@@ -705,143 +363,663 @@ impl LiveScraper {
             .lazy()
             .filter(col("url_name").eq(lit(item_name)))
             .collect()?;
-
         let id: Option<String> = None;
         let visibility = false;
         let price = 0;
         if orders_by_item.height() == 0 {
             return Ok((id, visibility, price, false));
         }
+        let id =
+            match helper::get_column_value(orders_by_item.clone(), None, "id", ColumnType::String)?
+            {
+                ColumnValue::String(values) => values,
+                _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+            };
 
-        let id = orders_by_item
-            .column("id")?
-            .utf8()?
-            .get(0)
-            .map(|x| x.to_owned());
-        let visibility = orders_by_item
-            .column("visible")?
-            .bool()?
-            .get(0)
-            .unwrap_or(false);
-        let price = orders_by_item
-            .column("platinum")?
-            .i64()?
-            .get(0)
-            .unwrap_or(0);
-        // new DataFrame
+        let visibility = match helper::get_column_value(
+            orders_by_item.clone(),
+            None,
+            "visible",
+            ColumnType::Bool,
+        )? {
+            ColumnValue::Bool(values) => values.unwrap_or(false),
+            _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+        };
+
+        let price: i64 = match helper::get_column_value(
+            orders_by_item.clone(),
+            None,
+            "platinum",
+            ColumnType::I64,
+        )? {
+            ColumnValue::I64(values) => values.unwrap_or(0),
+            _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+        };
         Ok((id.clone(), visibility, price, true))
     }
 
-    pub async fn compare_live_orders_when_buying(
+    async fn restructure_live_order_df(
+        &self,
+        item_live_orders_df: &DataFrame,
+        in_game_name: &str,
+    ) -> Result<(DataFrame, DataFrame, i64, i64, i64), GlobleError> {
+        let buy_orders_df = item_live_orders_df
+            .clone()
+            .lazy()
+            .filter(
+                col("username")
+                    .neq(lit(in_game_name))
+                    .and(col("order_type").eq(lit("buy"))), // Add this line
+            )
+            .collect()?;
+        let buy_orders_df = helper::sort_dataframe(buy_orders_df, "platinum", true)?;
+
+        let sell_orders_df = item_live_orders_df
+            .clone()
+            .lazy()
+            .filter(
+                col("username")
+                    .neq(lit(in_game_name))
+                    .and(col("order_type").eq(lit("sell"))), // Add this line
+            )
+            .collect()?;
+        let sell_orders_df = helper::sort_dataframe(sell_orders_df, "platinum", false)?;
+
+        let mut lowest_price = 0;
+        let mut highest_price = 0;
+
+        let buyers = buy_orders_df.height() as i64;
+        let sellers = sell_orders_df.height() as i64;
+        if buyers > 0 {
+            lowest_price = match helper::get_column_value(
+                buy_orders_df.clone(),
+                None,
+                "platinum",
+                ColumnType::I64,
+            )? {
+                ColumnValue::I64(values) => values.unwrap_or(0),
+                _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+            };
+        }
+
+        if sellers > 0 {
+            highest_price = match helper::get_column_value(
+                sell_orders_df.clone(),
+                None,
+                "platinum",
+                ColumnType::I64,
+            )? {
+                ColumnValue::I64(values) => values.unwrap_or(0),
+                _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+            };
+        }
+        let range = highest_price - lowest_price;
+        Ok((buy_orders_df, sell_orders_df, buyers, sellers, range))
+    }
+
+    fn knapsack(
+        &self,
+        items: Vec<(i64, f64, String, String)>,
+        max_weight: i64,
+    ) -> Result<
+        (
+            i64,
+            Vec<(i64, f64, String, String)>,
+            Vec<(i64, f64, String, String)>,
+        ),
+        GlobleError,
+    > {
+        let n = items.len();
+        let mut dp = vec![vec![0; (max_weight + 1) as usize]; (n + 1) as usize];
+
+        for i in 1..=n {
+            for w in 1..=max_weight {
+                let (weight, value, _, _) = items[i - 1];
+                if weight <= w {
+                    dp[i][w as usize] =
+                        dp[i - 1][w as usize].max(dp[i - 1][(w - weight) as usize] + value as i64);
+                } else {
+                    dp[i][w as usize] = dp[i - 1][w as usize];
+                }
+            }
+        }
+
+        let mut selected_items = Vec::new();
+        let mut unselected_items = Vec::new();
+        let mut w = max_weight;
+        for i in (0..n).rev() {
+            if dp[i + 1][w as usize] != dp[i][w as usize] {
+                selected_items.push(items[i].clone());
+                w -= items[i].0;
+            } else {
+                unselected_items.push(items[i].clone());
+            }
+        }
+
+        Ok((dp[n][max_weight as usize], selected_items, unselected_items))
+    }
+
+    async fn compare_live_orders_when_buying(
         &self,
         item_name: &str,
-        buy_sell_overlap: &DataFrame,
-        my_current_orders: &DataFrame,
-        live_item_orders: &DataFrame,
         item_id: &str,
         item_rank: Option<f64>,
+        current_orders: DataFrame,
+        item_live_orders_df: &DataFrame,
+        item_stats: &DataFrame,
+        inventory_df: &DataFrame,
     ) -> Result<Option<DataFrame>, GlobleError> {
+        let mut current_orders = current_orders.clone();
+        let avg_price_cap = self.settings.as_ref().unwrap().avg_price_cap;
+        let max_total_price_cap = self.settings.as_ref().unwrap().max_total_price_cap;
+        // Get the current orders for the item from the Warframe Market API
         let (order_id, visibility, price, active) = self
-            .get_my_order_information(item_name, my_current_orders)
+            .get_my_order_information(item_name, &current_orders)
             .await?;
-
-        // TODO: Delete this
-        println!(
-            "Id: {:?}, Visibility: {:?}, Price {:?}, Active: {:?}",
-            order_id.unwrap_or("default".to_string()),
-            visibility,
-            price,
-            active
+        logger::debug_file(
+            "LiveScraper",
+            format!(
+                "Name: {}, Order: {}, Visibility: {}, Price: {}, Active: {}",
+                item_name,
+                order_id.clone().unwrap_or("None".to_string()),
+                visibility,
+                price,
+                active
+            )
+            .as_str(),
+            Some("getMyOrderInformation.log"),
         );
 
-        let (mut live_buy_orders_df, live_sell_orders_df, buyers, sellers, price_range) = self
-            .restructure_live_order_df(live_item_orders, &self.in_game_name)
+        // Get all the live orders for the item from the Warframe Market API
+        let (live_buy_orders_df, _live_sell_orders_df, buyers, sellers, price_range) = self
+            .restructure_live_order_df(item_live_orders_df, &self.in_game_name)
             .await?;
 
+        logger::debug_file("LiveScraper",format!("Name: {item_name}, Buyers: {buyers}, Sellers: {sellers}, Price Range: {price_range}").as_str(), Some("restructureLiveOrderDF.log"));
+
+        // Probably don't want to be looking at this item right now if there's literally nobody interested in selling it.
         if sellers == 0 {
             return Ok(None);
         }
-        let item_avg_price = self.get_item_avg_price(buy_sell_overlap, &item_name)?;
-        // TODO: Delete this
-        println!(
-            "Buyers: {:?}, Sellers: {:?}, Price Range {:?}, Item avg price {:?}",
-            buyers, sellers, price_range, item_avg_price
+
+        // Get the average price of the item from the Warframe Market API
+        let item_closed_avg: f64 =
+            match helper::get_column_value(item_stats.clone(), None, "closedAvg", ColumnType::F64)?
+            {
+                ColumnValue::F64(values) => values.unwrap_or(0.0),
+                _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+            };
+
+        logger::debug_file(
+            "LiveScraper",
+            format!(
+                "Name: {item_name}, Buyers: {buyers}, ClosedAvg: {}",
+                item_closed_avg
+            )
+            .as_str(),
+            Some("if_there_are_no_buyers.log"),
         );
+        // If there are no buyers, and the average price is greater than 25p, then we should probably update our listing.
+        if buyers == 0 && item_closed_avg > 25.0 {
+            // If the item is worth more than 40p, then we should probably update our listing.
+            let mut post_price = (price_range - 40).max((price_range / 3) - 1);
 
-        // if buyers == 0 && item_avg_price > 25.0 {
-        //     let mut post_price = (price_range - 40).max((price_range / 3) - 1);
-        //     if price_range > self.settings.as_ref().unwrap().avg_price_cap as i64 {
-        //         println!("Price Range is to high");
-        //         return Ok(None);
-        //     }
-        //     if post_price < 1 {
-        //         post_price = 1;
-        //     }
-        //     if active {
-        //         let updatede_order = wfm_client::update_order_listing(
-        //             &self.token,
-        //             order_id.clone().unwrap().as_str(),
-        //             post_price.clone(),
-        //             1,
-        //             visibility,
-        //         )
-        //         .await?;
-        //     } else {
-        //         let postede_order = wfm_client::post_ordre(
-        //             &self.token,
-        //             item_id,
-        //             "buy",
-        //             post_price.clone(),
-        //             1,
-        //             true,
-        //             item_rank,
-        //         )
-        //         .await?;
-        //     }
-        // } else if buyers == 0 {
-        //     return Ok(None);
-        // }
+            if post_price > avg_price_cap as i64 {
+                logger::info_con("LiveScraper",format!("Item {item_name} is higher than the price cap you set. cap: {avg_price_cap}, post_price: {post_price}").as_str());
+                return Ok(None);
+            }
+            // If the item is worth less than 1p, then we should probably update our listing.
+            if post_price < 1 {
+                post_price = 1;
+            }
+            // If the order is active, then we should update it else we should post a new order.
+            if active {
+                wfm_client::update_order_listing(
+                    self.token.as_str(),
+                    order_id.clone().unwrap().as_str(),
+                    post_price,
+                    1,
+                    visibility,
+                    item_name,
+                    item_id,
+                    "buy",
+                )
+                .await?;
+                return Ok(None);
+            } else {
+                wfm_client::post_ordre(
+                    self.token.as_str(),
+                    item_name,
+                    item_id,
+                    "buy",
+                    post_price,
+                    1,
+                    true,
+                    item_rank,
+                )
+                .await?;
+                logger::info_con("LiveScraper",format!("Automatically Posted Visible Buy Order Item: {item_name}, ItemId: {item_id}, Price: {post_price}").as_str());
+                return Ok(None);
+            }
+        } else if buyers == 0 {
+            return Ok(None);
+        }
 
-        // let post_price_column = live_buy_orders_df
-        //     .clone()
-        //     .lazy()
-        //     .select(&[col("platinum")])
-        //     .collect()?;
-        // let post_price = post_price_column
-        //     .column("platinum")?
-        //     .i64()?
-        //     .get(0)
-        //     .unwrap_or(0);
+        // Get highest buy order price
+        let post_price: i64 = match helper::get_column_value(
+            live_buy_orders_df.clone(),
+            None,
+            "platinum",
+            ColumnType::I64,
+        )? {
+            ColumnValue::I64(values) => values.unwrap_or(0),
+            _ => return Err(GlobleError::OtherError("Expected i64 values".to_string())),
+        };
 
-        // let closed_avg_metric = item_avg_price as i64 - post_price;
+        // Get the average price of the item from the Warframe Market API
+        let closed_avg_metric: f64 =
+            match helper::get_column_value(item_stats.clone(), None, "closedAvg", ColumnType::F64)?
+            {
+                ColumnValue::F64(values) => values.unwrap_or(0.0) - post_price as f64,
+                _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+            };
+        let potential_profit = closed_avg_metric - 1.0;
 
-        // let potential_profit = closed_avg_metric - 1;
+        // Check if the post price is greater than the average price cap and return if it is
+        if post_price > avg_price_cap as i64 {
+            logger::info_con("LiveScraper",format!("Item {item_name} is higher than the price cap you set. cap: {avg_price_cap}, post_price: {post_price}").as_str());
+            return Ok(None);
+        }
+        // Get the owned value from the database
+        let owned: i64 = match helper::get_column_value(
+            inventory_df.clone(),
+            Some(col("item_url").eq(lit(item_name))),
+            "owned",
+            ColumnType::I64,
+        )? {
+            ColumnValue::I64(values) => values.unwrap_or(0),
+            _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+        };
 
-        // if post_price as i32 > self.settings.as_ref().unwrap().avg_price_cap {
-        //     println!("Price Range is to high");
-        //     return Ok(None);
-        // }
-        // if (closed_avg_metric >= 30 && price_range >= 15) || price_range >= 21 {
-        //     if active {
-        //         if price != post_price as i64 {
-        //             let updatede_order = wfm_client::update_order_listing(
-        //                 &self.token,
-        //                 order_id.clone().unwrap().as_str(),
-        //                 post_price,
-        //                 1,
-        //                 visibility,
-        //             )
-        //             .await?;
+        logger::debug_file(
+            "LiveScraper",
+            format!("Name: {item_name}, Owned: {owned}, ClosedAvgMetric: {closed_avg_metric}")
+                .as_str(),
+            Some("68.log"),
+        );
+        if owned > 1 && ((closed_avg_metric as i64) < (25 * owned)) {
+            logger::info_con(
+                "LiveScraper",
+                format!("You're holding too many of this {item_name}! Not putting up a buy order.")
+                    .as_str(),
+            );
+            if active {
+                logger::info_con(
+                    "LiveScraper",
+                    format!("In fact you have a buy order up for this {item_name}! Deleting it.")
+                        .as_str(),
+                );
+                wfm_client::delete_order(
+                    self.token.as_str(),
+                    order_id.clone().unwrap().as_str(),
+                    item_name,
+                    item_id,
+                    "buy",
+                )
+                .await?;
+            }
+            return Ok(None);
+        }
+        logger::debug_file(
+            "LiveScraper",
+            format!("Name: {item_name}, ClosedAvgMetric: {closed_avg_metric}, Price Range: {price_range}")
+                .as_str(),
+            Some("69.log"),
+        );
+        if ((closed_avg_metric as i64) >= 30 && price_range >= 15) || price_range >= 21 {
+            if active {
+                if price != post_price {
+                    wfm_client::update_order_listing(
+                        self.token.as_str(),
+                        order_id.clone().unwrap().as_str(),
+                        post_price,
+                        1,
+                        visibility,
+                        item_name,
+                        item_id,
+                        "buy",
+                    )
+                    .await?;
+                    let df = DataFrame::new(vec![
+                        Series::new("url_name", vec![item_name]),
+                        Series::new("platinum", vec![post_price]),
+                        Series::new("potential_profit", vec![(post_price - price)]),
+                    ])?;
+                    let updatede = current_orders.inner_join(&df, ["url_name"], ["url_name"])?;
+                    return Ok(Some(updatede));
+                } else {
+                    logger::info_con("LiveScraper", format!("Your current (possibly hidden) posting on this item {item_name} for {price} plat is a good one. Recommend to make visible.").as_str());
+                    return Ok(None);
+                }
+            } else {
+                let mut buy_orders_list: Vec<(i64, f64, String, String)> = vec![];
+                // Create a Vec of Tuples from the DataFrame of current orders
+                if current_orders.shape().0 != 0 {
+                    // Convert to Vec of Tuples
+                    let platinum_values = match helper::get_column_values(
+                        current_orders.clone(),
+                        None,
+                        "platinum",
+                        ColumnType::I64,
+                    )? {
+                        ColumnValues::I64(values) => values,
+                        _ => {
+                            return Err(GlobleError::OtherError("Expected f64 values".to_string()))
+                        }
+                    };
+                    let potential_profit_values = match helper::get_column_values(
+                        current_orders.clone(),
+                        None,
+                        "potential_profit",
+                        ColumnType::F64,
+                    )? {
+                        ColumnValues::F64(values) => values,
+                        _ => {
+                            return Err(GlobleError::OtherError("Expected f64 values".to_string()))
+                        }
+                    };
 
-        //         // live_buy_orders_df.clone().lazy().with_column(pl.when(pl.col('email')=='someGivenEmail').then(pl.lit("newValue")).otherwise(pl.col('col1')).alias('col1'))
-        //         } else {
-        //             println!("Price is the same");
-        //         }
-        //     } else {
-        //     }
-        // } else if active {
-        //     let rep = wfm_client::delete_order(&self.token, order_id.unwrap().as_str()).await?;
-        // }
+                    let url_name_values = match helper::get_column_values(
+                        current_orders.clone(),
+                        None,
+                        "url_name",
+                        ColumnType::String,
+                    )? {
+                        ColumnValues::String(values) => values,
+                        _ => {
+                            return Err(GlobleError::OtherError("Expected f64 values".to_string()))
+                        }
+                    };
+                    let id_values = match helper::get_column_values(
+                        current_orders.clone(),
+                        None,
+                        "id",
+                        ColumnType::String,
+                    )? {
+                        ColumnValues::String(values) => values,
+                        _ => {
+                            return Err(GlobleError::OtherError("Expected f64 values".to_string()))
+                        }
+                    };
+                    buy_orders_list = platinum_values
+                        .into_iter()
+                        .zip(potential_profit_values.into_iter())
+                        .zip(url_name_values.into_iter())
+                        .zip(id_values.into_iter())
+                        .map(|(((platinum, profit), url_name), id)| {
+                            (platinum, profit, url_name, id)
+                        })
+                        .collect();
+                }
+                buy_orders_list.append(&mut vec![(
+                    post_price,
+                    potential_profit,
+                    item_name.to_string(),
+                    "".to_string(),
+                )]);
+
+                let (max_profit, selected_buy_orders, unselected_buy_orders) =
+                    self.knapsack(buy_orders_list, max_total_price_cap as i64)?;
+
+                logger::debug_file(
+                    "LiveScraper",
+                    format!(
+                        "Name: {item_name}, MaxProfit: {max_profit}, {:?}, {:?}",
+                        selected_buy_orders, unselected_buy_orders
+                    )
+                    .as_str(),
+                    Some("knapsack.log"),
+                );
+
+                let selected_item_names: Vec<String> = selected_buy_orders
+                    .iter()
+                    .map(|order| order.2.clone())
+                    .collect();
+
+                if selected_item_names.contains(&item_name.to_string()) {
+                    logger::debug_file(
+                        "LiveScraper",
+                        format!(
+                            "Name: {item_name}, MaxProfit: {max_profit}, {:?}, {:?}",
+                            selected_buy_orders, unselected_buy_orders
+                        )
+                        .as_str(),
+                        Some("knapsack2.log"),
+                    );
+                    if !unselected_buy_orders.is_empty() {
+                        let unselected_item_names: Vec<String> = unselected_buy_orders
+                            .iter()
+                            .map(|order| order.2.clone())
+                            .collect();
+
+                        current_orders =
+                            current_orders
+                                .lazy()
+                                .filter(col("url_name").is_in(
+                                    lit(Series::new("url_name", unselected_item_names)).not(),
+                                ))
+                                .collect()?;
+
+                        for unselected_item in &unselected_buy_orders {
+                            wfm_client::delete_order(
+                                &self.token,
+                                unselected_item.3.as_str(),
+                                item_name,
+                                item_id,
+                                "buy",
+                            )
+                            .await?;
+                            logger::debug_con(
+                                "component",
+                                format!(
+                                    "DELETED BUY order for {} since it is not as optimal",
+                                    unselected_item.2
+                                )
+                                .as_str(),
+                            );
+                        }
+                    }
+                    let new_order = wfm_client::post_ordre(
+                        self.token.as_str(),
+                        item_name,
+                        item_id,
+                        "buy",
+                        post_price,
+                        1,
+                        true,
+                        item_rank,
+                    )
+                    .await?;
+                    let current_orders =
+                        self.get_new_buy_data(current_orders.clone(), new_order, item_closed_avg)?;
+                    return Ok(Some(current_orders));
+                } else {
+                    logger::info_con("LiveScraper",format!("Item {item_name} is too expensive or less optimal than current listings").as_str());
+                }
+            }
+        } else if active {
+            logger::info_con("LiveScraper",format!("Item {item_name} Not a good time to have an order up on this item. Deleted buy order for {price}").as_str());
+            wfm_client::delete_order(
+                self.token.as_str(),
+                order_id.clone().unwrap().as_str(),
+                item_name,
+                item_id,
+                "buy",
+            )
+            .await?;
+        }
+
         Ok(None)
+    }
+
+    fn get_new_buy_data(
+        &self,
+        current_orders: DataFrame,
+        order: Order,
+        item_closed_avg: f64,
+    ) -> Result<DataFrame, GlobleError> {
+        let mut order_df = wfm_client::convet_order_to_datafream(order.clone())?;
+        order_df = order_df
+            .with_column(Series::new(
+                "potential_profit",
+                vec![item_closed_avg - order.platinum.clone() as f64],
+            ))
+            .cloned()?
+            .with_column(Series::new("closedAvg", vec![item_closed_avg]))
+            .cloned()?;
+        Ok(helper::merge_dataframes(vec![current_orders, order_df])?)
+    }
+
+    pub async fn run(&self) -> Result<(), GlobleError> {
+        let buy_sell_overlap = self.get_buy_sell_overlap()?;
+        // let state_mutex = &self.app.state::<Mutex<Settings2>>();
+        // let state = state_mutex.lock().await;
+        // // Login logic
+        // // state. = true;
+        // println!("{:?}", state.clone());
+        return Ok(());
+        let inventory_df = database::get_inventory()?;
+        let whitelist = self.settings.as_ref().unwrap().whitelist.clone();
+        // Call the database to get the inventory names
+        let inventory_names = database::get_inventory_names()?;
+
+        // Get interesting items from buy_sell_overlap
+        let interesting_items: Vec<String> = match helper::get_column_values(
+            buy_sell_overlap.clone(),
+            None,
+            "name",
+            ColumnType::String,
+        )? {
+            ColumnValues::String(values) => values,
+            _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+        };
+
+        // Get current orders from Warframe Market Sell and Buy orders
+        let (mut current_buy_orders_df, current_sell_orders_df) =
+            wfm_client::get_ordres_data_frames(&self.token, &self.in_game_name).await?;
+
+        if current_buy_orders_df.shape().0 != 0 {
+            current_buy_orders_df = current_buy_orders_df
+                .lazy()
+                .filter(col("url_name").is_in(lit(Series::new(
+                    "interesting_items",
+                    interesting_items.clone(),
+                ))))
+                .collect()?;
+
+            let order_buy_df = helper::filter_and_extract(
+                buy_sell_overlap.clone(),
+                None,
+                vec!["name", "closedAvg"],
+            )?;
+
+            current_buy_orders_df =
+                current_buy_orders_df.inner_join(&order_buy_df, ["url_name"], ["name"])?;
+
+            current_buy_orders_df = current_buy_orders_df
+                .clone()
+                .lazy()
+                .fill_nan(lit(0.0).alias("closedAvg"))
+                .fill_nan(lit(0.0).alias("platinum"))
+                .with_column((col("closedAvg") - col("platinum")).alias("potential_profit"))
+                .collect()?;
+        }
+
+        // Combine inventory_names and interesting_items and whitelist
+        let all_interesting_items = inventory_names
+            .clone()
+            .into_iter()
+            .chain(interesting_items.clone().into_iter())
+            .chain(whitelist.into_iter())
+            .collect::<HashSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        // Remove duplicates
+        let all_interesting_items: HashSet<String> = HashSet::from_iter(all_interesting_items);
+
+        for item in all_interesting_items {
+            if self.is_running() == false {
+                break;
+            }
+
+            // Debug
+            // if item != "molt_reconstruct" && item != "adaptation" {
+            // if item != "hydroid_prime_set" {
+            //     continue;
+            // }
+
+            // logger::info_con("LiveScraper", format!("Checking item: {item}").as_str());
+
+            let item_live_orders_df = wfm_client::get_ordres_by_item(&self.token, &item).await?;
+            // Check if item_orders_df is empty and skip if it is
+            if item_live_orders_df.height() == 0 {
+                continue;
+            }
+
+            // Check if item is in interesting_items
+            if !interesting_items.contains(&item) {
+                // Add
+                continue;
+            }
+
+            // Get the item_id and item_rank
+            let item_id: String = match helper::get_column_value(
+                buy_sell_overlap.clone(),
+                Some(col("name").eq(lit(item.clone()))),
+                "item_id",
+                ColumnType::String,
+            )? {
+                ColumnValue::String(values) => values.unwrap_or("".to_string()),
+                _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+            };
+
+            let item_rank: Option<f64> = match helper::get_column_value(
+                buy_sell_overlap.clone(),
+                Some(col("name").eq(lit(item.clone()))),
+                "mod_rank",
+                ColumnType::F64,
+            )? {
+                ColumnValue::F64(values) => values,
+                _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+            };
+
+            let item_stats = buy_sell_overlap
+                .clone()
+                .lazy()
+                .filter(col("name").eq(lit(item.clone())))
+                .collect()?;
+
+            self.compare_live_orders_when_buying(
+                &item,
+                &item_id,
+                item_rank,
+                current_buy_orders_df.clone(),
+                &item_live_orders_df,
+                &item_stats,
+                &inventory_df,
+            )
+            .await?;
+        }
+
+        // if current_sell_orders_df.height() != 0 {}
+        logger::log_dataframe(
+            &mut current_buy_orders_df.clone(),
+            "live_scraper_current_buy_orders_df.csv",
+        );
+        logger::log_dataframe(
+            &mut current_sell_orders_df.clone(),
+            "live_scraper_current_sell_orders_df.csv",
+        );
+        Ok(())
     }
 }

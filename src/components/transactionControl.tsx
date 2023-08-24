@@ -8,8 +8,9 @@ import { useWhisperScraperContext } from '../contexts';
 import { useEffect, useState } from 'react';
 import { ButtonProgress } from './buttonProgress';
 import { OffTauriEvent, OnTauriEvent } from '../utils';
+import { useTranslateComponent } from '@hooks/index';
 
-const days = 8;
+const days = 15;
 export const TransactionControl = () => {
   const { isRunning: statsIsRunning, run: runStatsScraper } = useStatsScraperContext();
   const { isRunning: liveIsRunning, toggle: toggleLiveScraper } = useLiveScraperContext();
@@ -39,13 +40,13 @@ export const TransactionControl = () => {
             setPriceScraperProcess(0.1);
             runStatsScraper(days);
           }}
-          max={8}
+          max={10}
           current={price_scraper_process}
           label={useTranslate("price_scraper_start")}
           progressLabel={useTranslate("price_scraper_running")}
         />
         <Button color={liveIsRunning ? "red.7" : "green.7"} leftIcon={<FontAwesomeIcon icon={faDatabase} />} onClick={() => toggleLiveScraper()} disabled={statsIsRunning}>
-          {liveIsRunning ? useTranslate(useTranslate("live_trading_stop")) : useTranslate("live_trading_start")}
+          {liveIsRunning ? useTranslate("live_trading_stop") : useTranslate("live_trading_start")}
         </Button>
         <Button color={whisperIsRunning ? "red.7" : "green.7"} leftIcon={<FontAwesomeIcon icon={faDatabase} />} onClick={() => toggleWhisperScraper()} disabled={statsIsRunning || isWhisperStarting}>
           {whisperIsRunning ? useTranslate("wisper_stop") : useTranslate("wisper_start")}

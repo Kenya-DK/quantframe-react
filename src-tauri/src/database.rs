@@ -1,9 +1,9 @@
 use once_cell::sync::Lazy;
+use polars::prelude::*;
 use rusqlite::Connection;
 use std::sync::Mutex;
-use tauri::Window;
 
-use crate::structs::Invantory;
+use crate::{helper::{self, ColumnType, ColumnValues}, structs::{Invantory}};
 
 pub static DB_PATH: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("".to_string()));
 
@@ -14,36 +14,74 @@ pub fn get_connection() -> rusqlite::Result<Connection> {
 }
 
 pub fn get_inventory_names() -> Result<Vec<String>, rusqlite::Error> {
-    let conn = get_connection().unwrap();
-    let mut stmt = conn
-        .prepare("SELECT item_url FROM Inventorys WHERE owned > 0")
-        .unwrap();
-    let inventory_names: Vec<String> = stmt
-        .query_map([], |row| row.get(0))
-        .unwrap()
-        .map(|item_url| item_url.unwrap())
-        .collect();
-    Ok(inventory_names)
+    let names = match helper::get_column_values(get_inventory()?, Some(col("owned").gt(0)), "item_url", ColumnType::String).expect("") {
+        ColumnValues::String(values) => values,
+        _ => return Err(rusqlite::Error::InvalidQuery),
+    };
+    Ok(names)
 }
 
-pub async fn get_inventorys(sql: &str) -> Result<Vec<Invantory>, rusqlite::Error> {
+pub fn get_inventory() -> Result<DataFrame, rusqlite::Error> {
     let conn = get_connection().unwrap();
-    let mut stmt = conn.prepare(sql)?;
-    let inventorys = stmt.query_map([], |row| {
-        Ok(Invantory {
-            id: row.get(0)?,
-            item_id: row.get(1)?,
-            item_url: row.get(2)?,
-            item_name: row.get(3)?,
-            rank: row.get(4)?,
-            price: row.get(5)?,
-            listed_price: row.get(6)?,
-            owned: row.get(7)?,
-        })
-    })?;
-    let mut inventorys_vec = Vec::new();
-    for inventory in inventorys {
-        inventorys_vec.push(inventory.unwrap());
-    }
-    Ok(inventorys_vec)
+    let inventory_vec: Result<Vec<Invantory>, rusqlite::Error> = conn
+        .prepare("SELECT * FROM Inventorys")?
+        .query_map([], |row| {
+            Ok(Invantory {
+                id: row.get(0)?,
+                item_id: row.get(1)?,
+                item_url: row.get(2)?,
+                item_name: row.get(3)?,
+                rank: row.get(4)?,
+                price: row.get(5)?,
+                listed_price: row.get(6)?,
+                owned: row.get(7)?,
+            })
+        })?
+        .collect();
+    let inventory_vec = inventory_vec?;
+
+    let df = DataFrame::new(vec![
+        Series::new("id", inventory_vec.iter().map(|i| i.id).collect::<Vec<_>>()),
+        Series::new(
+            "item_id",
+            inventory_vec
+                .iter()
+                .map(|i| i.item_id.clone())
+                .collect::<Vec<_>>(),
+        ),
+        Series::new(
+            "item_url",
+            inventory_vec
+                .iter()
+                .map(|i| i.item_url.clone())
+                .collect::<Vec<_>>(),
+        ),
+        Series::new(
+            "item_name",
+            inventory_vec
+                .iter()
+                .map(|i| i.item_name.clone())
+                .collect::<Vec<_>>(),
+        ),
+        Series::new(
+            "rank",
+            inventory_vec.iter().map(|i| i.rank).collect::<Vec<_>>(),
+        ),
+        Series::new(
+            "price",
+            inventory_vec.iter().map(|i| i.price).collect::<Vec<_>>(),
+        ),
+        Series::new(
+            "listed_price",
+            inventory_vec
+                .iter()
+                .map(|i| i.listed_price)
+                .collect::<Vec<_>>(),
+        ),
+        Series::new(
+            "owned",
+            inventory_vec.iter().map(|i| i.owned).collect::<Vec<_>>(),
+        ),
+    ]);
+    Ok(df.unwrap())
 }

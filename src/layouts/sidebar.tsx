@@ -3,18 +3,20 @@ import { ReactNode, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChartSimple, faDesktop, faGlobe, faHome } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateLayout } from "../hooks";
+import { useNavigate } from "react-router-dom";
 
 interface NavbarLinkProps {
   icon: ReactNode;
   label: string;
+  link: string;
   active?: boolean;
-  onClick?(): void;
+  onClick?(url: string): void;
 }
-function NavbarLink({ icon, label, active, onClick }: NavbarLinkProps) {
+function NavbarLink({ link, icon, label, active, onClick }: NavbarLinkProps) {
   const { classes, cx } = useStyles();
   return (
     <Tooltip label={label} position="right" transitionProps={{ duration: 0 }}>
-      <UnstyledButton onClick={onClick} className={cx(classes.link, { [classes.active]: active })}>
+      <UnstyledButton onClick={() => onClick && onClick(link)} className={cx(classes.link, { [classes.active]: active })}>
         {icon}
       </UnstyledButton>
     </Tooltip>
@@ -45,21 +47,25 @@ const useStyles = createStyles((theme) => ({
 }));
 
 export default function SideBar({ }) {
+  const goTo = useNavigate();
   const [active, setActive] = useState(2);
   const useTranslate = (key: string, context?: { [key: string]: any }) => useTranslateLayout(`navigation.${key}`, { ...context })
   const mockdata = [
-    { icon: <FontAwesomeIcon icon={faHome} />, label: useTranslate("home") },
-    { icon: <FontAwesomeIcon icon={faGlobe} />, label: useTranslate("live_trading") },
-    { icon: <FontAwesomeIcon icon={faChartSimple} />, label: useTranslate("statistics") },
-    { icon: <FontAwesomeIcon icon={faChartSimple} />, label: useTranslate("warframe_market") },
-    { icon: <FontAwesomeIcon icon={faDesktop} />, label: useTranslate("debug") },
+    { link: "/", icon: <FontAwesomeIcon icon={faHome} />, label: useTranslate("home") },
+    { link: "live-trading", icon: <FontAwesomeIcon icon={faGlobe} />, label: useTranslate("live_trading") },
+    { link: "statistics", icon: <FontAwesomeIcon icon={faChartSimple} />, label: useTranslate("statistics") },
+    { link: "warframe-market", icon: <FontAwesomeIcon icon={faChartSimple} />, label: useTranslate("warframe_market") },
+    { link: "debug", icon: <FontAwesomeIcon icon={faDesktop} />, label: useTranslate("debug") },
   ];
   const links = mockdata.map((link, index) => (
     <NavbarLink
       {...link}
       key={link.label}
       active={index === active}
-      onClick={() => setActive(index)}
+      onClick={(url) => {
+        goTo(url);
+        setActive(index)
+      }}
     />
   ));
   return (

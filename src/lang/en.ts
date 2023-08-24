@@ -46,8 +46,8 @@ export const en = {
       price_scraper_running: "Price Scraper Running",
       live_trading_start: "Start Live Trading",
       live_trading_stop: "Stop Live Trading",
-      wisper_start: "Start Wisper",
-      wisper_stop: "Stop Wisper",
+      wisper_start: "Start Whisper",
+      wisper_stop: "Stop Whisper",
     },
     modals: {
       prompt: {
@@ -55,14 +55,26 @@ export const en = {
         cancelLabel: "Cancel",
       },
       settings: {
-        volume_threshold: "Volume Threshold",
-        volume_threshold_description: "Volume threshold for the sound",
-        range_threshold: "Range Threshold",
-        range_threshold_description: "Range threshold for the sound",
-        avg_price_cap: "Average Price Cap",
-        avg_price_cap_description: "Average price cap for the sound",
-        price_shift_threshold: "Price Shift Threshold",
-        price_shift_threshold_description: "Price shift threshold for the sound",
+        panels: {
+          general: {
+            title: "General",
+          },
+          live_trading: {
+            title: "Live Trading",
+            volume_threshold: "Volume Threshold",
+            volume_threshold_description: "Volume threshold for the sound",
+            max_total_price_cap: "Max Total Price Cap",
+            max_total_price_cap_description: "Max total price cap for the sound",
+            range_threshold: "Range Threshold",
+            range_threshold_description: "Range threshold for the sound",
+            avg_price_cap: "Average Price Cap",
+            avg_price_cap_description: "Average price cap for the sound",
+            price_shift_threshold: "Price Shift Threshold",
+            price_shift_threshold_description: "Price shift threshold for the sound",
+          },
+          price_scraper: {},
+          wisper: {},
+        },
       },
     },
   },
@@ -77,6 +89,7 @@ export const en = {
     header: {
       title: "QuantFrame",
       profile: {
+        settings: "Settings",
         logout: "Log Out",
       }
     },

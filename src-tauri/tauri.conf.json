@@ -51,9 +51,6 @@
         "icons/128x128@2x.png",
         "icons/icon.icns",
         "icons/icon.ico"
-      ],
-      "resources": [
-        "resources/*"
       ]
     },
     "security": {
@@ -63,7 +60,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "Quantframe React",
+        "title": "Quantframe",
         "width": 1105,
         "height": 750
       }

@@ -3,6 +3,7 @@ import { Wfm, Settings } from '$types/index';
 import { settings as sStore, user as uStore } from "@store/index";
 import { useStorage } from "../hooks/useStorage.hook";
 import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/api/notification';
+import { invoke } from "@tauri-apps/api";
 let permissionGranted = await isPermissionGranted();
 if (!permissionGranted) {
   const permission = await requestPermission();
@@ -41,7 +42,12 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
     setUser({ ...user, ...userData });
   }
 
-  const handleUpdateSettings = (settingsData: Partial<Settings>) => {
+  const handleUpdateSettings = async (settingsData: Partial<Settings>) => {
+    console.log("handleUpdateSettings");
+
+    console.log({ ...settings, ...settingsData });
+
+    await invoke('toggle_live_scraper_update_settings', { settings: { ...settings, ...settingsData } });
     setSettings({ ...settings, ...settingsData });
   }
   const handleSendNotification = async (title: string, body: string) => {

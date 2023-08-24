@@ -5,9 +5,11 @@ export interface Settings {
   user_password: '',
   access_token: string | undefined,
   volume_threshold: number;
+  max_total_price_cap: number;
   range_threshold: number;
   avg_price_cap: number;
   price_shift_threshold: number;
+  strict_whitelist: boolean;
   blacklist: string[];
   whitelist: string[];
 }

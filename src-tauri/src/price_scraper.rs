@@ -1,20 +1,18 @@
-use crate::helper;
-use crate::structs::{GlobleError, Item};
+use crate::structs::GlobleError;
 use crate::wfm_client;
+use crate::{helper, logger};
 use once_cell::sync::Lazy;
 use polars::prelude::*;
 use reqwest::{Client, Method, Url};
-use serde::Deserialize;
 use serde_json::{json, Value};
-use std::collections::HashSet;
+
 use std::path::Path;
+use std::sync::Mutex;
 use std::{
     collections::HashMap,
     fs::{self, File},
-    io::{BufWriter, Cursor},
-    path::PathBuf,
+    io::BufWriter,
 };
-use std::{iter::Map, sync::Mutex};
 extern crate chrono;
 use chrono::Duration;
 
@@ -38,7 +36,7 @@ pub fn get_csv_backup_path() -> String {
 /// Returns a vector of strings representing the dates of the last `x` days, including today.
 /// The dates are formatted as "YYYY-MM-DD".
 fn last_x_days(x: i64) -> Vec<String> {
-    let today = chrono::Local::now().naive_local();
+    let today = chrono::Local::now().naive_utc();
     (0..x)
         .rev()
         .map(|i| {
@@ -106,11 +104,6 @@ async fn get_price_by_day(platform: &str, day: &str) -> Result<Value, GlobleErro
 /// The first element must also have a "mod_rank" key.
 fn is_valid_price_data(name: &str, item_datas: &Vec<Value>) -> bool {
     if item_datas.len() == 0 {
-        // Log the response
-        custom_logger::write_to(
-            "wfmAPICalls.log",
-            &format!("{}\t Length of item_datas is 0", name),
-        );
         return false;
     }
     // Check if the first element has a "mod_rank" key
@@ -120,23 +113,11 @@ fn is_valid_price_data(name: &str, item_datas: &Vec<Value>) -> bool {
     };
 
     if is_mod && item_datas.len() == 6 {
-        custom_logger::write_to(
-            "wfmAPICalls.log",
-            &format!("{}\t Is Mod with length {}", name, item_datas.len()),
-        );
         return true;
     }
     if !is_mod && item_datas.len() == 3 {
-        custom_logger::write_to(
-            "wfmAPICalls.log",
-            &format!("{}\t Is not Mod with length {}", name, item_datas.len()),
-        );
         return true;
     }
-    custom_logger::write_to(
-        "wfmAPICalls.log",
-        &format!("{}\t Is not valid with length {}", name, item_datas.len()),
-    );
     return false;
 }
 
@@ -145,10 +126,6 @@ fn is_valid_price_data(name: &str, item_datas: &Vec<Value>) -> bool {
 async fn get_items_map_url_map(
 ) -> Result<(HashMap<String, String>, HashMap<String, String>), GlobleError> {
     let items = wfm_client::get_tradable_items("").await?;
-    // let filtered_items: Vec<Item> = items
-    //     .into_iter()
-    //     .filter(|item| !item.url_name.clone().contains("relic"))
-    //     .collect();
 
     let item_map_url: std::collections::HashMap<String, String> = items
         .iter()
@@ -160,44 +137,25 @@ async fn get_items_map_url_map(
         .collect();
     Ok((item_map_url, item_map_id))
 }
-fn merge_dataframes(frames: Vec<DataFrame>) -> Result<DataFrame, GlobleError> {
-    // Check if there are any frames to merge
-    if frames.is_empty() {
-        return Err(GlobleError::OtherError("No frames to merge".to_string()));
-    }
-
-    // Get the column names from the first frame
-    let column_names: Vec<&str> = frames[0].get_column_names();
-
-    // For each column name, stack the series from all frames vertically
-    let mut combined_series: Vec<Series> = Vec::new();
-
-    for &col_name in &column_names {
-        let first_series = frames[0].column(col_name)?.clone();
-        let mut stacked_series = first_series;
-
-        for frame in frames.iter().skip(1) {
-            let series = frame.column(col_name)?.clone();
-            stacked_series = stacked_series.append(&series)?.clone();
-        }
-
-        combined_series.push(stacked_series);
-    }
-    // Construct a DataFrame from the merged data
-    Ok(DataFrame::new(combined_series)?)
-}
 
 pub async fn generate(platform: &str, days: i64) -> Result<(), GlobleError> {
-    println!(
-        "Generating csv file for platform: {}, for {}",
-        platform, days
+    logger::debug_con(
+        "PriceScraper:generate",
+        format!(
+            "Generating csv file for platform: {}, for {} days.",
+            platform, days
+        )
+        .as_str(),
     );
     let csv_path_str = get_csv_path();
     let csv_backop_path_str = get_csv_backup_path();
     let csv_path: &Path = Path::new(&csv_path_str);
     let csv_backop_path = Path::new(&csv_backop_path_str);
     if csv_path.exists() {
-        println!("Backuping csv file: {}", csv_path_str);
+        logger::debug_con(
+            "PriceScraper:generate",
+            format!("Backuping csv file: {}", csv_path_str).as_str(),
+        );
         fs::copy(csv_path, csv_backop_path)?;
     }
     let last_days = last_x_days(days).clone();
@@ -207,19 +165,24 @@ pub async fn generate(platform: &str, days: i64) -> Result<(), GlobleError> {
     let mut found_data = 0;
 
     for day in last_days.clone() {
-        println!("Getting data for day: {}", day);
+        if found_data >= 7 {
+            // Should only get 7 days of data
+            continue;
+        }
+        helper::send_message_to_window(
+            "price_scraper_update_progress",
+            Some(json!({"current": found_data, "total": days, "day": day})),
+        );
+        // Get the price data for the day for all items
         let items = get_price_by_day(platform, &day).await;
         match items {
             Ok(items) => {
-                if found_data >= 7 {
-                    // println!("Found enough data, skipping");
-                    continue;
-                }
                 found_data += 1;
-                helper::send_message_to_window(
-                    "price_scraper_update_progress",
-                    Some(json!({"current": found_data, "total": days, "day": day})),
+                logger::info_con(
+                    "PriceScraper:generate",
+                    format!("Getting data for day: {}", day).as_str(),
                 );
+
                 if let Value::Object(map) = &items {
                     for (item_name, item_data_list) in map {
                         if let Value::Array(array) = item_data_list {
@@ -299,9 +262,9 @@ pub async fn generate(platform: &str, days: i64) -> Result<(), GlobleError> {
                                 })
                                 .collect();
 
-                            let mod_rank_vec: Vec<Option<i64>> = array
+                            let mod_rank_vec: Vec<Option<f64>> = array
                                 .iter()
-                                .map(|item_data| item_data.get("mod_rank").and_then(|v| v.as_i64()))
+                                .map(|item_data| item_data.get("mod_rank").and_then(|v| v.as_f64()))
                                 .collect();
 
                             let median_vec: Vec<Option<f64>> = array
@@ -323,12 +286,19 @@ pub async fn generate(platform: &str, days: i64) -> Result<(), GlobleError> {
                             ]);
                             // dump_dataframe(&mut df, format!("{}.csv", item_name).as_str())?;
 
-                            let mut df: DataFrame = df
+                            let df: DataFrame = df
                                 .clone()
                                 .lazy()
                                 .fill_nan(lit(0.0).alias("max_price"))
                                 .fill_nan(lit(0.0).alias("min_price"))
                                 .with_column((col("max_price") - col("min_price")).alias("range"))
+                                .collect()?;
+
+                            // Filter out items that are mod_rank 0.
+                            let df = df
+                                .clone()
+                                .lazy()
+                                .filter(col("mod_rank").neq(0).or(col("mod_rank").is_null()))
                                 .collect()?;
                             // dump_dataframe(&mut df, format!("{} {}.csv", day, item_name).as_str())?;
                             dataframes.push(df);
@@ -336,34 +306,32 @@ pub async fn generate(platform: &str, days: i64) -> Result<(), GlobleError> {
                     }
                 }
             }
-            Err(e) => {
-                println!("{}: {:?}", day, e);
+            Err(_e) => {
+                logger::error_con(
+                    "PriceScraper:generate",
+                    format!("Error getting price data for day: {}", day).as_str(),
+                );
             }
         }
     }
-    let mut full_df = merge_dataframes(dataframes)?;
+    logger::info_con(
+        "PriceScraper:generate",
+        format!(
+            "Finished getting price data for all days. Merging dataframes... {:?}",
+            dataframes.len()
+        )
+        .as_str(),
+    );
+    let mut full_df = helper::merge_dataframes(dataframes)?;
     helper::send_message_to_window(
         "price_scraper_update_complete",
         Some(json!({"total_items": full_df.height()})),
     );
-    dump_dataframe(&mut full_df, "full_df.csv")?;
+    logger::log_dataframe(&mut full_df, "price_scraper_full_df.csv");
 
-    // let mut sorted_df = full_df
-    //     .lazy()
-    //     .filter(col("mod_rank").gt(lit(0)))
-    //     .sort(
-    //         "name",
-    //         SortOptions {
-    //             descending: false,
-    //             nulls_last: false,
-    //             multithreaded: false,
-    //         },
-    //     )
-    //     .collect()?;
-
-    // dump_dataframe(&mut sorted_df, "sorted_df.csv")?;
     // Group by name and get the average price
     let mut group_by_name = full_df
+        .clone()
         .lazy()
         .groupby(&["name"])
         .agg(&[
@@ -371,102 +339,44 @@ pub async fn generate(platform: &str, days: i64) -> Result<(), GlobleError> {
             col("name").count().alias("name_count"),
         ])
         .collect()?;
-
-    dump_dataframe(&mut group_by_name, "group_by_name.csv")?;
+    logger::log_dataframe(&mut group_by_name, "price_scraper_group_by_name.csv");
 
     // Get the names of the items that are popular
 
-    let popular_items = group_by_name
+    let mut popular_items = group_by_name
         .clone()
         .lazy()
         .filter(col("name_count").gt_eq(21))
         .collect()?;
+    logger::log_dataframe(&mut popular_items, "price_scraper_popular_items.csv");
 
-    let popular_items = popular_items
-        .column("name")?
-        .utf8()?
-        .into_iter()
-        .filter_map(|opt_name| opt_name)
-        .collect::<Vec<_>>();
+    // Filter out items that are not popular and sort by name
+    let popular_items_s = popular_items.column("name")?;
+    let mask = full_df.column("name")?.is_in(&popular_items_s)?;
+    let filtered_df = full_df.filter(&mask)?;
+    // Sort by name
+    let mut filtered_df = filtered_df
+        .lazy()
+        .sort(
+            "name",
+            SortOptions {
+                descending: false,
+                nulls_last: false,
+                multithreaded: false,
+            },
+        )
+        .collect()?;
+    logger::log_dataframe(&mut filtered_df, "price_scraper_pricehistory.csv");
 
-    custom_logger::write_to("popular_items.txt", format!("{:?}", popular_items).as_str());
-
-    // Filter the big dataframe by the popular items
-    let popular_expr = popular_items
-        .iter()
-        .fold(lit(false), |acc, item| acc.or(col("name").eq(lit(*item))));
-
-    // let mut popular_df = sorted_df.clone().lazy().filter(popular_expr).collect()?;
-
-    // dump_dataframe(&mut popular_df, "popular_df.csv")?;
-
-    // let names = names
-    //     .column("name")?
-    //     .utf8()?
-    //     .into_iter()
-    //     .filter_map(|opt_name| opt_name)
-    //     .collect::<Vec<_>>();
-
-    // .column("name")?
-    // .utf8()
-    // .into_iter()
-    // .filter_map(|opt_name| Some(opt_name))
-    // .collect::<Vec<_>>();
-    // println!("Names: {:?}", names);
-    // let mask = groupby.column("datetime")?.eq(&21.into());
-    // let names = groupby.filter(&mask)?.select("name")?;
-
-    // // Cerate a csv file with the sorted DataFrame of price data
-    // let output_file: File = File::create(csv_path)?;
-    // let writer = BufWriter::new(output_file);
-    // // Write the DataFrame to a CSV file
-    // CsvWriter::new(writer).finish(&mut sorted_df)?;
+    // Cerate a csv file with the sorted DataFrame of price data
+    let output_file: File = File::create(csv_path)?;
+    let writer = BufWriter::new(output_file);
+    // Write the DataFrame to a CSV file
+    CsvWriter::new(writer).finish(&mut filtered_df)?;
 
     // Delete the backup file if it exists
     if csv_backop_path.exists() {
         fs::remove_file(csv_backop_path)?;
     }
     Ok(())
-}
-
-pub fn dump_dataframe(df: &mut DataFrame, name: &str) -> Result<(), GlobleError> {
-    let mut log_path = PathBuf::from("logs");
-    // Create the directory if it does not exist
-    if !log_path.exists() {
-        fs::create_dir_all(&log_path)?;
-    }
-    log_path.push(name);
-    // Cerate a csv file with the sorted DataFrame of price data
-    let output_file: File = File::create(log_path)?;
-    let writer = BufWriter::new(output_file);
-    // Write the DataFrame to a CSV file
-    CsvWriter::new(writer).finish(df)?;
-    Ok(())
-}
-
-mod custom_logger {
-    use std::fs::{self, OpenOptions};
-    use std::io::prelude::*;
-    use std::path::PathBuf;
-
-    pub fn write_to(filename: &str, content: &str) {
-        let mut log_path = PathBuf::from("logs");
-        // Create the directory if it does not exist
-        if !log_path.exists() {
-            fs::create_dir_all(&log_path).unwrap();
-        }
-        log_path.push(filename);
-        if !log_path.exists() {
-            fs::File::create(&log_path).unwrap();
-        }
-        let mut file = OpenOptions::new()
-            .write(true)
-            .append(true)
-            .open(log_path)
-            .unwrap();
-
-        if let Err(e) = writeln!(file, "{}", content) {
-            eprintln!("Couldn't write to file: {}", e);
-        }
-    }
 }

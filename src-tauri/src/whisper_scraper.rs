@@ -1,4 +1,4 @@
-use crate::helper;
+use crate::{helper, logger};
 use regex::Regex;
 use serde_json::json;
 use std::fs::File;
@@ -57,11 +57,15 @@ impl WhisperScraper {
                                 Err(err) => {
                                     helper::send_message_to_window(
                                         "whisper_scraper_error",
-                                        Some(json!({"error": e})),
+                                        Some(json!({ "error": "err" })),
                                     );
-                                    self.stop_loop();
-                                    println!("Error: {}", err)
-                                },
+                                    logger::error(
+                                        "WhisperScraper",
+                                        format!("{:?}", err).as_str(),
+                                        true,
+                                        None,
+                                    );
+                                }
                             }
                         }
                     }
