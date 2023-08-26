@@ -9,6 +9,7 @@ import { faGear } from "@fortawesome/free-solid-svg-icons/faGear";
 import { modals } from "@mantine/modals";
 import { Logo } from "../components/logo";
 import Clock from "../components/clock";
+import { useTauriContext } from "../contexts";
 
 interface TopMenuProps {
   opened: boolean;
@@ -41,8 +42,10 @@ export default function Hedder({ user }: TopMenuProps) {
   const [, setUserMenuOpened] = useState(false);
   const [avatar, setAvatar] = useState<string | undefined>(undefined);
 
+  const { settings, updateSettings, tradable_items } = useTauriContext();
+
   useEffect(() => {
-    setAvatar(`https://warframe.market/static/assets/${user?.avatar}`);
+    setAvatar(`${user?.avatar}`);
   }, [user?.avatar]);
 
 
@@ -77,9 +80,9 @@ export default function Hedder({ user }: TopMenuProps) {
                 <Menu.Divider />
                 <Menu.Item icon={<FontAwesomeIcon icon={faGear} />} onClick={async () => {
                   modals.open({
-                    size: "100%",
+                    size: "auto",
                     withCloseButton: false,
-                    children: < SettingsModal />,
+                    children: < SettingsModal settings={settings} updateSettings={updateSettings} tradable_items={tradable_items} />,
                   })
                 }}>
                   {useTranslateHedder("profile.settings")}

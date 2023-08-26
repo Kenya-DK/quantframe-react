@@ -23,10 +23,10 @@ pub struct WhisperScraper {
 }
 
 impl WhisperScraper {
-    pub fn new(log_path: PathBuf) -> Self {
+    pub fn new() -> Self {
         Self {
             is_running: Arc::new(AtomicBool::new(false)),
-            log_path,
+            log_path: helper::get_app_local_path().join("Warframe").join("EE.log"),
             last_file_size: Arc::new(Mutex::new(0)),
             handle: Arc::new(Mutex::new(None)),
         }

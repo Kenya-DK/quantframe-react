@@ -1,10 +1,9 @@
 
 import { Select } from '@mantine/core';
 import { useTranslateComponent } from '@hooks/index';
-import api from "@api/index";
-import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Wfm } from '../types';
+import { useTauriContext } from '../contexts';
 interface SearchItemFieldProps {
   value: string;
   onChange: (item: Wfm.ItemDto) => void;
@@ -12,16 +11,12 @@ interface SearchItemFieldProps {
 
 export const SearchItemField = (props: SearchItemFieldProps) => {
   const useTranslateSearch = (key: string, context?: { [key: string]: any }) => useTranslateComponent(`searchItemField.${key}`, { ...context })
-  const { value, onChange } = props;
+  const { tradable_items } = useTauriContext();
   const [items, setItems] = useState<Array<Wfm.ItemDto & { label: string, value: string }>>([]);
-
-  useQuery({
-    queryKey: ['warframes'],
-    queryFn: () => api.items.getTradableItems(),
-    onSuccess: (data) => {
-      setItems(data.map((warframe) => ({ ...warframe, label: warframe.item_name, value: warframe.url_name })) || []);
-    }
-  })
+  const { value, onChange } = props;
+  useEffect(() => {
+    setItems(tradable_items.map((warframe) => ({ ...warframe, label: warframe.item_name, value: warframe.url_name })) || []);
+  }, [tradable_items]);
   return (
     <Select
       w={300}
@@ -37,7 +32,7 @@ export const SearchItemField = (props: SearchItemFieldProps) => {
       value={value}
       onChange={async (value) => {
         if (!value) return;
-        const item = await api.items.findByUrlName(value);
+        const item = items.find(item => item.url_name === value);
         if (!item) return;
         onChange(item)
       }}

@@ -2,8 +2,15 @@ import { Tabs } from "@mantine/core";
 import { GeneralPanel } from "./general.panel";
 import { LiveScraperPanel } from "./liveScraper.panel";
 import { useTranslateModal } from "@hooks/index";
+import { Settings, Wfm } from "$types/index";
 
-export function SettingsModal() {
+interface SettingsModalProps {
+  settings: Settings | undefined;
+  tradable_items: Wfm.ItemDto[];
+  updateSettings: (user: Partial<Settings>) => void;
+}
+
+export function SettingsModal({ tradable_items, settings, updateSettings }: SettingsModalProps) {
   const useTranslateSettingsPanels = (key: string, context?: { [key: string]: any }) => useTranslateModal(`settings.panels.${key}`, { ...context })
   return (
     <Tabs defaultValue="gallery">
@@ -13,11 +20,11 @@ export function SettingsModal() {
       </Tabs.List>
 
       <Tabs.Panel value="general" pt="xs">
-        <GeneralPanel />
+        <GeneralPanel settings={settings} updateSettings={updateSettings} />
       </Tabs.Panel>
 
       <Tabs.Panel value="live_scraper" pt="xs">
-        <LiveScraperPanel />
+        <LiveScraperPanel settings={settings} updateSettings={updateSettings} tradable_items={tradable_items} />
       </Tabs.Panel>
     </Tabs>
 

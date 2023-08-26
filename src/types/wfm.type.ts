@@ -41,6 +41,10 @@ export namespace Wfm {
     // Get from warframe items npm package
     category: string,
     max_rank: number,
+    set_items: string[] | null,
+    tags: string[] | null,
+    mod_max_rank: number | null,
+    subtypes: string[] | null,
   }
   export interface ItemDetailsDto extends ItemDto {
     tags: string[];

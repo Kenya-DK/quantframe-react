@@ -137,6 +137,13 @@ pub fn trace_con(component: &str, msg: &str) {
     trace( component, msg,true, None);
 }
 
+
+/// Logs the given DataFrame to a CSV file with the given name in the log folder.
+/// The `df` argument is a mutable reference to the DataFrame to be logged.
+/// The `name` argument is a string representing the name of the CSV file to be created.
+/// The CSV file is created in the log folder, which is determined by the `get_log_folder` function.
+/// If the file creation or write fails, an error message is printed to the console.
+/// If the write is successful, an info message is printed to the console.
 pub fn log_dataframe(df: &mut DataFrame, name: &str) {
     let mut log_path = get_log_forlder();
     log_path.push(name);

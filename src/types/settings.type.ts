@@ -1,9 +1,13 @@
-import { Wfm } from ".";
+import { InventoryEntryDto, TransactionEntryDto, Wfm } from ".";
+export interface SetupResponse {
+  valid: boolean;
+  user: Wfm.UserDto;
+  settings: Settings;
+  transactions: TransactionEntryDto[];
+  inventorys: InventoryEntryDto[];
+}
+
 export interface Settings {
-  mastery_rank: 2, // Trading is unlocked at MR2
-  user_email: '',
-  user_password: '',
-  access_token: string | undefined,
   volume_threshold: number;
   max_total_price_cap: number;
   range_threshold: number;

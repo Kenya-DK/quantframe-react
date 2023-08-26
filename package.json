@@ -8,7 +8,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "tauri:dev": "set RUST_BACKTRACE=full && pnpm tauri dev"
+    "tauri:dev": "pnpm tauri dev"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",
@@ -26,8 +26,6 @@
     "@tauri-apps/api": "^1.4.0",
     "@types/lodash": "^4.14.196",
     "@types/node": "^20.4.5",
-    "axios": "^1.4.0",
-    "axios-tauri-adapter": "^0.3.0",
     "dayjs": "^1.11.9",
     "i18next": "^23.4.1",
     "lodash": "^4.17.21",
@@ -36,9 +34,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-i18next": "^13.0.3",
-    "react-router-dom": "^6.14.2",
-    "tauri-plugin-sql-api": "github:tauri-apps/tauri-plugin-sql#v1",
-    "tauri-plugin-store-api": "github:tauri-apps/tauri-plugin-store#v1"
+    "react-router-dom": "^6.14.2"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.4.0",

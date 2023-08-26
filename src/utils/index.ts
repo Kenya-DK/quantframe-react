@@ -11,3 +11,11 @@ export const groupBy = <T, K extends keyof T>(key: K, array: T[]): GroupBy<T> =>
 
 }
 
+export const paginate = <T>(items: Array<T>, page: number, take: number) => {
+  const startIndex = (page - 1) * take;
+  const endIndex = page * take;
+  return items.slice(startIndex, endIndex);
+}
+export const padTo2Digits = (num: number) => {
+  return num.toString().padStart(2, '0');
+}

@@ -1,11 +1,14 @@
 use std::{
+    path::{Path, PathBuf},
     sync::Mutex,
 };
 
+use chrono::Duration;
+use directories::BaseDirs;
 use once_cell::sync::Lazy;
 use polars::{
     lazy::dsl::col,
-    prelude::{CsvWriter, DataFrame, Expr, IntoLazy, SerWriter, SortOptions},
+    prelude::{CsvWriter, DataFrame, Expr, IntoLazy,  SortOptions},
     series::Series,
 };
 use serde_json::{json, Value};
@@ -44,6 +47,27 @@ pub fn send_message_to_window(event: &str, data: Option<Value>) {
                 println!("Error while sending message to window {:?}", e);
             }
         }
+    }
+}
+
+pub fn get_app_local_path() -> PathBuf {
+    if let Some(base_dirs) = BaseDirs::new() {
+        // App path for csv file
+        let local_path = Path::new(base_dirs.data_local_dir());
+        local_path.to_path_buf()
+    } else {
+        panic!("Could not find app path");
+    }
+}
+
+pub fn get_app_roaming_path() -> PathBuf {
+    if let Some(base_dirs) = BaseDirs::new() {
+        // App path for csv file
+        let roaming_path = Path::new(base_dirs.data_dir());
+        let app_path = roaming_path.join("quantframe");
+        app_path.clone()
+    } else {
+        panic!("Could not find app path");
     }
 }
 
@@ -192,4 +216,18 @@ pub fn merge_dataframes(frames: Vec<DataFrame>) -> Result<DataFrame, GlobleError
     }
     // Construct a DataFrame from the merged data
     Ok(DataFrame::new(combined_series)?)
+}
+/// Returns a vector of strings representing the dates of the last `x` days, including today.
+/// The dates are formatted as "YYYY-MM-DD".
+pub fn last_x_days(x: i64) -> Vec<String> {
+    let today = chrono::Local::now().naive_utc();
+    (0..x)
+        .rev()
+        .map(|i| {
+            (today - Duration::days(i + 1))
+                .format("%Y-%m-%d")
+                .to_string()
+        })
+        .rev()
+        .collect()
 }

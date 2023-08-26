@@ -6,45 +6,47 @@ use std::path::PathBuf;
 use crate::helper;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct SettingsState {
-    pub volume_threshold: i64,
-    pub range_threshold: i64,
-    pub avg_price_cap: i64,
-    pub max_total_price_cap: i64,
-    pub price_shift_threshold: i64,
-    pub blacklist: Vec<String>,
-    pub whitelist: Vec<String>,
-    pub strict_whitelist: bool,
+pub struct AuthState {
+    pub banned: bool,
+    pub id: String,
+    pub access_token: Option<String>,
+    pub avatar: String,
+    pub ingame_name: String,
+    pub locale: String,
+    pub platform: String,
+    pub region: String,
+    pub role: String,
 }
 // Allow us to run AuthState::default()
-impl Default for SettingsState {
+impl Default for AuthState {
     fn default() -> Self {
         Self {
-            volume_threshold: 15,
-            range_threshold: 10,
-            avg_price_cap: 600,
-            max_total_price_cap: 100000,
-            price_shift_threshold: -1,
-            blacklist: vec![],
-            whitelist: vec![],
-            strict_whitelist: false,
+            banned: false,
+            id: "".to_string(),
+            access_token: None,
+            avatar: "".to_string(),
+            ingame_name: "".to_string(),
+            locale: "".to_string(),
+            platform: "".to_string(),
+            region: "".to_string(),
+            role: "".to_string(),
         }
     }
 }
-impl SettingsState {
+impl AuthState {
     fn get_file_path() -> PathBuf {
         let app_path = helper::get_app_roaming_path();
-        let settings_path = app_path.join("settings.json");
-        settings_path
+        let auth_path = app_path.join("auth.json");
+        auth_path
     }
     pub fn setup() -> io::Result<Self> {
         let path_ref = Self::get_file_path();
         if path_ref.exists() {
             Self::read_from_file()
         } else {
-            let default_settings = SettingsState::default();
-            default_settings.save_to_file()?;
-            Ok(default_settings)
+            let default_auth = AuthState::default();
+            default_auth.save_to_file()?;
+            Ok(default_auth)
         }
     }
 
@@ -59,7 +61,7 @@ impl SettingsState {
         let mut file = File::open(Self::get_file_path())?;
         let mut content = String::new();
         file.read_to_string(&mut content)?;
-        let settings = serde_json::from_str(&content)?;
-        Ok(settings)
+        let auth = serde_json::from_str(&content)?;
+        Ok(auth)
     }
 }

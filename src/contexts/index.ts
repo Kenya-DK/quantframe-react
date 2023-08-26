@@ -1,5 +1,4 @@
 export * from './tauri.context'
-export * from './database/database.context'
 export * from './liveScraper.context'
 export * from './statsScraper.context'
 export * from './whisperScraper.context'

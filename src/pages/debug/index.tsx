@@ -1,5 +1,4 @@
 import { Button, Group, Tabs } from "@mantine/core";
-import { settings as sStore, user as uStore } from "@store/index";
 export default function DebugPage() {
   return (
     <Tabs defaultValue="first">
@@ -11,20 +10,11 @@ export default function DebugPage() {
       <Tabs.Panel value="reststorecache">
         <Group position="center">
           <Button onClick={async () => {
-            await uStore.reset();
-            window.location.reload()
-          }}>
-            Rest User Cache
-          </Button>
-          <Button onClick={async () => {
-            await sStore.reset();
             window.location.reload()
           }}>
             Rest Settings Cache
           </Button>
           <Button onClick={async () => {
-            await uStore.reset();
-            await sStore.reset();
             window.location.reload()
           }}>
             Rest All Cache

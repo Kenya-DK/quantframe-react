@@ -19,6 +19,8 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const logInMutation = useMutation((data: { email: string, password: string }) => api.auth.login(data.email, data.password), {
     onSuccess: async (data: Wfm.UserDto) => {
+      console.log(data);
+
       updateUser(data)
       notifications.show({
         title: i18next.t('success.auth.login_title'),

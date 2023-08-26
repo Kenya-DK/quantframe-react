@@ -8,6 +8,11 @@ export const en = {
       placeholder: "Search item",
       no_results: "No results",
     },
+    multiSelectListBox: {
+      add_all: "Add all",
+      remove_all: "Remove all",
+      name: "Name",
+    },
     inventory: {
       price: "Price",
       price_description: "Price per unit",
@@ -62,15 +67,24 @@ export const en = {
           live_trading: {
             title: "Live Trading",
             volume_threshold: "Volume Threshold",
-            volume_threshold_description: "Volume threshold for the sound",
+            volume_threshold_description: "Volume of items sold, set this to somewhere between 6-10",
             max_total_price_cap: "Max Total Price Cap",
-            max_total_price_cap_description: "Max total price cap for the sound",
+            max_total_price_cap_description: "Total Plat it will put up WTB for",
             range_threshold: "Range Threshold",
-            range_threshold_description: "Range threshold for the sound",
+            range_threshold_description: "Volume of plat profit per item flip the bot will look to buy/resell",
             avg_price_cap: "Average Price Cap",
-            avg_price_cap_description: "Average price cap for the sound",
+            avg_price_cap_description: "Average price of the items it wants to buy",
             price_shift_threshold: "Price Shift Threshold",
-            price_shift_threshold_description: "Price shift threshold for the sound",
+            price_shift_threshold_description: "Always have this at -1",
+            whitelist_label: "Whitelist",
+            whitelist_description: "Need Info",
+            whitelist_placeholder: "None",
+            blacklist_label: "Blacklist",
+            blacklist_description: "Need Info",
+            blacklist_placeholder: "None",
+            strict_whitelist: "Strict Whitelist",
+            strict_whitelist_description: "Need Info",
+            save: "Save",
           },
           price_scraper: {},
           wisper: {},
@@ -120,91 +134,17 @@ export const en = {
       login_message: "Welcome back {{name}}",
       logout_title: "Logout success",
       logout_message: "You have been logged out successfully",
-      invite_title: "Invite sent",
-      invite_message: "An invite has been sent to {{email}}",
     },
-    order: {
-      order_title: "Order",
-      not_found: "Order not found",
-      order_updated: "Order updated successfully #{{id}}",
-      order_updated_successfully: "Order updated successfully",
-      orders_refresh: "Orders refreshed successfully #{{count}}",
-      orders_refresh_successfully: "Orders refreshed successfully",
-      printing: {
-        title: "Printing",
-        message: "Printing order {{id}}",
-      },
-    },
-    invoicing: {
-      invoicing_title: "Invoicing",
-      order_added: "Order added successfully {{id}}",
-    },
-    user: {
-      updated: {
-        title: "User updated",
-        message: "User {{name}} was updated successfully",
-      },
-      created: {
-        title: "User created",
-        message: "User {{name}} was created successfully",
-      },
-      profile: {
-        updated: {
-          title: "Your profile updated",
-          message: "Your profile was updated successfully",
-        }
-      }
-    },
-    warehouse: {
-      updated: {
-        title: "Warehouse updated",
-        message: "Warehouse {{name}} was updated successfully",
-      },
-      created: {
-        title: "Warehouse created",
-      },
+    invantory: {
+      create_title: "Item added",
+      create_message: "Item {{name}} added successfully",
+      update_title: "Item updated",
+      update_message: "Item {{name}} updated successfully",
+      delete_title: "Item deleted",
+      delete_message: "Item {{name}} deleted successfully",
+      sell_title: "Item sold",
+      sell_message: "Item {{name}} sold successfully for {{price}}",
     }
   },
-  error: {
-    invalid_email: "Invalid email",
-    auth: {
-      login_title: "Login Failed",
-      logout_title: "Logout Failed",
-      invalidCredentials: "The email/password combination is invalid",
-      user_inactive: "The user is inactive please contact an administrator",
-      password_invalid: "Password should include at least 6 characters",
-    },
-    order: {
-      order_title: "Order",
-      not_found: "Order not found",
-    },
-    invoicing: {
-      invoicing_title: "Invoicing",
-      order_already_scanned: "Order {{id}} already scanned",
-    },
-    user: {
-      updated: {
-        title: "User updated failed",
-      },
-      created: {
-        title: "User created failed",
-      },
-      profile: {
-        updated: {
-          title: "Your profile updated failed",
-        }
-      }
-    },
-    warehouse: {
-      updated: {
-        title: "Warehouse updated failed",
-      },
-      created: {
-        title: "Warehouse created failed",
-      },
-    },
-    printing: {
-      title: "Printing failed",
-    }
-  }
-};
+  error: {}
+}

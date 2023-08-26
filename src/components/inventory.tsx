@@ -1,15 +1,19 @@
 
 import { ActionIcon, Box, Button, Divider, Group, NumberInput, Tooltip, Text, Stack } from '@mantine/core';
-import { useTranslateComponent } from '@hooks/index';
+import { useTranslateComponent, useTranslateSuccess } from '@hooks/index';
 import { useForm } from '@mantine/form';
 import { SearchItemField } from './searchItemField';
 import { DataTable } from 'mantine-datatable';
-import { useDatabaseContext } from '../contexts';
+import { useTauriContext } from '../contexts';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHammer, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faHammer, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import { modals } from '@mantine/modals';
 import { Wfm } from '../types';
 import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import api from '@api/index';
+import { notifications } from '@mantine/notifications';
+import { padTo2Digits } from '../utils';
 
 interface PurchaseNewItemProps {
   onSumit: (type: string, id: string, quantity: number, price: number, mod_rank: number) => void;
@@ -87,14 +91,44 @@ const PurchaseNewItem = (props: PurchaseNewItemProps) => {
 }
 const Items = () => {
   const useTranslateDataGrid = (key: string, context?: { [key: string]: any }) => useTranslateComponent(`inventory.datagrid.${key}`, { ...context })
-  const useTranslateDataGridColumns = (key: string, context?: { [key: string]: any }) => useTranslateDataGrid(`columns.${key}`, { ...context })
-  const { invantory, deleteInvantoryEntryById } = useDatabaseContext();
+  const useTranslateDataGridColumns = (key: string, context?: { [key: string]: any }) => useTranslateDataGrid(`columns.${key}`, { ...context });
+  const useTranslateInvSuccess = (key: string, context?: { [key: string]: any }) => useTranslateSuccess(`invantory.${key}`, { ...context })
+
+  const [itemPrices, setItemPrices] = useState<Record<string, number>>({});
+
+  const sellInvantoryEntryMutation = useMutation((data: { id: number, price: number }) => api.inventory.sellInvantoryEntry(data.id, data.price), {
+    onSuccess: async (data) => {
+      notifications.show({
+        title: useTranslateInvSuccess("sell_title"),
+        icon: <FontAwesomeIcon icon={faCheck} />,
+        message: useTranslateInvSuccess("sell_message", { name: data.item_name, price: data.price }),
+        color: "green"
+      });
+    },
+    onError: () => {
+
+    },
+  })
+  const deleteInvantoryEntryMutation = useMutation((id: number) => api.inventory.deleteInvantoryEntry(id), {
+    onSuccess: async (data) => {
+      notifications.show({
+        title: useTranslateInvSuccess("delete_title"),
+        icon: <FontAwesomeIcon icon={faCheck} />,
+        message: useTranslateInvSuccess("delete_message", { name: data.item_name }),
+        color: "green"
+      });
+    },
+    onError: () => {
+
+    },
+  })
+  const { inventorys } = useTauriContext();
   return (
     <DataTable
       sx={{ marginTop: "20px" }}
       striped
-      height={"50%"}
-      records={invantory}
+      height={"67vh"}
+      records={inventorys}
       // define columns
       columns={[
         {
@@ -121,19 +155,24 @@ const Items = () => {
           accessor: 'actions',
           width: 100,
           title: useTranslateDataGridColumns('actions.title'),
-          render: ({ id }) =>
+          render: ({ id, item_url }) =>
             <Group grow position="center" >
               <NumberInput
                 required
                 size='sm'
                 min={0}
+                max={999999}
+                value={itemPrices[item_url] || ""}
+                onChange={(value) => setItemPrices({ ...itemPrices, [item_url]: Number(value) })}
                 rightSectionWidth={75}
                 rightSection={
                   <Group spacing={"5px"} mr={0}>
                     <Divider orientation="vertical" />
                     <Tooltip label={useTranslateDataGridColumns('actions.sell')}>
                       <ActionIcon color="green.7" variant="filled" onClick={async () => {
-
+                        const price = itemPrices[item_url];
+                        if (!price || price <= 0 || !id) return;
+                        await sellInvantoryEntryMutation.mutateAsync({ id, price });
                       }} >
                         <FontAwesomeIcon icon={faHammer} />
                       </ActionIcon>
@@ -152,7 +191,7 @@ const Items = () => {
                           confirmProps: { color: 'red' },
                           onConfirm: async () => {
                             if (!id) return;
-                            await deleteInvantoryEntryById(id);
+                            await deleteInvantoryEntryMutation.mutateAsync(id);
                           }
                         })
                       }} >
@@ -170,11 +209,24 @@ const Items = () => {
 }
 
 export const Inventory = () => {
-  const { createInvantoryEntry } = useDatabaseContext();
+  const useTranslateInvSuccess = (key: string, context?: { [key: string]: any }) => useTranslateSuccess(`invantory.${key}`, { ...context })
+  const createInvantoryEntryMutation = useMutation((data: { id: string, quantity: number, price: number, mod_rank: number }) => api.inventory.createInvantoryEntry(data.id, data.quantity, data.price, data.mod_rank), {
+    onSuccess: async (data) => {
+      notifications.show({
+        title: useTranslateInvSuccess("create_title"),
+        icon: <FontAwesomeIcon icon={faCheck} />,
+        message: useTranslateInvSuccess("create_message", { name: data.item_name }),
+        color: "green"
+      });
+    },
+    onError: () => {
+
+    },
+  })
   return (
     <Box >
-      <PurchaseNewItem onSumit={(__type: string, id: string, quantity: number, price: number, mod_rank: number) => {
-        createInvantoryEntry(id, quantity, price, mod_rank);
+      <PurchaseNewItem onSumit={async (__type: string, id: string, quantity: number, price: number, mod_rank: number) => {
+        createInvantoryEntryMutation.mutate({ id, price, quantity, mod_rank });
       }} />
       <Items />
     </Box>
