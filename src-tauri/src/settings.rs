@@ -15,6 +15,8 @@ pub struct SettingsState {
     pub blacklist: Vec<String>,
     pub whitelist: Vec<String>,
     pub strict_whitelist: bool,
+    pub ping_on_notif: bool,
+    pub webhook: String,
 }
 // Allow us to run AuthState::default()
 impl Default for SettingsState {
@@ -28,6 +30,8 @@ impl Default for SettingsState {
             blacklist: vec![],
             whitelist: vec![],
             strict_whitelist: false,
+            ping_on_notif: false,
+            webhook: "".to_string(),
         }
     }
 }

@@ -1,16 +1,13 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { Wfm, Settings, TransactionEntryDto, InventoryEntryDto } from '$types/index';
-import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/api/notification';
+import { Wfm, Settings, TransactionEntryDto, InventoryEntryDto, StatisticDto } from '$types/index';
+import { isPermissionGranted, sendNotification } from '@tauri-apps/api/notification';
 import api from "../api";
 import { SplashScreen } from "../components/splashScreen";
 import { useQuery } from "@tanstack/react-query";
 import { notifications } from "@mantine/notifications";
-import { OnTauriEvent, OnTauriUpdateDataEvent } from "../utils";
-let permissionGranted = await isPermissionGranted();
-if (!permissionGranted) {
-  const permission = await requestPermission();
-  permissionGranted = permission === 'granted';
-}
+import { OnTauriEvent, OnTauriUpdateDataEvent, getStatistic } from "../utils";
+
+
 
 
 type TauriContextProps = {
@@ -20,6 +17,7 @@ type TauriContextProps = {
   inventorys: InventoryEntryDto[];
   updateUser: (user: Partial<Wfm.UserDto>) => void;
   settings: Settings | undefined;
+  statistics: StatisticDto | undefined,
   updateSettings: (user: Partial<Settings>) => void;
   sendNotification: (title: string, body: string) => void;
 }
@@ -32,6 +30,7 @@ export const TauriContext = createContext<TauriContextProps>({
   tradable_items: [],
   transactions: [],
   inventorys: [],
+  statistics: undefined,
   updateUser: () => { },
   settings: undefined,
   updateSettings: () => { },
@@ -46,6 +45,7 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
   const [tradable_items, setTradableItems] = useState<Wfm.ItemDto[]>([]);
   const [transactions, setTransactions] = useState<TransactionEntryDto[]>([]);
   const [inventorys, setInventorys] = useState<InventoryEntryDto[]>([]);
+  const [statistics, setStatistics] = useState<StatisticDto | undefined>(undefined);
 
   const { isFetching } = useQuery({
     queryKey: ['validate'],
@@ -68,6 +68,14 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
     },
   })
 
+  useEffect(() => {
+    if (!transactions) return;
+    let statistics = getStatistic(transactions);
+    setStatistics(statistics);
+    console.log(statistics);
+  }, [transactions]);
+
+
   const handleUpdateUser = (userData: Partial<Wfm.UserDto>) => {
     if (!user) return;
     setUser({ ...user, ...userData });
@@ -79,7 +87,10 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
     setSettings(data);
     await api.base.updatesettings(data as any); // add 'as any' to avoid type checking
   }
+
   const handleSendNotification = async (title: string, body: string) => {
+    let permissionGranted = await isPermissionGranted();
+    if (!permissionGranted) throw new Error("Permission not granted");
     if (permissionGranted) {
       sendNotification({ title: title, body: body });
     }
@@ -94,8 +105,21 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
         setInventorys((inventorys) => [...inventorys.filter((item) => item.id !== data.id), data]);
         break;
       case "delete":
-        console.log("Delete", data);
         setInventorys((inventorys) => [...inventorys.filter((item) => item.id !== data.id)]);
+        break;
+    }
+  }
+
+  const handleUpdateTransaction = (operation: string, data: TransactionEntryDto) => {
+    switch (operation) {
+      case "create":
+        setTransactions((transactions) => [...transactions, data]);
+        break;
+      case "update":
+        setTransactions((transactions) => [...transactions.filter((item) => item.id !== data.id), data]);
+        break;
+      case "delete":
+        setTransactions((transactions) => [...transactions.filter((item) => item.id !== data.id)]);
         break;
     }
   }
@@ -105,11 +129,12 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
       setTradableItems(data);
     });
     OnTauriUpdateDataEvent<InventoryEntryDto>("inventorys", ({ data, operation }) => handleUpdateInventory(operation, data));
+    OnTauriUpdateDataEvent<TransactionEntryDto>("transactions", ({ data, operation }) => handleUpdateTransaction(operation, data));
     return () => { }
   }, []);
 
   return (
-    <TauriContext.Provider value={{ user, transactions, inventorys, tradable_items, updateUser: handleUpdateUser, settings, updateSettings: handleUpdateSettings, sendNotification: handleSendNotification }}>
+    <TauriContext.Provider value={{ user, statistics, transactions, inventorys, tradable_items, updateUser: handleUpdateUser, settings, updateSettings: handleUpdateSettings, sendNotification: handleSendNotification }}>
       <SplashScreen opened={isFetching} />
       {children}
     </TauriContext.Provider>

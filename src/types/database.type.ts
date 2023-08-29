@@ -16,6 +16,8 @@ export interface TransactionEntryDto {
   item_name: string;
   rank: number;
   price: number;
+  quantity: number;
   datetime: string;
-  transactionType: string;
+  transaction_type: string;
 }
+

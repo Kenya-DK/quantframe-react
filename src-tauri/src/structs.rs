@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug)]
 pub enum GlobleError {
     ReqwestError(reqwest::Error),
-    SerdeError(usize, usize),
+    SerdeError(String, usize, usize),
     PolarsError(String),
     IoError(std::io::Error),
     ParseIntError(std::num::ParseIntError),
@@ -14,21 +14,19 @@ pub enum GlobleError {
     TooManyRequests(String),
     OtherError(String),
     HttpError(reqwest::StatusCode, String, String),
-    Io(std::io::Error),
-    PoisonError(String),
 }
 impl serde::Serialize for GlobleError {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::ser::Serializer,
     {
-        GlobleError::serialize(self, serializer)
+        return GlobleError::serialize(self, serializer);
     }
 }
 
 impl<T> From<std::sync::PoisonError<T>> for GlobleError {
-    fn from(err: std::sync::PoisonError<T>) -> Self {
-        GlobleError::OtherError(err.to_string())
+    fn from(e: std::sync::PoisonError<T>) -> Self {
+        GlobleError::OtherError(format!("{:?}", e))
     }
 }
 impl From<sqlx::Error> for GlobleError {
@@ -44,13 +42,12 @@ impl From<reqwest::Error> for GlobleError {
 }
 impl From<serde_json::Error> for GlobleError {
     fn from(e: serde_json::Error) -> Self {
-        GlobleError::SerdeError(e.line(), e.column())
+        GlobleError::SerdeError(format!("{:?}", e), e.line(), e.column())
     }
 }
 impl From<polars::error::PolarsError> for GlobleError {
     fn from(e: polars::error::PolarsError) -> Self {
-        println!("{:?}", e);
-        GlobleError::PolarsError(e.to_string())
+        GlobleError::PolarsError(format!("{:?}", e))
     }
 }
 impl From<std::io::Error> for GlobleError {
@@ -80,7 +77,7 @@ impl From<String> for GlobleError {
 }
 impl From<&str> for GlobleError {
     fn from(e: &str) -> Self {
-        GlobleError::ParseError(e.to_string())
+        GlobleError::ParseError(format!("{:?}", e))
     }
 }
 
@@ -94,6 +91,19 @@ pub struct Item {
     pub tags: Option<Vec<String>>,
     pub mod_max_rank: Option<i64>,
     pub subtypes: Option<Vec<String>>,
+}
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct ItemDetails {
+    pub id: String,
+    pub items_in_set: Vec<ItemInfo>,
+}
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct ItemInfo {
+    #[serde(rename = "id")]
+    pub id: String,
+
+    #[serde(rename = "mod_max_rank")]
+    pub mod_max_rank: Option<f64>,
 }
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct Order {

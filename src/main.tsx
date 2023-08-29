@@ -2,6 +2,22 @@ import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
+import i18n from "i18next";
+import { en } from './lang/en'
+import { dk } from './lang/dk'
+import { initReactI18next } from "react-i18next";
+// Create a client
+i18n
+  .use(initReactI18next)
+  .init({
+    resources: {
+      en: { translation: en },
+      dk: { translation: dk },
+    },
+    lng: "en",
+    fallbackLng: "en",
+    interpolation: { escapeValue: false }
+  });
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   //<React.StrictMode>

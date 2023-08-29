@@ -1,7 +1,5 @@
 use crate::structs::GlobleError;
-use crate::wfm_client;
 use crate::{helper, logger};
-use once_cell::sync::Lazy;
 use polars::prelude::*;
 use reqwest::{Client, Method, Url};
 use serde_json::{json, Value};
@@ -14,9 +12,8 @@ use std::{
     io::BufWriter,
 };
 extern crate chrono;
-use chrono::Duration;
 
-use crate::{auth::AuthState, settings::SettingsState, wfm_client::WFMClientState};
+use crate::{auth::AuthState, wfm_client::WFMClientState};
 
 // Structs for the Warframe Market API
 
@@ -31,8 +28,16 @@ pub struct PriceScraper {
 impl PriceScraper {
     pub fn new(wfm: Arc<Mutex<WFMClientState>>, auth: Arc<Mutex<AuthState>>) -> Self {
         PriceScraper {
-            csv_path: "price_data.csv".to_string(),
-            csv_backop_path: "price_data_backup.csv".to_string(),
+            csv_path: helper::get_app_roaming_path()
+                .join("price_data.csv")
+                .to_str()
+                .unwrap()
+                .to_string(),
+            csv_backop_path: helper::get_app_roaming_path()
+                .join("price_data_backup.csv")
+                .to_str()
+                .unwrap()
+                .to_string(),
             wfm,
             auth,
         }

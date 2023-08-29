@@ -14,6 +14,8 @@ export interface Settings {
   avg_price_cap: number;
   price_shift_threshold: number;
   strict_whitelist: boolean;
+  ping_on_notif: boolean;
+  webhook: string;
   blacklist: string[];
   whitelist: string[];
 }

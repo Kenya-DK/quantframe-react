@@ -1,16 +1,9 @@
 import './App.css'
-import i18n from "i18next";
-import { en } from './lang/en'
-import { dk } from './lang/dk'
-import { initReactI18next } from "react-i18next";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { ModalsProvider } from '@mantine/modals';
 import { createStyles } from '@mantine/core';
 import { PromptModal } from './components/modals/prompt.modal';
-import AppRoutes from './layouts/routes';
-import { StatsScraperContextProvider, LiveScraperContextProvider, TauriContextProvider, WhisperScraperContextProvider } from './contexts';
-
+import { TauriContextProvider } from './contexts';
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,17 +12,7 @@ const queryClient = new QueryClient({
     },
   },
 })
-i18n
-  .use(initReactI18next)
-  .init({
-    resources: {
-      en: { translation: en },
-      dk: { translation: dk },
-    },
-    lng: "en",
-    fallbackLng: "en",
-    interpolation: { escapeValue: false }
-  });
+
 
 const useStyles = createStyles(() => ({
   header: {
@@ -54,7 +37,6 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ModalsProvider
         modals={modals}
-
         modalProps={{
           centered: true,
           classNames: classes,
@@ -63,15 +45,15 @@ function App() {
           },
         }}>
         <TauriContextProvider>
-          <StatsScraperContextProvider>
+          {/* <StatsScraperContextProvider>
             <LiveScraperContextProvider>
               <WhisperScraperContextProvider>
                 <AppRoutes />
               </WhisperScraperContextProvider>
             </LiveScraperContextProvider>
-          </StatsScraperContextProvider>
+          </StatsScraperContextProvider> */}
         </TauriContextProvider>
-        <ReactQueryDevtools initialIsOpen={false} />
+        {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       </ModalsProvider>
     </QueryClientProvider>
   )

@@ -1,7 +1,7 @@
 import { Button, Container, Group, Select, TextInput, Textarea } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { ContextModalProps } from '@mantine/modals';
-import { useTranslateModal } from '../../hooks';
+import i18next from 'i18next';
 
 
 type PromtField = {
@@ -30,7 +30,6 @@ type ModalProps = {
 
 export const PromptModal = ({ context, id, innerProps }: ContextModalProps<ModalProps>) => {
   const { height, confirmLabel, cancelLabel, fields, onConfirm, onCancel } = innerProps;
-  const useTranslatePromptModal = (key: string, context?: { [key: string]: any }) => useTranslateModal(`prompt.${key}`, { ...context })
 
   const formValues: { [key: string]: any; } = {};
 
@@ -127,10 +126,10 @@ export const PromptModal = ({ context, id, innerProps }: ContextModalProps<Modal
           context.closeModal(id);
           onCancel(id);
         }} radius="xl">
-          {cancelLabel || useTranslatePromptModal('cancelLabel')}
+          {cancelLabel || i18next.t('components.modals.prompt.cancelLabel')}
         </Button>
         <Button type="submit" color='green' radius="xl" >
-          {confirmLabel || useTranslatePromptModal('confirmLabel')}
+          {confirmLabel || i18next.t('components.modals.prompt.confirmLabel')}
         </Button>
       </Group>
     </form>

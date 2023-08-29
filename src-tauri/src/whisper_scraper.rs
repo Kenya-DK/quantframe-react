@@ -1,3 +1,4 @@
+use crate::settings::SettingsState;
 use crate::{helper, logger};
 use regex::Regex;
 use serde_json::json;
@@ -20,20 +21,23 @@ pub struct WhisperScraper {
     log_path: PathBuf,
     last_file_size: Arc<Mutex<u64>>,
     handle: Arc<Mutex<Option<JoinHandle<()>>>>,
+    settings: Arc<Mutex<SettingsState>>,
 }
 
 impl WhisperScraper {
-    pub fn new() -> Self {
+    pub fn new(settings: Arc<Mutex<SettingsState>>) -> Self {
         Self {
             is_running: Arc::new(AtomicBool::new(false)),
             log_path: helper::get_app_local_path().join("Warframe").join("EE.log"),
             last_file_size: Arc::new(Mutex::new(0)),
             handle: Arc::new(Mutex::new(None)),
+            settings,
         }
     }
 
     pub fn start_loop(&mut self) {
         let is_running = Arc::clone(&self.is_running);
+        let settings = Arc::clone(&self.settings).lock().unwrap().clone();
         let scraper = self.clone();
 
         self.is_running.store(true, Ordering::SeqCst);
@@ -50,8 +54,18 @@ impl WhisperScraper {
                                     if matched && is_starting {
                                         helper::send_message_to_window(
                                             "whisper_scraper_mesage_from_player",
-                                            Some(json!({"name": group1.unwrap()})),
+                                            Some(json!({"name": group1.clone().unwrap()})),
                                         );
+                                        if settings.webhook != "" {
+                                            helper::send_message_to_discord(
+                                                settings.webhook.clone(),
+                                                format!(
+                                                    "You have whisper(s) from {}",
+                                                    group1.unwrap().as_str()
+                                                ),
+                                                settings.ping_on_notif,
+                                            );
+                                        }
                                     }
                                 }
                                 Err(err) => {

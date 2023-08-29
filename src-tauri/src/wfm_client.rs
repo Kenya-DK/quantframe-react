@@ -11,7 +11,7 @@ use serde_json::{json, Value};
 use crate::{
     auth::AuthState,
     logger,
-    structs::{GlobleError, Item, Order, OrderByItem, Ordres},
+    structs::{GlobleError, Item, ItemDetails, Order, OrderByItem, Ordres},
 };
 
 #[derive(Clone, Debug)]
@@ -50,7 +50,7 @@ impl WFMClientState {
             )
             .header("Language", "en");
 
-        let request = match body {
+        let request = match body.clone() {
             Some(content) => request.json(&content),
             None => request,
         };
@@ -73,21 +73,32 @@ impl WFMClientState {
         if status != 200 {
             let rep = response_data.text().await.unwrap();
             return Err(GlobleError::OtherError(format!(
-                "URL: {}, Status: {}, Response: {}",
-                new_url, status, rep
+                "URL: {}, Body: {}, Status: {}, Response: {}",
+                new_url,
+                body.unwrap_or(json!({})),
+                status,
+                rep
             )));
         }
 
         let headers = response_data.headers().clone();
         let response = response_data.json::<Value>().await.unwrap();
 
+        let mut data = response["payload"].clone();
         if let Some(payload_key) = payload_key {
-            let payload: T =
-                serde_json::from_value(response["payload"][payload_key].clone()).unwrap();
-            Ok((payload, headers))
-        } else {
-            let payload: T = serde_json::from_value(response["payload"].clone()).unwrap();
-            Ok((payload, headers))
+            data = response["payload"][payload_key].clone();
+            // let payload: T =
+            //     serde_json::from_value(response["payload"][payload_key].clone()).unwrap();
+        }
+
+        // Convert the response to a T object
+        match serde_json::from_value(data.clone()) {
+            Ok(payload) => Ok((payload, headers)),
+            Err(e) => Err(GlobleError::SerdeError(
+                format!("{}", data.to_string()),
+                e.line(),
+                e.column(),
+            )),
         }
     }
 
@@ -129,10 +140,10 @@ impl WFMClientState {
         &self,
         url: &str,
         payload_key: Option<&str>,
-        body: Value,
+        body: Option<Value>,
     ) -> Result<(T, HeaderMap), GlobleError> {
         let payload: (T, HeaderMap) = self
-            .send_request(Method::PUT, url, payload_key, Some(body))
+            .send_request(Method::PUT, url, payload_key, body)
             .await?;
         Ok(payload)
     }
@@ -193,6 +204,29 @@ impl WFMClientState {
         let (payload, _headers) = self.get("items", Some("items")).await?;
         Ok(payload)
     }
+    pub async fn get_item(&self, item: String) -> Result<ItemDetails, GlobleError> {
+        let url = format!("items/{}", item);
+        match self.get(&url, Some("item")).await {
+            Ok((item, _headers)) => {
+                logger::info(
+                    "WarframeMarket:GetItem",
+                    format!("For Item: {:?}", item).as_str(),
+                    true,
+                    Some(self.log_file.as_str()),
+                );
+                Ok(item)
+            }
+            Err(e) => {
+                logger::error(
+                    "WarframeMarket:GetItem",
+                    format!("Item: {}, Error: {:?}", item, e).as_str(),
+                    true,
+                    Some(self.log_file.as_str()),
+                );
+                Err(e)
+            }
+        }
+    }
     // Get orders from warframe market
     pub async fn get_user_ordres(&self) -> Result<Ordres, GlobleError> {
         let auth = self.auth.lock()?.clone();
@@ -201,11 +235,7 @@ impl WFMClientState {
             Ok((orders, _headers)) => {
                 logger::info(
                     "WarframeMarket:GetUserOrdres",
-                    format!(
-                        "From User: {}",
-                        auth.ingame_name.clone()
-                    )
-                    .as_str(),
+                    format!("From User: {}", auth.ingame_name.clone()).as_str(),
                     true,
                     Some(self.log_file.as_str()),
                 );
@@ -316,28 +346,28 @@ impl WFMClientState {
             ),
             Series::new(
                 "platform",
-                buy_orders
+                sell_orders
                     .iter()
                     .map(|order| order.platform.clone())
                     .collect::<Vec<_>>(),
             ),
             Series::new(
                 "quantity",
-                buy_orders
+                sell_orders
                     .iter()
                     .map(|order| order.quantity.clone())
                     .collect::<Vec<_>>(),
             ),
             Series::new(
                 "last_update",
-                buy_orders
+                sell_orders
                     .iter()
                     .map(|order| order.last_update.clone())
                     .collect::<Vec<_>>(),
             ),
             Series::new(
                 "creation_date",
-                buy_orders
+                sell_orders
                     .iter()
                     .map(|order| order.creation_date.clone())
                     .collect::<Vec<_>>(),
@@ -446,7 +476,7 @@ impl WFMClientState {
             "visible": visible
         });
         let url = format!("profile/orders/{}", order_id);
-        match self.put(&url, Some("order"), body).await {
+        match self.put(&url, Some("order"), Some(body)).await {
             Ok((order, _headers)) => {
                 logger::info("WarframeMarket:UpdateOrderListing", format!("Updated Order Id: {}, Item Name: {}, Item Id: {}, Platinum: {}, Quantity: {}, Visible: {}, Type: {}", order_id, item_name, item_id,platinum ,quantity ,visible, order_type).as_str(), true, Some(&self.log_file));
                 Ok(order)
@@ -533,5 +563,45 @@ impl WFMClientState {
             ),
         ]);
         Ok(orders_df)
+    }
+
+    pub async fn close_order_by_url(&self, item: &str) -> Result<String, GlobleError> {
+        // Get the user orders and find the order
+        let mut ordres_vec = self.get_user_ordres().await?;
+        let mut ordres: Vec<Order> = ordres_vec.buy_orders;
+        ordres.append(&mut ordres_vec.sell_orders);
+
+        let order = ordres
+            .iter()
+            .find(|order| order.item.url_name == item)
+            .clone();
+
+        if order.is_none() {
+            return Ok("No Order Found".to_string());
+        }
+
+        let url = format!("profile/orders/close/{}", order.unwrap().id);
+        let result: Result<(Option<String>, HeaderMap), GlobleError> =
+            self.put(&url, Some("order_id"), None).await;
+        match result {
+            Ok((order_data, _headers)) => {
+                logger::info(
+                    "WarframeMarket:CloseOrder",
+                    format!("Closed Order: {}", order.unwrap().id).as_str(),
+                    true,
+                    Some(self.log_file.as_str()),
+                );
+                Ok(order_data.unwrap_or("Order Successfully Closed".to_string()))
+            }
+            Err(e) => {
+                logger::error(
+                    "WarframeMarket:CloseOrder",
+                    format!("{:?}", e).as_str(),
+                    true,
+                    Some(self.log_file.as_str()),
+                );
+                Err(e)
+            }
+        }
     }
 }

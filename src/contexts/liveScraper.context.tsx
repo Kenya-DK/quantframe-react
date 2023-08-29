@@ -25,8 +25,7 @@ export const LiveScraperContextProvider = ({ children }: LiveScraperContextProvi
   }
 
   useEffect(() => {
-    OnTauriEvent("live_scraper_error", (data: any) => {
-      console.log(data);
+    OnTauriEvent("live_scraper_error", () => {
       setIsRunning(false)
     });
     return () => { }

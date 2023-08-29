@@ -1,6 +1,20 @@
 export const en = {
+  general: {
+    months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+    total_quantity: "Total orders <italic>{{count}}</italic>",
+    total_revenue: "Total revenue <italic>{{val, currency(USD)}}</italic>",
+    total_revenue_average: "Average revenue <italic>{{count, number}}</italic>",
+    this_year: "This year",
+    last_year: "Last year",
+    sales_label: "Sell",
+    buy_label: "Buy",
+  },
   components: {
     forms: {
+    },
+    transactionRevenueChart: {
+      revenue_label: "Revenue: {{val, number}}",
+      quantity_label: "Quantity: {{count}}",
     },
     searchItemField: {
       title: "Search item",
@@ -20,6 +34,10 @@ export const en = {
       quantity_description: "Quantity of items",
       rank: "Mod Rank",
       rank_description: "Rank of the mod",
+      report: "Report",
+      report_description: "w/o Reporting",
+      total_listed_price: "Total Listed Price: <italic>{{price}}</italic>",
+      total_purchase_price: "Total Purchase Price: <italic>{{price}}</italic>",
       buttons: {
         buy: "Buy",
         sell: "Sell",
@@ -33,6 +51,7 @@ export const en = {
           actions: {
             title: "Actions",
             sell: "Sell",
+            sell_report: "Sell & Report",
             delete: {
               title: "Delete",
               message: "Are you sure you want to delete this item?",
@@ -66,6 +85,9 @@ export const en = {
           },
           live_trading: {
             title: "Live Trading",
+            accordion_general: "General",
+            accordion_whitelist: "Whitelist",
+            accordion_blacklist: "Blacklist",
             volume_threshold: "Volume Threshold",
             volume_threshold_description: "Volume of items sold, set this to somewhere between 6-10",
             max_total_price_cap: "Max Total Price Cap",
@@ -84,6 +106,10 @@ export const en = {
             blacklist_placeholder: "None",
             strict_whitelist: "Strict Whitelist",
             strict_whitelist_description: "Need Info",
+            ping_on_notif: "Ping on Notification",
+            ping_on_notif_description: "If you want to be pinged on discord.",
+            webhook: "Webhook",
+            webhook_description: "The webhook to send notifications to",
             save: "Save",
           },
           price_scraper: {},
@@ -117,6 +143,20 @@ export const en = {
   },
   pages: {
     home: {
+      stats_cards: {
+        total_revenue_title: "Total Turnover",
+        total_sales: "Total Sales: <italic>{{val}}</italic>",
+
+        last_days_title: "Last {{days}} days",
+        today_revenue_title: "Today revenue",
+        open_orders_title: "Open orders",
+        best_selling_product_title: "Best selling product",
+        average_order_revenue: "Average order revenue <italic>{{val, currency(USD)}}</italic>",
+        average_orders_per_month: "Average orders per month <italic>{{val, currency(USD)}}</italic>",
+        revenue_compare_to_last_year_less: "Revenue <italic>{{val, currency(USD)}}</italic> less than last year",
+        revenue_compare_to_last_year_more: "Revenue <italic>{{val, currency(USD)}}</italic> more than last year",
+        completed_orders_today: "Completed orders <italic>{{count}}</italic>",
+      }
     },
     auth: {
       login: {

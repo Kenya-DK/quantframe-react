@@ -13,7 +13,7 @@ interface SettingsModalProps {
 export function SettingsModal({ tradable_items, settings, updateSettings }: SettingsModalProps) {
   const useTranslateSettingsPanels = (key: string, context?: { [key: string]: any }) => useTranslateModal(`settings.panels.${key}`, { ...context })
   return (
-    <Tabs defaultValue="gallery">
+    <Tabs defaultValue="live_scraper">
       <Tabs.List>
         <Tabs.Tab value="general">{useTranslateSettingsPanels("general.title")}</Tabs.Tab>
         <Tabs.Tab value="live_scraper">{useTranslateSettingsPanels("live_trading.title")}</Tabs.Tab>

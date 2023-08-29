@@ -1,4 +1,5 @@
 use std::{
+    fs,
     path::{Path, PathBuf},
     sync::Mutex,
 };
@@ -8,7 +9,7 @@ use directories::BaseDirs;
 use once_cell::sync::Lazy;
 use polars::{
     lazy::dsl::col,
-    prelude::{CsvWriter, DataFrame, Expr, IntoLazy,  SortOptions},
+    prelude::{DataFrame, Expr, IntoLazy, SortOptions},
     series::Series,
 };
 use serde_json::{json, Value};
@@ -65,7 +66,11 @@ pub fn get_app_roaming_path() -> PathBuf {
         // App path for csv file
         let roaming_path = Path::new(base_dirs.data_dir());
         let app_path = roaming_path.join("quantframe");
-        app_path.clone()
+        // Check if the app path exists, if not create it
+        if !app_path.exists() {
+            fs::create_dir_all(app_path.clone()).unwrap();
+        }
+        app_path
     } else {
         panic!("Could not find app path");
     }
@@ -230,4 +235,40 @@ pub fn last_x_days(x: i64) -> Vec<String> {
         })
         .rev()
         .collect()
+}
+pub fn send_message_to_discord(webhook: String, message: String, ping: bool) {
+    tauri::async_runtime::spawn(async move {
+        let client = reqwest::Client::new();
+        let mut user_id: Option<String> = None;
+
+        if ping {
+            let res = client
+                .post(webhook.as_str())
+                .json(&json!({ "content": message }))
+                .send()
+                .await;
+            if let Ok(res) = res {
+                let json: Value = res.json().await.unwrap();
+                if let Some(id) = json.get("user").unwrap().get("id") {
+                    user_id = Some(id.to_string());
+                }
+            }
+        }
+        let mut message = message.to_string();
+        if user_id.is_some() {
+            message = format!("{} <@{}>", message, user_id.unwrap());
+        }
+
+        let res = client
+            .post(webhook)
+            .json(&json!({ "content": message }))
+            .send()
+            .await;
+        match res {
+            Ok(_) => {}
+            Err(e) => {
+                println!("Error while sending message to discord {:?}", e);
+            }
+        }
+    });
 }

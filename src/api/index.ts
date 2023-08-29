@@ -29,11 +29,11 @@ const api = {
     }
   },
   inventory: {
-    async createInvantoryEntry(id: string, quantity: number, price: number, rank: number): Promise<InventoryEntryDto> {
-      return await invoke("create_invantory_entry", { id, quantity, price, rank }) as InventoryEntryDto;
+    async createInvantoryEntry(id: string, report: boolean, quantity: number, price: number, rank: number): Promise<InventoryEntryDto> {
+      return await invoke("create_invantory_entry", { id, report, quantity, price, rank }) as InventoryEntryDto;
     },
-    async sellInvantoryEntry(id: number, price: number): Promise<InventoryEntryDto> {
-      return await invoke("sell_invantory_entry", { id, price }) as InventoryEntryDto;
+    async sellInvantoryEntry(id: number, report: boolean, price: number): Promise<InventoryEntryDto> {
+      return await invoke("sell_invantory_entry", { id, report, price }) as InventoryEntryDto;
     },
     async deleteInvantoryEntry(id: number): Promise<InventoryEntryDto> {
       return await invoke("delete_invantory_entry", { id });

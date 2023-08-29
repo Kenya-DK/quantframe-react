@@ -40,10 +40,10 @@ async fn setup(
     let settings = settings.lock()?.clone();
     let auth = auth.lock()?.clone();
     let wfm = wfm.lock()?.clone();
-    let db = db.lock()?.clone();
-    db.initialize().await?;
     let cache = cache.lock()?.clone();
     cache.update_cache().await?;
+    let db = db.lock()?.clone();
+    db.initialize().await?;
 
     // Check if the user access token is valid
     // let valid = wfm.validate().await?;
@@ -55,7 +55,7 @@ async fn setup(
         "settings": &settings.clone(),
         "user": &auth.clone(),
          "inventorys": &db.get_inventorys().await?,
-         "transactions": &db.get_transactions().await?,
+         "transactions": &db.get_transactions("SELECT * FROM transactions").await?,
 
     }))
 }
@@ -84,6 +84,7 @@ async fn login(
 #[tauri::command]
 async fn create_invantory_entry(
     id: String,
+    report: bool,
     quantity: i64,
     price: i64,
     rank: i64,
@@ -91,7 +92,7 @@ async fn create_invantory_entry(
 ) -> Result<Invantory, GlobleError> {
     let db = db.lock()?.clone();
     let invantory = db
-        .create_inventory_entry(id, quantity, price, rank)
+        .create_inventory_entry(id, report, quantity, price, rank)
         .await
         .unwrap();
     Ok(invantory)
@@ -125,13 +126,15 @@ async fn delete_invantory_entry(
 #[tauri::command]
 async fn sell_invantory_entry(
     id: i64,
+    report: bool,
     price: i64,
     db: tauri::State<'_, Arc<Mutex<DatabaseClient>>>,
 ) -> Result<Invantory, GlobleError> {
     println!("{:?}", id);
     println!("{:?}", price);
     let db = db.lock()?.clone();
-    Ok(db.sell_invantory_entry(id, price).await?)
+    let invantory = db.sell_invantory_entry(id, report, price).await?;
+    Ok(invantory)
 }
 
 #[tauri::command]
@@ -177,6 +180,8 @@ async fn update_settings(
     my_lock.blacklist = settings.blacklist;
     my_lock.whitelist = settings.whitelist;
     my_lock.strict_whitelist = settings.strict_whitelist;
+    my_lock.ping_on_notif = settings.ping_on_notif;
+    my_lock.webhook = settings.webhook;
     my_lock.save_to_file().expect("Could not save settings");
     Ok(())
 }
@@ -190,7 +195,7 @@ async fn generate_price_history(
     Ok(price_scraper.generate(days).await?)
 }
 async fn setup_async(
-    app: &mut App
+    app: &mut App,
 ) -> Result<Arc<Mutex<DatabaseClient>>, Box<dyn std::error::Error>> {
     // create and manage Settings state
     let settings_arc = Arc::new(Mutex::new(
@@ -213,16 +218,23 @@ async fn setup_async(
     app.manage(cache_arc.clone());
 
     // create and manage DatabaseClient state
-    let database_client = Arc::new(Mutex::new(DatabaseClient::new(cache_arc).await.unwrap()));
+    let database_client = Arc::new(Mutex::new(
+        DatabaseClient::new(cache_arc, wfm_client.clone())
+            .await
+            .unwrap(),
+    ));
     app.manage(database_client.clone());
 
     // create and manage PriceScraper state
-    let price_scraper: Arc<Mutex<PriceScraper>> = Arc::new(Mutex::new(PriceScraper::new(Arc::clone(&wfm_client), Arc::clone(&auth_arc))));
+    let price_scraper: Arc<Mutex<PriceScraper>> = Arc::new(Mutex::new(PriceScraper::new(
+        Arc::clone(&wfm_client),
+        Arc::clone(&auth_arc),
+    )));
     app.manage(price_scraper.clone());
 
     // create and manage LiveScraper state
     let live_scraper = LiveScraper::new(
-        Arc::clone(&settings_arc),        
+        Arc::clone(&settings_arc),
         Arc::clone(&price_scraper),
         Arc::clone(&wfm_client),
         Arc::clone(&auth_arc),
@@ -231,7 +243,7 @@ async fn setup_async(
     app.manage(Arc::new(Mutex::new(live_scraper)));
 
     // create and manage WhisperScraper state
-    let whisper_scraper = WhisperScraper::new();
+    let whisper_scraper = WhisperScraper::new(Arc::clone(&settings_arc));
     app.manage(Arc::new(Mutex::new(whisper_scraper)));
 
     Ok(database_client)
