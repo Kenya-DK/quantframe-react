@@ -71,7 +71,7 @@ impl WFMClientState {
             ));
         }
         if status != 200 {
-            let rep = response_data.text().await.unwrap();
+            let rep = response_data.text().await?;
             return Err(GlobleError::OtherError(format!(
                 "URL: {}, Body: {}, Status: {}, Response: {}",
                 new_url,
@@ -82,7 +82,7 @@ impl WFMClientState {
         }
 
         let headers = response_data.headers().clone();
-        let response = response_data.json::<Value>().await.unwrap();
+        let response = response_data.json::<Value>().await?;
 
         let mut data = response["payload"].clone();
         if let Some(payload_key) = payload_key {
@@ -246,7 +246,7 @@ impl WFMClientState {
                     "WarframeMarket:GetUserOrdres",
                     format!("User: {}, Error: {:?}", auth.ingame_name, e).as_str(),
                     true,
-                    None,
+                    Some(self.log_file.as_str()),
                 );
                 Err(e)
             }
@@ -440,7 +440,7 @@ impl WFMClientState {
                     "WarframeMarket:DeleteOrder",
                     format!("{:?}", e).as_str(),
                     true,
-                    None,
+                    Some(self.log_file.as_str()),
                 );
                 Err(e)
             }

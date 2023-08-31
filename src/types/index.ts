@@ -1,4 +1,3 @@
-import { TransactionEntryDto } from "./database.type";
 
 export * from "./settings.type";
 export * from "./wfm.type";
@@ -59,17 +58,13 @@ export interface StatisticTodayTransaction extends StatisticTotalTransactionBuyA
 
 }
 
+export interface StatisticRecentDaysTransaction extends StatisticTotalTransactionBuyAndSell {
+  days: number;
+}
+
 export interface StatisticDto {
   total: StatisticTotalTransaction;
   today: StatisticTodayTransaction;
-  total_buy: number;
-  total_sales: number;
-  spend_plat: number;
-  spend_plat_avg: number;
-  earned_plat: number;
-  earned_plat_avg: number;
-  toltal_transactions: number;
+  recent_days: StatisticRecentDaysTransaction;
   turnover: number;
-  best_sellers: Array<TransactionEntryDto>;
-  most_bought: Array<TransactionEntryDto>;
 }

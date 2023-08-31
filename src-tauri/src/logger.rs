@@ -7,6 +7,8 @@ use std::{
     path::PathBuf,
 };
 
+use crate::helper;
+
 pub fn format_text(text: &str, color: &str, bold: bool) -> String {
     let color_code = match color {
         "red" => "31",
@@ -86,13 +88,23 @@ fn dolog(level: i32, component: &str, msg: &str, console: bool, file: Option<&st
 }
 
 fn get_log_forlder() -> PathBuf {
-    let log_path = PathBuf::from("logs");
+    let app_path = helper::get_app_roaming_path();
+    let log_path = app_path.join("logs");
     // Create the directory if it does not exist
     if !log_path.exists() {
         fs::create_dir_all(&log_path).unwrap();
     }
     log_path
 }
+
+pub fn clear_log_folder() {
+    let log_path = get_log_forlder();
+    // Create the directory if it does not exist
+    if log_path.exists() {
+        fs::remove_dir_all(&log_path).unwrap();
+    }
+}
+
 pub fn debug(component: &str, msg: &str, console: bool, file: Option<&str>) {
     dolog(3, component, msg, console, file);
 }

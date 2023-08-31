@@ -1,9 +1,9 @@
 import dayjs from "dayjs";
-import * as isBetween from 'dayjs/plugin/isBetween';
+import isBetween from 'dayjs/plugin/isBetween';
 dayjs.extend(isBetween);
 import i18next from "i18next";
 import { groupBy, getGroupByDate } from ".";
-import { StatisticDto, TransactionEntryDto, StatisticTotalTransaction, StatisticTransactionRevenueWithChart, StatisticTransactionBestSeller, StatisticTodayTransaction, StatisticTransactionRevenue } from "../types";
+import { StatisticDto, TransactionEntryDto, StatisticTotalTransaction, StatisticTransactionRevenueWithChart, StatisticTransactionBestSeller, StatisticTodayTransaction, StatisticTransactionRevenue, StatisticRecentDaysTransaction } from "../types";
 
 
 
@@ -107,32 +107,45 @@ const getTodayRevenue = (transactions: TransactionEntryDto[]): StatisticTodayTra
 
 };
 
+const getRecentDays = (transactions: TransactionEntryDto[], days: number): StatisticRecentDaysTransaction => {
+  let today = dayjs().subtract(days, "day").endOf('day').toDate();
+  let endToday = dayjs().endOf('day').toDate();
+  transactions = transactions.filter(t => dayjs(t.datetime).isBetween(today, endToday));
+  const sell_transactions = transactions.filter(t => t.transaction_type == "sell");
+  const buy_transactions = transactions.filter(t => t.transaction_type == "buy");
+
+  const labels = [];
+  const date = new Date();
+  date.setDate(date.getDate() - (days - 1));
+  for (let i = 0; i < days; i++) {
+    labels.push(`${date.getDate()} ${date.getMonth()} ${date.getFullYear()}`);
+    date.setDate(date.getDate() + 1);
+  }
+
+  return {
+    days: days,
+    labels: labels,
+    sales: getRevenueWithChart(labels, sell_transactions, { month: true, day: true, year: true }),
+    buy: getRevenueWithChart(labels, buy_transactions, { month: true, day: true, year: true }),
+  };
+
+};
+
 
 export const getStatistic = (transactions: TransactionEntryDto[]): StatisticDto => {
 
   const sell_transactions = transactions.filter(t => t.transaction_type == "sell");
   const buy_transactions = transactions.filter(t => t.transaction_type == "buy");
 
-
   const spend_plat = buy_transactions.reduce((acc, cur) => acc + cur.price, 0);
-  const spend_plat_avg = spend_plat / buy_transactions.length;
 
   const earned_plat = sell_transactions.reduce((acc, cur) => acc + cur.price, 0);
-  const earned_plat_avg = earned_plat / sell_transactions.length;
 
   return {
     total: getTotalRevenue(transactions),
     today: getTodayRevenue(transactions),
-    total_buy: buy_transactions.length,
-    spend_plat: spend_plat,
-    spend_plat_avg: spend_plat_avg,
-    total_sales: sell_transactions.length,
-    earned_plat: earned_plat,
-    earned_plat_avg: earned_plat_avg,
-    toltal_transactions: transactions.length,
+    recent_days: getRecentDays(transactions, 7),
     turnover: earned_plat - spend_plat,
-    best_sellers: [],//getGroupItem(sell_transactions).sort((a, b) => b.quantity - a.quantity).slice(0, 5),
-    most_bought: [],//getGroupItem(buy_transactions).sort((a, b) => b.quantity - a.quantity).slice(0, 5),
   };
 }
 

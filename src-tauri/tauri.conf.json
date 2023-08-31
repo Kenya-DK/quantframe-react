@@ -7,7 +7,7 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "quantframe-react",
+    "productName": "Quantframe",
     "version": "0.0.0"
   },
   "tauri": {
@@ -44,7 +44,7 @@
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "quantframe",
+      "identifier": "dev.kenya.quantframe",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
@@ -61,8 +61,8 @@
         "fullscreen": false,
         "resizable": true,
         "title": "Quantframe",
-        "width": 1105,
-        "height": 750
+        "width": 1455,
+        "height": 912
       }
     ]
   }

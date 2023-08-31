@@ -43,15 +43,15 @@ impl WhisperScraper {
         self.is_running.store(true, Ordering::SeqCst);
 
         let handle = thread::spawn(move || {
-            let mut is_starting = false;
+            let mut is_starting = true;
             while is_running.load(Ordering::SeqCst) {
-                let new_lines_result = scraper.read_new_lines();
+                let new_lines_result = scraper.read_new_lines(is_starting);
                 match new_lines_result {
                     Ok(new_lines) => {
                         for line in new_lines {
                             match WhisperScraper::match_pattern(&line) {
                                 Ok((matched, group1)) => {
-                                    if matched && is_starting {
+                                    if matched {
                                         helper::send_message_to_window(
                                             "whisper_scraper_mesage_from_player",
                                             Some(json!({"name": group1.clone().unwrap()})),
@@ -86,7 +86,7 @@ impl WhisperScraper {
                     Err(err) => eprintln!("Error: {:?}", err),
                 }
 
-                is_starting = true;
+                is_starting = false;
 
                 thread::sleep(Duration::from_secs(1));
             }
@@ -103,12 +103,17 @@ impl WhisperScraper {
         // Return the current value of is_running
         self.is_running.load(Ordering::SeqCst)
     }
-    fn read_new_lines(&self) -> io::Result<Vec<String>> {
+    fn read_new_lines(&self, is_starting: bool) -> io::Result<Vec<String>> {
         let mut new_lines = Vec::new();
         let mut file = File::open(&self.log_path)?;
 
         let metadata = file.metadata()?;
         let current_file_size = metadata.len();
+
+        if is_starting {
+            *self.last_file_size.lock().unwrap() = current_file_size;
+            return Ok(new_lines);
+        }
 
         let mut last_file_size = self.last_file_size.lock().unwrap();
 

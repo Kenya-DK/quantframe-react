@@ -15,10 +15,11 @@ import { notifications } from '@mantine/notifications';
 import { Trans } from 'react-i18next';
 
 interface PurchaseNewItemProps {
+  loading: boolean;
   onSumit: (type: string, id: string, report: boolean, quantity: number, price: number, mod_rank: number) => void;
 }
 const PurchaseNewItem = (props: PurchaseNewItemProps) => {
-  const { onSumit } = props;
+  const { onSumit, loading } = props;
   const useTranslateSearch = (key: string, context?: { [key: string]: any }) => useTranslateComponent(`inventory.${key}`, { ...context })
   const roleForm = useForm({
     initialValues: {
@@ -76,12 +77,12 @@ const PurchaseNewItem = (props: PurchaseNewItemProps) => {
             } */}
           </Group>
           <Group mt={5} position="center">
-            <Button type="submit" onClick={() => roleForm.setFieldValue('type', "buy")} disabled={roleForm.values.item.length <= 0} radius="xl">
+            <Button loading={loading} type="submit" onClick={() => roleForm.setFieldValue('type', "buy")} disabled={roleForm.values.item.length <= 0} radius="xl">
               {useTranslateSearch('buttons.buy')}
             </Button>
-            <Button type="submit" onClick={() => roleForm.setFieldValue('type', "sell")} disabled={roleForm.values.item.length <= 0} radius="xl">
+            {/* <Button loading={loading} type="submit" onClick={() => roleForm.setFieldValue('type', "sell")} disabled={roleForm.values.item.length <= 0} radius="xl">
               {useTranslateSearch('buttons.sell')}
-            </Button>
+            </Button> */}
           </Group>
         </Stack>
       </form>
@@ -105,7 +106,7 @@ const Items = () => {
 
   const [itemPrices, setItemPrices] = useState<Record<string, number>>({});
 
-  const sellInvantoryEntryMutation = useMutation((data: { id: number, report: boolean, price: number }) => api.inventory.sellInvantoryEntry(data.id, data.report, data.price), {
+  const sellInvantoryEntryMutation = useMutation((data: { id: number, report: boolean, price: number }) => api.inventory.sellInvantoryEntry(data.id, data.report, data.price, 1), {
     onSuccess: async (data) => {
       notifications.show({
         title: useTranslateInvSuccess("sell_title"),
@@ -178,7 +179,7 @@ const Items = () => {
                     <Group spacing={"5px"} mr={0}>
                       <Divider orientation="vertical" />
                       <Tooltip label={useTranslateDataGridColumns('actions.sell')}>
-                        <ActionIcon color="green.7" variant="filled" onClick={async () => {
+                        <ActionIcon loading={sellInvantoryEntryMutation.isLoading} color="green.7" variant="filled" onClick={async () => {
                           const price = itemPrices[item_url];
                           if (!price || price <= 0 || !id) return;
                           await sellInvantoryEntryMutation.mutateAsync({ id, price, report: false });
@@ -187,7 +188,7 @@ const Items = () => {
                         </ActionIcon>
                       </Tooltip>
                       <Tooltip label={useTranslateDataGridColumns('actions.sell_report')}>
-                        <ActionIcon color="blue.7" variant="filled" onClick={async () => {
+                        <ActionIcon loading={sellInvantoryEntryMutation.isLoading} color="blue.7" variant="filled" onClick={async () => {
                           const price = itemPrices[item_url];
                           if (!price || price <= 0 || !id) return;
                           await sellInvantoryEntryMutation.mutateAsync({ id, price, report: true });
@@ -196,7 +197,7 @@ const Items = () => {
                         </ActionIcon>
                       </Tooltip>
                       <Tooltip label={useTranslateDataGridColumns('actions.delete.title')}>
-                        <ActionIcon color="red.7" variant="filled" onClick={async () => {
+                        <ActionIcon loading={sellInvantoryEntryMutation.isLoading} color="red.7" variant="filled" onClick={async () => {
                           modals.openConfirmModal({
                             title: useTranslateDataGridColumns('actions.delete.title'),
                             children: (<Text>
@@ -267,7 +268,7 @@ export const Inventory = () => {
   })
   return (
     <Box >
-      <PurchaseNewItem onSumit={async (__type: string, id: string, report: boolean, quantity: number, price: number, mod_rank: number) => {
+      <PurchaseNewItem loading={createInvantoryEntryMutation.isLoading} onSumit={async (__type: string, id: string, report: boolean, quantity: number, price: number, mod_rank: number) => {
         createInvantoryEntryMutation.mutate({ id, report, price, quantity, mod_rank });
       }} />
       <Items />

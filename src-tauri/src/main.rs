@@ -3,12 +3,12 @@
 use auth::AuthState;
 use cache::CacheState;
 use database::DatabaseClient;
+use debug::DebugClient;
 use price_scraper::PriceScraper;
 use serde_json::{json, Value};
 use settings::SettingsState;
 use std::sync::Arc;
 use std::{env, sync::Mutex};
-use structs::{GlobleError, Invantory, Transaction};
 use tauri::async_runtime::block_on;
 use tauri::{App, Manager};
 use wfm_client::WFMClientState;
@@ -20,7 +20,9 @@ use live_scraper::LiveScraper;
 
 mod auth;
 mod cache;
+mod commands;
 mod database;
+mod debug;
 mod helper;
 mod logger;
 mod price_scraper;
@@ -29,174 +31,7 @@ mod wfm_client;
 
 use helper::WINDOW as HE_WINDOW;
 
-#[tauri::command]
-async fn setup(
-    settings: tauri::State<'_, Arc<Mutex<SettingsState>>>,
-    auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
-    wfm: tauri::State<'_, Arc<Mutex<WFMClientState>>>,
-    cache: tauri::State<'_, Arc<Mutex<CacheState>>>,
-    db: tauri::State<'_, Arc<Mutex<DatabaseClient>>>,
-) -> Result<Value, GlobleError> {
-    let settings = settings.lock()?.clone();
-    let auth = auth.lock()?.clone();
-    let wfm = wfm.lock()?.clone();
-    let cache = cache.lock()?.clone();
-    cache.update_cache().await?;
-    let db = db.lock()?.clone();
-    db.initialize().await?;
-
-    // Check if the user access token is valid
-    // let valid = wfm.validate().await?;
-    // if !valid {
-    //     return Ok(json!({"valid": false}));
-    // }
-    Ok(json!({
-        "valid": true,
-        "settings": &settings.clone(),
-        "user": &auth.clone(),
-         "inventorys": &db.get_inventorys().await?,
-         "transactions": &db.get_transactions("SELECT * FROM transactions").await?,
-
-    }))
-}
-
-#[tauri::command]
-async fn login(
-    email: String,
-    password: String,
-    auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
-    wfm: tauri::State<'_, Arc<Mutex<WFMClientState>>>,
-) -> Result<AuthState, GlobleError> {
-    let auth = auth.lock()?.clone();
-    let wfm = wfm.lock()?.clone();
-    match wfm.login(email, password).await {
-        Ok(user) => {
-            user.save_to_file()?;
-            return Ok(user.clone());
-        }
-        Err(e) => {
-            println!("Err: {:?}", e);
-        }
-    }
-    Ok(auth.clone())
-}
-
-#[tauri::command]
-async fn create_invantory_entry(
-    id: String,
-    report: bool,
-    quantity: i64,
-    price: i64,
-    rank: i64,
-    db: tauri::State<'_, Arc<Mutex<DatabaseClient>>>,
-) -> Result<Invantory, GlobleError> {
-    let db = db.lock()?.clone();
-    let invantory = db
-        .create_inventory_entry(id, report, quantity, price, rank)
-        .await
-        .unwrap();
-    Ok(invantory)
-}
-
-#[tauri::command]
-async fn create_transaction_entry(
-    id: String,
-    ttype: String,
-    quantity: i64,
-    rank: i64,
-    price: i64,
-    db: tauri::State<'_, Arc<Mutex<DatabaseClient>>>,
-) -> Result<Transaction, GlobleError> {
-    let db = db.lock()?.clone();
-    let transaction = db
-        .create_transaction_entry(id, ttype, quantity, rank, price)
-        .await
-        .unwrap();
-    Ok(transaction)
-}
-
-#[tauri::command]
-async fn delete_invantory_entry(
-    id: i64,
-    db: tauri::State<'_, Arc<Mutex<DatabaseClient>>>,
-) -> Result<Option<Invantory>, GlobleError> {
-    let db = db.lock()?.clone();
-    Ok(db.delete_inventory_entry(id).await?)
-}
-#[tauri::command]
-async fn sell_invantory_entry(
-    id: i64,
-    report: bool,
-    price: i64,
-    db: tauri::State<'_, Arc<Mutex<DatabaseClient>>>,
-) -> Result<Invantory, GlobleError> {
-    println!("{:?}", id);
-    println!("{:?}", price);
-    let db = db.lock()?.clone();
-    let invantory = db.sell_invantory_entry(id, report, price).await?;
-    Ok(invantory)
-}
-
-#[tauri::command]
-fn toggle_whisper_scraper(
-    whisper_scraper: tauri::State<'_, Arc<std::sync::Mutex<WhisperScraper>>>,
-) {
-    let mut whisper_scraper = whisper_scraper.lock().unwrap();
-
-    if whisper_scraper.is_running() {
-        whisper_scraper.stop_loop();
-    } else {
-        whisper_scraper.start_loop();
-    }
-}
-
-#[tauri::command]
-fn toggle_live_scraper(live_scraper: tauri::State<'_, Arc<std::sync::Mutex<LiveScraper>>>) {
-    let mut live_scraper = live_scraper.lock().unwrap();
-    if live_scraper.is_running() {
-        live_scraper.stop_loop();
-    } else {
-        match live_scraper.start_loop() {
-            Ok(_) => {}
-            Err(_e) => {
-                live_scraper.stop_loop();
-            }
-        }
-    }
-}
-
-#[tauri::command]
-async fn update_settings(
-    settings: SettingsState,
-    settings_state: tauri::State<'_, Arc<std::sync::Mutex<SettingsState>>>,
-) -> Result<(), GlobleError> {
-    let arced_mutex = Arc::clone(&settings_state);
-    let mut my_lock = arced_mutex.lock()?;
-    my_lock.volume_threshold = settings.volume_threshold;
-    my_lock.range_threshold = settings.range_threshold;
-    my_lock.avg_price_cap = settings.avg_price_cap;
-    my_lock.max_total_price_cap = settings.max_total_price_cap;
-    my_lock.price_shift_threshold = settings.price_shift_threshold;
-    my_lock.blacklist = settings.blacklist;
-    my_lock.whitelist = settings.whitelist;
-    my_lock.strict_whitelist = settings.strict_whitelist;
-    my_lock.ping_on_notif = settings.ping_on_notif;
-    my_lock.webhook = settings.webhook;
-    my_lock.save_to_file().expect("Could not save settings");
-    Ok(())
-}
-
-#[tauri::command(async)]
-async fn generate_price_history(
-    days: i64,
-    price_scraper: tauri::State<'_, Arc<std::sync::Mutex<PriceScraper>>>,
-) -> Result<i64, GlobleError> {
-    let price_scraper = price_scraper.lock().unwrap().clone();
-    Ok(price_scraper.generate(days).await?)
-}
-async fn setup_async(
-    app: &mut App,
-) -> Result<Arc<Mutex<DatabaseClient>>, Box<dyn std::error::Error>> {
+async fn setup_async(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
     // create and manage Settings state
     let settings_arc = Arc::new(Mutex::new(
         SettingsState::setup().expect("Could not setup settings"),
@@ -219,7 +54,7 @@ async fn setup_async(
 
     // create and manage DatabaseClient state
     let database_client = Arc::new(Mutex::new(
-        DatabaseClient::new(cache_arc, wfm_client.clone())
+        DatabaseClient::new(cache_arc.clone(), wfm_client.clone())
             .await
             .unwrap(),
     ));
@@ -246,7 +81,17 @@ async fn setup_async(
     let whisper_scraper = WhisperScraper::new(Arc::clone(&settings_arc));
     app.manage(Arc::new(Mutex::new(whisper_scraper)));
 
-    Ok(database_client)
+    // create and manage WhisperScraper state
+    let debug_client = DebugClient::new(
+        Arc::clone(&cache_arc),
+        Arc::clone(&wfm_client),
+        Arc::clone(&auth_arc),
+        Arc::clone(&database_client),
+        Arc::clone(&settings_arc),
+    );
+    app.manage(Arc::new(Mutex::new(debug_client)));
+
+    Ok(())
 }
 fn main() {
     tauri::Builder::default()
@@ -257,20 +102,21 @@ fn main() {
 
             // create and manage DatabaseClient state
             block_on(setup_async(app)).unwrap();
-
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            setup,
-            login,
-            update_settings,
-            create_invantory_entry,
-            create_transaction_entry,
-            delete_invantory_entry,
-            sell_invantory_entry,
-            toggle_whisper_scraper,
-            toggle_live_scraper,
-            generate_price_history
+            commands::base::setup,
+            commands::auth::login,
+            commands::base::update_settings,
+            commands::inventory::create_invantory_entry,
+            commands::transaction::create_transaction_entry,
+            commands::inventory::delete_invantory_entry,
+            commands::inventory::sell_invantory_entry,
+            commands::whisper_scraper::toggle_whisper_scraper,
+            commands::live_scraper::toggle_live_scraper,
+            commands::price_scraper::generate_price_history,
+            commands::debug::import_warframe_algo_trader_data,
+            commands::debug::reset_data,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

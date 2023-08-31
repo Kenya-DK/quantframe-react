@@ -3,7 +3,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ModalsProvider } from '@mantine/modals';
 import { createStyles } from '@mantine/core';
 import { PromptModal } from './components/modals/prompt.modal';
-import { TauriContextProvider } from './contexts';
+import { LiveScraperContextProvider, StatsScraperContextProvider, TauriContextProvider, WhisperScraperContextProvider } from './contexts';
+import AppRoutes from './layouts/routes';
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,13 +46,13 @@ function App() {
           },
         }}>
         <TauriContextProvider>
-          {/* <StatsScraperContextProvider>
+          <StatsScraperContextProvider>
             <LiveScraperContextProvider>
               <WhisperScraperContextProvider>
                 <AppRoutes />
               </WhisperScraperContextProvider>
             </LiveScraperContextProvider>
-          </StatsScraperContextProvider> */}
+          </StatsScraperContextProvider>
         </TauriContextProvider>
         {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       </ModalsProvider>

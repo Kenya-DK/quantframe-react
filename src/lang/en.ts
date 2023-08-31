@@ -45,7 +45,7 @@ export const en = {
       datagrid: {
         columns: {
           name: "Name",
-          price: "Price",
+          price: "Price Per Unit",
           listed_price: "Listed Price",
           owned: "Owned",
           actions: {

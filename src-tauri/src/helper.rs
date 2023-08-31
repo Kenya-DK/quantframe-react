@@ -65,7 +65,7 @@ pub fn get_app_roaming_path() -> PathBuf {
     if let Some(base_dirs) = BaseDirs::new() {
         // App path for csv file
         let roaming_path = Path::new(base_dirs.data_dir());
-        let app_path = roaming_path.join("quantframe");
+        let app_path = roaming_path.join("dev.kenya.quantframe");
         // Check if the app path exists, if not create it
         if !app_path.exists() {
             fs::create_dir_all(app_path.clone()).unwrap();
@@ -242,11 +242,7 @@ pub fn send_message_to_discord(webhook: String, message: String, ping: bool) {
         let mut user_id: Option<String> = None;
 
         if ping {
-            let res = client
-                .post(webhook.as_str())
-                .json(&json!({ "content": message }))
-                .send()
-                .await;
+            let res = client.get(webhook.as_str()).send().await;
             if let Ok(res) = res {
                 let json: Value = res.json().await.unwrap();
                 if let Some(id) = json.get("user").unwrap().get("id") {
@@ -256,7 +252,7 @@ pub fn send_message_to_discord(webhook: String, message: String, ping: bool) {
         }
         let mut message = message.to_string();
         if user_id.is_some() {
-            message = format!("{} <@{}>", message, user_id.unwrap());
+            message = format!("<@{}> {}", user_id.unwrap(), message).replace("\"", "");
         }
 
         let res = client

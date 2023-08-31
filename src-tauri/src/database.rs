@@ -4,7 +4,7 @@ use crate::{
     cache::CacheState,
     helper::{self, ColumnType, ColumnValues},
     logger,
-    structs::{GlobleError, Invantory, Transaction},
+    structs::{GlobleError, Invantory, Order, Transaction},
     wfm_client::WFMClientState,
 };
 use polars::{
@@ -90,8 +90,10 @@ impl DatabaseClient {
         .execute(&connection)
         .await
         .unwrap();
-        self.import_data().await?;
         Ok(true)
+    }
+    pub fn get_connection(&self) -> Arc<Mutex<Pool<Sqlite>>> {
+        self.connection.clone()
     }
     pub async fn get_inventory_names(&self) -> Result<Vec<String>, GlobleError> {
         let names = match helper::get_column_values(
@@ -209,7 +211,14 @@ impl DatabaseClient {
         price: i64,
     ) -> Result<Transaction, GlobleError> {
         let connection = self.connection.lock().unwrap().clone();
-        let item = self.cache.lock()?.get_item_by_url_name(&item_id).unwrap();
+        let item = self.cache.lock()?.get_item_by_url_name(&item_id);
+        if item.is_none() {
+            return Err(GlobleError::OtherError(
+                format!("Could not find transaction item with id {}", item_id).to_string(),
+            ));
+        }
+
+        let item = item.unwrap();
         let transaction = Transaction {
             id: -1,
             item_id,
@@ -265,13 +274,13 @@ impl DatabaseClient {
     }
     pub async fn create_inventory_entry(
         &self,
-        id: String,
+        url_name: String,
         report: bool,
         mut quantity: i64,
         price: i64,
         rank: i64,
     ) -> Result<Invantory, GlobleError> {
-        let inventorys = self.get_inventory_by_url_name(id.clone()).await?;
+        let inventorys = self.get_inventory_by_url_name(url_name.clone()).await?;
         let connection = self.connection.lock().unwrap().clone();
         let wfm = self.wfm.lock()?.clone();
         let operation = match inventorys {
@@ -283,10 +292,11 @@ impl DatabaseClient {
             quantity = 1;
         }
 
-        let item = self.cache.lock()?.get_item_by_url_name(&id).unwrap();
+        let item = self.cache.lock()?.get_item_by_url_name(&url_name).unwrap();
         let inventory = match inventorys {
             Some(t) => {
                 let total_owned = t.owned + quantity;
+                // Get price per unit
                 let total_price = (t.price * t.owned as f64) + price as f64;
                 let weighted_price = total_price / total_owned as f64;
                 sqlx::query("UPDATE inventorys SET owned = ?1, price = ?2 WHERE id = ?3")
@@ -301,6 +311,7 @@ impl DatabaseClient {
                 t
             }
             None => {
+                let price = price / quantity;
                 let result = sqlx::query(
                     "INSERT INTO inventorys (item_id, item_url, item_name, rank, price, owned) VALUES (?1, ?2, ?3, ?4, ?5, ?6)")
                     .bind(item.clone().id)
@@ -308,7 +319,7 @@ impl DatabaseClient {
                     .bind(item.clone().item_name)
                     .bind(rank)
                     .bind(price)
-                    .bind(1)
+                    .bind(quantity)
                     .execute(&connection).await?;
 
                 let inventory = Invantory {
@@ -319,23 +330,29 @@ impl DatabaseClient {
                     rank: rank as i64,
                     price: price as f64,
                     listed_price: None,
-                    owned: 1,
+                    owned: quantity,
                 };
                 inventory
             }
         };
-        self.create_transaction_entry(id, "buy".to_string(), quantity, rank, price)
-            .await?;
+        self.create_transaction_entry(
+            item.clone().url_name,
+            "buy".to_string(),
+            quantity,
+            rank,
+            price,
+        )
+        .await?;
 
         // Send Close Event to Warframe Market API
         if report {
             logger::info(
                 "Database",
-                format!("Closing order for item {}", item.url_name).as_str(),
+                format!("Closing order for item {}", item.clone().url_name).as_str(),
                 true,
                 Some(self.log_file.as_str()),
             );
-            wfm.close_order_by_url(&item.url_name).await?;
+            wfm.close_order_by_url(&item.clone().url_name).await?;
         }
 
         helper::send_message_to_window(
@@ -358,22 +375,32 @@ impl DatabaseClient {
         id: i64,
         report: bool,
         price: i64,
+        mut quantity: i64,
     ) -> Result<Invantory, GlobleError> {
         let inventorys = self.get_inventorys().await?;
         let wfm = self.wfm.lock()?.clone();
         let inventory = inventorys.iter().find(|t| t.id == id).clone();
         if inventory.is_none() {
             return Err(GlobleError::OtherError(
-                "Could not find inventory entry".to_string(),
+                format!("Could not find inventory with id {}", id).to_string(),
             ));
         }
         let connection = self.connection.lock().unwrap().clone();
         let mut inventory = inventory.unwrap().clone();
         inventory.owned -= 1;
-        inventory.price = price as f64;
 
-        self.create_transaction_entry(inventory.clone().item_url, "sell".to_string(), 1, 0, price)
-            .await?;
+        if quantity <= 0 {
+            quantity = 1;
+        }
+
+        self.create_transaction_entry(
+            inventory.clone().item_url,
+            "sell".to_string(),
+            quantity,
+            0,
+            price,
+        )
+        .await?;
         if inventory.owned <= 0 {
             self.delete_inventory_entry(id).await?;
         } else {
@@ -399,6 +426,35 @@ impl DatabaseClient {
                 Some(self.log_file.as_str()),
             );
             wfm.close_order_by_url(&inventory.item_url).await?;
+        } else {
+            let ordres: Vec<Order> = wfm.get_user_ordres().await?.sell_orders;
+            let order = ordres
+                .iter()
+                .find(|order| order.item.url_name == inventory.item_url)
+                .clone();
+
+            if order.is_some() {
+                if inventory.owned <= 0 {
+                    wfm.delete_order(
+                        &order.unwrap().id,
+                        &inventory.item_name,
+                        &inventory.item_id,
+                        "sell",
+                    )
+                    .await?;
+                } else {
+                    wfm.update_order_listing(
+                        &order.unwrap().id,
+                        order.unwrap().platinum,
+                        inventory.owned,
+                        order.unwrap().visible,
+                        &inventory.item_name,
+                        &inventory.item_id,
+                        "sell",
+                    )
+                    .await?;
+                }
+            }
         }
         Ok(inventory.clone())
     }
@@ -409,7 +465,7 @@ impl DatabaseClient {
             return Ok(None);
         }
         let connection = self.connection.lock().unwrap().clone();
-        let result = sqlx::query("DELETE FROM inventorys WHERE id = ?1")
+        sqlx::query("DELETE FROM inventorys WHERE id = ?1")
             .bind(id)
             .execute(&connection)
             .await?;
@@ -437,6 +493,7 @@ impl DatabaseClient {
         let inventory = inventorys.iter().find(|t| t.item_url == item_url).clone();
         Ok(inventory.cloned())
     }
+
     pub async fn update_inventory_by_url(
         &self,
         item_url: String,
@@ -461,58 +518,6 @@ impl DatabaseClient {
                 "data": inventory
             })),
         );
-        Ok(true)
-    }
-
-    // TODO: Remove in production
-    pub async fn import_data(&self) -> Result<bool, GlobleError> {
-        return Ok(true);
-        let db: Pool<Sqlite> = self.connection.lock().unwrap().clone();
-        let wfm = self.wfm.lock()?.clone();
-        let a = SqlitePool::connect(
-            "C:/Users/Kenya69/Desktop/FiveM/Coding/Warframe-Algo-Trader/inventory.db",
-        )
-        .await
-        .unwrap();
-        let inventory_vec = sqlx::query("SELECT * FROM transactions;")
-            .fetch_all(&a)
-            .await
-            .unwrap();
-
-        for row in inventory_vec {
-            let name = row.try_get::<String, _>(1).unwrap();
-            let datetime = row.try_get::<String, _>(2).unwrap();
-            let transaction_type = row.try_get::<String, _>(3).unwrap();
-            let price = row.try_get::<i64, _>(4).unwrap();
-
-            let item = self.cache.lock()?.get_item_by_url_name(&name);
-            if item.is_none() {
-                logger::error(
-                    "Database",
-                    format!("Could not find item with name {}", name).as_str(),
-                    true,
-                    Some(self.log_file.as_str()),
-                );
-                continue;
-            }
-            let item = item.unwrap();
-            let item_id = item.id.clone();
-            let item_type = item.tags.clone().unwrap().join(",");
-            let result = sqlx::query(
-                "INSERT INTO transactions (item_id, item_type, item_url, item_name, datetime, transaction_type, quantity, rank, price) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)")
-                .bind(item_id.clone())
-                .bind(item.tags.unwrap().join(","))
-                .bind(item.url_name)
-                .bind(item.item_name)
-                .bind(datetime)
-                .bind(transaction_type)
-                .bind(1)
-                .bind(0)
-                .bind(price)
-                .execute(&db).await?;
-            println!("{} {}", item_id, name);
-            // self.create_transaction_entry(item_id, transaction_type, 1, 0, price).await?;
-        }
         Ok(true)
     }
 }

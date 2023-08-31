@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
-
+use serde::{de::DeserializeOwned, Deserialize, Serialize, Deserializer};
+use serde_json::{Value};
 #[derive(Debug)]
 pub enum GlobleError {
     ReqwestError(reqwest::Error),
@@ -15,6 +15,24 @@ pub enum GlobleError {
     OtherError(String),
     HttpError(reqwest::StatusCode, String, String),
 }
+#[derive(Debug)]
+enum TryParse<T> {
+    Parsed(T),
+    Unparsed(Value),
+    NotPresent,
+}
+impl<'de, T: DeserializeOwned> Deserialize<'de> for TryParse<T> {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        match Option::<Value>::deserialize(deserializer)? {
+            None => Ok(TryParse::NotPresent),
+            Some(value) => match T::deserialize(&value) {
+                Ok(t) => Ok(TryParse::Parsed(t)),
+                Err(_) => Ok(TryParse::Unparsed(value)),
+            },
+        }
+    }
+}
+
 impl serde::Serialize for GlobleError {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where

@@ -6,6 +6,22 @@ const api = {
       return await invoke("update_settings", { settings })
     }
   },
+  debug: {
+    importWarframeAlgoTraderData: async (dbPath: string, type: string): Promise<any> => {
+      try {
+        return await invoke("import_warframe_algo_trader_data", { dbPath, importType: type })
+      } catch (error) {
+        console.error(error)
+      }
+    },
+    reset_data: async (reset_type: string): Promise<any> => {
+      try {
+        return await invoke("reset_data", { resetType: reset_type })
+      } catch (error) {
+        console.error(error)
+      }
+    }
+  },
   auth: {
     async login(email: string, password: string): Promise<Wfm.UserDto> {
       const user = await invoke("login", {
@@ -32,8 +48,8 @@ const api = {
     async createInvantoryEntry(id: string, report: boolean, quantity: number, price: number, rank: number): Promise<InventoryEntryDto> {
       return await invoke("create_invantory_entry", { id, report, quantity, price, rank }) as InventoryEntryDto;
     },
-    async sellInvantoryEntry(id: number, report: boolean, price: number): Promise<InventoryEntryDto> {
-      return await invoke("sell_invantory_entry", { id, report, price }) as InventoryEntryDto;
+    async sellInvantoryEntry(id: number, report: boolean, price: number, quantity: number): Promise<InventoryEntryDto> {
+      return await invoke("sell_invantory_entry", { id, report, price, quantity }) as InventoryEntryDto;
     },
     async deleteInvantoryEntry(id: number): Promise<InventoryEntryDto> {
       return await invoke("delete_invantory_entry", { id });

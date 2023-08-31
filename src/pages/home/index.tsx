@@ -84,31 +84,15 @@ export default function HomePage() {
           </Grid>
           <Grid mt={25}>
             <Grid.Col md={4} >
-              {/* <OrderRevenueChart
-                title={translateBase("stats_cards.last_days_title", { days: meterix.last_orders.days })}
+              <TransactionRevenueChart
+                title={translateBase("stats_cards.last_days_title", { days: statistics.recent_days.days })}
                 type="revenue"
                 background="linear-gradient(195deg, #051394, #0072a3)"
-                labels={meterix.last_orders.labels || []}
+                labels={statistics.recent_days.labels || []}
                 orderWithRevenues={[
-                  { ...meterix.last_orders, backgroundColor: theme.colors.blue[6], },
+                  { ...statistics.recent_days, backgroundColor: theme.colors.blue[6], },
                 ]}
-                context={
-                  <Box>
-                    <ChartContext
-                      i18nKey={"average_order_revenue"}
-                      values={{ val: meterix.last_orders.revenue / meterix.last_orders.days }}
-                    />
-                    <ChartContext
-                      i18nKey={"general.total_orders"}
-                      values={{ count: meterix.last_orders.quantity }}
-                    />
-                    <ChartContext
-                      i18nKey={"general.total_revenue"}
-                      values={{ val: meterix.last_orders.revenue }}
-                    />
-                  </Box>
-                }
-              /> */}
+              />
             </Grid.Col>
             <Grid.Col md={4} >
               <TransactionRevenueChart

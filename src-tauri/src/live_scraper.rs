@@ -179,19 +179,27 @@ impl LiveScraper {
             format!("Interesting items: {:?}", all_interesting_items).as_str(),
             Some(self.log_file.as_str()),
         );
+
+        let mut current_index = all_interesting_items.len();
         // Loop through all interesting items
         for item in all_interesting_items.clone() {
             if self.is_running() == false || item == "" {
                 break;
             }
 
-            logger::info_con("LiveScraper", format!("Checking item: {item}").as_str());
-
-            let mut item_live_orders_df = wfm.get_ordres_by_item(&item).await?;
-            logger::log_dataframe(
-                &mut item_live_orders_df,
-                "live_scraper_item_live_orders_df.csv",
+            logger::info_con(
+                "LiveScraper",
+                format!(
+                    "Checking item: {}, ({}/{})",
+                    item,
+                    current_index,
+                    all_interesting_items.len()
+                )
+                .as_str(),
             );
+            current_index -= 1;
+
+            let item_live_orders_df = wfm.get_ordres_by_item(&item).await?;
             // Check if item_orders_df is empty and skip if it is
             if item_live_orders_df.height() == 0 {
                 continue;
@@ -274,16 +282,6 @@ impl LiveScraper {
             )
             .await?;
         }
-
-        // if current_sell_orders_df.height() != 0 {}
-        logger::log_dataframe(
-            &mut current_buy_orders_df.clone(),
-            "live_scraper_current_buy_orders_df.csv",
-        );
-        logger::log_dataframe(
-            &mut current_sell_orders_df.clone(),
-            "live_scraper_current_sell_orders_df.csv",
-        );
         Ok(())
     }
 
@@ -344,7 +342,6 @@ impl LiveScraper {
     pub async fn get_buy_sell_overlap(&self) -> Result<DataFrame, GlobleError> {
         let settings = self.settings.lock()?.clone();
         let db = self.db.lock()?.clone();
-        println!("{:?}", settings);
         let df = self.price_scraper.lock()?.get_price_historys()?;
         let volume_threshold = settings.volume_threshold;
         let range_threshold = settings.range_threshold;
@@ -354,7 +351,7 @@ impl LiveScraper {
         let whitelist = settings.whitelist.clone();
 
         // Group by the "name" and "order_type" columns, and compute the mean of the other columns
-        let mut averaged_df = df
+        let averaged_df = df
             .clone()
             .lazy()
             .groupby(&["name", "order_type"])
@@ -370,9 +367,6 @@ impl LiveScraper {
                 col("item_id").first().alias("item_id"),
             ])
             .collect()?;
-
-        logger::log_dataframe(&mut averaged_df, "live_scraper_averaged_df.csv");
-
         // Call the database to get the inventory names and DataFrame
         let inventory_names = db.get_inventory_names().await?;
         let inventory_names_s = Series::new("desired_column_name", inventory_names);
@@ -396,7 +390,6 @@ impl LiveScraper {
 
         // Sort by "range" in descending order
         let mut filtered_df = helper::sort_dataframe(filtered_df, "range", true)?;
-        logger::log_dataframe(&mut filtered_df, "live_scraper_filtered_df.csv");
 
         // If the DataFrame is empty, return an empty DataFrame
         if filtered_df.height() == 0 {
@@ -431,7 +424,6 @@ impl LiveScraper {
         let mut filtered_df = filtered_df
             .with_column(Series::new("weekPriceShift", week_price_shifts))
             .cloned()?;
-        logger::log_dataframe(&mut filtered_df, "live_scraper_weekPriceShift.csv");
 
         // Handle the whitelist if it is strict or not
         let whitelist_s = Series::new("whitelist", whitelist);
@@ -464,12 +456,11 @@ impl LiveScraper {
         let unique_names = name_set.into_iter().collect::<Vec<_>>();
 
         let unique_names_series = Series::new("name", unique_names.clone());
-        let mut df_filtered = averaged_df
+        let df_filtered = averaged_df
             .clone()
             .lazy()
             .filter(col("name").is_in(lit(unique_names_series.clone())))
             .collect()?;
-        logger::log_dataframe(&mut df_filtered, "live_scraper_dffiltered.csv");
 
         // Start the creation of the buy_sell_overlap DataFrame
         let buy_sell_overlap = DataFrame::new(vec![unique_names_series])?;
@@ -516,7 +507,6 @@ impl LiveScraper {
             .rename("median", "closedMedian")?
             .rename("weekPriceShift", "priceShift")?;
 
-        logger::log_dataframe(buy_sell_overlap, "live_scraper_buy_sell_overlap.csv");
         return Ok(buy_sell_overlap.clone());
     }
     async fn get_my_order_information(
@@ -944,18 +934,8 @@ impl LiveScraper {
                     "".to_string(),
                 )]);
 
-                let (max_profit, selected_buy_orders, unselected_buy_orders) =
+                let (_max_profit, selected_buy_orders, unselected_buy_orders) =
                     self.knapsack(buy_orders_list, max_total_price_cap as i64)?;
-
-                logger::debug_file(
-                    "LiveScraper",
-                    format!(
-                        "Name: {item_name}, MaxProfit: {max_profit}, {:?}, {:?}",
-                        selected_buy_orders, unselected_buy_orders
-                    )
-                    .as_str(),
-                    Some("knapsack.log"),
-                );
 
                 let selected_item_names: Vec<String> = selected_buy_orders
                     .iter()
@@ -963,15 +943,6 @@ impl LiveScraper {
                     .collect();
 
                 if selected_item_names.contains(&item_name.to_string()) {
-                    logger::debug_file(
-                        "LiveScraper",
-                        format!(
-                            "Name: {item_name}, MaxProfit: {max_profit}, {:?}, {:?}",
-                            selected_buy_orders, unselected_buy_orders
-                        )
-                        .as_str(),
-                        Some("knapsack2.log"),
-                    );
                     if !unselected_buy_orders.is_empty() {
                         let unselected_item_names: Vec<String> = unselected_buy_orders
                             .iter()
@@ -1033,6 +1004,7 @@ impl LiveScraper {
         _inventory_df: &DataFrame,
     ) -> Result<(), GlobleError> {
         let wfm = self.wfm.lock()?.clone();
+        let set = self.settings.lock()?.clone();
         let db = self.db.lock()?.clone();
 
         // Get the current orders for the item from the Warframe Market API
@@ -1080,11 +1052,6 @@ impl LiveScraper {
         // Get the quantity of owned item.
         let quantity = inventory.owned as i64;
 
-        logger::info_con(
-            "LiveScraper",
-            format!("Compare_live_orders_when_selling Checking item: {item_id}").as_str(),
-        );
-
         // If there are no buyers, update order to be 30p above average price
         if sellers == 0 {
             let post_price = (avg_price + 30) as i64;
@@ -1129,7 +1096,14 @@ impl LiveScraper {
                 "LiveScraper",
                 format!("Item {item_name} is too cheap. Not putting up a sell order.").as_str(),
             );
-            // SEND NOTIFICATION TO DISCORD HERE AND SAY THAT THE ITEM IS TOO CHEAP
+            helper::send_message_to_discord(
+                set.webhook,
+                format!(
+                    "Item {item_name} is too cheap. Not putting up a sell order.",
+                    item_name = item_name
+                ),
+                set.ping_on_notif,
+            );
         }
 
         if post_price + 10 > post_price && sellers >= 2 {
