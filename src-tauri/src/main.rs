@@ -5,8 +5,8 @@ use cache::CacheState;
 use database::DatabaseClient;
 use debug::DebugClient;
 use price_scraper::PriceScraper;
-use serde_json::{json, Value};
 use settings::SettingsState;
+use std::panic;
 use std::sync::Arc;
 use std::{env, sync::Mutex};
 use tauri::async_runtime::block_on;
@@ -23,6 +23,7 @@ mod cache;
 mod commands;
 mod database;
 mod debug;
+mod error;
 mod helper;
 mod logger;
 mod price_scraper;
@@ -94,6 +95,10 @@ async fn setup_async(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 fn main() {
+    panic::set_hook(Box::new(|panic_info| {
+        println!("Panic: {:?}", panic_info);
+        //  Do something with backtrace and panic_info.
+    }));
     tauri::Builder::default()
         .setup(move |app| {
             // Get the 'main' window and store it

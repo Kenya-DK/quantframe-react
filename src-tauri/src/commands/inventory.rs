@@ -2,7 +2,8 @@ use std::sync::{Arc, Mutex};
 
 use crate::{
     database::DatabaseClient,
-    structs::{GlobleError, Invantory},
+    structs::Invantory,
+    error::AppError,
 };
 
 #[tauri::command]
@@ -13,7 +14,7 @@ pub async fn create_invantory_entry(
     price: i64,
     rank: i64,
     db: tauri::State<'_, Arc<Mutex<DatabaseClient>>>,
-) -> Result<Invantory, GlobleError> {
+) -> Result<Invantory, AppError> {
     let db = db.lock()?.clone();
     let invantory = db
         .create_inventory_entry(id, report, quantity, price, rank)
@@ -26,7 +27,7 @@ pub async fn create_invantory_entry(
 pub async fn delete_invantory_entry(
     id: i64,
     db: tauri::State<'_, Arc<Mutex<DatabaseClient>>>,
-) -> Result<Option<Invantory>, GlobleError> {
+) -> Result<Option<Invantory>, AppError> {
     let db = db.lock()?.clone();
     Ok(db.delete_inventory_entry(id).await?)
 }
@@ -37,7 +38,7 @@ pub async fn sell_invantory_entry(
     price: i64,
     quantity: i64,
     db: tauri::State<'_, Arc<Mutex<DatabaseClient>>>,
-) -> Result<Invantory, GlobleError> {
+) -> Result<Invantory, AppError> {
     let db = db.lock()?.clone();
     let invantory = db.sell_invantory_entry(id, report, price, quantity).await?;
     Ok(invantory)

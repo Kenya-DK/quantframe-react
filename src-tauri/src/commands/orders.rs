@@ -1,15 +1,19 @@
+use crate::{structs::GlobleError, wfm_client::WFMClientState, error::AppError};
+use std::sync::{Arc, Mutex};
+
+
 #[tauri::command]
-async fn get_orders(
-    wfm: tauri::State<'_, Arc<Mutex<WFMClientState>>>,
-) -> Result<Value, GlobleError> {
+async fn get_orders(wfm: tauri::State<'_, Arc<Mutex<WFMClientState>>>) -> Result<(), AppError> {
     let wfm = wfm.lock()?.clone();
+    Ok(())
 }
 #[tauri::command]
 async fn delete_order(
     id: String,
     wfm: tauri::State<'_, Arc<Mutex<WFMClientState>>>,
-) -> Result<Value, GlobleError> {
+) -> Result<(),AppError> {
     let wfm = wfm.lock()?.clone();
+    Ok(())
 }
 #[tauri::command]
 async fn create_order(
@@ -19,8 +23,9 @@ async fn create_order(
     price: i64,
     rank: i64,
     wfm: tauri::State<'_, Arc<Mutex<WFMClientState>>>,
-) -> Result<Value, GlobleError> {
+) -> Result<(), AppError> {
     let wfm = wfm.lock()?.clone();
+    Ok(())
 }
 #[tauri::command]
 async fn update_order(
@@ -30,6 +35,7 @@ async fn update_order(
     price: i64,
     rank: i64,
     wfm: tauri::State<'_, Arc<Mutex<WFMClientState>>>,
-) -> Result<Value, GlobleError> {
+) -> Result<(), AppError> {
     let wfm = wfm.lock()?.clone();
+    Ok(())
 }

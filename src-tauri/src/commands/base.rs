@@ -3,8 +3,9 @@ use std::sync::{Arc, Mutex};
 use serde_json::{json, Value};
 
 use crate::{
-    auth::AuthState, cache::CacheState, database::DatabaseClient, settings::SettingsState,
-    structs::GlobleError, wfm_client::WFMClientState,
+    auth::AuthState, cache::CacheState, database::DatabaseClient, debug::DebugClient,
+    error::{GetErrorInfo, AppError}, logger, settings::SettingsState, 
+    wfm_client::WFMClientState,
 };
 
 #[tauri::command]
@@ -14,14 +15,35 @@ pub async fn setup(
     wfm: tauri::State<'_, Arc<Mutex<WFMClientState>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheState>>>,
     db: tauri::State<'_, Arc<Mutex<DatabaseClient>>>,
-) -> Result<Value, GlobleError> {
+    debug: tauri::State<'_, Arc<Mutex<DebugClient>>>,
+) -> Result<Value, AppError> {
     let settings = settings.lock()?.clone();
     let auth = auth.lock()?.clone();
     let wfm = wfm.lock()?.clone();
     let cache = cache.lock()?.clone();
+    let debug = debug.lock()?.clone();
     cache.update_cache().await?;
     let db = db.lock()?.clone();
     db.initialize().await?;
+
+    match debug.test_error().await {
+        Ok(_) => {}
+        Err(err) => {
+            let component = err.component();
+            let cause = err.cause();
+            let backtrace = err.backtrace();
+            // let message = err.message();
+            // println!("Backtrace: {:?}", backtrace);
+            
+            // logger::trace(component.as_str(), format!("Main: {:?}", message).as_str(), backtrace, true, Some("setup.log"));
+            logger::error(
+                component.as_str(),
+                format!("Main: {:?}, {:?}", backtrace,cause).as_str(),
+                true,
+                None,
+            );
+        }
+    }
 
     // Check if the user access token is valid
     // let valid = wfm.validate().await?;
@@ -42,7 +64,7 @@ pub async fn setup(
 pub async fn update_settings(
     settings: SettingsState,
     settings_state: tauri::State<'_, Arc<std::sync::Mutex<SettingsState>>>,
-) -> Result<(), GlobleError> {
+) -> Result<(), AppError> {
     let arced_mutex = Arc::clone(&settings_state);
     let mut my_lock = arced_mutex.lock()?;
     my_lock.volume_threshold = settings.volume_threshold;

@@ -6,3 +6,4 @@ pub mod live_scraper;
 pub mod price_scraper;
 pub mod transaction;
 pub mod whisper_scraper;
+pub mod orders;

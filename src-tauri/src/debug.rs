@@ -1,22 +1,14 @@
-use std::sync::{Arc, Mutex};
-
 use crate::{
-    auth::AuthState,
-    cache::CacheState,
-    database::DatabaseClient,
-    helper::{self, ColumnType, ColumnValues},
-    logger,
-    settings::SettingsState,
-    structs::{GlobleError, Invantory, Order, Transaction},
-    wfm_client::WFMClientState,
+    auth::AuthState, cache::CacheState, database::DatabaseClient, error::AppError, logger,
+    settings::SettingsState, structs::Ordres, wfm_client::WFMClientState,
 };
-use polars::{
-    lazy::dsl::col,
-    prelude::{DataFrame, NamedFrom},
-    series::Series,
+use eyre::eyre;
+use serde_json::Value;
+use sqlx::{Pool, Row, Sqlite, SqlitePool};
+use std::{
+    fs::File,
+    sync::{Arc, Mutex},
 };
-use serde_json::json;
-use sqlx::{migrate::MigrateDatabase, Pool, Row, Sqlite, SqlitePool};
 
 #[derive(Clone, Debug)]
 pub struct DebugClient {
@@ -51,7 +43,7 @@ impl DebugClient {
         &self,
         db_path: String,
         import_type: String,
-    ) -> Result<bool, GlobleError> {
+    ) -> Result<bool, AppError> {
         let db = self.db.lock()?.clone();
         let db: Pool<Sqlite> = db.get_connection().clone().lock()?.clone();
 
@@ -59,7 +51,7 @@ impl DebugClient {
 
         if import_type == "inventory" {
             // Delete all data in the database to prevent duplicates and errors
-            sqlx::query("DELETE FROM inventorys;").execute(&db).await?;
+            sqlx::query("DELETE FROM inventorys;").execute(&db).await.map_err(|e| {AppError("Debug", eyre!(e.to_string()))} )?;
 
             let inventory_vec = sqlx::query("SELECT * FROM inventory;")
                 .fetch_all(&watdb)
@@ -90,13 +82,14 @@ impl DebugClient {
                     .bind(0)
                     .bind(price)
                     .bind(owned)
-                    .execute(&db).await?;
+                    .execute(&db).await.map_err(|e| {AppError("Debug", eyre!(e.to_string()))} )?;
             }
         } else if import_type == "transactions" {
             // Delete all data in the database to prevent duplicates and errors
             sqlx::query("DELETE FROM transactions;")
                 .execute(&db)
-                .await?;
+                .await
+                .map_err(|e| AppError("Debug", eyre!(e.to_string())))?;
             let transactions_vec = sqlx::query("SELECT * FROM transactions;")
                 .fetch_all(&watdb)
                 .await
@@ -131,7 +124,7 @@ impl DebugClient {
                                 .bind(1)
                                 .bind(0)
                                 .bind(price)
-                                .execute(&db).await?;
+                                .execute(&db).await.map_err(|e| {AppError("Debug", eyre!(e.to_string()))} )?;
             }
         } else {
             logger::error_con(
@@ -143,17 +136,21 @@ impl DebugClient {
         Ok(true)
     }
 
-    pub async fn reset_data(&self, reset_type: String) -> Result<bool, GlobleError> {
+    pub async fn reset_data(&self, reset_type: String) -> Result<bool, AppError> {
         let db = self.db.lock()?.clone();
         let db: Pool<Sqlite> = db.get_connection().clone().lock()?.clone();
         if reset_type == "inventory" {
             // Delete all data in the database to prevent duplicates and errors
-            sqlx::query("DELETE FROM inventorys;").execute(&db).await?;
+            sqlx::query("DELETE FROM inventorys;")
+                .execute(&db)
+                .await
+                .map_err(|e| AppError("Debug", eyre!(e.to_string())))?;
         } else if reset_type == "transactions" {
             // Delete all data in the database to prevent duplicates and errors
             sqlx::query("DELETE FROM transactions;")
                 .execute(&db)
-                .await?;
+                .await
+                .map_err(|e| AppError("Debug", eyre!(e.to_string())))?;
         } else {
             logger::error_con(
                 "Debug",
@@ -162,4 +159,80 @@ impl DebugClient {
         }
         Ok(true)
     }
+
+    //---------------------------------Test---------------------------------//
+    pub async fn dowload_string(&self, url: &str) -> Result<Value, AppError> {
+        let client = reqwest::Client::new();
+        let res = client
+            .get(url)
+            .send()
+            .await
+            .map_err(|e| AppError("Debug", eyre!(e.to_string())))?;
+        let text = res
+            .json()
+            .await
+            .map_err(|e| AppError("Debug", eyre!(e.to_string())))?;
+        Ok(text)
+    }
+
+    pub async fn test_error(&self) -> Result<(), AppError> {
+        // self.error_io().await?;
+        self.error_json().await?;
+        // self.error_reqwest().await?;
+        // self.error_polars().await?;
+
+        Ok(())
+    }
+
+    async fn error_io(&self) -> Result<(), AppError> {
+        let filename = "13.csv";
+        let file = File::open(filename).map_err(|e| AppError("Debug", eyre!(e.to_string())))?;
+        println!("Done: {:?}", file);
+        Ok(())
+    }
+
+    async fn error_json(&self) -> Result<(), AppError> {
+        let jsom_data = self
+            .dowload_string("https://api.warframe.market/v1/profile/Crystal4444_Worm/orders")
+            .await?;
+        let jsom_data = jsom_data["payload"].clone();
+        let item: Ordres = serde_json::from_value(jsom_data)
+            .map_err(|e| AppError("Debug", eyre!(e.to_string())))?;
+        println!("{:?}", item.buy_orders[0].platinum);
+        Ok(())
+    }
+
+    // async fn error_reqwest(&self) -> Result<(), eyre::Report> {
+    //     use AppError::*;
+    //     let jsom_data = self
+    //         .dowload_string("https://api.warframe.market/v1/profile/Crystal_Worm/orders")
+    //         .await?;
+    //     let jsom_data = jsom_data["payload"].clone();
+    //     let item: Ordres = serde_json::from_value(jsom_data).map_err(|e| {
+    //         JsonParseError(
+    //             e,
+    //             "Error".to_string(),
+    //             "".into(),
+    //             error::convert_backtrace(backtrace::Backtrace::new()),
+    //         )
+    //     })?;
+    //     Ok(())
+    // }
+
+    // async fn error_polars(&self) -> Result<(), eyre::Report> {
+    //     use AppError::*;
+    //     let jsom_data = self
+    //         .dowload_string("https://api.warframe.market/v1/profile/Crystal_Worm/orders")
+    //         .await?;
+    //     let jsom_data = jsom_data["payload"].clone();
+    //     let item: Ordres = serde_json::from_value(jsom_data).map_err(|e| {
+    //         JsonParseError(
+    //             e,
+    //             "Error".to_string(),
+    //             "".into(),
+    //             error::convert_backtrace(backtrace::Backtrace::new()),
+    //         )
+    //     })?;
+    //     Ok(())
+    // }
 }

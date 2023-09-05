@@ -1,9 +1,9 @@
-use crate::structs::GlobleError;
+use crate::error::AppError;
 use crate::{helper, logger};
+use eyre::eyre;
 use polars::prelude::*;
 use reqwest::{Client, Method, Url};
 use serde_json::{json, Value};
-
 use std::path::Path;
 use std::sync::Mutex;
 use std::{
@@ -44,21 +44,24 @@ impl PriceScraper {
     }
     /// Reads the price history data from a CSV file and returns it as a DataFrame.
     /// If the backup file is available, it is used instead of the main file.
-    pub fn get_price_historys(&self) -> Result<DataFrame, PolarsError> {
+    pub fn get_price_historys(&self) -> Result<DataFrame, AppError> {
         // Try to read from "allItemDataBackup.csv", and if it fails, read from "allItemData.csv".
-        let file = File::open(&self.csv_path).or_else(|_| File::open(&self.csv_backop_path))?;
+        let file = File::open(&self.csv_path)
+            .or_else(|_| File::open(&self.csv_backop_path))
+            .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
 
         // Parse the CSV file into a DataFrame
         CsvReader::new(file)
             .infer_schema(None)
             .has_header(true)
             .finish()
+            .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))
     }
     /// Returns a JSON object containing price data for the given platform and day.
     /// The `platform` argument should be one of "pc", "ps4", or "xb1".
     /// The `day` argument should be a string in the format "YYYY-MM-DD".
     /// If the request fails, returns a `GlobleError` with information about the error.
-    async fn get_price_by_day(&self, platform: &str, day: &str) -> Result<Value, GlobleError> {
+    async fn get_price_by_day(&self, platform: &str, day: &str) -> Result<Value, AppError> {
         let mut url = format!("https://relics.run/history/price_history_{}.json", day);
         if platform != "pc" {
             url = format!(
@@ -70,22 +73,19 @@ impl PriceScraper {
         let request = client.request(Method::GET, Url::parse(&url).unwrap());
         let response = request.send().await;
         if let Err(e) = response {
-            return Err(GlobleError::ReqwestError(e));
+            return Err(AppError("PriceScraper", eyre!(e.to_string())));
         }
         let response_data = response.unwrap();
         let status = response_data.status();
-        if status == 429 {
-            // Sleep for 3 second
-            tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
-            return Err(GlobleError::TooManyRequests(
-                "Too Many Requests".to_string(),
-            ));
-        }
+
         if status != 200 {
-            return Err(GlobleError::HttpError(
-                status,
-                response_data.text().await.unwrap(),
-                url.to_string(),
+            return Err(AppError(
+                "PriceScraper",
+                eyre!(
+                    "Error getting price data for day: {}. Status: {}",
+                    day,
+                    status
+                ),
             ));
         }
         let response = response_data.json::<Value>().await.unwrap();
@@ -116,10 +116,12 @@ impl PriceScraper {
     /// The map is represented as a `HashMap` with `String` keys and values.
     async fn get_items_map_url_map(
         &self,
-    ) -> Result<(HashMap<String, String>, HashMap<String, String>), GlobleError> {
+    ) -> Result<(HashMap<String, String>, HashMap<String, String>), AppError> {
         let wfm = self.wfm.lock()?.clone();
 
-        let items = wfm.get_tradable_items().await?;
+        let items = wfm
+            .get_tradable_items()
+            .await?;
 
         let item_map_url: std::collections::HashMap<String, String> = items
             .iter()
@@ -131,7 +133,7 @@ impl PriceScraper {
             .collect();
         Ok((item_map_url, item_map_id))
     }
-    pub async fn generate(&self, days: i64) -> Result<i64, GlobleError> {
+    pub async fn generate(&self, days: i64) -> Result<i64, AppError> {
         println!("Generating csv file for {} days.", days);
         let auth = self.auth.lock().unwrap().clone();
         println!("Generating csv file for {} days.", days);
@@ -150,7 +152,8 @@ impl PriceScraper {
                 "PriceScraper:generate",
                 format!("Backuping csv file: {}", self.csv_path).as_str(),
             );
-            fs::copy(csv_path, csv_backop_path)?;
+            fs::copy(csv_path, csv_backop_path)
+                .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
         }
         let last_days = helper::last_x_days(days).clone();
         let mut dataframes: Vec<DataFrame> = Vec::new();
@@ -292,14 +295,16 @@ impl PriceScraper {
                                     .with_column(
                                         (col("max_price") - col("min_price")).alias("range"),
                                     )
-                                    .collect()?;
+                                    .collect()
+                                    .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
 
                                 // Filter out items that are mod_rank 0.
                                 let df = df
                                     .clone()
                                     .lazy()
                                     .filter(col("mod_rank").neq(0).or(col("mod_rank").is_null()))
-                                    .collect()?;
+                                    .collect()
+                                    .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
                                 // dump_dataframe(&mut df, format!("{} {}.csv", day, item_name).as_str())?;
                                 dataframes.push(df);
                             }
@@ -338,7 +343,8 @@ impl PriceScraper {
                 // List the other columns you want to average
                 col("name").count().alias("name_count"),
             ])
-            .collect()?;
+            .collect()
+            .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
         logger::log_dataframe(&mut group_by_name, "price_scraper_group_by_name.csv");
 
         // Get the names of the items that are popular
@@ -347,13 +353,22 @@ impl PriceScraper {
             .clone()
             .lazy()
             .filter(col("name_count").gt_eq(21))
-            .collect()?;
+            .collect()
+            .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
         logger::log_dataframe(&mut popular_items, "price_scraper_popular_items.csv");
 
         // Filter out items that are not popular and sort by name
-        let popular_items_s = popular_items.column("name")?;
-        let mask = full_df.column("name")?.is_in(&popular_items_s)?;
-        let filtered_df = full_df.filter(&mask)?;
+        let popular_items_s = popular_items
+            .column("name")
+            .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
+        let mask = full_df
+            .column("name")
+            .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?
+            .is_in(&popular_items_s)
+            .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
+        let filtered_df = full_df
+            .filter(&mask)
+            .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
         // Sort by name
         let mut filtered_df = filtered_df
             .lazy()
@@ -365,18 +380,23 @@ impl PriceScraper {
                     multithreaded: false,
                 },
             )
-            .collect()?;
+            .collect()
+            .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
         logger::log_dataframe(&mut filtered_df, "price_scraper_pricehistory.csv");
 
         // Cerate a csv file with the sorted DataFrame of price data
-        let output_file: File = File::create(csv_path)?;
+        let output_file: File =
+            File::create(csv_path).map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
         let writer = BufWriter::new(output_file);
         // Write the DataFrame to a CSV file
-        CsvWriter::new(writer).finish(&mut filtered_df)?;
+        CsvWriter::new(writer)
+            .finish(&mut filtered_df)
+            .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
 
         // Delete the backup file if it exists
         if csv_backop_path.exists() {
-            fs::remove_file(csv_backop_path)?;
+            fs::remove_file(csv_backop_path)
+                .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
         }
         Ok(full_df.height() as i64)
     }

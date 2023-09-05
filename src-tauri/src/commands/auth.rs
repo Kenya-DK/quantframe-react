@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use crate::{auth::AuthState, structs::GlobleError, wfm_client::WFMClientState};
+use crate::{auth::AuthState, structs::GlobleError, wfm_client::WFMClientState, error::AppError};
 
 #[tauri::command]
 pub async fn login(
@@ -8,7 +8,7 @@ pub async fn login(
     password: String,
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClientState>>>,
-) -> Result<AuthState, GlobleError> {
+) -> Result<AuthState, AppError> {
     let auth = auth.lock()?.clone();
     let wfm = wfm.lock()?.clone();
     match wfm.login(email, password).await {

@@ -3,7 +3,7 @@ use std::{
     path::{Path, PathBuf},
     sync::Mutex,
 };
-
+use eyre::eyre;
 use chrono::Duration;
 use directories::BaseDirs;
 use once_cell::sync::Lazy;
@@ -15,7 +15,7 @@ use polars::{
 use serde_json::{json, Value};
 use tauri::Window;
 
-use crate::structs::GlobleError;
+use crate::error::AppError;
 
 pub static WINDOW: Lazy<Mutex<Option<Window>>> = Lazy::new(|| Mutex::new(None));
 
@@ -80,7 +80,7 @@ pub fn sort_dataframe(
     df: DataFrame,
     column: &str,
     ascending: bool,
-) -> Result<DataFrame, GlobleError> {
+) -> Result<DataFrame, AppError> {
     let df = df
         .clone()
         .lazy()
@@ -92,7 +92,7 @@ pub fn sort_dataframe(
                 multithreaded: false,
             },
         )
-        .collect()?;
+        .collect().map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?;
     Ok(df)
 }
 
@@ -100,21 +100,18 @@ pub fn filter_and_extract(
     df: DataFrame,
     filter: Option<Expr>,
     select_cols: Vec<&str>,
-) -> Result<DataFrame, GlobleError> {
+) -> Result<DataFrame, AppError> {
     let selected_columns: Vec<_> = select_cols.into_iter().map(col).collect();
 
     let df = match filter {
-        Some(filter) => df.lazy().filter(filter).collect()?,
+        Some(filter) => df.lazy().filter(filter).collect().map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?,
         None => df,
     };
 
     let df_select = df.lazy().select(&selected_columns).collect();
     match df_select {
         Ok(df_select) => Ok(df_select),
-        Err(e) => Err(GlobleError::OtherError(format!(
-            "Error while filtering and extracting: {:?}",
-            e
-        ))),
+        Err(e) => Err(AppError("Helper", eyre!(e.to_string()))),
     }
 }
 
@@ -123,18 +120,19 @@ pub fn get_column_values(
     filter: Option<Expr>,
     column: &str,
     col_type: ColumnType,
-) -> Result<ColumnValues, GlobleError> {
+) -> Result<ColumnValues, AppError> {
     let df: DataFrame = match filter {
-        Some(filter) => df.lazy().filter(filter).collect()?,
+        Some(filter) => df.lazy().filter(filter).collect().map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?,
         None => df,
     };
 
-    let column_series = df.column(column)?;
+    let column_series = df.column(column).map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?;
 
     match col_type {
         ColumnType::Bool => {
             let values: Vec<bool> = column_series
-                .bool()?
+                .bool()
+                .map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?
                 .into_iter()
                 .filter_map(|opt_val| opt_val)
                 .collect();
@@ -143,7 +141,8 @@ pub fn get_column_values(
 
         ColumnType::F64 => {
             let values: Vec<f64> = column_series
-                .f64()?
+                .f64()
+                .map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?
                 .into_iter()
                 .filter_map(|opt_val| opt_val)
                 .collect();
@@ -152,7 +151,8 @@ pub fn get_column_values(
 
         ColumnType::I64 => {
             let values: Vec<i64> = column_series
-                .i64()?
+                .i64()
+                .map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?
                 .into_iter()
                 .filter_map(|opt_val| opt_val)
                 .collect();
@@ -160,7 +160,8 @@ pub fn get_column_values(
         }
         ColumnType::String => {
             let values = column_series
-                .utf8()?
+                .utf8()
+                .map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?
                 .into_iter()
                 .filter_map(|opt_name| opt_name.map(String::from))
                 .collect::<Vec<_>>()
@@ -175,7 +176,7 @@ pub fn get_column_value(
     filter: Option<Expr>,
     column: &str,
     col_type: ColumnType,
-) -> Result<ColumnValue, GlobleError> {
+) -> Result<ColumnValue, AppError> {
     match get_column_values(df, filter, column, col_type)? {
         ColumnValues::Bool(bool_values) => {
             let value = bool_values.get(0).cloned();
@@ -196,10 +197,10 @@ pub fn get_column_value(
     }
 }
 
-pub fn merge_dataframes(frames: Vec<DataFrame>) -> Result<DataFrame, GlobleError> {
+pub fn merge_dataframes(frames: Vec<DataFrame>) -> Result<DataFrame, AppError> {
     // Check if there are any frames to merge
     if frames.is_empty() {
-        return Err(GlobleError::OtherError("No frames to merge".to_string()));
+        return Err(AppError("Helper", eyre!("No frames to merge")));
     }
 
     // Get the column names from the first frame
@@ -209,18 +210,18 @@ pub fn merge_dataframes(frames: Vec<DataFrame>) -> Result<DataFrame, GlobleError
     let mut combined_series: Vec<Series> = Vec::new();
 
     for &col_name in &column_names {
-        let first_series = frames[0].column(col_name)?.clone();
+        let first_series = frames[0].column(col_name).map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?.clone();
         let mut stacked_series = first_series;
 
         for frame in frames.iter().skip(1) {
-            let series = frame.column(col_name)?.clone();
-            stacked_series = stacked_series.append(&series)?.clone();
+            let series = frame.column(col_name).map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?.clone();
+            stacked_series = stacked_series.append(&series).map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?.clone();
         }
 
         combined_series.push(stacked_series);
     }
     // Construct a DataFrame from the merged data
-    Ok(DataFrame::new(combined_series)?)
+    Ok(DataFrame::new(combined_series).map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?)
 }
 /// Returns a vector of strings representing the dates of the last `x` days, including today.
 /// The dates are formatted as "YYYY-MM-DD".

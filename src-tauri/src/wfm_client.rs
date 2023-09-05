@@ -1,5 +1,6 @@
 use std::sync::{Arc, Mutex};
 
+use eyre::eyre;
 use polars::{
     prelude::{DataFrame, NamedFrom},
     series::Series,
@@ -10,8 +11,9 @@ use serde_json::{json, Value};
 
 use crate::{
     auth::AuthState,
+    error::AppError,
     logger,
-    structs::{GlobleError, Item, ItemDetails, Order, OrderByItem, Ordres},
+    structs::{Item, ItemDetails, Order, OrderByItem, Ordres},
 };
 
 #[derive(Clone, Debug)]
@@ -35,7 +37,7 @@ impl WFMClientState {
         url: &str,
         payload_key: Option<&str>,
         body: Option<Value>,
-    ) -> Result<(T, HeaderMap), GlobleError> {
+    ) -> Result<(T, HeaderMap), AppError> {
         let auth = self.auth.lock()?.clone();
         // Sleep for 1 seconds before sending a new request, to avoid 429 error
         tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
@@ -58,7 +60,7 @@ impl WFMClientState {
         let response = request.send().await;
 
         if let Err(e) = response {
-            return Err(GlobleError::ReqwestError(e));
+            return Err(AppError("WFMClientState", eyre!(e.to_string())));
         }
         let response_data = response.unwrap();
         let status = response_data.status();
@@ -66,23 +68,15 @@ impl WFMClientState {
         if status == 429 {
             // Sleep for 3 second
             tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
-            return Err(GlobleError::TooManyRequests(
-                "Too Many Requests".to_string(),
-            ));
+            return Err(AppError("WFMClientState", eyre!("429 Error")));
         }
         if status != 200 {
-            let rep = response_data.text().await?;
-            return Err(GlobleError::OtherError(format!(
-                "URL: {}, Body: {}, Status: {}, Response: {}",
-                new_url,
-                body.unwrap_or(json!({})),
-                status,
-                rep
-            )));
+            let rep = response_data.text().await.unwrap_or_default();
+            return Err(AppError("WFMClientState", eyre!(rep)));
         }
 
         let headers = response_data.headers().clone();
-        let response = response_data.json::<Value>().await?;
+        let response = response_data.json::<Value>().await.map_err(|e| AppError("WFMClientState", eyre!(e.to_string())))?;
 
         let mut data = response["payload"].clone();
         if let Some(payload_key) = payload_key {
@@ -94,11 +88,7 @@ impl WFMClientState {
         // Convert the response to a T object
         match serde_json::from_value(data.clone()) {
             Ok(payload) => Ok((payload, headers)),
-            Err(e) => Err(GlobleError::SerdeError(
-                format!("{}", data.to_string()),
-                e.line(),
-                e.column(),
-            )),
+            Err(e) => Err(AppError("WFMClientState", eyre!("Error: {:?}, Data: {:?}", e, data))),
         }
     }
 
@@ -106,7 +96,7 @@ impl WFMClientState {
         &self,
         url: &str,
         payload_key: Option<&str>,
-    ) -> Result<(T, HeaderMap), GlobleError> {
+    ) -> Result<(T, HeaderMap), AppError> {
         let payload: (T, HeaderMap) = self
             .send_request(Method::GET, url, payload_key, None)
             .await?;
@@ -118,7 +108,7 @@ impl WFMClientState {
         url: &str,
         payload_key: Option<&str>,
         body: Value,
-    ) -> Result<(T, HeaderMap), GlobleError> {
+    ) -> Result<(T, HeaderMap), AppError> {
         let payload: (T, HeaderMap) = self
             .send_request(Method::POST, url, payload_key, Some(body))
             .await?;
@@ -129,7 +119,7 @@ impl WFMClientState {
         &self,
         url: &str,
         payload_key: Option<&str>,
-    ) -> Result<(T, HeaderMap), GlobleError> {
+    ) -> Result<(T, HeaderMap), AppError> {
         let payload: (T, HeaderMap) = self
             .send_request(Method::DELETE, url, payload_key, None)
             .await?;
@@ -141,14 +131,14 @@ impl WFMClientState {
         url: &str,
         payload_key: Option<&str>,
         body: Option<Value>,
-    ) -> Result<(T, HeaderMap), GlobleError> {
+    ) -> Result<(T, HeaderMap), AppError> {
         let payload: (T, HeaderMap) = self
             .send_request(Method::PUT, url, payload_key, body)
             .await?;
         Ok(payload)
     }
 
-    pub async fn login(&self, email: String, password: String) -> Result<AuthState, GlobleError> {
+    pub async fn login(&self, email: String, password: String) -> Result<AuthState, AppError> {
         let body = json!({
             "email": email,
             "password": password
@@ -174,7 +164,7 @@ impl WFMClientState {
         Ok(user)
     }
 
-    pub async fn validate(&self) -> Result<bool, GlobleError> {
+    pub async fn validate(&self) -> Result<bool, AppError> {
         match self
             .post_ordre(
                 "Lex Prime Set",
@@ -200,11 +190,11 @@ impl WFMClientState {
             Err(_e) => Ok(false),
         }
     }
-    pub async fn get_tradable_items(&self) -> Result<Vec<Item>, GlobleError> {
+    pub async fn get_tradable_items(&self) -> Result<Vec<Item>, AppError> {
         let (payload, _headers) = self.get("items", Some("items")).await?;
         Ok(payload)
     }
-    pub async fn get_item(&self, item: String) -> Result<ItemDetails, GlobleError> {
+    pub async fn get_item(&self, item: String) -> Result<ItemDetails, AppError> {
         let url = format!("items/{}", item);
         match self.get(&url, Some("item")).await {
             Ok((item, _headers)) => {
@@ -228,7 +218,7 @@ impl WFMClientState {
         }
     }
     // Get orders from warframe market
-    pub async fn get_user_ordres(&self) -> Result<Ordres, GlobleError> {
+    pub async fn get_user_ordres(&self) -> Result<Ordres, AppError> {
         let auth = self.auth.lock()?.clone();
         let url = format!("profile/{}/orders", auth.ingame_name.clone());
         match self.get(&url, None).await {
@@ -252,7 +242,7 @@ impl WFMClientState {
             }
         }
     }
-    pub async fn get_ordres_data_frames(&self) -> Result<(DataFrame, DataFrame), GlobleError> {
+    pub async fn get_ordres_data_frames(&self) -> Result<(DataFrame, DataFrame), AppError> {
         let current_orders = self.get_user_ordres().await?;
         let buy_orders = current_orders.buy_orders.clone();
         let my_buy_orders_df = DataFrame::new_no_checks(vec![
@@ -384,7 +374,7 @@ impl WFMClientState {
         quantity: i64,
         visible: bool,
         rank: Option<f64>,
-    ) -> Result<Order, GlobleError> {
+    ) -> Result<Order, AppError> {
         // Construct any JSON body
         let mut body = json!({
             "item": item_id,
@@ -419,7 +409,7 @@ impl WFMClientState {
         item_name: &str,
         item_id: &str,
         order_type: &str,
-    ) -> Result<String, GlobleError> {
+    ) -> Result<String, AppError> {
         let url = format!("profile/orders/{}", order_id);
         match self.delete(&url, Some("order_id")).await {
             Ok((order_id, _headers)) => {
@@ -446,7 +436,7 @@ impl WFMClientState {
             }
         }
     }
-    pub fn convet_order_to_datafream(&self, order: Order) -> Result<DataFrame, GlobleError> {
+    pub fn convet_order_to_datafream(&self, order: Order) -> Result<DataFrame, AppError> {
         let orders_df = DataFrame::new_no_checks(vec![
             Series::new("id", vec![order.id.clone()]),
             Series::new("visible", vec![order.visible.clone()]),
@@ -468,7 +458,7 @@ impl WFMClientState {
         item_name: &str,
         item_id: &str,
         order_type: &str,
-    ) -> Result<Order, GlobleError> {
+    ) -> Result<Order, AppError> {
         // Construct any JSON body
         let body = json!({
             "platinum": platinum,
@@ -493,7 +483,7 @@ impl WFMClientState {
         }
     }
 
-    pub async fn get_ordres_by_item(&self, item: &str) -> Result<DataFrame, GlobleError> {
+    pub async fn get_ordres_by_item(&self, item: &str) -> Result<DataFrame, AppError> {
         let url = format!("items/{}/orders", item);
 
         let orders: Vec<OrderByItem> = match self.get(&url, Some("orders")).await {
@@ -565,7 +555,7 @@ impl WFMClientState {
         Ok(orders_df)
     }
 
-    pub async fn close_order_by_url(&self, item: &str) -> Result<String, GlobleError> {
+    pub async fn close_order_by_url(&self, item: &str) -> Result<String, AppError> {
         // Get the user orders and find the order
         let mut ordres_vec = self.get_user_ordres().await?;
         let mut ordres: Vec<Order> = ordres_vec.buy_orders;
@@ -581,7 +571,7 @@ impl WFMClientState {
         }
 
         let url = format!("profile/orders/close/{}", order.unwrap().id);
-        let result: Result<(Option<String>, HeaderMap), GlobleError> =
+        let result: Result<(Option<String>, HeaderMap), AppError> =
             self.put(&url, Some("order_id"), None).await;
         match result {
             Ok((order_data, _headers)) => {

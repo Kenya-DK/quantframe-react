@@ -3,9 +3,11 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
-use crate::structs::{GlobleError, Item};
+use crate::error::AppError;
+use crate::structs::Item;
 use crate::wfm_client::WFMClientState;
 use crate::{helper, logger};
+use eyre::eyre;
 
 #[derive(Clone, Debug)]
 pub struct CacheState {
@@ -22,7 +24,7 @@ impl CacheState {
         }
     }
 
-    pub async fn update_cache(&self) -> Result<bool, GlobleError> {
+    pub async fn update_cache(&self) -> Result<bool, AppError> {
         match self.update_tradable_items().await {
             Ok(_) => {}
             Err(e) => {
@@ -36,14 +38,16 @@ impl CacheState {
         }
         Ok(true)
     }
-    pub async fn update_tradable_items(&self) -> Result<bool, GlobleError> {
+    pub async fn update_tradable_items(&self) -> Result<bool, AppError> {
         let wfm = self.wfm.lock()?.clone();
         let items = wfm.get_tradable_items().await?;
         let response: HashMap<String, Value> =
             reqwest::get("https://relics.run/history/item_data/item_info.json")
-                .await?
+                .await
+                .map_err(|e| AppError("CacheState", eyre!(e.to_string())))?
                 .json()
-                .await?;
+                .await
+                .map_err(|e| AppError("CacheState", eyre!(e.to_string())))?;
 
         let mut new_items: Vec<Item> = Vec::new();
         // Link items with relic data on item_id

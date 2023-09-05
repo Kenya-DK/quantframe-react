@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{self, Read, Write};
 use std::path::PathBuf;
-
+use eyre::{eyre, Result};
+use crate::error::AppError;
 use crate::helper;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -39,7 +40,7 @@ impl AuthState {
         let auth_path = app_path.join("auth.json");
         auth_path
     }
-    pub fn setup() -> io::Result<Self> {
+    pub fn setup() -> Result<Self, AppError> {
         let path_ref = Self::get_file_path();
         if path_ref.exists() {
             Self::read_from_file()
@@ -50,18 +51,18 @@ impl AuthState {
         }
     }
 
-    pub fn save_to_file(&self) -> io::Result<()> {
-        let json = serde_json::to_string_pretty(self)?;
-        let mut file = File::create(Self::get_file_path())?;
-        file.write_all(json.as_bytes())?;
+    pub fn save_to_file(&self) -> Result<(), AppError> {
+        let json = serde_json::to_string_pretty(self).map_err(|e| {AppError("AuthState", eyre!(e.to_string()))} )?;
+        let mut file = File::create(Self::get_file_path()).map_err(|e| {AppError("AuthState", eyre!(e.to_string()))} )?;
+        file.write_all(json.as_bytes()).map_err(|e| {AppError("AuthState", eyre!(e.to_string()))} )?;
         Ok(())
     }
 
-    pub fn read_from_file() -> io::Result<Self> {
-        let mut file = File::open(Self::get_file_path())?;
+    pub fn read_from_file() -> Result<Self, AppError> {
+        let mut file = File::open(Self::get_file_path()).map_err(|e| {AppError("AuthState", eyre!(e.to_string()))} )?;
         let mut content = String::new();
-        file.read_to_string(&mut content)?;
-        let auth = serde_json::from_str(&content)?;
+        file.read_to_string(&mut content).map_err(|e| {AppError("AuthState", eyre!(e.to_string()))} )?;
+        let auth = serde_json::from_str(&content).map_err(|e| {AppError("AuthState", eyre!(e.to_string()))} )?;
         Ok(auth)
     }
 }

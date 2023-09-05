@@ -1,5 +1,5 @@
-use serde::{de::DeserializeOwned, Deserialize, Serialize, Deserializer};
-use serde_json::{Value};
+use serde::{de::DeserializeOwned, Deserialize, Deserializer, Serialize};
+use serde_json::Value;
 #[derive(Debug)]
 pub enum GlobleError {
     ReqwestError(reqwest::Error),
@@ -210,6 +210,7 @@ pub struct Invantory {
     pub item_id: String,
     pub item_url: String,
     pub item_name: String,
+    pub item_type: String,
     pub rank: i64,
     pub price: f64,
     pub listed_price: Option<i64>,
@@ -222,6 +223,7 @@ pub struct Transaction {
     pub item_id: String,
     pub item_url: String,
     pub item_type: String,
+    pub item_tags: String,
     pub rank: i64,
     pub price: i64,
     pub datetime: String,
