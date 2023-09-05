@@ -14,6 +14,7 @@ type TauriContextProps = {
   user: Wfm.UserDto | undefined;
   tradable_items: Wfm.ItemDto[];
   transactions: TransactionEntryDto[];
+  orders: Wfm.OrderDto[];
   inventorys: InventoryEntryDto[];
   updateUser: (user: Partial<Wfm.UserDto>) => void;
   settings: Settings | undefined;

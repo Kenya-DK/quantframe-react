@@ -5,6 +5,7 @@ export interface SetupResponse {
   settings: Settings;
   transactions: TransactionEntryDto[];
   inventorys: InventoryEntryDto[];
+  orders: Wfm.OrderDto[];
 }
 
 export interface Settings {

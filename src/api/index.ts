@@ -40,6 +40,18 @@ const api = {
     },
   },
   orders: {
+    async getOrders(): Promise<Wfm.OrderDto[]> {
+      return await invoke("get_orders") as Wfm.OrderDto[];
+    },
+    async deleteOrder(id: string): Promise<Wfm.OrderDto> {
+      return await invoke("delete_order", { id }) as Wfm.OrderDto;
+    },
+    async createOrder(id: string, quantity: number, price: number, rank: number, type: string): Promise<Wfm.OrderDto> {
+      return await invoke("create_order", { id, order_type: type, quantity, price, rank }) as Wfm.OrderDto;
+    },
+    async updateOrder(id: string, quantity: number, price: number, rank: number, type: string): Promise<Wfm.OrderDto> {
+      return await invoke("update_order", { id, order_type: type, quantity, price, rank }) as Wfm.OrderDto;
+    }
   },
 }
 
