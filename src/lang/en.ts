@@ -138,6 +138,7 @@ export const en = {
       live_trading: "Live Trading",
       statistics: "Statistics",
       warframe_market: "Warframe Market",
+      rivens: "Rivens",
       debug: "Debug",
     },
   },

@@ -55,6 +55,7 @@ export default function SideBar({ }) {
     { link: "live-trading", icon: <FontAwesomeIcon icon={faGlobe} />, label: useTranslate("live_trading") },
     { link: "statistics", icon: <FontAwesomeIcon icon={faChartSimple} />, label: useTranslate("statistics") },
     { link: "warframe-market", icon: <FontAwesomeIcon icon={faChartSimple} />, label: useTranslate("warframe_market") },
+    { link: "rivens", icon: <FontAwesomeIcon icon={faChartSimple} />, label: useTranslate("rivens") },
     { link: "debug", icon: <FontAwesomeIcon icon={faDesktop} />, label: useTranslate("debug") },
   ];
   const links = mockdata.map((link, index) => (
