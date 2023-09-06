@@ -22,7 +22,7 @@ import PStatistics from '../pages/statistics'
 import PWarframeMarket from '../pages/warframeMarket'
 
 // Rivens routes
-import PRiven from '../pages/rivens'
+import PAuction from '../pages/auctions'
 
 // Debug routes
 import PDebug from '../pages/debug'
@@ -41,7 +41,7 @@ export default function AppRoutes() {
             <Route path="live-trading" element={<PLiveTrading />} />
             <Route path="statistics" element={<PStatistics />} />
             <Route path="warframe-market" element={<PWarframeMarket />} />
-            <Route path="rivens" element={<PRiven />} />
+            <Route path="auctions" element={<PAuction />} />
             <Route path="debug" element={<PDebug />} />
           </Route>
         </Route>
