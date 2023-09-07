@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
-use crate::error::AppError;
+use crate::error::{AppError, GetErrorInfo};
 use crate::structs::Item;
 use crate::wfm_client::WFMClientState;
 use crate::{helper, logger};
@@ -28,12 +28,17 @@ impl CacheState {
         match self.update_tradable_items().await {
             Ok(_) => {}
             Err(e) => {
-                logger::error(
-                    "Cache",
-                    format!("Update Tradable Items: {:?}", e).as_str(),
+                let component = e.component();
+                let cause = e.cause();
+                let backtrace = e.backtrace();
+                let log_level = e.log_level();
+                crate::logger::dolog(
+                    log_level,
+                    component.as_str(),
+                    format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
                     true,
-                    None,
-                );
+                    Some(format!("error_{}_{}.log", component, chrono::Local::now().format("%Y-%m-%d")).as_str()),
+                );               
             }
         }
         Ok(true)

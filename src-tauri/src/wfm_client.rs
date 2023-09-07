@@ -11,8 +11,8 @@ use serde_json::{json, Value};
 
 use crate::{
     auth::AuthState,
-    error::AppError,
-    logger,
+    error::{AppError, GetErrorInfo},
+    helper, logger,
     structs::{Item, ItemDetails, Order, OrderByItem, Ordres},
 };
 
@@ -60,35 +60,40 @@ impl WFMClientState {
         let response = request.send().await;
 
         if let Err(e) = response {
-            return Err(AppError("WFMClientState", eyre!(e.to_string())));
+            return Err(AppError(
+                "WFMClientState",
+                eyre!("Error: {:?}, Url: {:?}", e.to_string(), new_url),
+            ));
         }
         let response_data = response.unwrap();
         let status = response_data.status();
 
-        if status == 429 {
-            // Sleep for 3 second
-            tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
-            return Err(AppError("WFMClientState", eyre!("429 Error")));
-        }
         if status != 200 {
             let rep = response_data.text().await.unwrap_or_default();
-            return Err(AppError("WFMClientState", eyre!(rep)));
+            return Err(AppError(
+                "WFMClientState",
+                eyre!("Status: {:?}, Data: {:?}, Url: {:?}", status, rep, new_url),
+            ));
         }
 
         let headers = response_data.headers().clone();
-        let response = response_data.json::<Value>().await.map_err(|e| AppError("WFMClientState", eyre!(e.to_string())))?;
+        let response = response_data
+            .json::<Value>()
+            .await
+            .map_err(|e| AppError("WFMClientState", eyre!(e.to_string())))?;
 
         let mut data = response["payload"].clone();
         if let Some(payload_key) = payload_key {
             data = response["payload"][payload_key].clone();
-            // let payload: T =
-            //     serde_json::from_value(response["payload"][payload_key].clone()).unwrap();
         }
 
         // Convert the response to a T object
         match serde_json::from_value(data.clone()) {
             Ok(payload) => Ok((payload, headers)),
-            Err(e) => Err(AppError("WFMClientState", eyre!("Error: {:?}, Data: {:?}", e, data))),
+            Err(e) => Err(AppError(
+                "WFMClientState",
+                eyre!("Error: {:?}, Url: {:?}", e, new_url),
+            )),
         }
     }
 
@@ -199,22 +204,14 @@ impl WFMClientState {
         match self.get(&url, Some("item")).await {
             Ok((item, _headers)) => {
                 logger::info(
-                    "WarframeMarket:GetItem",
+                    "WarframeMarket",
                     format!("For Item: {:?}", item).as_str(),
                     true,
                     Some(self.log_file.as_str()),
                 );
                 Ok(item)
             }
-            Err(e) => {
-                logger::error(
-                    "WarframeMarket:GetItem",
-                    format!("Item: {}, Error: {:?}", item, e).as_str(),
-                    true,
-                    Some(self.log_file.as_str()),
-                );
-                Err(e)
-            }
+            Err(e) => Err(e),
         }
     }
     // Get orders from warframe market
@@ -224,22 +221,14 @@ impl WFMClientState {
         match self.get(&url, None).await {
             Ok((orders, _headers)) => {
                 logger::info(
-                    "WarframeMarket:GetUserOrdres",
+                    "WarframeMarket",
                     format!("From User: {}", auth.ingame_name.clone()).as_str(),
                     true,
                     Some(self.log_file.as_str()),
                 );
                 Ok(orders)
             }
-            Err(e) => {
-                logger::error(
-                    "WarframeMarket:GetUserOrdres",
-                    format!("User: {}, Error: {:?}", auth.ingame_name, e).as_str(),
-                    true,
-                    Some(self.log_file.as_str()),
-                );
-                Err(e)
-            }
+            Err(e) => Err(e),
         }
     }
     pub async fn get_ordres_data_frames(&self) -> Result<(DataFrame, DataFrame), AppError> {
@@ -389,18 +378,10 @@ impl WFMClientState {
         }
         match self.post("profile/orders", Some("order"), body).await {
             Ok((order, _headers)) => {
-                logger::info("WarframeMarket:PostOrder", format!("Created Order: {}, Item Name: {}, Item Id: {},  Platinum: {}, Quantity: {}, Visible: {}", order_type, item_name, item_id ,platinum ,quantity ,visible).as_str(), true, Some(self.log_file.as_str()));
+                logger::info("WarframeMarket", format!("Created Order: {}, Item Name: {}, Item Id: {},  Platinum: {}, Quantity: {}, Visible: {}", order_type, item_name, item_id ,platinum ,quantity ,visible).as_str(), true, Some(self.log_file.as_str()));
                 Ok(order)
             }
-            Err(e) => {
-                logger::error(
-                    "WarframeMarket:PostOrder",
-                    format!("{:?}", e).as_str(),
-                    true,
-                    Some(&self.log_file),
-                );
-                Err(e)
-            }
+            Err(e) => Err(e),
         }
     }
     pub async fn delete_order(
@@ -414,7 +395,7 @@ impl WFMClientState {
         match self.delete(&url, Some("order_id")).await {
             Ok((order_id, _headers)) => {
                 logger::info(
-                    "WarframeMarket:DeleteOrder",
+                    "WarframeMarket",
                     format!(
                         "Deleted order: {}, Item Name: {}, Item Id: {}, Type: {}",
                         order_id, item_name, item_id, order_type
@@ -425,15 +406,7 @@ impl WFMClientState {
                 );
                 Ok(order_id)
             }
-            Err(e) => {
-                logger::error(
-                    "WarframeMarket:DeleteOrder",
-                    format!("{:?}", e).as_str(),
-                    true,
-                    Some(self.log_file.as_str()),
-                );
-                Err(e)
-            }
+            Err(e) => Err(e),
         }
     }
     pub fn convet_order_to_datafream(&self, order: Order) -> Result<DataFrame, AppError> {
@@ -468,18 +441,10 @@ impl WFMClientState {
         let url = format!("profile/orders/{}", order_id);
         match self.put(&url, Some("order"), Some(body)).await {
             Ok((order, _headers)) => {
-                logger::info("WarframeMarket:UpdateOrderListing", format!("Updated Order Id: {}, Item Name: {}, Item Id: {}, Platinum: {}, Quantity: {}, Visible: {}, Type: {}", order_id, item_name, item_id,platinum ,quantity ,visible, order_type).as_str(), true, Some(&self.log_file));
+                logger::info("WarframeMarket", format!("Updated Order Id: {}, Item Name: {}, Item Id: {}, Platinum: {}, Quantity: {}, Visible: {}, Type: {}", order_id, item_name, item_id,platinum ,quantity ,visible, order_type).as_str(), true, Some(&self.log_file));
                 Ok(order)
             }
-            Err(e) => {
-                logger::error(
-                    "WarframeMarket:UpdateOrderListing",
-                    format!("{:?}", e).as_str(),
-                    true,
-                    Some(self.log_file.as_str()),
-                );
-                Err(e)
-            }
+            Err(e) => Err(e),
         }
     }
 
@@ -488,15 +453,7 @@ impl WFMClientState {
 
         let orders: Vec<OrderByItem> = match self.get(&url, Some("orders")).await {
             Ok((orders, _headers)) => orders,
-            Err(e) => {
-                logger::error(
-                    "WarframeMarket:GetOrdresByItem",
-                    format!("Item: {}, Error: {:?}", item, e).as_str(),
-                    true,
-                    Some(self.log_file.as_str()),
-                );
-                vec![]
-            }
+            Err(e) => return Err(e),
         };
 
         if orders.len() == 0 {
@@ -576,22 +533,14 @@ impl WFMClientState {
         match result {
             Ok((order_data, _headers)) => {
                 logger::info(
-                    "WarframeMarket:CloseOrder",
+                    "WarframeMarket",
                     format!("Closed Order: {}", order.unwrap().id).as_str(),
                     true,
                     Some(self.log_file.as_str()),
                 );
                 Ok(order_data.unwrap_or("Order Successfully Closed".to_string()))
             }
-            Err(e) => {
-                logger::error(
-                    "WarframeMarket:CloseOrder",
-                    format!("{:?}", e).as_str(),
-                    true,
-                    Some(self.log_file.as_str()),
-                );
-                Err(e)
-            }
+            Err(e) => Err(e),
         }
     }
 }

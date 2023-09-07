@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use crate::live_scraper::LiveScraper;
 
@@ -10,9 +10,7 @@ pub fn toggle_live_scraper(live_scraper: tauri::State<'_, Arc<std::sync::Mutex<L
     } else {
         match live_scraper.start_loop() {
             Ok(_) => {}
-            Err(_e) => {
-                live_scraper.stop_loop();
-            }
+            Err(_e) => {}
         }
     }
 }

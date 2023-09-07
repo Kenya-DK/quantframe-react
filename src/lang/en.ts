@@ -123,6 +123,16 @@ export const en = {
     wisper: {
       title: "Wisper",
       message: "Wisper {{name}}",
+      error_title: "Wisper Error",
+      error_message: "There was an error with the wisper. Please check the logs for more information.",
+    },
+    live_scraper: {
+      error_title: "Live Scraper Error",
+      error_message: "There was an error with the live scraper. Please check the logs for more information.",
+    },
+    price_scraper: {
+      error_title: "Price Scraper Error",
+      error_message: "There was an error with the price scraper. Please check the logs for more information.",
     },
   },
   layout: {

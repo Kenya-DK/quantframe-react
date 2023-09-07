@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use crate::{auth::AuthState, structs::GlobleError, wfm_client::WFMClientState, error::AppError};
+use crate::{auth::AuthState, structs::GlobleError, wfm_client::WFMClientState, error::{AppError, GetErrorInfo}, helper};
 
 #[tauri::command]
 pub async fn login(
@@ -17,7 +17,17 @@ pub async fn login(
             return Ok(user.clone());
         }
         Err(e) => {
-            println!("Err: {:?}", e);
+            let component = e.component();
+            let cause = e.cause();
+            let backtrace = e.backtrace();
+            let log_level = e.log_level();
+            crate::logger::dolog(
+                log_level,
+                component.as_str(),
+                format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
+                true,
+                Some(format!("error_{}_{}.log", component, chrono::Local::now().format("%Y-%m-%d")).as_str()),
+            );  
         }
     }
     Ok(auth.clone())

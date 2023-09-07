@@ -3,8 +3,13 @@ use std::sync::{Arc, Mutex};
 use serde_json::{json, Value};
 
 use crate::{
-    auth::AuthState, cache::CacheState, database::DatabaseClient, debug::DebugClient,
-    error::{GetErrorInfo, AppError}, logger, settings::SettingsState, 
+    auth::AuthState,
+    cache::CacheState,
+    database::DatabaseClient,
+    debug::DebugClient,
+    error::{AppError, GetErrorInfo},
+    logger,
+    settings::SettingsState,
     wfm_client::WFMClientState,
 };
 
@@ -25,37 +30,40 @@ pub async fn setup(
     cache.update_cache().await?;
     let db = db.lock()?.clone();
     db.initialize().await?;
-
-    match debug.test_error().await {
-        Ok(_) => {}
-        Err(err) => {
-            let component = err.component();
-            let cause = err.cause();
-            let backtrace = err.backtrace();
-            // let message = err.message();
-            // println!("Backtrace: {:?}", backtrace);
-            
-            // logger::trace(component.as_str(), format!("Main: {:?}", message).as_str(), backtrace, true, Some("setup.log"));
-            logger::error(
+    
+    let mut orders = vec![];
+    
+    match wfm.get_user_ordres().await {
+        Ok(ordres) => {
+            for order in ordres.sell_orders {
+                orders.push(order);
+            }
+            for order in ordres.buy_orders {
+                orders.push(order);
+            }
+        }
+        Err(e) => {
+            let component = e.component();
+            let cause = e.cause();
+            let backtrace = e.backtrace();
+            let log_level = e.log_level();
+            crate::logger::dolog(
+                log_level,
                 component.as_str(),
-                format!("Main: {:?}, {:?}", backtrace,cause).as_str(),
+                format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
                 true,
-                None,
-            );
+                Some(format!("error_{}_{}.log", component, chrono::Local::now().format("%Y-%m-%d")).as_str()),
+            );  
         }
     }
-
-    // Check if the user access token is valid
-    // let valid = wfm.validate().await?;
-    // if !valid {
-    //     return Ok(json!({"valid": false}));
-    // }
+   
     Ok(json!({
         "valid": true,
         "settings": &settings.clone(),
         "user": &auth.clone(),
          "inventorys": &db.get_inventorys().await?,
          "transactions": &db.get_transactions("SELECT * FROM transactions").await?,
+         "orders": orders,
 
     }))
 }

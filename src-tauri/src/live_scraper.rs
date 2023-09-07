@@ -1,14 +1,17 @@
 use crate::auth::AuthState;
+use crate::error::GetErrorInfo;
+use crate::logger::LogLevel;
 use crate::price_scraper::PriceScraper;
 use crate::structs::Order;
 use crate::{
     database::DatabaseClient,
+    error::AppError,
     helper::{self, ColumnType, ColumnValue, ColumnValues},
     logger,
     settings::SettingsState,
     wfm_client::WFMClientState,
-    error::AppError;
 };
+use eyre::eyre;
 use polars::prelude::*;
 use serde_json::json;
 use std::time::Duration;
@@ -57,7 +60,7 @@ impl LiveScraper {
         let is_running = Arc::clone(&self.is_running);
         let forced_stop = Arc::clone(&self.is_running);
         let scraper = self.clone();
-
+        let log_file = self.log_file.clone();
         tauri::async_runtime::spawn(async move {
             // A loop that takes output from the async process and sends it
             // to the webview via a Tauri Event
@@ -67,14 +70,33 @@ impl LiveScraper {
                     logger::info_con("LiveScraper:DeleteAllOrders", "Delete all orders success");
                 }
                 Err(e) => {
-                    logger::error_con("LiveScraper:DeleteAllOrders", format!("{:?}", e).as_str());
+                    let component = e.component();
+                    let cause = e.cause();
+                    let backtrace = e.backtrace();
+                    let log_level = e.log_level();
+                    if log_level == LogLevel::Critical {
+                        crate::logger::dolog(
+                            log_level.clone(),
+                            component.as_str(),
+                            format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
+                            true,
+                            Some(log_file.as_str()),
+                        );  
+
+                    }
+
                     helper::send_message_to_window(
                         "live_scraper_error",
-                        Some(json!({ "error": format!("{:?}", e) })),
+                        Some(json!({ 
+                            "component": format!("{:?}", component),
+                            "cause": format!("{:?}", cause),
+                            "backtrace": format!("{:?}", backtrace),
+                            "log_level": format!("{:?}", log_level),
+                        })),
                     );
 
                     forced_stop.store(false, Ordering::SeqCst);
-                    eprint!("{:?}", e);
+                    // eprint!("{:?}", e);
                 }
             }
 
@@ -83,11 +105,20 @@ impl LiveScraper {
                 match scraper.run().await {
                     Ok(_) => {}
                     Err(e) => {
-                        logger::error_con("LiveScraper", format!("{:?}", e).as_str());
-                        helper::send_message_to_window(
-                            "live_scraper_error",
-                            Some(json!({ "error": format!("{:?}", e) })),
-                        );
+                        let log_level = e.log_level();
+                        // Check if log_level is Critical
+
+                        if LogLevel::Critical == log_level {
+                            helper::send_message_to_window(
+                                "live_scraper_error",
+                                Some(json!({
+                                    "msg": format!("{:?}", e),
+                                    "component": format!("{:?}", e.component()),
+                                    "cause": format!("{:?}", e.cause()),
+                                    "backtrace": format!("{:?}", e.cause())
+                                })),
+                            );
+                        }
 
                         forced_stop.store(false, Ordering::SeqCst);
                         eprint!("{:?}", e);
@@ -128,7 +159,7 @@ impl LiveScraper {
             ColumnType::String,
         )? {
             ColumnValues::String(values) => values,
-            _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+            _ => return Err(AppError("LiveScraper", eyre!("Expected f64 values"))),
         };
 
         // Get current orders from Warframe Market Sell and Buy orders
@@ -142,7 +173,8 @@ impl LiveScraper {
                     "interesting_items",
                     interesting_items.clone(),
                 ))))
-                .collect().map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+                .collect()
+                .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
 
             let order_buy_df = helper::filter_and_extract(
                 buy_sell_overlap.clone(),
@@ -150,9 +182,9 @@ impl LiveScraper {
                 vec!["name", "closedAvg"],
             )?;
 
-            current_buy_orders_df =
-                current_buy_orders_df.inner_join(&order_buy_df, ["url_name"], ["name"])
-                .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+            current_buy_orders_df = current_buy_orders_df
+                .inner_join(&order_buy_df, ["url_name"], ["name"])
+                .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
 
             current_buy_orders_df = current_buy_orders_df
                 .clone()
@@ -161,7 +193,7 @@ impl LiveScraper {
                 .fill_nan(lit(0.0).alias("platinum"))
                 .with_column((col("closedAvg") - col("platinum")).alias("potential_profit"))
                 .collect()
-                .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+                .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
         }
 
         // Combine inventory_names and interesting_items and whitelist
@@ -211,7 +243,7 @@ impl LiveScraper {
                 .lazy()
                 .filter(col("name").eq(lit(item.clone())))
                 .collect()
-                .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+                .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
             // Check if item is in all_interesting_items
             if !interesting_items.contains(&item) {
                 logger::info_file(
@@ -244,7 +276,7 @@ impl LiveScraper {
                 ColumnType::String,
             )? {
                 ColumnValue::String(values) => values.unwrap_or("".to_string()),
-                _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+                _ => return Err(AppError("LiveScraper", eyre!("Expected f64 values"))),
             };
 
             let item_rank: Option<f64> = match helper::get_column_value(
@@ -254,14 +286,15 @@ impl LiveScraper {
                 ColumnType::F64,
             )? {
                 ColumnValue::F64(values) => values,
-                _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+                _ => return Err(AppError("LiveScraper", eyre!("Expected f64 values"))),
             };
 
             let item_stats = buy_sell_overlap
                 .clone()
                 .lazy()
                 .filter(col("name").eq(lit(item.clone())))
-                .collect()?;
+                .collect()
+                .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
 
             self.compare_live_orders_when_buying(
                 &item,
@@ -288,7 +321,7 @@ impl LiveScraper {
         Ok(())
     }
 
-    fn get_week_increase(&self, df: &DataFrame, row_name: &str) -> Result<f64, GlobleError> {
+    fn get_week_increase(&self, df: &DataFrame, row_name: &str) -> Result<f64, AppError> {
         // Pre-filter DataFrame based on "order_type" == "closed"
         let week_df = df
             .clone()
@@ -299,17 +332,19 @@ impl LiveScraper {
                     .and(col("name").eq(lit(row_name))),
             )
             .collect()
-            .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
 
         // Sort the DataFrame by "datetime" column
         let week_df = helper::sort_dataframe(week_df, "datetime", true)?;
 
         // Assuming the filtered DataFrame has at least 7 rows
         if week_df.height() >= 7 {
-            let avg_price_series = week_df.column("median")
-                .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
-            let avg_price_array = avg_price_series.f64()
-                .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+            let avg_price_series = week_df
+                .column("median")
+                .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
+            let avg_price_array = avg_price_series
+                .f64()
+                .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
             let first_avg_price = avg_price_array.get(0).unwrap(); // Now a f64
             let last_avg_price = avg_price_array.get(6).unwrap(); // Now a f64
 
@@ -373,7 +408,7 @@ impl LiveScraper {
                 col("item_id").first().alias("item_id"),
             ])
             .collect()
-            .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
         // Call the database to get the inventory names and DataFrame
         let inventory_names = db.get_inventory_names().await?;
         let inventory_names_s = Series::new("desired_column_name", inventory_names);
@@ -394,7 +429,7 @@ impl LiveScraper {
                 ),
             )
             .collect()
-            .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
 
         // Sort by "range" in descending order
         let mut filtered_df = helper::sort_dataframe(filtered_df, "range", true)?;
@@ -415,17 +450,18 @@ impl LiveScraper {
                 Series::new("mod_rank", &[] as &[i32]),
                 Series::new("item_id", &[] as &[&str]),
             ])
-            .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?);
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?);
         }
 
         // Get the "name" column from the DataFrame
-        let name_column = filtered_df.column("name")
-            .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+        let name_column = filtered_df
+            .column("name")
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
 
         // Create a new Series with the calculated week price shifts
         let week_price_shifts: Vec<f64> = name_column
             .utf8()
-            .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?
             .into_iter()
             .filter_map(|opt_name| {
                 opt_name.map(|name| self.get_week_increase(&df, name).unwrap_or(0.0))
@@ -435,7 +471,7 @@ impl LiveScraper {
         let mut filtered_df = filtered_df
             .with_column(Series::new("weekPriceShift", week_price_shifts))
             .cloned()
-            .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
 
         // Handle the whitelist if it is strict or not
         let whitelist_s = Series::new("whitelist", whitelist);
@@ -444,7 +480,7 @@ impl LiveScraper {
                 .lazy()
                 .filter(col("name").is_in(lit(whitelist_s)))
                 .collect()
-                .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+                .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
         } else {
             filtered_df = filtered_df
                 .lazy()
@@ -456,7 +492,7 @@ impl LiveScraper {
                         .or(col("name").is_in(lit(whitelist_s))),
                 )
                 .collect()
-                .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+                .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
         }
 
         // Extract unique names from filtered_df into a HashSet
@@ -464,7 +500,7 @@ impl LiveScraper {
             match helper::get_column_values(filtered_df.clone(), None, "name", ColumnType::String)?
             {
                 ColumnValues::String(values) => values,
-                _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+                _ => return Err(AppError("LiveScraper", eyre!("Expected f64 values"))),
             },
         );
         let unique_names = name_set.into_iter().collect::<Vec<_>>();
@@ -475,11 +511,11 @@ impl LiveScraper {
             .lazy()
             .filter(col("name").is_in(lit(unique_names_series.clone())))
             .collect()
-            .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
 
         // Start the creation of the buy_sell_overlap DataFrame
         let buy_sell_overlap = DataFrame::new(vec![unique_names_series])
-            .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
 
         // Get Order type "sell" and "buy" into separate DataFrames
         let mut order_sell_df = helper::filter_and_extract(
@@ -487,15 +523,18 @@ impl LiveScraper {
             Some(col("order_type").eq(lit("sell"))),
             vec!["name", "min_price"],
         )?;
-        let order_sell_df = order_sell_df.rename("min_price", "minSell")?;
+        let order_sell_df = order_sell_df
+            .rename("min_price", "minSell")
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
 
         let mut order_buy_df = helper::filter_and_extract(
             df_filtered.clone(),
             Some(col("order_type").eq(lit("buy"))),
             vec!["name", "max_price"],
         )?;
-        let order_buy_df = order_buy_df.rename("max_price", "maxBuy")
-            .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+        let order_buy_df = order_buy_df
+            .rename("max_price", "maxBuy")
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
 
         // Remove unnecessary columns
         let filtered_df = filtered_df.drop_many(&["range", "order_type"]);
@@ -503,11 +542,11 @@ impl LiveScraper {
         // Join the DataFrames together
         let buy_sell_overlap = buy_sell_overlap
             .inner_join(&order_sell_df, ["name"], ["name"])
-                .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?
             .inner_join(&order_buy_df, ["name"], ["name"])
-                .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?
             .inner_join(&filtered_df, ["name"], ["name"])
-                .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
 
         // Calculate the overlap
         let mut buy_sell_overlap: DataFrame = buy_sell_overlap
@@ -517,22 +556,22 @@ impl LiveScraper {
             .fill_nan(lit(0.0).alias("minSell"))
             .with_column((col("maxBuy") - col("minSell")).alias("overlap"))
             .collect()
-            .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
 
         // Rename the columns
         let buy_sell_overlap = buy_sell_overlap
             .rename("volume", "closedVol")
-                .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?
             .rename("min_price", "closedMin")
-                .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?
             .rename("max_price", "closedMax")
-                .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?
             .rename("avg_price", "closedAvg")
-                .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?
             .rename("median", "closedMedian")
-                .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?
             .rename("weekPriceShift", "priceShift")
-                .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
 
         return Ok(buy_sell_overlap.clone());
     }
@@ -548,7 +587,7 @@ impl LiveScraper {
             .lazy()
             .filter(col("url_name").eq(lit(item_name)))
             .collect()
-            .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
         let id: Option<String> = None;
         let visibility = false;
         let price = 0;
@@ -559,7 +598,7 @@ impl LiveScraper {
             match helper::get_column_value(orders_by_item.clone(), None, "id", ColumnType::String)?
             {
                 ColumnValue::String(values) => values,
-                _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+                _ => return Err(AppError("LiveScraper", eyre!("Expected f64 values"))),
             };
 
         let visibility = match helper::get_column_value(
@@ -569,7 +608,7 @@ impl LiveScraper {
             ColumnType::Bool,
         )? {
             ColumnValue::Bool(values) => values.unwrap_or(false),
-            _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+            _ => return Err(AppError("LiveScraper", eyre!("Expected f64 values"))),
         };
 
         let price: i64 = match helper::get_column_value(
@@ -579,7 +618,7 @@ impl LiveScraper {
             ColumnType::I64,
         )? {
             ColumnValue::I64(values) => values.unwrap_or(0),
-            _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+            _ => return Err(AppError("LiveScraper", eyre!("Expected f64 values"))),
         };
         Ok((id.clone(), visibility, price, true))
     }
@@ -597,7 +636,7 @@ impl LiveScraper {
                     .and(col("order_type").eq(lit("buy"))), // Add this line
             )
             .collect()
-            .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
         let buy_orders_df = helper::sort_dataframe(buy_orders_df, "platinum", true)?;
 
         let sell_orders_df = item_live_orders_df
@@ -609,7 +648,7 @@ impl LiveScraper {
                     .and(col("order_type").eq(lit("sell"))), // Add this line
             )
             .collect()
-            .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
         let sell_orders_df = helper::sort_dataframe(sell_orders_df, "platinum", false)?;
 
         let mut lowest_price = 0;
@@ -625,7 +664,7 @@ impl LiveScraper {
                 ColumnType::I64,
             )? {
                 ColumnValue::I64(values) => values.unwrap_or(0),
-                _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+                _ => return Err(AppError("LiveScraper", eyre!("Expected f64 values"))),
             };
         }
 
@@ -637,7 +676,7 @@ impl LiveScraper {
                 ColumnType::I64,
             )? {
                 ColumnValue::I64(values) => values.unwrap_or(0),
-                _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+                _ => return Err(AppError("LiveScraper", eyre!("Expected f64 values"))),
             };
         }
         let range = highest_price - lowest_price;
@@ -740,9 +779,9 @@ impl LiveScraper {
             match helper::get_column_value(item_stats.clone(), None, "closedAvg", ColumnType::F64)?
             {
                 ColumnValue::F64(values) => values.unwrap_or(0.0),
-                _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+                _ => return Err(AppError("LiveScraper", eyre!("Expected f64 values"))),
             };
-            
+
         // If there are no buyers, and the average price is greater than 25p, then we should probably update our listing.
         if buyers == 0 && item_closed_avg > 25.0 {
             // If the item is worth more than 40p, then we should probably update our listing.
@@ -787,7 +826,7 @@ impl LiveScraper {
             ColumnType::I64,
         )? {
             ColumnValue::I64(values) => values.unwrap_or(0),
-            _ => return Err(GlobleError::OtherError("Expected i64 values".to_string())),
+            _ => return Err(AppError("LiveScraper", eyre!("Expected i64 values"))),
         };
 
         // Get the average price of the item from the Warframe Market API
@@ -795,7 +834,7 @@ impl LiveScraper {
             match helper::get_column_value(item_stats.clone(), None, "closedAvg", ColumnType::F64)?
             {
                 ColumnValue::F64(values) => values.unwrap_or(0.0) - post_price as f64,
-                _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+                _ => return Err(AppError("LiveScraper", eyre!("Expected f64 values"))),
             };
         let potential_profit = closed_avg_metric - 1.0;
 
@@ -812,7 +851,7 @@ impl LiveScraper {
             ColumnType::I64,
         )? {
             ColumnValue::I64(values) => values.unwrap_or(0),
-            _ => return Err(GlobleError::OtherError("Expected f64 values".to_string())),
+            _ => return Err(AppError("LiveScraper", eyre!("Expected f64 values"))),
         };
 
         if owned > 1 && ((closed_avg_metric as i64) < (25 * owned)) {
@@ -855,9 +894,10 @@ impl LiveScraper {
                         Series::new("platinum", vec![post_price]),
                         Series::new("potential_profit", vec![(post_price - price)]),
                     ])
-                    .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
-                    let updatede = current_orders.inner_join(&df, ["url_name"], ["url_name"])
-                        .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+                    .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
+                    let updatede = current_orders
+                        .inner_join(&df, ["url_name"], ["url_name"])
+                        .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
                     return Ok(Some(updatede));
                 } else {
                     logger::info_con("LiveScraper", format!("Your current (possibly hidden) posting on this item {item_name} for {price} plat is a good one. Recommend to make visible.").as_str());
@@ -875,9 +915,7 @@ impl LiveScraper {
                         ColumnType::I64,
                     )? {
                         ColumnValues::I64(values) => values,
-                        _ => {
-                            return Err(GlobleError::OtherError("Expected f64 values".to_string()))
-                        }
+                        _ => return Err(AppError("LiveScraper", eyre!("Expected i64 values"))),
                     };
                     let potential_profit_values = match helper::get_column_values(
                         current_orders.clone(),
@@ -886,9 +924,7 @@ impl LiveScraper {
                         ColumnType::F64,
                     )? {
                         ColumnValues::F64(values) => values,
-                        _ => {
-                            return Err(GlobleError::OtherError("Expected f64 values".to_string()))
-                        }
+                        _ => return Err(AppError("LiveScraper", eyre!("Expected f64 values"))),
                     };
 
                     let url_name_values = match helper::get_column_values(
@@ -898,9 +934,7 @@ impl LiveScraper {
                         ColumnType::String,
                     )? {
                         ColumnValues::String(values) => values,
-                        _ => {
-                            return Err(GlobleError::OtherError("Expected f64 values".to_string()))
-                        }
+                        _ => return Err(AppError("LiveScraper", eyre!("Expected string values"))),
                     };
                     let id_values = match helper::get_column_values(
                         current_orders.clone(),
@@ -909,9 +943,7 @@ impl LiveScraper {
                         ColumnType::String,
                     )? {
                         ColumnValues::String(values) => values,
-                        _ => {
-                            return Err(GlobleError::OtherError("Expected f64 values".to_string()))
-                        }
+                        _ => return Err(AppError("LiveScraper", eyre!("Expected string values"))),
                     };
                     buy_orders_list = platinum_values
                         .into_iter()
@@ -944,15 +976,27 @@ impl LiveScraper {
                             .iter()
                             .map(|order| order.2.clone())
                             .collect();
-
-                        current_orders =
-                            current_orders
-                                .lazy()
-                                .filter(col("url_name").is_in(
-                                    lit(Series::new("url_name", unselected_item_names)).not(),
-                                ))
-                                .collect()
-                                .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+                        logger::info_con("LiveScraper",format!("Item {} is not as optimal as other items. Deleting buy orders for {:?}",item_name,unselected_item_names).as_str());
+                        logger::log_dataframe(
+                            &mut current_orders,
+                            format!("Current Orders for {item_name}").as_str(),
+                        );
+                        current_orders = current_orders
+                            .lazy()
+                            .filter(col("url_name").is_in(
+                                lit(Series::new("url_name", unselected_item_names.clone())).not(),
+                            ))
+                            .collect()
+                            .map_err(|e| {
+                                AppError(
+                                    "LiveScraper",
+                                    eyre!(
+                                        "{:?}, {:?}",
+                                        e.to_string(),
+                                        unselected_item_names.clone()
+                                    ),
+                                )
+                            })?;
 
                         for unselected_item in &unselected_buy_orders {
                             wfm.delete_order(unselected_item.3.as_str(), item_name, item_id, "buy")
@@ -1083,7 +1127,7 @@ impl LiveScraper {
             ColumnType::I64,
         )? {
             ColumnValues::I64(values) => values,
-            _ => return Err(GlobleError::OtherError("Expected i64 values".to_string())),
+            _ => return Err(AppError("LiveScraper", eyre!("Expected i64 values"))),
         };
 
         let mut post_price = post_prices.get(0).unwrap_or(&0).clone();
@@ -1162,10 +1206,10 @@ impl LiveScraper {
                 vec![item_closed_avg - order.platinum.clone() as f64],
             ))
             .cloned()
-            .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?
             .with_column(Series::new("closedAvg", vec![item_closed_avg]))
             .cloned()
-            .map_err(|e| {AppError("LiveScraper", eyre!(e.to_string()))} )?;
+            .map_err(|e| AppError("LiveScraper", eyre!(e.to_string())))?;
         Ok(helper::merge_dataframes(vec![current_orders, order_df])?)
     }
 }

@@ -75,10 +75,11 @@ impl DebugClient {
                 let item = item.unwrap();
                 let item_id = item.id.clone();
                 sqlx::query(
-                    "INSERT INTO inventorys (item_id, item_url, item_name, rank, price, owned) VALUES (?1, ?2, ?3, ?4, ?5, ?6)")
+                    "INSERT INTO inventorys (item_id, item_url, item_name, item_type, rank, price, owned) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)")
                     .bind(item_id.clone())
                     .bind(item.url_name)
                     .bind(item.item_name)
+                    .bind("item".to_string())
                     .bind(0)
                     .bind(price)
                     .bind(owned)
@@ -111,14 +112,17 @@ impl DebugClient {
                     );
                     continue;
                 }
+
+                
                 let item = item.unwrap();
                 let item_id = item.id.clone();
                 sqlx::query(
-                    "INSERT INTO transactions (item_id, item_type, item_url, item_name, datetime, transaction_type, quantity, rank, price) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)")
-                    .bind(item_id.clone())
-                                .bind(item.tags.unwrap().join(","))
+                    "INSERT INTO transactions (item_id, item_type, item_url, item_name, item_tags, datetime, transaction_type, quantity, rank, price) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)")
+                                .bind(item_id.clone())
+                                .bind("item".to_string())
                                 .bind(item.url_name)
                                 .bind(item.item_name)
+                                .bind(item.tags.unwrap().join(","))
                                 .bind(datetime)
                                 .bind(transaction_type)
                                 .bind(1)
@@ -159,80 +163,5 @@ impl DebugClient {
         }
         Ok(true)
     }
-
-    //---------------------------------Test---------------------------------//
-    pub async fn dowload_string(&self, url: &str) -> Result<Value, AppError> {
-        let client = reqwest::Client::new();
-        let res = client
-            .get(url)
-            .send()
-            .await
-            .map_err(|e| AppError("Debug", eyre!(e.to_string())))?;
-        let text = res
-            .json()
-            .await
-            .map_err(|e| AppError("Debug", eyre!(e.to_string())))?;
-        Ok(text)
-    }
-
-    pub async fn test_error(&self) -> Result<(), AppError> {
-        // self.error_io().await?;
-        self.error_json().await?;
-        // self.error_reqwest().await?;
-        // self.error_polars().await?;
-
-        Ok(())
-    }
-
-    async fn error_io(&self) -> Result<(), AppError> {
-        let filename = "13.csv";
-        let file = File::open(filename).map_err(|e| AppError("Debug", eyre!(e.to_string())))?;
-        println!("Done: {:?}", file);
-        Ok(())
-    }
-
-    async fn error_json(&self) -> Result<(), AppError> {
-        let jsom_data = self
-            .dowload_string("https://api.warframe.market/v1/profile/Crystal4444_Worm/orders")
-            .await?;
-        let jsom_data = jsom_data["payload"].clone();
-        let item: Ordres = serde_json::from_value(jsom_data)
-            .map_err(|e| AppError("Debug", eyre!(e.to_string())))?;
-        println!("{:?}", item.buy_orders[0].platinum);
-        Ok(())
-    }
-
-    // async fn error_reqwest(&self) -> Result<(), eyre::Report> {
-    //     use AppError::*;
-    //     let jsom_data = self
-    //         .dowload_string("https://api.warframe.market/v1/profile/Crystal_Worm/orders")
-    //         .await?;
-    //     let jsom_data = jsom_data["payload"].clone();
-    //     let item: Ordres = serde_json::from_value(jsom_data).map_err(|e| {
-    //         JsonParseError(
-    //             e,
-    //             "Error".to_string(),
-    //             "".into(),
-    //             error::convert_backtrace(backtrace::Backtrace::new()),
-    //         )
-    //     })?;
-    //     Ok(())
-    // }
-
-    // async fn error_polars(&self) -> Result<(), eyre::Report> {
-    //     use AppError::*;
-    //     let jsom_data = self
-    //         .dowload_string("https://api.warframe.market/v1/profile/Crystal_Worm/orders")
-    //         .await?;
-    //     let jsom_data = jsom_data["payload"].clone();
-    //     let item: Ordres = serde_json::from_value(jsom_data).map_err(|e| {
-    //         JsonParseError(
-    //             e,
-    //             "Error".to_string(),
-    //             "".into(),
-    //             error::convert_backtrace(backtrace::Backtrace::new()),
-    //         )
-    //     })?;
-    //     Ok(())
-    // }
 }
+

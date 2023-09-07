@@ -1,7 +1,8 @@
 use eyre::eyre;
 use regex::Regex;
 
-LogLevel
+use crate::logger::LogLevel;
+
 #[derive(Debug)]
 pub struct AppError(pub &'static str, pub eyre::ErrReport);
 
@@ -25,6 +26,7 @@ pub trait GetErrorInfo {
     fn cause(&self) -> String;
     fn backtrace(&self) -> String;
     fn log_level(&self) -> LogLevel;
+    fn clone(&self) -> Self;
 }
 
 pub fn get_info(e: String) -> (String, String) {
@@ -56,5 +58,8 @@ impl GetErrorInfo for AppError {
     }
     fn log_level(&self) -> LogLevel {
         LogLevel::Critical
+    }
+    fn clone(&self) -> Self {
+        AppError(self.0, eyre!(self.1.to_string()))
     }
 }

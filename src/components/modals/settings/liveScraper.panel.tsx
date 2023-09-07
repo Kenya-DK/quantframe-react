@@ -120,7 +120,6 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
                         error={roleForm.errors.price_shift_threshold && 'Invalid Price Shift Threshold'}
                       />
                       <TextInput
-                        required
                         label={useTranslateSettingsModal('webhook')}
                         value={roleForm.values.webhook}
                         description={useTranslateSettingsModal('webhook_description')}

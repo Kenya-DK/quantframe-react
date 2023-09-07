@@ -7,7 +7,7 @@ use std::{
     path::PathBuf,
 };
 
-
+#[derive(PartialEq, Debug,Clone)]
 pub enum LogLevel {
     Info,
     Warning,
@@ -50,7 +50,7 @@ fn format_square_bracket(msg: &str) -> String {
     )
 }
 
-fn dolog(level: LogLevel, component: &str, msg: &str, console: bool, file: Option<&str>) {
+pub fn dolog(level: LogLevel, component: &str, msg: &str, console: bool, file: Option<&str>) {
     let time = format_square_bracket(
         chrono::Local::now()
             .naive_utc()
@@ -163,11 +163,11 @@ pub fn trace_con(component: &str, msg: &str) {
 pub fn critical(component: &str, msg: &str, console: bool, file: Option<&str>) {
     dolog(LogLevel::Critical, component, msg, console, file);
 }
-pub fn critical(component: &str, msg: &str, file: Option<&str>) {
-    trace(component, msg,false, file);
+pub fn critical_file(component: &str, msg: &str, file: Option<&str>) {
+    critical(component, msg,false, file);
 }
-pub fn critical(component: &str, msg: &str) {
-    trace(component, msg,true, None);
+pub fn critical_con(component: &str, msg: &str) {
+    critical(component, msg,true, None);
 }
 
 

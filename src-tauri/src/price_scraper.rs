@@ -119,9 +119,7 @@ impl PriceScraper {
     ) -> Result<(HashMap<String, String>, HashMap<String, String>), AppError> {
         let wfm = self.wfm.lock()?.clone();
 
-        let items = wfm
-            .get_tradable_items()
-            .await?;
+        let items = wfm.get_tradable_items().await?;
 
         let item_map_url: std::collections::HashMap<String, String> = items
             .iter()
@@ -134,24 +132,13 @@ impl PriceScraper {
         Ok((item_map_url, item_map_id))
     }
     pub async fn generate(&self, days: i64) -> Result<i64, AppError> {
-        println!("Generating csv file for {} days.", days);
         let auth = self.auth.lock().unwrap().clone();
-        println!("Generating csv file for {} days.", days);
-        logger::debug_con(
-            "PriceScraper:generate",
-            format!(
-                "Generating csv file for platform: {}, for {} days.",
-                auth.platform, days
-            )
-            .as_str(),
-        );
+        logger::debug_con("PriceScraper", format!("Generating csv file for platform: {}, for {} days.", auth.platform, days).as_str());
+
         let csv_path: &Path = Path::new(self.csv_path.as_str());
         let csv_backop_path = Path::new(self.csv_backop_path.as_str());
         if csv_path.exists() {
-            logger::debug_con(
-                "PriceScraper:generate",
-                format!("Backuping csv file: {}", self.csv_path).as_str(),
-            );
+            logger::debug_con("PriceScraper", format!("Backuping csv file: {}", self.csv_path).as_str());
             fs::copy(csv_path, csv_backop_path)
                 .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
         }
@@ -176,7 +163,7 @@ impl PriceScraper {
                 Ok(items) => {
                     found_data += 1;
                     logger::info_con(
-                        "PriceScraper:generate",
+                        "PriceScraper",
                         format!("Getting data for day: {}", day).as_str(),
                     );
 
@@ -311,31 +298,18 @@ impl PriceScraper {
                         }
                     }
                 }
-                Err(_e) => {
-                    logger::error_con(
-                        "PriceScraper:generate",
-                        format!("Error getting price data for day: {}", day).as_str(),
-                    );
-                }
+                Err(e) => return Err(e),
             }
         }
-        logger::info_con(
-            "PriceScraper:generate",
-            format!(
-                "Finished getting price data for all days. Merging dataframes... {:?}",
-                dataframes.len()
-            )
-            .as_str(),
-        );
-        let mut full_df = helper::merge_dataframes(dataframes)?;
+        logger::info_con("PriceScraper", format!("Finished getting price data for all days. Merging dataframes... {:?}", dataframes.len()).as_str());
+        let full_df = helper::merge_dataframes(dataframes)?;
         helper::send_message_to_window(
             "price_scraper_update_complete",
             Some(json!({"total_items": full_df.height()})),
         );
-        logger::log_dataframe(&mut full_df, "price_scraper_full_df.csv");
 
         // Group by name and get the average price
-        let mut group_by_name = full_df
+        let group_by_name = full_df
             .clone()
             .lazy()
             .groupby(&["name"])
@@ -345,17 +319,15 @@ impl PriceScraper {
             ])
             .collect()
             .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
-        logger::log_dataframe(&mut group_by_name, "price_scraper_group_by_name.csv");
 
         // Get the names of the items that are popular
 
-        let mut popular_items = group_by_name
+        let popular_items = group_by_name
             .clone()
             .lazy()
             .filter(col("name_count").gt_eq(21))
             .collect()
             .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
-        logger::log_dataframe(&mut popular_items, "price_scraper_popular_items.csv");
 
         // Filter out items that are not popular and sort by name
         let popular_items_s = popular_items
@@ -382,7 +354,6 @@ impl PriceScraper {
             )
             .collect()
             .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
-        logger::log_dataframe(&mut filtered_df, "price_scraper_pricehistory.csv");
 
         // Cerate a csv file with the sorted DataFrame of price data
         let output_file: File =

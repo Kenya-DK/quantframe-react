@@ -29,6 +29,7 @@ impl DatabaseClient {
         cache: Arc<Mutex<CacheState>>,
         wfm: Arc<Mutex<WFMClientState>>,
     ) -> Result<Self, AppError> {
+        let log_file = "db.log";
         let mut db_url = helper::get_app_roaming_path();
         db_url.push("quantframe.sqlite");
         let db_url: &str = db_url.to_str().unwrap();
@@ -38,16 +39,16 @@ impl DatabaseClient {
                     "Database",
                     format!("Database created at {}", db_url).as_str(),
                 ),
-                Err(error) => logger::error(
+                Err(error) => logger::critical(
                     "Database",
                     format!("Error creating database: {:?}", error).as_str(),
                     true,
-                    None,
+                    Some(log_file)
                 ),
             }
         }
         Ok(DatabaseClient {
-            log_file: "db.log".to_string(),
+            log_file: log_file.to_string(),
             connection: Arc::new(Mutex::new(SqlitePool::connect(db_url).await.unwrap())),
             cache,
             wfm,

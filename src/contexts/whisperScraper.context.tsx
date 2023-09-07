@@ -40,9 +40,9 @@ export const WhisperScraperContextProvider = ({ children }: WhisperScraperContex
       sendNotification(useTranslateWhisper("title"), (useTranslateWhisper("message", { name })));
 
     });
-    OnTauriEvent("whisper_scraper_error", (data: any) => {
-      console.log(data);
+    OnTauriEvent("whisper_scraper_error", () => {
       setIsStarting(false)
+      sendNotification(useTranslateWhisper("error_title"), (useTranslateWhisper("error_message")));
     });
     return () => { }
   }, []);

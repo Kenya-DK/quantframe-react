@@ -1,5 +1,8 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect } from "react";
 import { invoke } from "@tauri-apps/api";
+import { useTauriContext } from ".";
+import { OnTauriEvent } from "../utils";
+import { useTranslateContext } from "../hooks";
 type StatsScraperContextProps = {
   isRunning: boolean;
   run: (days: number) => void;
@@ -23,6 +26,15 @@ export const StatsScraperContextProvider = ({ children }: StatsScraperContextPro
       days
     })
   }
+  const useTranslatePriceScraper = (key: string, context?: { [key: string]: any }) => useTranslateContext(`price_scraper.${key}`, { ...context })
+  const { sendNotification } = useTauriContext()
+
+  useEffect(() => {
+    OnTauriEvent("price_scraper_error", () => {
+      sendNotification(useTranslatePriceScraper("error_title"), (useTranslatePriceScraper("error_message")));
+    });
+    return () => { }
+  }, []);
   return (
     <StatsScraperContext.Provider value={{ isRunning: false, run: handleRun }}>
       {children}

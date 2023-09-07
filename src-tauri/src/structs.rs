@@ -21,17 +21,17 @@ enum TryParse<T> {
     Unparsed(Value),
     NotPresent,
 }
-impl<'de, T: DeserializeOwned> Deserialize<'de> for TryParse<T> {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        match Option::<Value>::deserialize(deserializer)? {
-            None => Ok(TryParse::NotPresent),
-            Some(value) => match T::deserialize(&value) {
-                Ok(t) => Ok(TryParse::Parsed(t)),
-                Err(_) => Ok(TryParse::Unparsed(value)),
-            },
-        }
-    }
-}
+// impl<'de, T: DeserializeOwned> Deserialize<'de> for TryParse<T> {
+//     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+//         match Option::<Value>::deserialize(deserializer)? {
+//             None => Ok(TryParse::NotPresent),
+//             Some(value) => match T::deserialize(&value) {
+//                 Ok(t) => Ok(TryParse::Parsed(t)),
+//                 Err(_) => Ok(TryParse::Unparsed(value)),
+//             },
+//         }
+//     }
+// }
 
 impl serde::Serialize for GlobleError {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -196,7 +196,7 @@ pub struct OrderItemTranslation {
     item_name: String,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Ordres {
     #[serde(rename = "sell_orders")]
     pub sell_orders: Vec<Order>,

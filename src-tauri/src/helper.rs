@@ -1,11 +1,6 @@
-use std::{
-    fs,
-    path::{Path, PathBuf},
-    sync::Mutex,
-};
-use eyre::eyre;
 use chrono::Duration;
 use directories::BaseDirs;
+use eyre::eyre;
 use once_cell::sync::Lazy;
 use polars::{
     lazy::dsl::col,
@@ -13,9 +8,17 @@ use polars::{
     series::Series,
 };
 use serde_json::{json, Value};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    sync::Mutex,
+};
 use tauri::Window;
 
-use crate::error::AppError;
+use crate::{
+    error::{AppError, GetErrorInfo},
+    logger::LogLevel,
+};
 
 pub static WINDOW: Lazy<Mutex<Option<Window>>> = Lazy::new(|| Mutex::new(None));
 
@@ -76,11 +79,7 @@ pub fn get_app_roaming_path() -> PathBuf {
     }
 }
 
-pub fn sort_dataframe(
-    df: DataFrame,
-    column: &str,
-    ascending: bool,
-) -> Result<DataFrame, AppError> {
+pub fn sort_dataframe(df: DataFrame, column: &str, ascending: bool) -> Result<DataFrame, AppError> {
     let df = df
         .clone()
         .lazy()
@@ -92,7 +91,8 @@ pub fn sort_dataframe(
                 multithreaded: false,
             },
         )
-        .collect().map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?;
+        .collect()
+        .map_err(|e| AppError("Helper", eyre!(e.to_string())))?;
     Ok(df)
 }
 
@@ -104,7 +104,11 @@ pub fn filter_and_extract(
     let selected_columns: Vec<_> = select_cols.into_iter().map(col).collect();
 
     let df = match filter {
-        Some(filter) => df.lazy().filter(filter).collect().map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?,
+        Some(filter) => df
+            .lazy()
+            .filter(filter)
+            .collect()
+            .map_err(|e| AppError("Helper", eyre!(e.to_string())))?,
         None => df,
     };
 
@@ -122,17 +126,23 @@ pub fn get_column_values(
     col_type: ColumnType,
 ) -> Result<ColumnValues, AppError> {
     let df: DataFrame = match filter {
-        Some(filter) => df.lazy().filter(filter).collect().map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?,
+        Some(filter) => df
+            .lazy()
+            .filter(filter)
+            .collect()
+            .map_err(|e| AppError("Helper", eyre!(e.to_string())))?,
         None => df,
     };
 
-    let column_series = df.column(column).map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?;
+    let column_series = df
+        .column(column)
+        .map_err(|e| AppError("Helper", eyre!(e.to_string())))?;
 
     match col_type {
         ColumnType::Bool => {
             let values: Vec<bool> = column_series
                 .bool()
-                .map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?
+                .map_err(|e| AppError("Helper", eyre!(e.to_string())))?
                 .into_iter()
                 .filter_map(|opt_val| opt_val)
                 .collect();
@@ -142,7 +152,7 @@ pub fn get_column_values(
         ColumnType::F64 => {
             let values: Vec<f64> = column_series
                 .f64()
-                .map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?
+                .map_err(|e| AppError("Helper", eyre!(e.to_string())))?
                 .into_iter()
                 .filter_map(|opt_val| opt_val)
                 .collect();
@@ -152,7 +162,7 @@ pub fn get_column_values(
         ColumnType::I64 => {
             let values: Vec<i64> = column_series
                 .i64()
-                .map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?
+                .map_err(|e| AppError("Helper", eyre!(e.to_string())))?
                 .into_iter()
                 .filter_map(|opt_val| opt_val)
                 .collect();
@@ -161,7 +171,7 @@ pub fn get_column_values(
         ColumnType::String => {
             let values = column_series
                 .utf8()
-                .map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?
+                .map_err(|e| AppError("Helper", eyre!(e.to_string())))?
                 .into_iter()
                 .filter_map(|opt_name| opt_name.map(String::from))
                 .collect::<Vec<_>>()
@@ -210,18 +220,27 @@ pub fn merge_dataframes(frames: Vec<DataFrame>) -> Result<DataFrame, AppError> {
     let mut combined_series: Vec<Series> = Vec::new();
 
     for &col_name in &column_names {
-        let first_series = frames[0].column(col_name).map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?.clone();
+        let first_series = frames[0]
+            .column(col_name)
+            .map_err(|e| AppError("Helper", eyre!(e.to_string())))?
+            .clone();
         let mut stacked_series = first_series;
 
         for frame in frames.iter().skip(1) {
-            let series = frame.column(col_name).map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?.clone();
-            stacked_series = stacked_series.append(&series).map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?.clone();
+            let series = frame
+                .column(col_name)
+                .map_err(|e| AppError("Helper", eyre!(e.to_string())))?
+                .clone();
+            stacked_series = stacked_series
+                .append(&series)
+                .map_err(|e| AppError("Helper", eyre!(e.to_string())))?
+                .clone();
         }
 
         combined_series.push(stacked_series);
     }
     // Construct a DataFrame from the merged data
-    Ok(DataFrame::new(combined_series).map_err(|e| {AppError("Helper", eyre!(e.to_string()))} )?)
+    Ok(DataFrame::new(combined_series).map_err(|e| AppError("Helper", eyre!(e.to_string())))?)
 }
 /// Returns a vector of strings representing the dates of the last `x` days, including today.
 /// The dates are formatted as "YYYY-MM-DD".
