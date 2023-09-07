@@ -7,6 +7,16 @@ use std::{
     path::PathBuf,
 };
 
+
+pub enum LogLevel {
+    Info,
+    Warning,
+    Error,
+    Debug,
+    Trace,
+    Critical,
+}
+
 use crate::helper;
 
 pub fn format_text(text: &str, color: &str, bold: bool) -> String {
@@ -40,7 +50,7 @@ fn format_square_bracket(msg: &str) -> String {
     )
 }
 
-fn dolog(level: i32, component: &str, msg: &str, console: bool, file: Option<&str>) {
+fn dolog(level: LogLevel, component: &str, msg: &str, console: bool, file: Option<&str>) {
     let time = format_square_bracket(
         chrono::Local::now()
             .naive_utc()
@@ -51,11 +61,12 @@ fn dolog(level: i32, component: &str, msg: &str, console: bool, file: Option<&st
     let component = format_square_bracket(format_text(component, "magenta", true).as_str());
     let msg = format_text(msg, "white", false);
     let log_prefix = match level {
-        0 => format_square_bracket(format_text("INFO", "green", true).as_str()),
-        1 => format_square_bracket(format_text("WARN", "yellow", true).as_str()),
-        2 => format_square_bracket(format_text("ERROR", "red", true).as_str()),
-        3 => format_square_bracket(format_text("DEBUG", "blue", true).as_str()),
-        4 => format_square_bracket(format_text("TRACE", "cyan", true).as_str()),
+        LogLevel::Info => format_square_bracket(format_text("INFO", "green", true).as_str()),
+        LogLevel::Warning => format_square_bracket(format_text("WARN", "yellow", true).as_str()),
+        LogLevel::Error => format_square_bracket(format_text("ERROR", "red", true).as_str()),
+        LogLevel::Debug => format_square_bracket(format_text("DEBUG", "blue", true).as_str()),
+        LogLevel::Trace => format_square_bracket(format_text("TRACE", "cyan", true).as_str()),
+        LogLevel::Critical => format_square_bracket(format_text("CRITICAL", "red", true).as_str()),
         _ => format_square_bracket(format_text("UNKNOWN", "white", true).as_str()),
     };
     if console {
@@ -106,7 +117,7 @@ pub fn clear_log_folder() {
 }
 
 pub fn debug(component: &str, msg: &str, console: bool, file: Option<&str>) {
-    dolog(3, component, msg, console, file);
+    dolog(LogLevel::Debug, component, msg, console, file);
 }
 pub fn debug_file(component: &str, msg: &str, file: Option<&str>) {
     debug( component, msg,false, file);
@@ -118,7 +129,7 @@ pub fn debug_con(component: &str, msg: &str) {
 
 
 pub fn error(component: &str, msg: &str, console: bool, file: Option<&str>) {
-    dolog(2, component, msg, console, file);
+    dolog(LogLevel::Error, component, msg, console, file);
 }
 pub fn error_file(component: &str, msg: &str, file: Option<&str>) {
     error( component, msg,false, file);
@@ -129,7 +140,7 @@ pub fn error_con(component: &str, msg: &str) {
 
 
 pub fn info(component: &str, msg: &str, console: bool, file: Option<&str>) {
-    dolog(0, component, msg, console, file);
+    dolog(LogLevel::Info, component, msg, console, file);
 }
 pub fn info_file(component: &str, msg: &str, file: Option<&str>) {
     info( component, msg,false, file);
@@ -140,13 +151,23 @@ pub fn info_con(component: &str, msg: &str) {
 
 
 pub fn trace(component: &str, msg: &str, console: bool, file: Option<&str>) {
-    dolog(4, component, msg, console, file);
+    dolog(LogLevel::Trace, component, msg, console, file);
 }
 pub fn trace_file(component: &str, msg: &str, file: Option<&str>) {
     trace( component, msg,false, file);
 }
 pub fn trace_con(component: &str, msg: &str) {
     trace( component, msg,true, None);
+}
+
+pub fn critical(component: &str, msg: &str, console: bool, file: Option<&str>) {
+    dolog(LogLevel::Critical, component, msg, console, file);
+}
+pub fn critical(component: &str, msg: &str, file: Option<&str>) {
+    trace(component, msg,false, file);
+}
+pub fn critical(component: &str, msg: &str) {
+    trace(component, msg,true, None);
 }
 
 
