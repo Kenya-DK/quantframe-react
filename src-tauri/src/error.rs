@@ -1,6 +1,7 @@
 use eyre::eyre;
 use regex::Regex;
 
+LogLevel
 #[derive(Debug)]
 pub struct AppError(pub &'static str, pub eyre::ErrReport);
 
@@ -23,6 +24,7 @@ pub trait GetErrorInfo {
     fn component(&self) -> String;
     fn cause(&self) -> String;
     fn backtrace(&self) -> String;
+    fn log_level(&self) -> LogLevel;
 }
 
 pub fn get_info(e: String) -> (String, String) {
@@ -51,5 +53,8 @@ impl GetErrorInfo for AppError {
     fn backtrace(&self) -> String {
         let (_before_location, after_location) = get_info(format!("{:?}", self.1));
         after_location.replace("    ", "")
+    }
+    fn log_level(&self) -> LogLevel {
+        LogLevel::Critical
     }
 }
