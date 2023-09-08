@@ -6,6 +6,7 @@ import { SplashScreen } from "../components/splashScreen";
 import { useQuery } from "@tanstack/react-query";
 import { notifications } from "@mantine/notifications";
 import { OnTauriEvent, OnTauriUpdateDataEvent, getStatistic } from "@utils/index";
+import { useTranslateContext } from "../hooks";
 
 
 
@@ -42,6 +43,7 @@ export const TauriContext = createContext<TauriContextProps>({
 export const useTauriContext = () => useContext(TauriContext);
 
 export const TauriContextProvider = ({ children }: TauriContextProviderProps) => {
+  const useTranslateTauri = (key: string, context?: { [key: string]: any }) => useTranslateContext(`tauri.${key}`, { ...context })
   const [user, setUser] = useState<Wfm.UserDto | undefined>(undefined);
   const [settings, setSettings] = useState<Settings | undefined>(undefined);
   const [tradable_items, setTradableItems] = useState<Wfm.ItemDto[]>([]);
@@ -54,12 +56,10 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
     queryKey: ['validate'],
     queryFn: () => api.auth.validate(),
     onSuccess(data) {
-      console.log(data);
-
       if (!data.valid) {
         notifications.show({
-          title: 'Session Expired',
-          message: 'Please login again',
+          title: useTranslateTauri("notifications.session_expired"),
+          message: useTranslateTauri("notifications.session_expired_message"),
           color: 'red',
           autoClose: 5000,
         });
@@ -76,7 +76,6 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
     if (!transactions) return;
     let statistics = getStatistic(transactions);
     setStatistics(statistics);
-    console.log(statistics);
   }, [transactions]);
 
 
@@ -90,6 +89,12 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
     const data = { ...settings, ...settingsData } as Settings;
     setSettings(data);
     await api.base.updatesettings(data as any); // add 'as any' to avoid type checking
+    notifications.show({
+      title: useTranslateTauri("notifications.settings_updated"),
+      message: useTranslateTauri("notifications.settings_updated_message"),
+      color: 'green',
+      autoClose: 5000,
+    });
   }
 
   const handleSendNotification = async (title: string, body: string) => {

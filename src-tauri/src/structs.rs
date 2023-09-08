@@ -1,103 +1,5 @@
 use serde::{de::DeserializeOwned, Deserialize, Deserializer, Serialize};
 use serde_json::Value;
-#[derive(Debug)]
-pub enum GlobleError {
-    ReqwestError(reqwest::Error),
-    SerdeError(String, usize, usize),
-    PolarsError(String),
-    IoError(std::io::Error),
-    ParseIntError(std::num::ParseIntError),
-    ParseFloatError(std::num::ParseFloatError),
-    ParseBoolError(std::str::ParseBoolError),
-    DabaseError(sqlx::Error),
-    ParseError(String),
-    TooManyRequests(String),
-    OtherError(String),
-    HttpError(reqwest::StatusCode, String, String),
-}
-#[derive(Debug)]
-enum TryParse<T> {
-    Parsed(T),
-    Unparsed(Value),
-    NotPresent,
-}
-// impl<'de, T: DeserializeOwned> Deserialize<'de> for TryParse<T> {
-//     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-//         match Option::<Value>::deserialize(deserializer)? {
-//             None => Ok(TryParse::NotPresent),
-//             Some(value) => match T::deserialize(&value) {
-//                 Ok(t) => Ok(TryParse::Parsed(t)),
-//                 Err(_) => Ok(TryParse::Unparsed(value)),
-//             },
-//         }
-//     }
-// }
-
-impl serde::Serialize for GlobleError {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::ser::Serializer,
-    {
-        return GlobleError::serialize(self, serializer);
-    }
-}
-
-impl<T> From<std::sync::PoisonError<T>> for GlobleError {
-    fn from(e: std::sync::PoisonError<T>) -> Self {
-        GlobleError::OtherError(format!("{:?}", e))
-    }
-}
-impl From<sqlx::Error> for GlobleError {
-    fn from(e: sqlx::Error) -> Self {
-        GlobleError::DabaseError(e)
-    }
-}
-
-impl From<reqwest::Error> for GlobleError {
-    fn from(e: reqwest::Error) -> Self {
-        GlobleError::ReqwestError(e)
-    }
-}
-impl From<serde_json::Error> for GlobleError {
-    fn from(e: serde_json::Error) -> Self {
-        GlobleError::SerdeError(format!("{:?}", e), e.line(), e.column())
-    }
-}
-impl From<polars::error::PolarsError> for GlobleError {
-    fn from(e: polars::error::PolarsError) -> Self {
-        GlobleError::PolarsError(format!("{:?}", e))
-    }
-}
-impl From<std::io::Error> for GlobleError {
-    fn from(e: std::io::Error) -> Self {
-        GlobleError::IoError(e)
-    }
-}
-impl From<std::num::ParseIntError> for GlobleError {
-    fn from(e: std::num::ParseIntError) -> Self {
-        GlobleError::ParseIntError(e)
-    }
-}
-impl From<std::num::ParseFloatError> for GlobleError {
-    fn from(e: std::num::ParseFloatError) -> Self {
-        GlobleError::ParseFloatError(e)
-    }
-}
-impl From<std::str::ParseBoolError> for GlobleError {
-    fn from(e: std::str::ParseBoolError) -> Self {
-        GlobleError::ParseBoolError(e)
-    }
-}
-impl From<String> for GlobleError {
-    fn from(e: String) -> Self {
-        GlobleError::ParseError(e)
-    }
-}
-impl From<&str> for GlobleError {
-    fn from(e: &str) -> Self {
-        GlobleError::ParseError(format!("{:?}", e))
-    }
-}
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Item {
@@ -152,6 +54,9 @@ pub struct Order {
 
     #[serde(rename = "item")]
     pub item: OrderItem,
+    
+    #[serde(rename = "order_type")]
+    pub order_type: Option<String>,
 }
 #[derive(Serialize, Debug, Clone, Deserialize)]
 pub struct OrderItem {
@@ -164,7 +69,7 @@ pub struct OrderItem {
     pub icon: String,
 
     #[serde(rename = "icon_format")]
-    pub icon_format: String,
+    pub icon_format: Option<String>,
 
     #[serde(rename = "thumb")]
     pub thumb: String,

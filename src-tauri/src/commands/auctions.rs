@@ -1,4 +1,4 @@
-use crate::{structs::GlobleError, wfm_client::WFMClientState, error::AppError};
+use crate::{wfm_client::WFMClientState, error::AppError};
 use std::sync::{Arc, Mutex};
 
 

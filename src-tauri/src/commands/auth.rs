@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use crate::{auth::AuthState, structs::GlobleError, wfm_client::WFMClientState, error::{AppError, GetErrorInfo}, helper};
+use crate::{auth::AuthState, wfm_client::WFMClientState, error::AppError};
 
 #[tauri::command]
 pub async fn login(

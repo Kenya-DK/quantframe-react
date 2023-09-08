@@ -231,6 +231,19 @@ impl WFMClientState {
             Err(e) => Err(e),
         }
     }
+    pub async fn get_user_ordres_as_list(&self) -> Result<Vec<Ordre>, AppError> {
+        let current_orders = self.get_user_ordres().await?;
+        let mut orders: Vec<Ordre> = vec![];
+        for mut order in current_orders.sell_orders {
+            order.order_type = "sell".to_string();
+            orders.push(order);
+        }
+        for mut order in current_orders.buy_orders {
+            order.order_type = "buy".to_string();
+            orders.push(order);
+        }
+        Ok(orders)
+    }
     pub async fn get_ordres_data_frames(&self) -> Result<(DataFrame, DataFrame), AppError> {
         let current_orders = self.get_user_ordres().await?;
         let buy_orders = current_orders.buy_orders.clone();

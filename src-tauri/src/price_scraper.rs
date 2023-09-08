@@ -60,7 +60,7 @@ impl PriceScraper {
     /// Returns a JSON object containing price data for the given platform and day.
     /// The `platform` argument should be one of "pc", "ps4", or "xb1".
     /// The `day` argument should be a string in the format "YYYY-MM-DD".
-    /// If the request fails, returns a `GlobleError` with information about the error.
+    /// If the request fails, returns a `AppError` with information about the error.
     async fn get_price_by_day(&self, platform: &str, day: &str) -> Result<Value, AppError> {
         let mut url = format!("https://relics.run/history/price_history_{}.json", day);
         if platform != "pc" {

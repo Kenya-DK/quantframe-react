@@ -67,7 +67,7 @@ impl LiveScraper {
             logger::info_con("LiveScraper", "Loop live scraper is started");
             match scraper.delete_all_orders().await {
                 Ok(_) => {
-                    logger::info_con("LiveScraper:DeleteAllOrders", "Delete all orders success");
+                    logger::info_con("LiveScraper", "Delete all orders success");
                 }
                 Err(e) => {
                     let component = e.component();

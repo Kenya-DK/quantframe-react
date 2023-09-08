@@ -134,6 +134,14 @@ export const en = {
       error_title: "Price Scraper Error",
       error_message: "There was an error with the price scraper. Please check the logs for more information.",
     },
+    tauri: {
+      notifications: {
+        session_expired: "Session Expired",
+        session_expired_message: "Your session has expired, please login again",
+        settings_updated: "Settings Updated",
+        settings_updated_message: "Settings updated successfully",
+      },
+    },
   },
   layout: {
     header: {
