@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateLayout } from "@hooks/index";
 import { SettingsModal } from "@components/modals/settings";
-import { Settings, Wfm } from "$types/index";
+import { Wfm } from "$types/index";
 import { faGear } from "@fortawesome/free-solid-svg-icons/faGear";
 import { modals } from "@mantine/modals";
 import { Logo } from "../components/logo";
@@ -41,17 +41,11 @@ export default function Hedder({ user }: TopMenuProps) {
   const { classes } = useStyles();
   const [, setUserMenuOpened] = useState(false);
   const [avatar, setAvatar] = useState<string | undefined>(undefined);
-  const [settings, setSettings] = useState<Settings | undefined>(undefined);
-  const { settings: coS, updateSettings, tradable_items } = useTauriContext();
+  const { settings, updateSettings, tradable_items } = useTauriContext();
 
   useEffect(() => {
     setAvatar(`${user?.avatar}`);
   }, [user?.avatar]);
-
-  useEffect(() => {
-    if (!coS) return;
-    setSettings(coS);
-  }, [coS]);
 
   const useTranslateHedder = (key: string, context?: { [key: string]: any }) => useTranslateLayout(`header.${key}`, { ...context })
   return (
@@ -86,7 +80,7 @@ export default function Hedder({ user }: TopMenuProps) {
                   modals.open({
                     size: "auto",
                     withCloseButton: false,
-                    children: < SettingsModal settings={settings} updateSettings={updateSettings} tradable_items={tradable_items} />,
+                    children: <SettingsModal settings={settings} updateSettings={updateSettings} tradable_items={tradable_items} />,
                   })
                 }}>
                   {useTranslateHedder("profile.settings")}

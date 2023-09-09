@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { notifications } from "@mantine/notifications";
 import { OnTauriEvent, OnTauriUpdateDataEvent, getStatistic } from "@utils/index";
 import { useTranslateContext } from "../hooks";
+import { Center, Grid } from "@mantine/core";
 
 
 
@@ -79,19 +80,16 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
     setStatistics(statistics);
   }, [transactions]);
 
-
   const handleUpdateUser = (userData: Partial<Wfm.UserDto>) => {
     if (!user) return;
     setUser({ ...user, ...userData });
   }
 
-
   const handleUpdateSettings = async (settingsData: DeepPartial<Settings>) => {
     if (!settings) return;
-    debugger
     const data = { ...settings, ...settingsData } as Settings;
-    setSettings((a) => a = data);
-    setSettings(await api.base.updatesettings(data as any)); // add 'as any' to avoid type checking
+    setSettings((a) => a = { ...a, ...data });
+    await api.base.updatesettings(data as any); // add 'as any' to avoid type checking
     notifications.show({
       title: useTranslateTauri("notifications.settings_updated"),
       message: useTranslateTauri("notifications.settings_updated_message"),
@@ -99,12 +97,6 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
       autoClose: 5000,
     });
   }
-
-  useEffect(() => {
-    if (!settings) return;
-    console.log("settings", settings);
-
-  }, [settings]);
 
   const handleSendNotification = async (title: string, body: string) => {
     let permissionGranted = await isPermissionGranted();

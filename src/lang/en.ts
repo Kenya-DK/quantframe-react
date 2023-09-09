@@ -106,7 +106,6 @@ export const en = {
             blacklist_placeholder: "None",
             strict_whitelist: "Strict Whitelist",
             strict_whitelist_description: "Need Info",
-            ping_on_notif: "Ping on Notification",
             ping_on_notif_description: "If you want to be pinged on discord.",
             webhook: "Webhook",
             webhook_description: "The webhook to send notifications to",

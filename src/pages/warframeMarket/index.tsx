@@ -1,5 +1,28 @@
-import { Grid } from "@mantine/core";
+import { Grid, Group } from "@mantine/core";
 import { useTauriContext } from "@contexts/index";
+import { Wfm } from "../../types";
+
+
+interface PurchaseNewItemProps {
+  ordre: Wfm.OrderDto;
+}
+const OrderItem = ({ordre}: PurchaseNewItemProps) => {
+  return (
+    <Group grow position="center" >
+      {ordre.item.en.item_name}
+    <Group grow position="center" >
+      {ordre.item.en.item_name}
+
+    </Group>
+    <Group grow position="center" >
+      {ordre.item.en.item_name}
+    </Group>
+    <Group grow position="center" >
+      {ordre.item.en.item_name}
+    </Group>
+    </Group>
+  );
+}
 
 export default function WarframeMarketPage() {
   const { orders } = useTauriContext();

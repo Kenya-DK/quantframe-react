@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "@mantine/form";
-import { Accordion, Box, Button, Checkbox, Group, NumberInput, TextInput } from "@mantine/core";
+import { Accordion, Button, Checkbox, Group, NumberInput, TextInput } from "@mantine/core";
 import { useTranslateModal } from "@hooks/index";
 import { LiveScraperSettings, Wfm } from "$types/index";
 import { MultiSelectListBox } from "../../multiSelectListBox";
@@ -43,122 +43,124 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
 
   const useTranslateSettingsModal = (key: string, context?: { [key: string]: any }) => useTranslateModal(`settings.panels.live_trading.${key}`, { ...context })
   return (
-    <Box h={"75vh"} w={"75vw"}>
-      <form method="post" onSubmit={roleForm.onSubmit(async (data) => {
-        const settingsData = {
-          volume_threshold: data.volume_threshold,
-          range_threshold: data.range_threshold,
-          avg_price_cap: data.avg_price_cap,
-          price_shift_threshold: data.price_shift_threshold,
-          max_total_price_cap: data.max_total_price_cap,
-          blacklist: data.blacklist.split(","),
-          whitelist: data.whitelist.split(","),
-          strict_whitelist: data.strict_whitelist,
-          ping_on_notif: data.ping_on_notif,
-          webhook: data.webhook
-        }
+    <form method="post" onSubmit={roleForm.onSubmit(async (data) => {
+      const settingsData = {
+        volume_threshold: data.volume_threshold,
+        range_threshold: data.range_threshold,
+        avg_price_cap: data.avg_price_cap,
+        price_shift_threshold: data.price_shift_threshold,
+        max_total_price_cap: data.max_total_price_cap,
+        blacklist: data.blacklist.split(","),
+        whitelist: data.whitelist.split(","),
+        strict_whitelist: data.strict_whitelist,
+        ping_on_notif: data.ping_on_notif,
+        webhook: data.webhook
+      }
 
-        updateSettings(settingsData)
-      })}>
+      updateSettings(settingsData)
+    })}>
+      <Group grow>
         <Group grow>
-          <Group grow>
-            <Accordion defaultValue="accordion_general" w={"100%"}>
-              <Accordion.Item value="accordion_general">
-                <Accordion.Control>{useTranslateSettingsModal('accordion_general')}</Accordion.Control>
-                <Accordion.Panel>
-                  <Group >
-                    <Group>
-                      <NumberInput
-                        required
-                        label={useTranslateSettingsModal('volume_threshold')}
-                        value={roleForm.values.volume_threshold}
-                        description={useTranslateSettingsModal('volume_threshold_description')}
-                        onChange={(value) => roleForm.setFieldValue('volume_threshold', Number(value))}
-                        error={roleForm.errors.volume_threshold && 'Invalid Volume Threshold'}
-                      />
-                      <NumberInput
-                        required
-                        label={useTranslateSettingsModal('range_threshold')}
-                        value={roleForm.values.range_threshold}
-                        description={useTranslateSettingsModal('range_threshold_description')}
-                        onChange={(value) => roleForm.setFieldValue('range_threshold', Number(value))}
-                        error={roleForm.errors.range_threshold && 'Invalid Range Threshold'}
-                      />
-                      <NumberInput
-                        required
-                        label={useTranslateSettingsModal('max_total_price_cap')}
-                        value={roleForm.values.max_total_price_cap}
-                        description={useTranslateSettingsModal('max_total_price_cap_description')}
-                        onChange={(value) => roleForm.setFieldValue('max_total_price_cap', Number(value))}
-                        error={roleForm.errors.max_total_price_cap && 'Invalid Range Threshold'}
-                      />
-                      <NumberInput
-                        required
-                        label={useTranslateSettingsModal('avg_price_cap')}
-                        value={roleForm.values.avg_price_cap}
-                        description={useTranslateSettingsModal('avg_price_cap_description')}
-                        onChange={(value) => roleForm.setFieldValue('avg_price_cap', Number(value))}
-                        error={roleForm.errors.avg_price_cap && 'Invalid Avg Price Cap'}
-                      />
-                    </Group>
+          <Accordion defaultValue="accordion_general" w={"100%"}>
+            <Accordion.Item value="accordion_general">
+              <Accordion.Control>{useTranslateSettingsModal('accordion_general')}</Accordion.Control>
+              <Accordion.Panel>
+                <Group >
+                  <Group>
+                    <NumberInput
+                      required
+                      label={useTranslateSettingsModal('volume_threshold')}
+                      value={roleForm.values.volume_threshold}
+                      description={useTranslateSettingsModal('volume_threshold_description')}
+                      onChange={(value) => roleForm.setFieldValue('volume_threshold', Number(value))}
+                      error={roleForm.errors.volume_threshold && 'Invalid Volume Threshold'}
+                    />
+                    <NumberInput
+                      required
+                      label={useTranslateSettingsModal('range_threshold')}
+                      value={roleForm.values.range_threshold}
+                      description={useTranslateSettingsModal('range_threshold_description')}
+                      onChange={(value) => roleForm.setFieldValue('range_threshold', Number(value))}
+                      error={roleForm.errors.range_threshold && 'Invalid Range Threshold'}
+                    />
+                    <NumberInput
+                      required
+                      label={useTranslateSettingsModal('max_total_price_cap')}
+                      value={roleForm.values.max_total_price_cap}
+                      description={useTranslateSettingsModal('max_total_price_cap_description')}
+                      onChange={(value) => roleForm.setFieldValue('max_total_price_cap', Number(value))}
+                      error={roleForm.errors.max_total_price_cap && 'Invalid Range Threshold'}
+                    />
+                    <NumberInput
+                      required
+                      label={useTranslateSettingsModal('avg_price_cap')}
+                      value={roleForm.values.avg_price_cap}
+                      description={useTranslateSettingsModal('avg_price_cap_description')}
+                      onChange={(value) => roleForm.setFieldValue('avg_price_cap', Number(value))}
+                      error={roleForm.errors.avg_price_cap && 'Invalid Avg Price Cap'}
+                    />
+                  </Group>
 
+                </Group>
+                <Group grow mt={10}>
+                  <Group grow>
+                    <NumberInput
+                      required
+                      label={useTranslateSettingsModal('price_shift_threshold')}
+                      value={roleForm.values.price_shift_threshold}
+                      description={useTranslateSettingsModal('price_shift_threshold_description')}
+                      onChange={(value) => roleForm.setFieldValue('price_shift_threshold', Number(value))}
+                      error={roleForm.errors.price_shift_threshold && 'Invalid Price Shift Threshold'}
+                    />
+                    <TextInput
+                      label={useTranslateSettingsModal('webhook')}
+                      value={roleForm.values.webhook}
+                      description={useTranslateSettingsModal('webhook_description')}
+                      onChange={(event) => roleForm.setFieldValue('webhook', event.currentTarget.value)}
+                      error={roleForm.errors.webhook && 'Invalid Webhook'}
+                    />
+                    <Checkbox
+                      label={useTranslateSettingsModal('strict_whitelist')}
+                      description={useTranslateSettingsModal('strict_whitelist_description')}
+                      checked={roleForm.values.strict_whitelist}
+                      onChange={(event) => roleForm.setFieldValue('strict_whitelist', event.currentTarget.checked)}
+                    />
                   </Group>
-                  <Group grow mt={10}>
-                    <Group grow>
-                      <NumberInput
-                        required
-                        label={useTranslateSettingsModal('price_shift_threshold')}
-                        value={roleForm.values.price_shift_threshold}
-                        description={useTranslateSettingsModal('price_shift_threshold_description')}
-                        onChange={(value) => roleForm.setFieldValue('price_shift_threshold', Number(value))}
-                        error={roleForm.errors.price_shift_threshold && 'Invalid Price Shift Threshold'}
-                      />
-                      <TextInput
-                        label={useTranslateSettingsModal('webhook')}
-                        value={roleForm.values.webhook}
-                        description={useTranslateSettingsModal('webhook_description')}
-                        onChange={(event) => roleForm.setFieldValue('webhook', event.currentTarget.value)}
-                        error={roleForm.errors.webhook && 'Invalid Webhook'}
-                      />
-                      <Checkbox
-                        label={useTranslateSettingsModal('strict_whitelist')}
-                        description={useTranslateSettingsModal('strict_whitelist_description')}
-                        checked={roleForm.values.strict_whitelist}
-                        onChange={(event) => roleForm.setFieldValue('strict_whitelist', event.currentTarget.checked)}
-                      />
-                    </Group>
-                  </Group>
-                </Accordion.Panel>
-              </Accordion.Item>
-              <Accordion.Item value="accordion_whitelist">
-                <Accordion.Control>{useTranslateSettingsModal('accordion_whitelist')}</Accordion.Control>
-                <Accordion.Panel>
-                  {useTranslateSettingsModal('whitelist_description')}
-                  <MultiSelectListBox
-                    availableItems={tradable_items.map((warframe) => ({ ...warframe, label: warframe.item_name, value: warframe.url_name }))}
-                    selectedItems={roleForm.values.whitelist.split(",")}
-                    onChange={(value) => roleForm.setFieldValue('whitelist', value.join(","))}
-                  /></Accordion.Panel>
-              </Accordion.Item>
-              <Accordion.Item value="accordion_blacklist">
-                <Accordion.Control>{useTranslateSettingsModal('accordion_blacklist')}</Accordion.Control>
-                <Accordion.Panel>
-                  {useTranslateSettingsModal('blacklist_description')}
-                  <MultiSelectListBox
-                    availableItems={tradable_items.map((warframe) => ({ ...warframe, label: warframe.item_name, value: warframe.url_name }))}
-                    selectedItems={roleForm.values.blacklist.split(",")}
-                    onChange={(value) => roleForm.setFieldValue('blacklist', value.join(","))}
-                  /></Accordion.Panel>
-              </Accordion.Item>
-            </Accordion>
-          </Group>
+                </Group>
+              </Accordion.Panel>
+            </Accordion.Item>
+            <Accordion.Item value="accordion_whitelist">
+              <Accordion.Control>{useTranslateSettingsModal('accordion_whitelist')}</Accordion.Control>
+              <Accordion.Panel>
+                {useTranslateSettingsModal('whitelist_description')}
+                <MultiSelectListBox
+                  availableItems={tradable_items.map((warframe) => ({ ...warframe, label: warframe.item_name, value: warframe.url_name }))}
+                  selectedItems={roleForm.values.whitelist.split(",")}
+                  onChange={(value) => roleForm.setFieldValue('whitelist', value.join(","))}
+                /></Accordion.Panel>
+            </Accordion.Item>
+            <Accordion.Item value="accordion_blacklist">
+              <Accordion.Control>{useTranslateSettingsModal('accordion_blacklist')}</Accordion.Control>
+              <Accordion.Panel>
+                {useTranslateSettingsModal('blacklist_description')}
+                <MultiSelectListBox
+                  availableItems={tradable_items.map((warframe) => ({ ...warframe, label: warframe.item_name, value: warframe.url_name }))}
+                  selectedItems={roleForm.values.blacklist.split(",")}
+                  onChange={(value) => roleForm.setFieldValue('blacklist', value.join(","))}
+                /></Accordion.Panel>
+            </Accordion.Item>
+          </Accordion>
         </Group>
-        <Group position="right" mt={10}>
-          <Button type="submit" variant="light" color="blue">
-            {useTranslateSettingsModal('save')}
-          </Button>
-        </Group>
-      </form>
-    </Box>
+      </Group>
+      <Group position="right" mt={10} sx={{
+        position: "absolute",
+        bottom: 0,
+        right: 0,
+      }}>
+        <Button type="submit" variant="light" color="blue">
+          {useTranslateSettingsModal('save')}
+        </Button>
+      </Group>
+    </form>
   );
 }
