@@ -20,50 +20,22 @@ pub async fn setup(
     wfm: tauri::State<'_, Arc<Mutex<WFMClientState>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheState>>>,
     db: tauri::State<'_, Arc<Mutex<DatabaseClient>>>,
-    debug: tauri::State<'_, Arc<Mutex<DebugClient>>>,
 ) -> Result<Value, AppError> {
     let settings = settings.lock()?.clone();
     let auth = auth.lock()?.clone();
     let wfm = wfm.lock()?.clone();
     let cache = cache.lock()?.clone();
-    let debug = debug.lock()?.clone();
     cache.update_cache().await?;
     let db = db.lock()?.clone();
     db.initialize().await?;
-    
-    let mut orders = vec![];
-    
-    match wfm.get_user_ordres().await {
-        Ok(ordres) => {
-            for order in ordres.sell_orders {
-                orders.push(order);
-            }
-            for order in ordres.buy_orders {
-                orders.push(order);
-            }
-        }
-        Err(e) => {
-            let component = e.component();
-            let cause = e.cause();
-            let backtrace = e.backtrace();
-            let log_level = e.log_level();
-            crate::logger::dolog(
-                log_level,
-                component.as_str(),
-                format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
-                true,
-                Some(format!("error_{}_{}.log", component, chrono::Local::now().format("%Y-%m-%d")).as_str()),
-            );  
-        }
-    }
-   
+
     Ok(json!({
         "valid": true,
         "settings": &settings.clone(),
         "user": &auth.clone(),
          "inventorys": &db.get_inventorys().await?,
          "transactions": &db.get_transactions("SELECT * FROM transactions").await?,
-         "orders": orders,
+         "orders": wfm.get_user_ordres_as_list().await?,
 
     }))
 }
@@ -75,16 +47,20 @@ pub async fn update_settings(
 ) -> Result<(), AppError> {
     let arced_mutex = Arc::clone(&settings_state);
     let mut my_lock = arced_mutex.lock()?;
-    my_lock.volume_threshold = settings.volume_threshold;
-    my_lock.range_threshold = settings.range_threshold;
-    my_lock.avg_price_cap = settings.avg_price_cap;
-    my_lock.max_total_price_cap = settings.max_total_price_cap;
-    my_lock.price_shift_threshold = settings.price_shift_threshold;
-    my_lock.blacklist = settings.blacklist;
-    my_lock.whitelist = settings.whitelist;
-    my_lock.strict_whitelist = settings.strict_whitelist;
-    my_lock.ping_on_notif = settings.ping_on_notif;
-    my_lock.webhook = settings.webhook;
+    println!("{:?}",settings);
+    // Set Live Scraper Settings
+    my_lock.live_scraper.volume_threshold = settings.live_scraper.volume_threshold;
+    my_lock.live_scraper.range_threshold = settings.live_scraper.range_threshold;
+    my_lock.live_scraper.avg_price_cap = settings.live_scraper.avg_price_cap;
+    my_lock.live_scraper.max_total_price_cap = settings.live_scraper.max_total_price_cap;
+    my_lock.live_scraper.price_shift_threshold = settings.live_scraper.price_shift_threshold;
+    my_lock.live_scraper.blacklist = settings.live_scraper.blacklist;
+    my_lock.live_scraper.whitelist = settings.live_scraper.whitelist;
+    my_lock.live_scraper.strict_whitelist = settings.live_scraper.strict_whitelist;
+    my_lock.live_scraper.webhook = settings.live_scraper.webhook;
+    // Set Whisper Scraper Settings
+    my_lock.whisper_scraper.ping_on_notif = settings.whisper_scraper.ping_on_notif;
+    my_lock.whisper_scraper.webhook = settings.whisper_scraper.webhook;
     my_lock.save_to_file().expect("Could not save settings");
     Ok(())
 }

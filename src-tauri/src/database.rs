@@ -18,7 +18,7 @@ use std::sync::{Arc, Mutex};
 
 #[derive(Clone, Debug)]
 pub struct DatabaseClient {
-    log_file: String,
+    pub log_file: String,
     connection: Arc<Mutex<Pool<Sqlite>>>,
     cache: Arc<Mutex<CacheState>>,
     wfm: Arc<Mutex<WFMClientState>>,
@@ -43,7 +43,7 @@ impl DatabaseClient {
                     "Database",
                     format!("Error creating database: {:?}", error).as_str(),
                     true,
-                    Some(log_file)
+                    Some(log_file),
                 ),
             }
         }
@@ -320,7 +320,8 @@ impl DatabaseClient {
                     .bind(weighted_price)
                     .bind(t.id)
                     .execute(&connection)
-                    .await.map_err(|e| AppError("Database", eyre!(e.to_string())))?;
+                    .await
+                    .map_err(|e| AppError("Database", eyre!(e.to_string())))?;
                 let mut t = t.clone();
                 t.owned = total_owned;
                 t.price = weighted_price;
@@ -398,7 +399,10 @@ impl DatabaseClient {
         let wfm = self.wfm.lock()?.clone();
         let inventory = inventorys.iter().find(|t| t.id == id).clone();
         if inventory.is_none() {
-            return Err(AppError("Database", eyre!("Could not find inventory with id {}", id)));
+            return Err(AppError(
+                "Database",
+                eyre!("Could not find inventory with id {}", id),
+            ));
         }
         let connection = self.connection.lock().unwrap().clone();
         let mut inventory = inventory.unwrap().clone();
@@ -423,7 +427,8 @@ impl DatabaseClient {
                 .bind(inventory.clone().owned)
                 .bind(inventory.clone().id)
                 .execute(&connection)
-                .await.map_err(|e| AppError("Database", eyre!(e.to_string())))?;
+                .await
+                .map_err(|e| AppError("Database", eyre!(e.to_string())))?;
             helper::send_message_to_window(
                 "update_data",
                 Some(json!({ "type": "inventorys",
@@ -483,7 +488,8 @@ impl DatabaseClient {
         sqlx::query("DELETE FROM inventorys WHERE id = ?1")
             .bind(id)
             .execute(&connection)
-            .await.map_err(|e| AppError("Database", eyre!(e.to_string())))?;
+            .await
+            .map_err(|e| AppError("Database", eyre!(e.to_string())))?;
 
         helper::send_message_to_window(
             "update_data",
@@ -524,7 +530,8 @@ impl DatabaseClient {
             .bind(listed_price)
             .bind(inventory.id.clone())
             .execute(&connection)
-            .await.map_err(|e| AppError("Database", eyre!(e.to_string())))?;
+            .await
+            .map_err(|e| AppError("Database", eyre!(e.to_string())))?;
         inventory.listed_price = listed_price;
         helper::send_message_to_window(
             "update_data",

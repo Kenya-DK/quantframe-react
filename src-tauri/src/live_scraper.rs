@@ -65,50 +65,60 @@ impl LiveScraper {
             // A loop that takes output from the async process and sends it
             // to the webview via a Tauri Event
             logger::info_con("LiveScraper", "Loop live scraper is started");
-            match scraper.delete_all_orders().await {
-                Ok(_) => {
-                    logger::info_con("LiveScraper", "Delete all orders success");
-                }
-                Err(e) => {
-                    let component = e.component();
-                    let cause = e.cause();
-                    let backtrace = e.backtrace();
-                    let log_level = e.log_level();
-                    if log_level == LogLevel::Critical {
-                        crate::logger::dolog(
-                            log_level.clone(),
-                            component.as_str(),
-                            format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
-                            true,
-                            Some(log_file.as_str()),
-                        );  
+            // match scraper.delete_all_orders().await {
+            //     Ok(_) => {
+            //         logger::info_con("LiveScraper", "Delete all orders success");
+            //     }
+            //     Err(e) => {
+            //         let component = e.component();
+            //         let cause = e.cause();
+            //         let backtrace = e.backtrace();
+            //         let log_level = e.log_level();
+            //         if log_level == LogLevel::Critical {
+            //             crate::logger::dolog(
+            //                 log_level.clone(),
+            //                 component.as_str(),
+            //                 format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
+            //                 true,
+            //                 Some(log_file.as_str()),
+            //             );
 
-                    }
+            //         }
 
-                    helper::send_message_to_window(
-                        "live_scraper_error",
-                        Some(json!({ 
-                            "component": format!("{:?}", component),
-                            "cause": format!("{:?}", cause),
-                            "backtrace": format!("{:?}", backtrace),
-                            "log_level": format!("{:?}", log_level),
-                        })),
-                    );
+            //         helper::send_message_to_window(
+            //             "live_scraper_error",
+            //             Some(json!({
+            //                 "component": format!("{:?}", component),
+            //                 "cause": format!("{:?}", cause),
+            //                 "backtrace": format!("{:?}", backtrace),
+            //                 "log_level": format!("{:?}", log_level),
+            //             })),
+            //         );
 
-                    forced_stop.store(false, Ordering::SeqCst);
-                    // eprint!("{:?}", e);
-                }
-            }
+            //         forced_stop.store(false, Ordering::SeqCst);
+            //         // eprint!("{:?}", e);
+            //     }
+            // }
 
             while is_running.load(Ordering::SeqCst) && forced_stop.load(Ordering::SeqCst) {
                 logger::info_con("LiveScraper", "Loop live scraper is running...");
                 match scraper.run().await {
                     Ok(_) => {}
                     Err(e) => {
+                        let component = e.component();
+                        let cause = e.cause();
+                        let backtrace = e.backtrace();
                         let log_level = e.log_level();
                         // Check if log_level is Critical
 
                         if LogLevel::Critical == log_level {
+                            crate::logger::dolog(
+                                log_level.clone(),
+                                component.as_str(),
+                                format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
+                                true,
+                                Some(log_file.as_str()),
+                            );
                             helper::send_message_to_window(
                                 "live_scraper_error",
                                 Some(json!({
@@ -142,7 +152,7 @@ impl LiveScraper {
 
     pub async fn run(&self) -> Result<(), AppError> {
         let buy_sell_overlap = self.get_buy_sell_overlap().await?;
-        let settings = self.settings.lock()?.clone();
+        let settings = self.settings.lock()?.clone().live_scraper;
         let db = self.db.lock()?.clone();
         let wfm: WFMClientState = self.wfm.lock()?.clone();
 
@@ -357,7 +367,7 @@ impl LiveScraper {
     pub async fn delete_all_orders(&self) -> Result<(), AppError> {
         let wfm = self.wfm.lock()?.clone();
         let db = self.db.lock()?.clone();
-        let settings = self.settings.lock()?.clone();
+        let settings = self.settings.lock()?.clone().live_scraper;
         let blacklist = settings.blacklist.clone();
 
         let current_orders = wfm.get_user_ordres().await?;
@@ -381,7 +391,7 @@ impl LiveScraper {
         Ok(())
     }
     pub async fn get_buy_sell_overlap(&self) -> Result<DataFrame, AppError> {
-        let settings = self.settings.lock()?.clone();
+        let settings = self.settings.lock()?.clone().live_scraper;
         let db = self.db.lock()?.clone();
         let df = self.price_scraper.lock()?.get_price_historys()?;
         let volume_threshold = settings.volume_threshold;
@@ -684,7 +694,7 @@ impl LiveScraper {
     }
 
     fn is_item_blacklisted(&self, item_name: &str) -> Result<bool, AppError> {
-        let settings = self.settings.lock()?.clone();
+        let settings = self.settings.lock()?.clone().live_scraper;
         let blacklist = settings.blacklist.clone();
         let blacklist_s = Series::new("blacklist", blacklist);
         let blacklist_df = DataFrame::new(vec![blacklist_s]).unwrap();
@@ -755,7 +765,7 @@ impl LiveScraper {
             return Ok(None);
         }
 
-        let settings = self.settings.lock()?.clone();
+        let settings = self.settings.lock()?.clone().live_scraper;
         let wfm = self.wfm.lock()?.clone();
         let mut current_orders = current_orders.clone();
         let avg_price_cap = settings.avg_price_cap;
@@ -1045,7 +1055,7 @@ impl LiveScraper {
         _inventory_df: &DataFrame,
     ) -> Result<(), AppError> {
         let wfm = self.wfm.lock()?.clone();
-        let set = self.settings.lock()?.clone();
+        let set = self.settings.lock()?.clone().live_scraper;
         let db = self.db.lock()?.clone();
 
         // Get the current orders for the item from the Warframe Market API
@@ -1137,14 +1147,7 @@ impl LiveScraper {
                 "LiveScraper",
                 format!("Item {item_name} is too cheap. Not putting up a sell order.").as_str(),
             );
-            helper::send_message_to_discord(
-                set.webhook,
-                format!(
-                    "Item {item_name} is too cheap. Not putting up a sell order.",
-                    item_name = item_name
-                ),
-                set.ping_on_notif,
-            );
+            helper::send_message_to_discord(set.webhook, format!("Item {item_name} is too cheap. Not putting up a sell order."),true);
         }
 
         if post_price + 10 > post_price && sellers >= 2 {

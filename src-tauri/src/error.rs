@@ -26,7 +26,6 @@ pub trait GetErrorInfo {
     fn cause(&self) -> String;
     fn backtrace(&self) -> String;
     fn log_level(&self) -> LogLevel;
-    fn clone(&self) -> Self;
 }
 
 pub fn get_info(e: String) -> (String, String) {
@@ -59,7 +58,19 @@ impl GetErrorInfo for AppError {
     fn log_level(&self) -> LogLevel {
         LogLevel::Critical
     }
-    fn clone(&self) -> Self {
-        AppError(self.0, eyre!(self.1.to_string()))
-    }
+    
+}
+
+pub fn create_log_file(file: String, e: &AppError) {
+    let component = e.component();
+    let cause = e.cause();
+    let backtrace = e.backtrace();
+    let log_level = e.log_level();
+    crate::logger::dolog(
+        log_level,
+        component.as_str(),
+        format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
+        true,
+        Some(file.as_str()),
+    );
 }

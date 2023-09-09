@@ -4,6 +4,7 @@ use auth::AuthState;
 use cache::CacheState;
 use database::DatabaseClient;
 use debug::DebugClient;
+use error::{AppError, GetErrorInfo};
 use price_scraper::PriceScraper;
 use settings::SettingsState;
 use std::panic;
@@ -14,6 +15,7 @@ use tauri::{App, Manager};
 use wfm_client::WFMClientState;
 mod structs;
 mod whisper_scraper;
+use eyre::eyre;
 use whisper_scraper::WhisperScraper; // add this line
 mod live_scraper;
 use live_scraper::LiveScraper;
@@ -32,17 +34,14 @@ mod wfm_client;
 
 use helper::WINDOW as HE_WINDOW;
 
-async fn setup_async(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
+async fn setup_async(app: &mut App) -> Result<(), AppError> {
     // create and manage Settings state
-    let settings_arc = Arc::new(Mutex::new(
-        SettingsState::setup().expect("Could not setup settings"),
-    ));
+    // let se=SettingsState::setup()?;
+    let settings_arc = Arc::new(Mutex::new(SettingsState::setup()?));
     app.manage(settings_arc.clone());
 
     // create and manage Auth state
-    let auth_arc = Arc::new(Mutex::new(
-        AuthState::setup().expect("Could not setup auth"),
-    ));
+    let auth_arc = Arc::new(Mutex::new(AuthState::setup()?));
     app.manage(auth_arc.clone());
 
     // create and manage Warframe Market API client state
@@ -106,7 +105,23 @@ fn main() {
             *HE_WINDOW.lock().unwrap() = Some(window.clone());
 
             // create and manage DatabaseClient state
-            block_on(setup_async(app)).unwrap();
+            match block_on(setup_async(app)) {
+                Ok(_) => {}
+                Err(e) => {
+                    println!("Error: {:?}", e);
+                    let component = e.component();
+                    let cause = e.cause();
+                    let backtrace = e.backtrace();
+                    let log_level = e.log_level();
+                    crate::logger::dolog(
+                        log_level,
+                        component.as_str(),
+                        format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
+                        true,
+                        Some("setup_error.log"),
+                    );
+                }
+            }
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

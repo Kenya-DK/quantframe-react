@@ -54,9 +54,6 @@ pub struct Order {
 
     #[serde(rename = "item")]
     pub item: OrderItem,
-    
-    #[serde(rename = "order_type")]
-    pub order_type: Option<String>,
 }
 #[derive(Serialize, Debug, Clone, Deserialize)]
 pub struct OrderItem {

@@ -37,7 +37,7 @@ impl WhisperScraper {
 
     pub fn start_loop(&mut self) {
         let is_running = Arc::clone(&self.is_running);
-        let settings = Arc::clone(&self.settings).lock().unwrap().clone();
+        let settings = Arc::clone(&self.settings).lock().unwrap().clone().whisper_scraper;
         let scraper = self.clone();
 
         self.is_running.store(true, Ordering::SeqCst);
