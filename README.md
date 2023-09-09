@@ -6,7 +6,8 @@ Inspired by [Akmayer's Warframe-Algo-Trader](https://github.com/akmayer/Warframe
   - Install size: 11MB
   - Idle resource consumption: 60MB, extremely small cpu footprint (on my rig, 0-0.1%)
   - Update distribution
-- Save data in sqllite db located at `C:\Users\*\AppData\Roaming\dev.zanca.quantframe\quantframe.sqlite`
+- Save data in sqllite db located at `C:\Users\*\AppData\Roaming\quantframe\quantframe.sqlite`
+- Logs and setings wil be save at `C:\Users\*\AppData\Roaming\quantframe`
   - easily inspectible with db tools like https://beekeeperstudio.io
 - Api client to communicate with wf.market
 - Easy debugging / developer experience via edge dev tools

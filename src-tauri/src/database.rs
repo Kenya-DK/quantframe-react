@@ -334,6 +334,7 @@ impl DatabaseClient {
                     .bind(item.clone().id)
                     .bind(item.clone().url_name)
                     .bind(item.clone().item_name)
+                    .bind("item")
                     .bind(rank)
                     .bind(price)
                     .bind(quantity)
