@@ -68,3 +68,7 @@ export interface StatisticDto {
   recent_days: StatisticRecentDaysTransaction;
   turnover: number;
 }
+
+export type DeepPartial<T> = T extends object ? {
+  [P in keyof T]?: DeepPartial<T[P]>;
+} : T;

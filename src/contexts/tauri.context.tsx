@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { Wfm, Settings, TransactionEntryDto, InventoryEntryDto, StatisticDto } from '$types/index';
+import { Wfm, Settings, TransactionEntryDto, InventoryEntryDto, StatisticDto, DeepPartial } from '$types/index';
 import { isPermissionGranted, sendNotification } from '@tauri-apps/api/notification';
 import api from "../api";
 import { SplashScreen } from "../components/splashScreen";
@@ -20,7 +20,7 @@ type TauriContextProps = {
   updateUser: (user: Partial<Wfm.UserDto>) => void;
   settings: Settings | undefined;
   statistics: StatisticDto | undefined,
-  updateSettings: (user: Partial<Settings>) => void;
+  updateSettings: (user: DeepPartial<Settings>) => void;
   sendNotification: (title: string, body: string) => void;
 }
 type TauriContextProviderProps = {
@@ -69,6 +69,7 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
       setInventorys([...data.inventorys])
       setTransactions([...data.transactions])
       setOrders([...data.orders])
+      console.log(data);
     },
   })
 
@@ -84,11 +85,13 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
     setUser({ ...user, ...userData });
   }
 
-  const handleUpdateSettings = async (settingsData: Partial<Settings>) => {
+
+  const handleUpdateSettings = async (settingsData: DeepPartial<Settings>) => {
     if (!settings) return;
+    debugger
     const data = { ...settings, ...settingsData } as Settings;
-    setSettings(data);
-    await api.base.updatesettings(data as any); // add 'as any' to avoid type checking
+    setSettings((a) => a = data);
+    setSettings(await api.base.updatesettings(data as any)); // add 'as any' to avoid type checking
     notifications.show({
       title: useTranslateTauri("notifications.settings_updated"),
       message: useTranslateTauri("notifications.settings_updated_message"),
@@ -96,6 +99,12 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
       autoClose: 5000,
     });
   }
+
+  useEffect(() => {
+    if (!settings) return;
+    console.log("settings", settings);
+
+  }, [settings]);
 
   const handleSendNotification = async (title: string, body: string) => {
     let permissionGranted = await isPermissionGranted();
@@ -105,16 +114,25 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
     }
   }
 
-  const handleUpdateOrders = (operation: string, data: Wfm.OrderDto) => {
+  const handleUpdateOrders = (operation: string, data: Wfm.OrderDto | string) => {
     switch (operation) {
       case "create":
-        setOrders((inventorys) => [...inventorys, data]);
+        {
+          const order = data as Wfm.OrderDto;
+          setOrders((inventorys) => [...inventorys, order]);
+        }
         break;
       case "update":
-        setOrders((inventorys) => [...inventorys.filter((item) => item.id !== data.id), data]);
+        {
+          const order = data as Wfm.OrderDto;
+          setOrders((inventorys) => [...inventorys.filter((item) => item.id !== order.id), order]);
+        }
         break;
       case "delete":
-        setOrders((inventorys) => [...inventorys.filter((item) => item.id !== data.id)]);
+        {
+          const order_id = data as string;
+          setOrders((inventorys) => [...inventorys.filter((item) => item.id !== order_id)]);
+        }
         break;
     }
   }
@@ -153,7 +171,7 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
     });
     OnTauriUpdateDataEvent<InventoryEntryDto>("inventorys", ({ data, operation }) => handleUpdateInventory(operation, data));
     OnTauriUpdateDataEvent<TransactionEntryDto>("transactions", ({ data, operation }) => handleUpdateTransaction(operation, data));
-    OnTauriUpdateDataEvent<Wfm.OrderDto>("orders", ({ data, operation }) => handleUpdateOrders(operation, data));
+    OnTauriUpdateDataEvent<Wfm.OrderDto | string>("orders", ({ data, operation }) => handleUpdateOrders(operation, data));
     return () => { }
   }, []);
 

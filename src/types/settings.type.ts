@@ -10,6 +10,7 @@ export interface SetupResponse {
 
 export interface Settings {
   live_scraper: LiveScraperSettings;
+  whisper_scraper: WhisperScraperSettings;
 }
 
 export interface LiveScraperSettings {
@@ -19,9 +20,12 @@ export interface LiveScraperSettings {
   avg_price_cap: number;
   price_shift_threshold: number;
   strict_whitelist: boolean;
-  ping_on_notif: boolean;
   webhook: string;
   blacklist: string[];
   whitelist: string[];
+}
+export interface WhisperScraperSettings {
+  ping_on_notif: boolean;
+  webhook: string;
 }
 

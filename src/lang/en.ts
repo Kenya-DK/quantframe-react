@@ -113,7 +113,9 @@ export const en = {
             save: "Save",
           },
           price_scraper: {},
-          wisper: {},
+          whisper_scraper: {
+            title: "Whisper Scraper",
+          },
         },
       },
     },

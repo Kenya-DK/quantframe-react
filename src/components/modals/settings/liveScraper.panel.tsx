@@ -2,13 +2,13 @@ import { useEffect } from "react";
 import { useForm } from "@mantine/form";
 import { Accordion, Box, Button, Checkbox, Group, NumberInput, TextInput } from "@mantine/core";
 import { useTranslateModal } from "@hooks/index";
-import { Settings, Wfm } from "$types/index";
+import { LiveScraperSettings, Wfm } from "$types/index";
 import { MultiSelectListBox } from "../../multiSelectListBox";
 
 interface LiveScraperProps {
-  settings: Settings | undefined;
+  settings: LiveScraperSettings | undefined;
   tradable_items: Wfm.ItemDto[];
-  updateSettings: (user: Partial<Settings>) => void;
+  updateSettings: (user: Partial<LiveScraperSettings>) => void;
 }
 
 export function LiveScraperPanel({ settings, updateSettings, tradable_items }: LiveScraperProps) {
@@ -30,17 +30,15 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
 
   useEffect(() => {
     if (!settings) return;
-    const { live_scraper } = settings;
-    roleForm.setFieldValue("volume_threshold", live_scraper.volume_threshold);
-    roleForm.setFieldValue("range_threshold", live_scraper.range_threshold);
-    roleForm.setFieldValue("max_total_price_cap", live_scraper.max_total_price_cap);
-    roleForm.setFieldValue("avg_price_cap", live_scraper.avg_price_cap);
-    roleForm.setFieldValue("price_shift_threshold", live_scraper.price_shift_threshold);
-    roleForm.setFieldValue("strict_whitelist", live_scraper.strict_whitelist);
-    roleForm.setFieldValue("webhook", live_scraper.webhook);
-    roleForm.setFieldValue("ping_on_notif", live_scraper.ping_on_notif);
-    roleForm.setFieldValue("blacklist", live_scraper.blacklist.join(","));
-    roleForm.setFieldValue("whitelist", live_scraper.whitelist.join(","));
+    roleForm.setFieldValue("volume_threshold", settings.volume_threshold);
+    roleForm.setFieldValue("range_threshold", settings.range_threshold);
+    roleForm.setFieldValue("max_total_price_cap", settings.max_total_price_cap);
+    roleForm.setFieldValue("avg_price_cap", settings.avg_price_cap);
+    roleForm.setFieldValue("price_shift_threshold", settings.price_shift_threshold);
+    roleForm.setFieldValue("strict_whitelist", settings.strict_whitelist);
+    roleForm.setFieldValue("webhook", settings.webhook);
+    roleForm.setFieldValue("blacklist", settings.blacklist.join(","));
+    roleForm.setFieldValue("whitelist", settings.whitelist.join(","));
   }, [settings]);
 
   const useTranslateSettingsModal = (key: string, context?: { [key: string]: any }) => useTranslateModal(`settings.panels.live_trading.${key}`, { ...context })
@@ -60,7 +58,7 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
           webhook: data.webhook
         }
 
-        updateSettings({ live_scraper: settingsData })
+        updateSettings(settingsData)
       })}>
         <Group grow>
           <Group grow>
@@ -127,12 +125,6 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
                         description={useTranslateSettingsModal('strict_whitelist_description')}
                         checked={roleForm.values.strict_whitelist}
                         onChange={(event) => roleForm.setFieldValue('strict_whitelist', event.currentTarget.checked)}
-                      />
-                      <Checkbox
-                        label={useTranslateSettingsModal('ping_on_notif')}
-                        description={useTranslateSettingsModal('ping_on_notif_description')}
-                        checked={roleForm.values.ping_on_notif}
-                        onChange={(event) => roleForm.setFieldValue('ping_on_notif', event.currentTarget.checked)}
                       />
                     </Group>
                   </Group>
