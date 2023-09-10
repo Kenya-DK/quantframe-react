@@ -7,8 +7,9 @@ use crate::{
     cache::CacheState,
     database::DatabaseClient,
     debug::DebugClient,
-    error::{AppError, GetErrorInfo},
+    error::{self, AppError, GetErrorInfo},
     logger,
+    price_scraper::{self, PriceScraper},
     settings::SettingsState,
     wfm_client::WFMClientState,
 };
@@ -19,23 +20,38 @@ pub async fn setup(
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClientState>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheState>>>,
+    price_scraper: tauri::State<'_, Arc<Mutex<PriceScraper>>>,
     db: tauri::State<'_, Arc<Mutex<DatabaseClient>>>,
 ) -> Result<Value, AppError> {
+    let db = db.lock()?.clone();
     let settings = settings.lock()?.clone();
     let auth = auth.lock()?.clone();
     let wfm = wfm.lock()?.clone();
     let cache = cache.lock()?.clone();
+    let price_scraper = price_scraper.lock()?.clone();
     cache.update_cache().await?;
-    let db = db.lock()?.clone();
-    db.initialize().await?;
+    match db.initialize().await {
+        Ok(_) => {}
+        Err(e) => {
+            error::create_log_file("db.log".to_string(), &e);
+            return Err(e);
+        }
+    }
+    if !wfm.validate().await? {
+        return Ok(json!({
+            "valid": false,
+            "settings": &settings.clone(),
+        }));
+    }
 
     Ok(json!({
         "valid": true,
         "settings": &settings.clone(),
         "user": &auth.clone(),
-         "inventorys": &db.get_inventorys().await?,
-         "transactions": &db.get_transactions("SELECT * FROM transactions").await?,
-         "orders": wfm.get_user_ordres_as_list().await?,
+        "inventorys": &db.get_inventorys().await?,
+        "transactions": &db.get_transactions("SELECT * FROM transactions").await?,
+        "orders": wfm.get_user_ordres_as_list().await?,
+        "price_scraper_status":price_scraper.get_status(),
 
     }))
 }
@@ -47,7 +63,7 @@ pub async fn update_settings(
 ) -> Result<(), AppError> {
     let arced_mutex = Arc::clone(&settings_state);
     let mut my_lock = arced_mutex.lock()?;
-    println!("{:?}",settings);
+    println!("{:?}", settings);
     // Set Live Scraper Settings
     my_lock.live_scraper.volume_threshold = settings.live_scraper.volume_threshold;
     my_lock.live_scraper.range_threshold = settings.live_scraper.range_threshold;

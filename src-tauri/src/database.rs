@@ -60,21 +60,21 @@ impl DatabaseClient {
         let connection = self.connection.lock().unwrap().clone();
         sqlx::query(
             "
-        CREATE TABLE IF NOT EXISTS inventorys (
-            id integer not null primary key autoincrement,
-            item_id text not null,
-            item_url text not null,
-            item_name text not null,
-            item_type text not null,
-            rank integer not null default 0,
-            price REAL not null default 0,
-            listed_price INT default null,
-            owned INT not null default 1
-        )",
+                CREATE TABLE IF NOT EXISTS inventorys (
+                id integer not null primary key autoincrement,
+                item_id text not null,
+                item_url text not null,
+                item_name text not null,
+                item_type text not null,
+                rank integer not null default 0,
+                price REAL not null default 0,
+                listed_price INT default null,
+                owned INT not null default 1
+            )",
         )
         .execute(&connection)
         .await
-        .unwrap();
+        .map_err(|e| AppError("Database", eyre!(e.to_string())))?;
         sqlx::query(
             "
         CREATE TABLE IF NOT EXISTS transactions (
@@ -93,7 +93,7 @@ impl DatabaseClient {
         )
         .execute(&connection)
         .await
-        .unwrap();
+        .map_err(|e| AppError("Database", eyre!(e.to_string())))?;
         Ok(true)
     }
     pub fn get_connection(&self) -> Arc<Mutex<Pool<Sqlite>>> {

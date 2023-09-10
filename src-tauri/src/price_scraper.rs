@@ -48,7 +48,7 @@ impl PriceScraper {
         // Try to read from "allItemDataBackup.csv", and if it fails, read from "allItemData.csv".
         let file = File::open(&self.csv_path)
             .or_else(|_| File::open(&self.csv_backop_path))
-            .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
+            .map_err(|e| AppError("PriceScraper", eyre!("Error opening csv file: {}", e)))?;
 
         // Parse the CSV file into a DataFrame
         CsvReader::new(file)
@@ -56,6 +56,19 @@ impl PriceScraper {
             .has_header(true)
             .finish()
             .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))
+    }
+
+
+    pub fn get_status(&self) -> String {
+        // Try to read from "allItemDataBackup.csv", and if it fails, read from "allItemData.csv".
+        let file = File::open(&self.csv_path).or_else(|_| File::open(&self.csv_backop_path));
+        match file {
+            Ok(file) => format!(
+                "{:?}",
+                file.metadata().unwrap().modified().unwrap()
+            ),
+            Err(_) => "".to_string(),
+        }
     }
     /// Returns a JSON object containing price data for the given platform and day.
     /// The `platform` argument should be one of "pc", "ps4", or "xb1".
@@ -133,12 +146,22 @@ impl PriceScraper {
     }
     pub async fn generate(&self, days: i64) -> Result<i64, AppError> {
         let auth = self.auth.lock().unwrap().clone();
-        logger::debug_con("PriceScraper", format!("Generating csv file for platform: {}, for {} days.", auth.platform, days).as_str());
+        logger::debug_con(
+            "PriceScraper",
+            format!(
+                "Generating csv file for platform: {}, for {} days.",
+                auth.platform, days
+            )
+            .as_str(),
+        );
 
         let csv_path: &Path = Path::new(self.csv_path.as_str());
         let csv_backop_path = Path::new(self.csv_backop_path.as_str());
         if csv_path.exists() {
-            logger::debug_con("PriceScraper", format!("Backuping csv file: {}", self.csv_path).as_str());
+            logger::debug_con(
+                "PriceScraper",
+                format!("Backuping csv file: {}", self.csv_path).as_str(),
+            );
             fs::copy(csv_path, csv_backop_path)
                 .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
         }
@@ -301,7 +324,14 @@ impl PriceScraper {
                 Err(e) => return Err(e),
             }
         }
-        logger::info_con("PriceScraper", format!("Finished getting price data for all days. Merging dataframes... {:?}", dataframes.len()).as_str());
+        logger::info_con(
+            "PriceScraper",
+            format!(
+                "Finished getting price data for all days. Merging dataframes... {:?}",
+                dataframes.len()
+            )
+            .as_str(),
+        );
         let full_df = helper::merge_dataframes(dataframes)?;
         helper::send_message_to_window(
             "price_scraper_update_complete",

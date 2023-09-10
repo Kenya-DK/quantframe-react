@@ -13,7 +13,6 @@ use crate::{
 };
 use eyre::eyre;
 use polars::prelude::*;
-use serde_json::json;
 use std::time::Duration;
 use std::{
     collections::HashSet,
@@ -54,85 +53,51 @@ impl LiveScraper {
             db,
         }
     }
-
+    fn report_error(&self, error: AppError) {
+        let component = error.component();
+        let cause = error.cause();
+        let backtrace = error.backtrace();
+        let log_level = error.log_level();
+        let extra = error.extra_data();
+        if log_level == LogLevel::Critical {
+            self.is_running.store(false, Ordering::SeqCst);
+            crate::logger::dolog(
+                log_level.clone(),
+                component.as_str(),
+                format!("Error: {:?}, {:?}, {:?}", backtrace, cause, extra).as_str(),
+                true,
+                Some(self.log_file.as_str()),
+            );
+            helper::send_message_to_window("live_scraper_error", Some(error.to_json()));
+        } else {
+            logger::info_con(
+                "LiveScraper",
+                format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
+            );
+        }
+    }
     pub fn start_loop(&mut self) -> Result<(), AppError> {
         self.is_running.store(true, Ordering::SeqCst);
         let is_running = Arc::clone(&self.is_running);
         let forced_stop = Arc::clone(&self.is_running);
         let scraper = self.clone();
-        let log_file = self.log_file.clone();
+        let scrapper = self.clone();
         tauri::async_runtime::spawn(async move {
             // A loop that takes output from the async process and sends it
             // to the webview via a Tauri Event
             logger::info_con("LiveScraper", "Loop live scraper is started");
-            // match scraper.delete_all_orders().await {
-            //     Ok(_) => {
-            //         logger::info_con("LiveScraper", "Delete all orders success");
-            //     }
-            //     Err(e) => {
-            //         let component = e.component();
-            //         let cause = e.cause();
-            //         let backtrace = e.backtrace();
-            //         let log_level = e.log_level();
-            //         if log_level == LogLevel::Critical {
-            //             crate::logger::dolog(
-            //                 log_level.clone(),
-            //                 component.as_str(),
-            //                 format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
-            //                 true,
-            //                 Some(log_file.as_str()),
-            //             );
-
-            //         }
-
-            //         helper::send_message_to_window(
-            //             "live_scraper_error",
-            //             Some(json!({
-            //                 "component": format!("{:?}", component),
-            //                 "cause": format!("{:?}", cause),
-            //                 "backtrace": format!("{:?}", backtrace),
-            //                 "log_level": format!("{:?}", log_level),
-            //             })),
-            //         );
-
-            //         forced_stop.store(false, Ordering::SeqCst);
-            //         // eprint!("{:?}", e);
-            //     }
-            // }
+            match scraper.delete_all_orders().await {
+                Ok(_) => {
+                    logger::info_con("LiveScraper", "Delete all orders success");
+                }
+                Err(e) => scrapper.report_error(e),
+            }
 
             while is_running.load(Ordering::SeqCst) && forced_stop.load(Ordering::SeqCst) {
                 logger::info_con("LiveScraper", "Loop live scraper is running...");
                 match scraper.run().await {
                     Ok(_) => {}
-                    Err(e) => {
-                        let component = e.component();
-                        let cause = e.cause();
-                        let backtrace = e.backtrace();
-                        let log_level = e.log_level();
-                        // Check if log_level is Critical
-
-                        if LogLevel::Critical == log_level {
-                            crate::logger::dolog(
-                                log_level.clone(),
-                                component.as_str(),
-                                format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
-                                true,
-                                Some(log_file.as_str()),
-                            );
-                            helper::send_message_to_window(
-                                "live_scraper_error",
-                                Some(json!({
-                                    "msg": format!("{:?}", e),
-                                    "component": format!("{:?}", e.component()),
-                                    "cause": format!("{:?}", e.cause()),
-                                    "backtrace": format!("{:?}", e.cause())
-                                })),
-                            );
-                        }
-
-                        forced_stop.store(false, Ordering::SeqCst);
-                        eprint!("{:?}", e);
-                    }
+                    Err(e) => scrapper.report_error(e),
                 }
                 tokio::time::sleep(Duration::from_secs(1)).await;
             }
@@ -146,7 +111,6 @@ impl LiveScraper {
     }
 
     pub fn is_running(&self) -> bool {
-        // Return the current value of is_running
         self.is_running.load(Ordering::SeqCst)
     }
 
@@ -989,24 +953,27 @@ impl LiveScraper {
                         logger::info_con("LiveScraper",format!("Item {} is not as optimal as other items. Deleting buy orders for {:?}",item_name,unselected_item_names).as_str());
                         logger::log_dataframe(
                             &mut current_orders,
-                            format!("Current Orders for {item_name}").as_str(),
+                            format!("Current Orders for {item_name}.csv").as_str(),
                         );
-                        current_orders = current_orders
-                            .lazy()
-                            .filter(col("url_name").is_in(
-                                lit(Series::new("url_name", unselected_item_names.clone())).not(),
-                            ))
-                            .collect()
-                            .map_err(|e| {
-                                AppError(
-                                    "LiveScraper",
-                                    eyre!(
-                                        "{:?}, {:?}",
-                                        e.to_string(),
-                                        unselected_item_names.clone()
-                                    ),
-                                )
-                            })?;
+                        current_orders =
+                            current_orders
+                                .lazy()
+                                .filter(col("url_name").neq(lit(Series::new(
+                                    "url_name",
+                                    unselected_item_names.clone(),
+                                ))))
+                                .collect()
+                                .map_err(|e| {
+                                    AppError(
+                                        "LiveScraper",
+                                        eyre!(
+                                            "{:?}, {:?}, Item: {:?}",
+                                            e.to_string(),
+                                            unselected_item_names.clone(),
+                                            item_name
+                                        ),
+                                    )
+                                })?;
 
                         for unselected_item in &unselected_buy_orders {
                             wfm.delete_order(unselected_item.3.as_str(), item_name, item_id, "buy")
@@ -1147,7 +1114,11 @@ impl LiveScraper {
                 "LiveScraper",
                 format!("Item {item_name} is too cheap. Not putting up a sell order.").as_str(),
             );
-            helper::send_message_to_discord(set.webhook, format!("Item {item_name} is too cheap. Not putting up a sell order."),true);
+            helper::send_message_to_discord(
+                set.webhook,
+                format!("Item {item_name} is too cheap. Not putting up a sell order."),
+                true,
+            );
         }
 
         if post_price + 10 > post_price && sellers >= 2 {

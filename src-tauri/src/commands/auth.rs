@@ -1,6 +1,16 @@
-use std::sync::{Arc, Mutex};
+use std::{
+    f32::consts::E,
+    sync::{Arc, Mutex},
+};
 
-use crate::{auth::AuthState, wfm_client::WFMClientState, error::{AppError, GetErrorInfo}};
+use polars::export::rayon::string;
+use serde_json::Value;
+
+use crate::{
+    auth::AuthState,
+    error::{self, AppError, GetErrorInfo},
+    wfm_client::WFMClientState,
+};
 
 #[tauri::command]
 pub async fn login(
@@ -8,27 +18,15 @@ pub async fn login(
     password: String,
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClientState>>>,
-) -> Result<AuthState, AppError> {
-    let auth = auth.lock()?.clone();
-    let wfm = wfm.lock()?.clone();
+) -> Result<AuthState, Value> {
+    let wfm = wfm.lock().expect("Could not lock wfm").clone();
     match wfm.login(email, password).await {
         Ok(user) => {
-            user.save_to_file()?;
+            user.save_to_file().map_err(|e| e.to_json())?;
             return Ok(user.clone());
         }
         Err(e) => {
-            let component = e.component();
-            let cause = e.cause();
-            let backtrace = e.backtrace();
-            let log_level = e.log_level();
-            crate::logger::dolog(
-                log_level,
-                component.as_str(),
-                format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
-                true,
-                Some(format!("error_{}_{}.log", component, chrono::Local::now().format("%Y-%m-%d")).as_str()),
-            );  
+            return Err(e.to_json());
         }
     }
-    Ok(auth.clone())
 }

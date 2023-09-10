@@ -1,5 +1,6 @@
 use polars::prelude::*;
 use regex::Regex;
+use serde::Serialize;
 use std::{
     fs::{self, File, OpenOptions},
     io::BufWriter,
@@ -7,7 +8,7 @@ use std::{
     path::PathBuf,
 };
 
-#[derive(PartialEq, Debug,Clone)]
+#[derive(PartialEq, Serialize, Debug, Clone)]
 pub enum LogLevel {
     Info,
     Warning,
@@ -120,56 +121,51 @@ pub fn debug(component: &str, msg: &str, console: bool, file: Option<&str>) {
     dolog(LogLevel::Debug, component, msg, console, file);
 }
 pub fn debug_file(component: &str, msg: &str, file: Option<&str>) {
-    debug( component, msg,false, file);
+    debug(component, msg, false, file);
 }
 pub fn debug_con(component: &str, msg: &str) {
-    debug( component, msg,true, None);
+    debug(component, msg, true, None);
 }
-
-
 
 pub fn error(component: &str, msg: &str, console: bool, file: Option<&str>) {
     dolog(LogLevel::Error, component, msg, console, file);
 }
 pub fn error_file(component: &str, msg: &str, file: Option<&str>) {
-    error( component, msg,false, file);
+    error(component, msg, false, file);
 }
 pub fn error_con(component: &str, msg: &str) {
-    error( component, msg,true, None);
+    error(component, msg, true, None);
 }
-
 
 pub fn info(component: &str, msg: &str, console: bool, file: Option<&str>) {
     dolog(LogLevel::Info, component, msg, console, file);
 }
 pub fn info_file(component: &str, msg: &str, file: Option<&str>) {
-    info( component, msg,false, file);
+    info(component, msg, false, file);
 }
 pub fn info_con(component: &str, msg: &str) {
-    info( component, msg,true, None);
+    info(component, msg, true, None);
 }
-
 
 pub fn trace(component: &str, msg: &str, console: bool, file: Option<&str>) {
     dolog(LogLevel::Trace, component, msg, console, file);
 }
 pub fn trace_file(component: &str, msg: &str, file: Option<&str>) {
-    trace( component, msg,false, file);
+    trace(component, msg, false, file);
 }
 pub fn trace_con(component: &str, msg: &str) {
-    trace( component, msg,true, None);
+    trace(component, msg, true, None);
 }
 
 pub fn critical(component: &str, msg: &str, console: bool, file: Option<&str>) {
     dolog(LogLevel::Critical, component, msg, console, file);
 }
 pub fn critical_file(component: &str, msg: &str, file: Option<&str>) {
-    critical(component, msg,false, file);
+    critical(component, msg, false, file);
 }
 pub fn critical_con(component: &str, msg: &str) {
-    critical(component, msg,true, None);
+    critical(component, msg, true, None);
 }
-
 
 /// Logs the given DataFrame to a CSV file with the given name in the log folder.
 /// The `df` argument is a mutable reference to the DataFrame to be logged.

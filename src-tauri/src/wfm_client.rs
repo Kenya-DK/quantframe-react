@@ -72,7 +72,7 @@ impl WFMClientState {
             let rep = response_data.text().await.unwrap_or_default();
             return Err(AppError(
                 "WFMClientState",
-                eyre!("Status: {:?}, Data: {:?}, Url: {:?}", status, rep, new_url),
+                eyre!("Status: {:?}[J]{rep}[J], Url: {:?}", status, new_url),
             ));
         }
 
@@ -162,7 +162,7 @@ impl WFMClientState {
             let access_token: Option<String> =
                 Some(cookie_str[4..].split(';').next().unwrap_or("").to_string());
             user.access_token = access_token;
-            user.avatar = format!("https://warframe.market/static/assets/{}", user.avatar);
+            user.avatar = user.avatar;
         } else {
             user.clone().access_token = None;
         }
@@ -192,7 +192,16 @@ impl WFMClientState {
                 .await?;
                 Ok(true)
             }
-            Err(_e) => Ok(false),
+            Err(_e) => {
+                eprintln!("Invalid API Key: {:?}", _e);
+                logger::info(
+                    "WarframeMarket",
+                    "Invalid API Key",
+                    true,
+                    Some(self.log_file.as_str()),
+                );
+                Ok(false)
+            }
         }
     }
     pub async fn get_tradable_items(&self) -> Result<Vec<Item>, AppError> {
