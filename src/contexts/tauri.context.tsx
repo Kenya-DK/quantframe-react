@@ -7,10 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { notifications } from "@mantine/notifications";
 import { OnTauriEvent, OnTauriUpdateDataEvent, getStatistic } from "@utils/index";
 import { useTranslateContext } from "../hooks";
-import { Center, Grid } from "@mantine/core";
-
-
-
+import dayjs from "dayjs";
 
 type TauriContextProps = {
   user: Wfm.UserDto | undefined;
@@ -18,6 +15,7 @@ type TauriContextProps = {
   transactions: TransactionEntryDto[];
   orders: Wfm.OrderDto[];
   inventorys: InventoryEntryDto[];
+  price_scraper_status: string;
   updateUser: (user: Partial<Wfm.UserDto>) => void;
   settings: Settings | undefined;
   statistics: StatisticDto | undefined,
@@ -33,6 +31,7 @@ export const TauriContext = createContext<TauriContextProps>({
   tradable_items: [],
   transactions: [],
   inventorys: [],
+  price_scraper_status: "",
   orders: [],
   statistics: undefined,
   updateUser: () => { },
@@ -52,11 +51,13 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
   const [inventorys, setInventorys] = useState<InventoryEntryDto[]>([]);
   const [statistics, setStatistics] = useState<StatisticDto | undefined>(undefined);
   const [orders, setOrders] = useState<Wfm.OrderDto[]>([]);
-
+  const [price_scraper_status, setPriceScraperStatus] = useState<string>("");
   const { isFetching } = useQuery({
     queryKey: ['validate'],
     queryFn: () => api.auth.validate(),
     onSuccess(data) {
+      console.log("validate", data);
+
       if (!data.valid) {
         notifications.show({
           title: useTranslateTauri("notifications.session_expired"),
@@ -64,13 +65,14 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
           color: 'red',
           autoClose: 5000,
         });
-      } else
+      } else {
         setUser({ ...data.user })
+        setInventorys([...data.inventorys])
+        setTransactions([...data.transactions])
+        setOrders([...data.orders])
+        setPriceScraperStatus(data.price_scraper_status)
+      }
       setSettings({ ...data.settings })
-      setInventorys([...data.inventorys])
-      setTransactions([...data.transactions])
-      setOrders([...data.orders])
-      console.log(data);
     },
   })
 
@@ -80,13 +82,16 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
     setStatistics(statistics);
   }, [transactions]);
 
-  const handleUpdateUser = (userData: Partial<Wfm.UserDto>) => {
-    if (!user) return;
-    setUser({ ...user, ...userData });
+  const handleUpdateUser = (userData: DeepPartial<Wfm.UserDto>) => {
+    console.log("UserUpdate", userData);
+    if (!userData) return;
+
+    const data = { ...settings, ...userData } as Wfm.UserDto;
+    setUser((a) => a = { ...a, ...data });
   }
 
   const handleUpdateSettings = async (settingsData: DeepPartial<Settings>) => {
-    if (!settings) return;
+    if (!settingsData) return;
     const data = { ...settings, ...settingsData } as Settings;
     setSettings((a) => a = { ...a, ...data });
     await api.base.updatesettings(data as any); // add 'as any' to avoid type checking
@@ -156,10 +161,12 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
         break;
     }
   }
-
   useEffect(() => {
     OnTauriEvent("update_tradable_items", (data: Wfm.ItemDto[]) => {
       setTradableItems(data);
+    });
+    OnTauriEvent("price_scraper_update_complete", () => {
+      setPriceScraperStatus(dayjs().format("DD.MM.YYYY HH:mm:ss"));
     });
     OnTauriUpdateDataEvent<InventoryEntryDto>("inventorys", ({ data, operation }) => handleUpdateInventory(operation, data));
     OnTauriUpdateDataEvent<TransactionEntryDto>("transactions", ({ data, operation }) => handleUpdateTransaction(operation, data));
@@ -168,7 +175,7 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
   }, []);
 
   return (
-    <TauriContext.Provider value={{ user, orders, statistics, transactions, inventorys, tradable_items, updateUser: handleUpdateUser, settings, updateSettings: handleUpdateSettings, sendNotification: handleSendNotification }}>
+    <TauriContext.Provider value={{ user, price_scraper_status, orders, statistics, transactions, inventorys, tradable_items, updateUser: handleUpdateUser, settings, updateSettings: handleUpdateSettings, sendNotification: handleSendNotification }}>
       <SplashScreen opened={isFetching} />
       {children}
     </TauriContext.Provider>

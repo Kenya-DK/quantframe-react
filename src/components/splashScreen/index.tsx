@@ -10,8 +10,6 @@ export const fadeOut = keyframes({
   '100%': { opacity: '0' },
 });
 
-
-
 export const zoomIn = keyframes({
   'from, 20%, 53%, 80%, to': { transform: 'translate3d(0, 0, 0)' },
   '40%, 43%': { transform: 'translate3d(0, -1.875rem, 0)' },

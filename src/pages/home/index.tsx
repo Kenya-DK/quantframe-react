@@ -77,7 +77,7 @@ export default function HomePage() {
                 count={statistics.total.present.sales.best_sellers[0]?.quantity || 0}
                 fotter={
                   <Text size="sm"  >
-                    {statistics.total.present.sales.best_sellers[0]?.item_name || ""}
+                    {statistics.total.present.sales.best_sellers[0]?.item_name || translateBase("stats_cards.no_data")}
                   </Text>}
               />
             </Grid.Col>

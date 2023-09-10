@@ -171,6 +171,7 @@ export const en = {
         today_revenue_title: "Today revenue",
         open_orders_title: "Open orders",
         best_selling_product_title: "Best selling product",
+        no_data: "No data",
         average_order_revenue: "Average order revenue <italic>{{val, currency(USD)}}</italic>",
         average_orders_per_month: "Average orders per month <italic>{{val, currency(USD)}}</italic>",
         revenue_compare_to_last_year_less: "Revenue <italic>{{val, currency(USD)}}</italic> less than last year",
@@ -178,6 +179,21 @@ export const en = {
         completed_orders_today: "Completed orders <italic>{{count}}</italic>",
       }
     },
+    warframe_market: {
+      rank_label: "Rank: {{rank}} of {{max_rank}}",
+      plat_label: "Plat: <plat_html>{{plat}}</plat_html>",
+      buy_label: "WTB",
+      sell_label: "WTS",
+      buttons: {
+        delete: "Delete",
+        edit: "Edit",
+        bought: "Bought",
+        visible: "Visible",
+        sold: "Sold",
+        hidden: "Hidden",
+      }
+    }
+    ,
     auth: {
       login: {
         title: "Warframe Market - Login",
@@ -206,5 +222,12 @@ export const en = {
       sell_message: "Item {{name}} sold successfully for {{price}}",
     }
   },
-  error: {}
+  error: {
+    auth: {
+      login_title: "Login error",
+      login_message: "Username or password is invalid {{name}}",
+      logout_title: "Logout error",
+      logout_message: "There was an error logging out. Please try again.",
+    }
+  }
 }

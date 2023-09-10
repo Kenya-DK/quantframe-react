@@ -10,7 +10,7 @@ import { modals } from "@mantine/modals";
 import { Logo } from "../components/logo";
 import Clock from "../components/clock";
 import { useTauriContext } from "../contexts";
-
+import { wfmThumbnail } from "@api/index";
 interface TopMenuProps {
   opened: boolean;
   user: Wfm.UserDto | undefined;
@@ -44,7 +44,7 @@ export default function Hedder({ user }: TopMenuProps) {
   const { settings, updateSettings, tradable_items } = useTauriContext();
 
   useEffect(() => {
-    setAvatar(`${user?.avatar}`);
+    setAvatar(`${wfmThumbnail(user?.avatar || "")}`);
   }, [user?.avatar]);
 
   const useTranslateHedder = (key: string, context?: { [key: string]: any }) => useTranslateLayout(`header.${key}`, { ...context })

@@ -14,6 +14,7 @@ import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
 export default function LoginPage() {
   const useTraLogin = (key: string, context?: { [key: string]: any }) => useTranslatePage(`auth.${key}`, { ...context })
+
   const { updateUser } = useContext(TauriContext);
 
   const navigate = useNavigate();
@@ -30,10 +31,10 @@ export default function LoginPage() {
       });
       navigate('/')
     },
-    onError: (error: Error) => {
+    onError: () => {
       notifications.show({
         title: i18next.t('error.auth.login_title'),
-        message: error.message,
+        message: i18next.t('error.auth.login_message', { name: "" }),
         color: 'red',
         icon: <FontAwesomeIcon icon={faExclamationTriangle} />,
         autoClose: 5000,

@@ -1,6 +1,7 @@
 import { InventoryEntryDto, TransactionEntryDto, Wfm } from ".";
 export interface SetupResponse {
   valid: boolean;
+  price_scraper_status: string;
   user: Wfm.UserDto;
   settings: Settings;
   transactions: TransactionEntryDto[];

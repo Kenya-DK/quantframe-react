@@ -4,7 +4,7 @@ import { useStatsScraperContext } from '../contexts/statsScraper.context';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDatabase } from '@fortawesome/free-solid-svg-icons';
 import { useLiveScraperContext } from '../contexts/liveScraper.context';
-import { useWhisperScraperContext } from '../contexts';
+import { useTauriContext, useWhisperScraperContext } from '../contexts';
 import { useEffect, useState } from 'react';
 import { ButtonProgress } from './buttonProgress';
 import { OffTauriEvent, OnTauriEvent } from '../utils';
@@ -15,6 +15,7 @@ export const TransactionControl = () => {
   const { isRunning: statsIsRunning, run: runStatsScraper } = useStatsScraperContext();
   const { isRunning: liveIsRunning, toggle: toggleLiveScraper } = useLiveScraperContext();
   const { isStarting: isWhisperStarting, isRunning: whisperIsRunning, toggle: toggleWhisperScraper } = useWhisperScraperContext();
+  const { price_scraper_status } = useTauriContext();
   const [price_scraper_process, setPriceScraperProcess] = useState<number>(0);
   const useTranslate = (key: string, context?: { [key: string]: any }) => useTranslateComponent(`transactioncontrol.${key}`, { ...context })
 
@@ -45,7 +46,7 @@ export const TransactionControl = () => {
           label={useTranslate("price_scraper_start")}
           progressLabel={useTranslate("price_scraper_running")}
         />
-        <Button color={liveIsRunning ? "red.7" : "green.7"} leftIcon={<FontAwesomeIcon icon={faDatabase} />} onClick={() => toggleLiveScraper()} disabled={statsIsRunning}>
+        <Button color={liveIsRunning ? "red.7" : "green.7"} leftIcon={<FontAwesomeIcon icon={faDatabase} />} onClick={() => toggleLiveScraper()} disabled={statsIsRunning || price_scraper_status == ""}>
           {liveIsRunning ? useTranslate("live_trading_stop") : useTranslate("live_trading_start")}
         </Button>
         <Button color={whisperIsRunning ? "red.7" : "green.7"} leftIcon={<FontAwesomeIcon icon={faDatabase} />} onClick={() => toggleWhisperScraper()} disabled={statsIsRunning || isWhisperStarting}>
