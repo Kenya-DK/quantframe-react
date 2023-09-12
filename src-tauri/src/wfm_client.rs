@@ -50,7 +50,11 @@ impl WFMClientState {
                 "Authorization",
                 format!("JWT {}", auth.access_token.unwrap_or("".to_string())),
             )
-            .header("Language", "en");
+            .header(
+                "User-Agent",
+                format!("Quantframe {}", "0.0.0".to_string()),
+            )
+            .header("Language", auth.region);
 
         let request = match body.clone() {
             Some(content) => request.json(&content),
@@ -170,36 +174,15 @@ impl WFMClientState {
     }
 
     pub async fn validate(&self) -> Result<bool, AppError> {
-        match self
-            .post_ordre(
-                "Lex Prime Set",
-                "56783f24cbfa8f0432dd89a2",
-                "buy",
-                1,
-                1,
-                false,
-                None,
-            )
-            .await
+        match self.post_ordre("Lex Prime Set", "56783f24cbfa8f0432dd89a2", "buy", 1, 1, false, None).await
         {
             Ok(order) => {
-                self.delete_order(
-                    &order.id.clone(),
-                    "Lex Prime Set",
-                    "56783f24cbfa8f0432dd89a2",
-                    "buy",
-                )
-                .await?;
+                self.delete_order(&order.id.clone(), "Lex Prime Set", "56783f24cbfa8f0432dd89a2", "buy").await?;
                 Ok(true)
             }
             Err(_e) => {
                 eprintln!("Invalid API Key: {:?}", _e);
-                logger::info(
-                    "WarframeMarket",
-                    "Invalid API Key",
-                    true,
-                    Some(self.log_file.as_str()),
-                );
+                logger::info("WarframeMarket", "Invalid API Key", true, Some(self.log_file.as_str()));
                 Ok(false)
             }
         }
