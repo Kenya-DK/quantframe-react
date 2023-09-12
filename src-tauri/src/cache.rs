@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
-use crate::error::{AppError, GetErrorInfo};
+use crate::error::AppError;
 use crate::structs::Item;
 use crate::wfm_client::WFMClientState;
 use crate::{helper, logger};
@@ -37,8 +37,15 @@ impl CacheState {
                     component.as_str(),
                     format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
                     true,
-                    Some(format!("error_{}_{}.log", component, chrono::Local::now().format("%Y-%m-%d")).as_str()),
-                );               
+                    Some(
+                        format!(
+                            "error_{}_{}.log",
+                            component,
+                            chrono::Local::now().format("%Y-%m-%d")
+                        )
+                        .as_str(),
+                    ),
+                );
             }
         }
         Ok(true)
@@ -49,10 +56,10 @@ impl CacheState {
         let response: HashMap<String, Value> =
             reqwest::get("https://relics.run/history/item_data/item_info.json")
                 .await
-                .map_err(|e| AppError("CacheState", eyre!(e.to_string())))?
+                .map_err(|e| AppError::new("CacheState", eyre!(e.to_string())))?
                 .json()
                 .await
-                .map_err(|e| AppError("CacheState", eyre!(e.to_string())))?;
+                .map_err(|e| AppError::new("CacheState", eyre!(e.to_string())))?;
 
         let mut new_items: Vec<Item> = Vec::new();
         // Link items with relic data on item_id

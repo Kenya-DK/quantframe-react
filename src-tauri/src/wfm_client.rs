@@ -11,7 +11,7 @@ use serde_json::{json, Value};
 
 use crate::{
     auth::AuthState,
-    error::{AppError, GetErrorInfo},
+    error::AppError,
     helper, logger,
     structs::{Item, ItemDetails, Order, OrderByItem, Ordres},
 };
@@ -50,10 +50,7 @@ impl WFMClientState {
                 "Authorization",
                 format!("JWT {}", auth.access_token.unwrap_or("".to_string())),
             )
-            .header(
-                "User-Agent",
-                format!("Quantframe {}", "0.0.0".to_string()),
-            )
+            .header("User-Agent", format!("Quantframe {}", "0.0.0".to_string()))
             .header("Language", auth.region);
 
         let request = match body.clone() {
@@ -64,7 +61,7 @@ impl WFMClientState {
         let response = request.send().await;
 
         if let Err(e) = response {
-            return Err(AppError(
+            return Err(AppError::new(
                 "WFMClientState",
                 eyre!("Error: {:?}, Url: {:?}", e.to_string(), new_url),
             ));
@@ -74,17 +71,24 @@ impl WFMClientState {
 
         if status != 200 {
             let rep = response_data.text().await.unwrap_or_default();
-            return Err(AppError(
+            return Err(AppError::new(
                 "WFMClientState",
                 eyre!("Status: {:?}[J]{rep}[J], Url: {:?}", status, new_url),
             ));
         }
 
         let headers = response_data.headers().clone();
-        let response = response_data
-            .json::<Value>()
-            .await
-            .map_err(|e| AppError("WFMClientState", eyre!("Error: {}, Url: {}, Status: {}",e.to_string(),new_url, status)))?;
+        let response = response_data.json::<Value>().await.map_err(|e| {
+            AppError::new(
+                "WFMClientState",
+                eyre!(
+                    "Error: {}, Url: {}, Status: {}",
+                    e.to_string(),
+                    new_url,
+                    status
+                ),
+            )
+        })?;
 
         let mut data = response["payload"].clone();
         if let Some(payload_key) = payload_key {
@@ -94,7 +98,7 @@ impl WFMClientState {
         // Convert the response to a T object
         match serde_json::from_value(data.clone()) {
             Ok(payload) => Ok((payload, headers)),
-            Err(e) => Err(AppError(
+            Err(e) => Err(AppError::new(
                 "WFMClientState",
                 eyre!("Error: {:?}, Url: {:?}", e, new_url),
             )),
@@ -174,15 +178,36 @@ impl WFMClientState {
     }
 
     pub async fn validate(&self) -> Result<bool, AppError> {
-        match self.post_ordre("Lex Prime Set", "56783f24cbfa8f0432dd89a2", "buy", 1, 1, false, None).await
+        match self
+            .post_ordre(
+                "Lex Prime Set",
+                "56783f24cbfa8f0432dd89a2",
+                "buy",
+                1,
+                1,
+                false,
+                None,
+            )
+            .await
         {
             Ok(order) => {
-                self.delete_order(&order.id.clone(), "Lex Prime Set", "56783f24cbfa8f0432dd89a2", "buy").await?;
+                self.delete_order(
+                    &order.id.clone(),
+                    "Lex Prime Set",
+                    "56783f24cbfa8f0432dd89a2",
+                    "buy",
+                )
+                .await?;
                 Ok(true)
             }
             Err(_e) => {
                 eprintln!("Invalid API Key: {:?}", _e);
-                logger::info("WarframeMarket", "Invalid API Key", true, Some(self.log_file.as_str()));
+                logger::info(
+                    "WarframeMarket",
+                    "Invalid API Key",
+                    true,
+                    Some(self.log_file.as_str()),
+                );
                 Ok(false)
             }
         }

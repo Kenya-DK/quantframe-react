@@ -48,25 +48,21 @@ impl PriceScraper {
         // Try to read from "allItemDataBackup.csv", and if it fails, read from "allItemData.csv".
         let file = File::open(&self.csv_path)
             .or_else(|_| File::open(&self.csv_backop_path))
-            .map_err(|e| AppError("PriceScraper", eyre!("Error opening csv file: {}", e)))?;
+            .map_err(|e| AppError::new("PriceScraper", eyre!("Error opening csv file: {}", e)))?;
 
         // Parse the CSV file into a DataFrame
         CsvReader::new(file)
             .infer_schema(None)
             .has_header(true)
             .finish()
-            .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))
+            .map_err(|e| AppError::new("PriceScraper", eyre!(e.to_string())))
     }
-
 
     pub fn get_status(&self) -> String {
         // Try to read from "allItemDataBackup.csv", and if it fails, read from "allItemData.csv".
         let file = File::open(&self.csv_path).or_else(|_| File::open(&self.csv_backop_path));
         match file {
-            Ok(file) => format!(
-                "{:?}",
-                file.metadata().unwrap().modified().unwrap()
-            ),
+            Ok(file) => format!("{:?}", file.metadata().unwrap().modified().unwrap()),
             Err(_) => "".to_string(),
         }
     }
@@ -86,13 +82,13 @@ impl PriceScraper {
         let request = client.request(Method::GET, Url::parse(&url).unwrap());
         let response = request.send().await;
         if let Err(e) = response {
-            return Err(AppError("PriceScraper", eyre!(e.to_string())));
+            return Err(AppError::new("PriceScraper", eyre!(e.to_string())));
         }
         let response_data = response.unwrap();
         let status = response_data.status();
 
         if status != 200 {
-            return Err(AppError(
+            return Err(AppError::new(
                 "PriceScraper",
                 eyre!(
                     "Error getting price data for day: {}. Status: {}",
@@ -163,7 +159,7 @@ impl PriceScraper {
                 format!("Backuping csv file: {}", self.csv_path).as_str(),
             );
             fs::copy(csv_path, csv_backop_path)
-                .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
+                .map_err(|e| AppError::new("PriceScraper", eyre!(e.to_string())))?;
         }
         let last_days = helper::last_x_days(days).clone();
         let mut dataframes: Vec<DataFrame> = Vec::new();
@@ -306,7 +302,9 @@ impl PriceScraper {
                                         (col("max_price") - col("min_price")).alias("range"),
                                     )
                                     .collect()
-                                    .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
+                                    .map_err(|e| {
+                                        AppError::new("PriceScraper", eyre!(e.to_string()))
+                                    })?;
 
                                 // Filter out items that are mod_rank 0.
                                 let df = df
@@ -314,7 +312,9 @@ impl PriceScraper {
                                     .lazy()
                                     .filter(col("mod_rank").neq(0).or(col("mod_rank").is_null()))
                                     .collect()
-                                    .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
+                                    .map_err(|e| {
+                                        AppError::new("PriceScraper", eyre!(e.to_string()))
+                                    })?;
                                 // dump_dataframe(&mut df, format!("{} {}.csv", day, item_name).as_str())?;
                                 dataframes.push(df);
                             }
@@ -348,7 +348,7 @@ impl PriceScraper {
                 col("name").count().alias("name_count"),
             ])
             .collect()
-            .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
+            .map_err(|e| AppError::new("PriceScraper", eyre!(e.to_string())))?;
 
         // Get the names of the items that are popular
 
@@ -357,20 +357,20 @@ impl PriceScraper {
             .lazy()
             .filter(col("name_count").gt_eq(21))
             .collect()
-            .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
+            .map_err(|e| AppError::new("PriceScraper", eyre!(e.to_string())))?;
 
         // Filter out items that are not popular and sort by name
         let popular_items_s = popular_items
             .column("name")
-            .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
+            .map_err(|e| AppError::new("PriceScraper", eyre!(e.to_string())))?;
         let mask = full_df
             .column("name")
-            .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?
+            .map_err(|e| AppError::new("PriceScraper", eyre!(e.to_string())))?
             .is_in(&popular_items_s)
-            .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
+            .map_err(|e| AppError::new("PriceScraper", eyre!(e.to_string())))?;
         let filtered_df = full_df
             .filter(&mask)
-            .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
+            .map_err(|e| AppError::new("PriceScraper", eyre!(e.to_string())))?;
         // Sort by name
         let mut filtered_df = filtered_df
             .lazy()
@@ -383,21 +383,21 @@ impl PriceScraper {
                 },
             )
             .collect()
-            .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
+            .map_err(|e| AppError::new("PriceScraper", eyre!(e.to_string())))?;
 
         // Cerate a csv file with the sorted DataFrame of price data
-        let output_file: File =
-            File::create(csv_path).map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
+        let output_file: File = File::create(csv_path)
+            .map_err(|e| AppError::new("PriceScraper", eyre!(e.to_string())))?;
         let writer = BufWriter::new(output_file);
         // Write the DataFrame to a CSV file
         CsvWriter::new(writer)
             .finish(&mut filtered_df)
-            .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
+            .map_err(|e| AppError::new("PriceScraper", eyre!(e.to_string())))?;
 
         // Delete the backup file if it exists
         if csv_backop_path.exists() {
             fs::remove_file(csv_backop_path)
-                .map_err(|e| AppError("PriceScraper", eyre!(e.to_string())))?;
+                .map_err(|e| AppError::new("PriceScraper", eyre!(e.to_string())))?;
         }
         Ok(full_df.height() as i64)
     }

@@ -51,7 +51,10 @@ impl DebugClient {
 
         if import_type == "inventory" {
             // Delete all data in the database to prevent duplicates and errors
-            sqlx::query("DELETE FROM inventorys;").execute(&db).await.map_err(|e| {AppError("Debug", eyre!(e.to_string()))} )?;
+            sqlx::query("DELETE FROM inventorys;")
+                .execute(&db)
+                .await
+                .map_err(|e| AppError::new("Debug", eyre!(e.to_string())))?;
 
             let inventory_vec = sqlx::query("SELECT * FROM inventory;")
                 .fetch_all(&watdb)
@@ -83,14 +86,14 @@ impl DebugClient {
                     .bind(0)
                     .bind(price)
                     .bind(owned)
-                    .execute(&db).await.map_err(|e| {AppError("Debug", eyre!(e.to_string()))} )?;
+                    .execute(&db).await.map_err(|e| {AppError::new("Debug", eyre!(e.to_string()))} )?;
             }
         } else if import_type == "transactions" {
             // Delete all data in the database to prevent duplicates and errors
             sqlx::query("DELETE FROM transactions;")
                 .execute(&db)
                 .await
-                .map_err(|e| AppError("Debug", eyre!(e.to_string())))?;
+                .map_err(|e| AppError::new("Debug", eyre!(e.to_string())))?;
             let transactions_vec = sqlx::query("SELECT * FROM transactions;")
                 .fetch_all(&watdb)
                 .await
@@ -113,7 +116,6 @@ impl DebugClient {
                     continue;
                 }
 
-                
                 let item = item.unwrap();
                 let item_id = item.id.clone();
                 sqlx::query(
@@ -128,7 +130,7 @@ impl DebugClient {
                                 .bind(1)
                                 .bind(0)
                                 .bind(price)
-                                .execute(&db).await.map_err(|e| {AppError("Debug", eyre!(e.to_string()))} )?;
+                                .execute(&db).await.map_err(|e| {AppError::new("Debug", eyre!(e.to_string()))} )?;
             }
         } else {
             logger::error_con(
@@ -148,13 +150,13 @@ impl DebugClient {
             sqlx::query("DELETE FROM inventorys;")
                 .execute(&db)
                 .await
-                .map_err(|e| AppError("Debug", eyre!(e.to_string())))?;
+                .map_err(|e| AppError::new("Debug", eyre!(e.to_string())))?;
         } else if reset_type == "transactions" {
             // Delete all data in the database to prevent duplicates and errors
             sqlx::query("DELETE FROM transactions;")
                 .execute(&db)
                 .await
-                .map_err(|e| AppError("Debug", eyre!(e.to_string())))?;
+                .map_err(|e| AppError::new("Debug", eyre!(e.to_string())))?;
         } else {
             logger::error_con(
                 "Debug",
@@ -164,4 +166,3 @@ impl DebugClient {
         Ok(true)
     }
 }
-

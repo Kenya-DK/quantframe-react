@@ -4,7 +4,7 @@ use auth::AuthState;
 use cache::CacheState;
 use database::DatabaseClient;
 use debug::DebugClient;
-use error::{AppError, GetErrorInfo};
+use error::AppError;
 use price_scraper::PriceScraper;
 use settings::SettingsState;
 use std::panic;
@@ -15,7 +15,6 @@ use tauri::{App, Manager};
 use wfm_client::WFMClientState;
 mod structs;
 mod whisper_scraper;
-use eyre::eyre;
 use whisper_scraper::WhisperScraper; // add this line
 mod live_scraper;
 use live_scraper::LiveScraper;
@@ -137,6 +136,10 @@ fn main() {
             commands::price_scraper::generate_price_history,
             commands::debug::import_warframe_algo_trader_data,
             commands::debug::reset_data,
+            commands::orders::get_orders,
+            commands::orders::delete_order,
+            commands::orders::create_order,
+            commands::orders::update_order
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

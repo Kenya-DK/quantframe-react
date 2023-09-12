@@ -7,7 +7,7 @@ use crate::{
     cache::CacheState,
     database::DatabaseClient,
     debug::DebugClient,
-    error::{self, AppError, GetErrorInfo},
+    error::{self, AppError},
     logger,
     price_scraper::{self, PriceScraper},
     settings::SettingsState,

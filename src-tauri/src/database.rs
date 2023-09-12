@@ -74,7 +74,7 @@ impl DatabaseClient {
         )
         .execute(&connection)
         .await
-        .map_err(|e| AppError("Database", eyre!(e.to_string())))?;
+        .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
         sqlx::query(
             "
         CREATE TABLE IF NOT EXISTS transactions (
@@ -93,7 +93,7 @@ impl DatabaseClient {
         )
         .execute(&connection)
         .await
-        .map_err(|e| AppError("Database", eyre!(e.to_string())))?;
+        .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
         Ok(true)
     }
     pub fn get_connection(&self) -> Arc<Mutex<Pool<Sqlite>>> {
@@ -109,7 +109,7 @@ impl DatabaseClient {
         .expect("")
         {
             ColumnValues::String(values) => values,
-            _ => return Err(AppError("Database", eyre!(""))),
+            _ => return Err(AppError::new("Database", eyre!(""))),
         };
         Ok(names)
     }
@@ -226,7 +226,7 @@ impl DatabaseClient {
         let connection = self.connection.lock().unwrap().clone();
         let item = self.cache.lock()?.get_item_by_url_name(&item_id);
         if item.is_none() {
-            return Err(AppError(
+            return Err(AppError::new(
                 "Database",
                 eyre!("Could not find item with id {}", item_id),
             ));
@@ -258,7 +258,7 @@ impl DatabaseClient {
             .bind(transaction.clone().quantity)
             .bind(transaction.clone().rank)
             .bind(transaction.clone().price)
-            .execute(&connection).await.map_err(|e| AppError("Database", eyre!(e.to_string())))?;
+            .execute(&connection).await.map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
 
         let transaction = Transaction {
             id: result.last_insert_rowid(),
@@ -321,7 +321,7 @@ impl DatabaseClient {
                     .bind(t.id)
                     .execute(&connection)
                     .await
-                    .map_err(|e| AppError("Database", eyre!(e.to_string())))?;
+                    .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
                 let mut t = t.clone();
                 t.owned = total_owned;
                 t.price = weighted_price;
@@ -338,7 +338,7 @@ impl DatabaseClient {
                     .bind(rank)
                     .bind(price)
                     .bind(quantity)
-                    .execute(&connection).await.map_err(|e| AppError("Database", eyre!(e.to_string())))?;
+                    .execute(&connection).await.map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
 
                 let inventory = Invantory {
                     id: result.last_insert_rowid(),
@@ -400,7 +400,7 @@ impl DatabaseClient {
         let wfm = self.wfm.lock()?.clone();
         let inventory = inventorys.iter().find(|t| t.id == id).clone();
         if inventory.is_none() {
-            return Err(AppError(
+            return Err(AppError::new(
                 "Database",
                 eyre!("Could not find inventory with id {}", id),
             ));
@@ -429,7 +429,7 @@ impl DatabaseClient {
                 .bind(inventory.clone().id)
                 .execute(&connection)
                 .await
-                .map_err(|e| AppError("Database", eyre!(e.to_string())))?;
+                .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
             helper::send_message_to_window(
                 "update_data",
                 Some(json!({ "type": "inventorys",
@@ -490,7 +490,7 @@ impl DatabaseClient {
             .bind(id)
             .execute(&connection)
             .await
-            .map_err(|e| AppError("Database", eyre!(e.to_string())))?;
+            .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
 
         helper::send_message_to_window(
             "update_data",
@@ -532,7 +532,7 @@ impl DatabaseClient {
             .bind(inventory.id.clone())
             .execute(&connection)
             .await
-            .map_err(|e| AppError("Database", eyre!(e.to_string())))?;
+            .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
         inventory.listed_price = listed_price;
         helper::send_message_to_window(
             "update_data",

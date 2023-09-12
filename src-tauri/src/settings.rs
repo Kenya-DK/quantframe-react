@@ -48,7 +48,7 @@ impl Default for SettingsState {
             whisper_scraper: WhisperSettings {
                 ping_on_notif: false,
                 webhook: "".to_string(),
-            }
+            },
         }
     }
 }
@@ -77,20 +77,20 @@ impl SettingsState {
 
     pub fn save_to_file(&self) -> Result<(), AppError> {
         let json = serde_json::to_string_pretty(self)
-            .map_err(|e| AppError("Settings", eyre!(e.to_string())))?;
+            .map_err(|e| AppError::new("Settings", eyre!(e.to_string())))?;
         let mut file = File::create(Self::get_file_path())
-            .map_err(|e| AppError("Settings", eyre!(e.to_string())))?;
+            .map_err(|e| AppError::new("Settings", eyre!(e.to_string())))?;
         file.write_all(json.as_bytes())
-            .map_err(|e| AppError("Settings", eyre!(e.to_string())))?;
+            .map_err(|e| AppError::new("Settings", eyre!(e.to_string())))?;
         Ok(())
     }
 
     pub fn read_from_file() -> Result<(Self, bool), AppError> {
         let mut file = File::open(Self::get_file_path())
-            .map_err(|e| AppError("Settings", eyre!(e.to_string())))?;
+            .map_err(|e| AppError::new("Settings", eyre!(e.to_string())))?;
         let mut content = String::new();
         file.read_to_string(&mut content)
-            .map_err(|e| AppError("Settings", eyre!(e.to_string())))?;
+            .map_err(|e| AppError::new("Settings", eyre!(e.to_string())))?;
         Ok(Self::validate_json(&content)?)
     }
 
@@ -98,7 +98,7 @@ impl SettingsState {
         let mut is_valid = true;
         // Parse the JSON string into a Value object
         let mut json_value: Value = serde_json::from_str(json_str)
-            .map_err(|e| AppError("Settings", eyre!(e.to_string())))?;
+            .map_err(|e| AppError::new("Settings", eyre!(e.to_string())))?;
 
         // Create a default SettingsState object
         let default_settings = SettingsState::default();
@@ -150,12 +150,12 @@ impl SettingsState {
         } else {
             // If 'live_scraper' itself doesn't exist, add it
             json_value["live_scraper"] = serde_json::to_value(default_settings.live_scraper)
-                .map_err(|e| AppError("Settings", eyre!(e.to_string())))?;
+                .map_err(|e| AppError::new("Settings", eyre!(e.to_string())))?;
             is_valid = false;
         }
 
         // Check for nested properties within 'whisper_scraper'
-        if let Some(whisper_scraper) = json_value.get_mut("whisper_scraper") {            
+        if let Some(whisper_scraper) = json_value.get_mut("whisper_scraper") {
             if whisper_scraper.get("ping_on_notif").is_none() {
                 whisper_scraper["ping_on_notif"] =
                     Value::from(default_settings.whisper_scraper.ping_on_notif);
@@ -168,14 +168,14 @@ impl SettingsState {
         } else {
             // If 'live_scraper' itself doesn't exist, add it
             json_value["whisper_scraper"] = serde_json::to_value(default_settings.whisper_scraper)
-                .map_err(|e| AppError("Settings", eyre!(e.to_string())))?;
+                .map_err(|e| AppError::new("Settings", eyre!(e.to_string())))?;
             logger::info_con("Settings", "Added 'whisper_scraper' to settings.json");
             is_valid = false;
         }
 
         // Deserialize the updated JSON object into a SettingsState struct
         let deserialized: SettingsState = serde_json::from_value(json_value)
-            .map_err(|e| AppError("Settings", eyre!(e.to_string())))?;
+            .map_err(|e| AppError::new("Settings", eyre!(e.to_string())))?;
 
         Ok((deserialized, is_valid))
     }

@@ -52,17 +52,17 @@ impl AuthState {
     }
 
     pub fn save_to_file(&self) -> Result<(), AppError> {
-        let json = serde_json::to_string_pretty(self).map_err(|e| {AppError("AuthState", eyre!(e.to_string()))} )?;
-        let mut file = File::create(Self::get_file_path()).map_err(|e| {AppError("AuthState", eyre!(e.to_string()))} )?;
-        file.write_all(json.as_bytes()).map_err(|e| {AppError("AuthState", eyre!(e.to_string()))} )?;
+        let json = serde_json::to_string_pretty(self).map_err(|e| {AppError::new("AuthState", eyre!(e.to_string()))} )?;
+        let mut file = File::create(Self::get_file_path()).map_err(|e| {AppError::new("AuthState", eyre!(e.to_string()))} )?;
+        file.write_all(json.as_bytes()).map_err(|e| {AppError::new("AuthState", eyre!(e.to_string()))} )?;
         Ok(())
     }
 
     pub fn read_from_file() -> Result<Self, AppError> {
-        let mut file = File::open(Self::get_file_path()).map_err(|e| {AppError("AuthState", eyre!(e.to_string()))} )?;
+        let mut file = File::open(Self::get_file_path()).map_err(|e| {AppError::new("AuthState", eyre!(e.to_string()))} )?;
         let mut content = String::new();
-        file.read_to_string(&mut content).map_err(|e| {AppError("AuthState", eyre!(e.to_string()))} )?;
-        let auth = serde_json::from_str(&content).map_err(|e| {AppError("AuthState", eyre!(e.to_string()))} )?;
+        file.read_to_string(&mut content).map_err(|e| {AppError::new("AuthState", eyre!(e.to_string()))} )?;
+        let auth = serde_json::from_str(&content).map_err(|e| {AppError::new("AuthState", eyre!(e.to_string()))} )?;
         Ok(auth)
     }
 }
