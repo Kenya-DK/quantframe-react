@@ -1,6 +1,4 @@
-use std::{
-    sync::{Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 
 use serde_json::Value;
 
@@ -10,13 +8,16 @@ use crate::{auth::AuthState, wfm_client::WFMClientState};
 pub async fn login(
     email: String,
     password: String,
+    auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClientState>>>,
 ) -> Result<AuthState, Value> {
     let wfm = wfm.lock().expect("Could not lock wfm").clone();
+    let mut auth = auth.lock().expect("Could not lock auth").clone();
     match wfm.login(email, password).await {
         Ok(user) => {
-            user.save_to_file().map_err(|e| e.to_json())?;
-            return Ok(user.clone());
+            // user.save_to_file().map_err(|e| e.to_json())?;
+            auth.set_user(user.clone());
+            return Ok(auth.clone());
         }
         Err(e) => {
             return Err(e.to_json());
