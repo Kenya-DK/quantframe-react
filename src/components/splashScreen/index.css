@@ -59,3 +59,11 @@
 .content {
   width: 100%;
 }
+
+.text {
+  position: absolute;
+  font-size: 2rem;
+  text-align: center;
+  margin-top: 2rem;
+  color: #fff;
+}

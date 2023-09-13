@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import './index.css'
-import { Center, keyframes, useMantineTheme } from "@mantine/core";
+import { Center, keyframes, useMantineTheme, Text } from "@mantine/core";
 interface InfoCardProps {
   opened: boolean;
+  text?: string;
 }
 
 export const fadeOut = keyframes({
@@ -17,14 +18,14 @@ export const zoomIn = keyframes({
   '90%': { transform: 'translate3d(0, -0.25rem, 0)' },
 });
 export const SplashScreen = (props: InfoCardProps) => {
-  const { opened } = props;
+  const { opened, text } = props;
   const [show, setShow] = useState(true);
 
   useEffect(() => {
     if (!opened) {
       setTimeout(() => {
         setShow(false);
-      }, 4200);
+      }, 4500);
     }
   }, [opened]);
 
@@ -33,9 +34,8 @@ export const SplashScreen = (props: InfoCardProps) => {
     <>
       {show && (
         <Center className={`cover ${!opened ? "hide" : ""}`}
-          style={{ backgroundColor: theme.colors.dark[7] }}
+          style={{ backgroundColor: theme.colors.dark[7], }}
         >
-          {/* <Logo title='' id={"icon"} color='pink' /> */}
           <svg version="1.1" id="icon" xmlns="http://www.w3.org/2000/svg" fill={theme.colors.blue[7]}
             viewBox="0 0 382.36 370.14" >
             <g>
@@ -88,6 +88,10 @@ export const SplashScreen = (props: InfoCardProps) => {
 		c2.23-3.21,4.33-6.5,6.76-9.52c0.58-0.72,2.41-0.98,3.46-0.69C300.92,157.82,308.52,160.08,316.32,162.32z"/>
             </g>
           </svg>
+          {(text && text != "") && <Text size="lg" weight={700} style={{ backgroundColor: theme.colors.dark[7], position: "absolute", top: "calc(50% + 50px)" }}>
+            {text}
+          </Text>
+          }
         </Center>
       )}
 
