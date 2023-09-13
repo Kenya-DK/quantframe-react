@@ -44,6 +44,7 @@ export const useTauriContext = () => useContext(TauriContext);
 
 export const TauriContextProvider = ({ children }: TauriContextProviderProps) => {
   const useTranslateTauri = (key: string, context?: { [key: string]: any }) => useTranslateContext(`tauri.${key}`, { ...context })
+  const [initializstatus, setInitializstatus] = useState<string>("Initializing..");
   const [user, setUser] = useState<Wfm.UserDto | undefined>(undefined);
   const [settings, setSettings] = useState<Settings | undefined>(undefined);
   const [tradable_items, setTradableItems] = useState<Wfm.ItemDto[]>([]);
@@ -168,6 +169,9 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
     OnTauriEvent("price_scraper_update_complete", () => {
       setPriceScraperStatus(dayjs().format("DD.MM.YYYY HH:mm:ss"));
     });
+    OnTauriEvent("set_initializstatus", (data: { status: string }) => {
+      setInitializstatus(data.status);
+    });
     OnTauriUpdateDataEvent<InventoryEntryDto>("inventorys", ({ data, operation }) => handleUpdateInventory(operation, data));
     OnTauriUpdateDataEvent<TransactionEntryDto>("transactions", ({ data, operation }) => handleUpdateTransaction(operation, data));
     OnTauriUpdateDataEvent<Wfm.OrderDto | string>("orders", ({ data, operation }) => handleUpdateOrders(operation, data));
@@ -176,7 +180,7 @@ export const TauriContextProvider = ({ children }: TauriContextProviderProps) =>
 
   return (
     <TauriContext.Provider value={{ user, price_scraper_status, orders, statistics, transactions, inventorys, tradable_items, updateUser: handleUpdateUser, settings, updateSettings: handleUpdateSettings, sendNotification: handleSendNotification }}>
-      <SplashScreen opened={isFetching} />
+      <SplashScreen opened={isFetching} text={initializstatus} />
       {children}
     </TauriContext.Provider>
   )
