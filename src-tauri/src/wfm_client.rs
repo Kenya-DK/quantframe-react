@@ -12,7 +12,7 @@ use serde_json::{json, Value};
 use crate::{
     auth::AuthState,
     error::AppError,
-    helper, logger,
+    helper, logger::{self, LogLevel},
     structs::{Item, ItemDetails, Order, OrderByItem, Ordres},
 };
 
@@ -61,9 +61,10 @@ impl WFMClientState {
         let response = request.send().await;
 
         if let Err(e) = response {
-            return Err(AppError::new(
+            return Err(AppError::new_with_level(
                 "WFMClientState",
                 eyre!("Error: {:?}, Url: {:?}", e.to_string(), new_url),
+                LogLevel::Error
             ));
         }
         let response_data = response.unwrap();
@@ -71,15 +72,16 @@ impl WFMClientState {
 
         if status != 200 {
             let rep = response_data.text().await.unwrap_or_default();
-            return Err(AppError::new(
+            return Err(AppError::new_with_level(
                 "WFMClientState",
                 eyre!("Status: {:?}[J]{rep}[J], Url: {:?}", status, new_url),
+                LogLevel::Error
             ));
         }
 
         let headers = response_data.headers().clone();
         let response = response_data.json::<Value>().await.map_err(|e| {
-            AppError::new(
+            AppError::new_with_level(
                 "WFMClientState",
                 eyre!(
                     "Error: {}, Url: {}, Status: {}",
@@ -87,6 +89,7 @@ impl WFMClientState {
                     new_url,
                     status
                 ),
+                LogLevel::Error
             )
         })?;
 
@@ -100,7 +103,7 @@ impl WFMClientState {
             Ok(payload) => Ok((payload, headers)),
             Err(e) => Err(AppError::new(
                 "WFMClientState",
-                eyre!("Error: {:?}, Url: {:?}", e, new_url),
+                eyre!("Error: {:?},[J]{}[J] Url: {:?}", e, data, new_url),
             )),
         }
     }
@@ -178,6 +181,11 @@ impl WFMClientState {
     }
 
     pub async fn validate(&self) -> Result<bool, AppError> {
+        let auth = self.auth.lock()?.clone();
+        if auth.access_token.is_none() {
+            return Ok(false);
+        }
+
         match self
             .post_ordre(
                 "Lex Prime Set",

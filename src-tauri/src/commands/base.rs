@@ -11,7 +11,7 @@ use crate::{
     logger,
     price_scraper::{self, PriceScraper},
     settings::SettingsState,
-    wfm_client::WFMClientState,
+    wfm_client::WFMClientState, helper,
 };
 
 #[tauri::command]
@@ -29,7 +29,9 @@ pub async fn setup(
     let wfm = wfm.lock()?.clone();
     let cache = cache.lock()?.clone();
     let price_scraper = price_scraper.lock()?.clone();
+    helper::send_message_to_window("set_initializstatus",Some(json!({"status": "Loading Items..."})));
     cache.update_cache().await?;
+    helper::send_message_to_window("set_initializstatus",Some(json!({"status": "Loading Database..."})));
     match db.initialize().await {
         Ok(_) => {}
         Err(e) => {
@@ -37,20 +39,24 @@ pub async fn setup(
             return Err(e);
         }
     }
+    helper::send_message_to_window("set_initializstatus",Some(json!({"status": "Validating Credentials..."})));
     if !wfm.validate().await? {
-        return Ok(json!({
-            "valid": false,
-            "settings": &settings.clone(),
-        }));
+        return Ok(json!({"valid": false, "settings": &settings.clone()}));
     }
+    helper::send_message_to_window("set_initializstatus",Some(json!({"status": "Loading Inventory..."})));
+    let inventorys = db.get_inventorys().await?;
+    helper::send_message_to_window("set_initializstatus",Some(json!({"status": "Loading Transactions..."})));
+    let transactions = db.get_transactions("SELECT * FROM transactions").await?;
+    helper::send_message_to_window("set_initializstatus",Some(json!({"status": "Loading Your Orders..."})));
+    let orders = wfm.get_user_ordres_as_list().await?;
 
     Ok(json!({
         "valid": true,
         "settings": &settings.clone(),
         "user": &auth.clone(),
-        "inventorys": &db.get_inventorys().await?,
-        "transactions": &db.get_transactions("SELECT * FROM transactions").await?,
-        "orders": wfm.get_user_ordres_as_list().await?,
+        "inventorys": inventorys,
+        "transactions": transactions,
+        "orders":orders,
         "price_scraper_status":price_scraper.get_status(),
 
     }))

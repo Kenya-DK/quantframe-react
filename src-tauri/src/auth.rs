@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::fs::File;
-use std::io::{self, Read, Write};
+use std::io::{Read, Write};
 use std::path::PathBuf;
 use eyre::{eyre, Result};
 use crate::error::AppError;
@@ -11,7 +11,7 @@ pub struct AuthState {
     pub banned: bool,
     pub id: String,
     pub access_token: Option<String>,
-    pub avatar: String,
+    pub avatar: Option<String>,
     pub ingame_name: String,
     pub locale: String,
     pub platform: String,
@@ -25,7 +25,7 @@ impl Default for AuthState {
             banned: false,
             id: "".to_string(),
             access_token: None,
-            avatar: "".to_string(),
+            avatar:Some("".to_string()),
             ingame_name: "".to_string(),
             locale: "".to_string(),
             platform: "".to_string(),
@@ -50,7 +50,18 @@ impl AuthState {
             Ok(default_auth)
         }
     }
-
+    pub fn set_user(&mut self, user: Self) {
+        self.banned = user.banned;
+        self.id = user.id;
+        self.access_token = user.access_token;
+        self.avatar = user.avatar;
+        self.ingame_name = user.ingame_name;
+        self.locale = user.locale;
+        self.platform = user.platform;
+        self.region = user.region;
+        self.role = user.role;
+        self.save_to_file().unwrap();
+    }
     pub fn save_to_file(&self) -> Result<(), AppError> {
         let json = serde_json::to_string_pretty(self).map_err(|e| {AppError::new("AuthState", eyre!(e.to_string()))} )?;
         let mut file = File::create(Self::get_file_path()).map_err(|e| {AppError::new("AuthState", eyre!(e.to_string()))} )?;

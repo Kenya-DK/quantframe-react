@@ -345,6 +345,9 @@ impl LiveScraper {
             wfm.delete_order(&order.id, "None", "None", "Any").await?;
         }
         for order in current_orders.buy_orders {
+            if self.is_running() == false {
+                return Ok(());
+            }
             // Check if item is in blacklist
             if blacklist.contains(&order.item.url_name) {
                 continue;
@@ -975,10 +978,6 @@ impl LiveScraper {
                             .map(|order| order.2.clone())
                             .collect();
                         logger::info_con("LiveScraper",format!("Item {} is not as optimal as other items. Deleting buy orders for {:?}",item_name,unselected_item_names).as_str());
-                        logger::log_dataframe(
-                            &mut current_orders,
-                            format!("Current Orders for {item_name}.csv").as_str(),
-                        );
                         current_orders =
                             current_orders
                                 .lazy()
