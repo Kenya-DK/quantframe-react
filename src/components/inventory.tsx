@@ -62,7 +62,9 @@ const PurchaseNewItem = (props: PurchaseNewItemProps) => {
               onChange={(value) => roleForm.setFieldValue('price', Number(value))}
               error={roleForm.errors.price && 'Invalid identifier'}
             />
-            <Checkbox checked={roleForm.values.report} description={useTranslateSearch('report_description')} onChange={(event) => roleForm.setFieldValue('report', event.currentTarget.checked)} label={useTranslateSearch('report')} />
+            <Tooltip label={useTranslateSearch('report_tooltip')} position="top" withArrow>
+              <Checkbox mt={55} checked={roleForm.values.report} onChange={(event) => roleForm.setFieldValue('report', event.currentTarget.checked)} label={useTranslateSearch('report')} />
+            </Tooltip>
             {/* {(selectedItem?.category == "Mods" || selectedItem?.category == "Arcanes") &&
               <NumberInput
                 required
@@ -77,12 +79,23 @@ const PurchaseNewItem = (props: PurchaseNewItemProps) => {
             } */}
           </Group>
           <Group mt={5} position="center">
-            <Button loading={loading} type="submit" onClick={() => roleForm.setFieldValue('type', "buy")} disabled={roleForm.values.item.length <= 0} radius="xl">
-              {useTranslateSearch('buttons.buy')}
-            </Button>
-            {/* <Button loading={loading} type="submit" onClick={() => roleForm.setFieldValue('type', "sell")} disabled={roleForm.values.item.length <= 0} radius="xl">
-              {useTranslateSearch('buttons.sell')}
-            </Button> */}
+            <Group mt={5} position="center">
+              <Tooltip label={useTranslateSearch('buttons.resell_tooltip')} position="top" withArrow>
+                <Button loading={loading} type="submit" onClick={() => roleForm.setFieldValue('type', "resell")} disabled={roleForm.values.item.length <= 0} radius="xl">
+                  {useTranslateSearch('buttons.resell')}
+                </Button>
+              </Tooltip>
+              <Tooltip label={useTranslateSearch('buttons.buy_tooltip')} position="top" withArrow>
+                <Button loading={loading} type="submit" onClick={() => roleForm.setFieldValue('type', "buy")} disabled={roleForm.values.item.length <= 0} radius="xl">
+                  {useTranslateSearch('buttons.buy')}
+                </Button>
+              </Tooltip>
+              <Tooltip label={useTranslateSearch('buttons.sell_tooltip')} position="top" withArrow>
+                <Button loading={loading} type="submit" onClick={() => roleForm.setFieldValue('type', "sell")} disabled={roleForm.values.item.length <= 0} radius="xl">
+                  {useTranslateSearch('buttons.sell')}
+                </Button>
+              </Tooltip>
+            </Group>
           </Group>
         </Stack>
       </form>

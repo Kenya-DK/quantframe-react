@@ -114,5 +114,29 @@ export namespace Wfm {
     rank?: number,
     subtype?: string,
   }
+  export interface RivenItemDto {
+    thumb: string;
+    mastery_level: number;
+    url_name: string;
+    icon: string;
+    id: string;
+    riven_type: string;
+    icon_format: string;
+    group: string;
+    item_name: string;
+  }
 
+  export interface RivenAttributesDto {
+    negative_only: boolean;
+    effect: string;
+    id: string;
+    exclusive_to: string[];
+    group: string;
+    units: string;
+    search_only: boolean;
+    url_name: string;
+    suffix: string;
+    positive_is_negative: boolean;
+    prefix: string;
+  }
 }

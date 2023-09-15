@@ -33,14 +33,18 @@ export const en = {
       quantity: "Quantity",
       quantity_description: "Quantity of items",
       rank: "Mod Rank",
-      rank_description: "Rank of the mod",
+      report_tooltip: "Will try to add the transaction to the market",
       report: "Report",
       report_description: "w/o Reporting",
       total_listed_price: "Total Listed Price: <italic>{{price}}</italic>",
       total_purchase_price: "Total Purchase Price: <italic>{{price}}</italic>",
       buttons: {
         buy: "Buy",
+        buy_tooltip: "Will only add a buy transaction",
         sell: "Sell",
+        sell_tooltip: "Will only add a sell transaction",
+        resell: "Resell",
+        resell_tooltip: "This will try to resell the item on the market",
       },
       datagrid: {
         columns: {

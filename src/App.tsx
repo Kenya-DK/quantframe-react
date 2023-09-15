@@ -5,6 +5,10 @@ import { createStyles } from '@mantine/core';
 import { PromptModal } from './components/modals/prompt.modal';
 import { LiveScraperContextProvider, StatsScraperContextProvider, TauriContextProvider, WhisperScraperContextProvider } from './contexts';
 import AppRoutes from './layouts/routes';
+import { AppContextProvider } from './contexts/app.context';
+import { AuthContextProvider } from './contexts/auth.context';
+import { CacheContextProvider } from './contexts/cache.context';
+import { WarframeMarketContextProvider } from './contexts/warframeMarket.context';
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,6 +49,21 @@ function App() {
             console.log("Modal closed");
           },
         }}>
+        <AppContextProvider>
+          <AuthContextProvider>
+            <CacheContextProvider>
+              <WarframeMarketContextProvider>
+                <StatsScraperContextProvider>
+                  <LiveScraperContextProvider>
+                    <WhisperScraperContextProvider>
+                      <AppRoutes />
+                    </WhisperScraperContextProvider>
+                  </LiveScraperContextProvider>
+                </StatsScraperContextProvider>
+              </WarframeMarketContextProvider>
+            </CacheContextProvider>
+          </AuthContextProvider>
+        </AppContextProvider>
         <TauriContextProvider>
           <StatsScraperContextProvider>
             <LiveScraperContextProvider>

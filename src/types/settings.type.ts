@@ -9,6 +9,20 @@ export interface SetupResponse {
   orders: Wfm.OrderDto[];
 }
 
+export interface RustError {
+  component: string;
+  cause: string;
+  backtrace: string;
+  log_level: string;
+  extra_data: any;
+}
+
+export interface ScraperState {
+  is_running: boolean;
+  last_run: Date | null;
+  error: RustError | null;
+}
+
 export interface Settings {
   live_scraper: LiveScraperSettings;
   whisper_scraper: WhisperScraperSettings;
@@ -25,6 +39,7 @@ export interface LiveScraperSettings {
   blacklist: string[];
   whitelist: string[];
 }
+
 export interface WhisperScraperSettings {
   ping_on_notif: boolean;
   webhook: string;
