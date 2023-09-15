@@ -20,7 +20,9 @@ pub async fn login(
             return Ok(auth.clone());
         }
         Err(e) => {
-            return Err(e.to_json());
+            let error = e.to_json();
+            error::create_log_file("login".to_string(), &e);
+            return Err(error);
         }
     }
 }
