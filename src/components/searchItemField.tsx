@@ -3,7 +3,7 @@ import { Select } from '@mantine/core';
 import { useTranslateComponent } from '@hooks/index';
 import { useEffect, useState } from 'react';
 import { Wfm } from '../types';
-import { useTauriContext } from '../contexts';
+import { useCacheContext } from '../contexts';
 interface SearchItemFieldProps {
   value: string;
   onChange: (item: Wfm.ItemDto) => void;
@@ -11,12 +11,12 @@ interface SearchItemFieldProps {
 
 export const SearchItemField = (props: SearchItemFieldProps) => {
   const useTranslateSearch = (key: string, context?: { [key: string]: any }) => useTranslateComponent(`searchItemField.${key}`, { ...context })
-  const { tradable_items } = useTauriContext();
+  const { items: wfItems } = useCacheContext();
   const [items, setItems] = useState<Array<Wfm.ItemDto & { label: string, value: string }>>([]);
   const { value, onChange } = props;
   useEffect(() => {
-    setItems(tradable_items.map((warframe) => ({ ...warframe, label: warframe.item_name, value: warframe.url_name })) || []);
-  }, [tradable_items]);
+    setItems(wfItems.map((warframe) => ({ ...warframe, label: warframe.item_name, value: warframe.url_name })) || []);
+  }, [wfItems]);
   return (
     <Select
       w={300}

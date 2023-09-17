@@ -80,7 +80,6 @@ impl LiveScraper {
         let is_running = Arc::clone(&self.is_running);
         let forced_stop = Arc::clone(&self.is_running);
         let scraper = self.clone();
-        let scrapper = self.clone();
         tauri::async_runtime::spawn(async move {
             // A loop that takes output from the async process and sends it
             // to the webview via a Tauri Event
@@ -89,14 +88,14 @@ impl LiveScraper {
                 Ok(_) => {
                     logger::info_con("LiveScraper", "Delete all orders success");
                 }
-                Err(e) => scrapper.report_error(e),
+                Err(e) => scraper.report_error(e),
             }
 
             while is_running.load(Ordering::SeqCst) && forced_stop.load(Ordering::SeqCst) {
                 logger::info_con("LiveScraper", "Loop live scraper is running...");
                 match scraper.run().await {
                     Ok(_) => {}
-                    Err(e) => scrapper.report_error(e),
+                    Err(e) => scraper.report_error(e),
                 }
                 tokio::time::sleep(Duration::from_secs(1)).await;
             }

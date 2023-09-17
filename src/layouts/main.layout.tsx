@@ -1,9 +1,9 @@
 
 import { Outlet } from "react-router-dom";
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { AppShell, useMantineTheme } from '@mantine/core';
 import Hedder from "./header";
-import { TauriContext } from "@contexts/index";
+import { useAuthContext } from "@contexts/index";
 import { useLocalStorage } from "@mantine/hooks";
 import SideBar from "./sidebar";
 
@@ -11,7 +11,7 @@ export default function MainLayout() {
   const theme = useMantineTheme();
   const [opened, setOpened] = useState(false);
   const [hideSidebar, setHideSidebar] = useLocalStorage<boolean>({ key: "sidebar-opened", defaultValue: false });
-  const { user } = useContext(TauriContext)
+  const { user } = useAuthContext();
   return (
     <AppShell
       styles={{

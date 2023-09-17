@@ -21,14 +21,14 @@ export const AuthContextProvider = ({ children }: TauriContextProviderProps) => 
   // Handle update, create, delete transaction
   const handleUpdateUser = (operation: string, data: Wfm.UserDto) => {
     switch (operation) {
-      case "create":
-      case "update":
+      case "CREATE":
+      case "UPDATE":
         setUser((user) => ({ ...user, ...data }));
         break;
-      case "delete":
+      case "DELETE":
         setUser(undefined);
         break;
-      case "set":
+      case "SET":
         setUser(data);
         break;
     }

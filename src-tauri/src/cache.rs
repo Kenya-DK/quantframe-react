@@ -24,46 +24,20 @@ impl CacheState {
         }
     }
 
-    pub async fn update_cache(&self) -> Result<bool, AppError> {
-        match self.update_tradable_items().await {
-            Ok(_) => {}
-            Err(e) => {
-                let component = e.component();
-                let cause = e.cause();
-                let backtrace = e.backtrace();
-                let log_level = e.log_level();
-                crate::logger::dolog(
-                    log_level,
-                    component.as_str(),
-                    format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
-                    true,
-                    Some(
-                        format!(
-                            "error_{}_{}.log",
-                            component,
-                            chrono::Local::now().format("%Y-%m-%d")
-                        )
-                        .as_str(),
-                    ),
-                );
-            }
-        }
-        Ok(true)
-    }
-    pub async fn update_tradable_items(&self) -> Result<bool, AppError> {
+    pub async fn get_items(&self) -> Result<Vec<Item>, AppError> {
         let wfm = self.wfm.lock()?.clone();
-        let items = wfm.get_tradable_items().await?;
+        let wfm_items = wfm.get_tradable_items().await?;
         let response: HashMap<String, Value> =
             reqwest::get("https://relics.run/history/item_data/item_info.json")
-                .await
-                .map_err(|e| AppError::new("CacheState", eyre!(e.to_string())))?
-                .json()
-                .await
-                .map_err(|e| AppError::new("CacheState", eyre!(e.to_string())))?;
-
-        let mut new_items: Vec<Item> = Vec::new();
+            .await
+            .map_err(|e| AppError::new("CacheState", eyre!(e.to_string())))?
+            .json()
+            .await
+            .map_err(|e| AppError::new("CacheState", eyre!(e.to_string())))?;
+        
+        let mut items: Vec<Item> = Vec::new();
         // Link items with relic data on item_id
-        for item in items.clone() {
+        for item in wfm_items.clone() {
             let relic_data = response.get(&item.id.clone());
             if relic_data.is_some() {
                 let mut new = item.clone();
@@ -75,15 +49,16 @@ impl CacheState {
                 new.tags = Some(tags);
                 new.subtypes = Some(subtypes);
                 new.mod_max_rank = mod_max_rank;
-                new_items.push(new.clone());
+                items.push(new.clone());
             }
         }
+        Ok(items)
+    }
+    pub async fn update_items(&self) -> Result<Vec<Item>, AppError> {
+        let new_items = self.get_items().await?;
         let mut sitems = self.items.lock()?;
         *sitems = new_items.clone();
-        helper::send_message_to_window("update_tradable_items", Some(json!(new_items)));
-        // self.items.store(items, Ordering::SeqCst);
-        // self.items = items;
-        Ok(true)
+        Ok(new_items)
     }
     pub fn get_item_by_url_name(&self, url_name: &str) -> Option<Item> {
         let items = self.items.lock().unwrap();
@@ -92,6 +67,9 @@ impl CacheState {
             return Some(item.unwrap().clone());
         }
         None
+    }
+    pub fn send_to_item_window(&self) {
+        helper::send_message_to_window("Cache:Update:Items", Some( serde_json::to_value(self.items.clone()).unwrap()));
     }
 }
 

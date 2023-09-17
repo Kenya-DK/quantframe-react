@@ -18,6 +18,7 @@ pub async fn create_invantory_entry(
     let db = db.lock()?.clone();
     match db.create_inventory_entry(id, report, quantity, price, rank).await {
         Ok(invantory) => {
+            db.send_to_window("inventorys", "CREATE_OR_UPDATE", serde_json::to_value(invantory.clone()).unwrap());                
             return Ok(invantory);
         }
         Err(e) => {
@@ -35,6 +36,7 @@ pub async fn delete_invantory_entry(
     let db = db.lock()?.clone();
     match db.delete_inventory_entry(id).await {
         Ok(invantory) => {
+            db.send_to_window("inventorys", "DELETE", serde_json::to_value(invantory.clone()).unwrap());
             return Ok(invantory);
         }
         Err(e) => {
@@ -54,6 +56,11 @@ pub async fn sell_invantory_entry(
     let db = db.lock()?.clone();
     match db.sell_invantory_entry(id, report, price, quantity).await {
         Ok(invantory) => {
+            if invantory.owned == 0 {
+                db.send_to_window("inventorys", "DELETE", serde_json::to_value(invantory.clone()).unwrap());
+            } else {
+                db.send_to_window("inventorys", "CREATE_OR_UPDATE", serde_json::to_value(invantory.clone()).unwrap());                       
+            }
             return Ok(invantory);
         }
         Err(e) => {

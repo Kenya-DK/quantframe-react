@@ -8,14 +8,14 @@ use crate::{
     database::DatabaseClient,
     debug::DebugClient,
     error::{self, AppError},
-    logger,
+    helper, logger,
     price_scraper::{self, PriceScraper},
     settings::SettingsState,
-    wfm_client::WFMClientState, helper,
+    wfm_client::WFMClientState,
 };
 
 #[tauri::command]
-pub async fn setup(
+pub async fn init(
     settings: tauri::State<'_, Arc<Mutex<SettingsState>>>,
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClientState>>>,
@@ -29,9 +29,15 @@ pub async fn setup(
     let wfm = wfm.lock()?.clone();
     let cache = cache.lock()?.clone();
     let price_scraper = price_scraper.lock()?.clone();
-    helper::send_message_to_window("set_initializstatus",Some(json!({"status": "Loading Items..."})));
-    cache.update_cache().await?;
-    helper::send_message_to_window("set_initializstatus",Some(json!({"status": "Loading Database..."})));
+    helper::send_message_to_window(
+        "set_initializstatus",
+        Some(json!({"status": "Loading Items..."})),
+    );
+    let items = cache.update_items().await?;
+    helper::send_message_to_window(
+        "set_initializstatus",
+        Some(json!({"status": "Loading Database..."})),
+    );
     match db.initialize().await {
         Ok(_) => {}
         Err(e) => {
@@ -39,15 +45,30 @@ pub async fn setup(
             return Err(e);
         }
     }
-    helper::send_message_to_window("set_initializstatus",Some(json!({"status": "Validating Credentials..."})));
+    helper::send_message_to_window(
+        "set_initializstatus",
+        Some(json!({"status": "Validating Credentials..."})),
+    );
     if !wfm.validate().await? {
         return Ok(json!({"valid": false, "settings": &settings.clone()}));
     }
-    helper::send_message_to_window("set_initializstatus",Some(json!({"status": "Loading Inventory..."})));
+
+    helper::send_message_to_window(
+        "set_initializstatus",
+        Some(json!({"status": "Loading Inventory..."})),
+    );
     let inventorys = db.get_inventorys().await?;
-    helper::send_message_to_window("set_initializstatus",Some(json!({"status": "Loading Transactions..."})));
+
+    helper::send_message_to_window(
+        "set_initializstatus",
+        Some(json!({"status": "Loading Transactions..."})),
+    );
     let transactions = db.get_transactions("SELECT * FROM transactions").await?;
-    helper::send_message_to_window("set_initializstatus",Some(json!({"status": "Loading Your Orders..."})));
+
+    helper::send_message_to_window(
+        "set_initializstatus",
+        Some(json!({"status": "Loading Your Orders..."})),
+    );
     let orders = wfm.get_user_ordres_as_list().await?;
 
     Ok(json!({
@@ -57,7 +78,9 @@ pub async fn setup(
         "inventorys": inventorys,
         "transactions": transactions,
         "orders":orders,
-        "price_scraper_status":price_scraper.get_status(),
+        "price_scraper_last_run":price_scraper.get_status(),
+        "items": items,
+
 
     }))
 }
@@ -69,7 +92,6 @@ pub async fn update_settings(
 ) -> Result<(), AppError> {
     let arced_mutex = Arc::clone(&settings_state);
     let mut my_lock = arced_mutex.lock()?;
-    println!("{:?}", settings);
     // Set Live Scraper Settings
     my_lock.live_scraper.volume_threshold = settings.live_scraper.volume_threshold;
     my_lock.live_scraper.range_threshold = settings.live_scraper.range_threshold;

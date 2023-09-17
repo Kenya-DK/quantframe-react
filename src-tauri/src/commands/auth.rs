@@ -1,8 +1,8 @@
 use std::sync::{Arc, Mutex};
 
-use serde_json::Value;
+use serde_json::{Value, json};
 
-use crate::{auth::AuthState, wfm_client::WFMClientState};
+use crate::{auth::AuthState, wfm_client::WFMClientState, error};
 
 #[tauri::command]
 pub async fn login(
@@ -17,6 +17,7 @@ pub async fn login(
         Ok(user) => {
             // user.save_to_file().map_err(|e| e.to_json())?;
             auth.set_user(user.clone());
+            auth.send_to_window();
             return Ok(auth.clone());
         }
         Err(e) => {

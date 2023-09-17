@@ -123,7 +123,6 @@ export const en = {
       },
     },
   },
-
   context: {
     wisper: {
       title: "Wisper",
@@ -143,8 +142,6 @@ export const en = {
       notifications: {
         session_expired: "Session Expired",
         session_expired_message: "Your session has expired, please login again",
-        settings_updated: "Settings Updated",
-        settings_updated_message: "Settings updated successfully",
       },
     },
   },
@@ -154,7 +151,11 @@ export const en = {
       profile: {
         settings: "Settings",
         logout: "Log Out",
-      }
+      },
+      notifications: {
+        settings_updated: "Settings Updated",
+        settings_updated_message: "Settings updated successfully",
+      },
     },
     navigation: {
       home: "Home",
@@ -168,11 +169,26 @@ export const en = {
   pages: {
     home: {
       stats_cards: {
+        total: {
+          title: "Total Turnover",
+          context: "Sales <italic>{{sales}}</italic> | Buy <italic>{{buy}}</italic> | <qty/> <italic>{{quantity}}</italic>",
+        },
+        today: {
+          title: "Today Turnover",
+          context: "Sales <italic>{{sales}}</italic> | Buy <italic>{{buy}}</italic> | <qty/> <italic>{{quantity}}</italic>",
+        },
+        best_selling: {
+          title: "Best turnover product",
+          context: "Name <italic>{{name}}</italic> | Sales <italic>{{sales}}</italic> | Buy <italic>{{buy}}</italic> | <qty/> <italic>{{quantity}}</italic>",
+        },
         total_revenue_title: "Total Turnover",
-        total_sales: "Total Sales: <italic>{{val}}</italic>",
+        total_sales_old: "Total: Sales: <italic>{{val}}</italic> Invoices: <italic>{{val}}</italic>",
+        total_sales: "Sales <italic>{{sales}}</italic> | Buy <italic>{{buy}}</italic> | Quantity <italic>{{quantity}}</italic>",
+
+        today_revenue_title: "Today Turnover",
+        today_revenue_context: "Today Turnover",
 
         last_days_title: "Last {{days}} days",
-        today_revenue_title: "Today revenue",
         open_orders_title: "Open orders",
         best_selling_product_title: "Best selling product",
         no_data: "No data",

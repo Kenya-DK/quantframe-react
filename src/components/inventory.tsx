@@ -4,7 +4,6 @@ import { useTranslateComponent, useTranslateSuccess } from '@hooks/index';
 import { useForm } from '@mantine/form';
 import { SearchItemField } from './searchItemField';
 import { DataTable } from 'mantine-datatable';
-import { useTauriContext } from '../contexts';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faHammer, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import { modals } from '@mantine/modals';
@@ -13,10 +12,12 @@ import { useMutation } from '@tanstack/react-query';
 import api from '@api/index';
 import { notifications } from '@mantine/notifications';
 import { Trans } from 'react-i18next';
+import { useWarframeMarketContextContext } from '../contexts';
+import { CreateTransactionEntryDto } from '../types';
 
 interface PurchaseNewItemProps {
   loading: boolean;
-  onSumit: (type: string, id: string, report: boolean, quantity: number, price: number, mod_rank: number) => void;
+  onSumit: (data: CreateTransactionEntryDto) => void;
 }
 const PurchaseNewItem = (props: PurchaseNewItemProps) => {
   const { onSumit, loading } = props;
@@ -37,7 +38,14 @@ const PurchaseNewItem = (props: PurchaseNewItemProps) => {
   return (
     <Group grow position="center" >
       <form method="post" onSubmit={roleForm.onSubmit(async (d) => {
-        onSumit(d.type, d.item, d.report, d.quantity, d.price, d.rank);
+        onSumit({
+          transaction_type: d.type,
+          item_id: d.item,
+          report: d.report,
+          price: d.price,
+          quantity: d.quantity,
+          rank: d.rank
+        });
       })}>
         <Stack justify='center' spacing="md">
           <Group grow >
@@ -109,7 +117,7 @@ const Items = () => {
   const [total_purchase_price, setTotal_purchase_price] = useState(0);
   const [total_listed_price, setTotal_listed_price] = useState(0);
 
-  const { inventorys } = useTauriContext();
+  const { inventorys } = useWarframeMarketContextContext();
   useEffect(() => {
     if (!inventorys) return;
     setTotal_purchase_price(inventorys.reduce((a, b) => a + (b.price * b.owned), 0));
@@ -184,7 +192,7 @@ const Items = () => {
                   required
                   size='sm'
                   min={0}
-                  max={999999}
+                  max={999}
                   value={itemPrices[item_url] || ""}
                   onChange={(value) => setItemPrices({ ...itemPrices, [item_url]: Number(value) })}
                   rightSectionWidth={100}
@@ -266,7 +274,20 @@ const Items = () => {
 
 export const Inventory = () => {
   const useTranslateInvSuccess = (key: string, context?: { [key: string]: any }) => useTranslateSuccess(`invantory.${key}`, { ...context })
-  const createInvantoryEntryMutation = useMutation((data: { id: string, report: boolean, quantity: number, price: number, mod_rank: number }) => api.inventory.createInvantoryEntry(data.id, data.report, data.quantity, data.price, data.mod_rank), {
+  const createInvantoryEntryMutation = useMutation((data: CreateTransactionEntryDto) => api.inventory.createInvantoryEntry(data), {
+    onSuccess: async (data) => {
+      notifications.show({
+        title: useTranslateInvSuccess("create_title"),
+        icon: <FontAwesomeIcon icon={faCheck} />,
+        message: useTranslateInvSuccess("create_message", { name: data.item_name }),
+        color: "green"
+      });
+    },
+    onError: () => {
+
+    },
+  })
+  const createTransactionsEntryMutation = useMutation((data: CreateTransactionEntryDto) => api.transactions.create_transaction_entry(data), {
     onSuccess: async (data) => {
       notifications.show({
         title: useTranslateInvSuccess("create_title"),
@@ -281,8 +302,18 @@ export const Inventory = () => {
   })
   return (
     <Box >
-      <PurchaseNewItem loading={createInvantoryEntryMutation.isLoading} onSumit={async (__type: string, id: string, report: boolean, quantity: number, price: number, mod_rank: number) => {
-        createInvantoryEntryMutation.mutate({ id, report, price, quantity, mod_rank });
+      <PurchaseNewItem loading={createInvantoryEntryMutation.isLoading} onSumit={async (data: CreateTransactionEntryDto) => {
+        switch (data.transaction_type) {
+          case "buy":
+            createTransactionsEntryMutation.mutate(data);
+            break;
+          case "sell":
+            createTransactionsEntryMutation.mutate(data);
+            break;
+          case "resell":
+            createInvantoryEntryMutation.mutate(data);
+            break;
+        }
       }} />
       <Items />
     </Box>

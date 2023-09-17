@@ -1,3 +1,4 @@
+use crate::error::AppError;
 use crate::settings::SettingsState;
 use crate::{helper, logger};
 use regex::Regex;
@@ -21,6 +22,7 @@ pub struct WhisperScraper {
     log_path: PathBuf,
     last_file_size: Arc<Mutex<u64>>,
     handle: Arc<Mutex<Option<JoinHandle<()>>>>,
+    cold_start: Arc<AtomicBool>,
     settings: Arc<Mutex<SettingsState>>,
 }
 
@@ -31,62 +33,26 @@ impl WhisperScraper {
             log_path: helper::get_app_local_path().join("Warframe").join("EE.log"),
             last_file_size: Arc::new(Mutex::new(0)),
             handle: Arc::new(Mutex::new(None)),
+            cold_start: Arc::new(AtomicBool::new(true)),
             settings,
         }
     }
 
     pub fn start_loop(&mut self) {
+        logger::info_con("WhisperScraper", "Starting Whisper Listener");
         let is_running = Arc::clone(&self.is_running);
-        let settings = Arc::clone(&self.settings).lock().unwrap().clone().whisper_scraper;
-        let scraper = self.clone();
 
+        let scraper = self.clone();
         self.is_running.store(true, Ordering::SeqCst);
 
         let handle = thread::spawn(move || {
-            let mut is_starting = true;
             while is_running.load(Ordering::SeqCst) {
-                let new_lines_result = scraper.read_new_lines(is_starting);
-                match new_lines_result {
-                    Ok(new_lines) => {
-                        for line in new_lines {
-                            match WhisperScraper::match_pattern(&line) {
-                                Ok((matched, group1)) => {
-                                    if matched {
-                                        helper::send_message_to_window(
-                                            "whisper_scraper_mesage_from_player",
-                                            Some(json!({"name": group1.clone().unwrap()})),
-                                        );
-                                        if settings.webhook != "" {
-                                            helper::send_message_to_discord(
-                                                settings.webhook.clone(),
-                                                format!(
-                                                    "You have whisper(s) from {}",
-                                                    group1.unwrap().as_str()
-                                                ),
-                                                settings.ping_on_notif,
-                                            );
-                                        }
-                                    }
-                                }
-                                Err(err) => {
-                                    helper::send_message_to_window(
-                                        "whisper_scraper_error",
-                                        Some(json!({ "error": "err" })),
-                                    );
-                                    logger::error(
-                                        "WhisperScraper",
-                                        format!("{:?}", err).as_str(),
-                                        true,
-                                        None,
-                                    );
-                                }
-                            }
-                        }
+                match scraper.check() {
+                    Ok(_) => {
+                        scraper.cold_start.store(false, Ordering::SeqCst);
                     }
-                    Err(err) => eprintln!("Error: {:?}", err),
+                    Err(_) => {}
                 }
-
-                is_starting = false;
 
                 thread::sleep(Duration::from_secs(1));
             }
@@ -96,6 +62,7 @@ impl WhisperScraper {
     }
 
     pub fn stop_loop(&self) {
+        logger::info_con("WhisperScraper", "Stopping Whisper Listener");
         self.is_running.store(false, Ordering::SeqCst);
     }
 
@@ -103,6 +70,58 @@ impl WhisperScraper {
         // Return the current value of is_running
         self.is_running.load(Ordering::SeqCst)
     }
+
+    fn check(&self) -> Result<(), AppError> {
+        let new_lines_result = self.read_new_lines(self.cold_start.load(Ordering::SeqCst));
+        let settings = self.settings.lock()?.clone().whisper_scraper;
+        match new_lines_result {
+            Ok(new_lines) => {
+                for line in new_lines {
+                    match WhisperScraper::match_pattern(&line) {
+                        Ok((matched, group1)) => {
+                            if matched {
+                                let username = group1.clone().unwrap();
+                                helper::send_message_to_window(
+                                    "WhisperScraper:ReceivedMessage",
+                                    Some(json!({ "name": username })),
+                                );
+                                if settings.webhook != "" {
+                                    helper::send_message_to_discord(
+                                        settings.webhook.clone(),
+                                        format!("You have whisper(s) from {}", username.as_str()),
+                                        settings.ping_on_notif,
+                                    );
+                                }
+                            }
+                        }
+                        Err(err) => {
+                            helper::send_message_to_window(
+                                "WhisperScraper:Error",
+                                Some(json!({ "error": "err" })),
+                            );
+                            logger::error_con("WhisperScraper", format!("{:?}", err).as_str());
+                            Err(AppError::new(
+                                "WhisperScraper",
+                                eyre::eyre!(err.to_string()),
+                            ))?
+                        }
+                    }
+                }
+            }
+            Err(err) => {
+                helper::send_message_to_window(
+                    "WhisperScraper:Error",
+                    Some(json!({ "error": "err" })),
+                );
+                Err(AppError::new(
+                    "WhisperScraper",
+                    eyre::eyre!(err.to_string()),
+                ))?
+            }
+        }
+        Ok(())
+    }
+
     fn read_new_lines(&self, is_starting: bool) -> io::Result<Vec<String>> {
         let mut new_lines = Vec::new();
         let mut file = File::open(&self.log_path)?;

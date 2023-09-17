@@ -6,6 +6,7 @@ use reqwest::{Client, Method, Url};
 use serde_json::{json, Value};
 use std::path::Path;
 use std::sync::Mutex;
+use std::time::{SystemTime, UNIX_EPOCH};
 use std::{
     collections::HashMap,
     fs::{self, File},
@@ -58,12 +59,20 @@ impl PriceScraper {
             .map_err(|e| AppError::new("PriceScraper", eyre!(e.to_string())))
     }
 
-    pub fn get_status(&self) -> String {
+    pub fn get_status(&self) -> Option<u128> {
         // Try to read from "allItemDataBackup.csv", and if it fails, read from "allItemData.csv".
         let file = File::open(&self.csv_path).or_else(|_| File::open(&self.csv_backop_path));
         match file {
-            Ok(file) => format!("{:?}", file.metadata().unwrap().modified().unwrap()),
-            Err(_) => "".to_string(),
+            Ok(file) => Some(
+                file.metadata()
+                    .unwrap()
+                    .created()
+                    .unwrap()
+                    .duration_since(UNIX_EPOCH)
+                    .unwrap()
+                    .as_millis(),
+            ),
+            Err(_) => None,
         }
     }
     /// Returns a JSON object containing price data for the given platform and day.
@@ -142,15 +151,8 @@ impl PriceScraper {
     }
     pub async fn generate(&self, days: i64) -> Result<i64, AppError> {
         let auth = self.auth.lock().unwrap().clone();
-        logger::debug_con(
-            "PriceScraper",
-            format!(
-                "Generating csv file for platform: {}, for {} days.",
-                auth.platform, days
-            )
-            .as_str(),
-        );
-
+        // Should only get 7 days of data
+        let valid_days = 7;
         let csv_path: &Path = Path::new(self.csv_path.as_str());
         let csv_backop_path = Path::new(self.csv_backop_path.as_str());
         if csv_path.exists() {
@@ -168,14 +170,10 @@ impl PriceScraper {
         let mut found_data = 0;
 
         for day in last_days.clone() {
-            if found_data >= 7 {
-                // Should only get 7 days of data
+            if found_data >= valid_days {
                 continue;
             }
-            helper::send_message_to_window(
-                "price_scraper_update_progress",
-                Some(json!({"current": found_data, "total": days, "day": day})),
-            );
+
             // Get the price data for the day for all items
             let items = self.get_price_by_day(auth.platform.as_str(), &day).await;
             match items {
@@ -185,7 +183,10 @@ impl PriceScraper {
                         "PriceScraper",
                         format!("Getting data for day: {}", day).as_str(),
                     );
-
+                    helper::send_message_to_window(
+                        "PriceScraper:OnChange",
+                        Some(json!({"max": valid_days, "min": 0, "current": found_data})),
+                    );
                     if let Value::Object(map) = &items {
                         for (item_name, item_data_list) in map {
                             if let Value::Array(array) = item_data_list {
@@ -333,10 +334,7 @@ impl PriceScraper {
             .as_str(),
         );
         let full_df = helper::merge_dataframes(dataframes)?;
-        helper::send_message_to_window(
-            "price_scraper_update_complete",
-            Some(json!({"total_items": full_df.height()})),
-        );
+        helper::send_message_to_window("PriceScraper:Complete", Some(json!({ "max": valid_days })));
 
         // Group by name and get the average price
         let group_by_name = full_df

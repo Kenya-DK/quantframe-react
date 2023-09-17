@@ -1,43 +1,38 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { invoke } from "@tauri-apps/api/tauri";
 import { OnTauriEvent } from "../utils";
-import { useTauriContext } from ".";
-import { useTranslateContext } from "../hooks";
-type LiveScraperContextProps = {
-  isRunning: boolean;
-  toggle: () => void;
+import { RustError, ScraperState } from "../types";
+type LiveScraperContextProps = ScraperState & {
+
 }
 type LiveScraperContextProviderProps = {
   children: React.ReactNode;
 }
 
 export const LiveScraperContext = createContext<LiveScraperContextProps>({
-  isRunning: false,
-  toggle: () => { },
+  is_running: false,
+  last_run: null,
+  error: null,
 });
 
 export const useLiveScraperContext = () => useContext(LiveScraperContext);
 
 export const LiveScraperContextProvider = ({ children }: LiveScraperContextProviderProps) => {
-  const [isRunning, setIsRunning] = useState(false)
-  const useTranslateLiveScraper = (key: string, context?: { [key: string]: any }) => useTranslateContext(`live_scraper.${key}`, { ...context })
-  const { sendNotification } = useTauriContext()
-  const handleToggle = async () => {
-    const running = !isRunning;
-    setIsRunning(running);
-    await invoke("toggle_live_scraper")
-  }
+  const [is_running, setIsRunning] = useState(false);
+  const [error, setError] = useState<RustError | null>(null);
 
   useEffect(() => {
-    OnTauriEvent("live_scraper_error", () => {
+    OnTauriEvent("LiveScraper:Toggle", () => {
+      setIsRunning((is_running) => !is_running)
+    });
+    OnTauriEvent("LiveScraper:Error", (error: RustError) => {
       setIsRunning(false)
-      sendNotification(useTranslateLiveScraper("error_title"), (useTranslateLiveScraper("error_message")));
+      setError(error)
     });
     return () => { }
   }, []);
 
   return (
-    <LiveScraperContext.Provider value={{ isRunning, toggle: handleToggle }}>
+    <LiveScraperContext.Provider value={{ is_running, last_run: null, error }}>
       {children}
     </LiveScraperContext.Provider>
   )

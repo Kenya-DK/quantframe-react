@@ -1,13 +1,13 @@
 import { Grid, Group, Text, useMantineTheme, Container } from "@mantine/core";
-import { useTauriContext } from "../../contexts";
 import { StatsWithIcon } from "../../components/stats/statsWithIcon.stats";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBox, faCalendarAlt, faDollarSign, faMoneyBill } from "@fortawesome/free-solid-svg-icons";
+import { faBox, faCalendarAlt, faCubes, faMoneyBill } from "@fortawesome/free-solid-svg-icons";
 import { Trans } from "react-i18next";
 import { useTranslatePage, useTranslateGeneral } from "../../hooks";
 import { TransactionRevenueChart } from "../../components/stats/transactionRevenueChart.stats";
+import { useWarframeMarketContextContext } from "../../contexts";
 
-const ChartContext = ({ i18nKey, values }: { i18nKey: string, values: { [key: string]: number } }) => {
+const ChartContext = ({ i18nKey, values }: { i18nKey: string, values: { [key: string]: number | string } }) => {
 
   return (
     <Group grow>
@@ -15,7 +15,10 @@ const ChartContext = ({ i18nKey, values }: { i18nKey: string, values: { [key: st
         <Trans
           i18nKey={i18nKey.startsWith("general") ? i18nKey : `pages.home.stats_cards.${i18nKey}`}
           values={values}
-          components={{ italic: <Text component="span" size="sm" color="blue.3" /> }}
+          components={{
+            italic: <Text component="span" size="sm" color="blue.3" />,
+            qty: <FontAwesomeIcon icon={faCubes} />,
+          }}
         />
       </Text>
     </Group>)
@@ -24,61 +27,62 @@ const ChartContext = ({ i18nKey, values }: { i18nKey: string, values: { [key: st
 export default function HomePage() {
   const theme = useMantineTheme();
   const translateBase = (key: string, context?: { [key: string]: any }) => useTranslatePage(`home.${key}`, { ...context })
-  const { statistics } = useTauriContext();
+  const { statistics } = useWarframeMarketContextContext();
   return (
     <Container size={"100%"}>
       {statistics &&
         <>
           <Grid>
-            <Grid.Col md={3} >
+            <Grid.Col md={4} >
               <StatsWithIcon
                 color="linear-gradient(195deg, rgb(102, 187, 106), rgb(67, 160, 71))"
                 icon={<FontAwesomeIcon icon={faMoneyBill} size="2x" />}
-                title={translateBase("stats_cards.total_revenue_title")}
+                title={translateBase("stats_cards.total.title")}
                 count={statistics.total.sales.revenue - statistics.total.buy.revenue}
                 fotter={
                   <ChartContext
-                    i18nKey={"total_sales"}
-                    values={{ val: statistics.total.sales.quantity }}
+                    i18nKey={"total.context"}
+                    values={{
+                      sales: statistics.total.sales.quantity,
+                      buy: statistics.total.buy.quantity,
+                      quantity: statistics.total.sales.quantity + statistics.total.buy.quantity,
+                    }}
                   />}
               />
             </Grid.Col>
-            <Grid.Col md={3} >
+            <Grid.Col md={4} >
               <StatsWithIcon
                 color="linear-gradient(195deg, rgb(236, 64, 122), rgb(216, 27, 96))"
                 icon={<FontAwesomeIcon icon={faCalendarAlt} size="2x" />}
-                title={translateBase("stats_cards.today_revenue_title")}
+                title={translateBase("stats_cards.today.title")}
                 count={statistics.today.sales.revenue - statistics.today.buy.revenue}
                 fotter={
                   <ChartContext
-                    i18nKey={"average_order_revenue"}
-                    values={{ val: statistics.today.sales.quantity }}
+                    i18nKey={"today.context"}
+                    values={{
+                      sales: statistics.today.sales.quantity,
+                      buy: statistics.today.buy.quantity,
+                      quantity: statistics.today.sales.quantity + statistics.today.buy.quantity,
+                    }}
                   />}
               />
             </Grid.Col>
-            <Grid.Col md={3} >
-              <StatsWithIcon
-                color="linear-gradient(195deg, #49a3f1, #1A73E8);"
-                icon={<FontAwesomeIcon icon={faDollarSign} size="2x" />}
-                title={translateBase("stats_cards.open_orders_title")}
-                count={statistics.turnover}
-                fotter={
-                  <ChartContext
-                    i18nKey={"general.total_revenue"}
-                    values={{ val: statistics.turnover }}
-                  />}
-              />
-            </Grid.Col>
-            <Grid.Col md={3} >
+            <Grid.Col md={4} >
               <StatsWithIcon
                 color="linear-gradient(195deg, rgb(154 64 236), rgb(117 27 216))"
                 icon={<FontAwesomeIcon icon={faBox} size="2x" />}
-                title={translateBase("stats_cards.best_selling_product_title")}
-                count={statistics.total.present.sales.best_sellers[0]?.quantity || 0}
+                title={translateBase("stats_cards.best_selling.title")}
+                count={statistics.total.present.popular_items.sell[0].turnover || 0}
                 fotter={
-                  <Text size="sm"  >
-                    {statistics.total.present.sales.best_sellers[0]?.item_name || translateBase("stats_cards.no_data")}
-                  </Text>}
+                  <ChartContext
+                    i18nKey={"best_selling.context"}
+                    values={{
+                      name: statistics.total.present.popular_items.sell[0].item_name || "",
+                      sales: statistics.total.present.popular_items.sell[0].total_sold || 0,
+                      buy: statistics.total.present.popular_items.sell[0].total_bought || 0,
+                      quantity: statistics.total.present.popular_items.sell[0].quantity || 0,
+                    }}
+                  />}
               />
             </Grid.Col>
           </Grid>

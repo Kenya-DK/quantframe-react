@@ -4,13 +4,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateLayout } from "@hooks/index";
 import { SettingsModal } from "@components/modals/settings";
-import { Wfm } from "$types/index";
+import { DeepPartial, Settings, Wfm } from "$types/index";
 import { faGear } from "@fortawesome/free-solid-svg-icons/faGear";
 import { modals } from "@mantine/modals";
 import { Logo } from "../components/logo";
 import Clock from "../components/clock";
-import { useTauriContext } from "../contexts";
-import { wfmThumbnail } from "@api/index";
+import api, { wfmThumbnail } from "@api/index";
+import { useAppContext, useCacheContext } from "../contexts";
+import { notifications } from "@mantine/notifications";
 interface TopMenuProps {
   opened: boolean;
   user: Wfm.UserDto | undefined;
@@ -41,13 +42,28 @@ export default function Hedder({ user }: TopMenuProps) {
   const { classes } = useStyles();
   const [, setUserMenuOpened] = useState(false);
   const [avatar, setAvatar] = useState<string | undefined>(undefined);
-  const { settings, updateSettings, tradable_items } = useTauriContext();
+  const { settings } = useAppContext();
+  const { items } = useCacheContext();
 
   useEffect(() => {
     setAvatar(`${wfmThumbnail(user?.avatar || "")}`);
   }, [user?.avatar]);
 
   const useTranslateHedder = (key: string, context?: { [key: string]: any }) => useTranslateLayout(`header.${key}`, { ...context })
+
+  const handleUpdateSettings = async (settingsData: DeepPartial<Settings>) => {
+    if (!settingsData) return;
+    const data = { ...settings, ...settingsData } as Settings;
+    await api.base.updatesettings(data as any); // add 'as any' to avoid type checking
+    notifications.show({
+      title: useTranslateHedder("notifications.settings_updated"),
+      message: useTranslateHedder("notifications.settings_updated_message"),
+      color: 'green',
+      autoClose: 5000,
+    });
+  }
+
+
   return (
     <Header height={HEADER_HEIGHT} sx={{ borderBottom: 0 }} mb={120}>
       <Container className={classes.inner} fluid>
@@ -80,7 +96,7 @@ export default function Hedder({ user }: TopMenuProps) {
                   modals.open({
                     size: "auto",
                     withCloseButton: false,
-                    children: <SettingsModal settings={settings} updateSettings={updateSettings} tradable_items={tradable_items} />,
+                    children: <SettingsModal settings={settings} updateSettings={handleUpdateSettings} tradable_items={items} />,
                   })
                 }}>
                   {useTranslateHedder("profile.settings")}

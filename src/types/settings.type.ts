@@ -1,12 +1,13 @@
 import { InventoryEntryDto, TransactionEntryDto, Wfm } from ".";
 export interface SetupResponse {
   valid: boolean;
-  price_scraper_status: string;
+  price_scraper_last_run: number | null;
   user: Wfm.UserDto;
   settings: Settings;
   transactions: TransactionEntryDto[];
   inventorys: InventoryEntryDto[];
   orders: Wfm.OrderDto[];
+  items: Wfm.ItemDto[];
 }
 
 export interface RustError {

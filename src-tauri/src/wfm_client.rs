@@ -12,7 +12,8 @@ use serde_json::{json, Value};
 use crate::{
     auth::AuthState,
     error::AppError,
-    helper, logger::{self, LogLevel},
+    helper,
+    logger::{self, LogLevel},
     structs::{Item, ItemDetails, Order, OrderByItem, Ordres},
 };
 
@@ -64,7 +65,7 @@ impl WFMClientState {
             return Err(AppError::new_with_level(
                 "WFMClientState",
                 eyre!("Error: {:?}, Url: {:?}", e.to_string(), new_url),
-                LogLevel::Error
+                LogLevel::Error,
             ));
         }
         let response_data = response.unwrap();
@@ -75,7 +76,7 @@ impl WFMClientState {
             return Err(AppError::new_with_level(
                 "WFMClientState",
                 eyre!("Status: {:?}[J]{rep}[J], Url: {:?}", status, new_url),
-                LogLevel::Error
+                LogLevel::Error,
             ));
         }
 
@@ -89,7 +90,7 @@ impl WFMClientState {
                     new_url,
                     status
                 ),
-                LogLevel::Error
+                LogLevel::Error,
             )
         })?;
 
@@ -417,10 +418,6 @@ impl WFMClientState {
         match self.post("profile/orders", Some("order"), body).await {
             Ok((order, _headers)) => {
                 logger::info("WarframeMarket", format!("Created Order: {}, Item Name: {}, Item Id: {},  Platinum: {}, Quantity: {}, Visible: {}", order_type, item_name, item_id ,platinum ,quantity ,visible).as_str(), true, Some(self.log_file.as_str()));
-                helper::send_message_to_window(
-                    "update_data",
-                    Some(json!({ "type": "orders", "operation": "create", "data": order})),
-                );
                 Ok(order)
             }
             Err(e) => Err(e),
@@ -445,10 +442,6 @@ impl WFMClientState {
                     .as_str(),
                     true,
                     Some(self.log_file.as_str()),
-                );
-                helper::send_message_to_window(
-                    "update_data",
-                    Some(json!({ "type": "orders", "operation": "delete", "data": order_id})),
                 );
                 Ok(order_id)
             }
@@ -488,10 +481,6 @@ impl WFMClientState {
         match self.put(&url, Some("order"), Some(body)).await {
             Ok((order, _headers)) => {
                 logger::info("WarframeMarket", format!("Updated Order Id: {}, Item Name: {}, Item Id: {}, Platinum: {}, Quantity: {}, Visible: {}, Type: {}", order_id, item_name, item_id,platinum ,quantity ,visible, order_type).as_str(), true, Some(&self.log_file));
-                helper::send_message_to_window(
-                    "update_data",
-                    Some(json!({ "type": "orders", "operation": "update", "data": order})),
-                );
                 Ok(order)
             }
             Err(e) => Err(e),

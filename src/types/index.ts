@@ -1,7 +1,6 @@
 
 export * from "./settings.type";
 export * from "./wfm.type";
-export * from "./constants";
 export * from "./database.type";
 
 
@@ -16,8 +15,25 @@ export interface ChartDto extends ChartWithValuesDto, ChartWithLabelsDto {
 
 }
 
+// Handle Items Statistic
+export interface StatisticTransactionItemRevenue {
+  item_id: string;
+  item_url: string;
+  item_type: string;
+  item_name: string;
+  item_tags: string[];
+  total_bought: number;
+  total_sold: number;
+  quantity: number;
+  price: number;
+  turnover: number;
+}
 
-
+export interface StatisticTransactionPopularItems {
+  buy: StatisticTransactionItemRevenue[];
+  sell: StatisticTransactionItemRevenue[];
+}
+//End Handle Items Statistic
 export interface StatisticPreviousPresent extends ChartWithLabelsDto {
   previous: StatisticTotalTransactionBuyAndSell;
   present: StatisticTotalTransactionBuyAndSell;
@@ -28,25 +44,16 @@ export interface StatisticTransactionRevenue {
   average: number;
   quantity: number;
   revenue: number;
-  best_sellers: Array<StatisticTransactionBestSeller>;
 }
 export interface StatisticTransactionRevenueWithChart extends StatisticTransactionRevenue {
   quantity_chart: number[];
   revenue_chart: number[];
 }
 
-
-export interface StatisticTransactionBestSeller {
-  item_id: string;
-  item_url: string;
-  item_type: string;
-  item_name: string;
-  quantity: number;
-  revenue: number;
-}
 export interface StatisticTotalTransactionBuyAndSell extends ChartWithLabelsDto {
   sales: StatisticTransactionRevenueWithChart;
   buy: StatisticTransactionRevenueWithChart;
+  popular_items: StatisticTransactionPopularItems;
 }
 
 export interface StatisticTotalTransaction extends StatisticPreviousPresent {

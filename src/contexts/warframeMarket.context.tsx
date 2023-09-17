@@ -30,25 +30,19 @@ export const WarframeMarketContextProvider = ({ children }: WarframeMarketContex
   // Handle update, create, delete orders
   const handleUpdateOrders = (operation: string, data: Wfm.OrderDto | Wfm.OrderDto[] | string) => {
     switch (operation) {
-      case "create":
-        {
-          const order = data as Wfm.OrderDto;
-          setOrders((inventorys) => [...inventorys, order]);
-        }
-        break;
-      case "update":
+      case "CREATE_OR_UPDATE":
         {
           const order = data as Wfm.OrderDto;
           setOrders((inventorys) => [...inventorys.filter((item) => item.id !== order.id), order]);
         }
         break;
-      case "delete":
+      case "DELETE":
         {
           const order_id = data as string;
           setOrders((inventorys) => [...inventorys.filter((item) => item.id !== order_id)]);
         }
         break;
-      case "set":
+      case "SET":
         {
           const orders = data as Wfm.OrderDto[];
           setOrders(orders);
@@ -60,16 +54,13 @@ export const WarframeMarketContextProvider = ({ children }: WarframeMarketContex
   // Handle update, create, delete inventory
   const handleUpdateInventory = (operation: string, data: InventoryEntryDto | InventoryEntryDto[]) => {
     switch (operation) {
-      case "create":
-        setInventorys((inventorys) => [...inventorys, data as InventoryEntryDto]);
-        break;
-      case "update":
+      case "CREATE_OR_UPDATE":
         setInventorys((inventorys) => [...inventorys.filter((item) => item.id !== (data as InventoryEntryDto).id), data as InventoryEntryDto]);
         break;
-      case "delete":
+      case "DELETE":
         setInventorys((inventorys) => [...inventorys.filter((item) => item.id !== (data as InventoryEntryDto).id)]);
         break;
-      case "set":
+      case "SET":
         setInventorys(data as InventoryEntryDto[]);
         break;
     }
@@ -78,16 +69,13 @@ export const WarframeMarketContextProvider = ({ children }: WarframeMarketContex
   // Handle update, create, delete transaction
   const handleUpdateTransaction = (operation: string, data: TransactionEntryDto | TransactionEntryDto[]) => {
     switch (operation) {
-      case "create":
-        setTransactions((transactions) => [...transactions, data as TransactionEntryDto]);
-        break;
-      case "update":
+      case "CREATE_OR_UPDATE":
         setTransactions((transactions) => [...transactions.filter((item) => item.id !== (data as TransactionEntryDto).id), data as TransactionEntryDto]);
         break;
-      case "delete":
+      case "DELETE":
         setTransactions((transactions) => [...transactions.filter((item) => item.id !== (data as TransactionEntryDto).id)]);
         break;
-      case "set":
+      case "SET":
         setTransactions(data as TransactionEntryDto[]);
         break;
     }

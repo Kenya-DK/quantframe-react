@@ -1,53 +1,44 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { invoke } from "@tauri-apps/api/tauri";
-import { useTauriContext } from ".";
-import { useTranslateContext } from "@hooks/index";
-import { OnTauriEvent } from "@utils/index";
+import { OnTauriEvent, SendNotificationToWindow } from "@utils/index";
+import { RustError, ScraperState } from "../types";
+import { useTranslateContext } from "../hooks";
 
-type WhisperScraperContextProps = {
-  isRunning: boolean;
-  isStarting?: boolean;
-  toggle: () => void;
+type WhisperScraperContextProps = ScraperState & {
+
 }
 type WhisperScraperContextProviderProps = {
   children: React.ReactNode;
 }
 
 export const WhisperScraperContext = createContext<WhisperScraperContextProps>({
-  isRunning: false,
-  isStarting: false,
-  toggle: () => { },
+  is_running: false,
+  last_run: null,
+  error: null,
 });
 
 export const useWhisperScraperContext = () => useContext(WhisperScraperContext);
 
 export const WhisperScraperContextProvider = ({ children }: WhisperScraperContextProviderProps) => {
+  const [is_running, setIsRunning] = useState(false);
+  const [error, setError] = useState<RustError | null>(null);
   const useTranslateWhisper = (key: string, context?: { [key: string]: any }) => useTranslateContext(`wisper.${key}`, { ...context })
-  const [isRunning, setIsRunning] = useState(false)
-  const [isStarting, setIsStarting] = useState(false)
-  const { sendNotification } = useTauriContext()
-  const handleToggle = async () => {
-    const running = !isRunning;
-    setIsStarting(true)
-    setIsRunning(running);
-    await invoke("toggle_whisper_scraper")
-    setIsStarting(false)
-    // await invoke("toggle_live_scraper")
-  }
-  useEffect(() => {
-    OnTauriEvent("whisper_scraper_mesage_from_player", (data: { name: string }) => {
-      const { name } = data;
-      sendNotification(useTranslateWhisper("title"), (useTranslateWhisper("message", { name })));
 
+  useEffect(() => {
+    OnTauriEvent("WhisperScraper:Toggle", () => {
+      setIsRunning((is_running) => !is_running)
     });
-    OnTauriEvent("whisper_scraper_error", () => {
-      setIsStarting(false)
-      sendNotification(useTranslateWhisper("error_title"), (useTranslateWhisper("error_message")));
+    OnTauriEvent("WhisperScraper:Error", (error: RustError) => {
+      setIsRunning(false)
+      setError(error)
+    });
+    OnTauriEvent("WhisperScraper:ReceivedMessage", (data: { name: string }) => {
+      const { name } = data;
+      SendNotificationToWindow(useTranslateWhisper("title"), (useTranslateWhisper("message", { name })));
     });
     return () => { }
   }, []);
   return (
-    <WhisperScraperContext.Provider value={{ isStarting, isRunning, toggle: handleToggle }}>
+    <WhisperScraperContext.Provider value={{ is_running, last_run: null, error }}>
       {children}
     </WhisperScraperContext.Provider>
   )

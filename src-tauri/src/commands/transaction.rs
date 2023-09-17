@@ -19,5 +19,7 @@ pub async fn create_transaction_entry(
         .create_transaction_entry(id, ttype, quantity, rank, price)
         .await
         .unwrap();
+            // Update UI
+        db.send_to_window("transactions", "CREATE_OR_UPDATE", serde_json::to_value(transaction.clone()).unwrap());
     Ok(transaction)
 }

@@ -12,7 +12,7 @@ use polars::{
     prelude::{DataFrame, NamedFrom},
     series::Series,
 };
-use serde_json::json;
+use serde_json::{json, Value};
 use sqlx::{migrate::MigrateDatabase, Pool, Row, Sqlite, SqlitePool};
 use std::sync::{Arc, Mutex};
 
@@ -264,13 +264,6 @@ impl DatabaseClient {
             id: result.last_insert_rowid(),
             ..transaction
         };
-        helper::send_message_to_window(
-            "update_data",
-            Some(json!({ "type": "transactions",
-                "operation": "create",
-                "data": transaction.clone()
-            })),
-        );
         logger::info(
             "Database",
             format!("Created transaction entry with id {}", transaction.id).as_str(),
@@ -299,10 +292,6 @@ impl DatabaseClient {
         let inventorys = self.get_inventory_by_url_name(url_name.clone()).await?;
         let connection = self.connection.lock().unwrap().clone();
         let wfm = self.wfm.lock()?.clone();
-        let operation = match inventorys {
-            Some(_) => "update",
-            None => "create",
-        };
 
         if quantity <= 0 {
             quantity = 1;
@@ -354,7 +343,7 @@ impl DatabaseClient {
                 inventory
             }
         };
-        self.create_transaction_entry(
+        let transaction= self.create_transaction_entry(
             item.clone().url_name,
             "buy".to_string(),
             quantity,
@@ -362,7 +351,8 @@ impl DatabaseClient {
             price,
         )
         .await?;
-
+        // Update UI
+        self.send_to_window("transactions", "CREATE_OR_UPDATE", serde_json::to_value(transaction.clone()).unwrap());
         // Send Close Event to Warframe Market API
         if report {
             logger::info(
@@ -374,13 +364,6 @@ impl DatabaseClient {
             wfm.close_order_by_url(&item.clone().url_name).await?;
         }
 
-        helper::send_message_to_window(
-            "update_data",
-            Some(json!({ "type": "inventorys",
-                "operation": operation,
-                "data": inventory.clone()
-            })),
-        );
         logger::info(
             "Database",
             format!("Created inventory entry with id {}", inventory.id).as_str(),
@@ -430,13 +413,7 @@ impl DatabaseClient {
                 .execute(&connection)
                 .await
                 .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
-            helper::send_message_to_window(
-                "update_data",
-                Some(json!({ "type": "inventorys",
-                    "operation": "update",
-                    "data": inventory.clone()
-                })),
-            );
+
         }
         // Send Close Event to Warframe Market API
         if report {
@@ -492,13 +469,6 @@ impl DatabaseClient {
             .await
             .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
 
-        helper::send_message_to_window(
-            "update_data",
-            Some(json!({ "type": "inventorys",
-                "operation": "delete",
-                "data": inventory
-            })),
-        );
         logger::info(
             "Database",
             format!("Deleted inventory entry with id {}", id).as_str(),
@@ -534,13 +504,10 @@ impl DatabaseClient {
             .await
             .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
         inventory.listed_price = listed_price;
-        helper::send_message_to_window(
-            "update_data",
-            Some(json!({ "type": "inventorys",
-                "operation": "update",
-                "data": inventory
-            })),
-        );
+
         Ok(true)
+    }
+    pub fn send_to_window(&self, msg_type: &'static str, operation: &'static str, data: Value) {
+        helper::send_message_to_window("update_data", Some(json!({ "type": msg_type, "operation": operation, "data": data})));
     }
 }

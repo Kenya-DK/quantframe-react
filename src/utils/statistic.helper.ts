@@ -3,33 +3,59 @@ import isBetween from 'dayjs/plugin/isBetween';
 dayjs.extend(isBetween);
 import i18next from "i18next";
 import { groupBy, getGroupByDate } from ".";
-import { StatisticDto, TransactionEntryDto, StatisticTotalTransaction, StatisticTransactionRevenueWithChart, StatisticTransactionBestSeller, StatisticTodayTransaction, StatisticTransactionRevenue, StatisticRecentDaysTransaction } from "../types";
+import { StatisticDto, TransactionEntryDto, StatisticTotalTransaction, StatisticTransactionRevenueWithChart, StatisticTodayTransaction, StatisticTransactionRevenue, StatisticRecentDaysTransaction, StatisticTransactionItemRevenue, StatisticTransactionPopularItems } from "../types";
 
 
-
-const getBestSellerItem = (transactions: TransactionEntryDto[]): StatisticTransactionBestSeller[] => {
+type GroupByItem = { item_id: string; item_url: string; item_type: string; item_name: string; item_tags: string[]; quantity: number; price: number; total: number; }
+const GetGroupByItem = (transactions: TransactionEntryDto[]): GroupByItem[] => {
   // Initialize an empty array to hold the grouped products
-  let items: Array<StatisticTransactionBestSeller> = [];
+  let items: Array<GroupByItem> = [];
   // Clone the orders array to avoid modifying the original
   let transactionsgroupBy = groupBy("item_url", transactions);
   // Loop through the orders
   for (let item in transactionsgroupBy) {
     // Get the order
-    let transaction = transactionsgroupBy[item];
+    let transactionList = transactionsgroupBy[item];
 
-    let trans: StatisticTransactionBestSeller = {
-      item_id: transaction[0].item_id,
-      item_url: transaction[0].item_url,
-      item_type: transaction[0].item_type,
-      item_name: transaction[0].item_name,
-      quantity: transaction.reduce((acc, cur) => acc + cur.quantity, 0),
-      revenue: transaction.reduce((acc, cur) => acc + cur.price, 0),
+    let firstTransaction = transactionList[0];
+    let trans = {
+      item_id: firstTransaction.item_id,
+      item_url: firstTransaction.item_url,
+      item_type: firstTransaction.item_type,
+      item_name: firstTransaction.item_name,
+      item_tags: firstTransaction.item_tags,
+      quantity: transactionList.reduce((acc, cur) => acc + cur.quantity, 0),
+      price: transactionList.reduce((acc, cur) => acc + cur.price, 0),
+      total: transactionList.length,
     };
     items.push(trans);
   }
-  return items;
+  return items.sort((a, b) => b.quantity - a.quantity);
 };
 
+const GetRevenueForItems = (bought: GroupByItem[], sold: GroupByItem[]): StatisticTransactionItemRevenue[] => {
+  return bought.map((item) => {
+    const sell = sold.find((sell_item) => sell_item.item_url == item.item_url);
+    let turnover = 0;
+    let price = 0;
+    if (sell) {
+      turnover = item.price - sell.price;
+      price = sell.price;
+    }
+    return {
+      item_id: item.item_id,
+      item_url: item.item_url,
+      item_type: item.item_type,
+      item_name: item.item_name,
+      item_tags: item.item_tags,
+      quantity: item.quantity,
+      total_bought: sell ? sell.total : 0,
+      total_sold: item.total,
+      price: price,
+      turnover: turnover,
+    };
+  })
+};
 
 const getRevenue = (transactions: TransactionEntryDto[]): StatisticTransactionRevenue => {
   const revenue = transactions.reduce((acc, cur) => acc + cur.price, 0);
@@ -37,10 +63,10 @@ const getRevenue = (transactions: TransactionEntryDto[]): StatisticTransactionRe
     average: revenue == 0 ? 0 : revenue / transactions.length,
     quantity: transactions.length,
     revenue: revenue,
-    best_sellers: getBestSellerItem(transactions).sort((a, b) => b.quantity - a.quantity).slice(0, 5),
   };
 
 };
+
 const getRevenueWithChart = (labels: string[], transactions: TransactionEntryDto[], settings: { year?: boolean, month?: boolean, day?: boolean, hours?: boolean }): StatisticTransactionRevenueWithChart => {
   const groups = getGroupByDate<TransactionEntryDto>("datetime", transactions, settings);
   const quantity_chart = labels.map((label: string) => groups[`${label}`] ? groups[`${label}`].length : 0);
@@ -54,7 +80,9 @@ const getRevenueWithChart = (labels: string[], transactions: TransactionEntryDto
   };
 
 };
+
 const getTotalRevenue = (transactions: TransactionEntryDto[]): StatisticTotalTransaction => {
+
   // Initialize an empty array to hold the grouped products
   const sell_transactions = transactions.filter(t => t.transaction_type == "sell");
   const buy_transactions = transactions.filter(t => t.transaction_type == "buy");
@@ -67,9 +95,10 @@ const getTotalRevenue = (transactions: TransactionEntryDto[]): StatisticTotalTra
     thisYearLabels.push(`${i} ${year}`);
     lastYearLabels.push(`${i} ${year - 1}`);
   }
-  const currentMonth = new Date().getMonth() + 1;
-  console.log(currentMonth, thisYearLabels, lastYearLabels);
 
+
+  const thisYearTransactions = transactions.filter(t => dayjs(t.datetime).isSame(new Date(), "year"));
+  const lastYearTransactions = transactions.filter(t => dayjs(t.datetime).isSame(new Date().getFullYear() - 1, "year"));
 
   return {
     labels: i18next.t("general.months", { returnObjects: true }) as string[],
@@ -79,15 +108,29 @@ const getTotalRevenue = (transactions: TransactionEntryDto[]): StatisticTotalTra
       labels: lastYearLabels,
       sales: getRevenueWithChart(lastYearLabels, sell_transactions, { year: true, month: true, day: false, hours: false }),
       buy: getRevenueWithChart(lastYearLabels, buy_transactions, { year: true, month: true, day: false, hours: false }),
+      popular_items: getBestItem(lastYearTransactions),
     },
     present: {
       labels: thisYearLabels,
       sales: getRevenueWithChart(thisYearLabels, sell_transactions, { year: true, month: true, day: false, hours: false }),
       buy: getRevenueWithChart(thisYearLabels, buy_transactions, { year: true, month: true, day: false, hours: false }),
+      popular_items: getBestItem(thisYearTransactions),
     },
   };
 
 };
+
+const getBestItem = (transactions: TransactionEntryDto[]): StatisticTransactionPopularItems => {
+  const groped_sell = GetGroupByItem(transactions.filter(t => t.transaction_type == "buy"));
+  const groped_buy = GetGroupByItem(transactions.filter(t => t.transaction_type == "sell"));
+
+  return {
+    buy: GetRevenueForItems(groped_sell, groped_buy),
+    sell: GetRevenueForItems(groped_buy, groped_sell),
+  }
+
+};
+
 
 const getTodayRevenue = (transactions: TransactionEntryDto[]): StatisticTodayTransaction => {
   let today = dayjs().startOf("day").toDate();
@@ -103,6 +146,7 @@ const getTodayRevenue = (transactions: TransactionEntryDto[]): StatisticTodayTra
     labels: labels,
     sales: getRevenueWithChart(labels, sell_transactions, { hours: true }),
     buy: getRevenueWithChart(labels, buy_transactions, { hours: true }),
+    popular_items: getBestItem(transactions),
   };
 
 };
@@ -127,10 +171,10 @@ const getRecentDays = (transactions: TransactionEntryDto[], days: number): Stati
     labels: labels,
     sales: getRevenueWithChart(labels, sell_transactions, { month: true, day: true, year: true }),
     buy: getRevenueWithChart(labels, buy_transactions, { month: true, day: true, year: true }),
+    popular_items: getBestItem(transactions),
   };
 
 };
-
 
 export const getStatistic = (transactions: TransactionEntryDto[]): StatisticDto => {
 

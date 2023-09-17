@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::path::PathBuf;
@@ -75,5 +76,8 @@ impl AuthState {
         file.read_to_string(&mut content).map_err(|e| {AppError::new("AuthState", eyre!(e.to_string()))} )?;
         let auth = serde_json::from_str(&content).map_err(|e| {AppError::new("AuthState", eyre!(e.to_string()))} )?;
         Ok(auth)
+    }
+    pub fn send_to_window(&self) {
+        helper::send_message_to_window("update_data", Some(json!({ "type": "user", "operation": "set", "data": self.clone()})));
     }
 }

@@ -1,10 +1,10 @@
 import { Grid, Stack, Image, Text, Group, Flex, Divider, useMantineTheme, Button } from "@mantine/core";
-import { useTauriContext } from "@contexts/index";
 import { Wfm } from "../../types";
 import { wfmThumbnail } from "@api/index";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCubes } from "@fortawesome/free-solid-svg-icons";
 import { useTranslatePage } from "../../hooks";
+import { useCacheContext, useWarframeMarketContextContext } from "../../contexts";
 interface PurchaseNewItemProps {
   max_rank: number;
   ordre: Wfm.OrderDto;
@@ -51,14 +51,14 @@ const OrderItem = ({ type, max_rank, ordre }: PurchaseNewItemProps) => {
 }
 
 export default function WarframeMarketPage() {
-  const { orders } = useTauriContext();
+  const { orders } = useWarframeMarketContextContext();
   const [buyOrders] = [orders.filter((order) => order.order_type === "buy"), orders.filter((order) => order.order_type === "sell")];
-  const { tradable_items } = useTauriContext();
+  const { items } = useCacheContext();
   return (
     <Grid>
       <Grid.Col md={6}>
         {buyOrders.map((order) => (
-          <OrderItem type="buy" max_rank={tradable_items.find(x => x.id == order.item.id)?.mod_max_rank || 0} ordre={order} />
+          <OrderItem type="buy" max_rank={items.find(x => x.id == order.item.id)?.mod_max_rank || 0} ordre={order} />
         ))}
       </Grid.Col>
       <Grid.Col md={6}>

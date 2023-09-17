@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ModalsProvider } from '@mantine/modals';
 import { createStyles } from '@mantine/core';
 import { PromptModal } from './components/modals/prompt.modal';
-import { LiveScraperContextProvider, StatsScraperContextProvider, TauriContextProvider, WhisperScraperContextProvider } from './contexts';
+import { LiveScraperContextProvider, PriceScraperContextProvider, WhisperScraperContextProvider } from './contexts';
 import AppRoutes from './layouts/routes';
 import { AppContextProvider } from './contexts/app.context';
 import { AuthContextProvider } from './contexts/auth.context';
@@ -53,26 +53,17 @@ function App() {
           <AuthContextProvider>
             <CacheContextProvider>
               <WarframeMarketContextProvider>
-                <StatsScraperContextProvider>
+                <PriceScraperContextProvider>
                   <LiveScraperContextProvider>
                     <WhisperScraperContextProvider>
                       <AppRoutes />
                     </WhisperScraperContextProvider>
                   </LiveScraperContextProvider>
-                </StatsScraperContextProvider>
+                </PriceScraperContextProvider>
               </WarframeMarketContextProvider>
             </CacheContextProvider>
           </AuthContextProvider>
         </AppContextProvider>
-        <TauriContextProvider>
-          <StatsScraperContextProvider>
-            <LiveScraperContextProvider>
-              <WhisperScraperContextProvider>
-                <AppRoutes />
-              </WhisperScraperContextProvider>
-            </LiveScraperContextProvider>
-          </StatsScraperContextProvider>
-        </TauriContextProvider>
         {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       </ModalsProvider>
     </QueryClientProvider>

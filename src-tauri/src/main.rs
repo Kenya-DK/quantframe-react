@@ -124,7 +124,7 @@ fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            commands::base::setup,
+            commands::base::init,
             commands::auth::login,
             commands::base::update_settings,
             commands::inventory::create_invantory_entry,

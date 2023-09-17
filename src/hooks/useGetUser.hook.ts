@@ -1,6 +1,6 @@
 import { useContext } from "react";
-import { TauriContext } from "@contexts/index";
+import { AuthContext } from "@contexts/index";
 export const useGetUser = () => {
-  const authState = useContext(TauriContext)
+  const authState = useContext(AuthContext)
   return authState.user
 }
