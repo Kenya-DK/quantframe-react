@@ -22,6 +22,7 @@ use live_scraper::LiveScraper;
 mod auth;
 mod cache;
 mod commands;
+mod wfm_client2;
 mod database;
 mod debug;
 mod error;
@@ -46,6 +47,12 @@ async fn setup_async(app: &mut App) -> Result<(), AppError> {
     // create and manage Warframe Market API client state
     let wfm_client = Arc::new(Mutex::new(WFMClientState::new(Arc::clone(&auth_arc))));
     app.manage(wfm_client.clone());
+
+    // create and manage Warframe Market API client state
+    let wfm_clien2t = Arc::new(Mutex::new(wfm_client2::client::ClientState::new(Arc::clone(
+        &auth_arc,
+    ))));
+    app.manage(wfm_clien2t.clone());
 
     // create and manage Cache state
     let cache_arc = Arc::new(Mutex::new(CacheState::new(Arc::clone(&wfm_client))));

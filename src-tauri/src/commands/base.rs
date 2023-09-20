@@ -12,6 +12,7 @@ use crate::{
     price_scraper::{self, PriceScraper},
     settings::SettingsState,
     wfm_client::WFMClientState,
+    wfm_client2::client::ClientState,
 };
 
 #[tauri::command]
@@ -19,6 +20,7 @@ pub async fn init(
     settings: tauri::State<'_, Arc<Mutex<SettingsState>>>,
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClientState>>>,
+    wfm2: tauri::State<'_, Arc<Mutex<ClientState>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheState>>>,
     price_scraper: tauri::State<'_, Arc<Mutex<PriceScraper>>>,
     db: tauri::State<'_, Arc<Mutex<DatabaseClient>>>,
@@ -27,8 +29,13 @@ pub async fn init(
     let settings = settings.lock()?.clone();
     let auth = auth.lock()?.clone();
     let wfm = wfm.lock()?.clone();
+    let wfm2 = wfm2.lock()?.clone();
     let cache = cache.lock()?.clone();
     let price_scraper = price_scraper.lock()?.clone();
+
+    let items = wfm2.orders().get_my_auctions().await?;
+    println!("items: {:?}", items.len());
+
     helper::send_message_to_window(
         "set_initializstatus",
         Some(json!({"status": "Loading Items..."})),
