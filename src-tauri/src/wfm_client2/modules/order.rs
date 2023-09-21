@@ -170,6 +170,34 @@ impl<'a> OrderModule<'a> {
     }
     // End Actions User Order
 
+    // Methods 
+    pub async fn get_ordres_by_item(
+        &self, item: &str
+    ) -> Result<DataFrame, AppError> {
+        let url = format!("items/{}/orders", item);
+
+        let orders: Vec<OrderByItem> = match self.get(&url, Some("orders")).await {
+            Ok((orders, _headers)) => orders,
+            Err(e) => return Err(e),
+        };
+
+        if orders.len() == 0 {
+            return Ok(DataFrame::new_no_checks(vec![]));
+        }
+        let mod_rank = orders
+        .iter()
+        .max_by(|a, b| a.mod_rank.cmp(&b.mod_rank))
+        .unwrap()
+        .mod_rank;
+
+        let orders: Vec<OrderByItem> = orders
+            .into_iter()
+            .filter(|order| order.user.status == "ingame" && order.mod_rank == mod_rank)
+            .collect();
+        Ok(self.convert_orders_to_dataframe(orders).await?)
+    }
+    // End Methods
+
     // Helper
     pub async fn convert_orders_to_dataframe(
         &self,
@@ -182,6 +210,13 @@ impl<'a> OrderModule<'a> {
                 orders
                     .iter()
                     .map(|order| order.id.clone())
+                    .collect::<Vec<_>>(),
+            ),
+            Series::new(
+                "username",
+                orders
+                    .iter()
+                    .map(|order| order.user.ingame_name.clone())
                     .collect::<Vec<_>>(),
             ),
             Series::new(

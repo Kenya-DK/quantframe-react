@@ -29,10 +29,18 @@ pub struct ItemInfo {
 pub struct Order {
     #[serde(rename = "id")]
     pub id: String,
+
     #[serde(rename = "platinum")]
     pub platinum: i64,
+
     #[serde(rename = "visible")]
     pub visible: bool,
+
+    #[serde(rename = "order_type")]
+    pub order_type: String,
+
+    #[serde(rename = "user")]
+    pub user: Option<User>,
 
     #[serde(rename = "last_update")]
     pub last_update: String,
