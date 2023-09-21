@@ -1,0 +1,72 @@
+use std::sync::{Arc, Mutex};
+
+use eyre::eyre;
+use polars::{
+    prelude::{DataFrame, NamedFrom},
+    series::Series,
+};
+use reqwest::{header::HeaderMap, Client, Method, Url};
+use serde::de::DeserializeOwned;
+use serde_json::{json, Value};
+use sqlx::{Pool, Sqlite, migrate::MigrateDatabase, SqlitePool};
+
+use crate::{
+    auth::AuthState,
+    cache::CacheState,
+    error::AppError,
+    helper,
+    logger::{self, LogLevel},
+    wfm_client::client::WFMClient,
+};
+
+use super::modules::{inventory::InventoryModule, transaction::TransactionModule};
+#[derive(Clone, Debug)]
+pub struct DBClient {
+    pub log_file: String,
+    pub connection: Arc<Mutex<Pool<Sqlite>>>,
+    pub cache: Arc<Mutex<CacheState>>,
+    pub wfm: Arc<Mutex<WFMClient>>,
+}
+
+impl DBClient {
+    pub async fn new(
+        cache: Arc<Mutex<CacheState>>,
+        wfm: Arc<Mutex<WFMClient>>,
+    ) -> Result<Self, AppError> {
+        let log_file = "db.log";
+        let mut db_url = helper::get_app_roaming_path();
+        db_url.push("quantframe.sqlite");
+        let db_url: &str = db_url.to_str().unwrap();
+        if !Sqlite::database_exists(db_url).await.unwrap_or(false) {
+            match Sqlite::create_database(db_url).await {
+                Ok(_) => logger::info_con(
+                    "Database",
+                    format!("Database created at {}", db_url).as_str(),
+                ),
+                Err(error) => logger::critical(
+                    "Database",
+                    format!("Error creating database: {:?}", error).as_str(),
+                    true,
+                    Some(log_file),
+                ),
+            }
+        }
+        Ok(DBClient {
+            log_file: log_file.to_string(),
+            connection: Arc::new(Mutex::new(SqlitePool::connect(db_url).await.unwrap())),
+            cache,
+            wfm,
+        })
+    }
+    pub fn get_connection(&self) -> Arc<Mutex<Pool<Sqlite>>> {
+        self.connection.clone()
+    }
+    // Add an "add" method to WFMWFMClient
+    pub fn inventory(&self) -> InventoryModule {
+        InventoryModule { client: self }
+    }
+
+    pub fn transaction(&self) -> TransactionModule {
+        TransactionModule { client: self }
+    }
+}

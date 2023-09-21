@@ -1,4 +1,5 @@
 use crate::error::AppError;
+use crate::wfm_client::client::WFMClient;
 use crate::{helper, logger};
 use eyre::eyre;
 use polars::prelude::*;
@@ -14,7 +15,7 @@ use std::{
 };
 extern crate chrono;
 
-use crate::{auth::AuthState, wfm_client::WFMClientState};
+use crate::auth::AuthState;
 
 // Structs for the Warframe Market API
 
@@ -22,12 +23,12 @@ use crate::{auth::AuthState, wfm_client::WFMClientState};
 pub struct PriceScraper {
     csv_path: String,
     csv_backop_path: String,
-    wfm: Arc<Mutex<WFMClientState>>,
+    wfm: Arc<Mutex<WFMClient>>,
     auth: Arc<Mutex<AuthState>>,
 }
 
 impl PriceScraper {
-    pub fn new(wfm: Arc<Mutex<WFMClientState>>, auth: Arc<Mutex<AuthState>>) -> Self {
+    pub fn new(wfm: Arc<Mutex<WFMClient>>, auth: Arc<Mutex<AuthState>>) -> Self {
         PriceScraper {
             csv_path: helper::get_app_roaming_path()
                 .join("price_data.csv")
@@ -137,7 +138,7 @@ impl PriceScraper {
     ) -> Result<(HashMap<String, String>, HashMap<String, String>), AppError> {
         let wfm = self.wfm.lock()?.clone();
 
-        let items = wfm.get_tradable_items().await?;
+        let items = wfm.items().get_all_items().await?;
 
         let item_map_url: std::collections::HashMap<String, String> = items
             .iter()

@@ -1,16 +1,19 @@
-use polars::{prelude::{DataFrame, NamedFrom}, series::Series};
+use polars::{
+    prelude::{DataFrame, NamedFrom},
+    series::Series,
+};
 use reqwest::header::HeaderMap;
 use serde_json::json;
 
 use crate::{
     error::AppError,
     logger,
-    structs::{Order, Ordres},
-    wfm_client2::client::ClientState,
+    structs::{Order, Ordres, User},
+    wfm_client::client::WFMClient,
 };
 
 pub struct OrderModule<'a> {
-    pub client: &'a ClientState,
+    pub client: &'a WFMClient,
 }
 
 impl<'a> OrderModule<'a> {
@@ -170,13 +173,11 @@ impl<'a> OrderModule<'a> {
     }
     // End Actions User Order
 
-    // Methods 
-    pub async fn get_ordres_by_item(
-        &self, item: &str
-    ) -> Result<DataFrame, AppError> {
+    // Methods
+    pub async fn get_ordres_by_item(&self, item: &str) -> Result<DataFrame, AppError> {
         let url = format!("items/{}/orders", item);
 
-        let orders: Vec<OrderByItem> = match self.get(&url, Some("orders")).await {
+        let orders: Vec<Order> = match self.client.get(&url, Some("orders")).await {
             Ok((orders, _headers)) => orders,
             Err(e) => return Err(e),
         };
@@ -185,26 +186,44 @@ impl<'a> OrderModule<'a> {
             return Ok(DataFrame::new_no_checks(vec![]));
         }
         let mod_rank = orders
-        .iter()
-        .max_by(|a, b| a.mod_rank.cmp(&b.mod_rank))
-        .unwrap()
-        .mod_rank;
+            .iter()
+            .max_by(|a, b| a.mod_rank.cmp(&b.mod_rank))
+            .unwrap()
+            .mod_rank;
 
-        let orders: Vec<OrderByItem> = orders
+        let orders: Vec<Order> = orders
             .into_iter()
-            .filter(|order| order.user.status == "ingame" && order.mod_rank == mod_rank)
+            .filter(|order| {
+                if let Some(user) = &order.user {
+                    user.status == "ingame" && order.mod_rank == mod_rank
+                } else {
+                    false
+                }
+            })
             .collect();
         Ok(self.convert_orders_to_dataframe(orders).await?)
     }
     // End Methods
 
     // Helper
+    pub fn convet_order_to_datafream(&self, order: Order) -> Result<DataFrame, AppError> {
+        let orders_df = DataFrame::new_no_checks(vec![
+            Series::new("id", vec![order.id.clone()]),
+            Series::new("visible", vec![order.visible.clone()]),
+            Series::new("url_name", vec![order.item.url_name.clone()]),
+            Series::new("platinum", vec![order.platinum.clone()]),
+            Series::new("platform", vec![order.platform.clone()]),
+            Series::new("quantity", vec![order.quantity.clone()]),
+            Series::new("last_update", vec![order.last_update.clone()]),
+            Series::new("creation_date", vec![order.creation_date.clone()]),
+        ]);
+        Ok(orders_df)
+    }
     pub async fn convert_orders_to_dataframe(
         &self,
         orders: Vec<Order>,
     ) -> Result<DataFrame, AppError> {
         let orders_df = DataFrame::new_no_checks(vec![
-            // Assuming Order has fields field1, field2, ...
             Series::new(
                 "id",
                 orders
@@ -216,7 +235,13 @@ impl<'a> OrderModule<'a> {
                 "username",
                 orders
                     .iter()
-                    .map(|order| order.user.ingame_name.clone())
+                    .map(|order| {
+                        if let Some(user) = &order.user {
+                            user.ingame_name.clone()
+                        } else {
+                            "None".to_string()
+                        }
+                    })
                     .collect::<Vec<_>>(),
             ),
             Series::new(

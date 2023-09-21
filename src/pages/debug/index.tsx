@@ -1,6 +1,7 @@
 import { Tabs } from "@mantine/core";
 import { ImportAlgoTrader } from "./importAlgoTrader";
 import { ResetData } from "./resetData";
+import { Transactions } from "./transactions";
 export default function DebugPage() {
 
   return (
@@ -8,6 +9,8 @@ export default function DebugPage() {
       <Tabs.List>
         <Tabs.Tab value="warframe_algo_trader"> Warframe Algo Trader</Tabs.Tab>
         <Tabs.Tab value="reset_data"> Reset Data</Tabs.Tab>
+        <Tabs.Tab value="transactions"> Transactions</Tabs.Tab>
+
       </Tabs.List>
 
       <Tabs.Panel value="warframe_algo_trader">
@@ -15,6 +18,9 @@ export default function DebugPage() {
       </Tabs.Panel>
       <Tabs.Panel value="reset_data">
         <ResetData />
+      </Tabs.Panel>
+      <Tabs.Panel value="transactions">
+        <Transactions />
       </Tabs.Panel>
     </Tabs>
   );

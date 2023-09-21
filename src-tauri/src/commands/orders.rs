@@ -1,17 +1,16 @@
-use crate::{wfm_client::WFMClientState, error::AppError};
+use crate::{error::AppError, wfm_client::client::WFMClient};
 use std::sync::{Arc, Mutex};
 
-
 #[tauri::command]
-pub async fn get_orders(wfm: tauri::State<'_, Arc<Mutex<WFMClientState>>>) -> Result<(), AppError> {
+pub async fn get_orders(wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>) -> Result<(), AppError> {
     let wfm = wfm.lock()?.clone();
     Ok(())
 }
 #[tauri::command]
 pub async fn delete_order(
     id: String,
-    wfm: tauri::State<'_, Arc<Mutex<WFMClientState>>>,
-) -> Result<(),AppError> {
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+) -> Result<(), AppError> {
     let wfm = wfm.lock()?.clone();
     Ok(())
 }
@@ -22,7 +21,7 @@ pub async fn create_order(
     quantity: i64,
     price: i64,
     rank: i64,
-    wfm: tauri::State<'_, Arc<Mutex<WFMClientState>>>,
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<(), AppError> {
     let wfm = wfm.lock()?.clone();
     Ok(())
@@ -34,7 +33,7 @@ pub async fn update_order(
     quantity: i64,
     price: i64,
     rank: i64,
-    wfm: tauri::State<'_, Arc<Mutex<WFMClientState>>>,
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<(), AppError> {
     let wfm = wfm.lock()?.clone();
     Ok(())

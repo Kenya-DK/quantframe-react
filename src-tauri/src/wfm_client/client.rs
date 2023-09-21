@@ -12,20 +12,22 @@ use serde_json::{json, Value};
 use crate::{
     auth::AuthState,
     error::AppError,
-    helper, logger::{self, LogLevel},
-    structs::{Item, ItemDetails, Order, OrderByItem, Ordres},
+    helper,
+    logger::{self, LogLevel},
 };
 
+use super::modules::{auth::AuthModule, item::ItemModule, order::OrderModule};
+
 #[derive(Clone, Debug)]
-pub struct WarframeMarketClient {
+pub struct WFMClient {
     endpoint: String,
-    log_file: String,
-    auth: Arc<Mutex<AuthState>>,
+    pub log_file: String,
+    pub auth: Arc<Mutex<AuthState>>,
 }
 
-impl WarframeMarketClient {
+impl WFMClient {
     pub fn new(auth: Arc<Mutex<AuthState>>) -> Self {
-      WarframeMarketClient {
+        WFMClient {
             endpoint: "https://api.warframe.market/v1/".to_string(),
             log_file: "wfmAPICalls.log".to_string(),
             auth,
@@ -62,9 +64,9 @@ impl WarframeMarketClient {
 
         if let Err(e) = response {
             return Err(AppError::new_with_level(
-                "WFMClientState",
+                "WFMWFMClient",
                 eyre!("Error: {:?}, Url: {:?}", e.to_string(), new_url),
-                LogLevel::Error
+                LogLevel::Error,
             ));
         }
         let response_data = response.unwrap();
@@ -73,23 +75,23 @@ impl WarframeMarketClient {
         if status != 200 {
             let rep = response_data.text().await.unwrap_or_default();
             return Err(AppError::new_with_level(
-                "WFMClientState",
+                "WFMWFMClient",
                 eyre!("Status: {:?}[J]{rep}[J], Url: {:?}", status, new_url),
-                LogLevel::Error
+                LogLevel::Error,
             ));
         }
 
         let headers = response_data.headers().clone();
         let response = response_data.json::<Value>().await.map_err(|e| {
             AppError::new_with_level(
-                "WFMClientState",
+                "WFMWFMClient",
                 eyre!(
                     "Error: {}, Url: {}, Status: {}",
                     e.to_string(),
                     new_url,
                     status
                 ),
-                LogLevel::Error
+                LogLevel::Error,
             )
         })?;
 
@@ -102,7 +104,7 @@ impl WarframeMarketClient {
         match serde_json::from_value(data.clone()) {
             Ok(payload) => Ok((payload, headers)),
             Err(e) => Err(AppError::new(
-                "WFMClientState",
+                "WFMWFMClient",
                 eyre!("Error: {:?},[J]{}[J] Url: {:?}", e, data, new_url),
             )),
         }
@@ -153,28 +155,16 @@ impl WarframeMarketClient {
             .await?;
         Ok(payload)
     }
-
-     pub fn auth(&self) -> Auth {
-      Auth {
-          client: self,
-      }
-  }
-
-     pub fn orders(&self) -> Orders {
-      Orders {
-          client: self,
-      }
-  }
-  
-   pub fn auctions(&self) -> Auctions {
-    Auctions {
-        client: self,
+    // Add an "add" method to WFMWFMClient
+    pub fn auth(&self) -> AuthModule {
+        AuthModule { client: self }
     }
-  }
-  
-   pub fn items(&self) -> Items {
-    Items {
-        client: self,
+
+    pub fn orders(&self) -> OrderModule {
+        OrderModule { client: self }
     }
-  }
+
+    pub fn items(&self) -> ItemModule {
+        ItemModule { client: self }
+    }
 }

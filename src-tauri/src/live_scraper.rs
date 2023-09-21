@@ -1,14 +1,14 @@
 use crate::auth::AuthState;
+use crate::database::DatabaseClient;
 use crate::logger::LogLevel;
 use crate::price_scraper::PriceScraper;
 use crate::structs::Order;
+use crate::wfm_client::client::WFMClient;
 use crate::{
-    database::DatabaseClient,
     error::AppError,
     helper::{self, ColumnType, ColumnValue, ColumnValues},
     logger,
     settings::SettingsState,
-    wfm_client::WFMClientState,
 };
 use eyre::eyre;
 use polars::prelude::*;
@@ -29,7 +29,7 @@ pub struct LiveScraper {
     is_running: Arc<AtomicBool>,
     settings: Arc<Mutex<SettingsState>>,
     price_scraper: Arc<Mutex<PriceScraper>>,
-    wfm: Arc<Mutex<WFMClientState>>,
+    wfm: Arc<Mutex<WFMClient>>,
     auth: Arc<Mutex<AuthState>>,
     db: Arc<Mutex<DatabaseClient>>,
 }
@@ -38,7 +38,7 @@ impl LiveScraper {
     pub fn new(
         settings: Arc<Mutex<SettingsState>>,
         price_scraper: Arc<Mutex<PriceScraper>>,
-        wfm: Arc<Mutex<WFMClientState>>,
+        wfm: Arc<Mutex<WFMClient>>,
         auth: Arc<Mutex<AuthState>>,
         db: Arc<Mutex<DatabaseClient>>,
     ) -> Self {
@@ -116,7 +116,7 @@ impl LiveScraper {
         let buy_sell_overlap = self.get_buy_sell_overlap().await?;
         let settings = self.settings.lock()?.clone().live_scraper;
         let db = self.db.lock()?.clone();
-        let wfm: WFMClientState = self.wfm.lock()?.clone();
+        let wfm = self.wfm.lock()?.clone();
 
         let inventory_df = db.get_inventorys_df().await?;
         let whitelist = settings.whitelist.clone();
@@ -136,7 +136,7 @@ impl LiveScraper {
 
         // Get current orders from Warframe Market Sell and Buy orders
         let (mut current_buy_orders_df, current_sell_orders_df) =
-            wfm.get_ordres_data_frames().await?;
+            wfm.orders().get_orders_as_dataframe().await?;
 
         if current_buy_orders_df.shape().0 != 0 {
             current_buy_orders_df = current_buy_orders_df
@@ -205,7 +205,7 @@ impl LiveScraper {
             );
             current_index -= 1;
 
-            let item_live_orders_df = wfm.get_ordres_by_item(&item).await?;
+            let item_live_orders_df = wfm.orders().get_ordres_by_item(&item).await?;
             // Check if item_orders_df is empty and skip if it is
             if item_live_orders_df.height() == 0 {
                 continue;
@@ -223,7 +223,7 @@ impl LiveScraper {
                     format!("Item: {item} is not in all_interesting_items").as_str(),
                     Some(self.log_file.as_str()),
                 );
-                let item_info = wfm.get_item(item.to_string()).await?;
+                let item_info = wfm.items().get_item(item.to_string()).await?;
 
                 let item_id = item_info.id;
                 let item_rank = item_info.items_in_set.get(0).unwrap().mod_max_rank;
@@ -332,7 +332,7 @@ impl LiveScraper {
         let settings = self.settings.lock()?.clone().live_scraper;
         let blacklist = settings.blacklist.clone();
 
-        let current_orders = wfm.get_user_ordres().await?;
+        let current_orders = wfm.orders().get_my_orders().await?;
 
         for order in current_orders.sell_orders {
             // Check if item is in blacklist
@@ -341,7 +341,9 @@ impl LiveScraper {
             }
             db.update_inventory_by_url(order.item.url_name, None)
                 .await?;
-            wfm.delete_order(&order.id, "None", "None", "Any").await?;
+            wfm.orders()
+                .delete(&order.id, "None", "None", "Any")
+                .await?;
         }
         for order in current_orders.buy_orders {
             if self.is_running() == false {
@@ -351,7 +353,9 @@ impl LiveScraper {
             if blacklist.contains(&order.item.url_name) {
                 continue;
             }
-            wfm.delete_order(&order.id, "None", "None", "Any").await?;
+            wfm.orders()
+                .delete(&order.id, "None", "None", "Any")
+                .await?;
         }
         Ok(())
     }
@@ -772,19 +776,21 @@ impl LiveScraper {
             }
             // If the order is active, then we should update it else we should post a new order.
             if active {
-                wfm.update_order_listing(
-                    order_id.clone().unwrap().as_str(),
-                    post_price,
-                    1,
-                    visibility,
-                    item_name,
-                    item_id,
-                    "buy",
-                )
-                .await?;
+                wfm.orders()
+                    .update(
+                        order_id.clone().unwrap().as_str(),
+                        post_price,
+                        1,
+                        visibility,
+                        item_name,
+                        item_id,
+                        "buy",
+                    )
+                    .await?;
                 return Ok(None);
             } else {
-                wfm.post_ordre(item_name, item_id, "buy", post_price, 1, true, item_rank)
+                wfm.orders()
+                    .create(item_name, item_id, "buy", post_price, 1, true, item_rank)
                     .await?;
                 logger::info_con("LiveScraper",format!("Automatically Posted Visible Buy Order Item: {item_name}, ItemId: {item_id}, Price: {post_price}").as_str());
                 return Ok(None);
@@ -841,13 +847,14 @@ impl LiveScraper {
                     format!("In fact you have a buy order up for this {item_name}! Deleting it.")
                         .as_str(),
                 );
-                wfm.delete_order(
-                    order_id.clone().unwrap().as_str(),
-                    item_name,
-                    item_id,
-                    "buy",
-                )
-                .await?;
+                wfm.orders()
+                    .delete(
+                        order_id.clone().unwrap().as_str(),
+                        item_name,
+                        item_id,
+                        "buy",
+                    )
+                    .await?;
             }
             return Ok(None);
         }
@@ -855,16 +862,17 @@ impl LiveScraper {
             if active {
                 if price != post_price {
                     logger::info_con("LiveScraper", format!("Your current posting on this item {item_name} for {price} plat is not a good one. Updating to {post_price} plat.").as_str());
-                    wfm.update_order_listing(
-                        order_id.clone().unwrap().as_str(),
-                        post_price,
-                        1,
-                        visibility,
-                        item_name,
-                        item_id,
-                        "buy",
-                    )
-                    .await?;
+                    wfm.orders()
+                        .update(
+                            order_id.clone().unwrap().as_str(),
+                            post_price,
+                            1,
+                            visibility,
+                            item_name,
+                            item_id,
+                            "buy",
+                        )
+                        .await?;
                     let df = DataFrame::new(vec![
                         Series::new("url_name", vec![item_name]),
                         Series::new("platinum", vec![post_price]),
@@ -876,16 +884,17 @@ impl LiveScraper {
                         .map_err(|e| AppError::new("LiveScraper", eyre!(e.to_string())))?;
                     return Ok(Some(updatede));
                 } else {
-                    wfm.update_order_listing(
-                        order_id.clone().unwrap().as_str(),
-                        post_price,
-                        1,
-                        visibility,
-                        item_name,
-                        item_id,
-                        "buy",
-                    )
-                    .await?;
+                    wfm.orders()
+                        .update(
+                            order_id.clone().unwrap().as_str(),
+                            post_price,
+                            1,
+                            visibility,
+                            item_name,
+                            item_id,
+                            "buy",
+                        )
+                        .await?;
                     logger::info_con("LiveScraper", format!("Your current (possibly hidden) posting on this item {item_name} for {price} plat is a good one. Recommend to make visible.").as_str());
                     return Ok(None);
                 }
@@ -998,7 +1007,8 @@ impl LiveScraper {
                                 })?;
 
                         for unselected_item in &unselected_buy_orders {
-                            wfm.delete_order(unselected_item.3.as_str(), item_name, item_id, "buy")
+                            wfm.orders()
+                                .delete(unselected_item.3.as_str(), item_name, item_id, "buy")
                                 .await?;
                             logger::debug_con(
                                 "component",
@@ -1011,7 +1021,8 @@ impl LiveScraper {
                         }
                     }
                     let new_order = wfm
-                        .post_ordre(item_name, item_id, "buy", post_price, 1, true, item_rank)
+                        .orders()
+                        .create(item_name, item_id, "buy", post_price, 1, true, item_rank)
                         .await?;
                     let current_orders =
                         self.get_new_buy_data(current_orders.clone(), new_order, item_closed_avg)?;
@@ -1022,13 +1033,14 @@ impl LiveScraper {
             }
         } else if active {
             logger::info_con("LiveScraper",format!("Item {item_name} Not a good time to have an order up on this item. Deleted buy order for {price}").as_str());
-            wfm.delete_order(
-                order_id.clone().unwrap().as_str(),
-                item_name,
-                item_id,
-                "buy",
-            )
-            .await?;
+            wfm.orders()
+                .delete(
+                    order_id.clone().unwrap().as_str(),
+                    item_name,
+                    item_id,
+                    "buy",
+                )
+                .await?;
         }
 
         Ok(None)
@@ -1059,13 +1071,14 @@ impl LiveScraper {
         } else if !inventory_names.contains(&item_name.to_string()) {
             db.update_inventory_by_url(item_name.to_string(), None)
                 .await?;
-            wfm.delete_order(
-                order_id.clone().unwrap().as_str(),
-                item_name,
-                item_id,
-                "sell",
-            )
-            .await?;
+            wfm.orders()
+                .delete(
+                    order_id.clone().unwrap().as_str(),
+                    item_name,
+                    item_id,
+                    "sell",
+                )
+                .await?;
             logger::info_con(
                 "LiveScraper",
                 format!(
@@ -1098,22 +1111,24 @@ impl LiveScraper {
             db.update_inventory_by_url(item_name.to_string(), Some(post_price))
                 .await?;
             if active {
-                wfm.update_order_listing(
-                    order_id.clone().unwrap().as_str(),
-                    post_price,
-                    quantity,
-                    visibility,
-                    item_name,
-                    item_id,
-                    "sell",
-                )
-                .await?;
+                wfm.orders()
+                    .update(
+                        order_id.clone().unwrap().as_str(),
+                        post_price,
+                        quantity,
+                        visibility,
+                        item_name,
+                        item_id,
+                        "sell",
+                    )
+                    .await?;
                 return Ok(());
             } else {
-                wfm.post_ordre(
-                    item_name, item_id, "sell", post_price, quantity, true, item_rank,
-                )
-                .await?;
+                wfm.orders()
+                    .create(
+                        item_name, item_id, "sell", post_price, quantity, true, item_rank,
+                    )
+                    .await?;
                 return Ok(());
             }
         }
@@ -1150,16 +1165,17 @@ impl LiveScraper {
         }
         if active {
             if price != post_price {
-                wfm.update_order_listing(
-                    order_id.clone().unwrap().as_str(),
-                    post_price,
-                    quantity,
-                    visibility,
-                    item_name,
-                    item_id,
-                    "sell",
-                )
-                .await?;
+                wfm.orders()
+                    .update(
+                        order_id.clone().unwrap().as_str(),
+                        post_price,
+                        quantity,
+                        visibility,
+                        item_name,
+                        item_id,
+                        "sell",
+                    )
+                    .await?;
                 db.update_inventory_by_url(item_name.to_string(), Some(post_price))
                     .await?;
                 logger::info_con(
@@ -1179,10 +1195,11 @@ impl LiveScraper {
                 return Ok(());
             }
         } else {
-            wfm.post_ordre(
-                item_name, item_id, "sell", post_price, quantity, true, item_rank,
-            )
-            .await?;
+            wfm.orders()
+                .create(
+                    item_name, item_id, "sell", post_price, quantity, true, item_rank,
+                )
+                .await?;
             db.update_inventory_by_url(item_name.to_string(), Some(post_price))
                 .await?;
             logger::info_con("LiveScraper",format!("Automatically Posted Visible Sell Order Item: {item_name}, ItemId: {item_id}, Price: {post_price}").as_str());
@@ -1195,7 +1212,11 @@ impl LiveScraper {
         order: Order,
         item_closed_avg: f64,
     ) -> Result<DataFrame, AppError> {
-        let mut order_df = self.wfm.lock()?.convet_order_to_datafream(order.clone())?;
+        let mut order_df = self
+            .wfm
+            .lock()?
+            .orders()
+            .convet_order_to_datafream(order.clone())?;
         order_df = order_df
             .with_column(Series::new(
                 "potential_profit",

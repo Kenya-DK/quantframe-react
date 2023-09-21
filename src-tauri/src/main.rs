@@ -3,6 +3,7 @@
 use auth::AuthState;
 use cache::CacheState;
 use database::DatabaseClient;
+use database2::client::DBClient;
 use debug::DebugClient;
 use error::AppError;
 use price_scraper::PriceScraper;
@@ -12,7 +13,6 @@ use std::sync::Arc;
 use std::{env, sync::Mutex};
 use tauri::async_runtime::block_on;
 use tauri::{App, Manager};
-use wfm_client::WFMClientState;
 mod structs;
 mod whisper_scraper;
 use whisper_scraper::WhisperScraper; // add this line
@@ -22,8 +22,8 @@ use live_scraper::LiveScraper;
 mod auth;
 mod cache;
 mod commands;
-mod wfm_client2;
 mod database;
+mod database2;
 mod debug;
 mod error;
 mod helper;
@@ -45,14 +45,10 @@ async fn setup_async(app: &mut App) -> Result<(), AppError> {
     app.manage(auth_arc.clone());
 
     // create and manage Warframe Market API client state
-    let wfm_client = Arc::new(Mutex::new(WFMClientState::new(Arc::clone(&auth_arc))));
-    app.manage(wfm_client.clone());
-
-    // create and manage Warframe Market API client state
-    let wfm_clien2t = Arc::new(Mutex::new(wfm_client2::client::ClientState::new(Arc::clone(
+    let wfm_client = Arc::new(Mutex::new(wfm_client::client::WFMClient::new(Arc::clone(
         &auth_arc,
     ))));
-    app.manage(wfm_clien2t.clone());
+    app.manage(wfm_client.clone());
 
     // create and manage Cache state
     let cache_arc = Arc::new(Mutex::new(CacheState::new(Arc::clone(&wfm_client))));
@@ -65,6 +61,13 @@ async fn setup_async(app: &mut App) -> Result<(), AppError> {
             .unwrap(),
     ));
     app.manage(database_client.clone());
+
+    let database_client2 = Arc::new(Mutex::new(
+        DBClient::new(cache_arc.clone(), wfm_client.clone())
+            .await
+            .unwrap(),
+    ));
+    app.manage(database_client2.clone());
 
     // create and manage PriceScraper state
     let price_scraper: Arc<Mutex<PriceScraper>> = Arc::new(Mutex::new(PriceScraper::new(

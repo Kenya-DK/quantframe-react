@@ -5,7 +5,7 @@ use std::sync::{Arc, Mutex};
 
 use crate::error::AppError;
 use crate::structs::Item;
-use crate::wfm_client::WFMClientState;
+use crate::wfm_client::client::WFMClient;
 use crate::{helper, logger};
 use eyre::eyre;
 
@@ -13,10 +13,10 @@ use eyre::eyre;
 pub struct CacheState {
     pub items: Arc<Mutex<Vec<Item>>>,
     log_file: PathBuf,
-    wfm: Arc<Mutex<WFMClientState>>,
+    wfm: Arc<Mutex<WFMClient>>,
 }
 impl CacheState {
-    pub fn new(wfm: Arc<Mutex<WFMClientState>>) -> Self {
+    pub fn new(wfm: Arc<Mutex<WFMClient>>) -> Self {
         CacheState {
             items: Arc::new(Mutex::new(vec![])),
             log_file: PathBuf::from("cache"),
@@ -26,15 +26,15 @@ impl CacheState {
 
     pub async fn get_items(&self) -> Result<Vec<Item>, AppError> {
         let wfm = self.wfm.lock()?.clone();
-        let wfm_items = wfm.get_tradable_items().await?;
+        let wfm_items = wfm.items().get_all_items().await?;
         let response: HashMap<String, Value> =
             reqwest::get("https://relics.run/history/item_data/item_info.json")
-            .await
-            .map_err(|e| AppError::new("CacheState", eyre!(e.to_string())))?
-            .json()
-            .await
-            .map_err(|e| AppError::new("CacheState", eyre!(e.to_string())))?;
-        
+                .await
+                .map_err(|e| AppError::new("CacheState", eyre!(e.to_string())))?
+                .json()
+                .await
+                .map_err(|e| AppError::new("CacheState", eyre!(e.to_string())))?;
+
         let mut items: Vec<Item> = Vec::new();
         // Link items with relic data on item_id
         for item in wfm_items.clone() {
@@ -69,7 +69,10 @@ impl CacheState {
         None
     }
     pub fn send_to_item_window(&self) {
-        helper::send_message_to_window("Cache:Update:Items", Some( serde_json::to_value(self.items.clone()).unwrap()));
+        helper::send_message_to_window(
+            "Cache:Update:Items",
+            Some(serde_json::to_value(self.items.clone()).unwrap()),
+        );
     }
 }
 

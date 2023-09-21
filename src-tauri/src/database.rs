@@ -4,7 +4,7 @@ use crate::{
     helper::{self, ColumnType, ColumnValues},
     logger,
     structs::{Invantory, Order, Transaction},
-    wfm_client::WFMClientState,
+    wfm_client::client::WFMClient,
 };
 use eyre::eyre;
 use polars::{
@@ -21,13 +21,13 @@ pub struct DatabaseClient {
     pub log_file: String,
     connection: Arc<Mutex<Pool<Sqlite>>>,
     cache: Arc<Mutex<CacheState>>,
-    wfm: Arc<Mutex<WFMClientState>>,
+    wfm: Arc<Mutex<WFMClient>>,
 }
 
 impl DatabaseClient {
     pub async fn new(
         cache: Arc<Mutex<CacheState>>,
-        wfm: Arc<Mutex<WFMClientState>>,
+        wfm: Arc<Mutex<WFMClient>>,
     ) -> Result<Self, AppError> {
         let log_file = "db.log";
         let mut db_url = helper::get_app_roaming_path();
@@ -343,16 +343,21 @@ impl DatabaseClient {
                 inventory
             }
         };
-        let transaction= self.create_transaction_entry(
-            item.clone().url_name,
-            "buy".to_string(),
-            quantity,
-            rank,
-            price,
-        )
-        .await?;
+        let transaction = self
+            .create_transaction_entry(
+                item.clone().url_name,
+                "buy".to_string(),
+                quantity,
+                rank,
+                price,
+            )
+            .await?;
         // Update UI
-        self.send_to_window("transactions", "CREATE_OR_UPDATE", serde_json::to_value(transaction.clone()).unwrap());
+        self.send_to_window(
+            "transactions",
+            "CREATE_OR_UPDATE",
+            serde_json::to_value(transaction.clone()).unwrap(),
+        );
         // Send Close Event to Warframe Market API
         if report {
             logger::info(
@@ -361,7 +366,7 @@ impl DatabaseClient {
                 true,
                 Some(self.log_file.as_str()),
             );
-            wfm.close_order_by_url(&item.clone().url_name).await?;
+            wfm.orders().close(&item.clone().url_name).await?;
         }
 
         logger::info(
@@ -413,7 +418,6 @@ impl DatabaseClient {
                 .execute(&connection)
                 .await
                 .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
-
         }
         // Send Close Event to Warframe Market API
         if report {
@@ -423,9 +427,9 @@ impl DatabaseClient {
                 true,
                 Some(self.log_file.as_str()),
             );
-            wfm.close_order_by_url(&inventory.item_url).await?;
+            wfm.orders().close(&inventory.item_url).await?;
         } else {
-            let ordres: Vec<Order> = wfm.get_user_ordres().await?.sell_orders;
+            let ordres: Vec<Order> = wfm.orders().get_my_orders().await?.sell_orders;
             let order = ordres
                 .iter()
                 .find(|order| order.item.url_name == inventory.item_url)
@@ -433,24 +437,26 @@ impl DatabaseClient {
 
             if order.is_some() {
                 if inventory.owned <= 0 {
-                    wfm.delete_order(
-                        &order.unwrap().id,
-                        &inventory.item_name,
-                        &inventory.item_id,
-                        "sell",
-                    )
-                    .await?;
+                    wfm.orders()
+                        .delete(
+                            &order.unwrap().id,
+                            &inventory.item_name,
+                            &inventory.item_id,
+                            "sell",
+                        )
+                        .await?;
                 } else {
-                    wfm.update_order_listing(
-                        &order.unwrap().id,
-                        order.unwrap().platinum,
-                        inventory.owned,
-                        order.unwrap().visible,
-                        &inventory.item_name,
-                        &inventory.item_id,
-                        "sell",
-                    )
-                    .await?;
+                    wfm.orders()
+                        .update(
+                            &order.unwrap().id,
+                            order.unwrap().platinum,
+                            inventory.owned,
+                            order.unwrap().visible,
+                            &inventory.item_name,
+                            &inventory.item_id,
+                            "sell",
+                        )
+                        .await?;
                 }
             }
         }
@@ -500,14 +506,21 @@ impl DatabaseClient {
         let result = sqlx::query("UPDATE inventorys SET listed_price = ?1 WHERE id = ?2")
             .bind(listed_price)
             .bind(inventory.id.clone())
-            .execute(&connection)
-            .await
-            .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
+            
+        // let result = sqlx::query("UPDATE inventorys SET listed_price = ?1 WHERE id = ?2")
+        //     .bind(listed_price)
+        //     .bind(inventory.id.clone())
+        //     .execute(&connection)
+        //     .await
+        //     .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
         inventory.listed_price = listed_price;
 
         Ok(true)
     }
     pub fn send_to_window(&self, msg_type: &'static str, operation: &'static str, data: Value) {
-        helper::send_message_to_window("update_data", Some(json!({ "type": msg_type, "operation": operation, "data": data})));
+        helper::send_message_to_window(
+            "update_data",
+            Some(json!({ "type": msg_type, "operation": operation, "data": data})),
+        );
     }
 }

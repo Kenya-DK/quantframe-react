@@ -54,11 +54,11 @@ pub struct Order {
     #[serde(rename = "creation_date")]
     pub creation_date: String,
 
-    #[serde(rename = "order_type")]
-    pub order_type: String,
-
     #[serde(rename = "quantity")]
     pub quantity: i64,
+
+    #[serde(rename = "mod_rank")]
+    pub mod_rank: Option<i64>,
 
     #[serde(rename = "item")]
     pub item: OrderItem,
@@ -127,6 +127,18 @@ pub struct Invantory {
     pub owned: i64,
 }
 #[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct InvantoryCreateOrUpdate {
+    pub id: i64,
+    pub item_id: Option<String>,
+    pub item_url: Option<String>,
+    pub item_name: Option<String>,
+    pub item_type: Option<String>,
+    pub rank: Option<i64>,
+    pub price: Option<f64>,
+    pub listed_price: Option<i64>,
+    pub owned: Option<i64>,
+}
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Transaction {
     pub id: i64,
     pub item_name: String,
@@ -179,7 +191,7 @@ pub struct OrderByItem {
     pub region: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct User {
     #[serde(rename = "reputation")]
     pub reputation: i64,

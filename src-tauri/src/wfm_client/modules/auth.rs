@@ -1,10 +1,12 @@
-use crate::{error::AppError, wfm_client2::client::ClientState};
+use reqwest::header::HeaderMap;
+use serde_json::json;
+
+use crate::{auth::AuthState, error::AppError, logger, wfm_client::client::WFMClient};
 pub struct AuthModule<'a> {
-    pub client: &'a ClientState,
+    pub client: &'a WFMClient,
 }
 
 impl<'a> AuthModule<'a> {
-
     pub async fn login(&self, email: String, password: String) -> Result<AuthState, AppError> {
         let body = json!({
             "email": email,
@@ -32,19 +34,44 @@ impl<'a> AuthModule<'a> {
     }
 
     pub async fn validate(&self) -> Result<bool, AppError> {
-        let auth = self.auth.lock()?.clone();
+        let auth = self.client.auth.lock()?.clone();
         if auth.access_token.is_none() {
             return Ok(false);
         }
 
-        match self.client.orders().create("Lex Prime Set", "56783f24cbfa8f0432dd89a2", "buy", 1, 1, false, None).await
+        match self
+            .client
+            .orders()
+            .create(
+                "Lex Prime Set",
+                "56783f24cbfa8f0432dd89a2",
+                "buy",
+                1,
+                1,
+                false,
+                None,
+            )
+            .await
         {
             Ok(order) => {
-                self.client.orders().delete(&order.id.clone(), "Lex Prime Set", "56783f24cbfa8f0432dd89a2", "buy").await?;
+                self.client
+                    .orders()
+                    .delete(
+                        &order.id.clone(),
+                        "Lex Prime Set",
+                        "56783f24cbfa8f0432dd89a2",
+                        "buy",
+                    )
+                    .await?;
                 Ok(true)
             }
             Err(_e) => {
-                logger::info("WarframeMarket", "Invalid API Key", true, Some(self.log_file.as_str()));
+                logger::info(
+                    "WarframeMarket",
+                    "Invalid API Key",
+                    true,
+                    Some(self.client.log_file.as_str()),
+                );
                 Ok(false)
             }
         }

@@ -30,6 +30,18 @@ const GetGroupByItem = (transactions: TransactionEntryDto[]): GroupByItem[] => {
     };
     items.push(trans);
   }
+  if (items.length == 0) return [
+    {
+      item_id: "",
+      item_url: "",
+      item_type: "",
+      item_name: "",
+      item_tags: [],
+      quantity: 0,
+      price: 0,
+      total: 0,
+    }
+  ];
   return items.sort((a, b) => b.quantity - a.quantity);
 };
 

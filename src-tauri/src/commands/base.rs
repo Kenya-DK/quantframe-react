@@ -6,35 +6,45 @@ use crate::{
     auth::AuthState,
     cache::CacheState,
     database::DatabaseClient,
+    database2::client::DBClient,
     debug::DebugClient,
     error::{self, AppError},
     helper, logger,
     price_scraper::{self, PriceScraper},
     settings::SettingsState,
-    wfm_client::WFMClientState,
-    wfm_client2::client::ClientState,
+    wfm_client::client::WFMClient, structs::InvantoryCreateOrUpdate,
 };
 
 #[tauri::command]
 pub async fn init(
     settings: tauri::State<'_, Arc<Mutex<SettingsState>>>,
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
-    wfm: tauri::State<'_, Arc<Mutex<WFMClientState>>>,
-    wfm2: tauri::State<'_, Arc<Mutex<ClientState>>>,
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheState>>>,
     price_scraper: tauri::State<'_, Arc<Mutex<PriceScraper>>>,
     db: tauri::State<'_, Arc<Mutex<DatabaseClient>>>,
+    db2: tauri::State<'_, Arc<Mutex<DBClient>>>,
 ) -> Result<Value, AppError> {
     let db = db.lock()?.clone();
+    let db2 = db2.lock()?.clone();
     let settings = settings.lock()?.clone();
     let auth = auth.lock()?.clone();
     let wfm = wfm.lock()?.clone();
-    let wfm2 = wfm2.lock()?.clone();
     let cache = cache.lock()?.clone();
     let price_scraper = price_scraper.lock()?.clone();
 
-    let items = wfm2.orders().get_my_auctions().await?;
-    println!("items: {:?}", items.len());
+    let inv = db2
+        .inventory()
+        .get_item_by_url_name("archon_vitality")
+        .await?;
+    if inv.is_none() {
+        println!("Item not found");
+    } else {
+        let mut inv = inv.unwrap();
+        inv.owned = 1555;
+        db2.inventory().update(InvantoryCreateOrUpdate{id:20}).await?;
+    }
+    // println!("items: {:?}", items.len());
 
     helper::send_message_to_window(
         "set_initializstatus",
@@ -56,7 +66,7 @@ pub async fn init(
         "set_initializstatus",
         Some(json!({"status": "Validating Credentials..."})),
     );
-    if !wfm.validate().await? {
+    if !wfm.auth().validate().await? {
         return Ok(json!({"valid": false, "settings": &settings.clone()}));
     }
 
@@ -76,7 +86,7 @@ pub async fn init(
         "set_initializstatus",
         Some(json!({"status": "Loading Your Orders..."})),
     );
-    let orders = wfm.get_user_ordres_as_list().await?;
+    let current_orders = wfm.orders().get_my_orders().await?;
 
     Ok(json!({
         "valid": true,
@@ -84,7 +94,7 @@ pub async fn init(
         "user": &auth.clone(),
         "inventorys": inventorys,
         "transactions": transactions,
-        "orders":orders,
+        "orders":vec![current_orders.sell_orders, current_orders.buy_orders],
         "price_scraper_last_run":price_scraper.get_status(),
         "items": items,
 

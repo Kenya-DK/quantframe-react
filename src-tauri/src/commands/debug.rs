@@ -1,8 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use crate::{
-    auth::AuthState, debug::DebugClient, error::AppError, wfm_client::WFMClientState,
-};
+use crate::{auth::AuthState, debug::DebugClient, error::AppError, wfm_client::client::WFMClient};
 
 #[tauri::command]
 pub async fn import_warframe_algo_trader_data(

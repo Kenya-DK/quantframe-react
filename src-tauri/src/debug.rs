@@ -1,6 +1,6 @@
 use crate::{
     auth::AuthState, cache::CacheState, database::DatabaseClient, error::AppError, logger,
-    settings::SettingsState, structs::Ordres, wfm_client::WFMClientState,
+    settings::SettingsState, structs::Ordres, wfm_client::client::WFMClient,
 };
 use eyre::eyre;
 use serde_json::Value;
@@ -14,7 +14,7 @@ use std::{
 pub struct DebugClient {
     log_file: String,
     cache: Arc<Mutex<CacheState>>,
-    wfm: Arc<Mutex<WFMClientState>>,
+    wfm: Arc<Mutex<WFMClient>>,
     auth: Arc<Mutex<AuthState>>,
     db: Arc<Mutex<DatabaseClient>>,
     settings: Arc<Mutex<SettingsState>>,
@@ -23,7 +23,7 @@ pub struct DebugClient {
 impl DebugClient {
     pub fn new(
         cache: Arc<Mutex<CacheState>>,
-        wfm: Arc<Mutex<WFMClientState>>,
+        wfm: Arc<Mutex<WFMClient>>,
         auth: Arc<Mutex<AuthState>>,
         db: Arc<Mutex<DatabaseClient>>,
         settings: Arc<Mutex<SettingsState>>,
