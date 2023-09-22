@@ -5,12 +5,81 @@ use eyre::eyre;
 use reqwest::header::HeaderMap;
 use serde_json::json;
 use sqlx::Row;
+
+#[derive(Iden)]
+enum Inventory {
+    Table,
+    Id,
+    ItemId,
+    ItemUrl,
+    ItemName,
+    ItemType,
+    Rank,
+    SubType,
+    Attributes,
+    MasteryRank,
+    ReRolls,
+    Price,
+    ListedPrice,
+    Owned,
+    Created,
+}
+
+#[derive(sqlx::FromRow, Serialize, Deserialize, Clone, Debug)]
+#[allow(dead_code)]
+pub struct InventoryStruct {
+    pub id: i64,
+    pub item_id: String,
+    pub item_url: String,
+    pub item_name: String,
+    pub item_type: String,
+    pub rank: i64,
+    // Used for relics
+    pub sub_type: String,
+    // Used for riven mods
+    pub attributes: String,
+    // Used for riven mods
+    pub mastery_rank: i64,
+    // Used for riven mods
+    pub re_rolls: i64,
+    pub price: f64,
+    pub listed_price: Option<i64>,
+    pub owned: i64,
+}
+
 pub struct InventoryModule<'a> {
     pub client: &'a DBClient,
 }
 
 impl<'a> InventoryModule<'a> {
-    // Methods
+    // Methods sea-query
+
+    // Initialize the database
+    pub async fn initialize(&self) -> Result<bool, AppError> {
+        let connection = self.client.connection.lock().unwrap().clone();
+        let sql = Table::create()
+        .table(InventoryStruct::Table)
+        .if_not_exists()
+        .col(ColumnDef::new(InventoryStruct::Id).integer().not_null().auto_increment().primary_key())
+        .col(ColumnDef::new(Inventory::ItemId).uuid().not_null())
+        .col(ColumnDef::new(Inventory::ItemUrl).string().not_null())
+        .col(ColumnDef::new(Inventory::ItemName).string().not_null())
+        .col(ColumnDef::new(Inventory::ItemType).string().not_null())
+        .col(ColumnDef::new(Inventory::Rank).integer().not_null().default(Value::Int(0)))
+        .col(ColumnDef::new(Inventory::SubType).string())
+        .col(ColumnDef::new(Inventory::Attributes).json())
+        .col(ColumnDef::new(Inventory::MasteryRank).integer().not_null().default(Value::Int(0)))
+        .col(ColumnDef::new(Inventory::ReRolls).integer().not_null().default(Value::Int(0)))
+        .col(ColumnDef::new(Inventory::Price).float().not_null().default(Value::Int(0)))
+        .col(ColumnDef::new(Inventory::ListedPrice).float().default(Value::Int(None)))
+        .col(ColumnDef::new(Inventory::Owned).integer().not_null().default(Value::Int(1)))
+        .col(ColumnDef::new(Inventory::Created).date_time().not_null())
+        .build(SqliteQueryBuilder);
+
+        let result = sqlx::query(&sql).execute(&connection).await;
+        Ok(true)
+    }
+        
     pub async fn get_items(&self, sql: &str) -> Result<Vec<Invantory>, AppError> {
         let connection = self.client.connection.lock().unwrap().clone();
 
@@ -70,13 +139,8 @@ impl<'a> InventoryModule<'a> {
                 // Get price per unit
                 let total_price = (t.price * t.owned as f64) + price as f64;
                 let weighted_price = total_price / total_owned as f64;
-                sqlx::query("UPDATE inventorys SET owned = ?1, price = ?2 WHERE id = ?3")
-                    .bind(total_owned)
-                    .bind(weighted_price)
-                    .bind(t.id)
-                    .execute(&connection)
-                    .await
-                    .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
+                self.update(t.id, total_owned, weighted_price, None)
+                    .await?;               
                 let mut t = t.clone();
                 t.owned = total_owned;
                 t.price = weighted_price;
@@ -109,57 +173,25 @@ impl<'a> InventoryModule<'a> {
                 inventory
             }
         };
-        logger::info(
-            "Database",
-            format!("Created inventory entry with id {}", inventory.id).as_str(),
-            true,
-            Some(self.client.log_file.as_str()),
-        );
         Ok(inventory)
     }
 
-    pub async fn update(
+    pub async fn update_by_id(
         &self,
         id: i64,
         owned: Option<i64>,
-        price: Option<i64>,
+        price: Option<f64>,
         listed_price: Option<i64>,
-    ) -> Result<bool, AppError> {
-        let connection = self.client.connection.lock().unwrap().clone();
-        sqlx::query(
-            "UPDATE inventorys SET owned = ?1, listed_price = ?2, price = ?3 WHERE id = ?4",
-        )
-        .bind(owned)
-        .bind(listed_price)
-        .bind(price)
-        .bind(id)
-        .execute(&connection)
-        .await
-        .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
-
-        Ok(true)
+    ) -> Result<(), AppError> {
+        Ok(())
     }
-    pub async fn delete(&self, id: i64) -> Result<Option<Invantory>, AppError> {
-        let inventorys = self.get_items("SELECT * FROM inventorys;").await?;
-        let inventory = inventorys.iter().find(|t| t.id == id).clone();
-        if inventory.is_none() {
-            return Ok(None);
-        }
-        let connection = self.client.connection.lock().unwrap().clone();
-        sqlx::query("DELETE FROM inventorys WHERE id = ?1")
-            .bind(id)
-            .execute(&connection)
-            .await
-            .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
-
-        logger::info(
-            "Database",
-            format!("Deleted inventory entry with id {}", id).as_str(),
-            true,
-            Some(self.client.log_file.as_str()),
-        );
-        Ok(Some(inventory.unwrap().clone()))
+    
+    pub async fn delete(&self, id: i64) -> Result<(), AppError> {        
+        Ok(())
     }
 
+    pub fn emit(&'static str, operation: &'static str, data: Value) {
+        helper::emit_update("inventorys", operation, Some(data));
+    }
     // End of methods
 }

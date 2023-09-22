@@ -26,9 +26,8 @@ sqlx = { version = "0.7.1", features = ["runtime-tokio-native-tls", "sqlite"] }
 once_cell = "1.7"
 chrono = "0.4"
 reqwest = "0.11"
-thiserror = "1.0.47"
-backtrace = "0.3.69"
 eyre = "0.6.8"
+sea-query = "0"
 
 
 [features]

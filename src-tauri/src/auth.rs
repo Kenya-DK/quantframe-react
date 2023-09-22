@@ -78,6 +78,6 @@ impl AuthState {
         Ok(auth)
     }
     pub fn send_to_window(&self) {
-        helper::send_message_to_window("update_data", Some(json!({ "type": "user", "operation": "set", "data": self.clone()})));
+        helper::send_message_to_window("Client:Update", Some(json!({ "type": "user", "operation": "set", "data": self.clone()})));
     }
 }

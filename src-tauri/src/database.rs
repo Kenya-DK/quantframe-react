@@ -519,7 +519,7 @@ impl DatabaseClient {
     }
     pub fn send_to_window(&self, msg_type: &'static str, operation: &'static str, data: Value) {
         helper::send_message_to_window(
-            "update_data",
+            "Client:Update",
             Some(json!({ "type": msg_type, "operation": operation, "data": data})),
         );
     }

@@ -54,6 +54,10 @@ pub fn send_message_to_window(event: &str, data: Option<Value>) {
     }
 }
 
+pub fn emit_update(update_type: &str, operation: &str,data: Option<Value>) {
+    helper::send_message_to_window("Client:Update", Some(json!({ "type": update_type, "operation": operation, "data": data})));   
+}
+
 pub fn get_app_local_path() -> PathBuf {
     if let Some(base_dirs) = BaseDirs::new() {
         // App path for csv file

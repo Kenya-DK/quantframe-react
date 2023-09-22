@@ -26,19 +26,19 @@ export const OnTauriEvent = <T>(event: string, callback: (data: T) => void) => {
     }
   });
 
-  OnTauriEvent<{ type: string, operation: string, data: any }>("update_data", ({ type, operation, data }) => {
-    listener.fire(`update_data:${type}`, { operation, data });
+  OnTauriEvent<{ type: string, operation: string, data: any }>("Client:Update", ({ type, operation, data }) => {
+    listener.fire(`Client:Update:${type}`, { operation, data });
   });
 })();
 
 /**
- * Registers a callback function to be called when a Tauri "update_data" event with the given type is emitted.
+ * Registers a callback function to be called when a Tauri "Client:Update" event with the given type is emitted.
  * The callback function will receive an object with the operation and data properties as its argument.
- * @param type The type of the "update_data" event to listen for.
+ * @param type The type of the "Client:Update" event to listen for.
  * @param callback The function to be called when the event is emitted.
  */
 export const OnTauriUpdateDataEvent = <T>(type: string, callback: (data: { operation: string, data: T }) => void) => {
-  listener.add(`update_data:${type}`, callback);
+  listener.add(`Client:Update:${type}`, callback);
 }
 
 /**
@@ -61,12 +61,12 @@ export const SendTauriEvent = async (event: string, data?: any) => {
 }
 
 /**
- * Emits a Tauri "update_data" event with the given type and data (optional).
- * @param event The type of the "update_data" event to emit.
+ * Emits a Tauri "Client:Update" event with the given type and data (optional).
+ * @param event The type of the "Client:Update" event to emit.
  * @param data The data to pass along with the event (optional).
  */
 export const SendTauriUpdateDataEvent = async (event: string, data?: any) => {
-  listener.fire(`update_data:${event}`, data);
+  listener.fire(`Client:Update:${event}`, data);
 }
 
 /**
