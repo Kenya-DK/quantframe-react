@@ -2,8 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use auth::AuthState;
 use cache::CacheState;
-use database::DatabaseClient;
-use database2::client::DBClient;
+use database::client::DBClient;
 use debug::DebugClient;
 use error::AppError;
 use price_scraper::PriceScraper;
@@ -23,7 +22,6 @@ mod auth;
 mod cache;
 mod commands;
 mod database;
-mod database2;
 mod debug;
 mod error;
 mod helper;
@@ -56,18 +54,11 @@ async fn setup_async(app: &mut App) -> Result<(), AppError> {
 
     // create and manage DatabaseClient state
     let database_client = Arc::new(Mutex::new(
-        DatabaseClient::new(cache_arc.clone(), wfm_client.clone())
-            .await
-            .unwrap(),
-    ));
-    app.manage(database_client.clone());
-
-    let database_client2 = Arc::new(Mutex::new(
         DBClient::new(cache_arc.clone(), wfm_client.clone())
             .await
             .unwrap(),
     ));
-    app.manage(database_client2.clone());
+    app.manage(database_client.clone());
 
     // create and manage PriceScraper state
     let price_scraper: Arc<Mutex<PriceScraper>> = Arc::new(Mutex::new(PriceScraper::new(
@@ -104,7 +95,12 @@ async fn setup_async(app: &mut App) -> Result<(), AppError> {
 }
 fn main() {
     panic::set_hook(Box::new(|panic_info| {
-        println!("Panic: {:?}", panic_info);
+        logger::critical(
+            "Panic",
+            format!("Panic: {:?}", panic_info).as_str(),
+            true,
+            Some("panic.log"),
+        );
         //  Do something with backtrace and panic_info.
     }));
     tauri::Builder::default()

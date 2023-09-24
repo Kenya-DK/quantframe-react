@@ -1,3 +1,5 @@
+import { Wfm } from './wfm.type';
+
 export interface InventoryEntryDto {
   id?: number;
   item_id: string;
@@ -10,11 +12,16 @@ export interface InventoryEntryDto {
 }
 export interface CreateTransactionEntryDto {
   item_id: string;
+  item_type: string;
   transaction_type?: string;
   report?: boolean;
   rank: number;
   price: number;
   quantity: number;
+  sub_type?: string;
+  attributes?: Wfm.RivenAttributeDto[];
+  mastery_rank?: number;
+  re_rolls?: number;
 }
 export interface TransactionEntryDto {
   id?: number;

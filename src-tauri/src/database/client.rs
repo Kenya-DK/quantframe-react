@@ -8,7 +8,7 @@ use polars::{
 use reqwest::{header::HeaderMap, Client, Method, Url};
 use serde::de::DeserializeOwned;
 use serde_json::{json, Value};
-use sqlx::{Pool, Sqlite, migrate::MigrateDatabase, SqlitePool};
+use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
 
 use crate::{
     auth::AuthState,
@@ -57,6 +57,11 @@ impl DBClient {
             cache,
             wfm,
         })
+    }
+    pub async fn initialize(&self) -> Result<bool, AppError> {
+        self.inventory().initialize().await?;
+        self.transaction().initialize().await?;
+        Ok(true)
     }
     pub fn get_connection(&self) -> Arc<Mutex<Pool<Sqlite>>> {
         self.connection.clone()

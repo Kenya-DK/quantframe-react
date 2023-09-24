@@ -1,5 +1,5 @@
 
-import { Button, Center, Stack, Title } from '@mantine/core';
+import { Button, Center, Group, Title } from '@mantine/core';
 import { usePriceScraperContext } from '../contexts/priceScraper.context';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDatabase } from '@fortawesome/free-solid-svg-icons';
@@ -17,8 +17,8 @@ export const TransactionControl = () => {
 
   return (
     <Center >
-      <Stack >
-        <Title order={1}>{useTranslate("title")}</Title>
+      {/* <Title order={3}>{useTranslate("title")}</Title> */}
+      <Group position="center" spacing="xs" mr={12}>
         <ButtonProgress
           onStart={async () => {
             await api.price_scraper.start_scraper(days);
@@ -28,13 +28,17 @@ export const TransactionControl = () => {
           label={useTranslate("price_scraper_start")}
           progressLabel={useTranslate("price_scraper_running")}
         />
+      </Group>
+      <Group position="center" spacing="xs" mr={12}>
         <Button color={liveIsRunning ? "red.7" : "green.7"} leftIcon={<FontAwesomeIcon icon={faDatabase} />} onClick={async () => await api.live_scraper.start_scraper()} disabled={statsIsRunning}>
           {liveIsRunning ? useTranslate("live_trading_stop") : useTranslate("live_trading_start")}
         </Button>
+      </Group>
+      <Group position="center" spacing="xs" mr={12}>
         <Button color={whisperIsRunning ? "red.7" : "green.7"} leftIcon={<FontAwesomeIcon icon={faDatabase} />} onClick={async () => await api.whisper_scraper.start_scraper()} disabled={statsIsRunning}>
           {whisperIsRunning ? useTranslate("wisper_stop") : useTranslate("wisper_start")}
         </Button>
-      </Stack>
+      </Group>
     </Center>
   );
 }

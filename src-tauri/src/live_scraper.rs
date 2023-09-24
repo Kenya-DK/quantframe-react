@@ -1,5 +1,6 @@
 use crate::auth::AuthState;
-use crate::database::DatabaseClient;
+use crate::database::client::DBClient;
+use crate::error;
 use crate::logger::LogLevel;
 use crate::price_scraper::PriceScraper;
 use crate::structs::Order;
@@ -31,7 +32,7 @@ pub struct LiveScraper {
     price_scraper: Arc<Mutex<PriceScraper>>,
     wfm: Arc<Mutex<WFMClient>>,
     auth: Arc<Mutex<AuthState>>,
-    db: Arc<Mutex<DatabaseClient>>,
+    db: Arc<Mutex<DBClient>>,
 }
 
 impl LiveScraper {
@@ -40,7 +41,7 @@ impl LiveScraper {
         price_scraper: Arc<Mutex<PriceScraper>>,
         wfm: Arc<Mutex<WFMClient>>,
         auth: Arc<Mutex<AuthState>>,
-        db: Arc<Mutex<DatabaseClient>>,
+        db: Arc<Mutex<DBClient>>,
     ) -> Self {
         LiveScraper {
             log_file: "live_scraper.log".to_string(),
@@ -118,10 +119,13 @@ impl LiveScraper {
         let db = self.db.lock()?.clone();
         let wfm = self.wfm.lock()?.clone();
 
-        let inventory_df = db.get_inventorys_df().await?;
+        let inventory_df = db
+            .inventory()
+            .convet_inventorys_to_datafream(db.inventory().get_items().await?)
+            .unwrap();
         let whitelist = settings.whitelist.clone();
         // Call the database to get the inventory names
-        let inventory_names = db.get_inventory_names().await?;
+        let inventory_names = db.inventory().get_inventory_names().await?;
 
         // Get interesting items from buy_sell_overlap
         let interesting_items: Vec<String> = match helper::get_column_values(
@@ -336,21 +340,25 @@ impl LiveScraper {
 
         for order in current_orders.sell_orders {
             // Check if item is in blacklist
-            if blacklist.contains(&order.item.url_name) {
+            if blacklist.contains(&order.clone().item.unwrap().url_name) {
                 continue;
             }
-            db.update_inventory_by_url(order.item.url_name, None)
-                .await?;
             wfm.orders()
-                .delete(&order.id, "None", "None", "Any")
-                .await?;
+            .delete(&order.id, "None", "None", "Any")
+            .await?;
+            match db.inventory().update_by_url(&order.item.unwrap().url_name, None, None, None).await {      
+                Ok(_) => {}
+                Err(e) => {
+                    error::create_log_file(self.log_file.clone(), &e);
+                }
+            };  
         }
         for order in current_orders.buy_orders {
             if self.is_running() == false {
                 return Ok(());
             }
             // Check if item is in blacklist
-            if blacklist.contains(&order.item.url_name) {
+            if blacklist.contains(&order.item.unwrap().url_name) {
                 continue;
             }
             wfm.orders()
@@ -389,7 +397,7 @@ impl LiveScraper {
             .collect()
             .map_err(|e| AppError::new("LiveScraper", eyre!(e.to_string())))?;
         // Call the database to get the inventory names and DataFrame
-        let inventory_names = db.get_inventory_names().await?;
+        let inventory_names = db.inventory().get_inventory_names().await?;
         let inventory_names_s = Series::new("desired_column_name", inventory_names);
 
         // Filters the DataFrame based on the given predicates and returns a new DataFrame.
@@ -779,7 +787,7 @@ impl LiveScraper {
                 wfm.orders()
                     .update(
                         order_id.clone().unwrap().as_str(),
-                        post_price,
+                        post_price as i32,
                         1,
                         visibility,
                         item_name,
@@ -825,17 +833,17 @@ impl LiveScraper {
             return Ok(None);
         }
         // Get the owned value from the database
-        let owned: i64 = match helper::get_column_value(
+        let owned: i32 = match helper::get_column_value(
             inventory_df.clone(),
             Some(col("item_url").eq(lit(item_name))),
             "owned",
-            ColumnType::I64,
+            ColumnType::I32,
         )? {
-            ColumnValue::I64(values) => values.unwrap_or(0),
+            ColumnValue::I32(values) => values.unwrap_or(0),
             _ => return Err(AppError::new("LiveScraper", eyre!("Expected f64 values"))),
         };
 
-        if owned > 1 && ((closed_avg_metric as i64) < (25 * owned)) {
+        if owned > 1 && ((closed_avg_metric as i64) < (25 * owned as i64)) {
             logger::info_con(
                 "LiveScraper",
                 format!("You're holding too many of this {item_name}! Not putting up a buy order.")
@@ -865,7 +873,7 @@ impl LiveScraper {
                     wfm.orders()
                         .update(
                             order_id.clone().unwrap().as_str(),
-                            post_price,
+                            post_price as i32,
                             1,
                             visibility,
                             item_name,
@@ -887,7 +895,7 @@ impl LiveScraper {
                     wfm.orders()
                         .update(
                             order_id.clone().unwrap().as_str(),
-                            post_price,
+                            post_price as i32,
                             1,
                             visibility,
                             item_name,
@@ -1064,12 +1072,13 @@ impl LiveScraper {
             .get_my_order_information(item_name, &current_orders)
             .await?;
 
-        let inventory_names = db.get_inventory_names().await?;
+        let inventory_names = db.inventory().get_inventory_names().await?;
 
         if !inventory_names.contains(&item_name.to_string()) && !active {
             return Ok(());
         } else if !inventory_names.contains(&item_name.to_string()) {
-            db.update_inventory_by_url(item_name.to_string(), None)
+            db.inventory()
+                .update_by_url(item_name, None, None, None)
                 .await?;
             wfm.orders()
                 .delete(
@@ -1091,7 +1100,8 @@ impl LiveScraper {
 
         // Get Invantory Data from the database
         let inventory = db
-            .get_inventory_by_url(item_name.to_string())
+            .inventory()
+            .get_item_by_url_name(item_name)
             .await?
             .unwrap();
 
@@ -1108,14 +1118,15 @@ impl LiveScraper {
         // If there are no buyers, update order to be 30p above average price
         if sellers == 0 {
             let post_price = (avg_price + 30) as i64;
-            db.update_inventory_by_url(item_name.to_string(), Some(post_price))
+            db.inventory()
+                .update_by_url(item_name, None, None, Some(post_price as i32))
                 .await?;
             if active {
                 wfm.orders()
                     .update(
                         order_id.clone().unwrap().as_str(),
-                        post_price,
-                        quantity,
+                        post_price as i32,
+                        quantity as i32,
                         visibility,
                         item_name,
                         item_id,
@@ -1168,15 +1179,16 @@ impl LiveScraper {
                 wfm.orders()
                     .update(
                         order_id.clone().unwrap().as_str(),
-                        post_price,
-                        quantity,
+                        post_price as i32,
+                        quantity as i32,
                         visibility,
                         item_name,
                         item_id,
                         "sell",
                     )
                     .await?;
-                db.update_inventory_by_url(item_name.to_string(), Some(post_price))
+                db.inventory()
+                    .update_by_url(item_name, None, None, Some(post_price as i32))
                     .await?;
                 logger::info_con(
                     "LiveScraper",
@@ -1200,7 +1212,8 @@ impl LiveScraper {
                     item_name, item_id, "sell", post_price, quantity, true, item_rank,
                 )
                 .await?;
-            db.update_inventory_by_url(item_name.to_string(), Some(post_price))
+            db.inventory()
+                .update_by_url(item_name, None, None, Some(post_price as i32))
                 .await?;
             logger::info_con("LiveScraper",format!("Automatically Posted Visible Sell Order Item: {item_name}, ItemId: {item_id}, Price: {post_price}").as_str());
         }
@@ -1208,7 +1221,7 @@ impl LiveScraper {
     }
     fn get_new_buy_data(
         &self,
-        current_orders: DataFrame,
+        mut current_orders: DataFrame,
         order: Order,
         item_closed_avg: f64,
     ) -> Result<DataFrame, AppError> {
@@ -1227,6 +1240,7 @@ impl LiveScraper {
             .with_column(Series::new("closedAvg", vec![item_closed_avg]))
             .cloned()
             .map_err(|e| AppError::new("LiveScraper", eyre!(e.to_string())))?;
+        current_orders = current_orders.drop("username").unwrap();
         Ok(helper::merge_dataframes(vec![current_orders, order_df])?)
     }
 }

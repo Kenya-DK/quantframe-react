@@ -3446,7 +3446,6 @@ dependencies = [
 name = "quantframe-react"
 version = "0.0.0"
 dependencies = [
- "backtrace",
  "chrono",
  "csv",
  "directories",
@@ -3455,12 +3454,12 @@ dependencies = [
  "polars",
  "regex",
  "reqwest",
+ "sea-query",
  "serde",
  "serde_json",
  "sqlx",
  "tauri",
  "tauri-build",
- "thiserror",
  "tokio",
 ]
 
@@ -3857,6 +3856,29 @@ name = "scopeguard"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
+
+[[package]]
+name = "sea-query"
+version = "0.22.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "727090e8d1e61edd07305d237664315226748ad559e16daa6293fa26c4e7a3c3"
+dependencies = [
+ "sea-query-derive",
+ "serde_json",
+]
+
+[[package]]
+name = "sea-query-derive"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "34cdc022b4f606353fe5dc85b09713a04e433323b70163e81513b141c6ae6eb5"
+dependencies = [
+ "heck 0.3.3",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+ "thiserror",
+]
 
 [[package]]
 name = "security-framework"

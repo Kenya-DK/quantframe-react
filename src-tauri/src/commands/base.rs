@@ -5,14 +5,14 @@ use serde_json::{json, Value};
 use crate::{
     auth::AuthState,
     cache::CacheState,
-    database::DatabaseClient,
-    database2::client::DBClient,
+    database::client::DBClient,
     debug::DebugClient,
     error::{self, AppError},
     helper, logger,
     price_scraper::{self, PriceScraper},
     settings::SettingsState,
-    wfm_client::client::WFMClient, structs::InvantoryCreateOrUpdate,
+    structs::{InvantoryCreateOrUpdate, RivenAttribute},
+    wfm_client::client::WFMClient,
 };
 
 #[tauri::command]
@@ -22,28 +22,14 @@ pub async fn init(
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheState>>>,
     price_scraper: tauri::State<'_, Arc<Mutex<PriceScraper>>>,
-    db: tauri::State<'_, Arc<Mutex<DatabaseClient>>>,
-    db2: tauri::State<'_, Arc<Mutex<DBClient>>>,
+    db: tauri::State<'_, Arc<Mutex<DBClient>>>,
 ) -> Result<Value, AppError> {
     let db = db.lock()?.clone();
-    let db2 = db2.lock()?.clone();
     let settings = settings.lock()?.clone();
     let auth = auth.lock()?.clone();
     let wfm = wfm.lock()?.clone();
     let cache = cache.lock()?.clone();
     let price_scraper = price_scraper.lock()?.clone();
-
-    let inv = db2
-        .inventory()
-        .get_item_by_url_name("archon_vitality")
-        .await?;
-    if inv.is_none() {
-        println!("Item not found");
-    } else {
-        let mut inv = inv.unwrap();
-        inv.owned = 1555;
-        db2.inventory().update(InvantoryCreateOrUpdate{id:20}).await?;
-    }
     // println!("items: {:?}", items.len());
 
     helper::send_message_to_window(
@@ -74,27 +60,28 @@ pub async fn init(
         "set_initializstatus",
         Some(json!({"status": "Loading Inventory..."})),
     );
-    let inventorys = db.get_inventorys().await?;
+    let inventorys = db.inventory().get_items().await?;
 
     helper::send_message_to_window(
         "set_initializstatus",
         Some(json!({"status": "Loading Transactions..."})),
     );
-    let transactions = db.get_transactions("SELECT * FROM transactions").await?;
+    let transactions = db.transaction().get_items().await?;
 
     helper::send_message_to_window(
         "set_initializstatus",
         Some(json!({"status": "Loading Your Orders..."})),
     );
-    let current_orders = wfm.orders().get_my_orders().await?;
-
+    let mut ordres_vec = wfm.orders().get_my_orders().await?;
+    let mut ordres = ordres_vec.buy_orders;
+    ordres.append(&mut ordres_vec.sell_orders);
     Ok(json!({
         "valid": true,
         "settings": &settings.clone(),
         "user": &auth.clone(),
         "inventorys": inventorys,
         "transactions": transactions,
-        "orders":vec![current_orders.sell_orders, current_orders.buy_orders],
+        "orders": ordres,
         "price_scraper_last_run":price_scraper.get_status(),
         "items": items,
 

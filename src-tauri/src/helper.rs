@@ -22,22 +22,26 @@ use crate::{
 
 pub static WINDOW: Lazy<Mutex<Option<Window>>> = Lazy::new(|| Mutex::new(None));
 
+#[derive(Debug)]
 pub enum ColumnType {
     Bool,
     F64,
     I64,
+    I32,
     String,
 }
 pub enum ColumnValues {
     Bool(Vec<bool>),
     F64(Vec<f64>),
     I64(Vec<i64>),
+    I32(Vec<i32>),
     String(Vec<String>),
 }
 pub enum ColumnValue {
     Bool(Option<bool>),
     F64(Option<f64>),
     I64(Option<i64>),
+    I32(Option<i32>),
     String(Option<String>),
 }
 
@@ -55,7 +59,7 @@ pub fn send_message_to_window(event: &str, data: Option<Value>) {
 }
 
 pub fn emit_update(update_type: &str, operation: &str,data: Option<Value>) {
-    helper::send_message_to_window("Client:Update", Some(json!({ "type": update_type, "operation": operation, "data": data})));   
+    send_message_to_window("Client:Update", Some(json!({ "type": update_type, "operation": operation, "data": data})));   
 }
 
 pub fn get_app_local_path() -> PathBuf {
@@ -134,19 +138,19 @@ pub fn get_column_values(
             .lazy()
             .filter(filter)
             .collect()
-            .map_err(|e| AppError::new("Helper", eyre!(e.to_string())))?,
+            .map_err(|e| AppError::new("Helper", eyre!(format!("Column: {:?} ColumnType: {:?} Error: {:?}", column,col_type,e))))?,
         None => df,
     };
 
     let column_series = df
         .column(column)
-        .map_err(|e| AppError::new("Helper", eyre!(e.to_string())))?;
+        .map_err(|e| AppError::new("Helper", eyre!(format!("Column: {:?} ColumnType: {:?} Error: {:?}", column,col_type, e))))?;
 
     match col_type {
         ColumnType::Bool => {
             let values: Vec<bool> = column_series
                 .bool()
-                .map_err(|e| AppError::new("Helper", eyre!(e.to_string())))?
+                .map_err(|e| AppError::new("Helper", eyre!(format!("Column: {:?} ColumnType: {:?} Error: {:?}", column,col_type, e))))?
                 .into_iter()
                 .filter_map(|opt_val| opt_val)
                 .collect();
@@ -156,7 +160,7 @@ pub fn get_column_values(
         ColumnType::F64 => {
             let values: Vec<f64> = column_series
                 .f64()
-                .map_err(|e| AppError::new("Helper", eyre!(e.to_string())))?
+                .map_err(|e| AppError::new("Helper", eyre!(format!("Column: {:?} ColumnType: {:?} Error: {:?}", column,col_type, e))))?
                 .into_iter()
                 .filter_map(|opt_val| opt_val)
                 .collect();
@@ -166,16 +170,25 @@ pub fn get_column_values(
         ColumnType::I64 => {
             let values: Vec<i64> = column_series
                 .i64()
-                .map_err(|e| AppError::new("Helper", eyre!(e.to_string())))?
+                .map_err(|e| AppError::new("Helper", eyre!(format!("Column: {:?} ColumnType: {:?} Error: {:?}", column,col_type, e))))?
                 .into_iter()
                 .filter_map(|opt_val| opt_val)
                 .collect();
             Ok(ColumnValues::I64(values))
         }
+        ColumnType::I32 => {
+            let values: Vec<i32> = column_series
+                .i32()
+                .map_err(|e| AppError::new("Helper", eyre!(format!("Column: {:?} ColumnType: {:?} Error: {:?}", column,col_type ,e))))?
+                .into_iter()
+                .filter_map(|opt_val| opt_val)
+                .collect();
+            Ok(ColumnValues::I32(values))
+        }
         ColumnType::String => {
             let values = column_series
                 .utf8()
-                .map_err(|e| AppError::new("Helper", eyre!(e.to_string())))?
+                .map_err(|e| AppError::new("Helper", eyre!(format!("Column: {:?} ColumnType: {:?} Error: {:?}", column,col_type, e))))?
                 .into_iter()
                 .filter_map(|opt_name| opt_name.map(String::from))
                 .collect::<Vec<_>>()
@@ -203,6 +216,10 @@ pub fn get_column_value(
         ColumnValues::I64(i64_values) => {
             let value = i64_values.get(0).cloned();
             Ok(ColumnValue::I64(value))
+        }
+        ColumnValues::I32(i32_values) => {
+            let value = i32_values.get(0).cloned();
+            Ok(ColumnValue::I32(value))
         }
         ColumnValues::String(string_values) => {
             let value = string_values.get(0).cloned();

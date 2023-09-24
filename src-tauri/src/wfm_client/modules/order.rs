@@ -7,8 +7,8 @@ use serde_json::json;
 
 use crate::{
     error::AppError,
-    logger,
-    structs::{Order, Ordres, User},
+    helper, logger,
+    structs::{Order, Ordres},
     wfm_client::client::WFMClient,
 };
 
@@ -69,6 +69,7 @@ impl<'a> OrderModule<'a> {
         {
             Ok((order, _headers)) => {
                 logger::info("WarframeMarket", format!("Created Order: {}, Item Name: {}, Item Id: {},  Platinum: {}, Quantity: {}, Visible: {}", order_type, item_name, item_id ,platinum ,quantity ,visible).as_str(), true, Some(self.client.log_file.as_str()));
+                self.emit("CREATE_OR_UPDATE", serde_json::to_value(&order).unwrap());
                 Ok(order)
             }
             Err(e) => Err(e),
@@ -95,6 +96,7 @@ impl<'a> OrderModule<'a> {
                     true,
                     Some(self.client.log_file.as_str()),
                 );
+                self.emit("DELETE", json!({ "id": &order_id }));
                 Ok(order_id)
             }
             Err(e) => Err(e),
@@ -104,8 +106,8 @@ impl<'a> OrderModule<'a> {
     pub async fn update(
         &self,
         order_id: &str,
-        platinum: i64,
-        quantity: i64,
+        platinum: i32,
+        quantity: i32,
         visible: bool,
         item_name: &str,
         item_id: &str,
@@ -121,22 +123,22 @@ impl<'a> OrderModule<'a> {
         match self.client.put(&url, Some("order"), Some(body)).await {
             Ok((order, _headers)) => {
                 logger::info("WarframeMarket", format!("Updated Order Id: {}, Item Name: {}, Item Id: {}, Platinum: {}, Quantity: {}, Visible: {}, Type: {}", order_id, item_name, item_id,platinum ,quantity ,visible, order_type).as_str(), true, Some(&self.client.log_file));
+                self.emit("CREATE_OR_UPDATE", serde_json::to_value(&order).unwrap());
                 Ok(order)
             }
             Err(e) => Err(e),
         }
     }
 
-    pub async fn close(&self, item: &str) -> Result<String, AppError> {
+    pub async fn close(&self, item: &str, order_type: &str) -> Result<String, AppError> {
         // Get the user orders and find the order
         let mut ordres_vec = self.get_my_orders().await?;
         let mut ordres: Vec<Order> = ordres_vec.buy_orders;
         ordres.append(&mut ordres_vec.sell_orders);
-
         // Find Order by name.
         let order = ordres
             .iter()
-            .find(|order| order.item.url_name == item)
+            .find(|order| order.item.as_ref().unwrap().url_name == item && order.order_type == order_type)
             .clone();
 
         if order.is_none() {
@@ -210,9 +212,16 @@ impl<'a> OrderModule<'a> {
         let orders_df = DataFrame::new_no_checks(vec![
             Series::new("id", vec![order.id.clone()]),
             Series::new("visible", vec![order.visible.clone()]),
-            Series::new("url_name", vec![order.item.url_name.clone()]),
+            Series::new(
+                "url_name",
+                vec![order
+                    .item
+                    .map(|item| item.url_name)
+                    .unwrap_or("".to_string())],
+            ),
             Series::new("platinum", vec![order.platinum.clone()]),
             Series::new("platform", vec![order.platform.clone()]),
+            Series::new("order_type", vec![order.order_type.clone()]),
             Series::new("quantity", vec![order.quantity.clone()]),
             Series::new("last_update", vec![order.last_update.clone()]),
             Series::new("creation_date", vec![order.creation_date.clone()]),
@@ -255,7 +264,13 @@ impl<'a> OrderModule<'a> {
                 "url_name",
                 orders
                     .iter()
-                    .map(|order| order.item.url_name.clone())
+                    .map(|order| {
+                        order
+                            .clone()
+                            .item
+                            .map(|item| item.url_name)
+                            .unwrap_or("".to_string())
+                    })
                     .collect::<Vec<_>>(),
             ),
             Series::new(
@@ -270,6 +285,13 @@ impl<'a> OrderModule<'a> {
                 orders
                     .iter()
                     .map(|order| order.platform.clone())
+                    .collect::<Vec<_>>(),
+            ),
+            Series::new(
+                "order_type",
+                orders
+                    .iter()
+                    .map(|order| order.order_type.clone())
                     .collect::<Vec<_>>(),
             ),
             Series::new(
@@ -296,6 +318,8 @@ impl<'a> OrderModule<'a> {
         ]);
         Ok(orders_df)
     }
-
+    pub fn emit(&self, operation: &str, data: serde_json::Value) {
+        helper::emit_update("orders", operation, Some(data));
+    }
     // End Helper
 }

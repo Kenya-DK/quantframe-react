@@ -126,7 +126,7 @@ export namespace Wfm {
     item_name: string;
   }
 
-  export interface RivenAttributesDto {
+  export interface RivenAttributeInfoDto {
     negative_only: boolean;
     effect: string;
     id: string;
@@ -138,5 +138,10 @@ export namespace Wfm {
     suffix: string;
     positive_is_negative: boolean;
     prefix: string;
+  }
+  export interface RivenAttributeDto {
+    positive: boolean;
+    url_name: string;
+    value: number;
   }
 }

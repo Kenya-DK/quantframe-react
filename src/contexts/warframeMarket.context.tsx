@@ -38,8 +38,8 @@ export const WarframeMarketContextProvider = ({ children }: WarframeMarketContex
         break;
       case "DELETE":
         {
-          const order_id = data as string;
-          setOrders((inventorys) => [...inventorys.filter((item) => item.id !== order_id)]);
+          const order = data as Wfm.OrderDto;
+          setOrders((inventorys) => [...inventorys.filter((item) => item.id !== order.id)]);
         }
         break;
       case "SET":
@@ -92,7 +92,7 @@ export const WarframeMarketContextProvider = ({ children }: WarframeMarketContex
   useEffect(() => {
     OnTauriUpdateDataEvent<InventoryEntryDto>("inventorys", ({ data, operation }) => handleUpdateInventory(operation, data));
     OnTauriUpdateDataEvent<TransactionEntryDto>("transactions", ({ data, operation }) => handleUpdateTransaction(operation, data));
-    OnTauriUpdateDataEvent<Wfm.OrderDto | string>("orders", ({ data, operation }) => handleUpdateOrders(operation, data));
+    OnTauriUpdateDataEvent<Wfm.OrderDto>("orders", ({ data, operation }) => handleUpdateOrders(operation, data));
     return () => { }
   }, []);
 

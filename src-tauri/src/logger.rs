@@ -29,6 +29,7 @@ pub fn format_text(text: &str, color: &str, bold: bool) -> String {
         "magenta" => "35",
         "cyan" => "36",
         "white" => "37",
+        "orange" => "38;5;208",
         _ => "0", // default color
     };
 
@@ -63,7 +64,7 @@ pub fn dolog(level: LogLevel, component: &str, msg: &str, console: bool, file: O
     let msg = format_text(msg, "white", false);
     let log_prefix = match level {
         LogLevel::Info => format_square_bracket(format_text("INFO", "green", true).as_str()),
-        LogLevel::Warning => format_square_bracket(format_text("WARN", "yellow", true).as_str()),
+        LogLevel::Warning => format_square_bracket(format_text("WARN", "orange", true).as_str()),
         LogLevel::Error => format_square_bracket(format_text("ERROR", "red", true).as_str()),
         LogLevel::Debug => format_square_bracket(format_text("DEBUG", "blue", true).as_str()),
         LogLevel::Trace => format_square_bracket(format_text("TRACE", "cyan", true).as_str()),
@@ -167,6 +168,15 @@ pub fn critical_con(component: &str, msg: &str) {
     critical(component, msg, true, None);
 }
 
+pub fn warning(component: &str, msg: &str, console: bool, file: Option<&str>) {
+    dolog(LogLevel::Warning, component, msg, console, file);
+}
+pub fn warning_file(component: &str, msg: &str, file: Option<&str>) {
+    warning(component, msg, false, file);
+}
+pub fn warning_con(component: &str, msg: &str) {
+    warning(component, msg, true, None);
+}
 /// Logs the given DataFrame to a CSV file with the given name in the log folder.
 /// The `df` argument is a mutable reference to the DataFrame to be logged.
 /// The `name` argument is a string representing the name of the CSV file to be created.

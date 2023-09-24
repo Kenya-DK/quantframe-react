@@ -43,7 +43,18 @@ const api = {
   items: {},
   transactions: {
     async create_transaction_entry(input: CreateTransactionEntryDto): Promise<TransactionEntryDto> {
-      return await invoke("create_transaction_entry", { id: input.item_id, ttype: input.transaction_type || "buy", quantity: input.quantity, price: input.price, rank: input.rank }) as TransactionEntryDto;
+      return await invoke("create_transaction_entry", {
+        id: input.item_id,
+        itemType: input.item_type,
+        ttype: input.transaction_type || "buy",
+        quantity: input.quantity,
+        price: input.price,
+        rank: input.rank,
+        subType: input.sub_type,
+        attributes: input.attributes,
+        masteryRank: input.mastery_rank,
+        reRolls: input.re_rolls
+      }) as TransactionEntryDto;
     }
   },
   price_scraper: {
@@ -66,7 +77,18 @@ const api = {
   },
   inventory: {
     async createInvantoryEntry(input: CreateTransactionEntryDto): Promise<InventoryEntryDto> {
-      return await invoke("create_invantory_entry", { id: input.item_id, report: input.report || true, quantity: input.quantity, price: input.price, rank: input.rank }) as InventoryEntryDto;
+      return await invoke("create_invantory_entry", {
+        id: input.item_id,
+        report: input.report || true,
+        quantity: input.quantity,
+        itemType: input.item_type,
+        price: input.price,
+        rank: input.rank,
+        subType: input.sub_type,
+        attributes: input.attributes,
+        masteryRank: input.mastery_rank,
+        reRolls: input.re_rolls
+      }) as InventoryEntryDto;
     },
     async sellInvantoryEntry(id: number, report: boolean, price: number, quantity: number): Promise<InventoryEntryDto> {
       return await invoke("sell_invantory_entry", { id, report, price, quantity }) as InventoryEntryDto;

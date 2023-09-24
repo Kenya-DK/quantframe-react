@@ -1,5 +1,5 @@
 
-import { ActionIcon, Box, Button, Divider, Group, NumberInput, Tooltip, Text, Stack, Paper, Checkbox } from '@mantine/core';
+import { ActionIcon, Box, Button, Divider, Group, NumberInput, Tooltip, Text, Stack, Checkbox } from '@mantine/core';
 import { useTranslateComponent, useTranslateSuccess } from '@hooks/index';
 import { useForm } from '@mantine/form';
 import { SearchItemField } from './searchItemField';
@@ -44,6 +44,7 @@ const PurchaseNewItem = (props: PurchaseNewItemProps) => {
           report: d.report,
           price: d.price,
           quantity: d.quantity,
+          item_type: "item",
           rank: d.rank
         });
       })}>
@@ -154,121 +155,124 @@ const Items = () => {
     },
   })
   return (
-    <Stack>
-      <DataTable
-        sx={{ marginTop: "20px" }}
-        striped
-        height={"55vh"}
-        records={inventorys}
-        // define columns
-        columns={[
-          {
-            accessor: 'item_name',
-            title: useTranslateDataGridColumns('name'),
-            width: 120,
-          },
-          {
-            accessor: 'price',
-            title: useTranslateDataGridColumns('price'),
-            width: 40,
-          },
-          {
-            accessor: 'listed_price',
-            title: useTranslateDataGridColumns('listed_price'),
-            width: 60,
-          },
-          {
-            accessor: 'owned',
-            title: useTranslateDataGridColumns('owned'),
-            width: 40,
-          },
-          {
-            accessor: 'actions',
-            width: 100,
-            title: useTranslateDataGridColumns('actions.title'),
-            render: ({ id, item_url }) =>
-              <Group grow position="center" >
-                <NumberInput
-                  required
-                  size='sm'
-                  min={0}
-                  max={999}
-                  value={itemPrices[item_url] || ""}
-                  onChange={(value) => setItemPrices({ ...itemPrices, [item_url]: Number(value) })}
-                  rightSectionWidth={100}
-                  rightSection={
-                    <Group spacing={"5px"} mr={0}>
-                      <Divider orientation="vertical" />
-                      <Tooltip label={useTranslateDataGridColumns('actions.sell')}>
-                        <ActionIcon loading={sellInvantoryEntryMutation.isLoading} color="green.7" variant="filled" onClick={async () => {
-                          const price = itemPrices[item_url];
-                          if (!price || price <= 0 || !id) return;
-                          await sellInvantoryEntryMutation.mutateAsync({ id, price, report: false });
-                        }} >
-                          <FontAwesomeIcon icon={faHammer} />
-                        </ActionIcon>
-                      </Tooltip>
-                      <Tooltip label={useTranslateDataGridColumns('actions.sell_report')}>
-                        <ActionIcon loading={sellInvantoryEntryMutation.isLoading} color="blue.7" variant="filled" onClick={async () => {
-                          const price = itemPrices[item_url];
-                          if (!price || price <= 0 || !id) return;
-                          await sellInvantoryEntryMutation.mutateAsync({ id, price, report: true });
-                        }} >
-                          <FontAwesomeIcon icon={faHammer} />
-                        </ActionIcon>
-                      </Tooltip>
-                      <Tooltip label={useTranslateDataGridColumns('actions.delete.title')}>
-                        <ActionIcon loading={sellInvantoryEntryMutation.isLoading} color="red.7" variant="filled" onClick={async () => {
-                          modals.openConfirmModal({
-                            title: useTranslateDataGridColumns('actions.delete.title'),
-                            children: (<Text>
-                              {useTranslateDataGridColumns('actions.delete.message', { name: id })}
-                            </Text>),
-                            labels: {
-                              confirm: useTranslateDataGridColumns('actions.delete.buttons.confirm'),
-                              cancel: useTranslateDataGridColumns('actions.delete.buttons.cancel')
-                            },
-                            confirmProps: { color: 'red' },
-                            onConfirm: async () => {
-                              if (!id) return;
-                              await deleteInvantoryEntryMutation.mutateAsync(id);
-                            }
-                          })
-                        }} >
-                          <FontAwesomeIcon icon={faTrashCan} />
-                        </ActionIcon>
-                      </Tooltip>
-                    </Group>
-                  }
+    <DataTable
+      sx={{ marginTop: "20px" }}
+      striped
+      mah={5}
+      height={"65vh"}
+      records={inventorys}
+      // define columns
+      columns={[
+        {
+          accessor: 'item_name',
+          title: useTranslateDataGridColumns('name'),
+          width: 120,
+        },
+        {
+          accessor: 'price',
+          title: useTranslateDataGridColumns('price'),
+          width: 100,
+          footer: (
+            <Group spacing="xs">
+              <Text size="lg">
+                <Trans
+                  i18nKey={"components.inventory.total_purchase_price"}
+                  values={{ price: total_purchase_price }}
+                  components={{ italic: <Text component="span" size="md" color="blue.3" /> }}
                 />
-              </Group>
-          },
-        ]}
-      />
-      <Paper mt={5}
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          flexDirection: "column",
-          alignItems: "center",
-        }}>
-        <Text size="lg">
-          <Trans
-            i18nKey={"components.inventory.total_listed_price"}
-            values={{ price: total_listed_price }}
-            components={{ italic: <Text component="span" size="md" color="blue.3" /> }}
-          />
-        </Text>
-        <Text size="lg">
-          <Trans
-            i18nKey={"components.inventory.total_purchase_price"}
-            values={{ price: total_purchase_price }}
-            components={{ italic: <Text component="span" size="md" color="blue.3" /> }}
-          />
-        </Text>
-      </Paper>
-    </Stack>
+              </Text>
+            </Group>
+          ),
+        },
+        {
+          accessor: 'listed_price',
+          title: useTranslateDataGridColumns('listed_price'),
+          width: 100,
+          footer: (
+            <Group spacing="xs">
+              <Text size="lg">
+                <Trans
+                  i18nKey={"components.inventory.total_listed_price"}
+                  values={{ price: total_listed_price }}
+                  components={{ italic: <Text component="span" size="md" color="blue.3" /> }}
+                />
+              </Text>
+            </Group>
+          ),
+        },
+        {
+          accessor: 'owned',
+          title: useTranslateDataGridColumns('owned'),
+          width: 40,
+          footer: (
+            <Group spacing="xs">
 
+            </Group>
+          ),
+        },
+        {
+          accessor: 'actions',
+          width: 150,
+          title: useTranslateDataGridColumns('actions.title'),
+          render: ({ id, item_url }) =>
+            <Group grow position="center" >
+              <NumberInput
+                required
+                size='sm'
+                min={0}
+                max={999}
+                value={itemPrices[item_url] || ""}
+                onChange={(value) => setItemPrices({ ...itemPrices, [item_url]: Number(value) })}
+                rightSectionWidth={100}
+                rightSection={
+                  <Group spacing={"5px"} mr={0}>
+                    <Divider orientation="vertical" />
+                    <Tooltip label={useTranslateDataGridColumns('actions.sell')}>
+                      <ActionIcon loading={sellInvantoryEntryMutation.isLoading} color="green.7" variant="filled" onClick={async () => {
+                        const price = itemPrices[item_url];
+                        if (!price || price <= 0 || !id) return;
+                        await sellInvantoryEntryMutation.mutateAsync({ id, price, report: false });
+                      }} >
+                        <FontAwesomeIcon icon={faHammer} />
+                      </ActionIcon>
+                    </Tooltip>
+                    <Tooltip label={useTranslateDataGridColumns('actions.sell_report')}>
+                      <ActionIcon loading={sellInvantoryEntryMutation.isLoading} color="blue.7" variant="filled" onClick={async () => {
+                        const price = itemPrices[item_url];
+                        if (!price || price <= 0 || !id) return;
+                        await sellInvantoryEntryMutation.mutateAsync({ id, price, report: true });
+                      }} >
+                        <FontAwesomeIcon icon={faHammer} />
+                      </ActionIcon>
+                    </Tooltip>
+                    <Tooltip label={useTranslateDataGridColumns('actions.delete.title')}>
+                      <ActionIcon loading={sellInvantoryEntryMutation.isLoading} color="red.7" variant="filled" onClick={async () => {
+                        modals.openConfirmModal({
+                          title: useTranslateDataGridColumns('actions.delete.title'),
+                          children: (<Text>
+                            {useTranslateDataGridColumns('actions.delete.message', { name: id })}
+                          </Text>),
+                          labels: {
+                            confirm: useTranslateDataGridColumns('actions.delete.buttons.confirm'),
+                            cancel: useTranslateDataGridColumns('actions.delete.buttons.cancel')
+                          },
+                          confirmProps: { color: 'red' },
+                          onConfirm: async () => {
+                            if (!id) return;
+                            await deleteInvantoryEntryMutation.mutateAsync(id);
+                          }
+                        })
+                      }} >
+                        <FontAwesomeIcon icon={faTrashCan} />
+                      </ActionIcon>
+                    </Tooltip>
+                  </Group>
+                }
+              />
+            </Group>
+        },
+      ]}
+    />
   );
 }
 
@@ -301,7 +305,7 @@ export const Inventory = () => {
     },
   })
   return (
-    <Box >
+    <Box sx={{}} >
       <PurchaseNewItem loading={createInvantoryEntryMutation.isLoading} onSumit={async (data: CreateTransactionEntryDto) => {
         switch (data.transaction_type) {
           case "buy":
