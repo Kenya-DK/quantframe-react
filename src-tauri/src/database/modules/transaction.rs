@@ -20,6 +20,7 @@ pub enum Transaction {
     Attributes,
     MasteryRank,
     ReRolls,
+    Polarity,
     Price,
     TransactionType,
     Quantity,
@@ -44,6 +45,8 @@ pub struct TransactionStruct {
     pub mastery_rank: Option<i32>,
     // Used for riven mods
     pub re_rolls: Option<i32>,
+    // Used for riven mods
+    pub polarity: Option<String>,
     pub price: i32,
     pub transaction_type: String,
     pub quantity: i32,
@@ -77,6 +80,7 @@ impl<'a> TransactionModule<'a> {
             .col(ColumnDef::new(Transaction::Attributes).json().not_null())
             .col(ColumnDef::new(Transaction::MasteryRank).integer())
             .col(ColumnDef::new(Transaction::ReRolls).integer())
+            .col(ColumnDef::new(Transaction::Polarity).string())
             .col(
                 ColumnDef::new(Transaction::Price)
                     .integer()
@@ -120,6 +124,7 @@ impl<'a> TransactionModule<'a> {
                 Transaction::Attributes,
                 Transaction::MasteryRank,
                 Transaction::ReRolls,
+                Transaction::Polarity,
                 Transaction::Price,
                 Transaction::TransactionType,
                 Transaction::Quantity,
@@ -146,6 +151,7 @@ impl<'a> TransactionModule<'a> {
         attributes: Option<Vec<RivenAttribute>>,
         mastery_rank: Option<i32>,
         re_rolls: Option<i32>,
+        polarity: Option<&str>,
     ) -> Result<TransactionStruct, AppError> {
         let connection = self.client.connection.lock().unwrap().clone();
         let item = self
@@ -170,6 +176,7 @@ impl<'a> TransactionModule<'a> {
             attributes: sqlx::types::Json(attributes.clone()),
             mastery_rank,
             re_rolls,
+            polarity: polarity.map(|s| s.to_string()),
             price,
             transaction_type: transaction_type.to_string(),
             quantity,
@@ -189,6 +196,7 @@ impl<'a> TransactionModule<'a> {
                 Transaction::Attributes,
                 Transaction::MasteryRank,
                 Transaction::ReRolls,
+                Transaction::Polarity,
                 Transaction::Price,
                 Transaction::TransactionType,
                 Transaction::Quantity,
@@ -207,6 +215,7 @@ impl<'a> TransactionModule<'a> {
                     .into(),
                 transaction.mastery_rank.into(),
                 transaction.re_rolls.into(),
+                transaction.polarity.clone().into(),
                 transaction.price.into(),
                 transaction.transaction_type.clone().into(),
                 transaction.quantity.into(),

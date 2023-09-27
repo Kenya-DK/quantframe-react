@@ -37,6 +37,8 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
         SendTauriUpdateDataEvent("transactions", { data: data.transactions, operation: "SET" })
         SendTauriUpdateDataEvent("orders", { data: data.orders, operation: "SET" })
         SendTauriEvent("Cache:Update:Items", data.items)
+        SendTauriEvent("Cache:Update:RivenTypes", data.riven_items)
+        SendTauriEvent("Cache:Update:RivenAttributes", data.riven_attributes)
         SendTauriEvent("PriceScraper:Initialize", { last_run: data.price_scraper_last_run == null ? null : new Date(data.price_scraper_last_run) })
 
       }

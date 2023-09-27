@@ -8,6 +8,8 @@ export interface SetupResponse {
   inventorys: InventoryEntryDto[];
   orders: Wfm.OrderDto[];
   items: Wfm.ItemDto[];
+  riven_items: Wfm.RivenItemTypeDto[];
+  riven_attributes: Wfm.RivenAttributeInfoDto[];
 }
 
 export interface RustError {

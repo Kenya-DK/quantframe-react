@@ -11,6 +11,15 @@ export const en = {
   },
   components: {
     forms: {
+      riven: {
+        weapon_name: "Weapon Name",
+        attributes: "Attributes",
+        mod_name: "Mod Name",
+        mod_rank: "Mod Rank",
+        mastery_rank: "Mastery Rank",
+        re_rolls: "Re-Rolls",
+        polarity: "Polarity",
+      }
     },
     transactionRevenueChart: {
       revenue_label: "Revenue: {{val, number}}",

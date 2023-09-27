@@ -2,6 +2,72 @@ use serde::{de::DeserializeOwned, Deserialize, Deserializer, Serialize};
 use serde_json::Value;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct RivenTypeInfo {
+    #[serde(rename = "thumb")]
+    thumb: String,
+
+    #[serde(rename = "url_name")]
+    url_name: String,
+
+    #[serde(rename = "mastery_level")]
+    mastery_level: i64,
+
+    #[serde(rename = "group")]
+    group: String,
+
+    #[serde(rename = "id")]
+    id: String,
+
+    #[serde(rename = "icon")]
+    icon: String,
+
+    #[serde(rename = "item_name")]
+    item_name: String,
+
+    #[serde(rename = "icon_format")]
+    icon_format: Option<String>,
+
+    #[serde(rename = "riven_type")]
+    riven_type: String,
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct RivenAttributeInfo {
+    #[serde(rename = "negative_only")]
+    negative_only: bool,
+
+    #[serde(rename = "effect")]
+    effect: String,
+
+    #[serde(rename = "id")]
+    id: String,
+
+    #[serde(rename = "exclusive_to")]
+    exclusive_to: Option<Vec<String>>,
+
+    #[serde(rename = "group")]
+    group: String,
+
+    #[serde(rename = "units")]
+    units: Option<String>,
+
+    #[serde(rename = "search_only")]
+    search_only: bool,
+
+    #[serde(rename = "url_name")]
+    url_name: String,
+
+    #[serde(rename = "suffix")]
+    suffix: Option<String>,
+
+    #[serde(rename = "positive_is_negative")]
+    positive_is_negative: bool,
+
+    #[serde(rename = "prefix")]
+    prefix: Option<String>,
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Item {
     pub item_name: String,
     pub id: String,

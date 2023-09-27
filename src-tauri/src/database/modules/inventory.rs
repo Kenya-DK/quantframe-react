@@ -30,6 +30,7 @@ pub enum Inventory {
     Attributes,
     MasteryRank,
     ReRolls,
+    Polarity,
     Price,
     ListedPrice,
     Owned,
@@ -53,6 +54,8 @@ pub struct InventoryStruct {
     pub mastery_rank: Option<i32>,
     // Used for riven mods
     pub re_rolls: Option<i32>,
+    // Used for riven mods
+    pub polarity: Option<String>,
     pub price: f64,
     pub listed_price: Option<i32>,
     pub owned: i32,
@@ -93,6 +96,7 @@ impl<'a> InventoryModule<'a> {
             .col(ColumnDef::new(Inventory::Attributes).json())
             .col(ColumnDef::new(Inventory::MasteryRank).integer())
             .col(ColumnDef::new(Inventory::ReRolls).integer())
+            .col(ColumnDef::new(Inventory::Polarity).string())
             .col(
                 ColumnDef::new(Inventory::Price)
                     .float()
@@ -135,6 +139,7 @@ impl<'a> InventoryModule<'a> {
                 Inventory::Attributes,
                 Inventory::MasteryRank,
                 Inventory::ReRolls,
+                Inventory::Polarity,
                 Inventory::Price,
                 Inventory::ListedPrice,
                 Inventory::Owned,
@@ -170,6 +175,7 @@ impl<'a> InventoryModule<'a> {
         attributes: Option<Vec<RivenAttribute>>,
         mastery_rank: Option<i32>,
         re_rolls: Option<i32>,
+        polarity: Option<&str>,
     ) -> Result<InventoryStruct, AppError> {
         let inventorys = self.get_item_by_url_name(url_name).await?;
         let connection = self.client.connection.lock().unwrap().clone();
@@ -218,6 +224,7 @@ impl<'a> InventoryModule<'a> {
                     attributes: sqlx::types::Json(attributes.clone()),
                     mastery_rank,
                     re_rolls,
+                    polarity: polarity.map(|t| t.to_string()),
                     price: price as f64,
                     listed_price: None,
                     owned: quantity as i32,
@@ -236,6 +243,7 @@ impl<'a> InventoryModule<'a> {
                         Inventory::Attributes,
                         Inventory::MasteryRank,
                         Inventory::ReRolls,
+                        Inventory::Polarity,
                         Inventory::Price,
                         Inventory::Owned,
                         Inventory::Created,
@@ -250,6 +258,7 @@ impl<'a> InventoryModule<'a> {
                         serde_json::to_value(&inventory.attributes).unwrap().into(),
                         inventory.mastery_rank.into(),
                         inventory.re_rolls.into(),
+                        inventory.polarity.clone().into(),
                         inventory.price.into(),
                         inventory.owned.into(),
                         inventory.created.clone().into(),

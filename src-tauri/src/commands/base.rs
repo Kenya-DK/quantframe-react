@@ -36,7 +36,21 @@ pub async fn init(
         "set_initializstatus",
         Some(json!({"status": "Loading Items..."})),
     );
-    let items = cache.update_items().await?;
+    cache.update_items().await?;
+    let items = cache.get_items().await?;
+
+    helper::send_message_to_window(
+        "set_initializstatus",
+        Some(json!({"status": "Loading Riven Types..."})),
+    );
+    let riven_items = wfm.riven().get_all_riven_types().await?;
+
+    helper::send_message_to_window(
+        "set_initializstatus",
+        Some(json!({"status": "Loading Riven Attributes..."})),
+    );
+    let riven_attributes = wfm.riven().get_all_riven_attribute_types().await?;
+
     helper::send_message_to_window(
         "set_initializstatus",
         Some(json!({"status": "Loading Database..."})),
@@ -75,6 +89,7 @@ pub async fn init(
     let mut ordres_vec = wfm.orders().get_my_orders().await?;
     let mut ordres = ordres_vec.buy_orders;
     ordres.append(&mut ordres_vec.sell_orders);
+
     Ok(json!({
         "valid": true,
         "settings": &settings.clone(),
@@ -84,8 +99,8 @@ pub async fn init(
         "orders": ordres,
         "price_scraper_last_run":price_scraper.get_status(),
         "items": items,
-
-
+        "riven_items": riven_items,
+        "riven_attributes": riven_attributes,
     }))
 }
 

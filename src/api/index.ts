@@ -53,7 +53,8 @@ const api = {
         subType: input.sub_type,
         attributes: input.attributes,
         masteryRank: input.mastery_rank,
-        reRolls: input.re_rolls
+        reRolls: input.re_rolls,
+        polarity: input.polarity
       }) as TransactionEntryDto;
     }
   },
@@ -87,7 +88,8 @@ const api = {
         subType: input.sub_type,
         attributes: input.attributes,
         masteryRank: input.mastery_rank,
-        reRolls: input.re_rolls
+        reRolls: input.re_rolls,
+        polarity: input.polarity
       }) as InventoryEntryDto;
     },
     async sellInvantoryEntry(id: number, report: boolean, price: number, quantity: number): Promise<InventoryEntryDto> {

@@ -114,7 +114,7 @@ export namespace Wfm {
     rank?: number,
     subtype?: string,
   }
-  export interface RivenItemDto {
+  export interface RivenItemTypeDto {
     thumb: string;
     mastery_level: number;
     url_name: string;
@@ -124,6 +124,16 @@ export namespace Wfm {
     icon_format: string;
     group: string;
     item_name: string;
+  }
+  export interface RivenItemDto {
+    weapon_name: string;
+    url_name: string;
+    mod_name: string;
+    mod_rank: number;
+    mastery_rank: number;
+    attributes: RivenAttributeDto[],
+    re_rolls: number;
+    polarity: string;
   }
 
   export interface RivenAttributeInfoDto {
@@ -139,9 +149,8 @@ export namespace Wfm {
     positive_is_negative: boolean;
     prefix: string;
   }
-  export interface RivenAttributeDto {
+  export interface RivenAttributeDto extends RivenAttributeInfoDto {
     positive: boolean;
-    url_name: string;
     value: number;
   }
 }

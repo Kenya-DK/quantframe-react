@@ -22,6 +22,7 @@ export interface CreateTransactionEntryDto {
   attributes?: Wfm.RivenAttributeDto[];
   mastery_rank?: number;
   re_rolls?: number;
+  polarity?: string;
 }
 export interface TransactionEntryDto {
   id?: number;

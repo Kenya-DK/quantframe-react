@@ -87,7 +87,7 @@ impl DebugClient {
                 }
                 let item = item.unwrap();
                 db.inventory()
-                    .create(&item.url_name, "item", owned as i32, price, 0, None, None, None, None)
+                    .create(&item.url_name, "item", owned as i32, price, 0, None, None, None, None,None)
                     .await?;
             }
         } else if import_type == "transactions" {

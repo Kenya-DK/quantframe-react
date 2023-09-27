@@ -16,7 +16,7 @@ use crate::{
     logger::{self, LogLevel},
 };
 
-use super::modules::{auth::AuthModule, item::ItemModule, order::OrderModule};
+use super::modules::{auth::AuthModule, item::ItemModule, order::OrderModule, riven::RivenModule};
 
 #[derive(Clone, Debug)]
 pub struct WFMClient {
@@ -166,5 +166,8 @@ impl WFMClient {
 
     pub fn items(&self) -> ItemModule {
         ItemModule { client: self }
+    }
+    pub fn riven(&self) -> RivenModule {
+        RivenModule { client: self }
     }
 }

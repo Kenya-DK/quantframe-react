@@ -20,6 +20,7 @@ pub async fn create_invantory_entry(
     attributes: Option<Vec<RivenAttribute>>,
     mastery_rank: Option<i32>,
     re_rolls: Option<i32>,
+    polarity: Option<&str>,
     db: tauri::State<'_, Arc<Mutex<DBClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<InventoryStruct, AppError> {
@@ -38,6 +39,7 @@ pub async fn create_invantory_entry(
             attributes.clone(),
             mastery_rank,
             re_rolls,
+            polarity,
         )
         .await
     {
@@ -55,6 +57,7 @@ pub async fn create_invantory_entry(
                     attributes,
                     mastery_rank,
                     re_rolls,
+                    polarity
                 )
                 .await?;
             // Send Close Event to Warframe Market API
@@ -145,6 +148,7 @@ pub async fn sell_invantory_entry(
                     Some(invantory.clone().attributes.0),
                     invantory.mastery_rank,
                     invantory.re_rolls,
+                    invantory.polarity.as_deref(),
                 )
                 .await?;
 
