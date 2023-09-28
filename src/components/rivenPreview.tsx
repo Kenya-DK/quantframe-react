@@ -19,6 +19,9 @@ const useStyles = createStyles(() => ({
   attributes: {
     position: "absolute", top: "calc(50% + 3rem)", fontSize: 15
   },
+  attributeText: {
+    lineHeight: "1.2rem"
+  },
   mastery: {
     position: "absolute", bottom: "12%", left: "21%", fontWeight: 600
   },
@@ -57,7 +60,7 @@ export const RivenPreview = ({ riven }: RivenPreviewProps) => {
       }}>
         {riven.attributes.map((item, index) => {
           return (
-            <Text key={index} >
+            <Text key={index} className={classes.attributeText}>
               {item.value}{item.units == "percent" ? "%" : ""} {item.effect}
             </Text>
           )

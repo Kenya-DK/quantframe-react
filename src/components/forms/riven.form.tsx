@@ -93,9 +93,10 @@ export const RivenForm = ({ riven }: FormPropsProps) => {
   const [rivenTypes, setRivenTypes] = useState<Wfm.RivenItemTypeDto[]>([]);
   const [currentRivenType, setCurrentRivenType] = useState<Wfm.RivenItemTypeDto | undefined>(undefined);
   const [rivenAttributes, setRivenAttributes] = useState<Wfm.RivenAttributeInfoDto[]>([]);
-  const [rivenFilterAttributes, setRivenFilterAttributes] = useState<Wfm.RivenAttributeInfoDto[]>([]);
   const [attributeCount, setAttributeCount] = useState<number>(2);
-  const [mod_names, setMod_names] = useState<string[]>([]);
+  const [modNames, setModNames] = useState<string[]>([]);
+
+
   const { riven_attributes, riven_items } = useCacheContext();
   useEffect(() => {
     setRivenTypes(riven_items)
@@ -114,12 +115,6 @@ export const RivenForm = ({ riven }: FormPropsProps) => {
     userForm.setFieldValue("re_rolls", riven.re_rolls)
     userForm.setFieldValue("polarity", riven.polarity)
   }, [riven]);
-
-  useEffect(() => {
-    if (currentRivenType) {
-      setRivenFilterAttributes(rivenAttributes.filter((item) => item.exclusive_to == null || item.exclusive_to.includes(currentRivenType.riven_type)))
-    }
-  }, [currentRivenType]);
 
   const userForm = useForm({
     initialValues: {
@@ -142,6 +137,55 @@ export const RivenForm = ({ riven }: FormPropsProps) => {
     else
       return rivenAttributes;
   };
+
+  // Handle attribute permutations
+  useEffect(() => {
+    // Filter out null entries
+    const filteredArray = userForm.values.attributes.filter(entry => entry !== null && entry.positive) as Wfm.RivenAttributeInfoDto[];
+    function generatePermutations(inputArray: string[]): string[][] {
+      let currentIndex: string, swapIndex: number;
+      const arrayLength = inputArray.length;
+      let permutations = [inputArray.slice()];
+      const counters = new Array(arrayLength).fill(0);
+
+      for (let index = 1; index < arrayLength;) {
+        if (counters[index] < index) {
+          swapIndex = index % 2 ? counters[index] : 0;
+
+          // Swap elements
+          currentIndex = inputArray[index];
+          inputArray[index] = inputArray[swapIndex];
+          inputArray[swapIndex] = currentIndex;
+
+          counters[index]++;
+          index = 1;
+          permutations.push(inputArray.slice());
+        } else {
+          counters[index] = 0;
+          index++;
+        }
+      }
+
+      return permutations;
+    }
+    const rivenIds: { [key: string]: Wfm.RivenAttributeInfoDto } = {};
+    rivenAttributes.forEach((item) => { rivenIds[item.url_name] = { ...item } });
+    if (rivenAttributes.length == 0)
+      return;
+    let selectedIds = generatePermutations(filteredArray.map((item) => item.url_name));
+    console.log(selectedIds);
+
+    let modNames: string[] = [];
+    selectedIds.forEach((item) => {
+      if (2 === item.length) {
+        modNames.push(`${rivenIds[item[0]].prefix}${rivenIds[item[1]].suffix.toLowerCase()}`);
+      } else if (3 === item.length) {
+        modNames.push(`${rivenIds[item[0]].prefix}-${rivenIds[item[1]].prefix.toLowerCase()}${rivenIds[item[2]].suffix.toLowerCase()}`);
+      }
+    })
+    setModNames(modNames);
+  }, [userForm.values.attributes])
+
   return (
     <form method="post" onSubmit={userForm.onSubmit(async (data) => {
       console.log(data)
@@ -219,12 +263,7 @@ export const RivenForm = ({ riven }: FormPropsProps) => {
           searchable
           clearable
           limit={5}
-          data={rivenTypes.map((item: Wfm.RivenItemTypeDto) => {
-            return {
-              value: item.url_name,
-              label: item.item_name,
-            };
-          })}
+          data={modNames}
         />
       </Group>
       <Group >
