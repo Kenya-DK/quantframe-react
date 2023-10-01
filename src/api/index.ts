@@ -1,4 +1,4 @@
-import { SetupResponse, Wfm, InventoryEntryDto, TransactionEntryDto, Settings, CreateTransactionEntryDto } from '../types'
+import { SetupResponse, Wfm, TransactionEntryDto, Settings, CreateTransactionEntryDto, CreateStockItemEntryDto, StockItemDto, CreateStockRivenEntryDto, StockRivenDto } from '../types'
 import { invoke } from '@tauri-apps/api';
 import { SendTauriEvent, SendTauriUpdateDataEvent } from '../utils/tauri';
 const api = {
@@ -76,28 +76,44 @@ const api = {
       await invoke("toggle_whisper_scraper")
     }
   },
-  inventory: {
-    async createInvantoryEntry(input: CreateTransactionEntryDto): Promise<InventoryEntryDto> {
-      return await invoke("create_invantory_entry", {
-        id: input.item_id,
-        report: input.report || true,
-        quantity: input.quantity,
-        itemType: input.item_type,
-        price: input.price,
-        rank: input.rank,
-        subType: input.sub_type,
-        attributes: input.attributes,
-        masteryRank: input.mastery_rank,
-        reRolls: input.re_rolls,
-        polarity: input.polarity
-      }) as InventoryEntryDto;
+  stock: {
+    item: {
+      create: async (input: CreateStockItemEntryDto): Promise<StockItemDto> => {
+        return await invoke("create_item_stock", {
+          id: input.item_id,
+          report: input.report || true,
+          quantity: input.quantity,
+          price: input.price,
+          rank: input.rank,
+          subType: input.sub_type
+        }) as StockItemDto;
+      },
+      delete: async (id: number): Promise<StockItemDto> => {
+        return await invoke("delete_item_stock", { id }) as StockItemDto;
+      },
+      sell: async (id: number, report: boolean, price: number, quantity: number): Promise<StockItemDto> => {
+        return await invoke("sell_item_stock", { id, report, price, quantity }) as StockItemDto;
+      }
     },
-    async sellInvantoryEntry(id: number, report: boolean, price: number, quantity: number): Promise<InventoryEntryDto> {
-      return await invoke("sell_invantory_entry", { id, report, price, quantity }) as InventoryEntryDto;
-    },
-    async deleteInvantoryEntry(id: number): Promise<InventoryEntryDto> {
-      return await invoke("delete_invantory_entry", { id });
-    },
+    riven: {
+      create: async (input: CreateStockRivenEntryDto): Promise<StockRivenDto> => {
+        return await invoke("create_riven_stock", {
+          id: input.item_id,
+          price: input.price,
+          rank: input.rank,
+          attributes: input.attributes,
+          masteryRank: input.mastery_rank,
+          reRolls: input.re_rolls,
+          polarity: input.polarity
+        }) as StockRivenDto;
+      },
+      delete: async (id: number): Promise<StockRivenDto> => {
+        return await invoke("delete_riven_stock", { id }) as StockRivenDto;
+      },
+      sell: async (id: number, report: boolean, price: number, quantity: number): Promise<StockRivenDto> => {
+        return await invoke("sell_riven_stock", { id, report, price, quantity }) as StockRivenDto;
+      }
+    }
   },
   orders: {
     async getOrders(): Promise<Wfm.OrderDto[]> {

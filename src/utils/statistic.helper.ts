@@ -6,12 +6,12 @@ import { groupBy, getGroupByDate } from ".";
 import { StatisticDto, TransactionEntryDto, StatisticTotalTransaction, StatisticTransactionRevenueWithChart, StatisticTodayTransaction, StatisticTransactionRevenue, StatisticRecentDaysTransaction, StatisticTransactionItemRevenue, StatisticTransactionPopularItems } from "../types";
 
 
-type GroupByItem = { item_id: string; item_url: string; item_type: string; item_name: string; item_tags: string[]; quantity: number; price: number; total: number; }
+type GroupByItem = { wfm_id: string; url: string; item_type: string; name: string; tags: string[]; quantity: number; price: number; total: number; }
 const GetGroupByItem = (transactions: TransactionEntryDto[]): GroupByItem[] => {
   // Initialize an empty array to hold the grouped products
   let items: Array<GroupByItem> = [];
   // Clone the orders array to avoid modifying the original
-  let transactionsgroupBy = groupBy("item_url", transactions);
+  let transactionsgroupBy = groupBy("url", transactions);
   // Loop through the orders
   for (let item in transactionsgroupBy) {
     // Get the order
@@ -19,11 +19,11 @@ const GetGroupByItem = (transactions: TransactionEntryDto[]): GroupByItem[] => {
 
     let firstTransaction = transactionList[0];
     let trans = {
-      item_id: firstTransaction.item_id,
-      item_url: firstTransaction.item_url,
+      wfm_id: firstTransaction.wfm_id,
+      url: firstTransaction.url,
       item_type: firstTransaction.item_type,
-      item_name: firstTransaction.item_name,
-      item_tags: firstTransaction.item_tags,
+      name: firstTransaction.name,
+      tags: firstTransaction.tags.split(","),
       quantity: transactionList.reduce((acc, cur) => acc + cur.quantity, 0),
       price: transactionList.reduce((acc, cur) => acc + cur.price, 0),
       total: transactionList.length,
@@ -32,11 +32,11 @@ const GetGroupByItem = (transactions: TransactionEntryDto[]): GroupByItem[] => {
   }
   if (items.length == 0) return [
     {
-      item_id: "",
-      item_url: "",
+      wfm_id: "",
+      url: "",
       item_type: "",
-      item_name: "",
-      item_tags: [],
+      name: "",
+      tags: [],
       quantity: 0,
       price: 0,
       total: 0,
@@ -47,7 +47,7 @@ const GetGroupByItem = (transactions: TransactionEntryDto[]): GroupByItem[] => {
 
 const GetRevenueForItems = (bought: GroupByItem[], sold: GroupByItem[]): StatisticTransactionItemRevenue[] => {
   return bought.map((item) => {
-    const sell = sold.find((sell_item) => sell_item.item_url == item.item_url);
+    const sell = sold.find((sell_item) => sell_item.url == item.url);
     let turnover = 0;
     let price = 0;
     if (sell) {
@@ -55,11 +55,11 @@ const GetRevenueForItems = (bought: GroupByItem[], sold: GroupByItem[]): Statist
       price = sell.price;
     }
     return {
-      item_id: item.item_id,
-      item_url: item.item_url,
+      wfm_id: item.wfm_id,
+      url: item.url,
       item_type: item.item_type,
-      item_name: item.item_name,
-      item_tags: item.item_tags,
+      name: item.name,
+      tags: item.tags,
       quantity: item.quantity,
       total_bought: sell ? sell.total : 0,
       total_sold: item.total,
@@ -109,8 +109,8 @@ const getTotalRevenue = (transactions: TransactionEntryDto[]): StatisticTotalTra
   }
 
 
-  const thisYearTransactions = transactions.filter(t => dayjs(t.datetime).isSame(new Date(), "year"));
-  const lastYearTransactions = transactions.filter(t => dayjs(t.datetime).isSame(new Date().getFullYear() - 1, "year"));
+  const thisYearTransactions = transactions.filter(t => dayjs(t.created).isSame(new Date(), "year"));
+  const lastYearTransactions = transactions.filter(t => dayjs(t.created).isSame(new Date().getFullYear() - 1, "year"));
 
   return {
     labels: i18next.t("general.months", { returnObjects: true }) as string[],
@@ -147,7 +147,7 @@ const getBestItem = (transactions: TransactionEntryDto[]): StatisticTransactionP
 const getTodayRevenue = (transactions: TransactionEntryDto[]): StatisticTodayTransaction => {
   let today = dayjs().startOf("day").toDate();
   let endToday = dayjs().endOf('day').toDate();
-  transactions = transactions.filter(t => dayjs(t.datetime).isBetween(today, endToday));
+  transactions = transactions.filter(t => dayjs(t.created).isBetween(today, endToday));
   const sell_transactions = transactions.filter(t => t.transaction_type == "sell");
   const buy_transactions = transactions.filter(t => t.transaction_type == "buy");
 
@@ -166,7 +166,7 @@ const getTodayRevenue = (transactions: TransactionEntryDto[]): StatisticTodayTra
 const getRecentDays = (transactions: TransactionEntryDto[], days: number): StatisticRecentDaysTransaction => {
   let today = dayjs().subtract(days, "day").endOf('day').toDate();
   let endToday = dayjs().endOf('day').toDate();
-  transactions = transactions.filter(t => dayjs(t.datetime).isBetween(today, endToday));
+  transactions = transactions.filter(t => dayjs(t.created).isBetween(today, endToday));
   const sell_transactions = transactions.filter(t => t.transaction_type == "sell");
   const buy_transactions = transactions.filter(t => t.transaction_type == "buy");
 

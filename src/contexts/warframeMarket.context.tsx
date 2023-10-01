@@ -1,11 +1,11 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { InventoryEntryDto, StatisticDto, TransactionEntryDto, Wfm } from '$types/index';
+import { StockEntryDto, StatisticDto, TransactionEntryDto, Wfm } from '$types/index';
 import { OnTauriUpdateDataEvent, getStatistic } from "../utils";
 
 type WarframeMarketContextProps = {
   transactions: TransactionEntryDto[];
   orders: Wfm.OrderDto[];
-  inventorys: InventoryEntryDto[];
+  inventorys: StockEntryDto[];
   statistics: StatisticDto | undefined;
 }
 type WarframeMarketContextProviderProps = {
@@ -23,7 +23,7 @@ export const useWarframeMarketContextContext = () => useContext(WarframeMarketCo
 
 export const WarframeMarketContextProvider = ({ children }: WarframeMarketContextProviderProps) => {
   const [transactions, setTransactions] = useState<TransactionEntryDto[]>([]);
-  const [inventorys, setInventorys] = useState<InventoryEntryDto[]>([]);
+  const [inventorys, setInventorys] = useState<StockEntryDto[]>([]);
   const [statistics, setStatistics] = useState<StatisticDto | undefined>(undefined);
   const [orders, setOrders] = useState<Wfm.OrderDto[]>([]);
 
@@ -52,16 +52,16 @@ export const WarframeMarketContextProvider = ({ children }: WarframeMarketContex
   }
 
   // Handle update, create, delete inventory
-  const handleUpdateInventory = (operation: string, data: InventoryEntryDto | InventoryEntryDto[]) => {
+  const handleUpdateInventory = (operation: string, data: StockEntryDto | StockEntryDto[]) => {
     switch (operation) {
       case "CREATE_OR_UPDATE":
-        setInventorys((inventorys) => [...inventorys.filter((item) => item.id !== (data as InventoryEntryDto).id), data as InventoryEntryDto]);
+        setInventorys((inventorys) => [...inventorys.filter((item) => item.id !== (data as StockEntryDto).id), data as StockEntryDto]);
         break;
       case "DELETE":
-        setInventorys((inventorys) => [...inventorys.filter((item) => item.id !== (data as InventoryEntryDto).id)]);
+        setInventorys((inventorys) => [...inventorys.filter((item) => item.id !== (data as StockEntryDto).id)]);
         break;
       case "SET":
-        setInventorys(data as InventoryEntryDto[]);
+        setInventorys(data as StockEntryDto[]);
         break;
     }
   }
@@ -90,7 +90,7 @@ export const WarframeMarketContextProvider = ({ children }: WarframeMarketContex
 
   // Hook on tauri events from rust side
   useEffect(() => {
-    OnTauriUpdateDataEvent<InventoryEntryDto>("inventorys", ({ data, operation }) => handleUpdateInventory(operation, data));
+    OnTauriUpdateDataEvent<StockEntryDto>("inventorys", ({ data, operation }) => handleUpdateInventory(operation, data));
     OnTauriUpdateDataEvent<TransactionEntryDto>("transactions", ({ data, operation }) => handleUpdateTransaction(operation, data));
     OnTauriUpdateDataEvent<Wfm.OrderDto>("orders", ({ data, operation }) => handleUpdateOrders(operation, data));
     return () => { }

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useForm, } from '@mantine/form';
-import { ActionIcon, Group, NumberInput, Select, Title } from "@mantine/core";
+import { ActionIcon, Group, NumberInput, Select, Title, Tooltip } from "@mantine/core";
 
 import { Wfm } from '../../types';
 import { useTranslateForm } from '../../hooks';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowsRotate, faClose, faPercent } from '@fortawesome/free-solid-svg-icons';
+import { faClose, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { useCacheContext } from '../../contexts';
 import { RivenPreview } from '../rivenPreview';
 
@@ -69,8 +69,6 @@ const RiveAttributeForm = ({ availableAttributes, canRemove, attribute, onRemove
         value={attribute?.value || 0}
         max={400}
         onChange={(value) => setAttributeValue(Number(value))}
-        rightSectionWidth={45}
-        rightSection={<FontAwesomeIcon icon={faPercent} />}
       />
       {canRemove &&
         <ActionIcon color="red.7" onClick={() => {
@@ -249,15 +247,18 @@ export const RivenForm = ({ riven }: FormPropsProps) => {
         )
       })}
       {attributeCount < 4 &&
-        <ActionIcon mt={4} color="blue" onClick={() => {
-          setAttributeCount(attributeCount + 1)
-        }} >
-          <FontAwesomeIcon icon={faArrowsRotate} />
-        </ActionIcon>
+        <Tooltip label={useTranslateUserForm("add_attribute")}>
+          <ActionIcon mt={4} color="blue.7" onClick={() => {
+            setAttributeCount(attributeCount + 1)
+          }} >
+            <FontAwesomeIcon icon={faPlus} />
+          </ActionIcon>
+        </Tooltip>
       }
       <Group grow >
         <Select
           label={useTranslateUserForm("mod_name")}
+          disabled={modNames.length == 0}
           value={userForm.values.mod_name}
           onChange={(event) => userForm.setFieldValue('mod_name', event || "")}
           searchable

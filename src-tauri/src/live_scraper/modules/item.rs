@@ -1,6 +1,7 @@
 use crate::auth::AuthState;
 use crate::database::client::DBClient;
 use crate::error;
+use crate::live_scraper::client::LiveScraperClient;
 use crate::logger::LogLevel;
 use crate::price_scraper::PriceScraper;
 use crate::structs::Order;
@@ -22,110 +23,25 @@ use std::{
     },
 };
 
-// Structs for the Warframe Market API
-
-#[derive(Clone)]
-pub struct LiveScraper {
-    log_file: String,
-    is_running: Arc<AtomicBool>,
-    settings: Arc<Mutex<SettingsState>>,
-    price_scraper: Arc<Mutex<PriceScraper>>,
-    wfm: Arc<Mutex<WFMClient>>,
-    auth: Arc<Mutex<AuthState>>,
-    db: Arc<Mutex<DBClient>>,
+pub struct ItemModule<'a> {
+    pub client: &'a LiveScraperClient,
 }
 
-impl LiveScraper {
-    pub fn new(
-        settings: Arc<Mutex<SettingsState>>,
-        price_scraper: Arc<Mutex<PriceScraper>>,
-        wfm: Arc<Mutex<WFMClient>>,
-        auth: Arc<Mutex<AuthState>>,
-        db: Arc<Mutex<DBClient>>,
-    ) -> Self {
-        LiveScraper {
-            log_file: "live_scraper.log".to_string(),
-            price_scraper,
-            settings,
-            is_running: Arc::new(AtomicBool::new(false)),
-            wfm,
-            auth,
-            db,
-        }
-    }
-    fn report_error(&self, error: AppError) {
-        let component = error.component();
-        let cause = error.cause();
-        let backtrace = error.backtrace();
-        let log_level = error.log_level();
-        let extra = error.extra_data();
-        if log_level == LogLevel::Critical {
-            self.is_running.store(false, Ordering::SeqCst);
-            crate::logger::dolog(
-                log_level.clone(),
-                component.as_str(),
-                format!("Error: {:?}, {:?}, {:?}", backtrace, cause, extra).as_str(),
-                true,
-                Some(self.log_file.as_str()),
-            );
-            helper::send_message_to_window("live_scraper_error", Some(error.to_json()));
-        } else {
-            logger::info_con(
-                "LiveScraper",
-                format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
-            );
-        }
-    }
-    pub fn start_loop(&mut self) -> Result<(), AppError> {
-        self.is_running.store(true, Ordering::SeqCst);
-        let is_running = Arc::clone(&self.is_running);
-        let forced_stop = Arc::clone(&self.is_running);
-        let scraper = self.clone();
-        tauri::async_runtime::spawn(async move {
-            // A loop that takes output from the async process and sends it
-            // to the webview via a Tauri Event
-            logger::info_con("LiveScraper", "Loop live scraper is started");
-            match scraper.delete_all_orders().await {
-                Ok(_) => {
-                    logger::info_con("LiveScraper", "Delete all orders success");
-                }
-                Err(e) => scraper.report_error(e),
-            }
-
-            while is_running.load(Ordering::SeqCst) && forced_stop.load(Ordering::SeqCst) {
-                logger::info_con("LiveScraper", "Loop live scraper is running...");
-                match scraper.run().await {
-                    Ok(_) => {}
-                    Err(e) => scraper.report_error(e),
-                }
-                tokio::time::sleep(Duration::from_secs(1)).await;
-            }
-            logger::info_con("LiveScraper", "Loop live scraper is stopped");
-        });
-        Ok(())
-    }
-
-    pub fn stop_loop(&self) {
-        self.is_running.store(false, Ordering::SeqCst);
-    }
-
-    pub fn is_running(&self) -> bool {
-        self.is_running.load(Ordering::SeqCst)
-    }
-
-    pub async fn run(&self) -> Result<(), AppError> {
+impl<'a> ItemModule<'a> {
+    pub async fn check_stock(&self) -> Result<(), AppError> {
+        logger::info_con("ItemModule", "Run item module");
         let buy_sell_overlap = self.get_buy_sell_overlap().await?;
-        let settings = self.settings.lock()?.clone().live_scraper;
-        let db = self.db.lock()?.clone();
-        let wfm = self.wfm.lock()?.clone();
+        let settings = self.client.settings.lock()?.clone().live_scraper;
+        let db = self.client.db.lock()?.clone();
+        let wfm = self.client.wfm.lock()?.clone();
 
         let inventory_df = db
-            .inventory()
-            .convet_inventorys_to_datafream(db.inventory().get_items().await?)
+            .stock_item()
+            .convet_stock_item_to_datafream(db.stock_item().get_items().await?)
             .unwrap();
         let whitelist = settings.whitelist.clone();
         // Call the database to get the inventory names
-        let inventory_names = db.inventory().get_inventory_names().await?;
+        let inventory_names = db.stock_item().get_items_names().await?;
 
         // Get interesting items from buy_sell_overlap
         let interesting_items: Vec<String> = match helper::get_column_values(
@@ -187,13 +103,13 @@ impl LiveScraper {
         logger::info_file(
             "LiveScraper",
             format!("Interesting items: {:?}", all_interesting_items).as_str(),
-            Some(self.log_file.as_str()),
+            Some(self.client.log_file.as_str()),
         );
 
         let mut current_index = all_interesting_items.len();
         // Loop through all interesting items
         for item in all_interesting_items.clone() {
-            if self.is_running() == false || item == "" {
+            if self.client.is_running() == false || item == "" {
                 break;
             }
 
@@ -225,7 +141,7 @@ impl LiveScraper {
                 logger::info_file(
                     "LiveScraper",
                     format!("Item: {item} is not in all_interesting_items").as_str(),
-                    Some(self.log_file.as_str()),
+                    Some(self.client.log_file.as_str()),
                 );
                 let item_info = wfm.items().get_item(item.to_string()).await?;
 
@@ -296,7 +212,6 @@ impl LiveScraper {
         }
         Ok(())
     }
-
     fn get_week_increase(&self, df: &DataFrame, row_name: &str) -> Result<f64, AppError> {
         // Pre-filter DataFrame based on "order_type" == "closed"
         let week_df = df
@@ -331,9 +246,9 @@ impl LiveScraper {
         }
     }
     pub async fn delete_all_orders(&self) -> Result<(), AppError> {
-        let wfm = self.wfm.lock()?.clone();
-        let db = self.db.lock()?.clone();
-        let settings = self.settings.lock()?.clone().live_scraper;
+        let wfm = self.client.wfm.lock()?.clone();
+        let db = self.client.db.lock()?.clone();
+        let settings = self.client.settings.lock()?.clone().live_scraper;
         let blacklist = settings.blacklist.clone();
 
         let current_orders = wfm.orders().get_my_orders().await?;
@@ -344,17 +259,21 @@ impl LiveScraper {
                 continue;
             }
             wfm.orders()
-            .delete(&order.id, "None", "None", "Any")
-            .await?;
-            match db.inventory().update_by_url(&order.item.unwrap().url_name, None, None, None).await {      
+                .delete(&order.id, "None", "None", "Any")
+                .await?;
+            match db
+                .stock_item()
+                .update_by_url(&order.item.unwrap().url_name, None, None, None)
+                .await
+            {
                 Ok(_) => {}
                 Err(e) => {
-                    error::create_log_file(self.log_file.clone(), &e);
+                    error::create_log_file(self.client.log_file.clone(), &e);
                 }
-            };  
+            };
         }
         for order in current_orders.buy_orders {
-            if self.is_running() == false {
+            if self.client.is_running() == false {
                 return Ok(());
             }
             // Check if item is in blacklist
@@ -368,9 +287,9 @@ impl LiveScraper {
         Ok(())
     }
     pub async fn get_buy_sell_overlap(&self) -> Result<DataFrame, AppError> {
-        let settings = self.settings.lock()?.clone().live_scraper;
-        let db = self.db.lock()?.clone();
-        let df = self.price_scraper.lock()?.get_price_historys()?;
+        let settings = self.client.settings.lock()?.clone().live_scraper;
+        let db = self.client.db.lock()?.clone();
+        let df = self.client.price_scraper.lock()?.get_price_historys()?;
         let volume_threshold = settings.volume_threshold;
         let range_threshold = settings.range_threshold;
         let avg_price_cap = settings.avg_price_cap;
@@ -397,7 +316,7 @@ impl LiveScraper {
             .collect()
             .map_err(|e| AppError::new("LiveScraper", eyre!(e.to_string())))?;
         // Call the database to get the inventory names and DataFrame
-        let inventory_names = db.inventory().get_inventory_names().await?;
+        let inventory_names = db.stock_item().get_items_names().await?;
         let inventory_names_s = Series::new("desired_column_name", inventory_names);
 
         // Filters the DataFrame based on the given predicates and returns a new DataFrame.
@@ -613,7 +532,7 @@ impl LiveScraper {
         &self,
         item_live_orders_df: &DataFrame,
     ) -> Result<(DataFrame, DataFrame, i64, i64, i64), AppError> {
-        let in_game_name = self.auth.lock()?.clone().ingame_name;
+        let in_game_name = self.client.auth.lock()?.clone().ingame_name;
         let buy_orders_df = item_live_orders_df
             .clone()
             .lazy()
@@ -671,7 +590,7 @@ impl LiveScraper {
     }
 
     fn is_item_blacklisted(&self, item_name: &str) -> Result<bool, AppError> {
-        let settings = self.settings.lock()?.clone().live_scraper;
+        let settings = self.client.settings.lock()?.clone().live_scraper;
         let blacklist = settings.blacklist.clone();
         let blacklist_s = Series::new("blacklist", blacklist);
         let blacklist_df = DataFrame::new(vec![blacklist_s]).unwrap();
@@ -742,8 +661,8 @@ impl LiveScraper {
             return Ok(None);
         }
 
-        let settings = self.settings.lock()?.clone().live_scraper;
-        let wfm = self.wfm.lock()?.clone();
+        let settings = self.client.settings.lock()?.clone().live_scraper;
+        let wfm = self.client.wfm.lock()?.clone();
         let mut current_orders = current_orders.clone();
         let avg_price_cap = settings.avg_price_cap;
         let max_total_price_cap = settings.max_total_price_cap;
@@ -1063,21 +982,21 @@ impl LiveScraper {
         _item_stats: &DataFrame,
         _inventory_df: &DataFrame,
     ) -> Result<(), AppError> {
-        let wfm = self.wfm.lock()?.clone();
-        let set = self.settings.lock()?.clone().live_scraper;
-        let db = self.db.lock()?.clone();
+        let wfm = self.client.wfm.lock()?.clone();
+        let set = self.client.settings.lock()?.clone().live_scraper;
+        let db = self.client.db.lock()?.clone();
 
         // Get the current orders for the item from the Warframe Market API
         let (order_id, visibility, price, active) = self
             .get_my_order_information(item_name, &current_orders)
             .await?;
 
-        let inventory_names = db.inventory().get_inventory_names().await?;
+        let inventory_names = db.stock_item().get_items_names().await?;
 
         if !inventory_names.contains(&item_name.to_string()) && !active {
             return Ok(());
         } else if !inventory_names.contains(&item_name.to_string()) {
-            db.inventory()
+            db.stock_item()
                 .update_by_url(item_name, None, None, None)
                 .await?;
             wfm.orders()
@@ -1100,7 +1019,7 @@ impl LiveScraper {
 
         // Get Invantory Data from the database
         let inventory = db
-            .inventory()
+            .stock_item()
             .get_item_by_url_name(item_name)
             .await?
             .unwrap();
@@ -1118,7 +1037,7 @@ impl LiveScraper {
         // If there are no buyers, update order to be 30p above average price
         if sellers == 0 {
             let post_price = (avg_price + 30) as i64;
-            db.inventory()
+            db.stock_item()
                 .update_by_url(item_name, None, None, Some(post_price as i32))
                 .await?;
             if active {
@@ -1187,7 +1106,7 @@ impl LiveScraper {
                         "sell",
                     )
                     .await?;
-                db.inventory()
+                db.stock_item()
                     .update_by_url(item_name, None, None, Some(post_price as i32))
                     .await?;
                 logger::info_con(
@@ -1212,7 +1131,7 @@ impl LiveScraper {
                     item_name, item_id, "sell", post_price, quantity, true, item_rank,
                 )
                 .await?;
-            db.inventory()
+            db.stock_item()
                 .update_by_url(item_name, None, None, Some(post_price as i32))
                 .await?;
             logger::info_con("LiveScraper",format!("Automatically Posted Visible Sell Order Item: {item_name}, ItemId: {item_id}, Price: {post_price}").as_str());
@@ -1226,7 +1145,7 @@ impl LiveScraper {
         item_closed_avg: f64,
     ) -> Result<DataFrame, AppError> {
         let mut order_df = self
-            .wfm
+        .client.wfm
             .lock()?
             .orders()
             .convet_order_to_datafream(order.clone())?;

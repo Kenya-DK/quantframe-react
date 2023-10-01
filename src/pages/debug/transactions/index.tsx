@@ -19,7 +19,7 @@ export const Transactions = () => {
           // define columns
           columns={[
             {
-              accessor: 'item_name',
+              accessor: 'name',
               title: "Name",
               width: 250,
             },
@@ -34,7 +34,7 @@ export const Transactions = () => {
               width: 250,
             },
             {
-              accessor: 'datetime',
+              accessor: 'created',
               title: "Date",
               width: 250,
             },
@@ -47,12 +47,12 @@ export const Transactions = () => {
               accessor: 'actions',
               width: 100,
               title: "Actions",
-              render: ({ item_url, datetime, transaction_type, price }) =>
+              render: ({ url, created, transaction_type, price }) =>
                 <Group position="center" >
                   <Tooltip label="">
                     <ActionIcon variant="filled" onClick={async () => {
                       // Set the text to be copied
-                      await navigator.clipboard.writeText(`INSERT INTO transactions (name, datetime, transactionType, price) VALUES ('${item_url}', '${datetime}', '${transaction_type}', ${price})`);
+                      await navigator.clipboard.writeText(`INSERT INTO transactions (name, datetime, transactionType, price) VALUES ('${url}', '${created}', '${transaction_type}', ${price})`);
 
                     }} >
                       <FontAwesomeIcon icon={faCopy} />

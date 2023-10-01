@@ -2,6 +2,7 @@ use crate::{database::client::DBClient, error::AppError, helper, structs::RivenA
 use eyre::eyre;
 use sea_query::{ColumnDef, Expr, Iden, InsertStatement, Query, SqliteQueryBuilder, Table, Value};
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 pub struct TransactionModule<'a> {
     pub client: &'a DBClient,
@@ -10,47 +11,34 @@ pub struct TransactionModule<'a> {
 pub enum Transaction {
     Table,
     Id,
-    ItemId,
-    ItemUrl,
-    ItemName,
+    WFMId,
+    Url,
+    Name,
     ItemType,
-    ItemTags,
-    Rank,
-    SubType,
-    Attributes,
-    MasteryRank,
-    ReRolls,
-    Polarity,
-    Price,
+    Tags,
     TransactionType,
+    Rank,
+    Price,
     Quantity,
     Created,
+    Properties,
 }
 
 #[derive(sqlx::FromRow, Serialize, Deserialize, Clone, Debug)]
 #[allow(dead_code)]
 pub struct TransactionStruct {
     pub id: i64,
-    pub item_id: String,
-    pub item_url: String,
-    pub item_name: String,
+    pub wfm_id: String,
+    pub url: String,
+    pub name: String,
     pub item_type: String,
-    pub item_tags: String,
-    pub rank: i32,
-    // Used for relics
-    pub sub_type: Option<String>,
-    // Used for riven mods
-    pub attributes: sqlx::types::Json<Vec<RivenAttribute>>,
-    // Used for riven mods
-    pub mastery_rank: Option<i32>,
-    // Used for riven mods
-    pub re_rolls: Option<i32>,
-    // Used for riven mods
-    pub polarity: Option<String>,
-    pub price: i32,
+    pub tags: String,
     pub transaction_type: String,
     pub quantity: i32,
+    pub rank: i32,
+    pub price: i32,
     pub created: String,
+    pub properties: Option<sqlx::types::Json<Option<serde_json::Value>>>,
 }
 impl<'a> TransactionModule<'a> {
     pub async fn initialize(&self) -> Result<bool, AppError> {
@@ -65,28 +53,11 @@ impl<'a> TransactionModule<'a> {
                     .auto_increment()
                     .primary_key(),
             )
-            .col(ColumnDef::new(Transaction::ItemId).uuid().not_null())
-            .col(ColumnDef::new(Transaction::ItemUrl).string().not_null())
-            .col(ColumnDef::new(Transaction::ItemName).string().not_null())
+            .col(ColumnDef::new(Transaction::WFMId).uuid().not_null())
+            .col(ColumnDef::new(Transaction::Url).string().not_null())
+            .col(ColumnDef::new(Transaction::Name).string().not_null())
             .col(ColumnDef::new(Transaction::ItemType).string().not_null())
-            .col(ColumnDef::new(Transaction::ItemTags).string().not_null())
-            .col(
-                ColumnDef::new(Transaction::Rank)
-                    .integer()
-                    .not_null()
-                    .default(Value::Int(Some(0))),
-            )
-            .col(ColumnDef::new(Transaction::SubType).string())
-            .col(ColumnDef::new(Transaction::Attributes).json().not_null())
-            .col(ColumnDef::new(Transaction::MasteryRank).integer())
-            .col(ColumnDef::new(Transaction::ReRolls).integer())
-            .col(ColumnDef::new(Transaction::Polarity).string())
-            .col(
-                ColumnDef::new(Transaction::Price)
-                    .integer()
-                    .not_null()
-                    .default(Value::Int(Some(0))),
-            )
+            .col(ColumnDef::new(Transaction::Tags).string().not_null())
             .col(
                 ColumnDef::new(Transaction::TransactionType)
                     .string()
@@ -98,6 +69,19 @@ impl<'a> TransactionModule<'a> {
                     .not_null()
                     .default(Value::Int(Some(1))),
             )
+            .col(
+                ColumnDef::new(Transaction::Rank)
+                    .integer()
+                    .not_null()
+                    .default(Value::Int(Some(0))),
+            )
+            .col(
+                ColumnDef::new(Transaction::Price)
+                    .integer()
+                    .not_null()
+                    .default(Value::Int(Some(0))),
+            )
+            .col(ColumnDef::new(Transaction::Properties).json())
             .col(ColumnDef::new(Transaction::Created).date_time().not_null())
             .build(SqliteQueryBuilder);
 
@@ -114,20 +98,16 @@ impl<'a> TransactionModule<'a> {
         let sql = Query::select()
             .columns([
                 Transaction::Id,
-                Transaction::ItemId,
-                Transaction::ItemUrl,
-                Transaction::ItemName,
-                Transaction::ItemType,
-                Transaction::ItemTags,
-                Transaction::Rank,
-                Transaction::SubType,
-                Transaction::Attributes,
-                Transaction::MasteryRank,
-                Transaction::ReRolls,
-                Transaction::Polarity,
-                Transaction::Price,
                 Transaction::TransactionType,
+                Transaction::WFMId,
+                Transaction::Url,
+                Transaction::Name,
+                Transaction::ItemType,
+                Transaction::Tags,
+                Transaction::Rank,
+                Transaction::Price,
                 Transaction::Quantity,
+                Transaction::Properties,
                 Transaction::Created,
             ])
             .from(Transaction::Table)
@@ -147,11 +127,7 @@ impl<'a> TransactionModule<'a> {
         quantity: i32,
         price: i32,
         rank: i32,
-        sub_type: Option<&str>,
-        attributes: Option<Vec<RivenAttribute>>,
-        mastery_rank: Option<i32>,
-        re_rolls: Option<i32>,
-        polarity: Option<&str>,
+        properties: Option<serde_json::Value>,
     ) -> Result<TransactionStruct, AppError> {
         let connection = self.client.connection.lock().unwrap().clone();
         let item = self
@@ -160,23 +136,16 @@ impl<'a> TransactionModule<'a> {
             .lock()?
             .get_item_by_url_name(&url_name)
             .unwrap();
-        let attributes = match attributes {
-            Some(t) => t,
-            None => vec![],
-        };
+
         let mut transaction = TransactionStruct {
             id: 0,
-            item_id: item.id.clone(),
-            item_url: item.url_name.clone(),
-            item_name: item.item_name.clone(),
+            wfm_id: item.id.clone(),
+            url: item.url_name.clone(),
+            name: item.item_name.clone(),
             item_type: item_type.clone().to_string(),
-            item_tags: item.tags.unwrap().join(","),
+            tags: item.tags.unwrap().join(","),
             rank,
-            sub_type: sub_type.map(|s| s.to_string()),
-            attributes: sqlx::types::Json(attributes.clone()),
-            mastery_rank,
-            re_rolls,
-            polarity: polarity.map(|s| s.to_string()),
+            properties: Some(sqlx::types::Json(properties.clone())),
             price,
             transaction_type: transaction_type.to_string(),
             quantity,
@@ -186,36 +155,26 @@ impl<'a> TransactionModule<'a> {
         let sql = InsertStatement::default()
             .into_table(Transaction::Table)
             .columns([
-                Transaction::ItemId,
-                Transaction::ItemUrl,
-                Transaction::ItemName,
+                Transaction::WFMId,
+                Transaction::Url,
+                Transaction::Name,
                 Transaction::ItemType,
-                Transaction::ItemTags,
+                Transaction::Tags,
                 Transaction::Rank,
-                Transaction::SubType,
-                Transaction::Attributes,
-                Transaction::MasteryRank,
-                Transaction::ReRolls,
-                Transaction::Polarity,
+                Transaction::Properties,
                 Transaction::Price,
                 Transaction::TransactionType,
                 Transaction::Quantity,
                 Transaction::Created,
             ])
             .values_panic([
-                transaction.item_id.clone().into(),
-                transaction.item_url.clone().into(),
-                transaction.item_name.clone().into(),
+                transaction.wfm_id.clone().into(),
+                transaction.url.clone().into(),
+                transaction.name.clone().into(),
                 transaction.item_type.clone().into(),
-                transaction.item_tags.clone().into(),
+                transaction.tags.clone().into(),
                 transaction.rank.into(),
-                transaction.sub_type.clone().into(),
-                serde_json::to_value(&transaction.attributes)
-                    .unwrap()
-                    .into(),
-                transaction.mastery_rank.into(),
-                transaction.re_rolls.into(),
-                transaction.polarity.clone().into(),
+                properties.into(),
                 transaction.price.into(),
                 transaction.transaction_type.clone().into(),
                 transaction.quantity.into(),

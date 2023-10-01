@@ -74,7 +74,7 @@ pub async fn init(
         "set_initializstatus",
         Some(json!({"status": "Loading Inventory..."})),
     );
-    let inventorys = db.inventory().get_items().await?;
+    let inventorys = db.stock_item().get_items().await?;
 
     helper::send_message_to_window(
         "set_initializstatus",

@@ -77,7 +77,7 @@ export default function HomePage() {
                   <ChartContext
                     i18nKey={"best_selling.context"}
                     values={{
-                      name: statistics.total.present.popular_items.sell[0].item_name || "",
+                      name: statistics.total.present.popular_items.sell[0].name || "",
                       sales: statistics.total.present.popular_items.sell[0].total_sold || 0,
                       buy: statistics.total.present.popular_items.sell[0].total_bought || 0,
                       quantity: statistics.total.present.popular_items.sell[0].quantity || 0,

@@ -18,19 +18,15 @@ use serde_json::json;
 use sqlx::Row;
 
 #[derive(Iden)]
-pub enum Inventory {
+pub enum StockItem {
     Table,
     Id,
-    ItemId,
-    ItemUrl,
-    ItemName,
-    ItemType,
+    WFMId,
+    Url,
+    Name,
+    Tags,
     Rank,
     SubType,
-    Attributes,
-    MasteryRank,
-    ReRolls,
-    Polarity,
     Price,
     ListedPrice,
     Owned,
@@ -39,82 +35,69 @@ pub enum Inventory {
 
 #[derive(sqlx::FromRow, Serialize, Deserialize, Clone, Debug)]
 #[allow(dead_code)]
-pub struct InventoryStruct {
+pub struct StockItemStruct {
     pub id: i64,
-    pub item_id: String,
-    pub item_url: String,
-    pub item_name: String,
-    pub item_type: String,
+    pub wfm_id: String,
+    pub url: String,
+    pub name: String,
+    pub tags: String,
     pub rank: i32,
-    // Used for relics
     pub sub_type: Option<String>,
-    // Used for riven mods
-    pub attributes: sqlx::types::Json<Vec<RivenAttribute>>,
-    // Used for riven mods
-    pub mastery_rank: Option<i32>,
-    // Used for riven mods
-    pub re_rolls: Option<i32>,
-    // Used for riven mods
-    pub polarity: Option<String>,
     pub price: f64,
     pub listed_price: Option<i32>,
     pub owned: i32,
     pub created: String,
 }
 
-pub struct InventoryModule<'a> {
+pub struct StockItemModule<'a> {
     pub client: &'a DBClient,
 }
 
-impl<'a> InventoryModule<'a> {
+impl<'a> StockItemModule<'a> {
     // Methods sea-query
 
     // Initialize the database
     pub async fn initialize(&self) -> Result<bool, AppError> {
         let connection = self.client.connection.lock().unwrap().clone();
         let sql = Table::create()
-            .table(Inventory::Table)
+            .table(StockItem::Table)
             .if_not_exists()
             .col(
-                ColumnDef::new(Inventory::Id)
+                ColumnDef::new(StockItem::Id)
                     .integer()
                     .not_null()
                     .auto_increment()
                     .primary_key(),
             )
-            .col(ColumnDef::new(Inventory::ItemId).uuid().not_null())
-            .col(ColumnDef::new(Inventory::ItemUrl).string().not_null())
-            .col(ColumnDef::new(Inventory::ItemName).string().not_null())
-            .col(ColumnDef::new(Inventory::ItemType).string().not_null())
+            .col(ColumnDef::new(StockItem::WFMId).uuid().not_null())
+            .col(ColumnDef::new(StockItem::Url).string().not_null())
+            .col(ColumnDef::new(StockItem::Name).string().not_null())
+            .col(ColumnDef::new(StockItem::Tags).string().not_null())
             .col(
-                ColumnDef::new(Inventory::Rank)
+                ColumnDef::new(StockItem::Rank)
                     .integer()
                     .not_null()
                     .default(Value::Int(Some(0))),
             )
-            .col(ColumnDef::new(Inventory::SubType).string())
-            .col(ColumnDef::new(Inventory::Attributes).json())
-            .col(ColumnDef::new(Inventory::MasteryRank).integer())
-            .col(ColumnDef::new(Inventory::ReRolls).integer())
-            .col(ColumnDef::new(Inventory::Polarity).string())
+            .col(ColumnDef::new(StockItem::SubType).string())
             .col(
-                ColumnDef::new(Inventory::Price)
+                ColumnDef::new(StockItem::Price)
                     .float()
                     .not_null()
                     .default(Value::Int(Some(0))),
             )
             .col(
-                ColumnDef::new(Inventory::ListedPrice)
+                ColumnDef::new(StockItem::ListedPrice)
                     .integer()
                     .default(Value::Int(None)),
             )
             .col(
-                ColumnDef::new(Inventory::Owned)
+                ColumnDef::new(StockItem::Owned)
                     .integer()
                     .not_null()
                     .default(Value::Int(Some(1))),
             )
-            .col(ColumnDef::new(Inventory::Created).date_time().not_null())
+            .col(ColumnDef::new(StockItem::Created).date_time().not_null())
             .build(SqliteQueryBuilder);
 
         sqlx::query(&sql)
@@ -124,31 +107,27 @@ impl<'a> InventoryModule<'a> {
         Ok(true)
     }
 
-    pub async fn get_items(&self) -> Result<Vec<InventoryStruct>, AppError> {
+    pub async fn get_items(&self) -> Result<Vec<StockItemStruct>, AppError> {
         let connection = self.client.connection.lock().unwrap().clone();
         // Read
         let sql = Query::select()
             .columns([
-                Inventory::Id,
-                Inventory::ItemId,
-                Inventory::ItemUrl,
-                Inventory::ItemName,
-                Inventory::ItemType,
-                Inventory::Rank,
-                Inventory::SubType,
-                Inventory::Attributes,
-                Inventory::MasteryRank,
-                Inventory::ReRolls,
-                Inventory::Polarity,
-                Inventory::Price,
-                Inventory::ListedPrice,
-                Inventory::Owned,
-                Inventory::Created,
+                StockItem::Id,
+                StockItem::WFMId,
+                StockItem::Url,
+                StockItem::Name,
+                StockItem::Tags,
+                StockItem::Rank,
+                StockItem::SubType,
+                StockItem::Price,
+                StockItem::ListedPrice,
+                StockItem::Owned,
+                StockItem::Created,
             ])
-            .from(Inventory::Table)
+            .from(StockItem::Table)
             .to_string(SqliteQueryBuilder);
 
-        let rows = sqlx::query_as::<_, InventoryStruct>(&sql)
+        let rows = sqlx::query_as::<_, StockItemStruct>(&sql)
             .fetch_all(&connection)
             .await
             .unwrap();
@@ -158,32 +137,21 @@ impl<'a> InventoryModule<'a> {
     pub async fn get_item_by_url_name(
         &self,
         url_name: &str,
-    ) -> Result<Option<InventoryStruct>, AppError> {
-        let inventorys = self.get_items().await?;
-        let inventory = inventorys.iter().find(|t| t.item_url == url_name);
-        Ok(inventory.cloned())
+    ) -> Result<Option<StockItemStruct>, AppError> {
+        let items = self.get_items().await?;
+        let item = items.iter().find(|t| t.url == url_name);
+        Ok(item.cloned())
     }
-
     pub async fn create(
         &self,
         url_name: &str,
-        item_type: &str,
         mut quantity: i32,
         price: f64,
         rank: i32,
         sub_type: Option<&str>,
-        attributes: Option<Vec<RivenAttribute>>,
-        mastery_rank: Option<i32>,
-        re_rolls: Option<i32>,
-        polarity: Option<&str>,
-    ) -> Result<InventoryStruct, AppError> {
+    ) -> Result<StockItemStruct, AppError> {
         let inventorys = self.get_item_by_url_name(url_name).await?;
         let connection = self.client.connection.lock().unwrap().clone();
-
-        let attributes = match attributes {
-            Some(t) => t,
-            None => vec![],
-        };
 
         if quantity <= 0 {
             quantity = 1;
@@ -213,18 +181,14 @@ impl<'a> InventoryModule<'a> {
             None => {
                 let price = price / (quantity as f64);
 
-                let mut inventory = InventoryStruct {
+                let mut inventory = StockItemStruct {
                     id: 0,
-                    item_id: item.clone().id,
-                    item_url: item.clone().url_name,
-                    item_name: item.clone().item_name,
-                    item_type: item_type.to_string(),
+                    wfm_id: item.clone().id,
+                    url: item.clone().url_name,
+                    name: item.clone().item_name,
+                    tags: item.clone().tags.map(|t| t.join(",")).unwrap_or_default(),
                     rank: rank as i32,
                     sub_type: sub_type.map(|t| t.to_string()),
-                    attributes: sqlx::types::Json(attributes.clone()),
-                    mastery_rank,
-                    re_rolls,
-                    polarity: polarity.map(|t| t.to_string()),
                     price: price as f64,
                     listed_price: None,
                     owned: quantity as i32,
@@ -232,33 +196,25 @@ impl<'a> InventoryModule<'a> {
                 };
 
                 let sql = InsertStatement::default()
-                    .into_table(Inventory::Table)
+                    .into_table(StockItem::Table)
                     .columns([
-                        Inventory::ItemId,
-                        Inventory::ItemUrl,
-                        Inventory::ItemName,
-                        Inventory::ItemType,
-                        Inventory::Rank,
-                        Inventory::SubType,
-                        Inventory::Attributes,
-                        Inventory::MasteryRank,
-                        Inventory::ReRolls,
-                        Inventory::Polarity,
-                        Inventory::Price,
-                        Inventory::Owned,
-                        Inventory::Created,
+                        StockItem::WFMId,
+                        StockItem::Url,
+                        StockItem::Name,
+                        StockItem::Tags,
+                        StockItem::Rank,
+                        StockItem::SubType,
+                        StockItem::Price,
+                        StockItem::Owned,
+                        StockItem::Created,
                     ])
                     .values_panic([
-                        inventory.item_id.clone().into(),
-                        inventory.item_url.clone().into(),
-                        inventory.item_name.clone().into(),
-                        inventory.item_type.clone().into(),
+                        inventory.wfm_id.clone().into(),
+                        inventory.url.clone().into(),
+                        inventory.name.clone().into(),
+                        inventory.tags.clone().into(),
                         inventory.rank.into(),
                         inventory.sub_type.clone().into(),
-                        serde_json::to_value(&inventory.attributes).unwrap().into(),
-                        inventory.mastery_rank.into(),
-                        inventory.re_rolls.into(),
-                        inventory.polarity.clone().into(),
                         inventory.price.into(),
                         inventory.owned.into(),
                         inventory.created.clone().into(),
@@ -288,7 +244,7 @@ impl<'a> InventoryModule<'a> {
         owned: Option<i32>,
         price: Option<f64>,
         listed_price: Option<i32>,
-    ) -> Result<InventoryStruct, AppError> {
+    ) -> Result<StockItemStruct, AppError> {
         let connection = self.client.connection.lock().unwrap().clone();
         let items = self.get_items().await?;
         let inventory = items.iter().find(|t| t.id == id);
@@ -300,27 +256,27 @@ impl<'a> InventoryModule<'a> {
             ));
         }
         let mut inventory = inventory.unwrap().clone();
-        let mut values = vec![(Inventory::ListedPrice, listed_price.into())];
+        let mut values = vec![(StockItem::ListedPrice, listed_price.into())];
 
         if owned.is_some() {
             inventory.owned = owned.unwrap();
-            values.push((Inventory::Owned, owned.into()));
+            values.push((StockItem::Owned, owned.into()));
         }
 
         if price.is_some() {
             inventory.price = price.unwrap();
-            values.push((Inventory::Price, price.into()));
+            values.push((StockItem::Price, price.into()));
         }
 
         if listed_price.is_some() && listed_price.unwrap() > -1 {
             inventory.listed_price = listed_price;
-            values.push((Inventory::ListedPrice, listed_price.into()));
+            values.push((StockItem::ListedPrice, listed_price.into()));
         }
 
         let sql = Query::update()
-            .table(Inventory::Table)
+            .table(StockItem::Table)
             .values(values)
-            .and_where(Expr::col(Inventory::Id).eq(id))
+            .and_where(Expr::col(StockItem::Id).eq(id))
             .to_string(SqliteQueryBuilder);
         sqlx::query(&sql)
             .execute(&connection)
@@ -340,9 +296,9 @@ impl<'a> InventoryModule<'a> {
         owned: Option<i32>,
         price: Option<f64>,
         listed_price: Option<i32>,
-    ) -> Result<InventoryStruct, AppError> {
+    ) -> Result<StockItemStruct, AppError> {
         let items = self.get_items().await?;
-        let item = items.iter().find(|t| t.item_url == id);
+        let item = items.iter().find(|t| t.url == id);
         if item.is_none() {
             return Err(AppError::new_with_level(
                 "Database",
@@ -358,21 +314,21 @@ impl<'a> InventoryModule<'a> {
             .await?)
     }
 
-    pub async fn delete(&self, id: i64) -> Result<InventoryStruct, AppError> {
+    pub async fn delete(&self, id: i64) -> Result<StockItemStruct, AppError> {
         let connection = self.client.connection.lock().unwrap().clone();
         let items = self.get_items().await?;
 
-        let inventory = items.iter().find(|t| t.id == id);
-        if inventory.is_none() {
+        let stock_item = items.iter().find(|t| t.id == id);
+        if stock_item.is_none() {
             return Err(AppError::new_with_level(
                 "Database",
-                eyre!("Item not found in database"),
+                eyre!("Stock Item not found in database"),
                 LogLevel::Error,
             ));
         }
         let sql = Query::delete()
-            .from_table(Inventory::Table)
-            .and_where(Expr::col(Inventory::Id).eq(id))
+            .from_table(StockItem::Table)
+            .and_where(Expr::col(StockItem::Id).eq(id))
             .to_string(SqliteQueryBuilder);
         sqlx::query(&sql)
             .execute(&connection)
@@ -380,22 +336,21 @@ impl<'a> InventoryModule<'a> {
             .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
         self.emit(
             "DELETE",
-            serde_json::to_value(inventory.unwrap().clone()).unwrap(),
+            serde_json::to_value(stock_item.unwrap().clone()).unwrap(),
         );
-        Ok(inventory.unwrap().clone())
+        Ok(stock_item.unwrap().clone())
     }
 
     pub async fn sell_item(
         &self,
         id: i64,
-        item_type: &str,
         price: i32,
         mut quantity: i32,
-    ) -> Result<InventoryStruct, AppError> {
+    ) -> Result<StockItemStruct, AppError> {
         let items = self.get_items().await?;
-        let inventory = items.iter().find(|t| t.id == id);
+        let stock_item = items.iter().find(|t| t.id == id);
 
-        if inventory.is_none() {
+        if stock_item.is_none() {
             return Err(AppError::new_with_level(
                 "Database",
                 eyre!("Item not found in database"),
@@ -403,7 +358,7 @@ impl<'a> InventoryModule<'a> {
             ));
         }
 
-        let mut inventory = inventory.unwrap().clone();
+        let mut inventory = stock_item.unwrap().clone();
         if quantity <= 0 {
             quantity = 1;
         }
@@ -417,71 +372,42 @@ impl<'a> InventoryModule<'a> {
         }
         Ok(inventory.clone())
     }
-    pub async fn get_inventory_names(&self) -> Result<Vec<String>, AppError> {
+
+    pub async fn get_items_names(&self) -> Result<Vec<String>, AppError> {
         let inventorys = self.get_items().await?;
-        let names = inventorys
-            .iter()
-            .map(|t| t.item_url.clone())
-            .collect::<Vec<_>>();
+        let names = inventorys.iter().map(|t| t.url.clone()).collect::<Vec<_>>();
         Ok(names)
     }
+
     pub fn emit(&self, operation: &str, data: serde_json::Value) {
         helper::emit_update("inventorys", operation, Some(data));
     }
-    // End of methods
-    pub fn convet_inventorys_to_datafream(
+
+    pub fn convet_stock_item_to_datafream(
         &self,
-        inventorys: Vec<InventoryStruct>,
+        item: Vec<StockItemStruct>,
     ) -> Result<DataFrame, AppError> {
         let df = DataFrame::new(vec![
-            Series::new("id", inventorys.iter().map(|i| i.id).collect::<Vec<_>>()),
+            Series::new("id", item.iter().map(|i| i.id).collect::<Vec<_>>()),
             Series::new(
                 "item_id",
-                inventorys
-                    .iter()
-                    .map(|i| i.item_id.clone())
-                    .collect::<Vec<_>>(),
+                item.iter().map(|i| i.wfm_id.clone()).collect::<Vec<_>>(),
             ),
             Series::new(
                 "item_url",
-                inventorys
-                    .iter()
-                    .map(|i| i.item_url.clone())
-                    .collect::<Vec<_>>(),
+                item.iter().map(|i| i.url.clone()).collect::<Vec<_>>(),
             ),
             Series::new(
                 "item_name",
-                inventorys
-                    .iter()
-                    .map(|i| i.item_name.clone())
-                    .collect::<Vec<_>>(),
+                item.iter().map(|i| i.name.clone()).collect::<Vec<_>>(),
             ),
-            Series::new(
-                "item_type",
-                inventorys
-                    .iter()
-                    .map(|i| i.item_type.clone())
-                    .collect::<Vec<_>>(),
-            ),
-            Series::new(
-                "rank",
-                inventorys.iter().map(|i| i.rank).collect::<Vec<_>>(),
-            ),
-            Series::new(
-                "price",
-                inventorys.iter().map(|i| i.price).collect::<Vec<_>>(),
-            ),
+            Series::new("rank", item.iter().map(|i| i.rank).collect::<Vec<_>>()),
+            Series::new("price", item.iter().map(|i| i.price).collect::<Vec<_>>()),
             Series::new(
                 "listed_price",
-                inventorys
-                    .iter()
-                    .map(|i| i.listed_price)
-                    .collect::<Vec<_>>(),
+                item.iter().map(|i| i.listed_price).collect::<Vec<_>>(),
             ),
-            Series::new(
-                "owned",
-                inventorys.iter().map(|i| i.owned).collect::<Vec<_>>(),
-            ),
+            Series::new("owned", item.iter().map(|i| i.owned).collect::<Vec<_>>()),
         ]);
         Ok(df.unwrap())
     }

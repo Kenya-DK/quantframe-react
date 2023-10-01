@@ -61,7 +61,7 @@ impl DebugClient {
 
         if import_type == "inventory" {
             // Delete all data in the database to prevent duplicates and errors
-            sqlx::query("DELETE FROM 'inventory'")
+            sqlx::query("DELETE FROM 'stock_item'")
                 .execute(&dbcon)
                 .await
                 .map_err(|e| AppError::new("Debug", eyre!(e.to_string())))?;
@@ -86,8 +86,8 @@ impl DebugClient {
                     continue;
                 }
                 let item = item.unwrap();
-                db.inventory()
-                    .create(&item.url_name, "item", owned as i32, price, 0, None, None, None, None,None)
+                db.stock_item()
+                    .create(&item.url_name,  owned as i32, price,  0,None)
                     .await?;
             }
         } else if import_type == "transactions" {
@@ -122,14 +122,13 @@ impl DebugClient {
                 let sql = InsertStatement::default()
                     .into_table(Transaction::Table)
                     .columns([
-                        Transaction::ItemId,
-                        Transaction::ItemUrl,
-                        Transaction::ItemName,
+                        Transaction::WFMId,
+                        Transaction::Url,
+                        Transaction::Name,
                         Transaction::ItemType,
-                        Transaction::ItemTags,
+                        Transaction::Tags,
                         Transaction::Rank,
                         Transaction::Price,
-                        Transaction::Attributes,
                         Transaction::TransactionType,
                         Transaction::Quantity,
                         Transaction::Created,
@@ -142,7 +141,6 @@ impl DebugClient {
                         item.tags.unwrap().join(",").clone().into(),
                         0.into(),
                         price.into(),
-                        "[]".into(),
                         transaction_type.clone().into(),
                         1.into(),
                         datetime.into(),

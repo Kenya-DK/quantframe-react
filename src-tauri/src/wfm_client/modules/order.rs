@@ -138,7 +138,9 @@ impl<'a> OrderModule<'a> {
         // Find Order by name.
         let order = ordres
             .iter()
-            .find(|order| order.item.as_ref().unwrap().url_name == item && order.order_type == order_type)
+            .find(|order| {
+                order.item.as_ref().unwrap().url_name == item && order.order_type == order_type
+            })
             .clone();
 
         if order.is_none() {

@@ -13,7 +13,7 @@ import api from '@api/index';
 import { notifications } from '@mantine/notifications';
 import { Trans } from 'react-i18next';
 import { useWarframeMarketContextContext } from '../contexts';
-import { CreateTransactionEntryDto } from '../types';
+import { CreateStockItemEntryDto, CreateTransactionEntryDto } from '../types';
 
 interface PurchaseNewItemProps {
   loading: boolean;
@@ -122,18 +122,18 @@ const Items = () => {
   useEffect(() => {
     if (!inventorys) return;
     setTotal_purchase_price(inventorys.reduce((a, b) => a + (b.price * b.owned), 0));
-    setTotal_listed_price(inventorys.reduce((a, b) => a + (b.listed_price || 0), 0));
+    setTotal_listed_price(inventorys.reduce((a, b) => a + ((b.listed_price || 0) * b.owned), 0));
   }, [inventorys]);
 
 
   const [itemPrices, setItemPrices] = useState<Record<string, number>>({});
 
-  const sellInvantoryEntryMutation = useMutation((data: { id: number, report: boolean, price: number }) => api.inventory.sellInvantoryEntry(data.id, data.report, data.price, 1), {
+  const sellInvantoryEntryMutation = useMutation((data: { id: number, report: boolean, price: number }) => api.stock.item.sell(data.id, data.report, data.price, 1), {
     onSuccess: async (data) => {
       notifications.show({
         title: useTranslateInvSuccess("sell_title"),
         icon: <FontAwesomeIcon icon={faCheck} />,
-        message: useTranslateInvSuccess("sell_message", { name: data.item_name, price: data.price }),
+        message: useTranslateInvSuccess("sell_message", { name: data.name, price: data.price }),
         color: "green"
       });
     },
@@ -141,12 +141,12 @@ const Items = () => {
 
     },
   })
-  const deleteInvantoryEntryMutation = useMutation((id: number) => api.inventory.deleteInvantoryEntry(id), {
+  const deleteInvantoryEntryMutation = useMutation((id: number) => api.stock.item.delete(id), {
     onSuccess: async (data) => {
       notifications.show({
         title: useTranslateInvSuccess("delete_title"),
         icon: <FontAwesomeIcon icon={faCheck} />,
-        message: useTranslateInvSuccess("delete_message", { name: data.item_name }),
+        message: useTranslateInvSuccess("delete_message", { name: data.name }),
         color: "green"
       });
     },
@@ -164,7 +164,7 @@ const Items = () => {
       // define columns
       columns={[
         {
-          accessor: 'item_name',
+          accessor: 'name',
           title: useTranslateDataGridColumns('name'),
           width: 120,
         },
@@ -214,22 +214,22 @@ const Items = () => {
           accessor: 'actions',
           width: 150,
           title: useTranslateDataGridColumns('actions.title'),
-          render: ({ id, item_url }) =>
+          render: ({ id, url }) =>
             <Group grow position="center" >
               <NumberInput
                 required
                 size='sm'
                 min={0}
                 max={999}
-                value={itemPrices[item_url] || ""}
-                onChange={(value) => setItemPrices({ ...itemPrices, [item_url]: Number(value) })}
+                value={itemPrices[url] || ""}
+                onChange={(value) => setItemPrices({ ...itemPrices, [url]: Number(value) })}
                 rightSectionWidth={100}
                 rightSection={
                   <Group spacing={"5px"} mr={0}>
                     <Divider orientation="vertical" />
                     <Tooltip label={useTranslateDataGridColumns('actions.sell')}>
                       <ActionIcon loading={sellInvantoryEntryMutation.isLoading} color="green.7" variant="filled" onClick={async () => {
-                        const price = itemPrices[item_url];
+                        const price = itemPrices[url];
                         if (!price || price <= 0 || !id) return;
                         await sellInvantoryEntryMutation.mutateAsync({ id, price, report: false });
                       }} >
@@ -238,7 +238,7 @@ const Items = () => {
                     </Tooltip>
                     <Tooltip label={useTranslateDataGridColumns('actions.sell_report')}>
                       <ActionIcon loading={sellInvantoryEntryMutation.isLoading} color="blue.7" variant="filled" onClick={async () => {
-                        const price = itemPrices[item_url];
+                        const price = itemPrices[url];
                         if (!price || price <= 0 || !id) return;
                         await sellInvantoryEntryMutation.mutateAsync({ id, price, report: true });
                       }} >
@@ -278,12 +278,12 @@ const Items = () => {
 
 export const Inventory = () => {
   const useTranslateInvSuccess = (key: string, context?: { [key: string]: any }) => useTranslateSuccess(`invantory.${key}`, { ...context })
-  const createInvantoryEntryMutation = useMutation((data: CreateTransactionEntryDto) => api.inventory.createInvantoryEntry(data), {
+  const createInvantoryEntryMutation = useMutation((data: CreateStockItemEntryDto) => api.stock.item.create(data), {
     onSuccess: async (data) => {
       notifications.show({
         title: useTranslateInvSuccess("create_title"),
         icon: <FontAwesomeIcon icon={faCheck} />,
-        message: useTranslateInvSuccess("create_message", { name: data.item_name }),
+        message: useTranslateInvSuccess("create_message", { name: data.name }),
         color: "green"
       });
     },
@@ -296,7 +296,7 @@ export const Inventory = () => {
       notifications.show({
         title: useTranslateInvSuccess("create_title"),
         icon: <FontAwesomeIcon icon={faCheck} />,
-        message: useTranslateInvSuccess("create_message", { name: data.item_name }),
+        message: useTranslateInvSuccess("create_message", { name: data.name }),
         color: "green"
       });
     },
@@ -315,7 +315,13 @@ export const Inventory = () => {
             createTransactionsEntryMutation.mutate(data);
             break;
           case "resell":
-            createInvantoryEntryMutation.mutate(data);
+            createInvantoryEntryMutation.mutate({
+              item_id: data.item_id,
+              report: data.report || true,
+              price: data.price,
+              quantity: data.quantity,
+              rank: data.rank
+            });
             break;
         }
       }} />

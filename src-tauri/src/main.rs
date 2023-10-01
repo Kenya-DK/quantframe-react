@@ -5,6 +5,7 @@ use cache::CacheState;
 use database::client::DBClient;
 use debug::DebugClient;
 use error::AppError;
+use live_scraper::client::LiveScraperClient;
 use price_scraper::PriceScraper;
 use settings::SettingsState;
 use std::panic;
@@ -15,12 +16,12 @@ use tauri::{App, Manager};
 mod structs;
 mod whisper_scraper;
 use whisper_scraper::WhisperScraper; // add this line
-mod live_scraper;
-use live_scraper::LiveScraper;
+
 
 mod auth;
 mod cache;
 mod commands;
+mod live_scraper;
 mod database;
 mod debug;
 mod error;
@@ -68,7 +69,7 @@ async fn setup_async(app: &mut App) -> Result<(), AppError> {
     app.manage(price_scraper.clone());
 
     // create and manage LiveScraper state
-    let live_scraper = LiveScraper::new(
+    let live_scraper = LiveScraperClient::new(
         Arc::clone(&settings_arc),
         Arc::clone(&price_scraper),
         Arc::clone(&wfm_client),
@@ -133,10 +134,7 @@ fn main() {
             commands::base::init,
             commands::auth::login,
             commands::base::update_settings,
-            commands::inventory::create_invantory_entry,
             commands::transaction::create_transaction_entry,
-            commands::inventory::delete_invantory_entry,
-            commands::inventory::sell_invantory_entry,
             commands::whisper_scraper::toggle_whisper_scraper,
             commands::live_scraper::toggle_live_scraper,
             commands::price_scraper::generate_price_history,
@@ -145,7 +143,14 @@ fn main() {
             commands::orders::get_orders,
             commands::orders::delete_order,
             commands::orders::create_order,
-            commands::orders::update_order
+            commands::orders::update_order,
+            // Stock commands
+            commands::stock::create_item_stock,
+            commands::stock::delete_item_stock,
+            commands::stock::sell_item_stock,
+            commands::stock::create_riven_stock,
+            commands::stock::delete_riven_stock,
+            commands::stock::sell_riven_stock,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -3,7 +3,6 @@ use std::sync::{Arc, Mutex};
 use crate::{
     database::{client::DBClient, modules::transaction::TransactionStruct},
     error::AppError,
-    structs::RivenAttribute,
 };
 
 #[tauri::command]
@@ -14,29 +13,12 @@ pub async fn create_transaction_entry(
     quantity: i32,
     rank: i32,
     price: i32,
-    sub_type: Option<&str>,
-    attributes: Option<Vec<RivenAttribute>>,
-    mastery_rank: Option<i32>,
-    re_rolls: Option<i32>,
-    polarity: Option<&str>,
     db: tauri::State<'_, Arc<Mutex<DBClient>>>,
 ) -> Result<TransactionStruct, AppError> {
     let db = db.lock()?.clone();
     let transaction = db
         .transaction()
-        .create(
-            &id,
-            &item_type,
-            &ttype,
-            quantity,
-            price,
-            rank,
-            sub_type,
-            attributes,
-            mastery_rank,
-            re_rolls,
-            polarity,
-        )
+        .create(&id, &item_type, &ttype, quantity, price, rank, None)
         .await
         .unwrap();
     // Update UI

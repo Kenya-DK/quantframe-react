@@ -17,11 +17,11 @@ export interface ChartDto extends ChartWithValuesDto, ChartWithLabelsDto {
 
 // Handle Items Statistic
 export interface StatisticTransactionItemRevenue {
-  item_id: string;
-  item_url: string;
+  wfm_id: string;
+  url: string;
   item_type: string;
-  item_name: string;
-  item_tags: string[];
+  name: string;
+  tags: string[];
   total_bought: number;
   total_sold: number;
   quantity: number;

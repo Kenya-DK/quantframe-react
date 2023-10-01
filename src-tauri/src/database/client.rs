@@ -19,7 +19,7 @@ use crate::{
     wfm_client::client::WFMClient,
 };
 
-use super::modules::{inventory::InventoryModule, transaction::TransactionModule};
+use super::modules::{ transaction::TransactionModule, stock_item::StockItemModule, stock_riven::StockRivenModule};
 #[derive(Clone, Debug)]
 pub struct DBClient {
     pub log_file: String,
@@ -59,19 +59,24 @@ impl DBClient {
         })
     }
     pub async fn initialize(&self) -> Result<bool, AppError> {
-        self.inventory().initialize().await?;
+        self.stock_item().initialize().await?;
+        self.stock_riven().initialize().await?;
         self.transaction().initialize().await?;
         Ok(true)
     }
     pub fn get_connection(&self) -> Arc<Mutex<Pool<Sqlite>>> {
         self.connection.clone()
     }
-    // Add an "add" method to WFMWFMClient
-    pub fn inventory(&self) -> InventoryModule {
-        InventoryModule { client: self }
-    }
 
     pub fn transaction(&self) -> TransactionModule {
         TransactionModule { client: self }
+    }
+
+    pub fn stock_item(&self) -> StockItemModule {
+        StockItemModule { client: self }
+    }
+
+    pub fn stock_riven(&self) -> StockRivenModule {
+        StockRivenModule { client: self }
     }
 }

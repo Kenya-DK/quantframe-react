@@ -1,7 +1,7 @@
 use reqwest::header::HeaderMap;
 use serde_json::json;
 
-use crate::{auth::AuthState, error::AppError, logger};
+use crate::{auth::AuthState, error::AppError, live_scraper::client::LiveScraperClient, logger};
 pub struct RivenModule<'a> {
     pub client: &'a LiveScraperClient,
 }

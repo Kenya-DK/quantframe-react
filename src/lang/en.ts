@@ -19,6 +19,7 @@ export const en = {
         mastery_rank: "Mastery Rank",
         re_rolls: "Re-Rolls",
         polarity: "Polarity",
+        add_attribute: "Add Attribute",
       }
     },
     transactionRevenueChart: {
