@@ -1,11 +1,11 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { StockEntryDto, StatisticDto, TransactionEntryDto, Wfm } from '$types/index';
+import { StatisticDto, TransactionEntryDto, Wfm } from '$types/index';
 import { OnTauriUpdateDataEvent, getStatistic } from "../utils";
 
 type WarframeMarketContextProps = {
   transactions: TransactionEntryDto[];
   orders: Wfm.OrderDto[];
-  inventorys: StockEntryDto[];
+  auctions: Wfm.Auction<string>[];
   statistics: StatisticDto | undefined;
 }
 type WarframeMarketContextProviderProps = {
@@ -14,8 +14,8 @@ type WarframeMarketContextProviderProps = {
 
 export const WarframeMarketContextContext = createContext<WarframeMarketContextProps>({
   transactions: [],
-  inventorys: [],
   orders: [],
+  auctions: [],
   statistics: undefined,
 });
 
@@ -23,9 +23,9 @@ export const useWarframeMarketContextContext = () => useContext(WarframeMarketCo
 
 export const WarframeMarketContextProvider = ({ children }: WarframeMarketContextProviderProps) => {
   const [transactions, setTransactions] = useState<TransactionEntryDto[]>([]);
-  const [inventorys, setInventorys] = useState<StockEntryDto[]>([]);
   const [statistics, setStatistics] = useState<StatisticDto | undefined>(undefined);
   const [orders, setOrders] = useState<Wfm.OrderDto[]>([]);
+  const [auctions, setAuctions] = useState<Wfm.Auction<string>[]>([]);
 
   // Handle update, create, delete orders
   const handleUpdateOrders = (operation: string, data: Wfm.OrderDto | Wfm.OrderDto[] | string) => {
@@ -51,21 +51,6 @@ export const WarframeMarketContextProvider = ({ children }: WarframeMarketContex
     }
   }
 
-  // Handle update, create, delete inventory
-  const handleUpdateInventory = (operation: string, data: StockEntryDto | StockEntryDto[]) => {
-    switch (operation) {
-      case "CREATE_OR_UPDATE":
-        setInventorys((inventorys) => [...inventorys.filter((item) => item.id !== (data as StockEntryDto).id), data as StockEntryDto]);
-        break;
-      case "DELETE":
-        setInventorys((inventorys) => [...inventorys.filter((item) => item.id !== (data as StockEntryDto).id)]);
-        break;
-      case "SET":
-        setInventorys(data as StockEntryDto[]);
-        break;
-    }
-  }
-
   // Handle update, create, delete transaction
   const handleUpdateTransaction = (operation: string, data: TransactionEntryDto | TransactionEntryDto[]) => {
     switch (operation) {
@@ -81,6 +66,21 @@ export const WarframeMarketContextProvider = ({ children }: WarframeMarketContex
     }
   }
 
+  // Handle update, create, delete transaction
+  const handleUpdateAuction = (operation: string, data: Wfm.Auction<string> | Wfm.Auction<string>[]) => {
+    switch (operation) {
+      case "CREATE_OR_UPDATE":
+        setAuctions((auctions) => [...auctions.filter((item) => item.id !== (data as Wfm.Auction<string>).id), data as Wfm.Auction<string>]);
+        break;
+      case "DELETE":
+        setAuctions((auctions) => [...auctions.filter((item) => item.id !== (data as Wfm.Auction<string>).id)]);
+        break;
+      case "SET":
+        setAuctions(data as Wfm.Auction<string>[]);
+        break;
+    }
+  }
+
   // Handle update of statistics when transactions change
   useEffect(() => {
     if (!transactions) return;
@@ -90,14 +90,15 @@ export const WarframeMarketContextProvider = ({ children }: WarframeMarketContex
 
   // Hook on tauri events from rust side
   useEffect(() => {
-    OnTauriUpdateDataEvent<StockEntryDto>("inventorys", ({ data, operation }) => handleUpdateInventory(operation, data));
     OnTauriUpdateDataEvent<TransactionEntryDto>("transactions", ({ data, operation }) => handleUpdateTransaction(operation, data));
     OnTauriUpdateDataEvent<Wfm.OrderDto>("orders", ({ data, operation }) => handleUpdateOrders(operation, data));
+    OnTauriUpdateDataEvent<Wfm.Auction<string>>("auctions", ({ data, operation }) => handleUpdateAuction(operation, data));
+
     return () => { }
   }, []);
 
   return (
-    <WarframeMarketContextContext.Provider value={{ transactions, inventorys, statistics, orders }}>
+    <WarframeMarketContextContext.Provider value={{ transactions, statistics, orders, auctions }}>
       {children}
     </WarframeMarketContextContext.Provider>
   )

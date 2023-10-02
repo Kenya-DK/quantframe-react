@@ -104,7 +104,8 @@ const api = {
           attributes: input.attributes,
           masteryRank: input.mastery_rank,
           reRolls: input.re_rolls,
-          polarity: input.polarity
+          polarity: input.polarity,
+          modName: input.mod_name,
         }) as StockRivenDto;
       },
       delete: async (id: number): Promise<StockRivenDto> => {

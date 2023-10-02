@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ModalsProvider } from '@mantine/modals';
 import { createStyles } from '@mantine/core';
 import { PromptModal } from './components/modals/prompt.modal';
-import { LiveScraperContextProvider, PriceScraperContextProvider, WhisperScraperContextProvider } from './contexts';
+import { LiveScraperContextProvider, PriceScraperContextProvider, StockContextProvider, WhisperScraperContextProvider } from './contexts';
 import AppRoutes from './layouts/routes';
 import { AppContextProvider } from './contexts/app.context';
 import { AuthContextProvider } from './contexts/auth.context';
@@ -52,15 +52,17 @@ function App() {
         <AppContextProvider>
           <AuthContextProvider>
             <CacheContextProvider>
-              <WarframeMarketContextProvider>
-                <PriceScraperContextProvider>
-                  <LiveScraperContextProvider>
-                    <WhisperScraperContextProvider>
-                      <AppRoutes />
-                    </WhisperScraperContextProvider>
-                  </LiveScraperContextProvider>
-                </PriceScraperContextProvider>
-              </WarframeMarketContextProvider>
+              <StockContextProvider>
+                <WarframeMarketContextProvider>
+                  <PriceScraperContextProvider>
+                    <LiveScraperContextProvider>
+                      <WhisperScraperContextProvider>
+                        <AppRoutes />
+                      </WhisperScraperContextProvider>
+                    </LiveScraperContextProvider>
+                  </PriceScraperContextProvider>
+                </WarframeMarketContextProvider>
+              </StockContextProvider>
             </CacheContextProvider>
           </AuthContextProvider>
         </AppContextProvider>

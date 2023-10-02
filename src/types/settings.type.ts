@@ -1,14 +1,16 @@
-import { StockEntryDto, TransactionEntryDto, Wfm } from ".";
+import { StockItemDto, StockRivenDto, TransactionEntryDto, Wfm } from ".";
 export interface SetupResponse {
   valid: boolean;
   price_scraper_last_run: number | null;
   user: Wfm.UserDto;
   settings: Settings;
   transactions: TransactionEntryDto[];
-  inventorys: StockEntryDto[];
   orders: Wfm.OrderDto[];
+  auctions: Wfm.Auction<string>[];
   items: Wfm.ItemDto[];
   riven_items: Wfm.RivenItemTypeDto[];
+  stock_items: StockItemDto[];
+  stock_rivens: StockRivenDto[];
   riven_attributes: Wfm.RivenAttributeInfoDto[];
 }
 

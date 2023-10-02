@@ -12,7 +12,7 @@ import { useMutation } from '@tanstack/react-query';
 import api from '@api/index';
 import { notifications } from '@mantine/notifications';
 import { Trans } from 'react-i18next';
-import { useWarframeMarketContextContext } from '../contexts';
+import { useStockContextContext } from '../contexts';
 import { CreateStockItemEntryDto, CreateTransactionEntryDto } from '../types';
 
 interface PurchaseNewItemProps {
@@ -118,12 +118,12 @@ const Items = () => {
   const [total_purchase_price, setTotal_purchase_price] = useState(0);
   const [total_listed_price, setTotal_listed_price] = useState(0);
 
-  const { inventorys } = useWarframeMarketContextContext();
+  const { items: stocks } = useStockContextContext();
   useEffect(() => {
-    if (!inventorys) return;
-    setTotal_purchase_price(inventorys.reduce((a, b) => a + (b.price * b.owned), 0));
-    setTotal_listed_price(inventorys.reduce((a, b) => a + ((b.listed_price || 0) * b.owned), 0));
-  }, [inventorys]);
+    if (!stocks) return;
+    setTotal_purchase_price(stocks.reduce((a, b) => a + (b.price * b.owned), 0));
+    setTotal_listed_price(stocks.reduce((a, b) => a + ((b.listed_price || 0) * b.owned), 0));
+  }, [stocks]);
 
 
   const [itemPrices, setItemPrices] = useState<Record<string, number>>({});
@@ -160,7 +160,7 @@ const Items = () => {
       striped
       mah={5}
       height={"65vh"}
-      records={inventorys}
+      records={stocks}
       // define columns
       columns={[
         {

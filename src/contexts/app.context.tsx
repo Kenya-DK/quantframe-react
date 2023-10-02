@@ -33,9 +33,13 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
 
       } else {
         SendTauriUpdateDataEvent("user", { data: data.user, operation: "SET" })
-        SendTauriUpdateDataEvent("inventorys", { data: data.inventorys, operation: "SET" })
         SendTauriUpdateDataEvent("transactions", { data: data.transactions, operation: "SET" })
         SendTauriUpdateDataEvent("orders", { data: data.orders, operation: "SET" })
+        SendTauriUpdateDataEvent("auctions", { data: data.auctions, operation: "SET" })
+        // Stock Context
+        SendTauriUpdateDataEvent("StockItems", { data: data.stock_items, operation: "SET" })
+        SendTauriUpdateDataEvent("StockRivens", { data: data.stock_rivens, operation: "SET" })
+
         SendTauriEvent("Cache:Update:Items", data.items)
         SendTauriEvent("Cache:Update:RivenTypes", data.riven_items)
         SendTauriEvent("Cache:Update:RivenAttributes", data.riven_attributes)

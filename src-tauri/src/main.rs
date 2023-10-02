@@ -17,17 +17,17 @@ mod structs;
 mod whisper_scraper;
 use whisper_scraper::WhisperScraper; // add this line
 
-
 mod auth;
 mod cache;
 mod commands;
-mod live_scraper;
 mod database;
 mod debug;
 mod error;
 mod helper;
+mod live_scraper;
 mod logger;
 mod price_scraper;
+mod rate_limiter;
 mod settings;
 mod wfm_client;
 

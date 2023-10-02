@@ -188,24 +188,59 @@ pub async fn sell_item_stock(
 #[tauri::command]
 pub async fn create_riven_stock(
     id: String,
-    report: bool,
-    quantity: i32,
-    item_type: String,
     price: f64,
     rank: i32,
-    attributes: Option<Vec<RivenAttribute>>,
-    mastery_rank: Option<i32>,
-    re_rolls: Option<i32>,
-    polarity: Option<&str>,
+    attributes: Vec<RivenAttribute>,
+    mastery_rank: i32,
+    re_rolls: i32,
+    polarity: &str,
+    mod_name: &str,
     db: tauri::State<'_, Arc<Mutex<DBClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<serde_json::Value, AppError> {
     let db = db.lock()?.clone();
     let wfm = wfm.lock()?.clone();
-    logger::warning_con(
-        "CommandStock:",
-        "Riven Stock Commands are not implemented yet",
-    );
+    match db
+    .stock_riven()
+    .create(&id, mod_name, price, rank, attributes, mastery_rank, re_rolls, polarity)
+    .await
+{
+    Ok(stockitem) => {
+        // Create transaction
+    //     match db.transaction()
+    //     .create(
+    //         &id,
+    //         "item",
+    //         "buy",
+    //         quantity,
+    //         price as i32,
+    //         rank,
+    //         None
+    //     )
+    //     .await
+    // {
+    //     Ok(_) => {
+    //         // Send Close Event to Warframe Market API
+    //         if report {
+    //             wfm.orders().close(&id, "buy").await?;
+    //         }
+    //         return Ok(serde_json::to_value(stockitem).unwrap());
+    //     }
+    //     Err(e) => {
+    //         error::create_log_file(db.log_file.clone(), &e);
+    //         return Err(e);
+    //     }
+    // };
+
+
+
+
+    }
+    Err(e) => {
+        error::create_log_file(db.log_file.clone(), &e);
+        return Err(e);
+    }
+};
     Ok(json!({}))
 }
 

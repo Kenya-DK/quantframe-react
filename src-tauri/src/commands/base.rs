@@ -43,13 +43,13 @@ pub async fn init(
         "set_initializstatus",
         Some(json!({"status": "Loading Riven Types..."})),
     );
-    let riven_items = wfm.riven().get_all_riven_types().await?;
+    let riven_items = wfm.auction().get_all_riven_types().await?;
 
     helper::send_message_to_window(
         "set_initializstatus",
         Some(json!({"status": "Loading Riven Attributes..."})),
     );
-    let riven_attributes = wfm.riven().get_all_riven_attribute_types().await?;
+    let riven_attributes = wfm.auction().get_all_riven_attribute_types().await?;
 
     helper::send_message_to_window(
         "set_initializstatus",
@@ -72,9 +72,10 @@ pub async fn init(
 
     helper::send_message_to_window(
         "set_initializstatus",
-        Some(json!({"status": "Loading Inventory..."})),
+        Some(json!({"status": "Loading Stock..."})),
     );
-    let inventorys = db.stock_item().get_items().await?;
+    let stock_items = db.stock_item().get_items().await?;
+    let stock_rivens = db.stock_riven().get_rivens().await?;
 
     helper::send_message_to_window(
         "set_initializstatus",
@@ -90,17 +91,25 @@ pub async fn init(
     let mut ordres = ordres_vec.buy_orders;
     ordres.append(&mut ordres_vec.sell_orders);
 
+    helper::send_message_to_window(
+        "set_initializstatus",
+        Some(json!({"status": "Loading Your Auctions..."})),
+    );
+    let auctions = wfm.auction().get_my_auctions().await?;
+
     Ok(json!({
         "valid": true,
         "settings": &settings.clone(),
         "user": &auth.clone(),
-        "inventorys": inventorys,
         "transactions": transactions,
         "orders": ordres,
         "price_scraper_last_run":price_scraper.get_status(),
         "items": items,
+        "auctions": auctions,
         "riven_items": riven_items,
         "riven_attributes": riven_attributes,
+        "stock_items": stock_items,
+        "stock_rivens": stock_rivens,
     }))
 }
 

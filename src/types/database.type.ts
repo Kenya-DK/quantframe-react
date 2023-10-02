@@ -37,6 +37,7 @@ export interface CreateStockItemEntryDto extends CreateStockEntryDto {
 }
 
 export interface CreateStockRivenEntryDto extends CreateStockEntryDto {
+  mod_name: string;
   attributes: Wfm.RivenAttributeDto[];
   mastery_rank: number;
   re_rolls: number;

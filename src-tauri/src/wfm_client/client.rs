@@ -1,4 +1,7 @@
-use std::sync::{Arc, Mutex};
+use std::{
+    sync::{Arc, Mutex},
+    time::Duration,
+};
 
 use eyre::eyre;
 use polars::{
@@ -14,13 +17,17 @@ use crate::{
     error::AppError,
     helper,
     logger::{self, LogLevel},
+    rate_limiter::RateLimiter,
 };
 
-use super::modules::{auth::AuthModule, item::ItemModule, order::OrderModule, riven::RivenModule};
+use super::modules::{
+    auction::AuctionModule, auth::AuthModule, item::ItemModule, order::OrderModule,
+};
 
 #[derive(Clone, Debug)]
 pub struct WFMClient {
     endpoint: String,
+    limiter: Arc<tokio::sync::Mutex<RateLimiter>>,
     pub log_file: String,
     pub auth: Arc<Mutex<AuthState>>,
 }
@@ -29,6 +36,10 @@ impl WFMClient {
     pub fn new(auth: Arc<Mutex<AuthState>>) -> Self {
         WFMClient {
             endpoint: "https://api.warframe.market/v1/".to_string(),
+            limiter: Arc::new(tokio::sync::Mutex::new(RateLimiter::new(
+                1.0,
+                Duration::new(1, 0),
+            ))),
             log_file: "wfmAPICalls.log".to_string(),
             auth,
         }
@@ -41,8 +52,10 @@ impl WFMClient {
         body: Option<Value>,
     ) -> Result<(T, HeaderMap), AppError> {
         let auth = self.auth.lock()?.clone();
-        // Sleep for 1 seconds before sending a new request, to avoid 429 error
-        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+        let mut rate_limiter = self.limiter.lock().await;
+
+        rate_limiter.wait_for_token().await;
+
         let client = Client::new();
         let new_url = format!("{}{}", self.endpoint, url);
 
@@ -167,7 +180,7 @@ impl WFMClient {
     pub fn items(&self) -> ItemModule {
         ItemModule { client: self }
     }
-    pub fn riven(&self) -> RivenModule {
-        RivenModule { client: self }
+    pub fn auction(&self) -> AuctionModule {
+        AuctionModule { client: self }
     }
 }
