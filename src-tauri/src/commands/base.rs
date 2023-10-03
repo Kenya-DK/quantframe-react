@@ -34,22 +34,12 @@ pub async fn init(
 
     helper::send_message_to_window(
         "set_initializstatus",
-        Some(json!({"status": "Loading Items..."})),
+        Some(json!({"status": "Loading Cache..."})),
     );
-    cache.update_items().await?;
-    let items = cache.get_items().await?;
-
-    helper::send_message_to_window(
-        "set_initializstatus",
-        Some(json!({"status": "Loading Riven Types..."})),
-    );
-    let riven_items = wfm.auction().get_all_riven_types().await?;
-
-    helper::send_message_to_window(
-        "set_initializstatus",
-        Some(json!({"status": "Loading Riven Attributes..."})),
-    );
-    let riven_attributes = wfm.auction().get_all_riven_attribute_types().await?;
+    cache.refresh().await?;
+    let items = cache.items().get_types();
+    let riven_items = cache.riven().get_types().await?;
+    let riven_attributes = cache.riven().get_attributes().await?;
 
     helper::send_message_to_window(
         "set_initializstatus",
@@ -135,4 +125,30 @@ pub async fn update_settings(
     my_lock.whisper_scraper.webhook = settings.whisper_scraper.webhook;
     my_lock.save_to_file().expect("Could not save settings");
     Ok(())
+}
+
+#[tauri::command]
+pub fn get_weekly_rivens() -> Result<serde_json::Value, AppError>{
+    let mut url = "https://n9e5v4d8.ssl.hwcdn.net/repos/weeklyRivensPC.json";
+    let client = Client::new();
+    let request = client.request(Method::GET, Url::parse(&url).unwrap());
+    let response = request.send().await;
+    if let Err(e) = response {
+        return Err(AppError::new("WeeklyRivens", eyre!(e.to_string())));
+    }
+    let response_data = response.unwrap();
+    let status = response_data.status();
+
+    if status != 200 {
+        return Err(AppError::new(
+            "WeeklyRivens",
+            eyre!(
+                "Error getting price data for day: {}. Status: {}",
+                day,
+                status
+            ),
+        ));
+    }
+    let response = response_data.json::<Value>().await.unwrap();
+    Ok(response)
 }

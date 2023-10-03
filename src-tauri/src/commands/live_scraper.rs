@@ -18,3 +18,4 @@ pub fn toggle_live_scraper(
         }
     }
 }
+

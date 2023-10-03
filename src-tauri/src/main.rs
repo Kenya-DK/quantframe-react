@@ -132,11 +132,13 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             commands::base::init,
-            commands::auth::login,
             commands::base::update_settings,
+            commands::base::get_weekly_rivens,
+            commands::auth::login,
             commands::transaction::create_transaction_entry,
             commands::whisper_scraper::toggle_whisper_scraper,
             commands::live_scraper::toggle_live_scraper,
+            commands::live_scraper::get_weekly_rivens,
             commands::price_scraper::generate_price_history,
             commands::debug::import_warframe_algo_trader_data,
             commands::debug::reset_data,
