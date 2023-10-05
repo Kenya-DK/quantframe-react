@@ -132,6 +132,12 @@ export const en = {
         },
       },
     },
+    auction: {
+      mastery_rank: "MR: <italic>{{mastery_rank}}</italic>",
+      rank: "Ranks: <italic>{{rank}}</italic>",
+      re_rolls: "Re-rolls: <italic>{{re_rolls}}</italic>",
+      polarity: "Polarity: <italic>{{polarity}}</italic>",
+    }
   },
   context: {
     wisper: {
@@ -222,8 +228,7 @@ export const en = {
         sold: "Sold",
         hidden: "Hidden",
       }
-    }
-    ,
+    },
     auth: {
       login: {
         title: "Warframe Market - Login",
@@ -231,6 +236,16 @@ export const en = {
         password: "Password",
         remember_me: "Remember me",
         submit: "Login",
+      },
+    },
+    auctions: {
+      prompt: {
+        price: {
+          title: "Price",
+          label: "Price",
+          description: "The price you bought the item for",
+          placeholder: "Price",
+        },
       },
     },
   },

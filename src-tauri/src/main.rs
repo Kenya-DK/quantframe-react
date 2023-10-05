@@ -1,7 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use auth::AuthState;
-use cache::CacheState;
+use cache::client::CacheClient;
 use database::client::DBClient;
 use debug::DebugClient;
 use error::AppError;
@@ -50,7 +50,7 @@ async fn setup_async(app: &mut App) -> Result<(), AppError> {
     app.manage(wfm_client.clone());
 
     // create and manage Cache state
-    let cache_arc = Arc::new(Mutex::new(CacheState::new(Arc::clone(&wfm_client))));
+    let cache_arc = Arc::new(Mutex::new(CacheClient::new(Arc::clone(&wfm_client))));
     app.manage(cache_arc.clone());
 
     // create and manage DatabaseClient state
@@ -138,10 +138,11 @@ fn main() {
             commands::transaction::create_transaction_entry,
             commands::whisper_scraper::toggle_whisper_scraper,
             commands::live_scraper::toggle_live_scraper,
-            commands::live_scraper::get_weekly_rivens,
             commands::price_scraper::generate_price_history,
             commands::debug::import_warframe_algo_trader_data,
             commands::debug::reset_data,
+            commands::auctions::refresh_auctions,
+            commands::orders::refresh_orders,
             commands::orders::get_orders,
             commands::orders::delete_order,
             commands::orders::create_order,
@@ -151,6 +152,7 @@ fn main() {
             commands::stock::delete_item_stock,
             commands::stock::sell_item_stock,
             commands::stock::create_riven_stock,
+            commands::stock::import_auction,
             commands::stock::delete_riven_stock,
             commands::stock::sell_riven_stock,
         ])

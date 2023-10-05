@@ -161,7 +161,8 @@ impl<'a> StockItemModule<'a> {
             .client
             .cache
             .lock()?
-            .get_item_by_url_name(&url_name)
+            .items()
+            .find_type(&url_name)?
             .unwrap();
 
         let inventory = match inventorys {
@@ -380,7 +381,7 @@ impl<'a> StockItemModule<'a> {
     }
 
     pub fn emit(&self, operation: &str, data: serde_json::Value) {
-        helper::emit_update("inventorys", operation, Some(data));
+        helper::emit_update("StockItems", operation, Some(data));
     }
 
     pub fn convet_stock_item_to_datafream(

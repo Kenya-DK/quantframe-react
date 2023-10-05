@@ -4,7 +4,7 @@ use crate::{
     error::AppError,
     helper,
     logger::{self, LogLevel},
-    structs::RivenAttribute,
+    structs::{Auction, RivenAttribute},
 };
 use eyre::eyre;
 use polars::{
@@ -155,6 +155,7 @@ impl<'a> StockRivenModule<'a> {
     }
     pub async fn create(
         &self,
+        order_id: Option<String>,
         url_name: &str,
         mod_name: &str,
         price: f64,
@@ -165,16 +166,11 @@ impl<'a> StockRivenModule<'a> {
         polarity: &str,
     ) -> Result<StockRivenStruct, AppError> {
         let connection = self.client.connection.lock().unwrap().clone();
-        let wfm = self.client.wfm.lock()?.clone();
-        let items = wfm.auction().get_all_riven_types().await?;
-        let item = items
-            .iter()
-            .find(|item| item.url_name == url_name)
-            .unwrap()
-            .clone();
+        let cache = self.client.cache.lock().unwrap().clone();
+        let item = cache.riven().find_type(url_name)?.unwrap();
         let mut inventory = StockRivenStruct {
             id: 0,
-            order_id: None,
+            order_id: order_id.clone(),
             weapon_id: item.id,
             weapon_url: url_name.to_string(),
             weapon_name: item.item_name,
@@ -193,6 +189,7 @@ impl<'a> StockRivenModule<'a> {
         let sql = InsertStatement::default()
             .into_table(StockRiven::Table)
             .columns([
+                StockRiven::OrderId,
                 StockRiven::WeaponId,
                 StockRiven::WeaponUrl,
                 StockRiven::WeaponName,
@@ -202,12 +199,12 @@ impl<'a> StockRivenModule<'a> {
                 StockRiven::Attributes,
                 StockRiven::MasteryRank,
                 StockRiven::ReRolls,
-                StockRiven::Polarity,
                 StockRiven::Price,
-                StockRiven::ListedPrice,
+                StockRiven::Polarity,
                 StockRiven::Created,
             ])
             .values_panic([
+                inventory.order_id.clone().into(),
                 inventory.weapon_id.clone().into(),
                 inventory.weapon_url.clone().into(),
                 inventory.weapon_name.clone().into(),
@@ -218,6 +215,7 @@ impl<'a> StockRivenModule<'a> {
                 inventory.mastery_rank.into(),
                 inventory.re_rolls.into(),
                 inventory.price.into(),
+                inventory.polarity.clone().into(),
                 inventory.created.clone().into(),
             ])
             .to_string(SqliteQueryBuilder);
@@ -229,10 +227,39 @@ impl<'a> StockRivenModule<'a> {
         inventory.id = id;
 
         // Update UI
-        // self.emit(
-        //     "CREATE_OR_UPDATE",
-        //     serde_json::to_value(inventory.clone()).unwrap(),
-        // );
+        self.emit(
+            "CREATE_OR_UPDATE",
+            serde_json::to_value(inventory.clone()).unwrap(),
+        );
         Ok(inventory)
+    }
+
+    pub async fn import_auction(
+        &self,
+        auction: &Auction<String>,
+        price: i32,
+    ) -> Result<StockRivenStruct, AppError> {
+        let riven = self
+            .create(
+                Some(auction.id.clone()),
+                &auction.item.weapon_url_name.clone().expect("No Weapon"),
+                &auction.item.name.clone().expect("No Name"),
+                price as f64,
+                auction.item.mod_rank.clone().expect("No rank found") as i32,
+                auction
+                    .item
+                    .attributes
+                    .clone()
+                    .expect("No attributes found"),
+                auction.item.mastery_level.expect("No mastery rank found") as i32,
+                auction.item.re_rolls.expect("No re-rolls found") as i32,
+                &auction.item.polarity.clone().expect("No polarity found"),
+            )
+            .await?;
+
+        Ok(riven)
+    }
+    pub fn emit(&self, operation: &str, data: serde_json::Value) {
+        helper::emit_update("StockRivens", operation, Some(data));
     }
 }

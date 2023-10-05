@@ -1,6 +1,5 @@
 use crate::{
     auth::AuthState,
-    cache::CacheState,
     database::{
         client::DBClient,
         modules::transaction::{Transaction, TransactionStruct},
@@ -9,7 +8,7 @@ use crate::{
     logger,
     settings::SettingsState,
     structs::Ordres,
-    wfm_client::client::WFMClient,
+    wfm_client::client::WFMClient, cache::client::CacheClient,
 };
 use eyre::eyre;
 use sea_query::{InsertStatement, SqliteQueryBuilder};
@@ -23,7 +22,7 @@ use std::{
 #[derive(Clone, Debug)]
 pub struct DebugClient {
     log_file: String,
-    cache: Arc<Mutex<CacheState>>,
+    cache: Arc<Mutex<CacheClient>>,
     wfm: Arc<Mutex<WFMClient>>,
     auth: Arc<Mutex<AuthState>>,
     db: Arc<Mutex<DBClient>>,
@@ -32,7 +31,7 @@ pub struct DebugClient {
 
 impl DebugClient {
     pub fn new(
-        cache: Arc<Mutex<CacheState>>,
+        cache: Arc<Mutex<CacheClient>>,
         wfm: Arc<Mutex<WFMClient>>,
         auth: Arc<Mutex<AuthState>>,
         db: Arc<Mutex<DBClient>>,
@@ -75,7 +74,7 @@ impl DebugClient {
                 let price = row.try_get::<f64, _>(2).unwrap();
                 let owned = row.try_get::<i64, _>(4).unwrap();
 
-                let item = self.cache.lock()?.get_item_by_url_name(&name);
+                let item = self.cache.lock()?.items().find_type(&name)?;
                 if item.is_none() {
                     logger::error(
                         "Database",
@@ -107,7 +106,7 @@ impl DebugClient {
                 let transaction_type = row.try_get::<String, _>(3).unwrap();
                 let price = row.try_get::<i64, _>(4).unwrap();
 
-                let item = self.cache.lock()?.get_item_by_url_name(&name);
+                let item = self.cache.lock()?.items().find_type(&name)?;
                 if item.is_none() {
                     logger::error(
                         "Database",

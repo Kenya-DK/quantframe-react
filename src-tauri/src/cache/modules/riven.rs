@@ -1,77 +1,80 @@
-use reqwest::header::HeaderMap;
+use std::sync::{Arc, Mutex};
+
 use serde_json::json;
 
-use crate::{auth::AuthState, error::AppError, logger, cache::client::CacheClient};
+use crate::{
+    cache::client::CacheClient,
+    error::AppError,
+    logger,
+    structs::{RivenAttributeInfo, RivenTypeInfo}, helper,
+};
 pub struct RivenModule<'a> {
     pub client: &'a CacheClient,
-    pub riven_types: Arc<Mutex<Vec<RivenTypeInfo>>>,
-    pub riven_attributes: Arc<Mutex<Vec<RivenAttributeInfo>>>,
 }
 
 impl<'a> RivenModule<'a> {
     // Refrece
     pub async fn refresh(&self) -> Result<(), AppError> {
         self.refresh_types().await?;
-        self.refresh_attributes().await?;        
+        self.refresh_attributes().await?;
+        Ok(())
     }
     pub async fn refresh_types(&self) -> Result<Vec<RivenTypeInfo>, AppError> {
-        let (payload, _headers) = self.client.get("riven/items", Some("items")).await?;
-        let mut types = self.riven_types.lock()?;
-        *types = payload.clone();
-        Ok(payload)
+        let wfm = self.client.wfm.lock()?.clone();
+        let riven_types = wfm.auction().get_all_riven_types().await?;
+        let mut types = self.client.riven_types.lock()?;
+        *types = riven_types.clone();
+        Ok(riven_types)
     }
     pub async fn refresh_attributes(&self) -> Result<Vec<RivenAttributeInfo>, AppError> {
-        let (payload, _headers) = self
-            .client
-            .get("riven/attributes", Some("attributes"))
-            .await?;
-        let mut attributes = self.riven_attributes.lock()?;
-        *attributes = payload.clone();
-        Ok(payload)
-    }    
-    pub async fn get_types(&self) -> Result<Vec<RivenTypeInfo>, AppError> {
-        let items = self.items.lock()?;
+        let wfm = self.client.wfm.lock()?.clone();
+        let rattributes = wfm.auction().get_all_riven_attribute_types().await?;
+        let mut attributes = self.client.riven_attributes.lock()?;
+        *attributes = rattributes.clone();
+        Ok(rattributes)
+    }
+    pub fn get_types(&self) -> Result<Vec<RivenTypeInfo>, AppError> {
+        let items = self.client.riven_types.lock()?;
         Ok(items.clone())
     }
 
-    pub async fn get_attributes(&self) -> Result<Vec<RivenAttributeInfo>, AppError> {
-        let attributes = self.riven_attributes.lock()?;
+    pub fn get_attributes(&self) -> Result<Vec<RivenAttributeInfo>, AppError> {
+        let attributes = self.client.riven_attributes.lock()?;
         Ok(attributes.clone())
     }
 
-    pub async fn find_type(&self, url_name: &str) -> Result<Option<RivenTypeInfo>, AppError> {
-        let types = self.riven_types.lock()?;
-        let riven_type = types.iter().find(|&x| x.url_name == url_name);
-        if riven_type.is_some() {
-            Ok(riven_type.unwrap().clone())
-        } else {
+    pub fn find_type(&self, url_name: &str) -> Result<Option<RivenTypeInfo>, AppError> {
+        let types = self.client.riven_types.lock()?;
+        let riven_type = types.iter().find(|&x| x.url_name == url_name).cloned();
+        if !riven_type.is_some() {
             logger::warning_con(
                 "CacheRivens",
-                format!("Riven Type: {} not found", url_name).as_str()
+                format!("Riven Type: {} not found", url_name).as_str(),
             );
-            Ok(None)
         }
+        Ok(riven_type)
     }
 
-    pub async fn find_attribute(&self, url_name: &str) -> Result<Option<RivenAttributeInfo>, AppError> {
-        let attributes = self.riven_attributes.lock()?;
-        let riven_attribute = attributes.iter().find(|&x| x.url_name == url_name);
-        if riven_attribute.is_some() {
-            Ok(riven_attribute.unwrap().clone())
-        } else {
+    pub fn find_attribute(
+        &self,
+        url_name: &str,
+    ) -> Result<Option<RivenAttributeInfo>, AppError> {
+        let attributes = self.client.riven_attributes.lock()?;
+        let riven_attribute = attributes.iter().find(|&x| x.url_name == url_name).cloned();
+        if !riven_attribute.is_some() {
             logger::warning_con(
                 "CacheRivens",
-                format!("Riven Attribute: {} not found", url_name).as_str()
-            );
-            Ok(None)
+                format!("Riven Attribute: {} not found", url_name).as_str(),
+            );            
         }
+        Ok(riven_attribute)
     }
     pub fn emit(&self) {
         helper::send_message_to_window(
             "Cache:Update:Rivens",
             Some(json!({
-                "types": self.riven_types.lock().unwrap().clone(),
-                "attributes": self.riven_attributes.lock().unwrap().clone(),
+                "types": self.client.riven_types.lock().unwrap().clone(),
+                "attributes": self.client.riven_attributes.lock().unwrap().clone(),
             })),
         );
     }

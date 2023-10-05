@@ -116,10 +116,21 @@ const api = {
       },
       sell: async (id: number, report: boolean, price: number, quantity: number): Promise<StockRivenDto> => {
         return await invoke("sell_riven_stock", { id, report, price, quantity }) as StockRivenDto;
+      },
+      import_auction: async (id: string, price: number): Promise<StockRivenDto> => {
+        return await invoke("import_auction", { id, price }) as StockRivenDto;
       }
     }
   },
+  auction: {
+    refresh: async () => {
+      await invoke("refresh_auctions");
+    },
+  },
   orders: {
+    refresh: async () => {
+      await invoke("refresh_orders");
+    },
     async getOrders(): Promise<Wfm.OrderDto[]> {
       return await invoke("get_orders") as Wfm.OrderDto[];
     },

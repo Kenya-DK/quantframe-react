@@ -158,7 +158,7 @@ export namespace Wfm {
   export interface Auction<T> {
     visible: boolean;
     minimal_reputation: number;
-    item: AuctionLichesAndSistersItem | AuctionItemRiven;
+    item: AuctionItem;
     buyout_price: number;
     note: string;
     starting_price: number;
@@ -176,14 +176,20 @@ export namespace Wfm {
     id: string;
     private: boolean;
   }
-
-  export interface AuctionLichesAndSistersItem {
+  export interface AuctionItem {
+    mastery_level: number;
+    re_rolls: number;
+    type: string;
+    weapon_url_name: string;
+    attributes: RivenAttributeDto[];
+    name: string;
+    mod_rank: number;
+    polarity: string;
+    //Liches And Sister
     element: string;
     quirk: string;
     having_ephemera: boolean;
-    weapon_url_name: string;
     damage: number;
-    type: string;
   }
 
   export interface AuctionOwner {
@@ -195,23 +201,6 @@ export namespace Wfm {
     status: string;
     id: string;
     region: string;
-  }
-
-  export interface AuctionItemRiven {
-    mastery_level: number;
-    re_rolls: number;
-    type: string;
-    weapon_url_name: string;
-    attributes: RivenAttributeDto[];
-    name: string;
-    mod_rank: number;
-    polarity: string;
-  }
-
-  export interface Attribute {
-    value: number;
-    positive: boolean;
-    url_name: string;
   }
 
 }

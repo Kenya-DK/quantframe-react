@@ -2,6 +2,7 @@ import { Wfm } from './wfm.type';
 
 export interface StockEntryDto {
   id?: number;
+  order_id?: string | null;
   wfm_id: string;
   url: string;
   tags: string;

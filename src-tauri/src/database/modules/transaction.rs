@@ -130,20 +130,13 @@ impl<'a> TransactionModule<'a> {
         properties: Option<serde_json::Value>,
     ) -> Result<TransactionStruct, AppError> {
         let connection = self.client.connection.lock().unwrap().clone();
-        let item = self
-            .client
-            .cache
-            .lock()?
-            .get_item_by_url_name(&url_name)
-            .unwrap();
-
         let mut transaction = TransactionStruct {
             id: 0,
-            wfm_id: item.id.clone(),
-            url: item.url_name.clone(),
-            name: item.item_name.clone(),
+            wfm_id: "".to_string(),
+            url: "".to_string(),
+            name: "".to_string(),
             item_type: item_type.clone().to_string(),
-            tags: item.tags.unwrap().join(","),
+            tags: "".to_string(),
             rank,
             properties: Some(sqlx::types::Json(properties.clone())),
             price,
@@ -151,6 +144,30 @@ impl<'a> TransactionModule<'a> {
             quantity,
             created: chrono::Utc::now().to_rfc3339(),
         };
+        if  item_type == "riven" {
+            let item = self
+                .client
+                .cache
+                .lock()?
+                .riven()
+                .find_type(&url_name)?.unwrap();   
+                transaction.wfm_id= item.id.clone();
+                transaction.url= item.url_name.clone();
+                transaction.name= item.item_name.clone();
+                transaction.tags= item.riven_type.clone().to_string();
+        } else if item_type == "item" {
+            let item = self
+                .client
+                .cache
+                .lock()?
+                .items()
+                .find_type(&url_name)?.unwrap();
+                transaction.wfm_id= item.id.clone();
+                transaction.url= item.url_name.clone();
+                transaction.name= item.item_name.clone();
+                transaction.tags= item.tags.unwrap().join(",");
+        }
+
 
         let sql = InsertStatement::default()
             .into_table(Transaction::Table)

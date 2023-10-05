@@ -1,6 +1,6 @@
 use std::{
     sync::{Arc, Mutex},
-    time::Duration,
+    time::Duration, path::PathBuf,
 };
 
 use eyre::eyre;
@@ -17,17 +17,21 @@ use crate::{
     error::AppError,
     helper,
     logger::{self, LogLevel},
-    rate_limiter::RateLimiter,
+    rate_limiter::RateLimiter, wfm_client::client::WFMClient, structs::{Item, RivenTypeInfo, RivenAttributeInfo},
 };
 
 use super::modules::{
-    auction::AuctionModule, riven::RivenModule, item::ItemModule, order::OrderModule,
+     item::ItemModule,
+        riven::RivenModule,
 };
 
 #[derive(Clone, Debug)]
 pub struct CacheClient {
     pub log_file: PathBuf,
     pub wfm: Arc<Mutex<WFMClient>>,
+    pub items: Arc<Mutex<Vec<Item>>>,
+    pub riven_types: Arc<Mutex<Vec<RivenTypeInfo>>>,
+    pub riven_attributes: Arc<Mutex<Vec<RivenAttributeInfo>>>,
 }
 
 impl CacheClient {
@@ -35,18 +39,22 @@ impl CacheClient {
         CacheClient {
             log_file: PathBuf::from("cache"),
             wfm,
+            items: Arc::new(Mutex::new(vec![])),
+            riven_types: Arc::new(Mutex::new(vec![])), 
+            riven_attributes: Arc::new(Mutex::new(vec![]))
         }
     }
+    
     pub async fn refresh(&self) -> Result<(), AppError> {
         self.items().refresh().await?;
         self.riven().refresh().await?;
         Ok(()) 
     }
     pub fn items(&self) -> ItemModule {
-        ItemModule { client: self, items: Arc::new(Mutex::new(vec![])), }
+        ItemModule { client: self, }
     }
 
     pub fn riven(&self) -> RivenModule {
-        RivenModule { client: self, rivens: Arc::new(Mutex::new(vec![])), }
+        RivenModule { client: self}
     }
 }

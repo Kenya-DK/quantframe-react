@@ -1,4 +1,4 @@
-import { Button, Container, Group, Select, TextInput, Textarea } from '@mantine/core';
+import { Button, Container, Group, NumberInput, Select, TextInput, Textarea } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { ContextModalProps } from '@mantine/modals';
 import i18next from 'i18next';
@@ -115,7 +115,16 @@ export const PromptModal = ({ context, id, innerProps }: ContextModalProps<Modal
                 </Group>
               )
             case 'number':
-
+              return (
+                <Group grow key={index}>
+                  <NumberInput
+                    required={field.required}
+                    label={field.label}
+                    value={form.values[field.name]}
+                    onChange={(value) => form.setFieldValue(field.name, Number(value))}
+                  />
+                </Group>
+              )
             default:
               return (<></>);
           }

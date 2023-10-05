@@ -55,7 +55,7 @@ pub struct RivenAttributeInfo {
     search_only: bool,
 
     #[serde(rename = "url_name")]
-    url_name: String,
+    pub url_name: String,
 
     #[serde(rename = "suffix")]
     suffix: Option<String>,
@@ -293,108 +293,107 @@ pub struct User {
     pub status: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Auction<T> {
     #[serde(rename = "visible")]
-    visible: bool,
+    pub visible: bool,
 
     #[serde(rename = "minimal_reputation")]
-    minimal_reputation: i64,
+    pub minimal_reputation: i64,
 
     #[serde(rename = "item")]
-    item: AuctionItem,
+    pub item: AuctionItem,
 
     #[serde(rename = "buyout_price")]
-    buyout_price: i64,
+    pub buyout_price: i64,
 
     #[serde(rename = "note")]
-    note: String,
+    pub note: String,
 
     #[serde(rename = "starting_price")]
-    starting_price: i64,
+    pub starting_price: i64,
 
     #[serde(rename = "owner")]
-    owner: T,
+    pub owner: T,
 
     #[serde(rename = "platform")]
-    platform: String,
+    pub platform: String,
 
     #[serde(rename = "closed")]
-    closed: bool,
+    pub closed: bool,
 
     #[serde(rename = "top_bid")]
-    top_bid: Option<serde_json::Value>,
+    pub top_bid: Option<serde_json::Value>,
 
     #[serde(rename = "winner")]
-    winner: Option<serde_json::Value>,
+    pub winner: Option<serde_json::Value>,
 
     #[serde(rename = "is_marked_for")]
-    is_marked_for: Option<serde_json::Value>,
+    pub is_marked_for: Option<serde_json::Value>,
 
     #[serde(rename = "marked_operation_at")]
-    marked_operation_at: Option<serde_json::Value>,
+    pub marked_operation_at: Option<serde_json::Value>,
 
     #[serde(rename = "created")]
-    created: String,
+    pub created: String,
 
     #[serde(rename = "updated")]
-    updated: String,
+    pub updated: String,
 
     #[serde(rename = "note_raw")]
-    note_raw: String,
+    pub note_raw: String,
 
     #[serde(rename = "is_direct_sell")]
-    is_direct_sell: bool,
+    pub is_direct_sell: bool,
 
     #[serde(rename = "id")]
-    id: String,
+    pub id: String,
 
     #[serde(rename = "private")]
-    private: bool,
+    pub private: bool,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct AuctionItem {
+    // #[serde(rename = "type")]
+    // pub item_type: String,
+    #[serde(rename = "weapon_url_name")]
+    pub weapon_url_name: Option<String>,
+
     // Rivens
     #[serde(rename = "re_rolls")]
-    re_rolls: Option<i64>,
+    pub re_rolls: Option<i64>,
 
     #[serde(rename = "attributes")]
-    attributes: Option<Vec<RivenAttribute>>,
+    pub attributes: Option<Vec<RivenAttribute>>,
 
     #[serde(rename = "name")]
-    name: Option<String>,
-
-    #[serde(rename = "weapon_url_name")]
-    weapon_url_name: Option<String>,
+    pub name: Option<String>,
 
     #[serde(rename = "mod_rank")]
-    mod_rank: Option<i64>,
+    pub mod_rank: Option<i64>,
 
     #[serde(rename = "polarity")]
-    polarity: Option<String>,
+    pub polarity: Option<String>,
 
     #[serde(rename = "mastery_level")]
-    mastery_level: Option<i64>,
-
-    #[serde(rename = "type")]
-    item_type: Option<String>,
+    pub mastery_level: Option<i64>,
 
     // Kuva Lich And Sisters of Parvos
     #[serde(rename = "element")]
-    element: Option< String>,
-  
+    pub element: Option<String>,
+
     #[serde(rename = "quirk")]
-    quirk: Option< String>,
-  
+    pub quirk: Option<String>,
+
     #[serde(rename = "having_ephemera")]
-    having_ephemera: Option< bool>,
-    
+    pub having_ephemera: Option<bool>,
+
     #[serde(rename = "damage")]
-    damage: Option< i64>,
-  
+    pub damage: Option<i64>,
+
     #[serde(rename = "type")]
-    top_level_type: Option< String>,
+    pub top_level_type: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]

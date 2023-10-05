@@ -1,7 +1,9 @@
+use serde_json::json;
+
 use crate::{
     error::{self, AppError},
-    logger,
-    structs::{Auction, Item, ItemDetails, RivenAttributeInfo, RivenTypeInfo},
+    helper, logger,
+    structs::{Auction, AuctionItem, Item, ItemDetails, RivenAttributeInfo, RivenTypeInfo},
     wfm_client::client::WFMClient,
 };
 
@@ -52,7 +54,7 @@ impl<'a> AuctionModule<'a> {
     }
     pub async fn create(
         &self,
-        auction_type: str,
+        auction_type: &str,
         note: &str,
         starting_price: &str,
         buyout_price: f64,
@@ -60,10 +62,7 @@ impl<'a> AuctionModule<'a> {
         minimal_increment: i32,
         private: bool,
         item: AuctionItem,
-    ) -> Result<StockRivenStruct, AppError> {
-        let connection = self.client.connection.lock().unwrap().clone();
-        let wfm = self.client.wfm.lock()?.clone();
-
+    ) -> Result<Auction<String>, AppError> {
         // Construct any JSON body
         let mut body = json!({
             "note": note,
@@ -75,7 +74,7 @@ impl<'a> AuctionModule<'a> {
         });
 
         if auction_type == "riven" {
-            let mut item_riven = json!({
+            let item_riven = json!({
                 "type": "riven",
                 "re_rolls": item.re_rolls,
                 "attributes": item.attributes,
@@ -86,7 +85,6 @@ impl<'a> AuctionModule<'a> {
             });
             body["item"] = item_riven;
         } else if auction_type == "riven" {
-
         }
 
         match self
@@ -100,5 +98,8 @@ impl<'a> AuctionModule<'a> {
             }
             Err(e) => Err(e),
         }
+    }
+    pub fn emit(&self, operation: &str, data: serde_json::Value) {
+        helper::emit_update("auctions", operation, Some(data));
     }
 }

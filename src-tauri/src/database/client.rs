@@ -12,7 +12,7 @@ use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
 
 use crate::{
     auth::AuthState,
-    cache::CacheState,
+    cache::client::CacheClient,
     error::AppError,
     helper,
     logger::{self, LogLevel},
@@ -24,13 +24,13 @@ use super::modules::{ transaction::TransactionModule, stock_item::StockItemModul
 pub struct DBClient {
     pub log_file: String,
     pub connection: Arc<Mutex<Pool<Sqlite>>>,
-    pub cache: Arc<Mutex<CacheState>>,
+    pub cache: Arc<Mutex<CacheClient>>,
     pub wfm: Arc<Mutex<WFMClient>>,
 }
 
 impl DBClient {
     pub async fn new(
-        cache: Arc<Mutex<CacheState>>,
+        cache: Arc<Mutex<CacheClient>>,
         wfm: Arc<Mutex<WFMClient>>,
     ) -> Result<Self, AppError> {
         let log_file = "db.log";

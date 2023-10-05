@@ -7,6 +7,7 @@ use crate::{
     structs::{Order, RivenAttribute},
     wfm_client::client::WFMClient,
 };
+use eyre::eyre;
 use serde_json::json;
 
 // Item Stock Commands
@@ -24,7 +25,6 @@ pub async fn create_item_stock(
     let db = db.lock()?.clone();
     let wfm = wfm.lock()?.clone();
 
-
     match db
         .stock_item()
         .create(&id, quantity, price, rank, sub_type)
@@ -32,34 +32,23 @@ pub async fn create_item_stock(
     {
         Ok(stockitem) => {
             // Create transaction
-            match db.transaction()
-            .create(
-                &id,
-                "item",
-                "buy",
-                quantity,
-                price as i32,
-                rank,
-                None
-            )
-            .await
-        {
-            Ok(_) => {
-                // Send Close Event to Warframe Market API
-                if report {
-                    wfm.orders().close(&id, "buy").await?;
+            match db
+                .transaction()
+                .create(&id, "item", "buy", quantity, price as i32, rank, None)
+                .await
+            {
+                Ok(_) => {
+                    // Send Close Event to Warframe Market API
+                    if report {
+                        wfm.orders().close(&id, "buy").await?;
+                    }
+                    return Ok(serde_json::to_value(stockitem).unwrap());
                 }
-                return Ok(serde_json::to_value(stockitem).unwrap());
-            }
-            Err(e) => {
-                error::create_log_file(db.log_file.clone(), &e);
-                return Err(e);
-            }
-        };
-
-
-
-
+                Err(e) => {
+                    error::create_log_file(db.log_file.clone(), &e);
+                    return Err(e);
+                }
+            };
         }
         Err(e) => {
             error::create_log_file(db.log_file.clone(), &e);
@@ -199,49 +188,95 @@ pub async fn create_riven_stock(
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<serde_json::Value, AppError> {
     let db = db.lock()?.clone();
+    let riven_item = db
+        .stock_riven()
+        .create(
+            None,
+            &id,
+            mod_name,
+            price,
+            rank,
+            attributes,
+            mastery_rank,
+            re_rolls,
+            polarity,
+        )
+        .await
+        .map_err(|e| {
+            error::create_log_file(db.log_file.clone(), &e);
+            e
+        })?;
+    let item_value = serde_json::to_value(riven_item.clone()).unwrap();
+    if riven_item.price <= 0.0 {
+        return Ok(item_value);
+    }
+    db.transaction()
+        .create(
+            &riven_item.weapon_url,
+            "riven",
+            "buy",
+            1,
+            price as i32,
+            riven_item.rank,
+            Some(item_value.clone()),
+        )
+        .await
+        .map_err(|e| {
+            error::create_log_file(db.log_file.clone(), &e);
+            e
+        })?;
+
+    Ok(item_value)
+}
+#[tauri::command]
+pub async fn import_auction(
+    id: String,
+    price: i32,
+    db: tauri::State<'_, Arc<Mutex<DBClient>>>,
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+) -> Result<serde_json::Value, AppError> {
+    let db = db.lock()?.clone();
     let wfm = wfm.lock()?.clone();
-    match db
-    .stock_riven()
-    .create(&id, mod_name, price, rank, attributes, mastery_rank, re_rolls, polarity)
-    .await
-{
-    Ok(stockitem) => {
-        // Create transaction
-    //     match db.transaction()
-    //     .create(
-    //         &id,
-    //         "item",
-    //         "buy",
-    //         quantity,
-    //         price as i32,
-    //         rank,
-    //         None
-    //     )
-    //     .await
-    // {
-    //     Ok(_) => {
-    //         // Send Close Event to Warframe Market API
-    //         if report {
-    //             wfm.orders().close(&id, "buy").await?;
-    //         }
-    //         return Ok(serde_json::to_value(stockitem).unwrap());
-    //     }
-    //     Err(e) => {
-    //         error::create_log_file(db.log_file.clone(), &e);
-    //         return Err(e);
-    //     }
-    // };
+    let auctions = wfm.auction().get_my_auctions().await?;
 
-
-
-
+    let auction = auctions.iter().find(|auction| auction.id == id).clone();
+    if auction.is_none() {
+        return Err(AppError::new(
+            "Auction not found",
+            eyre!("Auction not found"),
+        ));
     }
-    Err(e) => {
-        error::create_log_file(db.log_file.clone(), &e);
-        return Err(e);
+    let auction = auction.unwrap().clone();
+
+    let riven_item = db
+        .stock_riven()
+        .import_auction(auction.clone(), price)
+        .await
+        .map_err(|e| {
+            error::create_log_file(db.log_file.clone(), &e);
+            e
+        })?;
+    let item_value = serde_json::to_value(&auction.item).unwrap();
+    if riven_item.price <= 0.0 {
+        return Ok(item_value);
     }
-};
-    Ok(json!({}))
+    db.transaction()
+        .create(
+            &riven_item.weapon_url,
+            "riven",
+            "buy",
+            1,
+            price as i32,
+            riven_item.rank,
+            Some(item_value.clone()),
+        )
+        .await
+        .map_err(|e| {
+            error::create_log_file(db.log_file.clone(), &e);
+            e
+        })?;
+
+    Ok(item_value)
 }
 
 #[tauri::command]

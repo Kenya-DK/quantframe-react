@@ -1,10 +1,11 @@
-import { Grid, Stack, Image, Text, Group, Flex, Divider, useMantineTheme, Button } from "@mantine/core";
+import { Stack, Image, Text, Group, Flex, Divider, useMantineTheme, Button, Tabs, Box } from "@mantine/core";
 import { Wfm } from "../../types";
-import { wfmThumbnail } from "@api/index";
+import api, { wfmThumbnail } from "@api/index";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCubes } from "@fortawesome/free-solid-svg-icons";
 import { useTranslatePage } from "../../hooks";
 import { useCacheContext, useWarframeMarketContextContext } from "../../contexts";
+import Auction from "../../components/auction";
 interface PurchaseNewItemProps {
   max_rank: number;
   ordre: Wfm.OrderDto;
@@ -51,21 +52,47 @@ const OrderItem = ({ type, max_rank, ordre }: PurchaseNewItemProps) => {
 }
 
 export default function WarframeMarketPage() {
-  const { orders } = useWarframeMarketContextContext();
-  const [buyOrders] = [orders.filter((order) => order.order_type === "buy"), orders.filter((order) => order.order_type === "sell")];
+  const { orders, auctions } = useWarframeMarketContextContext();
   const { items } = useCacheContext();
   return (
-    <Grid>
-      <Grid.Col md={6}>
-        {buyOrders.map((order) => (
-          <OrderItem type="buy" max_rank={items.find(x => x.id == order.item.id)?.mod_max_rank || 0} ordre={order} />
-        ))}
-      </Grid.Col>
-      <Grid.Col md={6}>
-        {/* {sellOrders.map((order) => (
-          <OrderItem ordre={order} />
-        ))} */}
-      </Grid.Col>
-    </Grid>
+    <Box p={0} m={0}>
+      <Tabs defaultValue="orders">
+        <Tabs.List>
+          <Tabs.Tab value="orders" >
+            Orders
+          </Tabs.Tab>
+          <Tabs.Tab value="contracts">
+            Contracts
+          </Tabs.Tab>
+          <Tabs.Tab value="bids" >
+            Bids
+          </Tabs.Tab>
+        </Tabs.List>
+
+        <Tabs.Panel value="orders">
+          <Button onClick={async () => {
+            await api.orders.refresh();
+          }}>Refresh</Button>
+          {orders.map((order) => (
+            <OrderItem type={order.order_type} max_rank={items.find(x => x.id == order.item.id)?.mod_max_rank || 0} ordre={order} />
+          ))}
+        </Tabs.Panel>
+
+        <Tabs.Panel value="contracts">
+          <Button onClick={async () => {
+            await api.auction.refresh();
+          }}>Refresh</Button>
+          <Stack>
+            {auctions.map((auction) => (
+              <Auction key={auction.id} auction={auction} />
+            ))}
+          </Stack>
+        </Tabs.Panel>
+
+        <Tabs.Panel value="bids">
+          Settings tab content
+        </Tabs.Panel>
+      </Tabs>
+    </Box>
   );
 }

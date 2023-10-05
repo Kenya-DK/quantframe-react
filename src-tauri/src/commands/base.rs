@@ -1,10 +1,12 @@
 use std::sync::{Arc, Mutex};
 
+use eyre::eyre;
+use reqwest::{Client, Method, Url};
 use serde_json::{json, Value};
 
 use crate::{
     auth::AuthState,
-    cache::CacheState,
+    cache::client::CacheClient,
     database::client::DBClient,
     debug::DebugClient,
     error::{self, AppError},
@@ -20,7 +22,7 @@ pub async fn init(
     settings: tauri::State<'_, Arc<Mutex<SettingsState>>>,
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-    cache: tauri::State<'_, Arc<Mutex<CacheState>>>,
+    cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
     price_scraper: tauri::State<'_, Arc<Mutex<PriceScraper>>>,
     db: tauri::State<'_, Arc<Mutex<DBClient>>>,
 ) -> Result<Value, AppError> {
@@ -37,9 +39,9 @@ pub async fn init(
         Some(json!({"status": "Loading Cache..."})),
     );
     cache.refresh().await?;
-    let items = cache.items().get_types();
-    let riven_items = cache.riven().get_types().await?;
-    let riven_attributes = cache.riven().get_attributes().await?;
+    let items = cache.items().get_types()?;
+    let riven_items = cache.riven().get_types()?;
+    let riven_attributes = cache.riven().get_attributes()?;
 
     helper::send_message_to_window(
         "set_initializstatus",
@@ -86,7 +88,6 @@ pub async fn init(
         Some(json!({"status": "Loading Your Auctions..."})),
     );
     let auctions = wfm.auction().get_my_auctions().await?;
-
     Ok(json!({
         "valid": true,
         "settings": &settings.clone(),
@@ -128,8 +129,8 @@ pub async fn update_settings(
 }
 
 #[tauri::command]
-pub fn get_weekly_rivens() -> Result<serde_json::Value, AppError>{
-    let mut url = "https://n9e5v4d8.ssl.hwcdn.net/repos/weeklyRivensPC.json";
+pub async fn get_weekly_rivens() -> Result<serde_json::Value, AppError> {
+    let url = "https://n9e5v4d8.ssl.hwcdn.net/repos/weeklyRivensPC.json";
     let client = Client::new();
     let request = client.request(Method::GET, Url::parse(&url).unwrap());
     let response = request.send().await;
@@ -143,9 +144,8 @@ pub fn get_weekly_rivens() -> Result<serde_json::Value, AppError>{
         return Err(AppError::new(
             "WeeklyRivens",
             eyre!(
-                "Error getting price data for day: {}. Status: {}",
-                day,
-                status
+                "Could not get weekly rivens. Status: {}",
+                status.to_string()
             ),
         ));
     }

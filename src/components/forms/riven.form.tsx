@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useForm, } from '@mantine/form';
-import { ActionIcon, Group, NumberInput, Select, Title, Tooltip } from "@mantine/core";
+import { ActionIcon, Button, Group, NumberInput, Select, Title, Tooltip } from "@mantine/core";
 
 import { Wfm } from '../../types';
 import { useTranslateForm } from '../../hooks';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClose, faPlus } from '@fortawesome/free-solid-svg-icons';
-import { useCacheContext } from '../../contexts';
 import { RivenPreview } from '../rivenPreview';
 
 
@@ -83,28 +82,23 @@ const RiveAttributeForm = ({ availableAttributes, canRemove, attribute, onRemove
 
 interface FormPropsProps {
   riven?: Wfm.RivenItemDto | undefined | null;
+  availableAttributes: Wfm.RivenAttributeInfoDto[],
+  availableRivens: Wfm.RivenItemTypeDto[],
   onSubmit: (user: Wfm.RivenItemDto) => void;
   onCancel?: () => void;
 }
 
-export const RivenForm = ({ riven }: FormPropsProps) => {
-  const [rivenTypes, setRivenTypes] = useState<Wfm.RivenItemTypeDto[]>([]);
+export const RivenForm = ({ onSubmit, availableAttributes, availableRivens, riven }: FormPropsProps) => {
   const [currentRivenType, setCurrentRivenType] = useState<Wfm.RivenItemTypeDto | undefined>(undefined);
-  const [rivenAttributes, setRivenAttributes] = useState<Wfm.RivenAttributeInfoDto[]>([]);
   const [attributeCount, setAttributeCount] = useState<number>(2);
   const [modNames, setModNames] = useState<string[]>([]);
 
 
-  const { riven_attributes, riven_items } = useCacheContext();
-  useEffect(() => {
-    setRivenTypes(riven_items)
-    setRivenAttributes(riven_attributes)
-  }, [riven_items, riven_attributes]);
   const useTranslateUserForm = (key: string, context?: { [key: string]: any }) => useTranslateForm(`riven.${key}`, { ...context })
 
   useEffect(() => {
     if (!riven) return;
-    setCurrentRivenType(rivenTypes.find((item) => item.url_name === riven.url_name))
+    setCurrentRivenType(availableRivens.find((item) => item.url_name === riven.url_name))
     userForm.setFieldValue("url_name", riven.url_name)
     userForm.setFieldValue("mod_name", riven.mod_name)
     userForm.setFieldValue("mod_rank", riven.mod_rank)
@@ -130,10 +124,10 @@ export const RivenForm = ({ riven }: FormPropsProps) => {
   const getFilterAttributes = (attribute: string) => {
     if (currentRivenType) {
       const attributes = userForm.values.attributes.map((item) => item?.url_name);
-      return rivenAttributes.filter((item) => item.exclusive_to == null || item.exclusive_to.includes(currentRivenType.riven_type) && (!attributes.includes(item.url_name) || item.url_name == attribute));
+      return availableAttributes.filter((item) => item.exclusive_to == null || item.exclusive_to.includes(currentRivenType.riven_type) && (!attributes.includes(item.url_name) || item.url_name == attribute));
     }
     else
-      return rivenAttributes;
+      return availableAttributes;
   };
 
   // Handle attribute permutations
@@ -167,8 +161,8 @@ export const RivenForm = ({ riven }: FormPropsProps) => {
       return permutations;
     }
     const rivenIds: { [key: string]: Wfm.RivenAttributeInfoDto } = {};
-    rivenAttributes.forEach((item) => { rivenIds[item.url_name] = { ...item } });
-    if (rivenAttributes.length == 0)
+    availableAttributes.forEach((item) => { rivenIds[item.url_name] = { ...item } });
+    if (availableAttributes.length == 0)
       return;
     let selectedIds = generatePermutations(filteredArray.map((item) => item.url_name));
     console.log(selectedIds);
@@ -186,7 +180,16 @@ export const RivenForm = ({ riven }: FormPropsProps) => {
 
   return (
     <form method="post" onSubmit={userForm.onSubmit(async (data) => {
-      console.log(data)
+
+      onSubmit({
+        ...data,
+        attributes: data.attributes.filter(x => x != null).map((item) => {
+          if (!item) return item;
+          return {
+            ...item,
+          }
+        }) as Wfm.RivenAttributeDto[]
+      })
     })}>
 
       <RivenPreview riven={{
@@ -206,13 +209,13 @@ export const RivenForm = ({ riven }: FormPropsProps) => {
           label={useTranslateUserForm("weapon_name")}
           value={userForm.values.url_name}
           onChange={(event) => {
-            setCurrentRivenType(rivenTypes.find((item) => item.url_name === event))
+            setCurrentRivenType(availableRivens.find((item) => item.url_name === event))
             userForm.setFieldValue('url_name', event || "")
           }}
           searchable
           clearable
           limit={5}
-          data={rivenTypes.map((item: Wfm.RivenItemTypeDto) => {
+          data={availableRivens.map((item: Wfm.RivenItemTypeDto) => {
             return {
               value: item.url_name,
               label: item.item_name,
@@ -304,6 +307,15 @@ export const RivenForm = ({ riven }: FormPropsProps) => {
             { value: "vazarin", label: "Vazarin" },
           ]}
         />
+      </Group>
+      <Group position="right" mt={10} sx={{
+        position: "absolute",
+        bottom: 15,
+        right: 15,
+      }}>
+        <Button type="submit" variant="light" color="blue">
+          {useTranslateUserForm('save')}
+        </Button>
       </Group>
     </form>
   );
