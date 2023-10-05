@@ -50,4 +50,55 @@ impl<'a> AuctionModule<'a> {
         let auctions = self.get_user_auctions(auth.ingame_name.as_str()).await?;
         Ok(auctions)
     }
+    pub async fn create(
+        &self,
+        auction_type: str,
+        note: &str,
+        starting_price: &str,
+        buyout_price: f64,
+        minimal_reputation: i32,
+        minimal_increment: i32,
+        private: bool,
+        item: AuctionItem,
+    ) -> Result<StockRivenStruct, AppError> {
+        let connection = self.client.connection.lock().unwrap().clone();
+        let wfm = self.client.wfm.lock()?.clone();
+
+        // Construct any JSON body
+        let mut body = json!({
+            "note": note,
+            "starting_price": starting_price,
+            "buyout_price": buyout_price,
+            "minimal_reputation": minimal_reputation,
+            "minimal_increment": minimal_increment,
+            "private": private
+        });
+
+        if auction_type == "riven" {
+            let mut item_riven = json!({
+                "type": "riven",
+                "re_rolls": item.re_rolls,
+                "attributes": item.attributes,
+                "name": item.name,
+                "weapon_url_name": item.weapon_url_name,
+                "mod_rank": item.mod_rank,
+                "polarity": item.polarity
+            });
+            body["item"] = item_riven;
+        } else if auction_type == "riven" {
+
+        }
+
+        match self
+            .client
+            .post("auctions/create", Some("auction"), body)
+            .await
+        {
+            Ok((auction, _headers)) => {
+                self.emit("CREATE_OR_UPDATE", serde_json::to_value(&auction).unwrap());
+                Ok(auction)
+            }
+            Err(e) => Err(e),
+        }
+    }
 }
