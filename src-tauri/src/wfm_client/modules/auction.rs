@@ -84,7 +84,8 @@ impl<'a> AuctionModule<'a> {
                 "polarity": item.polarity
             });
             body["item"] = item_riven;
-        } else if auction_type == "riven" {
+        } else if auction_type == "item" {
+
         }
 
         match self
@@ -98,8 +99,5 @@ impl<'a> AuctionModule<'a> {
             }
             Err(e) => Err(e),
         }
-    }
-    pub fn emit(&self, operation: &str, data: serde_json::Value) {
-        helper::emit_update("auctions", operation, Some(data));
     }
 }
