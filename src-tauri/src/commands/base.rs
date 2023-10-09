@@ -13,7 +13,6 @@ use crate::{
     helper, logger,
     price_scraper::{self, PriceScraper},
     settings::SettingsState,
-    structs::{InvantoryCreateOrUpdate, RivenAttribute},
     wfm_client::client::WFMClient,
 };
 
@@ -34,14 +33,11 @@ pub async fn init(
     let price_scraper = price_scraper.lock()?.clone();
     // println!("items: {:?}", items.len());
 
-    helper::send_message_to_window(
-        "set_initializstatus",
-        Some(json!({"status": "Loading Cache..."})),
-    );
-    cache.refresh().await?;
-    let items = cache.items().get_types()?;
-    let riven_items = cache.riven().get_types()?;
-    let riven_attributes = cache.riven().get_attributes()?;
+    let mut response = json!({
+        "settings": &settings.clone(),
+        "user": &auth.clone(),
+        "price_scraper_last_run":price_scraper.get_status(),
+    });
 
     helper::send_message_to_window(
         "set_initializstatus",
@@ -54,54 +50,53 @@ pub async fn init(
             return Err(e);
         }
     }
+
+    helper::send_message_to_window(
+        "set_initializstatus",
+        Some(json!({"status": "Loading Cache..."})),
+    );
+    cache.refresh().await?;
+    response["items"] = json!(cache.items().get_types()?);
+    response["riven_items"] = json!(cache.riven().get_types()?);
+    response["riven_attributes"] = json!( cache.riven().get_attributes()?);
+
     helper::send_message_to_window(
         "set_initializstatus",
         Some(json!({"status": "Validating Credentials..."})),
     );
-    if !wfm.auth().validate().await? {
-        return Ok(json!({"valid": false, "settings": &settings.clone()}));
-    }
+    let is_validate = wfm.auth().validate().await?;
+    response["valid"] = json!(is_validate);
 
     helper::send_message_to_window(
         "set_initializstatus",
         Some(json!({"status": "Loading Stock..."})),
     );
-    let stock_items = db.stock_item().get_items().await?;
-    let stock_rivens = db.stock_riven().get_rivens().await?;
+    response["stock_items"] = json!(db.stock_item().get_items().await?);
+    response["stock_rivens"] = json!(db.stock_riven().get_rivens().await?);
 
     helper::send_message_to_window(
         "set_initializstatus",
         Some(json!({"status": "Loading Transactions..."})),
     );
-    let transactions = db.transaction().get_items().await?;
+    response["transactions"] = json!(db.transaction().get_items().await?);
 
-    helper::send_message_to_window(
-        "set_initializstatus",
-        Some(json!({"status": "Loading Your Orders..."})),
-    );
-    let mut ordres_vec = wfm.orders().get_my_orders().await?;
-    let mut ordres = ordres_vec.buy_orders;
-    ordres.append(&mut ordres_vec.sell_orders);
+    if is_validate {
+        helper::send_message_to_window(
+            "set_initializstatus",
+            Some(json!({"status": "Loading Your Orders..."})),
+        );
+        let mut ordres_vec = wfm.orders().get_my_orders().await?;
+        let mut ordres = ordres_vec.buy_orders;
+        ordres.append(&mut ordres_vec.sell_orders);
+        response["orders"] = json!(ordres);
 
-    helper::send_message_to_window(
-        "set_initializstatus",
-        Some(json!({"status": "Loading Your Auctions..."})),
-    );
-    let auctions = wfm.auction().get_my_auctions().await?;
-    Ok(json!({
-        "valid": true,
-        "settings": &settings.clone(),
-        "user": &auth.clone(),
-        "transactions": transactions,
-        "orders": ordres,
-        "price_scraper_last_run":price_scraper.get_status(),
-        "items": items,
-        "auctions": auctions,
-        "riven_items": riven_items,
-        "riven_attributes": riven_attributes,
-        "stock_items": stock_items,
-        "stock_rivens": stock_rivens,
-    }))
+        helper::send_message_to_window(
+            "set_initializstatus",
+            Some(json!({"status": "Loading Your Auctions..."})),
+        );
+        response["auctions"] = json!(wfm.auction().get_my_auctions().await?);
+    }
+    Ok(response)
 }
 
 #[tauri::command]

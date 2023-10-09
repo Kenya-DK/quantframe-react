@@ -29,21 +29,19 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
     onSuccess(data) {
       console.log(data);
 
-      if (!data.valid) {
+      SendTauriUpdateDataEvent("user", { data: data.user, operation: "SET" })
+      SendTauriUpdateDataEvent("transactions", { data: data.transactions, operation: "SET" })
+      // Stock Context
+      SendTauriUpdateDataEvent("StockItems", { data: data.stock_items, operation: "SET" })
+      SendTauriUpdateDataEvent("StockRivens", { data: data.stock_rivens, operation: "SET" })
 
-      } else {
-        SendTauriUpdateDataEvent("user", { data: data.user, operation: "SET" })
-        SendTauriUpdateDataEvent("transactions", { data: data.transactions, operation: "SET" })
+      SendTauriEvent("Cache:Update:Items", data.items)
+      SendTauriEvent("Cache:Update:RivenTypes", data.riven_items)
+      SendTauriEvent("Cache:Update:RivenAttributes", data.riven_attributes)
+      SendTauriEvent("PriceScraper:Initialize", { last_run: data.price_scraper_last_run == null ? null : new Date(data.price_scraper_last_run) })
+      if (data.valid) {
         SendTauriUpdateDataEvent("orders", { data: data.orders, operation: "SET" })
         SendTauriUpdateDataEvent("auctions", { data: data.auctions, operation: "SET" })
-        // Stock Context
-        SendTauriUpdateDataEvent("StockItems", { data: data.stock_items, operation: "SET" })
-        SendTauriUpdateDataEvent("StockRivens", { data: data.stock_rivens, operation: "SET" })
-
-        SendTauriEvent("Cache:Update:Items", data.items)
-        SendTauriEvent("Cache:Update:RivenTypes", data.riven_items)
-        SendTauriEvent("Cache:Update:RivenAttributes", data.riven_attributes)
-        SendTauriEvent("PriceScraper:Initialize", { last_run: data.price_scraper_last_run == null ? null : new Date(data.price_scraper_last_run) })
 
       }
       setSettings({ ...data.settings })
