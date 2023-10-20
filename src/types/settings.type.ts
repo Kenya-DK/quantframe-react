@@ -34,15 +34,22 @@ export interface Settings {
 }
 
 export interface LiveScraperSettings {
+  webhook: string;
+  stock_item: StockItemSettings;
+  stock_riven: StockRivenSettings;
+}
+export interface StockItemSettings {
   volume_threshold: number;
   max_total_price_cap: number;
   range_threshold: number;
   avg_price_cap: number;
   price_shift_threshold: number;
   strict_whitelist: boolean;
-  webhook: string;
   blacklist: string[];
   whitelist: string[];
+}
+export interface StockRivenSettings {
+  range_threshold: number;
 }
 
 export interface WhisperScraperSettings {

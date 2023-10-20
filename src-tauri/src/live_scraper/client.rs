@@ -1,15 +1,23 @@
-use std::{sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}}, time::Duration};
-
+use std::{
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc, Mutex,
+    },
+    time::Duration,
+};
 
 use crate::{
     auth::AuthState,
+    database::client::DBClient,
     error::AppError,
     helper,
-    logger::{self, LogLevel}, settings::SettingsState, price_scraper::PriceScraper, wfm_client::client::WFMClient, database::client::DBClient,
+    logger::{self, LogLevel},
+    price_scraper::PriceScraper,
+    settings::SettingsState,
+    wfm_client::client::WFMClient,
 };
 
 use super::modules::{item::ItemModule, riven::RivenModule};
-
 
 #[derive(Clone)]
 pub struct LiveScraperClient {
@@ -28,7 +36,7 @@ impl LiveScraperClient {
         price_scraper: Arc<Mutex<PriceScraper>>,
         wfm: Arc<Mutex<WFMClient>>,
         auth: Arc<Mutex<AuthState>>,
-        db: Arc<Mutex<DBClient>>
+        db: Arc<Mutex<DBClient>>,
     ) -> Self {
         LiveScraperClient {
             log_file: "live_scraper.log".to_string(),
@@ -39,7 +47,7 @@ impl LiveScraperClient {
             auth,
             db,
         }
-    }    
+    }
     fn report_error(&self, error: AppError) {
         let component = error.component();
         let cause = error.cause();
@@ -55,7 +63,7 @@ impl LiveScraperClient {
                 true,
                 Some(self.log_file.as_str()),
             );
-            helper::send_message_to_window("live_scraper_error", Some(error.to_json()));
+            helper::send_message_to_window("LiveScraper:Error", Some(error.to_json()));
         } else {
             logger::info_con(
                 "LiveScraper",
@@ -75,22 +83,26 @@ impl LiveScraperClient {
         let is_running = Arc::clone(&self.is_running);
         let forced_stop = Arc::clone(&self.is_running);
         let scraper = self.clone();
-        tauri::async_runtime::spawn(async move {            
+        let db = self.db.lock()?.clone();
+
+        // Reset riven stocks on start
+        tauri::async_runtime::spawn(async move {
             logger::info_con("LiveScraper", "Loop live scraper is started");
 
             scraper.item().delete_all_orders().await.unwrap();
+            db.stock_riven().reset_listed_price().await.unwrap();
             while is_running.load(Ordering::SeqCst) && forced_stop.load(Ordering::SeqCst) {
-                logger::info_con("LiveScraper", "Checking item stock");
+                logger::info_con("LiveScraper", "Checking riven stock");
                 match scraper.riven().check_stock().await {
                     Ok(_) => {}
                     Err(e) => scraper.report_error(e),
-                }                
-                
-                logger::info_con("LiveScraper", "Checking riven stock");
+                }
+
+                logger::info_con("LiveScraper", "Checking item stock");
                 match scraper.item().check_stock().await {
                     Ok(_) => {}
                     Err(e) => scraper.report_error(e),
-                } 
+                }
 
                 tokio::time::sleep(Duration::from_secs(1)).await;
             }

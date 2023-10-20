@@ -28,6 +28,7 @@ pub enum StockItem {
     Rank,
     SubType,
     Price,
+    MiniumPrice,
     ListedPrice,
     Owned,
     Created,
@@ -44,6 +45,7 @@ pub struct StockItemStruct {
     pub rank: i32,
     pub sub_type: Option<String>,
     pub price: f64,
+    pub minium_price: Option<i32>,
     pub listed_price: Option<i32>,
     pub owned: i32,
     pub created: String,
@@ -87,6 +89,11 @@ impl<'a> StockItemModule<'a> {
                     .default(Value::Int(Some(0))),
             )
             .col(
+                ColumnDef::new(StockItem::MiniumPrice)
+                    .integer()
+                    .default(Value::Int(None)),
+            )
+            .col(
                 ColumnDef::new(StockItem::ListedPrice)
                     .integer()
                     .default(Value::Int(None)),
@@ -104,6 +111,18 @@ impl<'a> StockItemModule<'a> {
             .execute(&connection)
             .await
             .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
+
+
+            let table = Table::alter()
+            .table(StockItem::Table)
+            .add_column(
+                ColumnDef::new(StockItem::MiniumPrice)
+                    .integer()
+                    .default(Value::Int(None)),
+            )
+            .to_string(SqliteQueryBuilder);
+        helper::alter_table(connection.clone(), &table).await?;
+
         Ok(true)
     }
 
@@ -120,6 +139,7 @@ impl<'a> StockItemModule<'a> {
                 StockItem::Rank,
                 StockItem::SubType,
                 StockItem::Price,
+                StockItem::MiniumPrice,
                 StockItem::ListedPrice,
                 StockItem::Owned,
                 StockItem::Created,
@@ -147,6 +167,7 @@ impl<'a> StockItemModule<'a> {
         url_name: &str,
         mut quantity: i32,
         price: f64,
+        minium_price: Option<i32>,
         rank: i32,
         sub_type: Option<&str>,
     ) -> Result<StockItemStruct, AppError> {
@@ -172,7 +193,7 @@ impl<'a> StockItemModule<'a> {
                 let total_price = (t.price * t.owned as f64) + price as f64;
                 let weighted_price = total_price / total_owned as f64;
 
-                self.update_by_id(t.id, Some(total_owned), Some(weighted_price), None)
+                self.update_by_id(t.id, Some(total_owned), Some(weighted_price), None,None)
                     .await?;
                 let mut t = t.clone();
                 t.owned = total_owned;
@@ -191,6 +212,7 @@ impl<'a> StockItemModule<'a> {
                     rank: rank as i32,
                     sub_type: sub_type.map(|t| t.to_string()),
                     price: price as f64,
+                    minium_price,
                     listed_price: None,
                     owned: quantity as i32,
                     created: chrono::Local::now().naive_local().to_string(),
@@ -206,6 +228,7 @@ impl<'a> StockItemModule<'a> {
                         StockItem::Rank,
                         StockItem::SubType,
                         StockItem::Price,
+                        StockItem::MiniumPrice,
                         StockItem::Owned,
                         StockItem::Created,
                     ])
@@ -217,6 +240,7 @@ impl<'a> StockItemModule<'a> {
                         inventory.rank.into(),
                         inventory.sub_type.clone().into(),
                         inventory.price.into(),
+                        inventory.minium_price.into(),
                         inventory.owned.into(),
                         inventory.created.clone().into(),
                     ])
@@ -244,6 +268,7 @@ impl<'a> StockItemModule<'a> {
         id: i64,
         owned: Option<i32>,
         price: Option<f64>,
+        minium_price: Option<i32>,
         listed_price: Option<i32>,
     ) -> Result<StockItemStruct, AppError> {
         let connection = self.client.connection.lock().unwrap().clone();
@@ -308,10 +333,10 @@ impl<'a> StockItemModule<'a> {
             ));
         }
         let item = item.unwrap();
-        self.update_by_id(item.id, owned, price, listed_price)
+        self.update_by_id(item.id, owned, price, None, listed_price)
             .await?;
         Ok(self
-            .update_by_id(item.id, owned, price, listed_price)
+            .update_by_id(item.id, owned, price, None, listed_price)
             .await?)
     }
 
@@ -345,7 +370,6 @@ impl<'a> StockItemModule<'a> {
     pub async fn sell_item(
         &self,
         id: i64,
-        price: i32,
         mut quantity: i32,
     ) -> Result<StockItemStruct, AppError> {
         let items = self.get_items().await?;
@@ -368,7 +392,7 @@ impl<'a> StockItemModule<'a> {
         if inventory.owned <= 0 {
             self.delete(id).await?;
         } else {
-            self.update_by_id(id, Some(inventory.owned.clone()), None, None)
+            self.update_by_id(id, Some(inventory.owned.clone()), None, None,None)
                 .await?;
         }
         Ok(inventory.clone())
@@ -404,6 +428,10 @@ impl<'a> StockItemModule<'a> {
             ),
             Series::new("rank", item.iter().map(|i| i.rank).collect::<Vec<_>>()),
             Series::new("price", item.iter().map(|i| i.price).collect::<Vec<_>>()),
+            Series::new(
+                "minium_price",
+                item.iter().map(|i| i.minium_price).collect::<Vec<_>>(),
+            ),
             Series::new(
                 "listed_price",
                 item.iter().map(|i| i.listed_price).collect::<Vec<_>>(),

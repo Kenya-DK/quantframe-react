@@ -1,4 +1,4 @@
-use crate::{database::client::DBClient, error::AppError, helper, structs::RivenAttribute};
+use crate::{database::client::DBClient, error::AppError, helper, structs::RivenAttribute, logger::{LogLevel, self}};
 use eyre::eyre;
 use sea_query::{ColumnDef, Expr, Iden, InsertStatement, Query, SqliteQueryBuilder, Table, Value};
 use serde::{Deserialize, Serialize};
@@ -119,6 +119,11 @@ impl<'a> TransactionModule<'a> {
             .unwrap();
         Ok(rows)
     }
+    pub async fn get_by_id(&self, id: i64) -> Result<Option<TransactionStruct>, AppError> {
+        let transactions = self.get_items().await?;
+        let transaction = transactions.iter().find(|t| t.id == id);
+        Ok(transaction.cloned())
+    }
     pub async fn create(
         &self,
         url_name: &str,
@@ -144,30 +149,44 @@ impl<'a> TransactionModule<'a> {
             quantity,
             created: chrono::Utc::now().to_rfc3339(),
         };
-        if  item_type == "riven" {
+        if item_type == "riven" {
             let item = self
                 .client
                 .cache
                 .lock()?
                 .riven()
-                .find_type(&url_name)?.unwrap();   
-                transaction.wfm_id= item.id.clone();
-                transaction.url= item.url_name.clone();
-                transaction.name= item.item_name.clone();
-                transaction.tags= item.riven_type.clone().to_string();
+                .find_type(&url_name)?
+                .unwrap();
+            transaction.wfm_id = item.id.clone();
+            transaction.url = item.url_name.clone();
+            transaction.name = item.item_name.clone();
+            transaction.tags = item.riven_type.clone().to_string();
         } else if item_type == "item" {
             let item = self
                 .client
                 .cache
                 .lock()?
                 .items()
-                .find_type(&url_name)?.unwrap();
-                transaction.wfm_id= item.id.clone();
-                transaction.url= item.url_name.clone();
-                transaction.name= item.item_name.clone();
-                transaction.tags= item.tags.unwrap().join(",");
+                .find_type(&url_name)?
+                .unwrap();
+            transaction.wfm_id = item.id.clone();
+            transaction.url = item.url_name.clone();
+            transaction.name = item.item_name.clone();
+            transaction.tags = item.tags.unwrap().join(",");
         }
 
+        logger::info_con(
+            "Database",
+            format!(
+                "Creating Transaction: {} {} {} {} {}",
+                transaction.wfm_id,
+                transaction.url,
+                transaction.name,
+                transaction.item_type,
+                transaction.rank
+            )
+            .as_str()
+        );
 
         let sql = InsertStatement::default()
             .into_table(Transaction::Table)
@@ -210,8 +229,68 @@ impl<'a> TransactionModule<'a> {
         );
         Ok(transaction)
     }
+    pub async fn update_by_id(
+        &self,
+        id: i64,
+        price: Option<i64>,
+        transaction_type: Option<String>,
+        quantity: Option<i64>,
+        rank: Option<i64>,
+    ) -> Result<TransactionStruct, AppError> {
+        let connection = self.client.connection.lock().unwrap().clone();
+        let items = self.get_items().await?;
+        let transaction = items.iter().find(|t| t.id == id);
+        if transaction.is_none() {
+            return Err(AppError::new_with_level(
+                "Database",
+                eyre!("Transaction not found in database"),
+                LogLevel::Error,
+            ));
+        }
+        let mut transaction = transaction.unwrap().clone();
+        let mut values = vec![];
+
+        if price.is_some() {
+            transaction.price = price.unwrap() as i32;
+            values.push((Transaction::Price, price.into()));
+        }
+
+        if transaction_type.is_some() {
+            transaction.transaction_type = transaction_type.unwrap();
+            values.push((Transaction::TransactionType, transaction.transaction_type.clone().into()));
+        }
+
+        if quantity.is_some() && quantity.unwrap() > -1 {
+            transaction.quantity = quantity.unwrap() as i32;
+            values.push((Transaction::Quantity, quantity.into()));
+        }
+        
+        if rank.is_some() {
+            transaction.rank = rank.unwrap() as i32;
+            values.push((Transaction::Rank, rank.into()));
+        }
+        logger::info_con("Database", format!("Updating Transaction: {} {} {} {}", transaction.price, transaction.transaction_type, transaction.quantity, transaction.rank).as_str());
+        let sql = Query::update()
+            .table(Transaction::Table)
+            .values(values)
+            .and_where(Expr::col(Transaction::Id).eq(id))
+            .to_string(SqliteQueryBuilder);
+        sqlx::query(&sql.replace("\\", ""))
+            .execute(&connection)
+            .await
+            .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
+
+        self.emit(
+            "CREATE_OR_UPDATE",
+            serde_json::to_value(transaction.clone()).unwrap(),
+        );
+        Ok(transaction.clone())
+    }
+    
     pub async fn delete(&self, id: i64) -> Result<(), AppError> {
         let connection = self.client.connection.lock().unwrap().clone();
+
+        logger::info_con("Database", format!("Deleting Transaction: {}", id).as_str());
         let sql = Query::delete()
             .from_table(Transaction::Table)
             .and_where(Expr::col(Transaction::Id).eq(id))

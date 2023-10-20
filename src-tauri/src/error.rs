@@ -38,26 +38,26 @@ impl AppError {
         // Define a regular expression to match the text between [J] markers
         let json_re = Regex::new(r"\[J\](.*?)\[J\]").unwrap();
         let mut json = json!({});
-        // Get JSON from the text
-        if let Some(captured) = json_re.captures(e.as_str()) {
-            // Extract the captured text
+
+        for captured in json_re.captures_iter(&e) {
             let json_str = &captured[1];
-            // Parse the captured JSON string into a serde_json::Value
-            match serde_json::from_str(json_str) {
+            match serde_json::from_str::<Value>(json_str) {
                 Ok(parsed_json) => {
-                    json = parsed_json;
+                    // Merge parsed_json into json
+                    for (key, value) in parsed_json.as_object().unwrap() {
+                        json[key] = value.clone();
+                    }
                 }
                 Err(err) => {
-                    json = json!({"error": err.to_string()});
+                    json["error"] = json!(err.to_string());
                 }
             }
         }
-
-        // Remove the JSON from the text
-        let e = json_re.replace_all(e.as_str(), "").to_string();
+        // Remove the JSONs from the text
+        let e = json_re.replace_all(&e, "").to_string();
 
         // Perform the regex search
-        if let Some(captures) = re.captures(e.as_str()) {
+        if let Some(captures) = re.captures(&e) {
             let before_location = &captures[1];
             let after_location = &captures[2];
             return (
@@ -66,7 +66,7 @@ impl AppError {
                 json,
             );
         } else {
-            println!("Pattern not found in the text:{:?}.", e);
+            println!("Pattern not found in the text: {}.", e);
             return ("".to_string(), "".to_string(), json);
         }
     }
@@ -128,10 +128,11 @@ pub fn create_log_file(file: String, e: &AppError) {
     let cause = e.cause();
     let backtrace = e.backtrace();
     let log_level = e.log_level();
+    let extra = e.extra_data();
     crate::logger::dolog(
         log_level,
         component.as_str(),
-        format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
+        format!("Location: {:?}, {:?}, {:?}", backtrace, cause, extra).as_str(),
         true,
         Some(file.as_str()),
     );

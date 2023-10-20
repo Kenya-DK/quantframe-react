@@ -39,7 +39,7 @@ impl<'a> ItemModule<'a> {
             .stock_item()
             .convet_stock_item_to_datafream(db.stock_item().get_items().await?)
             .unwrap();
-        let whitelist = settings.whitelist.clone();
+        let whitelist = settings.stock_item.whitelist.clone();
         // Call the database to get the inventory names
         let inventory_names = db.stock_item().get_items_names().await?;
 
@@ -110,7 +110,7 @@ impl<'a> ItemModule<'a> {
         // Loop through all interesting items
         for item in all_interesting_items.clone() {
             if self.client.is_running() == false || item == "" {
-                break;
+                continue;
             }
 
             logger::info_con(
@@ -249,7 +249,7 @@ impl<'a> ItemModule<'a> {
         let wfm = self.client.wfm.lock()?.clone();
         let db = self.client.db.lock()?.clone();
         let settings = self.client.settings.lock()?.clone().live_scraper;
-        let blacklist = settings.blacklist.clone();
+        let blacklist = settings.stock_item.blacklist.clone();
 
         let current_orders = wfm.orders().get_my_orders().await?;
 
@@ -290,12 +290,12 @@ impl<'a> ItemModule<'a> {
         let settings = self.client.settings.lock()?.clone().live_scraper;
         let db = self.client.db.lock()?.clone();
         let df = self.client.price_scraper.lock()?.get_price_historys()?;
-        let volume_threshold = settings.volume_threshold;
-        let range_threshold = settings.range_threshold;
-        let avg_price_cap = settings.avg_price_cap;
-        let price_shift_threshold = settings.price_shift_threshold;
-        let strict_whitelist = settings.strict_whitelist;
-        let whitelist = settings.whitelist.clone();
+        let volume_threshold = settings.stock_item.volume_threshold;
+        let range_threshold = settings.stock_item.range_threshold;
+        let avg_price_cap = settings.stock_item.avg_price_cap;
+        let price_shift_threshold = settings.stock_item.price_shift_threshold;
+        let strict_whitelist = settings.stock_item.strict_whitelist;
+        let whitelist = settings.stock_item.whitelist.clone();
 
         // Group by the "name" and "order_type" columns, and compute the mean of the other columns
         let averaged_df = df
@@ -486,8 +486,6 @@ impl<'a> ItemModule<'a> {
         item_name: &str,
         df: &DataFrame,
     ) -> Result<(Option<String>, bool, i64, bool), AppError> {
-        // To print the first few rows of df
-
         let orders_by_item = df
             .clone()
             .lazy()
@@ -591,7 +589,7 @@ impl<'a> ItemModule<'a> {
 
     fn is_item_blacklisted(&self, item_name: &str) -> Result<bool, AppError> {
         let settings = self.client.settings.lock()?.clone().live_scraper;
-        let blacklist = settings.blacklist.clone();
+        let blacklist = settings.stock_item.blacklist.clone();
         let blacklist_s = Series::new("blacklist", blacklist);
         let blacklist_df = DataFrame::new(vec![blacklist_s]).unwrap();
         let blacklist_df = blacklist_df
@@ -664,8 +662,8 @@ impl<'a> ItemModule<'a> {
         let settings = self.client.settings.lock()?.clone().live_scraper;
         let wfm = self.client.wfm.lock()?.clone();
         let mut current_orders = current_orders.clone();
-        let avg_price_cap = settings.avg_price_cap;
-        let max_total_price_cap = settings.max_total_price_cap;
+        let avg_price_cap = settings.stock_item.avg_price_cap;
+        let max_total_price_cap = settings.stock_item.max_total_price_cap;
         // Get the current orders for the item from the Warframe Market API
         let (order_id, visibility, price, active) = self
             .get_my_order_information(item_name, &current_orders)
@@ -912,26 +910,26 @@ impl<'a> ItemModule<'a> {
                             .iter()
                             .map(|order| order.2.clone())
                             .collect();
-                        logger::info_con("LiveScraper",format!("Item {} is not as optimal as other items. Deleting buy orders for {:?}",item_name,unselected_item_names).as_str());
-                        current_orders =
-                            current_orders
-                                .lazy()
-                                .filter(col("url_name").neq(lit(Series::new(
-                                    "url_name",
-                                    unselected_item_names.clone(),
-                                ))))
-                                .collect()
-                                .map_err(|e| {
-                                    AppError::new(
-                                        "LiveScraper",
-                                        eyre!(
-                                            "{:?}, {:?}, Item: {:?}",
-                                            e.to_string(),
-                                            unselected_item_names.clone(),
-                                            item_name
-                                        ),
-                                    )
-                                })?;
+                        logger::info_con("LiveScraper",format!("Item {} is not as optimal as other items. Deleting buy orders for {:?}", item_name, unselected_item_names).as_str());
+                        
+                        current_orders = current_orders
+                            .lazy()
+                            .filter(col("url_name").is_in(lit(Series::new(
+                                "unselected_url_name",
+                                unselected_item_names.clone(),
+                            ))).not())
+                            .collect()
+                            .map_err(|e| {
+                                AppError::new(
+                                    "LiveScraper",
+                                    eyre!(
+                                        "{:?}, {:?}, Item: {:?}",
+                                        e.to_string(),
+                                        unselected_item_names.clone(),
+                                        item_name
+                                    ),
+                                )
+                            })?;
 
                         for unselected_item in &unselected_buy_orders {
                             wfm.orders()
@@ -1034,9 +1032,16 @@ impl<'a> ItemModule<'a> {
         // Get the quantity of owned item.
         let quantity = inventory.owned as i64;
 
+        // Get the minimum price of the item.
+        let minimum_price = inventory.minium_price;
+
         // If there are no buyers, update order to be 30p above average price
         if sellers == 0 {
-            let post_price = (avg_price + 30) as i64;
+            let mut post_price = (avg_price + 30) as i64;
+            if minimum_price.is_some() && post_price < minimum_price.unwrap() as i64 {
+                post_price = minimum_price.unwrap() as i64;
+            }
+
             db.stock_item()
                 .update_by_url(item_name, None, None, Some(post_price as i32))
                 .await?;
@@ -1093,6 +1098,9 @@ impl<'a> ItemModule<'a> {
         } else {
             post_price = (avg_price + 10).max(post_price);
         }
+        if minimum_price.is_some() && post_price < minimum_price.unwrap() as i64 {
+            post_price = minimum_price.unwrap() as i64;
+        }
         if active {
             if price != post_price {
                 wfm.orders()
@@ -1145,7 +1153,8 @@ impl<'a> ItemModule<'a> {
         item_closed_avg: f64,
     ) -> Result<DataFrame, AppError> {
         let mut order_df = self
-        .client.wfm
+            .client
+            .wfm
             .lock()?
             .orders()
             .convet_order_to_datafream(order.clone())?;

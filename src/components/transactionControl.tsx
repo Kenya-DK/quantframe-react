@@ -1,5 +1,5 @@
 
-import { Button, Center, Group, Title } from '@mantine/core';
+import { Button, Center, Group } from '@mantine/core';
 import { usePriceScraperContext } from '../contexts/priceScraper.context';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDatabase } from '@fortawesome/free-solid-svg-icons';
@@ -17,7 +17,6 @@ export const TransactionControl = () => {
 
   return (
     <Center >
-      {/* <Title order={3}>{useTranslate("title")}</Title> */}
       <Group position="center" spacing="xs" mr={12}>
         <ButtonProgress
           onStart={async () => {

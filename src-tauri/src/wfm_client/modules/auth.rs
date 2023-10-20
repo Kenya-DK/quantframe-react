@@ -34,7 +34,7 @@ impl<'a> AuthModule<'a> {
     }
 
     pub async fn validate(&self) -> Result<bool, AppError> {
-        let auth = self.client.auth.lock()?.clone();
+        let mut auth = self.client.auth.lock()?.clone();
         if auth.access_token.is_none() {
             return Ok(false);
         }
@@ -66,6 +66,9 @@ impl<'a> AuthModule<'a> {
                 Ok(true)
             }
             Err(_e) => {
+                auth.access_token = None;
+                auth.id = "".to_string();
+                auth.save_to_file()?;
                 logger::info(
                     "WarframeMarket",
                     "Invalid API Key",

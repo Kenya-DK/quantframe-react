@@ -1,7 +1,7 @@
 [package]
 name = "quantframe-react"
 version = "0.0.0"
-description = "A App for warframe market"
+description = "Quantframe"
 authors = ["Kenya-DK"]
 license = ""
 repository = ""
@@ -14,7 +14,7 @@ edition = "2021"
 tauri-build = { version = "1.4", features = [] }
 
 [dependencies]
-tauri = { version = "1.4", features = [ "fs-remove-file", "fs-copy-file", "notification-all", "fs-write-file", "fs-read-dir", "fs-exists", "http-all", "path-all", "shell-open"] }
+tauri = { version = "1.4", features = [ "system-tray", "fs-remove-file", "fs-copy-file", "notification-all", "fs-write-file", "fs-read-dir", "fs-exists", "http-all", "path-all", "shell-open"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = ["raw_value"] }
 regex = "1.9.1"

@@ -65,6 +65,7 @@ const RiveAttributeForm = ({ availableAttributes, canRemove, attribute, onRemove
       <NumberInput
         required
         disabled={!attribute}
+        precision={2}
         value={attribute?.value || 0}
         max={400}
         onChange={(value) => setAttributeValue(Number(value))}
@@ -84,7 +85,7 @@ interface FormPropsProps {
   riven?: Wfm.RivenItemDto | undefined | null;
   availableAttributes: Wfm.RivenAttributeInfoDto[],
   availableRivens: Wfm.RivenItemTypeDto[],
-  onSubmit: (user: Wfm.RivenItemDto) => void;
+  onSubmit: (user: Wfm.RivenItemDto & { price: number }) => void;
   onCancel?: () => void;
 }
 
@@ -115,6 +116,7 @@ export const RivenForm = ({ onSubmit, availableAttributes, availableRivens, rive
       mod_name: "",
       mod_rank: 0,
       mastery_rank: 7,
+      price: 0,
       attributes: [] as Array<Wfm.RivenAttributeDto | null>,
       re_rolls: 0,
       polarity: "madurai",
@@ -296,6 +298,14 @@ export const RivenForm = ({ onSubmit, availableAttributes, availableRivens, rive
           value={userForm.values.re_rolls}
           onChange={(value) => userForm.setFieldValue('re_rolls', Number(value))}
           error={userForm.errors.re_rolls && 'Invalid identifier'}
+        />
+        <NumberInput
+          required
+          label={useTranslateUserForm("bought")}
+          min={0}
+          value={userForm.values.price}
+          onChange={(value) => userForm.setFieldValue('price', Number(value))}
+          error={userForm.errors.price && 'Invalid identifier'}
         />
         <Select
           label={useTranslateUserForm("polarity")}

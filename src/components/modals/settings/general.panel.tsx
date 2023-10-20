@@ -9,7 +9,7 @@ export function GeneralPanel({ }: GeneralProps) {
 
   return (
     <>
-      KKK
+
     </>
   );
 }

@@ -19,6 +19,7 @@ interface PurchaseNewItemProps {
   loading: boolean;
   onSumit: (data: CreateTransactionEntryDto) => void;
 }
+
 const PurchaseNewItem = (props: PurchaseNewItemProps) => {
   const { onSumit, loading } = props;
   const useTranslateSearch = (key: string, context?: { [key: string]: any }) => useTranslateComponent(`inventory.${key}`, { ...context })
@@ -111,6 +112,7 @@ const PurchaseNewItem = (props: PurchaseNewItemProps) => {
     </Group>
   );
 }
+
 const Items = () => {
   const useTranslateDataGrid = (key: string, context?: { [key: string]: any }) => useTranslateComponent(`inventory.datagrid.${key}`, { ...context })
   const useTranslateDataGridColumns = (key: string, context?: { [key: string]: any }) => useTranslateDataGrid(`columns.${key}`, { ...context });
@@ -204,11 +206,6 @@ const Items = () => {
           accessor: 'owned',
           title: useTranslateDataGridColumns('owned'),
           width: 40,
-          footer: (
-            <Group spacing="xs">
-
-            </Group>
-          ),
         },
         {
           accessor: 'actions',
@@ -228,7 +225,7 @@ const Items = () => {
                   <Group spacing={"5px"} mr={0}>
                     <Divider orientation="vertical" />
                     <Tooltip label={useTranslateDataGridColumns('actions.sell')}>
-                      <ActionIcon loading={sellInvantoryEntryMutation.isLoading} color="green.7" variant="filled" onClick={async () => {
+                      <ActionIcon disabled={!itemPrices[url]} loading={sellInvantoryEntryMutation.isLoading} color="green.7" variant="filled" onClick={async () => {
                         const price = itemPrices[url];
                         if (!price || price <= 0 || !id) return;
                         await sellInvantoryEntryMutation.mutateAsync({ id, price, report: false });
@@ -237,7 +234,7 @@ const Items = () => {
                       </ActionIcon>
                     </Tooltip>
                     <Tooltip label={useTranslateDataGridColumns('actions.sell_report')}>
-                      <ActionIcon loading={sellInvantoryEntryMutation.isLoading} color="blue.7" variant="filled" onClick={async () => {
+                      <ActionIcon disabled={!itemPrices[url]} loading={sellInvantoryEntryMutation.isLoading} color="blue.7" variant="filled" onClick={async () => {
                         const price = itemPrices[url];
                         if (!price || price <= 0 || !id) return;
                         await sellInvantoryEntryMutation.mutateAsync({ id, price, report: true });
@@ -291,7 +288,7 @@ export const Inventory = () => {
 
     },
   })
-  const createTransactionsEntryMutation = useMutation((data: CreateTransactionEntryDto) => api.transactions.create_transaction_entry(data), {
+  const createTransactionsEntryMutation = useMutation((data: CreateTransactionEntryDto) => api.transactions.create(data), {
     onSuccess: async (data) => {
       notifications.show({
         title: useTranslateInvSuccess("create_title"),

@@ -1,4 +1,4 @@
-import { Button, Container, Group, NumberInput, Select, TextInput, Textarea } from '@mantine/core';
+import { Button, Checkbox, Container, Group, NumberInput, Select, TextInput, Textarea } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { ContextModalProps } from '@mantine/modals';
 import i18next from 'i18next';
@@ -50,7 +50,7 @@ export const PromptModal = ({ context, id, innerProps }: ContextModalProps<Modal
         break;
       case 'checkbox':
       case 'switch':
-        formValues[field.name] = false;
+        formValues[field.name] = field.value || false;
         break;
       case 'radio':
         formValues[field.name] = field.options ? field.options[0].value : '';
@@ -75,7 +75,7 @@ export const PromptModal = ({ context, id, innerProps }: ContextModalProps<Modal
       context.closeModal(id)
       onConfirm(data);
     })}>
-      <Container size="auto" h={height}>
+      <Container size="auto" h={height} pt={25}>
         {fields.map((field, index) => {
           switch (field.type) {
             case 'text':
@@ -122,6 +122,18 @@ export const PromptModal = ({ context, id, innerProps }: ContextModalProps<Modal
                     label={field.label}
                     value={form.values[field.name]}
                     onChange={(value) => form.setFieldValue(field.name, Number(value))}
+                  />
+                </Group>
+              )
+            case 'checkbox':
+              return (
+                <Group grow key={index}>
+                  <Checkbox
+                    {...form.getInputProps(field.name)}
+                    label={field.label}
+                    value={form.values[field.name]}
+                    checked={form.values[field.name]}
+                    onChange={(event) => form.setFieldValue(field.name, event.currentTarget.checked)}
                   />
                 </Group>
               )

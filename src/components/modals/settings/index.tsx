@@ -5,6 +5,7 @@ import { useTranslateModal } from "@hooks/index";
 import { DeepPartial, Settings, Wfm } from "$types/index";
 import { WhisperScraperPanel } from "./whisperScraper.panel";
 import { useState } from "react";
+import { modals } from "@mantine/modals";
 
 interface SettingsModalProps {
   settings: Settings | undefined;
@@ -21,6 +22,7 @@ export function SettingsModal({ tradable_items, settings: settingsIn, updateSett
     const data = { ...settings, ...settingsData } as Settings;
     setSettings((a) => a = { ...a, ...data });
     updateSettings(data);
+    modals.closeAll();
   }
   return (
     <Tabs defaultValue="live_scraper">

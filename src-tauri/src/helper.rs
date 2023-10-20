@@ -15,10 +15,7 @@ use std::{
 };
 use tauri::Window;
 
-use crate::{
-    error::AppError,
-    logger::LogLevel,
-};
+use crate::{error::AppError, logger::{LogLevel, self}};
 
 pub static WINDOW: Lazy<Mutex<Option<Window>>> = Lazy::new(|| Mutex::new(None));
 
@@ -58,8 +55,11 @@ pub fn send_message_to_window(event: &str, data: Option<Value>) {
     }
 }
 
-pub fn emit_update(update_type: &str, operation: &str,data: Option<Value>) {
-    send_message_to_window("Client:Update", Some(json!({ "type": update_type, "operation": operation, "data": data})));   
+pub fn emit_update(update_type: &str, operation: &str, data: Option<Value>) {
+    send_message_to_window(
+        "Client:Update",
+        Some(json!({ "type": update_type, "operation": operation, "data": data})),
+    );
 }
 
 pub fn get_app_local_path() -> PathBuf {
@@ -75,7 +75,7 @@ pub fn get_app_local_path() -> PathBuf {
 pub fn get_app_roaming_path() -> PathBuf {
     if let Some(base_dirs) = BaseDirs::new() {
         // App path for csv file
-        let roaming_path = Path::new(base_dirs.data_dir());
+        let roaming_path = Path::new(base_dirs.cache_dir());
         let app_path = roaming_path.join("dev.kenya.quantframe");
         // Check if the app path exists, if not create it
         if !app_path.exists() {
@@ -134,23 +134,41 @@ pub fn get_column_values(
     col_type: ColumnType,
 ) -> Result<ColumnValues, AppError> {
     let df: DataFrame = match filter {
-        Some(filter) => df
-            .lazy()
-            .filter(filter)
-            .collect()
-            .map_err(|e| AppError::new("Helper", eyre!(format!("Column: {:?} ColumnType: {:?} Error: {:?}", column,col_type,e))))?,
+        Some(filter) => df.lazy().filter(filter).collect().map_err(|e| {
+            AppError::new(
+                "Helper",
+                eyre!(format!(
+                    "Column: {:?} ColumnType: {:?} Error: {:?}",
+                    column, col_type, e
+                )),
+            )
+        })?,
         None => df,
     };
 
-    let column_series = df
-        .column(column)
-        .map_err(|e| AppError::new("Helper", eyre!(format!("Column: {:?} ColumnType: {:?} Error: {:?}", column,col_type, e))))?;
+    let column_series = df.column(column).map_err(|e| {
+        AppError::new(
+            "Helper",
+            eyre!(format!(
+                "Column: {:?} ColumnType: {:?} Error: {:?}",
+                column, col_type, e
+            )),
+        )
+    })?;
 
     match col_type {
         ColumnType::Bool => {
             let values: Vec<bool> = column_series
                 .bool()
-                .map_err(|e| AppError::new("Helper", eyre!(format!("Column: {:?} ColumnType: {:?} Error: {:?}", column,col_type, e))))?
+                .map_err(|e| {
+                    AppError::new(
+                        "Helper",
+                        eyre!(format!(
+                            "Column: {:?} ColumnType: {:?} Error: {:?}",
+                            column, col_type, e
+                        )),
+                    )
+                })?
                 .into_iter()
                 .filter_map(|opt_val| opt_val)
                 .collect();
@@ -160,7 +178,15 @@ pub fn get_column_values(
         ColumnType::F64 => {
             let values: Vec<f64> = column_series
                 .f64()
-                .map_err(|e| AppError::new("Helper", eyre!(format!("Column: {:?} ColumnType: {:?} Error: {:?}", column,col_type, e))))?
+                .map_err(|e| {
+                    AppError::new(
+                        "Helper",
+                        eyre!(format!(
+                            "Column: {:?} ColumnType: {:?} Error: {:?}",
+                            column, col_type, e
+                        )),
+                    )
+                })?
                 .into_iter()
                 .filter_map(|opt_val| opt_val)
                 .collect();
@@ -170,7 +196,15 @@ pub fn get_column_values(
         ColumnType::I64 => {
             let values: Vec<i64> = column_series
                 .i64()
-                .map_err(|e| AppError::new("Helper", eyre!(format!("Column: {:?} ColumnType: {:?} Error: {:?}", column,col_type, e))))?
+                .map_err(|e| {
+                    AppError::new(
+                        "Helper",
+                        eyre!(format!(
+                            "Column: {:?} ColumnType: {:?} Error: {:?}",
+                            column, col_type, e
+                        )),
+                    )
+                })?
                 .into_iter()
                 .filter_map(|opt_val| opt_val)
                 .collect();
@@ -179,7 +213,15 @@ pub fn get_column_values(
         ColumnType::I32 => {
             let values: Vec<i32> = column_series
                 .i32()
-                .map_err(|e| AppError::new("Helper", eyre!(format!("Column: {:?} ColumnType: {:?} Error: {:?}", column,col_type ,e))))?
+                .map_err(|e| {
+                    AppError::new(
+                        "Helper",
+                        eyre!(format!(
+                            "Column: {:?} ColumnType: {:?} Error: {:?}",
+                            column, col_type, e
+                        )),
+                    )
+                })?
                 .into_iter()
                 .filter_map(|opt_val| opt_val)
                 .collect();
@@ -188,7 +230,15 @@ pub fn get_column_values(
         ColumnType::String => {
             let values = column_series
                 .utf8()
-                .map_err(|e| AppError::new("Helper", eyre!(format!("Column: {:?} ColumnType: {:?} Error: {:?}", column,col_type, e))))?
+                .map_err(|e| {
+                    AppError::new(
+                        "Helper",
+                        eyre!(format!(
+                            "Column: {:?} ColumnType: {:?} Error: {:?}",
+                            column, col_type, e
+                        )),
+                    )
+                })?
                 .into_iter()
                 .filter_map(|opt_name| opt_name.map(String::from))
                 .collect::<Vec<_>>()
@@ -309,4 +359,41 @@ pub fn send_message_to_discord(webhook: String, message: String, ping: bool) {
             }
         }
     });
+}
+
+pub async fn alter_table(connection: sqlx::Pool<sqlx::Sqlite>, alter_sql: &str) -> Result<bool, AppError>{
+    let re = regex::Regex::new(r#"ALTER TABLE "(?P<table>[^"]+)" ADD COLUMN "(?P<column>[^"]+)"#).unwrap();    
+    if let Some(captures) = re.captures(alter_sql) {
+        let table_name = captures.name("table").map_or("", |m| m.as_str());
+        let column_name = captures.name("column").map_or("", |m| m.as_str());
+        if table_name != "" && column_name != "" {
+            let rep = sqlx::query(format!("PRAGMA table_info(\"{}\")", table_name).as_str())
+                .fetch_all(&connection)
+                .await
+                .map_err(|e| AppError::new("Database", eyre!(e.to_string())));
+                match rep {
+                    Ok(r) => {
+                        for row in r {
+                            let name: String = sqlx::Row::get(&row, "name");
+                            if name == column_name {
+                                return Ok(true)
+                            }
+                        }
+                        sqlx::query(&alter_sql)
+                            .execute(&connection)
+                            .await
+                            .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
+                        return Ok(false)
+                    }
+                    Err(_) => {
+                        return Err(AppError::new("Database", eyre!("Could not find table in database.")));
+                    }
+                }
+            } else {
+                logger::warning_con("Helper","Could not find table name or column name in the SQL.");
+            }
+        } else {
+            logger::warning_con("Helper","Could not find table name or column name in the SQL.");
+    }   
+    Ok(false)
 }

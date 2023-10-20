@@ -12,9 +12,10 @@ use std::panic;
 use std::sync::Arc;
 use std::{env, sync::Mutex};
 use tauri::async_runtime::block_on;
-use tauri::{App, Manager};
+use tauri::{App, CustomMenuItem, Manager, SystemTrayEvent};
 mod structs;
 mod whisper_scraper;
+use tauri::{SystemTray, SystemTrayMenu};
 use whisper_scraper::WhisperScraper; // add this line
 
 mod auth;
@@ -29,6 +30,7 @@ mod logger;
 mod price_scraper;
 mod rate_limiter;
 mod settings;
+mod system_tray;
 mod wfm_client;
 
 use helper::WINDOW as HE_WINDOW;
@@ -102,9 +104,16 @@ fn main() {
             true,
             Some("panic.log"),
         );
-        //  Do something with backtrace and panic_info.
     }));
+
     tauri::Builder::default()
+        .system_tray(SystemTray::new().with_menu(system_tray::client::get_tray_menu()))
+        .on_system_tray_event(|app, event| match event {
+            SystemTrayEvent::MenuItemClick { id, .. } => {
+                system_tray::client::get_tray_event(id);
+            }
+            _ => {}
+        })
         .setup(move |app| {
             // Get the 'main' window and store it
             let window = app.get_window("main").unwrap().clone();
@@ -114,7 +123,6 @@ fn main() {
             match block_on(setup_async(app)) {
                 Ok(_) => {}
                 Err(e) => {
-                    println!("Error: {:?}", e);
                     let component = e.component();
                     let cause = e.cause();
                     let backtrace = e.backtrace();
@@ -136,6 +144,8 @@ fn main() {
             commands::base::get_weekly_rivens,
             commands::auth::login,
             commands::transaction::create_transaction_entry,
+            commands::transaction::delete_transaction_entry,
+            commands::transaction::update_transaction_entry,
             commands::whisper_scraper::toggle_whisper_scraper,
             commands::live_scraper::toggle_live_scraper,
             commands::price_scraper::generate_price_history,
@@ -154,7 +164,10 @@ fn main() {
             commands::stock::create_riven_stock,
             commands::stock::import_auction,
             commands::stock::delete_riven_stock,
+            commands::stock::update_riven_stock,
             commands::stock::sell_riven_stock,
+            // Warframe Market Commands
+            wfm_client::modules::auction::auction_search,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -9,7 +9,7 @@ const api = {
     },
     get_weekly_rivens: async (): Promise<WeeklyRiven[]> => {
       return await invoke("get_weekly_rivens") as WeeklyRiven[];
-    },
+    }
   },
   debug: {
     importWarframeAlgoTraderData: async (dbPath: string, type: string): Promise<any> => {
@@ -45,7 +45,7 @@ const api = {
   },
   items: {},
   transactions: {
-    async create_transaction_entry(input: CreateTransactionEntryDto): Promise<TransactionEntryDto> {
+    async create(input: CreateTransactionEntryDto): Promise<TransactionEntryDto> {
       return await invoke("create_transaction_entry", {
         id: input.item_id,
         itemType: input.item_type,
@@ -58,6 +58,18 @@ const api = {
         masteryRank: input.mastery_rank,
         reRolls: input.re_rolls,
         polarity: input.polarity
+      }) as TransactionEntryDto;
+    },
+    async delete(id: number): Promise<TransactionEntryDto> {
+      return await invoke("delete_transaction_entry", { id }) as TransactionEntryDto;
+    },
+    update: async (id: number, transaction: Partial<TransactionEntryDto>): Promise<any> => {
+      return await invoke("update_transaction_entry", {
+        id,
+        price: transaction.price,
+        transaction_type: transaction.transaction_type,
+        quantity: transaction.quantity,
+        rank: transaction.rank
       }) as TransactionEntryDto;
     }
   },
@@ -87,6 +99,7 @@ const api = {
           report: input.report || true,
           quantity: input.quantity,
           price: input.price,
+          minium_price: input.minium_price,
           rank: input.rank,
           subType: input.sub_type
         }) as StockItemDto;
@@ -96,6 +109,10 @@ const api = {
       },
       sell: async (id: number, report: boolean, price: number, quantity: number): Promise<StockItemDto> => {
         return await invoke("sell_item_stock", { id, report, price, quantity }) as StockItemDto;
+      },
+      update: async (id: number, item: Partial<StockItemDto>): Promise<StockItemDto> => {
+        console.error("Not implemented");
+        return await invoke("update_item_stock", { id, minium_price: item.minium_price }) as StockItemDto;
       }
     },
     riven: {
@@ -103,9 +120,11 @@ const api = {
         return await invoke("create_riven_stock", {
           id: input.item_id,
           price: input.price,
+          minium_price: input.minium_price,
           rank: input.rank,
           attributes: input.attributes,
           masteryRank: input.mastery_rank,
+          matchRiven: input.match_riven,
           reRolls: input.re_rolls,
           polarity: input.polarity,
           modName: input.mod_name,
@@ -114,15 +133,36 @@ const api = {
       delete: async (id: number): Promise<StockRivenDto> => {
         return await invoke("delete_riven_stock", { id }) as StockRivenDto;
       },
-      sell: async (id: number, report: boolean, price: number, quantity: number): Promise<StockRivenDto> => {
-        return await invoke("sell_riven_stock", { id, report, price, quantity }) as StockRivenDto;
+      sell: async (id: number, price: number): Promise<StockRivenDto> => {
+        return await invoke("sell_riven_stock", { id, price }) as StockRivenDto;
       },
       import_auction: async (id: string, price: number): Promise<StockRivenDto> => {
         return await invoke("import_auction", { id, price }) as StockRivenDto;
+      },
+      update: async (id: number, riven: Partial<StockRivenDto>): Promise<StockRivenDto> => {
+        console.log(riven);
+        if (riven.minium_price && riven.minium_price <= 0)
+          riven.minium_price = -1;
+        return await invoke("update_riven_stock", { id, attributes: riven.attributes, matchRiven: riven.match_riven, miniumPrice: riven.minium_price }) as StockRivenDto;
       }
     }
   },
   auction: {
+    search: async (query: Wfm.AuctionSearchQueryDto): Promise<Wfm.Auction<Wfm.AuctionOwner>[]> => {
+      return await invoke("auction_search", {
+        ...query,
+        auctionType: query.auction_type,
+        weaponUrlName: query.weapon_url_name,
+        positiveStats: query.positive_stats,
+        negativeStats: query.negative_stats,
+        masteryRankMin: query.mastery_rank_min,
+        masteryRankMax: query.mastery_rank_max,
+        reRollsMin: query.re_rolls_min,
+        reRollsMax: query.re_rolls_max,
+        buyoutPolicy: query.buyout_policy,
+        sortBy: query.sort_by,
+      }) as Wfm.Auction<Wfm.AuctionOwner>[];
+    },
     refresh: async () => {
       await invoke("refresh_auctions");
     },

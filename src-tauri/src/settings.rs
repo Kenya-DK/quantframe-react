@@ -15,6 +15,14 @@ pub struct SettingsState {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct LiveScraperSettings {
+    pub webhook: String,
+    // Stock Item Settings
+    pub stock_item: StockItemSettings,
+    // Stock Riven Settings
+    pub stock_riven: StockRivenSettings,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct StockItemSettings {
     pub volume_threshold: i64,
     pub range_threshold: i64,
     pub avg_price_cap: i64,
@@ -23,7 +31,10 @@ pub struct LiveScraperSettings {
     pub blacklist: Vec<String>,
     pub whitelist: Vec<String>,
     pub strict_whitelist: bool,
-    pub webhook: String,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct StockRivenSettings {
+    pub range_threshold: i64,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WhisperSettings {
@@ -35,15 +46,20 @@ impl Default for SettingsState {
     fn default() -> Self {
         Self {
             live_scraper: LiveScraperSettings {
-                volume_threshold: 15,
-                range_threshold: 10,
-                avg_price_cap: 600,
-                max_total_price_cap: 100000,
-                price_shift_threshold: -1,
-                blacklist: vec![],
-                whitelist: vec![],
-                strict_whitelist: false,
                 webhook: "".to_string(),
+                stock_item: StockItemSettings {
+                    volume_threshold: 15,
+                    range_threshold: 10,
+                    avg_price_cap: 600,
+                    max_total_price_cap: 100000,
+                    price_shift_threshold: -1,
+                    blacklist: vec![],
+                    whitelist: vec![],
+                    strict_whitelist: false,
+                },
+                stock_riven: StockRivenSettings {
+                    range_threshold: 25,
+                },
             },
             whisper_scraper: WhisperSettings {
                 ping_on_notif: false,
@@ -105,46 +121,73 @@ impl SettingsState {
 
         // Check for nested properties within 'live_scraper'
         if let Some(live_scraper) = json_value.get_mut("live_scraper") {
-            if live_scraper.get("volume_threshold").is_none() {
-                live_scraper["volume_threshold"] =
-                    Value::from(default_settings.live_scraper.volume_threshold);
-                is_valid = false;
-            }
-            if live_scraper.get("range_threshold").is_none() {
-                live_scraper["range_threshold"] =
-                    Value::from(default_settings.live_scraper.range_threshold);
-                is_valid = false;
-            }
-            if live_scraper.get("avg_price_cap").is_none() {
-                live_scraper["avg_price_cap"] =
-                    Value::from(default_settings.live_scraper.avg_price_cap);
-                is_valid = false;
-            }
-            if live_scraper.get("max_total_price_cap").is_none() {
-                live_scraper["max_total_price_cap"] =
-                    Value::from(default_settings.live_scraper.max_total_price_cap);
-                is_valid = false;
-            }
-            if live_scraper.get("price_shift_threshold").is_none() {
-                live_scraper["price_shift_threshold"] =
-                    Value::from(default_settings.live_scraper.price_shift_threshold);
-                is_valid = false;
-            }
-            if live_scraper.get("blacklist").is_none() {
-                live_scraper["blacklist"] = Value::from(default_settings.live_scraper.blacklist);
-                is_valid = false;
-            }
-            if live_scraper.get("whitelist").is_none() {
-                live_scraper["whitelist"] = Value::from(default_settings.live_scraper.whitelist);
-                is_valid = false;
-            }
-            if live_scraper.get("strict_whitelist").is_none() {
-                live_scraper["strict_whitelist"] =
-                    Value::from(default_settings.live_scraper.strict_whitelist);
-                is_valid = false;
-            }
+            
             if live_scraper.get("webhook").is_none() {
                 live_scraper["webhook"] = Value::from(default_settings.live_scraper.webhook);
+                is_valid = false;
+            }
+
+
+            // Check for nested properties within 'stock_item'
+            if let Some(stock_item) = live_scraper.get_mut("stock_item") {
+                if stock_item.get("volume_threshold").is_none() {
+                    stock_item["volume_threshold"] =
+                        Value::from(default_settings.live_scraper.stock_item.volume_threshold);
+                    is_valid = false;
+                }
+                if stock_item.get("range_threshold").is_none() {
+                    stock_item["range_threshold"] =
+                        Value::from(default_settings.live_scraper.stock_item.range_threshold);
+                    is_valid = false;
+                }
+                if stock_item.get("avg_price_cap").is_none() {
+                    stock_item["avg_price_cap"] =
+                        Value::from(default_settings.live_scraper.stock_item.avg_price_cap);
+                    is_valid = false;
+                }
+                if stock_item.get("max_total_price_cap").is_none() {
+                    stock_item["max_total_price_cap"] =
+                        Value::from(default_settings.live_scraper.stock_item.max_total_price_cap);
+                    is_valid = false;
+                }
+                if stock_item.get("price_shift_threshold").is_none() {
+                    stock_item["price_shift_threshold"] =
+                        Value::from(default_settings.live_scraper.stock_item.price_shift_threshold);
+                    is_valid = false;
+                }
+                if stock_item.get("blacklist").is_none() {
+                    stock_item["blacklist"] = Value::from(default_settings.live_scraper.stock_item.blacklist);
+                    is_valid = false;
+                }
+                if stock_item.get("whitelist").is_none() {
+                    stock_item["whitelist"] = Value::from(default_settings.live_scraper.stock_item.whitelist);
+                    is_valid = false;
+                }
+                if stock_item.get("strict_whitelist").is_none() {
+                    stock_item["strict_whitelist"] =
+                        Value::from(default_settings.live_scraper.stock_item.strict_whitelist);
+                    is_valid = false;
+                }
+            } else {
+                // If 'stock_item' itself doesn't exist, add it
+                live_scraper["stock_item"] = serde_json::to_value(default_settings.live_scraper.stock_item)
+                    .map_err(|e| AppError::new("Settings", eyre!(e.to_string())))?;
+                logger::info_con("Settings", "Added 'live_scraper stock_item' to settings.json");
+                is_valid = false;
+            }
+
+            // Check for nested properties within 'stock_riven'
+            if let Some(stock_riven) = live_scraper.get_mut("stock_riven") {
+                if stock_riven.get("range_threshold").is_none() {
+                    stock_riven["range_threshold"] =
+                        Value::from(default_settings.live_scraper.stock_riven.range_threshold);
+                    is_valid = false;
+                }
+            } else {
+                // If 'stock_riven' itself doesn't exist, add it
+                live_scraper["stock_riven"] = serde_json::to_value(default_settings.live_scraper.stock_riven)
+                    .map_err(|e| AppError::new("Settings", eyre!(e.to_string())))?;
+                logger::info_con("Settings", "Added 'live_scraper stock_riven' to settings.json");
                 is_valid = false;
             }
         } else {

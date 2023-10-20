@@ -14,50 +14,44 @@ interface LiveScraperProps {
 export function LiveScraperPanel({ settings, updateSettings, tradable_items }: LiveScraperProps) {
   const roleForm = useForm({
     initialValues: {
-      volume_threshold: 200,
-      range_threshold: 200,
-      avg_price_cap: 200,
-      price_shift_threshold: 200,
-      max_total_price_cap: 200,
-      blacklist: "",
-      whitelist: "",
-      strict_whitelist: true,
-      ping_on_notif: true,
-      webhook: ""
+      live_trading: {
+        webhook: "",
+        stock_item: {
+          volume_threshold: 200,
+          range_threshold: 200,
+          avg_price_cap: 200,
+          price_shift_threshold: 200,
+          max_total_price_cap: 200,
+          blacklist: "",
+          whitelist: "",
+          strict_whitelist: true,
+        },
+        stock_riven: {
+          range_threshold: 25,
+        },
+      },
     },
     validate: {},
   });
 
   useEffect(() => {
     if (!settings) return;
-    roleForm.setFieldValue("volume_threshold", settings.volume_threshold);
-    roleForm.setFieldValue("range_threshold", settings.range_threshold);
-    roleForm.setFieldValue("max_total_price_cap", settings.max_total_price_cap);
-    roleForm.setFieldValue("avg_price_cap", settings.avg_price_cap);
-    roleForm.setFieldValue("price_shift_threshold", settings.price_shift_threshold);
-    roleForm.setFieldValue("strict_whitelist", settings.strict_whitelist);
-    roleForm.setFieldValue("webhook", settings.webhook);
-    roleForm.setFieldValue("blacklist", settings.blacklist.join(","));
-    roleForm.setFieldValue("whitelist", settings.whitelist.join(","));
+    // Set Settings from live Scraper
+    roleForm.setFieldValue("live_trading", { ...settings, stock_item: { ...settings.stock_item, blacklist: settings.stock_item.blacklist.join(","), whitelist: settings.stock_item.whitelist.join(",") } });
   }, [settings]);
 
   const useTranslateSettingsModal = (key: string, context?: { [key: string]: any }) => useTranslateModal(`settings.panels.live_trading.${key}`, { ...context })
   return (
     <form method="post" onSubmit={roleForm.onSubmit(async (data) => {
-      const settingsData = {
-        volume_threshold: data.volume_threshold,
-        range_threshold: data.range_threshold,
-        avg_price_cap: data.avg_price_cap,
-        price_shift_threshold: data.price_shift_threshold,
-        max_total_price_cap: data.max_total_price_cap,
-        blacklist: data.blacklist.split(","),
-        whitelist: data.whitelist.split(","),
-        strict_whitelist: data.strict_whitelist,
-        ping_on_notif: data.ping_on_notif,
-        webhook: data.webhook
-      }
-
-      updateSettings(settingsData)
+      console.log(data);
+      updateSettings({
+        ...data.live_trading,
+        stock_item: {
+          ...data.live_trading.stock_item,
+          blacklist: data.live_trading.stock_item.blacklist.split(","),
+          whitelist: data.live_trading.stock_item.whitelist.split(","),
+        },
+      })
     })}>
       <Group grow>
         <Group grow>
@@ -70,33 +64,33 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
                     <NumberInput
                       required
                       label={useTranslateSettingsModal('volume_threshold')}
-                      value={roleForm.values.volume_threshold}
+                      value={roleForm.values.live_trading.stock_item.volume_threshold}
                       description={useTranslateSettingsModal('volume_threshold_description')}
-                      onChange={(value) => roleForm.setFieldValue('volume_threshold', Number(value))}
+                      onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.volume_threshold', Number(value))}
                       error={roleForm.errors.volume_threshold && 'Invalid Volume Threshold'}
                     />
                     <NumberInput
                       required
                       label={useTranslateSettingsModal('range_threshold')}
-                      value={roleForm.values.range_threshold}
+                      value={roleForm.values.live_trading.stock_item.range_threshold}
                       description={useTranslateSettingsModal('range_threshold_description')}
-                      onChange={(value) => roleForm.setFieldValue('range_threshold', Number(value))}
+                      onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.range_threshold', Number(value))}
                       error={roleForm.errors.range_threshold && 'Invalid Range Threshold'}
                     />
                     <NumberInput
                       required
                       label={useTranslateSettingsModal('max_total_price_cap')}
-                      value={roleForm.values.max_total_price_cap}
+                      value={roleForm.values.live_trading.stock_item.max_total_price_cap}
                       description={useTranslateSettingsModal('max_total_price_cap_description')}
-                      onChange={(value) => roleForm.setFieldValue('max_total_price_cap', Number(value))}
+                      onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.max_total_price_cap', Number(value))}
                       error={roleForm.errors.max_total_price_cap && 'Invalid Range Threshold'}
                     />
                     <NumberInput
                       required
                       label={useTranslateSettingsModal('avg_price_cap')}
-                      value={roleForm.values.avg_price_cap}
+                      value={roleForm.values.live_trading.stock_item.avg_price_cap}
                       description={useTranslateSettingsModal('avg_price_cap_description')}
-                      onChange={(value) => roleForm.setFieldValue('avg_price_cap', Number(value))}
+                      onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.avg_price_cap', Number(value))}
                       error={roleForm.errors.avg_price_cap && 'Invalid Avg Price Cap'}
                     />
                   </Group>
@@ -107,23 +101,35 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
                     <NumberInput
                       required
                       label={useTranslateSettingsModal('price_shift_threshold')}
-                      value={roleForm.values.price_shift_threshold}
+                      value={roleForm.values.live_trading.stock_item.price_shift_threshold}
                       description={useTranslateSettingsModal('price_shift_threshold_description')}
-                      onChange={(value) => roleForm.setFieldValue('price_shift_threshold', Number(value))}
+                      onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.price_shift_threshold', Number(value))}
                       error={roleForm.errors.price_shift_threshold && 'Invalid Price Shift Threshold'}
                     />
                     <TextInput
                       label={useTranslateSettingsModal('webhook')}
-                      value={roleForm.values.webhook}
+                      value={roleForm.values.live_trading.webhook}
                       description={useTranslateSettingsModal('webhook_description')}
-                      onChange={(event) => roleForm.setFieldValue('webhook', event.currentTarget.value)}
+                      onChange={(event) => roleForm.setFieldValue('live_trading.webhook', event.currentTarget.value)}
                       error={roleForm.errors.webhook && 'Invalid Webhook'}
                     />
                     <Checkbox
                       label={useTranslateSettingsModal('strict_whitelist')}
                       description={useTranslateSettingsModal('strict_whitelist_description')}
-                      checked={roleForm.values.strict_whitelist}
-                      onChange={(event) => roleForm.setFieldValue('strict_whitelist', event.currentTarget.checked)}
+                      checked={roleForm.values.live_trading.stock_item.strict_whitelist}
+                      onChange={(event) => roleForm.setFieldValue('live_trading.stock_item.strict_whitelist', event.currentTarget.checked)}
+                    />
+                  </Group>
+                </Group>
+                <Group grow mt={10}>
+                  <Group grow>
+                    <NumberInput
+                      required
+                      label={useTranslateSettingsModal('riven_range_threshold')}
+                      value={roleForm.values.live_trading.stock_riven.range_threshold}
+                      description={useTranslateSettingsModal('riven_range_threshold_description')}
+                      onChange={(value) => roleForm.setFieldValue('live_trading.stock_riven.range_threshold', Number(value))}
+                      error={roleForm.errors.price_shift_threshold && 'Invalid Price Shift Threshold'}
                     />
                   </Group>
                 </Group>
@@ -135,8 +141,8 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
                 {useTranslateSettingsModal('whitelist_description')}
                 <MultiSelectListBox
                   availableItems={tradable_items.map((warframe) => ({ ...warframe, label: warframe.item_name, value: warframe.url_name }))}
-                  selectedItems={roleForm.values.whitelist.split(",")}
-                  onChange={(value) => roleForm.setFieldValue('whitelist', value.join(","))}
+                  selectedItems={roleForm.values.live_trading.stock_item.whitelist.split(",")}
+                  onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.whitelist', value.join(","))}
                 /></Accordion.Panel>
             </Accordion.Item>
             <Accordion.Item value="accordion_blacklist">
@@ -145,8 +151,8 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
                 {useTranslateSettingsModal('blacklist_description')}
                 <MultiSelectListBox
                   availableItems={tradable_items.map((warframe) => ({ ...warframe, label: warframe.item_name, value: warframe.url_name }))}
-                  selectedItems={roleForm.values.blacklist.split(",")}
-                  onChange={(value) => roleForm.setFieldValue('blacklist', value.join(","))}
+                  selectedItems={roleForm.values.live_trading.stock_item.blacklist.split(",")}
+                  onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.blacklist', value.join(","))}
                 /></Accordion.Panel>
             </Accordion.Item>
           </Accordion>

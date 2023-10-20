@@ -1,3 +1,6 @@
+import { createStyles } from "@mantine/core";
+import { Wfm } from "../types";
+
 /**
 * Groups an array of objects by date, using the specified key and date format settings.
 * The function returns an object whose keys are formatted dates and whose values are arrays of objects that have the same date.
@@ -48,3 +51,62 @@ export const paginate = <T>(items: Array<T>, page: number, take: number) => {
 export const padTo2Digits = (num: number) => {
   return num.toString().padStart(2, '0');
 }
+
+/**
+ * Returns the CSS class for the given order status, which can be used to style the order status in the UI.
+ * @param status - The order status to get the CSS class for.
+ * @returns The CSS class for the given order status.
+ */
+const useStyles = createStyles((theme) => {
+  const boxShadow = `inset 4px 0 0 0`;
+
+  return {
+    default: {
+      ['td:first-of-type']: {
+        boxShadow: `${boxShadow} ${theme.colors.gray[2]};`,
+      },
+    },
+    tolowprofile: {
+      ['td:first-of-type']: {
+        boxShadow: `${boxShadow} ${theme.colors.orange[7]};`,
+      },
+    },
+    pending: {
+      ['td:first-of-type']: {
+        boxShadow: `${boxShadow} ${theme.colors.violet[7]};`,
+      },
+    },
+    live: {
+      ['td:first-of-type']: {
+        boxShadow: `${boxShadow} ${theme.colors.green[7]};`,
+      },
+    },
+    inactive: {
+      ['td:first-of-type']: {
+        boxShadow: `${boxShadow} ${theme.colors.red[7]};`,
+      },
+    },
+    no_offers: {
+      ['td:first-of-type']: {
+        boxShadow: `${boxShadow} ${theme.colors.pink[7]};`,
+      },
+    },
+  }
+});
+export const getOrderStatusColor = (status: string) => {
+  const { classes } = useStyles();
+  switch (status) {
+    case Wfm.OrderStatus.Inactive:
+      return classes.inactive;
+    case Wfm.OrderStatus.Live:
+      return classes.live;
+    case Wfm.OrderStatus.Pending:
+      return classes.pending;
+    case Wfm.OrderStatus.ToLowProfile:
+      return classes.tolowprofile;
+    case Wfm.OrderStatus.NoOffers:
+      return classes.no_offers;
+    default:
+      return classes.default;
+  }
+};

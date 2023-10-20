@@ -15,27 +15,23 @@ interface LiveScraperProps {
 export function WhisperScraperPanel({ settings, updateSettings }: LiveScraperProps) {
   const roleForm = useForm({
     initialValues: {
-      ping_on_notif: true,
-      webhook: ""
+      whisper_scraper: {
+        ping_on_notif: true,
+        webhook: ""
+      },
     },
     validate: {},
   });
 
   useEffect(() => {
     if (!settings) return;
-    roleForm.setFieldValue("webhook", settings.webhook);
-    roleForm.setFieldValue("ping_on_notif", settings.ping_on_notif);
+    roleForm.setFieldValue("whisper_scraper", settings);
   }, [settings]);
 
   const useTranslateSettingsModal = (key: string, context?: { [key: string]: any }) => useTranslateModal(`settings.panels.live_trading.${key}`, { ...context })
   return (
     <form method="post" onSubmit={roleForm.onSubmit(async (data) => {
-      const settingsData = {
-        ping_on_notif: data.ping_on_notif,
-        webhook: data.webhook
-      }
-
-      updateSettings(settingsData)
+      updateSettings(data.whisper_scraper)
     })}>
       <Group grow>
         <Group grow>
@@ -47,19 +43,19 @@ export function WhisperScraperPanel({ settings, updateSettings }: LiveScraperPro
                   <Group grow>
                     <TextInput
                       label={useTranslateSettingsModal('webhook')}
-                      value={roleForm.values.webhook}
+                      value={roleForm.values.whisper_scraper.webhook}
                       description={useTranslateSettingsModal('webhook_description')}
-                      onChange={(event) => roleForm.setFieldValue('webhook', event.currentTarget.value)}
+                      onChange={(event) => roleForm.setFieldValue('whisper_scraper.webhook', event.currentTarget.value)}
                       error={roleForm.errors.webhook && 'Invalid Webhook'}
                       rightSectionWidth={45}
                       rightSection={
                         <Group spacing={"5px"} mr={0}>
                           <Divider orientation="vertical" />
                           <Tooltip label={useTranslateSettingsModal('ping_on_notif_description')}>
-                            <ActionIcon color={roleForm.values.ping_on_notif ? "green.7" : "gray.7"} variant="filled" onClick={async () => {
-                              roleForm.setFieldValue('ping_on_notif', !roleForm.values.ping_on_notif)
+                            <ActionIcon color={roleForm.values.whisper_scraper.ping_on_notif ? "green.7" : "gray.7"} variant="filled" onClick={async () => {
+                              roleForm.setFieldValue('whisper_scraper.ping_on_notif', !roleForm.values.whisper_scraper.ping_on_notif)
                             }} >
-                              <FontAwesomeIcon icon={roleForm.values.ping_on_notif ? faBell : faBellSlash} />
+                              <FontAwesomeIcon icon={roleForm.values.whisper_scraper.ping_on_notif ? faBell : faBellSlash} />
                             </ActionIcon>
                           </Tooltip>
                         </Group>

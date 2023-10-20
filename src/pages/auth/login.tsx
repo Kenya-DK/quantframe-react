@@ -24,6 +24,8 @@ export default function LoginPage() {
         color: 'success',
         autoClose: 5000,
       });
+      api.auction.refresh();
+      api.orders.refresh();
       navigate('/')
     },
     onError: () => {

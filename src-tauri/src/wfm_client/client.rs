@@ -8,7 +8,7 @@ use polars::{
     prelude::{DataFrame, NamedFrom},
     series::Series,
 };
-use reqwest::{header::HeaderMap, Client, Method, Url};
+use reqwest::{header::HeaderMap, Client, Method, StatusCode, Url};
 use serde::de::DeserializeOwned;
 use serde_json::{json, Value};
 
@@ -44,6 +44,50 @@ impl WFMClient {
             auth,
         }
     }
+
+    fn create_error(
+        &self,
+        url: &str,
+        method: Method,
+        status: StatusCode,
+        raw_response: String,
+        body: Option<Value>,
+        error: Option<String>,
+    ) -> AppError {
+        let body = match body {
+            Some(mut content) => {
+                if content["password"].is_string() {
+                    content["password"] = json!("********");
+                }
+                if content["access_token"].is_string() {
+                    content["access_token"] = json!("********");
+                }
+                if content["email"].is_string() {
+                    content["email"] = json!("********");
+                }
+                content.clone()
+            }
+            None => json!({}),
+        };
+        let data = json!({
+            "response": raw_response,
+            "payload": body,
+        });
+
+        AppError::new_with_level(
+            "WarframeMarket",
+            eyre!(
+                "Error Message: {}, Url: {}, Method: {}, Status: {}, Raw Response: [J]{}[J]",
+                error.unwrap_or("NONE".to_string()),
+                url,
+                method,
+                status,
+                data
+            ),
+            LogLevel::Error,
+        )
+    }
+
     async fn send_request<T: DeserializeOwned>(
         &self,
         method: Method,
@@ -58,9 +102,8 @@ impl WFMClient {
 
         let client = Client::new();
         let new_url = format!("{}{}", self.endpoint, url);
-
         let request = client
-            .request(method, Url::parse(&new_url).unwrap())
+            .request(method.clone(), Url::parse(&new_url).unwrap())
             .header(
                 "Authorization",
                 format!("JWT {}", auth.access_token.unwrap_or("".to_string())),
@@ -76,35 +119,39 @@ impl WFMClient {
         let response = request.send().await;
 
         if let Err(e) = response {
-            return Err(AppError::new_with_level(
-                "WFMWFMClient",
-                eyre!("Error: {:?}, Url: {:?}", e.to_string(), new_url),
-                LogLevel::Error,
+            return Err(self.create_error(
+                &new_url,
+                method,
+                StatusCode::BAD_REQUEST,
+                "NO".to_string(),
+                body,
+                Some(e.to_string()),
             ));
         }
         let response_data = response.unwrap();
         let status = response_data.status();
+        let headers = response_data.headers().clone();
+        let content = response_data.text().await.unwrap_or_default();
 
         if status != 200 {
-            let rep = response_data.text().await.unwrap_or_default();
-            return Err(AppError::new_with_level(
-                "WFMWFMClient",
-                eyre!("Status: {:?}[J]{rep}[J], Url: {:?}", status, new_url),
-                LogLevel::Error,
+            return Err(self.create_error(
+                &new_url,
+                method,
+                status.clone(),
+                content.clone(),
+                body.clone(),
+                None,
             ));
         }
 
-        let headers = response_data.headers().clone();
-        let response = response_data.json::<Value>().await.map_err(|e| {
-            AppError::new_with_level(
-                "WFMWFMClient",
-                eyre!(
-                    "Error: {}, Url: {}, Status: {}",
-                    e.to_string(),
-                    new_url,
-                    status
-                ),
-                LogLevel::Error,
+        let response: Value = serde_json::from_str(content.as_str()).map_err(|e| {
+            self.create_error(
+                &new_url,
+                method.clone(),
+                status.clone(),
+                content.clone(),
+                body.clone(),
+                Some(e.to_string()),
             )
         })?;
 
@@ -116,9 +163,13 @@ impl WFMClient {
         // Convert the response to a T object
         match serde_json::from_value(data.clone()) {
             Ok(payload) => Ok((payload, headers)),
-            Err(e) => Err(AppError::new(
-                "WFMWFMClient",
-                eyre!("Error: {:?},[J]{}[J] Url: {:?}", e, data, new_url),
+            Err(e) => Err(self.create_error(
+                &new_url,
+                method,
+                status.clone(),
+                content,
+                body,
+                Some(e.to_string()),
             )),
         }
     }

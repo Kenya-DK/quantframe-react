@@ -19,12 +19,52 @@ export const en = {
         mastery_rank: "Mastery Rank",
         re_rolls: "Re-Rolls",
         polarity: "Polarity",
+        bought: "Bought",
         add_attribute: "Add Attribute",
+        save: "Save",
       }
     },
     transactionRevenueChart: {
       revenue_label: "Revenue: {{val, number}}",
       quantity_label: "Quantity: {{count}}",
+    },
+    availableRivens: {
+      weaponInfo: {
+        weekly_rivens: {
+          range: "Weekly Rivens Range <blue>{{start}}</blue> - <blue>{{end}}</blue>",
+        },
+        wfm: {
+          sellers: "Sellers: <blue>{{sellers}}</blue>",
+          username: "Username: <blue>{{username}}</blue>",
+          lowestPrice: "Lowest Price: <blue>{{price}}</blue>",
+        },
+        title: "Weapon Info",
+        weapon_name: "Weapon Name",
+        mastery_rank: "Mastery Rank",
+        riven_type: "Riven Type",
+        group: "Group",
+      },
+      datagrid: {
+        columns: {
+          name: "Name",
+          riven_type: "Riven Type",
+          mastery_level: "Max Mastery Level",
+          group: "Group",
+          actions: {
+            title: "Actions",
+            add: "Add",
+          },
+        }
+      }
+    },
+    searchfield: {
+      title: "Search",
+      placeholder: "Search...",
+      buttons: {
+        search: "Search",
+        filter: "Filter",
+        create: "Create",
+      }
     },
     searchItemField: {
       title: "Search item",
@@ -108,6 +148,8 @@ export const en = {
             max_total_price_cap_description: "Total Plat it will put up WTB for",
             range_threshold: "Range Threshold",
             range_threshold_description: "Volume of plat profit per item flip the bot will look to buy/resell",
+            riven_range_threshold: "Riven Range Threshold",
+            riven_range_threshold_description: "Volume of plat profit per item flip the bot will look to buy/resell",
             avg_price_cap: "Average Price Cap",
             avg_price_cap_description: "Average price of the items it wants to buy",
             price_shift_threshold: "Price Shift Threshold",
@@ -133,10 +175,16 @@ export const en = {
       },
     },
     auction: {
-      mastery_rank: "MR: <italic>{{mastery_rank}}</italic>",
-      rank: "Ranks: <italic>{{rank}}</italic>",
-      re_rolls: "Re-rolls: <italic>{{re_rolls}}</italic>",
-      polarity: "Polarity: <italic>{{polarity}}</italic>",
+      import_tooltip: "Import auctions from warframe.market",
+      mastery_rank: "MR: <blue>{{mastery_rank}}</blue>",
+      rank: "Ranks: <blue>{{rank}}</blue>",
+      re_rolls: "Re-rolls: <blue>{{re_rolls}}</blue>",
+      polarity: "Polarity: <blue>{{polarity}}</blue>",
+      bought: "Bought for: <blue>{{bought}}</blue>",
+      selling_price: "Selling price: <blue>{{price}}</blue>",
+      buyout_price: "Buyout Price: <blue>{{price}}</blue>",
+      starting_price: "Starting Price: <blue>{{price}}</blue>",
+      top_bid: "Top bid: <blue>{{price}}</blue>",
     }
   },
   context: {
@@ -216,6 +264,38 @@ export const en = {
       }
     },
     warframe_market: {
+      tabs: {
+        auctions: {
+          title: "Contracts",
+          notifaications: {
+            import_title: "Import",
+            import_message: "Imported {{name}} auctions",
+            refresh_title: "Refresh",
+            refresh_message: "Contracts refreshed",
+          },
+          buttons: {
+            refresh: "Refresh Contracts",
+          },
+          prompt: {
+            import: {
+              title: "Import",
+              label: "Import",
+              description: "Import auctions from warframe.market",
+              placeholder: "Import",
+            },
+          },
+        },
+        orders: {
+          title: "Orders",
+          notifaications: {
+            refresh_title: "Refresh",
+            refresh_message: "Orders refreshed",
+          },
+          buttons: {
+            refresh: "Refresh Orders",
+          },
+        },
+      },
       rank_label: "Rank: {{rank}} of {{max_rank}}",
       plat_label: "Plat: <plat_html>{{plat}}</plat_html>",
       buy_label: "WTB",
@@ -238,16 +318,115 @@ export const en = {
         submit: "Login",
       },
     },
-    auctions: {
-      prompt: {
-        price: {
-          title: "Price",
-          label: "Price",
-          description: "The price you bought the item for",
-          placeholder: "Price",
+    live_trading: {
+      tabs: {
+        riven: {
+          title: "Stock Rivens",
+          infos: {
+            pending_description: "Pending",
+            live_description: "Live on market",
+            to_low_profit_description: "Profit was too low to sell",
+            no_offers_description: "No offers on market",
+            inactive_description: "Is Private",
+          },
+          notifaications: {
+            copy_wts: {
+              title: "Copy WTS",
+              message: "{{msg}} copied to clipboard",
+            },
+            sell_title: "Sell",
+            sell_message: "Riven {{name}} sold successfully for {{price}}",
+            update_title: "Update",
+            update_message: "Riven {{name}} updated successfully",
+            delete_title: "Delete",
+            delete_message: "Riven {{name}} deleted successfully",
+            create_title: "Create",
+            create_message: "Riven {{name}} created successfully",
+          },
+          buttons: {
+            create: "Add Riven",
+            create_wtb_message: "Create WTB Message",
+          },
+          datagrid: {
+            context_menu: {
+              copy_wts: "Create WTS Message",
+            },
+            columns: {
+              name: "Name",
+              mastery_rank: "MR",
+              rank: "Rank",
+              re_rolls: {
+                title: "Re-Rolls",
+                match: "Match Rivens with min {{min}} and max {{max}} re-rolls",
+                any: "Match Rivens with any re-rolls",
+                prompt: {
+                  title: "Match Rivens with re-rolls",
+                  enabled_label: "Should the re-rolls be used in the search",
+                  enabled_description: "Should the re-rolls be used in the search",
+                  min_label: "Minimun",
+                  min_description: "Minimun Re-Rolls",
+                  min_placeholder: "0",
+                  max_label: "Maximun",
+                  max_description: "Maximun Re-Rolls",
+                  max_placeholder: "0",
+                }
+              },
+              minium_price: {
+                title: "Min Price",
+                description: "Minium price to sell the riven for",
+                prompt: {
+                  title: "Minium price",
+                  minium_price_label: "Minium price",
+                }
+              },
+              price: "Price",
+              listed_price: "Listed Price",
+              attributes: "Attributes",
+              actions: {
+                title: "Actions",
+                sell: "Sell",
+                delete: {
+                  title: "Delete",
+                  message: "Are you sure you want to delete this riven?",
+                  buttons: {
+                    confirm: "Delete",
+                    cancel: "Cancel",
+                  }
+                }
+              },
+            }
+          }
+        },
+        item: {
+          title: "Stock Items",
         },
       },
     },
+    wtbMessage: {
+      copy_to_clipboard: "Copy to clipboard",
+      prompt: {
+        sell_price: {
+          title: "Sell Price",
+          label: "Sell Price",
+          description: "The price you want to sell the riven for",
+          placeholder: "Sell Price",
+        },
+      },
+      datagrid: {
+        columns: {
+          name: "Name",
+          bought_price: "Bought Price",
+          riven_type: "Riven Type",
+          mastery_level: "Max Mastery Level",
+          group: "Group",
+          actions: {
+            title: "Actions",
+            edit: "Edit",
+            delete: "Delete",
+          },
+        }
+      }
+    }
   },
   success: {
     auth: {

@@ -14,6 +14,9 @@ import AuthenticatedGate from '../components/AuthenticatedGate'
 
 // Live Trading routes
 import PLiveTrading from '../pages/liveTrading'
+import PWTBMessage from '../pages/liveTrading/tabs/rivens/wtbMessage';
+
+
 
 // Statistics routes
 import PStatistics from '../pages/statistics'
@@ -21,8 +24,6 @@ import PStatistics from '../pages/statistics'
 // Warframe Market routes
 import PWarframeMarket from '../pages/warframeMarket'
 
-// Rivens routes
-import PAuction from '../pages/auctions'
 
 // Debug routes
 import PDebug from '../pages/debug'
@@ -38,10 +39,12 @@ export default function AppRoutes() {
         <Route path="/" element={<MainLayout />}>
           <Route element={<AuthenticatedGate goTo="/auth/login" />} >
             <Route index element={<PHome />} />
-            <Route path="live-trading" element={<PLiveTrading />} />
+            <Route path="live-trading" >
+              <Route index element={<PLiveTrading />} />
+              <Route path="riven_wtb_message" element={<PWTBMessage />} />
+            </Route>
             <Route path="statistics" element={<PStatistics />} />
             <Route path="warframe-market" element={<PWarframeMarket />} />
-            <Route path="auctions" element={<PAuction />} />
             <Route path="debug" element={<PDebug />} />
           </Route>
         </Route>

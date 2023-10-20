@@ -41,7 +41,6 @@ export const ButtonProgress = ({ label, progressLabel, current, max, onStart }: 
       loading={progress > 0}
       fullWidth
       className={classes.button}
-      // onClick={() => (loaded ? setLoaded(false) : !interval.active && interval.start())}
       onClick={() => {
         // Progress is running
         onStart && onStart();

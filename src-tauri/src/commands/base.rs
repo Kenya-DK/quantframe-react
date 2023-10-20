@@ -31,7 +31,6 @@ pub async fn init(
     let wfm = wfm.lock()?.clone();
     let cache = cache.lock()?.clone();
     let price_scraper = price_scraper.lock()?.clone();
-    // println!("items: {:?}", items.len());
 
     let mut response = json!({
         "settings": &settings.clone(),
@@ -58,7 +57,7 @@ pub async fn init(
     cache.refresh().await?;
     response["items"] = json!(cache.items().get_types()?);
     response["riven_items"] = json!(cache.riven().get_types()?);
-    response["riven_attributes"] = json!( cache.riven().get_attributes()?);
+    response["riven_attributes"] = json!(cache.riven().get_attributes()?);
 
     helper::send_message_to_window(
         "set_initializstatus",
@@ -107,15 +106,21 @@ pub async fn update_settings(
     let arced_mutex = Arc::clone(&settings_state);
     let mut my_lock = arced_mutex.lock()?;
     // Set Live Scraper Settings
-    my_lock.live_scraper.volume_threshold = settings.live_scraper.volume_threshold;
-    my_lock.live_scraper.range_threshold = settings.live_scraper.range_threshold;
-    my_lock.live_scraper.avg_price_cap = settings.live_scraper.avg_price_cap;
-    my_lock.live_scraper.max_total_price_cap = settings.live_scraper.max_total_price_cap;
-    my_lock.live_scraper.price_shift_threshold = settings.live_scraper.price_shift_threshold;
-    my_lock.live_scraper.blacklist = settings.live_scraper.blacklist;
-    my_lock.live_scraper.whitelist = settings.live_scraper.whitelist;
-    my_lock.live_scraper.strict_whitelist = settings.live_scraper.strict_whitelist;
     my_lock.live_scraper.webhook = settings.live_scraper.webhook;
+
+    // Stock Item
+    my_lock.live_scraper.stock_item.volume_threshold = settings.live_scraper.stock_item.volume_threshold;
+    my_lock.live_scraper.stock_item.range_threshold = settings.live_scraper.stock_item.range_threshold;
+    my_lock.live_scraper.stock_item.avg_price_cap = settings.live_scraper.stock_item.avg_price_cap;
+    my_lock.live_scraper.stock_item.max_total_price_cap = settings.live_scraper.stock_item.max_total_price_cap;
+    my_lock.live_scraper.stock_item.price_shift_threshold = settings.live_scraper.stock_item.price_shift_threshold;
+    my_lock.live_scraper.stock_item.blacklist = settings.live_scraper.stock_item.blacklist;
+    my_lock.live_scraper.stock_item.whitelist = settings.live_scraper.stock_item.whitelist;
+    my_lock.live_scraper.stock_item.strict_whitelist = settings.live_scraper.stock_item.strict_whitelist;
+
+    // Stock Riven
+    my_lock.live_scraper.stock_riven.range_threshold = settings.live_scraper.stock_riven.range_threshold;
+
     // Set Whisper Scraper Settings
     my_lock.whisper_scraper.ping_on_notif = settings.whisper_scraper.ping_on_notif;
     my_lock.whisper_scraper.webhook = settings.whisper_scraper.webhook;

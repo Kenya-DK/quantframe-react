@@ -80,7 +80,7 @@ const getRevenue = (transactions: TransactionEntryDto[]): StatisticTransactionRe
 };
 
 const getRevenueWithChart = (labels: string[], transactions: TransactionEntryDto[], settings: { year?: boolean, month?: boolean, day?: boolean, hours?: boolean }): StatisticTransactionRevenueWithChart => {
-  const groups = getGroupByDate<TransactionEntryDto>("datetime", transactions, settings);
+  const groups = getGroupByDate<TransactionEntryDto>("created", transactions, settings);
   const quantity_chart = labels.map((label: string) => groups[`${label}`] ? groups[`${label}`].length : 0);
   const revenue_chart = labels.map((label: string) => groups[`${label}`] ? groups[`${label}`].reduce((previousValue, currentValue) => previousValue + currentValue.price, 0) : 0);
 
