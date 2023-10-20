@@ -3,6 +3,7 @@ use std::sync::{Arc, Mutex};
 use eyre::eyre;
 use reqwest::{Client, Method, Url};
 use serde_json::{json, Value};
+use tokio::process::Command;
 
 use crate::{
     auth::AuthState,
@@ -151,4 +152,12 @@ pub async fn get_weekly_rivens() -> Result<serde_json::Value, AppError> {
     }
     let response = response_data.json::<Value>().await.unwrap();
     Ok(response)
+}
+
+#[tauri::command]
+pub async fn open_logs_folder() {
+    Command::new("explorer")
+    .args(["/select,", &logger::get_log_forlder().to_str().unwrap()]) // The comma after select is not a typo
+    .spawn()
+    .unwrap();
 }

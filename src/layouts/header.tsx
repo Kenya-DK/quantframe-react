@@ -1,7 +1,7 @@
 import { Avatar, Group, Header, Menu, createStyles, rem, Container, ActionIcon, useMantineTheme } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+import { faFolder, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateLayout } from "@hooks/index";
 import { SettingsModal } from "@components/modals/settings";
 import { DeepPartial, Settings, Wfm } from "$types/index";
@@ -100,6 +100,11 @@ export default function Hedder({ user }: TopMenuProps) {
                   })
                 }}>
                   {useTranslateHedder("profile.settings")}
+                </Menu.Item>
+                <Menu.Item icon={<FontAwesomeIcon icon={faFolder} />} onClick={async () => {
+                  await api.base.openLogsFolder();
+                }}>
+                  {useTranslateHedder("profile.open_logs_folder")}
                 </Menu.Item>
                 <Menu.Item icon={<FontAwesomeIcon icon={faRightFromBracket} />}>
                   {useTranslateHedder("profile.logout")}

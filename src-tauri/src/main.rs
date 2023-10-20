@@ -142,6 +142,7 @@ fn main() {
             commands::base::init,
             commands::base::update_settings,
             commands::base::get_weekly_rivens,
+            commands::base::open_logs_folder,
             commands::auth::login,
             commands::transaction::create_transaction_entry,
             commands::transaction::delete_transaction_entry,

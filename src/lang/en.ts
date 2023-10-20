@@ -215,6 +215,7 @@ export const en = {
       profile: {
         settings: "Settings",
         logout: "Log Out",
+        open_logs_folder: "Open Logs Folder",
       },
       notifications: {
         settings_updated: "Settings Updated",

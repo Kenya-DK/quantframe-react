@@ -9,7 +9,10 @@ const api = {
     },
     get_weekly_rivens: async (): Promise<WeeklyRiven[]> => {
       return await invoke("get_weekly_rivens") as WeeklyRiven[];
-    }
+    },
+    openLogsFolder: async (): Promise<any> => {
+      return await invoke("open_logs_folder")
+    },
   },
   debug: {
     importWarframeAlgoTraderData: async (dbPath: string, type: string): Promise<any> => {

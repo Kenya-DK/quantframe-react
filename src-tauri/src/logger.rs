@@ -100,7 +100,7 @@ pub fn dolog(level: LogLevel, component: &str, msg: &str, console: bool, file: O
     }
 }
 
-fn get_log_forlder() -> PathBuf {
+pub fn get_log_forlder() -> PathBuf {
     let app_path = helper::get_app_roaming_path();
     let log_path = app_path.join("logs");
     // Create the directory if it does not exist
