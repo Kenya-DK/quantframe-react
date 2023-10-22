@@ -5,7 +5,7 @@ import { useForm } from '@mantine/form';
 import { SearchItemField } from './searchItemField';
 import { DataTable } from 'mantine-datatable';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faHammer, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faEdit, faHammer, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import { modals } from '@mantine/modals';
 import { useEffect, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
@@ -13,7 +13,7 @@ import api from '@api/index';
 import { notifications } from '@mantine/notifications';
 import { Trans } from 'react-i18next';
 import { useStockContextContext } from '../contexts';
-import { CreateStockItemEntryDto, CreateTransactionEntryDto } from '../types';
+import { CreateStockItemEntryDto, CreateTransactionEntryDto, StockItemDto } from '../types';
 
 interface PurchaseNewItemProps {
   loading: boolean;
@@ -52,6 +52,8 @@ const PurchaseNewItem = (props: PurchaseNewItemProps) => {
         <Stack justify='center' spacing="md">
           <Group grow >
             <SearchItemField value={roleForm.values.item} onChange={(value) => {
+              console.log(value);
+
               roleForm.setFieldValue('item', value.url_name)
             }} />
             <NumberInput
@@ -156,6 +158,17 @@ const Items = () => {
 
     },
   })
+  const updateItemEntryMutation = useMutation((data: { id: number, riven: Partial<StockItemDto> }) => api.stock.item.update(data.id, data.riven), {
+    onSuccess: async (data) => {
+      notifications.show({
+        title: useTranslateInvSuccess("update_title"),
+        icon: <FontAwesomeIcon icon={faCheck} />,
+        message: useTranslateInvSuccess("update_message", { name: `${data.name} ${data.name}` }),
+        color: "green"
+      });
+    },
+    onError: () => { },
+  })
   return (
     <DataTable
       sx={{ marginTop: "20px" }}
@@ -168,12 +181,10 @@ const Items = () => {
         {
           accessor: 'name',
           title: useTranslateDataGridColumns('name'),
-          width: 120,
         },
         {
           accessor: 'price',
           title: useTranslateDataGridColumns('price'),
-          width: 100,
           footer: (
             <Group spacing="xs">
               <Text size="lg">
@@ -187,9 +198,45 @@ const Items = () => {
           ),
         },
         {
+          accessor: 'minium_price',
+          title: useTranslateDataGridColumns('minium_price.title'),
+          sortable: true,
+          render: ({ id, minium_price }) => <Group grow position="apart" >
+            <Text>{minium_price || "N/A"}</Text>
+            <Box w={25} display="flex" sx={{ justifyContent: "flex-end" }}>
+              <Tooltip label={useTranslateDataGridColumns('minium_price.description')}>
+                <ActionIcon size={"sm"} color={"blue.7"} variant="filled" onClick={async (e) => {
+                  e.stopPropagation();
+                  modals.openContextModal({
+                    modal: 'prompt',
+                    title: useTranslateDataGridColumns('minium_price.prompt.title'),
+                    innerProps: {
+                      fields: [
+                        {
+                          name: 'minium_price',
+                          label: useTranslateDataGridColumns('minium_price.prompt.minium_price_label'),
+                          value: minium_price || 0,
+                          type: 'number',
+                        },
+                      ],
+                      onConfirm: async (data: { minium_price: number }) => {
+                        if (!id) return;
+                        const { minium_price } = data;
+                        updateItemEntryMutation.mutateAsync({ id, riven: { minium_price: minium_price == 0 ? -1 : minium_price } })
+                      },
+                      onCancel: (id: string) => modals.close(id),
+                    },
+                  })
+                }} >
+                  <FontAwesomeIcon size="xs" icon={faEdit} />
+                </ActionIcon>
+              </Tooltip>
+            </Box>
+          </Group>
+        },
+        {
           accessor: 'listed_price',
           title: useTranslateDataGridColumns('listed_price'),
-          width: 100,
           footer: (
             <Group spacing="xs">
               <Text size="lg">
@@ -205,11 +252,10 @@ const Items = () => {
         {
           accessor: 'owned',
           title: useTranslateDataGridColumns('owned'),
-          width: 40,
         },
         {
           accessor: 'actions',
-          width: 150,
+          width: 275,
           title: useTranslateDataGridColumns('actions.title'),
           render: ({ id, url }) =>
             <Group grow position="center" >

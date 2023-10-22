@@ -38,6 +38,8 @@ export namespace Wfm {
     item_name: string,
     url_name: string,
     thumb: string,
+    mr_requirement: number,
+    trade_tax: number,
     // Get from warframe items npm package
     category: string,
     max_rank: number,

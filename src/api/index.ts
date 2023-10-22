@@ -102,7 +102,7 @@ const api = {
           report: input.report || true,
           quantity: input.quantity,
           price: input.price,
-          minium_price: input.minium_price,
+          miniumPrice: input.minium_price,
           rank: input.rank,
           subType: input.sub_type
         }) as StockItemDto;
@@ -114,8 +114,7 @@ const api = {
         return await invoke("sell_item_stock", { id, report, price, quantity }) as StockItemDto;
       },
       update: async (id: number, item: Partial<StockItemDto>): Promise<StockItemDto> => {
-        console.error("Not implemented");
-        return await invoke("update_item_stock", { id, minium_price: item.minium_price }) as StockItemDto;
+        return await invoke("update_item_stock", { id, miniumPrice: item.minium_price }) as StockItemDto;
       }
     },
     riven: {
@@ -123,7 +122,7 @@ const api = {
         return await invoke("create_riven_stock", {
           id: input.item_id,
           price: input.price,
-          minium_price: input.minium_price,
+          miniumPrice: input.minium_price,
           rank: input.rank,
           attributes: input.attributes,
           masteryRank: input.mastery_rank,

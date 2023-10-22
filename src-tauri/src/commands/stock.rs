@@ -62,6 +62,26 @@ pub async fn create_item_stock(
 }
 
 #[tauri::command]
+pub async fn update_item_stock(
+    id: i64,
+    minium_price: Option<i32>,
+    db: tauri::State<'_, Arc<Mutex<DBClient>>>,
+) -> Result<serde_json::Value, AppError> {
+    let db = db.lock()?.clone();
+    // Find Riven in Stock
+    let stock = db.stock_item().get_by_id(id).await?;
+    if stock.is_none() {
+        return Err(AppError::new("Command", eyre!("Item not found")));
+    }
+    
+    // Update Riven in Stock
+    let stock = db
+        .stock_item()
+        .update_by_id(id, None, None, minium_price, None)
+        .await?;
+    Ok(json!(stock.clone()))
+}
+#[tauri::command]
 pub async fn delete_item_stock(
     id: i64,
     db: tauri::State<'_, Arc<Mutex<DBClient>>>,
@@ -324,6 +344,7 @@ pub async fn delete_riven_stock(
     Ok(json!({}))
 }
 
+
 #[tauri::command]
 pub async fn update_riven_stock(
     id: i64,
@@ -338,8 +359,7 @@ pub async fn update_riven_stock(
     if stock.is_none() {
         return Err(AppError::new("Riven not found", eyre!("Riven not found")));
     }
-
-    println!("{:?}", minium_price);
+    
     // Update Riven in Stock
     let stock = db
         .stock_riven()

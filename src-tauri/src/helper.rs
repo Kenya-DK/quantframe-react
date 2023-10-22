@@ -397,3 +397,36 @@ pub async fn alter_table(connection: sqlx::Pool<sqlx::Sqlite>, alter_sql: &str) 
     }   
     Ok(false)
 }
+
+pub fn calculate_trade_tax(item_tags: Vec<String>, rank: Option<i64>) -> i64 {
+    // If tags contains "arcane_upgrade" then it is an arcane
+    if item_tags.contains(&"arcane_enhancement".to_string()) {
+        if item_tags.contains(&"common".to_string()) {
+            return 2000;            
+        } else if item_tags.contains(&"uncommon".to_string()) {
+            return 4000;                        
+        } else if item_tags.contains(&"rare".to_string()) {
+            return 8000;
+        } else if item_tags.contains(&"legendary".to_string()) {
+            let rank_tax= Vec::from([100000, 300000, 600000, 1000000, 1500000, 2100000]);
+            let rank = rank.unwrap_or(0);
+            if rank > 0 && rank < 7 {
+                return rank_tax[rank as usize];
+            } else {
+                return rank_tax[0];
+            }           
+        }
+    }
+    if item_tags.contains(&"mod".to_string()) {
+        if item_tags.contains(&"common".to_string()) {
+            return 2000;           
+        } else if item_tags.contains(&"uncommon".to_string()) {
+            return 4000;                        
+        } else if item_tags.contains(&"rare".to_string()) {
+            return 8000;
+        } else if item_tags.contains(&"legendary".to_string())||item_tags.contains(&"archon".to_string()) {
+            return 1000000;            
+        }
+    }
+    2000
+}

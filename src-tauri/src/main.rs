@@ -161,6 +161,7 @@ fn main() {
             // Stock commands
             commands::stock::create_item_stock,
             commands::stock::delete_item_stock,
+            commands::stock::update_item_stock,
             commands::stock::sell_item_stock,
             commands::stock::create_riven_stock,
             commands::stock::import_auction,
