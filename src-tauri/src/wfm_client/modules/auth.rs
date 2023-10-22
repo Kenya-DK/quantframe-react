@@ -1,7 +1,12 @@
 use reqwest::header::HeaderMap;
 use serde_json::json;
 
-use crate::{auth::AuthState, error::AppError, logger, wfm_client::client::WFMClient};
+use crate::{
+    auth::AuthState,
+    error::{self, AppError},
+    logger,
+    wfm_client::client::WFMClient,
+};
 pub struct AuthModule<'a> {
     pub client: &'a WFMClient,
 }
@@ -65,16 +70,13 @@ impl<'a> AuthModule<'a> {
                     .await?;
                 Ok(true)
             }
-            Err(_e) => {
+            Err(e) => {
+                let a = e.cause();
+
                 auth.access_token = None;
                 auth.id = "".to_string();
                 auth.save_to_file()?;
-                logger::info(
-                    "WarframeMarket",
-                    "Invalid API Key",
-                    true,
-                    Some(self.client.log_file.as_str()),
-                );
+                error::create_log_file("auth.log".to_string(), &e);
                 Ok(false)
             }
         }
