@@ -183,6 +183,7 @@ impl<'a> RivenModule<'a> {
             );
 
             // Check if profit is greater than the range threshold
+            let mut order_id: Option<String> = None;
             if profit > settings.stock_riven.range_threshold as f64 {
                 // If profit is greater than the range threshold
                 match auction {
@@ -203,7 +204,8 @@ impl<'a> RivenModule<'a> {
                     }
                     None => {
                         // Post auction on warframe.market
-                        wfm.auction()
+                        let new_aut = wfm
+                            .auction()
                             .create(
                                 "riven",
                                 "",
@@ -228,16 +230,20 @@ impl<'a> RivenModule<'a> {
                                 },
                             )
                             .await?;
+                        order_id = Some(new_aut.id);
                     }
                 }
                 // Update database status to live
-                if post_price != riven.listed_price.unwrap_or(0) as i64 || riven.status != "live" {
+                if post_price != riven.listed_price.unwrap_or(0) as i64
+                    || riven.status != "live"
+                    || order_id.is_some()
+                {
                     db.stock_riven()
                         .update_by_id(
                             riven.id,
+                            order_id,
                             None,
-                            None,
-                            Some(lowest_price as i32),
+                            Some(post_price as i32),
                             None,
                             None,
                             None,
