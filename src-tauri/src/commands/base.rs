@@ -55,7 +55,7 @@ pub async fn init(
         "set_initializstatus",
         Some(json!({"status": "Loading Cache..."})),
     );
-    cache.refresh().await?;
+    cache.load().await?;
     response["items"] = json!(cache.items().get_types()?);
     response["riven_items"] = json!(cache.riven().get_types()?);
     response["riven_attributes"] = json!(cache.riven().get_attributes()?);

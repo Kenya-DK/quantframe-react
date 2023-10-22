@@ -23,9 +23,17 @@ impl<'a> ItemModule<'a> {
         self.refresh_types().await?;
         Ok(())
     }
+
     pub async fn refresh_types(&self) -> Result<Vec<Item>, AppError> {
         let wfm = self.client.wfm.lock()?.clone();
         let wfm_items = wfm.items().get_all_items().await?;
+        let response2: Vec<Value> =
+            reqwest::get("https://github.com/WFCD/warframe-items/raw/master/data/json/All.json")
+                .await
+                .map_err(|e| AppError::new("CacheItems", eyre!(e.to_string())))?
+                .json()
+                .await
+                .map_err(|e| AppError::new("CacheItems", eyre!(e.to_string())))?;
         let response: HashMap<String, Value> =
             reqwest::get("https://relics.run/history/item_data/item_info.json")
                 .await
@@ -43,26 +51,43 @@ impl<'a> ItemModule<'a> {
                 let tags = self.get_string_arry_from_json(relic_data.unwrap(), "tags");
                 let subtypes = self.get_string_arry_from_json(relic_data.unwrap(), "subtypes");
                 let mod_max_rank = relic_data.unwrap().get("mod_max_rank").unwrap().as_i64();
+                let mut mr_requirement: Option<i64> = Some(0);
+                // Find the item response2 by name property
+                let item_details = response2
+                    .iter()
+                    .find(|&x| x["name"].as_str().unwrap() == item.item_name);
+
+                if item_details.is_some() {
+                    // Get Mastery Requirement
+                    let item_details = item_details.unwrap();
+                    if item_details["masteryReq"].is_i64() {
+                        mr_requirement = item_details["masteryReq"].as_i64();
+                    }
+                }
+
                 new.set_items = Some(set_items);
-                new.tags = Some(tags);
+                new.tags = Some(tags.clone());
                 new.subtypes = Some(subtypes);
                 new.mod_max_rank = mod_max_rank;
+                new.trade_tax = Some(helper::calculate_trade_tax(tags, mod_max_rank));
+                new.mr_requirement = mr_requirement;
                 items.push(new.clone());
             }
         }
 
-        let mut sitems = self.client.items.lock()?;
-        *sitems = items.clone();
+        let arced_mutex = Arc::clone(&self.client.cache_data);
+        let mut my_lock = arced_mutex.lock()?;
+        my_lock.item.items = items.clone();
         Ok(items)
     }
 
     pub fn get_types(&self) -> Result<Vec<Item>, AppError> {
-        let items = self.client.items.lock()?.clone();
+        let items = self.client.cache_data.lock()?.clone().item.items;
         Ok(items)
     }
-
+    
     pub fn find_type(&self, url_name: &str) -> Result<Option<Item>, AppError> {
-        let types = self.client.items.lock()?.clone();
+        let types = self.client.cache_data.lock()?.clone().item.items;
         let item_type = types.iter().find(|&x| x.url_name == url_name).cloned();
         if !item_type.is_some() {
             logger::warning_con(
@@ -74,9 +99,10 @@ impl<'a> ItemModule<'a> {
     }
 
     pub fn emit(&self) {
+        let types = self.client.cache_data.lock().unwrap().clone().item.items;
         helper::send_message_to_window(
             "Cache:Update:Items",
-            Some(serde_json::to_value(self.client.items.clone()).unwrap()),
+            Some(serde_json::to_value(types).unwrap()),
         );
     }
     fn get_string_arry_from_json(&self, json: &Value, key: &str) -> Vec<String> {
