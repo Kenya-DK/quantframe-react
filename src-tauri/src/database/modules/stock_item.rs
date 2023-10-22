@@ -112,8 +112,7 @@ impl<'a> StockItemModule<'a> {
             .await
             .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
 
-
-            let table = Table::alter()
+        let table = Table::alter()
             .table(StockItem::Table)
             .add_column(
                 ColumnDef::new(StockItem::MiniumPrice)
@@ -162,6 +161,11 @@ impl<'a> StockItemModule<'a> {
         let item = items.iter().find(|t| t.url == url_name);
         Ok(item.cloned())
     }
+    pub async fn get_by_id(&self, id: i64) -> Result<Option<StockItemStruct>, AppError> {
+        let stock = self.get_items().await?;
+        let stock_item = stock.iter().find(|t| t.id == id);
+        Ok(stock_item.cloned())
+    }
     pub async fn create(
         &self,
         url_name: &str,
@@ -193,7 +197,7 @@ impl<'a> StockItemModule<'a> {
                 let total_price = (t.price * t.owned as f64) + price as f64;
                 let weighted_price = total_price / total_owned as f64;
 
-                self.update_by_id(t.id, Some(total_owned), Some(weighted_price), None,None)
+                self.update_by_id(t.id, Some(total_owned), Some(weighted_price), None, None)
                     .await?;
                 let mut t = t.clone();
                 t.owned = total_owned;
@@ -293,6 +297,16 @@ impl<'a> StockItemModule<'a> {
             inventory.price = price.unwrap();
             values.push((StockItem::Price, price.into()));
         }
+        if minium_price.is_some() {
+            // If minium_price is -1, set it to None
+            let minium_price = if minium_price.unwrap() == -1 {
+                None
+            } else {
+                minium_price
+            };
+            inventory.minium_price = minium_price;
+            values.push((StockItem::MiniumPrice, minium_price.into()));
+        }
 
         if listed_price.is_some() && listed_price.unwrap() > -1 {
             inventory.listed_price = listed_price;
@@ -367,11 +381,7 @@ impl<'a> StockItemModule<'a> {
         Ok(stock_item.unwrap().clone())
     }
 
-    pub async fn sell_item(
-        &self,
-        id: i64,
-        mut quantity: i32,
-    ) -> Result<StockItemStruct, AppError> {
+    pub async fn sell_item(&self, id: i64, mut quantity: i32) -> Result<StockItemStruct, AppError> {
         let items = self.get_items().await?;
         let stock_item = items.iter().find(|t| t.id == id);
 
@@ -392,7 +402,7 @@ impl<'a> StockItemModule<'a> {
         if inventory.owned <= 0 {
             self.delete(id).await?;
         } else {
-            self.update_by_id(id, Some(inventory.owned.clone()), None, None,None)
+            self.update_by_id(id, Some(inventory.owned.clone()), None, None, None)
                 .await?;
         }
         Ok(inventory.clone())

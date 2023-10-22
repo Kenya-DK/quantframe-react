@@ -94,7 +94,7 @@ export default function Hedder({ user }: TopMenuProps) {
                 <Menu.Divider />
                 <Menu.Item icon={<FontAwesomeIcon icon={faGear} />} onClick={async () => {
                   modals.open({
-                    size: "auto",
+                    size: "100%",
                     withCloseButton: false,
                     children: <SettingsModal settings={settings} updateSettings={handleUpdateSettings} tradable_items={items} />,
                   })

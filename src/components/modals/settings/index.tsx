@@ -33,20 +33,20 @@ export function SettingsModal({ tradable_items, settings: settingsIn, updateSett
       </Tabs.List>
 
       <Tabs.Panel value="general" pt="xs">
-        <Box h={"75vh"} w={"75vw"} sx={{ position: "relative" }}>
+        <Box h={"75vh"} sx={{ position: "relative" }}>
           <GeneralPanel settings={settings} updateSettings={updateSettings} />
         </Box>
       </Tabs.Panel>
 
       <Tabs.Panel value="live_scraper" pt="xs">
-        <Box h={"75vh"} w={"75vw"} sx={{ position: "relative" }}>
+        <Box h={"75vh"} sx={{ position: "relative" }}>
           <LiveScraperPanel settings={settings?.live_scraper} updateSettings={(set) => {
             handleUpdateSettings({ live_scraper: set })
           }} tradable_items={tradable_items} />
         </Box>
       </Tabs.Panel>
       <Tabs.Panel value="whisper_scraper" pt="xs">
-        <Box h={"75vh"} w={"75vw"} sx={{ position: "relative" }}>
+        <Box h={"75vh"} sx={{ position: "relative" }}>
           <WhisperScraperPanel settings={settings?.whisper_scraper} updateSettings={(set) => {
             handleUpdateSettings({ whisper_scraper: set })
           }} tradable_items={tradable_items} />

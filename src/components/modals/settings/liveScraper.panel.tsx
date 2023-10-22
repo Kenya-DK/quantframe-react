@@ -2,8 +2,11 @@ import { useEffect } from "react";
 import { useForm } from "@mantine/form";
 import { Accordion, Button, Checkbox, Group, NumberInput, TextInput } from "@mantine/core";
 import { useTranslateModal } from "@hooks/index";
-import { LiveScraperSettings, Wfm } from "$types/index";
+import { ISearchKeyParameter, LiveScraperSettings, Wfm } from "$types/index";
 import { MultiSelectListBox } from "../../multiSelectListBox";
+import { searchByPropertys } from "../../../utils/search.helper";
+import { min } from "lodash";
+import { MinMaxField } from "../../MinMaxField";
 
 interface LiveScraperProps {
   settings: LiveScraperSettings | undefined;
@@ -14,6 +17,28 @@ interface LiveScraperProps {
 export function LiveScraperPanel({ settings, updateSettings, tradable_items }: LiveScraperProps) {
   const roleForm = useForm({
     initialValues: {
+      filter: {
+        blacklist: {
+          tax: {
+            min: 0,
+            max: "" as number | "",
+          },
+          mr: {
+            min: 0,
+            max: "" as number | "",
+          },
+        },
+        whitelist: {
+          tax: {
+            min: 0,
+            max: "" as number | "",
+          },
+          mr: {
+            min: 0,
+            max: "" as number | "",
+          },
+        },
+      },
       live_trading: {
         webhook: "",
         stock_item: {
@@ -39,6 +64,51 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
     // Set Settings from live Scraper
     roleForm.setFieldValue("live_trading", { ...settings, stock_item: { ...settings.stock_item, blacklist: settings.stock_item.blacklist.join(","), whitelist: settings.stock_item.whitelist.join(",") } });
   }, [settings]);
+
+
+  const getAvailableItems = (filter: { tax: { max: number | "", min: number }, mr: { max: number | "", min: number } }) => {
+    let items = tradable_items;
+    const filters: ISearchKeyParameter = {};
+    if (filter.tax) {
+      const { min, max } = filter.tax;
+      if (min > 0) {
+        filters["trade_tax"] = {
+          filters: [
+            { operator: "gteq", value: min }
+          ]
+        }
+      }
+      if (max != "") {
+        filters["trade_tax"] = {
+          filters: [
+            ...filters["trade_tax"]?.filters ?? [],
+            { operator: "lteq", value: max },
+          ]
+        }
+      }
+
+    }
+    if (filter.mr) {
+      const { min, max } = filter.mr;
+      if (min > 0) {
+        filters["mr_requirement"] = {
+          filters: [
+            { operator: "gteq", value: min }
+          ]
+        }
+      }
+      if (max != "") {
+        filters["mr_requirement"] = {
+          filters: [
+            ...filters["mr_requirement"]?.filters ?? [],
+            { operator: "lteq", value: max },
+          ]
+        }
+      }
+
+    }
+    return searchByPropertys(items, filters);
+  }
 
   const useTranslateSettingsModal = (key: string, context?: { [key: string]: any }) => useTranslateModal(`settings.panels.live_trading.${key}`, { ...context })
   return (
@@ -140,9 +210,33 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
               <Accordion.Panel>
                 {useTranslateSettingsModal('whitelist_description')}
                 <MultiSelectListBox
-                  availableItems={tradable_items.map((warframe) => ({ ...warframe, label: warframe.item_name, value: warframe.url_name }))}
+                  availableItems={getAvailableItems(roleForm.values.filter.whitelist).map((warframe) => ({ ...warframe, label: warframe.item_name, value: warframe.url_name }))}
                   selectedItems={roleForm.values.live_trading.stock_item.whitelist.split(",")}
                   onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.whitelist', value.join(","))}
+                  actions={
+                    <Group>
+                      <MinMaxField
+                        min={roleForm.values.filter.whitelist.tax.min}
+                        minAllowed={0}
+                        max={roleForm.values.filter.whitelist.tax.max}
+                        maxAllowed={2100000}
+                        label={useTranslateSettingsModal('filter.tax')}
+                        onChange={(min: number, max: number | "") => {
+                          roleForm.setFieldValue('filter.whitelist.tax.min', min)
+                          roleForm.setFieldValue('filter.whitelist.tax.max', max)
+                        }} />
+                      <MinMaxField
+                        min={roleForm.values.filter.whitelist.mr.min}
+                        minAllowed={0}
+                        max={roleForm.values.filter.whitelist.mr.max}
+                        maxAllowed={2100000}
+                        label={useTranslateSettingsModal('filter.mr')}
+                        onChange={(min: number, max: number | "") => {
+                          roleForm.setFieldValue('filter.whitelist.mr.min', min)
+                          roleForm.setFieldValue('filter.whitelist.mr.max', max)
+                        }} />
+                    </Group>
+                  }
                 /></Accordion.Panel>
             </Accordion.Item>
             <Accordion.Item value="accordion_blacklist">
@@ -150,9 +244,33 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
               <Accordion.Panel>
                 {useTranslateSettingsModal('blacklist_description')}
                 <MultiSelectListBox
-                  availableItems={tradable_items.map((warframe) => ({ ...warframe, label: warframe.item_name, value: warframe.url_name }))}
+                  availableItems={getAvailableItems(roleForm.values.filter.blacklist).map((warframe) => ({ ...warframe, label: warframe.item_name, value: warframe.url_name }))}
                   selectedItems={roleForm.values.live_trading.stock_item.blacklist.split(",")}
                   onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.blacklist', value.join(","))}
+                  actions={
+                    <Group>
+                      <MinMaxField
+                        min={roleForm.values.filter.blacklist.tax.min}
+                        minAllowed={0}
+                        max={roleForm.values.filter.blacklist.tax.max}
+                        maxAllowed={2100000}
+                        label={useTranslateSettingsModal('filter.tax')}
+                        onChange={(min: number, max: number | "") => {
+                          roleForm.setFieldValue('filter.blacklist.tax.min', min)
+                          roleForm.setFieldValue('filter.blacklist.tax.max', max)
+                        }} />
+                      <MinMaxField
+                        min={roleForm.values.filter.blacklist.mr.min}
+                        minAllowed={0}
+                        max={roleForm.values.filter.blacklist.mr.max}
+                        maxAllowed={2100000}
+                        label={useTranslateSettingsModal('filter.mr')}
+                        onChange={(min: number, max: number | "") => {
+                          roleForm.setFieldValue('filter.blacklist.mr.min', min)
+                          roleForm.setFieldValue('filter.blacklist.mr.max', max)
+                        }} />
+                    </Group>
+                  }
                 /></Accordion.Panel>
             </Accordion.Item>
           </Accordion>

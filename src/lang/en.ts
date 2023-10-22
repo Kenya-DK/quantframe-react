@@ -102,6 +102,14 @@ export const en = {
           price: "Price Per Unit",
           listed_price: "Listed Price",
           owned: "Owned",
+          minium_price: {
+            title: "Min Price",
+            description: "Minium price to sell the item for",
+            prompt: {
+              title: "Minium price",
+              minium_price_label: "Minium price",
+            }
+          },
           actions: {
             title: "Actions",
             sell: "Sell",
@@ -165,6 +173,10 @@ export const en = {
             ping_on_notif_description: "If you want to be pinged on discord.",
             webhook: "Webhook",
             webhook_description: "The webhook to send notifications to",
+            filter: {
+              tax: "Tax Range",
+              mr: "MR Range",
+            },
             save: "Save",
           },
           price_scraper: {},
@@ -400,6 +412,7 @@ export const en = {
         },
         item: {
           title: "Stock Items",
+
         },
       },
     },
