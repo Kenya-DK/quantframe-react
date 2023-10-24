@@ -118,8 +118,11 @@ export const PromptModal = ({ context, id, innerProps }: ContextModalProps<Modal
               return (
                 <Group grow key={index}>
                   <NumberInput
+                    {...form.getInputProps(field.name)}
+                    {...field.attributes}
                     required={field.required}
                     label={field.label}
+
                     value={form.values[field.name]}
                     onChange={(value) => form.setFieldValue(field.name, Number(value))}
                   />
