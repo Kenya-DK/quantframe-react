@@ -3,11 +3,7 @@ import { TransactionControl } from "../../components/transactionControl";
 import { StockItemsPanel, StockRivenPanel } from "./tabs";
 import { useEffect, useRef, useState } from "react";
 import { useTranslatePage } from "../../hooks";
-interface IProps {
-  iconName: string;
-  wrapperStyle?: string;
-  svgProp?: React.SVGProps<SVGSVGElement>;
-}
+
 export function useDynamicSvgImport(iconName: string) {
   const importedIconRef = useRef<React.FC<React.SVGProps<SVGElement>>>();
   const [loading, setLoading] = useState(false);

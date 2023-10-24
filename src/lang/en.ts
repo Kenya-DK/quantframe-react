@@ -30,9 +30,6 @@ export const en = {
     },
     availableRivens: {
       weaponInfo: {
-        weekly_rivens: {
-          range: "Weekly Rivens Range <blue>{{start}}</blue> - <blue>{{end}}</blue>",
-        },
         wfm: {
           sellers: "Sellers: <blue>{{sellers}}</blue>",
           username: "Username: <blue>{{username}}</blue>",
@@ -76,55 +73,6 @@ export const en = {
       add_all: "Add all",
       remove_all: "Remove all",
       name: "Name",
-    },
-    inventory: {
-      price: "Price",
-      price_description: "Price per unit",
-      quantity: "Quantity",
-      quantity_description: "Quantity of items",
-      rank: "Mod Rank",
-      report_tooltip: "Will try to add the transaction to the market",
-      report: "Report",
-      report_description: "w/o Reporting",
-      total_listed_price: "Total Listed Price: <italic>{{price}}</italic>",
-      total_purchase_price: "Total Purchase Price: <italic>{{price}}</italic>",
-      buttons: {
-        buy: "Buy",
-        buy_tooltip: "Will only add a buy transaction",
-        sell: "Sell",
-        sell_tooltip: "Will only add a sell transaction",
-        resell: "Resell",
-        resell_tooltip: "This will try to resell the item on the market",
-      },
-      datagrid: {
-        columns: {
-          name: "Name",
-          price: "Price Per Unit",
-          listed_price: "Listed Price",
-          owned: "Owned",
-          minium_price: {
-            title: "Min Price",
-            description: "Minium price to sell the item for",
-            prompt: {
-              title: "Minium price",
-              minium_price_label: "Minium price",
-            }
-          },
-          actions: {
-            title: "Actions",
-            sell: "Sell",
-            sell_report: "Sell & Report",
-            delete: {
-              title: "Delete",
-              message: "Are you sure you want to delete this item?",
-              buttons: {
-                confirm: "Delete",
-                cancel: "Cancel",
-              }
-            }
-          },
-        }
-      }
     },
     transactioncontrol: {
       title: "Transaction Control",
@@ -335,6 +283,8 @@ export const en = {
       tabs: {
         riven: {
           title: "Stock Rivens",
+          total_listed_price: "Total Listed Price: <blue>{{price}}</blue>",
+          total_purchase_price: "Total Purchase Price: <blue>{{price}}</blue>",
           infos: {
             pending_description: "Pending",
             live_description: "Live on market",
@@ -412,18 +362,121 @@ export const en = {
         },
         item: {
           title: "Stock Items",
-
+          total_listed_price: "Total Listed Price: <blue>{{price}}</blue>",
+          total_purchase_price: "Total Purchase Price: <blue>{{price}}</blue>",
+          buttons: {
+            resell: {
+              label: "Resell",
+              description: "Will add a buy transaction on warframe.market",
+            },
+            resell_without_report: {
+              label: "Resell without report",
+              description: "Does not report the item on warframe.market",
+            },
+          },
+          fields: {
+            quantity: {
+              label: "Quantity",
+              description: "Quantity of items"
+            },
+            price: {
+              label: "Price",
+              description: "Price per unit"
+            },
+            rank: {
+              label: "Rank",
+              description: "Rank of the item"
+            },
+          },
+          notifaications: {
+            createStockItem: {
+              title: "Item added",
+              message: "Item {{name}} added successfully",
+            },
+            sellStockItem: {
+              title: "Item sold",
+              message: "Item {{name}} sold successfully for {{price}}",
+            },
+            deleteStockItem: {
+              title: "Item deleted",
+              message: "Item {{name}} deleted successfully",
+            },
+            updateStockItem: {
+              title: "Item updated",
+              message: "Item {{name}} updated successfully",
+            },
+          },
+          datagrid: {
+            columns: {
+              name: "Name",
+              price: "Price Per Unit",
+              listed_price: "Listed Price",
+              owned: "Owned",
+              minium_price: {
+                title: "Min Price",
+                description: "Minium price to sell the item for",
+                prompt: {
+                  title: "Minium price",
+                  minium_price_label: "Minium price",
+                }
+              },
+              actions: {
+                title: "Actions",
+                sell: "Sell",
+                sell_report: "Sell & Report",
+                delete: {
+                  title: "Delete",
+                  message: "Are you sure you want to delete this item?",
+                  buttons: {
+                    confirm: "Delete",
+                    cancel: "Cancel",
+                  }
+                }
+              },
+            }
+          }
         },
       },
     },
     wtbMessage: {
       copy_to_clipboard: "Copy to clipboard",
+      wtb_message: "Generate Message",
+      wtb_message_template: "WTB message template",
+      wtb_message_max_length: "WTB message max length: {{length}}/{{maxLength}}",
+      tooltip: {
+        calculate_price: "Calculate price based on the lowest price on warframe.market",
+        clear: "Clear list",
+      },
+      notifaications: {
+        copied_to_clipboard: "Copied to clipboard",
+      },
+      modals: {
+        generateWtbMessage: {
+          title: "Generate WTB Message",
+          description: "New rivens price",
+          list_text: "{{name}}: <blue>{{price}}</blue>",
+          confirm: "Replace",
+          cancel: "Cancel",
+        }
+      },
       prompt: {
         sell_price: {
           title: "Sell Price",
           label: "Sell Price",
           description: "The price you want to sell the riven for",
           placeholder: "Sell Price",
+        },
+        generateWtbMessage: {
+          title: "Generate WTB Message",
+          minSellers_label: "Min Sellers",
+          minSellers_description: "Min sellers for the riven",
+          minSellers_placeholder: "Min Sellers",
+          lowestPrice_label: "Lowest Price",
+          lowestPrice_description: "Lowest price for the riven",
+          lowestPrice_placeholder: "Lowest Price",
+          discount_label: "Discount",
+          discount_description: "Discount for the riven",
+          discount_placeholder: "Discount",
         },
       },
       datagrid: {
@@ -449,16 +502,6 @@ export const en = {
       logout_title: "Logout success",
       logout_message: "You have been logged out successfully",
     },
-    invantory: {
-      create_title: "Item added",
-      create_message: "Item {{name}} added successfully",
-      update_title: "Item updated",
-      update_message: "Item {{name}} updated successfully",
-      delete_title: "Item deleted",
-      delete_message: "Item {{name}} deleted successfully",
-      sell_title: "Item sold",
-      sell_message: "Item {{name}} sold successfully for {{price}}",
-    }
   },
   error: {
     auth: {

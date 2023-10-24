@@ -86,7 +86,7 @@ export default function AvailableRivens({ onAddRiven }: AvailableRivensProps) {
       <SearchField value={query} onChange={(text) => setQuery(text)} />
       <DataTable
         sx={{ marginTop: "20px" }}
-        height={"75vh"}
+        height={"81.7vh"}
         withBorder
         striped
         records={rows}

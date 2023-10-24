@@ -1,11 +1,11 @@
-import { Image, Group, Stack, NumberInput, Divider, Tooltip, ActionIcon, Text, Button, Box, useMantineTheme } from "@mantine/core";
+import { Image, Group, Stack, NumberInput, Divider, Tooltip, ActionIcon, Text, Box, useMantineTheme, Grid } from "@mantine/core";
 import { useCacheContext, useStockContextContext } from "@contexts/index";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { useTranslatePage } from "@hooks/index";
 import api, { wfmThumbnail } from "@api/index";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faEdit, faHammer, faMagnifyingGlass, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faComment, faEdit, faHammer, faMagnifyingGlass, faPlus, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { useMutation } from "@tanstack/react-query";
 import { RivenAttributes } from "@components/auction/rivenAttributes";
 import { CreateStockRivenEntryDto, StockRivenDto } from "$types/index";
@@ -15,16 +15,17 @@ import { RivenForm } from "@components/forms/riven.form";
 import { useNavigate } from "react-router-dom";
 import { getOrderStatusColor, paginate, sortArray } from "@utils/index";
 import { SearchField } from "@components/searchfield";
-import { InfoBox } from "../../../../components/InfoBox";
+import { TextColor } from "@components/textColor";
+import { InfoBox } from "@components/InfoBox";
 interface StockRivenPanelProps {
 }
 export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
-  const useTranslateRivenPanel = (key: string, context?: { [key: string]: any }) => useTranslatePage(`live_trading.tabs.riven.${key}`, { ...context })
-  const useTranslateButtons = (key: string, context?: { [key: string]: any }) => useTranslateRivenPanel(`buttons.${key}`, { ...context })
-  const useTranslateNotifaications = (key: string, context?: { [key: string]: any }) => useTranslateRivenPanel(`notifaications.${key}`, { ...context })
-  const useTranslateDataGrid = (key: string, context?: { [key: string]: any }) => useTranslateRivenPanel(`datagrid.${key}`, { ...context })
-  const useTranslateDataGridColumns = (key: string, context?: { [key: string]: any }) => useTranslateDataGrid(`columns.${key}`, { ...context });
-  const useTranslateDataGridContextMenu = (key: string, context?: { [key: string]: any }) => useTranslateDataGrid(`context_menu.${key}`, { ...context });
+  const useTranslateRivenPanel = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePage(`live_trading.tabs.riven.${key}`, { ...context }, i18Key)
+  const useTranslateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateRivenPanel(`buttons.${key}`, { ...context }, i18Key)
+  const useTranslateNotifaications = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateRivenPanel(`notifaications.${key}`, { ...context }, i18Key)
+  const useTranslateDataGrid = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateRivenPanel(`datagrid.${key}`, { ...context }, i18Key)
+  const useTranslateDataGridColumns = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateDataGrid(`columns.${key}`, { ...context }, i18Key);
+  const useTranslateDataGridContextMenu = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateDataGrid(`context_menu.${key}`, { ...context }, i18Key);
 
   const go = useNavigate();
 
@@ -81,7 +82,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
       notifications.show({
         title: useTranslateNotifaications("sell_title"),
         icon: <FontAwesomeIcon icon={faCheck} />,
-        message: useTranslateNotifaications("sell_message", { name: `${data.name} ${data.mod_name}`, price: data.listed_price }),
+        message: useTranslateNotifaications("sell_message", { name: `${data.weapon_name} ${data.mod_name}`, price: data.listed_price }),
         color: "green"
       });
     },
@@ -92,7 +93,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
       notifications.show({
         title: useTranslateNotifaications("update_title"),
         icon: <FontAwesomeIcon icon={faCheck} />,
-        message: useTranslateNotifaications("update_message", { name: `${data.name} ${data.mod_name}` }),
+        message: useTranslateNotifaications("update_message", { name: `${data.weapon_name} ${data.mod_name}` }),
         color: "green"
       });
     },
@@ -103,7 +104,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
       notifications.show({
         title: useTranslateNotifaications("delete_title"),
         icon: <FontAwesomeIcon icon={faCheck} />,
-        message: useTranslateNotifaications("delete_message", { name: `${data.name} ${data.mod_name}` }),
+        message: useTranslateNotifaications("delete_message", { name: `${data.weapon_name} ${data.mod_name}` }),
         color: "green"
       });
     },
@@ -121,48 +122,77 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
     onError: () => { },
   })
   return (
-    <Stack>
-      <Group grow position="apart" >
-        <Button onClick={() => {
-          modals.open({
-            size: "100%",
-            withCloseButton: false,
-            children: <RivenForm
-              availableRivens={riven_items}
-              availableAttributes={riven_attributes}
-              onSubmit={(data) => {
-                createRivenEntryMutation.mutate({
-                  item_id: data.url_name,
-                  rank: data.mod_rank,
-                  price: data.price,
-                  mod_name: data.mod_name,
-                  attributes: data.attributes,
-                  mastery_rank: data.mastery_rank,
-                  re_rolls: data.re_rolls,
-                  polarity: data.polarity,
-                  match_riven: {},
-                });
-              }}
-            />,
-          });
-        }}>{useTranslateButtons("create")}</Button>
-        <Button onClick={() => {
-          go("riven_wtb_message");
-        }}>{useTranslateButtons("create_wtb_message")}</Button>
-      </Group>
-      <SearchField value={query} onChange={(text) => setQuery(text)} />
-      <Group>
-        <InfoBox text={useTranslateRivenPanel("infos.to_low_profit_description")} color={theme.colors.orange[7]} />
-        <InfoBox text={useTranslateRivenPanel("infos.pending_description")} color={theme.colors.violet[7]} />
-        <InfoBox text={useTranslateRivenPanel("infos.live_description")} color={theme.colors.green[7]} />
-        <InfoBox text={useTranslateRivenPanel("infos.inactive_description")} color={theme.colors.red[7]} />
-        <InfoBox text={useTranslateRivenPanel("infos.no_offers_description")} color={theme.colors.pink[7]} />
-      </Group>
+    <Stack mt={20}>
+      <Grid>
+        <Grid.Col span={10}>
+          <SearchField value={query} onChange={(text) => setQuery(text)}
+            rightSectionWidth={75}
+            rightSection={
+              <>
+                <Tooltip label={useTranslateButtons('create')}>
+                  <ActionIcon variant="filled" color="blue.7" onClick={() => {
+                    modals.open({
+                      size: "100%",
+                      withCloseButton: false,
+                      children: <RivenForm
+                        availableRivens={riven_items}
+                        availableAttributes={riven_attributes}
+                        onSubmit={(data) => {
+                          createRivenEntryMutation.mutate({
+                            item_id: data.url_name,
+                            rank: data.mod_rank,
+                            price: data.price,
+                            mod_name: data.mod_name,
+                            attributes: data.attributes,
+                            mastery_rank: data.mastery_rank,
+                            re_rolls: data.re_rolls,
+                            polarity: data.polarity,
+                            match_riven: {},
+                          });
+                        }}
+                      />,
+                    });
+                  }}>
+                    <FontAwesomeIcon icon={faPlus} />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label={useTranslateButtons('create_wtb_message')}>
+                  <ActionIcon variant="filled" color="blue.7" onClick={() => {
+                    go("riven_wtb_message");
+                  }}>
+                    <FontAwesomeIcon icon={faComment} />
+                  </ActionIcon>
+                </Tooltip>
+              </>
+            }
+          />
+          <Group mt={15} >
+            <InfoBox text={useTranslateRivenPanel("infos.to_low_profit_description")} color={theme.colors.orange[7]} />
+            <InfoBox text={useTranslateRivenPanel("infos.pending_description")} color={theme.colors.violet[7]} />
+            <InfoBox text={useTranslateRivenPanel("infos.live_description")} color={theme.colors.green[7]} />
+            <InfoBox text={useTranslateRivenPanel("infos.inactive_description")} color={theme.colors.red[7]} />
+            <InfoBox text={useTranslateRivenPanel("infos.no_offers_description")} color={theme.colors.pink[7]} />
+          </Group>
+        </Grid.Col>
+        <Grid.Col span={2} p={0}>
+          <Stack spacing={1} h={"100%"} w={"100%"}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <TextColor size={"lg"} i18nKey={useTranslateRivenPanel("total_purchase_price", undefined, true)} values={{ price: rivens?.reduce((a, b) => a + (b.price || 0), 0) || 0 }} />
+            <TextColor size={"lg"} i18nKey={useTranslateRivenPanel("total_listed_price", undefined, true)} values={{ price: rivens?.reduce((a, b) => a + (b.listed_price || 0), 0) || 0 }} />
+          </Stack>
+        </Grid.Col>
+      </Grid>
       <DataTable
         sx={{ marginTop: "20px" }}
         striped
         mah={5}
-        height={"60vh"}
+        height={"65vh"}
         records={rows}
         page={page}
         onPageChange={setPage}
@@ -251,7 +281,6 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                         ],
                         onConfirm: async (data: { enabled: number, min: number, max: number }) => {
                           if (!id) return;
-                          console.log(data);
                           const { enabled, min, max } = data;
                           if (enabled)
                             updateRiveEntryMutation.mutateAsync({ id, riven: { match_riven: { ...match_riven, re_rolls: { min, max } } } })
@@ -297,8 +326,6 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                         ],
                         onConfirm: async (data: { minium_price: number }) => {
                           if (!id) return;
-                          console.log(data);
-
                           const { minium_price } = data;
                           updateRiveEntryMutation.mutateAsync({ id, riven: { minium_price: minium_price == 0 ? -1 : minium_price } })
                         },
