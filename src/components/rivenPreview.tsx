@@ -3,12 +3,13 @@ import { Box, createStyles, Text } from '@mantine/core';
 import { Wfm } from '../types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
+import SvgIcon, { SvgType } from './SvgIcon';
 interface RivenPreviewProps {
   riven: Wfm.RivenItemDto;
 }
 const useStyles = createStyles(() => ({
   polarity: {
-    position: "absolute", right: "15%", top: "9%"
+    position: "absolute", right: "15%", top: "9.7%"
   },
   itemName: {
     position: "absolute", top: "50%", fontSize: 16, fontWeight: 700
@@ -48,9 +49,11 @@ export const RivenPreview = ({ riven }: RivenPreviewProps) => {
       backgroundImage: `url(/riven_template.png)`,
       color: '#c3aae5',
     }} >
-      <Text className={classes.polarity}>
-        {riven.polarity}
-      </Text>
+      <SvgIcon wrapperStyle={classes.polarity} svgProp={{
+        fill: '#c3aae5',
+        width: 16,
+        height: 16,
+      }} iconType={SvgType.Polaritys} iconName={riven.polarity} />
       <Text className={classes.itemName}>{riven.weapon_name}</Text>
       <Text className={classes.modName}>{riven.mod_name}</Text>
       <Box className={classes.attributes} style={{

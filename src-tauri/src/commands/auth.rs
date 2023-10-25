@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use serde_json::{json, Value};
 
-use crate::{auth::AuthState, error::{self, AppError}, wfm_client::client::WFMClient, logger};
+use crate::{auth::AuthState, error::{self}, wfm_client::client::WFMClient, logger};
 
 #[tauri::command]
 pub async fn login(

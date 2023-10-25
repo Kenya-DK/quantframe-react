@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { useForm, } from '@mantine/form';
-import { ActionIcon, Button, Group, NumberInput, Select, Title, Tooltip } from "@mantine/core";
+import { ActionIcon, Button, Group, NumberInput, Select, Title, Tooltip, Text } from "@mantine/core";
 
 import { Wfm } from '../../types';
 import { useTranslateForm } from '../../hooks';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClose, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { RivenPreview } from '../rivenPreview';
+import SvgIcon, { SvgType } from '../SvgIcon';
 
 
 interface RiveAttributeFormProps {
@@ -80,6 +81,24 @@ const RiveAttributeForm = ({ availableAttributes, canRemove, attribute, onRemove
     </Group>
   );
 }
+
+
+interface ItemProps extends React.ComponentPropsWithoutRef<'div'> {
+  label: string;
+  value: string;
+}
+const SelectItem = forwardRef<HTMLDivElement, ItemProps>(
+  ({ value, label, ...others }: ItemProps, ref) => (
+    <div ref={ref} {...others}>
+      <Group noWrap>
+        <SvgIcon svgProp={{ width: 16, height: 16, }} iconType={SvgType.Polaritys} iconName={value} />
+        <div>
+          <Text size="sm">{label}</Text>
+        </div>
+      </Group>
+    </div>
+  )
+);
 
 interface FormPropsProps {
   riven?: Wfm.RivenItemDto | undefined | null;
@@ -167,7 +186,6 @@ export const RivenForm = ({ onSubmit, availableAttributes, availableRivens, rive
     if (availableAttributes.length == 0)
       return;
     let selectedIds = generatePermutations(filteredArray.map((item) => item.url_name));
-    console.log(selectedIds);
 
     let modNames: string[] = [];
     selectedIds.forEach((item) => {
@@ -311,6 +329,8 @@ export const RivenForm = ({ onSubmit, availableAttributes, availableRivens, rive
           label={useTranslateUserForm("polarity")}
           value={userForm.values.polarity}
           onChange={(event) => userForm.setFieldValue('polarity', event || "")}
+          itemComponent={SelectItem}
+          icon={<SvgIcon svgProp={{ width: 16, height: 16, }} iconType={SvgType.Polaritys} iconName={userForm.values.polarity} />}
           data={[
             { value: "madurai", label: "Madurai" },
             { value: "naramon", label: "Naramon" },
