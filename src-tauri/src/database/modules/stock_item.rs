@@ -239,7 +239,7 @@ impl<'a> StockItemModule<'a> {
                     .values_panic([
                         inventory.wfm_id.clone().into(),
                         inventory.url.clone().into(),
-                        inventory.name.clone().into(),
+                        inventory.name.clone().replace("\'", "").into(),
                         inventory.tags.clone().into(),
                         inventory.rank.into(),
                         inventory.sub_type.clone().into(),
@@ -249,7 +249,7 @@ impl<'a> StockItemModule<'a> {
                         inventory.created.clone().into(),
                     ])
                     .to_string(SqliteQueryBuilder);
-                let row = sqlx::query(&sql.replace("\\", ""))
+                let row = sqlx::query(&sql)
                     .execute(&connection)
                     .await
                     .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;

@@ -171,7 +171,7 @@ impl<'a> TransactionModule<'a> {
                 .unwrap();
             transaction.wfm_id = item.id.clone();
             transaction.url = item.url_name.clone();
-            transaction.name = item.item_name.clone();
+            transaction.name = item.item_name.replace("\'", "").clone();
             transaction.tags = item.tags.unwrap().join(",");
         }
 
