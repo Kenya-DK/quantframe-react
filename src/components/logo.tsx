@@ -1,6 +1,8 @@
-import { Group, Title, rem } from "@mantine/core";
+import { Group, Title, rem, Text } from "@mantine/core";
+import { useAppContext } from "../contexts";
 
 export function Logo({ title, color, width, id }: { color: string, title: string, id?: string, width?: number }) {
+	const { version } = useAppContext();
 	return (
 		<Group spacing={"xs"} id={id}>
 			<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" width={rem(width ?? 40)} fill={color}
@@ -56,6 +58,7 @@ export function Logo({ title, color, width, id }: { color: string, title: string
 				</g>
 			</svg>
 			<Title order={4} style={{ color: color }}>{title}</Title>
+			<Text size={"sm"} style={{ color: color }}>v{version}</Text>
 		</Group>
 	);
 }

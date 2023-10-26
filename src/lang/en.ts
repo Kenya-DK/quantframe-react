@@ -8,6 +8,8 @@ export const en = {
     last_year: "Last year",
     sales_label: "Sell",
     buy_label: "Buy",
+    new_release_label: "Update {{ v }} available",
+    new_release_message: "Click here to download the new version",
   },
   components: {
     forms: {
@@ -381,7 +383,7 @@ export const en = {
             },
             price: {
               label: "Price",
-              description: "Price per unit"
+              description: "Total price of the order"
             },
             rank: {
               label: "Rank",

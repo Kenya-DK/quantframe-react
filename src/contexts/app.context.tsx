@@ -3,10 +3,15 @@ import { Settings } from '$types/index';
 import { OnTauriEvent, OnTauriUpdateDataEvent, SendTauriEvent, SendTauriUpdateDataEvent } from "../utils";
 import { useQuery } from "@tanstack/react-query";
 import api from "../api";
+import { useTranslateGeneral } from "@hooks/index";
 import { SplashScreen } from "../components/splashScreen";
+import { notifications } from "@mantine/notifications";
+import { Button, Text } from "@mantine/core";
+import { open } from '@tauri-apps/api/shell';
 
 type AppContextProps = {
   settings: Settings | undefined;
+  version: string;
 }
 
 type AppContextProviderProps = {
@@ -15,6 +20,7 @@ type AppContextProviderProps = {
 
 export const AppContext = createContext<AppContextProps>({
   settings: undefined,
+  version: "0.0.0"
 });
 
 export const useAppContext = () => useContext(AppContext);
@@ -22,13 +28,14 @@ export const useAppContext = () => useContext(AppContext);
 export const AppContextProvider = ({ children }: AppContextProviderProps) => {
   const [settings, setSettings] = useState<Settings | undefined>(undefined);
   const [initializstatus, setInitializstatus] = useState<string>("Initializing..");
+  const [version, setVersion] = useState<string>("0.0.0");
 
+
+  // Fetch data from rust side
   const { isFetching } = useQuery({
     queryKey: ['init'],
     queryFn: () => api.auth.init(),
     onSuccess(data) {
-      console.log(data);
-
       SendTauriUpdateDataEvent("user", { data: data.user, operation: "SET" })
       SendTauriUpdateDataEvent("transactions", { data: data.transactions, operation: "SET" })
       // Stock Context
@@ -45,6 +52,20 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
 
       }
       setSettings({ ...data.settings })
+      setVersion(data.update_state.current_version);
+
+      if (!data.update_state.update_available) return;
+      notifications.show({
+        title: useTranslateGeneral("new_release_label", { v: data.update_state.version }),
+        message: <>
+          <Text>{data.update_state.release_notes}</Text>
+          <Button style={{ width: '100%' }} onClick={async () => {
+            if (data.update_state.download_url)
+              await open(data.update_state.download_url);
+          }}>{useTranslateGeneral('new_release_message')}</Button>
+        </>,
+        autoClose: false
+      });
     },
   })
 
@@ -68,7 +89,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
   }, []);
 
   return (
-    <AppContext.Provider value={{ settings }}>
+    <AppContext.Provider value={{ settings, version }}>
       <SplashScreen opened={isFetching} text={initializstatus} />
       {children}
     </AppContext.Provider>

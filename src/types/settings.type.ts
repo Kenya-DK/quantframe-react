@@ -12,6 +12,14 @@ export interface SetupResponse {
   stock_items: StockItemDto[];
   stock_rivens: StockRivenDto[];
   riven_attributes: Wfm.RivenAttributeInfoDto[];
+  update_state: UpdateState
+}
+export interface UpdateState {
+  update_available: boolean,
+  current_version: string,
+  version?: string,
+  download_url?: string,
+  release_notes?: string,
 }
 
 export interface RustError {
