@@ -42,7 +42,7 @@ impl<'a> RivenModule<'a> {
                         wfm.auction()
                             .update(
                                 auction.id.as_str(),
-                                auction.buyout_price as i32,
+                                auction.starting_price as i32,
                                 auction.minimal_reputation as i32,
                                 "",
                                 auction.starting_price as i32,
@@ -151,7 +151,7 @@ impl<'a> RivenModule<'a> {
             let minimum_price = riven.minium_price;
 
             // Get the lowest price
-            let lowest_price = live_auctions.get(0).unwrap().buyout_price;
+            let lowest_price = live_auctions.get(0).unwrap().starting_price;
 
             // The new price of the riven
             let mut post_price = lowest_price;
@@ -188,7 +188,7 @@ impl<'a> RivenModule<'a> {
                 // If profit is greater than the range threshold
                 match auction {
                     Some(auction) => {
-                        if auction.buyout_price != post_price as i64 {
+                        if auction.starting_price != post_price as i64 {
                             // Update auction
                             wfm.auction()
                                 .update(

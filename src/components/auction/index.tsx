@@ -88,7 +88,7 @@ export default function Auction({ isStock, auction, onImport }: AuctionProps) {
           <Flex sx={{ justifyContent: "center", flexDirection: "column", alignItems: "flex-end" }} h={"100%"} >
             {auction.is_direct_sell ? (
               <Text span size="sm">
-                <TextColor i18nKey="components.auction.selling_price" values={{ price: auction.buyout_price }} />
+                <TextColor i18nKey="components.auction.selling_price" values={{ price: auction.starting_price }} />
               </Text>
             ) : (
               <Group>

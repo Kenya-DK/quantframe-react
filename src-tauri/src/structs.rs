@@ -286,7 +286,7 @@ pub struct Auction<T> {
     pub item: AuctionItem,
 
     #[serde(rename = "buyout_price")]
-    pub buyout_price: i64,
+    pub buyout_price: Option<i64>,
 
     #[serde(rename = "note")]
     pub note: String,
