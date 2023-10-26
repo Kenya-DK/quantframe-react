@@ -1,24 +1,28 @@
 use std::sync::{Arc, Mutex};
 
 use eyre::eyre;
+use once_cell::sync::Lazy;
 use reqwest::{Client, Method, Url};
 use serde_json::{json, Value};
 use tokio::process::Command;
+
+// Create a static variable to store the log file name
+static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("commands.log".to_string()));
 
 use crate::{
     auth::AuthState,
     cache::client::CacheClient,
     database::client::DBClient,
-    debug::DebugClient,
     error::{self, AppError},
     helper, logger,
-    price_scraper::{self, PriceScraper},
+    price_scraper::PriceScraper,
     settings::SettingsState,
     wfm_client::client::WFMClient,
 };
 
 #[tauri::command]
 pub async fn init(
+    app_handle: tauri::AppHandle,
     settings: tauri::State<'_, Arc<Mutex<SettingsState>>>,
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
@@ -46,39 +50,84 @@ pub async fn init(
     match db.initialize().await {
         Ok(_) => {}
         Err(e) => {
-            error::create_log_file("db.log".to_string(), &e);
+            error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
             return Err(e);
         }
     }
 
+    // Load Cache
     helper::send_message_to_window(
         "set_initializstatus",
         Some(json!({"status": "Loading Cache..."})),
     );
-    cache.load().await?;
-    response["items"] = json!(cache.items().get_types()?);
-    response["riven_items"] = json!(cache.riven().get_types()?);
-    response["riven_attributes"] = json!(cache.riven().get_attributes()?);
+    match cache.load().await {
+        Ok(_) => {
+            response["items"] = json!(cache.items().get_types()?);
+            response["riven_items"] = json!(cache.riven().get_types()?);
+            response["riven_attributes"] = json!(cache.riven().get_attributes()?);
+        }
+        Err(e) => {
+            error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+            return Err(e);
+        }
+    }
 
+    // Validate Auth
     helper::send_message_to_window(
         "set_initializstatus",
         Some(json!({"status": "Validating Credentials..."})),
     );
-    let is_validate = wfm.auth().validate().await?;
-    response["valid"] = json!(is_validate);
+    let is_validate = match wfm.auth().validate().await {
+        Ok(is_validate) => {
+            response["valid"] = json!(is_validate);
+            is_validate
+        }
+        Err(e) => {
+            error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+            return Err(e);
+        }
+    };
 
+    // Load Stock Items, Rivens
     helper::send_message_to_window(
         "set_initializstatus",
         Some(json!({"status": "Loading Stock..."})),
     );
-    response["stock_items"] = json!(db.stock_item().get_items().await?);
-    response["stock_rivens"] = json!(db.stock_riven().get_rivens().await?);
+    // Load Stock Items
+    match db.stock_item().get_items().await {
+        Ok(items) => {
+            response["stock_items"] = json!(items);
+        }
+        Err(e) => {
+            error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+            return Err(e);
+        }
+    };
+    // Load Stock Rivens
+    match db.stock_riven().get_rivens().await {
+        Ok(items) => {
+            response["stock_rivens"] = json!(items);
+        }
+        Err(e) => {
+            error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+            return Err(e);
+        }
+    };
 
+    // Load Transactions
     helper::send_message_to_window(
         "set_initializstatus",
         Some(json!({"status": "Loading Transactions..."})),
     );
-    response["transactions"] = json!(db.transaction().get_items().await?);
+    match db.transaction().get_items().await {
+        Ok(transactions) => {
+            response["transactions"] = json!(transactions);
+        }
+        Err(e) => {
+            error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+            return Err(e);
+        }
+    };
 
     if is_validate {
         helper::send_message_to_window(
@@ -96,6 +145,14 @@ pub async fn init(
         );
         response["auctions"] = json!(wfm.auction().get_my_auctions().await?);
     }
+    // Check for updates
+    helper::send_message_to_window(
+        "set_initializstatus",
+        Some(json!({"status": "Checking for updates..."})),
+    );
+    let version = app_handle.package_info().version.to_string();
+    response["update_state"] = check_for_updates(version).await?;
+
     Ok(response)
 }
 
@@ -110,17 +167,23 @@ pub async fn update_settings(
     my_lock.live_scraper.webhook = settings.live_scraper.webhook;
 
     // Stock Item
-    my_lock.live_scraper.stock_item.volume_threshold = settings.live_scraper.stock_item.volume_threshold;
-    my_lock.live_scraper.stock_item.range_threshold = settings.live_scraper.stock_item.range_threshold;
+    my_lock.live_scraper.stock_item.volume_threshold =
+        settings.live_scraper.stock_item.volume_threshold;
+    my_lock.live_scraper.stock_item.range_threshold =
+        settings.live_scraper.stock_item.range_threshold;
     my_lock.live_scraper.stock_item.avg_price_cap = settings.live_scraper.stock_item.avg_price_cap;
-    my_lock.live_scraper.stock_item.max_total_price_cap = settings.live_scraper.stock_item.max_total_price_cap;
-    my_lock.live_scraper.stock_item.price_shift_threshold = settings.live_scraper.stock_item.price_shift_threshold;
+    my_lock.live_scraper.stock_item.max_total_price_cap =
+        settings.live_scraper.stock_item.max_total_price_cap;
+    my_lock.live_scraper.stock_item.price_shift_threshold =
+        settings.live_scraper.stock_item.price_shift_threshold;
     my_lock.live_scraper.stock_item.blacklist = settings.live_scraper.stock_item.blacklist;
     my_lock.live_scraper.stock_item.whitelist = settings.live_scraper.stock_item.whitelist;
-    my_lock.live_scraper.stock_item.strict_whitelist = settings.live_scraper.stock_item.strict_whitelist;
+    my_lock.live_scraper.stock_item.strict_whitelist =
+        settings.live_scraper.stock_item.strict_whitelist;
 
     // Stock Riven
-    my_lock.live_scraper.stock_riven.range_threshold = settings.live_scraper.stock_riven.range_threshold;
+    my_lock.live_scraper.stock_riven.range_threshold =
+        settings.live_scraper.stock_riven.range_threshold;
 
     // Set Whisper Scraper Settings
     my_lock.whisper_scraper.ping_on_notif = settings.whisper_scraper.ping_on_notif;
@@ -157,7 +220,47 @@ pub async fn get_weekly_rivens() -> Result<serde_json::Value, AppError> {
 #[tauri::command]
 pub async fn open_logs_folder() {
     Command::new("explorer")
-    .args(["/select,", &logger::get_log_forlder().to_str().unwrap()]) // The comma after select is not a typo
-    .spawn()
-    .unwrap();
+        .args(["/select,", &logger::get_log_forlder().to_str().unwrap()]) // The comma after select is not a typo
+        .spawn()
+        .unwrap();
+}
+
+pub async fn check_for_updates(version: String) -> Result<serde_json::Value, AppError> {
+    let url = "https://raw.githubusercontent.com/Kenya-DK/quantframe-react/main/src-tauri/tauri.conf.json";
+    let client = Client::new();
+    let request = client.request(Method::GET, Url::parse(&url).unwrap());
+    let response = request.send().await;
+    if let Err(e) = response {
+        return Err(AppError::new("CHECKFORUPDATES", eyre!(e.to_string())));
+    }
+    let response_data = response.unwrap();
+    let status = response_data.status();
+
+    if status != 200 {
+        return Err(AppError::new(
+            "CHECKFORUPDATES",
+            eyre!("Could not get package.json. Status: {}", status.to_string()),
+        ));
+    }
+    let response = response_data.json::<Value>().await.unwrap();
+
+    let current_version_str = response["package"]["version"].as_str().unwrap();
+    let current_version = current_version_str.replace(".", "");
+    let current_version = current_version.parse::<i32>().unwrap();
+
+    let version_str = version;
+    let version = version_str.replace(".", "").parse::<i32>().unwrap();
+    if current_version > version {
+        return Ok(json!({
+            "update_available": true,
+            "version": current_version_str,
+            "current_version": version_str,
+            "release_notes": "New version available",
+            "download_url": "https://github.com/Kenya-DK/quantframe-react/releases",
+        }));
+    }
+    Ok(json!({
+        "update_available": false,
+        "current_version": version_str,
+    }))
 }

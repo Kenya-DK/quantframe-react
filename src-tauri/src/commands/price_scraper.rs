@@ -1,6 +1,9 @@
 use std::sync::Arc;
 
-use crate::{price_scraper::PriceScraper, error::AppError};
+use crate::{error::AppError, price_scraper::PriceScraper};
+
+// Create a static variable to store the log file name
+// static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("app.log".to_string()));
 
 #[tauri::command(async)]
 pub async fn generate_price_history(

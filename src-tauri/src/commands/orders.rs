@@ -1,5 +1,10 @@
+use once_cell::sync::Lazy;
+
 use crate::{error::AppError, helper, wfm_client::client::WFMClient};
 use std::sync::{Arc, Mutex};
+
+// Create a static variable to store the log file name
+static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("commands.log".to_string()));
 
 #[tauri::command]
 pub async fn get_orders(wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>) -> Result<(), AppError> {
@@ -45,6 +50,6 @@ pub async fn refresh_orders(wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>) -> Res
     let mut ordres_vec = wfm.orders().get_my_orders().await?;
     let mut ordres = ordres_vec.buy_orders;
     ordres.append(&mut ordres_vec.sell_orders);
-    helper::emit_update("orders", "SET",Some(serde_json::to_value(ordres).unwrap()));
+    helper::emit_update("orders", "SET", Some(serde_json::to_value(ordres).unwrap()));
     Ok(())
 }

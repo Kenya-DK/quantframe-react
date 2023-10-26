@@ -2,6 +2,8 @@ use std::{
     clone,
     sync::{Arc, Mutex},
 };
+// Create a static variable to store the log file name
+static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("commands.log".to_string()));
 
 use crate::{
     database::{client::DBClient, modules::stock_riven::MatchRivenStruct},
@@ -11,6 +13,7 @@ use crate::{
     wfm_client::client::WFMClient,
 };
 use eyre::eyre;
+use once_cell::sync::Lazy;
 use serde_json::json;
 
 // Item Stock Commands
@@ -73,7 +76,7 @@ pub async fn update_item_stock(
     if stock.is_none() {
         return Err(AppError::new("Command", eyre!("Item not found")));
     }
-    
+
     // Update Riven in Stock
     let stock = db
         .stock_item()
@@ -344,7 +347,6 @@ pub async fn delete_riven_stock(
     Ok(json!({}))
 }
 
-
 #[tauri::command]
 pub async fn update_riven_stock(
     id: i64,
@@ -359,11 +361,21 @@ pub async fn update_riven_stock(
     if stock.is_none() {
         return Err(AppError::new("Riven not found", eyre!("Riven not found")));
     }
-    
+
     // Update Riven in Stock
     let stock = db
         .stock_riven()
-        .update_by_id(id, None, None, None, None, attributes, match_riven, minium_price, None)
+        .update_by_id(
+            id,
+            None,
+            None,
+            None,
+            None,
+            attributes,
+            match_riven,
+            minium_price,
+            None,
+        )
         .await?;
     Ok(json!(stock.clone()))
 }

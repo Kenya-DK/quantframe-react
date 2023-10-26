@@ -1,5 +1,14 @@
-use crate::{error::{AppError, self}, helper, wfm_client::client::WFMClient};
+use once_cell::sync::Lazy;
+
+use crate::{
+    error::{self, AppError},
+    helper,
+    wfm_client::client::WFMClient,
+};
 use std::sync::{Arc, Mutex};
+
+// Create a static variable to store the log file name
+static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("commands.log".to_string()));
 
 #[tauri::command]
 pub async fn refresh_auctions(
@@ -8,16 +17,12 @@ pub async fn refresh_auctions(
     let wfm = wfm.lock()?.clone();
     match wfm.auction().get_my_auctions().await {
         Ok(auctions) => {
-            let json  = serde_json::to_value(auctions).unwrap();
-            helper::emit_update(
-                "auctions",
-                "SET",
-                Some(json.clone()),
-            );
+            let json = serde_json::to_value(auctions).unwrap();
+            helper::emit_update("auctions", "SET", Some(json.clone()));
             Ok(json)
         }
         Err(e) => {
-            error::create_log_file("refresh_auctions".to_string(), &e);
+            error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
             return Err(e);
         }
     }

@@ -1,9 +1,12 @@
-use std::sync::{Arc, Mutex};
-use eyre::eyre;
 use crate::{
     database::{client::DBClient, modules::transaction::TransactionStruct},
-    error::{AppError, self},
+    error::{self, AppError},
 };
+use eyre::eyre;
+use once_cell::sync::Lazy;
+use std::sync::{Arc, Mutex};
+// Create a static variable to store the log file name
+static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("commands.log".to_string()));
 
 #[tauri::command]
 pub async fn create_transaction_entry(
@@ -40,14 +43,18 @@ pub async fn update_transaction_entry(
     // Find Riven in Stock
     let transaction = db.transaction().get_by_id(id).await?;
     if transaction.is_none() {
-        return Err(AppError::new("Command:Transaction", eyre!("Transaction not found")));
+        return Err(AppError::new(
+            "Command:Transaction",
+            eyre!("Transaction not found"),
+        ));
     }
 
     // Update Riven in Stock
     match db
-    .transaction()
-    .update_by_id(id, price, transaction_type, quantity, rank)
-    .await {
+        .transaction()
+        .update_by_id(id, price, transaction_type, quantity, rank)
+        .await
+    {
         Ok(transaction) => {
             return Ok(transaction);
         }
