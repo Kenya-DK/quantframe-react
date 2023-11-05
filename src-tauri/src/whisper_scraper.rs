@@ -74,9 +74,79 @@ impl WhisperScraper {
     fn check(&self) -> Result<(), AppError> {
         let new_lines_result = self.read_new_lines(self.cold_start.load(Ordering::SeqCst));
         let settings = self.settings.lock()?.clone().whisper_scraper;
+
+        // offering, receive, stopped
+        let mut trade_mode = "stopped";
+
+        let mut offerings: Vec<String> = Vec::new();
+        let mut from: String = "".to_string();
+        let mut receives: Vec<String> = Vec::new();
+
         match new_lines_result {
             Ok(new_lines) => {
                 for line in new_lines {
+                    // Check if for trading dialog
+
+                    match WhisperScraper::match_trade_receive(&line) {
+                        Ok((matched, group1)) => {
+                            if matched {
+                                trade_mode = "receive";
+                                from = group1.clone().unwrap();
+                                println!("Trade from: {:?}", from);
+                            } else if trade_mode == "receive" && line != "" && !line.contains(":") {
+                                receives.push(line.clone().replace(", leftItem=/Menu/Confirm_Item_Ok, rightItem=/Menu/Confirm_Item_Cancel)", ""));
+                            }
+                        }
+                        Err(_) => {}
+                    }
+
+                    match WhisperScraper::match_trade_offering(&line) {
+                        Ok((matched, _)) => {
+                            if matched {
+                                trade_mode = "offering";
+                            } else if trade_mode == "offering" && line != "" {
+                                offerings.push(line.clone());
+                            }
+                        }
+                        Err(_) => {}
+                    }
+
+                    match WhisperScraper::match_trade_finished(&line) {
+                        Ok((matched, group1)) => {
+                            if matched {
+                                let trade_result = group1.clone().unwrap();
+                                if trade_result == "cancelled" {
+                                    println!("Trade cancelled");
+                                }
+                                if trade_result == "successful" {
+                                    println!("Trade successful");
+                                    println!("Offering: {:?}", offerings);
+                                    println!("Receiving: {:?}", receives);
+                                    println!("From: {:?}", from);
+                                }
+                                trade_mode = "stopped";
+                            }
+                        }
+                        Err(_) => {}
+                    }
+
+                    // if trade_started {
+                    //     items.push(line.clone());
+                    //     // Check if trade ended
+                    //     match WhisperScraper::match_trade_from(&line) {
+                    //         Ok((matched, group1)) => {
+                    //             if matched {
+                    //                 let username = group1.clone().unwrap();
+                    //                 println!("Trade from: {:?}", username);
+                    //                 println!("Trade from: {}", username);
+                    //             }
+                    //         }
+                    //         Err(_) => {}
+                    //     }
+                    // }
+
+                    // Check if trade started
+
                     match WhisperScraper::match_pattern(&line) {
                         Ok((matched, group1)) => {
                             if matched {
@@ -154,7 +224,51 @@ impl WhisperScraper {
         *last_file_size = current_file_size;
         Ok(new_lines)
     }
+
+    fn match_trade_offering(input: &str) -> Result<(bool, Option<String>), regex::Error> {
+        // Dialog.lua: Dialog::CreateOkCancel(
+        let pattern = r"You are offering:";
+        let re = Regex::new(pattern)?;
+
+        if let Some(captures) = re.captures(input) {
+            return Ok((true, None));
+        }
+
+        Ok((false, None))
+    }
+
+    fn match_trade_receive(input: &str) -> Result<(bool, Option<String>), regex::Error> {
+        //
+        let pattern = r"and will receive from (?<name>.+) the following:";
+        let re = Regex::new(pattern)?;
+
+        if let Some(captures) = re.captures(input) {
+            let group1 = captures.get(1).map(|m| m.as_str().to_string());
+            let result: Option<String> =
+                group1.map(|s| s.chars().filter(|c| c.is_ascii()).collect());
+            return Ok((true, result));
+        }
+
+        Ok((false, None))
+    }
+
+    fn match_trade_finished(input: &str) -> Result<(bool, Option<String>), regex::Error> {
+        // Dialog.lua: Dialog::CreateOkCancel(
+        let trade_cancelled = r"The trade was cancelled";
+        let trade_successful = r"The trade was successful";
+
+        if let Some(_) = Regex::new(trade_cancelled)?.captures(input) {
+            return Ok((true, Some("cancelled".to_string())));
+        }
+        if let Some(_) = Regex::new(trade_successful)?.captures(input) {
+            return Ok((true, Some("successful".to_string())));
+        }
+
+        Ok((false, None))
+    }
+
     fn match_pattern(input: &str) -> Result<(bool, Option<String>), regex::Error> {
+        //
         let pattern = r"Script \[Info\]: ChatRedux\.lua: ChatRedux::AddTab: Adding tab with channel name: F(?<name>.+) to index.+";
         let re = Regex::new(pattern)?;
 

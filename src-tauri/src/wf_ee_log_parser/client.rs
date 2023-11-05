@@ -1,72 +1,51 @@
-use std::{
-    fs::File,
-    io::{Read, Write},
-    path::PathBuf,
-    sync::{Arc, Mutex},
-    time::Duration,
-};
+use crate::error::AppError;
+use crate::settings::SettingsState;
+use crate::{helper, logger};
+use serde_json::json;
+use std::fs::File;
+use std::io::{self, BufRead, BufReader, Seek, SeekFrom}; // Add Seek here
+use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
+use std::thread::{self, JoinHandle};
+use std::time::Duration;
 
-use eyre::eyre;
-use polars::{
-    prelude::{DataFrame, NamedFrom},
-    series::Series,
-};
-use reqwest::{header::HeaderMap, Client, Method, Url};
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use serde_json::{json, Value};
-
-use crate::{
-    auth::AuthState,
-    error::AppError,
-    helper,
-    logger::{self, LogLevel},
-    rate_limiter::RateLimiter,
-    structs::{Item, RivenAttributeInfo, RivenTypeInfo},
-    wfm_client::client::WFMClient,
-};
-
-use super::modules::{item::ItemModule, riven::RivenModule};
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-#[allow(dead_code)]
-pub struct CacheDataStruct {
-    pub last_refresh: Option<String>,
-    pub item: CacheDataItemStruct,
-    pub riven: CacheDataRivenStruct,
-}
-#[derive(Serialize, Deserialize, Clone, Debug)]
-#[allow(dead_code)]
-pub struct CacheDataItemStruct {
-    pub items: Vec<Item>,
-}
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct CacheDataRivenStruct {
-    pub items: Vec<RivenTypeInfo>,
-    pub attributes: Vec<RivenAttributeInfo>,
-}
+use super::events::on_new_conversation::OnNewConversationEvent;
+use super::events::on_new_trading::OnTradingEvent;
 
 #[derive(Clone, Debug)]
 pub struct EELogParser {
     is_running: Arc<AtomicBool>,
-    log_path: PathBuf,
+    wf_ee_path: PathBuf,
     last_file_size: Arc<Mutex<u64>>,
+    last_line_index: Arc<Mutex<usize>>,
     handle: Arc<Mutex<Option<JoinHandle<()>>>>,
     cold_start: Arc<AtomicBool>,
-    settings: Arc<Mutex<SettingsState>>,
+    // Events
+    event_conversation: Arc<Mutex<OnNewConversationEvent>>,
+    event_trading: Arc<Mutex<OnTradingEvent>>,
 }
 
 impl EELogParser {
     pub fn new(settings: Arc<Mutex<SettingsState>>) -> Self {
+        let wf_ee_path = helper::get_app_local_path().join("Warframe").join("EE.log");
         Self {
             is_running: Arc::new(AtomicBool::new(false)),
-            log_path: helper::get_app_local_path().join("Warframe").join("EE.log"),
+            wf_ee_path: wf_ee_path.clone(),
             last_file_size: Arc::new(Mutex::new(0)),
+            last_line_index: Arc::new(Mutex::new(0)),
             handle: Arc::new(Mutex::new(None)),
             cold_start: Arc::new(AtomicBool::new(true)),
-            settings,
+            event_conversation: Arc::new(Mutex::new(OnNewConversationEvent::new(
+                Arc::clone(&settings),
+                wf_ee_path.clone(),
+            ))),
+            event_trading: Arc::new(Mutex::new(OnTradingEvent::new(
+                Arc::clone(&settings),
+                wf_ee_path.clone(),
+            )))
         }
     }
-
     pub fn start_loop(&mut self) {
         logger::info_con("EELogParser", "Starting Whisper Listener");
         let is_running = Arc::clone(&self.is_running);
@@ -102,30 +81,29 @@ impl EELogParser {
 
     fn check(&self) -> Result<(), AppError> {
         let new_lines_result = self.read_new_lines(self.cold_start.load(Ordering::SeqCst));
-        let settings = self.settings.lock()?.clone().whisper_scraper;
+
+        // Events to check
+        let event_conversation = self.event_conversation.lock()?.clone();
+        let event_trading = self.event_trading.lock()?.clone();
+
         match new_lines_result {
             Ok(new_lines) => {
                 for line in new_lines {
-                
+                    event_conversation.check(line.0, &line.1)?;
+                    event_trading.check(line.0, &line.1)?;
                 }
             }
             Err(err) => {
-                helper::send_message_to_window(
-                    "EELogParser",
-                    Some(json!({ "error": "err" })),
-                );
-                Err(AppError::new(
-                    "EELogParser",
-                    eyre::eyre!(err.to_string()),
-                ))?
+                helper::send_message_to_window("EELogParser", Some(json!({ "error": "err" })));
+                Err(AppError::new("EELogParser", eyre::eyre!(err.to_string())))?
             }
         }
         Ok(())
     }
 
-    fn read_new_lines(&self, is_starting: bool) -> io::Result<Vec<String>> {
-        let mut new_lines = Vec::new();
-        let mut file = File::open(&self.log_path)?;
+    fn read_new_lines(&self, is_starting: bool) -> io::Result<Vec<(usize, String)>> {
+        let mut new_lines: Vec<(usize, String)> = Vec::new();
+        let mut file = File::open(&self.wf_ee_path)?;
 
         let metadata = file.metadata()?;
         let current_file_size = metadata.len();
@@ -136,9 +114,10 @@ impl EELogParser {
         }
 
         let mut last_file_size = self.last_file_size.lock().unwrap();
-
-        if *last_file_size > current_file_size {
+        let mut last_line_index = self.last_line_index.lock().unwrap();
+        if *last_file_size > current_file_size || current_file_size< *last_file_size {
             *last_file_size = 0;
+            *last_line_index = 0;
         }
 
         // Now we can call seek on the file because we have Seek in our scope
@@ -146,9 +125,10 @@ impl EELogParser {
 
         let reader = BufReader::new(file);
 
-        for line in reader.lines() {
+        for (_, line) in reader.lines().enumerate() {
+            *last_line_index += 1;
             if let Ok(line) = line {
-                new_lines.push(line);
+                new_lines.push((last_line_index.clone(), line)); // Adding line index
             }
         }
 

@@ -1,42 +1,62 @@
 use std::{
-    collections::HashMap,
+    path::PathBuf,
     sync::{Arc, Mutex},
 };
 
-use crate::{
-    cache::client::CacheClient,
-};
-
+use crate::{error::AppError, helper, settings::SettingsState};
+use eyre::eyre;
+use serde_json::json;
 
 enum Events {
     Conversation,
-    World
 }
 impl Events {
-    fn as_str_list(&self) -> &'static Vec<str> {
+    fn as_str_list(&self) -> Vec<String> {
         match self {
-            Events::Conversation => Vec<String>[r"Script \[Info\]: ChatRedux\.lua: ChatRedux::AddTab: Adding tab with channel name: F(?<name>.+) to index.+"],
-            Events::World => Vec<String>["World"],
+            Events::Conversation => vec![
+                r"Script \[Info\]: ChatRedux\.lua: ChatRedux::AddTab: Adding tab with channel name: F(?<name>.+) to index.+".to_string(),
+            ],
         }
     }
 }
 
-pub struct OnNewConversationEvent<'a> {
-    pub client: &'a EELogParser,
+#[derive(Clone, Debug)]
+pub struct OnNewConversationEvent {
+    wf_ee_path: PathBuf,
+    settings: Arc<Mutex<SettingsState>>,
 }
 
-impl<'a> OnNewConversationEvent<'a> {
-    fn check(input: &str) -> Result<(bool, Option<String>), regex::Error> {
-        let pattern = r"Script \[Info\]: ChatRedux\.lua: ChatRedux::AddTab: Adding tab with channel name: F(?<name>.+) to index.+";
-        let re = Regex::new(pattern)?;
-
-        if let Some(captures) = re.captures(input) {
-            let group1 = captures.get(1).map(|m| m.as_str().to_string());
-            let result: Option<String> =
-                group1.map(|s| s.chars().filter(|c| c.is_ascii()).collect());
-            return Ok((true, result));
+impl OnNewConversationEvent {
+    pub fn new(settings: Arc<Mutex<SettingsState>>, wf_ee_path: PathBuf) -> Self {
+        Self {
+            settings,
+            wf_ee_path,
         }
-
-        Ok((false, None))
+    }
+    pub fn check(&self, _: usize, input: &str) -> Result<(), AppError> {
+        let settings = self.settings.lock()?.clone().whisper_scraper;
+        if !settings.enable {
+            return Ok(());
+        }
+        let (found, captures) = crate::wf_ee_log_parser::events::helper::match_pattern(
+            input,
+            Events::Conversation.as_str_list(),
+        )
+        .map_err(|e| AppError::new("OnNewConversationEvent", eyre!(e)))?;
+        if found {
+            let username = captures.get(0).unwrap().clone().unwrap();
+            crate::helper::send_message_to_window(
+                "WhisperScraper:ReceivedMessage",
+                Some(json!({ "name": username })),
+            );
+            if settings.webhook != "" {
+                crate::helper::send_message_to_discord(
+                    settings.webhook.clone(),
+                    format!("You have whisper(s) from {}", username.as_str()),
+                    settings.ping_on_notif,
+                );
+            }
+        }
+        Ok(())
     }
 }

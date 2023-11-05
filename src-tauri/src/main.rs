@@ -6,16 +6,18 @@ use database::client::DBClient;
 use debug::DebugClient;
 use error::AppError;
 use live_scraper::client::LiveScraperClient;
+use once_cell::sync::Lazy;
 use price_scraper::PriceScraper;
 use settings::SettingsState;
 use std::panic;
 use std::sync::Arc;
 use std::{env, sync::Mutex};
 use tauri::async_runtime::block_on;
-use tauri::{App, CustomMenuItem, Manager, SystemTrayEvent};
+use tauri::{App, Manager, SystemTrayEvent, PackageInfo};
+use wf_ee_log_parser::client::EELogParser;
 mod structs;
 mod whisper_scraper;
-use tauri::{SystemTray, SystemTrayMenu};
+use tauri::SystemTray;
 use whisper_scraper::WhisperScraper; // add this line
 
 mod auth;
@@ -31,9 +33,12 @@ mod price_scraper;
 mod rate_limiter;
 mod settings;
 mod system_tray;
+mod wf_ee_log_parser;
 mod wfm_client;
 
 use helper::WINDOW as HE_WINDOW;
+
+pub static PACKAGEINFO: Lazy<Mutex<Option<PackageInfo>>> = Lazy::new(|| Mutex::new(None));
 
 async fn setup_async(app: &mut App) -> Result<(), AppError> {
     // create and manage Settings state
@@ -85,6 +90,10 @@ async fn setup_async(app: &mut App) -> Result<(), AppError> {
     app.manage(Arc::new(Mutex::new(whisper_scraper)));
 
     // create and manage WhisperScraper state
+    let ee_log = EELogParser::new(Arc::clone(&settings_arc));
+    app.manage(Arc::new(Mutex::new(ee_log)));
+
+    // create and manage WhisperScraper state
     let debug_client = DebugClient::new(
         Arc::clone(&cache_arc),
         Arc::clone(&wfm_client),
@@ -119,6 +128,9 @@ fn main() {
             let window = app.get_window("main").unwrap().clone();
             *HE_WINDOW.lock().unwrap() = Some(window.clone());
 
+            // Get the package info and store it
+            *PACKAGEINFO.lock().unwrap() = Some(app.package_info().clone());
+
             // create and manage DatabaseClient state
             match block_on(setup_async(app)) {
                 Ok(_) => {}
@@ -147,7 +159,6 @@ fn main() {
             commands::transaction::create_transaction_entry,
             commands::transaction::delete_transaction_entry,
             commands::transaction::update_transaction_entry,
-            commands::whisper_scraper::toggle_whisper_scraper,
             commands::live_scraper::toggle_live_scraper,
             commands::price_scraper::generate_price_history,
             commands::debug::import_warframe_algo_trader_data,
@@ -158,6 +169,7 @@ fn main() {
             commands::orders::delete_order,
             commands::orders::create_order,
             commands::orders::update_order,
+            commands::orders::delete_all_orders,
             // Stock commands
             commands::stock::create_item_stock,
             commands::stock::delete_item_stock,
