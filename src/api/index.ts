@@ -88,12 +88,6 @@ const api = {
       await invoke("toggle_live_scraper")
     }
   },
-  whisper_scraper: {
-    async start_scraper(): Promise<any> {
-      SendTauriEvent("WhisperScraper:Toggle")
-      await invoke("toggle_whisper_scraper")
-    }
-  },
   stock: {
     item: {
       create: async (input: CreateStockItemEntryDto): Promise<StockItemDto> => {
@@ -168,6 +162,10 @@ const api = {
     refresh: async () => {
       await invoke("refresh_auctions");
     },
+    async delete_all(): Promise<number> {
+      const rep = await invoke("delete_all_auctions") as { count: number };
+      return rep.count;
+    }
   },
   orders: {
     refresh: async () => {
@@ -184,6 +182,10 @@ const api = {
     },
     async updateOrder(id: string, quantity: number, price: number, rank: number, type: string): Promise<Wfm.OrderDto> {
       return await invoke("update_order", { id, order_type: type, quantity, price, rank }) as Wfm.OrderDto;
+    },
+    async delete_all(): Promise<number> {
+      const rep = await invoke("delete_all_orders") as { count: number };
+      return rep.count;
     }
   },
 }

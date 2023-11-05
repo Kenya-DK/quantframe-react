@@ -12,14 +12,21 @@ export interface SetupResponse {
   stock_items: StockItemDto[];
   stock_rivens: StockRivenDto[];
   riven_attributes: Wfm.RivenAttributeInfoDto[];
-  update_state: UpdateState
+  app_info: AppInfo
 }
-export interface UpdateState {
-  update_available: boolean,
-  current_version: string,
-  version?: string,
-  download_url?: string,
-  release_notes?: string,
+export interface AppInfo {
+  app_author: string;
+  app_description: string;
+  app_name: string;
+  app_version: AppVersion;
+}
+
+export interface AppVersion {
+  current_version: string;
+  download_url: string;
+  release_notes: string;
+  update_available: boolean;
+  version: string;
 }
 
 export interface RustError {
@@ -53,6 +60,7 @@ export interface StockItemSettings {
   avg_price_cap: number;
   price_shift_threshold: number;
   strict_whitelist: boolean;
+  order_mode: string;
   blacklist: string[];
   whitelist: string[];
 }
@@ -61,6 +69,7 @@ export interface StockRivenSettings {
 }
 
 export interface WhisperScraperSettings {
+  enable: boolean;
   ping_on_notif: boolean;
   webhook: string;
 }

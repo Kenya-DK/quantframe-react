@@ -82,8 +82,6 @@ export const en = {
       price_scraper_running: "Price Scraper Running",
       live_trading_start: "Start Live Trading",
       live_trading_stop: "Stop Live Trading",
-      wisper_start: "Start Whisper",
-      wisper_stop: "Stop Whisper",
     },
     modals: {
       prompt: {
@@ -96,12 +94,25 @@ export const en = {
             title: "General",
           },
           live_trading: {
+            fields: {
+              order_mode: {
+                label: "Order Mode",
+                both_description: "Will buy and sell items",
+                buy_description: "Will only buy items",
+                sell_description: "Will only sell items",
+                options: {
+                  both: "Both",
+                  buy: "Buy",
+                  sell: "Sell",
+                },
+              },
+            },
             title: "Live Trading",
             accordion_general: "General",
             accordion_whitelist: "Whitelist",
             accordion_blacklist: "Blacklist",
             volume_threshold: "Volume Threshold",
-            volume_threshold_description: "Volume of items sold, set this to somewhere between 6-10",
+            volume_threshold_description: "Volume of items sold, set this to somewhere between 6-10, but default is 15",
             max_total_price_cap: "Max Total Price Cap",
             max_total_price_cap_description: "Total Plat it will put up WTB for",
             range_threshold: "Range Threshold",
@@ -123,6 +134,8 @@ export const en = {
             ping_on_notif_description: "If you want to be pinged on discord.",
             webhook: "Webhook",
             webhook_description: "The webhook to send notifications to",
+            enable: "Notify on a new conversation",
+            enable_description: "If you want to be notified on a new conversation.",
             filter: {
               tax: "Tax Range",
               mr: "MR Range",
@@ -277,7 +290,6 @@ export const en = {
         title: "Warframe Market - Login",
         email: "Email",
         password: "Password",
-        remember_me: "Remember me",
         submit: "Login",
       },
     },

@@ -24,6 +24,8 @@ pub struct LiveScraperSettings {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StockItemSettings {
     pub volume_threshold: i64,
+    // pub minimum_profit: i64,
+    // pub maximum_profit: i64,
     pub range_threshold: i64,
     pub avg_price_cap: i64,
     pub max_total_price_cap: i64,
@@ -31,6 +33,8 @@ pub struct StockItemSettings {
     pub blacklist: Vec<String>,
     pub whitelist: Vec<String>,
     pub strict_whitelist: bool,
+    // What to post sell, buy, or both
+    pub order_mode: String,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StockRivenSettings {
@@ -38,6 +42,7 @@ pub struct StockRivenSettings {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WhisperSettings {
+    pub enable: bool,
     pub ping_on_notif: bool,
     pub webhook: String,
 }
@@ -56,12 +61,14 @@ impl Default for SettingsState {
                     blacklist: vec![],
                     whitelist: vec![],
                     strict_whitelist: false,
+                    order_mode: "both".to_string(),
                 },
                 stock_riven: StockRivenSettings {
                     range_threshold: 25,
                 },
             },
             whisper_scraper: WhisperSettings {
+                enable: true,
                 ping_on_notif: false,
                 webhook: "".to_string(),
             },
@@ -121,12 +128,10 @@ impl SettingsState {
 
         // Check for nested properties within 'live_scraper'
         if let Some(live_scraper) = json_value.get_mut("live_scraper") {
-            
             if live_scraper.get("webhook").is_none() {
                 live_scraper["webhook"] = Value::from(default_settings.live_scraper.webhook);
                 is_valid = false;
             }
-
 
             // Check for nested properties within 'stock_item'
             if let Some(stock_item) = live_scraper.get_mut("stock_item") {
@@ -151,16 +156,22 @@ impl SettingsState {
                     is_valid = false;
                 }
                 if stock_item.get("price_shift_threshold").is_none() {
-                    stock_item["price_shift_threshold"] =
-                        Value::from(default_settings.live_scraper.stock_item.price_shift_threshold);
+                    stock_item["price_shift_threshold"] = Value::from(
+                        default_settings
+                            .live_scraper
+                            .stock_item
+                            .price_shift_threshold,
+                    );
                     is_valid = false;
                 }
                 if stock_item.get("blacklist").is_none() {
-                    stock_item["blacklist"] = Value::from(default_settings.live_scraper.stock_item.blacklist);
+                    stock_item["blacklist"] =
+                        Value::from(default_settings.live_scraper.stock_item.blacklist);
                     is_valid = false;
                 }
                 if stock_item.get("whitelist").is_none() {
-                    stock_item["whitelist"] = Value::from(default_settings.live_scraper.stock_item.whitelist);
+                    stock_item["whitelist"] =
+                        Value::from(default_settings.live_scraper.stock_item.whitelist);
                     is_valid = false;
                 }
                 if stock_item.get("strict_whitelist").is_none() {
@@ -168,11 +179,20 @@ impl SettingsState {
                         Value::from(default_settings.live_scraper.stock_item.strict_whitelist);
                     is_valid = false;
                 }
+                if stock_item.get("order_mode").is_none() {
+                    stock_item["order_mode"] =
+                        Value::from(default_settings.live_scraper.stock_item.order_mode);
+                    is_valid = false;
+                }
             } else {
                 // If 'stock_item' itself doesn't exist, add it
-                live_scraper["stock_item"] = serde_json::to_value(default_settings.live_scraper.stock_item)
-                    .map_err(|e| AppError::new("Settings", eyre!(e.to_string())))?;
-                logger::info_con("Settings", "Added 'live_scraper stock_item' to settings.json");
+                live_scraper["stock_item"] =
+                    serde_json::to_value(default_settings.live_scraper.stock_item)
+                        .map_err(|e| AppError::new("Settings", eyre!(e.to_string())))?;
+                logger::info_con(
+                    "Settings",
+                    "Added 'live_scraper stock_item' to settings.json",
+                );
                 is_valid = false;
             }
 
@@ -185,9 +205,13 @@ impl SettingsState {
                 }
             } else {
                 // If 'stock_riven' itself doesn't exist, add it
-                live_scraper["stock_riven"] = serde_json::to_value(default_settings.live_scraper.stock_riven)
-                    .map_err(|e| AppError::new("Settings", eyre!(e.to_string())))?;
-                logger::info_con("Settings", "Added 'live_scraper stock_riven' to settings.json");
+                live_scraper["stock_riven"] =
+                    serde_json::to_value(default_settings.live_scraper.stock_riven)
+                        .map_err(|e| AppError::new("Settings", eyre!(e.to_string())))?;
+                logger::info_con(
+                    "Settings",
+                    "Added 'live_scraper stock_riven' to settings.json",
+                );
                 is_valid = false;
             }
         } else {
@@ -199,6 +223,10 @@ impl SettingsState {
 
         // Check for nested properties within 'whisper_scraper'
         if let Some(whisper_scraper) = json_value.get_mut("whisper_scraper") {
+            if whisper_scraper.get("enable").is_none() {
+                whisper_scraper["enable"] = Value::from(default_settings.whisper_scraper.enable);
+                is_valid = false;
+            }
             if whisper_scraper.get("ping_on_notif").is_none() {
                 whisper_scraper["ping_on_notif"] =
                     Value::from(default_settings.whisper_scraper.ping_on_notif);

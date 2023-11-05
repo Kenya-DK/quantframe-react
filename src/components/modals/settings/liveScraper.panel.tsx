@@ -1,11 +1,10 @@
 import { useEffect } from "react";
 import { useForm } from "@mantine/form";
-import { Accordion, Button, Checkbox, Group, NumberInput, TextInput } from "@mantine/core";
+import { Accordion, Button, Checkbox, Group, NumberInput, Select } from "@mantine/core";
 import { useTranslateModal } from "@hooks/index";
 import { ISearchKeyParameter, LiveScraperSettings, Wfm } from "$types/index";
 import { MultiSelectListBox } from "../../multiSelectListBox";
 import { searchByPropertys } from "../../../utils/search.helper";
-import { min } from "lodash";
 import { MinMaxField } from "../../MinMaxField";
 
 interface LiveScraperProps {
@@ -50,6 +49,7 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
           blacklist: "",
           whitelist: "",
           strict_whitelist: true,
+          order_mode: "both",
         },
         stock_riven: {
           range_threshold: 25,
@@ -110,7 +110,8 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
     return searchByPropertys(items, filters);
   }
 
-  const useTranslateSettingsModal = (key: string, context?: { [key: string]: any }) => useTranslateModal(`settings.panels.live_trading.${key}`, { ...context })
+  const useTranslateSettingsModal = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateModal(`settings.panels.live_trading.${key}`, { ...context }, i18Key)
+  const useTranslateFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateSettingsModal(`fields.${key}`, { ...context }, i18Key)
   return (
     <form method="post" onSubmit={roleForm.onSubmit(async (data) => {
       console.log(data);
@@ -176,12 +177,23 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
                       onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.price_shift_threshold', Number(value))}
                       error={roleForm.errors.price_shift_threshold && 'Invalid Price Shift Threshold'}
                     />
-                    <TextInput
+                    {/* <TextInput
                       label={useTranslateSettingsModal('webhook')}
                       value={roleForm.values.live_trading.webhook}
                       description={useTranslateSettingsModal('webhook_description')}
                       onChange={(event) => roleForm.setFieldValue('live_trading.webhook', event.currentTarget.value)}
                       error={roleForm.errors.webhook && 'Invalid Webhook'}
+                    /> */}
+                    <Select
+                      label={useTranslateFields("order_mode.label")}
+                      description={useTranslateFields(`order_mode.${roleForm.values.live_trading.stock_item.order_mode}_description`)}
+                      value={roleForm.values.live_trading.stock_item.order_mode}
+                      onChange={(event) => roleForm.setFieldValue('live_trading.stock_item.order_mode', event || "")}
+                      data={[
+                        { description: useTranslateFields(`order_mode.both_description`), value: "both", label: useTranslateFields("order_mode.options.both") },
+                        { description: useTranslateFields(`order_mode.buy_description`), value: "buy", label: useTranslateFields("order_mode.options.buy") },
+                        { description: useTranslateFields(`order_mode.sell_description`), value: "sell", label: useTranslateFields("order_mode.options.sell") },
+                      ]}
                     />
                     <Checkbox
                       label={useTranslateSettingsModal('strict_whitelist')}
