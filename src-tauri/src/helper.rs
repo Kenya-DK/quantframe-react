@@ -62,6 +62,18 @@ pub fn emit_update(update_type: &str, operation: &str, data: Option<Value>) {
     );
 }
 
+pub fn emit_undate_initializ_status(status: &str, data: Option<Value>) {
+    send_message_to_window(
+        "set_initializstatus",
+        Some(json!({
+            "status": status,
+            "data": data
+        })),
+    );
+}
+
+
+
 pub fn get_app_local_path() -> PathBuf {
     if let Some(base_dirs) = BaseDirs::new() {
         // App path for csv file
