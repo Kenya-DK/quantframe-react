@@ -1,4 +1,5 @@
 use once_cell::sync::Lazy;
+use serde_json::json;
 
 use crate::{error::AppError, helper, wfm_client::client::WFMClient};
 use std::sync::{Arc, Mutex};
@@ -52,4 +53,28 @@ pub async fn refresh_orders(wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>) -> Res
     ordres.append(&mut ordres_vec.sell_orders);
     helper::emit_update("orders", "SET", Some(serde_json::to_value(ordres).unwrap()));
     Ok(())
+}
+#[tauri::command]
+pub async fn delete_all_orders(
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+) -> Result<serde_json::Value, AppError> {
+    let wfm = wfm.lock()?.clone();
+
+    let current_orders = wfm.orders().get_my_orders().await?;
+
+    let count = current_orders.buy_orders.len() + current_orders.sell_orders.len();
+
+    for order in current_orders.sell_orders {
+        wfm.orders()
+            .delete(&order.id, "None", "None", "Any")
+            .await?;
+    }
+    for order in current_orders.buy_orders {
+        wfm.orders()
+            .delete(&order.id, "None", "None", "Any")
+            .await?;
+    }
+    Ok(json!({
+        "count": count
+    }))
 }
