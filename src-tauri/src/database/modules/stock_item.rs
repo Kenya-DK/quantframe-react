@@ -297,6 +297,7 @@ impl<'a> StockItemModule<'a> {
             inventory.price = price.unwrap();
             values.push((StockItem::Price, price.into()));
         }
+
         if minium_price.is_some() {
             // If minium_price is -1, set it to None
             let minium_price = if minium_price.unwrap() == -1 {

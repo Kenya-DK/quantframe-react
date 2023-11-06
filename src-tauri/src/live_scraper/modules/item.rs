@@ -1,27 +1,14 @@
-use crate::auth::AuthState;
-use crate::database::client::DBClient;
 use crate::error;
 use crate::live_scraper::client::LiveScraperClient;
-use crate::logger::LogLevel;
-use crate::price_scraper::PriceScraper;
 use crate::structs::Order;
-use crate::wfm_client::client::WFMClient;
 use crate::{
     error::AppError,
     helper::{self, ColumnType, ColumnValue, ColumnValues},
     logger,
-    settings::SettingsState,
 };
 use eyre::eyre;
 use polars::prelude::*;
-use std::time::Duration;
-use std::{
-    collections::HashSet,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc, Mutex,
-    },
-};
+use std::collections::HashSet;
 
 pub struct ItemModule<'a> {
     pub client: &'a LiveScraperClient,
@@ -188,27 +175,31 @@ impl<'a> ItemModule<'a> {
                 .collect()
                 .map_err(|e| AppError::new("LiveScraper", eyre!(e.to_string())))?;
 
-            self.compare_live_orders_when_buying(
-                &item,
-                &item_id,
-                item_rank,
-                current_buy_orders_df.clone(),
-                &item_live_orders_df,
-                &item_stats,
-                &inventory_df,
-            )
-            .await?;
-
-            self.compare_live_orders_when_selling(
-                &item,
-                &item_id,
-                item_rank,
-                current_sell_orders_df.clone(),
-                &item_live_orders_df,
-                &item_stats,
-                &inventory_df,
-            )
-            .await?;
+            if settings.stock_item.order_mode == "buy" || settings.stock_item.order_mode == "both" {
+                self.compare_live_orders_when_buying(
+                    &item,
+                    &item_id,
+                    item_rank,
+                    current_buy_orders_df.clone(),
+                    &item_live_orders_df,
+                    &item_stats,
+                    &inventory_df,
+                )
+                .await?;
+            }
+            if settings.stock_item.order_mode == "sell" || settings.stock_item.order_mode == "both"
+            {
+                self.compare_live_orders_when_selling(
+                    &item,
+                    &item_id,
+                    item_rank,
+                    current_sell_orders_df.clone(),
+                    &item_live_orders_df,
+                    &item_stats,
+                    &inventory_df,
+                )
+                .await?;
+            }
         }
         Ok(())
     }
@@ -911,13 +902,17 @@ impl<'a> ItemModule<'a> {
                             .map(|order| order.2.clone())
                             .collect();
                         logger::info_con("LiveScraper",format!("Item {} is not as optimal as other items. Deleting buy orders for {:?}", item_name, unselected_item_names).as_str());
-                        
+
                         current_orders = current_orders
                             .lazy()
-                            .filter(col("url_name").is_in(lit(Series::new(
-                                "unselected_url_name",
-                                unselected_item_names.clone(),
-                            ))).not())
+                            .filter(
+                                col("url_name")
+                                    .is_in(lit(Series::new(
+                                        "unselected_url_name",
+                                        unselected_item_names.clone(),
+                                    )))
+                                    .not(),
+                            )
                             .collect()
                             .map_err(|e| {
                                 AppError::new(

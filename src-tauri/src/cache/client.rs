@@ -75,7 +75,7 @@ impl CacheClient {
 
     pub async fn load(&self) -> Result<CacheDataStruct, AppError> {
         let path_ref = Self::get_file_path();
-        
+
         if path_ref.exists() {
             let (se, vaild) = Self::read_from_file()?;
             if vaild {
@@ -83,15 +83,15 @@ impl CacheClient {
                 match last_refresh {
                     Some(last_refresh) => {
                         let last_refresh = chrono::DateTime::parse_from_rfc3339(&last_refresh)
-                        .map_err(|e| AppError::new("Cache", eyre!(e.to_string())))?;
-                    let now = chrono::Utc::now();
-                    let diff = now.signed_duration_since(last_refresh);
-                    if diff.num_hours() < 24 {
+                            .map_err(|e| AppError::new("Cache", eyre!(e.to_string())))?;
+                        let now = chrono::Utc::now();
+                        let diff = now.signed_duration_since(last_refresh);
+                        if diff.num_hours() < 24 {
                             let arced_mutex = Arc::clone(&self.cache_data);
                             let mut my_lock = arced_mutex.lock()?;
                             my_lock.last_refresh = Some(last_refresh.to_string());
                             my_lock.item = se.item;
-                            my_lock.riven = se.riven;                            
+                            my_lock.riven = se.riven;
                             return Ok(my_lock.clone());
                         } else {
                             let data = self.refresh().await?;
@@ -127,7 +127,6 @@ impl CacheClient {
     pub fn items(&self) -> ItemModule {
         ItemModule { client: self }
     }
-
 
     pub fn set_last_refresh(&self, last_refresh: String) -> Result<(), AppError> {
         let arced_mutex = Arc::clone(&self.cache_data);
