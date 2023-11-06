@@ -100,6 +100,12 @@ impl WFMClient {
 
         rate_limiter.wait_for_token().await;
 
+        let packageinfo = crate::PACKAGEINFO
+            .lock()
+            .unwrap()
+            .clone()
+            .expect("Could not get package info");
+
         let client = Client::new();
         let new_url = format!("{}{}", self.endpoint, url);
         let request = client
@@ -108,7 +114,10 @@ impl WFMClient {
                 "Authorization",
                 format!("JWT {}", auth.access_token.unwrap_or("".to_string())),
             )
-            .header("User-Agent", format!("Quantframe {}", "0.0.0".to_string()))
+            .header(
+                "User-Agent",
+                format!("Quantframe {}", packageinfo.version.to_string()),
+            )
             .header("Language", auth.region);
 
         let request = match body.clone() {
