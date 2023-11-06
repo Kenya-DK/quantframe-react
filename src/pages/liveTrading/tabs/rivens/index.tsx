@@ -192,7 +192,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
         sx={{ marginTop: "20px" }}
         striped
         mah={5}
-        height={"65vh"}
+        height={"63.4vh"}
         records={rows}
         page={page}
         onPageChange={setPage}

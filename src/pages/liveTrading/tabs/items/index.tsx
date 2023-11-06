@@ -113,9 +113,11 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
       <Grid>
         <Grid.Col span={10}>
           <PurchaseNewItem loading={createStockItemEntryMutation.isLoading} onSumit={async (data: CreateStockItemEntryDto) => {
+            console.log(data);
+
             createStockItemEntryMutation.mutate({
               item_id: data.item_id,
-              report: data.report || true,
+              report: data.report,
               price: data.price,
               quantity: data.quantity,
               rank: data.rank
@@ -131,8 +133,8 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
               alignItems: "center",
             }}
           >
-            <TextColor size={"lg"} i18nKey={useTranslateItemPanel("total_purchase_price", undefined, true)} values={{ price: items?.reduce((a, b) => a + (b.price || 0), 0) || 0 }} />
-            <TextColor size={"lg"} i18nKey={useTranslateItemPanel("total_listed_price", undefined, true)} values={{ price: items?.reduce((a, b) => a + (b.listed_price || 0), 0) || 0 }} />
+            <TextColor size={"lg"} i18nKey={useTranslateItemPanel("total_purchase_price", undefined, true)} values={{ price: items?.reduce((a, b) => a + (b.price || 0) * b.owned, 0) || 0 }} />
+            <TextColor size={"lg"} i18nKey={useTranslateItemPanel("total_listed_price", undefined, true)} values={{ price: items?.reduce((a, b) => a + (b.listed_price || 0) * b.owned, 0) || 0 }} />
           </Stack>
         </Grid.Col>
       </Grid>

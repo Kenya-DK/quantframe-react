@@ -1,7 +1,7 @@
 import { createStyles, rem, Tooltip, UnstyledButton, Navbar, Stack } from "@mantine/core";
 import { ReactNode, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChartSimple, faDesktop, faGlobe, faHome } from "@fortawesome/free-solid-svg-icons";
+import { faDesktop, faGlobe, faHome } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateLayout } from "../hooks";
 import { useNavigate } from "react-router-dom";
 import { WFMLogo } from "../components/icons/wfm_logo";
@@ -54,7 +54,7 @@ export default function SideBar({ }) {
   const mockdata = [
     { link: "/", icon: <FontAwesomeIcon icon={faHome} />, label: useTranslate("home") },
     { link: "live-trading", icon: <FontAwesomeIcon icon={faGlobe} />, label: useTranslate("live_trading") },
-    { link: "statistics", icon: <FontAwesomeIcon icon={faChartSimple} />, label: useTranslate("statistics") },
+    // { link: "statistics", icon: <FontAwesomeIcon icon={faChartSimple} />, label: useTranslate("statistics") },
     { link: "warframe-market", icon: <WFMLogo color="#d5d7e0" />, label: useTranslate("warframe_market") },
     { link: "debug", icon: <FontAwesomeIcon icon={faDesktop} />, label: useTranslate("debug") },
   ];
