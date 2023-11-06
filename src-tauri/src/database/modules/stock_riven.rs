@@ -266,7 +266,17 @@ impl<'a> StockRivenModule<'a> {
     ) -> Result<StockRivenStruct, AppError> {
         let connection = self.client.connection.lock().unwrap().clone();
         let cache = self.client.cache.lock().unwrap().clone();
-        let item = cache.riven().find_type(url_name)?.unwrap();
+
+        let item = match cache.riven().find_type(url_name)? {
+            Some(item) => item,
+            None => {
+                return Err(AppError::new_with_level(
+                    "Database",
+                    eyre!("Could not find riven in cache: {}", url_name),
+                    LogLevel::Critical,
+                ))
+            }
+        };
 
         let match_riven = match match_riven {
             Some(m) => m,
