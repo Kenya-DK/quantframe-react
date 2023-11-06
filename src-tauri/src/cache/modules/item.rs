@@ -4,7 +4,7 @@ use std::{
 };
 
 use eyre::eyre;
-use serde_json::Value;
+use serde_json::{json, Value};
 
 use crate::{
     cache::client::CacheClient,
@@ -26,7 +26,13 @@ impl<'a> ItemModule<'a> {
 
     pub async fn refresh_types(&self) -> Result<Vec<Item>, AppError> {
         let wfm = self.client.wfm.lock()?.clone();
+
+        helper::emit_undate_initializ_status("Downloading Item Data from Warframe.Market...", None);
         let wfm_items = wfm.items().get_all_items().await?;
+        helper::send_message_to_window(
+            "set_initializstatus",
+            Some(json!({"status": "Downloading Item Data from Github..."})),
+        );
         let response2: Vec<Value> =
             reqwest::get("https://github.com/WFCD/warframe-items/raw/master/data/json/All.json")
                 .await
@@ -34,6 +40,8 @@ impl<'a> ItemModule<'a> {
                 .json()
                 .await
                 .map_err(|e| AppError::new("CacheItems", eyre!(e.to_string())))?;
+
+        helper::emit_undate_initializ_status("Downloading Item Data from Relics.Run...", None);
         let response: HashMap<String, Value> =
             reqwest::get("https://relics.run/history/item_data/item_info.json")
                 .await
@@ -42,6 +50,7 @@ impl<'a> ItemModule<'a> {
                 .await
                 .map_err(|e| AppError::new("CacheItems", eyre!(e.to_string())))?;
 
+        helper::emit_undate_initializ_status("Storing Looping through Item Data...", None);
         let mut items: Vec<Item> = Vec::new();
         for item in wfm_items.clone() {
             let relic_data = response.get(&item.id.clone());
@@ -71,6 +80,20 @@ impl<'a> ItemModule<'a> {
                 new.mod_max_rank = mod_max_rank;
                 new.trade_tax = Some(helper::calculate_trade_tax(tags, mod_max_rank));
                 new.mr_requirement = mr_requirement;
+                // Only send for every 10th item
+                if items.len() % 100 == 0 {
+                    helper::emit_undate_initializ_status(
+                        format!(
+                            "Storing Item Data: {} {}/{}",
+                            item.item_name,
+                            items.len(),
+                            wfm_items.len()
+                        )
+                        .as_str(),
+                        None,
+                    );
+                }
+
                 items.push(new.clone());
             }
         }
@@ -85,7 +108,7 @@ impl<'a> ItemModule<'a> {
         let items = self.client.cache_data.lock()?.clone().item.items;
         Ok(items)
     }
-    
+
     pub fn find_type(&self, url_name: &str) -> Result<Option<Item>, AppError> {
         let types = self.client.cache_data.lock()?.clone().item.items;
         let item_type = types.iter().find(|&x| x.url_name == url_name).cloned();

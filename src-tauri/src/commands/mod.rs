@@ -7,4 +7,3 @@ pub mod orders;
 pub mod price_scraper;
 pub mod stock;
 pub mod transaction;
-pub mod whisper_scraper;

@@ -21,6 +21,10 @@ impl<'a> RivenModule<'a> {
     }
     pub async fn refresh_types(&self) -> Result<Vec<RivenTypeInfo>, AppError> {
         let wfm = self.client.wfm.lock()?.clone();
+        helper::send_message_to_window(
+            "set_initializstatus",
+            Some(json!({"status": "Downloading Riven Data from Warframe.Market..."})),
+        );
         let riven_types = wfm.auction().get_all_riven_types().await?;
 
         let arced_mutex = Arc::clone(&self.client.cache_data);
@@ -30,6 +34,10 @@ impl<'a> RivenModule<'a> {
     }
     pub async fn refresh_attributes(&self) -> Result<Vec<RivenAttributeInfo>, AppError> {
         let wfm = self.client.wfm.lock()?.clone();
+        helper::send_message_to_window(
+            "set_initializstatus",
+            Some(json!({"status": "Downloading Riven Attribute Data from Warframe.Market..."})),
+        );
         let rattributes = wfm.auction().get_all_riven_attribute_types().await?;
         let arced_mutex = Arc::clone(&self.client.cache_data);
         let mut my_lock = arced_mutex.lock()?;
