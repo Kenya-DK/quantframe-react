@@ -31,7 +31,7 @@ pub async fn create_item_stock(
 ) -> Result<serde_json::Value, AppError> {
     let db = db.lock()?.clone();
     let wfm = wfm.lock()?.clone();
-
+    
     match db
         .stock_item()
         .create(&id, quantity, price, minium_price, rank, sub_type)
@@ -67,6 +67,7 @@ pub async fn create_item_stock(
 #[tauri::command]
 pub async fn update_item_stock(
     id: i64,
+    owned: Option<i32>,
     minium_price: Option<i32>,
     db: tauri::State<'_, Arc<Mutex<DBClient>>>,
 ) -> Result<serde_json::Value, AppError> {
@@ -80,7 +81,7 @@ pub async fn update_item_stock(
     // Update Riven in Stock
     let stock = db
         .stock_item()
-        .update_by_id(id, None, None, minium_price, None)
+        .update_by_id(id, owned, None, minium_price, None)
         .await?;
     Ok(json!(stock.clone()))
 }
