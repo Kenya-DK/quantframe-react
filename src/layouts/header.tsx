@@ -69,7 +69,7 @@ export default function Hedder({ user }: TopMenuProps) {
       <Container className={classes.inner} fluid>
         <Group>
           <Group position="left" grow>
-            <Logo title={useTranslateHedder("title")} color={theme.colors.blue[7]} />
+            <Logo color={theme.colors.blue[7]} />
           </Group>
         </Group>
         <Clock />

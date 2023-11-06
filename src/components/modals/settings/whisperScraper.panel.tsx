@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "@mantine/form";
-import { Accordion, ActionIcon, Button, Divider, Group, TextInput, Tooltip } from "@mantine/core";
+import { Accordion, ActionIcon, Button, Checkbox, Divider, Group, TextInput, Tooltip } from "@mantine/core";
 import { useTranslateModal } from "@hooks/index";
 import { WhisperScraperSettings, Wfm } from "$types/index";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -16,6 +16,7 @@ export function WhisperScraperPanel({ settings, updateSettings }: LiveScraperPro
   const roleForm = useForm({
     initialValues: {
       whisper_scraper: {
+        enable: true,
         ping_on_notif: true,
         webhook: ""
       },
@@ -42,6 +43,7 @@ export function WhisperScraperPanel({ settings, updateSettings }: LiveScraperPro
                 <Group grow mt={10}>
                   <Group grow>
                     <TextInput
+                      disabled={!roleForm.values.whisper_scraper.enable}
                       label={useTranslateSettingsModal('webhook')}
                       value={roleForm.values.whisper_scraper.webhook}
                       description={useTranslateSettingsModal('webhook_description')}
@@ -60,6 +62,12 @@ export function WhisperScraperPanel({ settings, updateSettings }: LiveScraperPro
                           </Tooltip>
                         </Group>
                       }
+                    />
+                    <Checkbox
+                      label={useTranslateSettingsModal('enable')}
+                      description={useTranslateSettingsModal('enable_description')}
+                      checked={roleForm.values.whisper_scraper.enable}
+                      onChange={(event) => roleForm.setFieldValue('whisper_scraper.enable', event.currentTarget.checked)}
                     />
                   </Group>
                 </Group>
