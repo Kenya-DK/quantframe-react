@@ -79,6 +79,7 @@ export const en = {
     transactioncontrol: {
       title: "Transaction Control",
       price_scraper_start: "Start Price Scraper",
+      price_scraper_last_run: "Price Scraper Was Last Run: <blue>{{date}}</blue>",
       price_scraper_running: "Price Scraper Running",
       live_trading_start: "Start Live Trading",
       live_trading_stop: "Stop Live Trading",
@@ -243,14 +244,21 @@ export const en = {
       tabs: {
         auctions: {
           title: "Contracts",
+          tolltip: {
+            refresh: "Refresh orders",
+            delete_all: "Delete all orders",
+          },
           notifaications: {
             import_title: "Import",
             import_message: "Imported {{name}} auctions",
-            refresh_title: "Refresh",
-            refresh_message: "Contracts refreshed",
-          },
-          buttons: {
-            refresh: "Refresh Contracts",
+            refresh: {
+              title: "Refresh",
+              message: "Orders refreshed",
+            },
+            delete_all: {
+              title: "Refresh",
+              message: "Deleted {{count}} orders",
+            }
           },
           prompt: {
             import: {
@@ -259,13 +267,37 @@ export const en = {
               description: "Import auctions from warframe.market",
               placeholder: "Import",
             },
+            delete_all: {
+              title: "Delete All your orders",
+              message: "Are you sure you want to delete all your orders? This cannot be undone.",
+              confirm: "Delete",
+              cancel: "Cancel",
+            },
           },
         },
         orders: {
           title: "Orders",
+          tolltip: {
+            refresh: "Refresh orders",
+            delete_all: "Delete all orders",
+          },
+          prompt: {
+            delete_all: {
+              title: "Delete All your orders",
+              message: "Are you sure you want to delete all your orders? This cannot be undone.",
+              confirm: "Delete",
+              cancel: "Cancel",
+            },
+          },
           notifaications: {
-            refresh_title: "Refresh",
-            refresh_message: "Orders refreshed",
+            refresh: {
+              title: "Refresh",
+              message: "Orders refreshed",
+            },
+            delete_all: {
+              title: "Refresh",
+              message: "Deleted {{count}} orders",
+            }
           },
           buttons: {
             refresh: "Refresh Orders",

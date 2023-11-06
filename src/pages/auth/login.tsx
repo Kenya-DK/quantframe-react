@@ -1,4 +1,4 @@
-import { Box, Button, Center, Container, Group, PasswordInput, TextInput, Title, Paper, Checkbox } from "@mantine/core";
+import { Box, Button, Center, Container, PasswordInput, TextInput, Title, Paper } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import api from "@api/index";
 import { notifications } from "@mantine/notifications";
@@ -89,12 +89,6 @@ export default function LoginPage() {
                 error={form.errors.password && i18next.t('error.auth.password_invalid')}
                 radius="md"
               />
-              <Group position="apart" mt="lg">
-                <Checkbox label={useTraLogin('login.remember_me')}
-                  checked={form.values.rememberMe}
-                  onChange={(event) => form.setFieldValue('rememberMe', event.currentTarget.checked)}
-                  sx={{ lineHeight: 1 }} />
-              </Group>
               <Button loading={logInMutation.isLoading} type="submit" fullWidth mt="xl">
                 {useTraLogin('login.submit')}
               </Button>
