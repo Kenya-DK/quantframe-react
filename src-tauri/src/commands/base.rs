@@ -43,7 +43,7 @@ pub async fn init(
     let mut response = json!({
         "settings": &settings.clone(),
         "user": &auth.clone(),
-        "price_scraper_last_run":price_scraper.get_status(),
+        "price_scraper_last_run": price_scraper.get_status(),
     });
 
     helper::emit_undate_initializ_status("Loading Database...", None);
@@ -127,10 +127,10 @@ pub async fn init(
         helper::emit_undate_initializ_status("Loading Your Auctions...", None);
         response["auctions"] = json!(wfm.auction().get_my_auctions().await?);
     }
-    
+
     // Check for updates
     helper::emit_undate_initializ_status("Checking for updates...", None);
-    response["app_info"] = get_app_info().await?;    
+    response["app_info"] = get_app_info().await?;
 
     // Start EE Log Parser
     if !ee_log.is_running() {
@@ -212,7 +212,11 @@ pub async fn open_logs_folder() {
 }
 
 pub async fn get_app_info() -> Result<serde_json::Value, AppError> {
-    let packageinfo = PACKAGEINFO.lock().unwrap().clone().expect("Could not get package info");
+    let packageinfo = PACKAGEINFO
+        .lock()
+        .unwrap()
+        .clone()
+        .expect("Could not get package info");
     let version = packageinfo.version.to_string();
     let url = "https://raw.githubusercontent.com/Kenya-DK/quantframe-react/main/src-tauri/tauri.conf.json";
     let client = Client::new();
@@ -238,7 +242,6 @@ pub async fn get_app_info() -> Result<serde_json::Value, AppError> {
 
     let version_str = version;
     let version = version_str.replace(".", "").parse::<i32>().unwrap();
-
 
     let update_state = json!({
         "update_available": current_version > version,

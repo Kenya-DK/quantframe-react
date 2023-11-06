@@ -1,4 +1,5 @@
 use crate::error::AppError;
+use crate::logger::LogLevel;
 use crate::wfm_client::client::WFMClient;
 use crate::{helper, logger};
 use eyre::eyre;
@@ -98,13 +99,19 @@ impl PriceScraper {
         let status = response_data.status();
 
         if status != 200 {
-            return Err(AppError::new(
+            let log_level = if status == 404 {
+                LogLevel::Info
+            } else {
+                LogLevel::Error
+            };
+            return Err(AppError::new_with_level(
                 "PriceScraper",
                 eyre!(
                     "Error getting price data for day: {}. Status: {}",
                     day,
                     status
                 ),
+                log_level,
             ));
         }
         let response = response_data.json::<Value>().await.unwrap();
@@ -176,8 +183,7 @@ impl PriceScraper {
             }
 
             // Get the price data for the day for all items
-            let items = self.get_price_by_day(auth.platform.as_str(), &day).await;
-            match items {
+            match self.get_price_by_day(auth.platform.as_str(), &day).await {
                 Ok(items) => {
                     found_data += 1;
                     logger::info_con(
@@ -323,7 +329,19 @@ impl PriceScraper {
                         }
                     }
                 }
-                Err(e) => return Err(e),
+                Err(e) => {
+                    if e.log_level() == LogLevel::Info {
+                        logger::info_con(
+                            "PriceScraper",
+                            format!("No price data for day: {}", day).as_str(),
+                        );
+                    } else {
+                        crate::error::create_log_file(
+                            "priceScraper.log".to_string(),
+                            &e,
+                        );
+                    }
+                }
             }
         }
         logger::info_con(
