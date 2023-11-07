@@ -35,6 +35,7 @@ mod settings;
 mod system_tray;
 mod wf_ee_log_parser;
 mod wfm_client;
+mod qf_client;
 
 use helper::WINDOW as HE_WINDOW;
 
@@ -55,6 +56,12 @@ async fn setup_async(app: &mut App) -> Result<(), AppError> {
         &auth_arc,
     ))));
     app.manage(wfm_client.clone());
+
+    // create and manage Warframe Market API client state
+    let qf_client = Arc::new(Mutex::new(qf_client::client::QFClient::new(Arc::clone(
+        &auth_arc,
+    ))));
+    app.manage(qf_client.clone());
 
     // create and manage Cache state
     let cache_arc = Arc::new(Mutex::new(CacheClient::new(Arc::clone(&wfm_client))));

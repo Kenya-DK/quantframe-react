@@ -7,7 +7,7 @@ use crate::{
     auth::AuthState,
     error::{self},
     logger,
-    wfm_client::client::WFMClient,
+    wfm_client::client::WFMClient, qf_client::client::QFClient,
 };
 
 // Create a static variable to store the log file name
@@ -19,8 +19,22 @@ pub async fn login(
     password: String,
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<AuthState, Value> {
     let wfm = wfm.lock().expect("Could not lock wfm").clone();
+    let qf = qf.lock().expect("Could not lock qf").clone();
+
+    // Validate user in QuantFrame api
+    match qf.auth().login("".to_string(), "".to_string()).await {
+        Ok(_) => {}
+        Err(e) => {
+            let error = e.to_json();
+            error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+            return Err(error);
+        }
+    }
+
+
     match wfm.auth().login(email, password).await {
         Ok(user) => {
             if user.access_token.is_none() {
@@ -36,7 +50,7 @@ pub async fn login(
             let arced_mutex = Arc::clone(&auth);
             let mut auth = arced_mutex.lock().expect("Could not lock auth");
             auth.banned = user.banned;
-            auth.id = user.id;
+            auth.id = user.clone().id;
             auth.access_token = user.access_token;
             auth.avatar = user.avatar;
             auth.ingame_name = user.ingame_name;
@@ -44,6 +58,14 @@ pub async fn login(
             auth.platform = user.platform;
             auth.region = user.region;
             auth.role = user.role;
+                        
+            if auth.created_at.is_none() {
+                auth.created_at = Some(chrono::Utc::now().timestamp());
+                // Create User i QuantFrame api if it does not exist
+            } else {
+               
+            }
+
             auth.save_to_file().map_err(|e| e.to_json())?;
             auth.send_to_window();
             return Ok(auth.clone());

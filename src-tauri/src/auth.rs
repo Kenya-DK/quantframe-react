@@ -1,23 +1,25 @@
+use crate::error::AppError;
+use crate::helper;
+use eyre::{eyre, Result};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::path::PathBuf;
-use eyre::{eyre, Result};
-use crate::error::AppError;
-use crate::helper;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AuthState {
     pub banned: bool,
     pub id: String,
     pub access_token: Option<String>,
+    pub qf_access_token: Option<String>,
     pub avatar: Option<String>,
     pub ingame_name: String,
     pub locale: String,
     pub platform: String,
     pub region: String,
     pub role: String,
+    pub created_at: Option<i64>,
 }
 // Allow us to run AuthState::default()
 impl Default for AuthState {
@@ -26,12 +28,14 @@ impl Default for AuthState {
             banned: false,
             id: "".to_string(),
             access_token: None,
-            avatar:Some("".to_string()),
+            qf_access_token: None,
+            avatar: Some("".to_string()),
             ingame_name: "".to_string(),
             locale: "".to_string(),
             platform: "".to_string(),
             region: "".to_string(),
             role: "".to_string(),
+            created_at: Some(chrono::Utc::now().timestamp()),
         }
     }
 }
@@ -52,20 +56,26 @@ impl AuthState {
         }
     }
     pub fn save_to_file(&self) -> Result<(), AppError> {
-        let json = serde_json::to_string_pretty(self).map_err(|e| {AppError::new("AuthState", eyre!(e.to_string()))} )?;
-        let mut file = File::create(Self::get_file_path()).map_err(|e| {AppError::new("AuthState", eyre!(e.to_string()))} )?;
-        file.write_all(json.as_bytes()).map_err(|e| {AppError::new("AuthState", eyre!(e.to_string()))} )?;
+        let json = serde_json::to_string_pretty(self)
+            .map_err(|e| AppError::new("AuthState", eyre!(e.to_string())))?;
+        let mut file = File::create(Self::get_file_path())
+            .map_err(|e| AppError::new("AuthState", eyre!(e.to_string())))?;
+        file.write_all(json.as_bytes())
+            .map_err(|e| AppError::new("AuthState", eyre!(e.to_string())))?;
         Ok(())
     }
 
     pub fn read_from_file() -> Result<Self, AppError> {
-        let mut file = File::open(Self::get_file_path()).map_err(|e| {AppError::new("AuthState", eyre!(e.to_string()))} )?;
+        let mut file = File::open(Self::get_file_path())
+            .map_err(|e| AppError::new("AuthState", eyre!(e.to_string())))?;
         let mut content = String::new();
-        file.read_to_string(&mut content).map_err(|e| {AppError::new("AuthState", eyre!(e.to_string()))} )?;
-        let auth = serde_json::from_str(&content).map_err(|e| {AppError::new("AuthState", eyre!(e.to_string()))} )?;
+        file.read_to_string(&mut content)
+            .map_err(|e| AppError::new("AuthState", eyre!(e.to_string())))?;
+        let auth = serde_json::from_str(&content)
+            .map_err(|e| AppError::new("AuthState", eyre!(e.to_string())))?;
         Ok(auth)
     }
     pub fn send_to_window(&self) {
-        helper::emit_update("user","SET", Some(json!(self.clone())));
+        helper::emit_update("user", "SET", Some(json!(self.clone())));
     }
 }
