@@ -442,3 +442,19 @@ pub fn calculate_trade_tax(item_tags: Vec<String>, rank: Option<i64>) -> i64 {
     }
     2000
 }
+
+pub fn generate_random_string(length: usize) -> String {
+    let charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+                   abcdefghijklmnopqrstuvwxyz\
+                   0123456789";
+    let base: u64 = charset.chars().count() as u64;
+    let mut rng = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
+
+    (0..length)
+        .map(|_| {
+            let idx = (rng as usize) % charset.len();
+            rng = rng.wrapping_mul(1664525).wrapping_add(1013904223) % 4294967296; // LCG formula
+            charset.chars().nth(idx).unwrap()
+        })
+        .collect()
+}

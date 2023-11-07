@@ -230,7 +230,7 @@ pub struct OrderByItem {
     pub mod_rank: Option<i64>,
 
     #[serde(rename = "user")]
-    pub user: User,
+    pub user: OrderUser,
     #[serde(rename = "platform")]
     pub platform: String,
 
@@ -251,7 +251,7 @@ pub struct OrderByItem {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct User {
+pub struct OrderUser {
     #[serde(rename = "reputation")]
     pub reputation: i64,
 
