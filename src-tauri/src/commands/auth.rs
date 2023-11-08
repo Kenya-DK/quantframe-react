@@ -7,7 +7,8 @@ use crate::{
     auth::AuthState,
     error::{self},
     logger,
-    wfm_client::client::WFMClient, qf_client::client::QFClient,
+    qf_client::client::QFClient,
+    wfm_client::client::WFMClient,
 };
 
 // Create a static variable to store the log file name
@@ -34,10 +35,9 @@ pub async fn login(
         }
     }
 
-
     match wfm.auth().login(email, password).await {
         Ok(user) => {
-            if user.access_token.is_none() {
+            if user.wfm_access_token.is_none() {
                 logger::critical(
                     "WarframeMarket",
                     "No access token found for user",
@@ -58,12 +58,11 @@ pub async fn login(
             auth.platform = user.platform;
             auth.region = user.region;
             auth.role = user.role;
-                        
-            if auth.created_at.is_none() {
-                auth.created_at = Some(chrono::Utc::now().timestamp());
+
+            if auth.locale_access_token.is_none() {
+                auth.locale_access_token = Some(chrono::Utc::now().timestamp());
                 // Create User i QuantFrame api if it does not exist
             } else {
-               
             }
 
             auth.save_to_file().map_err(|e| e.to_json())?;
