@@ -16,6 +16,7 @@ use crate::{
     error::{self, AppError},
     helper, logger,
     price_scraper::PriceScraper,
+    qf_client::client::QFClient,
     settings::SettingsState,
     wf_ee_log_parser::client::EELogParser,
     wfm_client::client::WFMClient,
@@ -27,6 +28,7 @@ pub async fn init(
     settings: tauri::State<'_, Arc<Mutex<SettingsState>>>,
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
     price_scraper: tauri::State<'_, Arc<Mutex<PriceScraper>>>,
     ee_log: tauri::State<'_, Arc<std::sync::Mutex<EELogParser>>>,
@@ -37,6 +39,7 @@ pub async fn init(
     let settings = settings.lock()?.clone();
     let auth = auth.lock()?.clone();
     let wfm = wfm.lock()?.clone();
+    let qf = qf.lock()?.clone();
     let cache = cache.lock()?.clone();
     let price_scraper = price_scraper.lock()?.clone();
 
@@ -71,16 +74,14 @@ pub async fn init(
 
     // Validate Auth
     helper::emit_undate_initializ_status("Validating Credentials...", None);
-    let is_validate = match wfm.auth().validate().await {
-        Ok(is_validate) => {
-            response["valid"] = json!(is_validate);
-            is_validate
-        }
+    let is_validate = match crate::commands::auth::validate(auth, wfm.clone(), qf).await {
+        Ok(is_validate) => is_validate,
         Err(e) => {
             error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
             return Err(e);
         }
     };
+    response["valid"] = json!(is_validate);
 
     // Load Stock Items, Rivens
     helper::emit_undate_initializ_status("Loading Stock...", None);
@@ -137,6 +138,7 @@ pub async fn init(
         ee_log.start_loop();
     }
 
+    println!("{}", is_validate);
     Ok(response)
 }
 

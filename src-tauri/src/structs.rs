@@ -108,7 +108,7 @@ pub struct Order {
     pub order_type: String,
 
     #[serde(rename = "user")]
-    pub user: Option<User>,
+    pub user: Option<crate::wfm_client::structs::User>,
 
     #[serde(rename = "last_update")]
     pub last_update: String,

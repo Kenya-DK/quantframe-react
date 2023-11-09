@@ -448,7 +448,7 @@ pub fn generate_random_string(length: usize) -> String {
                    abcdefghijklmnopqrstuvwxyz\
                    0123456789";
     let base: u64 = charset.chars().count() as u64;
-    let mut rng = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
+    let mut rng = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs();
 
     (0..length)
         .map(|_| {

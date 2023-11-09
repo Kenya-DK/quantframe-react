@@ -54,7 +54,7 @@ impl<'a> AuctionModule<'a> {
 
     pub async fn get_my_auctions(&self) -> Result<Vec<Auction<String>>, AppError> {
         let auth = self.client.auth.lock()?.clone();
-        let auctions = self.get_user_auctions(auth.ingame_name.as_str()).await?;
+        let auctions = self.get_user_auctions(auth.wfm_access_token.unwrap().as_str()).await?;
         Ok(auctions)
     }
 

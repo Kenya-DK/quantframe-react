@@ -3,8 +3,7 @@ use serde_json::json;
 
 use crate::{
     auth::AuthState,
-    error::{self, AppError},
-    logger,
+    error::AppError,
     qf_client::client::QFClient,
 };
 pub struct AuthModule<'a> {
@@ -30,17 +29,16 @@ impl<'a> AuthModule<'a> {
             // The slicing and splitting logic
             let access_token: Option<String> =
                 Some(cookie_str[4..].split(';').next().unwrap_or("").to_string());
-            user.access_token = access_token;
-            user.avatar = user.avatar;
+            user.wfm_access_token = access_token;
         } else {
-            user.clone().access_token = None;
+            user.clone().wfm_access_token = None;
         }
         Ok(user)
     }
 
     pub async fn validate(&self) -> Result<Option<AuthState>, AppError> {
         let auth = self.client.auth.lock()?.clone();
-        if auth.access_token.is_none() {
+        if auth.wfm_access_token.is_none() {
             return Ok(None);
         }
         match self.client.get("/auth/me").await {
@@ -56,7 +54,7 @@ impl<'a> AuthModule<'a> {
     pub async fn registration(
         &self,
         wfm_id: String,
-        avatar: String,
+        avatar: Option<String>,
         ingame_name: String,
         locale: String,
         platform: String,
@@ -87,10 +85,9 @@ impl<'a> AuthModule<'a> {
             // The slicing and splitting logic
             let access_token: Option<String> =
                 Some(cookie_str[4..].split(';').next().unwrap_or("").to_string());
-            user.access_token = access_token;
-            user.avatar = user.avatar;
+            user.wfm_access_token = access_token;
         } else {
-            user.clone().access_token = None;
+            user.clone().wfm_access_token = None;
         }
         Ok(user)
     }

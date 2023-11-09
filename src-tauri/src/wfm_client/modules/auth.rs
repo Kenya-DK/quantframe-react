@@ -5,19 +5,19 @@ use crate::{
     auth::AuthState,
     error::{self, AppError},
     logger,
-    wfm_client::client::WFMClient,
+    wfm_client::{client::WFMClient, structs::User},
 };
 pub struct AuthModule<'a> {
     pub client: &'a WFMClient,
 }
 
 impl<'a> AuthModule<'a> {
-    pub async fn login(&self, email: String, password: String) -> Result<AuthState, AppError> {
+    pub async fn login(&self, email: String, password: String) -> Result<User, AppError> {
         let body = json!({
             "email": email,
             "password": password
         });
-        let (mut user, headers): (AuthState, HeaderMap) =
+        let (mut user, headers): (User, HeaderMap) =
             self.client.post("/auth/signin", Some("user"), body).await?;
 
         // Get the "set-cookie" header
@@ -40,7 +40,7 @@ impl<'a> AuthModule<'a> {
 
     pub async fn validate(&self) -> Result<bool, AppError> {
         let mut auth = self.client.auth.lock()?.clone();
-        if auth.access_token.is_none() {
+        if auth.wfm_access_token.is_none() {
             return Ok(false);
         }
 
@@ -73,8 +73,7 @@ impl<'a> AuthModule<'a> {
             Err(e) => {
                 let a = e.cause();
 
-                auth.access_token = None;
-                auth.id = "".to_string();
+                auth.wfm_access_token = None;
                 auth.save_to_file()?;
                 error::create_log_file("auth.log".to_string(), &e);
                 Ok(false)

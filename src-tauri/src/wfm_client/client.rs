@@ -112,7 +112,7 @@ impl WFMClient {
             .request(method.clone(), Url::parse(&new_url).unwrap())
             .header(
                 "Authorization",
-                format!("JWT {}", auth.w.unwrap_or("".to_string())),
+                format!("JWT {}",auth.wfm_access_token.unwrap_or("".to_string())),
             )
             .header(
                 "User-Agent",

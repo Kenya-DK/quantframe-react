@@ -8,38 +8,26 @@ use std::io::{Read, Write};
 use std::path::PathBuf;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct AuthState {    
+pub struct AuthState {
     // WarframeMarket specific fields
+    pub locale: String,
+    pub region: String,
+    pub ingame_name: String,
+    pub platform: String,
     pub wfm_access_token: Option<String>,
     pub qf_access_token: Option<String>,
     pub created_at: Option<i64>,
-}
-#[derive(Serialize, Deserialize)]
-pub struct Role {
-  #[serde(rename = "id")]
-  pub id: String,
-
-  #[serde(rename = "created_at")]
-  pub created_at: String,
-
-  #[serde(rename = "updated_at")]
-  pub updated_at: String,
-
-  #[serde(rename = "name")]
-  pub name: String,
-
-  #[serde(rename = "can_managed")]
-  pub can_managed: bool,
-
-  #[serde(rename = "permissions")]
-  pub permissions: String,
 }
 // Allow us to run AuthState::default()
 impl Default for AuthState {
     fn default() -> Self {
         Self {
-            wfm_access_token:None,
-            locale_access_token:None,
+            locale: "en".to_string(),
+            region: "en".to_string(),
+            ingame_name: "".to_string(),
+            platform: "".to_string(),
+            wfm_access_token: None,
+            qf_access_token: None,
             created_at: Some(chrono::Utc::now().timestamp()),
         }
     }

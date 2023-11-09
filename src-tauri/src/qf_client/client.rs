@@ -27,7 +27,6 @@ pub struct QFClient {
     endpoint: String,
     limiter: Arc<tokio::sync::Mutex<RateLimiter>>,
     pub log_file: String,
-    pub wfm: Arc<Mutex<WFMClient>>,
     pub auth: Arc<Mutex<AuthState>>,
 }
 

@@ -18,6 +18,9 @@ pub struct User {
   #[serde(rename = "check_code")]
   pub check_code: String,
 
+  #[serde(rename = "status")]
+  pub status: String,
+
   #[serde(rename = "role")]
   pub role: String,
 
@@ -53,9 +56,15 @@ pub struct User {
 
   #[serde(rename = "unread_messages")]
   pub unread_messages: i64,
+
+  #[serde(rename = "locale")]
+  pub locale: String,
+
+  #[serde(rename = "access_token")]
+  pub access_token: Option<String>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct LinkedAccounts {
   #[serde(rename = "steam_profile")]
   pub steam_profile: bool,
@@ -67,7 +76,7 @@ pub struct LinkedAccounts {
   pub xbox_profile: bool,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PatreonProfile {
   #[serde(rename = "patreon_founder")]
   pub patreon_founder: bool,

@@ -1,11 +1,11 @@
 use std::sync::{Arc, Mutex};
 
+use eyre::eyre;
 use once_cell::sync::Lazy;
-use serde_json::{json, Value};
 
 use crate::{
     auth::AuthState,
-    error::{self},
+    error::{self, AppError},
     logger,
     qf_client::client::QFClient,
     wfm_client::client::WFMClient,
@@ -21,79 +21,103 @@ pub async fn login(
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
     qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
-) -> Result<AuthState, Value> {
-    let wfm = wfm.lock().expect("Could not lock wfm").clone();
-    let qf = qf.lock().expect("Could not lock qf").clone();
+) -> Result<AuthState, AppError> {
+    let wfm = wfm.lock()?.clone();
+    let qf = qf.lock()?.clone();
     let arced_mutex = Arc::clone(&auth);
-    let mut auth = arced_mutex.lock().expect("Could not lock auth");
+    let mut auth = arced_mutex.lock().expect("Could not lock auth").clone();
 
-    let mut created_at= Some(chrono::Utc::now().timestamp());
+    let mut created_at = Some(chrono::Utc::now().timestamp());
 
-    let wfm_user = None;
+    let mut wfm_user = None;
 
-    match wfm.auth().login(email, password).await {
-        Ok(user) => {           
+    match wfm.auth().login(email.clone(), password.clone()).await {
+        Ok(user) => {
             wfm_user = Some(user.clone());
             // Check if user is banned from WarframeMarket
             if user.banned {
-                let error = AppError::new("WarframeMarket", eyre!("User is banned from WarframeMarket reason: {:?}", user.ban_reason));
+                let error = AppError::new(
+                    "WarframeMarket",
+                    eyre!(
+                        "User is banned from WarframeMarket reason: {:?}",
+                        user.ban_reason
+                    ),
+                );
                 error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &error);
-                return Err(error.to_json());
+                return Err(error);
             }
         }
         Err(e) => {
-            let error = e.to_json();
             error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
-            return Err(error);
+            return Err(e);
         }
     }
+    let wfm_user_un = wfm_user.unwrap();
 
     // Check if first time starting app
     if auth.created_at.is_some() {
         created_at = auth.created_at;
     } else {
-        match qf.auth().registration(
-            wfm_user.id,
-            wfm_user.avatar,
-            wfm_user.ingame_name,
-            wfm_user.locale,
-            wfm_user.platform,
-            wfm_user.region,
-            created_at.to_string()
-            created_at.to_string()).await {
+        let password = created_at.unwrap().to_string();
+        match qf
+            .auth()
+            .registration(
+                wfm_user_un.id.clone(),
+                wfm_user_un.avatar,
+                wfm_user_un.ingame_name,
+                wfm_user_un.locale,
+                wfm_user_un.platform,
+                wfm_user_un.region,
+                password.clone(),
+                password.clone(),
+            )
+            .await
+        {
             Ok(user) => {
-                logger::log(
-                    LogLevel::Info,
-                    &format!("User registered with QuantFrame: {:?}", user),
-                );
+                logger::info_con("QuantFrame", "User registered");
             }
             Err(e) => {
-                let error = e.to_json();
                 error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
-                return Err(error);
+                return Err(e);
             }
         }
     }
 
-    // auth.save_to_file().map_err(|e| e.to_json())?;
-    // auth.send_to_window();
-    // return Ok(auth.clone());
+    let password = created_at.unwrap().to_string();
 
-
-    if auth.access_token.is_none() {
-        return Ok(None);
-    }
-
+    
     // Validate user in QuantFrame api
-    match qf.auth().login(wfm_id.to_string(), created_at.to_string()).await {
+    match qf.auth().login(wfm_user_un.id, password).await {
         Ok(user) => {
-
+            auth.ingame_name = user.ingame_name;
+            auth.locale = user.locale;
+            auth.region = user.region;
+            auth.wfm_access_token = wfm_user_un.access_token;
+            auth.qf_access_token = user.qf_access_token;
+            auth.save_to_file().map_err(|e| e.to_json()).map_err(|e| AppError::new("Auth", eyre!(e.to_string())))?;
+            auth.send_to_window();
+            return Ok(auth.clone());
         }
         Err(e) => {
-            let error = e.to_json();
             error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
-            return Err(error);
+            return Err(e);
         }
     }
+}
 
+pub async fn validate(auth: AuthState, wfm: WFMClient, qf: QFClient) -> Result<bool, AppError> {
+    // Check WarframeMarket Credentials are valid
+
+    let is_validate = match wfm.auth().validate().await {
+        Ok(is_validate) => is_validate,
+        Err(e) => {
+            logger::warning_con(
+                "WarframeMarket",
+                format!("WarframeMarket Credentials are invalid").as_str(),
+            );
+            error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+            return Err(e);
+        }
+    };
+    Ok(is_validate)
 }
