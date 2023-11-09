@@ -34,13 +34,13 @@ pub struct User {
   pub banned: bool,
 
   #[serde(rename = "ban_reason")]
-  pub ban_reason: String,
+  pub ban_reason: Option<String>,
 
   #[serde(rename = "avatar")]
-  pub avatar: String,
+  pub avatar: Option<String>,
 
   #[serde(rename = "background")]
-  pub background: String,
+  pub background: Option<String>,
 
   #[serde(rename = "linked_accounts")]
   pub linked_accounts: LinkedAccounts,
