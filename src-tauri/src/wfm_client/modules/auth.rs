@@ -43,13 +43,14 @@ impl<'a> AuthModule<'a> {
         if auth.wfm_access_token.is_none() {
             return Ok(false);
         }
-
+        let item_id = "56783f24cbfa8f0432dd89a2";
+        let item_name = "Lex Prime Set";
         match self
             .client
             .orders()
             .create(
-                "Lex Prime Set",
-                "56783f24cbfa8f0432dd89a2",
+                item_name,
+                item_id,
                 "buy",
                 1,
                 1,
@@ -61,22 +62,14 @@ impl<'a> AuthModule<'a> {
             Ok(order) => {
                 self.client
                     .orders()
-                    .delete(
-                        &order.id.clone(),
-                        "Lex Prime Set",
-                        "56783f24cbfa8f0432dd89a2",
-                        "buy",
-                    )
+                    .delete(&order.id.clone(), item_name, item_id, "buy")
                     .await?;
                 Ok(true)
             }
             Err(e) => {
-                let a = e.cause();
-
                 auth.wfm_access_token = None;
                 auth.save_to_file()?;
-                error::create_log_file("auth.log".to_string(), &e);
-                Ok(false)
+                return Err(e);
             }
         }
     }

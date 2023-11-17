@@ -9,14 +9,16 @@ use std::path::PathBuf;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AuthState {
+    // Credentials for WarframeMarket and QuantFrame API
+    pub wfm_access_token: Option<String>,
+    pub qf_access_token: Option<String>,
+    pub code: Option<String>,
     // WarframeMarket specific fields
     pub locale: String,
     pub region: String,
     pub ingame_name: String,
     pub platform: String,
-    pub wfm_access_token: Option<String>,
-    pub qf_access_token: Option<String>,
-    pub created_at: Option<i64>,
+    pub wfm_user_id: String,
 }
 // Allow us to run AuthState::default()
 impl Default for AuthState {
@@ -26,9 +28,10 @@ impl Default for AuthState {
             region: "en".to_string(),
             ingame_name: "".to_string(),
             platform: "".to_string(),
+            wfm_user_id: "".to_string(),
             wfm_access_token: None,
             qf_access_token: None,
-            created_at: Some(chrono::Utc::now().timestamp()),
+            code: None,
         }
     }
 }

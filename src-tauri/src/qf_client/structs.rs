@@ -2,7 +2,7 @@ use serde::{de::DeserializeOwned, Deserialize, Deserializer, Serialize};
 use serde_json::Value;
 
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize,Clone, Debug)]
 pub struct User {
   #[serde(rename = "id")]
   pub id: String,
@@ -30,9 +30,12 @@ pub struct User {
 
   #[serde(rename = "region")]
   pub region: String,
+  
+  #[serde(rename = "current_version")]
+  pub current_version: String,
 
-  #[serde(rename = "active")]
-  pub active: bool,
+  #[serde(rename = "banned")]
+  pub banned: bool,
 
   #[serde(rename = "role")]
   pub role: Option<Role>,
@@ -41,7 +44,7 @@ pub struct User {
   pub role_id: Option<String>,
   
   #[serde(rename = "token")]
-  pub token: String,
+  pub token: Option<String>,
   
   // WarframeMarket specific fields
   pub wfm_access_token: Option<String>,
@@ -49,7 +52,7 @@ pub struct User {
 
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize,Clone, Debug)]
 pub struct Role {
   #[serde(rename = "id")]
   id: String,

@@ -4,23 +4,24 @@ use std::{
 };
 
 use eyre::eyre;
-use polars::{
-    prelude::{DataFrame, NamedFrom},
-    series::Series,
-};
 use reqwest::{header::HeaderMap, Client, Method, StatusCode, Url};
-use serde::de::DeserializeOwned;
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::{json, Value};
 
 use crate::{
     auth::AuthState,
-    error::AppError,
-    helper,
-    logger::{self, LogLevel},
+    error::{AppError, ErrorApiResponse},
+    logger::LogLevel,
     rate_limiter::RateLimiter,
 };
 
-use super::modules::auth::AuthModule;
+use super::modules::{auth::AuthModule, user::UserModule};
+
+#[derive(Debug)]
+pub enum ApiResult<T> {
+    Success(T, HeaderMap),
+    Error(ErrorApiResponse, HeaderMap),
+}
 
 #[derive(Clone, Debug)]
 pub struct QFClient {
@@ -33,7 +34,7 @@ pub struct QFClient {
 impl QFClient {
     pub fn new(auth: Arc<Mutex<AuthState>>) -> Self {
         QFClient {
-            endpoint: "https://api.warframe.market/v1/".to_string(),
+            endpoint: "http://localhost:6969/api/".to_string(),
             limiter: Arc::new(tokio::sync::Mutex::new(RateLimiter::new(
                 1.0,
                 Duration::new(1, 0),
@@ -42,56 +43,12 @@ impl QFClient {
             auth,
         }
     }
-
-    fn create_error(
-        &self,
-        url: &str,
-        method: Method,
-        status: StatusCode,
-        raw_response: String,
-        body: Option<Value>,
-        error: Option<String>,
-    ) -> AppError {
-        let body = match body {
-            Some(mut content) => {
-                if content["password"].is_string() {
-                    content["password"] = json!("********");
-                }
-                if content["access_token"].is_string() {
-                    content["access_token"] = json!("********");
-                }
-                if content["email"].is_string() {
-                    content["email"] = json!("********");
-                }
-                content.clone()
-            }
-            None => json!({}),
-        };
-        let data = json!({
-            "response": raw_response,
-            "payload": body,
-        });
-
-        AppError::new_with_level(
-            "WarframeMarket",
-            eyre!(
-                "Error Message: {}, Url: {}, Method: {}, Status: {}, Raw Response: [J]{}[J]",
-                error.unwrap_or("NONE".to_string()),
-                url,
-                method,
-                status,
-                data
-            ),
-            LogLevel::Error,
-        )
-    }
-
     async fn send_request<T: DeserializeOwned>(
         &self,
         method: Method,
         url: &str,
         body: Option<Value>,
-    ) -> Result<(T, HeaderMap), AppError> {
+    ) -> Result<ApiResult<T>, AppError> {
         let auth = self.auth.lock()?.clone();
         let mut rate_limiter = self.limiter.lock().await;
 
@@ -121,103 +78,110 @@ impl QFClient {
             Some(content) => request.json(&content),
             None => request,
         };
+
         // let response: Value = request.send().await?.json().await;
         let response = request.send().await;
 
+        // Create default error response
+        let mut error_def = ErrorApiResponse {
+            status_code: 500,
+            error: "UnknownError".to_string(),
+            message: vec![],
+            raw_response: None,
+            body: body.clone(),
+            url: Some(new_url.clone()),
+            method: Some(method.to_string()),
+        };
+
         if let Err(e) = response {
-            return Err(self.create_error(
-                &new_url,
-                method,
-                StatusCode::BAD_REQUEST,
-                "NO".to_string(),
-                body,
-                Some(e.to_string()),
+            error_def.message.push(e.to_string());
+            return Err(AppError::new_api(
+                "QuantframeApi",
+                error_def,
+                eyre!(""),
+                LogLevel::Critical,
             ));
         }
         let response_data = response.unwrap();
-        let status = response_data.status();
+        error_def.status_code = response_data.status().as_u16() as i64;
         let headers = response_data.headers().clone();
         let content = response_data.text().await.unwrap_or_default();
 
-        if status != 200 {
-            return Err(self.create_error(
-                &new_url,
-                method,
-                status.clone(),
-                content.clone(),
-                body.clone(),
-                None,
-            ));
-        }
-
-        let response: Value = serde_json::from_str(content.as_str()).map_err(|e| {
-            self.create_error(
-                &new_url,
-                method.clone(),
-                status.clone(),
-                content.clone(),
-                body.clone(),
-                Some(e.to_string()),
+        let mut response: Value = serde_json::from_str(content.as_str()).map_err(|e| {
+            error_def.message.push(e.to_string());
+            AppError::new_api(
+                "QuantframeApi",
+                error_def.clone(),
+                eyre!(""),
+                LogLevel::Critical,
             )
         })?;
 
+        if response.get("statusCode").is_some()
+            && response.get("error").is_some()
+            && response.get("message").is_some()
+        {
+            if response.get("message").unwrap().is_string() {
+                let msg = response.get("message");
+                response["message"] = json!([msg]);
+            }
+
+            let error: ErrorApiResponse = match serde_json::from_value(response.clone()) {
+                Ok(payload) => payload,
+                Err(e) => {
+                    error_def.message.push(e.to_string());
+                    error_def.clone()
+                }
+            };
+            error_def.error = error.error;
+            error_def.message = error.message;
+            return Ok(ApiResult::Error(error_def, headers));
+        }
+
         // Convert the response to a T object
         match serde_json::from_value(response.clone()) {
-            Ok(payload) => Ok((payload, headers)),
-            Err(e) => Err(self.create_error(
-                &new_url,
-                method,
-                status.clone(),
-                content,
-                body,
-                Some(e.to_string()),
-            )),
+            Ok(payload) => Ok(ApiResult::Success(payload, headers)),
+            Err(e) => {
+                error_def.message.push(e.to_string());
+                return Err(AppError::new_api(
+                    "QuantframeApi",
+                    error_def,
+                    eyre!(""),
+                    LogLevel::Critical,
+                ));
+            }
         }
     }
 
-    pub async fn get<T: DeserializeOwned>(
-        &self,
-        url: &str,
-    ) -> Result<(T, HeaderMap), AppError> {
-        let payload: (T, HeaderMap) = self
-            .send_request(Method::GET, url, None)
-            .await?;
-        Ok(payload)
+    pub async fn get<T: DeserializeOwned>(&self, url: &str) -> Result<ApiResult<T>, AppError> {
+        Ok(self.send_request(Method::GET, url, None).await?)
     }
 
     pub async fn post<T: DeserializeOwned>(
         &self,
         url: &str,
         body: Value,
-    ) -> Result<(T, HeaderMap), AppError> {
-        let payload: (T, HeaderMap) = self
-            .send_request(Method::POST, url,  Some(body))
-            .await?;
-        Ok(payload)
+    ) -> Result<ApiResult<T>, AppError> {
+        Ok(self.send_request(Method::POST, url, Some(body)).await?)
     }
 
-    pub async fn delete<T: DeserializeOwned>(
-        &self,
-        url: &str,
-    ) -> Result<(T, HeaderMap), AppError> {
-        let payload: (T, HeaderMap) = self
-            .send_request(Method::DELETE, url,  None)
-            .await?;
-        Ok(payload)
+    pub async fn delete<T: DeserializeOwned>(&self, url: &str) -> Result<ApiResult<T>, AppError> {
+        Ok(self.send_request(Method::DELETE, url, None).await?)
     }
 
     pub async fn put<T: DeserializeOwned>(
         &self,
         url: &str,
         body: Option<Value>,
-    ) -> Result<(T, HeaderMap), AppError> {
-        let payload: (T, HeaderMap) = self
-            .send_request(Method::PUT, url,  body)
-            .await?;
-        Ok(payload)
+    ) -> Result<ApiResult<T>, AppError> {
+        Ok(self.send_request(Method::PUT, url, body).await?)
     }
     // Add an "add" method to WFMQFClient
     pub fn auth(&self) -> AuthModule {
         AuthModule { client: self }
+    }
+    // Add an "add" method to WFMQFClient
+    pub fn user(&self) -> UserModule {
+        UserModule { client: self }
     }
 }

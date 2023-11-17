@@ -45,7 +45,6 @@ pub async fn init(
 
     let mut response = json!({
         "settings": &settings.clone(),
-        "user": &auth.clone(),
         "price_scraper_last_run": price_scraper.get_status(),
     });
 
@@ -74,14 +73,14 @@ pub async fn init(
 
     // Validate Auth
     helper::emit_undate_initializ_status("Validating Credentials...", None);
-    let is_validate = match crate::commands::auth::validate(auth, wfm.clone(), qf).await {
+    let user = match crate::commands::auth::validate(wfm.clone(), qf).await {
         Ok(is_validate) => is_validate,
         Err(e) => {
             error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
             return Err(e);
         }
     };
-    response["valid"] = json!(is_validate);
+    response["user"] = json!(user);
 
     // Load Stock Items, Rivens
     helper::emit_undate_initializ_status("Loading Stock...", None);
@@ -118,7 +117,7 @@ pub async fn init(
         }
     };
 
-    if is_validate {
+    if user.is_some() {
         helper::emit_undate_initializ_status("Loading Your Orders...", None);
         let mut ordres_vec = wfm.orders().get_my_orders().await?;
         let mut ordres = ordres_vec.buy_orders;
@@ -138,7 +137,6 @@ pub async fn init(
         ee_log.start_loop();
     }
 
-    println!("{}", is_validate);
     Ok(response)
 }
 

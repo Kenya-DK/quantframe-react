@@ -1,54 +1,71 @@
-use reqwest::header::HeaderMap;
+use std::f32::consts::E;
+
+use eyre::eyre;
 use serde_json::json;
 
 use crate::{
-    auth::AuthState,
     error::AppError,
-    qf_client::client::QFClient,
+    logger::LogLevel,
+    qf_client::{
+        client::{ApiResult, QFClient},
+        structs::User,
+    },
 };
 pub struct AuthModule<'a> {
     pub client: &'a QFClient,
 }
 
 impl<'a> AuthModule<'a> {
-    pub async fn login(&self, email: String, password: String) -> Result<AuthState, AppError> {
+    pub async fn login(&self, username: String, password: String) -> Result<User, AppError> {
         let body = json!({
-            "email": email,
+            "username": username,
             "password": password
         });
-        let (mut user, headers): (AuthState, HeaderMap) =
-            self.client.post("/auth/signin", body).await?;
 
-        // Get the "set-cookie" header
-        let cookies = headers.get("set-cookie");
-        // Check if the header is present
-        if let Some(cookie_value) = cookies {
-            // Convert HeaderValue to String
-            let cookie_str = cookie_value.to_str().unwrap_or_default();
+        let user: User = match self.client.post("auth/login", body).await {
+            Ok(ApiResult::Success(payload, _headers)) => payload,
+            Ok(ApiResult::Error(error, _headers)) => {
+                return Err(AppError::new_api(
+                    "QuantframeApi",
+                    error,
+                    eyre!(""),
+                    LogLevel::Error,
+                ));
+            }
+            Err(err) => {
+                return Err(err);
+            }
+        };
 
-            // The slicing and splitting logic
-            let access_token: Option<String> =
-                Some(cookie_str[4..].split(';').next().unwrap_or("").to_string());
-            user.wfm_access_token = access_token;
-        } else {
-            user.clone().wfm_access_token = None;
-        }
         Ok(user)
     }
 
-    pub async fn validate(&self) -> Result<Option<AuthState>, AppError> {
-        let auth = self.client.auth.lock()?.clone();
-        if auth.wfm_access_token.is_none() {
+    pub async fn validate(&self) -> Result<Option<User>, AppError> {
+        let mut auth = self.client.auth.lock()?.clone();
+        if auth.qf_access_token.is_none() {
             return Ok(None);
         }
-        match self.client.get("/auth/me").await {
-            Ok((user, _)) => {
-                Ok(Some(user))
+
+        let user: User = match self.client.get("auth/me").await {
+            Ok(ApiResult::Success(payload, _headers)) => payload,
+            Ok(ApiResult::Error(error, _headers)) => {
+                auth.qf_access_token = None;
+                auth.save_to_file()?;
+                return Err(AppError::new_api(
+                    "QuantframeApi",
+                    error,
+                    eyre!(""),
+                    LogLevel::Error,
+                ));
             }
-            Err(_e) => {
-                Ok(None)
-            }            
-        }
+            Err(err) => {
+                auth.qf_access_token = None;
+                auth.save_to_file()?;
+                return Err(err);
+            }
+        };
+        // Ok(Some(user))
+        Ok(Some(user))
     }
 
     pub async fn registration(
@@ -61,7 +78,8 @@ impl<'a> AuthModule<'a> {
         region: String,
         password: String,
         password_confirmation: String,
-    ) -> Result<AuthState, AppError> {
+        current_version: String,
+    ) -> Result<User, AppError> {        
         let body = json!({
             "wfm_id": wfm_id,
             "avatar": avatar,
@@ -69,26 +87,29 @@ impl<'a> AuthModule<'a> {
             "locale": locale,
             "platform": platform,
             "region": region,
+            "current_version": current_version,
             "password": password,
             "password_confirmation": password_confirmation
         });
-        let (mut user, headers): (AuthState, HeaderMap) =
-            self.client.post("/auth/registration", body).await?;
 
-        // Get the "set-cookie" header
-        let cookies = headers.get("set-cookie");
-        // Check if the header is present
-        if let Some(cookie_value) = cookies {
-            // Convert HeaderValue to String
-            let cookie_str = cookie_value.to_str().unwrap_or_default();
-
-            // The slicing and splitting logic
-            let access_token: Option<String> =
-                Some(cookie_str[4..].split(';').next().unwrap_or("").to_string());
-            user.wfm_access_token = access_token;
-        } else {
-            user.clone().wfm_access_token = None;
-        }
+        let user: User = match self.client.put("auth/registration", Some(body)).await {
+            Ok(ApiResult::Success(payload, _headers)) => payload,
+            Ok(ApiResult::Error(error, _headers)) => {
+                let mut log_level = LogLevel::Error;
+                if error.message.contains(&"user_already_exists".to_string()) {
+                    log_level = LogLevel::Warning;
+                }
+                return Err(AppError::new_api(
+                    "QuantframeApi",
+                    error,
+                    eyre!(""),
+                    log_level,
+                ));
+            }
+            Err(err) => {
+                return Err(err);
+            }
+        };
         Ok(user)
     }
 }

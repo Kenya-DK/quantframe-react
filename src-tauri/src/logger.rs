@@ -69,7 +69,6 @@ pub fn dolog(level: LogLevel, component: &str, msg: &str, console: bool, file: O
         LogLevel::Debug => format_square_bracket(format_text("DEBUG", "blue", true).as_str()),
         LogLevel::Trace => format_square_bracket(format_text("TRACE", "cyan", true).as_str()),
         LogLevel::Critical => format_square_bracket(format_text("CRITICAL", "red", true).as_str()),
-        _ => format_square_bracket(format_text("UNKNOWN", "white", true).as_str()),
     };
     if console {
         println!("{} {} {} {}", time, log_prefix, component, msg);
