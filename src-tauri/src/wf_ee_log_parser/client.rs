@@ -47,7 +47,7 @@ impl EELogParser {
         }
     }
     pub fn start_loop(&mut self) {
-        logger::info_con("EELogParser", "Starting Whisper Listener");
+        logger::info_con("EELogParser", "Starting EE Log Parser");
         let is_running = Arc::clone(&self.is_running);
 
         let scraper = self.clone();
