@@ -87,12 +87,12 @@ function SvgCore(props: ICoreProps) {
         <div className="rounded-full bg-slate-400 animate-pulse h-8 w-8"></div>
       )}
       {dynamicSvg.SvgIcon && (
-        <div className={wrapperStyle}>
+        <span className={wrapperStyle}>
           <dynamicSvg.SvgIcon {...{
             ...svgProp,
             fill: color,
           }} />
-        </div>
+        </span>
       )}
     </>
   );

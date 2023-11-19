@@ -49,6 +49,7 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
           blacklist: "",
           whitelist: "",
           strict_whitelist: true,
+          report_to_wfm: true,
           order_mode: "both",
         },
         stock_riven: {
@@ -200,6 +201,12 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
                       description={useTranslateSettingsModal('strict_whitelist_description')}
                       checked={roleForm.values.live_trading.stock_item.strict_whitelist}
                       onChange={(event) => roleForm.setFieldValue('live_trading.stock_item.strict_whitelist', event.currentTarget.checked)}
+                    />
+                    <Checkbox
+                      label={useTranslateSettingsModal('report_to_wfm')}
+                      description={useTranslateSettingsModal('report_to_wfm_description')}
+                      checked={roleForm.values.live_trading.stock_item.report_to_wfm}
+                      onChange={(event) => roleForm.setFieldValue('live_trading.stock_item.report_to_wfm', event.currentTarget.checked)}
                     />
                   </Group>
                 </Group>

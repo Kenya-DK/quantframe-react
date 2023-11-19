@@ -32,6 +32,7 @@ pub struct StockItemSettings {
     pub price_shift_threshold: i64,
     pub blacklist: Vec<String>,
     pub whitelist: Vec<String>,
+    pub report_to_wfm: bool,
     pub strict_whitelist: bool,
     // What to post sell, buy, or both
     pub order_mode: String,
@@ -61,6 +62,7 @@ impl Default for SettingsState {
                     blacklist: vec![],
                     whitelist: vec![],
                     strict_whitelist: false,
+                    report_to_wfm: true,
                     order_mode: "both".to_string(),
                 },
                 stock_riven: StockRivenSettings {
@@ -167,6 +169,11 @@ impl SettingsState {
                 if stock_item.get("blacklist").is_none() {
                     stock_item["blacklist"] =
                         Value::from(default_settings.live_scraper.stock_item.blacklist);
+                    is_valid = false;
+                }
+                if stock_item.get("report_to_wfm").is_none() {
+                    stock_item["report_to_wfm"] =
+                        Value::from(default_settings.live_scraper.stock_item.report_to_wfm);
                     is_valid = false;
                 }
                 if stock_item.get("whitelist").is_none() {

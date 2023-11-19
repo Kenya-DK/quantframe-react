@@ -79,6 +79,8 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
 
   const sellRiveEntryMutation = useMutation((data: { id: number, price: number }) => api.stock.riven.sell(data.id, data.price), {
     onSuccess: async (data) => {
+      console.log(data);
+
       notifications.show({
         title: useTranslateNotifaications("sell_title"),
         icon: <FontAwesomeIcon icon={faCheck} />,
@@ -379,7 +381,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                   max={999}
                   value={itemPrices[`${row.weapon_url}${row.mod_name}`] || ""}
                   onChange={(value) => setItemPrices({ ...itemPrices, [`${row.weapon_url}${row.mod_name}`]: Number(value) })}
-                  rightSectionWidth={77}
+                  rightSectionWidth={110}
                   rightSection={
                     <Group spacing={"5px"} mr={0}>
                       <Divider orientation="vertical" />
@@ -389,6 +391,14 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                           const price = itemPrices[`${row.weapon_url}${row.mod_name}`];
                           if (!price || price <= 0 || !row.id) return;
                           await sellRiveEntryMutation.mutateAsync({ id: row.id, price });
+                        }} >
+                          <FontAwesomeIcon icon={faHammer} />
+                        </ActionIcon>
+                      </Tooltip>
+                      <Tooltip label={useTranslateDataGridColumns('actions.sell_for_listed_price')}>
+                        <ActionIcon disabled={!row.listed_price} loading={sellRiveEntryMutation.isLoading} color="blue.7" variant="filled" onClick={async () => {
+                          if (!row.listed_price || !row.id) return;
+                          await sellRiveEntryMutation.mutateAsync({ id: row.id, price: row.listed_price });
                         }} >
                           <FontAwesomeIcon icon={faHammer} />
                         </ActionIcon>

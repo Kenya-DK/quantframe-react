@@ -60,6 +60,7 @@ export interface StockItemSettings {
   avg_price_cap: number;
   price_shift_threshold: number;
   strict_whitelist: boolean;
+  report_to_wfm: boolean;
   order_mode: string;
   blacklist: string[];
   whitelist: string[];

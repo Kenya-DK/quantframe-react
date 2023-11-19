@@ -64,12 +64,13 @@ export namespace Wfm {
     id: string;
     platinum: number;
     quantity: number;
+    mod_rank?: number;
     order_type: OrderType;
     platform: string;
     region: string;
     creation_date: string;
     last_update: string;
-    subtype: string;
+    subtype?: string;
     visible: boolean;
     item: OrderItemDto;
   }
@@ -85,6 +86,7 @@ export namespace Wfm {
     subtypes: string[];
     tags: string[];
     ducats: number;
+    vaulted?: boolean;
     quantity_for_set: number;
     en: LangItemNameDto;
     ru: LangItemNameDto;

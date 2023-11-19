@@ -50,7 +50,6 @@ export interface CreateStockEntryDto {
 }
 
 export interface CreateStockItemEntryDto extends CreateStockEntryDto {
-  report: boolean;
   quantity: number;
   sub_type?: string;
 }
