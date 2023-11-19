@@ -165,6 +165,7 @@ pub async fn update_settings(
     my_lock.live_scraper.stock_item.strict_whitelist =
         settings.live_scraper.stock_item.strict_whitelist;
     my_lock.live_scraper.stock_item.order_mode = settings.live_scraper.stock_item.order_mode;
+    my_lock.live_scraper.stock_item.report_to_wfm = settings.live_scraper.stock_item.report_to_wfm;
 
     // Stock Riven
     my_lock.live_scraper.stock_riven.range_threshold =

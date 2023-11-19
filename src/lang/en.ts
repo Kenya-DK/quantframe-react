@@ -119,7 +119,7 @@ export const en = {
             range_threshold: "Range Threshold",
             range_threshold_description: "Volume of plat profit per item flip the bot will look to buy/resell",
             riven_range_threshold: "Riven Range Threshold",
-            riven_range_threshold_description: "Volume of plat profit per item flip the bot will look to buy/resell",
+            riven_range_threshold_description: "Volume of profit for then riven to be sold.",
             avg_price_cap: "Average Price Cap",
             avg_price_cap_description: "Average price of the items it wants to buy",
             price_shift_threshold: "Price Shift Threshold",
@@ -132,6 +132,8 @@ export const en = {
             blacklist_placeholder: "None",
             strict_whitelist: "Strict Whitelist",
             strict_whitelist_description: "Need Info",
+            report_to_wfm: "Report to WFM",
+            report_to_wfm_description: "Will report buy/sell orders to WFM",
             ping_on_notif_description: "If you want to be pinged on discord.",
             webhook: "Webhook",
             webhook_description: "The webhook to send notifications to",
@@ -280,6 +282,13 @@ export const en = {
           tolltip: {
             refresh: "Refresh orders",
             delete_all: "Delete all orders",
+            delete: "Delete order",
+            buy_add_to_stock: "Buy and add to stock",
+            sell_remove_from_stock: "Sell and remove from stock",
+          },
+          info: {
+            buy: "Buy Orders: {{count}} ({{plat}}p)",
+            sell: "Sell Orders: {{count}} ({{plat}}p)",
           },
           prompt: {
             delete_all: {
@@ -297,25 +306,28 @@ export const en = {
             delete_all: {
               title: "Refresh",
               message: "Deleted {{count}} orders",
+            },
+            createStockItem: {
+              title: "Item added",
+              message: "Item {{name}} added successfully",
+            },
+            sellStockItem: {
+              title: "Item sold",
+              message: "Item {{name}} sold successfully for {{price}}",
+            },
+            delete_ordre: {
+              title: "Order deleted",
+              message: "Order was deleted successfully",
             }
           },
           buttons: {
             refresh: "Refresh Orders",
           },
+          rank_label: "Rank: <blue>{{rank}}</blue> of <blue>{{max_rank}}",
+          plat_label: "<blue>{{plat}}</blue> <plat/>",
+          quantity_label: "<qty/> <blue>{{quantity}}</blue>",
         },
       },
-      rank_label: "Rank: {{rank}} of {{max_rank}}",
-      plat_label: "Plat: <plat_html>{{plat}}</plat_html>",
-      buy_label: "WTB",
-      sell_label: "WTS",
-      buttons: {
-        delete: "Delete",
-        edit: "Edit",
-        bought: "Bought",
-        visible: "Visible",
-        sold: "Sold",
-        hidden: "Hidden",
-      }
     },
     auth: {
       login: {
@@ -394,6 +406,7 @@ export const en = {
               actions: {
                 title: "Actions",
                 sell: "Sell",
+                sell_for_listed_price: "Sell for listed price",
                 delete: {
                   title: "Delete",
                   message: "Are you sure you want to delete this riven?",
@@ -414,11 +427,7 @@ export const en = {
             resell: {
               label: "Resell",
               description: "Will add a buy transaction on warframe.market",
-            },
-            resell_without_report: {
-              label: "Resell without report",
-              description: "Does not report the item on warframe.market",
-            },
+            }
           },
           fields: {
             quantity: {
@@ -469,7 +478,7 @@ export const en = {
               actions: {
                 title: "Actions",
                 sell: "Sell",
-                sell_report: "Sell & Report",
+                sell_for_listed_price: "Sell for listed price",
                 delete: {
                   title: "Delete",
                   message: "Are you sure you want to delete this item?",

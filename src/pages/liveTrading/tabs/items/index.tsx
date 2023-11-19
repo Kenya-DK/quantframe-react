@@ -73,7 +73,7 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
     },
   })
 
-  const sellStockItemEntryMutation = useMutation((data: { id: number, report: boolean, price: number }) => api.stock.item.sell(data.id, data.report, data.price, 1), {
+  const sellStockItemEntryMutation = useMutation((data: { id: number, price: number }) => api.stock.item.sell(data.id, data.price, 1), {
     onSuccess: async (data) => {
       notifications.show({
         title: useTranslateNotifaications("sellStockItem.title"),
@@ -117,7 +117,6 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
 
             createStockItemEntryMutation.mutate({
               item_id: data.item_id,
-              report: data.report,
               price: data.price,
               quantity: data.quantity,
               rank: data.rank
@@ -125,7 +124,7 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
           }} />
         </Grid.Col>
         <Grid.Col span={2}>
-          <Stack spacing={1} h={"100%"} w={"100%"}
+          <Stack spacing={2} h={"100%"} w={"100%"}
             sx={{
               display: "flex",
               flexDirection: "column",
@@ -142,7 +141,7 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
       <DataTable
         striped
         mah={5}
-        height={"55vh"}
+        height={"61vh"}
         withColumnBorders
         records={rows}
         page={page}
@@ -162,7 +161,7 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
           },
           {
             accessor: 'price',
-            title: useTranslateDataGridColumns('price'),
+            title: useTranslateDataGridColumns('price')
           },
           {
             accessor: 'minium_price',
@@ -214,7 +213,7 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
             accessor: 'actions',
             width: 275,
             title: useTranslateDataGridColumns('actions.title'),
-            render: ({ id, url }) =>
+            render: ({ id, url, listed_price }) =>
               <Group grow position="center" >
                 <NumberInput
                   required
@@ -231,16 +230,15 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
                         <ActionIcon disabled={!itemPrices[url]} loading={sellStockItemEntryMutation.isLoading} color="green.7" variant="filled" onClick={async () => {
                           const price = itemPrices[url];
                           if (!price || price <= 0 || !id) return;
-                          await sellStockItemEntryMutation.mutateAsync({ id, price, report: false });
+                          await sellStockItemEntryMutation.mutateAsync({ id, price });
                         }} >
                           <FontAwesomeIcon icon={faHammer} />
                         </ActionIcon>
                       </Tooltip>
-                      <Tooltip label={useTranslateDataGridColumns('actions.sell_report')}>
-                        <ActionIcon disabled={!itemPrices[url]} loading={sellStockItemEntryMutation.isLoading} color="blue.7" variant="filled" onClick={async () => {
-                          const price = itemPrices[url];
-                          if (!price || price <= 0 || !id) return;
-                          await sellStockItemEntryMutation.mutateAsync({ id, price, report: true });
+                      <Tooltip label={useTranslateDataGridColumns('actions.sell_for_listed_price')}>
+                        <ActionIcon disabled={!listed_price} loading={sellStockItemEntryMutation.isLoading} color="blue.7" variant="filled" onClick={async () => {
+                          if (!listed_price || !id) return;
+                          await sellStockItemEntryMutation.mutateAsync({ id, price: listed_price });
                         }} >
                           <FontAwesomeIcon icon={faHammer} />
                         </ActionIcon>

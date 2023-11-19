@@ -122,6 +122,9 @@ pub struct Order {
     #[serde(rename = "creation_date")]
     pub creation_date: String,
 
+    #[serde(rename = "subtype")]
+    pub subtype: Option<String>,
+
     #[serde(rename = "quantity")]
     pub quantity: i64,
 
@@ -164,6 +167,9 @@ pub struct OrderItem {
 
     #[serde(rename = "quantity_for_set")]
     pub quantity_for_set: Option<i64>,
+
+    #[serde(rename = "vaulted")]
+    pub vaulted: Option<bool>,
 
     #[serde(rename = "en")]
     pub en: OrderItemTranslation,

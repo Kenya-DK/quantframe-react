@@ -93,7 +93,6 @@ const api = {
       create: async (input: CreateStockItemEntryDto): Promise<StockItemDto> => {
         return await invoke("create_item_stock", {
           id: input.item_id,
-          report: input.report,
           quantity: input.quantity,
           price: input.price,
           miniumPrice: input.minium_price,
@@ -104,8 +103,11 @@ const api = {
       delete: async (id: number): Promise<StockItemDto> => {
         return await invoke("delete_item_stock", { id }) as StockItemDto;
       },
-      sell: async (id: number, report: boolean, price: number, quantity: number): Promise<StockItemDto> => {
-        return await invoke("sell_item_stock", { id, report, price, quantity }) as StockItemDto;
+      sell: async (id: number, price: number, quantity: number): Promise<StockItemDto> => {
+        return await invoke("sell_item_stock", { id, price, quantity }) as StockItemDto;
+      },
+      sell_by_name: async (name: string, price: number, quantity: number): Promise<StockItemDto> => {
+        return await invoke("sell_item_stock_by_url", { name, price, quantity }) as StockItemDto;
       },
       update: async (id: number, item: Partial<StockItemDto>): Promise<StockItemDto> => {
         return await invoke("update_item_stock", { id, miniumPrice: item.minium_price }) as StockItemDto;

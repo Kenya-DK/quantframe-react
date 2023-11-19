@@ -3,6 +3,7 @@ use polars::{
     series::Series,
 };
 use reqwest::header::HeaderMap;
+use sea_query::Value;
 use serde_json::json;
 
 use crate::{
@@ -147,18 +148,29 @@ impl<'a> OrderModule<'a> {
             return Ok("No Order Found".to_string());
         }
 
-        let url = format!("profile/orders/close/{}", order.unwrap().id);
-        let result: Result<(Option<String>, HeaderMap), AppError> =
-            self.client.put(&url, Some("order_id"), None).await;
+        let mut order = order.unwrap().to_owned();
+
+        let url = format!("profile/orders/close/{}", order.id);
+        let result: Result<(Option<serde_json::Value>, HeaderMap), AppError> =
+            self.client.put(&url, Some("order"), None).await;
         match result {
             Ok((order_data, _headers)) => {
-                logger::info(
-                    "WarframeMarket",
-                    format!("Closed Order: {}", order.unwrap().id).as_str(),
-                    true,
-                    Some(self.client.log_file.as_str()),
-                );
-                Ok(order_data.unwrap_or("Order Successfully Closed".to_string()))
+                if order_data.is_none() {
+                    self.emit("DELETE", json!({ "id": &order.id }));
+                    return Ok("Order Successfully Closed".to_string());
+                } else {
+                    let order_data = order_data.unwrap();
+                    order.quantity= order_data["quantity"].as_i64().unwrap();
+                    self.emit("CREATE_OR_UPDATE", serde_json::to_value(&order).unwrap());
+                    return Ok("Order Successfully Closed and Updated".to_string());
+                }
+                // logger::info(
+                //     "WarframeMarket",
+                //     format!("Closed Order: {}", order.unwrap().id).as_str(),
+                //     true,
+                //     Some(self.client.log_file.as_str()),
+                // );
+                // Ok(order_data.unwrap_or("Order Successfully Closed".to_string()))
             }
             Err(e) => Err(e),
         }

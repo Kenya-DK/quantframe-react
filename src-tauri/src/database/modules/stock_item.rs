@@ -187,8 +187,18 @@ impl<'a> StockItemModule<'a> {
             .cache
             .lock()?
             .items()
-            .find_type(&url_name)?
-            .unwrap();
+            .find_type(&url_name)?;
+
+        let item =match item {
+            Some(t) => t,
+            None => {
+                return Err(AppError::new_with_level(
+                    "Database",
+                    eyre!("Item {} not found in cache", url_name),
+                    LogLevel::Critical,
+                ));
+            }                
+        };
 
         let inventory = match inventorys {
             Some(t) => {
@@ -353,6 +363,24 @@ impl<'a> StockItemModule<'a> {
         Ok(self
             .update_by_id(item.id, owned, price, None, listed_price)
             .await?)
+    }
+    pub async fn sell_by_url(
+        &self,
+        id: &str,
+        quantity: i32
+    ) -> Result<StockItemStruct, AppError> {
+        let items = self.get_items().await?;
+        let item = items.iter().find(|t| t.url == id);
+        if item.is_none() {
+            return Err(AppError::new_with_level(
+                "Database",
+                eyre!("Item not found in database: {}", id),
+                LogLevel::Warning,
+            ));
+        }
+        
+        let item = item.unwrap();
+        Ok(self.sell_item(item.id, quantity).await?)
     }
 
     pub async fn delete(&self, id: i64) -> Result<StockItemStruct, AppError> {

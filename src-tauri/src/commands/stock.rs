@@ -20,7 +20,6 @@ use serde_json::json;
 #[tauri::command]
 pub async fn create_item_stock(
     id: String,
-    report: bool,
     quantity: i32,
     price: f64,
     rank: i32,
@@ -28,10 +27,12 @@ pub async fn create_item_stock(
     minium_price: Option<i32>,
     db: tauri::State<'_, Arc<Mutex<DBClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+    settings: tauri::State<'_, Arc<Mutex<crate::settings::SettingsState>>>,
 ) -> Result<serde_json::Value, AppError> {
     let db = db.lock()?.clone();
     let wfm = wfm.lock()?.clone();
-    
+    let settings = settings.lock()?.clone();
+
     match db
         .stock_item()
         .create(&id, quantity, price, minium_price, rank, sub_type)
@@ -46,7 +47,7 @@ pub async fn create_item_stock(
             {
                 Ok(_) => {
                     // Send Close Event to Warframe Market API
-                    if report {
+                    if settings.live_scraper.stock_item.report_to_wfm {
                         wfm.orders().close(&id, "buy").await?;
                     }
                     return Ok(serde_json::to_value(stockitem).unwrap());
@@ -127,14 +128,15 @@ pub async fn delete_item_stock(
 #[tauri::command]
 pub async fn sell_item_stock(
     id: i64,
-    report: bool,
     quantity: i32,
     price: i32,
     db: tauri::State<'_, Arc<Mutex<DBClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+    settings: tauri::State<'_, Arc<Mutex<crate::settings::SettingsState>>>,
 ) -> Result<serde_json::Value, AppError> {
     let db = db.lock()?.clone();
     let wfm = wfm.lock()?.clone();
+    let settings = settings.lock()?.clone();
     match db.stock_item().sell_item(id, quantity).await {
         Ok(invantory) => {
             if invantory.owned == 0 {
@@ -159,7 +161,84 @@ pub async fn sell_item_stock(
                 .await?;
 
             // Send Close Event to Warframe Market API
-            if report {
+            if settings.live_scraper.stock_item.report_to_wfm {
+                wfm.orders().close(&invantory.url, "sell").await?;
+            } else {
+                let ordres: Vec<Order> = wfm.orders().get_my_orders().await?.sell_orders;
+                let order = ordres
+                    .iter()
+                    .find(|order| order.item.as_ref().unwrap().url_name == invantory.url)
+                    .clone();
+                if order.is_some() {
+                    if invantory.owned <= 0 {
+                        wfm.orders()
+                            .delete(
+                                &order.unwrap().id,
+                                &invantory.name,
+                                &invantory.wfm_id,
+                                "sell",
+                            )
+                            .await?;
+                    } else {
+                        wfm.orders()
+                            .update(
+                                &order.unwrap().id,
+                                order.unwrap().platinum as i32,
+                                invantory.owned,
+                                order.unwrap().visible,
+                                &invantory.name,
+                                &invantory.wfm_id,
+                                "sell",
+                            )
+                            .await?;
+                    }
+                }
+            }
+            return Ok(serde_json::to_value(invantory).unwrap());
+        }
+        Err(e) => {
+            error::create_log_file(db.log_file.clone(), &e);
+            return Err(e);
+        }
+    };
+}
+#[tauri::command]
+pub async fn sell_item_stock_by_url(
+    name: String,
+    quantity: i32,
+    price: i32,
+    db: tauri::State<'_, Arc<Mutex<DBClient>>>,
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+    settings: tauri::State<'_, Arc<Mutex<crate::settings::SettingsState>>>,
+) -> Result<serde_json::Value, AppError> {
+    let db = db.lock()?.clone();
+    let wfm = wfm.lock()?.clone();
+    let settings = settings.lock()?.clone();
+    match db.stock_item().sell_by_url(name.as_str(), quantity).await {
+        Ok(invantory) => {
+            if invantory.owned == 0 {
+                db.stock_item()
+                    .emit("DELETE", serde_json::to_value(invantory.clone()).unwrap());
+            } else {
+                db.stock_item().emit(
+                    "CREATE_OR_UPDATE",
+                    serde_json::to_value(invantory.clone()).unwrap(),
+                );
+            }
+            db.transaction()
+                .create(
+                    &invantory.url,
+                    "item",
+                    "sell",
+                    quantity,
+                    price,
+                    invantory.rank,
+                    None,
+                )
+                .await?;
+
+            // Send Close Event to Warframe Market API
+            if settings.live_scraper.stock_item.report_to_wfm {
                 wfm.orders().close(&invantory.url, "sell").await?;
             } else {
                 let ordres: Vec<Order> = wfm.orders().get_my_orders().await?.sell_orders;
@@ -329,7 +408,8 @@ pub async fn delete_riven_stock(
     // Delete Riven from Stock
     db.stock_riven().delete(id).await?;
 
-    // Delete Riven from Warframe Market
+    let json_stock = serde_json::to_value(&stock).unwrap();
+
     // Delete Riven from Warframe Market
     if stock.order_id.is_some() {
         let order_id = stock.order_id.unwrap();
@@ -345,7 +425,7 @@ pub async fn delete_riven_stock(
         };
     }
 
-    Ok(json!({}))
+    Ok(json_stock)
 }
 
 #[tauri::command]
@@ -400,6 +480,8 @@ pub async fn sell_riven_stock(
     // Delete Riven from Stock
     db.stock_riven().delete(id).await?;
 
+    let json_stock = serde_json::to_value(&stock).unwrap();
+
     // Delete Riven from Warframe Market
     if stock.order_id.is_some() {
         let order_id = stock.order_id.unwrap();
@@ -440,7 +522,7 @@ pub async fn sell_riven_stock(
             error::create_log_file(db.log_file.clone(), &e);
             e
         })?;
-    Ok(json!({}))
+    Ok(json_stock)
 }
 
 // -----------------------------------------------------------------------------------------------

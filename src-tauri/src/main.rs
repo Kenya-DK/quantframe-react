@@ -16,9 +16,7 @@ use tauri::async_runtime::block_on;
 use tauri::{App, Manager, SystemTrayEvent, PackageInfo};
 use wf_ee_log_parser::client::EELogParser;
 mod structs;
-mod whisper_scraper;
 use tauri::SystemTray;
-use whisper_scraper::WhisperScraper; // add this line
 
 mod auth;
 mod cache;
@@ -84,10 +82,6 @@ async fn setup_async(app: &mut App) -> Result<(), AppError> {
         Arc::clone(&database_client),
     );
     app.manage(Arc::new(Mutex::new(live_scraper)));
-
-    // create and manage WhisperScraper state
-    let whisper_scraper = WhisperScraper::new(Arc::clone(&settings_arc));
-    app.manage(Arc::new(Mutex::new(whisper_scraper)));
 
     // create and manage WhisperScraper state
     let ee_log = EELogParser::new(Arc::clone(&settings_arc));
@@ -175,6 +169,7 @@ fn main() {
             commands::stock::delete_item_stock,
             commands::stock::update_item_stock,
             commands::stock::sell_item_stock,
+            commands::stock::sell_item_stock_by_url,
             commands::stock::create_riven_stock,
             commands::stock::import_auction,
             commands::stock::delete_riven_stock,

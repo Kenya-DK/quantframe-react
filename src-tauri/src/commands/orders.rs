@@ -1,7 +1,7 @@
 use once_cell::sync::Lazy;
 use serde_json::json;
 
-use crate::{error::AppError, helper, wfm_client::client::WFMClient};
+use crate::{error::{AppError, self}, helper, wfm_client::client::WFMClient};
 use std::sync::{Arc, Mutex};
 
 // Create a static variable to store the log file name
@@ -18,6 +18,13 @@ pub async fn delete_order(
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<(), AppError> {
     let wfm = wfm.lock()?.clone();
+    match wfm.orders().delete(id.as_str(), "Any", "", "").await {
+        Ok(_) => {
+        }
+        Err(e) => {
+            error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+        }
+    }
     Ok(())
 }
 #[tauri::command]
