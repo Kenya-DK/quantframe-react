@@ -28,7 +28,7 @@ pub async fn login(
                     "WarframeMarket",
                     "No access token found for user",
                     true,
-                    Some(wfm.log_file.as_str()),
+                    Some(LOG_FILE.lock().unwrap().as_str()),
                 );
                 return Err(json!({"error": "No access token found for user"}));
             }

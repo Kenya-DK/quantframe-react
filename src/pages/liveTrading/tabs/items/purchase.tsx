@@ -1,11 +1,12 @@
 import { ActionIcon, Group, NumberInput, Tooltip } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { SearchItemField } from "../../../../components/searchItemField";
-import { CreateStockItemEntryDto, Wfm } from "../../../../types";
-import { useTranslatePage } from "../../../../hooks";
+import { SearchItemField } from "@components/searchItemField";
+import { CreateStockItemEntryDto, Wfm } from "$types/index";
+import { useTranslatePage } from "@hooks/index";
 import { useState } from "react";
 import { faShoppingCart } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useAppContext } from "@contexts/index";
 
 interface PurchaseNewItemProps {
   loading: boolean;
@@ -18,6 +19,7 @@ export const PurchaseNewItem = (props: PurchaseNewItemProps) => {
   const useTranslateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateItemPanel(`buttons.${key}`, { ...context }, i18Key)
   const { onSumit } = props;
   const [, setSelectedItem] = useState<Wfm.ItemDto | undefined>(undefined);
+  const { settings } = useAppContext();
   const roleForm = useForm({
     initialValues: {
       price: 0,
@@ -71,7 +73,7 @@ export const PurchaseNewItem = (props: PurchaseNewItemProps) => {
           onChange={(value) => roleForm.setFieldValue('price', Number(value))}
           error={roleForm.errors.price && 'Invalid identifier'}
           rightSection={
-            <Tooltip label={useTranslateButtons('resell.description')}>
+            <Tooltip label={useTranslateButtons(`resell.${settings?.live_scraper.stock_item.report_to_wfm ? "description_with_report" : "description_without_report"}`)}>
               <ActionIcon type="submit" variant="filled" color="green" disabled={roleForm.values.item.length <= 0} >
                 <FontAwesomeIcon icon={faShoppingCart} />
               </ActionIcon>

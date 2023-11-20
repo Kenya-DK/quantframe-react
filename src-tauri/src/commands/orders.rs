@@ -1,15 +1,18 @@
 use once_cell::sync::Lazy;
-use serde_json::json;
+use serde_json::{json, Value};
 
-use crate::{error::{AppError, self}, helper, wfm_client::client::WFMClient};
+use crate::{
+    error::{self, AppError},
+    helper,
+    wfm_client::client::WFMClient,
+};
 use std::sync::{Arc, Mutex};
 
 // Create a static variable to store the log file name
 static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("commands.log".to_string()));
 
 #[tauri::command]
-pub async fn get_orders(wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>) -> Result<(), AppError> {
-    let wfm = wfm.lock()?.clone();
+pub async fn get_orders(_wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>) -> Result<(), AppError> {
     Ok(())
 }
 #[tauri::command]
@@ -19,36 +22,20 @@ pub async fn delete_order(
 ) -> Result<(), AppError> {
     let wfm = wfm.lock()?.clone();
     match wfm.orders().delete(id.as_str(), "Any", "", "").await {
-        Ok(_) => {
-        }
+        Ok(_) => {}
         Err(e) => {
             error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+            return Err(e);
         }
     }
     Ok(())
 }
 #[tauri::command]
-pub async fn create_order(
-    id: String,
-    order_type: String,
-    quantity: i64,
-    price: i64,
-    rank: i64,
-    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-) -> Result<(), AppError> {
-    let wfm = wfm.lock()?.clone();
+pub async fn create_order(_wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>) -> Result<(), AppError> {
     Ok(())
 }
 #[tauri::command]
-pub async fn update_order(
-    id: String,
-    order_type: String,
-    quantity: i64,
-    price: i64,
-    rank: i64,
-    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-) -> Result<(), AppError> {
-    let wfm = wfm.lock()?.clone();
+pub async fn update_order(_wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>) -> Result<(), AppError> {
     Ok(())
 }
 

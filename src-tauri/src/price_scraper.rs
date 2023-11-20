@@ -68,7 +68,7 @@ impl PriceScraper {
             Ok(file) => Some(
                 file.metadata()
                     .unwrap()
-                    .created()
+                    .modified()
                     .unwrap()
                     .duration_since(UNIX_EPOCH)
                     .unwrap()

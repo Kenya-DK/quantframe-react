@@ -3,10 +3,8 @@ use std::sync::{Arc, Mutex};
 use once_cell::sync::Lazy;
 
 use crate::{
-    auth::AuthState,
     debug::DebugClient,
     error::{self, AppError},
-    wfm_client::client::WFMClient,
 };
 
 // Create a static variable to store the log file name
