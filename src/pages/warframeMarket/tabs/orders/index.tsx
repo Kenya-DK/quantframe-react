@@ -1,7 +1,7 @@
 import { Divider, Group, Stack, Text, Image, Box, Grid, Tooltip, ActionIcon, Paper, SimpleGrid, ScrollArea, useMantineTheme } from "@mantine/core";
 import { useCacheContext, useWarframeMarketContextContext } from "@contexts/index";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faTrashCan, faRefresh, faCartShopping } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faTrashCan, faRefresh, faCartShopping, faShoppingCart } from "@fortawesome/free-solid-svg-icons";
 import { Wfm } from "$types/index";
 import { useTranslatePage } from "@hooks/index";
 import api, { wfmThumbnail } from "@api/index";
@@ -83,6 +83,10 @@ const OrderItem = ({ max_rank, ordre }: PurchaseNewItemProps) => {
 
     }
   }
+
+
+
+
   return (
     <Paper p={10} sx={{
       boxShadow: `inset 4px 0 0 0 ${ordre.order_type === "buy" ? theme.colors.green[7] : theme.colors.violet[7]}`,
@@ -146,6 +150,7 @@ export const OrdersPanel = ({ }: OrdersPanelProps) => {
   const { orders } = useWarframeMarketContextContext();
   const { items } = useCacheContext();
   const [query, setQuery] = useState<string>("");
+  const [order_type, setOrderType] = useState<"buy" | "sell" | "all">("all");
   const theme = useMantineTheme();
 
   const [buyOrders, setBuyOrders] = useState<Wfm.OrderDto[]>([]);
@@ -178,12 +183,21 @@ export const OrdersPanel = ({ }: OrdersPanelProps) => {
     onError: () => { },
   })
 
+  const getFilterOrders = () => {
+    let ordersF = orders;
+    if (order_type != "all")
+      ordersF = orders.filter(x => x.order_type == order_type);
+    else
+      ordersF = orders;
 
-  const getOrders = () => {
-    if (query.length > 0) {
-      return orders.filter((x) => x.item.en.item_name.toLowerCase().includes(query.toLowerCase()));
-    }
-    return orders;
+    // Sort by order_type
+    return ordersF.sort((a, b) => {
+      if (a.order_type == "buy" && b.order_type == "sell")
+        return 1;
+      if (a.order_type == "sell" && b.order_type == "buy")
+        return -1;
+      return 0;
+    });
   }
 
   return (
@@ -191,7 +205,7 @@ export const OrdersPanel = ({ }: OrdersPanelProps) => {
       <Grid>
         <Grid.Col span={12}>
           <SearchField value={query} onChange={(text) => setQuery(text)}
-            rightSectionWidth={80}
+            rightSectionWidth={100}
             rightSection={
               <Group spacing={5}>
                 <Tooltip label={useTranslateOrdersPanel('tolltip.refresh')}>
@@ -199,6 +213,21 @@ export const OrdersPanel = ({ }: OrdersPanelProps) => {
                     refreshOrdersMutation.mutate();
                   }}>
                     <FontAwesomeIcon icon={faRefresh} />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label={useTranslateOrdersPanel(`sort.${order_type}`)}>
+                  <ActionIcon variant="filled"
+                    color={order_type == "buy" ? "green.7" : order_type == "sell" ? "violet.7" : "gray.7"}
+                    onClick={() => {
+                      // Switch order type
+                      if (order_type == "buy")
+                        setOrderType("sell");
+                      else if (order_type == "sell")
+                        setOrderType("all");
+                      else
+                        setOrderType("buy");
+                    }}>
+                    <FontAwesomeIcon icon={faShoppingCart} />
                   </ActionIcon>
                 </Tooltip>
                 <Tooltip label={useTranslateOrdersPanel('tolltip.delete_all')}>
@@ -241,7 +270,7 @@ export const OrdersPanel = ({ }: OrdersPanelProps) => {
             { maxWidth: '36rem', cols: 1, spacing: 'sm' },
           ]}
         >
-          {getOrders().map((order, i) => (
+          {getFilterOrders().map((order, i) => (
             <OrderItem key={i} type={order.order_type} max_rank={items.find(x => x.id == order.item.id)?.mod_max_rank || 0} ordre={order} />
           ))}
         </SimpleGrid>

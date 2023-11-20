@@ -323,6 +323,11 @@ export const en = {
           buttons: {
             refresh: "Refresh Orders",
           },
+          sort: {
+            buy: "Showing Buy Orders",
+            sell: "Showing Sell Orders",
+            all: "Showing All Orders",
+          },
           rank_label: "Rank: <blue>{{rank}}</blue> of <blue>{{max_rank}}",
           plat_label: "<blue>{{plat}}</blue> <plat/>",
           quantity_label: "<qty/> <blue>{{quantity}}</blue>",
@@ -426,7 +431,8 @@ export const en = {
           buttons: {
             resell: {
               label: "Resell",
-              description: "Will add a buy transaction on warframe.market",
+              description_with_report: "Add item to your stock and market transaction",
+              description_without_report: "Add item to your stock",
             }
           },
           fields: {
