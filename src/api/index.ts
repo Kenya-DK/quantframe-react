@@ -92,7 +92,7 @@ const api = {
     item: {
       create: async (input: CreateStockItemEntryDto): Promise<StockItemDto> => {
         return await invoke("create_item_stock", {
-          id: input.item_id,
+          urlName: input.item_id,
           quantity: input.quantity,
           price: input.price,
           miniumPrice: input.minium_price,
