@@ -23,7 +23,6 @@ interface PurchaseNewItemProps {
 const OrderItem = ({ max_rank, ordre }: PurchaseNewItemProps) => {
   const useTranslateNotifaications = (key: string, context?: { [key: string]: any }) => useTranslateOrdersPanel(`notifaications.${key}`, { ...context })
 
-
   const theme = useMantineTheme();
   const createStockItemEntryMutation = useMutation((data: CreateStockItemEntryDto) => api.stock.item.create(data), {
     onSuccess: async (data) => {
@@ -84,9 +83,6 @@ const OrderItem = ({ max_rank, ordre }: PurchaseNewItemProps) => {
     }
   }
 
-
-
-
   return (
     <Paper p={10} sx={{
       boxShadow: `inset 4px 0 0 0 ${ordre.order_type === "buy" ? theme.colors.green[7] : theme.colors.violet[7]}`,
@@ -100,10 +96,10 @@ const OrderItem = ({ max_rank, ordre }: PurchaseNewItemProps) => {
         </Box>
         <Divider />
         <Grid mt={5} mb={5}>
-          <Grid.Col sm={3} md={3} lg={2.3}>
-            <Image sx={{}} width={64} height={64} fit="contain" src={wfmThumbnail(ordre.item.icon)} />
+          <Grid.Col sm={4} md={4} lg={2.5}>
+            <Image ml={15} width={64} height={64} fit="contain" src={wfmThumbnail(ordre.item.icon)} />
           </Grid.Col>
-          <Grid.Col sm={5} md={6} lg={8.6} sx={{ display: "flex", alignItems: "center" }}>
+          <Grid.Col sm={9} md={9} lg={8.6} sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
             {ordre.mod_rank && (
               <TextColor color="gray.6" i18nKey={useTranslateOrdersPanel("rank_label", undefined, true)} values={{ max_rank: max_rank, rank: ordre.item.mod_max_rank }} />
             )}
@@ -118,7 +114,12 @@ const OrderItem = ({ max_rank, ordre }: PurchaseNewItemProps) => {
               </Text>
             )}
           </Grid.Col>
-          <Grid.Col sm={4} md={3} lg={1} sx={{ display: "flex", justifyContent: "flex-end", gap: 5 }}>
+        </Grid>
+
+        <Divider />
+        <Group grow position="apart" ml={15} mt={5}>
+          <TextColor size={"lg"} sx={{ float: "inline-end" }} color="gray.6" i18nKey={useTranslateOrdersPanel("plat_label", undefined, true)} values={{ plat: ordre.platinum }} />
+          <Group spacing={2} position="right">
             <Tooltip label={useTranslateOrdersPanel(ordre.order_type === "buy" ? "tolltip.buy_add_to_stock" : "tolltip.sell_remove_from_stock")}>
               <ActionIcon loading={sellStockItemEntryMutation.isLoading || createStockItemEntryMutation.isLoading} color="green.7" onClick={async () => handleCartClick()} >
                 <FontAwesomeIcon icon={faCartShopping} />
@@ -131,13 +132,8 @@ const OrderItem = ({ max_rank, ordre }: PurchaseNewItemProps) => {
                 <FontAwesomeIcon icon={faTrashCan} />
               </ActionIcon>
             </Tooltip>
-          </Grid.Col>
-        </Grid>
-
-        <Divider />
-        <Box p={0} m={0} sx={{ lineHeight: "1" }} >
-          <TextColor size={"lg"} sx={{ float: "inline-end" }} color="gray.6" i18nKey={useTranslateOrdersPanel("plat_label", undefined, true)} values={{ plat: ordre.platinum }} />
-        </Box>
+          </Group>
+        </Group>
       </Stack>
     </Paper>
   );
@@ -189,6 +185,9 @@ export const OrdersPanel = ({ }: OrdersPanelProps) => {
       ordersF = orders.filter(x => x.order_type == order_type);
     else
       ordersF = orders;
+
+    if (query != "")
+      ordersF = ordersF.filter((x) => x.item.en.item_name.toLowerCase().includes(query.toLowerCase()));
 
     // Sort by order_type
     return ordersF.sort((a, b) => {
