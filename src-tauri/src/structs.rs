@@ -73,6 +73,7 @@ pub struct Item {
     pub id: String,
     pub url_name: String,
     pub thumb: String,
+    pub wikia_url: Option<String>,
     pub trade_tax: Option<i64>,
     pub mr_requirement: Option<i64>,
     pub set_items: Option<Vec<String>>,

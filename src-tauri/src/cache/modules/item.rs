@@ -61,16 +61,20 @@ impl<'a> ItemModule<'a> {
                 let subtypes = self.get_string_arry_from_json(relic_data.unwrap(), "subtypes");
                 let mod_max_rank = relic_data.unwrap().get("mod_max_rank").unwrap().as_i64();
                 let mut mr_requirement: Option<i64> = Some(0);
+                let mut wikia_url: Option<String> = Some("".to_string());
                 // Find the item response2 by name property
                 let item_details = response2
                     .iter()
-                    .find(|&x| x["name"].as_str().unwrap() == item.item_name);
+                    .find(|&x| x["name"].as_str().unwrap() == item.item_name.replace("(", "").replace(")", ""));
 
                 if item_details.is_some() {
                     // Get Mastery Requirement
                     let item_details = item_details.unwrap();
                     if item_details["masteryReq"].is_i64() {
                         mr_requirement = item_details["masteryReq"].as_i64();
+                    }
+                    if item_details["wikiaUrl"].is_string() {
+                        wikia_url = item_details["wikiaUrl"].as_str().map(|s| s.to_string());
                     }
                 }
 
@@ -80,6 +84,7 @@ impl<'a> ItemModule<'a> {
                 new.mod_max_rank = mod_max_rank;
                 new.trade_tax = Some(helper::calculate_trade_tax(tags, mod_max_rank));
                 new.mr_requirement = mr_requirement;
+                new.wikia_url = wikia_url;
                 // Only send for every 10th item
                 if items.len() % 100 == 0 {
                     helper::emit_undate_initializ_status(
