@@ -50,6 +50,7 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
           whitelist: "",
           strict_whitelist: true,
           report_to_wfm: true,
+          auto_trade: false,
           order_mode: "both",
         },
         stock_riven: {
@@ -207,6 +208,12 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
                       description={useTranslateSettingsModal('report_to_wfm_description')}
                       checked={roleForm.values.live_trading.stock_item.report_to_wfm}
                       onChange={(event) => roleForm.setFieldValue('live_trading.stock_item.report_to_wfm', event.currentTarget.checked)}
+                    />
+                    <Checkbox
+                      label={useTranslateSettingsModal('auto_trade')}
+                      description={useTranslateSettingsModal('auto_trade_description')}
+                      checked={roleForm.values.live_trading.stock_item.auto_trade}
+                      onChange={(event) => roleForm.setFieldValue('live_trading.stock_item.auto_trade', event.currentTarget.checked)}
                     />
                   </Group>
                 </Group>

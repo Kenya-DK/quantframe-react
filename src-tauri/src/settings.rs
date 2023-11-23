@@ -33,6 +33,7 @@ pub struct StockItemSettings {
     pub blacklist: Vec<String>,
     pub whitelist: Vec<String>,
     pub report_to_wfm: bool,
+    pub auto_trade: bool, // Will add order to you stock automatically or remove it if you have it
     pub strict_whitelist: bool,
     // What to post sell, buy, or both
     pub order_mode: String,
@@ -63,6 +64,7 @@ impl Default for SettingsState {
                     whitelist: vec![],
                     strict_whitelist: false,
                     report_to_wfm: true,
+                    auto_trade: true,
                     order_mode: "both".to_string(),
                 },
                 stock_riven: StockRivenSettings {
@@ -174,6 +176,11 @@ impl SettingsState {
                 if stock_item.get("report_to_wfm").is_none() {
                     stock_item["report_to_wfm"] =
                         Value::from(default_settings.live_scraper.stock_item.report_to_wfm);
+                    is_valid = false;
+                }
+                if stock_item.get("auto_trade").is_none() {
+                    stock_item["auto_trade"] =
+                        Value::from(default_settings.live_scraper.stock_item.auto_trade);
                     is_valid = false;
                 }
                 if stock_item.get("whitelist").is_none() {
