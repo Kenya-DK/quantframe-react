@@ -31,7 +31,6 @@ export const PriceScraperContextProvider = ({ children }: PriceScraperContextPro
 
   useEffect(() => {
     OnTauriEvent("PriceScraper:Initialize", (data: { last_run: Date | null }) => {
-      console.log("PriceScraper:Initialize", data);
       setLastRun(data.last_run)
     });
     OnTauriEvent("PriceScraper:OnChange", (data: { max: number, min: number, current: number }) => {

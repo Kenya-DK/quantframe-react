@@ -138,7 +138,6 @@ const api = {
         return await invoke("import_auction", { id, price }) as StockRivenDto;
       },
       update: async (id: number, riven: Partial<StockRivenDto>): Promise<StockRivenDto> => {
-        console.log(riven);
         if (riven.minium_price && riven.minium_price <= 0)
           riven.minium_price = -1;
         return await invoke("update_riven_stock", { id, attributes: riven.attributes, matchRiven: riven.match_riven, miniumPrice: riven.minium_price }) as StockRivenDto;

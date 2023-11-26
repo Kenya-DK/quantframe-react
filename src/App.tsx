@@ -45,9 +45,7 @@ function App() {
         modalProps={{
           centered: true,
           classNames: classes,
-          onClose() {
-            console.log("Modal closed");
-          },
+          onClose() { },
         }}>
         <AppContextProvider>
           <AuthContextProvider>

@@ -1,7 +1,7 @@
 // import { invoke } from "@tauri-apps/api/tauri";
 import { listen } from "@tauri-apps/api/event";
 import { ComposedListener } from "./listener/Composed.listener";
-import { isPermissionGranted, sendNotification } from "@tauri-apps/api/notification";
+import { invoke } from "@tauri-apps/api";
 
 const listener = new ComposedListener();
 
@@ -18,7 +18,7 @@ export const OnTauriEvent = <T>(event: string, callback: (data: T) => void) => {
 // Handle events from rust side
 (async () => {
   listen("message", (eventIn: { payload: { event: string, data: any } }) => {
-    console.log("message", eventIn.payload);
+    console.log("Message", eventIn.payload);
 
     const { event, data } = eventIn.payload;
     if (event) {
@@ -75,9 +75,6 @@ export const SendTauriUpdateDataEvent = async (event: string, data?: any) => {
  * @param title The title of the notification.
  * @param body The body of the notification.
  */
-export const SendNotificationToWindow = async (title: string, body: string) => {
-  let permissionGranted = await isPermissionGranted();
-  if (!permissionGranted) throw new Error("Permission not granted");
-  if (permissionGranted)
-    sendNotification({ title: title, body: body });
+export const SendNotificationToWindow = async (title: string, message: string, icon?: string, sound?: string) => {
+  await invoke("show_notification", { title, message, icon, sound })
 }

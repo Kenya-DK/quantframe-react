@@ -6,6 +6,8 @@ import { faDatabase } from '@fortawesome/free-solid-svg-icons';
 import { useLiveScraperContext } from '../contexts/liveScraper.context';
 import { ButtonProgress } from './buttonProgress';
 import { useTranslateComponent } from '@hooks/index';
+
+
 import api from '../api';
 import { TextColor } from './textColor';
 import dayjs from 'dayjs';
@@ -36,7 +38,9 @@ export const TransactionControl = () => {
             />
           </Group>
           <Group position="center" spacing="xs">
-            <Button color={liveIsRunning ? "red.7" : "green.7"} leftIcon={<FontAwesomeIcon icon={faDatabase} />} onClick={async () => await api.live_scraper.start_scraper()} disabled={statsIsRunning || last_run == null}>
+            <Button color={liveIsRunning ? "red.7" : "green.7"} leftIcon={<FontAwesomeIcon icon={faDatabase} />} onClick={async () => {
+              await api.live_scraper.start_scraper()
+            }} disabled={statsIsRunning || last_run == null}>
               {liveIsRunning ? useTranslate("live_trading_stop") : useTranslate("live_trading_start")}
             </Button>
           </Group>

@@ -116,7 +116,6 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
   const useTranslateFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateSettingsModal(`fields.${key}`, { ...context }, i18Key)
   return (
     <form method="post" onSubmit={roleForm.onSubmit(async (data) => {
-      console.log(data);
       updateSettings({
         ...data.live_trading,
         stock_item: {

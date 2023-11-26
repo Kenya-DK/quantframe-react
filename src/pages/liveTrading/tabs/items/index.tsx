@@ -33,6 +33,21 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({ columnAccessor: 'listed_price', direction: 'desc' });
   const [query, setQuery] = useState<string>("");
 
+  // States For Total Price
+  const [totalPurchasePrice, setTotalPurchasePrice] = useState<number>(0);
+  const [totalListedPrice, setTotalListedPrice] = useState<number>(0);
+  const [totalProfit, setTotalProfit] = useState<number>(0);
+
+
+  useEffect(() => {
+    if (!items) return;
+    const totalPurchasePrice = items.reduce((a, b) => a + (b.price || 0) * b.owned, 0);
+    const totalListedPrice = items.reduce((a, b) => a + (b.listed_price || 0) * b.owned, 0);
+    setTotalPurchasePrice(totalPurchasePrice);
+    setTotalListedPrice(totalListedPrice);
+    setTotalProfit(totalListedPrice - totalPurchasePrice);
+  }, [items])
+
   // Update DataGrid Rows
   useEffect(() => {
     if (!items)
@@ -113,8 +128,6 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
       <Grid>
         <Grid.Col span={10}>
           <PurchaseNewItem loading={createStockItemEntryMutation.isLoading} onSumit={async (data: CreateStockItemEntryDto) => {
-            console.log(data);
-
             createStockItemEntryMutation.mutate({
               item_id: data.item_id,
               price: data.price,
@@ -132,8 +145,9 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
               alignItems: "center",
             }}
           >
-            <TextColor size={"lg"} i18nKey={useTranslateItemPanel("total_purchase_price", undefined, true)} values={{ price: items?.reduce((a, b) => a + (b.price || 0) * b.owned, 0) || 0 }} />
-            <TextColor size={"lg"} i18nKey={useTranslateItemPanel("total_listed_price", undefined, true)} values={{ price: items?.reduce((a, b) => a + (b.listed_price || 0) * b.owned, 0) || 0 }} />
+            <TextColor size={"lg"} i18nKey={useTranslateItemPanel("total_purchase_price", undefined, true)} values={{ price: totalPurchasePrice }} />
+            <TextColor size={"lg"} i18nKey={useTranslateItemPanel("total_listed_price", undefined, true)} values={{ price: totalListedPrice }} />
+            <TextColor size={"lg"} i18nKey={useTranslateItemPanel("total_profit", undefined, true)} values={{ price: totalProfit }} />
           </Stack>
         </Grid.Col>
       </Grid>

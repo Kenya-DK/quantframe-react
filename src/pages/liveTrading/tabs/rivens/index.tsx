@@ -33,7 +33,20 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
   const { rivens } = useStockContextContext();
   const { riven_items, riven_attributes } = useCacheContext();
 
+  // States For Total Price
+  const [totalPurchasePrice, setTotalPurchasePrice] = useState<number>(0);
+  const [totalListedPrice, setTotalListedPrice] = useState<number>(0);
+  const [totalProfit, setTotalProfit] = useState<number>(0);
 
+
+  useEffect(() => {
+    if (!rivens) return;
+    const totalPurchasePrice = rivens.reduce((a, b) => a + b.price, 0);
+    const totalListedPrice = rivens.reduce((a, b) => a + (b.listed_price || 0), 0);
+    setTotalPurchasePrice(totalPurchasePrice);
+    setTotalListedPrice(totalListedPrice);
+    setTotalProfit(totalListedPrice - totalPurchasePrice);
+  }, [rivens])
   // States For DataGrid
   const [page, setPage] = useState(1);
   const pageSizes = [5, 10, 15, 20, 25, 30, 50, 100];
@@ -79,8 +92,6 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
 
   const sellRiveEntryMutation = useMutation((data: { id: number, price: number }) => api.stock.riven.sell(data.id, data.price), {
     onSuccess: async (data) => {
-      console.log(data);
-
       notifications.show({
         title: useTranslateNotifaications("sell_title"),
         icon: <FontAwesomeIcon icon={faCheck} />,
@@ -185,8 +196,9 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
               alignItems: "center",
             }}
           >
-            <TextColor size={"lg"} i18nKey={useTranslateRivenPanel("total_purchase_price", undefined, true)} values={{ price: rivens?.reduce((a, b) => a + (b.price || 0), 0) || 0 }} />
-            <TextColor size={"lg"} i18nKey={useTranslateRivenPanel("total_listed_price", undefined, true)} values={{ price: rivens?.reduce((a, b) => a + (b.listed_price || 0), 0) || 0 }} />
+            <TextColor size={"lg"} i18nKey={useTranslateRivenPanel("total_purchase_price", undefined, true)} values={{ price: totalPurchasePrice }} />
+            <TextColor size={"lg"} i18nKey={useTranslateRivenPanel("total_listed_price", undefined, true)} values={{ price: totalListedPrice }} />
+            <TextColor size={"lg"} i18nKey={useTranslateRivenPanel("total_profit", undefined, true)} values={{ price: totalProfit }} />
           </Stack>
         </Grid.Col>
       </Grid>

@@ -18,8 +18,6 @@ export const MinMaxField = ({ maxAllowed, minAllowed, onChange, label, min, max 
 
   const [] = useState<number | "">("");
   const handleValueChange = (value: number | "", type: "min" | "max") => {
-    console.log(value);
-
     if (type === "min") {
       onChange(Number(value), max);
     } else {

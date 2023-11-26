@@ -139,6 +139,8 @@ export const en = {
             webhook_description: "The webhook to send notifications to",
             enable: "Notify on a new conversation",
             enable_description: "If you want to be notified on a new conversation.",
+            auto_trade: "Auto Trade",
+            auto_trade_description: "Will try to add the items you buy/sell to the stock",
             filter: {
               tax: "Tax Range",
               mr: "MR Range",
@@ -348,6 +350,7 @@ export const en = {
           title: "Stock Rivens",
           total_listed_price: "Total Listed Price: <blue>{{price}}</blue>",
           total_purchase_price: "Total Purchase Price: <blue>{{price}}</blue>",
+          total_profit: "Total Profit: <blue>{{price}}</blue>",
           infos: {
             pending_description: "Pending",
             live_description: "Live on market",
@@ -428,6 +431,7 @@ export const en = {
           title: "Stock Items",
           total_listed_price: "Total Listed Price: <blue>{{price}}</blue>",
           total_purchase_price: "Total Purchase Price: <blue>{{price}}</blue>",
+          total_profit: "Total Profit: <blue>{{price}}</blue>",
           buttons: {
             resell: {
               label: "Resell",

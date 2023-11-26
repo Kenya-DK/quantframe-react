@@ -32,7 +32,6 @@ export default function Auction({ isStock, auction, onImport }: AuctionProps) {
       const itemRiven = auction.item;
       const riven = riven_items.find(x => x.url_name === itemRiven.weapon_url_name);
       if (!riven) return console.log("Riven not found");
-      console.log(riven);
 
       setItem({
         name: `${riven.item_name} ${itemRiven.name}`,
