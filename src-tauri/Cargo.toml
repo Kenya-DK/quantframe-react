@@ -11,10 +11,10 @@ edition = "2021"
 
 
 [build-dependencies]
-tauri-build = { version = "1.4", features = [] }
+tauri-build = { version = "1.5", features = [] }
 
 [dependencies]
-tauri = { version = "1.4", features = [ "system-tray", "fs-remove-file", "fs-copy-file", "notification-all", "fs-write-file", "fs-read-dir", "fs-exists", "http-all", "path-all", "shell-open"] }
+tauri = { version = "1.5.2", features = [ "protocol-all", "system-tray", "fs-remove-file", "fs-copy-file", "notification-all", "fs-write-file", "fs-read-dir", "fs-exists", "http-all", "path-all", "shell-open"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = ["raw_value"] }
 regex = "1.9.1"
