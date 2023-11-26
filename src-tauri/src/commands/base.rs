@@ -19,7 +19,7 @@ use crate::{
     settings::SettingsState,
     wf_ee_log_parser::client::EELogParser,
     wfm_client::client::WFMClient,
-    PACKAGEINFO,
+    PACKAGEINFO, handler::MonitorHandler,
 };
 
 #[tauri::command]
@@ -261,4 +261,17 @@ pub async fn get_app_info() -> Result<serde_json::Value, AppError> {
     });
 
     Ok(rep)
+}
+
+
+#[tauri::command]
+pub fn show_notification(
+    title: String,
+    message: String,    
+    icon: Option<String>,    
+    sound: Option<String>,
+    mh: tauri::State<'_, Arc<std::sync::Mutex<MonitorHandler>>>,
+) {
+    let mh = mh.lock().unwrap();
+    mh.show_notification(&title, &message,Some("https://i.imgur.com/UggEVVI.jpeg"), sound.as_deref());
 }

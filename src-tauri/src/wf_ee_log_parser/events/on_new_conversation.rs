@@ -3,7 +3,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use crate::{error::AppError, helper, settings::SettingsState};
+use crate::{error::AppError, helper, settings::SettingsState, logger, handler::MonitorHandler};
 use eyre::eyre;
 use serde_json::json;
 
@@ -20,23 +20,27 @@ impl Events {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone,Debug)]
 pub struct OnNewConversationEvent {
     wf_ee_path: PathBuf,
     settings: Arc<Mutex<SettingsState>>,
+    helper: Arc<Mutex<MonitorHandler>>,
 }
 
 impl OnNewConversationEvent {
-    pub fn new(settings: Arc<Mutex<SettingsState>>, wf_ee_path: PathBuf) -> Self {
+    pub fn new(settings: Arc<Mutex<SettingsState>>,helper: Arc<Mutex<MonitorHandler>>, wf_ee_path: PathBuf) -> Self {
         Self {
             settings,
+            helper,
             wf_ee_path,
         }
     }
-    pub fn check(&self, _: usize, input: &str) -> Result<(), AppError> {
+
+    pub fn check(&self, _: usize, input: &str) -> Result<(bool), AppError> {
         let settings = self.settings.lock()?.clone().whisper_scraper;
+        let helper = self.helper.lock()?;
         if !settings.enable {
-            return Ok(());
+            return Ok(false);
         }
         let (found, captures) = crate::wf_ee_log_parser::events::helper::match_pattern(
             input,
@@ -45,6 +49,14 @@ impl OnNewConversationEvent {
         .map_err(|e| AppError::new("OnNewConversationEvent", eyre!(e)))?;
         if found {
             let username = captures.get(0).unwrap().clone().unwrap();
+            // &app.config().tauri.bundle.identifier
+            helper.show_notification(
+                "New Conversation",
+                &format!("You have whisper(s) from {}", username.as_str()),
+                Some("assets/icons/icon.png"),
+                Some("Default"),
+            );
+            logger::info_con("WhisperScraper", &format!("ReceivedMessage: {} received at {}", username.as_str(), chrono::Local::now().format("%Y-%m-%d %H:%M:%S")));
             crate::helper::send_message_to_window(
                 "WhisperScraper:ReceivedMessage",
                 Some(json!({ "name": username })),
@@ -56,7 +68,8 @@ impl OnNewConversationEvent {
                     settings.ping_on_notif,
                 );
             }
+            
         }
-        Ok(())
+        Ok(found)
     }
 }

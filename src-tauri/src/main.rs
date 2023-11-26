@@ -5,6 +5,7 @@ use cache::client::CacheClient;
 use database::client::DBClient;
 use debug::DebugClient;
 use error::AppError;
+use handler::MonitorHandler;
 use live_scraper::client::LiveScraperClient;
 use once_cell::sync::Lazy;
 use price_scraper::PriceScraper;
@@ -12,9 +13,11 @@ use settings::SettingsState;
 use std::panic;
 use std::sync::Arc;
 use std::{env, sync::Mutex};
+use tauri::api::notification::Notification;
 use tauri::async_runtime::block_on;
-use tauri::{App, Manager, SystemTrayEvent, PackageInfo};
+use tauri::{App, Manager, PackageInfo, SystemTrayEvent};
 use wf_ee_log_parser::client::EELogParser;
+mod handler;
 mod structs;
 use tauri::SystemTray;
 
@@ -39,8 +42,16 @@ use helper::WINDOW as HE_WINDOW;
 pub static PACKAGEINFO: Lazy<Mutex<Option<PackageInfo>>> = Lazy::new(|| Mutex::new(None));
 
 async fn setup_async(app: &mut App) -> Result<(), AppError> {
+    // Get the main window
+    let window = app.get_window("main").unwrap().clone();        
+    // create and manage PriceScraper state
+    let monitor_handler_arc: Arc<Mutex<MonitorHandler>> = Arc::new(Mutex::new(MonitorHandler::new(
+        window.clone(),
+        app.handle().clone(),
+    )));
+    app.manage(monitor_handler_arc.clone());
+
     // create and manage Settings state
-    // let se=SettingsState::setup()?;
     let settings_arc = Arc::new(Mutex::new(SettingsState::setup()?));
     app.manage(settings_arc.clone());
 
@@ -84,9 +95,8 @@ async fn setup_async(app: &mut App) -> Result<(), AppError> {
     app.manage(Arc::new(Mutex::new(live_scraper)));
 
     // create and manage WhisperScraper state
-    let ee_log = EELogParser::new(Arc::clone(&settings_arc));
+    let ee_log = EELogParser::new(Arc::clone(&settings_arc), Arc::clone(&monitor_handler_arc),Arc::clone(&cache_arc));
     app.manage(Arc::new(Mutex::new(ee_log)));
-
     // create and manage WhisperScraper state
     let debug_client = DebugClient::new(
         Arc::clone(&cache_arc),
@@ -111,15 +121,17 @@ fn main() {
 
     tauri::Builder::default()
         .system_tray(SystemTray::new().with_menu(system_tray::client::get_tray_menu()))
-        .on_system_tray_event(|app, event| match event {
+        .on_system_tray_event(|_app, event| match event {
             SystemTrayEvent::MenuItemClick { id, .. } => {
                 system_tray::client::get_tray_event(id);
             }
             _ => {}
         })
         .setup(move |app| {
+            // Get the main window
+            let window = app.get_window("main").unwrap().clone();           
+
             // Get the 'main' window and store it
-            let window = app.get_window("main").unwrap().clone();
             *HE_WINDOW.lock().unwrap() = Some(window.clone());
 
             // Get the package info and store it
@@ -149,6 +161,7 @@ fn main() {
             commands::base::update_settings,
             commands::base::get_weekly_rivens,
             commands::base::open_logs_folder,
+            commands::base::show_notification,
             commands::auth::login,
             commands::transaction::create_transaction_entry,
             commands::transaction::delete_transaction_entry,

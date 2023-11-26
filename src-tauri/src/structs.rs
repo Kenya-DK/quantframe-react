@@ -1,6 +1,39 @@
 use serde::{de::DeserializeOwned, Deserialize, Deserializer, Serialize};
-use serde_json::Value;
 
+#[derive(PartialEq, Eq, Hash,Debug)]
+pub enum WarframeLanguage {
+    English, // Add other language variants as needed
+    French,
+    Spanish,
+    German,
+    Russian,
+    Unknown,
+}
+#[derive(Clone,Serialize,Deserialize, PartialEq, Eq, Hash,Debug)]
+pub enum TradeClassification {
+    Sale,
+    Purchase,
+    Trade,
+    Unknown,
+}
+
+impl Default for WarframeLanguage {
+    fn default() -> Self {
+        WarframeLanguage::English
+    }
+}
+impl WarframeLanguage {
+    pub fn from_str(s: &str) -> Self {
+        match s {
+            "en" => WarframeLanguage::English,
+            "fr" => WarframeLanguage::French,
+            "es" => WarframeLanguage::Spanish,
+            "de" => WarframeLanguage::German,
+            "ru" => WarframeLanguage::Russian,
+            _ => WarframeLanguage::Unknown,
+        }
+    }    
+}
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct RivenTypeInfo {
     #[serde(rename = "thumb")]
@@ -214,7 +247,7 @@ pub struct RivenAttribute {
 
     #[serde(rename = "url_name")]
     pub url_name: String,
-    
+
     #[serde(rename = "match")]
     pub match_type: Option<bool>,
 }
@@ -385,13 +418,13 @@ pub struct AuctionItem {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AuctionOwner {
     #[serde(rename = "ingame_name")]
-    pub  ingame_name: String,
+    pub ingame_name: String,
 
     #[serde(rename = "last_seen")]
-    pub  last_seen: String,
+    pub last_seen: String,
 
     #[serde(rename = "reputation")]
-    pub  reputation: i64,
+    pub reputation: i64,
 
     #[serde(rename = "locale")]
     pub locale: String,
@@ -400,11 +433,11 @@ pub struct AuctionOwner {
     pub status: String,
 
     #[serde(rename = "id")]
-    pub  id: String,
+    pub id: String,
 
     #[serde(rename = "region")]
     pub region: String,
 
     #[serde(rename = "avatar")]
-   pub avatar: Option<String>,
+    pub avatar: Option<String>,
 }

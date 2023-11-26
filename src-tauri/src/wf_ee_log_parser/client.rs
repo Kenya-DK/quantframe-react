@@ -1,4 +1,7 @@
+use crate::cache::client::CacheClient;
+use crate::database::client::DBClient;
 use crate::error::AppError;
+use crate::handler::MonitorHandler;
 use crate::settings::SettingsState;
 use crate::{helper, logger};
 use serde_json::json;
@@ -27,7 +30,11 @@ pub struct EELogParser {
 }
 
 impl EELogParser {
-    pub fn new(settings: Arc<Mutex<SettingsState>>) -> Self {
+    pub fn new(
+        settings: Arc<Mutex<SettingsState>>,
+        mh: Arc<Mutex<MonitorHandler>>,
+        cache: Arc<Mutex<CacheClient>>,
+    ) -> Self {
         let wf_ee_path = helper::get_app_local_path().join("Warframe").join("EE.log");
         Self {
             is_running: Arc::new(AtomicBool::new(false)),
@@ -38,12 +45,15 @@ impl EELogParser {
             cold_start: Arc::new(AtomicBool::new(true)),
             event_conversation: Arc::new(Mutex::new(OnNewConversationEvent::new(
                 Arc::clone(&settings),
+                Arc::clone(&mh),
                 wf_ee_path.clone(),
             ))),
             event_trading: Arc::new(Mutex::new(OnTradingEvent::new(
                 Arc::clone(&settings),
+                Arc::clone(&mh),
+                Arc::clone(&cache),
                 wf_ee_path.clone(),
-            )))
+            ))),
         }
     }
     pub fn start_loop(&mut self) {
@@ -84,13 +94,17 @@ impl EELogParser {
 
         // Events to check
         let event_conversation = self.event_conversation.lock()?.clone();
-        let event_trading = self.event_trading.lock()?.clone();
+        let mut event_trading = self.event_trading.lock()?;
 
         match new_lines_result {
             Ok(new_lines) => {
                 for line in new_lines {
-                    event_conversation.check(line.0, &line.1)?;
-                    event_trading.check(line.0, &line.1)?;
+                    if event_conversation.check(line.0, &line.1)? {
+                        continue;
+                    }
+                    if event_trading.check(line.0, &line.1)? {
+                        continue;
+                    }
                 }
             }
             Err(err) => {
@@ -115,7 +129,7 @@ impl EELogParser {
 
         let mut last_file_size = self.last_file_size.lock().unwrap();
         let mut last_line_index = self.last_line_index.lock().unwrap();
-        if *last_file_size > current_file_size || current_file_size< *last_file_size {
+        if *last_file_size > current_file_size || current_file_size < *last_file_size {
             *last_file_size = 0;
             *last_line_index = 0;
         }

@@ -41,6 +41,7 @@ impl<'a> ItemModule<'a> {
             _ => return Err(AppError::new("LiveScraper", eyre!("Expected f64 values"))),
         };
 
+        
         // Get current orders from Warframe Market Sell and Buy orders
         let (mut current_buy_orders_df, current_sell_orders_df) =
             wfm.orders().get_orders_as_dataframe().await?;

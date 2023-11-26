@@ -78,6 +78,7 @@ impl LiveScraperClient {
     pub fn is_running(&self) -> bool {
         self.is_running.load(Ordering::SeqCst)
     }
+
     pub fn start_loop(&mut self) -> Result<(), AppError> {
         self.is_running.store(true, Ordering::SeqCst);
         let is_running = Arc::clone(&self.is_running);
