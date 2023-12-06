@@ -13,7 +13,7 @@ use crate::{
     error::{self, AppError},
     logger,
     structs::{Order, RivenAttribute},
-    wfm_client::client::WFMClient,
+    wfm_client::client::WFMClient, enums::OrderType,
 };
 use eyre::eyre;
 use once_cell::sync::Lazy;
@@ -69,7 +69,7 @@ pub async fn create_item_stock(
             return Err(e);
         }
     };
-    match wfm.orders().close(&url_name, "buy").await {
+    match wfm.orders().close(&url_name, OrderType::Buy).await {
         Ok(_) => {
             return Ok(json!(stockitem));
         }
@@ -85,6 +85,7 @@ pub async fn update_item_stock(
     id: i64,
     owned: Option<i32>,
     minium_price: Option<i32>,
+    hidden: Option<bool>,
     db: tauri::State<'_, Arc<Mutex<DBClient>>>,
 ) -> Result<serde_json::Value, AppError> {
     let db = db.lock()?.clone();
@@ -97,7 +98,7 @@ pub async fn update_item_stock(
     // Update Riven in Stock
     match db
         .stock_item()
-        .update_by_id(id, owned, None, minium_price, None)
+        .update_by_id(id, owned, None, minium_price, None, hidden)
         .await
     {
         Ok(stock) => {
@@ -214,7 +215,7 @@ pub async fn sell_item_stock(
 
     if settings.live_scraper.stock_item.report_to_wfm {
         // Send Close Event to Warframe Market API
-        match wfm.orders().close(&invantory.url, "sell").await {
+        match wfm.orders().close(&invantory.url, OrderType::Sell).await {
             Ok(_) => {}
             Err(e) => {
                 error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
@@ -389,7 +390,6 @@ pub async fn create_riven_stock(
             return Err(e);
         }
     }
-    
 }
 #[tauri::command]
 pub async fn import_auction(
@@ -500,6 +500,7 @@ pub async fn update_riven_stock(
     attributes: Option<Vec<RivenAttribute>>,
     match_riven: Option<MatchRivenStruct>,
     minium_price: Option<i32>,
+    private: Option<bool>,
     db: tauri::State<'_, Arc<Mutex<DBClient>>>,
 ) -> Result<serde_json::Value, AppError> {
     let db = db.lock()?.clone();
@@ -522,6 +523,7 @@ pub async fn update_riven_stock(
             match_riven,
             minium_price,
             None,
+            private,
         )
         .await?;
     Ok(json!(stock.clone()))

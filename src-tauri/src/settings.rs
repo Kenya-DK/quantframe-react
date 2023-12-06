@@ -4,6 +4,7 @@ use std::fs::File;
 use std::io::{self, Read, Write};
 use std::path::PathBuf;
 
+use crate::enums::{OrderMode, StockMode};
 use crate::error::AppError;
 use crate::{helper, logger};
 use eyre::eyre;
@@ -15,6 +16,9 @@ pub struct SettingsState {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct LiveScraperSettings {
+    // Stock Mode
+    pub stock_mode: StockMode,
+    // Discord Webhook
     pub webhook: String,
     // Stock Item Settings
     pub stock_item: StockItemSettings,
@@ -36,23 +40,38 @@ pub struct StockItemSettings {
     pub auto_trade: bool, // Will add order to you stock automatically or remove it if you have it
     pub strict_whitelist: bool,
     // What to post sell, buy, or both
-    pub order_mode: String,
+    pub order_mode: OrderMode,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StockRivenSettings {
     pub range_threshold: i64,
 }
+
+#[derive(Clone, Debug,Serialize, Deserialize)]
+pub struct Notification {
+    pub enable: bool,
+    pub content: String,
+    pub title: String,
+    // Use For Discord
+    pub webhook: Option<String>,
+    pub user_ids: Option<Vec<String>>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct NewConversion {
+    pub discord: Notification,
+    pub system: Notification,
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WhisperSettings {
-    pub enable: bool,
-    pub ping_on_notif: bool,
-    pub webhook: String,
+    pub on_new_conversation: NewConversion,
 }
 // Allow us to run AuthState::default()
 impl Default for SettingsState {
     fn default() -> Self {
         Self {
             live_scraper: LiveScraperSettings {
+                stock_mode: StockMode::All,
                 webhook: "".to_string(),
                 stock_item: StockItemSettings {
                     volume_threshold: 15,
@@ -65,16 +84,29 @@ impl Default for SettingsState {
                     strict_whitelist: false,
                     report_to_wfm: true,
                     auto_trade: true,
-                    order_mode: "both".to_string(),
+                    order_mode: OrderMode::Both 
                 },
                 stock_riven: StockRivenSettings {
                     range_threshold: 25,
                 },
             },
             whisper_scraper: WhisperSettings {
-                enable: true,
-                ping_on_notif: false,
-                webhook: "".to_string(),
+                on_new_conversation: NewConversion {
+                    discord: Notification {
+                        enable: true,
+                        content: "From: <PLAYER_NAME>".to_string(),
+                        title: "New Conversation".to_string(),
+                        webhook: Some("".to_string()),
+                        user_ids: Some(vec![]),
+                    },
+                    system: Notification {
+                        enable: true,
+                        content: "From: <PLAYER_NAME>".to_string(),
+                        title: "You have a new in-game conversation!".to_string(),
+                        webhook: None,
+                        user_ids: None,
+                    },
+                },
             },
         }
     }
@@ -136,6 +168,10 @@ impl SettingsState {
                 live_scraper["webhook"] = Value::from(default_settings.live_scraper.webhook);
                 is_valid = false;
             }
+            if live_scraper.get("stock_mode").is_none() {
+                live_scraper["stock_mode"] = Value::from(default_settings.live_scraper.stock_mode.as_str());
+                is_valid = false;
+            }
 
             // Check for nested properties within 'stock_item'
             if let Some(stock_item) = live_scraper.get_mut("stock_item") {
@@ -194,8 +230,7 @@ impl SettingsState {
                     is_valid = false;
                 }
                 if stock_item.get("order_mode").is_none() {
-                    stock_item["order_mode"] =
-                        Value::from(default_settings.live_scraper.stock_item.order_mode);
+                    stock_item["order_mode"] = Value::from(default_settings.live_scraper.stock_item.order_mode.as_str());
                     is_valid = false;
                 }
             } else {
@@ -237,17 +272,126 @@ impl SettingsState {
 
         // Check for nested properties within 'whisper_scraper'
         if let Some(whisper_scraper) = json_value.get_mut("whisper_scraper") {
-            if whisper_scraper.get("enable").is_none() {
-                whisper_scraper["enable"] = Value::from(default_settings.whisper_scraper.enable);
-                is_valid = false;
-            }
-            if whisper_scraper.get("ping_on_notif").is_none() {
-                whisper_scraper["ping_on_notif"] =
-                    Value::from(default_settings.whisper_scraper.ping_on_notif);
-                is_valid = false;
-            }
-            if whisper_scraper.get("webhook").is_none() {
-                whisper_scraper["webhook"] = Value::from(default_settings.whisper_scraper.webhook);
+            // Check for nested properties within 'on_new_conversation'
+            if let Some(on_new_conversation) = whisper_scraper.get_mut("on_new_conversation") {
+                // Check for nested properties within 'on_new_conversation'
+                if let Some(system) = on_new_conversation.get_mut("system") {
+                    if system.get("enable").is_none() {
+                        system["enable"] = Value::from(
+                            default_settings
+                                .whisper_scraper
+                                .on_new_conversation
+                                .system
+                                .enable,
+                        );
+                        is_valid = false;
+                    }
+                    if system.get("title").is_none() {
+                        system["title"] = Value::from(
+                            default_settings
+                                .whisper_scraper
+                                .on_new_conversation
+                                .system
+                                .title,
+                        );
+                        is_valid = false;
+                    }
+                    if system.get("content").is_none() {
+                        system["content"] = Value::from(
+                            default_settings
+                                .whisper_scraper
+                                .on_new_conversation
+                                .system
+                                .content,
+                        );
+                        is_valid = false;
+                    }
+                } else {
+                    // If 'stock_item' itself doesn't exist, add it
+                    on_new_conversation["system"] = serde_json::to_value(
+                        default_settings.whisper_scraper.on_new_conversation.system,
+                    )
+                    .map_err(|e| AppError::new("Settings", eyre!(e.to_string())))?;
+                    logger::info_con(
+                        "Settings",
+                        "Added 'on_new_conversation system' to settings.json",
+                    );
+                    is_valid = false;
+                }
+
+                // Check for nested properties within 'on_new_conversation'
+                if let Some(discord) = on_new_conversation.get_mut("discord") {
+                    if discord.get("enable").is_none() {
+                        discord["enable"] = Value::from(
+                            default_settings
+                                .whisper_scraper
+                                .on_new_conversation
+                                .discord
+                                .enable,
+                        );
+                        is_valid = false;
+                    }
+                    if discord.get("title").is_none() {
+                        discord["title"] = Value::from(
+                            default_settings
+                                .whisper_scraper
+                                .on_new_conversation
+                                .discord
+                                .title,
+                        );
+                        is_valid = false;
+                    }
+                    if discord.get("content").is_none() {
+                        discord["content"] = Value::from(
+                            default_settings
+                                .whisper_scraper
+                                .on_new_conversation
+                                .discord
+                                .content,
+                        );
+                        is_valid = false;
+                    }
+                    if discord.get("webhook").is_none() {
+                        discord["webhook"] = Value::from(
+                            default_settings
+                                .whisper_scraper
+                                .on_new_conversation
+                                .discord
+                                .webhook,
+                        );
+                        is_valid = false;
+                    }
+                    if discord.get("user_ids").is_none() {
+                        discord["user_ids"] = Value::from(
+                            default_settings
+                                .whisper_scraper
+                                .on_new_conversation
+                                .discord
+                                .user_ids,
+                        );
+                        is_valid = false;
+                    }
+                } else {
+                    // If 'stock_item' itself doesn't exist, add it
+                    on_new_conversation["discord"] = serde_json::to_value(
+                        default_settings.whisper_scraper.on_new_conversation.discord,
+                    )
+                    .map_err(|e| AppError::new("Settings", eyre!(e.to_string())))?;
+                    logger::info_con(
+                        "Settings",
+                        "Added 'on_new_conversation discord' to settings.json",
+                    );
+                    is_valid = false;
+                }
+            } else {
+                // If 'stock_item' itself doesn't exist, add it
+                whisper_scraper["on_new_conversation"] =
+                    serde_json::to_value(default_settings.whisper_scraper.on_new_conversation)
+                        .map_err(|e| AppError::new("Settings", eyre!(e.to_string())))?;
+                logger::info_con(
+                    "Settings",
+                    "Added 'whisper_scraper on_new_conversation' to settings.json",
+                );
                 is_valid = false;
             }
         } else {

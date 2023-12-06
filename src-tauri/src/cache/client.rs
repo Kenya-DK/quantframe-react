@@ -19,7 +19,7 @@ use crate::{
     auth::AuthState,
     error::AppError,
     helper,
-    logger::{self, LogLevel},
+    logger::{self},
     rate_limiter::RateLimiter,
     structs::{Item, RivenAttributeInfo, RivenTypeInfo},
     wfm_client::client::WFMClient,

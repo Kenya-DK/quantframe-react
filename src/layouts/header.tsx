@@ -1,7 +1,7 @@
-import { Avatar, Group, Header, Menu, createStyles, rem, Container, ActionIcon, useMantineTheme } from "@mantine/core";
+import { Avatar, Group, Header, Menu, createStyles, rem, Container, ActionIcon, useMantineTheme, Indicator } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFolder, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+import { faEnvelope, faFolder, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateLayout } from "@hooks/index";
 import { SettingsModal } from "@components/modals/settings";
 import { DeepPartial, Settings, Wfm } from "$types/index";
@@ -10,7 +10,7 @@ import { modals } from "@mantine/modals";
 import { Logo } from "../components/logo";
 import Clock from "../components/clock";
 import api, { wfmThumbnail } from "@api/index";
-import { useAppContext, useCacheContext } from "../contexts";
+import { useAppContext, useCacheContext, useChatContext, useSocketContextContext } from "../contexts";
 import { notifications } from "@mantine/notifications";
 interface TopMenuProps {
   opened: boolean;
@@ -40,14 +40,25 @@ const useStyles = createStyles((theme) => ({
 export default function Hedder({ user }: TopMenuProps) {
   const theme = useMantineTheme();
   const { classes } = useStyles();
+  const { socket } = useSocketContextContext();
   const [, setUserMenuOpened] = useState(false);
+  const { unread_messages } = useChatContext();
   const [avatar, setAvatar] = useState<string | undefined>(undefined);
   const { settings } = useAppContext();
   const { items } = useCacheContext();
-
+  const [status, setStatus] = useState<string>("gray.7");
   useEffect(() => {
     setAvatar(`${wfmThumbnail(user?.avatar || "")}`);
   }, [user?.avatar]);
+  useEffect(() => {
+    if (user?.status === Wfm.UserStatus.Online) {
+      setStatus("darkgreen");
+    } else if (user?.status === Wfm.UserStatus.Ingame) {
+      setStatus("mediumpurple");
+    } else if (user?.status === Wfm.UserStatus.Invisible) {
+      setStatus("darkred");
+    }
+  }, [user?.status]);
 
   const useTranslateHedder = (key: string, context?: { [key: string]: any }) => useTranslateLayout(`header.${key}`, { ...context })
 
@@ -63,6 +74,12 @@ export default function Hedder({ user }: TopMenuProps) {
     });
   }
 
+  const SetUserStatus = async (status: Wfm.UserStatus) => {
+    socket?.send(JSON.stringify({
+      type: "@WS/USER/SET_STATUS",
+      payload: status
+    }));
+  }
 
   return (
     <Header height={HEADER_HEIGHT} sx={{ borderBottom: 0 }} mb={120}>
@@ -84,7 +101,9 @@ export default function Hedder({ user }: TopMenuProps) {
             >
               <Menu.Target>
                 <ActionIcon color="pink" size="xs">
-                  <Avatar variant="subtle" src={avatar} alt={user.ingame_name} radius="xl" size={"sm"} />
+                  <Indicator inline size={12} offset={7} position="bottom-start" color={status} >
+                    <Avatar variant="subtle" src={avatar} alt={user.ingame_name} radius="xl" size={"md"} />
+                  </Indicator>
                 </ActionIcon>
               </Menu.Target>
               <Menu.Dropdown>
@@ -108,6 +127,18 @@ export default function Hedder({ user }: TopMenuProps) {
                 </Menu.Item>
                 <Menu.Item icon={<FontAwesomeIcon icon={faRightFromBracket} />}>
                   {useTranslateHedder("profile.logout")}
+                </Menu.Item>
+                <Menu.Divider />
+
+                <Menu.Label>{useTranslateHedder("profile.status.title")}</Menu.Label>
+                <Menu.Item color="darkgreen" onClick={() => SetUserStatus(Wfm.UserStatus.Online)}>
+                  {useTranslateHedder("profile.status.online")}
+                </Menu.Item>
+                <Menu.Item color="mediumpurple" onClick={() => SetUserStatus(Wfm.UserStatus.Ingame)}>
+                  {useTranslateHedder("profile.status.ingame")}
+                </Menu.Item>
+                <Menu.Item color="gray.5" onClick={() => SetUserStatus(Wfm.UserStatus.Invisible)}>
+                  {useTranslateHedder("profile.status.invisible")}
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>)}

@@ -16,8 +16,8 @@ use crate::{
     auth::AuthState,
     error::AppError,
     helper,
-    logger::{self, LogLevel},
-    rate_limiter::RateLimiter,
+    logger::{self},
+    rate_limiter::RateLimiter, enums::LogLevel,
 };
 
 use super::modules::{

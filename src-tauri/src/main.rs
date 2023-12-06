@@ -17,6 +17,7 @@ use tauri::api::notification::Notification;
 use tauri::async_runtime::block_on;
 use tauri::{App, Manager, PackageInfo, SystemTrayEvent};
 use wf_ee_log_parser::client::EELogParser;
+mod enums;
 mod handler;
 mod structs;
 use tauri::SystemTray;
@@ -43,12 +44,11 @@ pub static PACKAGEINFO: Lazy<Mutex<Option<PackageInfo>>> = Lazy::new(|| Mutex::n
 
 async fn setup_async(app: &mut App) -> Result<(), AppError> {
     // Get the main window
-    let window = app.get_window("main").unwrap().clone();        
+    let window = app.get_window("main").unwrap().clone();
     // create and manage PriceScraper state
-    let monitor_handler_arc: Arc<Mutex<MonitorHandler>> = Arc::new(Mutex::new(MonitorHandler::new(
-        window.clone(),
-        app.handle().clone(),
-    )));
+    let monitor_handler_arc: Arc<Mutex<MonitorHandler>> = Arc::new(Mutex::new(
+        MonitorHandler::new(window.clone(), app.handle().clone()),
+    ));
     app.manage(monitor_handler_arc.clone());
 
     // create and manage Settings state
@@ -95,7 +95,11 @@ async fn setup_async(app: &mut App) -> Result<(), AppError> {
     app.manage(Arc::new(Mutex::new(live_scraper)));
 
     // create and manage WhisperScraper state
-    let ee_log = EELogParser::new(Arc::clone(&settings_arc), Arc::clone(&monitor_handler_arc),Arc::clone(&cache_arc));
+    let ee_log = EELogParser::new(
+        Arc::clone(&settings_arc),
+        Arc::clone(&monitor_handler_arc),
+        Arc::clone(&cache_arc),
+    );
     app.manage(Arc::new(Mutex::new(ee_log)));
     // create and manage WhisperScraper state
     let debug_client = DebugClient::new(
@@ -120,6 +124,7 @@ fn main() {
     }));
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_websocket::init())
         .system_tray(SystemTray::new().with_menu(system_tray::client::get_tray_menu()))
         .on_system_tray_event(|_app, event| match event {
             SystemTrayEvent::MenuItemClick { id, .. } => {
@@ -129,7 +134,7 @@ fn main() {
         })
         .setup(move |app| {
             // Get the main window
-            let window = app.get_window("main").unwrap().clone();           
+            let window = app.get_window("main").unwrap().clone();
 
             // Get the 'main' window and store it
             *HE_WINDOW.lock().unwrap() = Some(window.clone());
@@ -163,6 +168,8 @@ fn main() {
             commands::base::open_logs_folder,
             commands::base::show_notification,
             commands::auth::login,
+            commands::base::log,
+            commands::auth::update_user_status,
             commands::transaction::create_transaction_entry,
             commands::transaction::delete_transaction_entry,
             commands::transaction::update_transaction_entry,
@@ -177,6 +184,8 @@ fn main() {
             commands::orders::create_order,
             commands::orders::update_order,
             commands::orders::delete_all_orders,
+            commands::chat::get_chat,
+            commands::chat::delete_chat,
             // Stock commands
             commands::stock::create_item_stock,
             commands::stock::delete_item_stock,

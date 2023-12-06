@@ -41,6 +41,14 @@ export const OnTauriUpdateDataEvent = <T>(type: string, callback: (data: { opera
   listener.add(`Client:Update:${type}`, callback);
 }
 
+// This function allows you to listen for a socket event with the given event name.
+// When the event is triggered, the provided callback function will be called with the event data.
+export const OnSocketEvent = <T>(event: string, callback: (data: T) => void) => {
+  // The 'add' method adds a listener for the event with the given name.
+  // When the event is triggered, the callback function will be called with the event data.
+  listener.add(`Client:Socket:${event}`, callback);
+}
+
 /**
  * Removes the given callback function from the list of functions to be called when a Tauri event with the given name is emitted.
  * If no callback function is provided, all callbacks for the given event are removed.
@@ -67,6 +75,15 @@ export const SendTauriEvent = async (event: string, data?: any) => {
  */
 export const SendTauriUpdateDataEvent = async (event: string, data?: any) => {
   listener.fire(`Client:Update:${event}`, data);
+}
+
+// This function sends a socket event with the given event name and data.
+// The event name is prefixed with "Client:Socket:" to distinguish it from other types of events.
+export const SendSocketEvent = async (event: string, data?: any) => {
+  console.log("SendSocketEvent", event, data);
+
+  // The 'fire' method triggers the event with the given name and data.
+  listener.fire(`Client:Socket:${event}`, data);
 }
 
 /**

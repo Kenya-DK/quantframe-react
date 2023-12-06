@@ -3,8 +3,8 @@ use crate::{
     database::client::DBClient,
     error::AppError,
     helper,
-    logger::{self, LogLevel},
-    structs::RivenAttribute,
+    logger::{self},
+    structs::RivenAttribute, enums::LogLevel,
 };
 use eyre::eyre;
 use polars::{
@@ -31,6 +31,7 @@ pub enum StockItem {
     MiniumPrice,
     ListedPrice,
     Owned,
+    Hidden,
     Created,
 }
 
@@ -48,6 +49,7 @@ pub struct StockItemStruct {
     pub minium_price: Option<i32>,
     pub listed_price: Option<i32>,
     pub owned: i32,
+    pub hidden: bool,
     pub created: String,
 }
 
@@ -104,6 +106,12 @@ impl<'a> StockItemModule<'a> {
                     .not_null()
                     .default(Value::Int(Some(1))),
             )
+            .col(
+                ColumnDef::new(StockItem::Hidden)
+                    .boolean()
+                    .not_null()
+                    .default(Value::Bool(Some(false))),
+            )
             .col(ColumnDef::new(StockItem::Created).date_time().not_null())
             .build(SqliteQueryBuilder);
 
@@ -112,7 +120,7 @@ impl<'a> StockItemModule<'a> {
             .await
             .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
 
-        let table = Table::alter()
+        let mut table = Table::alter()
             .table(StockItem::Table)
             .add_column(
                 ColumnDef::new(StockItem::MiniumPrice)
@@ -120,6 +128,18 @@ impl<'a> StockItemModule<'a> {
                     .default(Value::Int(None)),
             )
             .to_string(SqliteQueryBuilder);
+        helper::alter_table(connection.clone(), &table).await?;
+
+        table = Table::alter()
+            .table(StockItem::Table)
+            .add_column(
+                ColumnDef::new(StockItem::Hidden)
+                    .boolean()
+                    .not_null()
+                    .default(Value::Bool(Some(false))),
+            )
+            .to_string(SqliteQueryBuilder);
+
         helper::alter_table(connection.clone(), &table).await?;
 
         Ok(true)
@@ -141,6 +161,7 @@ impl<'a> StockItemModule<'a> {
                 StockItem::MiniumPrice,
                 StockItem::ListedPrice,
                 StockItem::Owned,
+                StockItem::Hidden,
                 StockItem::Created,
             ])
             .from(StockItem::Table)
@@ -202,8 +223,15 @@ impl<'a> StockItemModule<'a> {
                 let total_price = (t.price * t.owned as f64) + price as f64;
                 let weighted_price = total_price / total_owned as f64;
 
-                self.update_by_id(t.id, Some(total_owned), Some(weighted_price), None, None)
-                    .await?;
+                self.update_by_id(
+                    t.id,
+                    Some(total_owned),
+                    Some(weighted_price),
+                    None,
+                    None,
+                    None,
+                )
+                .await?;
                 let mut t = t.clone();
                 t.owned = total_owned;
                 t.price = weighted_price;
@@ -224,6 +252,7 @@ impl<'a> StockItemModule<'a> {
                     minium_price,
                     listed_price: None,
                     owned: quantity as i32,
+                    hidden: false,
                     created: chrono::Local::now().naive_local().to_string(),
                 };
 
@@ -239,6 +268,7 @@ impl<'a> StockItemModule<'a> {
                         StockItem::Price,
                         StockItem::MiniumPrice,
                         StockItem::Owned,
+                        StockItem::Hidden,
                         StockItem::Created,
                     ])
                     .values_panic([
@@ -251,6 +281,7 @@ impl<'a> StockItemModule<'a> {
                         inventory.price.into(),
                         inventory.minium_price.into(),
                         inventory.owned.into(),
+                        inventory.hidden.into(),
                         inventory.created.clone().into(),
                     ])
                     .to_string(SqliteQueryBuilder);
@@ -279,6 +310,7 @@ impl<'a> StockItemModule<'a> {
         price: Option<f64>,
         minium_price: Option<i32>,
         listed_price: Option<i32>,
+        hidden: Option<bool>,
     ) -> Result<StockItemStruct, AppError> {
         let connection = self.client.connection.lock().unwrap().clone();
         let items = self.get_items().await?;
@@ -319,6 +351,11 @@ impl<'a> StockItemModule<'a> {
             values.push((StockItem::ListedPrice, listed_price.into()));
         }
 
+        if hidden.is_some() {
+            inventory.hidden = hidden.unwrap();
+            values.push((StockItem::Hidden, hidden.into()));
+        }
+
         let sql = Query::update()
             .table(StockItem::Table)
             .values(values)
@@ -342,6 +379,7 @@ impl<'a> StockItemModule<'a> {
         owned: Option<i32>,
         price: Option<f64>,
         listed_price: Option<i32>,
+        hidden: Option<bool>,
     ) -> Result<StockItemStruct, AppError> {
         let items = self.get_items().await?;
         let item = items.iter().find(|t| t.url == id);
@@ -353,10 +391,10 @@ impl<'a> StockItemModule<'a> {
             ));
         }
         let item = item.unwrap();
-        self.update_by_id(item.id, owned, price, None, listed_price)
+        self.update_by_id(item.id, owned, price, None, listed_price, hidden)
             .await?;
         Ok(self
-            .update_by_id(item.id, owned, price, None, listed_price)
+            .update_by_id(item.id, owned, price, None, listed_price, hidden)
             .await?)
     }
 
@@ -408,14 +446,26 @@ impl<'a> StockItemModule<'a> {
         if inventory.owned <= 0 {
             self.delete(id).await?;
         } else {
-            self.update_by_id(id, Some(inventory.owned.clone()), None, None, None)
-                .await?;
+            self.update_by_id(
+                id,
+                Some(inventory.owned.clone()),
+                None,
+                None,
+                Some(-1),
+                None,
+            )
+            .await?;
         }
         Ok(inventory.clone())
     }
 
     pub async fn get_items_names(&self) -> Result<Vec<String>, AppError> {
         let inventorys = self.get_items().await?;
+        // Return all hidden items and where owned is under 1
+        let inventorys = inventorys
+            .iter()
+            .filter(|t| t.hidden == false && t.owned > 0)
+            .collect::<Vec<_>>();
         let names = inventorys.iter().map(|t| t.url.clone()).collect::<Vec<_>>();
         Ok(names)
     }

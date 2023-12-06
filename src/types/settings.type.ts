@@ -51,6 +51,7 @@ export interface Settings {
 
 export interface LiveScraperSettings {
   webhook: string;
+  stock_mode: string;
   stock_item: StockItemSettings;
   stock_riven: StockRivenSettings;
 }
@@ -71,9 +72,21 @@ export interface StockRivenSettings {
   range_threshold: number;
 }
 
-export interface WhisperScraperSettings {
+export interface NotificationBase {
   enable: boolean;
-  ping_on_notif: boolean;
+  title: string;
+  content: string;
+}
+
+export interface NotificationDiscord extends NotificationBase {
   webhook: string;
+  user_ids: string[];
+}
+export interface NewConversion {
+  discord: NotificationDiscord;
+  system: NotificationBase;
+}
+export interface WhisperScraperSettings {
+  on_new_conversation: NewConversion;
 }
 

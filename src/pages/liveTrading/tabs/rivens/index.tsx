@@ -1,11 +1,11 @@
-import { Image, Group, Stack, NumberInput, Divider, Tooltip, ActionIcon, Text, Box, useMantineTheme, Grid } from "@mantine/core";
+import { Image, Group, Stack, Tooltip, ActionIcon, Text, Box, useMantineTheme, Grid } from "@mantine/core";
 import { useCacheContext, useStockContextContext } from "@contexts/index";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { useTranslatePage } from "@hooks/index";
 import api, { wfmThumbnail } from "@api/index";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faComment, faEdit, faHammer, faMagnifyingGlass, faPlus, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faComment, faEdit, faEye, faEyeSlash, faHammer, faMagnifyingGlass, faPen, faPlus, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { useMutation } from "@tanstack/react-query";
 import { RivenAttributes } from "@components/auction/rivenAttributes";
 import { CreateStockRivenEntryDto, StockRivenDto } from "$types/index";
@@ -87,8 +87,6 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
       </Group>
     );
   }
-  const [itemPrices, setItemPrices] = useState<Record<string, number>>({});
-
 
   const sellRiveEntryMutation = useMutation((data: { id: number, price: number }) => api.stock.riven.sell(data.id, data.price), {
     onSuccess: async (data) => {
@@ -382,63 +380,67 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
           },
           {
             accessor: 'actions',
-            width: 180,
+            width: 170,
             title: useTranslateDataGridColumns('actions.title'),
             render: (row) =>
-              <Group grow position="center" >
-                <NumberInput
-                  required
-                  size='sm'
-                  min={0}
-                  max={999}
-                  value={itemPrices[`${row.weapon_url}${row.mod_name}`] || ""}
-                  onChange={(value) => setItemPrices({ ...itemPrices, [`${row.weapon_url}${row.mod_name}`]: Number(value) })}
-                  rightSectionWidth={110}
-                  rightSection={
-                    <Group spacing={"5px"} mr={0}>
-                      <Divider orientation="vertical" />
-                      <Tooltip label={useTranslateDataGridColumns('actions.sell')}>
-                        <ActionIcon disabled={!itemPrices[`${row.weapon_url}${row.mod_name}`]} loading={sellRiveEntryMutation.isLoading} color="green.7" variant="filled" onClick={async (e) => {
-                          e.stopPropagation();
-                          const price = itemPrices[`${row.weapon_url}${row.mod_name}`];
+              <Group spacing={"5px"} mr={0}>
+                <Tooltip label={useTranslateDataGridColumns('actions.sell.title')}>
+                  <ActionIcon loading={sellRiveEntryMutation.isLoading} color="green.7" variant="filled" onClick={async (e) => {
+                    e.stopPropagation();
+                    modals.openContextModal({
+                      modal: 'prompt',
+                      title: useTranslateDataGridColumns("actions.sell.prompt.title"),
+                      innerProps: {
+                        fields: [{ name: 'price', description: useTranslateDataGridColumns("actions.sell.prompt.description"), label: useTranslateDataGridColumns("actions.sell.prompt.label"), type: 'number', value: 0, }],
+                        onConfirm: async (data: { price: number }) => {
+                          const { price } = data;
                           if (!price || price <= 0 || !row.id) return;
                           await sellRiveEntryMutation.mutateAsync({ id: row.id, price });
-                        }} >
-                          <FontAwesomeIcon icon={faHammer} />
-                        </ActionIcon>
-                      </Tooltip>
-                      <Tooltip label={useTranslateDataGridColumns('actions.sell_for_listed_price')}>
-                        <ActionIcon disabled={!row.listed_price} loading={sellRiveEntryMutation.isLoading} color="blue.7" variant="filled" onClick={async () => {
-                          if (!row.listed_price || !row.id) return;
-                          await sellRiveEntryMutation.mutateAsync({ id: row.id, price: row.listed_price });
-                        }} >
-                          <FontAwesomeIcon icon={faHammer} />
-                        </ActionIcon>
-                      </Tooltip>
-                      <Tooltip label={useTranslateDataGridColumns('actions.delete.title')}>
-                        <ActionIcon color="red.7" variant="filled" onClick={async () => {
-                          modals.openConfirmModal({
-                            title: useTranslateDataGridColumns('actions.delete.title'),
-                            children: (<Text>
-                              {useTranslateDataGridColumns('actions.delete.message', { name: `${row.weapon_name} ${row.mod_name}` })}
-                            </Text>),
-                            labels: {
-                              confirm: useTranslateDataGridColumns('actions.delete.buttons.confirm'),
-                              cancel: useTranslateDataGridColumns('actions.delete.buttons.cancel')
-                            },
-                            confirmProps: { color: 'red' },
-                            onConfirm: async () => {
-                              if (!row.id) return;
-                              await deleteInvantoryEntryMutation.mutateAsync(row.id);
-                            }
-                          })
-                        }} >
-                          <FontAwesomeIcon icon={faTrashCan} />
-                        </ActionIcon>
-                      </Tooltip>
-                    </Group>
-                  }
-                />
+                        },
+                        onCancel: (id: string) => modals.close(id),
+                      },
+                    })
+                  }} >
+                    <FontAwesomeIcon icon={faPen} />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label={useTranslateDataGridColumns('actions.sell_for_listed_price')}>
+                  <ActionIcon disabled={!row.listed_price} loading={sellRiveEntryMutation.isLoading} color="blue.7" variant="filled" onClick={async () => {
+                    if (!row.listed_price || !row.id) return;
+                    await sellRiveEntryMutation.mutateAsync({ id: row.id, price: row.listed_price });
+                  }} >
+                    <FontAwesomeIcon icon={faHammer} />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label={useTranslateDataGridColumns(`actions.is_private.${row.private ? "enable" : "disable"}`)}>
+                  <ActionIcon loading={sellRiveEntryMutation.isLoading} color={`${row.private ? "red.7" : "green.7"}`} variant="filled" onClick={async () => {
+                    if (!row.id) return;
+                    await updateRiveEntryMutation.mutateAsync({ id: row.id, riven: { private: !row.private } });
+                  }} >
+                    <FontAwesomeIcon icon={row.private ? faEye : faEyeSlash} />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label={useTranslateDataGridColumns('actions.delete.title')}>
+                  <ActionIcon color="red.7" variant="filled" onClick={async () => {
+                    modals.openConfirmModal({
+                      title: useTranslateDataGridColumns('actions.delete.title'),
+                      children: (<Text>
+                        {useTranslateDataGridColumns('actions.delete.message', { name: `${row.weapon_name} ${row.mod_name}` })}
+                      </Text>),
+                      labels: {
+                        confirm: useTranslateDataGridColumns('actions.delete.buttons.confirm'),
+                        cancel: useTranslateDataGridColumns('actions.delete.buttons.cancel')
+                      },
+                      confirmProps: { color: 'red' },
+                      onConfirm: async () => {
+                        if (!row.id) return;
+                        await deleteInvantoryEntryMutation.mutateAsync(row.id);
+                      }
+                    })
+                  }} >
+                    <FontAwesomeIcon icon={faTrashCan} />
+                  </ActionIcon>
+                </Tooltip>
               </Group>
           },
         ]}

@@ -8,17 +8,7 @@ use std::{
     path::PathBuf,
 };
 
-#[derive(PartialEq, Serialize, Debug, Clone)]
-pub enum LogLevel {
-    Info,
-    Warning,
-    Error,
-    Debug,
-    Trace,
-    Critical,
-}
-
-use crate::helper;
+use crate::{helper, enums::LogLevel};
 
 pub fn format_text(text: &str, color: &str, bold: bool) -> String {
     let color_code = match color {
@@ -107,15 +97,17 @@ pub fn get_log_forlder() -> PathBuf {
     if !log_path.exists() {
         fs::create_dir_all(&log_path).unwrap();
     }
-    log_path
-}
-
-pub fn clear_log_folder() {
-    let log_path = get_log_forlder();
+    //create a folder for the current date
+    let date = chrono::Local::now()
+        .naive_utc()
+        .format("%Y-%m-%d")
+        .to_string();
+    let log_path = log_path.join(date);
     // Create the directory if it does not exist
-    if log_path.exists() {
-        fs::remove_dir_all(&log_path).unwrap();
+    if !log_path.exists() {
+        fs::create_dir_all(&log_path).unwrap();
     }
+    log_path
 }
 
 pub fn debug(component: &str, msg: &str, console: bool, file: Option<&str>) {

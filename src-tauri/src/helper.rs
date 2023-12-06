@@ -17,8 +17,9 @@ use tauri::Window;
 
 use crate::{
     error::AppError,
-    logger::{self, LogLevel},
+    logger::{self},
     structs::WarframeLanguage,
+    PACKAGEINFO,
 };
 pub static WINDOW: Lazy<Mutex<Option<Window>>> = Lazy::new(|| Mutex::new(None));
 
@@ -341,30 +342,51 @@ pub fn last_x_days(x: i64) -> Vec<String> {
         .rev()
         .collect()
 }
-pub fn send_message_to_discord(webhook: String, message: String, ping: bool) {
+pub fn send_message_to_discord(
+    webhook: String,
+    title: String,
+    content: String,
+    user_ids: Option<Vec<String>>,
+) {
+    // Check if the webhook is empty
+    if webhook.is_empty() {
+        logger::warning_con("Helper", "Discord webhook is empty");
+        return;
+    }
     tauri::async_runtime::spawn(async move {
         let client = reqwest::Client::new();
-        let mut user_id: Option<String> = None;
 
-        if ping {
-            let res = client.get(webhook.as_str()).send().await;
-            if let Ok(res) = res {
-                let json: Value = res.json().await.unwrap();
-                if let Some(id) = json.get("user").unwrap().get("id") {
-                    user_id = Some(id.to_string());
+        let mut body = json!({
+            "username": "Quantframe",
+            "avatar_url": "https://i.imgur.com/bgR6vAd.png",
+            "embeds": [
+                {
+                    "title": title,
+                    "description": content,
+                    "color": 5814783,
+                    "footer": {
+                        "text": format!("Quantframe v{}", PACKAGEINFO.lock().unwrap().clone().unwrap().version.to_string()),
+                        "timestamp": chrono::Local::now()
+                        .naive_utc()
+                        .to_string()
+                    }
                 }
+            ]
+        });
+
+        let mut pings: Vec<String> = Vec::new();
+        if let Some(user_ids) = user_ids {
+            for user_id in user_ids {
+                pings.push(format!("<@{}>", user_id));
             }
         }
-        let mut message = message.to_string();
-        if user_id.is_some() {
-            message = format!("<@{}> {}", user_id.unwrap(), message).replace("\"", "");
+        if pings.len() > 0 {
+            body["content"] = json!(format!("{}", pings.join(" ")).replace("\"", ""));
+        } else {
+            body["content"] = json!("");
         }
 
-        let res = client
-            .post(webhook)
-            .json(&json!({ "content": message }))
-            .send()
-            .await;
+        let res = client.post(webhook).json(&body).send().await;
         match res {
             Ok(_) => {
                 logger::info_con("Helper", "Message sent to discord");

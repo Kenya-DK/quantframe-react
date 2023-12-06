@@ -1,5 +1,5 @@
+use crate::enums::LogLevel;
 use crate::error::AppError;
-use crate::logger::LogLevel;
 use crate::wfm_client::client::WFMClient;
 use crate::{helper, logger};
 use eyre::eyre;

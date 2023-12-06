@@ -38,18 +38,7 @@ impl<'a> RivenModule<'a> {
                 // Update Auction on warframe.market
                 if auction.is_some() {
                     let auction = auction.unwrap();
-                    if auction.private == false {
-                        wfm.auction()
-                            .update(
-                                auction.id.as_str(),
-                                auction.starting_price as i32,
-                                auction.minimal_reputation as i32,
-                                "",
-                                auction.starting_price as i32,
-                                riven.private,
-                            )
-                            .await?;
-                    }
+                    wfm.auction().delete(auction.id.as_str()).await?;
                 }
 
                 // Update database status to inactive
@@ -57,7 +46,7 @@ impl<'a> RivenModule<'a> {
                     db.stock_riven()
                         .update_by_id(
                             riven.id,
-                            None,
+                            Some("".to_string()),
                             None,
                             None,
                             None,
@@ -65,6 +54,7 @@ impl<'a> RivenModule<'a> {
                             None,
                             None,
                             Some("inactive".to_string()),
+                            None,
                         )
                         .await?;
                 }
@@ -142,6 +132,7 @@ impl<'a> RivenModule<'a> {
                         None,
                         None,
                         Some("no_offers".to_string()),
+                        None,
                     )
                     .await?;
                 continue;
@@ -158,14 +149,6 @@ impl<'a> RivenModule<'a> {
 
             // Check if the rivens price is lower than the minimum price
             if minimum_price.is_some() && post_price < minimum_price.unwrap() as i64 {
-                logger::info_con(
-                    "RivenModule",
-                    format!(
-                        "Minimum price for {} is {} and yours is {}",
-                        riven.weapon_url, lowest_price, riven.price
-                    )
-                    .as_str(),
-                );
                 post_price = minimum_price.unwrap() as i64;
             }
 
@@ -249,6 +232,7 @@ impl<'a> RivenModule<'a> {
                             None,
                             None,
                             Some("live".to_string()),
+                            None,
                         )
                         .await?;
                 }
@@ -284,6 +268,7 @@ impl<'a> RivenModule<'a> {
                             None,
                             None,
                             Some("to_low_profit".to_string()),
+                            None,
                         )
                         .await?;
                 }

@@ -40,6 +40,7 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
       },
       live_trading: {
         webhook: "",
+        stock_mode: "",
         stock_item: {
           volume_threshold: 200,
           range_threshold: 200,
@@ -126,180 +127,189 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
       })
     })}>
       <Group grow>
-        <Group grow>
-          <Accordion defaultValue="accordion_general" w={"100%"}>
-            <Accordion.Item value="accordion_general">
-              <Accordion.Control>{useTranslateSettingsModal('accordion_general')}</Accordion.Control>
-              <Accordion.Panel>
-                <Group >
-                  <Group>
-                    <NumberInput
-                      required
-                      label={useTranslateSettingsModal('volume_threshold')}
-                      value={roleForm.values.live_trading.stock_item.volume_threshold}
-                      description={useTranslateSettingsModal('volume_threshold_description')}
-                      onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.volume_threshold', Number(value))}
-                      error={roleForm.errors.volume_threshold && 'Invalid Volume Threshold'}
-                    />
-                    <NumberInput
-                      required
-                      label={useTranslateSettingsModal('range_threshold')}
-                      value={roleForm.values.live_trading.stock_item.range_threshold}
-                      description={useTranslateSettingsModal('range_threshold_description')}
-                      onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.range_threshold', Number(value))}
-                      error={roleForm.errors.range_threshold && 'Invalid Range Threshold'}
-                    />
-                    <NumberInput
-                      required
-                      label={useTranslateSettingsModal('max_total_price_cap')}
-                      value={roleForm.values.live_trading.stock_item.max_total_price_cap}
-                      description={useTranslateSettingsModal('max_total_price_cap_description')}
-                      onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.max_total_price_cap', Number(value))}
-                      error={roleForm.errors.max_total_price_cap && 'Invalid Range Threshold'}
-                    />
-                    <NumberInput
-                      required
-                      label={useTranslateSettingsModal('avg_price_cap')}
-                      value={roleForm.values.live_trading.stock_item.avg_price_cap}
-                      description={useTranslateSettingsModal('avg_price_cap_description')}
-                      onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.avg_price_cap', Number(value))}
-                      error={roleForm.errors.avg_price_cap && 'Invalid Avg Price Cap'}
-                    />
-                  </Group>
-
+        <Accordion defaultValue="accordion_general" w={"100%"}>
+          <Accordion.Item value="accordion_general">
+            <Accordion.Control>{useTranslateSettingsModal('accordion_general')}</Accordion.Control>
+            <Accordion.Panel>
+              <Group >
+                <Group>
+                  <NumberInput
+                    required
+                    label={useTranslateSettingsModal('volume_threshold')}
+                    value={roleForm.values.live_trading.stock_item.volume_threshold}
+                    description={useTranslateSettingsModal('volume_threshold_description')}
+                    onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.volume_threshold', Number(value))}
+                    error={roleForm.errors.volume_threshold && 'Invalid Volume Threshold'}
+                  />
+                  <NumberInput
+                    required
+                    label={useTranslateSettingsModal('range_threshold')}
+                    value={roleForm.values.live_trading.stock_item.range_threshold}
+                    description={useTranslateSettingsModal('range_threshold_description')}
+                    onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.range_threshold', Number(value))}
+                    error={roleForm.errors.range_threshold && 'Invalid Range Threshold'}
+                  />
+                  <NumberInput
+                    required
+                    label={useTranslateSettingsModal('max_total_price_cap')}
+                    value={roleForm.values.live_trading.stock_item.max_total_price_cap}
+                    description={useTranslateSettingsModal('max_total_price_cap_description')}
+                    onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.max_total_price_cap', Number(value))}
+                    error={roleForm.errors.max_total_price_cap && 'Invalid Range Threshold'}
+                  />
+                  <NumberInput
+                    required
+                    label={useTranslateSettingsModal('avg_price_cap')}
+                    value={roleForm.values.live_trading.stock_item.avg_price_cap}
+                    description={useTranslateSettingsModal('avg_price_cap_description')}
+                    onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.avg_price_cap', Number(value))}
+                    error={roleForm.errors.avg_price_cap && 'Invalid Avg Price Cap'}
+                  />
                 </Group>
-                <Group grow mt={10}>
-                  <Group grow>
-                    <NumberInput
-                      required
-                      label={useTranslateSettingsModal('price_shift_threshold')}
-                      value={roleForm.values.live_trading.stock_item.price_shift_threshold}
-                      description={useTranslateSettingsModal('price_shift_threshold_description')}
-                      onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.price_shift_threshold', Number(value))}
-                      error={roleForm.errors.price_shift_threshold && 'Invalid Price Shift Threshold'}
-                    />
-                    {/* <TextInput
+
+              </Group>
+              <Group grow mt={10}>
+                <Group grow>
+                  <NumberInput
+                    required
+                    label={useTranslateSettingsModal('price_shift_threshold')}
+                    value={roleForm.values.live_trading.stock_item.price_shift_threshold}
+                    description={useTranslateSettingsModal('price_shift_threshold_description')}
+                    onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.price_shift_threshold', Number(value))}
+                    error={roleForm.errors.price_shift_threshold && 'Invalid Price Shift Threshold'}
+                  />
+                  {/* <TextInput
                       label={useTranslateSettingsModal('webhook')}
                       value={roleForm.values.live_trading.webhook}
                       description={useTranslateSettingsModal('webhook_description')}
                       onChange={(event) => roleForm.setFieldValue('live_trading.webhook', event.currentTarget.value)}
                       error={roleForm.errors.webhook && 'Invalid Webhook'}
                     /> */}
-                    <Select
-                      label={useTranslateFields("order_mode.label")}
-                      description={useTranslateFields(`order_mode.${roleForm.values.live_trading.stock_item.order_mode}_description`)}
-                      value={roleForm.values.live_trading.stock_item.order_mode}
-                      onChange={(event) => roleForm.setFieldValue('live_trading.stock_item.order_mode', event || "")}
-                      data={[
-                        { description: useTranslateFields(`order_mode.both_description`), value: "both", label: useTranslateFields("order_mode.options.both") },
-                        { description: useTranslateFields(`order_mode.buy_description`), value: "buy", label: useTranslateFields("order_mode.options.buy") },
-                        { description: useTranslateFields(`order_mode.sell_description`), value: "sell", label: useTranslateFields("order_mode.options.sell") },
-                      ]}
-                    />
-                    <Checkbox
-                      label={useTranslateSettingsModal('strict_whitelist')}
-                      description={useTranslateSettingsModal('strict_whitelist_description')}
-                      checked={roleForm.values.live_trading.stock_item.strict_whitelist}
-                      onChange={(event) => roleForm.setFieldValue('live_trading.stock_item.strict_whitelist', event.currentTarget.checked)}
-                    />
-                    <Checkbox
-                      label={useTranslateSettingsModal('report_to_wfm')}
-                      description={useTranslateSettingsModal('report_to_wfm_description')}
-                      checked={roleForm.values.live_trading.stock_item.report_to_wfm}
-                      onChange={(event) => roleForm.setFieldValue('live_trading.stock_item.report_to_wfm', event.currentTarget.checked)}
-                    />
-                    <Checkbox
-                      label={useTranslateSettingsModal('auto_trade')}
-                      description={useTranslateSettingsModal('auto_trade_description')}
-                      checked={roleForm.values.live_trading.stock_item.auto_trade}
-                      onChange={(event) => roleForm.setFieldValue('live_trading.stock_item.auto_trade', event.currentTarget.checked)}
-                    />
-                  </Group>
+                  <Select
+                    label={useTranslateFields("stock_mode.label")}
+                    description={useTranslateFields(`stock_mode.${roleForm.values.live_trading.stock_mode}_description`)}
+                    value={roleForm.values.live_trading.stock_mode}
+                    onChange={(event) => roleForm.setFieldValue('live_trading.stock_mode', event || "")}
+                    data={[
+                      { description: useTranslateFields(`stock_mode.all_description`), value: "all", label: useTranslateFields("stock_mode.options.all") },
+                      { description: useTranslateFields(`stock_mode.item_description`), value: "item", label: useTranslateFields("stock_mode.options.item") },
+                      { description: useTranslateFields(`stock_mode.riven_description`), value: "riven", label: useTranslateFields("stock_mode.options.riven") },
+                    ]}
+                  />
+                  <Select
+                    label={useTranslateFields("order_mode.label")}
+                    description={useTranslateFields(`order_mode.${roleForm.values.live_trading.stock_item.order_mode}_description`)}
+                    value={roleForm.values.live_trading.stock_item.order_mode}
+                    onChange={(event) => roleForm.setFieldValue('live_trading.stock_item.order_mode', event || "")}
+                    data={[
+                      { description: useTranslateFields(`order_mode.both_description`), value: "both", label: useTranslateFields("order_mode.options.both") },
+                      { description: useTranslateFields(`order_mode.buy_description`), value: "buy", label: useTranslateFields("order_mode.options.buy") },
+                      { description: useTranslateFields(`order_mode.sell_description`), value: "sell", label: useTranslateFields("order_mode.options.sell") },
+                    ]}
+                  />
+                  <Checkbox
+                    label={useTranslateSettingsModal('strict_whitelist')}
+                    description={useTranslateSettingsModal('strict_whitelist_description')}
+                    checked={roleForm.values.live_trading.stock_item.strict_whitelist}
+                    onChange={(event) => roleForm.setFieldValue('live_trading.stock_item.strict_whitelist', event.currentTarget.checked)}
+                  />
+                  <Checkbox
+                    label={useTranslateSettingsModal('report_to_wfm')}
+                    description={useTranslateSettingsModal('report_to_wfm_description')}
+                    checked={roleForm.values.live_trading.stock_item.report_to_wfm}
+                    onChange={(event) => roleForm.setFieldValue('live_trading.stock_item.report_to_wfm', event.currentTarget.checked)}
+                  />
+                  <Checkbox
+                    label={useTranslateSettingsModal('auto_trade')}
+                    description={useTranslateSettingsModal('auto_trade_description')}
+                    checked={roleForm.values.live_trading.stock_item.auto_trade}
+                    onChange={(event) => roleForm.setFieldValue('live_trading.stock_item.auto_trade', event.currentTarget.checked)}
+                  />
                 </Group>
-                <Group grow mt={10}>
-                  <Group grow>
-                    <NumberInput
-                      required
-                      label={useTranslateSettingsModal('riven_range_threshold')}
-                      value={roleForm.values.live_trading.stock_riven.range_threshold}
-                      description={useTranslateSettingsModal('riven_range_threshold_description')}
-                      onChange={(value) => roleForm.setFieldValue('live_trading.stock_riven.range_threshold', Number(value))}
-                      error={roleForm.errors.price_shift_threshold && 'Invalid Price Shift Threshold'}
-                    />
-                  </Group>
+              </Group>
+              <Group grow mt={10}>
+                <Group grow>
+                  <NumberInput
+                    required
+                    label={useTranslateSettingsModal('riven_range_threshold')}
+                    value={roleForm.values.live_trading.stock_riven.range_threshold}
+                    description={useTranslateSettingsModal('riven_range_threshold_description')}
+                    onChange={(value) => roleForm.setFieldValue('live_trading.stock_riven.range_threshold', Number(value))}
+                    error={roleForm.errors.price_shift_threshold && 'Invalid Price Shift Threshold'}
+                  />
                 </Group>
-              </Accordion.Panel>
-            </Accordion.Item>
-            <Accordion.Item value="accordion_whitelist">
-              <Accordion.Control>{useTranslateSettingsModal('accordion_whitelist')}</Accordion.Control>
-              <Accordion.Panel>
-                {useTranslateSettingsModal('whitelist_description')}
-                <MultiSelectListBox
-                  availableItems={getAvailableItems(roleForm.values.filter.whitelist).map((warframe) => ({ ...warframe, label: warframe.item_name, value: warframe.url_name }))}
-                  selectedItems={roleForm.values.live_trading.stock_item.whitelist.split(",")}
-                  onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.whitelist', value.join(","))}
-                  actions={
-                    <Group>
-                      <MinMaxField
-                        min={roleForm.values.filter.whitelist.tax.min}
-                        minAllowed={0}
-                        max={roleForm.values.filter.whitelist.tax.max}
-                        maxAllowed={2100000}
-                        label={useTranslateSettingsModal('filter.tax')}
-                        onChange={(min: number, max: number | "") => {
-                          roleForm.setFieldValue('filter.whitelist.tax.min', min)
-                          roleForm.setFieldValue('filter.whitelist.tax.max', max)
-                        }} />
-                      <MinMaxField
-                        min={roleForm.values.filter.whitelist.mr.min}
-                        minAllowed={0}
-                        max={roleForm.values.filter.whitelist.mr.max}
-                        maxAllowed={2100000}
-                        label={useTranslateSettingsModal('filter.mr')}
-                        onChange={(min: number, max: number | "") => {
-                          roleForm.setFieldValue('filter.whitelist.mr.min', min)
-                          roleForm.setFieldValue('filter.whitelist.mr.max', max)
-                        }} />
-                    </Group>
-                  }
-                /></Accordion.Panel>
-            </Accordion.Item>
-            <Accordion.Item value="accordion_blacklist">
-              <Accordion.Control>{useTranslateSettingsModal('accordion_blacklist')}</Accordion.Control>
-              <Accordion.Panel>
-                {useTranslateSettingsModal('blacklist_description')}
-                <MultiSelectListBox
-                  availableItems={getAvailableItems(roleForm.values.filter.blacklist).map((warframe) => ({ ...warframe, label: warframe.item_name, value: warframe.url_name }))}
-                  selectedItems={roleForm.values.live_trading.stock_item.blacklist.split(",")}
-                  onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.blacklist', value.join(","))}
-                  actions={
-                    <Group>
-                      <MinMaxField
-                        min={roleForm.values.filter.blacklist.tax.min}
-                        minAllowed={0}
-                        max={roleForm.values.filter.blacklist.tax.max}
-                        maxAllowed={2100000}
-                        label={useTranslateSettingsModal('filter.tax')}
-                        onChange={(min: number, max: number | "") => {
-                          roleForm.setFieldValue('filter.blacklist.tax.min', min)
-                          roleForm.setFieldValue('filter.blacklist.tax.max', max)
-                        }} />
-                      <MinMaxField
-                        min={roleForm.values.filter.blacklist.mr.min}
-                        minAllowed={0}
-                        max={roleForm.values.filter.blacklist.mr.max}
-                        maxAllowed={2100000}
-                        label={useTranslateSettingsModal('filter.mr')}
-                        onChange={(min: number, max: number | "") => {
-                          roleForm.setFieldValue('filter.blacklist.mr.min', min)
-                          roleForm.setFieldValue('filter.blacklist.mr.max', max)
-                        }} />
-                    </Group>
-                  }
-                /></Accordion.Panel>
-            </Accordion.Item>
-          </Accordion>
-        </Group>
+              </Group>
+            </Accordion.Panel>
+          </Accordion.Item>
+          <Accordion.Item value="accordion_whitelist">
+            <Accordion.Control>{useTranslateSettingsModal('accordion_whitelist')}</Accordion.Control>
+            <Accordion.Panel>
+              {useTranslateSettingsModal('whitelist_description')}
+              <MultiSelectListBox
+                availableItems={getAvailableItems(roleForm.values.filter.whitelist).map((warframe) => ({ ...warframe, label: warframe.item_name, value: warframe.url_name }))}
+                selectedItems={roleForm.values.live_trading.stock_item.whitelist.split(",")}
+                onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.whitelist', value.join(","))}
+                actions={
+                  <Group>
+                    <MinMaxField
+                      min={roleForm.values.filter.whitelist.tax.min}
+                      minAllowed={0}
+                      max={roleForm.values.filter.whitelist.tax.max}
+                      maxAllowed={2100000}
+                      label={useTranslateSettingsModal('filter.tax')}
+                      onChange={(min: number, max: number | "") => {
+                        roleForm.setFieldValue('filter.whitelist.tax.min', min)
+                        roleForm.setFieldValue('filter.whitelist.tax.max', max)
+                      }} />
+                    <MinMaxField
+                      min={roleForm.values.filter.whitelist.mr.min}
+                      minAllowed={0}
+                      max={roleForm.values.filter.whitelist.mr.max}
+                      maxAllowed={2100000}
+                      label={useTranslateSettingsModal('filter.mr')}
+                      onChange={(min: number, max: number | "") => {
+                        roleForm.setFieldValue('filter.whitelist.mr.min', min)
+                        roleForm.setFieldValue('filter.whitelist.mr.max', max)
+                      }} />
+                  </Group>
+                }
+              /></Accordion.Panel>
+          </Accordion.Item>
+          <Accordion.Item value="accordion_blacklist">
+            <Accordion.Control>{useTranslateSettingsModal('accordion_blacklist')}</Accordion.Control>
+            <Accordion.Panel>
+              {useTranslateSettingsModal('blacklist_description')}
+              <MultiSelectListBox
+                availableItems={getAvailableItems(roleForm.values.filter.blacklist).map((warframe) => ({ ...warframe, label: warframe.item_name, value: warframe.url_name }))}
+                selectedItems={roleForm.values.live_trading.stock_item.blacklist.split(",")}
+                onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.blacklist', value.join(","))}
+                actions={
+                  <Group>
+                    <MinMaxField
+                      min={roleForm.values.filter.blacklist.tax.min}
+                      minAllowed={0}
+                      max={roleForm.values.filter.blacklist.tax.max}
+                      maxAllowed={2100000}
+                      label={useTranslateSettingsModal('filter.tax')}
+                      onChange={(min: number, max: number | "") => {
+                        roleForm.setFieldValue('filter.blacklist.tax.min', min)
+                        roleForm.setFieldValue('filter.blacklist.tax.max', max)
+                      }} />
+                    <MinMaxField
+                      min={roleForm.values.filter.blacklist.mr.min}
+                      minAllowed={0}
+                      max={roleForm.values.filter.blacklist.mr.max}
+                      maxAllowed={2100000}
+                      label={useTranslateSettingsModal('filter.mr')}
+                      onChange={(min: number, max: number | "") => {
+                        roleForm.setFieldValue('filter.blacklist.mr.min', min)
+                        roleForm.setFieldValue('filter.blacklist.mr.max', max)
+                      }} />
+                  </Group>
+                }
+              /></Accordion.Panel>
+          </Accordion.Item>
+        </Accordion>
       </Group>
       <Group position="right" mt={10} sx={{
         position: "absolute",

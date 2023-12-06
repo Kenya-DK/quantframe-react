@@ -24,6 +24,9 @@ import PStatistics from '../pages/statistics'
 // Warframe Market routes
 import PWarframeMarket from '../pages/warframeMarket'
 
+// Warframe Market routes
+import PChats from '../pages/chats'
+
 
 // Debug routes
 import PDebug from '../pages/debug'
@@ -44,6 +47,7 @@ export default function AppRoutes() {
               <Route path="riven_wtb_message" element={<PWTBMessage />} />
             </Route>
             <Route path="statistics" element={<PStatistics />} />
+            <Route path="chats" element={<PChats />} />
             <Route path="warframe-market" element={<PWarframeMarket />} />
             <Route path="debug" element={<PDebug />} />
           </Route>

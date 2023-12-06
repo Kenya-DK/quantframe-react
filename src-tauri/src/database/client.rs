@@ -15,7 +15,7 @@ use crate::{
     cache::client::CacheClient,
     error::AppError,
     helper,
-    logger::{self, LogLevel},
+    logger::{self},
     wfm_client::client::WFMClient,
 };
 

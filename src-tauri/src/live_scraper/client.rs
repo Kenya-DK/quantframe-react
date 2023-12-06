@@ -9,9 +9,10 @@ use std::{
 use crate::{
     auth::AuthState,
     database::client::DBClient,
+    enums::{OrderMode, StockMode, LogLevel},
     error::AppError,
     helper,
-    logger::{self, LogLevel},
+    logger::{self},
     price_scraper::PriceScraper,
     settings::SettingsState,
     wfm_client::client::WFMClient,
@@ -85,24 +86,36 @@ impl LiveScraperClient {
         let forced_stop = Arc::clone(&self.is_running);
         let scraper = self.clone();
         let db = self.db.lock()?.clone();
-
         // Reset riven stocks on start
         tauri::async_runtime::spawn(async move {
             logger::info_con("LiveScraper", "Loop live scraper is started");
 
-            scraper.item().delete_all_orders().await.unwrap();
+            scraper
+                .item()
+                .delete_all_orders(OrderMode::Both)
+                .await
+                .unwrap();
             db.stock_riven().reset_listed_price().await.unwrap();
             while is_running.load(Ordering::SeqCst) && forced_stop.load(Ordering::SeqCst) {
-                logger::info_con("LiveScraper", "Checking riven stock");
-                match scraper.riven().check_stock().await {
-                    Ok(_) => {}
-                    Err(e) => scraper.report_error(e),
+                let settings = scraper.settings.lock().unwrap().clone();
+                if settings.live_scraper.stock_mode == StockMode::Riven
+                    || settings.live_scraper.stock_mode == StockMode::All
+                {
+                    logger::info_con("LiveScraper", "Checking riven stock");
+                    match scraper.riven().check_stock().await {
+                        Ok(_) => {}
+                        Err(e) => scraper.report_error(e),
+                    }
                 }
 
-                logger::info_con("LiveScraper", "Checking item stock");
-                match scraper.item().check_stock().await {
-                    Ok(_) => {}
-                    Err(e) => scraper.report_error(e),
+                if settings.live_scraper.stock_mode == StockMode::Item
+                    || settings.live_scraper.stock_mode == StockMode::All
+                {
+                    logger::info_con("LiveScraper", "Checking item stock");
+                    match scraper.item().check_stock().await {
+                        Ok(_) => {}
+                        Err(e) => scraper.report_error(e),
+                    }
                 }
 
                 tokio::time::sleep(Duration::from_secs(1)).await;

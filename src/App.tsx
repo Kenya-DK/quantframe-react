@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ModalsProvider } from '@mantine/modals';
 import { createStyles } from '@mantine/core';
 import { PromptModal } from './components/modals/prompt.modal';
-import { LiveScraperContextProvider, PriceScraperContextProvider, StockContextProvider } from './contexts';
+import { LiveScraperContextProvider, PriceScraperContextProvider, StockContextProvider, SocketContextProvider, ChatContextProvider } from './contexts';
 import AppRoutes from './layouts/routes';
 import { AppContextProvider } from './contexts/app.context';
 import { AuthContextProvider } from './contexts/auth.context';
@@ -25,7 +25,6 @@ const useStyles = createStyles(() => ({
     padding: 10,
   },
 }));
-
 const modals = {
   prompt: PromptModal
   /* ...other modals */
@@ -49,17 +48,21 @@ function App() {
         }}>
         <AppContextProvider>
           <AuthContextProvider>
-            <CacheContextProvider>
-              <StockContextProvider>
-                <WarframeMarketContextProvider>
-                  <PriceScraperContextProvider>
-                    <LiveScraperContextProvider>
-                      <AppRoutes />
-                    </LiveScraperContextProvider>
-                  </PriceScraperContextProvider>
-                </WarframeMarketContextProvider>
-              </StockContextProvider>
-            </CacheContextProvider>
+            <SocketContextProvider>
+              <ChatContextProvider>
+                <CacheContextProvider>
+                  <StockContextProvider>
+                    <WarframeMarketContextProvider>
+                      <PriceScraperContextProvider>
+                        <LiveScraperContextProvider>
+                          <AppRoutes />
+                        </LiveScraperContextProvider>
+                      </PriceScraperContextProvider>
+                    </WarframeMarketContextProvider>
+                  </StockContextProvider>
+                </CacheContextProvider>
+              </ChatContextProvider>
+            </SocketContextProvider>
           </AuthContextProvider>
         </AppContextProvider>
         {/* <ReactQueryDevtools initialIsOpen={false} /> */}

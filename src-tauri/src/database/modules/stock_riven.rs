@@ -3,8 +3,8 @@ use crate::{
     database::client::DBClient,
     error::AppError,
     helper,
-    logger::{self, LogLevel},
-    structs::{Auction, RivenAttribute},
+    logger::{self},
+    structs::{Auction, RivenAttribute}, enums::LogLevel,
 };
 use eyre::eyre;
 use polars::{
@@ -328,7 +328,7 @@ impl<'a> StockRivenModule<'a> {
                 StockRiven::MiniumPrice,
                 StockRiven::Polarity,
                 StockRiven::Created,
-                StockRiven::Created,
+                StockRiven::Status,
             ])
             .values_panic([
                 inventory.order_id.clone().into(),
@@ -420,6 +420,7 @@ impl<'a> StockRivenModule<'a> {
         match_riven: Option<MatchRivenStruct>,
         minium_price: Option<i32>,
         status: Option<String>,
+        private: Option<bool>,
     ) -> Result<StockRivenStruct, AppError> {
         let connection = self.client.connection.lock().unwrap().clone();
         let items = self.get_rivens().await?;
@@ -435,7 +436,13 @@ impl<'a> StockRivenModule<'a> {
         let mut values = vec![(StockRiven::ListedPrice, listed_price.into())];
 
         if order_id.is_some() {
-            stock_riven.order_id = order_id.clone();
+            if order_id.clone().unwrap() == "".to_string()
+                || order_id.clone().unwrap() == "null".to_string()
+            {
+                stock_riven.order_id = None;
+            } else {
+                stock_riven.order_id = order_id.clone();
+            }
             values.push((StockRiven::OrderId, order_id.into()));
         }
 
@@ -468,6 +475,10 @@ impl<'a> StockRivenModule<'a> {
         if status.is_some() {
             stock_riven.status = status.unwrap();
             values.push((StockRiven::Status, stock_riven.status.clone().into()));
+        }
+        if private.is_some() {
+            stock_riven.private = private.unwrap();
+            values.push((StockRiven::Private, stock_riven.private.clone().into()));
         }
 
         if attributes.is_some() {

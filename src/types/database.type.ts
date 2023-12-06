@@ -24,6 +24,7 @@ export interface StockEntryDto {
 
 export interface StockItemDto extends StockEntryDto {
   sub_type?: string;
+  hidden: boolean;
   owned: number;
 }
 
@@ -33,6 +34,7 @@ export interface StockRivenDto extends StockEntryDto {
   mod_name: string;
   re_rolls: number;
   status: string;
+  private: boolean;
   match_riven: MatchRivenDto;
 }
 export interface MatchRivenDto {

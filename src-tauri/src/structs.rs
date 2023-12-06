@@ -1,5 +1,7 @@
 use serde::{de::DeserializeOwned, Deserialize, Deserializer, Serialize};
 
+use crate::enums::OrderType;
+
 #[derive(PartialEq, Eq, Hash,Debug)]
 pub enum WarframeLanguage {
     English, // Add other language variants as needed
@@ -139,7 +141,7 @@ pub struct Order {
     pub visible: bool,
 
     #[serde(rename = "order_type")]
-    pub order_type: String,
+    pub order_type: OrderType,
 
     #[serde(rename = "user")]
     pub user: Option<User>,

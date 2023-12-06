@@ -35,6 +35,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
     queryKey: ['init'],
     queryFn: () => api.auth.init(),
     onSuccess(data) {
+      console.log(data);
 
       SendTauriUpdateDataEvent("user", { data: data.user, operation: "SET" })
       SendTauriUpdateDataEvent("transactions", { data: data.transactions, operation: "SET" })

@@ -15,12 +15,19 @@ export namespace Wfm {
     id: string,
     region: 'en' | (string & {}),
     locale: 'en' | (string & {}),
+    access_token: 'string',
     // background: string|null,
     role: 'user',
+    status: UserStatus,
     // avatar: string,
     banned: boolean
   }
 
+  export enum UserStatus {
+    Online = 'online',
+    Invisible = 'invisible',
+    Ingame = 'ingame',
+  }
   export interface LinkedAccountsDto {
     steam_profile: boolean;
     patreon_profile: boolean;

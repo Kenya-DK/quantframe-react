@@ -37,9 +37,11 @@ impl OnNewConversationEvent {
     }
 
     pub fn check(&self, _: usize, input: &str) -> Result<(bool), AppError> {
-        let settings = self.settings.lock()?.clone().whisper_scraper;
+        let settings = self.settings.lock()?.clone().whisper_scraper.on_new_conversation;
         let helper = self.helper.lock()?;
-        if !settings.enable {
+
+
+        if !settings.discord.enable && !settings.system.enable {
             return Ok(false);
         }
         let (found, captures) = crate::wf_ee_log_parser::events::helper::match_pattern(
@@ -49,26 +51,25 @@ impl OnNewConversationEvent {
         .map_err(|e| AppError::new("OnNewConversationEvent", eyre!(e)))?;
         if found {
             let username = captures.get(0).unwrap().clone().unwrap();
-            // &app.config().tauri.bundle.identifier
-            helper.show_notification(
-                "New Conversation",
-                &format!("You have whisper(s) from {}", username.as_str()),
-                Some("assets/icons/icon.png"),
-                Some("Default"),
-            );
-            logger::info_con("WhisperScraper", &format!("ReceivedMessage: {} received at {}", username.as_str(), chrono::Local::now().format("%Y-%m-%d %H:%M:%S")));
-            crate::helper::send_message_to_window(
-                "WhisperScraper:ReceivedMessage",
-                Some(json!({ "name": username })),
-            );
-            if settings.webhook != "" {
-                crate::helper::send_message_to_discord(
-                    settings.webhook.clone(),
-                    format!("You have whisper(s) from {}", username.as_str()),
-                    settings.ping_on_notif,
+
+            // If system notification is enabled, show it
+            if settings.system.enable {
+                helper.show_notification(
+                    settings.system.title.as_str(),
+                    &settings.system.content.replace("<PLAYER_NAME>", username.as_str()),
+                    Some("assets/icons/icon.png"),
+                    Some("Default"),
                 );
             }
-            
+            // If discord webhook is enabled, send it
+            if settings.discord.enable {
+                crate::helper::send_message_to_discord(
+                    settings.discord.webhook.unwrap_or("".to_string()),
+                    settings.discord.title,
+                    settings.discord.content.replace("<PLAYER_NAME>", username.as_str()),
+                    settings.discord.user_ids.clone(),
+                );
+            }            
         }
         Ok(found)
     }

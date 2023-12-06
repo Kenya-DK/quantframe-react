@@ -10,7 +10,7 @@ use crate::{
     error::AppError,
     helper, logger,
     structs::{Order, Ordres},
-    wfm_client::client::WFMClient,
+    wfm_client::client::WFMClient, enums::OrderType,
 };
 
 pub struct OrderModule<'a> {
@@ -131,7 +131,7 @@ impl<'a> OrderModule<'a> {
         }
     }
 
-    pub async fn close(&self, item: &str, order_type: &str) -> Result<String, AppError> {
+    pub async fn close(&self, item: &str, order_type: OrderType) -> Result<String, AppError> {
         // Get the user orders and find the order
         let mut ordres_vec = self.get_my_orders().await?;
         let mut ordres: Vec<Order> = ordres_vec.buy_orders;
@@ -235,7 +235,7 @@ impl<'a> OrderModule<'a> {
             ),
             Series::new("platinum", vec![order.platinum.clone()]),
             Series::new("platform", vec![order.platform.clone()]),
-            Series::new("order_type", vec![order.order_type.clone()]),
+            Series::new("order_type", vec![order.order_type.as_str().clone()]),
             Series::new("quantity", vec![order.quantity.clone()]),
             Series::new("last_update", vec![order.last_update.clone()]),
             Series::new("creation_date", vec![order.creation_date.clone()]),
@@ -305,7 +305,7 @@ impl<'a> OrderModule<'a> {
                 "order_type",
                 orders
                     .iter()
-                    .map(|order| order.order_type.clone())
+                    .map(|order| order.order_type.as_str().clone())
                     .collect::<Vec<_>>(),
             ),
             Series::new(

@@ -1,11 +1,11 @@
-import { ActionIcon, Box, Divider, Grid, Group, NumberInput, Stack, Tooltip, Text } from "@mantine/core";
+import { ActionIcon, Box, Grid, Group, Stack, Tooltip, Text } from "@mantine/core";
 import { useTranslatePage } from "@hooks/index";
 import { TextColor } from "@components/textColor";
 import { useStockContextContext } from "@contexts/index";
 import { PurchaseNewItem } from "./purchase";
 import { notifications } from "@mantine/notifications";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faEdit, faHammer, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faEdit, faEye, faEyeSlash, faHammer, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { useMutation } from "@tanstack/react-query";
 import { CreateStockItemEntryDto, StockItemDto } from "$types/index";
 import api from '@api/index';
@@ -71,7 +71,6 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
     setRows(rivensFilter);
   }, [items, query, pageSize, page, sortStatus])
 
-  const [itemPrices, setItemPrices] = useState<Record<string, number>>({});
 
   // Mutations
   const createStockItemEntryMutation = useMutation((data: CreateStockItemEntryDto) => api.stock.item.create(data), {
@@ -225,62 +224,67 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
           },
           {
             accessor: 'actions',
-            width: 275,
+            width: 200,
             title: useTranslateDataGridColumns('actions.title'),
-            render: ({ id, url, listed_price }) =>
-              <Group grow position="center" >
-                <NumberInput
-                  required
-                  size='sm'
-                  min={0}
-                  max={999}
-                  value={itemPrices[url] || ""}
-                  onChange={(value) => setItemPrices({ ...itemPrices, [url]: Number(value) })}
-                  rightSectionWidth={100}
-                  rightSection={
-                    <Group spacing={"5px"} mr={0}>
-                      <Divider orientation="vertical" />
-                      <Tooltip label={useTranslateDataGridColumns('actions.sell')}>
-                        <ActionIcon disabled={!itemPrices[url]} loading={sellStockItemEntryMutation.isLoading} color="green.7" variant="filled" onClick={async () => {
-                          const price = itemPrices[url];
+            render: ({ id, listed_price, hidden: hide }) =>
+              <Group position="center" >
+                <Tooltip label={useTranslateDataGridColumns('actions.sell')}>
+                  <ActionIcon loading={sellStockItemEntryMutation.isLoading} color="green.7" variant="filled" onClick={async (e) => {
+                    e.stopPropagation();
+                    modals.openContextModal({
+                      modal: 'prompt',
+                      title: useTranslateDataGridColumns("actions.sell.prompt.title"),
+                      innerProps: {
+                        fields: [{ name: 'price', description: useTranslateDataGridColumns("actions.sell.prompt.description"), label: useTranslateDataGridColumns("actions.sell.prompt.label"), type: 'number', value: 0, }],
+                        onConfirm: async (data: { price: number }) => {
+                          const { price } = data;
                           if (!price || price <= 0 || !id) return;
-                          await sellStockItemEntryMutation.mutateAsync({ id, price });
-                        }} >
-                          <FontAwesomeIcon icon={faHammer} />
-                        </ActionIcon>
-                      </Tooltip>
-                      <Tooltip label={useTranslateDataGridColumns('actions.sell_for_listed_price')}>
-                        <ActionIcon disabled={!listed_price} loading={sellStockItemEntryMutation.isLoading} color="blue.7" variant="filled" onClick={async () => {
-                          if (!listed_price || !id) return;
-                          await sellStockItemEntryMutation.mutateAsync({ id, price: listed_price });
-                        }} >
-                          <FontAwesomeIcon icon={faHammer} />
-                        </ActionIcon>
-                      </Tooltip>
-                      <Tooltip label={useTranslateDataGridColumns('actions.delete.title')}>
-                        <ActionIcon loading={sellStockItemEntryMutation.isLoading} color="red.7" variant="filled" onClick={async () => {
-                          modals.openConfirmModal({
-                            title: useTranslateDataGridColumns('actions.delete.title'),
-                            children: (<Text>
-                              {useTranslateDataGridColumns('actions.delete.message', { name: id })}
-                            </Text>),
-                            labels: {
-                              confirm: useTranslateDataGridColumns('actions.delete.buttons.confirm'),
-                              cancel: useTranslateDataGridColumns('actions.delete.buttons.cancel')
-                            },
-                            confirmProps: { color: 'red' },
-                            onConfirm: async () => {
-                              if (!id) return;
-                              await deleteStockItemEntryMutation.mutateAsync(id);
-                            }
-                          })
-                        }} >
-                          <FontAwesomeIcon icon={faTrashCan} />
-                        </ActionIcon>
-                      </Tooltip>
-                    </Group>
-                  }
-                />
+                          await sellStockItemEntryMutation.mutateAsync({ id: id, price });
+                        },
+                        onCancel: (id: string) => modals.close(id),
+                      },
+                    })
+                  }} >
+                    <FontAwesomeIcon icon={faPen} />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label={useTranslateDataGridColumns('actions.sell_for_listed_price')}>
+                  <ActionIcon disabled={!listed_price} loading={sellStockItemEntryMutation.isLoading} color="blue.7" variant="filled" onClick={async () => {
+                    if (!listed_price || !id) return;
+                    await sellStockItemEntryMutation.mutateAsync({ id, price: listed_price });
+                  }} >
+                    <FontAwesomeIcon icon={faHammer} />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label={useTranslateDataGridColumns(`actions.is_hiding.${hide ? "true" : "false"}`)}>
+                  <ActionIcon loading={sellStockItemEntryMutation.isLoading} color={`${hide ? "red.7" : "green.7"}`} variant="filled" onClick={async () => {
+                    if (!id) return;
+                    await updateItemEntryMutation.mutateAsync({ id: id, riven: { hidden: !hide } });
+                  }} >
+                    <FontAwesomeIcon icon={hide ? faEye : faEyeSlash} />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label={useTranslateDataGridColumns('actions.delete.title')}>
+                  <ActionIcon loading={sellStockItemEntryMutation.isLoading} color="red.7" variant="filled" onClick={async () => {
+                    modals.openConfirmModal({
+                      title: useTranslateDataGridColumns('actions.delete.title'),
+                      children: (<Text>
+                        {useTranslateDataGridColumns('actions.delete.message', { name: id })}
+                      </Text>),
+                      labels: {
+                        confirm: useTranslateDataGridColumns('actions.delete.buttons.confirm'),
+                        cancel: useTranslateDataGridColumns('actions.delete.buttons.cancel')
+                      },
+                      confirmProps: { color: 'red' },
+                      onConfirm: async () => {
+                        if (!id) return;
+                        await deleteStockItemEntryMutation.mutateAsync(id);
+                      }
+                    })
+                  }} >
+                    <FontAwesomeIcon icon={faTrashCan} />
+                  </ActionIcon>
+                </Tooltip>
               </Group>
           },
         ]}

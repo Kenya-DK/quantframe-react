@@ -18,6 +18,7 @@ pub struct AuthState {
     pub platform: String,
     pub region: String,
     pub role: String,
+    pub status: Option<String>,
 }
 // Allow us to run AuthState::default()
 impl Default for AuthState {
@@ -32,6 +33,7 @@ impl Default for AuthState {
             platform: "".to_string(),
             region: "".to_string(),
             role: "".to_string(),
+            status: Some("invisible".to_string()),
         }
     }
 }

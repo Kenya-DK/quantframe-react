@@ -1,10 +1,11 @@
-import { createStyles, rem, Tooltip, UnstyledButton, Navbar, Stack } from "@mantine/core";
+import { createStyles, rem, Tooltip, UnstyledButton, Navbar, Stack, Indicator } from "@mantine/core";
 import { ReactNode, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDesktop, faGlobe, faHome } from "@fortawesome/free-solid-svg-icons";
+import { faDesktop, faEnvelope, faGlobe, faHome } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateLayout } from "../hooks";
 import { useNavigate } from "react-router-dom";
 import { WFMLogo } from "../components/icons/wfm_logo";
+import { useChatContext } from "../contexts";
 
 interface NavbarLinkProps {
   icon: ReactNode;
@@ -48,12 +49,18 @@ const useStyles = createStyles((theme) => ({
 }));
 
 export default function SideBar({ }) {
+  const { unread_messages } = useChatContext();
   const goTo = useNavigate();
   const [active, setActive] = useState(0);
   const useTranslate = (key: string, context?: { [key: string]: any }) => useTranslateLayout(`navigation.${key}`, { ...context })
   const mockdata = [
     { link: "/", icon: <FontAwesomeIcon icon={faHome} />, label: useTranslate("home") },
     { link: "live-trading", icon: <FontAwesomeIcon icon={faGlobe} />, label: useTranslate("live_trading") },
+    {
+      link: "chats", icon: <Indicator disabled={unread_messages == 0} label={unread_messages > 0 ? unread_messages : undefined} inline size={16} position="top-start" color={status} >
+        <FontAwesomeIcon icon={faEnvelope} />
+      </Indicator>, label: useTranslate("chats")
+    },
     // { link: "statistics", icon: <FontAwesomeIcon icon={faChartSimple} />, label: useTranslate("statistics") },
     { link: "warframe-market", icon: <WFMLogo color="#d5d7e0" />, label: useTranslate("warframe_market") },
     { link: "debug", icon: <FontAwesomeIcon icon={faDesktop} />, label: useTranslate("debug") },

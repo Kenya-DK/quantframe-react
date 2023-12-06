@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { Wfm } from '$types/index';
-import { OnTauriUpdateDataEvent } from "../utils";
+import { OnSocketEvent, OnTauriUpdateDataEvent } from "../utils";
 
 type ChatContextProps = {
   chats: Wfm.ChatData[];
@@ -53,9 +53,27 @@ export const ChatContextProvider = ({ children }: ChatContextProviderProps) => {
   }
 
 
+  const AddChatMessage = (chat_id: string, message: Wfm.ChatMessage) => {
+
+    setChats((chats) => {
+      const chat = chats.find((item) => item.id === chat_id);
+      if (!chat) return chats;
+      const new_chat = { ...chat };
+      new_chat.unread_count = new_chat.unread_count + 1;
+      new_chat.messages = [...new_chat.messages, message];
+      return [...chats.filter((item) => item.id !== chat_id), new_chat];
+    })
+  }
+
+
   // Hook on tauri events from rust side
   useEffect(() => {
     OnTauriUpdateDataEvent<Wfm.ChatData>("ChatMessages", ({ data, operation }) => handleUpdateItems(operation, data));
+    OnSocketEvent("chats/NEW_MESSAGE", (data: Wfm.ChatMessage) => {
+      console.log("NEW_MESSAGE", data);
+
+      AddChatMessage(data.chat_id, data);
+    });
     return () => { }
   }, []);
 

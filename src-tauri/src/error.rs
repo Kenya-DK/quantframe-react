@@ -2,7 +2,8 @@ use eyre::eyre;
 use regex::Regex;
 use serde_json::{json, Value};
 
-use crate::logger::LogLevel;
+use crate::enums::LogLevel;
+
 #[derive(Debug)]
 pub struct AppError {
     component: &'static str,

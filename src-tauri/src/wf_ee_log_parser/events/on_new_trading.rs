@@ -360,7 +360,7 @@ impl OnTradingEvent {
         );
 
         // Send the trade to the main window
-        helper::send_message_to_window("Client:Trade:Received", json!(trade.clone()))?;
+        helper::send_message_to_window("Client:Trade:Received", Some(json!(trade.clone())));
 
         match self.read_json_file(file_path) {
             Ok(data) => {

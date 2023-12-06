@@ -80,7 +80,7 @@ export const en = {
       title: "Transaction Control",
       price_scraper_start: "Start Price Scraper",
       price_scraper_last_run: "Price Scraper Was Last Run: <blue>{{date}}</blue>",
-      price_scraper_running: "Price Scraper Running",
+      price_scraper_running: "Running",
       live_trading_start: "Start Live Trading",
       live_trading_stop: "Stop Live Trading",
     },
@@ -105,6 +105,17 @@ export const en = {
                   both: "Both",
                   buy: "Buy",
                   sell: "Sell",
+                },
+              },
+              stock_mode: {
+                label: "Stock Mode",
+                all_description: "Will process all items",
+                item_description: "Will only process items",
+                riven_description: "Will only process rivens",
+                options: {
+                  all: "All",
+                  item: "Item",
+                  riven: "Riven",
                 },
               },
             },
@@ -150,6 +161,46 @@ export const en = {
           price_scraper: {},
           whisper_scraper: {
             title: "Whisper Scraper",
+            accordion_general: "General",
+            conversation: {
+              system: {
+                enable: {
+                  title: "Enable System Notification",
+                  description: "Will send a notification to the system on a new conversation",
+                },
+                title: {
+                  title: "Title",
+                  description: "The title of the notification",
+                },
+                content: {
+                  title: "Content",
+                  description: "Use <PLAYER_NAME> as the placeholder for the Warframe username ",
+                },
+              },
+              discord: {
+                enable: {
+                  title: "Enable Discord Notification",
+                  description: "Will send a notification to discord on a new conversation",
+                },
+                webhook: {
+                  title: "Discord Webhook",
+                  description: "The webhook to send notifications to",
+                },
+                user_ids: {
+                  title: "User IDs",
+                  description: "The user ids to ping separated by comma",
+                },
+                title: {
+                  title: "Title",
+                  description: "The title of the notification",
+                },
+                content: {
+                  title: "Content",
+                  description: "Use <PLAYER_NAME> as the placeholder for the Warframe username ",
+                },
+              }
+            },
+            save: "Save",
           },
         },
       },
@@ -196,6 +247,12 @@ export const en = {
         settings: "Settings",
         logout: "Log Out",
         open_logs_folder: "Open Logs Folder",
+        status: {
+          title: "Status",
+          online: "Online",
+          invisible: "Invisible",
+          ingame: "Ingame",
+        }
       },
       notifications: {
         settings_updated: "Settings Updated",
@@ -206,6 +263,7 @@ export const en = {
       home: "Home",
       live_trading: "Live Trading",
       statistics: "Statistics",
+      chats: "Chats",
       warframe_market: "Warframe Market",
       auctions: "Contracts",
       debug: "Debug",
@@ -413,8 +471,19 @@ export const en = {
               attributes: "Attributes",
               actions: {
                 title: "Actions",
-                sell: "Sell",
+                sell: {
+                  title: "Sell",
+                  prompt: {
+                    title: "Sell Riven",
+                    label: "Sold for",
+                    description: "The price you sold the item for",
+                  }
+                },
                 sell_for_listed_price: "Sell for listed price",
+                is_private: {
+                  enable: "Show on market",
+                  disable: "Hide from market",
+                },
                 delete: {
                   title: "Delete",
                   message: "Are you sure you want to delete this riven?",

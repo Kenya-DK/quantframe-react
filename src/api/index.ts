@@ -14,6 +14,9 @@ const api = {
       return await invoke("open_logs_folder")
     },
   },
+  chat: {
+
+  },
   debug: {
     importWarframeAlgoTraderData: async (dbPath: string, type: string): Promise<any> => {
       try {
@@ -44,6 +47,9 @@ const api = {
     init: async (): Promise<SetupResponse> => {
       const data = await invoke("init") as SetupResponse;
       return data;
+    },
+    async update_user_status(status: Wfm.UserStatus): Promise<any> {
+      await invoke("update_user_status", { status })
     },
   },
   items: {},
@@ -110,7 +116,7 @@ const api = {
         return await invoke("sell_item_stock_by_url", { name, price, quantity }) as StockItemDto;
       },
       update: async (id: number, item: Partial<StockItemDto>): Promise<StockItemDto> => {
-        return await invoke("update_item_stock", { id, miniumPrice: item.minium_price }) as StockItemDto;
+        return await invoke("update_item_stock", { id, miniumPrice: item.minium_price, hidden: item.hidden }) as StockItemDto;
       }
     },
     riven: {
@@ -140,7 +146,7 @@ const api = {
       update: async (id: number, riven: Partial<StockRivenDto>): Promise<StockRivenDto> => {
         if (riven.minium_price && riven.minium_price <= 0)
           riven.minium_price = -1;
-        return await invoke("update_riven_stock", { id, attributes: riven.attributes, matchRiven: riven.match_riven, miniumPrice: riven.minium_price }) as StockRivenDto;
+        return await invoke("update_riven_stock", { id, private: riven.private, attributes: riven.attributes, matchRiven: riven.match_riven, miniumPrice: riven.minium_price }) as StockRivenDto;
       }
     }
   },
