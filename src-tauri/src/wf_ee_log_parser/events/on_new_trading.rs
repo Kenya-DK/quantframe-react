@@ -351,12 +351,16 @@ impl OnTradingEvent {
         let mh = self.helper.lock()?.clone();
         let trade = self.current_trade.lock()?.clone();
 
+        // Send a notification to the user
         mh.show_notification(
             "Trade Accepted",
             &format!("Trade accepted from {}", trade.user_name),
             Some("assets/icons/icon.png"),
             Some("Default"),
         );
+
+        // Send the trade to the main window
+        helper::send_message_to_window("Client:Trade:Received", json!(trade.clone()))?;
 
         match self.read_json_file(file_path) {
             Ok(data) => {

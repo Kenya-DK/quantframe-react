@@ -12,6 +12,7 @@ export interface SetupResponse {
   stock_items: StockItemDto[];
   stock_rivens: StockRivenDto[];
   riven_attributes: Wfm.RivenAttributeInfoDto[];
+  chats: Wfm.ChatData[];
   app_info: AppInfo
 }
 export interface AppInfo {

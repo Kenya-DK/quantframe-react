@@ -126,6 +126,9 @@ pub async fn init(
 
         helper::emit_undate_initializ_status("Loading Your Auctions...", None);
         response["auctions"] = json!(wfm.auction().get_my_auctions().await?);
+
+        helper::emit_undate_initializ_status("Loading Your Chats...", None);
+        response["chats"] = json!(wfm.chat().get_chats().await?);
     }
 
     // Check for updates

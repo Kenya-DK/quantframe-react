@@ -49,7 +49,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
       if (data.valid) {
         SendTauriUpdateDataEvent("orders", { data: data.orders, operation: "SET" })
         SendTauriUpdateDataEvent("auctions", { data: data.auctions, operation: "SET" })
-
+        SendTauriUpdateDataEvent("ChatMessages", { data: data.chats, operation: "SET" })
       }
       setSettings({ ...data.settings })
       setAppInfo(data.app_info);

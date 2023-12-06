@@ -21,7 +21,7 @@ use crate::{
 };
 
 use super::modules::{
-    auction::AuctionModule, auth::AuthModule, item::ItemModule, order::OrderModule,
+    auction::AuctionModule, auth::AuthModule, item::ItemModule, order::OrderModule, chat::ChatModule,
 };
 
 #[derive(Clone, Debug)]
@@ -242,5 +242,8 @@ impl WFMClient {
     }
     pub fn auction(&self) -> AuctionModule {
         AuctionModule { client: self }
+    }
+    pub fn chat(&self) -> ChatModule {
+        ChatModule { client: self }
     }
 }
