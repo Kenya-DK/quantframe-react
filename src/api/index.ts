@@ -15,7 +15,19 @@ const api = {
     },
   },
   chat: {
-
+    refresh_chats: async (exclude: string[]): Promise<any> => {
+      return await invoke("refresh_chats", { exclude });
+    },
+    delete_all: async (): Promise<number> => {
+      const rep = await invoke("delete_all_chats") as { count: number };
+      return rep.count;
+    },
+    delete: async (id: string): Promise<any> => {
+      return await invoke("delete_chat", { id });
+    },
+    getChat: async (id: string): Promise<Wfm.ChatMessage[]> => {
+      return await invoke("get_chat", { id }) as Wfm.ChatMessage[];
+    },
   },
   debug: {
     importWarframeAlgoTraderData: async (dbPath: string, type: string): Promise<any> => {
@@ -42,7 +54,7 @@ const api = {
       return user
     },
     async logout() {
-      // await settings.set('access_token', undefined)
+      await invoke("logout")
     },
     init: async (): Promise<SetupResponse> => {
       const data = await invoke("init") as SetupResponse;

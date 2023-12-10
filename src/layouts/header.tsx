@@ -1,7 +1,7 @@
 import { Avatar, Group, Header, Menu, createStyles, rem, Container, ActionIcon, useMantineTheme, Indicator } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEnvelope, faFolder, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+import { faFolder, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateLayout } from "@hooks/index";
 import { SettingsModal } from "@components/modals/settings";
 import { DeepPartial, Settings, Wfm } from "$types/index";
@@ -10,8 +10,9 @@ import { modals } from "@mantine/modals";
 import { Logo } from "../components/logo";
 import Clock from "../components/clock";
 import api, { wfmThumbnail } from "@api/index";
-import { useAppContext, useCacheContext, useChatContext, useSocketContextContext } from "../contexts";
+import { useAppContext, useCacheContext, useSocketContextContext } from "../contexts";
 import { notifications } from "@mantine/notifications";
+import { getUserStatusColor } from "../utils";
 interface TopMenuProps {
   opened: boolean;
   user: Wfm.UserDto | undefined;
@@ -42,23 +43,13 @@ export default function Hedder({ user }: TopMenuProps) {
   const { classes } = useStyles();
   const { socket } = useSocketContextContext();
   const [, setUserMenuOpened] = useState(false);
-  const { unread_messages } = useChatContext();
   const [avatar, setAvatar] = useState<string | undefined>(undefined);
   const { settings } = useAppContext();
   const { items } = useCacheContext();
-  const [status, setStatus] = useState<string>("gray.7");
   useEffect(() => {
     setAvatar(`${wfmThumbnail(user?.avatar || "")}`);
   }, [user?.avatar]);
-  useEffect(() => {
-    if (user?.status === Wfm.UserStatus.Online) {
-      setStatus("darkgreen");
-    } else if (user?.status === Wfm.UserStatus.Ingame) {
-      setStatus("mediumpurple");
-    } else if (user?.status === Wfm.UserStatus.Invisible) {
-      setStatus("darkred");
-    }
-  }, [user?.status]);
+
 
   const useTranslateHedder = (key: string, context?: { [key: string]: any }) => useTranslateLayout(`header.${key}`, { ...context })
 
@@ -101,7 +92,7 @@ export default function Hedder({ user }: TopMenuProps) {
             >
               <Menu.Target>
                 <ActionIcon color="pink" size="xs">
-                  <Indicator inline size={12} offset={7} position="bottom-start" color={status} >
+                  <Indicator inline size={12} offset={7} position="bottom-start" color={getUserStatusColor(user.status)} >
                     <Avatar variant="subtle" src={avatar} alt={user.ingame_name} radius="xl" size={"md"} />
                   </Indicator>
                 </ActionIcon>
@@ -125,7 +116,7 @@ export default function Hedder({ user }: TopMenuProps) {
                 }}>
                   {useTranslateHedder("profile.open_logs_folder")}
                 </Menu.Item>
-                <Menu.Item icon={<FontAwesomeIcon icon={faRightFromBracket} />}>
+                <Menu.Item icon={<FontAwesomeIcon icon={faRightFromBracket} />} onClick={async () => { await api.auth.logout(); }}>
                   {useTranslateHedder("profile.logout")}
                 </Menu.Item>
                 <Menu.Divider />

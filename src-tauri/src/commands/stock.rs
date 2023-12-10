@@ -13,7 +13,7 @@ use crate::{
     error::{self, AppError},
     logger,
     structs::{Order, RivenAttribute},
-    wfm_client::client::WFMClient, enums::OrderType,
+    wfm_client::client::WFMClient, enums::{OrderType, LogLevel},
 };
 use eyre::eyre;
 use once_cell::sync::Lazy;
@@ -253,7 +253,11 @@ pub async fn sell_item_stock(
             }
             Err(e) => {
                 error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
-                return Err(e);
+                if e.log_level()  !=LogLevel::Error {
+                    return Err(e);                    
+                }else {
+                    return Ok(json!(invantory.clone()));          
+                }
             }
         }
     } else {

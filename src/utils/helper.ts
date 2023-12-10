@@ -110,3 +110,14 @@ export const getOrderStatusColor = (status: string) => {
       return classes.default;
   }
 };
+export const getUserStatusColor = (status: Wfm.UserStatus) => {
+  switch (status) {
+    case Wfm.UserStatus.Ingame:
+      return "mediumpurple";
+    case Wfm.UserStatus.Online:
+      return "green";
+    case Wfm.UserStatus.Invisible:
+    default:
+      return "darkred";
+  }
+};

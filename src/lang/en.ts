@@ -76,6 +76,13 @@ export const en = {
       remove_all: "Remove all",
       name: "Name",
     },
+    labelTimeBage: {
+      months: "{{months}} months ago",
+      days: "{{days}} days ago",
+      hours: "{{hours}} hours ago",
+      minutes: "{{minutes}} minutes ago",
+      seconds: "{{seconds}} seconds ago",
+    },
     transactioncontrol: {
       title: "Transaction Control",
       price_scraper_start: "Start Price Scraper",
@@ -627,7 +634,27 @@ export const en = {
           },
         }
       }
-    }
+    },
+    chats: {
+      
+      item: {
+        un_read_messages: "<mail /> {{count}}",
+        delete: "Leave Chat",
+      },
+      navbar: {
+        back: "Back",
+        options: "Options",
+        delete: "Leave Chat",
+        ignore: "Ignore User",
+      },
+      msgbox: {
+        send: "Send",
+        placeholder: "Type a message...",
+        error: {
+          msg_to_long: "Message is too long",
+      },
+      },
+    },
   },
   success: {
     auth: {

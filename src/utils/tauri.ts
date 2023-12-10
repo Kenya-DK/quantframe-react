@@ -49,6 +49,14 @@ export const OnSocketEvent = <T>(event: string, callback: (data: T) => void) => 
   listener.add(`Client:Socket:${event}`, callback);
 }
 
+// This function allows you to stop listening for a socket event with the given event name.
+// It removes the provided callback function from the list of listeners for the event.
+export const OffSocketEvent = <T>(event: string, callback: (data: T) => void) => {
+  // The 'remove' method removes the listener for the event with the given name.
+  // After this method is called, the callback function will no longer be called when the event is triggered.
+  listener.remove(`Client:Socket:${event}`, callback);
+}
+
 /**
  * Removes the given callback function from the list of functions to be called when a Tauri event with the given name is emitted.
  * If no callback function is provided, all callbacks for the given event are removed.

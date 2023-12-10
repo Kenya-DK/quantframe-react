@@ -1,7 +1,7 @@
 import { Trans } from "react-i18next";
 import { MantineNumberSize, Sx, Text } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCubes } from "@fortawesome/free-solid-svg-icons";
+import { faCubes, faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import SvgIcon, { SvgType } from "./SvgIcon";
 interface TextColorProps {
   i18nKey: string;
@@ -35,6 +35,7 @@ export const TextColor = ({ sx, size, color, i18nKey, values, conponents }: Text
             teal: <Text component="span" size={size ? size : "sm"} color="teal.3" />,
             dark: <Text component="span" size={size ? size : "sm"} color="dark.3" />,
             qty: <FontAwesomeIcon icon={faCubes} />,
+            mail: <FontAwesomeIcon icon={faEnvelope} />,
             plat: <SvgIcon svgProp={{ width: 16, height: 16, }} iconType={SvgType.Default} iconName={"plat"} />,
           }
         }

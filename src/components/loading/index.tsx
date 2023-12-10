@@ -1,5 +1,5 @@
 
-import { Text, Box } from '@mantine/core';
+import { Text, Center } from '@mantine/core';
 import './index.css'
 interface LoadingProps {
   text?: string;
@@ -8,7 +8,7 @@ interface LoadingProps {
 export const Loading = (props: LoadingProps) => {
   const { text } = props;
   return (
-    <Box sx={{ height: "100%", width: "100&" }}>
+    <Center sx={{ height: "100%", width: "100&" }}>
       {text &&
         <Text variant="h4" component="div" sx={{ textAlign: "center", color: "white" }}>
           {text}
@@ -18,6 +18,6 @@ export const Loading = (props: LoadingProps) => {
         <div className="spin"></div>
         <div className="bounce"></div>
       </div>
-    </Box >
+    </Center >
   );
 }

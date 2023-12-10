@@ -67,3 +67,17 @@ pub async fn update_user_status(
     auth.send_to_window();
     Ok(())
 }
+#[tauri::command]
+pub async fn logout(
+    auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
+) -> Result<(), Value> {
+    let arced_mutex = Arc::clone(&auth);
+    let mut auth = arced_mutex.lock().expect("Could not lock auth");
+    auth.access_token = None;
+    auth.avatar = None;
+    auth.ingame_name = "".to_string();
+    auth.id = "".to_string();
+    auth.save_to_file().map_err(|e| e.to_json())?;
+    auth.send_to_window();
+    Ok(())
+}

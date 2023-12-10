@@ -2,6 +2,7 @@
   --loader-background: #fff;
   --loader-animation: 2.25s;
 }
+
 @keyframes spin {
   0% {
     transform: rotate(0deg);

@@ -168,6 +168,7 @@ fn main() {
             commands::base::open_logs_folder,
             commands::base::show_notification,
             commands::auth::login,
+            commands::auth::logout,
             commands::base::log,
             commands::auth::update_user_status,
             commands::transaction::create_transaction_entry,
@@ -186,6 +187,7 @@ fn main() {
             commands::orders::delete_all_orders,
             commands::chat::get_chat,
             commands::chat::delete_chat,
+            commands::chat::refresh_chats,
             // Stock commands
             commands::stock::create_item_stock,
             commands::stock::delete_item_stock,

@@ -8,7 +8,7 @@ use std::{
     path::PathBuf,
 };
 
-use crate::{helper, enums::LogLevel};
+use crate::{enums::LogLevel, helper};
 
 pub fn format_text(text: &str, color: &str, bold: bool) -> String {
     let color_code = match color {
