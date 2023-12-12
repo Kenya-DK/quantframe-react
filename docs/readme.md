@@ -13,7 +13,7 @@ This section is to help him map key parts of his app to mine.
 
 > But its also kinda for me as well, since this is a reverse engineering effort.
 
-|[WF-Algo-trader](https://github.com/akmayer/Warframe-Algo-Trader)|[QuantFrame](https://github.com/metruzanca/quantframe)|
+|[WF-Algo-trader](https://github.com/akmayer/Warframe-Algo-Trader)|[QuantFrame](https://github.com/Kenya-DK/quantframe-react)|
 |--|--|
-| [getWFMtoken.py](https://github.com/akmayer/Warframe-Algo-Trader/blob/main/getWFMtoken.py)<br>[AccessingWFMarket.py](https://github.com/akmayer/Warframe-Algo-Trader/blob/main/AccessingWFMarket.py) | [wfm_client.rs](https://github.com/metruzanca/quantframe/blob/main/src/lib/wfmClient.ts) |
-| [inventoryApi.py](https://github.com/akmayer/Warframe-Algo-Trader/blob/main/inventoryApi.py)| WIP |
+| [getWFMtoken.py](https://github.com/akmayer/Warframe-Algo-Trader/blob/main/getWFMtoken.py)<br>[AccessingWFMarket.py](https://github.com/akmayer/Warframe-Algo-Trader/blob/main/AccessingWFMarket.py) | [wfm_client.rs](https://github.com/Kenya-DK/quantframe-react/blob/main/src-tauri/src/wfm_client/client.rs) |
+| [inventoryApi.py](https://github.com/akmayer/Warframe-Algo-Trader/blob/main/inventoryApi.py)| [stock.rs](https://github.com/Kenya-DK/quantframe-react/blob/main/src-tauri/src/database/client.rs) |
