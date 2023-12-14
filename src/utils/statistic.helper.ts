@@ -145,6 +145,7 @@ const getBestItem = (transactions: TransactionEntryDto[]): StatisticTransactionP
 
 
 const getTodayRevenue = (transactions: TransactionEntryDto[]): StatisticTodayTransaction => {
+  debugger;
   let today = dayjs().startOf("day").toDate();
   let endToday = dayjs().endOf('day').toDate();
   transactions = transactions.filter(t => dayjs(t.created).isBetween(today, endToday));

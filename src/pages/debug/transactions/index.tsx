@@ -12,6 +12,7 @@ import api from "../../../api";
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
 import { useForm } from "@mantine/form";
+import dayjs from "dayjs";
 
 export const Transactions = () => {
   const { transactions } = useWarframeMarketContextContext();
@@ -304,18 +305,14 @@ export const Transactions = () => {
             </Group>
           },
           {
-            accessor: 'item_type',
-            title: "Item Type",
-            sortable: true,
-            render: ({ properties }) =>
-              <Group position="right" >
-                {JSON.stringify(properties)}
-              </Group>
-          },
-          {
             accessor: 'created',
             title: "Date",
             sortable: true,
+            render: ({ created }) => {
+              return (
+                <Text>{dayjs(created).format("DD.MM.YYYY HH:mm")}</Text>
+              )
+            }
           },
           {
             accessor: 'actions',
@@ -323,25 +320,21 @@ export const Transactions = () => {
             title: "Actions",
             render: ({ id, url, created, transaction_type, price }) =>
               <Group position="right" >
-                <Tooltip label="">
-                  <ActionIcon variant="filled" onClick={async () => {
-                    // Set the text to be copied
-                    await navigator.clipboard.writeText(`INSERT INTO transactions (name, datetime, transactionType, price) VALUES ('${url}', '${created}', '${transaction_type}', ${price})`);
+                <ActionIcon variant="filled" onClick={async () => {
+                  // Set the text to be copied
+                  await navigator.clipboard.writeText(`INSERT INTO transactions (name, datetime, transactionType, price) VALUES ('${url}', '${created}', '${transaction_type}', ${price})`);
 
-                  }} >
-                    <FontAwesomeIcon icon={faCopy} />
-                  </ActionIcon>
-                </Tooltip>
-                <Tooltip label="">
-                  <ActionIcon color="red.7" variant="filled" onClick={async () => {
-                    if (!id)
-                      return;
-                    // Set the text to be copied
-                    deleteEntryMutation.mutate(id);
-                  }} >
-                    <FontAwesomeIcon icon={faTrashCan} />
-                  </ActionIcon>
-                </Tooltip>
+                }} >
+                  <FontAwesomeIcon icon={faCopy} />
+                </ActionIcon>
+                <ActionIcon color="red.7" variant="filled" onClick={async () => {
+                  if (!id)
+                    return;
+                  // Set the text to be copied
+                  deleteEntryMutation.mutate(id);
+                }} >
+                  <FontAwesomeIcon icon={faTrashCan} />
+                </ActionIcon>
               </Group>
           },
         ]}

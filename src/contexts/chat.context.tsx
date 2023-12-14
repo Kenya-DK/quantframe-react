@@ -41,7 +41,6 @@ export const ChatContextProvider = ({ children }: ChatContextProviderProps) => {
 
   // Handle update, create, delete orders
   const handleUpdateItems = (operation: string, data: Wfm.ChatData | Wfm.ChatData[] | string) => {
-    debugger;
     switch (operation) {
       case "CREATE_OR_UPDATE":
         {

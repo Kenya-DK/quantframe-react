@@ -104,7 +104,7 @@ export default function WTBMessagePage() {
             <List>
               {data.map((riven) =>
                 <List.Item key={riven.url}>
-                  <TextColor color="gray.7" i18nKey="pages.wtbMessage.modals.generateWtbMessage.list_text" values={{ name: riven.name, price: riven.price }} />
+                  <TextColor color="gray.7" i18nKey="pages.wtbMessage.modals.generateWtbMessage.list_text" values={{ name: riven.name, price: riven.price, previousPrice: riven.previousPrice }} />
                 </List.Item>)
               }
             </List>

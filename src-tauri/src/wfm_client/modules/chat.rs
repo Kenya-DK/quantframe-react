@@ -104,7 +104,7 @@ pub struct ChatMessageWith {
     pub locale: String,
 
     #[serde(rename = "avatar")]
-    pub avatar: String,
+    pub avatar: Option<String>,
 
     #[serde(rename = "last_seen")]
     pub last_seen: String,

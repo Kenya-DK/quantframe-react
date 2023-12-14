@@ -1,5 +1,4 @@
 import { Avatar, Divider, Text, Grid, Paper, Stack, Tooltip, Box, ActionIcon, useMantineTheme } from "@mantine/core";
-import { useAuthContext, useChatContext } from "../../contexts";
 import { useEffect, useState } from "react";
 import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

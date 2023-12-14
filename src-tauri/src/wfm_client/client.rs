@@ -14,14 +14,16 @@ use serde_json::{json, Value};
 
 use crate::{
     auth::AuthState,
+    enums::LogLevel,
     error::AppError,
     helper,
     logger::{self},
-    rate_limiter::RateLimiter, enums::LogLevel,
+    rate_limiter::RateLimiter,
 };
 
 use super::modules::{
-    auction::AuctionModule, auth::AuthModule, item::ItemModule, order::OrderModule, chat::ChatModule,
+    auction::AuctionModule, auth::AuthModule, chat::ChatModule, item::ItemModule,
+    order::OrderModule,
 };
 
 #[derive(Clone, Debug)]

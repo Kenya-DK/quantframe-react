@@ -17,7 +17,7 @@ const sendProgress = (id: string, total: number, current: number, message: strin
 
 
 export const generateWtbMessage = async (rivenTypes: WTBEntry[], minSellers: number, lowestPrice: number, discount: number) => {
-  const rivens: { name: string, url: string, icon: string, sellers: number, lowestPrice: number, sellingPrice: number }[] = [];
+  const rivens: { name: string, url: string, icon: string, sellers: number, lowestPrice: number, previousPrice: number, sellingPrice: number }[] = [];
 
   for (let index = 0; index < rivenTypes.length; index++) {
     const weapon = rivenTypes[index];
@@ -32,7 +32,7 @@ export const generateWtbMessage = async (rivenTypes: WTBEntry[], minSellers: num
     const sellers = filtered.length;
     const lowestPrice = filtered[0]?.buyout_price || 0;
     const rivenPrice = lowestPrice - Math.round(lowestPrice * discount);
-    rivens.push({ name: weapon.name, url: weapon.url, icon: weapon.icon, sellers, lowestPrice, sellingPrice: rivenPrice });
+    rivens.push({ name: weapon.name, url: weapon.url, icon: weapon.icon, sellers, lowestPrice, sellingPrice: rivenPrice, previousPrice: weapon.price });
     sendProgress("generate-wtb-message", rivenTypes.length, index + 1, `Riven ${weapon.name} has ${sellers} sellers and lowest price is ${lowestPrice}p Total ${rivens.length}/${rivenTypes.length}`, false);
 
   }
@@ -44,6 +44,8 @@ export const generateWtbMessage = async (rivenTypes: WTBEntry[], minSellers: num
       name: x.name,
       icon: x.icon,
       price: x.sellingPrice,
+      // Add Previsous Price
+      previousPrice: x.previousPrice,
       hidden: false,
     }
   });

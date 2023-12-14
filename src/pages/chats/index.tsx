@@ -1,4 +1,4 @@
-import { Grid } from "@mantine/core";
+import { Grid, ScrollArea } from "@mantine/core";
 import { useAuthContext, useChatContext } from "../../contexts";
 import { ChatListItem } from "./chatItem";
 import { ChatRome } from "./chatRome";
@@ -16,16 +16,18 @@ export default function ChatsPage() {
   return (
     <Grid>
       <Grid.Col span={aktive_chat ? 3 : 12}>
-        {chats?.map((chat: any) => (
-          <ChatListItem exlude_user_names={[user?.ingame_name || ""]} chat={chat}
-            onClick={(chat) => SendSocketEvent("chats/SET_CHAT", chat)}
-            selected={aktive_chat?.id === chat.id}
-            onDelete={async (id) => {
-              await api.chat.delete(id);
-              SendSocketEvent("chats/SET_CHAT", undefined);
-            }}
-          />
-        ))}
+        <ScrollArea p="xs" scrollbarSize={1} sx={{ height: "80vh" }} >
+          {chats?.sort((a, b) => new Date(a.last_update) > new Date(b.last_update) ? -1 : 1).map((chat) => (
+            <ChatListItem exlude_user_names={[user?.ingame_name || ""]} chat={chat}
+              onClick={(chat) => SendSocketEvent("chats/SET_CHAT", chat)}
+              selected={aktive_chat?.id === chat.id}
+              onDelete={async (id) => {
+                await api.chat.delete(id);
+                SendSocketEvent("chats/SET_CHAT", undefined);
+              }}
+            />
+          ))}
+        </ScrollArea>
       </Grid.Col>
       {aktive_chat && (
         <Grid.Col span={9}>

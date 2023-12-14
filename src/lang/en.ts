@@ -563,7 +563,18 @@ export const en = {
               },
               actions: {
                 title: "Actions",
-                sell: "Sell",
+                sell: {
+                  title: "Sell",
+                  prompt: {
+                    title: "Sell Item",
+                    label: "Sold for",
+                    description: "The price you sold the item for",
+                  }
+                },
+                is_hiding: {
+                  enable: "Show on market",
+                  disable: "Hide from market",
+                },
                 sell_for_listed_price: "Sell for listed price",
                 delete: {
                   title: "Delete",
@@ -595,7 +606,7 @@ export const en = {
         generateWtbMessage: {
           title: "Generate WTB Message",
           description: "New rivens price",
-          list_text: "{{name}}: <blue>{{price}}</blue>",
+          list_text: "{{name}}: <blue>{{previousPrice}}</blue> > <blue>{{price}}</blue> ",
           confirm: "Replace",
           cancel: "Cancel",
         }
@@ -636,7 +647,7 @@ export const en = {
       }
     },
     chats: {
-      
+
       item: {
         un_read_messages: "<mail /> {{count}}",
         delete: "Leave Chat",
@@ -652,7 +663,7 @@ export const en = {
         placeholder: "Type a message...",
         error: {
           msg_to_long: "Message is too long",
-      },
+        },
       },
     },
   },

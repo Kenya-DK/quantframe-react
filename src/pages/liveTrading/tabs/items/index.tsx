@@ -228,7 +228,7 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
             title: useTranslateDataGridColumns('actions.title'),
             render: ({ id, listed_price, hidden: hide }) =>
               <Group position="center" >
-                <Tooltip label={useTranslateDataGridColumns('actions.sell')}>
+                <Tooltip label={useTranslateDataGridColumns('actions.sell.title')}>
                   <ActionIcon loading={sellStockItemEntryMutation.isLoading} color="green.7" variant="filled" onClick={async (e) => {
                     e.stopPropagation();
                     modals.openContextModal({
@@ -256,7 +256,7 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
                     <FontAwesomeIcon icon={faHammer} />
                   </ActionIcon>
                 </Tooltip>
-                <Tooltip label={useTranslateDataGridColumns(`actions.is_hiding.${hide ? "true" : "false"}`)}>
+                <Tooltip label={useTranslateDataGridColumns(`actions.is_hiding.${hide ? "enable" : "disable"}`)}>
                   <ActionIcon loading={sellStockItemEntryMutation.isLoading} color={`${hide ? "red.7" : "green.7"}`} variant="filled" onClick={async () => {
                     if (!id) return;
                     await updateItemEntryMutation.mutateAsync({ id: id, riven: { hidden: !hide } });

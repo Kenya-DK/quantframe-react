@@ -10,10 +10,11 @@ use crate::{
         client::DBClient,
         modules::{stock_item, stock_riven::MatchRivenStruct},
     },
+    enums::{LogLevel, OrderType},
     error::{self, AppError},
     logger,
     structs::{Order, RivenAttribute},
-    wfm_client::client::WFMClient, enums::{OrderType, LogLevel},
+    wfm_client::client::WFMClient,
 };
 use eyre::eyre;
 use once_cell::sync::Lazy;
@@ -253,10 +254,10 @@ pub async fn sell_item_stock(
             }
             Err(e) => {
                 error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
-                if e.log_level()  !=LogLevel::Error {
-                    return Err(e);                    
-                }else {
-                    return Ok(json!(invantory.clone()));          
+                if e.log_level() != LogLevel::Error {
+                    return Err(e);
+                } else {
+                    return Ok(json!(invantory.clone()));
                 }
             }
         }
