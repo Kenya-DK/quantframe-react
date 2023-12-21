@@ -1,4 +1,4 @@
-import { createStyles } from "@mantine/core";
+import { createStyles, useMantineTheme } from "@mantine/core";
 import { Wfm } from "../types";
 
 /**
@@ -57,43 +57,60 @@ export const padTo2Digits = (num: number) => {
  * @param status - The order status to get the CSS class for.
  * @returns The CSS class for the given order status.
  */
-const useStyles = createStyles((theme) => {
+const useStyles = createStyles(() => {
   const boxShadow = `inset 4px 0 0 0`;
 
   return {
     default: {
       ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${theme.colors.gray[2]};`,
+        boxShadow: `${boxShadow} ${getOrderStatusColorCode("")};`,
       },
     },
     tolowprofile: {
       ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${theme.colors.orange[7]};`,
+        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.ToLowProfile)};`,
       },
     },
     pending: {
       ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${theme.colors.violet[7]};`,
+        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.Pending)};`,
       },
     },
     live: {
       ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${theme.colors.green[7]};`,
+        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.Live)};`,
       },
     },
     inactive: {
       ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${theme.colors.red[7]};`,
+        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.Inactive)};`,
       },
     },
     no_offers: {
       ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${theme.colors.pink[7]};`,
+        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.NoOffers)};`,
       },
     },
   }
 });
-export const getOrderStatusColor = (status: string) => {
+export const getOrderStatusColorCode = (status: string) => {
+  const theme = useMantineTheme();
+  switch (status) {
+    case Wfm.OrderStatus.Inactive:
+      return theme.colors.red[7];
+    case Wfm.OrderStatus.Live:
+      return theme.colors.green[7];
+    case Wfm.OrderStatus.Pending:
+      return theme.colors.violet[7];
+    case Wfm.OrderStatus.ToLowProfile:
+      return theme.colors.orange[7];
+    case Wfm.OrderStatus.NoOffers:
+      return theme.colors.pink[7];
+    default:
+      return theme.colors.gray[2];
+  }
+};
+export const getOrderStatusColorClass = (status: string) => {
   const { classes } = useStyles();
   switch (status) {
     case Wfm.OrderStatus.Inactive:

@@ -13,7 +13,7 @@ import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
 import { RivenForm } from "@components/forms/riven.form";
 import { useNavigate } from "react-router-dom";
-import { getOrderStatusColor, paginate, sortArray } from "@utils/index";
+import { getOrderStatusColorClass, paginate, sortArray } from "@utils/index";
 import { SearchField } from "@components/searchfield";
 import { TextColor } from "@components/textColor";
 import { InfoBox } from "@components/InfoBox";
@@ -215,7 +215,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
         sortStatus={sortStatus}
         onSortStatusChange={setSortStatus}
         withColumnBorders
-        rowClassName={(row) => getOrderStatusColor(row.status)}
+        rowClassName={(row) => getOrderStatusColorClass(row.status)}
         rowContextMenu={{
           items: (record) => [
             {

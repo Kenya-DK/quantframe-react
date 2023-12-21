@@ -12,8 +12,9 @@ import api from '@api/index';
 import { useEffect, useState } from "react";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { modals } from "@mantine/modals";
-import { paginate, sortArray } from "@utils/index";
+import { getOrderStatusColorClass, paginate, sortArray } from "@utils/index";
 import { SearchField } from "@components/searchfield";
+import { InfoBox } from "../../../../components/InfoBox";
 interface StockItemsPanelProps {
 }
 export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
@@ -134,6 +135,13 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
               rank: data.rank
             });
           }} />
+          <Group mt={15} >
+            <InfoBox text={useTranslateItemPanel("infos.to_low_profit_description")} color={theme.colors.orange[7]} />
+            <InfoBox text={useTranslateItemPanel("infos.pending_description")} color={theme.colors.violet[7]} />
+            <InfoBox text={useTranslateItemPanel("infos.live_description")} color={theme.colors.green[7]} />
+            <InfoBox text={useTranslateItemPanel("infos.inactive_description")} color={theme.colors.red[7]} />
+            <InfoBox text={useTranslateItemPanel("infos.no_offers_description")} color={theme.colors.pink[7]} />
+          </Group>
         </Grid.Col>
         <Grid.Col span={2}>
           <Stack spacing={2} h={"100%"} w={"100%"}
@@ -160,6 +168,7 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
         page={page}
         onPageChange={setPage}
         totalRecords={totalRecords}
+        rowClassName={(row) => getOrderStatusColorClass(row.status)}
         recordsPerPage={pageSize}
         recordsPerPageOptions={pageSizes}
         onRecordsPerPageChange={setPageSize}

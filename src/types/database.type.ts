@@ -17,6 +17,7 @@ export interface StockEntryDto {
   name: string;
   rank: number;
   price: number;
+  status: string;
   minium_price?: number | null,
   listed_price?: number | null;
   owned: number;
@@ -33,7 +34,6 @@ export interface StockRivenDto extends StockEntryDto {
   mastery_rank: number;
   mod_name: string;
   re_rolls: number;
-  status: string;
   private: boolean;
   match_riven: MatchRivenDto;
 }

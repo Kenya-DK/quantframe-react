@@ -32,6 +32,7 @@ pub enum StockItem {
     ListedPrice,
     Owned,
     Hidden,
+    Status,
     Created,
 }
 
@@ -50,6 +51,7 @@ pub struct StockItemStruct {
     pub listed_price: Option<i32>,
     pub owned: i32,
     pub hidden: bool,
+    pub status: String,
     pub created: String,
 }
 
@@ -142,6 +144,17 @@ impl<'a> StockItemModule<'a> {
 
         helper::alter_table(connection.clone(), &table).await?;
 
+        table = Table::alter()
+            .table(StockItem::Table)
+            .add_column(
+                ColumnDef::new(StockItem::Status)
+                    .string()
+                    .not_null()
+                    .default("pending"),
+            )
+            .to_string(SqliteQueryBuilder);
+        helper::alter_table(connection.clone(), &table).await?;
+
         Ok(true)
     }
 
@@ -162,6 +175,7 @@ impl<'a> StockItemModule<'a> {
                 StockItem::ListedPrice,
                 StockItem::Owned,
                 StockItem::Hidden,
+                StockRiven::Status,
                 StockItem::Created,
             ])
             .from(StockItem::Table)
@@ -253,6 +267,7 @@ impl<'a> StockItemModule<'a> {
                     listed_price: None,
                     owned: quantity as i32,
                     hidden: false,
+                    status: "pending".to_string(),
                     created: chrono::Local::now().naive_local().to_string(),
                 };
 
@@ -269,6 +284,7 @@ impl<'a> StockItemModule<'a> {
                         StockItem::MiniumPrice,
                         StockItem::Owned,
                         StockItem::Hidden,
+                        StockRiven::Status,
                         StockItem::Created,
                     ])
                     .values_panic([
@@ -282,6 +298,7 @@ impl<'a> StockItemModule<'a> {
                         inventory.minium_price.into(),
                         inventory.owned.into(),
                         inventory.hidden.into(),
+                        inventory.status.into(),
                         inventory.created.clone().into(),
                     ])
                     .to_string(SqliteQueryBuilder);
@@ -310,6 +327,7 @@ impl<'a> StockItemModule<'a> {
         price: Option<f64>,
         minium_price: Option<i32>,
         listed_price: Option<i32>,
+        status: Option<String>,
         hidden: Option<bool>,
     ) -> Result<StockItemStruct, AppError> {
         let connection = self.client.connection.lock().unwrap().clone();
@@ -351,6 +369,11 @@ impl<'a> StockItemModule<'a> {
             values.push((StockItem::ListedPrice, listed_price.into()));
         }
 
+        if status.is_some() {
+            inventory.status = status.unwrap();
+            values.push((StockItem::Status, inventory.status.clone().into()));
+        }
+
         if hidden.is_some() {
             inventory.hidden = hidden.unwrap();
             values.push((StockItem::Hidden, hidden.into()));
@@ -379,6 +402,7 @@ impl<'a> StockItemModule<'a> {
         owned: Option<i32>,
         price: Option<f64>,
         listed_price: Option<i32>,
+        status: Option<String>,
         hidden: Option<bool>,
     ) -> Result<StockItemStruct, AppError> {
         let items = self.get_items().await?;
@@ -391,10 +415,10 @@ impl<'a> StockItemModule<'a> {
             ));
         }
         let item = item.unwrap();
-        self.update_by_id(item.id, owned, price, None, listed_price, hidden)
+        self.update_by_id(item.id, owned, price, None, listed_price, status, hidden)
             .await?;
         Ok(self
-            .update_by_id(item.id, owned, price, None, listed_price, hidden)
+            .update_by_id(item.id, owned, price, None, listed_price, status, hidden)
             .await?)
     }
 
