@@ -1,7 +1,7 @@
 import { createStyles, rem, Tooltip, UnstyledButton, Navbar, Stack, Indicator } from "@mantine/core";
 import { ReactNode, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDesktop, faEnvelope, faGlobe, faHome } from "@fortawesome/free-solid-svg-icons";
+import { faCoffee, faDesktop, faEnvelope, faGlobe, faHome } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateLayout } from "../hooks";
 import { useNavigate } from "react-router-dom";
 import { WFMLogo } from "../components/icons/wfm_logo";
@@ -12,13 +12,14 @@ interface NavbarLinkProps {
   label: string;
   link: string;
   active?: boolean;
+  button?: boolean;
   onClick?(url: string): void;
 }
-function NavbarLink({ link, icon, label, active, onClick }: NavbarLinkProps) {
+function NavbarLink({ link, icon, label, active, onClick, button }: NavbarLinkProps) {
   const { classes, cx } = useStyles();
   return (
     <Tooltip label={label} position="right" transitionProps={{ duration: 0 }}>
-      <UnstyledButton onClick={() => onClick && onClick(link)} className={cx(classes.link, { [classes.active]: active })}>
+      <UnstyledButton sx={{ ...(button ? { position: "absolute", bottom: 0 } : undefined) }} onClick={() => onClick && onClick(link)} className={cx(classes.link, { [classes.active]: active })}>
         {icon}
       </UnstyledButton>
     </Tooltip>
@@ -79,8 +80,19 @@ export default function SideBar({ }) {
   return (
     <Navbar width={{ base: 70 }} p="xs">
       <Navbar.Section grow>
-        <Stack justify="center" spacing={0}>
+        <Stack spacing={0} sx={{ position: "relative", height: "100%" }}>
           {links}
+          <NavbarLink
+            button
+            link={""}
+            icon={<FontAwesomeIcon icon={faCoffee} />}
+            label={useTranslate("buy_me_a_coffee")}
+            key={"coffee"}
+            active={false}
+            onClick={() => {
+              window.open("https://www.buymeacoffee.com/kenyadk", "_blank")
+            }}
+          />
         </Stack>
       </Navbar.Section>
     </Navbar>

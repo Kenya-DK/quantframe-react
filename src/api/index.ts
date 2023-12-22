@@ -1,4 +1,4 @@
-import { SetupResponse, Wfm, WeeklyRiven, TransactionEntryDto, Settings, CreateTransactionEntryDto, CreateStockItemEntryDto, StockItemDto, CreateStockRivenEntryDto, StockRivenDto } from '../types'
+import { SetupResponse, Wfm, TransactionEntryDto, Settings, CreateTransactionEntryDto, CreateStockItemEntryDto, StockItemDto, CreateStockRivenEntryDto, StockRivenDto } from '../types'
 import { invoke } from '@tauri-apps/api';
 import { SendTauriEvent, SendTauriUpdateDataEvent } from '../utils/tauri';
 const api = {
@@ -6,9 +6,6 @@ const api = {
     updatesettings: async (settings: Settings): Promise<Settings | undefined> => {
       SendTauriUpdateDataEvent("settings", { data: settings, operation: "SET" })
       return await invoke("update_settings", { settings })
-    },
-    get_weekly_rivens: async (): Promise<WeeklyRiven[]> => {
-      return await invoke("get_weekly_rivens") as WeeklyRiven[];
     },
     openLogsFolder: async (): Promise<any> => {
       return await invoke("open_logs_folder")

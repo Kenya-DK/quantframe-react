@@ -274,6 +274,7 @@ export const en = {
       warframe_market: "Warframe Market",
       auctions: "Contracts",
       debug: "Debug",
+      buy_me_a_coffee: "Buy me a coffee",
     },
   },
   pages: {
@@ -416,7 +417,7 @@ export const en = {
           total_listed_price: "Total Listed Price: <blue>{{price}}</blue>",
           total_purchase_price: "Total Purchase Price: <blue>{{price}}</blue>",
           total_profit: "Total Profit: <blue>{{price}}</blue>",
-          infos: {
+          info_boxs: {
             pending_description: "Pending",
             live_description: "Live on market",
             to_low_profit_description: "Profit was too low to sell",
@@ -508,6 +509,14 @@ export const en = {
           total_listed_price: "Total Listed Price: <blue>{{price}}</blue>",
           total_purchase_price: "Total Purchase Price: <blue>{{price}}</blue>",
           total_profit: "Total Profit: <blue>{{price}}</blue>",
+          info_boxs: {
+            pending_description: "Pending",
+            live_description: "Live on market",
+            to_low_profit_description: "Profit was too low to sell",
+            no_offers_description: "No offers on market",
+            inactive_description: "Is Private",
+            no_buyers_description: "No buyers on market",
+          },
           buttons: {
             resell: {
               label: "Resell",
@@ -681,6 +690,10 @@ export const en = {
       login_message: "Username or password is invalid {{name}}",
       logout_title: "Logout error",
       logout_message: "There was an error logging out. Please try again.",
-    }
+    },
+    rust: {
+      title: "Error in {{component}}",
+      message: "There was an error at {{loc}}. Please check the logs for more information.",
+    },
   }
 }

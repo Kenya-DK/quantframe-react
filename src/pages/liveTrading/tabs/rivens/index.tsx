@@ -1,19 +1,19 @@
 import { Image, Group, Stack, Tooltip, ActionIcon, Text, Box, useMantineTheme, Grid } from "@mantine/core";
 import { useCacheContext, useStockContextContext } from "@contexts/index";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
-import { useTranslatePage } from "@hooks/index";
+import { useTranslatePage, useTranslateRustError } from "@hooks/index";
 import api, { wfmThumbnail } from "@api/index";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faComment, faEdit, faEye, faEyeSlash, faHammer, faMagnifyingGlass, faPen, faPlus, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { useMutation } from "@tanstack/react-query";
 import { RivenAttributes } from "@components/auction/rivenAttributes";
-import { CreateStockRivenEntryDto, StockRivenDto } from "$types/index";
+import { CreateStockRivenEntryDto, StockRivenDto, RustError } from "$types/index";
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
 import { RivenForm } from "@components/forms/riven.form";
 import { useNavigate } from "react-router-dom";
-import { getOrderStatusColorClass, paginate, sortArray } from "@utils/index";
+import { getOrderStatusColorClass, paginate, sortArray, SendNotificationToWindow } from "@utils/index";
 import { SearchField } from "@components/searchfield";
 import { TextColor } from "@components/textColor";
 import { InfoBox } from "@components/InfoBox";
@@ -97,7 +97,9 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
         color: "green"
       });
     },
-    onError: () => { },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+    }
   })
   const updateRiveEntryMutation = useMutation((data: { id: number, riven: Partial<StockRivenDto> }) => api.stock.riven.update(data.id, data.riven), {
     onSuccess: async (data) => {
@@ -108,7 +110,9 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
         color: "green"
       });
     },
-    onError: () => { },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+    }
   })
   const deleteInvantoryEntryMutation = useMutation((id: number) => api.stock.riven.delete(id), {
     onSuccess: async (data) => {
@@ -119,7 +123,9 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
         color: "green"
       });
     },
-    onError: () => { },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+    }
   })
   const createRivenEntryMutation = useMutation((data: CreateStockRivenEntryDto) => api.stock.riven.create(data), {
     onSuccess: async (data) => {
@@ -130,7 +136,9 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
         color: "green"
       });
     },
-    onError: () => { },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+    }
   })
   return (
     <Stack mt={20}>
@@ -178,15 +186,15 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
             }
           />
           <Group mt={15} >
-            <InfoBox text={useTranslateRivenPanel("infos.to_low_profit_description")} color={theme.colors.orange[7]} />
-            <InfoBox text={useTranslateRivenPanel("infos.pending_description")} color={theme.colors.violet[7]} />
-            <InfoBox text={useTranslateRivenPanel("infos.live_description")} color={theme.colors.green[7]} />
-            <InfoBox text={useTranslateRivenPanel("infos.inactive_description")} color={theme.colors.red[7]} />
-            <InfoBox text={useTranslateRivenPanel("infos.no_offers_description")} color={theme.colors.pink[7]} />
+            <InfoBox text={useTranslateRivenPanel("info_boxs.to_low_profit_description")} color={theme.colors.orange[7]} />
+            <InfoBox text={useTranslateRivenPanel("info_boxs.pending_description")} color={theme.colors.violet[7]} />
+            <InfoBox text={useTranslateRivenPanel("info_boxs.live_description")} color={theme.colors.green[7]} />
+            <InfoBox text={useTranslateRivenPanel("info_boxs.inactive_description")} color={theme.colors.red[7]} />
+            <InfoBox text={useTranslateRivenPanel("info_boxs.no_offers_description")} color={theme.colors.pink[7]} />
           </Group>
         </Grid.Col>
-        <Grid.Col span={2} p={0}>
-          <Stack spacing={1} h={"100%"} w={"100%"}
+        <Grid.Col span={2} >
+          <Stack spacing={2} h={"100%"} w={"100%"}
             sx={{
               display: "flex",
               flexDirection: "column",
@@ -204,7 +212,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
         sx={{ marginTop: "20px" }}
         striped
         mah={5}
-        height={"63.4vh"}
+        height={"calc(100vh - 330px)"}
         records={rows}
         page={page}
         onPageChange={setPage}
@@ -405,7 +413,8 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                   </ActionIcon>
                 </Tooltip>
                 <Tooltip label={useTranslateDataGridColumns('actions.sell_for_listed_price')}>
-                  <ActionIcon disabled={!row.listed_price} loading={sellRiveEntryMutation.isLoading} color="blue.7" variant="filled" onClick={async () => {
+                  <ActionIcon disabled={!row.listed_price} loading={sellRiveEntryMutation.isLoading} color="blue.7" variant="filled" onClick={async (e) => {
+                    e.stopPropagation();
                     if (!row.listed_price || !row.id) return;
                     await sellRiveEntryMutation.mutateAsync({ id: row.id, price: row.listed_price });
                   }} >
@@ -413,7 +422,8 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                   </ActionIcon>
                 </Tooltip>
                 <Tooltip label={useTranslateDataGridColumns(`actions.is_private.${row.private ? "enable" : "disable"}`)}>
-                  <ActionIcon loading={sellRiveEntryMutation.isLoading} color={`${row.private ? "red.7" : "green.7"}`} variant="filled" onClick={async () => {
+                  <ActionIcon loading={sellRiveEntryMutation.isLoading} color={`${row.private ? "red.7" : "green.7"}`} variant="filled" onClick={async (e) => {
+                    e.stopPropagation();
                     if (!row.id) return;
                     await updateRiveEntryMutation.mutateAsync({ id: row.id, riven: { private: !row.private } });
                   }} >
@@ -421,7 +431,8 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                   </ActionIcon>
                 </Tooltip>
                 <Tooltip label={useTranslateDataGridColumns('actions.delete.title')}>
-                  <ActionIcon color="red.7" variant="filled" onClick={async () => {
+                  <ActionIcon color="red.7" variant="filled" onClick={async (e) => {
+                    e.stopPropagation();
                     modals.openConfirmModal({
                       title: useTranslateDataGridColumns('actions.delete.title'),
                       children: (<Text>

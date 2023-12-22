@@ -1,6 +1,9 @@
 import { Text, Card, Group, Button, TextInput, Select } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
 import { useMutation } from "@tanstack/react-query";
+import { RustError } from "$types/index";
+import { SendNotificationToWindow } from "@utils/index";
+import { useTranslateRustError } from "@hooks/index";
 import api from "@api/index";
 
 export const ImportAlgoTrader = () => {
@@ -11,9 +14,9 @@ export const ImportAlgoTrader = () => {
     onSuccess: async () => {
       window.location.reload();
     },
-    onError: () => {
-
-    },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+    }
   })
   const handleImportWarframeAlgoTraderData = async () => {
     await importWarframeAlgoTraderDataMutation.mutateAsync({ path: dbPath, type })

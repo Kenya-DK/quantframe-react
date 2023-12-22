@@ -2,10 +2,11 @@ use std::sync::{Arc, Mutex};
 
 use once_cell::sync::Lazy;
 use serde_json::{json, Value};
+use eyre::eyre;
 
 use crate::{
     auth::AuthState,
-    error::{self},
+    error::{self, AppError},
     logger,
     wfm_client::client::WFMClient,
 };
@@ -19,7 +20,7 @@ pub async fn login(
     password: String,
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-) -> Result<AuthState, Value> {
+) -> Result<AuthState, AppError> {
     let wfm = wfm.lock().expect("Could not lock wfm").clone();
     match wfm.auth().login(email, password).await {
         Ok(user) => {
@@ -30,7 +31,10 @@ pub async fn login(
                     true,
                     Some(LOG_FILE.lock().unwrap().as_str()),
                 );
-                return Err(json!({"error": "No access token found for user"}));
+                return Err(AppError::new(
+                    "WarframeMarket",
+                    eyre!("No access token found for user"),
+                ));
             }
 
             let arced_mutex = Arc::clone(&auth);
@@ -44,14 +48,13 @@ pub async fn login(
             auth.platform = user.platform;
             auth.region = user.region;
             auth.role = user.role;
-            auth.save_to_file().map_err(|e| e.to_json())?;
+            auth.save_to_file()?;
             auth.send_to_window();
             return Ok(auth.clone());
         }
         Err(e) => {
-            let error = e.to_json();
             error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
-            return Err(error);
+            return Err(e);
         }
     }
 }
@@ -59,25 +62,25 @@ pub async fn login(
 pub async fn update_user_status(
     status: String,
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
-) -> Result<(), Value> {
+) -> Result<(), AppError> {
     let arced_mutex = Arc::clone(&auth);
     let mut auth = arced_mutex.lock().expect("Could not lock auth");
     auth.status = Some(status);
-    auth.save_to_file().map_err(|e| e.to_json())?;
+    auth.save_to_file()?;
     auth.send_to_window();
     Ok(())
 }
 #[tauri::command]
 pub async fn logout(
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
-) -> Result<(), Value> {
+) -> Result<(), AppError> {
     let arced_mutex = Arc::clone(&auth);
     let mut auth = arced_mutex.lock().expect("Could not lock auth");
     auth.access_token = None;
     auth.avatar = None;
     auth.ingame_name = "".to_string();
     auth.id = "".to_string();
-    auth.save_to_file().map_err(|e| e.to_json())?;
+    auth.save_to_file()?;
     auth.send_to_window();
     Ok(())
 }

@@ -47,6 +47,7 @@ pub async fn init(
         "price_scraper_last_run": price_scraper.get_status(),
     });
 
+    return Err(AppError::new("TEST", eyre!("This is a test error")))?;
     helper::emit_undate_initializ_status("Loading Database...", None);
     match db.initialize().await {
         Ok(_) => {}
@@ -165,31 +166,6 @@ pub async fn update_settings(
 }
 
 #[tauri::command]
-pub async fn get_weekly_rivens() -> Result<serde_json::Value, AppError> {
-    let url = "https://n9e5v4d8.ssl.hwcdn.net/repos/weeklyRivensPC.json";
-    let client = Client::new();
-    let request = client.request(Method::GET, Url::parse(&url).unwrap());
-    let response = request.send().await;
-    if let Err(e) = response {
-        return Err(AppError::new("WeeklyRivens", eyre!(e.to_string())));
-    }
-    let response_data = response.unwrap();
-    let status = response_data.status();
-
-    if status != 200 {
-        return Err(AppError::new(
-            "WeeklyRivens",
-            eyre!(
-                "Could not get weekly rivens. Status: {}",
-                status.to_string()
-            ),
-        ));
-    }
-    let response = response_data.json::<Value>().await.unwrap();
-    Ok(response)
-}
-
-#[tauri::command]
 pub async fn open_logs_folder() {
     Command::new("explorer")
         .args(["/select,", &logger::get_log_forlder().to_str().unwrap()]) // The comma after select is not a typo
@@ -280,3 +256,8 @@ pub fn log(
     };
     logger::dolog(level, &component, &msg, console, file);
 }
+
+// #[tauri::command]
+// pub fn open_url(url: String) {
+//     let _ = webbrowser::open(&url);
+// }

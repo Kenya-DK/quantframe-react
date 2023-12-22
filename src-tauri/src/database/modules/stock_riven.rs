@@ -294,7 +294,7 @@ impl<'a> StockRivenModule<'a> {
             weapon_id: item.id,
             weapon_url: url_name.to_string(),
             weapon_name: item.item_name,
-            weapon_type: item.riven_type,
+            weapon_type: item.riven_type.unwrap_or("Unknown".to_string()),
             polarity: polarity.to_string(),
             mod_name: mod_name.to_string(),
             rank: rank as i32,

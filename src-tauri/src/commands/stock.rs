@@ -99,7 +99,7 @@ pub async fn update_item_stock(
     // Update Riven in Stock
     match db
         .stock_item()
-        .update_by_id(id, owned, None, minium_price, None, hidden)
+        .update_by_id(id, owned, None, minium_price, None,None, hidden)
         .await
     {
         Ok(stock) => {

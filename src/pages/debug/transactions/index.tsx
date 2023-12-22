@@ -1,17 +1,18 @@
 import { Text, Card, Group, Tooltip, ActionIcon, Box, TextInput, Select } from "@mantine/core";
-import { useWarframeMarketContextContext } from "../../../contexts";
+import { useWarframeMarketContextContext } from "@contexts/index";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faCopy, faEdit, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
-import { paginate, sortArray } from "../../../utils";
-import { SearchField } from "../../../components/searchfield";
-import { TransactionEntryDto } from "../../../types";
+import { SearchField } from "@components/searchfield";
 import { useMutation } from "@tanstack/react-query";
-import api from "../../../api";
+import api from "@api/index";
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
 import { useForm } from "@mantine/form";
+import { RustError, TransactionEntryDto } from "$types/index";
+import { SendNotificationToWindow, paginate, sortArray } from "@utils/index";
+import { useTranslateRustError } from "@hooks/index";
 import dayjs from "dayjs";
 
 export const Transactions = () => {
@@ -78,9 +79,9 @@ export const Transactions = () => {
         color: "green"
       });
     },
-    onError: () => {
-
-    },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+    }
   })
   const updateEntryMutation = useMutation((data: { id: number, transaction: Partial<TransactionEntryDto> }) => api.transactions.update(data.id, data.transaction), {
     onSuccess: async () => {
@@ -91,7 +92,9 @@ export const Transactions = () => {
         color: "green"
       });
     },
-    onError: () => { },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+    }
   })
   return (
     <Card>

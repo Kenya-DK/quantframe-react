@@ -291,16 +291,6 @@ impl<'a> ItemModule<'a> {
             wfm.orders()
                 .delete(&order.id, "None", "None", "Any")
                 .await?;
-            match db
-                .stock_item()
-                .update_by_url(&order.item.unwrap().url_name, None, None, None, None)
-                .await
-            {
-                Ok(_) => {}
-                Err(e) => {
-                    error::create_log_file(self.client.log_file.clone(), &e);
-                }
-            };
         }
         for order in current_orders.buy_orders {
             if self.client.is_running() == false {
@@ -1028,7 +1018,14 @@ impl<'a> ItemModule<'a> {
             return Ok(());
         } else if !inventory_names.contains(&item_name.to_string()) {
             db.stock_item()
-                .update_by_url(item_name, None, None, None, None)
+                .update_by_url(
+                    item_name,
+                    None,
+                    None,
+                    None,
+                    Some("to_low_profit".to_string()),
+                    None,
+                )
                 .await?;
             wfm.orders()
                 .delete(
@@ -1049,7 +1046,7 @@ impl<'a> ItemModule<'a> {
         }
 
         // Get Invantory Data from the database
-        let inventory = db
+        let stock_item = db
             .stock_item()
             .get_item_by_url_name(item_name)
             .await?
@@ -1060,23 +1057,31 @@ impl<'a> ItemModule<'a> {
             self.restructure_live_order_df(item_live_orders_df).await?;
 
         // Get the average price of the item.
-        let avg_price = (inventory.price * inventory.owned as f64 / inventory.owned as f64) as i64;
+        let bought_avg_price =
+            (stock_item.price * stock_item.owned as f64 / stock_item.owned as f64) as i64;
 
         // Get the quantity of owned item.
-        let quantity = inventory.owned as i64;
+        let quantity = stock_item.owned as i64;
 
         // Get the minimum price of the item.
-        let minimum_price = inventory.minium_price;
+        let minimum_price = stock_item.minium_price;
 
         // If there are no buyers, update order to be 30p above average price
         if sellers == 0 {
-            let mut post_price = (avg_price + 30) as i64;
+            let mut post_price = (bought_avg_price + 30) as i64;
             if minimum_price.is_some() && post_price < minimum_price.unwrap() as i64 {
                 post_price = minimum_price.unwrap() as i64;
             }
 
             db.stock_item()
-                .update_by_url(item_name, None, None, Some(post_price as i32), None)
+                .update_by_url(
+                    item_name,
+                    None,
+                    None,
+                    Some(post_price as i32),
+                    Some("no_buyers".to_string()),
+                    None,
+                )
                 .await?;
             if active {
                 wfm.orders()
@@ -1101,7 +1106,7 @@ impl<'a> ItemModule<'a> {
             }
         }
 
-        // Get lowest buy order price
+        // Get the platinum values from the DataFrame of live sell orders
         let post_prices: Vec<i64> = match helper::get_column_values(
             live_sell_orders_df.clone(),
             None,
@@ -1112,19 +1117,47 @@ impl<'a> ItemModule<'a> {
             _ => return Err(AppError::new("LiveScraper", eyre!("Expected i64 values"))),
         };
 
+        // Get lowest buy order price from the DataFrame of live sell orders
         let mut post_price = post_prices.get(0).unwrap_or(&0).clone();
 
-        if (post_price - avg_price as i64) <= -10 {
+        // Get the profit from the current order
+        let profit = post_price - bought_avg_price as i64;
+        
+        if profit <= -10 {
+            // Only update the database if the item is not already marked as to_low_profit
+            if stock_item.status != "to_low_profit" {
+                db.stock_item()
+                    .update_by_url(
+                        item_name,
+                        None,
+                        None,
+                        Some(-1),
+                        Some("to_low_profit".to_string()),
+                        None,
+                    )
+                    .await?;
+            }
             logger::info_con(
                 "LiveScraper",
                 format!("Item {item_name} is too cheap. Not putting up a sell order.").as_str(),
             );
+            if active {
+                wfm.orders()
+                    .delete(
+                        order_id.clone().unwrap().as_str(),
+                        item_name,
+                        item_id,
+                        "sell",
+                    )
+                    .await?;
+            }
+            return Ok(());
         }
 
         if post_price + 10 > post_price && sellers >= 2 {
-            post_price = (avg_price + 10).max(post_prices.get(0).unwrap_or(&0).clone());
+            post_price = (bought_avg_price + 10).max(post_prices.get(0).unwrap_or(&0).clone());
         } else {
-            post_price = (avg_price + 10).max(post_price);
+            post_price = (bought_avg_price + 10).max(post_price);
         }
         if minimum_price.is_some() && post_price < minimum_price.unwrap() as i64 {
             post_price = minimum_price.unwrap() as i64;
@@ -1143,7 +1176,14 @@ impl<'a> ItemModule<'a> {
                     )
                     .await?;
                 db.stock_item()
-                    .update_by_url(item_name, None, None, Some(post_price as i32), None)
+                    .update_by_url(
+                        item_name,
+                        None,
+                        None,
+                        Some(post_price as i32),
+                        Some("live".to_string()),
+                        None,
+                    )
                     .await?;
                 logger::info_con(
                     "LiveScraper",
@@ -1168,7 +1208,14 @@ impl<'a> ItemModule<'a> {
                 )
                 .await?;
             db.stock_item()
-                .update_by_url(item_name, None, None, Some(post_price as i32), None)
+                .update_by_url(
+                    item_name,
+                    None,
+                    None,
+                    Some(post_price as i32),
+                    Some("live".to_string()),
+                    None,
+                )
                 .await?;
             logger::info_con("LiveScraper",format!("Automatically Posted Visible Sell Order Item: {item_name}, ItemId: {item_id}, Price: {post_price}").as_str());
         }

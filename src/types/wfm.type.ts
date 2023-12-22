@@ -230,6 +230,7 @@ export namespace Wfm {
     Live = "live",
     ToLowProfile = "to_low_profit",
     NoOffers = "no_offers",
+    NoBuyers = "no_buyers",
     Inactive = "inactive",
   }
   export interface ChatData {

@@ -63,7 +63,7 @@ pub struct RivenTypeInfo {
     pub icon_format: Option<String>,
 
     #[serde(rename = "riven_type")]
-    pub riven_type: String,
+    pub riven_type: Option<String>,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]

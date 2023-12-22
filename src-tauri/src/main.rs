@@ -91,6 +91,7 @@ async fn setup_async(app: &mut App) -> Result<(), AppError> {
         Arc::clone(&wfm_client),
         Arc::clone(&auth_arc),
         Arc::clone(&database_client),
+        Arc::clone(&monitor_handler_arc),
     );
     app.manage(Arc::new(Mutex::new(live_scraper)));
 
@@ -164,7 +165,6 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             commands::base::init,
             commands::base::update_settings,
-            commands::base::get_weekly_rivens,
             commands::base::open_logs_folder,
             commands::base::show_notification,
             commands::auth::login,

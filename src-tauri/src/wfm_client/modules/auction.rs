@@ -39,7 +39,7 @@ impl<'a> AuctionModule<'a> {
             Ok((orders, _headers)) => {
                 logger::info(
                     "WarframeMarket",
-                    format!("From User Auctions: {}", ingame_name).as_str(),
+                    format!("Getting Auctions for {}", ingame_name).as_str(),
                     true,
                     Some(self.client.log_file.as_str()),
                 );

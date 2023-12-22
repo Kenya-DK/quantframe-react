@@ -91,6 +91,12 @@ const useStyles = createStyles(() => {
         boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.NoOffers)};`,
       },
     },
+    no_buyers: {
+      ['td:first-of-type']: {
+        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.NoBuyers)};`,
+      },
+    }
+
   }
 });
 export const getOrderStatusColorCode = (status: string) => {
@@ -106,6 +112,8 @@ export const getOrderStatusColorCode = (status: string) => {
       return theme.colors.orange[7];
     case Wfm.OrderStatus.NoOffers:
       return theme.colors.pink[7];
+    case Wfm.OrderStatus.NoBuyers:
+      return theme.colors.yellow[7];
     default:
       return theme.colors.gray[2];
   }

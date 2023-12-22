@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { AppInfo, Settings } from '$types/index';
-import { OnTauriEvent, OnTauriUpdateDataEvent, SendTauriEvent, SendTauriUpdateDataEvent } from "../utils";
+import { AppInfo, RustError, Settings } from '$types/index';
+import { OnTauriEvent, OnTauriUpdateDataEvent, SendNotificationToWindow, SendTauriEvent, SendTauriUpdateDataEvent } from "../utils";
 import { useQuery } from "@tanstack/react-query";
 import api from "../api";
-import { useTranslateGeneral } from "@hooks/index";
+import { useTranslateGeneral, useTranslateRustError } from "@hooks/index";
 import { SplashScreen } from "../components/splashScreen";
 import { notifications } from "@mantine/notifications";
 import { Button, Text } from "@mantine/core";
@@ -29,6 +29,8 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
   const [settings, setSettings] = useState<Settings | undefined>(undefined);
   const [appInfo, setAppInfo] = useState<AppInfo | undefined>(undefined);
   const [initializstatus, setInitializstatus] = useState<string>("Initializing..");
+
+
 
   // Fetch data from rust side
   const { isFetching } = useQuery({
@@ -68,6 +70,9 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
         autoClose: false
       });
     },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+    }
   })
 
   // Handle update, create, delete transaction

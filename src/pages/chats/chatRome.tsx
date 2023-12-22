@@ -2,12 +2,14 @@ import { Paper, ScrollArea, Stack } from "@mantine/core";
 import api from "@api/index";
 import { useQuery } from "@tanstack/react-query";
 import ChatMessage from "./chatMessage";
-import { Wfm } from "../../types";
 import { useEffect, useRef, useState } from "react";
-import { useChatContext } from "../../contexts";
+import { useChatContext } from "@contexts/index";
 import { ChatNavBar } from "./chatNavBar";
-import { Loading } from "../../components/loading";
+import { Loading } from "@components/loading";
 import { ChatBox } from "./chatBox";
+import { RustError, Wfm } from "$types/index";
+import { SendNotificationToWindow } from "@utils/index";
+import { useTranslateRustError } from "@hooks/index";
 
 interface ChatContextProps {
   chat: Wfm.ChatData | undefined;
@@ -45,6 +47,9 @@ export const ChatRome = ({ chat }: ChatContextProps) => {
       setTimeout(() => {
         scrollToBottom();
       }, 100);
+    },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
     }
   })
 

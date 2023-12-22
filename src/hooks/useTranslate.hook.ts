@@ -16,3 +16,5 @@ export const useTranslateSuccess = (key: string, context?: { [key: string]: any 
 export const useTranslateError = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => i18Key ? `error.${key}` : i18next.t(`error.${key}`, { ...context }) as string
 
 export const useTranslateContext = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => i18Key ? `context.${key}` : i18next.t(`context.${key}`, { ...context }) as string
+
+export const useTranslateRustError = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateError(`rust.${key}`, { ...context }, i18Key) as string

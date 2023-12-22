@@ -1,15 +1,18 @@
 import { ActionIcon, Box, Grid, Group, Stack, Tooltip, Text } from "@mantine/core";
 import api from "@api/index";
-import { useWarframeMarketContextContext } from "../../../../contexts";
-import Auction from "../../../../components/auction";
+import { useWarframeMarketContextContext } from "@contexts/index";
+import Auction from "@components/auction";
 import { modals } from "@mantine/modals";
 import { useMutation } from "@tanstack/react-query";
 import { notifications } from "@mantine/notifications";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
-import { useTranslatePage } from "../../../../hooks";
+import { useTranslatePage, useTranslateRustError } from "@hooks/index";
 import { useState } from "react";
-import { SearchField } from "../../../../components/searchfield";
+import { SearchField } from "@components/searchfield";
+import { RustError } from "$types/index";
+import { SendNotificationToWindow } from "@utils/index";
+
 interface AuctionsPanelProps {
 }
 export const AuctionsPanel = ({ }: AuctionsPanelProps) => {
@@ -29,7 +32,9 @@ export const AuctionsPanel = ({ }: AuctionsPanelProps) => {
         color: "green"
       });
     },
-    onError: () => { },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+    }
   })
   const refreshAuctionsMutation = useMutation(() => api.auction.refresh(), {
     onSuccess: async () => {
@@ -40,7 +45,9 @@ export const AuctionsPanel = ({ }: AuctionsPanelProps) => {
         color: "green"
       });
     },
-    onError: () => { },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+    }
   })
   const deleteAllAuctionsMutation = useMutation(() => api.auction.delete_all(), {
     onSuccess: async (count) => {
@@ -51,7 +58,9 @@ export const AuctionsPanel = ({ }: AuctionsPanelProps) => {
         color: "green"
       });
     },
-    onError: () => { },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+    }
   })
 
   const getAuctions = () => {

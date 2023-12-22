@@ -2,8 +2,8 @@ import { Divider, Group, Stack, Text, Image, Box, Grid, Tooltip, ActionIcon, Pap
 import { useCacheContext, useWarframeMarketContextContext } from "@contexts/index";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faTrashCan, faRefresh, faCartShopping, faShoppingCart } from "@fortawesome/free-solid-svg-icons";
-import { Wfm } from "$types/index";
-import { useTranslatePage } from "@hooks/index";
+import { Wfm, CreateStockItemEntryDto, RustError } from "$types/index";
+import { useTranslatePage, useTranslateRustError } from "@hooks/index";
 import api, { wfmThumbnail } from "@api/index";
 import { useMutation } from "@tanstack/react-query";
 import { notifications } from "@mantine/notifications";
@@ -11,8 +11,8 @@ import { SearchField } from "@components/searchfield";
 import { useEffect, useState } from "react";
 import { modals } from "@mantine/modals";
 import { TextColor } from "@components/textColor";
-import { CreateStockItemEntryDto } from "$types/index";
-import { InfoBox } from "../../../../components/InfoBox";
+import { InfoBox } from "@components/InfoBox";
+import { SendNotificationToWindow } from "@utils/index";
 interface OrdersPanelProps {
 }
 interface PurchaseNewItemProps {
@@ -33,9 +33,9 @@ const OrderItem = ({ max_rank, ordre }: PurchaseNewItemProps) => {
         color: "green"
       });
     },
-    onError: () => {
-
-    },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+    }
   })
 
   const sellStockItemEntryMutation = useMutation((data: { url: string, price: number }) => api.stock.item.sell_by_name(data.url, data.price, 1), {
@@ -47,7 +47,9 @@ const OrderItem = ({ max_rank, ordre }: PurchaseNewItemProps) => {
         color: "green"
       });
     },
-    onError: () => { },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+    }
   })
   const deleteOrdreEntryMutation = useMutation((data: { id: string }) => api.orders.deleteOrder(data.id), {
     onSuccess: async (data) => {
@@ -58,7 +60,9 @@ const OrderItem = ({ max_rank, ordre }: PurchaseNewItemProps) => {
         color: "green"
       });
     },
-    onError: () => { },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+    }
   })
   const useTranslateOrdersPanel = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePage(`warframe_market.tabs.orders.${key}`, { ...context }, i18Key)
   const handleCartClick = async () => {
@@ -165,7 +169,9 @@ export const OrdersPanel = ({ }: OrdersPanelProps) => {
         color: "green"
       });
     },
-    onError: () => { },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+    }
   })
   const deleteAllOrdersMutation = useMutation(() => api.orders.delete_all(), {
     onSuccess: async (count) => {
@@ -176,7 +182,9 @@ export const OrdersPanel = ({ }: OrdersPanelProps) => {
         color: "green"
       });
     },
-    onError: () => { },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+    }
   })
 
   const getFilterOrders = () => {
@@ -258,7 +266,7 @@ export const OrdersPanel = ({ }: OrdersPanelProps) => {
           </Group>
         </Grid.Col>
       </Grid>
-      <ScrollArea mt={25} h={"70vh"} pr={15} pl={15}>
+      <ScrollArea mt={25} h={"calc(100vh - 243px)"} pr={15} pl={15}>
         <SimpleGrid
           cols={4}
           spacing="lg"

@@ -1,5 +1,5 @@
 import { ActionIcon, Box, Grid, Group, Stack, Tooltip, Text } from "@mantine/core";
-import { useTranslatePage } from "@hooks/index";
+import { useTranslatePage, useTranslateRustError } from "@hooks/index";
 import { TextColor } from "@components/textColor";
 import { useStockContextContext } from "@contexts/index";
 import { PurchaseNewItem } from "./purchase";
@@ -7,14 +7,16 @@ import { notifications } from "@mantine/notifications";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faEdit, faEye, faEyeSlash, faHammer, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { useMutation } from "@tanstack/react-query";
-import { CreateStockItemEntryDto, StockItemDto } from "$types/index";
+import { RustError, CreateStockItemEntryDto, StockItemDto, Wfm } from "$types/index";
 import api from '@api/index';
 import { useEffect, useState } from "react";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { modals } from "@mantine/modals";
-import { getOrderStatusColorClass, paginate, sortArray } from "@utils/index";
+import { SendNotificationToWindow, getOrderStatusColorClass, getOrderStatusColorCode, paginate, sortArray } from "@utils/index";
 import { SearchField } from "@components/searchfield";
-import { InfoBox } from "../../../../components/InfoBox";
+import { InfoBox } from "@components/InfoBox";
+
+
 interface StockItemsPanelProps {
 }
 export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
@@ -83,9 +85,9 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
         color: "green"
       });
     },
-    onError: () => {
-
-    },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+    }
   })
 
   const sellStockItemEntryMutation = useMutation((data: { id: number, price: number }) => api.stock.item.sell(data.id, data.price, 1), {
@@ -97,7 +99,9 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
         color: "green"
       });
     },
-    onError: () => { },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+    }
   })
   const deleteStockItemEntryMutation = useMutation((id: number) => api.stock.item.delete(id), {
     onSuccess: async (data) => {
@@ -108,9 +112,9 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
         color: "green"
       });
     },
-    onError: () => {
-
-    },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+    }
   })
   const updateItemEntryMutation = useMutation((data: { id: number, riven: Partial<StockItemDto> }) => api.stock.item.update(data.id, data.riven), {
     onSuccess: async (data) => {
@@ -121,7 +125,9 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
         color: "green"
       });
     },
-    onError: () => { },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+    }
   })
   return (
     <Stack >
@@ -136,14 +142,15 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
             });
           }} />
           <Group mt={15} >
-            <InfoBox text={useTranslateItemPanel("infos.to_low_profit_description")} color={theme.colors.orange[7]} />
-            <InfoBox text={useTranslateItemPanel("infos.pending_description")} color={theme.colors.violet[7]} />
-            <InfoBox text={useTranslateItemPanel("infos.live_description")} color={theme.colors.green[7]} />
-            <InfoBox text={useTranslateItemPanel("infos.inactive_description")} color={theme.colors.red[7]} />
-            <InfoBox text={useTranslateItemPanel("infos.no_offers_description")} color={theme.colors.pink[7]} />
+            <InfoBox text={useTranslateItemPanel("info_boxs.to_low_profit_description")} color={getOrderStatusColorCode(Wfm.OrderStatus.ToLowProfile)} />
+            <InfoBox text={useTranslateItemPanel("info_boxs.pending_description")} color={getOrderStatusColorCode(Wfm.OrderStatus.Pending)} />
+            <InfoBox text={useTranslateItemPanel("info_boxs.live_description")} color={getOrderStatusColorCode(Wfm.OrderStatus.Live)} />
+            <InfoBox text={useTranslateItemPanel("info_boxs.inactive_description")} color={getOrderStatusColorCode(Wfm.OrderStatus.Inactive)} />
+            <InfoBox text={useTranslateItemPanel("info_boxs.no_offers_description")} color={getOrderStatusColorCode(Wfm.OrderStatus.NoOffers)} />
+            <InfoBox text={useTranslateItemPanel("info_boxs.no_buyers_description")} color={getOrderStatusColorCode(Wfm.OrderStatus.NoBuyers)} />
           </Group>
         </Grid.Col>
-        <Grid.Col span={2}>
+        <Grid.Col span={2} >
           <Stack spacing={2} h={"100%"} w={"100%"}
             sx={{
               display: "flex",
@@ -160,9 +167,10 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
       </Grid>
       <SearchField value={query} onChange={(text) => setQuery(text)} />
       <DataTable
+        sx={{ marginTop: "3px" }}
         striped
         mah={5}
-        height={"61vh"}
+        height={"calc(100vh - 389px)"}
         withColumnBorders
         records={rows}
         page={page}

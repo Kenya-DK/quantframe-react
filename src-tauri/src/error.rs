@@ -114,7 +114,7 @@ impl serde::Serialize for AppError {
     where
         S: serde::ser::Serializer,
     {
-        return AppError::serialize(self, serializer);
+        self.to_json().serialize(serializer)
     }
 }
 

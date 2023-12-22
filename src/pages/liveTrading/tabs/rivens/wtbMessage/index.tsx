@@ -4,18 +4,18 @@ import AvailableRivens from "./availableRivens";
 import { useLocalStorage } from "@mantine/hooks";
 import { useEffect, useState } from "react";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
-import { useTranslatePage } from "@hooks/index";
+import { useTranslatePage, useTranslateRustError } from "@hooks/index";
 import { modals } from "@mantine/modals";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCopy, faDollarSign, faEdit, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { wfmThumbnail } from "@api/index";
 import { useMutation } from "@tanstack/react-query";
 import { generateWtbMessage } from "./helper";
-import { OffTauriEvent, OnTauriEvent, paginate, sortArray } from "@utils/index";
+import { OffTauriEvent, SendNotificationToWindow, OnTauriEvent, paginate, sortArray } from "@utils/index";
 import { SearchField } from "@components/searchfield";
 import { notifications } from "@mantine/notifications";
-import { Wfm } from "$types/index";
-import { TextColor } from "../../../../../components/textColor";
+import { Wfm, RustError } from "$types/index";
+import { TextColor } from "@components/textColor";
 
 
 export interface WTBEntry {
@@ -122,7 +122,9 @@ export default function WTBMessagePage() {
         }
       })
     },
-    onError: () => { },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+    }
   })
 
   // Hook on tauri events from rust side

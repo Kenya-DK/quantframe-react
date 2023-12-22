@@ -9,8 +9,9 @@ use std::{
 use crate::{
     auth::AuthState,
     database::client::DBClient,
-    enums::{OrderMode, StockMode, LogLevel},
+    enums::{LogLevel, OrderMode, StockMode},
     error::AppError,
+    handler::MonitorHandler,
     helper,
     logger::{self},
     price_scraper::PriceScraper,
@@ -29,6 +30,7 @@ pub struct LiveScraperClient {
     pub wfm: Arc<Mutex<WFMClient>>,
     pub auth: Arc<Mutex<AuthState>>,
     pub db: Arc<Mutex<DBClient>>,
+    pub mh: Arc<Mutex<MonitorHandler>>,
 }
 
 impl LiveScraperClient {
@@ -38,6 +40,7 @@ impl LiveScraperClient {
         wfm: Arc<Mutex<WFMClient>>,
         auth: Arc<Mutex<AuthState>>,
         db: Arc<Mutex<DBClient>>,
+        mh: Arc<Mutex<MonitorHandler>>,
     ) -> Self {
         LiveScraperClient {
             log_file: "live_scraper.log".to_string(),
@@ -47,6 +50,7 @@ impl LiveScraperClient {
             wfm,
             auth,
             db,
+            mh,
         }
     }
     fn report_error(&self, error: AppError) {
@@ -90,12 +94,13 @@ impl LiveScraperClient {
         tauri::async_runtime::spawn(async move {
             logger::info_con("LiveScraper", "Loop live scraper is started");
 
+            db.stock_riven().reset_listed_price().await.unwrap();
+            db.stock_item().reset_listed_price().await.unwrap();
             scraper
                 .item()
                 .delete_all_orders(OrderMode::Both)
                 .await
                 .unwrap();
-            db.stock_riven().reset_listed_price().await.unwrap();
             while is_running.load(Ordering::SeqCst) && forced_stop.load(Ordering::SeqCst) {
                 let settings = scraper.settings.lock().unwrap().clone();
                 if settings.live_scraper.stock_mode == StockMode::Riven

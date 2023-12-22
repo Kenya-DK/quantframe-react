@@ -140,7 +140,7 @@ impl<'a> TransactionModule<'a> {
             wfm_id: "".to_string(),
             url: "".to_string(),
             name: "".to_string(),
-            item_type: item_type.clone().to_string(),
+            item_type: item_type.to_string(),
             tags: "".to_string(),
             rank,
             properties: Some(sqlx::types::Json(properties.clone())),
@@ -160,7 +160,7 @@ impl<'a> TransactionModule<'a> {
             transaction.wfm_id = item.id.clone();
             transaction.url = item.url_name.clone();
             transaction.name = item.item_name.clone();
-            transaction.tags = item.riven_type.clone().to_string();
+            transaction.tags = item.riven_type.clone().unwrap_or("Unknown".to_string());
         } else if item_type == "item" {
             let item = self
                 .client

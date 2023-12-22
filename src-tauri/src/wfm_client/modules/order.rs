@@ -3,7 +3,6 @@ use polars::{
     series::Series,
 };
 use reqwest::header::HeaderMap;
-use sea_query::Value;
 use serde_json::json;
 
 use crate::{
@@ -25,7 +24,7 @@ impl<'a> OrderModule<'a> {
             Ok((orders, _headers)) => {
                 logger::info(
                     "WarframeMarket",
-                    format!("From User: {}", ingame_name).as_str(),
+                    format!("Getting Orders for {}", ingame_name).as_str(),
                     true,
                     Some(self.client.log_file.as_str()),
                 );
@@ -305,7 +304,7 @@ impl<'a> OrderModule<'a> {
                 "order_type",
                 orders
                     .iter()
-                    .map(|order| order.order_type.as_str().clone())
+                    .map(|order| order.order_type.as_str())
                     .collect::<Vec<_>>(),
             ),
             Series::new(

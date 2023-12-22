@@ -67,8 +67,6 @@ export const SocketContextProvider = ({ children }: SocketContextProviderProps) 
   useEffect(() => {
     let tempDate = new Date();
     const interval = setInterval(() => {
-      // If last event received is more than 1 minutes ago, reconnect
-      console.log("Checking socket connection");
       // if (last_event_received && (new Date().valueOf() - last_event_received.valueOf()) > 180000) {
       if (tempDate && (new Date().valueOf() - tempDate.valueOf()) > 180000) {
         // Disconnect socket if it exists

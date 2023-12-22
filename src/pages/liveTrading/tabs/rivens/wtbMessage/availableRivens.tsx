@@ -1,17 +1,17 @@
 import { ActionIcon, Box, Button, Grid, Group, Image, Text, Stack, Title, Tooltip } from "@mantine/core";
 import { useCacheContext } from "@contexts/index";
-import { useTranslateComponent } from "@hooks/index";
+import { useTranslateComponent, useTranslateRustError } from "@hooks/index";
 import { SearchField } from "@components/searchfield";
 import { useEffect, useState } from "react";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
-import { Wfm } from "$types/index";
-import { paginate, sortArray } from "@utils/index";
+import { Wfm, RustError } from "$types/index";
+import { paginate, sortArray, SendNotificationToWindow } from "@utils/index";
 import api, { wfmThumbnail } from "@api/index";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { useMutation } from "@tanstack/react-query";
-import { TextColor } from "../../../../../components/textColor";
-import { RivenAttributes } from "../../../../../components/auction/rivenAttributes";
+import { TextColor } from "@components/textColor";
+import { RivenAttributes } from "@components/auction/rivenAttributes";
 
 
 interface WeaponInfo {
@@ -78,7 +78,9 @@ export default function AvailableRivens({ onAddRiven }: AvailableRivensProps) {
         }
       })
     },
-    onError: () => { },
+    onError(error: RustError) {
+      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+    }
   })
 
   return (
@@ -146,7 +148,7 @@ export default function AvailableRivens({ onAddRiven }: AvailableRivensProps) {
             accessor: 'riven_type',
             title: useTranslateDataGridColumns("riven_type"),
             sortable: true,
-            render: ({ riven_type }) => riven_type.charAt(0).toUpperCase() + riven_type.slice(1)
+            render: ({ riven_type }) => riven_type?.charAt(0).toUpperCase() + riven_type.slice(1)
           },
           {
             accessor: 'group',

@@ -58,7 +58,7 @@ export function Logo({ color, width, id }: { color: string, id?: string, width?:
 				</g>
 			</svg>
 			<Title order={4} style={{ color: color }}>{app_info?.app_name}</Title>
-			<Text size={"sm"} style={{ color: color }}>v{app_info?.app_version.version}</Text>
+			<Text size={"sm"} style={{ color: color }}>v{app_info?.app_version.current_version}</Text>
 		</Group>
 	);
 }

@@ -1,10 +1,11 @@
 use crate::{
     auth::AuthState,
     database::client::DBClient,
+    enums::LogLevel,
     error::AppError,
     helper,
     logger::{self},
-    structs::RivenAttribute, enums::LogLevel,
+    structs::RivenAttribute,
 };
 use eyre::eyre;
 use polars::{
@@ -175,7 +176,7 @@ impl<'a> StockItemModule<'a> {
                 StockItem::ListedPrice,
                 StockItem::Owned,
                 StockItem::Hidden,
-                StockRiven::Status,
+                StockItem::Status,
                 StockItem::Created,
             ])
             .from(StockItem::Table)
@@ -244,6 +245,7 @@ impl<'a> StockItemModule<'a> {
                     None,
                     None,
                     None,
+                    None,
                 )
                 .await?;
                 let mut t = t.clone();
@@ -284,7 +286,7 @@ impl<'a> StockItemModule<'a> {
                         StockItem::MiniumPrice,
                         StockItem::Owned,
                         StockItem::Hidden,
-                        StockRiven::Status,
+                        StockItem::Status,
                         StockItem::Created,
                     ])
                     .values_panic([
@@ -298,7 +300,7 @@ impl<'a> StockItemModule<'a> {
                         inventory.minium_price.into(),
                         inventory.owned.into(),
                         inventory.hidden.into(),
-                        inventory.status.into(),
+                        inventory.status.clone().into(),
                         inventory.created.clone().into(),
                     ])
                     .to_string(SqliteQueryBuilder);
@@ -308,7 +310,6 @@ impl<'a> StockItemModule<'a> {
                     .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
                 let id = row.last_insert_rowid();
                 inventory.id = id;
-
                 inventory
             }
         };
@@ -341,7 +342,7 @@ impl<'a> StockItemModule<'a> {
             ));
         }
         let mut inventory = inventory.unwrap().clone();
-        let mut values = vec![(StockItem::ListedPrice, listed_price.into())];
+        let mut values = vec![];
 
         if owned.is_some() {
             inventory.owned = owned.unwrap();
@@ -364,7 +365,12 @@ impl<'a> StockItemModule<'a> {
             values.push((StockItem::MiniumPrice, minium_price.into()));
         }
 
-        if listed_price.is_some() && listed_price.unwrap() > -1 {
+        if listed_price.is_some() {
+            let listed_price = if listed_price.unwrap() == -1 {
+                None
+            } else {
+                listed_price
+            };
             inventory.listed_price = listed_price;
             values.push((StockItem::ListedPrice, listed_price.into()));
         }
@@ -395,7 +401,23 @@ impl<'a> StockItemModule<'a> {
         );
         Ok(inventory.clone())
     }
+    pub async fn reset_listed_price(&self) -> Result<(), AppError> {
+        let connection = self.client.connection.lock().unwrap().clone();
+        let sql = Query::update()
+            .table(StockItem::Table)
+            .values([
+                (StockItem::ListedPrice, Value::Int(None)),
+                (StockItem::Status, "pending".into()),
+            ])
+            .to_string(SqliteQueryBuilder);
+        sqlx::query(&sql.replace("\\", ""))
+            .execute(&connection)
+            .await
+            .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
 
+        self.emit("SET", json!(self.get_items().await?));
+        Ok(())
+    }
     pub async fn update_by_url(
         &self,
         id: &str,
@@ -415,8 +437,16 @@ impl<'a> StockItemModule<'a> {
             ));
         }
         let item = item.unwrap();
-        self.update_by_id(item.id, owned, price, None, listed_price, status, hidden)
-            .await?;
+        self.update_by_id(
+            item.id,
+            owned,
+            price,
+            None,
+            listed_price,
+            status.clone(),
+            hidden,
+        )
+        .await?;
         Ok(self
             .update_by_id(item.id, owned, price, None, listed_price, status, hidden)
             .await?)
@@ -476,6 +506,7 @@ impl<'a> StockItemModule<'a> {
                 None,
                 None,
                 Some(-1),
+                None,
                 None,
             )
             .await?;
