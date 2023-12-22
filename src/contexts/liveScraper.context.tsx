@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { OnTauriEvent } from "../utils";
-import { RustError, ScraperState } from "../types";
+import { RustError, ScraperState, ScraperMessage } from "../types";
 type LiveScraperContextProps = ScraperState & {
 
 }
@@ -11,6 +11,7 @@ type LiveScraperContextProviderProps = {
 export const LiveScraperContext = createContext<LiveScraperContextProps>({
   is_running: false,
   last_run: null,
+  message: undefined,
   error: null,
 });
 
@@ -19,8 +20,12 @@ export const useLiveScraperContext = () => useContext(LiveScraperContext);
 export const LiveScraperContextProvider = ({ children }: LiveScraperContextProviderProps) => {
   const [is_running, setIsRunning] = useState(false);
   const [error, setError] = useState<RustError | null>(null);
+  const [message, setMessage] = useState<ScraperMessage | undefined>(undefined);
 
   useEffect(() => {
+    OnTauriEvent("LiveScraper:UpdateMessage", (e: ScraperMessage) => {
+      setMessage(e)
+    });
     OnTauriEvent("LiveScraper:Toggle", () => {
       setIsRunning((is_running) => !is_running)
     });
@@ -28,11 +33,13 @@ export const LiveScraperContextProvider = ({ children }: LiveScraperContextProvi
       setIsRunning(false)
       setError(error)
     });
-    return () => { }
+    return () => {
+
+    }
   }, []);
 
   return (
-    <LiveScraperContext.Provider value={{ is_running, last_run: null, error }}>
+    <LiveScraperContext.Provider value={{ is_running, last_run: null, error, message }}>
       {children}
     </LiveScraperContext.Provider>
   )

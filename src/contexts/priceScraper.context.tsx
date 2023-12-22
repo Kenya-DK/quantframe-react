@@ -14,6 +14,7 @@ export const PriceScraperContext = createContext<PriceScraperContextProps>({
   is_running: false,
   last_run: null,
   error: null,
+  message: undefined,
   max: 0,
   min: 0,
   current: 0,
@@ -53,7 +54,7 @@ export const PriceScraperContextProvider = ({ children }: PriceScraperContextPro
     return () => { }
   }, []);
   return (
-    <PriceScraperContext.Provider value={{ is_running, last_run, error, min, max, current }}>
+    <PriceScraperContext.Provider value={{ is_running, last_run, error, min, max, current, message: undefined }}>
       {children}
     </PriceScraperContext.Provider>
   )

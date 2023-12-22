@@ -41,7 +41,12 @@ export interface RustError {
 export interface ScraperState {
   is_running: boolean;
   last_run: Date | null;
+  message: ScraperMessage | undefined;
   error: RustError | null;
+}
+export interface ScraperMessage {
+  i18n_key: string;
+  values: { [key: string]: string };
 }
 
 export interface Settings {
