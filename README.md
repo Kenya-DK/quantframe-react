@@ -2,7 +2,7 @@
 Inspired by [Akmayer's Warframe-Algo-Trader](https://github.com/akmayer/Warframe-Algo-Trader), this is a re-implementation using tauri. Tauri allows for easy distribution to windows & linux without technical knowledge.
 
 ## Prototype features
-- Distribute as windows / linux installer
+- Distribute as windows
   - Install size: 11MB
   - Idle resource consumption: 60MB, extremely small cpu footprint (on my rig, 0-0.1%)
   - Update distribution
