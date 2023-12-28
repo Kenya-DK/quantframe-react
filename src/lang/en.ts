@@ -1,4 +1,29 @@
 export const en = {
+  live_scraper: {
+    item: {
+      starting: "Starting Items",
+      checking: "Checking: <blue>{{name}}</blue> <blue>{{count}}</blue>/<blue>{{total}}</blue>",
+      deleting_orders: "Deleting Orders: <blue>{{count}}</blue>/<blue>{{total}}</blue>",
+      sell: {
+        deleting: "Deleting Sell Order: <blue>{{name}}</blue>",
+        updating: "Updating Sell Order: <blue>{{name}}</blue> for <blue>{{price}}</plat></blue>",
+        creating: "Creating Sell Order: <blue>{{name}}</blue> for <blue>{{price}}</plat></blue>",
+      },
+      buy: {
+        deleting: "Deleting Buy Order: <blue>{{name}}</blue>",
+        updating: "Updating Buy Order: <blue>{{name}}</blue> for <blue>{{price}}</plat></blue>",
+        creating: "Creating Buy Order: <blue>{{name}}</blue> for <blue>{{price}}</plat></blue>",
+      }
+    },
+    riven: {
+      starting: "Starting Rivens",
+      deleting: "Deleting Riven: <blue>{{name}}</blue>",
+      searching: "Searching Riven: <blue>{{name}}</blue>",
+      no_offers: "No offers found for: <blue>{{name}}</blue>",
+      updating: "Updating Riven: <blue>{{name}}</blue> for <blue>{{price}}</plat></blue>",
+      creating: "Creating Riven: <blue>{{name}}</blue> for <blue>{{price}}</plat></blue>",
+    }
+  },
   general: {
     months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
     total_quantity: "Total orders <italic>{{count}}</italic>",
@@ -29,6 +54,7 @@ export const en = {
     transactionRevenueChart: {
       revenue_label: "Revenue: {{val, number}}",
       quantity_label: "Quantity: {{count}}",
+
     },
     availableRivens: {
       weaponInfo: {
@@ -254,6 +280,7 @@ export const en = {
         settings: "Settings",
         logout: "Log Out",
         open_logs_folder: "Open Logs Folder",
+        export_logs: "Export Logs",
         status: {
           title: "Status",
           online: "Online",

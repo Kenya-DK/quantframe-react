@@ -10,9 +10,10 @@ use live_scraper::client::LiveScraperClient;
 use once_cell::sync::Lazy;
 use price_scraper::PriceScraper;
 use settings::SettingsState;
-use std::panic;
+use std::path::{self, PathBuf};
 use std::sync::Arc;
 use std::{env, sync::Mutex};
+use std::{fs, panic};
 use tauri::api::notification::Notification;
 use tauri::async_runtime::block_on;
 use tauri::{App, Manager, PackageInfo, SystemTrayEvent};
@@ -166,6 +167,7 @@ fn main() {
             commands::base::init,
             commands::base::update_settings,
             commands::base::open_logs_folder,
+            commands::base::export_logs,
             commands::base::show_notification,
             commands::auth::login,
             commands::auth::logout,

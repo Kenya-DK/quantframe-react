@@ -22,7 +22,11 @@ impl<'a> RivenModule<'a> {
             .iter()
             .filter(|a| a.item.item_type == "riven".to_string())
             .collect::<Vec<_>>();
+        let mut current_index = stockrivens.len();
+        let total = stockrivens.len();
         for riven in stockrivens {
+            current_index -= 1;
+            self.client.send_message("riven.checking", Some(json!({ "name": riven.weapon_name, "count": current_index, "total": total})));
             // Check if client is running
             if self.client.is_running() == false {
                 break;
@@ -38,6 +42,8 @@ impl<'a> RivenModule<'a> {
                 // Update Auction on warframe.market
                 if auction.is_some() {
                     let auction = auction.unwrap();
+                    self.client
+                        .send_message("riven.deleting", Some(json!({ "name": riven.weapon_url})));
                     wfm.auction().delete(auction.id.as_str()).await?;
                 }
 
@@ -87,6 +93,8 @@ impl<'a> RivenModule<'a> {
             }
 
             // Search for live auctions for this riven
+            self.client
+                .send_message("riven.searching", Some(json!({ "name": riven.weapon_url})));
             let live_auctions = wfm
                 .auction()
                 .search(
@@ -121,6 +129,8 @@ impl<'a> RivenModule<'a> {
                     "RivenModule",
                     format!("No live auctions for {}", riven.weapon_url).as_str(),
                 );
+                self.client
+                    .send_message("riven.no_offers", Some(json!({ "name": riven.weapon_url})));
                 db.stock_riven()
                     .update_by_id(
                         riven.id,
@@ -173,6 +183,10 @@ impl<'a> RivenModule<'a> {
                     Some(auction) => {
                         if auction.starting_price != post_price as i64 {
                             // Update auction
+                            self.client.send_message(
+                                "riven.updating",
+                                Some(json!({ "name": riven.weapon_url, "price": post_price})),
+                            );
                             wfm.auction()
                                 .update(
                                     auction.id.as_str(),
@@ -187,6 +201,10 @@ impl<'a> RivenModule<'a> {
                     }
                     None => {
                         // Post auction on warframe.market
+                        self.client.send_message(
+                            "riven.creating",
+                            Some(json!({ "name": riven.weapon_url, "price": post_price})),
+                        );
                         let new_aut = wfm
                             .auction()
                             .create(

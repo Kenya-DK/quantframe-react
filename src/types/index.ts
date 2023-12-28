@@ -73,8 +73,12 @@ export interface StatisticDto {
   total: StatisticTotalTransaction;
   today: StatisticTodayTransaction;
   recent_days: StatisticRecentDaysTransaction;
+  sales: StatisticTransactionItemRevenue[];
+  purchase: StatisticTransactionItemRevenue[];
   turnover: number;
 }
+
+
 export interface WeeklyRiven {
   itemType: string;
   compatibility: null;

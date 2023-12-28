@@ -1,7 +1,7 @@
 import { ActionIcon, Box, Grid, Group, Stack, Tooltip, Text } from "@mantine/core";
 import { useTranslatePage, useTranslateRustError } from "@hooks/index";
 import { TextColor } from "@components/textColor";
-import { useStockContextContext } from "@contexts/index";
+import { useLiveScraperContext, useStockContextContext } from "@contexts/index";
 import { PurchaseNewItem } from "./purchase";
 import { notifications } from "@mantine/notifications";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -26,6 +26,7 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
   const useTranslateDataGridColumns = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateDataGrid(`columns.${key}`, { ...context }, i18Key);
 
   const { items } = useStockContextContext();
+  const { message } = useLiveScraperContext();
 
   // States For DataGrid
   const [page, setPage] = useState(1);
@@ -170,7 +171,7 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
         sx={{ marginTop: "3px" }}
         striped
         mah={5}
-        height={"calc(100vh - 389px)"}
+        height={`calc(100vh - ${message ? "411px" : "389px"})`}
         withColumnBorders
         records={rows}
         page={page}

@@ -5,8 +5,9 @@ import i18next from "i18next";
 import { groupBy, getGroupByDate } from ".";
 import { StatisticDto, TransactionEntryDto, StatisticTotalTransaction, StatisticTransactionRevenueWithChart, StatisticTodayTransaction, StatisticTransactionRevenue, StatisticRecentDaysTransaction, StatisticTransactionItemRevenue, StatisticTransactionPopularItems } from "../types";
 
-
 type GroupByItem = { wfm_id: string; url: string; item_type: string; name: string; tags: string[]; quantity: number; price: number; total: number; }
+
+
 const GetGroupByItem = (transactions: TransactionEntryDto[]): GroupByItem[] => {
   // Initialize an empty array to hold the grouped products
   let items: Array<GroupByItem> = [];
@@ -96,8 +97,7 @@ const getRevenueWithChart = (labels: string[], transactions: TransactionEntryDto
 const getTotalRevenue = (transactions: TransactionEntryDto[]): StatisticTotalTransaction => {
 
   // Initialize an empty array to hold the grouped products
-  const sell_transactions = transactions.filter(t => t.transaction_type == "sell");
-  const buy_transactions = transactions.filter(t => t.transaction_type == "buy");
+  const [buy_transactions, sell_transactions] = SplitTransactionType(transactions);
 
   // Create Chart Data
   const thisYearLabels = [];
@@ -133,8 +133,9 @@ const getTotalRevenue = (transactions: TransactionEntryDto[]): StatisticTotalTra
 };
 
 const getBestItem = (transactions: TransactionEntryDto[]): StatisticTransactionPopularItems => {
-  const groped_sell = GetGroupByItem(transactions.filter(t => t.transaction_type == "buy"));
-  const groped_buy = GetGroupByItem(transactions.filter(t => t.transaction_type == "sell"));
+  const [buy_transactions, sell_transactions] = SplitTransactionType(transactions);
+  const groped_sell = GetGroupByItem(buy_transactions);
+  const groped_buy = GetGroupByItem(sell_transactions);
 
   return {
     buy: GetRevenueForItems(groped_sell, groped_buy),
@@ -148,8 +149,8 @@ const getTodayRevenue = (transactions: TransactionEntryDto[]): StatisticTodayTra
   let today = dayjs().startOf("day").toDate();
   let endToday = dayjs().endOf('day').toDate();
   transactions = transactions.filter(t => dayjs(t.created).isBetween(today, endToday));
-  const sell_transactions = transactions.filter(t => t.transaction_type == "sell");
-  const buy_transactions = transactions.filter(t => t.transaction_type == "buy");
+
+  const [buy_transactions, sell_transactions] = SplitTransactionType(transactions);
 
   const labels = [];
   for (let i = 0; i < 24; i++) labels.push(`${i}:00`);
@@ -167,8 +168,7 @@ const getRecentDays = (transactions: TransactionEntryDto[], days: number): Stati
   let today = dayjs().subtract(days, "day").endOf('day').toDate();
   let endToday = dayjs().endOf('day').toDate();
   transactions = transactions.filter(t => dayjs(t.created).isBetween(today, endToday));
-  const sell_transactions = transactions.filter(t => t.transaction_type == "sell");
-  const buy_transactions = transactions.filter(t => t.transaction_type == "buy");
+  const [buy_transactions, sell_transactions] = SplitTransactionType(transactions);
 
   const labels = [];
   const date = new Date();
@@ -189,9 +189,7 @@ const getRecentDays = (transactions: TransactionEntryDto[], days: number): Stati
 };
 
 export const getStatistic = (transactions: TransactionEntryDto[]): StatisticDto => {
-
-  const sell_transactions = transactions.filter(t => t.transaction_type == "sell");
-  const buy_transactions = transactions.filter(t => t.transaction_type == "buy");
+  const [buy_transactions, sell_transactions] = SplitTransactionType(transactions);
 
   const spend_plat = buy_transactions.reduce((acc, cur) => acc + cur.price, 0);
 
@@ -202,9 +200,15 @@ export const getStatistic = (transactions: TransactionEntryDto[]): StatisticDto 
     today: getTodayRevenue(transactions),
     recent_days: getRecentDays(transactions, 7),
     turnover: earned_plat - spend_plat,
+    sales: [],
+    purchase: [],
   };
 }
 
-
-
-
+// This function splits the given array of transactions into two arrays: one for buy transactions and one for sell transactions.
+// It takes an array of TransactionEntryDto objects as input and returns a tuple of two arrays.
+export const SplitTransactionType = (transactions: TransactionEntryDto[]): [TransactionEntryDto[], TransactionEntryDto[]] => {
+  // The 'filter' method is used to create a new array with all elements that pass the test implemented by the provided function.
+  // Here, it's used to create two new arrays: one with all transactions where 'transaction_type' is "buy", and one where 'transaction_type' is "sell".
+  return [transactions.filter(t => t.transaction_type == "buy"), transactions.filter(t => t.transaction_type == "sell")];
+}

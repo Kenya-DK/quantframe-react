@@ -8,7 +8,7 @@ use std::{
     path::PathBuf,
 };
 
-use crate::{enums::LogLevel, helper};
+use crate::{enums::LogLevel, helper, PACKAGEINFO};
 
 pub fn format_text(text: &str, color: &str, bold: bool) -> String {
     let color_code = match color {
@@ -189,4 +189,46 @@ pub fn log_dataframe(df: &mut DataFrame, name: &str) {
         false,
         None,
     );
+}
+
+pub fn export_logs() {
+    let date = chrono::Local::now()
+        .naive_utc()
+        .format("%Y-%m-%d")
+        .to_string();
+
+    let packageinfo = PACKAGEINFO
+        .lock()
+        .unwrap()
+        .clone()
+        .expect("Could not get package info");
+    let version = packageinfo.version.to_string();
+
+    let zip_path = helper::get_desktop_path().join(format!("{} v{} {} Logs.zip",packageinfo.name, version, date));
+    let mut files_to_compress: Vec<helper::ZipEntry> = vec![];
+
+    let mut logs_path = get_log_forlder();
+    logs_path.pop();
+
+    files_to_compress.push(helper::ZipEntry {
+        file_path: logs_path,
+        sub_path: Some("logs".to_string()),
+        include_dir: true,
+    });
+
+    let app_path = helper::get_app_roaming_path();
+    for path in fs::read_dir(app_path).unwrap() {
+        files_to_compress.push(helper::ZipEntry {
+            file_path: path.unwrap().path().to_owned(),
+            sub_path: None,
+            include_dir: false,
+        });
+    }
+
+    match helper::create_zip_file(files_to_compress, zip_path.to_str().unwrap_or_default()) {
+        Ok(_) => {}
+        Err(e) => {
+            println!("Error: {:?}", e);
+        }
+    }
 }

@@ -13,10 +13,9 @@ import { TextColor } from './textColor';
 import dayjs from 'dayjs';
 const days = 15;
 export const TransactionControl = () => {
-  const { is_running: statsIsRunning, max, current } = usePriceScraperContext();
-  const { is_running: liveIsRunning } = useLiveScraperContext();
+  const { is_running: statsIsRunning, max, current, last_run } = usePriceScraperContext();
+  const { is_running: liveIsRunning, message } = useLiveScraperContext();
   const useTranslate = (key: string, context?: { [key: string]: any }) => useTranslateComponent(`transactioncontrol.${key}`, { ...context })
-  const { last_run } = usePriceScraperContext();
   return (
     <Center >
       <Stack spacing={"1"} sx={{
@@ -28,9 +27,7 @@ export const TransactionControl = () => {
         <Group grow position="center">
           <Group position="center" spacing="xs">
             <ButtonProgress
-              onStart={async () => {
-                await api.price_scraper.start_scraper(days);
-              }}
+              onStart={async () => await api.price_scraper.start_scraper(days)}
               max={max == 0 ? 1 : max}
               current={current}
               label={useTranslate("price_scraper_start")}
@@ -46,6 +43,7 @@ export const TransactionControl = () => {
           </Group>
         </Group>
         <TextColor i18nKey="components.transactioncontrol.price_scraper_last_run" values={{ date: last_run == null ? "N/A" : dayjs(last_run).format("DD/MM/YYYY HH:mm") }} />
+        {message && <TextColor i18nKey={message.i18n_key} values={{ ...message.values }} />}
       </Stack>
     </Center>
   );

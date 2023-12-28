@@ -82,45 +82,52 @@ export default function Hedder({ user }: TopMenuProps) {
         </Group>
         <Clock />
         <Group spacing={20}>
-          {user && (
-            <Menu
-              width={"auto"}
-              position="bottom-end"
-              transitionProps={{ transition: 'pop-top-right' }}
-              onClose={() => setUserMenuOpened(false)}
-              onOpen={() => setUserMenuOpened(true)}
-            >
-              <Menu.Target>
-                <ActionIcon color="pink" size="xs">
-                  <Indicator inline size={12} offset={7} position="bottom-start" color={getUserStatusColor(user.status)} >
-                    <Avatar variant="subtle" src={avatar} alt={user.ingame_name} radius="xl" size={"md"} />
-                  </Indicator>
-                </ActionIcon>
-              </Menu.Target>
-              <Menu.Dropdown>
-                <Menu.Item icon={<Avatar variant="subtle" src={avatar} alt={user.ingame_name} radius="xl" size={"sm"} />}>
-                  {user.ingame_name}
-                </Menu.Item>
-                <Menu.Divider />
-                <Menu.Item icon={<FontAwesomeIcon icon={faGear} />} onClick={async () => {
-                  modals.open({
-                    size: "100%",
-                    withCloseButton: false,
-                    children: <SettingsModal settings={settings} updateSettings={handleUpdateSettings} tradable_items={items} />,
-                  })
-                }}>
-                  {useTranslateHedder("profile.settings")}
-                </Menu.Item>
-                <Menu.Item icon={<FontAwesomeIcon icon={faFolder} />} onClick={async () => {
-                  await api.base.openLogsFolder();
-                }}>
-                  {useTranslateHedder("profile.open_logs_folder")}
-                </Menu.Item>
+          <Menu
+            width={"auto"}
+            position="bottom-end"
+            transitionProps={{ transition: 'pop-top-right' }}
+            onClose={() => setUserMenuOpened(false)}
+            onOpen={() => setUserMenuOpened(true)}
+          >
+            <Menu.Target>
+              <ActionIcon color="pink" size="xs">
+                <Indicator disabled={!user} inline size={12} offset={7} position="bottom-start" color={getUserStatusColor(user?.status || Wfm.UserStatus.Invisible)} >
+                  <Avatar variant="subtle" src={avatar} alt={user?.ingame_name} radius="xl" size={"md"} />
+                </Indicator>
+              </ActionIcon>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Item icon={<Avatar variant="subtle" src={avatar} alt={user?.ingame_name} radius="xl" size={"sm"} />}>
+                {user?.ingame_name || "Unknown"}
+              </Menu.Item>
+              <Menu.Divider />
+              <Menu.Item icon={<FontAwesomeIcon icon={faGear} />} onClick={async () => {
+                modals.open({
+                  size: "100%",
+                  withCloseButton: false,
+                  children: <SettingsModal settings={settings} updateSettings={handleUpdateSettings} tradable_items={items} />,
+                })
+              }}>
+                {useTranslateHedder("profile.settings")}
+              </Menu.Item>
+              <Menu.Item icon={<FontAwesomeIcon icon={faFolder} />} onClick={async () => {
+                await api.base.openLogsFolder();
+              }}>
+                {useTranslateHedder("profile.open_logs_folder")}
+              </Menu.Item>
+              <Menu.Item icon={<FontAwesomeIcon icon={faFolder} />} onClick={async () => {
+                await api.base.export_logs();
+              }}>
+                {useTranslateHedder("profile.export_logs")}
+              </Menu.Item>
+              {user && (
                 <Menu.Item icon={<FontAwesomeIcon icon={faRightFromBracket} />} onClick={async () => { await api.auth.logout(); }}>
                   {useTranslateHedder("profile.logout")}
                 </Menu.Item>
-                <Menu.Divider />
+              )}
+              <Menu.Divider />
 
+              {user && (<>
                 <Menu.Label>{useTranslateHedder("profile.status.title")}</Menu.Label>
                 <Menu.Item color="darkgreen" onClick={() => SetUserStatus(Wfm.UserStatus.Online)}>
                   {useTranslateHedder("profile.status.online")}
@@ -131,8 +138,9 @@ export default function Hedder({ user }: TopMenuProps) {
                 <Menu.Item color="gray.5" onClick={() => SetUserStatus(Wfm.UserStatus.Invisible)}>
                   {useTranslateHedder("profile.status.invisible")}
                 </Menu.Item>
-              </Menu.Dropdown>
-            </Menu>)}
+              </>)}
+            </Menu.Dropdown>
+          </Menu>
         </Group>
       </Container>
     </Header>

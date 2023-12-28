@@ -247,7 +247,7 @@ export default function WTBMessagePage() {
         />
         <DataTable
           sx={{ marginTop: "20px" }}
-          height={"75vh"}
+          height={`calc(100vh - 225px)`}
           striped
           records={rows}
           page={page}

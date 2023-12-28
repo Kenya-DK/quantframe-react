@@ -1,5 +1,5 @@
-use chrono::Duration;
-use directories::BaseDirs;
+use chrono::{format, Duration};
+use directories::{BaseDirs, UserDirs};
 use eyre::eyre;
 use once_cell::sync::Lazy;
 use polars::{
@@ -9,11 +9,13 @@ use polars::{
 };
 use serde_json::{json, Value};
 use std::{
-    fs,
+    fs::{self, File},
+    io::{self, Read, Write},
     path::{Path, PathBuf},
     sync::Mutex,
 };
-use tauri::Window;
+use tauri::{api::file, Window};
+use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 
 use crate::{
     error::AppError,
@@ -59,6 +61,57 @@ pub fn send_message_to_window(event: &str, data: Option<Value>) {
     }
 }
 
+
+pub async fn get_app_info() -> Result<serde_json::Value, AppError> {
+    let packageinfo = PACKAGEINFO
+        .lock()
+        .unwrap()
+        .clone()
+        .expect("Could not get package info");
+    let version = packageinfo.version.to_string();
+    let url = "https://raw.githubusercontent.com/Kenya-DK/quantframe-react/main/src-tauri/tauri.conf.json";
+    let client = reqwest::Client::new();
+    let request = client.request(reqwest::Method::GET, reqwest::Url::parse(&url).unwrap());
+    let response = request.send().await;
+    if let Err(e) = response {
+        return Err(AppError::new("CHECKFORUPDATES", eyre!(e.to_string())));
+    }
+    let response_data = response.unwrap();
+    let status = response_data.status();
+
+    if status != 200 {
+        return Err(AppError::new(
+            "CHECKFORUPDATES",
+            eyre!("Could not get package.json. Status: {}", status.to_string()),
+        ));
+    }
+    let response = response_data.json::<Value>().await.unwrap();
+
+    let current_version_str = response["package"]["version"].as_str().unwrap();
+    let current_version = current_version_str.replace(".", "");
+    let current_version = current_version.parse::<i32>().unwrap();
+
+    let version_str = version;
+    let version = version_str.replace(".", "").parse::<i32>().unwrap();
+
+    let update_state = json!({
+        "update_available": current_version > version,
+        "version": current_version_str,
+        "current_version": version_str,
+        "release_notes": "New version available",
+        "download_url": "https://github.com/Kenya-DK/quantframe-react/releases",
+    });
+
+    let rep = json!({
+        "app_name": packageinfo.name,
+        "app_description": packageinfo.description,
+        "app_author": packageinfo.authors,
+        "app_version": update_state,
+    });
+
+    Ok(rep)
+}
+
 pub fn emit_update(update_type: &str, operation: &str, data: Option<Value>) {
     send_message_to_window(
         "Client:Update",
@@ -99,6 +152,168 @@ pub fn get_app_roaming_path() -> PathBuf {
     } else {
         panic!("Could not find app path");
     }
+}
+
+pub fn get_desktop_path() -> PathBuf {
+    if let Some(base_dirs) = UserDirs::new() {
+        let local_path = get_app_roaming_path(); // Ensure local_path lives long enough
+
+        let desktop_path = match base_dirs.desktop_dir() {
+            Some(desktop_path) => desktop_path,
+            None => local_path.as_path(),
+        };
+        desktop_path.to_path_buf()
+    } else {
+        panic!("Could not find app path");
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ZipEntry {
+    pub file_path: PathBuf,
+    pub sub_path: Option<String>,
+    pub include_dir: bool,
+}
+
+pub fn get_zip_entrys(path: PathBuf, in_subfolders: bool) -> Result<Vec<ZipEntry>, AppError> {
+    let mut files: Vec<ZipEntry> = Vec::new();
+    for path in fs::read_dir(path).unwrap() {
+        let path = path.unwrap().path();
+        if path.is_dir() {
+            let dir_name = path.file_name().unwrap().to_str().unwrap();
+            let subfiles = get_zip_entrys(path.to_owned(), in_subfolders)?;
+            for mut subfile in subfiles {
+                let sub_path = subfile.sub_path.clone().unwrap_or("".to_string());
+                // Remove the first slash if it exists
+                let full_path = format!("{}/{}", dir_name, sub_path);
+                subfile.sub_path = Some(full_path);
+                files.push(subfile);
+            }
+        }
+        if path.is_file() {
+            files.push(ZipEntry {
+                file_path: path.clone(),
+                sub_path: None,
+                include_dir: false,
+            });
+        }
+    }
+    Ok(files)
+}
+
+pub fn create_zip_file(mut files: Vec<ZipEntry>, zip_path: &str) -> Result<(), AppError> {
+    let zip_file_path = Path::new(&zip_path);
+    let zip_file =
+        File::create(&zip_file_path).map_err(|e| AppError::new("Zip", eyre!(e.to_string())))?;
+    let mut zip = ZipWriter::new(zip_file);
+
+    // Get all files that are directories and add them to the files list
+    let mut files_to_compress: Vec<ZipEntry> = Vec::new();
+
+    for file_entry in &files {
+        if file_entry.include_dir {
+            let subfiles = get_zip_entrys(file_entry.file_path.clone(), true)?;
+            for mut subfile in subfiles {
+                if subfile.sub_path.is_some() {
+                    subfile.sub_path = Some(format!(
+                        "{}/{}",
+                        file_entry.sub_path.clone().unwrap_or("".to_string()),
+                        subfile.sub_path.clone().unwrap_or("".to_string())
+                    ));
+                }
+                files_to_compress.push(subfile);
+            }
+        }
+    }
+    files.append(&mut files_to_compress);
+
+    // Set compression options (e.g., compression method)
+    let options = FileOptions::default().compression_method(CompressionMethod::DEFLATE);
+
+    for file_entry in &files {
+        if file_entry.include_dir {
+            continue;
+        }
+
+        let file_path = Path::new(&file_entry.file_path)
+            .canonicalize()
+            .map_err(|e| AppError::new("Zip", eyre!(e.to_string())))?;
+
+        if !file_path.exists() || !file_path.is_file() {
+            continue;
+        }
+
+        let file = File::open(&file_path).map_err(|e| {
+            AppError::new(
+                "Zip:Open",
+                eyre!(format!(
+                    "Path: {:?}, Error: {}",
+                    file_entry.file_path.clone(),
+                    e.to_string()
+                )),
+            )
+        })?;
+        let file_name = file_path.file_name().unwrap().to_str().unwrap();
+
+        // Adding the file to the ZIP archive.
+        if file_entry.sub_path.is_some() && file_entry.sub_path.clone().unwrap() != "" {
+            let mut sub_path = file_entry.sub_path.clone().unwrap();
+            if sub_path.starts_with("/") {
+                sub_path = sub_path[1..].to_string();
+            }
+            if sub_path.ends_with("/") {
+                sub_path = sub_path[..sub_path.len() - 1].to_string();
+            }
+            zip.start_file(format!("{}/{}", sub_path, file_name), options)
+                .map_err(|e| {
+                    AppError::new(
+                        "Zip:StartSub",
+                        eyre!(format!(
+                            "Path: {:?}, ZipPath: {:?}, Error: {}",
+                            file_entry.file_path.clone(),
+                            file_entry.sub_path.clone(),
+                            e.to_string()
+                        )),
+                    )
+                })?;
+        } else {
+            zip.start_file(file_name, options).map_err(|e| {
+                AppError::new(
+                    "Zip:Start",
+                    eyre!(format!(
+                        "Path: {:?}, Error: {}",
+                        file_entry.file_path,
+                        e.to_string()
+                    )),
+                )
+            })?;
+        }
+        let mut buffer = Vec::new();
+        io::copy(&mut file.take(u64::MAX), &mut buffer).map_err(|e| {
+            AppError::new(
+                "Zip:Copy",
+                eyre!(format!(
+                    "Path: {:?}, Error: {}",
+                    file_entry.file_path,
+                    e.to_string()
+                )),
+            )
+        })?;
+
+        zip.write_all(&buffer).map_err(|e| {
+            AppError::new(
+                "Zip:Write",
+                eyre!(format!(
+                    "Path: {:?}, Error: {}",
+                    file_entry.file_path,
+                    e.to_string()
+                )),
+            )
+        })?;
+    }
+    zip.finish()
+        .map_err(|e| AppError::new("Zip:Done", eyre!(format!("Error: {}", e.to_string()))))?;
+    Ok(())
 }
 
 pub fn sort_dataframe(df: DataFrame, column: &str, ascending: bool) -> Result<DataFrame, AppError> {

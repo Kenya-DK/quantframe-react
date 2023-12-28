@@ -1,11 +1,12 @@
-import { Grid, Group, Text, useMantineTheme, Container } from "@mantine/core";
+import { Grid, Group, Text, useMantineTheme, Container, Image } from "@mantine/core";
 import { StatsWithIcon } from "../../components/stats/statsWithIcon.stats";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBox, faCalendarAlt, faCubes, faMoneyBill } from "@fortawesome/free-solid-svg-icons";
+import { faCalendarAlt, faCubes, faMoneyBill } from "@fortawesome/free-solid-svg-icons";
 import { Trans } from "react-i18next";
 import { useTranslatePage, useTranslateGeneral } from "../../hooks";
 import { TransactionRevenueChart } from "../../components/stats/transactionRevenueChart.stats";
-import { useWarframeMarketContextContext } from "../../contexts";
+import { useCacheContext, useWarframeMarketContextContext } from "../../contexts";
+import { wfmThumbnail } from "@api/index";
 
 const ChartContext = ({ i18nKey, values }: { i18nKey: string, values: { [key: string]: number | string } }) => {
 
@@ -28,6 +29,7 @@ export default function HomePage() {
   const theme = useMantineTheme();
   const translateBase = (key: string, context?: { [key: string]: any }) => useTranslatePage(`home.${key}`, { ...context })
   const { statistics } = useWarframeMarketContextContext();
+  const { images_map } = useCacheContext();
   return (
     <Container size={"100%"}>
       {statistics &&
@@ -70,7 +72,7 @@ export default function HomePage() {
             <Grid.Col md={4} >
               <StatsWithIcon
                 color="linear-gradient(195deg, rgb(154 64 236), rgb(117 27 216))"
-                icon={<FontAwesomeIcon icon={faBox} size="2x" />}
+                icon={<Image width={60} src={wfmThumbnail(images_map[statistics.total.present.popular_items.sell[0].url])} />}
                 title={translateBase("stats_cards.best_selling.title")}
                 count={statistics.total.present.popular_items.sell[0].turnover || 0}
                 fotter={
@@ -126,6 +128,7 @@ export default function HomePage() {
               />
             </Grid.Col>
           </Grid>
+          {statistics.sales}
         </>
       }
     </Container>

@@ -6,6 +6,8 @@ use std::{
     time::Duration,
 };
 
+use serde_json::json;
+
 use crate::{
     auth::AuthState,
     database::client::DBClient,
@@ -80,7 +82,7 @@ impl LiveScraperClient {
         self.is_running.store(false, Ordering::SeqCst);
     }
 
-    pub fn is_running(&self) -> bool {
+    pub fn is_running(&self) -> bool {        
         self.is_running.load(Ordering::SeqCst)
     }
 
@@ -94,7 +96,9 @@ impl LiveScraperClient {
         tauri::async_runtime::spawn(async move {
             logger::info_con("LiveScraper", "Loop live scraper is started");
 
+            scraper.send_message("riven.reset", None);
             db.stock_riven().reset_listed_price().await.unwrap();
+            scraper.send_message("item.reset", None);
             db.stock_item().reset_listed_price().await.unwrap();
             scraper
                 .item()
@@ -107,6 +111,7 @@ impl LiveScraperClient {
                     || settings.live_scraper.stock_mode == StockMode::All
                 {
                     logger::info_con("LiveScraper", "Checking riven stock");
+                    scraper.send_message("riven.starting", None);
                     match scraper.riven().check_stock().await {
                         Ok(_) => {}
                         Err(e) => scraper.report_error(e),
@@ -117,14 +122,15 @@ impl LiveScraperClient {
                     || settings.live_scraper.stock_mode == StockMode::All
                 {
                     logger::info_con("LiveScraper", "Checking item stock");
+                    scraper.send_message("riven.starting", None);
                     match scraper.item().check_stock().await {
                         Ok(_) => {}
                         Err(e) => scraper.report_error(e),
                     }
                 }
-
                 tokio::time::sleep(Duration::from_secs(1)).await;
             }
+            scraper.send_message("", None);
             logger::info_con("LiveScraper", "Loop live scraper is stopped");
         });
         Ok(())
@@ -134,5 +140,12 @@ impl LiveScraperClient {
     }
     pub fn riven(&self) -> RivenModule {
         RivenModule { client: self }
+    }
+
+    pub fn send_message(&self, i18n_key: &str, data: Option<serde_json::Value>) {
+        helper::send_message_to_window("LiveScraper:UpdateMessage", Some(json!({
+            "i18n_key": i18n_key,
+            "values": data
+        })));
     }
 }

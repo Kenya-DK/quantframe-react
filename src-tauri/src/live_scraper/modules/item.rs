@@ -9,7 +9,9 @@ use crate::{
 };
 use eyre::eyre;
 use polars::prelude::*;
+use serde_json::json;
 use std::collections::HashSet;
+use std::vec;
 
 pub struct ItemModule<'a> {
     pub client: &'a LiveScraperClient,
@@ -43,13 +45,23 @@ impl<'a> ItemModule<'a> {
         // Delete orders base on order_mode
         let orders = wfm.orders().get_my_orders().await?;
         if order_mode == OrderMode::Buy {
+            let mut current_index = 0;
+            let total = orders.sell_orders.len();
+            self.client.send_message("item.deleting_orders", Some(json!({ "count": 0, "total": total})));
             for order in orders.sell_orders {
+                current_index += 1;
+                self.client.send_message("item.deleting_orders", Some(json!({ "count": current_index, "total": total})));
                 wfm.orders()
                     .delete(&order.id, "None", "None", "Any")
                     .await?;
             }
         } else if order_mode == OrderMode::Sell {
+            let mut current_index = 0;
+            let total = orders.buy_orders.len();
+            self.client.send_message("item.deleting_orders", Some(json!({ "count": 0, "total": total})));
             for order in orders.buy_orders {
+                current_index += 1;
+                self.client.send_message("item.deleting_orders", Some(json!({ "count": current_index, "total": total})));
                 wfm.orders()
                     .delete(&order.id, "None", "None", "Any")
                     .await?;
@@ -134,7 +146,8 @@ impl<'a> ItemModule<'a> {
             if self.client.is_running() == false || item == "" {
                 continue;
             }
-
+            current_index -= 1;
+            
             logger::info_con(
                 "LiveScraper",
                 format!(
@@ -145,7 +158,7 @@ impl<'a> ItemModule<'a> {
                 )
                 .as_str(),
             );
-            current_index -= 1;
+            self.client.send_message("item.checking", Some(json!({ "name": item, "count": current_index, "total": all_interesting_items.len()})));
 
             let item_live_orders_df = wfm.orders().get_ordres_by_item(&item).await?;
             // Check if item_orders_df is empty and skip if it is
@@ -273,31 +286,32 @@ impl<'a> ItemModule<'a> {
     }
     pub async fn delete_all_orders(&self, mode: OrderMode) -> Result<(), AppError> {
         let wfm = self.client.wfm.lock()?.clone();
-        let db = self.client.db.lock()?.clone();
         let settings = self.client.settings.lock()?.clone().live_scraper;
         let blacklist = settings.stock_item.blacklist.clone();
+        self.client.send_message("item.deleting_orders", Some(json!({ "count": 0, "total": 0})));
+        let mut current_orders = wfm.orders().get_my_orders().await?;
 
-        let current_orders = wfm.orders().get_my_orders().await?;
+        let mut orders = vec![];
 
-        if mode == OrderMode::Buy || mode == OrderMode::Both {}
-
-        if mode == OrderMode::Sell || mode == OrderMode::Both {}
-
-        for order in current_orders.sell_orders {
-            // Check if item is in blacklist
-            if blacklist.contains(&order.clone().item.unwrap().url_name) {
-                continue;
-            }
-            wfm.orders()
-                .delete(&order.id, "None", "None", "Any")
-                .await?;
+        if mode == OrderMode::Buy || mode == OrderMode::Both {
+            orders.append(&mut current_orders.buy_orders);            
         }
-        for order in current_orders.buy_orders {
+        if mode == OrderMode::Sell || mode == OrderMode::Both {
+            orders.append(&mut current_orders.sell_orders);
+        }
+
+
+        let mut current_index = 0;
+        let total = orders.len();
+        self.client.send_message("item.deleting_orders", Some(json!({ "count": 0, "total": total})));
+        for order in orders {
+            current_index += 1;
+            self.client.send_message("item.deleting_orders", Some(json!({ "count": current_index, "total": total})));
             if self.client.is_running() == false {
                 return Ok(());
             }
             // Check if item is in blacklist
-            if blacklist.contains(&order.item.unwrap().url_name) {
+            if blacklist.contains(&order.clone().item.unwrap().url_name) {
                 continue;
             }
             wfm.orders()
@@ -721,6 +735,7 @@ impl<'a> ItemModule<'a> {
             }
             // If the order is active, then we should update it else we should post a new order.
             if active {
+                self.client.send_message("item.buy.updating", Some(json!({ "name": item_name, "price": post_price})));
                 wfm.orders()
                     .update(
                         order_id.clone().unwrap().as_str(),
@@ -734,6 +749,7 @@ impl<'a> ItemModule<'a> {
                     .await?;
                 return Ok(None);
             } else {
+                self.client.send_message("item.buy.creating", Some(json!({ "name": item_name, "price": post_price})));
                 wfm.orders()
                     .create(item_name, item_id, "buy", post_price, 1, true, item_rank)
                     .await?;
@@ -792,6 +808,7 @@ impl<'a> ItemModule<'a> {
                     format!("In fact you have a buy order up for this {item_name}! Deleting it.")
                         .as_str(),
                 );
+                self.client.send_message("item.buy.deleting", Some(json!({ "name": item_name})));
                 wfm.orders()
                     .delete(
                         order_id.clone().unwrap().as_str(),
@@ -807,6 +824,7 @@ impl<'a> ItemModule<'a> {
             if active {
                 if price != post_price {
                     logger::info_con("LiveScraper", format!("Your current posting on this item {item_name} for {price} plat is not a good one. Updating to {post_price} plat.").as_str());
+                    self.client.send_message("item.buy.updating", Some(json!({ "name": item_name, "price": post_price})));
                     wfm.orders()
                         .update(
                             order_id.clone().unwrap().as_str(),
@@ -829,6 +847,7 @@ impl<'a> ItemModule<'a> {
                         .map_err(|e| AppError::new("LiveScraper", eyre!(e.to_string())))?;
                     return Ok(Some(updatede));
                 } else {
+                    self.client.send_message("item.buy.updating", Some(json!({ "name": item_name, "price": post_price})));
                     wfm.orders()
                         .update(
                             order_id.clone().unwrap().as_str(),
@@ -956,6 +975,7 @@ impl<'a> ItemModule<'a> {
                             })?;
 
                         for unselected_item in &unselected_buy_orders {
+                            self.client.send_message("item.buy.deleting", Some(json!({ "name": unselected_item.2})));
                             wfm.orders()
                                 .delete(unselected_item.3.as_str(), item_name, item_id, "buy")
                                 .await?;
@@ -969,6 +989,7 @@ impl<'a> ItemModule<'a> {
                             );
                         }
                     }
+                    self.client.send_message("item.buy.creating", Some(json!({ "name": item_name, "price": post_price})));
                     let new_order = wfm
                         .orders()
                         .create(item_name, item_id, "buy", post_price, 1, true, item_rank)
@@ -982,6 +1003,7 @@ impl<'a> ItemModule<'a> {
             }
         } else if active {
             logger::info_con("LiveScraper",format!("Item {item_name} Not a good time to have an order up on this item. Deleted buy order for {price}").as_str());
+            self.client.send_message("item.buy.deleting", Some(json!({ "name": item_name})));
             wfm.orders()
                 .delete(
                     order_id.clone().unwrap().as_str(),
@@ -1017,6 +1039,7 @@ impl<'a> ItemModule<'a> {
         if !inventory_names.contains(&item_name.to_string()) && !active {
             return Ok(());
         } else if !inventory_names.contains(&item_name.to_string()) {
+            self.client.send_message("item.sell.deleting", Some(json!({ "name": item_name})));
             db.stock_item()
                 .update_by_url(
                     item_name,
@@ -1084,6 +1107,7 @@ impl<'a> ItemModule<'a> {
                 )
                 .await?;
             if active {
+                self.client.send_message("item.sell.deleting", Some(json!({ "name": item_name})));
                 wfm.orders()
                     .update(
                         order_id.clone().unwrap().as_str(),
@@ -1142,6 +1166,7 @@ impl<'a> ItemModule<'a> {
                 format!("Item {item_name} is too cheap. Not putting up a sell order.").as_str(),
             );
             if active {
+                self.client.send_message("item.sell.deleting", Some(json!({ "name": item_name})));
                 wfm.orders()
                     .delete(
                         order_id.clone().unwrap().as_str(),
@@ -1164,6 +1189,7 @@ impl<'a> ItemModule<'a> {
         }
         if active {
             if price != post_price {
+                self.client.send_message("item.sell.updating", Some(json!({ "name": item_name, "price": post_price})));
                 wfm.orders()
                     .update(
                         order_id.clone().unwrap().as_str(),
@@ -1202,6 +1228,7 @@ impl<'a> ItemModule<'a> {
                 return Ok(());
             }
         } else {
+            self.client.send_message("item.sell.creating", Some(json!({ "name": item_name, "price": post_price})));
             wfm.orders()
                 .create(
                     item_name, item_id, "sell", post_price, quantity, true, item_rank,

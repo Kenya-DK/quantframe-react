@@ -41,15 +41,13 @@
         "copyFile": true,
         "removeFile": true,
         "scope": [
-          "$APPDATA/**"
+          "$APPDATA/**",
+          "$DESKTOP/**"
         ]
       },
       "http": {
         "all": true,
-        "scope": [
-          "https://api.warframe.market/**",
-          "https://relics.run/**"
-        ]
+        "scope": []
       }
     },
     "bundle": {

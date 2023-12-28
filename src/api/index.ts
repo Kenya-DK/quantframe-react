@@ -10,6 +10,9 @@ const api = {
     openLogsFolder: async (): Promise<any> => {
       return await invoke("open_logs_folder")
     },
+    export_logs: async (): Promise<any> => {
+      return await invoke("export_logs")
+    },
   },
   chat: {
     refresh_chats: async (exclude: string[]): Promise<any> => {

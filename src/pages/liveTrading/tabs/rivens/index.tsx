@@ -1,5 +1,5 @@
 import { Image, Group, Stack, Tooltip, ActionIcon, Text, Box, useMantineTheme, Grid } from "@mantine/core";
-import { useCacheContext, useStockContextContext } from "@contexts/index";
+import { useCacheContext, useLiveScraperContext, useStockContextContext } from "@contexts/index";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { useTranslatePage, useTranslateRustError } from "@hooks/index";
 import api, { wfmThumbnail } from "@api/index";
@@ -31,6 +31,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
 
   const theme = useMantineTheme();
   const { rivens } = useStockContextContext();
+  const { message } = useLiveScraperContext();
   const { riven_items, riven_attributes } = useCacheContext();
 
   // States For Total Price
@@ -212,7 +213,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
         sx={{ marginTop: "20px" }}
         striped
         mah={5}
-        height={"calc(100vh - 330px)"}
+        height={`calc(100vh - ${message ? "351px" : "330px"})`}
         records={rows}
         page={page}
         onPageChange={setPage}

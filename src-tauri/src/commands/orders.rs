@@ -4,7 +4,7 @@ use serde_json::{json, Value};
 use crate::{
     error::{self, AppError},
     helper,
-    wfm_client::client::WFMClient,
+    wfm_client::client::WFMClient, database::client::DBClient,
 };
 use std::sync::{Arc, Mutex};
 
@@ -42,31 +42,54 @@ pub async fn update_order(_wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>) -> Resu
 #[tauri::command]
 pub async fn refresh_orders(wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>) -> Result<(), AppError> {
     let wfm = wfm.lock()?.clone();
-    let mut ordres_vec = wfm.orders().get_my_orders().await?;
-    let mut ordres = ordres_vec.buy_orders;
-    ordres.append(&mut ordres_vec.sell_orders);
-    helper::emit_update("orders", "SET", Some(serde_json::to_value(ordres).unwrap()));
+    let current_orders = match wfm.orders().get_my_orders().await {
+        Ok(mut auctions) => {
+            let mut orders = auctions.buy_orders;
+            orders.append(&mut auctions.sell_orders);
+            orders
+        }
+        Err(e) => {
+            error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+            return Err(e);
+        }
+    };
+    helper::emit_update("orders", "SET", Some(serde_json::to_value(current_orders).unwrap()));
     Ok(())
 }
 #[tauri::command]
 pub async fn delete_all_orders(
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+    db: tauri::State<'_, Arc<Mutex<DBClient>>>,
 ) -> Result<serde_json::Value, AppError> {
     let wfm = wfm.lock()?.clone();
-
-    let current_orders = wfm.orders().get_my_orders().await?;
-
-    let count = current_orders.buy_orders.len() + current_orders.sell_orders.len();
-
-    for order in current_orders.sell_orders {
-        wfm.orders()
-            .delete(&order.id, "None", "None", "Any")
-            .await?;
-    }
-    for order in current_orders.buy_orders {
-        wfm.orders()
-            .delete(&order.id, "None", "None", "Any")
-            .await?;
+    let db = db.lock()?.clone();
+    match db.stock_item().reset_listed_price().await {
+        Ok(_) => {}
+        Err(e) => {
+            error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+            return Err(e);
+        }
+    };
+    let current_orders = match wfm.orders().get_my_orders().await {
+        Ok(mut auctions) => {
+            let mut orders = auctions.buy_orders;
+            orders.append(&mut auctions.sell_orders);
+            orders
+        }
+        Err(e) => {
+            error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+            return Err(e);
+        }
+    };
+    let count = current_orders.len();
+    for order in current_orders {
+        match wfm.orders().delete(&order.id, "None", "None", "Any").await {
+            Ok(_) => {}
+            Err(e) => {
+                error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+                return Err(e);
+            }
+        };
     }
     Ok(json!({
         "count": count

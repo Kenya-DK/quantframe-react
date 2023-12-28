@@ -24,7 +24,10 @@ export const LiveScraperContextProvider = ({ children }: LiveScraperContextProvi
 
   useEffect(() => {
     OnTauriEvent("LiveScraper:UpdateMessage", (e: ScraperMessage) => {
-      setMessage(e)
+      if (e.i18n_key == "")
+        setMessage(undefined);
+      else
+        setMessage({ ...e, i18n_key: `live_scraper.${e.i18n_key}` })
     });
     OnTauriEvent("LiveScraper:Toggle", () => {
       setIsRunning((is_running) => !is_running)

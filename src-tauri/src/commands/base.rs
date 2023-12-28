@@ -1,10 +1,16 @@
-use std::sync::{Arc, Mutex};
+use std::{
+    fs::{self, File},
+    io::{self, Read, Write},
+    path::{Path, PathBuf},
+    sync::{Arc, Mutex},
+};
 
 use eyre::eyre;
 use once_cell::sync::Lazy;
 use reqwest::{Client, Method, Url};
 use serde_json::{json, Value};
 use tokio::process::Command;
+use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 
 // Create a static variable to store the log file name
 static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("commands.log".to_string()));
@@ -34,6 +40,7 @@ pub async fn init(
     ee_log: tauri::State<'_, Arc<std::sync::Mutex<EELogParser>>>,
     db: tauri::State<'_, Arc<Mutex<DBClient>>>,
 ) -> Result<Value, AppError> {
+
     let db = db.lock()?.clone();
     let mut ee_log = ee_log.lock()?.clone();
     let settings = settings.lock()?.clone();
@@ -47,7 +54,6 @@ pub async fn init(
         "price_scraper_last_run": price_scraper.get_status(),
     });
 
-    return Err(AppError::new("TEST", eyre!("This is a test error")))?;
     helper::emit_undate_initializ_status("Loading Database...", None);
     match db.initialize().await {
         Ok(_) => {}
@@ -135,7 +141,7 @@ pub async fn init(
 
     // Check for updates
     helper::emit_undate_initializ_status("Checking for updates...", None);
-    response["app_info"] = get_app_info().await?;
+    response["app_info"] = helper::get_app_info().await?;
 
     // Start EE Log Parser
     if !ee_log.is_running() {
@@ -149,9 +155,7 @@ pub async fn init(
 pub async fn update_settings(
     settings: SettingsState,
     settings_state: tauri::State<'_, Arc<std::sync::Mutex<SettingsState>>>,
-    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<(), AppError> {
-    let wfm = wfm.lock()?.clone();
     let arced_mutex = Arc::clone(&settings_state);
     let mut my_lock = arced_mutex.lock()?;
 
@@ -173,55 +177,7 @@ pub async fn open_logs_folder() {
         .unwrap();
 }
 
-pub async fn get_app_info() -> Result<serde_json::Value, AppError> {
-    let packageinfo = PACKAGEINFO
-        .lock()
-        .unwrap()
-        .clone()
-        .expect("Could not get package info");
-    let version = packageinfo.version.to_string();
-    let url = "https://raw.githubusercontent.com/Kenya-DK/quantframe-react/main/src-tauri/tauri.conf.json";
-    let client = Client::new();
-    let request = client.request(Method::GET, Url::parse(&url).unwrap());
-    let response = request.send().await;
-    if let Err(e) = response {
-        return Err(AppError::new("CHECKFORUPDATES", eyre!(e.to_string())));
-    }
-    let response_data = response.unwrap();
-    let status = response_data.status();
 
-    if status != 200 {
-        return Err(AppError::new(
-            "CHECKFORUPDATES",
-            eyre!("Could not get package.json. Status: {}", status.to_string()),
-        ));
-    }
-    let response = response_data.json::<Value>().await.unwrap();
-
-    let current_version_str = response["package"]["version"].as_str().unwrap();
-    let current_version = current_version_str.replace(".", "");
-    let current_version = current_version.parse::<i32>().unwrap();
-
-    let version_str = version;
-    let version = version_str.replace(".", "").parse::<i32>().unwrap();
-
-    let update_state = json!({
-        "update_available": current_version > version,
-        "version": current_version_str,
-        "current_version": version_str,
-        "release_notes": "New version available",
-        "download_url": "https://github.com/Kenya-DK/quantframe-react/releases",
-    });
-
-    let rep = json!({
-        "app_name": packageinfo.name,
-        "app_description": packageinfo.description,
-        "app_author": packageinfo.authors,
-        "app_version": update_state,
-    });
-
-    Ok(rep)
-}
 
 #[tauri::command]
 pub fn show_notification(
@@ -257,7 +213,14 @@ pub fn log(
     logger::dolog(level, &component, &msg, console, file);
 }
 
-// #[tauri::command]
-// pub fn open_url(url: String) {
-//     let _ = webbrowser::open(&url);
-// }
+#[tauri::command]
+pub fn export_logs(mh: tauri::State<'_, Arc<std::sync::Mutex<MonitorHandler>>>) {
+    logger::export_logs();
+    show_notification(
+        "Logs Exported".to_string(),
+        "Logs exported to desktop".to_string(),
+        None,
+        None,
+        mh
+    );
+}
