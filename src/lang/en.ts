@@ -346,11 +346,13 @@ export const en = {
             delete_all: "Delete all orders",
           },
           notifaications: {
-            import_title: "Import",
-            import_message: "Imported {{name}} auctions",
+            import: {
+              title: "Import",
+              message: "Imported {{name}} auctions",
+            },
             refresh: {
               title: "Refresh",
-              message: "Orders refreshed",
+              message: "Auctions refreshed",
             },
             delete_all: {
               title: "Refresh",
@@ -370,6 +372,11 @@ export const en = {
               confirm: "Delete",
               cancel: "Cancel",
             },
+          },
+          info: {
+            inactive: "Is importede but is inactive",
+            is_imported: "Is imported and is active",
+            is_not_imported: "Is not imported",
           },
         },
         orders: {
