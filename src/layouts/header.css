@@ -1,0 +1,10 @@
+.indicator-border {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 2px solid white;
+    position: absolute;
+    bottom: 2px;
+    left: -1px;
+    z-index: 1;
+  }

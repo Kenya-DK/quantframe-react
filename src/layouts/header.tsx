@@ -1,3 +1,4 @@
+import './header.css';
 import { Avatar, Group, Header, Menu, createStyles, rem, Container, ActionIcon, useMantineTheme, Indicator } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -91,9 +92,12 @@ export default function Hedder({ user }: TopMenuProps) {
           >
             <Menu.Target>
               <ActionIcon color="pink" size="xs">
-                <Indicator disabled={!user} inline size={12} offset={7} position="bottom-start" color={getUserStatusColor(user?.status || Wfm.UserStatus.Invisible)} >
-                  <Avatar variant="subtle" src={avatar} alt={user?.ingame_name} radius="xl" size={"md"} />
-                </Indicator>
+                <div style={{ position: 'relative' }}>
+                  <div className="indicator-border" />
+                  <Indicator disabled={!user} inline size={12} offset={7} position="bottom-start" color={getUserStatusColor(user?.status || Wfm.UserStatus.Invisible)} >
+                    <Avatar variant="subtle" src={avatar} alt={user?.ingame_name} radius="xl" size={"md"} />
+                  </Indicator>
+                </div>
               </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
