@@ -5,13 +5,12 @@ import { useTranslatePage, useTranslateRustError } from "@hooks/index";
 import api, { wfmThumbnail } from "@api/index";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faComment, faEdit, faEye, faEyeSlash, faHammer, faMagnifyingGlass, faPen, faPlus, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faComment, faEdit, faEye, faEyeSlash, faHammer, faMagnifyingGlass, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { useMutation } from "@tanstack/react-query";
 import { RivenAttributes } from "@components/auction/rivenAttributes";
-import { CreateStockRivenEntryDto, StockRivenDto, RustError } from "$types/index";
+import { StockRivenDto, RustError } from "$types/index";
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
-import { RivenForm } from "@components/forms/riven.form";
 import { useNavigate } from "react-router-dom";
 import { getOrderStatusColorClass, paginate, sortArray, SendNotificationToWindow } from "@utils/index";
 import { SearchField } from "@components/searchfield";
@@ -32,7 +31,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
   const theme = useMantineTheme();
   const { rivens } = useStockContextContext();
   const { message } = useLiveScraperContext();
-  const { riven_items, riven_attributes } = useCacheContext();
+  const { riven_items } = useCacheContext();
 
   // States For Total Price
   const [totalPurchasePrice, setTotalPurchasePrice] = useState<number>(0);
@@ -128,28 +127,28 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
       SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
     }
   })
-  const createRivenEntryMutation = useMutation((data: CreateStockRivenEntryDto) => api.stock.riven.create(data), {
-    onSuccess: async (data) => {
-      notifications.show({
-        title: useTranslateNotifaications("create_title"),
-        icon: <FontAwesomeIcon icon={faCheck} />,
-        message: useTranslateNotifaications("create_message", { name: `${data.name} ${data.mod_name}` }),
-        color: "green"
-      });
-    },
-    onError(error: RustError) {
-      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
-    }
-  })
+  // const createRivenEntryMutation = useMutation((data: CreateStockRivenEntryDto) => api.stock.riven.create(data), {
+  //   onSuccess: async (data) => {
+  //     notifications.show({
+  //       title: useTranslateNotifaications("create_title"),
+  //       icon: <FontAwesomeIcon icon={faCheck} />,
+  //       message: useTranslateNotifaications("create_message", { name: `${data.name} ${data.mod_name}` }),
+  //       color: "green"
+  //     });
+  //   },
+  //   onError(error: RustError) {
+  //     SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+  //   }
+  // })
   return (
     <Stack mt={20}>
       <Grid>
         <Grid.Col span={10}>
           <SearchField value={query} onChange={(text) => setQuery(text)}
-            rightSectionWidth={75}
+            rightSectionWidth={45}
             rightSection={
               <>
-                <Tooltip label={useTranslateButtons('create')}>
+                {/* <Tooltip label={useTranslateButtons('create')}>
                   <ActionIcon variant="filled" color="blue.7" onClick={() => {
                     modals.open({
                       size: "100%",
@@ -175,7 +174,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                   }}>
                     <FontAwesomeIcon icon={faPlus} />
                   </ActionIcon>
-                </Tooltip>
+                </Tooltip> */}
                 <Tooltip label={useTranslateButtons('create_wtb_message')}>
                   <ActionIcon variant="filled" color="blue.7" onClick={() => {
                     go("riven_wtb_message");

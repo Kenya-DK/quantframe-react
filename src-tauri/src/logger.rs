@@ -218,11 +218,17 @@ pub fn export_logs() {
 
     let app_path = helper::get_app_roaming_path();
     for path in fs::read_dir(app_path).unwrap() {
-        files_to_compress.push(helper::ZipEntry {
-            file_path: path.unwrap().path().to_owned(),
-            sub_path: None,
-            include_dir: false,
-        });
+        let path = path.unwrap().path();
+        // Check if path is auth.json
+            if path.ends_with("auth.json") {
+                info_con("Logger", "Skipping auth.json");
+            } else {
+                files_to_compress.push(helper::ZipEntry {
+                    file_path: path.to_owned(),
+                    sub_path: None,
+                    include_dir: false,
+                });                
+            }
     }
 
     match helper::create_zip_file(files_to_compress, zip_path.to_str().unwrap_or_default()) {

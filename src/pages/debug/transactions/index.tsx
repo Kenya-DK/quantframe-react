@@ -104,6 +104,7 @@ export const Transactions = () => {
       <SearchField value={query} onChange={(text) => setQuery(text)} />
       <DataTable
         sx={{ marginTop: "20px" }}
+        height={`calc(100vh - 270px)`}
         striped
         withColumnBorders
         records={rows}

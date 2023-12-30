@@ -7,8 +7,12 @@ import { useTranslateGeneral, useTranslateRustError } from "@hooks/index";
 import { SplashScreen } from "../components/splashScreen";
 import { notifications } from "@mantine/notifications";
 import { Button, Text } from "@mantine/core";
-import { open } from '@tauri-apps/api/shell';
-
+import {
+  checkUpdate, installUpdate,
+  // installUpdate,
+  // onUpdaterEvent,
+} from '@tauri-apps/api/updater'
+import { relaunch } from "@tauri-apps/api/process";
 type AppContextProps = {
   settings: Settings | undefined;
   app_info: AppInfo | undefined;
@@ -36,7 +40,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
   const { isFetching } = useQuery({
     queryKey: ['init'],
     queryFn: () => api.auth.init(),
-    onSuccess(data) {
+    async onSuccess(data) {
       SendTauriUpdateDataEvent("user", { data: data.user, operation: "SET" })
       SendTauriEvent("Cache:Update:Items", data.items)
       SendTauriEvent("Cache:Update:RivenTypes", data.riven_items)
@@ -55,14 +59,22 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
       setSettings({ ...data.settings })
       setAppInfo(data.app_info);
 
-      if (!data.app_info.app_version.update_available) return;
+
+      const { shouldUpdate, manifest } = await checkUpdate()
+      if (!shouldUpdate)
+        return;
+
       notifications.show({
-        title: useTranslateGeneral("new_release_label", { v: data.app_info.app_version.version }),
+        title: useTranslateGeneral("new_release_label", { version: manifest?.version }),
         message: <>
-          <Text>{data.app_info.app_version.release_notes}</Text>
+          <Text>{manifest?.body}</Text>
           <Button style={{ width: '100%' }} onClick={async () => {
-            if (data.app_info.app_version.download_url)
-              await open(data.app_info.app_version.download_url);
+            // Install the update. This will also restart the app on Windows!
+            await installUpdate()
+
+            // On macOS and Linux you will need to restart the app manually.
+            // You could use this step to display another confirmation dialog.
+            await relaunch()
           }}>{useTranslateGeneral('new_release_message')}</Button>
         </>,
         autoClose: false
@@ -72,6 +84,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
       SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
     }
   })
+
 
   // Handle update, create, delete transaction
   const handleUpdateSettings = (operation: string, data: Settings) => {

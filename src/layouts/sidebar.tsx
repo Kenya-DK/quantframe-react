@@ -58,7 +58,7 @@ export default function SideBar({ }) {
     { link: "/", icon: <FontAwesomeIcon icon={faHome} />, label: useTranslate("home") },
     { link: "live-trading", icon: <FontAwesomeIcon icon={faGlobe} />, label: useTranslate("live_trading") },
     {
-      link: "chats", icon: <Indicator disabled={unread_messages == 0} label={unread_messages > 0 ? unread_messages : undefined} inline size={16} position="top-start" color={status} >
+      hide: true, link: "chats", icon: <Indicator disabled={unread_messages == 0} label={unread_messages > 0 ? unread_messages : undefined} inline size={16} position="top-start" color={status} >
         <FontAwesomeIcon icon={faEnvelope} />
       </Indicator>, label: useTranslate("chats")
     },
@@ -66,7 +66,7 @@ export default function SideBar({ }) {
     { link: "warframe-market", icon: <WFMLogo color="#d5d7e0" />, label: useTranslate("warframe_market") },
     { link: "debug", icon: <FontAwesomeIcon icon={faDesktop} />, label: useTranslate("debug") },
   ];
-  const links = mockdata.map((link, index) => (
+  const links = mockdata.filter(x => !x.hide).map((link, index) => (
     <NavbarLink
       {...link}
       key={link.label}

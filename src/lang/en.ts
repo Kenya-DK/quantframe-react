@@ -33,8 +33,8 @@ export const en = {
     last_year: "Last year",
     sales_label: "Sell",
     buy_label: "Buy",
-    new_release_label: "Update {{ v }} available",
-    new_release_message: "Click here to download the new version",
+    new_release_label: "Update {{ version }} is available",
+    new_release_message: "Click here to install the new update",
   },
   components: {
     forms: {
