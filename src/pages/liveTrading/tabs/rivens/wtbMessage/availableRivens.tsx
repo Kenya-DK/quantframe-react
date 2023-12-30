@@ -148,7 +148,7 @@ export default function AvailableRivens({ onAddRiven }: AvailableRivensProps) {
             accessor: 'riven_type',
             title: useTranslateDataGridColumns("riven_type"),
             sortable: true,
-            render: ({ riven_type }) => riven_type?.charAt(0).toUpperCase() + riven_type.slice(1)
+            render: ({ riven_type }) => (riven_type || "Unkonw").charAt(0).toUpperCase() + (riven_type || "Unkonw").slice(1)
           },
           {
             accessor: 'group',
