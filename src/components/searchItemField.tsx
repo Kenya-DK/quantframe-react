@@ -14,6 +14,9 @@ export const SearchItemField = (props: SearchItemFieldProps) => {
   const { items: wfItems } = useCacheContext();
   const [items, setItems] = useState<Array<Wfm.ItemDto & { label: string, value: string }>>([]);
   const { value, onChange } = props;
+  const [filteredItems, setFilteredItems] = useState(items);
+  const [lastKeyPressed, setLastKeyPressed] = useState<string | null>(null);
+
   useEffect(() => {
     setItems(wfItems.map((warframe) => ({ ...warframe, label: warframe.item_name, value: warframe.url_name })) || []);
   }, [wfItems]);
@@ -30,6 +33,21 @@ export const SearchItemField = (props: SearchItemFieldProps) => {
       maxDropdownHeight={400}
       nothingFound={useTranslateSearch('no_results')}
       value={value}
+      onKeyDown={(event) => {
+        setLastKeyPressed(event.key);
+      }}
+      onSearchChange={(searchValue) => {
+        setFilteredItems(
+          items.filter(item => item.label.toLowerCase().includes(searchValue.toLowerCase()))
+        );
+      }}
+      onBlur={() => {
+        if (lastKeyPressed === 'Tab' && filteredItems.length > 0) {
+          const firstItem = filteredItems[0];
+          onChange(firstItem);
+        }
+        setLastKeyPressed(null);
+      }}
       onChange={async (value) => {
         if (!value) return;
         const item = items.find(item => item.url_name === value);
