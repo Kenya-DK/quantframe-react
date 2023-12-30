@@ -361,8 +361,8 @@ export const en = {
           },
           prompt: {
             import: {
-              title: "Import",
-              label: "Import",
+              title: "How much did you buy it for?",
+              label: "Bought for",
               description: "Import auctions from warframe.market",
               placeholder: "Import",
             },

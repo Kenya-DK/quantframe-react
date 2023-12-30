@@ -91,17 +91,6 @@ export default function HomePage() {
           <Grid mt={25}>
             <Grid.Col md={4} >
               <TransactionRevenueChart
-                title={translateBase("stats_cards.last_days_title", { days: statistics.recent_days.days })}
-                type="revenue"
-                background="linear-gradient(195deg, #051394, #0072a3)"
-                labels={statistics.recent_days.labels || []}
-                orderWithRevenues={[
-                  { ...statistics.recent_days, backgroundColor: theme.colors.blue[6], },
-                ]}
-              />
-            </Grid.Col>
-            <Grid.Col md={4} >
-              <TransactionRevenueChart
                 title={translateBase("stats_cards.total_revenue_title")}
                 showDatasetLabels
                 type="revenue"
@@ -124,6 +113,17 @@ export default function HomePage() {
                 precision={0}
                 orderWithRevenues={[
                   { ...statistics.today, backgroundColor: theme.colors.gray[5], },
+                ]}
+              />
+            </Grid.Col>
+            <Grid.Col md={4} >
+              <TransactionRevenueChart
+                title={translateBase("stats_cards.last_days_title", { days: statistics.recent_days.days })}
+                type="revenue"
+                background="linear-gradient(195deg, #051394, #0072a3)"
+                labels={statistics.recent_days.labels || []}
+                orderWithRevenues={[
+                  { ...statistics.recent_days, backgroundColor: theme.colors.blue[6], },
                 ]}
               />
             </Grid.Col>
