@@ -143,6 +143,6 @@ export const getUserStatusColor = (status: Wfm.UserStatus) => {
       return "green";
     case Wfm.UserStatus.Invisible:
     default:
-      return "darkred";
+      return "red";
   }
 };
