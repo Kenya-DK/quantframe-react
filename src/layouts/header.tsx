@@ -93,10 +93,10 @@ export default function Hedder({ user }: TopMenuProps) {
               <ActionIcon color="pink" size="xs">
                 <Indicator
                   withBorder
-                  styles={{ indicator: { border: '0.125rem solid #e0e0e0' } }}
+                  styles={{ indicator: { border: '0.2rem solid #1D1E30' } }}
                   disabled={!user}
                   inline
-                  size={13}
+                  size={15}
                   offset={5}
                   position="bottom-start"
                   color={getUserStatusColor(user?.status || Wfm.UserStatus.Invisible)}
