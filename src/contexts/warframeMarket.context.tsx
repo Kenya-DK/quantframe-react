@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { StatisticDto, TransactionEntryDto, Wfm } from '$types/index';
-import { OnTauriUpdateDataEvent, getStatistic } from "../utils";
+import { OnTauriUpdateDataEvent, GetStatistic } from "../utils";
 
 type WarframeMarketContextProps = {
   transactions: TransactionEntryDto[];
@@ -84,7 +84,8 @@ export const WarframeMarketContextProvider = ({ children }: WarframeMarketContex
   // Handle update of statistics when transactions change
   useEffect(() => {
     if (!transactions) return;
-    let statistics = getStatistic(transactions);
+    let statistics = GetStatistic(transactions);
+
     setStatistics(statistics);
   }, [transactions]);
 

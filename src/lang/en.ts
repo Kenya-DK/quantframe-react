@@ -52,10 +52,28 @@ export const en = {
       }
     },
     transactionRevenueChart: {
-      revenue_label: "Revenue: {{val, number}}",
-      quantity_label: "Quantity: {{count}}",
-
+      modes: {
+        sales: {
+          title: "Sales",
+        },
+        purchases: {
+          title: "Purchases",
+        },
+        quantity: {
+          title: "Quantity",
+        },
+        profit: {
+          title: "Profit",
+        },
+      },
+      context: {
+        profit: "Profit: <blue>{{val, currency(USD)}}</blue>",
+        profit_margin: "Profit Margin: <blue>{{val}} %</blue>",
+        revenue_average: "Average Profit: <blue>{{val, currency(USD)}}</blue>",
+        footer: "Sales <blue>{{sales}}</blue> | Purchases <blue>{{purchases}}</blue> | Trades <blue>{{trades}}</blue>",
+      },
     },
+
     availableRivens: {
       weaponInfo: {
         wfm: {
@@ -308,33 +326,35 @@ export const en = {
     home: {
       stats_cards: {
         total: {
-          title: "Total Turnover",
-          context: "Sales <italic>{{sales}}</italic> | Buy <italic>{{buy}}</italic> | <qty/> <italic>{{quantity}}</italic>",
+          title: "Total Profit",
+          context: "Sales <blue>{{sales}}</blue> | Purchases <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | Margin <blue>{{profit_margin}}%</blue>",
+        },
+        total_chart: {
+          title: "Total Profit",
         },
         today: {
           title: "Today Turnover",
-          context: "Sales <italic>{{sales}}</italic> | Buy <italic>{{buy}}</italic> | <qty/> <italic>{{quantity}}</italic>",
+          context: "Sales <blue>{{sales}}</blue> | Purchases <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | Margin <blue>{{profit_margin}}%</blue>",
+        },
+        today_chart: {
+          title: "Today Profit",
+        },
+        last_days: {
+          title: "Last {{days}} days",
         },
         best_selling: {
           title: "Best turnover product",
-          context: "Name <italic>{{name}}</italic> | Sales <italic>{{sales}}</italic> | Buy <italic>{{buy}}</italic> | <qty/> <italic>{{quantity}}</italic>",
+          context: "Name <blue>{{name}}</blue> | Sales <blue>{{sales}}</blue> | Purchases <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | Margin <blue>{{profit_margin}}%</blue>",
         },
-        total_revenue_title: "Total Turnover",
-        total_sales_old: "Total: Sales: <italic>{{val}}</italic> Invoices: <italic>{{val}}</italic>",
-        total_sales: "Sales <italic>{{sales}}</italic> | Buy <italic>{{buy}}</italic> | Quantity <italic>{{quantity}}</italic>",
-
-        today_revenue_title: "Today Turnover",
-        today_revenue_context: "Today Turnover",
-
-        last_days_title: "Last {{days}} days",
-        open_orders_title: "Open orders",
-        best_selling_product_title: "Best selling product",
-        no_data: "No data",
-        average_order_revenue: "Average order revenue <italic>{{val, currency(USD)}}</italic>",
-        average_orders_per_month: "Average orders per month <italic>{{val, currency(USD)}}</italic>",
-        revenue_compare_to_last_year_less: "Revenue <italic>{{val, currency(USD)}}</italic> less than last year",
-        revenue_compare_to_last_year_more: "Revenue <italic>{{val, currency(USD)}}</italic> more than last year",
-        completed_orders_today: "Completed orders <italic>{{count}}</italic>",
+        datagrid: {
+          columns: {
+            name: "Name",
+            revenue: "Revenue",
+            expense: "Expense",
+            profit: "Profit",
+            profit_margin: "Profit Margin",
+          }
+        }
       }
     },
     warframe_market: {

@@ -56,7 +56,7 @@ interface BarChartProps {
 }
 
 
-export const BarChart = ({ tooltipShowColor, chartType, boxWidth, boxHeight, tooltipCallback, onColumnClick, context, showDatasetLabels, chartStyle, labels, title, datasets }: BarChartProps) => {
+export const PieChart = ({ tooltipShowColor, chartType, boxWidth, boxHeight, tooltipCallback, onColumnClick, context, showDatasetLabels, chartStyle, labels, title, datasets }: BarChartProps) => {
   const theme = useMantineTheme();
   const chartRef = useRef(null);
 
