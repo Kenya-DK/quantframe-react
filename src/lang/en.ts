@@ -419,6 +419,11 @@ export const en = {
               confirm: "Delete",
               cancel: "Cancel",
             },
+            sell: {
+              title: "Place Sell/Purchase For",
+              label: "Price",
+              description: "Place a sell/purchase order for the item",
+            }
           },
           notifaications: {
             refresh: {

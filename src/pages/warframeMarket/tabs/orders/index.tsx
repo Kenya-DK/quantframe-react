@@ -1,7 +1,7 @@
 import { Divider, Group, Stack, Text, Image, Box, Grid, Tooltip, ActionIcon, Paper, SimpleGrid, ScrollArea, useMantineTheme } from "@mantine/core";
 import { useCacheContext, useWarframeMarketContextContext } from "@contexts/index";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faTrashCan, faRefresh, faCartShopping, faShoppingCart } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faTrashCan, faRefresh, faCartShopping, faShoppingCart, faPen } from "@fortawesome/free-solid-svg-icons";
 import { Wfm, CreateStockItemEntryDto, RustError } from "$types/index";
 import { useTranslatePage, useTranslateRustError } from "@hooks/index";
 import api, { wfmThumbnail } from "@api/index";
@@ -22,7 +22,7 @@ interface PurchaseNewItemProps {
 }
 const OrderItem = ({ max_rank, ordre }: PurchaseNewItemProps) => {
   const useTranslateNotifaications = (key: string, context?: { [key: string]: any }) => useTranslateOrdersPanel(`notifaications.${key}`, { ...context })
-
+  const useTranslatePrompt = (key: string, context?: { [key: string]: any }) => useTranslateOrdersPanel(`prompt.${key}`, { ...context });
   const theme = useMantineTheme();
   const createStockItemEntryMutation = useMutation((data: CreateStockItemEntryDto) => api.stock.item.create(data), {
     onSuccess: async (data) => {
@@ -65,12 +65,12 @@ const OrderItem = ({ max_rank, ordre }: PurchaseNewItemProps) => {
     }
   })
   const useTranslateOrdersPanel = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePage(`warframe_market.tabs.orders.${key}`, { ...context }, i18Key)
-  const handleCartClick = async () => {
+  const handleCartClick = async (price?: number) => {
     switch (ordre.order_type) {
       case "buy":
         createStockItemEntryMutation.mutate({
           item_id: ordre.item.url_name,
-          price: ordre.platinum,
+          price: price || ordre.platinum,
           quantity: 1,
           rank: ordre.mod_rank || 0
         });
@@ -78,7 +78,7 @@ const OrderItem = ({ max_rank, ordre }: PurchaseNewItemProps) => {
       case "sell":
         sellStockItemEntryMutation.mutate({
           url: ordre.item.url_name,
-          price: ordre.platinum
+          price: price || ordre.platinum
         });
         break;
       default:
@@ -124,6 +124,26 @@ const OrderItem = ({ max_rank, ordre }: PurchaseNewItemProps) => {
         <Group grow position="apart" ml={15} mt={5}>
           <TextColor size={"lg"} sx={{ float: "inline-end" }} color="gray.6" i18nKey={useTranslateOrdersPanel("plat_label", undefined, true)} values={{ plat: ordre.platinum }} />
           <Group spacing={2} position="right">
+            <Tooltip label={useTranslateOrdersPanel(ordre.order_type === "buy" ? "tolltip.buy_add_to_stock" : "tolltip.sell_remove_from_stock")}>
+              <ActionIcon loading={deleteOrdreEntryMutation.isLoading} color="bule.7" onClick={async (e) => {
+                e.stopPropagation();
+                modals.openContextModal({
+                  modal: 'prompt',
+                  title: useTranslatePrompt("sell.title"),
+                  innerProps: {
+                    fields: [{ name: 'price', description: useTranslatePrompt("sell.description"), label: useTranslatePrompt("sell.label"), type: 'number', value: 0, }],
+                    onConfirm: async (data: { price: number }) => {
+                      const { price } = data;
+                      if (!price || price <= 0) return;
+                      await handleCartClick(price);
+                    },
+                    onCancel: (id: string) => modals.close(id),
+                  },
+                })
+              }} >
+                <FontAwesomeIcon icon={faPen} />
+              </ActionIcon>
+            </Tooltip>
             <Tooltip label={useTranslateOrdersPanel(ordre.order_type === "buy" ? "tolltip.buy_add_to_stock" : "tolltip.sell_remove_from_stock")}>
               <ActionIcon loading={sellStockItemEntryMutation.isLoading || createStockItemEntryMutation.isLoading} color="green.7" onClick={async () => handleCartClick()} >
                 <FontAwesomeIcon icon={faCartShopping} />
