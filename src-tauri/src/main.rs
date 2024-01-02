@@ -92,6 +92,7 @@ async fn setup_async(app: &mut App) -> Result<(), AppError> {
         Arc::clone(&wfm_client),
         Arc::clone(&auth_arc),
         Arc::clone(&database_client),
+        Arc::clone(&cache_arc),
         Arc::clone(&monitor_handler_arc),
     );
     app.manage(Arc::new(Mutex::new(live_scraper)));

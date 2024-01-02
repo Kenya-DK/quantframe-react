@@ -61,7 +61,6 @@ pub fn send_message_to_window(event: &str, data: Option<Value>) {
     }
 }
 
-
 pub async fn get_app_info() -> Result<serde_json::Value, AppError> {
     let packageinfo = PACKAGEINFO
         .lock()

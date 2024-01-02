@@ -6,10 +6,11 @@ use reqwest::header::HeaderMap;
 use serde_json::json;
 
 use crate::{
+    enums::OrderType,
     error::AppError,
     helper, logger,
     structs::{Order, Ordres},
-    wfm_client::client::WFMClient, enums::OrderType,
+    wfm_client::client::WFMClient,
 };
 
 pub struct OrderModule<'a> {
@@ -159,7 +160,7 @@ impl<'a> OrderModule<'a> {
                     return Ok("Order Successfully Closed".to_string());
                 } else {
                     let order_data = order_data.unwrap();
-                    order.quantity= order_data["quantity"].as_i64().unwrap();
+                    order.quantity = order_data["quantity"].as_i64().unwrap();
                     self.emit("CREATE_OR_UPDATE", serde_json::to_value(&order).unwrap());
                     return Ok("Order Successfully Closed and Updated".to_string());
                 }
@@ -234,7 +235,7 @@ impl<'a> OrderModule<'a> {
             ),
             Series::new("platinum", vec![order.platinum.clone()]),
             Series::new("platform", vec![order.platform.clone()]),
-            Series::new("order_type", vec![order.order_type.as_str().clone()]),
+            Series::new("order_type", vec![order.order_type.as_str()]),
             Series::new("quantity", vec![order.quantity.clone()]),
             Series::new("last_update", vec![order.last_update.clone()]),
             Series::new("creation_date", vec![order.creation_date.clone()]),

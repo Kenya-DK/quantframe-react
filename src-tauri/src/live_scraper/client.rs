@@ -18,7 +18,7 @@ use crate::{
     logger::{self},
     price_scraper::PriceScraper,
     settings::SettingsState,
-    wfm_client::client::WFMClient,
+    wfm_client::client::WFMClient, cache::client::CacheClient,
 };
 
 use super::modules::{item::ItemModule, riven::RivenModule};
@@ -32,6 +32,7 @@ pub struct LiveScraperClient {
     pub wfm: Arc<Mutex<WFMClient>>,
     pub auth: Arc<Mutex<AuthState>>,
     pub db: Arc<Mutex<DBClient>>,
+    pub cache: Arc<Mutex<CacheClient>>,
     pub mh: Arc<Mutex<MonitorHandler>>,
 }
 
@@ -42,6 +43,7 @@ impl LiveScraperClient {
         wfm: Arc<Mutex<WFMClient>>,
         auth: Arc<Mutex<AuthState>>,
         db: Arc<Mutex<DBClient>>,
+        cache: Arc<Mutex<CacheClient>>,
         mh: Arc<Mutex<MonitorHandler>>,
     ) -> Self {
         LiveScraperClient {
@@ -52,6 +54,7 @@ impl LiveScraperClient {
             wfm,
             auth,
             db,
+            cache,
             mh,
         }
     }
@@ -100,11 +103,11 @@ impl LiveScraperClient {
             db.stock_riven().reset_listed_price().await.unwrap();
             scraper.send_message("item.reset", None);
             db.stock_item().reset_listed_price().await.unwrap();
-            scraper
-                .item()
-                .delete_all_orders(OrderMode::Both)
-                .await
-                .unwrap();
+            // scraper
+            //     .item()
+            //     .delete_all_orders(OrderMode::Both)
+            //     .await
+            //     .unwrap();
             while is_running.load(Ordering::SeqCst) && forced_stop.load(Ordering::SeqCst) {
                 let settings = scraper.settings.lock().unwrap().clone();
                 if settings.live_scraper.stock_mode == StockMode::Riven
