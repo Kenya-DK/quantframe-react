@@ -8,7 +8,7 @@ use crate::{
 };
 
 // Create a static variable to store the log file name
-static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("price_history.log".to_string()));
+static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("command_price_history.log".to_string()));
 
 #[tauri::command(async)]
 pub async fn generate_price_history(

@@ -9,7 +9,7 @@ use crate::{
 use std::sync::{Arc, Mutex};
 
 // Create a static variable to store the log file name
-static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("commands.log".to_string()));
+static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("command_orders.log".to_string()));
 
 #[tauri::command]
 pub async fn get_orders(_wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>) -> Result<(), AppError> {
