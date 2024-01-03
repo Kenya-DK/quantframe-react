@@ -38,6 +38,7 @@ mod settings;
 mod system_tray;
 mod wf_ee_log_parser;
 mod wfm_client;
+mod utils;
 
 use helper::WINDOW as HE_WINDOW;
 
