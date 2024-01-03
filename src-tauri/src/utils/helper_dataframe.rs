@@ -16,7 +16,7 @@ pub enum ColumnValues {
 impl ColumnValues {
     /// Converts the ColumnValues into a vector of Strings, if it is a String.
     /// Returns None if the ColumnValues is not a String.
-    fn into_string(self) -> Option<Vec<String>> {
+    pub fn into_string(self) -> Option<Vec<String>> {
         match self {
             ColumnValues::String(values) => Some(values),
             _ => None,
@@ -25,7 +25,7 @@ impl ColumnValues {
 
     /// Converts the ColumnValues into a vector of bools, if it is a Bool.
     /// Returns None if the ColumnValues is not a Bool.
-    fn into_bool(self) -> Option<Vec<bool>> {
+    pub fn into_bool(self) -> Option<Vec<bool>> {
         match self {
             ColumnValues::Bool(values) => Some(values),
             _ => None,
@@ -34,7 +34,7 @@ impl ColumnValues {
 
     /// Converts the ColumnValues into a vector of f64s, if it is a F64.
     /// Returns None if the ColumnValues is not a F64.
-    fn into_f64(self) -> Option<Vec<f64>> {
+    pub fn into_f64(self) -> Option<Vec<f64>> {
         match self {
             ColumnValues::F64(values) => Some(values),
             _ => None,
@@ -43,7 +43,7 @@ impl ColumnValues {
 
     /// Converts the ColumnValues into a vector of i64s, if it is a I64.
     /// Returns None if the ColumnValues is not a I64.
-    fn into_i64(self) -> Option<Vec<i64>> {
+    pub fn into_i64(self) -> Option<Vec<i64>> {
         match self {
             ColumnValues::I64(values) => Some(values),
             _ => None,
@@ -52,7 +52,7 @@ impl ColumnValues {
 
     /// Converts the ColumnValues into a vector of i32s, if it is a I32.
     /// Returns None if the ColumnValues is not a I32.
-    fn into_i32(self) -> Option<Vec<i32>> {
+    pub fn into_i32(self) -> Option<Vec<i32>> {
         match self {
             ColumnValues::I32(values) => Some(values),
             _ => None,
@@ -69,7 +69,7 @@ pub enum ColumnValue {
 impl ColumnValue {
     /// Converts the ColumnValue into a String, if it is a String.
     /// Returns None if the ColumnValue is not a String.
-    fn into_string(self) -> Option<String> {
+    pub fn into_string(self) -> Option<String> {
         match self {
             ColumnValue::String(value) => value,
             _ => None,
@@ -78,7 +78,7 @@ impl ColumnValue {
 
     /// Converts the ColumnValue into a bool, if it is a Bool.
     /// Returns None if the ColumnValue is not a Bool.
-    fn into_bool(self) -> Option<bool> {
+    pub fn into_bool(self) -> Option<bool> {
         match self {
             ColumnValue::Bool(value) => value,
             _ => None,
@@ -87,7 +87,7 @@ impl ColumnValue {
 
     /// Converts the ColumnValue into a f64, if it is a F64.
     /// Returns None if the ColumnValue is not a F64.
-    fn into_f64(self) -> Option<f64> {
+    pub fn into_f64(self) -> Option<f64> {
         match self {
             ColumnValue::F64(value) => value,
             _ => None,
@@ -96,7 +96,7 @@ impl ColumnValue {
 
     /// Converts the ColumnValue into a i64, if it is a I64.
     /// Returns None if the ColumnValue is not a I64.
-    fn into_i64(self) -> Option<i64> {
+    pub fn into_i64(self) -> Option<i64> {
         match self {
             ColumnValue::I64(value) => value,
             _ => None,
@@ -105,12 +105,12 @@ impl ColumnValue {
 
     /// Converts the ColumnValue into a i32, if it is a I32.
     /// Returns None if the ColumnValue is not a I32.
-    fn into_i32(self) -> Option<i32> {
+    pub fn into_i32(self) -> Option<i32> {
         match self {
             ColumnValue::I32(value) => value,
             _ => None,
         }
-    }    
+    }
 }
 /// Extracts the values of a specified column from a DataFrame.
 ///
@@ -312,7 +312,12 @@ pub fn get_column_value(
 /// # Returns
 ///
 /// A Result containing the sorted DataFrame, or an AppError if an error occurs.
-pub fn sort_dataframe(df: DataFrame,filter: Option<Expr>, column: &str, ascending: bool) -> Result<DataFrame, AppError> {
+pub fn sort_dataframe(
+    df: DataFrame,
+    filter: Option<Expr>,
+    column: &str,
+    ascending: bool,
+) -> Result<DataFrame, AppError> {
     let df = match filter {
         Some(filter) => df
             .lazy()

@@ -252,20 +252,10 @@ impl<'a> ItemModule<'a> {
         Ok(())
     }
     fn get_week_increase(&self, df: &DataFrame, row_name: &str) -> Result<f64, AppError> {
-        // Pre-filter DataFrame based on "order_type" == "closed"
-        let week_df = df
-            .clone()
-            .lazy()
-            .filter(
-                col("order_type")
-                    .eq(lit("closed"))
-                    .and(col("name").eq(lit(row_name))),
-            )
-            .collect()
-            .map_err(|e| AppError::new("LiveScraper", eyre!(e.to_string())))?;
-
-        // Sort the DataFrame by "datetime" column
-        let week_df = helper::sort_dataframe(week_df, "datetime", true)?;
+        // Sort the DataFrame by "datetime" column in ascending order and filter DataFrame based on "order_type" == "closed"
+        let week_df = helper::sort_dataframe(week_df,Some(col("order_type")
+        .eq(lit("closed"))
+        .and(col("name").eq(lit(row_name)))), "datetime", true)?;
 
         // Assuming the filtered DataFrame has at least 7 rows
         if week_df.height() >= 7 {
@@ -357,22 +347,13 @@ impl<'a> ItemModule<'a> {
         // The `volume_threshold` and `range_threshold` arguments are used to filter by volume and range.
         // The `inventory_names_s` argument is used to filter by name.
         // The `closed` order type is used to filter by order type.
-        let filtered_df = averaged_df
-            .clone()
-            .lazy()
-            .filter(
-                col("order_type").eq(lit("closed")).and(
-                    col("volume")
-                        .gt(lit(volume_threshold))
-                        .and(col("range").gt(lit(range_threshold)))
-                        .or(col("name").is_in(lit(inventory_names_s.clone()))),
-                ),
-            )
-            .collect()
-            .map_err(|e| AppError::new("LiveScraper", eyre!(e.to_string())))?;
-
         // Sort by "range" in descending order
-        let mut filtered_df = helper::sort_dataframe(filtered_df, "range", true)?;
+        let mut filtered_df = helper::sort_dataframe(filtered_df,Some(col("order_type").eq(lit("closed")).and(
+            col("volume")
+                .gt(lit(volume_threshold))
+                .and(col("range").gt(lit(range_threshold)))
+                .or(col("name").is_in(lit(inventory_names_s.clone()))),
+        )), "range", true)?;
 
         // If the DataFrame is empty, return an empty DataFrame
         if filtered_df.height() == 0 {

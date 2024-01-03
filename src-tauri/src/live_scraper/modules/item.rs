@@ -14,7 +14,7 @@ use serde_json::json;
 use std::collections::HashSet;
 use std::vec;
 
-pub struct ItemModule<'a> {    
+pub struct ItemModule<'a> {
     pub client: &'a LiveScraperClient,
 }
 
@@ -36,22 +36,11 @@ impl<'a> ItemModule<'a> {
         let mut interesting_items: Vec<String> = settings.stock_item.whitelist.clone();
 
         // Get interesting items from the price scraper if the order mode is buy or both.
-        let price_scraper_interesting_items: DataFrame = self.get_buy_sell_overlap().await?;
-        let price_scraper_interesting_items_names: Vec<String> = match helper::get_column_values(
-            price_scraper_interesting_items.clone(),
-            None,
-            "name",
-            ColumnType::String,
-        )? {
-            ColumnValues::String(values) => values,
-            _ => {
-                return Err(AppError::new(
-                    "LiveScraper",
-                    eyre!("Expected string values"),
-                ))
-            }
-        };
-
+        let mut price_scraper_interesting_items: DataFrame = self.get_buy_sell_overlap().await?;
+        logger::log_dataframe(
+            &mut price_scraper_interesting_items,
+            "price_scraper_interesting_items.csv",
+        );
         // Get interesting items from stock items if the order mode is sell or both and remove blacklisted items else return None.
         let stock_items_interesting_items: Option<Vec<StockItemStruct>> =
             if order_mode == OrderMode::Sell || order_mode == OrderMode::Both {
@@ -76,7 +65,7 @@ impl<'a> ItemModule<'a> {
         };
 
         // Get current orders from Warframe Market Sell and Buy orders.
-        let (mut current_buy_orders_df, current_sell_orders_df) =
+        let (mut current_buy_orders_df,current_sell_orders_df) =
             wfm.orders().get_orders_as_dataframe().await?;
 
         // Delete orders if the order mode is buy or sell.
@@ -88,10 +77,10 @@ impl<'a> ItemModule<'a> {
                 OrderMode::Unknown(_) => "",
             };
 
-            let order_ids: Vec<String> = match helper::get_column_values(
+            let order_ids: Vec<String> = helper::get_column_values(
                 helper::merge_dataframes(vec![
                     current_buy_orders_df.clone(),
-                    current_sell_orders_df,
+                    current_sell_orders_df.clone(),
                 ])?,
                 Some(
                     col("order_type")
@@ -100,10 +89,10 @@ impl<'a> ItemModule<'a> {
                 ),
                 "id",
                 ColumnType::String,
-            )? {
-                ColumnValues::String(values) => values,
-                _ => return Err(AppError::new("LiveScraper", eyre!("Expected f64 values"))),
-            };
+            )?
+            .into_string()
+            .ok_or_else(|| AppError::new("LiveScraper", eyre!("Expected string values")))?;
+
             let mut current_index = 0;
             let total = order_ids.len();
             for id in order_ids {
@@ -118,6 +107,14 @@ impl<'a> ItemModule<'a> {
 
         // Get potential items to buy from the price scrape if the order mode is buy or both.
         if order_mode == OrderMode::Buy || order_mode == OrderMode::Both {
+            let price_scraper_interesting_items_names: Vec<String> = helper::get_column_values(
+                price_scraper_interesting_items.clone(),
+                None,
+                "name",
+                ColumnType::String,
+            )?
+            .into_string()
+            .ok_or_else(|| AppError::new("LiveScraper", eyre!("Expected string values")))?;
             interesting_items.append(&mut price_scraper_interesting_items_names.clone());
 
             if current_buy_orders_df.height() != 0 {
@@ -177,13 +174,6 @@ impl<'a> ItemModule<'a> {
                     continue;
                 }
             };
-            // Check if item is in stock items
-            let stock_item = stock_items_interesting_items
-                .clone()
-                .unwrap_or_else(|| Vec::new())
-                .into_iter()
-                .find(|stock_item| stock_item.url == item_info.url_name);
-
             current_index -= 1;
             // Log the current item
             logger::info_con(
@@ -198,54 +188,102 @@ impl<'a> ItemModule<'a> {
             );
             self.client.send_message("item.checking", Some(json!({ "name": item_info.item_name.clone(), "count": current_index, "total": interesting_items.len()})));
 
+            // Check if item is in stock items
+            let stock_item = stock_items_interesting_items
+                .clone()
+                .unwrap_or_else(|| Vec::new())
+                .into_iter()
+                .find(|stock_item| stock_item.url == item_info.url_name);
+
+            // Get the item stats from the price scraper
+            let statistics = price_scraper_interesting_items
+                .clone()
+                .lazy()
+                .filter(col("name").eq(lit(item.clone())))
+                .collect()
+                .map_err(|e| AppError::new("LiveScraper", eyre!(e.to_string())))?;
+
             let live_orders_df = wfm.orders().get_ordres_by_item(&item).await?;
             // Check if item_orders_df is empty and skip if it is
             if live_orders_df.height() == 0 {
                 continue;
             }
 
+            // Get item_id from statistics or item_info
+            let item_id = if statistics.height() != 0 {
+                helper::get_column_value(statistics.clone(), None, "item_id", ColumnType::String)?
+                    .into_string()
+                    .ok_or_else(|| AppError::new("LiveScraper", eyre!("Expected string values")))?
+            } else {
+                item_info.id.clone()
+            };
+
+            // Get rank from statistics or item_info
+            let item_rank: Option<f64> = if statistics.height() != 0 {
+                helper::get_column_value(
+                    statistics.clone(),
+                    Some(col("name").eq(lit(item.clone()))),
+                    "mod_rank",
+                    ColumnType::F64,
+                )?
+                .into_f64()
+            } else {
+                if item_info.mod_max_rank.is_none() {
+                    None
+                } else {
+                    Some(item_info.mod_max_rank.clone().unwrap() as f64)
+                }
+            };
+
             if order_mode == OrderMode::Buy || order_mode == OrderMode::Both {
-                let stock_item = stock_item.unwrap();
-                let item_id = stock_item.item_id;
-                let item_rank = stock_item.item_rank;
-                logger::info_con("LiveScraper",format!("Creating buy order for item: {}, rank: {}", item_info.item_name.clone(),item_rank.clone()).as_str());
+                logger::info_con(
+                    "LiveScraper",
+                    format!(
+                        "Creating buy order for item: {}, rank: {}",
+                        item_info.item_name.clone(),
+                        item_info.mod_max_rank.clone().unwrap_or(0)
+                    )
+                    .as_str(),
+                );
+                self.compare_live_orders_when_buying(
+                    &item,
+                    &item_id,
+                    item_rank,
+                    current_buy_orders_df.clone(),
+                    &live_orders_df,
+                    &statistics,
+                    stock_item.clone(),
+                ).await?;
             }
 
             // Only check if the order mode is sell or both and if the item is in stock items
-            if (order_mode == OrderMode::Sell || order_mode == OrderMode::Both) && stock_item.is_some(){
-                let stock_item = stock_item.unwrap();
-                let item_id = stock_item.item_id;
-                let item_rank = stock_item.item_rank;
-                logger::info_con("LiveScraper",format!("Creating sell order for item: {}, rank: {}", item_info.item_name.clone(), item_rank.clone()).as_str());
-                // self.compare_live_orders_when_selling(
-                //     &item,
-                //     &item_id,
-                //     item_rank,
-                //     current_sell_orders_df.clone(),
-                //     &item_live_orders_df,
-                //     &item_stats,
-                //     &stock_items_df,
-                // )
-                // .await?;
-            } 
+            if (order_mode == OrderMode::Sell || order_mode == OrderMode::Both)
+                && stock_item.clone().is_some()
+            {
+                self.compare_live_orders_when_selling(
+                    &item,
+                    &item_id,
+                    item_rank,
+                    current_sell_orders_df.clone(),
+                    &live_orders_df
+                )
+                .await?;
+            }
         }
         Ok(())
     }
     fn get_week_increase(&self, df: &DataFrame, row_name: &str) -> Result<f64, AppError> {
-        // Pre-filter DataFrame based on "order_type" == "closed"
-        let week_df = df
-            .clone()
-            .lazy()
-            .filter(
+        // Sort the DataFrame by "datetime" column in ascending order and filter DataFrame based on "order_type" == "closed" and "name" == row_name
+        let week_df = helper::sort_dataframe(
+            df.clone(),
+            Some(
                 col("order_type")
                     .eq(lit("closed"))
                     .and(col("name").eq(lit(row_name))),
-            )
-            .collect()
-            .map_err(|e| AppError::new("LiveScraper", eyre!(e.to_string())))?;
-
-        // Sort the DataFrame by "datetime" column
-        let week_df = helper::sort_dataframe(week_df, "datetime", true)?;
+            ),
+            "datetime",
+            true,
+        )?;
 
         // Assuming the filtered DataFrame has at least 7 rows
         if week_df.height() >= 7 {
@@ -331,13 +369,13 @@ impl<'a> ItemModule<'a> {
             settings.stock_item.whitelist.clone().join(","),
             settings.stock_item.blacklist.clone().join(",")
         );
-        match self.client.cache_querieds.get(query_id) {
+        match self.client.get_cache_queried(&query_id) {
             Some(review) => {
                 return Ok(review.clone());
             }
             None => {
                 // Delete old queries
-                self.client.cache_querieds.retain(|key, _| !key.starts_with("get_buy"));
+                self.client.remove_cache_queried("get_buy");
             }
         }
         // Group by the "name" and "order_type" columns, and compute the mean of the other columns
@@ -370,10 +408,10 @@ impl<'a> ItemModule<'a> {
         // The `closed` order type is used to filter by order type.
         // The `stock_item_series` argument is used to filter by inventory names.
         // The `blacklist_series` argument is used to filter by blacklist names.
-        let filtered_df = averaged_df
-            .clone()
-            .lazy()
-            .filter(
+        // Sort by "range" in descending order
+        let mut filtered_df = helper::sort_dataframe(
+            averaged_df.clone(),
+            Some(
                 col("order_type").eq(lit("closed")).and(
                     col("volume")
                         .gt(lit(volume_threshold))
@@ -381,12 +419,10 @@ impl<'a> ItemModule<'a> {
                         .and(col("name").is_in(lit(blacklist_series)).not())
                         .or(col("name").is_in(lit(stock_item_series.clone()))),
                 ),
-            )
-            .collect()
-            .map_err(|e| AppError::new("LiveScraper", eyre!(e.to_string())))?;
-
-        // Sort by "range" in descending order
-        let mut filtered_df = helper::sort_dataframe(filtered_df, "range", true)?;
+            ),
+            "range",
+            true,
+        )?;
 
         // If the DataFrame is empty, return an empty DataFrame
         if filtered_df.height() == 0 {
@@ -450,15 +486,12 @@ impl<'a> ItemModule<'a> {
 
         // Extract unique names from filtered_df into a HashSet
         let name_set: HashSet<String> = HashSet::from_iter(
-            match helper::get_column_values(filtered_df.clone(), None, "name", ColumnType::String)?
-            {
-                ColumnValues::String(values) => values,
-                _ => return Err(AppError::new("LiveScraper", eyre!("Expected f64 values"))),
-            },
+            helper::get_column_values(filtered_df.clone(), None, "name", ColumnType::String)?
+                .into_string()
+                .ok_or_else(|| AppError::new("LiveScraper", eyre!("Expected string values")))?,
         );
-        let unique_names = name_set.into_iter().collect::<Vec<_>>();
 
-        let unique_names_series = Series::new("name", unique_names.clone());
+        let unique_names_series = Series::new("name", name_set.into_iter().collect::<Vec<_>>());
         let df_filtered = averaged_df
             .clone()
             .lazy()
@@ -476,6 +509,7 @@ impl<'a> ItemModule<'a> {
             Some(col("order_type").eq(lit("sell"))),
             vec!["name", "min_price"],
         )?;
+
         let order_sell_df = order_sell_df
             .rename("min_price", "minSell")
             .map_err(|e| AppError::new("LiveScraper", eyre!(e.to_string())))?;
@@ -485,6 +519,7 @@ impl<'a> ItemModule<'a> {
             Some(col("order_type").eq(lit("buy"))),
             vec!["name", "max_price"],
         )?;
+
         let order_buy_df = order_buy_df
             .rename("max_price", "maxBuy")
             .map_err(|e| AppError::new("LiveScraper", eyre!(e.to_string())))?;
@@ -526,7 +561,8 @@ impl<'a> ItemModule<'a> {
             .rename("weekPriceShift", "priceShift")
             .map_err(|e| AppError::new("LiveScraper", eyre!(e.to_string())))?;
 
-        self.client.cache_querieds.insert(query_id, buy_sell_overlap.clone());
+        self.client
+            .add_cache_queried(query_id, buy_sell_overlap.clone());
         return Ok(buy_sell_overlap.clone());
     }
     async fn get_my_order_information(
@@ -579,29 +615,27 @@ impl<'a> ItemModule<'a> {
         item_live_orders_df: &DataFrame,
     ) -> Result<(DataFrame, DataFrame, i64, i64, i64), AppError> {
         let in_game_name = self.client.auth.lock()?.clone().ingame_name;
-        let buy_orders_df = item_live_orders_df
-            .clone()
-            .lazy()
-            .filter(
+        let buy_orders_df = helper::sort_dataframe(
+            item_live_orders_df.clone(),
+            Some(
                 col("username")
                     .neq(lit(in_game_name.clone()))
-                    .and(col("order_type").eq(lit("buy"))), // Add this line
-            )
-            .collect()
-            .map_err(|e| AppError::new("LiveScraper", eyre!(e.to_string())))?;
-        let buy_orders_df = helper::sort_dataframe(buy_orders_df, "platinum", true)?;
+                    .and(col("order_type").eq(lit("buy"))),
+            ),
+            "platinum",
+            true,
+        )?;
 
-        let sell_orders_df = item_live_orders_df
-            .clone()
-            .lazy()
-            .filter(
+        let sell_orders_df = helper::sort_dataframe(
+            item_live_orders_df.clone(),
+            Some(
                 col("username")
                     .neq(lit(in_game_name))
-                    .and(col("order_type").eq(lit("sell"))), // Add this line
-            )
-            .collect()
-            .map_err(|e| AppError::new("LiveScraper", eyre!(e.to_string())))?;
-        let sell_orders_df = helper::sort_dataframe(sell_orders_df, "platinum", false)?;
+                    .and(col("order_type").eq(lit("sell"))),
+            ),
+            "platinum",
+            false,
+        )?;
 
         let mut lowest_price = 0;
         let mut highest_price = 0;
@@ -684,13 +718,17 @@ impl<'a> ItemModule<'a> {
         current_orders: DataFrame,
         item_live_orders_df: &DataFrame,
         item_stats: &DataFrame,
-        inventory_df: &DataFrame,
+        stock_item: Option<StockItemStruct>,
     ) -> Result<Option<DataFrame>, AppError> {
+        // Load Managers.
         let settings = self.client.settings.lock()?.clone().live_scraper;
         let wfm = self.client.wfm.lock()?.clone();
         let mut current_orders = current_orders.clone();
+
+        // Get Settings.
         let avg_price_cap = settings.stock_item.avg_price_cap;
         let max_total_price_cap = settings.stock_item.max_total_price_cap;
+
         // Get the current orders for the item from the Warframe Market API
         let (order_id, visibility, price, active) = self
             .get_my_order_information(item_name, &current_orders)
@@ -785,14 +823,9 @@ impl<'a> ItemModule<'a> {
             return Ok(None);
         }
         // Get the owned value from the database
-        let owned: i32 = match helper::get_column_value(
-            inventory_df.clone(),
-            Some(col("item_url").eq(lit(item_name))),
-            "owned",
-            ColumnType::I32,
-        )? {
-            ColumnValue::I32(values) => values.unwrap_or(0),
-            _ => return Err(AppError::new("LiveScraper", eyre!("Expected f64 values"))),
+        let owned: i32 = match stock_item {
+            Some(stock_item) => stock_item.owned,
+            None => 0,            
         };
 
         if owned > 1 && ((closed_avg_metric as i64) < (25 * owned as i64)) {
@@ -1035,9 +1068,7 @@ impl<'a> ItemModule<'a> {
         item_id: &str,
         item_rank: Option<f64>,
         current_orders: DataFrame,
-        item_live_orders_df: &DataFrame,
-        _item_stats: &DataFrame,
-        _inventory_df: &DataFrame,
+        item_live_orders_df: &DataFrame
     ) -> Result<(), AppError> {
         let wfm = self.client.wfm.lock()?.clone();
         let db = self.client.db.lock()?.clone();

@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc, Mutex,
@@ -6,10 +7,12 @@ use std::{
     time::Duration,
 };
 
+use polars::frame::DataFrame;
 use serde_json::json;
 
 use crate::{
     auth::AuthState,
+    cache::client::CacheClient,
     database::client::DBClient,
     enums::{LogLevel, OrderMode, StockMode},
     error::AppError,
@@ -18,7 +21,7 @@ use crate::{
     logger::{self},
     price_scraper::PriceScraper,
     settings::SettingsState,
-    wfm_client::client::WFMClient, cache::client::CacheClient,
+    wfm_client::client::WFMClient,
 };
 
 use super::modules::{item::ItemModule, riven::RivenModule};
@@ -26,6 +29,7 @@ use super::modules::{item::ItemModule, riven::RivenModule};
 #[derive(Clone)]
 pub struct LiveScraperClient {
     pub log_file: String,
+    pub cache_querieds: Arc<Mutex<HashMap<String, DataFrame>>>,
     pub is_running: Arc<AtomicBool>,
     pub settings: Arc<Mutex<SettingsState>>,
     pub price_scraper: Arc<Mutex<PriceScraper>>,
@@ -48,6 +52,7 @@ impl LiveScraperClient {
     ) -> Self {
         LiveScraperClient {
             log_file: "live_scraper.log".to_string(),
+            cache_querieds: Arc::new(Mutex::new(HashMap::new())),
             price_scraper,
             settings,
             is_running: Arc::new(AtomicBool::new(false)),
@@ -85,7 +90,7 @@ impl LiveScraperClient {
         self.is_running.store(false, Ordering::SeqCst);
     }
 
-    pub fn is_running(&self) -> bool {        
+    pub fn is_running(&self) -> bool {
         self.is_running.load(Ordering::SeqCst)
     }
 
@@ -103,11 +108,11 @@ impl LiveScraperClient {
             db.stock_riven().reset_listed_price().await.unwrap();
             scraper.send_message("item.reset", None);
             db.stock_item().reset_listed_price().await.unwrap();
-            // scraper
-            //     .item()
-            //     .delete_all_orders(OrderMode::Both)
-            //     .await
-            //     .unwrap();
+            scraper
+                .item()
+                .delete_all_orders(OrderMode::Both)
+                .await
+                .unwrap();
             while is_running.load(Ordering::SeqCst) && forced_stop.load(Ordering::SeqCst) {
                 let settings = scraper.settings.lock().unwrap().clone();
                 if settings.live_scraper.stock_mode == StockMode::Riven
@@ -120,7 +125,6 @@ impl LiveScraperClient {
                         Err(e) => scraper.report_error(e),
                     }
                 }
-
                 if settings.live_scraper.stock_mode == StockMode::Item
                     || settings.live_scraper.stock_mode == StockMode::All
                 {
@@ -146,9 +150,26 @@ impl LiveScraperClient {
     }
 
     pub fn send_message(&self, i18n_key: &str, data: Option<serde_json::Value>) {
-        helper::send_message_to_window("LiveScraper:UpdateMessage", Some(json!({
-            "i18n_key": i18n_key,
-            "values": data
-        })));
+        helper::send_message_to_window(
+            "LiveScraper:UpdateMessage",
+            Some(json!({
+                "i18n_key": i18n_key,
+                "values": data
+            })),
+        );
+    }
+    pub fn add_cache_queried(&self, key: String, df: DataFrame) {
+        self.cache_querieds.lock().unwrap().insert(key, df);
+    }
+
+    pub fn get_cache_queried(&self, key: &str) -> Option<DataFrame> {
+        self.cache_querieds.lock().unwrap().get(key).cloned()
+    }
+
+    pub fn remove_cache_queried(&self, key: &str) {
+        self.cache_querieds
+            .lock()
+            .unwrap()
+            .retain(|k, _| !k.starts_with(key));
     }
 }
