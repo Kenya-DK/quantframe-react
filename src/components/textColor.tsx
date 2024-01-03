@@ -38,6 +38,7 @@ export const TextColor = ({ sx, size, color, i18nKey, values, conponents }: Text
             mail: <FontAwesomeIcon icon={faEnvelope} />,
             plat: <SvgIcon svgProp={{ width: 16, height: 16, }} iconType={SvgType.Default} iconName={"plat"} />,
             trade: <FontAwesomeIcon icon={faHandshake} />,
+            credits: <SvgIcon svgProp={{ width: 16, height: 16, }} iconType={SvgType.Default} iconName={"plat"} />,
           }
         }
       />

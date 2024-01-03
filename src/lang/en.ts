@@ -457,6 +457,7 @@ export const en = {
           },
           rank_label: "Rank: <blue>{{rank}}</blue> of <blue>{{max_rank}}",
           plat_label: "<blue>{{plat}}</blue> <plat/>",
+          credits_label: "<blue>{{credits}}</blue> <credits/>",
           quantity_label: "<qty/> <blue>{{quantity}}</blue>",
         },
       },
