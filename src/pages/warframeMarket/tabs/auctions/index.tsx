@@ -64,10 +64,11 @@ export const AuctionsPanel = ({ }: AuctionsPanelProps) => {
   })
 
   const getAuctions = () => {
+    const aut = auctions.filter((x) => x.item.type.toLowerCase().includes("riven"));
     if (query.length > 0)
-      return auctions.filter((x) => x.item.name.toLowerCase().includes(query.toLowerCase()) ||
+      return aut.filter((x) => x.item.name.toLowerCase().includes(query.toLowerCase()) ||
         x.item.weapon_url_name.toLowerCase().includes(query.toLowerCase()));
-    return auctions;
+    return aut;
   }
   return (
     <Box>
