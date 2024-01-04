@@ -40,7 +40,6 @@ pub async fn init(
     ee_log: tauri::State<'_, Arc<std::sync::Mutex<EELogParser>>>,
     db: tauri::State<'_, Arc<Mutex<DBClient>>>,
 ) -> Result<Value, AppError> {
-
     let db = db.lock()?.clone();
     let mut ee_log = ee_log.lock()?.clone();
     let settings = settings.lock()?.clone();
@@ -127,16 +126,36 @@ pub async fn init(
 
     if is_validate {
         helper::emit_undate_initializ_status("Loading Your Orders...", None);
-        let mut ordres_vec = wfm.orders().get_my_orders().await?;
+        let mut ordres_vec = match wfm.orders().get_my_orders().await {
+            Ok(ordres_vec) => ordres_vec,
+            Err(e) => {
+                error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+                return Err(e);
+            }
+        };
         let mut ordres = ordres_vec.buy_orders;
         ordres.append(&mut ordres_vec.sell_orders);
         response["orders"] = json!(ordres);
 
         helper::emit_undate_initializ_status("Loading Your Auctions...", None);
-        response["auctions"] = json!(wfm.auction().get_my_auctions().await?);
+        let auctions_vec = match wfm.auction().get_my_auctions().await {
+            Ok(auctions_vec) => auctions_vec,
+            Err(e) => {
+                error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+                return Err(e);
+            }
+        };
+        response["auctions"] = json!(auctions_vec);
 
         helper::emit_undate_initializ_status("Loading Your Chats...", None);
-        response["chats"] = json!(wfm.chat().get_chats().await?);
+        let chats_vec = match wfm.chat().get_chats().await {
+            Ok(chats_vec) => chats_vec,
+            Err(e) => {
+                error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+                return Err(e);
+            }
+        };
+        response["chats"] = json!(chats_vec);
     }
 
     // Check for updates
@@ -176,8 +195,6 @@ pub async fn open_logs_folder() {
         .spawn()
         .unwrap();
 }
-
-
 
 #[tauri::command]
 pub fn show_notification(
@@ -221,6 +238,6 @@ pub fn export_logs(mh: tauri::State<'_, Arc<std::sync::Mutex<MonitorHandler>>>) 
         "Logs exported to desktop".to_string(),
         None,
         None,
-        mh
+        mh,
     );
 }

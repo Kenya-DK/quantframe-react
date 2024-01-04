@@ -91,8 +91,23 @@ export default function Hedder({ user }: TopMenuProps) {
           >
             <Menu.Target>
               <ActionIcon color="pink" size="xs">
-                <Indicator disabled={!user} inline size={12} offset={7} position="bottom-start" color={getUserStatusColor(user?.status || Wfm.UserStatus.Invisible)} >
-                  <Avatar variant="subtle" src={avatar} alt={user?.ingame_name} radius="xl" size={"md"} />
+                <Indicator
+                  withBorder
+                  styles={{ indicator: { border: '0.2rem solid #1D1E30' } }}
+                  disabled={!user}
+                  inline
+                  size={15}
+                  offset={5}
+                  position="bottom-start"
+                  color={getUserStatusColor(user?.status || Wfm.UserStatus.Invisible)}
+                >
+                  <Avatar
+                    variant="subtle"
+                    src={avatar}
+                    alt={user?.ingame_name}
+                    radius="xl"
+                    size="md"
+                  />
                 </Indicator>
               </ActionIcon>
             </Menu.Target>
