@@ -32,7 +32,7 @@ export default function HomePage() {
                       sales: statistics.total.sales,
                       purchases: statistics.total.purchases,
                       quantity: statistics.total.sales + statistics.total.purchases,
-                      profit_margin: ((statistics.today.profit_margin || 0) * 100).toPrecision(2),
+                      profit_margin: ((statistics.today.profit_margin || 0) * 100),
                     }}
                   />}
               />
@@ -50,7 +50,7 @@ export default function HomePage() {
                       sales: statistics.today.sales,
                       purchases: statistics.today.purchases,
                       quantity: statistics.today.sales + statistics.today.purchases,
-                      profit_margin: ((statistics.today.profit_margin || 0) * 100).toPrecision(2),
+                      profit_margin: ((statistics.today.profit_margin || 0) * 100),
                     }}
                   />}
               />
@@ -58,7 +58,7 @@ export default function HomePage() {
             <Grid.Col md={4} >
               <StatsWithIcon
                 color="linear-gradient(195deg, rgb(154 64 236), rgb(117 27 216))"
-                icon={<Image width={60} src={wfmThumbnail(images_map[statistics.best_seller.items[0]?.url || ""])} />}
+                icon={<Image width={15} src={wfmThumbnail(images_map[statistics.best_seller.items[0]?.url || ""])} />}
                 title={translateBase("stats_cards.best_selling.title")}
                 count={statistics.best_seller.items[0]?.profit || 0}
                 fotter={
@@ -69,7 +69,7 @@ export default function HomePage() {
                       sales: statistics.best_seller.items[0]?.sales || 0,
                       purchases: statistics.best_seller.items[0]?.purchases || 0,
                       quantity: statistics.best_seller.items[0]?.quantity || 0,
-                      profit_margin: ((statistics.best_seller.items[0]?.profit_margin || 0) * 100).toPrecision(2),
+                      profit_margin: ((statistics.best_seller.items[0]?.profit_margin || 0) * 100),
                     }}
                   />}
               />
@@ -141,7 +141,7 @@ export default function HomePage() {
                   {
                     accessor: 'profit_margin',
                     title: translateBase("stats_cards.datagrid.columns.profit_margin"),
-                    render: ({ profit_margin }) => `${(profit_margin * 100).toPrecision(2)}%`,
+                    render: ({ profit_margin }) => `${profit_margin * 100}%`,
                   },
                 ]} />
             </Grid.Col>

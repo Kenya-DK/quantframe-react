@@ -124,7 +124,6 @@ const OrderItem = ({ item, ordre }: PurchaseNewItemProps) => {
                   Vaulted
                 </Text>
               )}
-              <TextColor size={"md"} sx={{ float: "inherit" }} color="gray.6" i18nKey={useTranslateOrdersPanel("credits_label", undefined, true)} values={{ credits: formatNumber(item?.trade_tax || 0) }} />
             </Stack>
           </Grid.Col>
         </Grid>
@@ -133,7 +132,7 @@ const OrderItem = ({ item, ordre }: PurchaseNewItemProps) => {
         <Grid mt={5} p={0}>
           <Grid.Col md={8} p={0} pl={10} >
             <TextColor size={"lg"} sx={{ float: "inline-start", marginRight: 15 }} color="gray.6" i18nKey={useTranslateOrdersPanel("plat_label", undefined, true)} values={{ plat: ordre.platinum }} />
-            <TextColor size={"lg"} sx={{ float: "inherit" }} color="gray.6" i18nKey={useTranslateOrdersPanel("credits_label", undefined, true)} values={{ credits: formatNumber(item?.trade_tax || 0) }} />
+            <TextColor size={"lg"} sx={{ display: "flex", alignItems: "center" }} color="gray.6" i18nKey={useTranslateOrdersPanel("credits_label", undefined, true)} values={{ credits: formatNumber(item?.trade_tax || 0) }} />
           </Grid.Col>
           <Grid.Col md={4} p={0}>
             <Group spacing={1}>
