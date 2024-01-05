@@ -194,6 +194,7 @@ export const OrdersPanel = ({ }: OrdersPanelProps) => {
     setBuyOrders(orders.filter(x => x.order_type == "buy"));
     setSellOrders(orders.filter(x => x.order_type == "sell"));
   }, [orders]);
+
   const refreshOrdersMutation = useMutation(() => api.orders.refresh(), {
     onSuccess: async () => {
       notifications.show({
@@ -207,15 +208,9 @@ export const OrdersPanel = ({ }: OrdersPanelProps) => {
       SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
     }
   })
+
   const deleteAllOrdersMutation = useMutation(() => api.orders.delete_all(), {
-    onSuccess: async (count) => {
-      notifications.show({
-        title: useTranslateNotifaications("delete_all.title"),
-        icon: <FontAwesomeIcon icon={faCheck} />,
-        message: useTranslateNotifaications("delete_all.message", { count: count }),
-        color: "green"
-      });
-    },
+    onSuccess: async () => { },
     onError(error: RustError) {
       SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
     }
