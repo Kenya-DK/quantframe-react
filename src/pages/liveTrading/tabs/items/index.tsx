@@ -1,4 +1,4 @@
-import { ActionIcon, Box, Grid, Group, Stack, Tooltip, Text } from "@mantine/core";
+import { ActionIcon, Box, Grid, Group, Stack, Tooltip, Text, Button } from "@mantine/core";
 import { useTranslatePage, useTranslateRustError } from "@hooks/index";
 import { TextColor } from "@components/textColor";
 import { useLiveScraperContext, useStockContextContext } from "@contexts/index";
@@ -24,6 +24,8 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
   const useTranslateNotifaications = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateItemPanel(`notifaications.${key}`, { ...context }, i18Key)
   const useTranslateDataGrid = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateItemPanel(`datagrid.${key}`, { ...context }, i18Key)
   const useTranslateDataGridColumns = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateDataGrid(`columns.${key}`, { ...context }, i18Key);
+
+  const priceIntervals = [5, 10];
 
   const { items } = useStockContextContext();
   const { message } = useLiveScraperContext();
@@ -117,7 +119,7 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
       SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
     }
   })
-  const updateItemEntryMutation = useMutation((data: { id: number, riven: Partial<StockItemDto> }) => api.stock.item.update(data.id, data.riven), {
+  const updateItemEntryMutation = useMutation((data: { id: number, item: Partial<StockItemDto> }) => api.stock.item.update(data.id, data.item), {
     onSuccess: async (data) => {
       notifications.show({
         title: useTranslateNotifaications("updateStockItem.title"),
@@ -189,18 +191,39 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
           {
             accessor: 'name',
             title: useTranslateDataGridColumns('name'),
+            sortable: true,
           },
           {
             accessor: 'price',
-            title: useTranslateDataGridColumns('price')
+            title: useTranslateDataGridColumns('price'),
+            sortable: true,
           },
           {
             accessor: 'minium_price',
             title: useTranslateDataGridColumns('minium_price.title'),
+            width: 300,
             sortable: true,
             render: ({ id, minium_price }) => <Group grow position="apart" >
               <Text>{minium_price || "N/A"}</Text>
               <Box w={25} display="flex" sx={{ justifyContent: "flex-end" }}>
+                {priceIntervals.map((price, i) =>
+                  <Button key={i} mr={10} size="xs" h={22} sx={{ padding: "0px 11px 0px" }} color={"red.7"} onClick={async () => {
+                    if (!id) return;
+                    const new_price = (minium_price || 0) - price;
+                    updateItemEntryMutation.mutateAsync({ id, item: { minium_price: new_price <= 0 ? -1 : new_price } })
+                  }} >
+                    {`-${price}`}
+                  </Button>
+                )}
+                {priceIntervals.map((price, i) =>
+                  <Button key={i} mr={10} size="xs" h={22} sx={{ padding: "0px 11px 0px" }} color={"green.7"} onClick={async () => {
+                    if (!id) return;
+                    const new_price = (minium_price || 0) + price;
+                    updateItemEntryMutation.mutateAsync({ id, item: { minium_price: new_price <= 0 ? -1 : new_price } })
+                  }} >
+                    {`+${price}`}
+                  </Button>
+                )}
                 <Tooltip label={useTranslateDataGridColumns('minium_price.description')}>
                   <ActionIcon size={"sm"} color={"blue.7"} variant="filled" onClick={async (e) => {
                     e.stopPropagation();
@@ -219,7 +242,7 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
                         onConfirm: async (data: { minium_price: number }) => {
                           if (!id) return;
                           const { minium_price } = data;
-                          updateItemEntryMutation.mutateAsync({ id, riven: { minium_price: minium_price == 0 ? -1 : minium_price } })
+                          updateItemEntryMutation.mutateAsync({ id, item: { minium_price: minium_price == 0 ? -1 : minium_price } })
                         },
                         onCancel: (id: string) => modals.close(id),
                       },
@@ -239,6 +262,7 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
           {
             accessor: 'owned',
             title: useTranslateDataGridColumns('owned'),
+            sortable: true,
           },
           {
             accessor: 'actions',
@@ -277,7 +301,7 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
                 <Tooltip label={useTranslateDataGridColumns(`actions.is_hiding.${hide ? "enable" : "disable"}`)}>
                   <ActionIcon loading={sellStockItemEntryMutation.isLoading} color={`${hide ? "red.7" : "green.7"}`} variant="filled" onClick={async () => {
                     if (!id) return;
-                    await updateItemEntryMutation.mutateAsync({ id: id, riven: { hidden: !hide } });
+                    await updateItemEntryMutation.mutateAsync({ id: id, item: { hidden: !hide } });
                   }} >
                     <FontAwesomeIcon icon={hide ? faEye : faEyeSlash} />
                   </ActionIcon>
