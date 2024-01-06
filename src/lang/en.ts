@@ -438,10 +438,6 @@ export const en = {
               title: "Refresh",
               message: "Orders refreshed",
             },
-            delete_all: {
-              title: "Refresh",
-              message: "Deleted {{count}} orders",
-            },
             createStockItem: {
               title: "Item added",
               message: "Item {{name}} added successfully",
