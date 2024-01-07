@@ -7,3 +7,6 @@ export * from "./search.type";
 export * from "./statistic.type";
 export * from "./progressReport.type";
 
+export type DeepPartial<T> = T extends object ? {
+  [P in keyof T]?: DeepPartial<T[P]>;
+} : T;
