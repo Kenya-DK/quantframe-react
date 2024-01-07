@@ -2,8 +2,12 @@
 import { listen } from "@tauri-apps/api/event";
 import { ComposedListener } from "./listener/Composed.listener";
 import { invoke } from "@tauri-apps/api";
+import { ProgressReport } from "../types";
+import { notifications } from "@mantine/notifications";
+import i18next from "i18next";
 
 const listener = new ComposedListener();
+const progress: { [key: string]: ProgressReport } = {};
 
 /**
  * Registers a callback function to be called when a Tauri event with the given name is emitted.
@@ -12,6 +16,7 @@ const listener = new ComposedListener();
  * @param callback The function to be called when the event is emitted.
  */
 export const OnTauriEvent = <T>(event: string, callback: (data: T) => void) => {
+  console.log("OnTauriEvent", event, callback);
   listener.add(event, callback);
 }
 
@@ -103,3 +108,23 @@ export const SendSocketEvent = async (event: string, data?: any) => {
 export const SendNotificationToWindow = async (title: string, message: string, icon?: string, sound?: string) => {
   await invoke("show_notification", { title, message, icon, sound })
 }
+
+
+OnTauriEvent("Client:Update:Progress", (data: ProgressReport) => {
+  const { id, title, i18n_key, isCompleted, values } = data;
+  let notification = {
+    id,
+    title,
+    message: i18next.t(`progress.${i18n_key}`, values),
+    autoClose: isCompleted,
+    withCloseButton: false,
+  }
+  if (!progress[data.id])
+    notifications.show(notification);
+  else
+    notifications.update(notification);
+  if (isCompleted)
+    delete progress[data.id];
+  else
+    progress[data.id] = data;
+});

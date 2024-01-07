@@ -1,28 +1,36 @@
 export const en = {
-  live_scraper: {
-    item: {
-      starting: "Starting Items",
-      checking: "Checking: <blue>{{name}}</blue> <blue>{{count}}</blue>/<blue>{{total}}</blue>",
-      deleting_orders: "Deleting Orders: <blue>{{count}}</blue>/<blue>{{total}}</blue>",
-      sell: {
-        deleting: "Deleting Sell Order: <blue>{{name}}</blue>",
-        updating: "Updating Sell Order: <blue>{{name}}</blue> for <blue>{{price}}</plat></blue>",
-        creating: "Creating Sell Order: <blue>{{name}}</blue> for <blue>{{price}}</plat></blue>",
+  progress: {
+    delete_all_orders: {
+      starting: "Deleting all orders",
+      loading: "Loading current orders",
+      progress: "Deleting order {{current}}/{{total}}",
+      completed: "All orders deleted ({{total}})",
+    },
+    live_scraper: {
+      item: {
+        starting: "Starting Items",
+        checking: "Checking: <blue>{{name}}</blue> <blue>{{count}}</blue>/<blue>{{total}}</blue>",
+        deleting_orders: "Deleting Orders: <blue>{{count}}</blue>/<blue>{{total}}</blue>",
+        sell: {
+          deleting: "Deleting Sell Order: <blue>{{name}}</blue>",
+          updating: "Updating Sell Order: <blue>{{name}}</blue> for <blue>{{price}}</plat></blue>",
+          creating: "Creating Sell Order: <blue>{{name}}</blue> for <blue>{{price}}</plat></blue>",
+        },
+        buy: {
+          deleting: "Deleting Buy Order: <blue>{{name}}</blue>",
+          updating: "Updating Buy Order: <blue>{{name}}</blue> for <blue>{{price}}</plat></blue>",
+          creating: "Creating Buy Order: <blue>{{name}}</blue> for <blue>{{price}}</plat></blue>",
+        }
       },
-      buy: {
-        deleting: "Deleting Buy Order: <blue>{{name}}</blue>",
-        updating: "Updating Buy Order: <blue>{{name}}</blue> for <blue>{{price}}</plat></blue>",
-        creating: "Creating Buy Order: <blue>{{name}}</blue> for <blue>{{price}}</plat></blue>",
+      riven: {
+        starting: "Starting Rivens",
+        deleting: "Deleting Riven: <blue>{{name}}</blue>",
+        searching: "Searching Riven: <blue>{{name}}</blue>",
+        no_offers: "No offers found for: <blue>{{name}}</blue>",
+        updating: "Updating Riven: <blue>{{name}}</blue> for <blue>{{price}}</plat></blue>",
+        creating: "Creating Riven: <blue>{{name}}</blue> for <blue>{{price}}</plat></blue>",
       }
     },
-    riven: {
-      starting: "Starting Rivens",
-      deleting: "Deleting Riven: <blue>{{name}}</blue>",
-      searching: "Searching Riven: <blue>{{name}}</blue>",
-      no_offers: "No offers found for: <blue>{{name}}</blue>",
-      updating: "Updating Riven: <blue>{{name}}</blue> for <blue>{{price}}</plat></blue>",
-      creating: "Creating Riven: <blue>{{name}}</blue> for <blue>{{price}}</plat></blue>",
-    }
   },
   general: {
     months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
@@ -52,10 +60,28 @@ export const en = {
       }
     },
     transactionRevenueChart: {
-      revenue_label: "Revenue: {{val, number}}",
-      quantity_label: "Quantity: {{count}}",
-
+      modes: {
+        sales: {
+          title: "Sales",
+        },
+        purchases: {
+          title: "Purchases",
+        },
+        quantity: {
+          title: "Quantity",
+        },
+        profit: {
+          title: "Profit",
+        },
+      },
+      context: {
+        profit: "Profit: <blue>{{val, currency(USD)}}</blue>",
+        profit_margin: "Profit Margin: <blue>{{val}} %</blue>",
+        revenue_average: "Average Profit: <blue>{{val, currency(USD)}}</blue>",
+        footer: "Sales <blue>{{sales}}</blue> | Purchases <blue>{{purchases}}</blue> | Trades <blue>{{trades}}</blue>",
+      },
     },
+
     availableRivens: {
       weaponInfo: {
         wfm: {
@@ -308,33 +334,35 @@ export const en = {
     home: {
       stats_cards: {
         total: {
-          title: "Total Turnover",
-          context: "Sales <italic>{{sales}}</italic> | Buy <italic>{{buy}}</italic> | <qty/> <italic>{{quantity}}</italic>",
+          title: "Total Profit",
+          context: "Sales <blue>{{sales}}</blue> | Purchases <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | Margin <blue>{{profit_margin}}%</blue>",
+        },
+        total_chart: {
+          title: "Total Profit",
         },
         today: {
           title: "Today Turnover",
-          context: "Sales <italic>{{sales}}</italic> | Buy <italic>{{buy}}</italic> | <qty/> <italic>{{quantity}}</italic>",
+          context: "Sales <blue>{{sales}}</blue> | Purchases <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | Margin <blue>{{profit_margin}}%</blue>",
+        },
+        today_chart: {
+          title: "Today Profit",
+        },
+        last_days: {
+          title: "Last {{days}} days",
         },
         best_selling: {
           title: "Best turnover product",
-          context: "Name <italic>{{name}}</italic> | Sales <italic>{{sales}}</italic> | Buy <italic>{{buy}}</italic> | <qty/> <italic>{{quantity}}</italic>",
+          context: "Name <blue>{{name}}</blue> | Sales <blue>{{sales}}</blue> | Purchases <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | Margin <blue>{{profit_margin}}%</blue>",
         },
-        total_revenue_title: "Total Turnover",
-        total_sales_old: "Total: Sales: <italic>{{val}}</italic> Invoices: <italic>{{val}}</italic>",
-        total_sales: "Sales <italic>{{sales}}</italic> | Buy <italic>{{buy}}</italic> | Quantity <italic>{{quantity}}</italic>",
-
-        today_revenue_title: "Today Turnover",
-        today_revenue_context: "Today Turnover",
-
-        last_days_title: "Last {{days}} days",
-        open_orders_title: "Open orders",
-        best_selling_product_title: "Best selling product",
-        no_data: "No data",
-        average_order_revenue: "Average order revenue <italic>{{val, currency(USD)}}</italic>",
-        average_orders_per_month: "Average orders per month <italic>{{val, currency(USD)}}</italic>",
-        revenue_compare_to_last_year_less: "Revenue <italic>{{val, currency(USD)}}</italic> less than last year",
-        revenue_compare_to_last_year_more: "Revenue <italic>{{val, currency(USD)}}</italic> more than last year",
-        completed_orders_today: "Completed orders <italic>{{count}}</italic>",
+        datagrid: {
+          columns: {
+            name: "Name",
+            revenue: "Revenue",
+            expense: "Expense",
+            profit: "Profit",
+            profit_margin: "Profit Margin",
+          }
+        }
       }
     },
     warframe_market: {
@@ -346,11 +374,13 @@ export const en = {
             delete_all: "Delete all orders",
           },
           notifaications: {
-            import_title: "Import",
-            import_message: "Imported {{name}} auctions",
+            import: {
+              title: "Import",
+              message: "Imported {{name}} auctions",
+            },
             refresh: {
               title: "Refresh",
-              message: "Orders refreshed",
+              message: "Auctions refreshed",
             },
             delete_all: {
               title: "Refresh",
@@ -359,8 +389,8 @@ export const en = {
           },
           prompt: {
             import: {
-              title: "Import",
-              label: "Import",
+              title: "How much did you buy it for?",
+              label: "Bought for",
               description: "Import auctions from warframe.market",
               placeholder: "Import",
             },
@@ -370,6 +400,11 @@ export const en = {
               confirm: "Delete",
               cancel: "Cancel",
             },
+          },
+          info: {
+            inactive: "Is importede but is inactive",
+            is_imported: "Is imported and is active",
+            is_not_imported: "Is not imported",
           },
         },
         orders: {
@@ -392,15 +427,16 @@ export const en = {
               confirm: "Delete",
               cancel: "Cancel",
             },
+            sell: {
+              title: "Place Sell/Purchase For",
+              label: "Price",
+              description: "Place a sell/purchase order for the item",
+            }
           },
           notifaications: {
             refresh: {
               title: "Refresh",
               message: "Orders refreshed",
-            },
-            delete_all: {
-              title: "Refresh",
-              message: "Deleted {{count}} orders",
             },
             createStockItem: {
               title: "Item added",
@@ -425,6 +461,7 @@ export const en = {
           },
           rank_label: "Rank: <blue>{{rank}}</blue> of <blue>{{max_rank}}",
           plat_label: "<blue>{{plat}}</blue> <plat/>",
+          credits_label: "<blue>{{credits}}</blue> <credits/>",
           quantity_label: "<qty/> <blue>{{quantity}}</blue>",
         },
       },

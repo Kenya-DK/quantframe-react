@@ -1,15 +1,25 @@
 import { createStyles, useMantineTheme } from "@mantine/core";
 import { Wfm } from "../types";
 
+export interface GroupByDateSettings {
+  labels?: string[]
+  year?: boolean;
+  month?: boolean;
+  day?: boolean;
+  hours?: boolean;
+}
 /**
-* Groups an array of objects by date, using the specified key and date format settings.
-* The function returns an object whose keys are formatted dates and whose values are arrays of objects that have the same date.
-* @param key The key to use for grouping the objects by date.
-* @param items The array of objects to group by date.
-* @param settings An object that specifies which date components to include in the formatted date key.
-* @returns An object whose keys are formatted dates and whose values are arrays of objects that have the same date.
-*/
-export const getGroupByDate = <T>(key: string, items: Array<T>, settings: { year?: boolean, month?: boolean, day?: boolean, hours?: boolean }): { [key: string]: T[] } => {
+ * This function groups an array of items by date.
+ * 
+ * @param {string} key - The key in the items to be used for grouping.
+ * @param {Array<T>} items - The array of items to be grouped.
+ * @param {GroupByDateSettings} settings - The settings for grouping which can include day, hours, month, and year.
+ * 
+ * @returns {Array} - An array where the first element is an object with keys being the formatted date and values being the items falling under that date, 
+ * and the second element is an array of labels for each group.
+ */
+export const getGroupByDate = <T>(key: string, items: Array<T>, settings: GroupByDateSettings): [{ [key: string]: T[] }, string[]] => {
+  const labels: string[] = []
   const formatKey = (date: Date): string => {
     let key = "";
     if (settings.day)
@@ -24,13 +34,15 @@ export const getGroupByDate = <T>(key: string, items: Array<T>, settings: { year
   };
   const groups = items.reduce((groups: { [key: string]: T[] }, item: T) => {
     const date = new Date((item as any)[key] || "");
-    if (!groups[formatKey(date)])
+    if (!groups[formatKey(date)]) {
       groups[formatKey(date)] = [];
-
+      // labels.push(dayjs(date).format("DD/MM/YYYY HH:mm"));
+      labels.push(formatKey(date));
+    }
     groups[formatKey(date)].push(item);
     return groups;
   }, {});
-  return groups;
+  return [groups, settings.labels || labels];
 }
 
 type GroupBy<T> = Record<string, T[]>;
@@ -146,3 +158,17 @@ export const getUserStatusColor = (status: Wfm.UserStatus) => {
       return "red";
   }
 };
+
+// format number 1k, 1m, 1b
+export const formatNumber = (num: number) => {
+  if (num >= 1000000000) {
+    return (num / 1000000000).toFixed(2).replace(/\.0$/, '') + ' b.';
+  }
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(2).replace(/\.0$/, '') + ' m.';
+  }
+  if (num >= 1000) {
+    return (num / 1000).toFixed(2).replace(/\.0$/, '') + ' k.';
+  }
+  return num;
+}

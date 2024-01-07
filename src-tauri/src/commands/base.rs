@@ -13,7 +13,7 @@ use tokio::process::Command;
 use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 
 // Create a static variable to store the log file name
-static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("commands.log".to_string()));
+static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("command_base.log".to_string()));
 
 use crate::{
     auth::AuthState,

@@ -2,14 +2,17 @@ use once_cell::sync::Lazy;
 use serde_json::{json, Value};
 
 use crate::{
+    database::client::DBClient,
     error::{self, AppError},
     helper,
-    wfm_client::client::WFMClient, database::client::DBClient,
+    settings::SettingsState,
+    structs::Order,
+    wfm_client::client::WFMClient,
 };
 use std::sync::{Arc, Mutex};
 
 // Create a static variable to store the log file name
-static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("commands.log".to_string()));
+static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("command_orders.log".to_string()));
 
 #[tauri::command]
 pub async fn get_orders(_wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>) -> Result<(), AppError> {
@@ -53,16 +56,24 @@ pub async fn refresh_orders(wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>) -> Res
             return Err(e);
         }
     };
-    helper::emit_update("orders", "SET", Some(serde_json::to_value(current_orders).unwrap()));
+    helper::emit_update(
+        "orders",
+        "SET",
+        Some(serde_json::to_value(current_orders).unwrap()),
+    );
     Ok(())
 }
 #[tauri::command]
 pub async fn delete_all_orders(
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
     db: tauri::State<'_, Arc<Mutex<DBClient>>>,
+    settings: tauri::State<'_, Arc<Mutex<SettingsState>>>,
 ) -> Result<serde_json::Value, AppError> {
     let wfm = wfm.lock()?.clone();
     let db = db.lock()?.clone();
+    let settings = settings.lock()?.clone();
+    let blacklist = settings.live_scraper.stock_item.blacklist.clone();
+    helper::emit_progress("Orders:Delete:All:Progress", "delete_all_orders.starting", None, false);
     match db.stock_item().reset_listed_price().await {
         Ok(_) => {}
         Err(e) => {
@@ -70,19 +81,30 @@ pub async fn delete_all_orders(
             return Err(e);
         }
     };
-    let current_orders = match wfm.orders().get_my_orders().await {
+    helper::emit_progress("Orders:Delete:All:Progress", "delete_all_orders.loading", None, false);
+    let current_orders: Vec<Order> = match wfm.orders().get_my_orders().await {
         Ok(mut auctions) => {
             let mut orders = auctions.buy_orders;
             orders.append(&mut auctions.sell_orders);
             orders
+                .into_iter()
+                .filter(|order| !blacklist.contains(&order.item.clone().unwrap().url_name))
+                .collect()
         }
         Err(e) => {
             error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
             return Err(e);
         }
     };
+
     let count = current_orders.len();
+    let mut current_count = 0;
     for order in current_orders {
+        current_count += 1;
+        helper::emit_progress("Orders:Delete:All:Progress", "delete_all_orders.progress",Some(json!({
+            "current": current_count,
+            "total": count
+        })), false);
         match wfm.orders().delete(&order.id, "None", "None", "Any").await {
             Ok(_) => {}
             Err(e) => {
@@ -91,7 +113,8 @@ pub async fn delete_all_orders(
             }
         };
     }
-    Ok(json!({
-        "count": count
-    }))
+    helper::emit_progress("Orders:Delete:All:Progress", "delete_all_orders.completed", Some(json!({
+        "total": count
+    })), true);
+    Ok(json!({"count": count}))
 }

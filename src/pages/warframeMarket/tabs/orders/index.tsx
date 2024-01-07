@@ -1,7 +1,7 @@
 import { Divider, Group, Stack, Text, Image, Box, Grid, Tooltip, ActionIcon, Paper, SimpleGrid, ScrollArea, useMantineTheme } from "@mantine/core";
 import { useCacheContext, useWarframeMarketContextContext } from "@contexts/index";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faTrashCan, faRefresh, faCartShopping, faShoppingCart } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faTrashCan, faRefresh, faCartShopping, faShoppingCart, faPen } from "@fortawesome/free-solid-svg-icons";
 import { Wfm, CreateStockItemEntryDto, RustError } from "$types/index";
 import { useTranslatePage, useTranslateRustError } from "@hooks/index";
 import api, { wfmThumbnail } from "@api/index";
@@ -12,17 +12,17 @@ import { useEffect, useState } from "react";
 import { modals } from "@mantine/modals";
 import { TextColor } from "@components/textColor";
 import { InfoBox } from "@components/InfoBox";
-import { SendNotificationToWindow } from "@utils/index";
+import { SendNotificationToWindow, formatNumber } from "@utils/index";
 interface OrdersPanelProps {
 }
 interface PurchaseNewItemProps {
-  max_rank: number;
+  item: Wfm.ItemDto | undefined;
   ordre: Wfm.OrderDto;
   type: "buy" | "sell";
 }
-const OrderItem = ({ max_rank, ordre }: PurchaseNewItemProps) => {
+const OrderItem = ({ item, ordre }: PurchaseNewItemProps) => {
   const useTranslateNotifaications = (key: string, context?: { [key: string]: any }) => useTranslateOrdersPanel(`notifaications.${key}`, { ...context })
-
+  const useTranslatePrompt = (key: string, context?: { [key: string]: any }) => useTranslateOrdersPanel(`prompt.${key}`, { ...context });
   const theme = useMantineTheme();
   const createStockItemEntryMutation = useMutation((data: CreateStockItemEntryDto) => api.stock.item.create(data), {
     onSuccess: async (data) => {
@@ -65,12 +65,12 @@ const OrderItem = ({ max_rank, ordre }: PurchaseNewItemProps) => {
     }
   })
   const useTranslateOrdersPanel = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePage(`warframe_market.tabs.orders.${key}`, { ...context }, i18Key)
-  const handleCartClick = async () => {
+  const handleCartClick = async (price?: number) => {
     switch (ordre.order_type) {
       case "buy":
         createStockItemEntryMutation.mutate({
           item_id: ordre.item.url_name,
-          price: ordre.platinum,
+          price: price || ordre.platinum,
           quantity: 1,
           rank: ordre.mod_rank || 0
         });
@@ -78,7 +78,7 @@ const OrderItem = ({ max_rank, ordre }: PurchaseNewItemProps) => {
       case "sell":
         sellStockItemEntryMutation.mutate({
           url: ordre.item.url_name,
-          price: ordre.platinum
+          price: price || ordre.platinum
         });
         break;
       default:
@@ -92,52 +92,86 @@ const OrderItem = ({ max_rank, ordre }: PurchaseNewItemProps) => {
       boxShadow: `inset 4px 0 0 0 ${ordre.order_type === "buy" ? theme.colors.green[7] : theme.colors.violet[7]}`,
     }}>
       <Stack spacing={0}>
-        <Box p={0} m={0} sx={{ lineHeight: "1" }} >
-          <Text component="span" size="lg" weight={700} >
-            {ordre.item.en.item_name}
-          </Text>
-          <TextColor size={"lg"} sx={{ float: "inline-end" }} color="gray.6" i18nKey={useTranslateOrdersPanel("quantity_label", undefined, true)} values={{ quantity: ordre.quantity }} />
-        </Box>
+        <Group position="apart">
+          <Group w={"75%"} >
+            <Text size="lg" weight={700} truncate="end">
+              {ordre.item.en.item_name}
+            </Text>
+          </Group>
+          <Group position="right">
+            <TextColor size={"lg"} sx={{ float: "inline-end" }} color="gray.6" i18nKey={useTranslateOrdersPanel("quantity_label", undefined, true)} values={{ quantity: ordre.quantity }} />
+          </Group>
+        </Group>
         <Divider />
         <Grid mt={5} mb={5}>
           <Grid.Col sm={4} md={4} lg={2.5}>
-            <Image ml={15} width={64} height={64} fit="contain" src={wfmThumbnail(ordre.item.icon)} />
+            <Tooltip label={ordre.item.en.item_name}>
+              <Image ml={15} width={64} height={64} fit="contain" src={wfmThumbnail(ordre.item.icon)} />
+            </Tooltip>
           </Grid.Col>
           <Grid.Col sm={9} md={9} lg={8.6} sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
-            {ordre.mod_rank && (
-              <TextColor color="gray.6" i18nKey={useTranslateOrdersPanel("rank_label", undefined, true)} values={{ max_rank: max_rank, rank: ordre.item.mod_max_rank }} />
-            )}
-            {ordre.subtype && (
-              <Text size="sm" color="gray.6">
-                Rank: {ordre.subtype}
-              </Text>
-            )}
-            {ordre.item.vaulted && (
-              <Text size="sm" color="yellow.6">
-                Vaulted
-              </Text>
-            )}
+            <Stack spacing={0}>
+              {ordre.mod_rank && (
+                <TextColor size={"md"} color="gray.6" i18nKey={useTranslateOrdersPanel("rank_label", undefined, true)} values={{ max_rank: item?.mod_max_rank || 0, rank: ordre.item.mod_max_rank }} />
+              )}
+              {ordre.subtype && (
+                <Text size="sm" color="gray.6">
+                  Rank: {ordre.subtype}
+                </Text>
+              )}
+              {ordre.item.vaulted && (
+                <Text size="sm" color="yellow.6">
+                  Vaulted
+                </Text>
+              )}
+            </Stack>
           </Grid.Col>
         </Grid>
 
         <Divider />
-        <Group grow position="apart" ml={15} mt={5}>
-          <TextColor size={"lg"} sx={{ float: "inline-end" }} color="gray.6" i18nKey={useTranslateOrdersPanel("plat_label", undefined, true)} values={{ plat: ordre.platinum }} />
-          <Group spacing={2} position="right">
-            <Tooltip label={useTranslateOrdersPanel(ordre.order_type === "buy" ? "tolltip.buy_add_to_stock" : "tolltip.sell_remove_from_stock")}>
-              <ActionIcon loading={sellStockItemEntryMutation.isLoading || createStockItemEntryMutation.isLoading} color="green.7" onClick={async () => handleCartClick()} >
-                <FontAwesomeIcon icon={faCartShopping} />
-              </ActionIcon>
-            </Tooltip>
-            <Tooltip label={useTranslateOrdersPanel("tolltip.delete")}>
-              <ActionIcon loading={deleteOrdreEntryMutation.isLoading} color="red.7" onClick={async () => {
-                deleteOrdreEntryMutation.mutate({ id: ordre.id })
-              }} >
-                <FontAwesomeIcon icon={faTrashCan} />
-              </ActionIcon>
-            </Tooltip>
-          </Group>
-        </Group>
+        <Grid mt={5} p={0}>
+          <Grid.Col md={8} p={0} pl={10} >
+            <TextColor size={"lg"} sx={{ float: "inline-start", marginRight: 15 }} color="gray.6" i18nKey={useTranslateOrdersPanel("plat_label", undefined, true)} values={{ plat: ordre.platinum }} />
+            <TextColor size={"lg"} sx={{ display: "flex", alignItems: "center" }} color="gray.6" i18nKey={useTranslateOrdersPanel("credits_label", undefined, true)} values={{ credits: formatNumber(item?.trade_tax || 0) }} />
+          </Grid.Col>
+          <Grid.Col md={4} p={0}>
+            <Group spacing={1}>
+
+              <Tooltip label={useTranslateOrdersPanel(ordre.order_type === "buy" ? "tolltip.buy_add_to_stock" : "tolltip.sell_remove_from_stock")}>
+                <ActionIcon loading={deleteOrdreEntryMutation.isLoading} color="bule.7" onClick={async (e) => {
+                  e.stopPropagation();
+                  modals.openContextModal({
+                    modal: 'prompt',
+                    title: useTranslatePrompt("sell.title"),
+                    innerProps: {
+                      fields: [{ name: 'price', description: useTranslatePrompt("sell.description"), label: useTranslatePrompt("sell.label"), type: 'number', value: 0, }],
+                      onConfirm: async (data: { price: number }) => {
+                        const { price } = data;
+                        if (!price || price <= 0) return;
+                        await handleCartClick(price);
+                      },
+                      onCancel: (id: string) => modals.close(id),
+                    },
+                  })
+                }} >
+                  <FontAwesomeIcon icon={faPen} />
+                </ActionIcon>
+              </Tooltip>
+              <Tooltip label={useTranslateOrdersPanel(ordre.order_type === "buy" ? "tolltip.buy_add_to_stock" : "tolltip.sell_remove_from_stock")}>
+                <ActionIcon loading={sellStockItemEntryMutation.isLoading || createStockItemEntryMutation.isLoading} color="green.7" onClick={async () => handleCartClick()} >
+                  <FontAwesomeIcon icon={faCartShopping} />
+                </ActionIcon>
+              </Tooltip>
+              <Tooltip label={useTranslateOrdersPanel("tolltip.delete")}>
+                <ActionIcon loading={deleteOrdreEntryMutation.isLoading} color="red.7" onClick={async () => {
+                  deleteOrdreEntryMutation.mutate({ id: ordre.id })
+                }} >
+                  <FontAwesomeIcon icon={faTrashCan} />
+                </ActionIcon>
+              </Tooltip>
+            </Group>
+          </Grid.Col>
+        </Grid>
       </Stack>
     </Paper>
   );
@@ -160,6 +194,7 @@ export const OrdersPanel = ({ }: OrdersPanelProps) => {
     setBuyOrders(orders.filter(x => x.order_type == "buy"));
     setSellOrders(orders.filter(x => x.order_type == "sell"));
   }, [orders]);
+
   const refreshOrdersMutation = useMutation(() => api.orders.refresh(), {
     onSuccess: async () => {
       notifications.show({
@@ -173,15 +208,9 @@ export const OrdersPanel = ({ }: OrdersPanelProps) => {
       SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
     }
   })
+
   const deleteAllOrdersMutation = useMutation(() => api.orders.delete_all(), {
-    onSuccess: async (count) => {
-      notifications.show({
-        title: useTranslateNotifaications("delete_all.title"),
-        icon: <FontAwesomeIcon icon={faCheck} />,
-        message: useTranslateNotifaications("delete_all.message", { count: count }),
-        color: "green"
-      });
-    },
+    onSuccess: async () => { },
     onError(error: RustError) {
       SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
     }
@@ -278,7 +307,7 @@ export const OrdersPanel = ({ }: OrdersPanelProps) => {
           ]}
         >
           {getFilterOrders().map((order, i) => (
-            <OrderItem key={i} type={order.order_type} max_rank={items.find(x => x.id == order.item.id)?.mod_max_rank || 0} ordre={order} />
+            <OrderItem key={i} type={order.order_type} item={items.find(x => x.id == order.item.id)} ordre={order} />
           ))}
         </SimpleGrid>
       </ScrollArea>
