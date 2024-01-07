@@ -80,7 +80,7 @@ const GetTransactionProfit = (transactions: TransactionEntryDto[]): StatisticPro
   const profit = revenue - expense;
   return {
     profit: profit,
-    profit_margin: profit / revenue,
+    profit_margin: (revenue == 0 ? 0 : profit / revenue),
     average_revenue: revenue / transactions.length,
     number_of_trades: transactions.length,
     expense: expense,
@@ -114,7 +114,7 @@ const GetItemsProfit = (transactions: TransactionEntryDto[]): StatisticProfitIte
 
     let trans = {
       profit: profit,
-      profit_margin: profit / revenue,
+      profit_margin: (revenue == 0 ? 0 : profit / revenue),
       average_revenue: revenue / transactions.length,
       number_of_trades: transactions.length,
       expense: expense,

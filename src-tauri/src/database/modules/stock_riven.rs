@@ -1,10 +1,11 @@
 use crate::{
     auth::AuthState,
     database::client::DBClient,
+    enums::LogLevel,
     error::AppError,
     helper,
     logger::{self},
-    structs::{Auction, RivenAttribute}, enums::LogLevel,
+    structs::{Auction, RivenAttribute},
 };
 use eyre::eyre;
 use polars::{
@@ -327,8 +328,8 @@ impl<'a> StockRivenModule<'a> {
                 StockRiven::Price,
                 StockRiven::MiniumPrice,
                 StockRiven::Polarity,
-                StockRiven::Created,
                 StockRiven::Status,
+                StockRiven::Created,
             ])
             .values_panic([
                 inventory.order_id.clone().into(),

@@ -140,5 +140,5 @@ pub struct ChatMessage {
     pub message_from: String,
 
     #[serde(rename = "raw_message")]
-    pub raw_message: String,
+    pub raw_message: Option<String>,
 }

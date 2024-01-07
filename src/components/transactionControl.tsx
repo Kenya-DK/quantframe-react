@@ -43,7 +43,7 @@ export const TransactionControl = () => {
           </Group>
         </Group>
         <TextColor i18nKey="components.transactioncontrol.price_scraper_last_run" values={{ date: last_run == null ? "N/A" : dayjs(last_run).format("DD/MM/YYYY HH:mm") }} />
-        {message && <TextColor i18nKey={message.i18n_key} values={{ ...message.values }} />}
+        {message && <TextColor i18nKey={`progress.${message.i18n_key}`} values={{ ...message.values }} />}
       </Stack>
     </Center>
   );

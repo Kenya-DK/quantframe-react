@@ -203,6 +203,14 @@ pub async fn get_app_info() -> Result<serde_json::Value, AppError> {
     Ok(rep)
 }
 
+pub fn emit_progress(id: &str, i18n_key: &str, values: Option<Value>, is_completed: bool) {
+    send_message_to_window(
+        "Client:Update:Progress",
+        Some(json!({ "id": id, "i18n_key": i18n_key,"values": values, "isCompleted": is_completed})),
+    );
+}
+
+
 pub fn emit_update(update_type: &str, operation: &str, data: Option<Value>) {
     send_message_to_window(
         "Client:Update",

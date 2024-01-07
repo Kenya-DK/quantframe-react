@@ -155,6 +155,20 @@ export const getUserStatusColor = (status: Wfm.UserStatus) => {
       return "green";
     case Wfm.UserStatus.Invisible:
     default:
-      return "darkred";
+      return "red";
   }
 };
+
+// format number 1k, 1m, 1b
+export const formatNumber = (num: number) => {
+  if (num >= 1000000000) {
+    return (num / 1000000000).toFixed(2).replace(/\.0$/, '') + ' b.';
+  }
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(2).replace(/\.0$/, '') + ' m.';
+  }
+  if (num >= 1000) {
+    return (num / 1000).toFixed(2).replace(/\.0$/, '') + ' k.';
+  }
+  return num;
+}

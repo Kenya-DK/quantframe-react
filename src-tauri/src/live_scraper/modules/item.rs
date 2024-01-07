@@ -340,9 +340,15 @@ impl<'a> ItemModule<'a> {
             if blacklist.contains(&order.clone().item.unwrap().url_name) {
                 continue;
             }
-            wfm.orders()
-                .delete(&order.id, "None", "None", "Any")
-                .await?;
+            match wfm.orders()
+            .delete(&order.id, "None", "None", "Any")
+            .await {
+                Ok(_) => {}
+                Err(e) => {
+                    error::create_log_file(self.client.log_file.to_owned(), &e);
+                    logger::warning_con("LiveScraper",format!("Error trying to delete order: {:?}", e).as_str());
+                }            
+            };
         }
         Ok(())
     }

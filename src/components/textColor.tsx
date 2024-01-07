@@ -1,5 +1,5 @@
 import { Trans } from "react-i18next";
-import { MantineNumberSize, Sx, Text } from "@mantine/core";
+import { Image, MantineNumberSize, Sx, Text } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCubes, faEnvelope, faHandshake } from "@fortawesome/free-solid-svg-icons";
 import SvgIcon, { SvgType } from "./SvgIcon";
@@ -38,6 +38,7 @@ export const TextColor = ({ sx, size, color, i18nKey, values, conponents }: Text
             mail: <FontAwesomeIcon icon={faEnvelope} />,
             plat: <SvgIcon svgProp={{ width: 16, height: 16, }} iconType={SvgType.Default} iconName={"plat"} />,
             trade: <FontAwesomeIcon icon={faHandshake} />,
+            credits: <Image src={"/imgs/credits.png"} width={16} height={16} />,
           }
         }
       />
