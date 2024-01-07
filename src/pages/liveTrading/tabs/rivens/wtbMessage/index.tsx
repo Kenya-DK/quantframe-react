@@ -87,7 +87,7 @@ export default function WTBMessagePage() {
     const message = prices.map((key) => {
       const rivens = groupByPrice[key];
       const msg = rivens.map((riven) => `[${riven.name}]`).join("");
-      return `${msg} ${key}p`;
+      return `${msg}${key}`;
     }).join(" ");
     setWtbMessage(messageTemplate.replace("[WTB]", message));
   }, [wtbList, messageTemplate])
