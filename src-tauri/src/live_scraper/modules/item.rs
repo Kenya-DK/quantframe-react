@@ -65,7 +65,7 @@ impl<'a> ItemModule<'a> {
         };
 
         // Get current orders from Warframe Market Sell and Buy orders.
-        let (mut current_buy_orders_df,current_sell_orders_df) =
+        let (mut current_buy_orders_df, current_sell_orders_df) =
             wfm.orders().get_orders_as_dataframe().await?;
 
         // Delete orders if the order mode is buy or sell.
@@ -253,19 +253,19 @@ impl<'a> ItemModule<'a> {
                     &live_orders_df,
                     &statistics,
                     stock_item.clone(),
-                ).await?;
+                )
+                .await?;
             }
 
             // Only check if the order mode is sell or both and if the item is in stock items
-            if (order_mode == OrderMode::Sell || order_mode == OrderMode::Both)
-                && stock_item.clone().is_some()
-            {
+            if (order_mode == OrderMode::Sell || order_mode == OrderMode::Both) {
                 self.compare_live_orders_when_selling(
                     &item,
                     &item_id,
                     item_rank,
                     current_sell_orders_df.clone(),
-                    &live_orders_df
+                    &live_orders_df,
+                    stock_item.clone(),
                 )
                 .await?;
             }
@@ -340,14 +340,15 @@ impl<'a> ItemModule<'a> {
             if blacklist.contains(&order.clone().item.unwrap().url_name) {
                 continue;
             }
-            match wfm.orders()
-            .delete(&order.id, "None", "None", "Any")
-            .await {
+            match wfm.orders().delete(&order.id, "None", "None", "Any").await {
                 Ok(_) => {}
                 Err(e) => {
                     error::create_log_file(self.client.log_file.to_owned(), &e);
-                    logger::warning_con("LiveScraper",format!("Error trying to delete order: {:?}", e).as_str());
-                }            
+                    logger::warning_con(
+                        "LiveScraper",
+                        format!("Error trying to delete order: {:?}", e).as_str(),
+                    );
+                }
             };
         }
         Ok(())
@@ -582,38 +583,25 @@ impl<'a> ItemModule<'a> {
             .filter(col("url_name").eq(lit(item_name)))
             .collect()
             .map_err(|e| AppError::new("LiveScraper", eyre!(e.to_string())))?;
-        let id: Option<String> = None;
-        let visibility = false;
-        let price = 0;
+
         if orders_by_item.height() == 0 {
-            return Ok((id, visibility, price, false));
+            return Ok((None, false, 0, false));
         }
-        let id =
-            match helper::get_column_value(orders_by_item.clone(), None, "id", ColumnType::String)?
-            {
-                ColumnValue::String(values) => values,
-                _ => return Err(AppError::new("LiveScraper", eyre!("Expected f64 values"))),
-            };
+        // Get the order id from the Order DataFrame
+        let id = helper::get_column_value(orders_by_item.clone(), None, "id", ColumnType::String)?
+            .into_string();
 
-        let visibility = match helper::get_column_value(
-            orders_by_item.clone(),
-            None,
-            "visible",
-            ColumnType::Bool,
-        )? {
-            ColumnValue::Bool(values) => values.unwrap_or(false),
-            _ => return Err(AppError::new("LiveScraper", eyre!("Expected f64 values"))),
-        };
+        // Get the visibility from the Order DataFrame
+        let visibility =
+            helper::get_column_value(orders_by_item.clone(), None, "visible", ColumnType::Bool)?
+                .into_bool()
+                .unwrap_or(false);
 
-        let price: i64 = match helper::get_column_value(
-            orders_by_item.clone(),
-            None,
-            "platinum",
-            ColumnType::I64,
-        )? {
-            ColumnValue::I64(values) => values.unwrap_or(0),
-            _ => return Err(AppError::new("LiveScraper", eyre!("Expected f64 values"))),
-        };
+        // Get the price from the Order DataFrame
+        let price: i64 =
+            helper::get_column_value(orders_by_item.clone(), None, "platinum", ColumnType::I64)?
+                .into_i64()
+                .unwrap_or(0);
         Ok((id.clone(), visibility, price, true))
     }
     async fn restructure_live_order_df(
@@ -729,7 +717,7 @@ impl<'a> ItemModule<'a> {
         // Load Managers.
         let settings = self.client.settings.lock()?.clone().live_scraper;
         let wfm = self.client.wfm.lock()?.clone();
-        let mut current_orders = current_orders.clone();
+        let current_orders = current_orders.clone();
 
         // Get Settings.
         let avg_price_cap = settings.stock_item.avg_price_cap;
@@ -746,18 +734,20 @@ impl<'a> ItemModule<'a> {
 
         // Probably don't want to be looking at this item right now if there's literally nobody interested in selling it.
         if sellers == 0 {
+            logger::info_con(
+                "LiveScraper",
+                format!("Item {item_name} has no sellers. Skipping.").as_str(),
+            );
             return Ok(None);
         }
 
-        // Get the average price of the item from the Warframe Market API
+        // Get the closed average price of the item from the Warframe Market API
         let item_closed_avg: f64 =
-            match helper::get_column_value(item_stats.clone(), None, "closedAvg", ColumnType::F64)?
-            {
-                ColumnValue::F64(values) => values.unwrap_or(0.0),
-                _ => return Err(AppError::new("LiveScraper", eyre!("Expected f64 values"))),
-            };
+            helper::get_column_value(item_stats.clone(), None, "closedAvg", ColumnType::F64)?
+                .into_f64()
+                .unwrap_or(0.0);
 
-        // If there are no buyers, and the average price is greater than 25p, then we should probably update our listing.
+        // If there are no buyers, and the average price is greater than 25p, then we should probably update/create our listing.
         if buyers == 0 && item_closed_avg > 25.0 {
             // If the item is worth more than 40p, then we should probably update our listing.
             let mut post_price = (price_range - 40).max((price_range / 3) - 1);
@@ -796,31 +786,26 @@ impl<'a> ItemModule<'a> {
                 wfm.orders()
                     .create(item_name, item_id, "buy", post_price, 1, true, item_rank)
                     .await?;
-                logger::info_con("LiveScraper",format!("Automatically Posted Visible Buy Order Item: {item_name}, ItemId: {item_id}, Price: {post_price}").as_str());
                 return Ok(None);
             }
         } else if buyers == 0 {
             return Ok(None);
         }
 
-        // Get highest buy order price
-        let post_price: i64 = match helper::get_column_value(
+        // Get highest buy order price from the DataFrame of live buy orders
+        let post_price: i64 = helper::get_column_value(
             live_buy_orders_df.clone(),
             None,
             "platinum",
             ColumnType::I64,
-        )? {
-            ColumnValue::I64(values) => values.unwrap_or(0),
-            _ => return Err(AppError::new("LiveScraper", eyre!("Expected i64 values"))),
-        };
+        )?
+        .into_i64()
+        .unwrap_or(0);
 
         // Get the average price of the item from the Warframe Market API
-        let closed_avg_metric: f64 =
-            match helper::get_column_value(item_stats.clone(), None, "closedAvg", ColumnType::F64)?
-            {
-                ColumnValue::F64(values) => values.unwrap_or(0.0) - post_price as f64,
-                _ => return Err(AppError::new("LiveScraper", eyre!("Expected f64 values"))),
-            };
+        let closed_avg_metric: f64 = item_closed_avg - post_price as f64;
+
+        // Get the potential profit from the average price of the item from the Warframe Market API
         let potential_profit = closed_avg_metric - 1.0;
 
         // Check if the post price is greater than the average price cap and return if it is
@@ -828,12 +813,14 @@ impl<'a> ItemModule<'a> {
             logger::info_con("LiveScraper",format!("Item {item_name} is higher than the price cap you set. cap: {avg_price_cap}, post_price: {post_price}").as_str());
             return Ok(None);
         }
+
         // Get the owned value from the database
         let owned: i32 = match stock_item {
             Some(stock_item) => stock_item.owned,
-            None => 0,            
+            None => 0,
         };
 
+        // If you own more than 1 of this item, and the average price is less than 25p, then we should probably update/create our listing.
         if owned > 1 && ((closed_avg_metric as i64) < (25 * owned as i64)) {
             logger::info_con(
                 "LiveScraper",
@@ -859,110 +846,71 @@ impl<'a> ItemModule<'a> {
             }
             return Ok(None);
         }
+
         if ((closed_avg_metric as i64) >= 30 && price_range >= 15) || price_range >= 21 {
             if active {
-                if price != post_price {
-                    logger::info_con("LiveScraper", format!("Your current posting on this item {item_name} for {price} plat is not a good one. Updating to {post_price} plat.").as_str());
-                    self.client.send_message(
-                        "item.buy.updating",
-                        Some(json!({ "name": item_name, "price": post_price})),
-                    );
-                    wfm.orders()
-                        .update(
-                            order_id.clone().unwrap().as_str(),
-                            post_price as i32,
-                            1,
-                            visibility,
-                            item_name,
-                            item_id,
-                            "buy",
-                        )
-                        .await?;
-                    let df = DataFrame::new(vec![
-                        Series::new("url_name", vec![item_name]),
-                        Series::new("platinum", vec![post_price]),
-                        Series::new("potential_profit", vec![(post_price - price)]),
-                    ])
-                    .map_err(|e| AppError::new("LiveScraper", eyre!(e.to_string())))?;
-                    let updatede = current_orders
-                        .inner_join(&df, ["url_name"], ["url_name"])
-                        .map_err(|e| AppError::new("LiveScraper", eyre!(e.to_string())))?;
-                    return Ok(Some(updatede));
-                } else {
-                    self.client.send_message(
-                        "item.buy.updating",
-                        Some(json!({ "name": item_name, "price": post_price})),
-                    );
-                    wfm.orders()
-                        .update(
-                            order_id.clone().unwrap().as_str(),
-                            post_price as i32,
-                            1,
-                            visibility,
-                            item_name,
-                            item_id,
-                            "buy",
-                        )
-                        .await?;
-                    logger::info_con("LiveScraper", format!("Your current (possibly hidden) posting on this item {item_name} for {price} plat is a good one. Recommend to make visible.").as_str());
-                    return Ok(None);
-                }
+                self.client.send_message(
+                    "item.buy.updating",
+                    Some(json!({ "name": item_name, "price": post_price})),
+                );
+                wfm.orders()
+                    .update(
+                        order_id.clone().unwrap().as_str(),
+                        post_price as i32,
+                        1,
+                        visibility,
+                        item_name,
+                        item_id,
+                        "buy",
+                    )
+                    .await?;
+                logger::info_con("LiveScraper", format!("Your current (possibly hidden) posting on this item {item_name} for {price} plat is a good one. Recommend to make visible.").as_str());
+                return Ok(None);
             } else {
                 let mut buy_orders_list: Vec<(i64, f64, String, String)> = vec![];
+
                 // Create a Vec of Tuples from the DataFrame of current orders
                 if current_orders.shape().0 != 0 {
-                    // Convert to Vec of Tuples
-                    let platinum_values = match helper::get_column_values(
+                    // Get the platinum values from the DataFrame of current orders
+                    let platinum_values = helper::get_column_values(
                         current_orders.clone(),
                         None,
                         "platinum",
                         ColumnType::I64,
-                    )? {
-                        ColumnValues::I64(values) => values,
-                        _ => {
-                            return Err(AppError::new("LiveScraper", eyre!("Expected i64 values")))
-                        }
-                    };
-                    let potential_profit_values = match helper::get_column_values(
+                    )?
+                    .into_i64()
+                    .unwrap_or(vec![]);
+
+                    // Get the potential profit values from the DataFrame of current orders
+                    let potential_profit_values = helper::get_column_values(
                         current_orders.clone(),
                         None,
                         "potential_profit",
                         ColumnType::F64,
-                    )? {
-                        ColumnValues::F64(values) => values,
-                        _ => {
-                            return Err(AppError::new("LiveScraper", eyre!("Expected f64 values")))
-                        }
-                    };
+                    )?
+                    .into_f64()
+                    .unwrap_or(vec![]);
 
-                    let url_name_values = match helper::get_column_values(
+                    // Get the url_name values from the DataFrame of current orders
+                    let url_name_values = helper::get_column_values(
                         current_orders.clone(),
                         None,
                         "url_name",
                         ColumnType::String,
-                    )? {
-                        ColumnValues::String(values) => values,
-                        _ => {
-                            return Err(AppError::new(
-                                "LiveScraper",
-                                eyre!("Expected string values"),
-                            ))
-                        }
-                    };
-                    let id_values = match helper::get_column_values(
+                    )?
+                    .into_string()
+                    .unwrap_or(vec![]);
+
+                    // Get the id values from the DataFrame of current orders
+                    let id_values = helper::get_column_values(
                         current_orders.clone(),
                         None,
                         "id",
                         ColumnType::String,
-                    )? {
-                        ColumnValues::String(values) => values,
-                        _ => {
-                            return Err(AppError::new(
-                                "LiveScraper",
-                                eyre!("Expected string values"),
-                            ))
-                        }
-                    };
+                    )?
+                    .into_string()
+                    .unwrap_or(vec![]);
+
                     buy_orders_list = platinum_values
                         .into_iter()
                         .zip(potential_profit_values.into_iter())
@@ -973,16 +921,22 @@ impl<'a> ItemModule<'a> {
                         })
                         .collect();
                 }
+
+                // Add the new order to the Vec of Tuples
                 buy_orders_list.append(&mut vec![(
                     post_price,
                     potential_profit,
                     item_name.to_string(),
                     "".to_string(),
                 )]);
-
+                
+                // Call the `knapsack` method on `self` with the parameters `buy_orders_list` and `max_total_price_cap` cast to i64
+                // The `knapsack` method is expected to return a tuple containing the maximum profit, the selected buy orders, and the unselected buy orders
+                // If the method call fails (returns an error), propagate the error with `?`
                 let (_max_profit, selected_buy_orders, unselected_buy_orders) =
                     self.knapsack(buy_orders_list, max_total_price_cap as i64)?;
 
+                // Get the url_name values from the selected buy orders
                 let selected_item_names: Vec<String> = selected_buy_orders
                     .iter()
                     .map(|order| order.2.clone())
@@ -995,29 +949,6 @@ impl<'a> ItemModule<'a> {
                             .map(|order| order.2.clone())
                             .collect();
                         logger::info_con("LiveScraper",format!("Item {} is not as optimal as other items. Deleting buy orders for {:?}", item_name, unselected_item_names).as_str());
-
-                        current_orders = current_orders
-                            .lazy()
-                            .filter(
-                                col("url_name")
-                                    .is_in(lit(Series::new(
-                                        "unselected_url_name",
-                                        unselected_item_names.clone(),
-                                    )))
-                                    .not(),
-                            )
-                            .collect()
-                            .map_err(|e| {
-                                AppError::new(
-                                    "LiveScraper",
-                                    eyre!(
-                                        "{:?}, {:?}, Item: {:?}",
-                                        e.to_string(),
-                                        unselected_item_names.clone(),
-                                        item_name
-                                    ),
-                                )
-                            })?;
 
                         for unselected_item in &unselected_buy_orders {
                             self.client.send_message(
@@ -1041,13 +972,10 @@ impl<'a> ItemModule<'a> {
                         "item.buy.creating",
                         Some(json!({ "name": item_name, "price": post_price})),
                     );
-                    let new_order = wfm
-                        .orders()
+                    wfm.orders()
                         .create(item_name, item_id, "buy", post_price, 1, true, item_rank)
                         .await?;
-                    let current_orders =
-                        self.get_new_buy_data(current_orders.clone(), new_order, item_closed_avg)?;
-                    return Ok(Some(current_orders));
+                    return Ok(None);
                 } else {
                     logger::info_con("LiveScraper",format!("Item {item_name} is too expensive or less optimal than current listings").as_str());
                 }
@@ -1074,8 +1002,10 @@ impl<'a> ItemModule<'a> {
         item_id: &str,
         item_rank: Option<f64>,
         current_orders: DataFrame,
-        item_live_orders_df: &DataFrame
+        item_live_orders_df: &DataFrame,
+        stock_item: Option<StockItemStruct>,
     ) -> Result<(), AppError> {
+        // Load Managers.
         let wfm = self.client.wfm.lock()?.clone();
         let db = self.client.db.lock()?.clone();
 
@@ -1084,23 +1014,12 @@ impl<'a> ItemModule<'a> {
             .get_my_order_information(item_name, &current_orders)
             .await?;
 
-        let inventory_names = db.stock_item().get_items_names().await?;
-
-        if !inventory_names.contains(&item_name.to_string()) && !active {
+        if stock_item.is_none() && !active {
             return Ok(());
-        } else if !inventory_names.contains(&item_name.to_string()) {
+        } else if stock_item.is_none() {
             self.client
                 .send_message("item.sell.deleting", Some(json!({ "name": item_name})));
-            db.stock_item()
-                .update_by_url(
-                    item_name,
-                    None,
-                    None,
-                    None,
-                    Some("to_low_profit".to_string()),
-                    None,
-                )
-                .await?;
+
             wfm.orders()
                 .delete(
                     order_id.clone().unwrap().as_str(),
@@ -1119,12 +1038,8 @@ impl<'a> ItemModule<'a> {
             return Ok(());
         }
 
-        // Get Invantory Data from the database
-        let stock_item = db
-            .stock_item()
-            .get_item_by_url_name(item_name)
-            .await?
-            .unwrap();
+        // Unwrap the StockItemStruct from the Option
+        let stock_item= stock_item.unwrap();
 
         // Get all the live orders for the item from the Warframe Market API
         let (_live_buy_orders_df, live_sell_orders_df, _buyers, sellers, _price_range) =
@@ -1153,13 +1068,13 @@ impl<'a> ItemModule<'a> {
                     None,
                     None,
                     Some(post_price as i32),
-                    Some("no_buyers".to_string()),
+                    Some("live".to_string()),
                     None,
                 )
                 .await?;
             if active {
                 self.client
-                    .send_message("item.sell.deleting", Some(json!({ "name": item_name})));
+                    .send_message("item.sell.updating", Some(json!({ "name": item_name})));
                 wfm.orders()
                     .update(
                         order_id.clone().unwrap().as_str(),
@@ -1173,6 +1088,8 @@ impl<'a> ItemModule<'a> {
                     .await?;
                 return Ok(());
             } else {
+                self.client
+                    .send_message("item.sell.creating", Some(json!({ "name": item_name})));
                 wfm.orders()
                     .create(
                         item_name, item_id, "sell", post_price, quantity, true, item_rank,
@@ -1183,15 +1100,12 @@ impl<'a> ItemModule<'a> {
         }
 
         // Get the platinum values from the DataFrame of live sell orders
-        let post_prices: Vec<i64> = match helper::get_column_values(
+        let post_prices: Vec<i64> = helper::get_column_values(
             live_sell_orders_df.clone(),
             None,
             "platinum",
             ColumnType::I64,
-        )? {
-            ColumnValues::I64(values) => values,
-            _ => return Err(AppError::new("LiveScraper", eyre!("Expected i64 values"))),
-        };
+        )?.into_i64().unwrap();
 
         // Get lowest buy order price from the DataFrame of live sell orders
         let mut post_price = post_prices.get(0).unwrap_or(&0).clone();
@@ -1306,30 +1220,5 @@ impl<'a> ItemModule<'a> {
             logger::info_con("LiveScraper",format!("Automatically Posted Visible Sell Order Item: {item_name}, ItemId: {item_id}, Price: {post_price}").as_str());
         }
         Ok(())
-    }
-    fn get_new_buy_data(
-        &self,
-        mut current_orders: DataFrame,
-        order: Order,
-        item_closed_avg: f64,
-    ) -> Result<DataFrame, AppError> {
-        let mut order_df = self
-            .client
-            .wfm
-            .lock()?
-            .orders()
-            .convet_order_to_datafream(order.clone())?;
-        order_df = order_df
-            .with_column(Series::new(
-                "potential_profit",
-                vec![item_closed_avg - order.platinum.clone() as f64],
-            ))
-            .cloned()
-            .map_err(|e| AppError::new("LiveScraper", eyre!(e.to_string())))?
-            .with_column(Series::new("closedAvg", vec![item_closed_avg]))
-            .cloned()
-            .map_err(|e| AppError::new("LiveScraper", eyre!(e.to_string())))?;
-        current_orders = current_orders.drop("username").unwrap();
-        Ok(helper::merge_dataframes(vec![current_orders, order_df])?)
     }
 }
