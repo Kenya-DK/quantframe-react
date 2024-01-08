@@ -1,0 +1,18 @@
+{
+	"folders": [
+		{
+			"path": ".\\"
+		},
+		{
+			"path": "../../../../../AppData/Local/dev.kenya.quantframe"
+		}
+	],
+	"extensions": {
+		"recommendations": [
+			"shardulm94.trailing-spaces"
+		]
+	},
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "backend"
+	}
+}
