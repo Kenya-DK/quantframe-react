@@ -402,7 +402,7 @@ export const en = {
             },
           },
           info: {
-            inactive: "Is importede but is inactive",
+            inactive: "Is imported but is inactive",
             is_imported: "Is imported and is active",
             is_not_imported: "Is not imported",
           },
