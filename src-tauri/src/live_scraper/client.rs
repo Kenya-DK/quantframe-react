@@ -113,12 +113,17 @@ impl LiveScraperClient {
                 .delete_all_orders(OrderMode::Both)
                 .await
                 .unwrap();
+
+            let riven_interval = 60;
+            let mut current_riven_interval = riven_interval.clone();
+
             while is_running.load(Ordering::SeqCst) && forced_stop.load(Ordering::SeqCst) {
                 let settings = scraper.settings.lock().unwrap().clone();
-                if settings.live_scraper.stock_mode == StockMode::Riven
-                    || settings.live_scraper.stock_mode == StockMode::All
+                if (settings.live_scraper.stock_mode == StockMode::Riven
+                    || settings.live_scraper.stock_mode == StockMode::All)
+                    && current_riven_interval >= riven_interval
                 {
-                    logger::info_con("LiveScraper", "Checking riven stock");
+                    current_riven_interval = 0;
                     scraper.send_message("riven.starting", None);
                     match scraper.riven().check_stock().await {
                         Ok(_) => {}
@@ -128,13 +133,13 @@ impl LiveScraperClient {
                 if settings.live_scraper.stock_mode == StockMode::Item
                     || settings.live_scraper.stock_mode == StockMode::All
                 {
-                    logger::info_con("LiveScraper", "Checking item stock");
                     scraper.send_message("riven.starting", None);
                     match scraper.item().check_stock().await {
                         Ok(_) => {}
                         Err(e) => scraper.report_error(e),
                     }
                 }
+                current_riven_interval += 1;
                 tokio::time::sleep(Duration::from_secs(1)).await;
             }
             scraper.send_message("", None);

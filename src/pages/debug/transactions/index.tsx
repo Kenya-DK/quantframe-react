@@ -10,7 +10,7 @@ import api from "@api/index";
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
 import { useForm } from "@mantine/form";
-import { RustError, TransactionEntryDto } from "$types/index";
+import { RustError, TransactionEntryDto, Wfm } from "$types/index";
 import { SendNotificationToWindow, paginate, sortArray } from "@utils/index";
 import { useTranslateRustError } from "@hooks/index";
 import dayjs from "dayjs";
@@ -181,12 +181,12 @@ export const Transactions = () => {
                             label: "Type",
                             value: transaction_type,
                             type: 'text',
-                          },
+                          }
                         ],
                         onConfirm: async (data: { transaction_type: string }) => {
                           if (!id) return;
                           const { transaction_type } = data;
-                          updateEntryMutation.mutateAsync({ id, transaction: { transaction_type } })
+                          updateEntryMutation.mutateAsync({ id, transaction: { transaction_type: transaction_type as Wfm.TradeClassification } })
                         },
                         onCancel: (id: string) => modals.close(id),
                       },

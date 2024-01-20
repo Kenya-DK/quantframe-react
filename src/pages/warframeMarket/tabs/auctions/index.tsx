@@ -81,7 +81,6 @@ export const AuctionsPanel = ({ }: AuctionsPanelProps) => {
             rightSectionWidth={80}
             rightSection={
               <Group spacing={5}>
-
                 <Tooltip label={useTranslateAuctionsPanel('tolltip.refresh')}>
                   <ActionIcon variant="filled" color="green.7" onClick={() => {
                     refreshAuctionsMutation.mutate();

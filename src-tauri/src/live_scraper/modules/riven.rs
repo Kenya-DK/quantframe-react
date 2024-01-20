@@ -15,7 +15,7 @@ impl<'a> RivenModule<'a> {
         let wfm = self.client.wfm.lock()?.clone();
         let auth = self.client.auth.lock()?.clone();
         let settings = self.client.settings.lock()?.clone().live_scraper;
-        logger::info_con("RivenModule", "Run riven module");
+        logger::info_con("RivenModule", "Run Riven Stock Check");
         let stockrivens = db.stock_riven().get_rivens().await?;
         let my_auctions = wfm.auction().get_my_auctions().await?;
         let my_rivens = my_auctions
@@ -31,7 +31,7 @@ impl<'a> RivenModule<'a> {
             if self.client.is_running() == false {
                 break;
             }
-
+            
             // Find my auction for this riven if exists
             let auction = my_rivens
                 .iter()
@@ -43,7 +43,7 @@ impl<'a> RivenModule<'a> {
                 if auction.is_some() {
                     let auction = auction.unwrap();
                     self.client
-                        .send_message("riven.deleting", Some(json!({ "name": riven.weapon_url})));
+                        .send_message("riven.deleting", Some(json!({ "name": riven.weapon_name})));
                     wfm.auction().delete(auction.id.as_str()).await?;
                 }
 
@@ -94,7 +94,7 @@ impl<'a> RivenModule<'a> {
 
             // Search for live auctions for this riven
             self.client
-                .send_message("riven.searching", Some(json!({ "name": riven.weapon_url})));
+                .send_message("riven.searching", Some(json!({ "name": riven.weapon_name})));
             let live_auctions = wfm
                 .auction()
                 .search(
@@ -127,10 +127,10 @@ impl<'a> RivenModule<'a> {
             if live_auctions.len() == 0 {
                 logger::info_con(
                     "RivenModule",
-                    format!("No live auctions for {}", riven.weapon_url).as_str(),
+                    format!("No live auctions for {}", riven.weapon_name).as_str(),
                 );
                 self.client
-                    .send_message("riven.no_offers", Some(json!({ "name": riven.weapon_url})));
+                    .send_message("riven.no_offers", Some(json!({ "name": riven.weapon_name})));
                 db.stock_riven()
                     .update_by_id(
                         riven.id,
@@ -170,7 +170,7 @@ impl<'a> RivenModule<'a> {
                 "RivenModule",
                 format!(
                     "Lowest price for {} is {} and yours is {} and profit is {}",
-                    riven.weapon_url, lowest_price, riven.price, profit
+                    riven.weapon_name, lowest_price, riven.price, profit
                 )
                 .as_str(),
             );
@@ -185,7 +185,7 @@ impl<'a> RivenModule<'a> {
                             // Update auction
                             self.client.send_message(
                                 "riven.updating",
-                                Some(json!({ "name": riven.weapon_url, "price": post_price})),
+                                Some(json!({ "name": riven.weapon_name, "price": post_price})),
                             );
                             wfm.auction()
                                 .update(
@@ -203,7 +203,7 @@ impl<'a> RivenModule<'a> {
                         // Post auction on warframe.market
                         self.client.send_message(
                             "riven.creating",
-                            Some(json!({ "name": riven.weapon_url, "price": post_price})),
+                            Some(json!({ "name": riven.weapon_name, "price": post_price})),
                         );
                         let new_aut = wfm
                             .auction()

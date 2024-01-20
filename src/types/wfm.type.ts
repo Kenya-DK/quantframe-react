@@ -233,6 +233,16 @@ export namespace Wfm {
     NoBuyers = "no_buyers",
     Inactive = "inactive",
   }
+  export enum TradeClassification {
+    Buy = "buy",
+    Sell = "sell",
+    Trade = "trade",
+    Unknown = "unknown",
+  }
+  export enum ItemType {
+    Riven = "riven",
+    Item = "item",
+  }
   export interface ChatData {
     id: string;
     chat_with: ChatWith[];

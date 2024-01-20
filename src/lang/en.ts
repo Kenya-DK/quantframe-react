@@ -332,6 +332,13 @@ export const en = {
   },
   pages: {
     home: {
+      last_transactions: {
+        title: "Last Transactions",
+        info: {
+          buy: "Purchases",
+          sell: "Sales",
+        },
+      },
       stats_cards: {
         total: {
           title: "Total Profit",

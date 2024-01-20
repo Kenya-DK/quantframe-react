@@ -95,7 +95,7 @@ impl DebugClient {
                 .execute(&dbcon)
                 .await
                 .map_err(|e| AppError::new("Debug", eyre!(e.to_string())))?;
-            let transactions_vec = sqlx::query("SELECT * FROM transactions;")
+            let transactions_vec = sqlx::query("SELECT * FROM transaction;")
                 .fetch_all(&watdb)
                 .await
                 .unwrap();

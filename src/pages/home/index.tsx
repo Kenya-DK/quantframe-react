@@ -1,4 +1,4 @@
-import { Grid, useMantineTheme, Text, Container, Image } from "@mantine/core";
+import { Grid, useMantineTheme, Text, Container, Image, Group, ScrollArea, Divider, Paper } from "@mantine/core";
 import { StatsWithIcon } from "@components/stats/statsWithIcon.stats";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarAlt, faMoneyBill } from "@fortawesome/free-solid-svg-icons";
@@ -8,11 +8,15 @@ import { useCacheContext, useWarframeMarketContextContext } from "@contexts/inde
 import { wfmThumbnail } from "@api/index";
 import { TextColor } from "@components/textColor";
 import { DataTable } from "mantine-datatable";
+import { InfoBox } from "../../components/InfoBox";
+import dayjs from "dayjs";
+import { getTradeClassificationColorCode } from "../../utils";
+import { Wfm } from "../../types";
 
 export default function HomePage() {
   const theme = useMantineTheme();
   const translateBase = (key: string, context?: { [key: string]: any }) => useTranslatePage(`home.${key}`, { ...context })
-  const { statistics } = useWarframeMarketContextContext();
+  const { statistics, transactions } = useWarframeMarketContextContext();
   const { images_map } = useCacheContext();
   return (
     <Container size={"100%"}>
@@ -116,7 +120,40 @@ export default function HomePage() {
             </Grid.Col>
           </Grid>
           <Grid mt={10}>
-            <Grid.Col md={12} >
+            <Grid.Col md={5} >
+              <Paper p={10}>
+                <Group position="apart" mt="md" mb="xs">
+                  <Text weight={500}>{translateBase("last_transactions.title")}</Text>
+                  <Group>
+                    <InfoBox text={translateBase("last_transactions.info.buy")} color={getTradeClassificationColorCode(Wfm.TradeClassification.Buy)} />
+                    <InfoBox text={translateBase("last_transactions.info.sell")} color={getTradeClassificationColorCode(Wfm.TradeClassification.Sell)} />
+                  </Group>
+                </Group>
+                <Divider />
+                <ScrollArea h={"calc(100vh - 688px)"}>
+                  {transactions.sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime()).slice(0, 10).map((transaction, index) => (
+                    <Paper mt={8} p={5} key={index} sx={{
+                      boxShadow: `inset 4px 0 0 0 ${getTradeClassificationColorCode(transaction.transaction_type)}`,
+                      border: `1px solid ${theme.colors.gray[7]}`,
+                    }}>
+                      <Group position="apart">
+                        <Group ml={10} w={"35%"}>
+                          <Text color="gray.4">{transaction.name}</Text>
+                        </Group>
+                        <Group w={100}>
+                          <Text color="blue.5">{transaction.price} </Text>
+                        </Group>
+                        <Group position="right">
+                          <Text color="gray.4">{dayjs(transaction.created).format("DD/MM/YYYY HH:mm:ss")}</Text>
+                        </Group>
+                      </Group>
+                    </Paper>
+                  ))}
+                </ScrollArea>
+              </Paper>
+
+            </Grid.Col>
+            <Grid.Col md={7} >
               <DataTable
                 records={statistics.best_seller.categorys}
                 // define columns
@@ -136,7 +173,7 @@ export default function HomePage() {
                   {
                     accessor: 'profit',
                     title: translateBase("stats_cards.datagrid.columns.profit"),
-                    render: ({ profit }) => <Text color={profit > 0 ? "green" : "red"}>{profit}</Text>,
+                    render: ({ profit }) => <Text color={profit > 0 ? getTradeClassificationColorCode(Wfm.TradeClassification.Sell) : getTradeClassificationColorCode(Wfm.TradeClassification.Buy)}>{profit}</Text>,
                   },
                   {
                     accessor: 'profit_margin',
@@ -148,6 +185,6 @@ export default function HomePage() {
           </Grid>
         </>
       }
-    </Container>
+    </Container >
   );
 }

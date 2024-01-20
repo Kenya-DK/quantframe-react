@@ -20,7 +20,7 @@ pub struct ItemModule<'a> {
 
 impl<'a> ItemModule<'a> {
     pub async fn check_stock(&self) -> Result<(), AppError> {
-        logger::info_con("ItemModule", "Run item module");
+        logger::info_con("ItemModule", "Running Item Stock Check");
         // Load Managers.
         let db = self.client.db.lock()?.clone();
         let wfm = self.client.wfm.lock()?.clone();
@@ -49,7 +49,7 @@ impl<'a> ItemModule<'a> {
                         .get_items()
                         .await?
                         .into_iter()
-                        .filter(|item| !blacklist_items.clone().contains(&item.url))
+                        .filter(|item| !blacklist_items.clone().contains(&item.url) && item.owned > 0 && !item.hidden)
                         .collect::<Vec<_>>(),
                 )
             } else {
@@ -63,7 +63,6 @@ impl<'a> ItemModule<'a> {
             }
             None => {}
         };
-
         // Get current orders from Warframe Market Sell and Buy orders.
         let (mut current_buy_orders_df, current_sell_orders_df) =
             wfm.orders().get_orders_as_dataframe().await?;

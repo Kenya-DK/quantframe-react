@@ -130,6 +130,20 @@ export const getOrderStatusColorCode = (status: string) => {
       return theme.colors.gray[2];
   }
 };
+export const getTradeClassificationColorCode = (type: string) => {
+  const theme = useMantineTheme();
+  switch (type) {
+    case Wfm.TradeClassification.Buy:
+      return "red";
+    case Wfm.TradeClassification.Sell:
+      return "green";
+    case Wfm.TradeClassification.Trade:
+      return theme.colors.violet[7];
+    case Wfm.TradeClassification.Buy:
+    default:
+      return theme.colors.gray[2];
+  }
+};
 export const getOrderStatusColorClass = (status: string) => {
   const { classes } = useStyles();
   switch (status) {
