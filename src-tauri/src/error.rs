@@ -1,13 +1,44 @@
 use eyre::eyre;
 use regex::Regex;
+use reqwest::header::HeaderMap;
 use serde_json::{json, Value};
 
-use crate::enums::LogLevel;
+use crate::{enums::LogLevel, logger};
+
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+pub struct ErrorApiResponse {
+    #[serde(rename = "statusCode")]
+    pub status_code: i64,
+
+    #[serde(rename = "error")]
+    pub error: String,
+
+    #[serde(rename = "message")]
+    pub message: Vec<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none", rename = "raw_response")]
+    pub raw_response: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none", rename = "url")]
+    pub url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none", rename = "body")]
+    pub body: Option<Value>,
+
+    #[serde(skip_serializing_if = "Option::is_none", rename = "method")]
+    pub method: Option<String>,
+}
+
+#[derive(Debug)]
+pub enum ApiResult<T> {
+    Success(T, HeaderMap),
+    Error(ErrorApiResponse, HeaderMap),
+}
 
 #[derive(Debug)]
 pub struct AppError {
     component: &'static str,
-    eyre_report: eyre::ErrReport,
+    eyre_report: String,
     log_level: LogLevel,
 }
 impl AppError {
@@ -15,9 +46,48 @@ impl AppError {
     pub fn new(component: &'static str, eyre_report: eyre::ErrReport) -> Self {
         AppError {
             component,
-            eyre_report,
+            eyre_report: format!("{:?}", eyre_report),
             log_level: LogLevel::Critical,
         }
+    }
+    // Custom constructor
+    pub fn new_api(
+        component: &'static str,
+        mut err: ErrorApiResponse,
+        eyre_report: eyre::ErrReport,
+        log_level: LogLevel,
+    ) -> Self {
+        let mut new_err: AppError = AppError::new_with_level(component, eyre_report, log_level);
+        let mut cause = new_err.cause();
+        let backtrace = new_err.backtrace();
+        let mut extra = new_err.extra_data();
+
+        let payload = match err.body {
+            Some(mut content) => {
+                if content["password"].is_string() {
+                    content["password"] = json!("********");
+                }
+                if content["access_token"].is_string() {
+                    content["access_token"] = json!("********");
+                }
+                if content["email"].is_string() {
+                    content["email"] = json!("********");
+                }
+                content.clone()
+            }
+            None => json!({}),
+        };
+        err.body = Some(payload.clone());
+        extra["ApiError"] = json!(err);
+        cause = format!(
+            "{}The request failed with status code {} to the url: {} with the following message: {}",
+            cause,
+            err.status_code,
+            err.clone().url.unwrap_or("NONE".to_string()),
+            err.message.join(",")
+        );
+        new_err.eyre_report = format!("{}[J]{}[J]\n\nLocation:\n    {}", cause, extra, backtrace);
+        new_err
     }
     // Custom constructor
     pub fn new_with_level(
@@ -27,11 +97,12 @@ impl AppError {
     ) -> Self {
         AppError {
             component,
-            eyre_report,
+            eyre_report: format!("{:?}", eyre_report),
             log_level,
         }
     }
-    pub fn get_info(&self, e: String) -> (String, String, Value) {
+    pub fn get_info(&self) -> (String, String, Value) {
+        let e = self.eyre_report.clone();
         // Define the regular expression pattern
         let pattern = r"(.*?)(?:\n\nLocation:\n)(.*)";
         let re = Regex::new(pattern).unwrap();
@@ -67,7 +138,14 @@ impl AppError {
                 json,
             );
         } else {
-            println!("Pattern not found in the text: {}.", e);
+            logger::warning_con(
+                "AppError",
+                format!(
+                    "The regex pattern {} did not match the error string {}",
+                    pattern, e
+                )
+                .as_str(),
+            );
             return ("".to_string(), "".to_string(), json);
         }
     }
@@ -77,14 +155,12 @@ impl AppError {
     }
     // Getter for component
     pub fn cause(&self) -> String {
-        let (before_location, _after_location, _json) =
-            self.get_info(format!("{:?}", self.eyre_report));
+        let (before_location, _after_location, _json) = self.get_info();
         before_location
     }
     // Getter for backtrace
     pub fn backtrace(&self) -> String {
-        let (_before_location, after_location, _json) =
-            self.get_info(format!("{:?}", self.eyre_report));
+        let (_before_location, after_location, _json) = self.get_info();
         after_location.replace("    ", "")
     }
     // Getter for log_level
@@ -93,8 +169,7 @@ impl AppError {
     }
     // Getter for extra_data
     pub fn extra_data(&self) -> Value {
-        let (_before_location, _after_location, json) =
-            self.get_info(format!("{:?}", self.eyre_report));
+        let (_before_location, _after_location, json) = self.get_info();
         json
     }
 
@@ -130,10 +205,11 @@ pub fn create_log_file(file: String, e: &AppError) {
     let backtrace = e.backtrace();
     let log_level = e.log_level();
     let extra = e.extra_data();
+
     crate::logger::dolog(
         log_level,
         component.as_str(),
-        format!("Location: {:?}, {:?}, {:?}", backtrace, cause, extra).as_str(),
+        format!("Location: {:?}, {:?}, Extra: <{:?}>", backtrace, cause, extra.to_string()).as_str(),
         true,
         Some(file.as_str()),
     );

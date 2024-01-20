@@ -1,25 +1,17 @@
 use std::f32::consts::E;
 
+use eyre::eyre;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::{
-    error::AppError,
+    enums::LogLevel,
+    error::{ApiResult, AppError},
     helper, logger,
     structs::{Item, ItemDetails},
     wfm_client::client::WFMClient,
 };
 
-// On New Message
-// @WS/chats/NEW_MESSAGE
-
-// Send Message
-// type: "@WS/chats/SEND_MESSAGE",
-// payload: {
-//     chat_id: e,
-//     message: t,
-//     temp_id: o
-// }
 pub struct ChatModule<'a> {
     pub client: &'a WFMClient,
 }
@@ -27,46 +19,61 @@ pub struct ChatModule<'a> {
 impl<'a> ChatModule<'a> {
     pub async fn get_chats(&self) -> Result<Vec<ChatData>, AppError> {
         match self.client.get("im/chats", Some("chats")).await {
-            Ok((chats, _headers)) => Ok(chats),
-            Err(e) => Err(e),
-        }
+            Ok(ApiResult::Success(payload, _headers)) => {
+                return Ok(payload);
+            }
+            Ok(ApiResult::Error(error, _headers)) => {
+                return Err(AppError::new_api(
+                    "WarframeMarket:Chat:GetChats",
+                    error,
+                    eyre!(""),
+                    LogLevel::Error,
+                ));
+            }
+            Err(err) => {
+                return Err(err);
+            }
+        };
     }
 
     pub async fn get_chat(&self, id: String) -> Result<Vec<ChatMessage>, AppError> {
         let url = format!("im/chats/{}", id);
         match self.client.get(&url, Some("messages")).await {
-            Ok((chat, _headers)) => {
-                logger::info(
-                    "ChatModule",
-                    format!("For Chat: {:?}", id).as_str(),
-                    true,
-                    Some(self.client.log_file.as_str()),
-                );
-                Ok(chat)
+            Ok(ApiResult::Success(payload, _headers)) => {
+                return Ok(payload);
             }
-            Err(e) => {
-                let data = e.extra_data();
-                println!("{:?}", data);
-                Err(e)
+            Ok(ApiResult::Error(error, _headers)) => {
+                return Err(AppError::new_api(
+                    "WarframeMarket:Chat:GetChat",
+                    error,
+                    eyre!(""),
+                    LogLevel::Error,
+                ));
             }
-        }
+            Err(err) => {
+                return Err(err);
+            }
+        };
     }
 
     pub async fn delete(&self, id: String) -> Result<String, AppError> {
         let url = format!("im/chats/{}", id);
         match self.client.delete(&url, Some("chat_id")).await {
-            Ok((chat, _headers)) => {
-                logger::info(
-                    "ChatModule",
-                    format!("Deleted Chat: {:?}", id).as_str(),
-                    true,
-                    Some(self.client.log_file.as_str()),
-                );
-                self.emit("DELETE", json!({ "id": id }));
-                Ok(chat)
+            Ok(ApiResult::Success(payload, _headers)) => {
+                return Ok(payload);
             }
-            Err(e) => Err(e),
-        }
+            Ok(ApiResult::Error(error, _headers)) => {
+                return Err(AppError::new_api(
+                    "WarframeMarket:Chat:Delete",
+                    error,
+                    eyre!(""),
+                    LogLevel::Error,
+                ));
+            }
+            Err(err) => {
+                return Err(err);
+            }
+        };
     }
     pub fn emit(&self, operation: &str, data: serde_json::Value) {
         helper::emit_update("ChatMessages", operation, Some(data));

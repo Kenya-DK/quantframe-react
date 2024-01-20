@@ -1,9 +1,11 @@
+use eyre::eyre;
 use reqwest::header::HeaderMap;
 use serde_json::json;
 
 use crate::{
     auth::AuthState,
-    error::{self, AppError},
+    enums::LogLevel,
+    error::{self, ApiResult, AppError},
     logger,
     wfm_client::client::WFMClient,
 };
@@ -17,8 +19,20 @@ impl<'a> AuthModule<'a> {
             "email": email,
             "password": password
         });
+
         let (mut user, headers): (AuthState, HeaderMap) =
-            self.client.post("/auth/signin", Some("user"), body).await?;
+            match self.client.post("/auth/signin", Some("user"), body).await {
+                Ok(ApiResult::Success(user, headers)) => (user, headers),
+                Ok(ApiResult::Error(e, _headers)) => {
+                    return Err(AppError::new_api(
+                        "WarframeMarketAuth:Login",
+                        e,
+                        eyre!(""),
+                        LogLevel::Warning,
+                    ))
+                }
+                Err(e) => return Err(e),
+            };
 
         // Get the "set-cookie" header
         let cookies = headers.get("set-cookie");
@@ -71,8 +85,11 @@ impl<'a> AuthModule<'a> {
                 Ok(true)
             }
             Err(e) => {
-                let a = e.cause();
-
+                if e.cause()
+                    .contains("app.post_order.already_created_no_duplicates")
+                {
+                    return Ok(true);
+                }
                 auth.access_token = None;
                 auth.id = "".to_string();
                 auth.save_to_file()?;

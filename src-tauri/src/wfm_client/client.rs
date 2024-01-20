@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     sync::{Arc, Mutex},
     time::Duration,
 };
@@ -15,7 +16,7 @@ use serde_json::{json, Value};
 use crate::{
     auth::AuthState,
     enums::LogLevel,
-    error::AppError,
+    error::{ApiResult, AppError, ErrorApiResponse},
     helper,
     logger::{self},
     rate_limiter::RateLimiter,
@@ -47,56 +48,13 @@ impl WFMClient {
         }
     }
 
-    fn create_error(
-        &self,
-        url: &str,
-        method: Method,
-        status: StatusCode,
-        raw_response: String,
-        body: Option<Value>,
-        error: Option<String>,
-    ) -> AppError {
-        let body = match body {
-            Some(mut content) => {
-                if content["password"].is_string() {
-                    content["password"] = json!("********");
-                }
-                if content["access_token"].is_string() {
-                    content["access_token"] = json!("********");
-                }
-                if content["email"].is_string() {
-                    content["email"] = json!("********");
-                }
-                content.clone()
-            }
-            None => json!({}),
-        };
-        let data = json!({
-            "response": raw_response,
-            "payload": body,
-        });
-
-        AppError::new_with_level(
-            "WarframeMarket",
-            eyre!(
-                "Error Message: {}, Url: {}, Method: {}, Status: {}, Raw Response: [J]{}[J]",
-                error.unwrap_or("NONE".to_string()),
-                url,
-                method,
-                status,
-                data
-            ),
-            LogLevel::Error,
-        )
-    }
-
     async fn send_request<T: DeserializeOwned>(
         &self,
         method: Method,
         url: &str,
         payload_key: Option<&str>,
         body: Option<Value>,
-    ) -> Result<(T, HeaderMap), AppError> {
+    ) -> Result<ApiResult<T>, AppError> {
         let auth = self.auth.lock()?.clone();
         let mut rate_limiter = self.limiter.lock().await;
 
@@ -126,46 +84,85 @@ impl WFMClient {
             Some(content) => request.json(&content),
             None => request,
         };
-        // let response: Value = request.send().await?.json().await;
+
         let response = request.send().await;
 
+        // Create default error response
+        let mut error_def = ErrorApiResponse {
+            status_code: 500,
+            error: "UnknownError".to_string(),
+            message: vec![],
+            raw_response: None,
+            body: body.clone(),
+            url: Some(new_url.clone()),
+            method: Some(method.to_string()),
+        };
+
         if let Err(e) = response {
-            return Err(self.create_error(
-                &new_url,
-                method,
-                StatusCode::BAD_REQUEST,
-                "NO".to_string(),
-                body,
-                Some(e.to_string()),
+            error_def.message.push(e.to_string());
+            return Err(AppError::new_api(
+                "WarframeMarket",
+                error_def,
+                eyre!(format!("There was an error sending the request: {}", e)),
+                LogLevel::Critical,
             ));
         }
+
+        // Get the response data from the response
         let response_data = response.unwrap();
-        let status = response_data.status();
+        error_def.status_code = response_data.status().as_u16() as i64;
         let headers = response_data.headers().clone();
         let content = response_data.text().await.unwrap_or_default();
+        error_def.raw_response = Some(content.clone());
 
-        if status != 200 {
-            return Err(self.create_error(
-                &new_url,
-                method,
-                status.clone(),
-                content.clone(),
-                body.clone(),
-                None,
-            ));
-        }
-
+        // Convert the response to a Value object
         let response: Value = serde_json::from_str(content.as_str()).map_err(|e| {
-            self.create_error(
-                &new_url,
-                method.clone(),
-                status.clone(),
-                content.clone(),
-                body.clone(),
-                Some(e.to_string()),
+            error_def.message.push(e.to_string());
+            AppError::new_api(
+                "WarframeMarket",
+                error_def.clone(),
+                eyre!(""),
+                LogLevel::Critical,
             )
         })?;
 
+        // Check if the response is an error
+        if response.get("error").is_some() {            
+            error_def.error = "ApiError".to_string();
+            // Loop through the error object and add each message to the error_def
+            let errors: HashMap<String, Value> = serde_json::from_value(response["error"].clone())
+                .map_err(|e| {
+                    error_def.message.push(e.to_string());
+                    AppError::new_api(
+                        "WarframeMarket",
+                        error_def.clone(),
+                        eyre!(""),
+                        LogLevel::Critical,
+                    )
+                })?;
+
+            for (key, value) in errors {
+                if value.is_array() {
+                    let messages: Vec<String> =
+                        serde_json::from_value(value.clone()).map_err(|e| {
+                            AppError::new_api(
+                                "WarframeMarket",
+                                error_def.clone(),
+                                eyre!(format!("Could not parse error messages: {}", e)),
+                                LogLevel::Critical,
+                            )
+                        })?;
+                    error_def
+                        .message
+                        .push(format!("{}: {}", key, messages.join(", ")));
+                } else {
+                    error_def.message.push(format!("{}: {:?}", key, value));
+                }
+            }
+            return Ok(ApiResult::Error(error_def, headers));
+        }
+
+        // Get the payload from the response if it exists
         let mut data = response["payload"].clone();
         if let Some(payload_key) = payload_key {
             data = response["payload"][payload_key].clone();
@@ -173,15 +170,17 @@ impl WFMClient {
 
         // Convert the response to a T object
         match serde_json::from_value(data.clone()) {
-            Ok(payload) => Ok((payload, headers)),
-            Err(e) => Err(self.create_error(
-                &new_url,
-                method,
-                status.clone(),
-                content,
-                body,
-                Some(e.to_string()),
-            )),
+            Ok(payload) => Ok(ApiResult::Success(payload, headers)),
+            Err(e) => {
+                error_def.message.push(e.to_string());
+                error_def.error = "ParseError".to_string();
+                return Err(AppError::new_api(
+                    "WarframeMarket",
+                    error_def,
+                    eyre!(""),
+                    LogLevel::Critical,
+                ));
+            }
         }
     }
 
@@ -189,8 +188,8 @@ impl WFMClient {
         &self,
         url: &str,
         payload_key: Option<&str>,
-    ) -> Result<(T, HeaderMap), AppError> {
-        let payload: (T, HeaderMap) = self
+    ) -> Result<ApiResult<T>, AppError> {
+        let payload: ApiResult<T> = self
             .send_request(Method::GET, url, payload_key, None)
             .await?;
         Ok(payload)
@@ -201,8 +200,8 @@ impl WFMClient {
         url: &str,
         payload_key: Option<&str>,
         body: Value,
-    ) -> Result<(T, HeaderMap), AppError> {
-        let payload: (T, HeaderMap) = self
+    ) -> Result<ApiResult<T>, AppError> {
+        let payload: ApiResult<T> = self
             .send_request(Method::POST, url, payload_key, Some(body))
             .await?;
         Ok(payload)
@@ -212,8 +211,8 @@ impl WFMClient {
         &self,
         url: &str,
         payload_key: Option<&str>,
-    ) -> Result<(T, HeaderMap), AppError> {
-        let payload: (T, HeaderMap) = self
+    ) -> Result<ApiResult<T>, AppError> {
+        let payload: ApiResult<T> = self
             .send_request(Method::DELETE, url, payload_key, None)
             .await?;
         Ok(payload)
@@ -224,8 +223,8 @@ impl WFMClient {
         url: &str,
         payload_key: Option<&str>,
         body: Option<Value>,
-    ) -> Result<(T, HeaderMap), AppError> {
-        let payload: (T, HeaderMap) = self
+    ) -> Result<ApiResult<T>, AppError> {
+        let payload: ApiResult<T> = self
             .send_request(Method::PUT, url, payload_key, body)
             .await?;
         Ok(payload)

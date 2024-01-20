@@ -1,9 +1,11 @@
 use std::sync::{Arc, Mutex};
 
+use eyre::eyre;
 use serde_json::{json, Value};
 
 use crate::{
-    error::{self, AppError},
+    enums::LogLevel,
+    error::{self, ApiResult, AppError},
     helper, logger,
     structs::{
         Auction, AuctionItem, AuctionOwner, Item, ItemDetails, RivenAttribute, RivenAttributeInfo,
@@ -18,15 +20,44 @@ pub struct AuctionModule<'a> {
 
 impl<'a> AuctionModule<'a> {
     pub async fn get_all_riven_types(&self) -> Result<Vec<RivenTypeInfo>, AppError> {
-        let (payload, _headers) = self.client.get("riven/items", Some("items")).await?;
-        Ok(payload)
+        match self.client.get("riven/items", Some("items")).await {
+            Ok(ApiResult::Success(payload, _headers)) => {
+                return Ok(payload);
+            },
+            Ok(ApiResult::Error(error, _headers)) => {
+                return Err(AppError::new_api(
+                    "WarframeMarket:Auction:GetAllRivenTypes",
+                    error,
+                    eyre!(""),
+                    LogLevel::Error,
+                ));
+            }
+            Err(err) => {
+                return Err(err);
+            }
+        };
     }
     pub async fn get_all_riven_attribute_types(&self) -> Result<Vec<RivenAttributeInfo>, AppError> {
-        let (payload, _headers) = self
+         match self
             .client
             .get("riven/attributes", Some("attributes"))
-            .await?;
-        Ok(payload)
+            .await
+        {
+            Ok(ApiResult::Success(payload, _headers)) => {
+                return Ok(payload);
+            },
+            Ok(ApiResult::Error(error, _headers)) => {
+                return Err(AppError::new_api(
+                    "WarframeMarket:Auction:GetAllRivenAttributeTypes",
+                    error,
+                    eyre!(""),
+                    LogLevel::Error,
+                ));
+            }
+            Err(err) => {
+                return Err(err);
+            }
+        };
     }
 
     // User methods (sea-query)
@@ -35,21 +66,23 @@ impl<'a> AuctionModule<'a> {
         ingame_name: &str,
     ) -> Result<Vec<Auction<String>>, AppError> {
         let url = format!("profile/{}/auctions", ingame_name);
+
         match self.client.get(&url, Some("auctions")).await {
-            Ok((orders, _headers)) => {
-                logger::info(
-                    "WarframeMarket",
-                    format!("Getting Auctions for {}", ingame_name).as_str(),
-                    true,
-                    Some(self.client.log_file.as_str()),
-                );
-                Ok(orders)
+            Ok(ApiResult::Success(payload, _headers)) => {
+                return Ok(payload);
+            },
+            Ok(ApiResult::Error(error, _headers)) => {
+                return Err(AppError::new_api(
+                    "WarframeMarket:Auction:GetUsersAuctions",
+                    error,
+                    eyre!(""),
+                    LogLevel::Error,
+                ));
             }
-            Err(e) => {
-                error::create_log_file("wfm.log".to_string(), &e);
-                Err(e)
+            Err(err) => {
+                return Err(err);
             }
-        }
+        };
     }
 
     pub async fn get_my_auctions(&self) -> Result<Vec<Auction<String>>, AppError> {
@@ -104,6 +137,7 @@ impl<'a> AuctionModule<'a> {
             });
             body["item"] = item_riven;
         } else if auction_type == "item" {
+            logger::warning_con("WarframeMarket:Auction:Create", "Item auctions are not yet supported");
         }
 
         match self
@@ -111,12 +145,22 @@ impl<'a> AuctionModule<'a> {
             .post("auctions/create", Some("auction"), body)
             .await
         {
-            Ok((auction, _headers)) => {
-                self.emit("CREATE_OR_UPDATE", serde_json::to_value(&auction).unwrap());
-                Ok(auction)
+            Ok(ApiResult::Success(payload, _headers)) => {
+                self.emit("CREATE_OR_UPDATE", serde_json::to_value(&payload).unwrap());
+                return Ok(payload);
             }
-            Err(e) => Err(e),
-        }
+            Ok(ApiResult::Error(error, _headers)) => {
+                return Err(AppError::new_api(
+                    "WarframeMarket:Auction:Create",
+                    error,
+                    eyre!(""),
+                    LogLevel::Error,
+                ));
+            }
+            Err(err) => {
+                return Err(err);
+            }
+        };
     }
 
     pub async fn update(
@@ -137,19 +181,25 @@ impl<'a> AuctionModule<'a> {
             "visible": visible
         });
         let url = format!("auctions/entry/{}", auction_id);
-        match self.client.put(&url, Some("auction"), Some(body)).await {
-            Ok((order, _headers)) => {
-                logger::info(
-                    "WarframeMarket",
-                    format!("Update Auction: {}", auction_id).as_str(),
-                    true,
-                    Some(self.client.log_file.as_str()),
-                );
-                self.emit("CREATE_OR_UPDATE", serde_json::to_value(&order).unwrap());
-                Ok(order)
+
+        match self.client.put(&url, Some("auction"), Some(body)).await
+        {
+            Ok(ApiResult::Success(payload, _headers)) => {
+                self.emit("CREATE_OR_UPDATE", serde_json::to_value(&payload).unwrap());
+                return Ok(payload);
             }
-            Err(e) => Err(e),
-        }
+            Ok(ApiResult::Error(error, _headers)) => {
+                return Err(AppError::new_api(
+                    "WarframeMarket:Auction:Update",
+                    error,
+                    eyre!(""),
+                    LogLevel::Error,
+                ));
+            }
+            Err(err) => {
+                return Err(err);
+            }
+        };
     }
     pub async fn search(
         &self,
@@ -206,32 +256,40 @@ impl<'a> AuctionModule<'a> {
 
         let full_query = query_params.join("&");
         let url = format!("{}&{}", base_url, full_query);
+
         match self.client.get(&url, Some("auctions")).await {
-            Ok((order, _headers)) => {
-                logger::info_con(
-                    "WarframeMarket",
-                    format!("Auctions Search: {}", url).as_str(),
-                );
-                Ok(order)
+            Ok(ApiResult::Success(payload, _headers)) => {
+                self.emit("CREATE_OR_UPDATE", serde_json::to_value(&payload).unwrap());
+                return Ok(payload);
             }
-            Err(e) => Err(e),
-        }
+            Ok(ApiResult::Error(error, _headers)) => {
+                return Err(AppError::new_api(
+                    "WarframeMarket:Auction:Search",
+                    error,
+                    eyre!(""),
+                    LogLevel::Error,
+                ));
+            }
+            Err(err) => {
+                return Err(err);
+            }
+        };
     }
     pub async fn delete(&self, auction_id: &str) -> Result<Option<String>, AppError> {
         let url = format!("auctions/entry/{}/close", auction_id);
+
         match self.client.put(&url, Some("auction_id"), None).await {
-            Ok((id, _headers)) => {
-                logger::info(
-                    "WarframeMarket",
-                    format!("Delete Auction: {}", auction_id).as_str(),
-                    true,
-                    Some(self.client.log_file.as_str()),
-                );
-                self.emit("DELETE", json!(auction_id));
-                Ok(id)
+            Ok(ApiResult::Success(payload, _headers)) => {
+                self.emit("CREATE_OR_UPDATE", serde_json::to_value(&payload).unwrap());
+                return Ok(payload);
+            },
+            Ok(ApiResult::Error(error, _headers)) => {
+                return Err(AppError::new_api("WarframeMarket:Auction:Delete",error,eyre!(""),LogLevel::Error));
             }
-            Err(e) => Err(e),
-        }
+            Err(err) => {
+                return Err(err);
+            }
+        };
     }
     pub fn emit(&self, operation: &str, data: serde_json::Value) {
         helper::emit_update("auctions", operation, Some(data));
