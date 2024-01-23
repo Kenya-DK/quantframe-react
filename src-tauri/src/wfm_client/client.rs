@@ -30,6 +30,7 @@ use super::modules::{
 #[derive(Clone, Debug)]
 pub struct WFMClient {
     endpoint: String,
+    component: String,
     limiter: Arc<tokio::sync::Mutex<RateLimiter>>,
     pub log_file: String,
     pub auth: Arc<Mutex<AuthState>>,
@@ -40,6 +41,7 @@ impl WFMClient {
     pub fn new(auth: Arc<Mutex<AuthState>>, settings: Arc<Mutex<crate::settings::SettingsState>>) -> Self {
         WFMClient {
             endpoint: "https://api.warframe.market/v1/".to_string(),
+            component: "WarframeMarket".to_string(),
             limiter: Arc::new(tokio::sync::Mutex::new(RateLimiter::new(
                 1.0,
                 Duration::new(1, 0),
@@ -56,10 +58,19 @@ impl WFMClient {
             return;
         }
         if file.is_none() {
-            logger::debug(format!("WarframeMarket:{}", component).as_str(), msg, true, None);
+            logger::debug(format!("{}:{}", self.component, component).as_str(), msg, true, None);
             return;
         }        
-        logger::debug(format!("WarframeMarket:{}", component).as_str(), msg, true, Some(&self.log_file));
+        logger::debug(format!("{}:{}", self.component, component).as_str(), msg, true, Some(&self.log_file));
+    }
+
+    pub fn create_api_error(&self, component: &str, err: ErrorApiResponse, eyre_report: eyre::ErrReport) {
+       return AppError::new_api(
+            format!("{}:{}",self.component, component).as_str(),
+            err,
+            eyre_report,
+            LogLevel::Error,
+        )
     }
 
     async fn send_request<T: DeserializeOwned>(
@@ -115,7 +126,7 @@ impl WFMClient {
         if let Err(e) = response {
             error_def.message.push(e.to_string());
             return Err(AppError::new_api(
-                "WarframeMarket",
+                self.component.as_str(),
                 error_def,
                 eyre!(format!("There was an error sending the request: {}", e)),
                 LogLevel::Critical,
@@ -134,7 +145,7 @@ impl WFMClient {
             error_def.message.push(e.to_string());
             error_def.error = "RequestError".to_string();
             AppError::new_api(
-                "WarframeMarket",
+                self.component.as_str(),
                 error_def.clone(),
                 eyre!(""),
                 LogLevel::Critical,
@@ -149,7 +160,7 @@ impl WFMClient {
                 .map_err(|e| {
                     error_def.message.push(e.to_string());
                     AppError::new_api(
-                        "WarframeMarket",
+                        self.component.as_str(),
                         error_def.clone(),
                         eyre!(""),
                         LogLevel::Critical,
@@ -161,7 +172,7 @@ impl WFMClient {
                     let messages: Vec<String> =
                         serde_json::from_value(value.clone()).map_err(|e| {
                             AppError::new_api(
-                                "WarframeMarket",
+                                self.component.as_str(),
                                 error_def.clone(),
                                 eyre!(format!("Could not parse error messages: {}", e)),
                                 LogLevel::Critical,
@@ -190,7 +201,7 @@ impl WFMClient {
                 error_def.message.push(e.to_string());
                 error_def.error = "ParseError".to_string();
                 return Err(AppError::new_api(
-                    "WarframeMarket",
+                    self.component.as_str(),
                     error_def,
                     eyre!(""),
                     LogLevel::Critical,

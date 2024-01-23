@@ -22,11 +22,10 @@ impl<'a> ItemModule<'a> {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api(
-                    "WarframeMarket:Item:GetAllItems",
+                return Err(self.client.create_api_error(
+                    "Item:GetAllItems",
                     error,
-                    eyre!(""),
-                    LogLevel::Error,
+                    eyre!("There was an error fetching items"),
                 ));
             }
             Err(err) => {
@@ -46,11 +45,10 @@ impl<'a> ItemModule<'a> {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api(
-                    "WarframeMarket:Item:GetItem",
+                return Err(self.client.create_api_error(
+                    "Item:GetItem",
                     error,
-                    eyre!(""),
-                    LogLevel::Error,
+                    eyre!("There was an error fetching item {}", item),
                 ));
             }
             Err(err) => {

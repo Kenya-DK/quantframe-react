@@ -30,11 +30,10 @@ impl<'a> AuctionModule<'a> {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api(
-                    "WarframeMarket:Auction:GetAllRivenTypes",
+                return Err(self.client.create_api_error(
+                    "Auction:GetAllRivenTypes",
                     error,
-                    eyre!(""),
-                    LogLevel::Error,
+                    eyre!("There was an error getting all riven types"),
                 ));
             }
             Err(err) => {
@@ -57,11 +56,10 @@ impl<'a> AuctionModule<'a> {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api(
+                return Err(self.client.create_api_error(
                     "Auction:GetAllRivenAttributeTypes",
                     error,
-                    eyre!(""),
-                    LogLevel::Error,
+                    eyre!("There was an error getting all riven attribute types"),
                 ));
             }
             Err(err) => {
@@ -87,11 +85,10 @@ impl<'a> AuctionModule<'a> {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api(
-                    "WarframeMarket:Auction:GetUsersAuctions",
+                return Err(self.client.create_api_error(
+                    "Auction:GetUsersAuctions",
                     error,
-                    eyre!(""),
-                    LogLevel::Error,
+                    eyre!("There was an error getting all auctions for user: {}", ingame_name),
                 ));
             }
             Err(err) => {
@@ -177,11 +174,10 @@ impl<'a> AuctionModule<'a> {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api(
-                    "WarframeMarket:Auction:Create",
+                return Err(self.client.create_api_error(
+                    "Auction:Create",
                     error,
-                    eyre!(""),
-                    LogLevel::Error,
+                    eyre!("There was an error creating the auction"),
                 ));
             }
             Err(err) => {
@@ -224,11 +220,10 @@ impl<'a> AuctionModule<'a> {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api(
-                    "WarframeMarket:Auction:Update",
+                return Err(self.client.create_api_error(
+                    "Auction:Update",
                     error,
-                    eyre!(""),
-                    LogLevel::Error,
+                    eyre!("There was an error updating the auction"),
                 ));
             }
             Err(err) => {
@@ -311,11 +306,10 @@ impl<'a> AuctionModule<'a> {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api(
-                    "WarframeMarket:Auction:Search",
+                return Err(self.client.create_api_error(
+                    "Auction:Search",
                     error,
-                    eyre!(""),
-                    LogLevel::Error,
+                    eyre!("There was an error searching for auctions"),
                 ));
             }
             Err(err) => {
@@ -337,11 +331,10 @@ impl<'a> AuctionModule<'a> {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api(
-                    "WarframeMarket:Auction:Delete",
+                return Err(self.client.create_api_error(
+                    "Auction:Delete",
                     error,
-                    eyre!(""),
-                    LogLevel::Error,
+                    eyre!("There was an error deleting the auction"),
                 ));
             }
             Err(err) => {

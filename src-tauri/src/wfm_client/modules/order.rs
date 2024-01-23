@@ -36,11 +36,10 @@ impl<'a> OrderModule<'a> {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api(
-                    "WarframeMarket:Order:GetUserOrders",
+                return Err(self.client.create_api_error(
+                    "Order:GetUserOrders",
                     error,
-                    eyre!(""),
-                    LogLevel::Error,
+                    eyre!("There was an error fetching orders for {}", ingame_name),
                 ));
             }
             Err(err) => {
@@ -100,11 +99,10 @@ impl<'a> OrderModule<'a> {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api(
-                    "WarframeMarket:Order:Create",
+                return Err(self.client.create_api_error(
+                    "Order:Create",
                     error,
-                    eyre!(""),
-                    LogLevel::Error,
+                    eyre!("There was an error creating order"),
                 ));
             }
             Err(err) => {
@@ -126,11 +124,10 @@ impl<'a> OrderModule<'a> {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api(
-                    "WarframeMarket:Order:Delete",
+                return Err(self.client.create_api_error(
+                    "Order:Delete",
                     error,
-                    eyre!(""),
-                    LogLevel::Error,
+                    eyre!("There was an error deleting order {}", order_id),
                 ));
             }
             Err(err) => {
@@ -172,11 +169,10 @@ impl<'a> OrderModule<'a> {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api(
-                    "WarframeMarket:Order:Update",
+                return Err(self.client.create_api_error(
+                    "Order:Update",
                     error,
-                    eyre!(""),
-                    LogLevel::Error,
+                    eyre!("There was an error updating order {}", order_id),
                 ));
             }
             Err(err) => {
@@ -222,11 +218,10 @@ impl<'a> OrderModule<'a> {
                     payload
                 }
                 Ok(ApiResult::Error(error, _headers)) => {
-                    return Err(AppError::new_api(
-                        "WarframeMarket:Order:Close",
+                    return Err(self.client.create_api_error(
+                        "Order:Closeing",
                         error,
-                        eyre!(""),
-                        LogLevel::Error,
+                        eyre!("There was an error closing order {}", order.id),
                     ));
                 }
                 Err(err) => {
@@ -272,11 +267,10 @@ impl<'a> OrderModule<'a> {
                 payload
             }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api(
-                    "WarframeMarket:Order:GetOrdersByItem",
+                return Err(self.client.create_api_error(
+                    "Order:GetOrdersByItem",
                     error,
-                    eyre!(""),
-                    LogLevel::Error,
+                    eyre!("There was an error fetching orders for {}", item),
                 ));
             }
             Err(err) => {

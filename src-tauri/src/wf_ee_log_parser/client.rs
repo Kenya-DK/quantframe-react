@@ -20,10 +20,12 @@ use super::events::on_new_trading::OnTradingEvent;
 pub struct EELogParser {
     is_running: Arc<AtomicBool>,
     wf_ee_path: PathBuf,
+    component: String,
     last_file_size: Arc<Mutex<u64>>,
     last_line_index: Arc<Mutex<usize>>,
     handle: Arc<Mutex<Option<JoinHandle<()>>>>,
     cold_start: Arc<AtomicBool>,
+    pub settings: Arc<Mutex<crate::settings::SettingsState>>,
     // Events
     event_conversation: Arc<Mutex<OnNewConversationEvent>>,
     event_trading: Arc<Mutex<OnTradingEvent>>,
@@ -38,11 +40,13 @@ impl EELogParser {
         let wf_ee_path = helper::get_app_local_path().join("Warframe").join("EE.log");
         Self {
             is_running: Arc::new(AtomicBool::new(false)),
+            component: "EELogParser".to_string(),
             wf_ee_path: wf_ee_path.clone(),
             last_file_size: Arc::new(Mutex::new(0)),
             last_line_index: Arc::new(Mutex::new(0)),
             handle: Arc::new(Mutex::new(None)),
             cold_start: Arc::new(AtomicBool::new(true)),
+            settings: Arc::clone(&settings),
             event_conversation: Arc::new(Mutex::new(OnNewConversationEvent::new(
                 Arc::clone(&settings),
                 Arc::clone(&mh),
@@ -56,8 +60,21 @@ impl EELogParser {
             ))),
         }
     }
+
+    pub fn debug(&self, component: &str, msg: &str, file: Option<bool>) {
+        let settings = self.settings.lock().unwrap().clone();
+        if !settings.debug {
+            return;
+        }
+        if file.is_none() {
+            logger::debug(format!("{}:{}", self.component, component).as_str(), msg, true, None);
+            return;
+        }        
+        logger::debug(format!("{}:{}", self.component, component).as_str(), msg, true, Some(&self.log_file));
+    }
+
     pub fn start_loop(&mut self) {
-        logger::info_con("EELogParser", "Starting EE Log Parser");
+        logger::info_con(self.component, "Starting EE Log Parser");
         let is_running = Arc::clone(&self.is_running);
 
         let scraper = self.clone();
@@ -80,7 +97,7 @@ impl EELogParser {
     }
 
     pub fn stop_loop(&self) {
-        logger::info_con("EELogParser", "Stopping Whisper Listener");
+        logger::info_con(self.component, "Stopping Whisper Listener");
         self.is_running.store(false, Ordering::SeqCst);
     }
 
@@ -109,7 +126,7 @@ impl EELogParser {
             }
             Err(err) => {
                 helper::send_message_to_window("EELogParser", Some(json!({ "error": "err" })));
-                Err(AppError::new("EELogParser", eyre::eyre!(err.to_string())))?
+                Err(AppError::new(self.component, eyre::eyre!(err.to_string())))?
             }
         }
         Ok(())

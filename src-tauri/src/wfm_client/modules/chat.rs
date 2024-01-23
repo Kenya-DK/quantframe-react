@@ -28,11 +28,10 @@ impl<'a> ChatModule<'a> {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api(
-                    "WarframeMarket:Chat:GetChats",
+                return Err(self.client.create_api_error(
+                    "Chat:GetChats",
                     error,
-                    eyre!(""),
-                    LogLevel::Error,
+                    eyre!("There was an error fetching chats"),
                 ));
             }
             Err(err) => {
@@ -53,11 +52,10 @@ impl<'a> ChatModule<'a> {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api(
-                    "WarframeMarket:Chat:GetChat",
+                return Err(self.client.create_api_error(
+                    "Chat:GetChatById",
                     error,
-                    eyre!(""),
-                    LogLevel::Error,
+                    eyre!("There was an error fetching chat messages for chat {}", id),
                 ));
             }
             Err(err) => {
@@ -78,11 +76,10 @@ impl<'a> ChatModule<'a> {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api(
-                    "WarframeMarket:Chat:Delete",
+                return Err(self.client.create_api_error(
+                    "Chat:Delete",
                     error,
-                    eyre!(""),
-                    LogLevel::Error,
+                    eyre!("There was an error deleting chat {}", id),
                 ));
             }
             Err(err) => {

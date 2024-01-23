@@ -34,12 +34,11 @@ impl<'a> AuthModule<'a> {
                 (user, headers)
             }
             Ok(ApiResult::Error(e, _headers)) => {
-                return Err(AppError::new_api(
-                    "WarframeMarketAuth:Login",
-                    e,
-                    eyre!(""),
-                    LogLevel::Warning,
-                ))
+                return Err(self.client.create_api_error(
+                    "Auth:Login",
+                    error,
+                    eyre!("There was an error logging in"),
+                ));
             }
             Err(e) => return Err(e),
         };

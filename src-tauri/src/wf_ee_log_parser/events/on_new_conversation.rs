@@ -50,10 +50,28 @@ impl OnNewConversationEvent {
         )
         .map_err(|e| AppError::new("OnNewConversationEvent", eyre!(e)))?;
         if found {
+            self.client.debug(
+                "OnNewConversationEvent",
+                format!(
+                    "Found a new conversation: {}",
+                    input
+                )
+                .as_str(),
+                None,
+            );
             let username = captures.get(0).unwrap().clone().unwrap();
 
             // If system notification is enabled, show it
             if settings.system.enable {
+                self.client.debug(
+                    "OnNewConversationEvent",
+                    format!(
+                        "Showing system notification for: {}",
+                        username
+                    )
+                    .as_str(),
+                    None,
+                );
                 helper.show_notification(
                     settings.system.title.as_str(),
                     &settings.system.content.replace("<PLAYER_NAME>", username.as_str()),
@@ -62,7 +80,7 @@ impl OnNewConversationEvent {
                 );
             }
             // If discord webhook is enabled, send it
-            if settings.discord.enable {
+            if settings.discord.enable {                
                 crate::helper::send_message_to_discord(
                     settings.discord.webhook.unwrap_or("".to_string()),
                     settings.discord.title,
