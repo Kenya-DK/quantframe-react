@@ -33,10 +33,11 @@ pub struct WFMClient {
     limiter: Arc<tokio::sync::Mutex<RateLimiter>>,
     pub log_file: String,
     pub auth: Arc<Mutex<AuthState>>,
+    pub settings: Arc<Mutex<crate::settings::SettingsState>>,
 }
 
 impl WFMClient {
-    pub fn new(auth: Arc<Mutex<AuthState>>) -> Self {
+    pub fn new(auth: Arc<Mutex<AuthState>>, settings: Arc<Mutex<crate::settings::SettingsState>>) -> Self {
         WFMClient {
             endpoint: "https://api.warframe.market/v1/".to_string(),
             limiter: Arc::new(tokio::sync::Mutex::new(RateLimiter::new(
@@ -45,7 +46,20 @@ impl WFMClient {
             ))),
             log_file: "wfmAPICalls.log".to_string(),
             auth,
+            settings,
         }
+    }
+
+    pub fn debug(&self, component: &str, msg: &str, file: Option<bool>) {
+        let settings = self.settings.lock().unwrap().clone();
+        if !settings.debug {
+            return;
+        }
+        if file.is_none() {
+            logger::debug(format!("WarframeMarket:{}", component).as_str(), msg, true, None);
+            return;
+        }        
+        logger::debug(format!("WarframeMarket:{}", component).as_str(), msg, true, Some(&self.log_file));
     }
 
     async fn send_request<T: DeserializeOwned>(
@@ -118,6 +132,7 @@ impl WFMClient {
         // Convert the response to a Value object
         let response: Value = serde_json::from_str(content.as_str()).map_err(|e| {
             error_def.message.push(e.to_string());
+            error_def.error = "RequestError".to_string();
             AppError::new_api(
                 "WarframeMarket",
                 error_def.clone(),

@@ -20,10 +20,15 @@ pub struct AuctionModule<'a> {
 
 impl<'a> AuctionModule<'a> {
     pub async fn get_all_riven_types(&self) -> Result<Vec<RivenTypeInfo>, AppError> {
-        match self.client.get("riven/items", Some("items")).await {
+        match self.client.get::<Vec<RivenTypeInfo>>("riven/items", Some("items")).await {
             Ok(ApiResult::Success(payload, _headers)) => {
+                self.client.debug(
+                    "Auction:GetAllRivenTypes",
+                    format!("Found {} riven types", payload.len()).as_str(),
+                    None,
+                );
                 return Ok(payload);
-            },
+            }
             Ok(ApiResult::Error(error, _headers)) => {
                 return Err(AppError::new_api(
                     "WarframeMarket:Auction:GetAllRivenTypes",
@@ -38,17 +43,22 @@ impl<'a> AuctionModule<'a> {
         };
     }
     pub async fn get_all_riven_attribute_types(&self) -> Result<Vec<RivenAttributeInfo>, AppError> {
-         match self
+        match self
             .client
-            .get("riven/attributes", Some("attributes"))
+            .get::<Vec<RivenAttributeInfo>>("riven/attributes", Some("attributes"))
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {
+                self.client.debug(
+                    "Auction:GetAllRivenAttributeTypes",
+                    format!("Found {} attributes", payload.len()).as_str(),
+                    None,
+                );
                 return Ok(payload);
-            },
+            }
             Ok(ApiResult::Error(error, _headers)) => {
                 return Err(AppError::new_api(
-                    "WarframeMarket:Auction:GetAllRivenAttributeTypes",
+                    "Auction:GetAllRivenAttributeTypes",
                     error,
                     eyre!(""),
                     LogLevel::Error,
@@ -67,10 +77,15 @@ impl<'a> AuctionModule<'a> {
     ) -> Result<Vec<Auction<String>>, AppError> {
         let url = format!("profile/{}/auctions", ingame_name);
 
-        match self.client.get(&url, Some("auctions")).await {
+        match self.client.get::<Vec<Auction<String>>>(&url, Some("auctions")).await {
             Ok(ApiResult::Success(payload, _headers)) => {
+                self.client.debug(
+                    "Auction:GetUsersAuctions",
+                    format!("Found {} auctions", payload.len()).as_str(),
+                    None,
+                );
                 return Ok(payload);
-            },
+            }
             Ok(ApiResult::Error(error, _headers)) => {
                 return Err(AppError::new_api(
                     "WarframeMarket:Auction:GetUsersAuctions",
@@ -137,7 +152,10 @@ impl<'a> AuctionModule<'a> {
             });
             body["item"] = item_riven;
         } else if auction_type == "item" {
-            logger::warning_con("WarframeMarket:Auction:Create", "Item auctions are not yet supported");
+            logger::warning_con(
+                "WarframeMarket:Auction:Create",
+                "Item auctions are not yet supported",
+            );
         }
 
         match self
@@ -147,6 +165,15 @@ impl<'a> AuctionModule<'a> {
         {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.emit("CREATE_OR_UPDATE", serde_json::to_value(&payload).unwrap());
+                self.client.debug(
+                    "Auction:Create",
+                    format!(
+                        "Created auction for type: {} for item: {}",
+                        auction_type, item.name.unwrap_or("None".to_string())
+                    )
+                    .as_str(),
+                    None,
+                );
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
@@ -182,10 +209,18 @@ impl<'a> AuctionModule<'a> {
         });
         let url = format!("auctions/entry/{}", auction_id);
 
-        match self.client.put(&url, Some("auction"), Some(body)).await
-        {
+        match self.client.put(&url, Some("auction"), Some(body)).await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.emit("CREATE_OR_UPDATE", serde_json::to_value(&payload).unwrap());
+                self.client.debug(
+                    "Auction:Update",
+                    format!(
+                        "Updated auction: {} to buyout price: {}",
+                        auction_id, buyout_price
+                    )
+                    .as_str(),
+                    None,
+                );
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
@@ -257,9 +292,22 @@ impl<'a> AuctionModule<'a> {
         let full_query = query_params.join("&");
         let url = format!("{}&{}", base_url, full_query);
 
-        match self.client.get(&url, Some("auctions")).await {
+        match self
+            .client
+            .get::<Vec<Auction<AuctionOwner>>>(&url, Some("auctions"))
+            .await
+        {
             Ok(ApiResult::Success(payload, _headers)) => {
-                self.emit("CREATE_OR_UPDATE", serde_json::to_value(&payload).unwrap());
+                self.client.debug(
+                    "Auction:Search",
+                    format!(
+                        "Found {} auctions using query: {}",
+                        &payload.len(),
+                        full_query
+                    )
+                    .as_str(),
+                    None,
+                );
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
@@ -281,10 +329,20 @@ impl<'a> AuctionModule<'a> {
         match self.client.put(&url, Some("auction_id"), None).await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.emit("CREATE_OR_UPDATE", serde_json::to_value(&payload).unwrap());
+                self.client.debug(
+                    "Auction:Delete",
+                    format!("Deleted auction: {}", auction_id).as_str(),
+                    None,
+                );
                 return Ok(payload);
-            },
+            }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api("WarframeMarket:Auction:Delete",error,eyre!(""),LogLevel::Error));
+                return Err(AppError::new_api(
+                    "WarframeMarket:Auction:Delete",
+                    error,
+                    eyre!(""),
+                    LogLevel::Error,
+                ));
             }
             Err(err) => {
                 return Err(err);

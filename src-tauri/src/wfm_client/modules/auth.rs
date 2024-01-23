@@ -20,19 +20,29 @@ impl<'a> AuthModule<'a> {
             "password": password
         });
 
-        let (mut user, headers): (AuthState, HeaderMap) =
-            match self.client.post("/auth/signin", Some("user"), body).await {
-                Ok(ApiResult::Success(user, headers)) => (user, headers),
-                Ok(ApiResult::Error(e, _headers)) => {
-                    return Err(AppError::new_api(
-                        "WarframeMarketAuth:Login",
-                        e,
-                        eyre!(""),
-                        LogLevel::Warning,
-                    ))
-                }
-                Err(e) => return Err(e),
-            };
+        let (mut user, headers): (AuthState, HeaderMap) = match self
+            .client
+            .post::<AuthState>("/auth/signin", Some("user"), body)
+            .await
+        {
+            Ok(ApiResult::Success(user, headers)) => {
+                self.client.debug(
+                    "User:Login",
+                    format!("User logged in: {}", user.ingame_name).as_str(),
+                    None,
+                );
+                (user, headers)
+            }
+            Ok(ApiResult::Error(e, _headers)) => {
+                return Err(AppError::new_api(
+                    "WarframeMarketAuth:Login",
+                    e,
+                    eyre!(""),
+                    LogLevel::Warning,
+                ))
+            }
+            Err(e) => return Err(e),
+        };
 
         // Get the "set-cookie" header
         let cookies = headers.get("set-cookie");
@@ -61,27 +71,11 @@ impl<'a> AuthModule<'a> {
         match self
             .client
             .orders()
-            .create(
-                "Lex Prime Set",
-                "56783f24cbfa8f0432dd89a2",
-                "buy",
-                1,
-                1,
-                false,
-                None,
-            )
+            .create("56783f24cbfa8f0432dd89a2", "buy", 1, 1, false, None)
             .await
         {
             Ok(order) => {
-                self.client
-                    .orders()
-                    .delete(
-                        &order.id.clone(),
-                        "Lex Prime Set",
-                        "56783f24cbfa8f0432dd89a2",
-                        "buy",
-                    )
-                    .await?;
+                self.client.orders().delete(&order.id.clone()).await?;
                 Ok(true)
             }
             Err(e) => {

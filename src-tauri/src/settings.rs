@@ -11,6 +11,8 @@ use eyre::eyre;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SettingsState {
+    // Debug Mode
+    pub debug: bool,
     pub live_scraper: LiveScraperSettings,
     pub whisper_scraper: WhisperSettings,
 }
@@ -70,6 +72,7 @@ pub struct WhisperSettings {
 impl Default for SettingsState {
     fn default() -> Self {
         Self {
+            debug: false,
             live_scraper: LiveScraperSettings {
                 stock_mode: StockMode::All,
                 webhook: "".to_string(),
@@ -161,6 +164,13 @@ impl SettingsState {
 
         // Create a default SettingsState object
         let default_settings = SettingsState::default();
+
+        // Check for debug mode
+        if json_value.get("debug").is_none() {
+            json_value["debug"] =
+            Value::from(default_settings.debug);
+            is_valid = false;
+        }
 
         // Check for nested properties within 'live_scraper'
         if let Some(live_scraper) = json_value.get_mut("live_scraper") {

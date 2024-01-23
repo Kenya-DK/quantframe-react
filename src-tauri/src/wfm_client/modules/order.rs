@@ -6,10 +6,11 @@ use reqwest::header::HeaderMap;
 use serde_json::json;
 
 use crate::{
-    error::{AppError, ApiResult},
+    enums::{LogLevel, OrderType},
+    error::{ApiResult, AppError},
     helper, logger,
     structs::{Order, Ordres},
-    wfm_client::client::WFMClient, enums::{OrderType, LogLevel},
+    wfm_client::client::WFMClient,
 };
 
 use eyre::eyre;
@@ -21,12 +22,26 @@ impl<'a> OrderModule<'a> {
     // Actions User Order
     pub async fn get_user_orders(&self, ingame_name: &str) -> Result<Ordres, AppError> {
         let url = format!("profile/{}/orders", ingame_name);
-        match self.client.get(&url, None).await {
+        match self.client.get::<Ordres>(&url, None).await {
             Ok(ApiResult::Success(payload, _headers)) => {
+                self.client.debug(
+                    "Order:GetUserOrders",
+                    format!(
+                        "{} orders were fetched.",
+                        payload.buy_orders.len() + payload.sell_orders.len()
+                    )
+                    .as_str(),
+                    None,
+                );
                 return Ok(payload);
-            },
+            }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api("WarframeMarket:Order:GetUserOrders",error,eyre!(""),LogLevel::Error));
+                return Err(AppError::new_api(
+                    "WarframeMarket:Order:GetUserOrders",
+                    error,
+                    eyre!(""),
+                    LogLevel::Error,
+                ));
             }
             Err(err) => {
                 return Err(err);
@@ -42,7 +57,6 @@ impl<'a> OrderModule<'a> {
 
     pub async fn create(
         &self,
-        _item_name: &str,
         item_id: &str,
         order_type: &str,
         platinum: i64,
@@ -63,13 +77,35 @@ impl<'a> OrderModule<'a> {
             body["rank"] = json!(rank);
         }
 
-        match self.client.post("profile/orders", Some("order"), body).await {
+        match self
+            .client
+            .post("profile/orders", Some("order"), body)
+            .await
+        {
             Ok(ApiResult::Success(payload, _headers)) => {
+                self.client.debug(
+                    "Order:Create",
+                    format!(
+                        "Order created type: {} item: {}, platinum: {}, quantity: {}, rank: {}",
+                        order_type,
+                        item_id,
+                        platinum,
+                        quantity,
+                        rank.unwrap_or(-1.0)
+                    )
+                    .as_str(),
+                    None,
+                );
                 self.emit("CREATE_OR_UPDATE", serde_json::to_value(&payload).unwrap());
                 return Ok(payload);
-            },
+            }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api("WarframeMarket:Order:Create",error,eyre!(""),LogLevel::Error));
+                return Err(AppError::new_api(
+                    "WarframeMarket:Order:Create",
+                    error,
+                    eyre!(""),
+                    LogLevel::Error,
+                ));
             }
             Err(err) => {
                 return Err(err);
@@ -77,21 +113,25 @@ impl<'a> OrderModule<'a> {
         }
     }
 
-    pub async fn delete(
-        &self,
-        order_id: &str,
-        _item_name: &str,
-        _item_id: &str,
-        _order_type: &str,
-    ) -> Result<String, AppError> {
+    pub async fn delete(&self, order_id: &str) -> Result<String, AppError> {
         let url = format!("profile/orders/{}", order_id);
         match self.client.delete(&url, Some("order_id")).await {
             Ok(ApiResult::Success(payload, _headers)) => {
+                self.client.debug(
+                    "Order:Delete",
+                    format!("Order {} was deleted.", order_id).as_str(),
+                    None,
+                );
                 self.emit("DELETE", json!({ "id": &payload }));
                 return Ok(payload);
-            },
+            }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api("WarframeMarket:Order:Delete",error,eyre!(""),LogLevel::Error));
+                return Err(AppError::new_api(
+                    "WarframeMarket:Order:Delete",
+                    error,
+                    eyre!(""),
+                    LogLevel::Error,
+                ));
             }
             Err(err) => {
                 return Err(err);
@@ -105,9 +145,6 @@ impl<'a> OrderModule<'a> {
         platinum: i32,
         quantity: i32,
         visible: bool,
-        _item_name: &str,
-        _item_id: &str,
-        _order_type: &str,
     ) -> Result<Order, AppError> {
         // Construct any JSON body
         let body = json!({
@@ -116,13 +153,31 @@ impl<'a> OrderModule<'a> {
             "visible": visible
         });
         let url = format!("profile/orders/{}", order_id);
-        match self.client.put(&url, Some("order"), Some(body)).await {
+        match self
+            .client
+            .put::<Order>(&url, Some("order"), Some(body))
+            .await
+        {
             Ok(ApiResult::Success(payload, _headers)) => {
+                self.client.debug(
+                    "Order:Update",
+                    format!(
+                        "Order id: {}, platinum: {}, quantity: {}",
+                        order_id, platinum, quantity
+                    )
+                    .as_str(),
+                    None,
+                );
                 self.emit("CREATE_OR_UPDATE", serde_json::to_value(&payload).unwrap());
                 return Ok(payload);
-            },
+            }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api("WarframeMarket:Order:Update",error,eyre!(""),LogLevel::Error));
+                return Err(AppError::new_api(
+                    "WarframeMarket:Order:Update",
+                    error,
+                    eyre!(""),
+                    LogLevel::Error,
+                ));
             }
             Err(err) => {
                 return Err(err);
@@ -151,25 +206,40 @@ impl<'a> OrderModule<'a> {
 
         let url = format!("profile/orders/close/{}", order.id);
 
-
-        let result:Option<serde_json::Value> =match self.client.put(&url, Some("order"), None).await {
-            Ok(ApiResult::Success(payload, _headers)) => {
-                payload
-            },
-            Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api("WarframeMarket:Order:Close",error,eyre!(""),LogLevel::Error));
-            }
-            Err(err) => {
-                return Err(err);
-            }
-        };
+        let result: Option<serde_json::Value> =
+            match self.client.put(&url, Some("order"), None).await {
+                Ok(ApiResult::Success(payload, _headers)) => {
+                    self.client.debug(
+                        "Order:Close",
+                        format!(
+                            "Order {} type: {} was closed.",
+                            order.id,
+                            order.order_type.as_str()
+                        )
+                        .as_str(),
+                        None,
+                    );
+                    payload
+                }
+                Ok(ApiResult::Error(error, _headers)) => {
+                    return Err(AppError::new_api(
+                        "WarframeMarket:Order:Close",
+                        error,
+                        eyre!(""),
+                        LogLevel::Error,
+                    ));
+                }
+                Err(err) => {
+                    return Err(err);
+                }
+            };
 
         if result.is_none() {
             self.emit("DELETE", json!({ "id": &order.id }));
             return Ok("Order Successfully Closed".to_string());
         } else {
             let order_data = result.unwrap();
-            order.quantity= order_data["quantity"].as_i64().unwrap();
+            order.quantity = order_data["quantity"].as_i64().unwrap();
             self.emit("CREATE_OR_UPDATE", serde_json::to_value(&order).unwrap());
             return Ok("Order Successfully Closed and Updated".to_string());
         }
@@ -194,10 +264,20 @@ impl<'a> OrderModule<'a> {
 
         let orders: Vec<Order> = match self.client.get(&url, Some("orders")).await {
             Ok(ApiResult::Success(payload, _headers)) => {
+                self.client.debug(
+                    "Order:GetOrdersByItem",
+                    format!("Orders for {} were fetched.", item).as_str(),
+                    None,
+                );
                 payload
-            },
+            }
             Ok(ApiResult::Error(error, _headers)) => {
-                return Err(AppError::new_api("WarframeMarket:Order:GetOrdersByItem",error,eyre!(""),LogLevel::Error));
+                return Err(AppError::new_api(
+                    "WarframeMarket:Order:GetOrdersByItem",
+                    error,
+                    eyre!(""),
+                    LogLevel::Error,
+                ));
             }
             Err(err) => {
                 return Err(err);
