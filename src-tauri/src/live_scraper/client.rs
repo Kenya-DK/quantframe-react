@@ -69,20 +69,23 @@ impl LiveScraperClient {
         let backtrace = error.backtrace();
         let log_level = error.log_level();
         let extra = error.extra_data();
-        if log_level == LogLevel::Critical {
+        if log_level == LogLevel::Critical || log_level == LogLevel::Error {
             self.is_running.store(false, Ordering::SeqCst);
             crate::logger::dolog(
                 log_level.clone(),
                 component.as_str(),
-                format!("Error: {:?}, {:?}, {:?}", backtrace, cause, extra).as_str(),
+                format!("{}, {}, {}", backtrace, cause, extra.to_string()).as_str(),
                 true,
                 Some(self.log_file.as_str()),
             );
             helper::send_message_to_window("LiveScraper:Error", Some(error.to_json()));
         } else {
-            logger::info_con(
-                "LiveScraper",
-                format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
+            crate::logger::dolog(
+                log_level.clone(),
+                component.as_str(),
+                format!("{}, {}, {}", backtrace, cause, extra.to_string()).as_str(),
+                true,
+                Some(self.log_file.as_str()),
             );
         }
     }

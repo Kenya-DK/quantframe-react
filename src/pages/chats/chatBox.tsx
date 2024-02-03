@@ -32,7 +32,7 @@ export const ChatBox = ({ id }: ChatBoxProps) => {
       }
     }));
     const chat = {
-      chat_id: "656b2ed385339a17bf0fc118",
+      chat_id: id,
       message: `<p>${msg}<p/>`,
       raw_message: msg,
       message_from: user?.id || "",

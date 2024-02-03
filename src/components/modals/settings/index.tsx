@@ -3,9 +3,10 @@ import { GeneralPanel } from "./general.panel";
 import { LiveScraperPanel } from "./liveScraper.panel";
 import { useTranslateModal } from "@hooks/index";
 import { DeepPartial, Settings, Wfm } from "$types/index";
-import { WhisperScraperPanel } from "./whisperScraper.panel";
+import { NotificationsPanel } from "./notifications.panel";
 import { useState } from "react";
 import { modals } from "@mantine/modals";
+import { LoggingPanel } from "./logging.panel";
 
 interface SettingsModalProps {
   settings: Settings | undefined;
@@ -29,7 +30,8 @@ export function SettingsModal({ tradable_items, settings: settingsIn, updateSett
       <Tabs.List>
         <Tabs.Tab value="general">{useTranslateSettingsPanels("general.title")}</Tabs.Tab>
         <Tabs.Tab value="live_scraper">{useTranslateSettingsPanels("live_trading.title")}</Tabs.Tab>
-        <Tabs.Tab value="whisper_scraper">{useTranslateSettingsPanels("whisper_scraper.title")}</Tabs.Tab>
+        <Tabs.Tab value="notifications">{useTranslateSettingsPanels("notifications.title")}</Tabs.Tab>
+        <Tabs.Tab value="logging">{useTranslateSettingsPanels("logging.title")}</Tabs.Tab>
       </Tabs.List>
 
       <Tabs.Panel value="general" pt="xs">
@@ -45,10 +47,17 @@ export function SettingsModal({ tradable_items, settings: settingsIn, updateSett
           }} tradable_items={tradable_items} />
         </Box>
       </Tabs.Panel>
-      <Tabs.Panel value="whisper_scraper" pt="xs">
+      <Tabs.Panel value="logging" pt="xs">
         <Box h={"75vh"} sx={{ position: "relative" }}>
-          <WhisperScraperPanel settings={settings?.whisper_scraper} updateSettings={(set) => {
-            handleUpdateSettings({ whisper_scraper: set })
+          <LoggingPanel settings={settings} updateSettings={(set) => {
+            handleUpdateSettings({ ...set })
+          }} />
+        </Box>
+      </Tabs.Panel>
+      <Tabs.Panel value="notifications" pt="xs">
+        <Box h={"75vh"} sx={{ position: "relative" }}>
+          <NotificationsPanel settings={settings?.notifications} updateSettings={(set) => {
+            handleUpdateSettings({ notifications: set })
           }} tradable_items={tradable_items} />
         </Box>
       </Tabs.Panel>

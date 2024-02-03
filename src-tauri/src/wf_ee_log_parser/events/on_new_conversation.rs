@@ -3,9 +3,8 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use crate::{error::AppError, helper, settings::SettingsState, logger, handler::MonitorHandler};
+use crate::{error::AppError, handler::MonitorHandler, settings::SettingsState};
 use eyre::eyre;
-use serde_json::json;
 
 enum Events {
     Conversation,
@@ -20,28 +19,31 @@ impl Events {
     }
 }
 
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct OnNewConversationEvent {
-    wf_ee_path: PathBuf,
     settings: Arc<Mutex<SettingsState>>,
     helper: Arc<Mutex<MonitorHandler>>,
 }
 
 impl OnNewConversationEvent {
-    pub fn new(settings: Arc<Mutex<SettingsState>>,helper: Arc<Mutex<MonitorHandler>>, wf_ee_path: PathBuf) -> Self {
-        Self {
-            settings,
-            helper,
-            wf_ee_path,
-        }
+    pub fn new(
+        settings: Arc<Mutex<SettingsState>>,
+        helper: Arc<Mutex<MonitorHandler>>,
+        _: PathBuf,
+    ) -> Self {
+        Self { settings, helper }
     }
 
-    pub fn check(&self, _: usize, input: &str) -> Result<(bool), AppError> {
-        let settings = self.settings.lock()?.clone().whisper_scraper.on_new_conversation;
+    pub fn check(&self, _: usize, input: &str) -> Result<bool, AppError> {
+        let settings = self
+            .settings
+            .lock()?
+            .clone()
+            .notifications
+            .on_new_conversation;
         let helper = self.helper.lock()?;
 
-
-        if !settings.discord.enable && !settings.system.enable {
+        if !settings.system_notify && !settings.discord_notify {
             return Ok(false);
         }
         let (found, captures) = crate::wf_ee_log_parser::events::helper::match_pattern(
@@ -51,25 +53,25 @@ impl OnNewConversationEvent {
         .map_err(|e| AppError::new("OnNewConversationEvent", eyre!(e)))?;
         if found {
             let username = captures.get(0).unwrap().clone().unwrap();
-
+            let content = settings.content.replace("<PLAYER_NAME>", username.as_str());
             // If system notification is enabled, show it
-            if settings.system.enable {
+            if settings.system_notify {
                 helper.show_notification(
-                    settings.system.title.as_str(),
-                    &settings.system.content.replace("<PLAYER_NAME>", username.as_str()),
+                    settings.title.as_str(),
+                    &content,
                     Some("assets/icons/icon.png"),
                     Some("Default"),
                 );
             }
             // If discord webhook is enabled, send it
-            if settings.discord.enable {
+            if settings.discord_notify && settings.webhook.is_some() {
                 crate::helper::send_message_to_discord(
-                    settings.discord.webhook.unwrap_or("".to_string()),
-                    settings.discord.title,
-                    settings.discord.content.replace("<PLAYER_NAME>", username.as_str()),
-                    settings.discord.user_ids.clone(),
+                    settings.webhook.unwrap_or("".to_string()),
+                    settings.title,
+                    content,
+                    settings.user_ids.clone(),
                 );
-            }            
+            }
         }
         Ok(found)
     }

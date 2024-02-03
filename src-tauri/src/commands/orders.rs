@@ -24,7 +24,7 @@ pub async fn delete_order(
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<(), AppError> {
     let wfm = wfm.lock()?.clone();
-    match wfm.orders().delete(id.as_str(), "Any", "", "").await {
+    match wfm.orders().delete(id.as_str()).await {
         Ok(_) => {}
         Err(e) => {
             error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
@@ -105,7 +105,7 @@ pub async fn delete_all_orders(
             "current": current_count,
             "total": count
         })), false);
-        match wfm.orders().delete(&order.id, "None", "None", "Any").await {
+        match wfm.orders().delete(&order.id).await {
             Ok(_) => {}
             Err(e) => {
                 error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);

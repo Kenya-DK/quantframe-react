@@ -101,9 +101,6 @@ impl OnTradingEvent {
         }
     }
     pub fn check(&mut self, _index: usize, input: &str) -> Result<bool, AppError> {
-        // let file_path = "tradings.json";
-        // let settings = self.settings.lock()?.clone().whisper_scraper;
-
         while self.getting_trade_message_multiline {
             if input.contains("[Info]") || input.contains("[Error]") || input.contains("[Warning]")
             {
@@ -382,16 +379,11 @@ impl OnTradingEvent {
             }
         }
 
-        logger::info_con(
-            "OnTradingEvent",
-            format!("Trade accepted from {}", trade.user_name).as_str(),
-        );
         self.reset_trade();
         Ok(())
     }
 
     fn trade_failed(&mut self) {
-        logger::info_con("OnTradingEvent", "Trade failed");
         self.reset_trade();
     }
 

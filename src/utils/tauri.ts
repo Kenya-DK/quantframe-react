@@ -110,6 +110,18 @@ export const SendNotificationToWindow = async (title: string, message: string, i
 }
 
 
+/**
+ * Sends a notification to Discord using a specified webhook.
+ * 
+ * @param title - The title of the notification.
+ * @param content - The content of the notification.
+ * @param webhook - The webhook URL to send the notification to.
+ * @param user_ids - Optional. An array of user IDs to mention in the notification.
+ */
+export const SendDiscordNotification = async (title: string, content: string, webhook: string, user_ids?: string[]) => {
+  await invoke("send_message_to_discord", { title, content, webhook, user_ids })
+}
+
 OnTauriEvent("Client:Update:Progress", (data: ProgressReport) => {
   const { id, title, i18n_key, isCompleted, values } = data;
   let notification = {

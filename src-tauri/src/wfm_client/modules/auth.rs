@@ -1,14 +1,15 @@
+use eyre::eyre;
 use reqwest::header::HeaderMap;
 use serde_json::json;
 
 use crate::{
     auth::AuthState,
-    error::{self, AppError},
-    logger,
+    error::{self, ApiResult, AppError},
     wfm_client::client::WFMClient,
 };
 pub struct AuthModule<'a> {
     pub client: &'a WFMClient,
+    pub debug_id: String,
 }
 
 impl<'a> AuthModule<'a> {
@@ -17,8 +18,31 @@ impl<'a> AuthModule<'a> {
             "email": email,
             "password": password
         });
-        let (mut user, headers): (AuthState, HeaderMap) =
-            self.client.post("/auth/signin", Some("user"), body).await?;
+
+        let (mut user, headers): (AuthState, HeaderMap) = match self
+            .client
+            .post::<AuthState>("/auth/signin", Some("user"), body)
+            .await
+        {
+            Ok(ApiResult::Success(user, headers)) => {
+                self.client.debug(
+                    &self.debug_id,
+                    "User:Login",
+                    format!("User logged in: {}", user.ingame_name).as_str(),
+                    None,
+                );
+                (user, headers)
+            }
+            Ok(ApiResult::Error(e, _headers)) => {
+                return Err(self.client.create_api_error(
+                    "Auth:Login",
+                    e,
+                    eyre!("There was an error logging in"),
+                    crate::enums::LogLevel::Error,
+                ));
+            }
+            Err(e) => return Err(e),
+        };
 
         // Get the "set-cookie" header
         let cookies = headers.get("set-cookie");
@@ -47,32 +71,19 @@ impl<'a> AuthModule<'a> {
         match self
             .client
             .orders()
-            .create(
-                "Lex Prime Set",
-                "56783f24cbfa8f0432dd89a2",
-                "buy",
-                1,
-                1,
-                false,
-                None,
-            )
+            .create("56783f24cbfa8f0432dd89a2", "buy", 1, 1, false, None)
             .await
         {
             Ok(order) => {
-                self.client
-                    .orders()
-                    .delete(
-                        &order.id.clone(),
-                        "Lex Prime Set",
-                        "56783f24cbfa8f0432dd89a2",
-                        "buy",
-                    )
-                    .await?;
+                self.client.orders().delete(&order.id.clone()).await?;
                 Ok(true)
             }
             Err(e) => {
-                let a = e.cause();
-
+                if e.cause()
+                    .contains("app.post_order.already_created_no_duplicates")
+                {
+                    return Ok(true);
+                }
                 auth.access_token = None;
                 auth.id = "".to_string();
                 auth.save_to_file()?;

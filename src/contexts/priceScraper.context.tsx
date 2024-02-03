@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { OnTauriEvent } from "../utils";
+import { OnTauriEvent, SendNotificationToWindow } from "../utils";
 import { RustError, ScraperState } from "../types";
+import { useTranslateContext } from "../hooks";
 type PriceScraperContextProps = ScraperState & {
   max: number;
   min: number;
@@ -23,6 +24,7 @@ export const PriceScraperContext = createContext<PriceScraperContextProps>({
 export const usePriceScraperContext = () => useContext(PriceScraperContext);
 
 export const PriceScraperContextProvider = ({ children }: PriceScraperContextProviderProps) => {
+  const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateContext(`price_scraper.${key}`, { ...context }, i18Key);
   const [is_running, setIsRunning] = useState(false);
   const [last_run, setLastRun] = useState<Date | null>(null);
   const [error, setError] = useState<RustError | null>(null);
@@ -50,6 +52,7 @@ export const PriceScraperContextProvider = ({ children }: PriceScraperContextPro
     OnTauriEvent("PriceScraper:Error", (error: RustError) => {
       setIsRunning(false)
       setError(error)
+      SendNotificationToWindow(useTranslate("error_title"), useTranslate("error_message"));
     });
     return () => { }
   }, []);

@@ -50,8 +50,10 @@ export interface ScraperMessage {
 }
 
 export interface Settings {
+  debug: string[];
+  dev_mode: boolean;
   live_scraper: LiveScraperSettings;
-  whisper_scraper: WhisperScraperSettings;
+  notifications: Notifications;
 }
 
 export interface LiveScraperSettings {
@@ -78,20 +80,15 @@ export interface StockRivenSettings {
 }
 
 export interface NotificationBase {
-  enable: boolean;
+  discord_notify: boolean;
+  system_notify: boolean;
   title: string;
   content: string;
-}
-
-export interface NotificationDiscord extends NotificationBase {
   webhook: string;
   user_ids: string[];
 }
-export interface NewConversion {
-  discord: NotificationDiscord;
-  system: NotificationBase;
-}
-export interface WhisperScraperSettings {
-  on_new_conversation: NewConversion;
+export interface Notifications {
+  on_new_conversation: NotificationBase;
+  on_wfm_chat_message: NotificationBase;
 }
 

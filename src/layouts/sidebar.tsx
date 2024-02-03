@@ -5,7 +5,7 @@ import { faCoffee, faDesktop, faEnvelope, faGlobe, faHome } from "@fortawesome/f
 import { useTranslateLayout } from "../hooks";
 import { useNavigate } from "react-router-dom";
 import { WFMLogo } from "../components/icons/wfm_logo";
-import { useChatContext } from "../contexts";
+import { useAppContext, useChatContext } from "../contexts";
 
 interface NavbarLinkProps {
   icon: ReactNode;
@@ -51,6 +51,7 @@ const useStyles = createStyles((theme) => ({
 
 export default function SideBar({ }) {
   const { unread_messages } = useChatContext();
+  useAppContext();
   const goTo = useNavigate();
   const [active, setActive] = useState(0);
   const useTranslate = (key: string, context?: { [key: string]: any }) => useTranslateLayout(`navigation.${key}`, { ...context })
@@ -58,7 +59,7 @@ export default function SideBar({ }) {
     { link: "/", icon: <FontAwesomeIcon icon={faHome} />, label: useTranslate("home") },
     { link: "live-trading", icon: <FontAwesomeIcon icon={faGlobe} />, label: useTranslate("live_trading") },
     {
-      hide: true, link: "chats", icon: <Indicator disabled={unread_messages == 0} label={unread_messages > 0 ? unread_messages : undefined} inline size={16} position="top-start" color={status} >
+      hide: false, link: "chats", icon: <Indicator disabled={unread_messages == 0} label={unread_messages > 0 ? unread_messages : undefined} inline size={16} position="top-start" color={status} >
         <FontAwesomeIcon icon={faEnvelope} />
       </Indicator>, label: useTranslate("chats")
     },

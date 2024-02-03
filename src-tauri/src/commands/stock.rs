@@ -146,10 +146,7 @@ pub async fn delete_item_stock(
     match wfm
         .orders()
         .delete(
-            &order.unwrap().id,
-            &stockitem.name,
-            &stockitem.wfm_id,
-            "sell",
+            &order.unwrap().id
         )
         .await
     {
@@ -242,10 +239,7 @@ pub async fn sell_item_stock(
         match wfm
             .orders()
             .delete(
-                &order.unwrap().id,
-                &invantory.name,
-                &invantory.wfm_id,
-                "sell",
+                &order.unwrap().id
             )
             .await
         {
@@ -269,10 +263,7 @@ pub async fn sell_item_stock(
                 &order.unwrap().id,
                 order.unwrap().platinum as i32,
                 invantory.owned,
-                order.unwrap().visible,
-                &invantory.name,
-                &invantory.wfm_id,
-                "sell",
+                order.unwrap().visible
             )
             .await
         {

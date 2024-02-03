@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { Wfm } from '$types/index';
 import { OnSocketEvent, OnTauriUpdateDataEvent } from "../utils";
 import api from "@api/index";
+import { useAppContext, useAuthContext } from ".";
 
 
 
@@ -24,6 +25,8 @@ export const ChatContext = createContext<ChatContextProps>({
 export const useChatContext = () => useContext(ChatContext);
 
 export const ChatContextProvider = ({ children }: ChatContextProviderProps) => {
+  const { user } = useAuthContext();
+  const { settings } = useAppContext();
   const [state, setState] = useState<{
     aktive_chat: Wfm.ChatData | undefined,
     chats: Wfm.ChatData[]
@@ -75,7 +78,8 @@ export const ChatContextProvider = ({ children }: ChatContextProviderProps) => {
     }
   }
 
-  const AddChatMessage = (chat_id: string, message: Wfm.ChatMessage) => {
+  const AddChatMessage = async (chat_id: string, message: Wfm.ChatMessage) => {
+    await api.chat.on_new_wfm_message(message);
     setState((preState) => {
       const newState = { ...preState };
       const foundChat = newState.chats.find((item) => item.id === chat_id);
@@ -98,18 +102,6 @@ export const ChatContextProvider = ({ children }: ChatContextProviderProps) => {
   // Hook on tauri events from rust side
   useEffect(() => {
     OnTauriUpdateDataEvent<Wfm.ChatData>("ChatMessages", ({ data, operation }) => handleUpdateItems(operation, data));
-    // setInterval(() => {
-    //   const test_chat = Math.random().toString(36).substring(7);
-    //   const chat = {
-    //     "chat_id": "656b2ed385339a17bf0fc118",
-    //     "message": `<p>Test message ${test_chat}<p/>`,
-    //     "raw_message": `Test message ${test_chat}`,
-    //     "message_from": "61c96830493dc90e94c8dfde",
-    //     "send_date": new Date().toISOString(),
-    //     "id": Math.random().toString(36).substring(7)
-    //   }
-    //   SendSocketEvent("chats/NEW_MESSAGE", chat);
-    // }, 1000);
     OnSocketEvent("chats/NEW_MESSAGE", (data: Wfm.ChatMessage) => AddChatMessage(data.chat_id, data));
     OnSocketEvent("chats/SET_CHAT", (data: Wfm.ChatData | undefined) => {
       setState((preState) => {

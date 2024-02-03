@@ -62,9 +62,10 @@ async fn setup_async(app: &mut App) -> Result<(), AppError> {
     app.manage(auth_arc.clone());
 
     // create and manage Warframe Market API client state
-    let wfm_client = Arc::new(Mutex::new(wfm_client::client::WFMClient::new(Arc::clone(
-        &auth_arc,
-    ))));
+    let wfm_client = Arc::new(Mutex::new(wfm_client::client::WFMClient::new(
+        Arc::clone(&auth_arc),
+        Arc::clone(&settings_arc),
+    )));
     app.manage(wfm_client.clone());
 
     // create and manage Cache state
@@ -171,6 +172,7 @@ fn main() {
             commands::base::open_logs_folder,
             commands::base::export_logs,
             commands::base::show_notification,
+            commands::base::on_new_wfm_message,
             commands::auth::login,
             commands::auth::logout,
             commands::base::log,

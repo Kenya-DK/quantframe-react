@@ -2,36 +2,51 @@ use polars::{
     prelude::{DataFrame, NamedFrom},
     series::Series,
 };
-use reqwest::header::HeaderMap;
 use serde_json::json;
 
 use crate::{
     enums::OrderType,
-    error::AppError,
-    helper, logger,
+    error::{ApiResult, AppError},
+    helper,
     structs::{Order, Ordres},
     wfm_client::client::WFMClient,
 };
 
+use eyre::eyre;
 pub struct OrderModule<'a> {
     pub client: &'a WFMClient,
+    pub debug_id: String,
 }
 
 impl<'a> OrderModule<'a> {
     // Actions User Order
     pub async fn get_user_orders(&self, ingame_name: &str) -> Result<Ordres, AppError> {
         let url = format!("profile/{}/orders", ingame_name);
-        match self.client.get(&url, None).await {
-            Ok((orders, _headers)) => {
-                logger::info(
-                    "WarframeMarket",
-                    format!("Getting Orders for {}", ingame_name).as_str(),
-                    true,
-                    Some(self.client.log_file.as_str()),
+        match self.client.get::<Ordres>(&url, None).await {
+            Ok(ApiResult::Success(payload, _headers)) => {
+                self.client.debug(
+                    &self.debug_id,
+                    "Order:GetUserOrders",
+                    format!(
+                        "{} orders were fetched.",
+                        payload.buy_orders.len() + payload.sell_orders.len()
+                    )
+                    .as_str(),
+                    None,
                 );
-                Ok(orders)
+                return Ok(payload);
             }
-            Err(e) => Err(e),
+            Ok(ApiResult::Error(error, _headers)) => {
+                return Err(self.client.create_api_error(
+                    "Order:GetUserOrders",
+                    error,
+                    eyre!("There was an error fetching orders for {}", ingame_name),
+                    crate::enums::LogLevel::Error,
+                ));
+            }
+            Err(err) => {
+                return Err(err);
+            }
         }
     }
 
@@ -43,7 +58,6 @@ impl<'a> OrderModule<'a> {
 
     pub async fn create(
         &self,
-        item_name: &str,
         item_id: &str,
         order_type: &str,
         platinum: i64,
@@ -63,44 +77,74 @@ impl<'a> OrderModule<'a> {
         if let Some(rank) = rank {
             body["rank"] = json!(rank);
         }
+
         match self
             .client
             .post("profile/orders", Some("order"), body)
             .await
         {
-            Ok((order, _headers)) => {
-                logger::info("WarframeMarket", format!("Created Order: {}, Item Name: {}, Item Id: {},  Platinum: {}, Quantity: {}, Visible: {}", order_type, item_name, item_id ,platinum ,quantity ,visible).as_str(), true, Some(self.client.log_file.as_str()));
-                self.emit("CREATE_OR_UPDATE", serde_json::to_value(&order).unwrap());
-                Ok(order)
+            Ok(ApiResult::Success(payload, _headers)) => {
+                self.client.debug(
+                    &self.debug_id,
+                    "Order:Create",
+                    format!(
+                        "Order created type: {} item: {}, platinum: {}, quantity: {}, rank: {}",
+                        order_type,
+                        item_id,
+                        platinum,
+                        quantity,
+                        rank.unwrap_or(-1.0)
+                    )
+                    .as_str(),
+                    None,
+                );
+                self.emit("CREATE_OR_UPDATE", serde_json::to_value(&payload).unwrap());
+                return Ok(payload);
             }
-            Err(e) => Err(e),
+            Ok(ApiResult::Error(error, _headers)) => {
+                return Err(self.client.create_api_error(
+                    "Order:Create",
+                    error,
+                    eyre!("There was an error creating order"),
+                    crate::enums::LogLevel::Error,
+                ));
+            }
+            Err(err) => {
+                return Err(err);
+            }
         }
     }
 
-    pub async fn delete(
-        &self,
-        order_id: &str,
-        item_name: &str,
-        item_id: &str,
-        order_type: &str,
-    ) -> Result<String, AppError> {
+    pub async fn delete(&self, order_id: &str) -> Result<String, AppError> {
         let url = format!("profile/orders/{}", order_id);
         match self.client.delete(&url, Some("order_id")).await {
-            Ok((order_id, _headers)) => {
-                logger::info(
-                    "WarframeMarket",
-                    format!(
-                        "Deleted order: {}, Item Name: {}, Item Id: {}, Type: {}",
-                        order_id, item_name, item_id, order_type
-                    )
-                    .as_str(),
-                    true,
-                    Some(self.client.log_file.as_str()),
+            Ok(ApiResult::Success(payload, _headers)) => {
+                self.client.debug(
+                    &self.debug_id,
+                    "Order:Delete",
+                    format!("Order {} was deleted.", order_id).as_str(),
+                    None,
                 );
-                self.emit("DELETE", json!({ "id": &order_id }));
-                Ok(order_id)
+                self.emit("DELETE", json!({ "id": &payload }));
+                return Ok(payload);
             }
-            Err(e) => Err(e),
+            Ok(ApiResult::Error(error, _headers)) => {
+                let log_level = match error.messages.get(0) {
+                    Some(message) if message.contains("app.delete_order.order_not_exist") => {
+                        crate::enums::LogLevel::Warning
+                    }
+                    _ => crate::enums::LogLevel::Error,
+                };
+                return Err(self.client.create_api_error(
+                    "Order:Delete",
+                    error,
+                    eyre!("There was an error deleting order {}", order_id),
+                    crate::enums::LogLevel::Error,
+                ));
+            }
+            Err(err) => {
+                return Err(err);
+            }
         }
     }
 
@@ -110,9 +154,6 @@ impl<'a> OrderModule<'a> {
         platinum: i32,
         quantity: i32,
         visible: bool,
-        item_name: &str,
-        item_id: &str,
-        order_type: &str,
     ) -> Result<Order, AppError> {
         // Construct any JSON body
         let body = json!({
@@ -121,13 +162,36 @@ impl<'a> OrderModule<'a> {
             "visible": visible
         });
         let url = format!("profile/orders/{}", order_id);
-        match self.client.put(&url, Some("order"), Some(body)).await {
-            Ok((order, _headers)) => {
-                logger::info("WarframeMarket", format!("Updated Order Id: {}, Item Name: {}, Item Id: {}, Platinum: {}, Quantity: {}, Visible: {}, Type: {}", order_id, item_name, item_id,platinum ,quantity ,visible, order_type).as_str(), true, Some(&self.client.log_file));
-                self.emit("CREATE_OR_UPDATE", serde_json::to_value(&order).unwrap());
-                Ok(order)
+        match self
+            .client
+            .put::<Order>(&url, Some("order"), Some(body))
+            .await
+        {
+            Ok(ApiResult::Success(payload, _headers)) => {
+                self.client.debug(
+                    &self.debug_id,
+                    "Order:Update",
+                    format!(
+                        "Order id: {}, platinum: {}, quantity: {}",
+                        order_id, platinum, quantity
+                    )
+                    .as_str(),
+                    None,
+                );
+                self.emit("CREATE_OR_UPDATE", serde_json::to_value(&payload).unwrap());
+                return Ok(payload);
             }
-            Err(e) => Err(e),
+            Ok(ApiResult::Error(error, _headers)) => {
+                return Err(self.client.create_api_error(
+                    "Order:Update",
+                    error,
+                    eyre!("There was an error updating order {}", order_id),
+                    crate::enums::LogLevel::Error,
+                ));
+            }
+            Err(err) => {
+                return Err(err);
+            }
         }
     }
 
@@ -151,28 +215,50 @@ impl<'a> OrderModule<'a> {
         let mut order = order.unwrap().to_owned();
 
         let url = format!("profile/orders/close/{}", order.id);
-        let result: Result<(Option<serde_json::Value>, HeaderMap), AppError> =
-            self.client.put(&url, Some("order"), None).await;
-        match result {
-            Ok((order_data, _headers)) => {
-                if order_data.is_none() {
-                    self.emit("DELETE", json!({ "id": &order.id }));
-                    return Ok("Order Successfully Closed".to_string());
-                } else {
-                    let order_data = order_data.unwrap();
-                    order.quantity = order_data["quantity"].as_i64().unwrap();
-                    self.emit("CREATE_OR_UPDATE", serde_json::to_value(&order).unwrap());
-                    return Ok("Order Successfully Closed and Updated".to_string());
+
+        let result: Option<serde_json::Value> =
+            match self.client.put(&url, Some("order"), None).await {
+                Ok(ApiResult::Success(payload, _headers)) => {
+                    self.client.debug(
+                        &self.debug_id,
+                        "Order:Close",
+                        format!(
+                            "Order {} type: {} was closed.",
+                            order.id,
+                            order.order_type.as_str()
+                        )
+                        .as_str(),
+                        None,
+                    );
+                    payload
                 }
-                // logger::info(
-                //     "WarframeMarket",
-                //     format!("Closed Order: {}", order.unwrap().id).as_str(),
-                //     true,
-                //     Some(self.client.log_file.as_str()),
-                // );
-                // Ok(order_data.unwrap_or("Order Successfully Closed".to_string()))
-            }
-            Err(e) => Err(e),
+                Ok(ApiResult::Error(error, _headers)) => {
+                    let log_level = match error.messages.get(0) {
+                        Some(message) if message.contains("app.close_order.order_not_exist") => {
+                            crate::enums::LogLevel::Warning
+                        }
+                        _ => crate::enums::LogLevel::Error,
+                    };
+                    return Err(self.client.create_api_error(
+                        "Order:Closeing",
+                        error,
+                        eyre!("There was an error closing order {}", order.id),
+                        crate::enums::LogLevel::Error,
+                    ));
+                }
+                Err(err) => {
+                    return Err(err);
+                }
+            };
+
+        if result.is_none() {
+            self.emit("DELETE", json!({ "id": &order.id }));
+            return Ok("Order Successfully Closed".to_string());
+        } else {
+            let order_data = result.unwrap();
+            order.quantity = order_data["quantity"].as_i64().unwrap();
+            self.emit("CREATE_OR_UPDATE", serde_json::to_value(&order).unwrap());
+            return Ok("Order Successfully Closed and Updated".to_string());
         }
     }
 
@@ -193,9 +279,27 @@ impl<'a> OrderModule<'a> {
     pub async fn get_ordres_by_item(&self, item: &str) -> Result<DataFrame, AppError> {
         let url = format!("items/{}/orders", item);
 
-        let orders: Vec<Order> = match self.client.get(&url, Some("orders")).await {
-            Ok((orders, _headers)) => orders,
-            Err(e) => return Err(e),
+        let orders = match self.client.get::<Vec<Order>>(&url, Some("orders")).await {
+            Ok(ApiResult::Success(payload, _headers)) => {
+                self.client.debug(
+                    &self.debug_id,
+                    "Order:GetOrdersByItem",
+                    format!("Orders for {} were fetched. found: {}", item, payload.len()).as_str(),
+                    None,
+                );
+                payload
+            }
+            Ok(ApiResult::Error(error, _headers)) => {
+                return Err(self.client.create_api_error(
+                    "Order:GetOrdersByItem",
+                    error,
+                    eyre!("There was an error fetching orders for {}", item),
+                    crate::enums::LogLevel::Error,
+                ));
+            }
+            Err(err) => {
+                return Err(err);
+            }
         };
 
         if orders.len() == 0 {

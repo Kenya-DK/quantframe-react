@@ -1,6 +1,4 @@
 use polars::prelude::*;
-use regex::Regex;
-use serde::Serialize;
 use std::{
     fs::{self, File, OpenOptions},
     io::BufWriter,
@@ -30,7 +28,7 @@ pub fn format_text(text: &str, color: &str, bold: bool) -> String {
     }
 }
 fn remove_ansi_codes(s: &str) -> String {
-    let re = Regex::new(r"\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]").unwrap();
+    let re = regex::Regex::new(r"\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]").unwrap();
     re.replace_all(s, "").to_string()
 }
 fn format_square_bracket(msg: &str) -> String {
@@ -54,7 +52,7 @@ pub fn dolog(level: LogLevel, component: &str, msg: &str, console: bool, file: O
     let msg = format_text(msg, "white", false);
     let log_prefix = match level {
         LogLevel::Info => format_square_bracket(format_text("INFO", "green", true).as_str()),
-        LogLevel::Warning => format_square_bracket(format_text("WARN", "orange", true).as_str()),
+        LogLevel::Warning => format_square_bracket(format_text("WARN", "yellow", true).as_str()),
         LogLevel::Error => format_square_bracket(format_text("ERROR", "red", true).as_str()),
         LogLevel::Debug => format_square_bracket(format_text("DEBUG", "blue", true).as_str()),
         LogLevel::Trace => format_square_bracket(format_text("TRACE", "cyan", true).as_str()),
@@ -204,7 +202,10 @@ pub fn export_logs() {
         .expect("Could not get package info");
     let version = packageinfo.version.to_string();
 
-    let zip_path = helper::get_desktop_path().join(format!("{} v{} {} Logs.zip",packageinfo.name, version, date));
+    let zip_path = helper::get_desktop_path().join(format!(
+        "{} v{} {} Logs.zip",
+        packageinfo.name, version, date
+    ));
     let mut files_to_compress: Vec<helper::ZipEntry> = vec![];
 
     let mut logs_path = get_log_forlder();
@@ -220,15 +221,15 @@ pub fn export_logs() {
     for path in fs::read_dir(app_path).unwrap() {
         let path = path.unwrap().path();
         // Check if path is auth.json
-            if path.ends_with("auth.json") {
-                info_con("Logger", "Skipping auth.json");
-            } else {
-                files_to_compress.push(helper::ZipEntry {
-                    file_path: path.to_owned(),
-                    sub_path: None,
-                    include_dir: false,
-                });                
-            }
+        if path.ends_with("auth.json") {
+            info_con("Logger", "Skipping auth.json");
+        } else {
+            files_to_compress.push(helper::ZipEntry {
+                file_path: path.to_owned(),
+                sub_path: None,
+                include_dir: false,
+            });
+        }
     }
 
     match helper::create_zip_file(files_to_compress, zip_path.to_str().unwrap_or_default()) {

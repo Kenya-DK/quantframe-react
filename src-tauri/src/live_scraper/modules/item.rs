@@ -339,7 +339,7 @@ impl<'a> ItemModule<'a> {
             if blacklist.contains(&order.clone().item.unwrap().url_name) {
                 continue;
             }
-            match wfm.orders().delete(&order.id, "None", "None", "Any").await {
+            match wfm.orders().delete(&order.id).await {
                 Ok(_) => {}
                 Err(e) => {
                     error::create_log_file(self.client.log_file.to_owned(), &e);
@@ -771,9 +771,6 @@ impl<'a> ItemModule<'a> {
                         post_price as i32,
                         1,
                         visibility,
-                        item_name,
-                        item_id,
-                        "buy",
                     )
                     .await?;
                 return Ok(None);
@@ -783,7 +780,7 @@ impl<'a> ItemModule<'a> {
                     Some(json!({ "name": item_name, "price": post_price})),
                 );
                 wfm.orders()
-                    .create(item_name, item_id, "buy", post_price, 1, true, item_rank)
+                    .create(item_id, "buy", post_price, 1, true, item_rank)
                     .await?;
                 return Ok(None);
             }
@@ -835,12 +832,7 @@ impl<'a> ItemModule<'a> {
                 self.client
                     .send_message("item.buy.deleting", Some(json!({ "name": item_name})));
                 wfm.orders()
-                    .delete(
-                        order_id.clone().unwrap().as_str(),
-                        item_name,
-                        item_id,
-                        "buy",
-                    )
+                    .delete(order_id.clone().unwrap().as_str())
                     .await?;
             }
             return Ok(None);
@@ -984,12 +976,7 @@ impl<'a> ItemModule<'a> {
             self.client
                 .send_message("item.buy.deleting", Some(json!({ "name": item_name})));
             wfm.orders()
-                .delete(
-                    order_id.clone().unwrap().as_str(),
-                    item_name,
-                    item_id,
-                    "buy",
-                )
+                .delete(order_id.clone().unwrap().as_str())
                 .await?;
         }
 
@@ -1021,10 +1008,7 @@ impl<'a> ItemModule<'a> {
 
             wfm.orders()
                 .delete(
-                    order_id.clone().unwrap().as_str(),
-                    item_name,
-                    item_id,
-                    "sell",
+                    order_id.clone().unwrap().as_str()
                 )
                 .await?;
             logger::info_con(
@@ -1079,10 +1063,7 @@ impl<'a> ItemModule<'a> {
                         order_id.clone().unwrap().as_str(),
                         post_price as i32,
                         quantity as i32,
-                        visibility,
-                        item_name,
-                        item_id,
-                        "sell",
+                        visibility
                     )
                     .await?;
                 return Ok(());
@@ -1091,7 +1072,7 @@ impl<'a> ItemModule<'a> {
                     .send_message("item.sell.creating", Some(json!({ "name": item_name})));
                 wfm.orders()
                     .create(
-                        item_name, item_id, "sell", post_price, quantity, true, item_rank,
+                         item_id, "sell", post_price, quantity, true, item_rank,
                     )
                     .await?;
                 return Ok(());
@@ -1135,10 +1116,7 @@ impl<'a> ItemModule<'a> {
                     .send_message("item.sell.deleting", Some(json!({ "name": item_name})));
                 wfm.orders()
                     .delete(
-                        order_id.clone().unwrap().as_str(),
-                        item_name,
-                        item_id,
-                        "sell",
+                        order_id.clone().unwrap().as_str()
                     )
                     .await?;
             }
@@ -1164,10 +1142,7 @@ impl<'a> ItemModule<'a> {
                         order_id.clone().unwrap().as_str(),
                         post_price as i32,
                         quantity as i32,
-                        visibility,
-                        item_name,
-                        item_id,
-                        "sell",
+                        visibility
                     )
                     .await?;
                 db.stock_item()
@@ -1203,7 +1178,7 @@ impl<'a> ItemModule<'a> {
             );
             wfm.orders()
                 .create(
-                    item_name, item_id, "sell", post_price, quantity, true, item_rank,
+                     item_id, "sell", post_price, quantity, true, item_rank,
                 )
                 .await?;
             db.stock_item()

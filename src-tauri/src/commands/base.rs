@@ -30,6 +30,8 @@ use crate::{
     PACKAGEINFO,
 };
 
+use super::auth;
+
 #[tauri::command]
 pub async fn init(
     settings: tauri::State<'_, Arc<Mutex<SettingsState>>>,
@@ -178,11 +180,14 @@ pub async fn update_settings(
     let arced_mutex = Arc::clone(&settings_state);
     let mut my_lock = arced_mutex.lock()?;
 
+    // Set Loggin Settings
+    my_lock.debug = settings.debug;
+
     // Set Live Scraper Settings
     my_lock.live_scraper = settings.live_scraper;
 
     // Set Whisper Scraper Settings
-    my_lock.whisper_scraper = settings.whisper_scraper;
+    my_lock.notifications = settings.notifications;
 
     my_lock.save_to_file().expect("Could not save settings");
     Ok(())
@@ -211,6 +216,41 @@ pub fn show_notification(
         Some("https://i.imgur.com/UggEVVI.jpeg"),
         sound.as_deref(),
     );
+}
+
+#[tauri::command]
+pub fn on_new_wfm_message(
+    message: crate::wfm_client::modules::chat::ChatMessage,
+    auth: tauri::State<'_, Arc<Mutex<AuthState>>>,  
+    settings: tauri::State<'_, Arc<std::sync::Mutex<SettingsState>>>,
+    mh: tauri::State<'_, Arc<std::sync::Mutex<MonitorHandler>>>,
+) {
+    let mh = mh.lock().unwrap();
+    let auth = auth.lock().unwrap().clone();
+    let settings = settings.lock().unwrap().clone().notifications.on_wfm_chat_message;
+
+    if auth.id == message.message_from {
+        return;
+    }
+
+    let content = settings.content.replace("<WFM_MESSAGE>", &message.raw_message.unwrap_or("".to_string()));
+    if settings.system_notify {
+        mh.show_notification(
+            &settings.title,
+            &content,
+            Some("https://i.imgur.com/UggEVVI.jpeg"),
+            Some("Default"),
+        );
+    }
+
+    if settings.discord_notify  && settings.webhook.is_some() {
+        crate::helper::send_message_to_discord(
+            settings.webhook.unwrap_or("".to_string()),
+            settings.title,
+            content,
+            settings.user_ids,
+        );
+    }
 }
 
 #[tauri::command]
