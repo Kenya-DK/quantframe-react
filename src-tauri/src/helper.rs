@@ -61,7 +61,6 @@ pub fn send_message_to_window(event: &str, data: Option<Value>) {
     }
 }
 
-
 pub async fn get_app_info() -> Result<serde_json::Value, AppError> {
     let packageinfo = PACKAGEINFO
         .lock()
@@ -115,10 +114,11 @@ pub async fn get_app_info() -> Result<serde_json::Value, AppError> {
 pub fn emit_progress(id: &str, i18n_key: &str, values: Option<Value>, is_completed: bool) {
     send_message_to_window(
         "Client:Update:Progress",
-        Some(json!({ "id": id, "i18n_key": i18n_key,"values": values, "isCompleted": is_completed})),
+        Some(
+            json!({ "id": id, "i18n_key": i18n_key,"values": values, "isCompleted": is_completed}),
+        ),
     );
 }
-
 
 pub fn emit_update(update_type: &str, operation: &str, data: Option<Value>) {
     send_message_to_window(
@@ -370,41 +370,30 @@ pub fn get_column_values(
     column: &str,
     col_type: ColumnType,
 ) -> Result<ColumnValues, AppError> {
+    let error = format!(
+        "Column: {:?} ColumnType: {:?} Error: [] [J]{}[J]",
+        column,
+        col_type,
+        serde_json::to_value(&df).unwrap().to_string()
+    );
+
     let df: DataFrame = match filter {
         Some(filter) => df.lazy().filter(filter).collect().map_err(|e| {
-            AppError::new(
-                "Helper",
-                eyre!(format!(
-                    "Column: {:?} ColumnType: {:?} Error: {:?}",
-                    column, col_type, e
-                )),
-            )
+            AppError::new("Helper", eyre!(error.replace("[]", e.to_string().as_str())))
         })?,
         None => df,
     };
 
-    let column_series = df.column(column).map_err(|e| {
-        AppError::new(
-            "Helper",
-            eyre!(format!(
-                "Column: {:?} ColumnType: {:?} Error: {:?}",
-                column, col_type, e
-            )),
-        )
-    })?;
+    let column_series = df
+        .column(column)
+        .map_err(|e| AppError::new("Helper", eyre!(error.replace("[]", e.to_string().as_str()))))?;
 
     match col_type {
         ColumnType::Bool => {
             let values: Vec<bool> = column_series
                 .bool()
                 .map_err(|e| {
-                    AppError::new(
-                        "Helper",
-                        eyre!(format!(
-                            "Column: {:?} ColumnType: {:?} Error: {:?}",
-                            column, col_type, e
-                        )),
-                    )
+                    AppError::new("Helper", eyre!(error.replace("[]", e.to_string().as_str())))
                 })?
                 .into_iter()
                 .filter_map(|opt_val| opt_val)
@@ -416,13 +405,7 @@ pub fn get_column_values(
             let values: Vec<f64> = column_series
                 .f64()
                 .map_err(|e| {
-                    AppError::new(
-                        "Helper",
-                        eyre!(format!(
-                            "Column: {:?} ColumnType: {:?} Error: {:?}",
-                            column, col_type, e
-                        )),
-                    )
+                    AppError::new("Helper", eyre!(error.replace("[]", e.to_string().as_str())))
                 })?
                 .into_iter()
                 .filter_map(|opt_val| opt_val)
@@ -434,13 +417,7 @@ pub fn get_column_values(
             let values: Vec<i64> = column_series
                 .i64()
                 .map_err(|e| {
-                    AppError::new(
-                        "Helper",
-                        eyre!(format!(
-                            "Column: {:?} ColumnType: {:?} Error: {:?}",
-                            column, col_type, e
-                        )),
-                    )
+                    AppError::new("Helper", eyre!(error.replace("[]", e.to_string().as_str())))
                 })?
                 .into_iter()
                 .filter_map(|opt_val| opt_val)
@@ -451,13 +428,7 @@ pub fn get_column_values(
             let values: Vec<i32> = column_series
                 .i32()
                 .map_err(|e| {
-                    AppError::new(
-                        "Helper",
-                        eyre!(format!(
-                            "Column: {:?} ColumnType: {:?} Error: {:?}",
-                            column, col_type, e
-                        )),
-                    )
+                    AppError::new("Helper", eyre!(error.replace("[]", e.to_string().as_str())))
                 })?
                 .into_iter()
                 .filter_map(|opt_val| opt_val)
@@ -468,13 +439,7 @@ pub fn get_column_values(
             let values = column_series
                 .utf8()
                 .map_err(|e| {
-                    AppError::new(
-                        "Helper",
-                        eyre!(format!(
-                            "Column: {:?} ColumnType: {:?} Error: {:?}",
-                            column, col_type, e
-                        )),
-                    )
+                    AppError::new("Helper", eyre!(error.replace("[]", e.to_string().as_str())))
                 })?
                 .into_iter()
                 .filter_map(|opt_name| opt_name.map(String::from))
@@ -769,4 +734,33 @@ pub fn get_warframe_language() -> WarframeLanguage {
 
     // Default to English in case of any error
     WarframeLanguage::English
+}
+
+pub fn validate_json(json: &Value, required: &Value, path: &str) -> (Value, Vec<String>) {
+    let mut modified_json = json.clone();
+    let mut missing_properties = Vec::new();
+
+    if let Some(required_obj) = required.as_object() {
+        for (key, value) in required_obj {
+            let full_path = if path.is_empty() {
+                key.clone()
+            } else {
+                format!("{}.{}", path, key)
+            };
+
+            if !json.as_object().unwrap().contains_key(key) {
+                missing_properties.push(full_path.clone());
+                modified_json[key] = required_obj[key].clone();
+            } else if value.is_object() {
+                let sub_json = json.get(key).unwrap();
+                let (modified_sub_json, sub_missing) = validate_json(sub_json, value, &full_path);
+                if !sub_missing.is_empty() {
+                    modified_json[key] = modified_sub_json;
+                    missing_properties.extend(sub_missing);
+                }
+            }
+        }
+    }
+
+    (modified_json, missing_properties)
 }

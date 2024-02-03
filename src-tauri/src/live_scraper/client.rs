@@ -61,20 +61,23 @@ impl LiveScraperClient {
         let backtrace = error.backtrace();
         let log_level = error.log_level();
         let extra = error.extra_data();
-        if log_level == LogLevel::Critical {
+        if log_level == LogLevel::Critical || log_level == LogLevel::Error {
             self.is_running.store(false, Ordering::SeqCst);
             crate::logger::dolog(
                 log_level.clone(),
                 component.as_str(),
-                format!("Error: {:?}, {:?}, {:?}", backtrace, cause, extra).as_str(),
+                format!("{}, {}, {}", backtrace, cause, extra.to_string()).as_str(),
                 true,
                 Some(self.log_file.as_str()),
             );
             helper::send_message_to_window("LiveScraper:Error", Some(error.to_json()));
         } else {
-            logger::info_con(
-                "LiveScraper",
-                format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
+            crate::logger::dolog(
+                log_level.clone(),
+                component.as_str(),
+                format!("{}, {}, {}", backtrace, cause, extra.to_string()).as_str(),
+                true,
+                Some(self.log_file.as_str()),
             );
         }
     }
@@ -82,7 +85,7 @@ impl LiveScraperClient {
         self.is_running.store(false, Ordering::SeqCst);
     }
 
-    pub fn is_running(&self) -> bool {        
+    pub fn is_running(&self) -> bool {
         self.is_running.load(Ordering::SeqCst)
     }
 
@@ -143,9 +146,12 @@ impl LiveScraperClient {
     }
 
     pub fn send_message(&self, i18n_key: &str, data: Option<serde_json::Value>) {
-        helper::send_message_to_window("LiveScraper:UpdateMessage", Some(json!({
-            "i18n_key": i18n_key,
-            "values": data
-        })));
+        helper::send_message_to_window(
+            "LiveScraper:UpdateMessage",
+            Some(json!({
+                "i18n_key": i18n_key,
+                "values": data
+            })),
+        );
     }
 }

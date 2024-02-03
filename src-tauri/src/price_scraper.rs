@@ -97,7 +97,7 @@ impl PriceScraper {
         let mut error_def = ErrorApiResponse {
             status_code: 500,
             error: "UnknownError".to_string(),
-            message: vec![],
+            messages: vec![],
             raw_response: None,
             body: None,
             url: Some(url.clone()),
@@ -106,7 +106,7 @@ impl PriceScraper {
 
 
         if let Err(e) = response {
-            error_def.message.push(e.to_string());
+            error_def.messages.push(e.to_string());
             return Err(AppError::new_api(
                 "PriceScraper",
                 error_def,
@@ -128,7 +128,7 @@ impl PriceScraper {
 
         // Convert the response to a Value object
         let response: Value = serde_json::from_str(content.as_str()).map_err(|e| {
-        error_def.message.push(e.to_string());
+        error_def.messages.push(e.to_string());
         error_def.error = "ParseError".to_string();
         AppError::new_api(
             "PriceScraper",
@@ -205,7 +205,7 @@ impl PriceScraper {
 
             // Get the price data for the day for all items
             match self.get_price_by_day(auth.platform.as_str(), &day).await {
-                Ok(ApiResult::Success(items, headers)) => {
+                Ok(ApiResult::Success(items, _headers)) => {
                     found_data += 1;
                     logger::info_con(
                         "PriceScraper",

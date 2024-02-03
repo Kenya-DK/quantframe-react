@@ -1,28 +1,32 @@
 use std::sync::{Arc, Mutex};
 
 use eyre::eyre;
-use serde_json::{json, Value};
+use serde_json::json;
 
 use crate::{
-    enums::LogLevel,
-    error::{self, ApiResult, AppError},
+    error::{ApiResult, AppError},
     helper, logger,
     structs::{
-        Auction, AuctionItem, AuctionOwner, Item, ItemDetails, RivenAttribute, RivenAttributeInfo,
-        RivenTypeInfo,
+        Auction, AuctionItem, AuctionOwner, RivenAttribute, RivenAttributeInfo, RivenTypeInfo,
     },
     wfm_client::client::WFMClient,
 };
 
 pub struct AuctionModule<'a> {
     pub client: &'a WFMClient,
+    pub debug_id: String,
 }
 
 impl<'a> AuctionModule<'a> {
     pub async fn get_all_riven_types(&self) -> Result<Vec<RivenTypeInfo>, AppError> {
-        match self.client.get::<Vec<RivenTypeInfo>>("riven/items", Some("items")).await {
+        match self
+            .client
+            .get::<Vec<RivenTypeInfo>>("riven/items", Some("items"))
+            .await
+        {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
+                    &self.debug_id,
                     "Auction:GetAllRivenTypes",
                     format!("Found {} riven types", payload.len()).as_str(),
                     None,
@@ -34,6 +38,7 @@ impl<'a> AuctionModule<'a> {
                     "Auction:GetAllRivenTypes",
                     error,
                     eyre!("There was an error getting all riven types"),
+                    crate::enums::LogLevel::Error,
                 ));
             }
             Err(err) => {
@@ -49,6 +54,7 @@ impl<'a> AuctionModule<'a> {
         {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
+                    &self.debug_id,
                     "Auction:GetAllRivenAttributeTypes",
                     format!("Found {} attributes", payload.len()).as_str(),
                     None,
@@ -60,6 +66,7 @@ impl<'a> AuctionModule<'a> {
                     "Auction:GetAllRivenAttributeTypes",
                     error,
                     eyre!("There was an error getting all riven attribute types"),
+                    crate::enums::LogLevel::Error,
                 ));
             }
             Err(err) => {
@@ -75,9 +82,14 @@ impl<'a> AuctionModule<'a> {
     ) -> Result<Vec<Auction<String>>, AppError> {
         let url = format!("profile/{}/auctions", ingame_name);
 
-        match self.client.get::<Vec<Auction<String>>>(&url, Some("auctions")).await {
+        match self
+            .client
+            .get::<Vec<Auction<String>>>(&url, Some("auctions"))
+            .await
+        {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
+                    &self.debug_id,
                     "Auction:GetUsersAuctions",
                     format!("Found {} auctions", payload.len()).as_str(),
                     None,
@@ -88,7 +100,11 @@ impl<'a> AuctionModule<'a> {
                 return Err(self.client.create_api_error(
                     "Auction:GetUsersAuctions",
                     error,
-                    eyre!("There was an error getting all auctions for user: {}", ingame_name),
+                    eyre!(
+                        "There was an error getting all auctions for user: {}",
+                        ingame_name
+                    ),
+                    crate::enums::LogLevel::Error,
                 ));
             }
             Err(err) => {
@@ -103,18 +119,6 @@ impl<'a> AuctionModule<'a> {
         Ok(auctions)
     }
 
-    pub async fn get_auction_by_id(
-        &self,
-        auction_id: &str,
-    ) -> Result<Option<Auction<String>>, AppError> {
-        let auctions = self.get_my_auctions().await?;
-
-        let auction = auctions
-            .iter()
-            .find(|auction| auction.id == auction_id)
-            .clone();
-        Ok(auction.cloned())
-    }
     pub async fn create(
         &self,
         auction_type: &str,
@@ -163,10 +167,12 @@ impl<'a> AuctionModule<'a> {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.emit("CREATE_OR_UPDATE", serde_json::to_value(&payload).unwrap());
                 self.client.debug(
+                    &self.debug_id,
                     "Auction:Create",
                     format!(
                         "Created auction for type: {} for item: {}",
-                        auction_type, item.name.unwrap_or("None".to_string())
+                        auction_type,
+                        item.name.unwrap_or("None".to_string())
                     )
                     .as_str(),
                     None,
@@ -178,6 +184,7 @@ impl<'a> AuctionModule<'a> {
                     "Auction:Create",
                     error,
                     eyre!("There was an error creating the auction"),
+                    crate::enums::LogLevel::Error,
                 ));
             }
             Err(err) => {
@@ -209,6 +216,7 @@ impl<'a> AuctionModule<'a> {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.emit("CREATE_OR_UPDATE", serde_json::to_value(&payload).unwrap());
                 self.client.debug(
+                    &self.debug_id,
                     "Auction:Update",
                     format!(
                         "Updated auction: {} to buyout price: {}",
@@ -224,6 +232,7 @@ impl<'a> AuctionModule<'a> {
                     "Auction:Update",
                     error,
                     eyre!("There was an error updating the auction"),
+                    crate::enums::LogLevel::Error,
                 ));
             }
             Err(err) => {
@@ -294,6 +303,7 @@ impl<'a> AuctionModule<'a> {
         {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
+                    &self.debug_id,
                     "Auction:Search",
                     format!(
                         "Found {} auctions using query: {}",
@@ -306,10 +316,15 @@ impl<'a> AuctionModule<'a> {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
+                let log_level = match error.status_code {
+                    400 => crate::enums::LogLevel::Warning,
+                    _ => crate::enums::LogLevel::Error,
+                };
                 return Err(self.client.create_api_error(
                     "Auction:Search",
                     error,
-                    eyre!("There was an error searching for auctions"),
+                    eyre!("There was an error searching for auctions."),
+                    log_level,
                 ));
             }
             Err(err) => {
@@ -324,6 +339,7 @@ impl<'a> AuctionModule<'a> {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.emit("CREATE_OR_UPDATE", serde_json::to_value(&payload).unwrap());
                 self.client.debug(
+                    &self.debug_id,
                     "Auction:Delete",
                     format!("Deleted auction: {}", auction_id).as_str(),
                     None,
@@ -331,10 +347,20 @@ impl<'a> AuctionModule<'a> {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
+                let log_level = match error.messages.get(0) {
+                    Some(message)
+                        if message.contains("app.form.not_exist")
+                            || message.contains("app.form.invalid") =>
+                    {
+                        crate::enums::LogLevel::Warning
+                    }
+                    _ => crate::enums::LogLevel::Error,
+                };
                 return Err(self.client.create_api_error(
                     "Auction:Delete",
                     error,
                     eyre!("There was an error deleting the auction"),
+                    log_level,
                 ));
             }
             Err(err) => {

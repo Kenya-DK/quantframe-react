@@ -202,9 +202,9 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
               alignItems: "center",
             }}
           >
-            <TextColor size={"lg"} i18nKey={useTranslateRivenPanel("total_purchase_price", undefined, true)} values={{ price: totalPurchasePrice }} />
-            <TextColor size={"lg"} i18nKey={useTranslateRivenPanel("total_listed_price", undefined, true)} values={{ price: totalListedPrice }} />
-            <TextColor size={"lg"} i18nKey={useTranslateRivenPanel("total_profit", undefined, true)} values={{ price: totalProfit }} />
+            <TextColor size={"md"} i18nKey={useTranslateRivenPanel("total_purchase_price", undefined, true)} values={{ price: totalPurchasePrice.toFixed(2) }} />
+            <TextColor size={"md"} i18nKey={useTranslateRivenPanel("total_listed_price", undefined, true)} values={{ price: totalListedPrice.toFixed(2) }} />
+            <TextColor size={"md"} i18nKey={useTranslateRivenPanel("total_profit", undefined, true)} values={{ price: totalProfit.toFixed(2) }} />
           </Stack>
         </Grid.Col>
       </Grid>
@@ -321,6 +321,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
             accessor: 'price',
             title: useTranslateDataGridColumns('price'),
             sortable: true,
+            render: ({ price }) => <Text>{price.toFixed(2) || ""}</Text>
           },
           {
             accessor: 'minium_price',

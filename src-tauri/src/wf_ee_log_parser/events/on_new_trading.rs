@@ -101,15 +101,11 @@ impl OnTradingEvent {
         }
     }
     pub fn check(&mut self, _index: usize, input: &str) -> Result<bool, AppError> {
-        // let file_path = "tradings.json";
-        // let settings = self.settings.lock()?.clone().whisper_scraper;
-
         while self.getting_trade_message_multiline {
             if input.contains("[Info]") || input.contains("[Error]") || input.contains("[Warning]")
             {
                 self.getting_trade_message_multiline = false;
                 self.trade_logs_finished()?;
-                self.client.debug("OnTradingEvent", "Trade finished", None);
                 self.waiting_for_trade_message_confirmation = true;
             } else {
                 self.received_trade_log_message(input);
@@ -121,12 +117,10 @@ impl OnTradingEvent {
         if input.contains("[Info]: Dialog.lua: Dialog::CreateOkCancel(description=")
             && self.is_beginninig_of_tradelog(input)?
         {
-            self.client.debug("OnTradingEvent", "New trade detected", None);
             self.start_trade_log(input);
             if input
                 .contains(", leftItem=/Menu/Confirm_Item_Ok, rightItem=/Menu/Confirm_Item_Cancel)")
             {
-                self.client.debug("OnTradingEvent", "Waiting for trade confirmation", None);
                 self.waiting_for_trade_message_confirmation = true;
             } else {
                 self.getting_trade_message_multiline = true;
@@ -137,9 +131,9 @@ impl OnTradingEvent {
         else if self.waiting_for_trade_message_confirmation
             && input.contains("[Info]: Dialog.lua: Dialog::CreateOk(description=")
         {
-            if self.is_trade_confirmation(input)? {                
+            if self.is_trade_confirmation(input)? {
                 self.trade_accepted()?;
-            } else if self.is_trade_failed(input)? {                
+            } else if self.is_trade_failed(input)? {
                 self.trade_failed();
             }
             return Ok(true);
@@ -289,7 +283,7 @@ impl OnTradingEvent {
             }
         } else {
             trade_struct.trade_type = TradeClassification::Sale;
-        }        
+        }
         Ok(())
     }
 
@@ -385,13 +379,11 @@ impl OnTradingEvent {
             }
         }
 
-        self.client.debug("OnTradingEvent", format!("Trade accepted from {}", trade.user_name).as_str(), None);
         self.reset_trade();
         Ok(())
     }
 
     fn trade_failed(&mut self) {
-        self.client.debug("OnTradingEvent", "Trade failed", None);
         self.reset_trade();
     }
 

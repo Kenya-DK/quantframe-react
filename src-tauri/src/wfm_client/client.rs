@@ -38,7 +38,10 @@ pub struct WFMClient {
 }
 
 impl WFMClient {
-    pub fn new(auth: Arc<Mutex<AuthState>>, settings: Arc<Mutex<crate::settings::SettingsState>>) -> Self {
+    pub fn new(
+        auth: Arc<Mutex<AuthState>>,
+        settings: Arc<Mutex<crate::settings::SettingsState>>,
+    ) -> Self {
         WFMClient {
             endpoint: "https://api.warframe.market/v1/".to_string(),
             component: "WarframeMarket".to_string(),
@@ -52,25 +55,42 @@ impl WFMClient {
         }
     }
 
-    pub fn debug(&self, component: &str, msg: &str, file: Option<bool>) {
+    pub fn debug(&self, id: &str, component: &str, msg: &str, file: Option<bool>) {
         let settings = self.settings.lock().unwrap().clone();
-        if !settings.debug {
+        if !settings.debug.contains(&"*".to_owned()) && !settings.debug.contains(&id.to_owned()) {
             return;
         }
+
         if file.is_none() {
-            logger::debug(format!("{}:{}", self.component, component).as_str(), msg, true, None);
+            logger::debug(
+                format!("{}:{}", self.component, component).as_str(),
+                msg,
+                true,
+                None,
+            );
             return;
-        }        
-        logger::debug(format!("{}:{}", self.component, component).as_str(), msg, true, Some(&self.log_file));
+        }
+        logger::debug(
+            format!("{}:{}", self.component, component).as_str(),
+            msg,
+            true,
+            Some(&self.log_file),
+        );
     }
 
-    pub fn create_api_error(&self, component: &str, err: ErrorApiResponse, eyre_report: eyre::ErrReport) {
-       return AppError::new_api(
-            format!("{}:{}",self.component, component).as_str(),
+    pub fn create_api_error(
+        &self,
+        component: &str,
+        err: ErrorApiResponse,
+        eyre_report: eyre::ErrReport,
+        level: LogLevel,
+    ) -> AppError {
+        return AppError::new_api(
+            format!("{}:{}", self.component, component).as_str(),
             err,
             eyre_report,
-            LogLevel::Error,
-        )
+            level,
+        );
     }
 
     async fn send_request<T: DeserializeOwned>(
@@ -116,7 +136,7 @@ impl WFMClient {
         let mut error_def = ErrorApiResponse {
             status_code: 500,
             error: "UnknownError".to_string(),
-            message: vec![],
+            messages: vec![],
             raw_response: None,
             body: body.clone(),
             url: Some(new_url.clone()),
@@ -124,9 +144,9 @@ impl WFMClient {
         };
 
         if let Err(e) = response {
-            error_def.message.push(e.to_string());
+            error_def.messages.push(e.to_string());
             return Err(AppError::new_api(
-                self.component.as_str(),
+                "WarframeMarket",
                 error_def,
                 eyre!(format!("There was an error sending the request: {}", e)),
                 LogLevel::Critical,
@@ -142,27 +162,27 @@ impl WFMClient {
 
         // Convert the response to a Value object
         let response: Value = serde_json::from_str(content.as_str()).map_err(|e| {
-            error_def.message.push(e.to_string());
+            error_def.messages.push(e.to_string());
             error_def.error = "RequestError".to_string();
             AppError::new_api(
                 self.component.as_str(),
                 error_def.clone(),
-                eyre!(""),
+                eyre!(format!("Could not parse response: {}, {:?}", content, e)),
                 LogLevel::Critical,
             )
         })?;
 
         // Check if the response is an error
-        if response.get("error").is_some() {            
+        if response.get("error").is_some() {
             error_def.error = "ApiError".to_string();
             // Loop through the error object and add each message to the error_def
             let errors: HashMap<String, Value> = serde_json::from_value(response["error"].clone())
                 .map_err(|e| {
-                    error_def.message.push(e.to_string());
+                    error_def.messages.push(e.to_string());
                     AppError::new_api(
                         self.component.as_str(),
                         error_def.clone(),
-                        eyre!(""),
+                        eyre!(format!("Could not parse error messages: {}", e)),
                         LogLevel::Critical,
                     )
                 })?;
@@ -179,10 +199,10 @@ impl WFMClient {
                             )
                         })?;
                     error_def
-                        .message
+                        .messages
                         .push(format!("{}: {}", key, messages.join(", ")));
                 } else {
-                    error_def.message.push(format!("{}: {:?}", key, value));
+                    error_def.messages.push(format!("{}: {:?}", key, value));
                 }
             }
             return Ok(ApiResult::Error(error_def, headers));
@@ -198,12 +218,12 @@ impl WFMClient {
         match serde_json::from_value(data.clone()) {
             Ok(payload) => Ok(ApiResult::Success(payload, headers)),
             Err(e) => {
-                error_def.message.push(e.to_string());
+                error_def.messages.push(e.to_string());
                 error_def.error = "ParseError".to_string();
                 return Err(AppError::new_api(
                     self.component.as_str(),
                     error_def,
-                    eyre!(""),
+                    eyre!(format!("Could not parse payload: {}", e)),
                     LogLevel::Critical,
                 ));
             }
@@ -257,20 +277,35 @@ impl WFMClient {
     }
     // Add an "add" method to WFMWFMClient
     pub fn auth(&self) -> AuthModule {
-        AuthModule { client: self }
+        AuthModule {
+            client: self,
+            debug_id: "wfm_client_auth".to_string(),
+        }
     }
 
     pub fn orders(&self) -> OrderModule {
-        OrderModule { client: self }
+        OrderModule {
+            client: self,
+            debug_id: "wfm_client_order".to_string(),
+        }
     }
 
     pub fn items(&self) -> ItemModule {
-        ItemModule { client: self }
+        ItemModule {
+            client: self,
+            debug_id: "wfm_client_item".to_string(),
+        }
     }
     pub fn auction(&self) -> AuctionModule {
-        AuctionModule { client: self }
+        AuctionModule {
+            client: self,
+            debug_id: "wfm_client_auction".to_string(),
+        }
     }
     pub fn chat(&self) -> ChatModule {
-        ChatModule { client: self }
+        ChatModule {
+            client: self,
+            debug_id: "wfm_client_chat".to_string(),
+        }
     }
 }

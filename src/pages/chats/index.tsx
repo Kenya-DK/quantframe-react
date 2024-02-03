@@ -16,9 +16,9 @@ export default function ChatsPage() {
   return (
     <Grid>
       <Grid.Col span={aktive_chat ? 3 : 12}>
-        <ScrollArea p="xs" scrollbarSize={1} sx={{ height: "80vh" }} >
+        <ScrollArea p="xs" scrollbarSize={1} sx={{ height: "calc(100vh - 106px)" }} >
           {chats?.sort((a, b) => new Date(a.last_update) > new Date(b.last_update) ? -1 : 1).map((chat) => (
-            <ChatListItem exlude_user_names={[user?.ingame_name || ""]} chat={chat}
+            <ChatListItem key={chat.id} exlude_user_names={[user?.ingame_name || ""]} chat={chat}
               onClick={(chat) => SendSocketEvent("chats/SET_CHAT", chat)}
               selected={aktive_chat?.id === chat.id}
               onDelete={async (id) => {

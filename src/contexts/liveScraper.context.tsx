@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { OnTauriEvent } from "../utils";
+import { OnTauriEvent, SendNotificationToWindow } from "../utils";
 import { RustError, ScraperState, ScraperMessage } from "../types";
+import { useTranslateContext } from "../hooks";
 type LiveScraperContextProps = ScraperState & {
 
 }
@@ -18,6 +19,7 @@ export const LiveScraperContext = createContext<LiveScraperContextProps>({
 export const useLiveScraperContext = () => useContext(LiveScraperContext);
 
 export const LiveScraperContextProvider = ({ children }: LiveScraperContextProviderProps) => {
+  const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateContext(`live_scraper.${key}`, { ...context }, i18Key);
   const [is_running, setIsRunning] = useState(false);
   const [error, setError] = useState<RustError | null>(null);
   const [message, setMessage] = useState<ScraperMessage | undefined>(undefined);
@@ -35,6 +37,7 @@ export const LiveScraperContextProvider = ({ children }: LiveScraperContextProvi
     OnTauriEvent("LiveScraper:Error", (error: RustError) => {
       setIsRunning(false)
       setError(error)
+      SendNotificationToWindow(useTranslate("error_title"), useTranslate("error_message"));
     });
     return () => {
 

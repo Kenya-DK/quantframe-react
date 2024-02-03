@@ -2,13 +2,12 @@ use polars::{
     prelude::{DataFrame, NamedFrom},
     series::Series,
 };
-use reqwest::header::HeaderMap;
 use serde_json::json;
 
 use crate::{
-    enums::{LogLevel, OrderType},
+    enums::OrderType,
     error::{ApiResult, AppError},
-    helper, logger,
+    helper,
     structs::{Order, Ordres},
     wfm_client::client::WFMClient,
 };
@@ -16,6 +15,7 @@ use crate::{
 use eyre::eyre;
 pub struct OrderModule<'a> {
     pub client: &'a WFMClient,
+    pub debug_id: String,
 }
 
 impl<'a> OrderModule<'a> {
@@ -25,6 +25,7 @@ impl<'a> OrderModule<'a> {
         match self.client.get::<Ordres>(&url, None).await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
+                    &self.debug_id,
                     "Order:GetUserOrders",
                     format!(
                         "{} orders were fetched.",
@@ -40,6 +41,7 @@ impl<'a> OrderModule<'a> {
                     "Order:GetUserOrders",
                     error,
                     eyre!("There was an error fetching orders for {}", ingame_name),
+                    crate::enums::LogLevel::Error,
                 ));
             }
             Err(err) => {
@@ -83,6 +85,7 @@ impl<'a> OrderModule<'a> {
         {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
+                    &self.debug_id,
                     "Order:Create",
                     format!(
                         "Order created type: {} item: {}, platinum: {}, quantity: {}, rank: {}",
@@ -103,6 +106,7 @@ impl<'a> OrderModule<'a> {
                     "Order:Create",
                     error,
                     eyre!("There was an error creating order"),
+                    crate::enums::LogLevel::Error,
                 ));
             }
             Err(err) => {
@@ -116,6 +120,7 @@ impl<'a> OrderModule<'a> {
         match self.client.delete(&url, Some("order_id")).await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
+                    &self.debug_id,
                     "Order:Delete",
                     format!("Order {} was deleted.", order_id).as_str(),
                     None,
@@ -124,10 +129,17 @@ impl<'a> OrderModule<'a> {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
+                let log_level = match error.messages.get(0) {
+                    Some(message) if message.contains("app.delete_order.order_not_exist") => {
+                        crate::enums::LogLevel::Warning
+                    }
+                    _ => crate::enums::LogLevel::Error,
+                };
                 return Err(self.client.create_api_error(
                     "Order:Delete",
                     error,
                     eyre!("There was an error deleting order {}", order_id),
+                    crate::enums::LogLevel::Error,
                 ));
             }
             Err(err) => {
@@ -157,6 +169,7 @@ impl<'a> OrderModule<'a> {
         {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
+                    &self.debug_id,
                     "Order:Update",
                     format!(
                         "Order id: {}, platinum: {}, quantity: {}",
@@ -173,6 +186,7 @@ impl<'a> OrderModule<'a> {
                     "Order:Update",
                     error,
                     eyre!("There was an error updating order {}", order_id),
+                    crate::enums::LogLevel::Error,
                 ));
             }
             Err(err) => {
@@ -206,6 +220,7 @@ impl<'a> OrderModule<'a> {
             match self.client.put(&url, Some("order"), None).await {
                 Ok(ApiResult::Success(payload, _headers)) => {
                     self.client.debug(
+                        &self.debug_id,
                         "Order:Close",
                         format!(
                             "Order {} type: {} was closed.",
@@ -218,10 +233,17 @@ impl<'a> OrderModule<'a> {
                     payload
                 }
                 Ok(ApiResult::Error(error, _headers)) => {
+                    let log_level = match error.messages.get(0) {
+                        Some(message) if message.contains("app.close_order.order_not_exist") => {
+                            crate::enums::LogLevel::Warning
+                        }
+                        _ => crate::enums::LogLevel::Error,
+                    };
                     return Err(self.client.create_api_error(
                         "Order:Closeing",
                         error,
                         eyre!("There was an error closing order {}", order.id),
+                        crate::enums::LogLevel::Error,
                     ));
                 }
                 Err(err) => {
@@ -257,11 +279,12 @@ impl<'a> OrderModule<'a> {
     pub async fn get_ordres_by_item(&self, item: &str) -> Result<DataFrame, AppError> {
         let url = format!("items/{}/orders", item);
 
-        let orders: Vec<Order> = match self.client.get(&url, Some("orders")).await {
+        let orders = match self.client.get::<Vec<Order>>(&url, Some("orders")).await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
+                    &self.debug_id,
                     "Order:GetOrdersByItem",
-                    format!("Orders for {} were fetched.", item).as_str(),
+                    format!("Orders for {} were fetched. found: {}", item, payload.len()).as_str(),
                     None,
                 );
                 payload
@@ -271,6 +294,7 @@ impl<'a> OrderModule<'a> {
                     "Order:GetOrdersByItem",
                     error,
                     eyre!("There was an error fetching orders for {}", item),
+                    crate::enums::LogLevel::Error,
                 ));
             }
             Err(err) => {

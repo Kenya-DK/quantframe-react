@@ -13,8 +13,8 @@ pub struct ErrorApiResponse {
     #[serde(rename = "error")]
     pub error: String,
 
-    #[serde(rename = "message")]
-    pub message: Vec<String>,
+    #[serde(rename = "messages")]
+    pub messages: Vec<String>,
 
     #[serde(skip_serializing_if = "Option::is_none", rename = "raw_response")]
     pub raw_response: Option<String>,
@@ -37,22 +37,22 @@ pub enum ApiResult<T> {
 
 #[derive(Debug)]
 pub struct AppError {
-    component: &'static str,
+    component: String,
     eyre_report: String,
     log_level: LogLevel,
 }
 impl AppError {
     // Custom constructor
-    pub fn new(component: &'static str, eyre_report: eyre::ErrReport) -> Self {
+    pub fn new(component: &str, eyre_report: eyre::ErrReport) -> Self {
         AppError {
-            component,
+            component: component.to_string(),
             eyre_report: format!("{:?}", eyre_report),
             log_level: LogLevel::Critical,
         }
     }
     // Custom constructor
     pub fn new_api(
-        component: &'static str,
+        component: &str,
         mut err: ErrorApiResponse,
         eyre_report: eyre::ErrReport,
         log_level: LogLevel,
@@ -80,23 +80,28 @@ impl AppError {
         err.body = Some(payload.clone());
         extra["ApiError"] = json!(err);
         cause = format!(
-            "{}The request failed with status code {} to the url: {} with the following message: {}",
+            "{} The request failed with status code {} to the url: {} with the following message: {}",
             cause,
             err.status_code,
             err.clone().url.unwrap_or("NONE".to_string()),
-            err.message.join(",")
+            err.messages.join(",")
         );
-        new_err.eyre_report = format!("{}[J]{}[J]\n\nLocation:\n    {}", cause, extra, backtrace);
+        new_err.eyre_report = format!(
+            "{}[J]{}[J]\n\nLocation:\n    {}",
+            cause,
+            extra.to_string(),
+            backtrace
+        );
         new_err
     }
     // Custom constructor
     pub fn new_with_level(
-        component: &'static str,
+        component: &str,
         eyre_report: eyre::ErrReport,
         log_level: LogLevel,
     ) -> Self {
         AppError {
-            component,
+            component: component.to_string(),
             eyre_report: format!("{:?}", eyre_report),
             log_level,
         }
@@ -121,7 +126,11 @@ impl AppError {
                     }
                 }
                 Err(err) => {
-                    json["error"] = json!(err.to_string());
+                    json["ParsingError"] = json!({
+                        "message": "Failed to parse the JSON in the error",
+                        "error": err.to_string(),
+                        "raw": json_str,
+                    });
                 }
             }
         }
@@ -209,7 +218,13 @@ pub fn create_log_file(file: String, e: &AppError) {
     crate::logger::dolog(
         log_level,
         component.as_str(),
-        format!("Location: {:?}, {:?}, Extra: <{:?}>", backtrace, cause, extra.to_string()).as_str(),
+        format!(
+            "Location: {:?}, {:?}, Extra: <{}>",
+            backtrace,
+            cause,
+            extra.to_string()
+        )
+        .as_str(),
         true,
         Some(file.as_str()),
     );

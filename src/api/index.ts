@@ -28,6 +28,9 @@ const api = {
     getChat: async (id: string): Promise<Wfm.ChatMessage[]> => {
       return await invoke("get_chat", { id }) as Wfm.ChatMessage[];
     },
+    on_new_wfm_message: async (message: Wfm.ChatMessage) => {
+      return await invoke("on_new_wfm_message", { message });
+    },
   },
   debug: {
     importWarframeAlgoTraderData: async (dbPath: string, type: string): Promise<any> => {

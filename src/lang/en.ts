@@ -218,46 +218,77 @@ export const en = {
             save: "Save",
           },
           price_scraper: {},
-          whisper_scraper: {
-            title: "Whisper Scraper",
+          notifications: {
+            title: "Notifications",
             accordion_general: "General",
-            conversation: {
-              system: {
-                enable: {
-                  title: "Enable System Notification",
-                  description: "Will send a notification to the system on a new conversation",
-                },
+            on_ingame_new_conversation: {
+              title: "On Ingame Conversation",
+              tooltip: {
+                discord: "Send a notification to discord",
+                system: "Send a notification to the system",
+              },
+              fields: {
                 title: {
-                  title: "Title",
+                  label: "Title",
                   description: "The title of the notification",
                 },
                 content: {
-                  title: "Content",
-                  description: "Use <PLAYER_NAME> as the placeholder for the Warframe username ",
-                },
-              },
-              discord: {
-                enable: {
-                  title: "Enable Discord Notification",
-                  description: "Will send a notification to discord on a new conversation",
+                  label: "Content",
+                  description: "Use <PLAYER_NAME> as the placeholder for the Warframe username",
                 },
                 webhook: {
-                  title: "Discord Webhook",
+                  label: "Discord Webhook",
                   description: "The webhook to send notifications to",
                 },
                 user_ids: {
-                  title: "User IDs",
+                  label: "User IDs",
                   description: "The user ids to ping separated by comma",
                 },
+              }
+            },
+            on_wfm_chat_message: {
+              title: "On WFM Chat Message",
+              tooltip: {
+                discord: "Send a notification to discord",
+                system: "Send a notification to the system",
+              },
+              fields: {
                 title: {
-                  title: "Title",
+                  label: "Title",
                   description: "The title of the notification",
                 },
                 content: {
-                  title: "Content",
-                  description: "Use <PLAYER_NAME> as the placeholder for the Warframe username ",
+                  label: "Content",
+                  description: "Use <WFM_MESSAGE> as the placeholder for the Warframe username",
+                },
+                webhook: {
+                  label: "Discord Webhook",
+                  description: "The webhook to send notifications to",
+                },
+                user_ids: {
+                  label: "User IDs",
+                  description: "The user ids to ping separated by comma",
                 },
               }
+            },
+            save: "Save",
+          },
+          logging: {
+            title: "Logging",
+            fields: {
+              log: {
+                label: "Loggin Level",
+                description: "What to log",
+                placeholder: "Loggin Level",
+                options: {
+                  all: "All",
+                  wfm_client_auth: "WFM Client Auth",
+                  wfm_client_order: "WFM Client Order",
+                  wfm_client_item: "WFM Client Item",
+                  wfm_client_auction: "WFM Client Auction",
+                  wfm_client_chat: "WFM Client Chat",
+                }
+              },
             },
             save: "Save",
           },
@@ -281,8 +312,6 @@ export const en = {
     wisper: {
       title: "Wisper",
       message: "Wisper {{name}}",
-      error_title: "Wisper Error",
-      error_message: "There was an error with the wisper. Please check the logs for more information.",
     },
     live_scraper: {
       error_title: "Live Scraper Error",

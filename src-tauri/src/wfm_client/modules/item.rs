@@ -1,5 +1,4 @@
 use crate::{
-    enums::LogLevel,
     error::{ApiResult, AppError},
     structs::{Item, ItemDetails},
     wfm_client::client::WFMClient,
@@ -8,6 +7,7 @@ use crate::{
 use eyre::eyre;
 pub struct ItemModule<'a> {
     pub client: &'a WFMClient,
+    pub debug_id: String,
 }
 
 impl<'a> ItemModule<'a> {
@@ -15,6 +15,7 @@ impl<'a> ItemModule<'a> {
         match self.client.get::<Vec<Item>>("items", Some("items")).await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
+                    &self.debug_id,
                     "Item:GetAllItems",
                     format!("{} items were fetched.", payload.len()).as_str(),
                     None,
@@ -26,6 +27,7 @@ impl<'a> ItemModule<'a> {
                     "Item:GetAllItems",
                     error,
                     eyre!("There was an error fetching items"),
+                    crate::enums::LogLevel::Error,
                 ));
             }
             Err(err) => {
@@ -38,6 +40,7 @@ impl<'a> ItemModule<'a> {
         match self.client.get(&url, Some("item")).await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
+                    &self.debug_id,
                     "Item:GetItem",
                     format!("Gettting item: {}", item).as_str(),
                     None,
@@ -49,6 +52,7 @@ impl<'a> ItemModule<'a> {
                     "Item:GetItem",
                     error,
                     eyre!("There was an error fetching item {}", item),
+                    crate::enums::LogLevel::Error,
                 ));
             }
             Err(err) => {

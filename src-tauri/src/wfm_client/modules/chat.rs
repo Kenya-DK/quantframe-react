@@ -1,26 +1,27 @@
-use std::f32::consts::E;
-
 use eyre::eyre;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 
 use crate::{
-    enums::LogLevel,
     error::{ApiResult, AppError},
-    helper, logger,
-    structs::{Item, ItemDetails},
+    helper,
     wfm_client::client::WFMClient,
 };
 
 pub struct ChatModule<'a> {
     pub client: &'a WFMClient,
+    pub debug_id: String,
 }
 
 impl<'a> ChatModule<'a> {
     pub async fn get_chats(&self) -> Result<Vec<ChatData>, AppError> {
-        match self.client.get::<Vec<ChatData>>("im/chats", Some("chats")).await {
+        match self
+            .client
+            .get::<Vec<ChatData>>("im/chats", Some("chats"))
+            .await
+        {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
+                    &self.debug_id,
                     "Chat:GetChats",
                     format!("{} was fetched.", payload.len()).as_str(),
                     None,
@@ -32,6 +33,7 @@ impl<'a> ChatModule<'a> {
                     "Chat:GetChats",
                     error,
                     eyre!("There was an error fetching chats"),
+                    crate::enums::LogLevel::Error,
                 ));
             }
             Err(err) => {
@@ -42,9 +44,14 @@ impl<'a> ChatModule<'a> {
 
     pub async fn get_chat(&self, id: String) -> Result<Vec<ChatMessage>, AppError> {
         let url = format!("im/chats/{}", id);
-        match self.client.get::<Vec<ChatMessage>>(&url, Some("messages")).await {
+        match self
+            .client
+            .get::<Vec<ChatMessage>>(&url, Some("messages"))
+            .await
+        {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
+                    &self.debug_id,
                     "Chat:GetChat",
                     format!("{} chat messages were fetched.", payload.len()).as_str(),
                     None,
@@ -56,6 +63,7 @@ impl<'a> ChatModule<'a> {
                     "Chat:GetChatById",
                     error,
                     eyre!("There was an error fetching chat messages for chat {}", id),
+                    crate::enums::LogLevel::Error,
                 ));
             }
             Err(err) => {
@@ -69,6 +77,7 @@ impl<'a> ChatModule<'a> {
         match self.client.delete(&url, Some("chat_id")).await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
+                    &self.debug_id,
                     "Chat:Delete",
                     format!("Chat {} was deleted.", id).as_str(),
                     None,
@@ -80,6 +89,7 @@ impl<'a> ChatModule<'a> {
                     "Chat:Delete",
                     error,
                     eyre!("There was an error deleting chat {}", id),
+                    crate::enums::LogLevel::Error,
                 ));
             }
             Err(err) => {

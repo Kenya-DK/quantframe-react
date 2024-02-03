@@ -4,13 +4,12 @@ use serde_json::json;
 
 use crate::{
     auth::AuthState,
-    enums::LogLevel,
     error::{self, ApiResult, AppError},
-    logger,
     wfm_client::client::WFMClient,
 };
 pub struct AuthModule<'a> {
     pub client: &'a WFMClient,
+    pub debug_id: String,
 }
 
 impl<'a> AuthModule<'a> {
@@ -27,6 +26,7 @@ impl<'a> AuthModule<'a> {
         {
             Ok(ApiResult::Success(user, headers)) => {
                 self.client.debug(
+                    &self.debug_id,
                     "User:Login",
                     format!("User logged in: {}", user.ingame_name).as_str(),
                     None,
@@ -36,8 +36,9 @@ impl<'a> AuthModule<'a> {
             Ok(ApiResult::Error(e, _headers)) => {
                 return Err(self.client.create_api_error(
                     "Auth:Login",
-                    error,
+                    e,
                     eyre!("There was an error logging in"),
+                    crate::enums::LogLevel::Error,
                 ));
             }
             Err(e) => return Err(e),
