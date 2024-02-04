@@ -56,8 +56,8 @@ Then type in `powershell` and hit enter
 </details>
 
 ```bash
-npm i # Install nodejs deps 
-npm run tauri build
+pnpm i # Install nodejs deps 
+pnpm run tauri build
 ```
 > For developers, you can also use yarn or pnpm if you prefer. (pnpm is the fastest package manager)
 
