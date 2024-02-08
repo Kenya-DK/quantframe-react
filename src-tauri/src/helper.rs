@@ -7,7 +7,7 @@ use polars::{
     prelude::{DataFrame, Expr, IntoLazy, SortOptions},
     series::Series,
 };
-use serde_json::{json, Value};
+use serde_json::{Map, json, Value};
 use std::{
     fs::{self, File},
     io::{self, Read, Write},
@@ -272,6 +272,7 @@ pub fn get_desktop_path() -> PathBuf {
 pub struct ZipEntry {
     pub file_path: PathBuf,
     pub sub_path: Option<String>,
+    pub content: Option<String>,
     pub include_dir: bool,
 }
 
@@ -294,6 +295,7 @@ pub fn get_zip_entrys(path: PathBuf, in_subfolders: bool) -> Result<Vec<ZipEntry
             files.push(ZipEntry {
                 file_path: path.clone(),
                 sub_path: None,
+                content: None,
                 include_dir: false,
             });
         }
@@ -388,17 +390,31 @@ pub fn create_zip_file(mut files: Vec<ZipEntry>, zip_path: &str) -> Result<(), A
                 )
             })?;
         }
+
         let mut buffer = Vec::new();
-        io::copy(&mut file.take(u64::MAX), &mut buffer).map_err(|e| {
-            AppError::new(
-                "Zip:Copy",
-                eyre!(format!(
-                    "Path: {:?}, Error: {}",
-                    file_entry.file_path,
-                    e.to_string()
-                )),
-            )
-        })?;
+        if file_entry.content.is_some() {
+            buffer.write_all(file_entry.content.clone().unwrap().as_bytes()).map_err(|e| {
+                AppError::new(
+                    "Zip:Write",
+                    eyre!(format!(
+                        "Path: {:?}, Error: {}",
+                        file_entry.file_path,
+                        e.to_string()
+                    )),
+                )
+            })?;
+        } else {
+            io::copy(&mut file.take(u64::MAX), &mut buffer).map_err(|e| {
+                AppError::new(
+                    "Zip:Copy",
+                    eyre!(format!(
+                        "Path: {:?}, Error: {}",
+                        file_entry.file_path,
+                        e.to_string()
+                    )),
+                )
+            })?;            
+        }
 
         zip.write_all(&buffer).map_err(|e| {
             AppError::new(
@@ -869,4 +885,40 @@ pub fn validate_json(json: &Value, required: &Value, path: &str) -> (Value, Vec<
     }
 
     (modified_json, missing_properties)
+}
+
+pub fn loop_through_properties(data: &mut Map<String, Value>, propertys: Vec<String>) {
+    // Iterate over each key-value pair in the JSON object
+    for (key, value) in data.iter_mut() {
+        // Perform actions based on the property key or type
+        match value {
+            Value::Object(sub_object) => {
+                // If the value is another object, recursively loop through its properties
+                loop_through_properties(sub_object, propertys.clone());
+            }
+            _ => {
+                if propertys.contains(&key.to_string()) {
+                    *value = json!("***");
+                }
+            }
+        }
+    }
+}
+
+pub fn open_json_and_replace(path: &str, propertys: Vec<String>) -> Result<Value, AppError> {
+    match std::fs::File::open(path.clone()) {
+        Ok(file) => {
+            let reader = std::io::BufReader::new(file);
+            let mut data: serde_json::Map<String, Value> = serde_json::from_reader(reader)
+                .map_err(|e| AppError::new("Logger", eyre!(e.to_string()))).expect("Could not read auth.json");
+            loop_through_properties(&mut data, propertys.clone());
+            Ok(json!(data))
+        }
+        Err(_) => {
+            Err(AppError::new(
+                "Logger",
+                eyre!("Could not open file at path: {}", path),
+            ))
+        }
+    }
 }

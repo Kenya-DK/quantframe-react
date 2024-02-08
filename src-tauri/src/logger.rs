@@ -1,4 +1,6 @@
+use eyre::eyre;
 use polars::prelude::*;
+use serde_json::Value;
 use std::{
     fs::{self, File, OpenOptions},
     io::BufWriter,
@@ -6,7 +8,7 @@ use std::{
     path::PathBuf,
 };
 
-use crate::{enums::LogLevel, helper, PACKAGEINFO};
+use crate::{enums::LogLevel, error::AppError, helper, PACKAGEINFO};
 
 pub fn format_text(text: &str, color: &str, bold: bool) -> String {
     let color_code = match color {
@@ -188,7 +190,15 @@ pub fn log_dataframe(df: &mut DataFrame, name: &str) {
         None,
     );
 }
-
+pub fn log_json(file_path: &str, data: &Value) -> Result<(), AppError> {
+    let path = get_log_forlder().join(file_path);
+    let file =
+        std::fs::File::create(path).map_err(|e| AppError::new("log_json", eyre!(e.to_string())))?;
+    let writer = std::io::BufWriter::new(file);
+    serde_json::to_writer_pretty(writer, data)
+        .map_err(|e| AppError::new("log_json", eyre!(e.to_string())))?;
+    Ok(())
+}
 pub fn export_logs() {
     let date = chrono::Local::now()
         .naive_utc()
@@ -214,6 +224,7 @@ pub fn export_logs() {
     files_to_compress.push(helper::ZipEntry {
         file_path: logs_path,
         sub_path: Some("logs".to_string()),
+        content: None,
         include_dir: true,
     });
 
@@ -221,12 +232,24 @@ pub fn export_logs() {
     for path in fs::read_dir(app_path).unwrap() {
         let path = path.unwrap().path();
         // Check if path is auth.json
-        if path.ends_with("auth.json") {
-            info_con("Logger", "Skipping auth.json");
+        if path.ends_with("auth.json") || path.ends_with("settings.json") {
+            let json = helper::open_json_and_replace(
+                &path.to_str().unwrap(),
+                vec!["access_token".to_string(), "webhook".to_string()],
+            )
+            .expect("Could not open auth.json");
+
+            files_to_compress.push(helper::ZipEntry {
+                file_path: path.to_owned(),
+                sub_path: None,
+                content: Some(serde_json::to_string_pretty(&json).unwrap()),
+                include_dir: false,
+            });
         } else {
             files_to_compress.push(helper::ZipEntry {
                 file_path: path.to_owned(),
                 sub_path: None,
+                content: None,
                 include_dir: false,
             });
         }
