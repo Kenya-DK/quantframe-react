@@ -246,6 +246,7 @@ impl<'a> StockItemModule<'a> {
                     None,
                     None,
                     None,
+                    None,
                 )
                 .await?;
                 let mut t = t.clone();
@@ -330,6 +331,7 @@ impl<'a> StockItemModule<'a> {
         listed_price: Option<i32>,
         status: Option<String>,
         hidden: Option<bool>,
+        trades: Option<&DataFrame>,
     ) -> Result<StockItemStruct, AppError> {
         let connection = self.client.connection.lock().unwrap().clone();
         let items = self.get_items().await?;
@@ -426,6 +428,7 @@ impl<'a> StockItemModule<'a> {
         listed_price: Option<i32>,
         status: Option<String>,
         hidden: Option<bool>,
+        trades: Option<&DataFrame>,
     ) -> Result<StockItemStruct, AppError> {
         let items = self.get_items().await?;
         let item = items.iter().find(|t| t.url == id);
@@ -437,18 +440,8 @@ impl<'a> StockItemModule<'a> {
             ));
         }
         let item = item.unwrap();
-        self.update_by_id(
-            item.id,
-            owned,
-            price,
-            None,
-            listed_price,
-            status.clone(),
-            hidden,
-        )
-        .await?;
         Ok(self
-            .update_by_id(item.id, owned, price, None, listed_price, status, hidden)
+            .update_by_id(item.id, owned, price, None, listed_price, status, hidden, trades)
             .await?)
     }
 
@@ -505,7 +498,8 @@ impl<'a> StockItemModule<'a> {
                 Some(inventory.owned.clone()),
                 None,
                 None,
-                Some(-1),
+                None,
+                None,
                 None,
                 None,
             )
@@ -527,38 +521,5 @@ impl<'a> StockItemModule<'a> {
 
     pub fn emit(&self, operation: &str, data: serde_json::Value) {
         helper::emit_update("StockItems", operation, Some(data));
-    }
-
-    pub fn convet_stock_item_to_datafream(
-        &self,
-        item: Vec<StockItemStruct>,
-    ) -> Result<DataFrame, AppError> {
-        let df = DataFrame::new(vec![
-            Series::new("id", item.iter().map(|i| i.id).collect::<Vec<_>>()),
-            Series::new(
-                "item_id",
-                item.iter().map(|i| i.wfm_id.clone()).collect::<Vec<_>>(),
-            ),
-            Series::new(
-                "item_url",
-                item.iter().map(|i| i.url.clone()).collect::<Vec<_>>(),
-            ),
-            Series::new(
-                "item_name",
-                item.iter().map(|i| i.name.clone()).collect::<Vec<_>>(),
-            ),
-            Series::new("rank", item.iter().map(|i| i.rank).collect::<Vec<_>>()),
-            Series::new("price", item.iter().map(|i| i.price).collect::<Vec<_>>()),
-            Series::new(
-                "minium_price",
-                item.iter().map(|i| i.minium_price).collect::<Vec<_>>(),
-            ),
-            Series::new(
-                "listed_price",
-                item.iter().map(|i| i.listed_price).collect::<Vec<_>>(),
-            ),
-            Series::new("owned", item.iter().map(|i| i.owned).collect::<Vec<_>>()),
-        ]);
-        Ok(df.unwrap())
-    }
+    }    
 }

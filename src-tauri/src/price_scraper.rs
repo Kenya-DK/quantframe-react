@@ -1,5 +1,5 @@
 use crate::enums::LogLevel;
-use crate::error::{AppError, ApiResult, ErrorApiResponse};
+use crate::error::{ApiResult, AppError, ErrorApiResponse};
 use crate::wfm_client::client::WFMClient;
 use crate::{helper, logger};
 use eyre::eyre;
@@ -24,6 +24,7 @@ use crate::auth::AuthState;
 pub struct PriceScraper {
     csv_path: String,
     csv_backop_path: String,
+    component: String,
     wfm: Arc<Mutex<WFMClient>>,
     auth: Arc<Mutex<AuthState>>,
 }
@@ -31,6 +32,7 @@ pub struct PriceScraper {
 impl PriceScraper {
     pub fn new(wfm: Arc<Mutex<WFMClient>>, auth: Arc<Mutex<AuthState>>) -> Self {
         PriceScraper {
+            component: "PriceScraper".to_string(),
             csv_path: helper::get_app_roaming_path()
                 .join("price_data.csv")
                 .to_str()
@@ -51,14 +53,14 @@ impl PriceScraper {
         // Try to read from "allItemDataBackup.csv", and if it fails, read from "allItemData.csv".
         let file = File::open(&self.csv_path)
             .or_else(|_| File::open(&self.csv_backop_path))
-            .map_err(|e| AppError::new("PriceScraper", eyre!("Error opening csv file: {}", e)))?;
+            .map_err(|e| AppError::new(&self.component, eyre!("Error opening csv file: {}", e)))?;
 
         // Parse the CSV file into a DataFrame
         CsvReader::new(file)
             .infer_schema(None)
             .has_header(true)
             .finish()
-            .map_err(|e| AppError::new("PriceScraper", eyre!(e.to_string())))
+            .map_err(|e| AppError::new(&self.component, eyre!(e.to_string())))
     }
 
     pub fn get_status(&self) -> Option<u128> {
@@ -81,7 +83,11 @@ impl PriceScraper {
     /// The `platform` argument should be one of "pc", "ps4", or "xb1".
     /// The `day` argument should be a string in the format "YYYY-MM-DD".
     /// If the request fails, returns a `AppError` with information about the error.
-    async fn get_price_by_day(&self, platform: &str, day: &str) -> Result<ApiResult<Value>, AppError> {
+    async fn get_price_by_day(
+        &self,
+        platform: &str,
+        day: &str,
+    ) -> Result<ApiResult<Value>, AppError> {
         let mut url = format!("https://relics.run/history/price_history_{}.json", day);
         if platform != "pc" {
             url = format!(
@@ -92,7 +98,17 @@ impl PriceScraper {
         let client = Client::new();
         let request = client.request(Method::GET, Url::parse(&url).unwrap());
         let response = request.send().await;
-        
+
+        logger::info_file(
+            "PriceScraper",
+            format!(
+                "Getting price data for day: {}, platform: {}, url: {}",
+                day, platform, url
+            )
+            .as_str(),
+            Some("price_scraper.log"),
+        );
+
         // Define the error response
         let mut error_def = ErrorApiResponse {
             status_code: 500,
@@ -104,11 +120,10 @@ impl PriceScraper {
             method: Some("GET".to_string()),
         };
 
-
         if let Err(e) = response {
             error_def.messages.push(e.to_string());
             return Err(AppError::new_api(
-                "PriceScraper",
+                &self.component,
                 error_def,
                 eyre!(format!("There was an error sending the request: {}", e)),
                 LogLevel::Critical,
@@ -122,21 +137,22 @@ impl PriceScraper {
         let content = response_data.text().await.unwrap_or_default();
         error_def.raw_response = Some(content.clone());
 
-        if error_def.status_code != 200{
-            return Ok(ApiResult::Error(error_def,headers));
+        if error_def.status_code != 200 {
+            return Ok(ApiResult::Error(error_def, headers));
         }
 
         // Convert the response to a Value object
         let response: Value = serde_json::from_str(content.as_str()).map_err(|e| {
-        error_def.messages.push(e.to_string());
-        error_def.error = "ParseError".to_string();
-        AppError::new_api(
-            "PriceScraper",
-            error_def.clone(),
-            eyre!(""),
-            LogLevel::Critical,
-        )})?;
-        return Ok(ApiResult::Success(response,headers));
+            error_def.messages.push(e.to_string());
+            error_def.error = "ParseError".to_string();
+            AppError::new_api(
+                &self.component,
+                error_def.clone(),
+                eyre!(""),
+                LogLevel::Critical,
+            )
+        })?;
+        return Ok(ApiResult::Success(response, headers));
     }
     /// Returns true if the given vector of item data is valid for price scraping, false otherwise.
     /// A valid item data vector must have at least one element, and the first element must have either 3 or 6 keys.
@@ -186,11 +202,11 @@ impl PriceScraper {
         let csv_backop_path = Path::new(self.csv_backop_path.as_str());
         if csv_path.exists() {
             logger::debug_con(
-                "PriceScraper",
+                &self.component,
                 format!("Backuping csv file: {}", self.csv_path).as_str(),
             );
             fs::copy(csv_path, csv_backop_path)
-                .map_err(|e| AppError::new("PriceScraper", eyre!(e.to_string())))?;
+                .map_err(|e| AppError::new(&self.component, eyre!(e.to_string())))?;
         }
         let last_days = helper::last_x_days(days).clone();
         let mut dataframes: Vec<DataFrame> = Vec::new();
@@ -208,7 +224,7 @@ impl PriceScraper {
                 Ok(ApiResult::Success(items, _headers)) => {
                     found_data += 1;
                     logger::info_con(
-                        "PriceScraper",
+                        &self.component,
                         format!("Getting data for day: {}", day).as_str(),
                     );
                     helper::send_message_to_window(
@@ -349,10 +365,13 @@ impl PriceScraper {
                             }
                         }
                     }
-                },
+                }
                 Ok(ApiResult::Error(e, _headers)) => {
-                    if e.status_code == 404{
-                        logger::info_con("PriceScraper", format!("No data for day: {}", day).as_str());
+                    if e.status_code == 404 {
+                        logger::info_con(
+                            "PriceScraper",
+                            format!("No data for day: {}", day).as_str(),
+                        );
                     } else {
                         logger::error_file(
                             "PriceScraper",

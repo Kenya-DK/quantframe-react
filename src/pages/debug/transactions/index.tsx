@@ -121,6 +121,7 @@ export const Transactions = () => {
           {
             accessor: 'id',
             title: "Id",
+            sortable: true,
           },
           {
             accessor: 'name',

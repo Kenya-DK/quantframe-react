@@ -99,7 +99,7 @@ pub async fn update_item_stock(
     // Update Riven in Stock
     match db
         .stock_item()
-        .update_by_id(id, owned, None, minium_price, None,None, hidden)
+        .update_by_id(id, owned, None, minium_price, None,None, hidden,None)
         .await
     {
         Ok(stock) => {
@@ -330,6 +330,7 @@ pub async fn create_riven_stock(
     polarity: &str,
     mod_name: &str,
     minium_price: Option<i32>,
+    commet: Option<String>,
     db: tauri::State<'_, Arc<Mutex<DBClient>>>,
 ) -> Result<serde_json::Value, AppError> {
     let db = db.lock()?.clone();
@@ -349,6 +350,7 @@ pub async fn create_riven_stock(
             re_rolls,
             polarity,
             minium_price,
+            commet,
         )
         .await
     {
@@ -497,6 +499,7 @@ pub async fn update_riven_stock(
     match_riven: Option<MatchRivenStruct>,
     minium_price: Option<i32>,
     private: Option<bool>,
+    commet: Option<String>,
     db: tauri::State<'_, Arc<Mutex<DBClient>>>,
 ) -> Result<serde_json::Value, AppError> {
     let db = db.lock()?.clone();
@@ -513,13 +516,15 @@ pub async fn update_riven_stock(
             id,
             None,
             None,
-            None,
+            Some(-1),
             None,
             attributes,
             match_riven,
             minium_price,
             None,
             private,
+            commet,
+            None
         )
         .await?;
     Ok(json!(stock.clone()))

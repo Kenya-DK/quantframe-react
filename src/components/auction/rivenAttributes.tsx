@@ -4,8 +4,6 @@ import { useCacheContext } from "../../contexts";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 interface RivenAttributesProps {
-  isClickable?: boolean,
-  onClick?: (attribute: Wfm.RivenAttributeDto) => void,
   attributes: Wfm.RivenAttributeDto[]
 }
 const useStyles = createStyles((theme) => ({
@@ -48,20 +46,20 @@ const AttributeText = ({ onClick, isClickable, attribute }: { onClick?: (attribu
     </>
   )
 }
-export const RivenAttributes = ({ onClick, isClickable, attributes }: RivenAttributesProps) => {
+export const RivenAttributes = ({ attributes }: RivenAttributesProps) => {
   return (
     <Stack >
       <Box>
         {attributes.filter(x => x.positive).map((att, i) => {
           return (
-            <AttributeText onClick={onClick} isClickable={isClickable} key={i} attribute={att} />
+            <AttributeText key={i} attribute={att} />
           )
         })}
       </Box>
       <Box>
         {attributes.filter(x => !x.positive).map((att, i) => {
           return (
-            <AttributeText onClick={onClick} isClickable={isClickable} key={i} attribute={att} />
+            <AttributeText key={i} attribute={att} />
           )
         })}
       </Box>

@@ -3,24 +3,15 @@ use std::{
     io::{Read, Write},
     path::PathBuf,
     sync::{Arc, Mutex},
-    time::Duration,
 };
 
 use eyre::eyre;
-use polars::{
-    prelude::{DataFrame, NamedFrom},
-    series::Series,
-};
-use reqwest::{header::HeaderMap, Client, Method, Url};
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
 use crate::{
-    auth::AuthState,
     error::AppError,
     helper,
-    logger::{self},
-    rate_limiter::RateLimiter,
     structs::{Item, RivenAttributeInfo, RivenTypeInfo},
     wfm_client::client::WFMClient,
 };

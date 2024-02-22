@@ -7,12 +7,24 @@ use crate::{
     error::{self, ApiResult, AppError},
     wfm_client::client::WFMClient,
 };
-pub struct AuthModule<'a> {
-    pub client: &'a WFMClient,
+#[derive(Clone, Debug)]
+pub struct AuthModule {
+    pub client: WFMClient,
     pub debug_id: String,
+    component: String,
 }
 
-impl<'a> AuthModule<'a> {
+impl AuthModule {
+    pub fn new(client: WFMClient) -> Self {
+        AuthModule {
+            client,
+            debug_id: "wfm_client_auth".to_string(),
+            component: "Auth".to_string(),
+        }
+    }
+    fn get_component(&self, component: &str) -> String {
+        format!("{}:{}", self.component, component)
+    }
     pub async fn login(&self, email: String, password: String) -> Result<AuthState, AppError> {
         let body = json!({
             "email": email,
@@ -27,7 +39,7 @@ impl<'a> AuthModule<'a> {
             Ok(ApiResult::Success(user, headers)) => {
                 self.client.debug(
                     &self.debug_id,
-                    "User:Login",
+                    &self.get_component("Login"),
                     format!("User logged in: {}", user.ingame_name).as_str(),
                     None,
                 );
@@ -35,7 +47,7 @@ impl<'a> AuthModule<'a> {
             }
             Ok(ApiResult::Error(e, _headers)) => {
                 return Err(self.client.create_api_error(
-                    "Auth:Login",
+                    &self.get_component("Login"),
                     e,
                     eyre!("There was an error logging in"),
                     crate::enums::LogLevel::Error,
@@ -75,12 +87,14 @@ impl<'a> AuthModule<'a> {
             .await
         {
             Ok(order) => {
+                let order = order.unwrap();
                 self.client.orders().delete(&order.id.clone()).await?;
                 Ok(true)
             }
             Err(e) => {
                 if e.cause()
                     .contains("app.post_order.already_created_no_duplicates")
+                    || e.cause().contains("app.post_order.limit_exceeded")
                 {
                     return Ok(true);
                 }

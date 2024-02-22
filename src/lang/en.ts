@@ -211,6 +211,8 @@ export const en = {
             enable_description: "If you want to be notified on a new conversation.",
             auto_trade: "Auto Trade",
             auto_trade_description: "Will try to add the items you buy/sell to the stock",
+            auto_delete: "Auto Delete",
+            auto_delete_description: "Will delete all when you start the live trading",
             filter: {
               tax: "Tax Range",
               mr: "MR Range",
@@ -364,8 +366,8 @@ export const en = {
       last_transactions: {
         title: "Last Transactions",
         info: {
-          buy: "Purchases",
-          sell: "Sales",
+          buy: "Purchases ({{count}})",
+          sell: "Sales ({{count}})",
         },
       },
       stats_cards: {
@@ -552,19 +554,6 @@ export const en = {
               rank: "Rank",
               re_rolls: {
                 title: "Re-Rolls",
-                match: "Match Rivens with min {{min}} and max {{max}} re-rolls",
-                any: "Match Rivens with any re-rolls",
-                prompt: {
-                  title: "Match Rivens with re-rolls",
-                  enabled_label: "Should the re-rolls be used in the search",
-                  enabled_description: "Should the re-rolls be used in the search",
-                  min_label: "Minimun",
-                  min_description: "Minimun Re-Rolls",
-                  min_placeholder: "0",
-                  max_label: "Maximun",
-                  max_description: "Maximun Re-Rolls",
-                  max_placeholder: "0",
-                }
               },
               minium_price: {
                 title: "Min Price",

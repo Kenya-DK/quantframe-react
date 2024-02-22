@@ -1,3 +1,5 @@
+import { TransactionEntryDto } from ".";
+
 // Base Statistic Type
 export interface ChartWithValuesDto {
   values: Array<number>;
@@ -71,6 +73,11 @@ export interface StatisticProfitTransactionTotal extends StatisticProfitTransact
 export interface StatisticProfitTransactionToday extends StatisticChartTransactionAndItem {
 
 }
+
+// export interface StatisticItemCategoryProfit extends StatisticProfitBase {
+export interface StatisticRecentTransactions extends StatisticProfitBase {
+  transactions: TransactionEntryDto[];
+}
 export interface StatisticProfitTransactionRecentDays extends StatisticChartTransactionAndItem {
   days: number;
 }
@@ -85,4 +92,5 @@ export interface StatisticDto {
   total: StatisticProfitTransactionTotal;
   today: StatisticProfitTransactionToday;
   recent_days: StatisticProfitTransactionRecentDays;
+  recent_transactions: StatisticRecentTransactions;
 }

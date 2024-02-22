@@ -81,7 +81,7 @@ function SvgCore(props: ICoreProps) {
   return (
     <>
       {dynamicSvg.error && (
-        <div className="rounded-full bg-slate-400 h-8 w-8">{JSON.stringify(dynamicSvg.error)}</div>
+        console.error(dynamicSvg.error)
       )}
       {dynamicSvg.loading && (
         <div className="rounded-full bg-slate-400 animate-pulse h-8 w-8"></div>

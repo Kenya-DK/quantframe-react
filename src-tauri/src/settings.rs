@@ -42,6 +42,7 @@ pub struct StockItemSettings {
     pub report_to_wfm: bool,
     pub auto_trade: bool, // Will add order to you stock automatically or remove it if you have it
     pub strict_whitelist: bool,
+    pub auto_delete: bool,
     // What to post sell, buy, or both
     pub order_mode: OrderMode,
 }
@@ -86,6 +87,7 @@ impl Default for SettingsState {
                     strict_whitelist: false,
                     report_to_wfm: true,
                     auto_trade: true,
+                    auto_delete: true,
                     order_mode: OrderMode::Both,
                 },
                 stock_riven: StockRivenSettings {

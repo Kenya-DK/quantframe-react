@@ -1,5 +1,5 @@
 import { createStyles, useMantineTheme } from "@mantine/core";
-import { Wfm } from "../types";
+import { MatchRivenDto, StockRivenDto, Wfm } from "../types";
 
 export interface GroupByDateSettings {
   labels?: string[]
@@ -185,4 +185,21 @@ export const formatNumber = (num: number) => {
     return (num / 1000).toFixed(2).replace(/\.0$/, '') + ' k.';
   }
   return num;
+}
+
+export const convertStockRivenToMatchRiven = (stockRiven: StockRivenDto): MatchRivenDto => {
+  const match: MatchRivenDto = stockRiven.match_riven;
+  const filteredObject = Object.fromEntries(
+    Object.entries(match).filter(([_, value]) => value !== null)
+  ) as MatchRivenDto;
+  filteredObject.attributes = stockRiven.attributes.map((item) => {
+    if (item == null) return null;
+    const matchAttribute = match.attributes?.find((matchAttribute) => matchAttribute?.url_name === item.url_name);
+    return {
+      is_negative: matchAttribute?.is_negative || !item.positive,
+      is_required: matchAttribute?.is_required || false,
+      url_name: item.url_name,
+    }
+  });
+  return filteredObject;
 }

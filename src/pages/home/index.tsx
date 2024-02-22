@@ -16,8 +16,9 @@ import { Wfm } from "../../types";
 export default function HomePage() {
   const theme = useMantineTheme();
   const translateBase = (key: string, context?: { [key: string]: any }) => useTranslatePage(`home.${key}`, { ...context })
-  const { statistics, transactions } = useWarframeMarketContextContext();
+  const { statistics } = useWarframeMarketContextContext();
   const { images_map } = useCacheContext();
+
   return (
     <Container size={"100%"}>
       {statistics &&
@@ -125,13 +126,13 @@ export default function HomePage() {
                 <Group position="apart" mt="md" mb="xs">
                   <Text weight={500}>{translateBase("last_transactions.title")}</Text>
                   <Group>
-                    <InfoBox text={translateBase("last_transactions.info.buy")} color={getTradeClassificationColorCode(Wfm.TradeClassification.Buy)} />
-                    <InfoBox text={translateBase("last_transactions.info.sell")} color={getTradeClassificationColorCode(Wfm.TradeClassification.Sell)} />
+                    <InfoBox text={translateBase("last_transactions.info.buy", { count: statistics.recent_transactions.purchases })} color={getTradeClassificationColorCode(Wfm.TradeClassification.Buy)} />
+                    <InfoBox text={translateBase("last_transactions.info.sell", { count: statistics.recent_transactions.sales })} color={getTradeClassificationColorCode(Wfm.TradeClassification.Sell)} />
                   </Group>
                 </Group>
                 <Divider />
-                <ScrollArea h={"calc(100vh - 688px)"}>
-                  {transactions.sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime()).slice(0, 10).map((transaction, index) => (
+                <ScrollArea h={"225px"}>
+                  {statistics?.recent_transactions.transactions.map((transaction, index) => (
                     <Paper mt={8} p={5} key={index} sx={{
                       boxShadow: `inset 4px 0 0 0 ${getTradeClassificationColorCode(transaction.transaction_type)}`,
                       border: `1px solid ${theme.colors.gray[7]}`,
@@ -139,6 +140,7 @@ export default function HomePage() {
                       <Group position="apart">
                         <Group ml={10} w={"35%"}>
                           <Text color="gray.4">{transaction.name}</Text>
+                          {transaction.quantity > 1 && <Text color="gray.4">{transaction.quantity}x</Text>}
                         </Group>
                         <Group w={100}>
                           <Text color="blue.5">{transaction.price} </Text>
@@ -156,6 +158,7 @@ export default function HomePage() {
             <Grid.Col md={7} >
               <DataTable
                 records={statistics.best_seller.categorys}
+                idAccessor={"name"}
                 // define columns
                 columns={[
                   {

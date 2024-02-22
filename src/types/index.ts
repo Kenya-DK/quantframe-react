@@ -5,6 +5,7 @@ export * from "./database.type";
 export * from "./sorting.type";
 export * from "./search.type";
 export * from "./statistic.type";
+export * from "./constants.enum";
 export * from "./progressReport.type";
 
 export type DeepPartial<T> = T extends object ? {

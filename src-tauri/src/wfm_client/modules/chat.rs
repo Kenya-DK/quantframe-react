@@ -6,13 +6,24 @@ use crate::{
     helper,
     wfm_client::client::WFMClient,
 };
-
-pub struct ChatModule<'a> {
-    pub client: &'a WFMClient,
+#[derive(Clone, Debug)]
+pub struct ChatModule {
+    pub client: WFMClient,
     pub debug_id: String,
+    component: String,
 }
 
-impl<'a> ChatModule<'a> {
+impl ChatModule {
+    pub fn new(client: WFMClient) -> Self {
+        ChatModule {
+            client,
+            debug_id: "wfm_client_chat".to_string(),
+            component: "Chats".to_string(),
+        }
+    }
+    fn get_component(&self, component: &str) -> String {
+        format!("{}:{}", self.component, component)
+    }
     pub async fn get_chats(&self) -> Result<Vec<ChatData>, AppError> {
         match self
             .client
@@ -22,7 +33,7 @@ impl<'a> ChatModule<'a> {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
                     &self.debug_id,
-                    "Chat:GetChats",
+                    &self.get_component("GetChats"),
                     format!("{} was fetched.", payload.len()).as_str(),
                     None,
                 );
@@ -30,7 +41,7 @@ impl<'a> ChatModule<'a> {
             }
             Ok(ApiResult::Error(error, _headers)) => {
                 return Err(self.client.create_api_error(
-                    "Chat:GetChats",
+                    &self.get_component("GetChats"),
                     error,
                     eyre!("There was an error fetching chats"),
                     crate::enums::LogLevel::Error,
@@ -52,7 +63,7 @@ impl<'a> ChatModule<'a> {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
                     &self.debug_id,
-                    "Chat:GetChat",
+                    &self.get_component("GetChatById"),
                     format!("{} chat messages were fetched.", payload.len()).as_str(),
                     None,
                 );
@@ -60,7 +71,7 @@ impl<'a> ChatModule<'a> {
             }
             Ok(ApiResult::Error(error, _headers)) => {
                 return Err(self.client.create_api_error(
-                    "Chat:GetChatById",
+                    &self.get_component("GetChatById"),
                     error,
                     eyre!("There was an error fetching chat messages for chat {}", id),
                     crate::enums::LogLevel::Error,
@@ -78,7 +89,7 @@ impl<'a> ChatModule<'a> {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
                     &self.debug_id,
-                    "Chat:Delete",
+                    &self.get_component("Delete"),
                     format!("Chat {} was deleted.", id).as_str(),
                     None,
                 );
@@ -86,7 +97,7 @@ impl<'a> ChatModule<'a> {
             }
             Ok(ApiResult::Error(error, _headers)) => {
                 return Err(self.client.create_api_error(
-                    "Chat:Delete",
+                    &self.get_component("Delete"),
                     error,
                     eyre!("There was an error deleting chat {}", id),
                     crate::enums::LogLevel::Error,

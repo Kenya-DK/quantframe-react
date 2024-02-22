@@ -20,13 +20,13 @@ export interface StockEntryDto {
   status: string;
   minium_price?: number | null,
   listed_price?: number | null;
-  owned: number;
 }
 
 export interface StockItemDto extends StockEntryDto {
   sub_type?: string;
   hidden: boolean;
   owned: number;
+  trades: Wfm.OrderDto[];
 }
 
 export interface StockRivenDto extends StockEntryDto {
@@ -35,13 +35,24 @@ export interface StockRivenDto extends StockEntryDto {
   mod_name: string;
   re_rolls: number;
   private: boolean;
+  comment: string;
   match_riven: MatchRivenDto;
+  trades: Wfm.Auction<Wfm.AuctionOwner>[];
 }
 export interface MatchRivenDto {
+  enabled: boolean;
   rank?: MinMaxDto;
   mastery_rank?: MinMaxDto;
   re_rolls?: MinMaxDto;
   polarity?: string;
+  similarity?: number;
+  attributes?: Array<MatchRivenAttributeDto | null>;
+  required_negative?: boolean;
+}
+export interface MatchRivenAttributeDto {
+  is_negative: boolean;
+  is_required: boolean;
+  url_name: string;
 }
 
 export interface CreateStockEntryDto {
@@ -63,6 +74,7 @@ export interface CreateStockRivenEntryDto extends CreateStockEntryDto {
   mastery_rank: number;
   re_rolls: number;
   polarity: string;
+  comment: string;
 }
 
 export interface CreateTransactionEntryDto {

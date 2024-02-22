@@ -5,17 +5,18 @@ import { useTranslatePage, useTranslateRustError } from "@hooks/index";
 import api, { wfmThumbnail } from "@api/index";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faComment, faEdit, faEye, faEyeSlash, faHammer, faMagnifyingGlass, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faComment, faEdit, faEye, faEyeSlash, faHammer, faPen, faSearch, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { useMutation } from "@tanstack/react-query";
 import { RivenAttributes } from "@components/auction/rivenAttributes";
 import { StockRivenDto, RustError } from "$types/index";
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
 import { useNavigate } from "react-router-dom";
-import { getOrderStatusColorClass, paginate, sortArray, SendNotificationToWindow } from "@utils/index";
+import { getOrderStatusColorClass, paginate, sortArray, SendNotificationToWindow, convertStockRivenToMatchRiven } from "@utils/index";
 import { SearchField } from "@components/searchfield";
 import { TextColor } from "@components/textColor";
 import { InfoBox } from "@components/InfoBox";
+import { MatchRivenForm } from "@components/forms/match_riven.form";
 interface StockRivenPanelProps {
 }
 export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
@@ -37,7 +38,6 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
   const [totalPurchasePrice, setTotalPurchasePrice] = useState<number>(0);
   const [totalListedPrice, setTotalListedPrice] = useState<number>(0);
   const [totalProfit, setTotalProfit] = useState<number>(0);
-
 
   useEffect(() => {
     if (!rivens) return;
@@ -223,6 +223,13 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
         sortStatus={sortStatus}
         onSortStatusChange={setSortStatus}
         withColumnBorders
+        rowExpansion={{
+          content: ({ record }) => (
+            <pre>
+              {JSON.stringify(record, null, 2)}
+            </pre>
+          ),
+        }}
         rowClassName={(row) => getOrderStatusColorClass(row.status)}
         rowContextMenu={{
           items: (record) => [
@@ -264,58 +271,6 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
             accessor: 're_rolls',
             title: useTranslateDataGridColumns('re_rolls.title'),
             sortable: true,
-            render: ({ id, re_rolls, match_riven }) => <Group grow position="apart" >
-              <Text>{re_rolls || 0}</Text>
-              <Box w={25} display="flex" sx={{ justifyContent: "flex-end" }}>
-                <Tooltip label={match_riven.re_rolls ? useTranslateDataGridColumns('re_rolls.match', { min: match_riven.re_rolls.min, max: match_riven.re_rolls.max }) : useTranslateDataGridColumns('re_rolls.any')}>
-                  <ActionIcon size={"sm"} loading={sellRiveEntryMutation.isLoading} color={match_riven.re_rolls ? "green.7" : "blue.7"} variant="filled" onClick={async (e) => {
-                    e.stopPropagation();
-                    modals.openContextModal({
-                      modal: 'prompt',
-                      title: useTranslateDataGridColumns("re_rolls.prompt.title"),
-                      innerProps: {
-                        fields: [
-                          {
-                            name: 'enabled',
-                            description: useTranslateDataGridColumns("re_rolls.prompt.enabled_description"),
-                            label: useTranslateDataGridColumns("re_rolls.prompt.enabled_label"),
-                            value: !!match_riven.re_rolls,
-                            type: 'checkbox',
-                          },
-                          {
-                            name: 'min',
-                            description: useTranslateDataGridColumns("re_rolls.prompt.min_description"),
-                            label: useTranslateDataGridColumns("re_rolls.prompt.min_label"),
-                            type: 'number',
-                            value: match_riven.re_rolls?.min || 0,
-                            placeholder: useTranslateDataGridColumns("re_rolls.prompt.min_placeholder")
-                          },
-                          {
-                            name: 'max',
-                            description: useTranslateDataGridColumns("re_rolls.prompt.max_description"),
-                            label: useTranslateDataGridColumns("re_rolls.prompt.max_label"),
-                            type: 'number',
-                            value: match_riven.re_rolls?.max || 0,
-                            placeholder: useTranslateDataGridColumns("re_rolls.prompt.max_placeholder")
-                          }
-                        ],
-                        onConfirm: async (data: { enabled: number, min: number, max: number }) => {
-                          if (!id) return;
-                          const { enabled, min, max } = data;
-                          if (enabled)
-                            updateRiveEntryMutation.mutateAsync({ id, riven: { match_riven: { ...match_riven, re_rolls: { min, max } } } })
-                          else
-                            updateRiveEntryMutation.mutateAsync({ id, riven: { match_riven: { ...match_riven, re_rolls: undefined } } })
-                        },
-                        onCancel: (id: string) => modals.close(id),
-                      },
-                    })
-                  }} >
-                    <FontAwesomeIcon size="xs" icon={faMagnifyingGlass} />
-                  </ActionIcon>
-                </Tooltip>
-              </Box>
-            </Group>
           },
           {
             accessor: 'price',
@@ -364,32 +319,50 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
             accessor: 'listed_price',
             title: useTranslateDataGridColumns('listed_price'),
             sortable: true,
-            render: ({ listed_price }) => <Group grow position="apart" >
-              <Text>{(listed_price == 0) ? "" : listed_price}</Text>
+            render: ({ id, listed_price }) => <Group grow position="apart" >
+              <Text>{listed_price || "N/A"}</Text>
+              <Box w={25} display="flex" sx={{ justifyContent: "flex-end" }}>
+                <Tooltip label={useTranslateDataGridColumns('minium_price.description')}>
+                  <ActionIcon size={"sm"} color={"blue.7"} variant="filled" onClick={async (e) => {
+                    e.stopPropagation();
+                    modals.openContextModal({
+                      modal: 'prompt',
+                      title: useTranslateDataGridColumns('minium_price.prompt.title'),
+                      innerProps: {
+                        fields: [
+                          {
+                            name: 'minium_price',
+                            label: useTranslateDataGridColumns('minium_price.prompt.minium_price_label'),
+                            value: listed_price || 0,
+                            type: 'number',
+                          },
+                        ],
+                        onConfirm: async () => {
+                          if (!id) return;
+
+                        },
+                        onCancel: (id: string) => modals.close(id),
+                      },
+                    })
+                  }} >
+                    <FontAwesomeIcon size="xs" icon={faEdit} />
+                  </ActionIcon>
+                </Tooltip>
+              </Box>
             </Group>
           },
           {
             accessor: 'attributes',
             title: useTranslateDataGridColumns('attributes'),
             width: "38%",
-            render: ({ id, attributes }) =>
+            render: ({ attributes }) =>
               <Group >
-                <RivenAttributes isClickable attributes={attributes}
-                  onClick={(a) => {
-                    if (!id) return;
-                    const newAttributes = [...attributes];
-                    const index = newAttributes.findIndex(x => x.url_name === a.url_name);
-                    if (index === -1) return;
-                    a.match = !a.match;
-                    newAttributes[index] = a;
-                    updateRiveEntryMutation.mutateAsync({ id, riven: { attributes: newAttributes } })
-                  }}
-                />
+                <RivenAttributes attributes={attributes} />
               </Group>
           },
           {
             accessor: 'actions',
-            width: 170,
+            width: 125,
             title: useTranslateDataGridColumns('actions.title'),
             render: (row) =>
               <Group spacing={"5px"} mr={0}>
@@ -429,6 +402,43 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                     await updateRiveEntryMutation.mutateAsync({ id: row.id, riven: { private: !row.private } });
                   }} >
                     <FontAwesomeIcon icon={row.private ? faEye : faEyeSlash} />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label={useTranslateDataGridColumns('actions.search.title')}>
+                  <ActionIcon color={row.match_riven.enabled ? "green.7" : "blue.7"} variant="filled" onClick={async (e) => {
+                    e.stopPropagation();
+                    modals.open({
+                      title: useTranslateDataGridColumns('actions.search.title'),
+                      size: "95vw",
+                      withCloseButton: false,
+                      children: (<MatchRivenForm canToggle height={"50vh"} weapon={riven_items.find(x => x.url_name == row.weapon_url)} match={convertStockRivenToMatchRiven(row)} onSubmit={(d) => {
+                        if (!row.id) return;
+                        updateRiveEntryMutation.mutateAsync({ id: row.id, riven: { match_riven: d } })
+                        modals.closeAll();
+                      }} />),
+                    })
+                  }} >
+                    <FontAwesomeIcon icon={faSearch} />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label={useTranslateDataGridColumns('actions.comment.title')}>
+                  <ActionIcon color="blue*.7" variant="filled" onClick={async (e) => {
+                    e.stopPropagation();
+                    modals.openContextModal({
+                      modal: 'prompt',
+                      title: useTranslateDataGridColumns("actions.comment.prompt.title"),
+                      innerProps: {
+                        fields: [{ name: 'comment', description: useTranslateDataGridColumns("actions.comment.prompt.description"), label: useTranslateDataGridColumns("actions.comment.prompt.label"), type: 'textarea', value: row.comment, }],
+                        onConfirm: async (data: { comment: string }) => {
+                          const { comment } = data;
+                          if (!comment || !row.id) return;
+                          await updateRiveEntryMutation.mutateAsync({ id: row.id, riven: { comment } });
+                        },
+                        onCancel: (id: string) => modals.close(id),
+                      },
+                    })
+                  }} >
+                    <FontAwesomeIcon icon={faComment} />
                   </ActionIcon>
                 </Tooltip>
                 <Tooltip label={useTranslateDataGridColumns('actions.delete.title')}>

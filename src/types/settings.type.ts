@@ -71,6 +71,7 @@ export interface StockItemSettings {
   strict_whitelist: boolean;
   report_to_wfm: boolean;
   auto_trade: boolean;
+  auto_delete: boolean;
   order_mode: string;
   blacklist: string[];
   whitelist: string[];

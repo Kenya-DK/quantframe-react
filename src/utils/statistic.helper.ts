@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import isBetween from 'dayjs/plugin/isBetween';
 dayjs.extend(isBetween);
 import { groupBy, getGroupByDate, GroupByDateSettings } from ".";
-import { TransactionEntryDto, StatisticProfitItem, StatisticProfitTransaction, StatisticProfitTransactionTotal, StatisticProfitTransactionToday, StatisticProfitTransactionRecentDays, StatisticDto, ChartMultipleDto, CategoryItemProfitLink, StatisticItemCategoryProfit, StatisticItemBestSeller } from "../types";
+import { TransactionEntryDto, StatisticProfitItem, StatisticProfitTransaction, StatisticProfitTransactionTotal, StatisticProfitTransactionToday, StatisticProfitTransactionRecentDays, StatisticDto, ChartMultipleDto, CategoryItemProfitLink, StatisticItemCategoryProfit, StatisticItemBestSeller, StatisticRecentTransactions } from "../types";
 import i18next from "i18next";
 
 // This function splits the given array of transactions into two arrays: one for buy transactions and one for sell transactions.
@@ -251,6 +251,16 @@ export const GetRecentDaysProfit = (transactions: TransactionEntryDto[], days: n
     days
   };
 };
+
+export const GetRecentTransactions = (transactions: TransactionEntryDto[], count: number): StatisticRecentTransactions => {
+  transactions = transactions.sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime()).slice(0, count);
+  return {
+    ...GetTransactionProfit(transactions),
+    transactions: transactions
+  };
+};
+
+
 export const GetBestSeller = (transactions: TransactionEntryDto[]): StatisticItemBestSeller => {
   const categorys = [
     {
@@ -303,6 +313,7 @@ export const GetStatistic = (transactions: TransactionEntryDto[]): StatisticDto 
     best_seller: GetBestSeller(transactions),
     total: GetTotalProfit(transactions),
     today: GetToDayProfit(transactions),
-    recent_days: GetRecentDaysProfit(transactions, 7)
+    recent_days: GetRecentDaysProfit(transactions, 7),
+    recent_transactions: GetRecentTransactions(transactions, 10)
   };
 }

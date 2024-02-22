@@ -3,9 +3,8 @@ use crate::{
     database::client::DBClient,
     enums::LogLevel,
     error::AppError,
-    helper,
-    logger::{self},
-    structs::{Auction, RivenAttribute},
+    helper, logger,
+    structs::{Auction, AuctionOwner, RivenAttribute},
 };
 use eyre::eyre;
 use polars::{
@@ -43,6 +42,7 @@ pub enum StockRiven {
     MatchRiven,
     Private,
     Status,
+    Comment,
     Created,
 }
 
@@ -67,15 +67,27 @@ pub struct StockRivenStruct {
     pub match_riven: sqlx::types::Json<MatchRivenStruct>,
     pub private: bool,
     pub status: String,
+    pub comment: Option<String>,
     pub created: String,
 }
 #[derive(sqlx::FromRow, Serialize, Deserialize, Clone, Debug)]
 #[allow(dead_code)]
 pub struct MatchRivenStruct {
+    pub enabled: Option<bool>,
     pub rank: Option<MinMaxStruct>,
     pub mastery_rank: Option<MinMaxStruct>,
     pub re_rolls: Option<MinMaxStruct>,
     pub polarity: Option<String>,
+    pub similarity: Option<f64>,
+    pub required_negative: Option<bool>,
+    pub attributes: Option<Vec<MatchRivenAttributeStruct>>,
+}
+#[derive(sqlx::FromRow, Serialize, Deserialize, Clone, Debug)]
+#[allow(dead_code)]
+pub struct MatchRivenAttributeStruct {
+    pub url_name: String,
+    pub is_negative: bool,
+    pub is_required: bool,
 }
 
 #[derive(sqlx::FromRow, Serialize, Deserialize, Clone, Debug)]
@@ -169,6 +181,7 @@ impl<'a> StockRivenModule<'a> {
                     .not_null()
                     .default("pending"),
             )
+            .col(ColumnDef::new(StockRiven::Comment).string())
             .col(ColumnDef::new(StockRiven::Created).date_time().not_null())
             .build(SqliteQueryBuilder);
 
@@ -210,6 +223,16 @@ impl<'a> StockRivenModule<'a> {
             .to_string(SqliteQueryBuilder);
         helper::alter_table(connection.clone(), &table).await?;
 
+        table = Table::alter()
+            .table(StockRiven::Table)
+            .add_column(
+                ColumnDef::new(StockRiven::Comment)
+                    .string()
+                    .default(Value::String(None)),
+            )
+            .to_string(SqliteQueryBuilder);
+        helper::alter_table(connection.clone(), &table).await?;
+
         Ok(true)
     }
 
@@ -236,6 +259,7 @@ impl<'a> StockRivenModule<'a> {
                 StockRiven::ListedPrice,
                 StockRiven::Private,
                 StockRiven::Status,
+                StockRiven::Comment,
                 StockRiven::Created,
             ])
             .from(StockRiven::Table)
@@ -264,6 +288,7 @@ impl<'a> StockRivenModule<'a> {
         re_rolls: i32,
         polarity: &str,
         minium_price: Option<i32>,
+        comment: Option<String>,
     ) -> Result<StockRivenStruct, AppError> {
         let connection = self.client.connection.lock().unwrap().clone();
         let cache = self.client.cache.lock().unwrap().clone();
@@ -282,10 +307,14 @@ impl<'a> StockRivenModule<'a> {
         let match_riven = match match_riven {
             Some(m) => m,
             None => MatchRivenStruct {
+                enabled: Some(false),
                 rank: None,
                 mastery_rank: None,
                 re_rolls: None,
                 polarity: None,
+                similarity: None,
+                attributes: None,
+                required_negative: None,
             },
         };
 
@@ -308,6 +337,7 @@ impl<'a> StockRivenModule<'a> {
             listed_price: None,
             private: false,
             status: "pending".to_string(),
+            comment,
             created: chrono::Local::now().naive_local().to_string(),
         };
 
@@ -329,6 +359,7 @@ impl<'a> StockRivenModule<'a> {
                 StockRiven::MiniumPrice,
                 StockRiven::Polarity,
                 StockRiven::Status,
+                StockRiven::Comment,
                 StockRiven::Created,
             ])
             .values_panic([
@@ -347,6 +378,7 @@ impl<'a> StockRivenModule<'a> {
                 inventory.minium_price.into(),
                 inventory.polarity.clone().into(),
                 inventory.status.clone().into(),
+                inventory.comment.clone().into(),
                 inventory.created.clone().into(),
             ])
             .to_string(SqliteQueryBuilder);
@@ -387,6 +419,7 @@ impl<'a> StockRivenModule<'a> {
                 auction.item.re_rolls.expect("No re-rolls found") as i32,
                 &auction.item.polarity.clone().expect("No polarity found"),
                 None,
+                None,
             )
             .await?;
 
@@ -422,6 +455,8 @@ impl<'a> StockRivenModule<'a> {
         minium_price: Option<i32>,
         status: Option<String>,
         private: Option<bool>,
+        comment: Option<String>,
+        trades: Option<Vec<&Auction<AuctionOwner>>>,
     ) -> Result<StockRivenStruct, AppError> {
         let connection = self.client.connection.lock().unwrap().clone();
         let items = self.get_rivens().await?;
@@ -434,7 +469,7 @@ impl<'a> StockRivenModule<'a> {
             ));
         }
         let mut stock_riven = stock_riven.unwrap().clone();
-        let mut values = vec![(StockRiven::ListedPrice, listed_price.into())];
+        let mut values = vec![];
 
         if order_id.is_some() {
             if order_id.clone().unwrap() == "".to_string()
@@ -491,7 +526,6 @@ impl<'a> StockRivenModule<'a> {
                     .into(),
             ));
         }
-
         if match_riven.is_some() {
             stock_riven.match_riven = sqlx::types::Json(match_riven.unwrap());
             values.push((
@@ -502,6 +536,10 @@ impl<'a> StockRivenModule<'a> {
             ));
         }
 
+        if comment.is_some() {
+            stock_riven.comment = comment.clone();
+            values.push((StockRiven::Comment, comment.clone().into()));
+        }
         let sql = Query::update()
             .table(StockRiven::Table)
             .values(values)
@@ -512,10 +550,11 @@ impl<'a> StockRivenModule<'a> {
             .await
             .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
 
-        self.emit(
-            "CREATE_OR_UPDATE",
-            serde_json::to_value(stock_riven.clone()).unwrap(),
-        );
+        let trades = trades.unwrap_or(vec![]);
+        let mut json = serde_json::to_value(stock_riven.clone()).unwrap();
+        json["trades"] = serde_json::to_value(trades).unwrap();
+
+        self.emit("CREATE_OR_UPDATE", serde_json::to_value(json).unwrap());
         Ok(stock_riven.clone())
     }
     pub async fn delete(&self, id: i64) -> Result<StockRivenStruct, AppError> {

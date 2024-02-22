@@ -147,6 +147,7 @@ const api = {
           reRolls: input.re_rolls,
           polarity: input.polarity,
           modName: input.mod_name,
+          comment: input.comment,
         }) as StockRivenDto;
       },
       delete: async (id: number): Promise<StockRivenDto> => {
@@ -161,7 +162,7 @@ const api = {
       update: async (id: number, riven: Partial<StockRivenDto>): Promise<StockRivenDto> => {
         if (riven.minium_price && riven.minium_price <= 0)
           riven.minium_price = -1;
-        return await invoke("update_riven_stock", { id, private: riven.private, attributes: riven.attributes, matchRiven: riven.match_riven, miniumPrice: riven.minium_price }) as StockRivenDto;
+        return await invoke("update_riven_stock", { id, private: riven.private, attributes: riven.attributes, matchRiven: riven.match_riven, miniumPrice: riven.minium_price, comment: riven.comment }) as StockRivenDto;
       }
     }
   },

@@ -50,6 +50,7 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
           blacklist: "",
           whitelist: "",
           strict_whitelist: true,
+          auto_delete: true,
           report_to_wfm: true,
           auto_trade: false,
           order_mode: "both",
@@ -220,11 +221,17 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
                     onChange={(event) => roleForm.setFieldValue('live_trading.stock_item.report_to_wfm', event.currentTarget.checked)}
                   />
                   <Checkbox
+                    label={useTranslateSettingsModal('auto_delete')}
+                    description={useTranslateSettingsModal('auto_delete_description')}
+                    checked={roleForm.values.live_trading.stock_item.auto_delete}
+                    onChange={(event) => roleForm.setFieldValue('live_trading.stock_item.auto_delete', event.currentTarget.checked)}
+                  />
+                  {/* <Checkbox
                     label={useTranslateSettingsModal('auto_trade')}
                     description={useTranslateSettingsModal('auto_trade_description')}
                     checked={roleForm.values.live_trading.stock_item.auto_trade}
                     onChange={(event) => roleForm.setFieldValue('live_trading.stock_item.auto_trade', event.currentTarget.checked)}
-                  />
+                  /> */}
                 </Group>
               </Group>
               <Group grow mt={10}>

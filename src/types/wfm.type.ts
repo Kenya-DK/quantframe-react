@@ -129,6 +129,7 @@ export namespace Wfm {
     url_name: string;
     icon: string;
     id: string;
+    exclusive_to: string[];
     riven_type: string;
     icon_format: string;
     group: string;
@@ -149,7 +150,6 @@ export namespace Wfm {
     negative_only: boolean;
     effect: string;
     id: string;
-    exclusive_to: string[];
     group: string;
     units: string;
     search_only: boolean;
@@ -208,6 +208,9 @@ export namespace Wfm {
     name: string;
     mod_rank: number;
     polarity: string;
+    similarity: number;
+    missing_attributes: RivenAttributeDto[];
+    extra_attributes: RivenAttributeDto[];
     //Liches And Sister
     element: string;
     quirk: string;

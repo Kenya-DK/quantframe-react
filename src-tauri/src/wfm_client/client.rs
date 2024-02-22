@@ -1,7 +1,5 @@
 use std::{
-    collections::HashMap,
-    sync::{Arc, Mutex},
-    time::Duration,
+    borrow::BorrowMut, collections::HashMap, sync::{Arc, Mutex, RwLock}, time::Duration
 };
 
 use eyre::eyre;
@@ -30,8 +28,13 @@ use super::modules::{
 #[derive(Clone, Debug)]
 pub struct WFMClient {
     endpoint: String,
-    component: String,
+    pub component: String,
     limiter: Arc<tokio::sync::Mutex<RateLimiter>>,
+    order_module: Arc<RwLock<Option<OrderModule>>>,
+    item_module: Arc<RwLock<Option<ItemModule>>>,
+    chat_module: Arc<RwLock<Option<ChatModule>>>,
+    auction_module: Arc<RwLock<Option<AuctionModule>>>,
+    auth_module: Arc<RwLock<Option<AuthModule>>>,
     pub log_file: String,
     pub auth: Arc<Mutex<AuthState>>,
     pub settings: Arc<Mutex<crate::settings::SettingsState>>,
@@ -52,6 +55,11 @@ impl WFMClient {
             log_file: "wfmAPICalls.log".to_string(),
             auth,
             settings,
+            item_module: Arc::new(RwLock::new(None)),
+            order_module: Arc::new(RwLock::new(None)),
+            chat_module: Arc::new(RwLock::new(None)),
+            auction_module: Arc::new(RwLock::new(None)),
+            auth_module: Arc::new(RwLock::new(None)),
         }
     }
 
@@ -275,37 +283,75 @@ impl WFMClient {
             .await?;
         Ok(payload)
     }
-    // Add an "add" method to WFMWFMClient
+
     pub fn auth(&self) -> AuthModule {
-        AuthModule {
-            client: self,
-            debug_id: "wfm_client_auth".to_string(),
+        // Lazily initialize ItemModule if not already initialized
+        if self.auth_module.read().unwrap().is_none() {
+            *self.auth_module.write().unwrap() = Some(AuthModule::new(self.clone()).clone());
         }
+
+        // Unwrapping is safe here because we ensured the item_module is initialized
+        self.auth_module.read().unwrap().as_ref().unwrap().clone()
+    }
+    pub fn update_auth_module(&self, module: AuthModule) {
+        // Update the stored ItemModule
+        *self.auth_module.write().unwrap() = Some(module);
     }
 
     pub fn orders(&self) -> OrderModule {
-        OrderModule {
-            client: self,
-            debug_id: "wfm_client_order".to_string(),
+        // Lazily initialize ItemModule if not already initialized
+        if self.order_module.read().unwrap().is_none() {
+            *self.order_module.write().unwrap() = Some(OrderModule::new(self.clone()).clone());
         }
+
+        // Unwrapping is safe here because we ensured the order_module is initialized
+        self.order_module.read().unwrap().as_ref().unwrap().clone()
+    }
+    pub fn update_order_module(&self, module: OrderModule) {
+        // Update the stored ItemModule
+        *self.order_module.write().unwrap() = Some(module);
     }
 
+
     pub fn items(&self) -> ItemModule {
-        ItemModule {
-            client: self,
-            debug_id: "wfm_client_item".to_string(),
+        // Lazily initialize ItemModule if not already initialized
+        if self.item_module.read().unwrap().is_none() {
+            *self.item_module.write().unwrap() = Some(ItemModule::new(self.clone()).clone());
         }
+
+        // Unwrapping is safe here because we ensured the item_module is initialized
+        self.item_module.read().unwrap().as_ref().unwrap().clone()
     }
+    pub fn update_item_module(&self, module: ItemModule) {
+        // Update the stored ItemModule
+        *self.item_module.write().unwrap() = Some(module);
+    }
+    
     pub fn auction(&self) -> AuctionModule {
-        AuctionModule {
-            client: self,
-            debug_id: "wfm_client_auction".to_string(),
+        // Lazily initialize AuctionModule if not already initialized
+        if self.auction_module.read().unwrap().is_none() {
+            *self.auction_module.write().unwrap() = Some(AuctionModule::new(self.clone()).clone());
         }
+
+        // Unwrapping is safe here because we ensured the item_module is initialized
+        self.auction_module.read().unwrap().as_ref().unwrap().clone()
     }
+    pub fn update_auction_module(&self, module: AuctionModule) {
+        // Update the stored AuctionModule
+        *self.auction_module.write().unwrap() = Some(module);
+    }
+
     pub fn chat(&self) -> ChatModule {
-        ChatModule {
-            client: self,
-            debug_id: "wfm_client_chat".to_string(),
+        // Lazily initialize ChatModule if not already initialized
+        if self.chat_module.read().unwrap().is_none() {
+            *self.chat_module.write().unwrap() = Some(ChatModule::new(self.clone()).clone());
         }
+
+        // Unwrapping is safe here because we ensured the chat_module is initialized
+        self.chat_module.read().unwrap().as_ref().unwrap().clone()
+    }
+    pub fn update_chat_module(&self, module: ChatModule) {
+        // Update the stored ChatModule
+        *self.chat_module.write().unwrap() = Some(module);
     }
 }

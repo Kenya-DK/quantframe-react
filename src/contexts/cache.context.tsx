@@ -1,6 +1,7 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { Wfm } from '$types/index';
+import { createContext, useContext, useEffect } from "react";
+import { CacheDataId, Wfm } from '$types/index';
 import { OnTauriEvent } from "../utils";
+import { useLocalStorage } from "@mantine/hooks";
 
 type CacheContextProps = {
   items: Wfm.ItemDto[];
@@ -13,6 +14,9 @@ type CacheContextProviderProps = {
   children: React.ReactNode;
 }
 
+
+
+
 export const CacheContext = createContext<CacheContextProps>({
   items: [],
   riven_items: [],
@@ -23,10 +27,10 @@ export const CacheContext = createContext<CacheContextProps>({
 export const useCacheContext = () => useContext(CacheContext);
 
 export const CacheContextProvider = ({ children }: CacheContextProviderProps) => {
-  const [items, setItems] = useState<Wfm.ItemDto[]>([]);
-  const [riven_items, setRivenItems] = useState<Wfm.RivenItemTypeDto[]>([]);
-  const [riven_attributes, setRivenAttributes] = useState<Wfm.RivenAttributeInfoDto[]>([]);
-  const [images_map, setImagesMap] = useState<Record<string, string>>({});
+  const [riven_items, setCacheWeapons] = useLocalStorage<Wfm.RivenItemTypeDto[]>({ key: CacheDataId.RivenItems, defaultValue: [] });
+  const [riven_attributes, setCacheAttributes] = useLocalStorage<Wfm.RivenAttributeInfoDto[]>({ key: CacheDataId.RivenAttributes, defaultValue: [] });
+  const [items, setCacheItems] = useLocalStorage<Wfm.ItemDto[]>({ key: CacheDataId.Items, defaultValue: [] });
+  const [images_map, setCacheImages] = useLocalStorage<Record<string, string>>({ key: CacheDataId.ImagesMap, defaultValue: {} });
 
   useEffect(() => {
     const records: Record<string, string> = {};
@@ -34,14 +38,14 @@ export const CacheContextProvider = ({ children }: CacheContextProviderProps) =>
       records[item.url_name] = item.thumb;
     for (const item of riven_items)
       records[item.url_name] = item.icon;
-    setImagesMap(records);
+    setCacheImages(records);
   }, [items, riven_items]);
 
   // Hook on tauri events from rust side
   useEffect(() => {
-    OnTauriEvent("Cache:Update:Items", (data: Wfm.ItemDto[]) => setItems(data));
-    OnTauriEvent("Cache:Update:RivenTypes", (data: Wfm.RivenItemTypeDto[]) => setRivenItems(data));
-    OnTauriEvent("Cache:Update:RivenAttributes", (data: Wfm.RivenAttributeInfoDto[]) => setRivenAttributes(data));
+    OnTauriEvent("Cache:Update:Items", (data: Wfm.ItemDto[]) => setCacheItems(data));
+    OnTauriEvent("Cache:Update:RivenTypes", (data: Wfm.RivenItemTypeDto[]) => setCacheWeapons(data));
+    OnTauriEvent("Cache:Update:RivenAttributes", (data: Wfm.RivenAttributeInfoDto[]) => setCacheAttributes(data));
     return () => { }
   }, []);
 

@@ -1,8 +1,9 @@
 use crate::error::AppError;
-use crate::helper;
+use crate::{helper, logger};
 use eyre::{eyre, Result};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use serde_json::Value;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::path::PathBuf;
@@ -18,6 +19,8 @@ pub struct AuthState {
     pub platform: String,
     pub region: String,
     pub role: String,
+    pub order_limit: i64,
+    pub auctions_limit: i64,
     pub status: Option<String>,
 }
 // Allow us to run AuthState::default()
@@ -33,6 +36,8 @@ impl Default for AuthState {
             platform: "".to_string(),
             region: "".to_string(),
             role: "".to_string(),
+            order_limit: 100,
+            auctions_limit: 50,
             status: Some("invisible".to_string()),
         }
     }
@@ -46,7 +51,13 @@ impl AuthState {
     pub fn setup() -> Result<Self, AppError> {
         let path_ref = Self::get_file_path();
         if path_ref.exists() {
-            Self::read_from_file()
+            let (se, vaild) = Self::read_from_file()?;
+            if vaild {
+                Ok(se)
+            } else {
+                se.save_to_file()?;
+                Ok(se)
+            }
         } else {
             let default_auth = AuthState::default();
             default_auth.save_to_file()?;
@@ -63,15 +74,39 @@ impl AuthState {
         Ok(())
     }
 
-    pub fn read_from_file() -> Result<Self, AppError> {
+    pub fn read_from_file() -> Result<(Self, bool), AppError> {
         let mut file = File::open(Self::get_file_path())
             .map_err(|e| AppError::new("AuthState", eyre!(e.to_string())))?;
         let mut content = String::new();
         file.read_to_string(&mut content)
             .map_err(|e| AppError::new("AuthState", eyre!(e.to_string())))?;
-        let auth = serde_json::from_str(&content)
+        Ok(Self::validate_json(&content)?)
+    }
+    fn validate_json(json_str: &str) -> Result<(Self, bool), AppError> {
+        // Parse the JSON string into a Value object
+        let json_value: Value = serde_json::from_str(json_str)
             .map_err(|e| AppError::new("AuthState", eyre!(e.to_string())))?;
-        Ok(auth)
+
+        // Required properties for the settings.json file
+        let required_json = serde_json::to_value(AuthState::default())
+            .map_err(|e| AppError::new("AuthState", eyre!(e.to_string())))?;
+
+        // Validate the JSON object against the required properties
+        let (validated_json, missing_properties) =
+            helper::validate_json(&json_value, &required_json, "");
+
+        // Check for missing properties
+        if !missing_properties.is_empty() {
+            for property in missing_properties.clone() {
+                logger::warning_con("AuthState", &format!("Missing property: {}", property));
+            }
+        }
+
+        // Deserialize the updated JSON object into a AuthState struct
+        let deserialized: AuthState = serde_json::from_value(validated_json)
+            .map_err(|e| AppError::new("AuthState", eyre!(e.to_string())))?;
+
+        Ok((deserialized, missing_properties.is_empty()))
     }
     pub fn send_to_window(&self) {
         helper::emit_update("user", "SET", Some(json!(self.clone())));

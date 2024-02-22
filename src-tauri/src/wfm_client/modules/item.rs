@@ -5,18 +5,30 @@ use crate::{
 };
 
 use eyre::eyre;
-pub struct ItemModule<'a> {
-    pub client: &'a WFMClient,
+#[derive(Clone, Debug)]
+pub struct ItemModule {
+    pub client: WFMClient,
     pub debug_id: String,
+    component: String,
 }
 
-impl<'a> ItemModule<'a> {
+impl ItemModule {
+    pub fn new(client: WFMClient) -> Self {
+        ItemModule {
+            client,
+            debug_id: "wfm_client_item".to_string(),
+            component: "Items".to_string(),
+        }
+    }
+    fn get_component(&self, component: &str) -> String {
+        format!("{}:{}", self.component, component)
+    }
     pub async fn get_all_items(&self) -> Result<Vec<Item>, AppError> {
         match self.client.get::<Vec<Item>>("items", Some("items")).await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
                     &self.debug_id,
-                    "Item:GetAllItems",
+                    &self.get_component("GetAllItems"),
                     format!("{} items were fetched.", payload.len()).as_str(),
                     None,
                 );
@@ -41,7 +53,7 @@ impl<'a> ItemModule<'a> {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
                     &self.debug_id,
-                    "Item:GetItem",
+                    &self.get_component("GetItem"),
                     format!("Gettting item: {}", item).as_str(),
                     None,
                 );
@@ -49,7 +61,7 @@ impl<'a> ItemModule<'a> {
             }
             Ok(ApiResult::Error(error, _headers)) => {
                 return Err(self.client.create_api_error(
-                    "Item:GetItem",
+                    &self.get_component("GetItem"),
                     error,
                     eyre!("There was an error fetching item {}", item),
                     crate::enums::LogLevel::Error,

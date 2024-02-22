@@ -177,6 +177,7 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
         withColumnBorders
         records={rows}
         page={page}
+        idAccessor={(row) => row.id ?? row.wfm_id}
         onPageChange={setPage}
         totalRecords={totalRecords}
         rowClassName={(row) => getOrderStatusColorClass(row.status)}

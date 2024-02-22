@@ -1,8 +1,8 @@
 use std::sync::{Arc, Mutex};
 
+use eyre::eyre;
 use once_cell::sync::Lazy;
 use serde_json::{json, Value};
-use eyre::eyre;
 
 use crate::{
     auth::AuthState,
@@ -47,7 +47,13 @@ pub async fn login(
             auth.locale = user.locale;
             auth.platform = user.platform;
             auth.region = user.region;
-            auth.role = user.role;
+            auth.role = user.role.clone();
+
+            if user.role != "user" {
+                auth.order_limit = 999;
+                auth.auctions_limit = 999;
+            }
+
             auth.save_to_file()?;
             auth.send_to_window();
             return Ok(auth.clone());
@@ -71,9 +77,7 @@ pub async fn update_user_status(
     Ok(())
 }
 #[tauri::command]
-pub async fn logout(
-    auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
-) -> Result<(), AppError> {
+pub async fn logout(auth: tauri::State<'_, Arc<Mutex<AuthState>>>) -> Result<(), AppError> {
     let arced_mutex = Arc::clone(&auth);
     let mut auth = arced_mutex.lock().expect("Could not lock auth");
     auth.access_token = None;
