@@ -153,6 +153,8 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
                   <NumberInput
                     required
                     label={useTranslateSettingsModal('max_total_price_cap')}
+                    min={0}
+                    max={100000}
                     value={roleForm.values.live_trading.stock_item.max_total_price_cap}
                     description={useTranslateSettingsModal('max_total_price_cap_description')}
                     onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.max_total_price_cap', Number(value))}
