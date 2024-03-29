@@ -5,7 +5,7 @@ import { useLiveScraperContext, useStockContextContext } from "@contexts/index";
 import { PurchaseNewItem } from "./purchase";
 import { notifications } from "@mantine/notifications";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faEdit, faEye, faEyeSlash, faHammer, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faEdit, faEye, faEyeSlash, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { useMutation } from "@tanstack/react-query";
 import { RustError, CreateStockItemEntryDto, StockItemDto, Wfm } from "$types/index";
 import api from '@api/index';
@@ -15,6 +15,7 @@ import { modals } from "@mantine/modals";
 import { SendNotificationToWindow, getOrderStatusColorClass, getOrderStatusColorCode, paginate, sortArray } from "@utils/index";
 import { SearchField } from "@components/searchfield";
 import { InfoBox } from "@components/InfoBox";
+import { StockItemInfoModal } from "@components/modals/stockInfo";
 
 
 interface StockItemsPanelProps {
@@ -132,11 +133,12 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
       SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
     }
   })
+
   return (
     <Stack >
       <Grid>
         <Grid.Col span={10}>
-          <PurchaseNewItem loading={createStockItemEntryMutation.isLoading} onSumit={async (data: CreateStockItemEntryDto) => {
+          <PurchaseNewItem loading={createStockItemEntryMutation.isLoading} onSubmit={async (data: CreateStockItemEntryDto) => {
             createStockItemEntryMutation.mutate({
               item_id: data.item_id,
               price: data.price,
@@ -145,12 +147,13 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
             });
           }} />
           <Group mt={15} >
-            <InfoBox text={useTranslateItemPanel("info_boxs.to_low_profit_description")} color={getOrderStatusColorCode(Wfm.OrderStatus.ToLowProfile)} />
-            <InfoBox text={useTranslateItemPanel("info_boxs.pending_description")} color={getOrderStatusColorCode(Wfm.OrderStatus.Pending)} />
-            <InfoBox text={useTranslateItemPanel("info_boxs.live_description")} color={getOrderStatusColorCode(Wfm.OrderStatus.Live)} />
-            <InfoBox text={useTranslateItemPanel("info_boxs.inactive_description")} color={getOrderStatusColorCode(Wfm.OrderStatus.Inactive)} />
-            <InfoBox text={useTranslateItemPanel("info_boxs.no_offers_description")} color={getOrderStatusColorCode(Wfm.OrderStatus.NoOffers)} />
-            <InfoBox text={useTranslateItemPanel("info_boxs.no_buyers_description")} color={getOrderStatusColorCode(Wfm.OrderStatus.NoBuyers)} />
+            <InfoBox text={useTranslateItemPanel("info_box.pending.title")} color={getOrderStatusColorCode(Wfm.OrderStatus.Pending)} />
+            <InfoBox text={useTranslateItemPanel("info_box.live.title")} color={getOrderStatusColorCode(Wfm.OrderStatus.Live)} />
+            <InfoBox text={useTranslateItemPanel("info_box.to_low_profit.title")} color={getOrderStatusColorCode(Wfm.OrderStatus.ToLowProfit)} />
+            <InfoBox text={useTranslateItemPanel("info_box.no_buyers.title")} color={getOrderStatusColorCode(Wfm.OrderStatus.NoBuyers)} />
+            <InfoBox text={useTranslateItemPanel("info_box.inactive.title")} color={getOrderStatusColorCode(Wfm.OrderStatus.InActive)} />
+            <InfoBox text={useTranslateItemPanel("info_box.sma_limit.title")} color={getOrderStatusColorCode(Wfm.OrderStatus.SMALimit)} />
+            <InfoBox text={useTranslateItemPanel("info_box.order_limit.title")} color={getOrderStatusColorCode(Wfm.OrderStatus.OrderLimit)} />
           </Group>
         </Grid.Col>
         <Grid.Col span={2} >
@@ -268,9 +271,9 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
           },
           {
             accessor: 'actions',
-            width: 200,
+            width: 225,
             title: useTranslateDataGridColumns('actions.title'),
-            render: ({ id, listed_price, hidden: hide }) =>
+            render: (row) =>
               <Group position="center" >
                 <Tooltip label={useTranslateDataGridColumns('actions.sell.title')}>
                   <ActionIcon loading={sellStockItemEntryMutation.isLoading} color="green.7" variant="filled" onClick={async (e) => {
@@ -282,8 +285,8 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
                         fields: [{ name: 'price', description: useTranslateDataGridColumns("actions.sell.prompt.description"), label: useTranslateDataGridColumns("actions.sell.prompt.label"), type: 'number', value: 0, }],
                         onConfirm: async (data: { price: number }) => {
                           const { price } = data;
-                          if (!price || price <= 0 || !id) return;
-                          await sellStockItemEntryMutation.mutateAsync({ id: id, price });
+                          if (!price || price <= 0 || !row.id) return;
+                          await sellStockItemEntryMutation.mutateAsync({ id: row.id, price });
                         },
                         onCancel: (id: string) => modals.close(id),
                       },
@@ -293,19 +296,31 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
                   </ActionIcon>
                 </Tooltip>
                 <Tooltip label={useTranslateDataGridColumns('actions.sell_for_listed_price')}>
-                  <ActionIcon disabled={!listed_price} loading={sellStockItemEntryMutation.isLoading} color="blue.7" variant="filled" onClick={async () => {
-                    if (!listed_price || !id) return;
-                    await sellStockItemEntryMutation.mutateAsync({ id, price: listed_price });
+                  <ActionIcon disabled={!row.listed_price} loading={sellStockItemEntryMutation.isLoading} color="blue.7" variant="filled" onClick={async () => {
+                    if (!row.listed_price || !row.id) return;
+                    await sellStockItemEntryMutation.mutateAsync({ id: row.id, price: row.listed_price });
                   }} >
                     <FontAwesomeIcon icon={faHammer} />
                   </ActionIcon>
                 </Tooltip>
-                <Tooltip label={useTranslateDataGridColumns(`actions.is_hiding.${hide ? "enable" : "disable"}`)}>
-                  <ActionIcon loading={sellStockItemEntryMutation.isLoading} color={`${hide ? "red.7" : "green.7"}`} variant="filled" onClick={async () => {
-                    if (!id) return;
-                    await updateItemEntryMutation.mutateAsync({ id: id, item: { hidden: !hide } });
+                <Tooltip label={useTranslateDataGridColumns(`actions.is_hiding.${row.hidden ? "enable" : "disable"}`)}>
+                  <ActionIcon loading={sellStockItemEntryMutation.isLoading} color={`${row.hidden ? "red.7" : "green.7"}`} variant="filled" onClick={async () => {
+                    if (!row.id) return;
+                    await updateItemEntryMutation.mutateAsync({ id: row.id, item: { hidden: !row.hidden } });
                   }} >
-                    <FontAwesomeIcon icon={hide ? faEye : faEyeSlash} />
+                    <FontAwesomeIcon icon={row.hidden ? faEyeSlash : faEye} />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label={useTranslateDataGridColumns(`actions.info`)}>
+                  <ActionIcon color="blue.7" variant="filled" onClick={async (e) => {
+                    e.stopPropagation();
+                    modals.open({
+                      size: "100%",
+                      withCloseButton: false,
+                      children: (<StockItemInfoModal item={row} />)
+                    })
+                  }} >
+                    <FontAwesomeIcon icon={faInfo} />
                   </ActionIcon>
                 </Tooltip>
                 <Tooltip label={useTranslateDataGridColumns('actions.delete.title')}>
@@ -313,7 +328,7 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
                     modals.openConfirmModal({
                       title: useTranslateDataGridColumns('actions.delete.title'),
                       children: (<Text>
-                        {useTranslateDataGridColumns('actions.delete.message', { name: id })}
+                        {useTranslateDataGridColumns('actions.delete.message', { name: row.name })}
                       </Text>),
                       labels: {
                         confirm: useTranslateDataGridColumns('actions.delete.buttons.confirm'),
@@ -321,8 +336,8 @@ export const StockItemsPanel = ({ }: StockItemsPanelProps) => {
                       },
                       confirmProps: { color: 'red' },
                       onConfirm: async () => {
-                        if (!id) return;
-                        await deleteStockItemEntryMutation.mutateAsync(id);
+                        if (!row.id) return;
+                        await deleteStockItemEntryMutation.mutateAsync(row.id);
                       }
                     })
                   }} >

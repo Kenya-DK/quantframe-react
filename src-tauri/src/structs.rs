@@ -1,6 +1,9 @@
-use serde::{de::DeserializeOwned, Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 
-use crate::enums::OrderType;
+use crate::{
+    enums::OrderType,
+    error::AppError,
+};
 
 #[derive(PartialEq, Eq, Hash, Debug)]
 pub enum WarframeLanguage {
@@ -11,7 +14,6 @@ pub enum WarframeLanguage {
     Russian,
     Unknown,
 }
-
 
 impl Default for WarframeLanguage {
     fn default() -> Self {
@@ -30,14 +32,6 @@ impl WarframeLanguage {
         }
     }
 }
-#[derive(Clone,Serialize,Deserialize, PartialEq, Eq, Hash,Debug)]
-pub enum TradeClassification {
-    Sale,
-    Purchase,
-    Trade,
-    Unknown,
-}
-
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct RivenTypeInfo {
     #[serde(rename = "thumb")]
@@ -110,7 +104,7 @@ pub struct Item {
     pub id: String,
     pub url_name: String,
     pub thumb: String,
-    pub wikia_url: Option<String>,
+    pub wiki_url: Option<String>,
     pub trade_tax: Option<i64>,
     pub mr_requirement: Option<i64>,
     pub set_items: Option<Vec<String>>,
@@ -171,7 +165,14 @@ pub struct Order {
 
     #[serde(rename = "item")]
     pub item: Option<OrderItem>,
+
+    #[serde(rename = "profit")]
+    pub profit: Option<f64>,
+
+    #[serde(rename = "closed_avg")]
+    pub closed_avg: Option<f64>,
 }
+
 #[derive(Serialize, Debug, Clone, Deserialize)]
 pub struct OrderItem {
     #[serde(rename = "id")]
@@ -219,13 +220,112 @@ pub struct OrderItemTranslation {
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
-pub struct Ordres {
+pub struct Orders {
     #[serde(rename = "sell_orders")]
     pub sell_orders: Vec<Order>,
     #[serde(rename = "buy_orders")]
     pub buy_orders: Vec<Order>,
 }
+impl Orders {
+    pub fn sort_by_platinum(&mut self) {
+        self.sell_orders.sort_by(|a, b| a.platinum.cmp(&b.platinum));
+        self.buy_orders.sort_by(|a, b| b.platinum.cmp(&a.platinum));
+    }
 
+    pub fn filter_by_username(&mut self, username: &str, exclude: bool)
+    where
+        Self: Sized,
+    {
+        self.sell_orders = self
+            .sell_orders
+            .iter()
+            .filter(|order| {
+                if exclude {
+                    // And User is ingame_name
+                    order.user.clone().map(|user| user.ingame_name.clone())
+                        != Some(username.to_owned())
+                } else {
+                    order.user.clone().map(|user| user.ingame_name.clone())
+                        == Some(username.to_owned())
+                }
+            })
+            .cloned()
+            .collect();
+        self.buy_orders = self
+            .buy_orders
+            .iter()
+            .filter(|order| {
+                if exclude {
+                    // And User is ingame_name
+                    order.user.clone().map(|user| user.ingame_name.clone())
+                        != Some(username.to_owned())
+                } else {
+                    order.user.clone().map(|user| user.ingame_name.clone())
+                        == Some(username.to_owned())
+                }
+            })
+            .cloned()
+            .collect();
+    }
+
+    pub fn lowest_order(&self, order_type: OrderType) -> Option<Order> {
+        let orders = match order_type {
+            OrderType::Sell => &self.sell_orders,
+            OrderType::Buy => &self.buy_orders,
+            _ => return None,
+        };
+
+        if orders.is_empty() {
+            return None;
+        }
+        orders
+            .iter()
+            .min_by(|a, b| a.platinum.cmp(&b.platinum))
+            .cloned()
+    }
+
+    pub fn lowest_price(&self, order_type: OrderType) -> i64 {
+        let order = self.lowest_order(order_type);
+        if order.is_none() {
+            return 0;
+        }
+        order.unwrap().platinum
+    }
+
+    pub fn highest_order(&self, order_type: OrderType) -> Option<Order> {
+        let orders = match order_type {
+            OrderType::Sell => &self.sell_orders,
+            OrderType::Buy => &self.buy_orders,
+            _ => return None,
+        };
+
+        if orders.is_empty() {
+            return None;
+        }
+        orders
+            .iter()
+            .max_by(|a, b| a.platinum.cmp(&b.platinum))
+            .cloned()
+    }
+
+    pub fn highest_price(&self, order_type: OrderType) -> i64 {
+        let order = self.highest_order(order_type);
+        if order.is_none() {
+            return 0;
+        }
+        order.unwrap().platinum
+    }
+
+    pub fn get_price_range(&self) -> i64 {
+        let lowest_price = self.lowest_price(OrderType::Sell);
+        let highest_price = self.highest_price(OrderType::Buy);
+        return lowest_price - highest_price;
+    }
+
+    pub fn total_count(&self) -> i64 {
+        self.sell_orders.len() as i64 + self.buy_orders.len() as i64
+    }
+}
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Transaction {
     pub id: i64,
@@ -365,7 +465,7 @@ pub struct Auction<T> {
     // pub note_raw: String,
     #[serde(rename = "is_direct_sell")]
     pub is_direct_sell: bool,
-    
+
     #[serde(rename = "id")]
     pub id: String,
     // #[serde(rename = "private")]
@@ -447,4 +547,19 @@ pub struct AuctionOwner {
 
     #[serde(rename = "avatar")]
     pub avatar: Option<String>,
+}
+
+#[derive(sqlx::Decode, Serialize, Deserialize, Debug, Clone)]
+pub struct PriceHistory {
+    #[serde(rename = "user_id")]
+    pub user_id: String,
+
+    #[serde(rename = "name")]
+    pub name: String,
+
+    #[serde(rename = "created_at")]
+    pub created_at: String,
+
+    #[serde(rename = "price")]
+    pub price: i64,
 }

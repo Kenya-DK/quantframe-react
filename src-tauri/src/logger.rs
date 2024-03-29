@@ -1,9 +1,7 @@
 use eyre::eyre;
-use polars::prelude::*;
 use serde_json::Value;
 use std::{
     fs::{self, File, OpenOptions},
-    io::BufWriter,
     io::Write,
     path::PathBuf,
 };
@@ -66,7 +64,7 @@ pub fn dolog(level: LogLevel, component: &str, msg: &str, console: bool, file: O
     }
 
     if let Some(file) = file {
-        let mut log_path = get_log_forlder();
+        let mut log_path = get_log_folder();
         log_path.push(file);
         if !log_path.exists() {
             fs::File::create(&log_path).unwrap();
@@ -90,7 +88,7 @@ pub fn dolog(level: LogLevel, component: &str, msg: &str, console: bool, file: O
     }
 }
 
-pub fn get_log_forlder() -> PathBuf {
+pub fn get_log_folder() -> PathBuf {
     let app_path = helper::get_app_roaming_path();
     let log_path = app_path.join("logs");
     // Create the directory if it does not exist
@@ -113,9 +111,9 @@ pub fn get_log_forlder() -> PathBuf {
 pub fn debug(component: &str, msg: &str, console: bool, file: Option<&str>) {
     dolog(LogLevel::Debug, component, msg, console, file);
 }
-pub fn debug_file(component: &str, msg: &str, file: Option<&str>) {
-    debug(component, msg, false, file);
-}
+// pub fn debug_file(component: &str, msg: &str, file: Option<&str>) {
+//     debug(component, msg, false, file);
+// }
 pub fn debug_con(component: &str, msg: &str) {
     debug(component, msg, true, None);
 }
@@ -140,15 +138,15 @@ pub fn info_con(component: &str, msg: &str) {
     info(component, msg, true, None);
 }
 
-pub fn trace(component: &str, msg: &str, console: bool, file: Option<&str>) {
-    dolog(LogLevel::Trace, component, msg, console, file);
-}
-pub fn trace_file(component: &str, msg: &str, file: Option<&str>) {
-    trace(component, msg, false, file);
-}
-pub fn trace_con(component: &str, msg: &str) {
-    trace(component, msg, true, None);
-}
+// pub fn trace(component: &str, msg: &str, console: bool, file: Option<&str>) {
+//     dolog(LogLevel::Trace, component, msg, console, file);
+// }
+// pub fn trace_file(component: &str, msg: &str, file: Option<&str>) {
+//     trace(component, msg, false, file);
+// }
+// pub fn trace_con(component: &str, msg: &str) {
+//     trace(component, msg, true, None);
+// }
 
 pub fn critical(component: &str, msg: &str, console: bool, file: Option<&str>) {
     dolog(LogLevel::Critical, component, msg, console, file);
@@ -156,42 +154,22 @@ pub fn critical(component: &str, msg: &str, console: bool, file: Option<&str>) {
 pub fn critical_file(component: &str, msg: &str, file: Option<&str>) {
     critical(component, msg, false, file);
 }
-pub fn critical_con(component: &str, msg: &str) {
-    critical(component, msg, true, None);
-}
+// pub fn critical_con(component: &str, msg: &str) {
+//     critical(component, msg, true, None);
+// }
 
 pub fn warning(component: &str, msg: &str, console: bool, file: Option<&str>) {
     dolog(LogLevel::Warning, component, msg, console, file);
 }
-pub fn warning_file(component: &str, msg: &str, file: Option<&str>) {
-    warning(component, msg, false, file);
-}
+// pub fn warning_file(component: &str, msg: &str, file: Option<&str>) {
+//     warning(component, msg, false, file);
+// }
 pub fn warning_con(component: &str, msg: &str) {
     warning(component, msg, true, None);
 }
-/// Logs the given DataFrame to a CSV file with the given name in the log folder.
-/// The `df` argument is a mutable reference to the DataFrame to be logged.
-/// The `name` argument is a string representing the name of the CSV file to be created.
-/// The CSV file is created in the log folder, which is determined by the `get_log_folder` function.
-/// If the file creation or write fails, an error message is printed to the console.
-/// If the write is successful, an info message is printed to the console.
-pub fn log_dataframe(df: &mut DataFrame, name: &str) {
-    let mut log_path = get_log_forlder();
-    log_path.push(name);
-    // Cerate a csv file with the sorted DataFrame of price data
-    let output_file: File = File::create(log_path).expect("create failed");
-    let writer = BufWriter::new(output_file);
-    // Write the DataFrame to a CSV file
-    CsvWriter::new(writer).finish(df).expect("write failed");
-    info(
-        "Logger",
-        format!("DataFrame logged to {}", format_text(name, "yellow", false)).as_str(),
-        false,
-        None,
-    );
-}
+
 pub fn log_json(file_path: &str, data: &Value) -> Result<(), AppError> {
-    let path = get_log_forlder().join(file_path);
+    let path = get_log_folder().join(file_path);
     let file =
         std::fs::File::create(path).map_err(|e| AppError::new("log_json", eyre!(e.to_string())))?;
     let writer = std::io::BufWriter::new(file);
@@ -218,7 +196,7 @@ pub fn export_logs() {
     ));
     let mut files_to_compress: Vec<helper::ZipEntry> = vec![];
 
-    let mut logs_path = get_log_forlder();
+    let mut logs_path = get_log_folder();
     logs_path.pop();
 
     files_to_compress.push(helper::ZipEntry {

@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use once_cell::sync::Lazy;
 
-use crate::{error, live_scraper::client::LiveScraperClient, logger::error};
+use crate::{error, live_scraper::client::LiveScraperClient};
 
 // Create a static variable to store the log file name
 static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("command_live_scraper.log".to_string()));

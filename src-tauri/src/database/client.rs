@@ -1,17 +1,8 @@
 use std::sync::{Arc, Mutex};
 
-use eyre::eyre;
-use polars::{
-    prelude::{DataFrame, NamedFrom},
-    series::Series,
-};
-use reqwest::{header::HeaderMap, Client, Method, Url};
-use serde::de::DeserializeOwned;
-use serde_json::{json, Value};
 use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
 
 use crate::{
-    auth::AuthState,
     cache::client::CacheClient,
     error::AppError,
     helper,

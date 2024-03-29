@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ModalsProvider } from '@mantine/modals';
 import { createStyles } from '@mantine/core';
 import { PromptModal } from './components/modals/prompt.modal';
-import { LiveScraperContextProvider, PriceScraperContextProvider, StockContextProvider, SocketContextProvider, ChatContextProvider } from './contexts';
+import { LiveScraperContextProvider, StockContextProvider, SocketContextProvider, ChatContextProvider } from './contexts';
 import AppRoutes from './layouts/routes';
 import { AppContextProvider } from './contexts/app.context';
 import { AuthContextProvider } from './contexts/auth.context';
@@ -53,11 +53,9 @@ function App() {
                 <CacheContextProvider>
                   <StockContextProvider>
                     <WarframeMarketContextProvider>
-                      <PriceScraperContextProvider>
-                        <LiveScraperContextProvider>
-                          <AppRoutes />
-                        </LiveScraperContextProvider>
-                      </PriceScraperContextProvider>
+                      <LiveScraperContextProvider>
+                        <AppRoutes />
+                      </LiveScraperContextProvider>
                     </WarframeMarketContextProvider>
                   </StockContextProvider>
                 </CacheContextProvider>

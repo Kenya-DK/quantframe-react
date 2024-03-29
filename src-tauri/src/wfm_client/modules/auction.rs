@@ -133,7 +133,7 @@ impl AuctionModule {
                     format!("Found {} auctions", payload.len()).as_str(),
                     None,
                 );
-                self.set_auction_count(payload.len() as i64);
+                self.set_auction_count(payload.len() as i64)?;
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
@@ -206,7 +206,7 @@ impl AuctionModule {
         {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.emit("CREATE_OR_UPDATE", serde_json::to_value(&payload).unwrap());
-                self.add_auction_count(1);
+                self.add_auction_count(1)?;
                 self.client.debug(
                     &self.debug_id,
                     &self.get_component("Create"),
@@ -477,7 +477,7 @@ impl AuctionModule {
     }
 }
 
-// Taurei Commands
+// Tauri Commands
 #[tauri::command]
 pub async fn auction_search(
     auction_type: &str,

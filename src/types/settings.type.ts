@@ -1,7 +1,6 @@
 import { StockItemDto, StockRivenDto, TransactionEntryDto, Wfm } from ".";
 export interface SetupResponse {
   valid: boolean;
-  price_scraper_last_run: number | null;
   user: Wfm.UserDto;
   settings: Settings;
   transactions: TransactionEntryDto[];
@@ -19,15 +18,7 @@ export interface AppInfo {
   app_author: string;
   app_description: string;
   app_name: string;
-  app_version: AppVersion;
-}
-
-export interface AppVersion {
-  current_version: string;
-  download_url: string;
-  release_notes: string;
-  update_available: boolean;
-  version: string;
+  app_version: string;
 }
 
 export interface RustError {
@@ -68,6 +59,7 @@ export interface StockItemSettings {
   range_threshold: number;
   avg_price_cap: number;
   price_shift_threshold: number;
+  min_sma: number;
   strict_whitelist: boolean;
   report_to_wfm: boolean;
   auto_trade: boolean;

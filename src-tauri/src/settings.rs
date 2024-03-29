@@ -42,6 +42,7 @@ pub struct StockItemSettings {
     pub report_to_wfm: bool,
     pub auto_trade: bool, // Will add order to you stock automatically or remove it if you have it
     pub strict_whitelist: bool,
+    pub min_sma: i64,
     pub auto_delete: bool,
     // What to post sell, buy, or both
     pub order_mode: OrderMode,
@@ -77,6 +78,7 @@ impl Default for SettingsState {
                 stock_mode: StockMode::All,
                 webhook: "".to_string(),
                 stock_item: StockItemSettings {
+                    min_sma: 3,
                     volume_threshold: 15,
                     range_threshold: 10,
                     avg_price_cap: 600,
@@ -124,8 +126,8 @@ impl SettingsState {
     pub fn setup() -> Result<Self, AppError> {
         let path_ref = Self::get_file_path();
         if path_ref.exists() {
-            let (se, vaild) = Self::read_from_file()?;
-            if vaild {
+            let (se, valid) = Self::read_from_file()?;
+            if valid {
                 Ok(se)
             } else {
                 se.save_to_file()?;

@@ -5,82 +5,11 @@ import { ActionIcon, Button, Group, NumberInput, Select, Title, Tooltip, Text } 
 import { Wfm } from '../../types';
 import { useTranslateForm } from '../../hooks';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClose, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { RivenPreview } from '../rivenPreview';
 import SvgIcon, { SvgType } from '../SvgIcon';
 
 
-interface RiveAttributeFormProps {
-  availableAttributes: Wfm.RivenAttributeInfoDto[],
-  attribute: Wfm.RivenAttributeDto | undefined,
-  index: number,
-  onChange?: (riven: Wfm.RivenAttributeDto | undefined) => void
-  canRemove?: boolean,
-  onRemove?: () => void
-  onClear?: () => void
-}
-const RiveAttributeForm = ({ availableAttributes, canRemove, attribute, onRemove, onChange, onClear }: RiveAttributeFormProps) => {
-  const [attributeType, setAttributeType] = useState<Wfm.RivenAttributeInfoDto | undefined>(undefined);
-  const [attributeValue, setAttributeValue] = useState<number>(0);
-
-
-  useEffect(() => {
-    if (attribute) {
-      setAttributeType(availableAttributes.find((item) => item.url_name === attribute.url_name))
-      setAttributeValue(attribute.value)
-    }
-    else
-      setAttributeType(undefined)
-
-  }, [attribute])
-
-  useEffect(() => {
-    if (attributeType)
-      onChange?.({ ...attributeType, value: attributeValue, positive: attributeType.positive_is_negative ? attributeValue < 0 : attributeValue > 0 })
-  }, [attributeType, attributeValue])
-  return (
-
-    <Group grow mt={5}>
-      <Select
-        value={attribute?.url_name || ""}
-        onChange={(event) => setAttributeType(availableAttributes.find((item) => item.url_name === event))}
-        searchable
-        limit={5}
-        rightSectionWidth={45}
-        rightSection={
-          <>
-            {attributeType &&
-              <ActionIcon color="red.7" onClick={async () => { onClear?.() }} >
-                <FontAwesomeIcon icon={faClose} />
-              </ActionIcon>
-            }
-          </>
-        }
-        data={availableAttributes.map((item: Wfm.RivenAttributeInfoDto) => {
-          return {
-            value: item.url_name,
-            label: item.effect,
-          };
-        })}
-      />
-      <NumberInput
-        required
-        disabled={!attribute}
-        precision={2}
-        value={attribute?.value || 0}
-        max={400}
-        onChange={(value) => setAttributeValue(Number(value))}
-      />
-      {canRemove &&
-        <ActionIcon color="red.7" onClick={() => {
-          onRemove?.()
-        }} >
-          <FontAwesomeIcon icon={faClose} />
-        </ActionIcon>
-      }
-    </Group>
-  );
-}
 
 
 interface ItemProps extends React.ComponentPropsWithoutRef<'div'> {
@@ -142,14 +71,6 @@ export const RivenForm = ({ onSubmit, availableAttributes, availableRivens, rive
     },
     validate: {},
   });
-  const getFilterAttributes = (attribute: string) => {
-    if (currentRivenType) {
-      const attributes = userForm.values.attributes.map((item) => item?.url_name);
-      return availableAttributes.filter((item) => item.exclusive_to == null || item.exclusive_to.includes(currentRivenType.riven_type) && (!attributes.includes(item.url_name) || item.url_name == attribute));
-    }
-    else
-      return availableAttributes;
-  };
 
   // Handle attribute permutations
   useEffect(() => {
@@ -244,29 +165,30 @@ export const RivenForm = ({ onSubmit, availableAttributes, availableRivens, rive
         />
       </Group>
       <Title order={5} style={{ marginBottom: 10 }}>{useTranslateUserForm("attributes")}</Title>
-      {Array.from(Array(attributeCount).keys()).map((i) => {
+      {Array.from(Array(attributeCount).keys()).map(() => {
         return (
-          <RiveAttributeForm
-            onClear={() => {
-              const attributes = [...userForm.values.attributes];
-              attributes[i] = null;
-              userForm.setFieldValue('attributes', attributes)
-            }}
-            onRemove={() => setAttributeCount(attributeCount - 1)}
-            key={i}
-            canRemove={i >= 2}
-            availableAttributes={getFilterAttributes(userForm.values.attributes[i]?.url_name || "")}
-            attribute={userForm.values.attributes[i] == null ? undefined : userForm.values.attributes[i] as Wfm.RivenAttributeDto}
-            index={i}
-            onChange={(attribute) => {
-              const attributes = [...userForm.values.attributes];
-              if (attribute)
-                attributes[i] = attribute;
-              else
-                attributes.splice(i, 1);
-              userForm.setFieldValue('attributes', attributes)
-            }}
-          />
+          <></>
+          // <RiveAttributeForm
+          //   onClear={() => {
+          //     const attributes = [...userForm.values.attributes];
+          //     attributes[i] = null;
+          //     userForm.setFieldValue('attributes', attributes)
+          //   }}
+          //   onRemove={() => setAttributeCount(attributeCount - 1)}
+          //   key={i}
+          //   canRemove={i >= 2}
+          //   availableAttributes={getFilterAttributes()}
+          //   attribute={userForm.values.attributes[i] == null ? undefined : userForm.values.attributes[i] as Wfm.RivenAttributeDto}
+          //   index={i}
+          //   onChange={(attribute) => {
+          //     const attributes = [...userForm.values.attributes];
+          //     if (attribute)
+          //       attributes[i] = attribute;
+          //     else
+          //       attributes.splice(i, 1);
+          //     userForm.setFieldValue('attributes', attributes)
+          //   }}
+          // />
         )
       })}
       {attributeCount < 4 &&

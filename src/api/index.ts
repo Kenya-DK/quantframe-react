@@ -46,6 +46,15 @@ const api = {
       } catch (error) {
         console.error(error)
       }
+    },
+    get_trades: async (): Promise<any> => {
+      return await invoke("get_trades")
+    },
+    simulate_trade: async (list: string[]): Promise<any> => {
+      return await invoke("simulate_trade", { list })
+    },
+    test: async (id: string, data?: Record<string, any>): Promise<any> => {
+      return await invoke("test_method", { id, data })
     }
   },
   auth: {

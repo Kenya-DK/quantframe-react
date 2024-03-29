@@ -1,5 +1,5 @@
 use once_cell::sync::Lazy;
-use serde_json::{json, Value};
+use serde_json::{json};
 
 use crate::{
     database::client::DBClient,

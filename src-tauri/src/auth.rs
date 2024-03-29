@@ -19,7 +19,9 @@ pub struct AuthState {
     pub platform: String,
     pub region: String,
     pub role: String,
+    #[serde(default = "AuthState::order_limit")]
     pub order_limit: i64,
+    #[serde(default = "AuthState::auctions_limit")]
     pub auctions_limit: i64,
     pub status: Option<String>,
 }
@@ -48,11 +50,19 @@ impl AuthState {
         let auth_path = app_path.join("auth.json");
         auth_path
     }
+    pub fn order_limit() -> i64 {
+        let auth = AuthState::default();
+        auth.order_limit
+    }
+    pub fn auctions_limit() -> i64 {
+        let auth = AuthState::default();
+        auth.auctions_limit
+    }
     pub fn setup() -> Result<Self, AppError> {
         let path_ref = Self::get_file_path();
         if path_ref.exists() {
-            let (se, vaild) = Self::read_from_file()?;
-            if vaild {
+            let (se, valid) = Self::read_from_file()?;
+            if valid {
                 Ok(se)
             } else {
                 se.save_to_file()?;

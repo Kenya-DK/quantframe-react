@@ -38,7 +38,7 @@ const useStyles = createStyles((theme) => ({
 
 }));
 
-export default function Hedder({ user }: TopMenuProps) {
+export default function HeaderC({ user }: TopMenuProps) {
   const theme = useMantineTheme();
   const { classes } = useStyles();
   const { socket } = useSocketContextContext();
@@ -51,15 +51,15 @@ export default function Hedder({ user }: TopMenuProps) {
   }, [user?.avatar]);
 
 
-  const useTranslateHedder = (key: string, context?: { [key: string]: any }) => useTranslateLayout(`header.${key}`, { ...context })
+  const useTranslateHeader = (key: string, context?: { [key: string]: any }) => useTranslateLayout(`header.${key}`, { ...context })
 
   const handleUpdateSettings = async (settingsData: DeepPartial<Settings>) => {
     if (!settingsData) return;
     const data = { ...settings, ...settingsData } as Settings;
     await api.base.updatesettings(data as any); // add 'as any' to avoid type checking
     notifications.show({
-      title: useTranslateHedder("notifications.settings_updated"),
-      message: useTranslateHedder("notifications.settings_updated_message"),
+      title: useTranslateHeader("notifications.settings_updated"),
+      message: useTranslateHeader("notifications.settings_updated_message"),
       color: 'green',
       autoClose: 5000,
     });
@@ -123,35 +123,35 @@ export default function Hedder({ user }: TopMenuProps) {
                   children: <SettingsModal settings={settings} updateSettings={handleUpdateSettings} tradable_items={items} />,
                 })
               }}>
-                {useTranslateHedder("profile.settings")}
+                {useTranslateHeader("profile.settings")}
               </Menu.Item>
               <Menu.Item icon={<FontAwesomeIcon icon={faFolder} />} onClick={async () => {
                 await api.base.openLogsFolder();
               }}>
-                {useTranslateHedder("profile.open_logs_folder")}
+                {useTranslateHeader("profile.open_logs_folder")}
               </Menu.Item>
               <Menu.Item icon={<FontAwesomeIcon icon={faFolder} />} onClick={async () => {
                 await api.base.export_logs();
               }}>
-                {useTranslateHedder("profile.export_logs")}
+                {useTranslateHeader("profile.export_logs")}
               </Menu.Item>
               {user && (
                 <Menu.Item icon={<FontAwesomeIcon icon={faRightFromBracket} />} onClick={async () => { await api.auth.logout(); }}>
-                  {useTranslateHedder("profile.logout")}
+                  {useTranslateHeader("profile.logout")}
                 </Menu.Item>
               )}
               <Menu.Divider />
 
               {user && (<>
-                <Menu.Label>{useTranslateHedder("profile.status.title")}</Menu.Label>
+                <Menu.Label>{useTranslateHeader("profile.status.title")}</Menu.Label>
                 <Menu.Item color="darkgreen" onClick={() => SetUserStatus(Wfm.UserStatus.Online)}>
-                  {useTranslateHedder("profile.status.online")}
+                  {useTranslateHeader("profile.status.online")}
                 </Menu.Item>
                 <Menu.Item color="mediumpurple" onClick={() => SetUserStatus(Wfm.UserStatus.Ingame)}>
-                  {useTranslateHedder("profile.status.ingame")}
+                  {useTranslateHeader("profile.status.ingame")}
                 </Menu.Item>
                 <Menu.Item color="gray.5" onClick={() => SetUserStatus(Wfm.UserStatus.Invisible)}>
-                  {useTranslateHedder("profile.status.invisible")}
+                  {useTranslateHeader("profile.status.invisible")}
                 </Menu.Item>
               </>)}
             </Menu.Dropdown>

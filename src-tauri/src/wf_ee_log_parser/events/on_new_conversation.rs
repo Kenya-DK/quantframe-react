@@ -23,6 +23,7 @@ impl Events {
 pub struct OnNewConversationEvent {
     settings: Arc<Mutex<SettingsState>>,
     helper: Arc<Mutex<MonitorHandler>>,
+    
 }
 
 impl OnNewConversationEvent {

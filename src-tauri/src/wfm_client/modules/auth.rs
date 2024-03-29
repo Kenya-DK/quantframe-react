@@ -86,11 +86,16 @@ impl AuthModule {
             .create("56783f24cbfa8f0432dd89a2", "buy", 1, 1, false, None)
             .await
         {
-            Ok(order) => {
-                let order = order.unwrap();
-                self.client.orders().delete(&order.id.clone()).await?;
-                Ok(true)
-            }
+            Ok((_, order)) => {
+                self.client.debug(
+                    &self.debug_id,
+                    &self.get_component("Validate"),
+                    "User is validated",
+                    None,
+                );
+                self.client.orders().delete(&order.unwrap().id).await?;
+                return Ok(true);
+            },
             Err(e) => {
                 if e.cause()
                     .contains("app.post_order.already_created_no_duplicates")

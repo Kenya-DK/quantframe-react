@@ -1,22 +1,15 @@
 use crate::{
-    auth::AuthState,
     database::client::DBClient,
-    enums::LogLevel,
+    enums::{LogLevel, StockStatus},
     error::AppError,
     helper,
-    logger::{self},
-    structs::RivenAttribute,
+    structs::{Order, PriceHistory},
 };
 use eyre::eyre;
-use polars::{
-    prelude::{DataFrame, NamedFrom},
-    series::Series,
-};
-use reqwest::header::HeaderMap;
+
 use sea_query::{ColumnDef, Expr, Iden, InsertStatement, Query, SqliteQueryBuilder, Table, Value};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use sqlx::Row;
 
 #[derive(Iden)]
 pub enum StockItem {
@@ -31,6 +24,7 @@ pub enum StockItem {
     Price,
     MiniumPrice,
     ListedPrice,
+    PriceHistory,
     Owned,
     Hidden,
     Status,
@@ -50,6 +44,7 @@ pub struct StockItemStruct {
     pub price: f64,
     pub minium_price: Option<i32>,
     pub listed_price: Option<i32>,
+    pub price_history: sqlx::types::Json<Vec<PriceHistory>>,
     pub owned: i32,
     pub hidden: bool,
     pub status: String,
@@ -104,6 +99,12 @@ impl<'a> StockItemModule<'a> {
                     .default(Value::Int(None)),
             )
             .col(
+                ColumnDef::new(StockItem::PriceHistory)
+                    .json()
+                    .not_null()
+                    .default(json!([])),
+            )
+            .col(
                 ColumnDef::new(StockItem::Owned)
                     .integer()
                     .not_null()
@@ -151,7 +152,18 @@ impl<'a> StockItemModule<'a> {
                 ColumnDef::new(StockItem::Status)
                     .string()
                     .not_null()
-                    .default("pending"),
+                    .default(StockStatus::Pending.as_str()),
+            )
+            .to_string(SqliteQueryBuilder);
+        helper::alter_table(connection.clone(), &table).await?;
+
+        table = Table::alter()
+            .table(StockItem::Table)
+            .add_column(
+                ColumnDef::new(StockItem::PriceHistory)
+                    .json()
+                    .not_null()
+                    .default(json!([])),
             )
             .to_string(SqliteQueryBuilder);
         helper::alter_table(connection.clone(), &table).await?;
@@ -174,6 +186,7 @@ impl<'a> StockItemModule<'a> {
                 StockItem::Price,
                 StockItem::MiniumPrice,
                 StockItem::ListedPrice,
+                StockItem::PriceHistory,
                 StockItem::Owned,
                 StockItem::Hidden,
                 StockItem::Status,
@@ -211,14 +224,14 @@ impl<'a> StockItemModule<'a> {
         rank: i32,
         sub_type: Option<&str>,
     ) -> Result<StockItemStruct, AppError> {
-        let inventorys = self.get_item_by_url_name(url_name).await?;
+        let stock_items = self.get_item_by_url_name(url_name).await?;
         let connection = self.client.connection.lock().unwrap().clone();
 
         if quantity <= 0 {
             quantity = 1;
         }
 
-        let item = self.client.cache.lock()?.items().find_type(&url_name)?;
+        let item = self.client.cache.lock()?.item().find_type(&url_name)?;
 
         let item = match item {
             Some(t) => t,
@@ -231,7 +244,7 @@ impl<'a> StockItemModule<'a> {
             }
         };
 
-        let inventory = match inventorys {
+        let inventory = match stock_items {
             Some(t) => {
                 let total_owned = t.owned + quantity;
                 // Get price per unit
@@ -242,6 +255,7 @@ impl<'a> StockItemModule<'a> {
                     t.id,
                     Some(total_owned),
                     Some(weighted_price),
+                    None,
                     None,
                     None,
                     None,
@@ -268,9 +282,10 @@ impl<'a> StockItemModule<'a> {
                     price: price as f64,
                     minium_price,
                     listed_price: None,
+                    price_history: sqlx::types::Json(vec![]),
                     owned: quantity as i32,
                     hidden: false,
-                    status: "pending".to_string(),
+                    status: StockStatus::Pending.to_string(),
                     created: chrono::Local::now().naive_local().to_string(),
                 };
 
@@ -329,11 +344,13 @@ impl<'a> StockItemModule<'a> {
         price: Option<f64>,
         minium_price: Option<i32>,
         listed_price: Option<i32>,
-        status: Option<String>,
+        status: Option<StockStatus>,
         hidden: Option<bool>,
-        trades: Option<&DataFrame>,
+        price_history: Option<PriceHistory>,
+        trades: Option<&Vec<Order>>,
     ) -> Result<StockItemStruct, AppError> {
         let connection = self.client.connection.lock().unwrap().clone();
+
         let items = self.get_items().await?;
         let inventory = items.iter().find(|t| t.id == id);
         if inventory.is_none() {
@@ -378,7 +395,7 @@ impl<'a> StockItemModule<'a> {
         }
 
         if status.is_some() {
-            inventory.status = status.unwrap();
+            inventory.status = status.unwrap().to_string();
             values.push((StockItem::Status, inventory.status.clone().into()));
         }
 
@@ -387,29 +404,47 @@ impl<'a> StockItemModule<'a> {
             values.push((StockItem::Hidden, hidden.into()));
         }
 
+        if price_history.is_some() {
+            // let mut price_history = price_history.unwrap();
+            let mut price_histories = inventory.price_history.clone();
+            // Max 5 price history
+            if price_histories.len() >= 5 {
+                price_histories.remove(0);
+            }
+            price_histories.push(price_history.unwrap());
+            inventory.price_history = price_histories;
+            values.push((
+                StockItem::PriceHistory,
+                serde_json::to_value(sqlx::types::Json(&inventory.price_history.clone()))
+                    .unwrap()
+                    .into(),
+            ));
+        }
+
         let sql = Query::update()
             .table(StockItem::Table)
             .values(values)
             .and_where(Expr::col(StockItem::Id).eq(id))
             .to_string(SqliteQueryBuilder);
-        sqlx::query(&sql)
+        sqlx::query(&sql.replace("\\", ""))
             .execute(&connection)
             .await
             .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
 
-        self.emit(
-            "CREATE_OR_UPDATE",
-            serde_json::to_value(inventory.clone()).unwrap(),
-        );
+        let mut json_data = serde_json::to_value(inventory.clone()).unwrap();
+        json_data["trades"] = serde_json::to_value(trades).unwrap();
+        self.emit("CREATE_OR_UPDATE", json_data);
+
         Ok(inventory.clone())
     }
+
     pub async fn reset_listed_price(&self) -> Result<(), AppError> {
         let connection = self.client.connection.lock().unwrap().clone();
         let sql = Query::update()
             .table(StockItem::Table)
             .values([
                 (StockItem::ListedPrice, Value::Int(None)),
-                (StockItem::Status, "pending".into()),
+                (StockItem::Status, StockStatus::Pending.as_str().into()),
             ])
             .to_string(SqliteQueryBuilder);
         sqlx::query(&sql.replace("\\", ""))
@@ -419,30 +454,6 @@ impl<'a> StockItemModule<'a> {
 
         self.emit("SET", json!(self.get_items().await?));
         Ok(())
-    }
-    pub async fn update_by_url(
-        &self,
-        id: &str,
-        owned: Option<i32>,
-        price: Option<f64>,
-        listed_price: Option<i32>,
-        status: Option<String>,
-        hidden: Option<bool>,
-        trades: Option<&DataFrame>,
-    ) -> Result<StockItemStruct, AppError> {
-        let items = self.get_items().await?;
-        let item = items.iter().find(|t| t.url == id);
-        if item.is_none() {
-            return Err(AppError::new_with_level(
-                "Database",
-                eyre!("Item not found in database: {}", id),
-                LogLevel::Warning,
-            ));
-        }
-        let item = item.unwrap();
-        Ok(self
-            .update_by_id(item.id, owned, price, None, listed_price, status, hidden, trades)
-            .await?)
     }
 
     pub async fn delete(&self, id: i64) -> Result<StockItemStruct, AppError> {
@@ -502,6 +513,7 @@ impl<'a> StockItemModule<'a> {
                 None,
                 None,
                 None,
+                None,
             )
             .await?;
         }
@@ -509,17 +521,20 @@ impl<'a> StockItemModule<'a> {
     }
 
     pub async fn get_items_names(&self) -> Result<Vec<String>, AppError> {
-        let inventorys = self.get_items().await?;
+        let stock_items = self.get_items().await?;
         // Return all hidden items and where owned is under 1
-        let inventorys = inventorys
+        let stock_items = stock_items
             .iter()
             .filter(|t| t.hidden == false && t.owned > 0)
             .collect::<Vec<_>>();
-        let names = inventorys.iter().map(|t| t.url.clone()).collect::<Vec<_>>();
+        let names = stock_items
+            .iter()
+            .map(|t| t.url.clone())
+            .collect::<Vec<_>>();
         Ok(names)
     }
 
     pub fn emit(&self, operation: &str, data: serde_json::Value) {
         helper::emit_update("StockItems", operation, Some(data));
-    }    
+    }
 }

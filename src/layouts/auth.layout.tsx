@@ -2,7 +2,7 @@
 import { Outlet } from "react-router-dom";
 import { useState } from 'react';
 import { AppShell, useMantineTheme } from '@mantine/core';
-import Hedder from "./header";
+import HeaderC from "./header";
 export default function AuthLayout() {
   const theme = useMantineTheme();
   const [opened, setOpened] = useState(false);
@@ -13,7 +13,7 @@ export default function AuthLayout() {
           background: theme.colorScheme === 'dark' ? theme.colors.dark[8] : theme.colors.gray[0],
         },
       }}
-      header={<Hedder user={undefined} opened={opened} onOpenedClick={() => setOpened((o) => !o)} hideSidebar={false} setHideSidebar={() => { }} />}
+      header={<HeaderC user={undefined} opened={opened} onOpenedClick={() => setOpened((o) => !o)} hideSidebar={false} setHideSidebar={() => { }} />}
     >
       <Outlet />
     </AppShell>

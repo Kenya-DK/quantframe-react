@@ -1,36 +1,16 @@
-use std::{
-    fs::{self, File},
-    io::{self, Read, Write},
-    path::{Path, PathBuf},
-    sync::{Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 
-use eyre::eyre;
 use once_cell::sync::Lazy;
-use reqwest::{Client, Method, Url};
+
 use serde_json::{json, Value};
 use tokio::process::Command;
-use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 
 // Create a static variable to store the log file name
 static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("command_base.log".to_string()));
 
 use crate::{
-    auth::AuthState,
-    cache::client::CacheClient,
-    database::client::DBClient,
-    enums::LogLevel,
-    error::{self, AppError},
-    handler::MonitorHandler,
-    helper, logger,
-    price_scraper::PriceScraper,
-    settings::SettingsState,
-    wf_ee_log_parser::client::EELogParser,
-    wfm_client::client::WFMClient,
-    PACKAGEINFO,
+    auth::AuthState, cache::client::CacheClient, database::client::DBClient, enums::LogLevel, error::{self, AppError}, handler::MonitorHandler, helper, logger, settings::SettingsState, wf_ee_log_parser::client::EELogParser, wfm_client::client::WFMClient
 };
-
-use super::auth;
 
 #[tauri::command]
 pub async fn init(
@@ -38,7 +18,6 @@ pub async fn init(
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
-    price_scraper: tauri::State<'_, Arc<Mutex<PriceScraper>>>,
     ee_log: tauri::State<'_, Arc<std::sync::Mutex<EELogParser>>>,
     db: tauri::State<'_, Arc<Mutex<DBClient>>>,
 ) -> Result<Value, AppError> {
@@ -48,14 +27,12 @@ pub async fn init(
     let auth = auth.lock()?.clone();
     let wfm = wfm.lock()?.clone();
     let cache = cache.lock()?.clone();
-    let price_scraper = price_scraper.lock()?.clone();
     let mut response = json!({
         "settings": &settings.clone(),
         "user": &auth.clone(),
-        "price_scraper_last_run": price_scraper.get_status(),
     });
 
-    helper::emit_undate_initializ_status("Loading Database...", None);
+    helper::emit_update_initialization_status("Loading Database...", None);
     match db.initialize().await {
         Ok(_) => {}
         Err(e) => {
@@ -65,10 +42,10 @@ pub async fn init(
     }
 
     // Load Cache
-    helper::emit_undate_initializ_status("Loading Cache...", None);
+    helper::emit_update_initialization_status("Loading Cache...", None);
     match cache.load().await {
         Ok(_) => {
-            response["items"] = json!(cache.items().get_types()?);
+            response["items"] = json!(cache.item().get_types()?);
             response["riven_items"] = json!(cache.riven().get_types()?);
             response["riven_attributes"] = json!(cache.riven().get_attributes()?);
         }
@@ -79,7 +56,7 @@ pub async fn init(
     }
 
     // Validate Auth
-    helper::emit_undate_initializ_status("Validating Credentials...", None);
+    helper::emit_update_initialization_status("Validating Credentials...", None);
     let is_validate = match wfm.auth().validate().await {
         Ok(is_validate) => {
             response["valid"] = json!(is_validate);
@@ -92,7 +69,7 @@ pub async fn init(
     };
 
     // Load Stock Items, Rivens
-    helper::emit_undate_initializ_status("Loading Stock...", None);
+    helper::emit_update_initialization_status("Loading Stock...", None);
     // Load Stock Items
     match db.stock_item().get_items().await {
         Ok(items) => {
@@ -115,7 +92,7 @@ pub async fn init(
     };
 
     // Load Transactions
-    helper::emit_undate_initializ_status("Loading Transactions...", None);
+    helper::emit_update_initialization_status("Loading Transactions...", None);
     match db.transaction().get_items().await {
         Ok(transactions) => {
             response["transactions"] = json!(transactions);
@@ -127,19 +104,19 @@ pub async fn init(
     };
 
     if is_validate {
-        helper::emit_undate_initializ_status("Loading Your Orders...", None);
-        let mut ordres_vec = match wfm.orders().get_my_orders().await {
-            Ok(ordres_vec) => ordres_vec,
+        helper::emit_update_initialization_status("Loading Your Orders...", None);
+        let mut orders_vec = match wfm.orders().get_my_orders().await {
+            Ok(orders_vec) => orders_vec,
             Err(e) => {
                 error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
                 return Err(e);
             }
         };
-        let mut ordres = ordres_vec.buy_orders;
-        ordres.append(&mut ordres_vec.sell_orders);
-        response["orders"] = json!(ordres);
+        let mut orders = orders_vec.buy_orders;
+        orders.append(&mut orders_vec.sell_orders);
+        response["orders"] = json!(orders);
 
-        helper::emit_undate_initializ_status("Loading Your Auctions...", None);
+        helper::emit_update_initialization_status("Loading Your Auctions...", None);
         let auctions_vec = match wfm.auction().get_my_auctions().await {
             Ok(auctions_vec) => auctions_vec,
             Err(e) => {
@@ -149,7 +126,7 @@ pub async fn init(
         };
         response["auctions"] = json!(auctions_vec);
 
-        helper::emit_undate_initializ_status("Loading Your Chats...", None);
+        helper::emit_update_initialization_status("Loading Your Chats...", None);
         let chats_vec = match wfm.chat().get_chats().await {
             Ok(chats_vec) => chats_vec,
             Err(e) => {
@@ -161,7 +138,7 @@ pub async fn init(
     }
 
     // Check for updates
-    helper::emit_undate_initializ_status("Checking for updates...", None);
+    helper::emit_update_initialization_status("Checking for updates...", None);
     response["app_info"] = helper::get_app_info().await?;
 
     // Start EE Log Parser
@@ -180,7 +157,7 @@ pub async fn update_settings(
     let arced_mutex = Arc::clone(&settings_state);
     let mut my_lock = arced_mutex.lock()?;
 
-    // Set Loggin Settings
+    // Set Log in Settings
     my_lock.debug = settings.debug;
 
     // Set Live Scraper Settings
@@ -196,7 +173,7 @@ pub async fn update_settings(
 #[tauri::command]
 pub async fn open_logs_folder() {
     Command::new("explorer")
-        .args(["/select,", &logger::get_log_forlder().to_str().unwrap()]) // The comma after select is not a typo
+        .args(["/select,", &logger::get_log_folder().to_str().unwrap()]) // The comma after select is not a typo
         .spawn()
         .unwrap();
 }
@@ -205,7 +182,7 @@ pub async fn open_logs_folder() {
 pub fn show_notification(
     title: String,
     message: String,
-    icon: Option<String>,
+    _icon: Option<String>,
     sound: Option<String>,
     mh: tauri::State<'_, Arc<std::sync::Mutex<MonitorHandler>>>,
 ) {
@@ -221,19 +198,27 @@ pub fn show_notification(
 #[tauri::command]
 pub fn on_new_wfm_message(
     message: crate::wfm_client::modules::chat::ChatMessage,
-    auth: tauri::State<'_, Arc<Mutex<AuthState>>>,  
+    auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
     settings: tauri::State<'_, Arc<std::sync::Mutex<SettingsState>>>,
     mh: tauri::State<'_, Arc<std::sync::Mutex<MonitorHandler>>>,
 ) {
     let mh = mh.lock().unwrap();
     let auth = auth.lock().unwrap().clone();
-    let settings = settings.lock().unwrap().clone().notifications.on_wfm_chat_message;
+    let settings = settings
+        .lock()
+        .unwrap()
+        .clone()
+        .notifications
+        .on_wfm_chat_message;
 
     if auth.id == message.message_from {
         return;
     }
 
-    let content = settings.content.replace("<WFM_MESSAGE>", &message.raw_message.unwrap_or("".to_string()));
+    let content = settings.content.replace(
+        "<WFM_MESSAGE>",
+        &message.raw_message.unwrap_or("".to_string()),
+    );
     if settings.system_notify {
         mh.show_notification(
             &settings.title,
@@ -243,7 +228,7 @@ pub fn on_new_wfm_message(
         );
     }
 
-    if settings.discord_notify  && settings.webhook.is_some() {
+    if settings.discord_notify && settings.webhook.is_some() {
         crate::helper::send_message_to_discord(
             settings.webhook.unwrap_or("".to_string()),
             settings.title,

@@ -4,8 +4,8 @@ use crate::handler::MonitorHandler;
 use crate::settings::SettingsState;
 use crate::{helper, logger};
 use serde_json::json;
-use std::fs::File;
-use std::io::{self, BufRead, BufReader, Seek, SeekFrom}; // Add Seek here
+use std::fs::{self, File};
+use std::io::{self, BufRead, BufReader, Read, Seek, SeekFrom, Write}; // Add Seek here
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
@@ -52,10 +52,8 @@ impl EELogParser {
                 wf_ee_path.clone(),
             ))),
             event_trading: Arc::new(Mutex::new(OnTradingEvent::new(
-                Arc::clone(&settings),
                 Arc::clone(&mh),
                 Arc::clone(&cache),
-                wf_ee_path.clone(),
             ))),
         }
     }
@@ -82,10 +80,10 @@ impl EELogParser {
         *self.handle.lock().unwrap() = Some(handle);
     }
 
-    pub fn stop_loop(&self) {
-        logger::info_con(self.component.as_str(), "Stopping Whisper Listener");
-        self.is_running.store(false, Ordering::SeqCst);
-    }
+    // pub fn stop_loop(&self) {
+    //     logger::info_con(self.component.as_str(), "Stopping Whisper Listener");
+    //     self.is_running.store(false, Ordering::SeqCst);
+    // }
 
     pub fn is_running(&self) -> bool {
         // Return the current value of is_running
@@ -120,7 +118,39 @@ impl EELogParser {
         }
         Ok(())
     }
-
+    pub fn clone_ee_file_to_debug(&self, name: &str) -> Result<(), AppError> {
+        let mut file = File::open(&self.wf_ee_path).map_err(|e| {
+            AppError::new(
+                self.component.as_str(),
+                eyre::eyre!("Error opening EE.log: {}", e),
+            )
+        })?;
+        let mut contents = String::new();
+        file.read_to_string(&mut contents).map_err(|e| {
+            AppError::new(
+                self.component.as_str(),
+                eyre::eyre!("Error reading EE.log: {}", e),
+            )
+        })?;
+        let mut debug_path = helper::get_app_roaming_path().join("debug");
+        if !debug_path.exists() {
+            fs::create_dir_all(&debug_path).unwrap();
+        }
+        debug_path.push(format!("EE-{}.log", name));
+        let mut debug_file = File::create(debug_path).map_err(|e| {
+            AppError::new(
+                self.component.as_str(),
+                eyre::eyre!("Error creating debug file: {}", e),
+            )
+        })?;
+        debug_file.write_all(contents.as_bytes()).map_err(|e| {
+            AppError::new(
+                self.component.as_str(),
+                eyre::eyre!("Error writing to debug file: {}", e),
+            )
+        })?;
+        Ok(())
+    }
     fn read_new_lines(&self, is_starting: bool) -> io::Result<Vec<(usize, String)>> {
         let mut new_lines: Vec<(usize, String)> = Vec::new();
         let mut file = File::open(&self.wf_ee_path)?;

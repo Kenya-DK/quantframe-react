@@ -231,10 +231,12 @@ export namespace Wfm {
   export enum OrderStatus {
     Pending = "pending",
     Live = "live",
-    ToLowProfile = "to_low_profit",
-    NoOffers = "no_offers",
+    ToLowProfit = "to_low_profit",
+    NoSellers = "no_sellers",
     NoBuyers = "no_buyers",
-    Inactive = "inactive",
+    InActive = "inactive",
+    SMALimit = "sma_limit",
+    OrderLimit = "order_limit",
   }
   export enum TradeClassification {
     Buy = "buy",

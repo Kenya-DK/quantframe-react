@@ -1,10 +1,10 @@
 use std::sync::{Arc, Mutex};
 
-use eyre::eyre;
+
 use once_cell::sync::Lazy;
-use reqwest::{Client, Method, Url};
-use serde_json::{json, Value};
-use tokio::process::Command;
+
+use serde_json::{json};
+
 
 // Create a static variable to store the log file name
 static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("command_chat.log".to_string()));

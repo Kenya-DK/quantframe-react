@@ -1,7 +1,4 @@
-use std::{
-    clone,
-    sync::{Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 // Create a static variable to store the log file name
 static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("command_stock.log".to_string()));
 
@@ -38,12 +35,12 @@ pub async fn create_item_stock(
     let settings = settings.lock()?.clone();
 
     // Create Item in Stock DB
-    let stockitem = match db
+    let stock_item = match db
         .stock_item()
         .create(&url_name, quantity, price, minium_price, rank, sub_type)
         .await
     {
-        Ok(stockitem) => stockitem,
+        Ok(stock_item) => stock_item,
         Err(e) => {
             error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
             return Err(e);
@@ -52,7 +49,7 @@ pub async fn create_item_stock(
 
     // Create transaction if price is greater than 0
     if price <= 0.0 {
-        return Ok(json!(stockitem));
+        return Ok(json!(stock_item));
     }
     match db
         .transaction()
@@ -62,7 +59,7 @@ pub async fn create_item_stock(
         Ok(_) => {
             // Send Close Event to Warframe Market API if enabled
             if !settings.live_scraper.stock_item.report_to_wfm {
-                return Ok(serde_json::to_value(stockitem).unwrap());
+                return Ok(serde_json::to_value(stock_item).unwrap());
             }
         }
         Err(e) => {
@@ -72,7 +69,7 @@ pub async fn create_item_stock(
     };
     match wfm.orders().close(&url_name, OrderType::Buy).await {
         Ok(_) => {
-            return Ok(json!(stockitem));
+            return Ok(json!(stock_item));
         }
         Err(e) => {
             error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
@@ -99,7 +96,7 @@ pub async fn update_item_stock(
     // Update Riven in Stock
     match db
         .stock_item()
-        .update_by_id(id, owned, None, minium_price, None,None, hidden,None)
+        .update_by_id(id, owned, None, minium_price, None, None, hidden, None, None)
         .await
     {
         Ok(stock) => {
@@ -133,8 +130,8 @@ pub async fn delete_item_stock(
     };
 
     // Get all sell orders from Warframe Market API and find the order for the item
-    let ordres: Vec<Order> = wfm.orders().get_my_orders().await?.sell_orders;
-    let order = ordres
+    let orders: Vec<Order> = wfm.orders().get_my_orders().await?.sell_orders;
+    let order = orders
         .iter()
         .find(|order| order.item.as_ref().unwrap().url_name == stockitem.url)
         .clone();
@@ -143,13 +140,7 @@ pub async fn delete_item_stock(
         return Ok(json!(stockitem.clone()));
     }
     // Delete the order from Warframe Market API
-    match wfm
-        .orders()
-        .delete(
-            &order.unwrap().id
-        )
-        .await
-    {
+    match wfm.orders().delete(&order.unwrap().id).await {
         Ok(_) => {
             return Ok(json!(stockitem.clone()));
         }
@@ -174,8 +165,8 @@ pub async fn sell_item_stock(
     let settings = settings.lock()?.clone();
 
     // Sell Item in Stock DB
-    let invantory = match db.stock_item().sell_item(id, quantity).await {
-        Ok(invantory) => invantory,
+    let stock_item = match db.stock_item().sell_item(id, quantity).await {
+        Ok(stock_item) => stock_item,
         Err(e) => {
             error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
             return Err(e);
@@ -183,23 +174,23 @@ pub async fn sell_item_stock(
     };
 
     // Send Stock Item to Frontend
-    if invantory.owned == 0 {
-        db.stock_item().emit("DELETE", json!(invantory.clone()));
+    if stock_item.owned == 0 {
+        db.stock_item().emit("DELETE", json!(stock_item.clone()));
     } else {
         db.stock_item()
-            .emit("CREATE_OR_UPDATE", json!(invantory.clone()));
+            .emit("CREATE_OR_UPDATE", json!(stock_item.clone()));
     }
 
     // Create Transaction in DB
     match db
         .transaction()
         .create(
-            &invantory.url,
+            &stock_item.url,
             "item",
             "sell",
             quantity,
             price,
-            invantory.rank,
+            stock_item.rank,
             None,
         )
         .await
@@ -213,45 +204,39 @@ pub async fn sell_item_stock(
 
     if settings.live_scraper.stock_item.report_to_wfm {
         // Send Close Event to Warframe Market API
-        match wfm.orders().close(&invantory.url, OrderType::Sell).await {
+        match wfm.orders().close(&stock_item.url, OrderType::Sell).await {
             Ok(_) => {}
             Err(e) => {
                 error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
                 return Err(e);
             }
         }
-        return Ok(json!(invantory.clone()));
+        return Ok(json!(stock_item.clone()));
     }
-    let ordres: Vec<Order> = wfm.orders().get_my_orders().await?.sell_orders;
-    let order = ordres
+    let orders: Vec<Order> = wfm.orders().get_my_orders().await?.sell_orders;
+    let order = orders
         .iter()
-        .find(|order| order.item.as_ref().unwrap().url_name == invantory.url)
+        .find(|order| order.item.as_ref().unwrap().url_name == stock_item.url)
         .clone();
 
     // Check if order is found
     if order.is_none() {
-        return Ok(json!(invantory.clone()));
+        return Ok(json!(stock_item.clone()));
     }
 
     // Delete the order from Warframe Market API OR Update the order Warframe Market API
-    if invantory.owned <= 0 {
+    if stock_item.owned <= 0 {
         // Delete the order from Warframe Market API
-        match wfm
-            .orders()
-            .delete(
-                &order.unwrap().id
-            )
-            .await
-        {
+        match wfm.orders().delete(&order.unwrap().id).await {
             Ok(_) => {
-                return Ok(json!(invantory.clone()));
+                return Ok(json!(stock_item.clone()));
             }
             Err(e) => {
                 error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
                 if e.log_level() != LogLevel::Error {
                     return Err(e);
                 } else {
-                    return Ok(json!(invantory.clone()));
+                    return Ok(json!(stock_item.clone()));
                 }
             }
         }
@@ -262,13 +247,13 @@ pub async fn sell_item_stock(
             .update(
                 &order.unwrap().id,
                 order.unwrap().platinum as i32,
-                invantory.owned,
-                order.unwrap().visible
+                stock_item.owned,
+                order.unwrap().visible,
             )
             .await
         {
             Ok(_) => {
-                return Ok(json!(invantory.clone()));
+                return Ok(json!(stock_item.clone()));
             }
             Err(e) => {
                 error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
@@ -294,11 +279,11 @@ pub async fn sell_item_stock_by_url(
         .get_item_by_url_name(name.as_str())
         .await
     {
-        Ok(strock_item) => {
-            if strock_item.is_none() {
+        Ok(stock_item) => {
+            if stock_item.is_none() {
                 return Err(AppError::new("Command", eyre!("Item not found: {}", name)));
             }
-            strock_item.unwrap()
+            stock_item.unwrap()
         }
         Err(e) => {
             error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
@@ -307,8 +292,8 @@ pub async fn sell_item_stock_by_url(
     };
 
     match sell_item_stock(stock_item.id.clone(), quantity, price, db, wfm, settings).await {
-        Ok(invantory) => {
-            return Ok(invantory);
+        Ok(stock_item) => {
+            return Ok(stock_item);
         }
         Err(e) => {
             error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
@@ -330,7 +315,7 @@ pub async fn create_riven_stock(
     polarity: &str,
     mod_name: &str,
     minium_price: Option<i32>,
-    commet: Option<String>,
+    comment: Option<String>,
     db: tauri::State<'_, Arc<Mutex<DBClient>>>,
 ) -> Result<serde_json::Value, AppError> {
     let db = db.lock()?.clone();
@@ -350,7 +335,7 @@ pub async fn create_riven_stock(
             re_rolls,
             polarity,
             minium_price,
-            commet,
+            comment,
         )
         .await
     {
@@ -499,7 +484,7 @@ pub async fn update_riven_stock(
     match_riven: Option<MatchRivenStruct>,
     minium_price: Option<i32>,
     private: Option<bool>,
-    commet: Option<String>,
+    comment: Option<String>,
     db: tauri::State<'_, Arc<Mutex<DBClient>>>,
 ) -> Result<serde_json::Value, AppError> {
     let db = db.lock()?.clone();
@@ -508,7 +493,6 @@ pub async fn update_riven_stock(
     if stock.is_none() {
         return Err(AppError::new("Riven not found", eyre!("Riven not found")));
     }
-
     // Update Riven in Stock
     let stock = db
         .stock_riven()
@@ -523,8 +507,8 @@ pub async fn update_riven_stock(
             minium_price,
             None,
             private,
-            commet,
-            None
+            comment,
+            None,
         )
         .await?;
     Ok(json!(stock.clone()))

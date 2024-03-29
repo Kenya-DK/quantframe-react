@@ -134,9 +134,13 @@ const OrderItem = ({ item, ordre }: PurchaseNewItemProps) => {
             <TextColor size={"lg"} sx={{ float: "inline-start", marginRight: 15 }} color="gray.6" i18nKey={useTranslateOrdersPanel("plat_label", undefined, true)} values={{ plat: ordre.platinum }} />
             <TextColor size={"lg"} sx={{ display: "flex", alignItems: "center" }} color="gray.6" i18nKey={useTranslateOrdersPanel("credits_label", undefined, true)} values={{ credits: formatNumber(item?.trade_tax || 0) }} />
           </Grid.Col>
-          <Grid.Col md={4} p={0}>
-            <Group spacing={1}>
+          <Grid.Col md={4} p={0} sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end"
 
+          }}>
+            <Group spacing={1}>
               <Tooltip label={useTranslateOrdersPanel(ordre.order_type === "buy" ? "tolltip.buy_add_to_stock" : "tolltip.sell_remove_from_stock")}>
                 <ActionIcon loading={deleteOrdreEntryMutation.isLoading} color="bule.7" onClick={async (e) => {
                   e.stopPropagation();

@@ -1,8 +1,8 @@
-use crate::{database::client::DBClient, error::AppError, helper, structs::RivenAttribute, logger::{self}, enums::LogLevel};
+use crate::{database::client::DBClient, error::AppError, helper, logger::{self}, enums::LogLevel};
 use eyre::eyre;
 use sea_query::{ColumnDef, Expr, Iden, InsertStatement, Query, SqliteQueryBuilder, Table, Value};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
+
 
 pub struct TransactionModule<'a> {
     pub client: &'a DBClient,
@@ -166,7 +166,7 @@ impl<'a> TransactionModule<'a> {
                 .client
                 .cache
                 .lock()?
-                .items()
+                .item()
                 .find_type(&url_name)?
                 .unwrap();
             transaction.wfm_id = item.id.clone();

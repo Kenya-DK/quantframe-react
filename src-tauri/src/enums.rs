@@ -1,6 +1,5 @@
-use serde::{Deserialize, Serialize};
-
 use crate::logger;
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum OrderMode {
@@ -66,6 +65,7 @@ impl<'de> Deserialize<'de> for OrderMode {
 pub enum OrderType {
     Buy,
     Sell,
+    BuySell,
     Unknown(String),
 }
 impl OrderType {
@@ -74,6 +74,7 @@ impl OrderType {
         match *self {
             OrderType::Buy => "buy",
             OrderType::Sell => "sell",
+            OrderType::BuySell => "buy_sell",
             OrderType::Unknown(ref i) => i,
         }
     }
@@ -87,6 +88,7 @@ impl Serialize for OrderType {
         let value = match self {
             OrderType::Buy => "buy",
             OrderType::Sell => "sell",
+            OrderType::BuySell => "buy_sell",
             OrderType::Unknown(i) => {
                 logger::critical_file(
                     "OrderType",
@@ -128,14 +130,14 @@ pub enum StockMode {
 }
 impl StockMode {
     // Create method to convert `OrderType` to a `&str`
-    pub fn as_str(&self) -> &str {
-        match *self {
-            StockMode::All => "all",
-            StockMode::Item => "item",
-            StockMode::Riven => "riven",
-            StockMode::Unknown(ref i) => i,
-        }
-    }
+    // pub fn as_str(&self) -> &str {
+    //     match *self {
+    //         StockMode::All => "all",
+    //         StockMode::Item => "item",
+    //         StockMode::Riven => "riven",
+    //         StockMode::Unknown(ref i) => i,
+    //     }
+    // }
 }
 impl Serialize for StockMode {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -190,17 +192,17 @@ pub enum LogLevel {
 }
 impl LogLevel {
     // Create method to convert `OrderType` to a `&str`
-    pub fn as_str(&self) -> &str {
-        match *self {
-            LogLevel::Info => "info",
-            LogLevel::Warning => "warning",
-            LogLevel::Error => "error",
-            LogLevel::Debug => "debug",
-            LogLevel::Trace => "trace",
-            LogLevel::Critical => "critical",
-            LogLevel::Unknown(ref i) => i,
-        }
-    }
+    // pub fn as_str(&self) -> &str {
+    //     match *self {
+    //         LogLevel::Info => "info",
+    //         LogLevel::Warning => "warning",
+    //         LogLevel::Error => "error",
+    //         LogLevel::Debug => "debug",
+    //         LogLevel::Trace => "trace",
+    //         LogLevel::Critical => "critical",
+    //         LogLevel::Unknown(ref i) => i,
+    //     }
+    // }
 }
 impl Serialize for LogLevel {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -246,6 +248,149 @@ impl<'de> Deserialize<'de> for LogLevel {
                     s
                 ))
             })?),
+        })
+    }
+}
+
+#[derive(Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Debug)]
+pub enum TradeClassification {
+    Sale,
+    Purchase,
+    Trade,
+    Unknown,
+}
+impl TradeClassification {
+    // Create method to convert `OrderType` to a `&str`
+    pub fn as_str(&self) -> &str {
+        match *self {
+            TradeClassification::Sale => "sale",
+            TradeClassification::Purchase => "purchase",
+            TradeClassification::Trade => "trade",
+            TradeClassification::Unknown => "unknown",
+        }
+    }
+    pub fn display(&self) -> &str {
+        match *self {
+            TradeClassification::Sale => "Sale",
+            TradeClassification::Purchase => "Purchase",
+            TradeClassification::Trade => "Trade",
+            TradeClassification::Unknown => "Unknown",
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum StockStatus {
+    Pending,
+    Live,
+    ToLowProfit,
+    NoSellers,
+    NoBuyers,
+    InActive,
+    SMALimit,
+    OrderLimit,
+    Overpriced,
+    Underpriced,
+    Unknown(String),
+}
+impl StockStatus {
+    // Create method to convert `OrderType` to a `&str`
+    pub fn as_str(&self) -> &str {
+        match *self {
+            StockStatus::Pending => "pending",
+            StockStatus::Live => "live",
+            StockStatus::ToLowProfit => "to_low_profit",
+            StockStatus::NoSellers => "no_sellers",
+            StockStatus::NoBuyers => "no_buyers",
+            StockStatus::InActive => "inactive",
+            StockStatus::SMALimit => "sma_limit",
+            StockStatus::OrderLimit => "order_limit",
+            StockStatus::Overpriced => "overpriced",
+            StockStatus::Underpriced => "underpriced",
+            StockStatus::Unknown(ref i) => i,
+        }
+    }
+    pub fn to_string(&self) -> String {
+        match self {
+            StockStatus::Pending => StockStatus::Pending.as_str().to_string(),
+            StockStatus::Live => StockStatus::Live.as_str().to_string(),
+            StockStatus::ToLowProfit => StockStatus::ToLowProfit.as_str().to_string(),
+            StockStatus::NoSellers => StockStatus::NoSellers.as_str().to_string(),
+            StockStatus::NoBuyers => StockStatus::NoBuyers.as_str().to_string(),
+            StockStatus::InActive => StockStatus::InActive.as_str().to_string(),
+            StockStatus::SMALimit => StockStatus::SMALimit.as_str().to_string(),
+            StockStatus::OrderLimit => StockStatus::OrderLimit.as_str().to_string(),
+            StockStatus::Overpriced => StockStatus::Overpriced.as_str().to_string(),
+            StockStatus::Underpriced => StockStatus::Underpriced.as_str().to_string(),
+            StockStatus::Unknown(i) => i.to_string(),
+        }
+    }
+    pub fn from_string(s: &str) -> StockStatus {
+        match s {
+            "pending" => StockStatus::Pending,
+            "live" => StockStatus::Live,
+            "to_low_profit" => StockStatus::ToLowProfit,
+            "no_sellers" => StockStatus::NoSellers,
+            "no_buyers" => StockStatus::NoBuyers,
+            "inactive" => StockStatus::InActive,
+            "sma_limit" => StockStatus::SMALimit,
+            "order_limit" => StockStatus::OrderLimit,
+            "overpriced" => StockStatus::Overpriced,
+            "underpriced" => StockStatus::Underpriced,
+            s => StockStatus::Unknown(s.to_string()),
+        }
+    }
+}
+impl Serialize for StockStatus {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let value = match self {
+            StockStatus::Pending => "pending",
+            StockStatus::Live => "live",
+            StockStatus::ToLowProfit => "to_low_profit",
+            StockStatus::NoSellers => "no_sellers",
+            StockStatus::NoBuyers => "no_buyers",
+            StockStatus::InActive => "inactive",
+            StockStatus::SMALimit => "sma_limit",
+            StockStatus::OrderLimit => "order_limit",
+            StockStatus::Overpriced => "overpriced",
+            StockStatus::Underpriced => "underpriced",
+            StockStatus::Unknown(i) => {
+                logger::critical_file(
+                    "StockStatus",
+                    format!("Unknown StockStatus: {}", i).as_str(),
+                    Some("enums.log"),
+                );
+                "unknown"
+            }
+        };
+        serializer.serialize_str(value)
+    }
+}
+
+impl<'de> Deserialize<'de> for StockStatus {
+    fn deserialize<D>(deserializer: D) -> Result<StockStatus, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let s: String = String::deserialize(deserializer)?;
+        Ok(match s.as_str() {
+            "pending" => StockStatus::Pending,
+            "live" => StockStatus::Live,
+            "to_low_profit" => StockStatus::ToLowProfit,
+            "no_sellers" => StockStatus::NoSellers,
+            "no_buyers" => StockStatus::NoBuyers,
+            "inactive" => StockStatus::InActive,
+            "sma_limit" => StockStatus::SMALimit,
+            "order_limit" => StockStatus::OrderLimit,
+            "overpriced" => StockStatus::Overpriced,
+            "underpriced" => StockStatus::Underpriced,
+            s => StockStatus::Unknown(
+                s.parse()
+                    .map_err(|_| serde::de::Error::custom(format!("Unknown StockStatus: {}", s)))?,
+            ),
         })
     }
 }

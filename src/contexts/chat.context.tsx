@@ -2,9 +2,6 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { Wfm } from '$types/index';
 import { OnSocketEvent, OnTauriUpdateDataEvent } from "../utils";
 import api from "@api/index";
-import { useAppContext, useAuthContext } from ".";
-
-
 
 type ChatContextProps = {
   chats: Wfm.ChatData[];
@@ -25,8 +22,6 @@ export const ChatContext = createContext<ChatContextProps>({
 export const useChatContext = () => useContext(ChatContext);
 
 export const ChatContextProvider = ({ children }: ChatContextProviderProps) => {
-  const { user } = useAuthContext();
-  const { settings } = useAppContext();
   const [state, setState] = useState<{
     aktive_chat: Wfm.ChatData | undefined,
     chats: Wfm.ChatData[]

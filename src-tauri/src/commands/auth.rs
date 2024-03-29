@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use eyre::eyre;
 use once_cell::sync::Lazy;
-use serde_json::{json, Value};
+
 
 use crate::{
     auth::AuthState,

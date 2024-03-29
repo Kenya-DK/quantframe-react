@@ -10,14 +10,14 @@ import { useAppContext } from "@contexts/index";
 
 interface PurchaseNewItemProps {
   loading: boolean;
-  onSumit: (data: CreateStockItemEntryDto) => void;
+  onSubmit: (data: CreateStockItemEntryDto) => void;
 }
 
 export const PurchaseNewItem = (props: PurchaseNewItemProps) => {
   const useTranslateItemPanel = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePage(`live_trading.tabs.item.${key}`, { ...context }, i18Key)
   const useTranslateFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateItemPanel(`fields.${key}`, { ...context }, i18Key)
   const useTranslateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateItemPanel(`buttons.${key}`, { ...context }, i18Key)
-  const { onSumit } = props;
+  const { onSubmit } = props;
   const [, setSelectedItem] = useState<Wfm.ItemDto | undefined>(undefined);
   const { settings } = useAppContext();
   const roleForm = useForm({
@@ -30,7 +30,7 @@ export const PurchaseNewItem = (props: PurchaseNewItemProps) => {
   });
   return (
     <form method="post" onSubmit={roleForm.onSubmit(async (d) => {
-      onSumit({
+      onSubmit({
         item_id: d.item,
         price: d.price,
         quantity: d.quantity,

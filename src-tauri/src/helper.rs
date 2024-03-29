@@ -1,20 +1,15 @@
-use chrono::{format, Duration};
+use chrono::Duration;
 use directories::{BaseDirs, UserDirs};
 use eyre::eyre;
 use once_cell::sync::Lazy;
-use polars::{
-    lazy::dsl::col,
-    prelude::{DataFrame, Expr, IntoLazy, SortOptions},
-    series::Series,
-};
-use serde_json::{Map, json, Value};
+use serde_json::{json, Map, Value};
 use std::{
     fs::{self, File},
     io::{self, Read, Write},
     path::{Path, PathBuf},
     sync::Mutex,
 };
-use tauri::{api::file, Window};
+use tauri::Window;
 use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 
 use crate::{
@@ -24,121 +19,6 @@ use crate::{
     PACKAGEINFO,
 };
 pub static WINDOW: Lazy<Mutex<Option<Window>>> = Lazy::new(|| Mutex::new(None));
-
-#[derive(Debug)]
-pub enum ColumnType {
-    Bool,
-    F64,
-    I64,
-    I32,
-    String,
-}
-pub enum ColumnValues {
-    Bool(Vec<bool>),
-    F64(Vec<f64>),
-    I64(Vec<i64>),
-    I32(Vec<i32>),
-    String(Vec<String>),
-}
-impl ColumnValues {
-    /// Converts the ColumnValues into a vector of Strings, if it is a String.
-    /// Returns None if the ColumnValues is not a String.
-  pub  fn into_string(self) -> Option<Vec<String>> {
-        match self {
-            ColumnValues::String(values) => Some(values),
-            _ => None,
-        }
-    }
-
-    /// Converts the ColumnValues into a vector of bools, if it is a Bool.
-    /// Returns None if the ColumnValues is not a Bool.
-  pub  fn into_bool(self) -> Option<Vec<bool>> {
-        match self {
-            ColumnValues::Bool(values) => Some(values),
-            _ => None,
-        }
-    }
-
-    /// Converts the ColumnValues into a vector of f64s, if it is a F64.
-    /// Returns None if the ColumnValues is not a F64.
-   pub fn into_f64(self) -> Option<Vec<f64>> {
-        match self {
-            ColumnValues::F64(values) => Some(values),
-            _ => None,
-        }
-    }
-
-    /// Converts the ColumnValues into a vector of i64s, if it is a I64.
-    /// Returns None if the ColumnValues is not a I64.
-   pub fn into_i64(self) -> Option<Vec<i64>> {
-        match self {
-            ColumnValues::I64(values) => Some(values),
-            _ => None,
-        }
-    }
-
-    /// Converts the ColumnValues into a vector of i32s, if it is a I32.
-    /// Returns None if the ColumnValues is not a I32.
-    pub fn into_i32(self) -> Option<Vec<i32>> {
-        match self {
-            ColumnValues::I32(values) => Some(values),
-            _ => None,
-        }
-    }
-}
-pub enum ColumnValue {
-    Bool(Option<bool>),
-    F64(Option<f64>),
-    I64(Option<i64>),
-    I32(Option<i32>),
-    String(Option<String>),
-}
-impl ColumnValue {
-    /// Converts the ColumnValue into a String, if it is a String.
-    /// Returns None if the ColumnValue is not a String.
-    pub fn into_string(self) -> Option<String> {
-        match self {
-            ColumnValue::String(value) => value,
-            _ => None,
-        }
-    }
-
-    /// Converts the ColumnValue into a bool, if it is a Bool.
-    /// Returns None if the ColumnValue is not a Bool.
-    pub fn into_bool(self) -> Option<bool> {
-        match self {
-            ColumnValue::Bool(value) => value,
-            _ => None,
-        }
-    }
-
-    /// Converts the ColumnValue into a f64, if it is a F64.
-    /// Returns None if the ColumnValue is not a F64.
-    pub fn into_f64(self) -> Option<f64> {
-        match self {
-            ColumnValue::F64(value) => value,
-            _ => None,
-        }
-    }
-
-    /// Converts the ColumnValue into a i64, if it is a I64.
-    /// Returns None if the ColumnValue is not a I64.
-    pub fn into_i64(self) -> Option<i64> {
-        match self {
-            ColumnValue::I64(value) => value,
-            _ => None,
-        }
-    }
-
-    /// Converts the ColumnValue into a i32, if it is a I32.
-    /// Returns None if the ColumnValue is not a I32.
-    pub fn into_i32(self) -> Option<i32> {
-        match self {
-            ColumnValue::I32(value) => value,
-            _ => None,
-        }
-    }
-}
 
 pub fn send_message_to_window(event: &str, data: Option<Value>) {
     let window = WINDOW.lock().unwrap();
@@ -160,44 +40,12 @@ pub async fn get_app_info() -> Result<serde_json::Value, AppError> {
         .clone()
         .expect("Could not get package info");
     let version = packageinfo.version.to_string();
-    let url = "https://raw.githubusercontent.com/Kenya-DK/quantframe-react/main/src-tauri/tauri.conf.json";
-    let client = reqwest::Client::new();
-    let request = client.request(reqwest::Method::GET, reqwest::Url::parse(&url).unwrap());
-    let response = request.send().await;
-    if let Err(e) = response {
-        return Err(AppError::new("CHECKFORUPDATES", eyre!(e.to_string())));
-    }
-    let response_data = response.unwrap();
-    let status = response_data.status();
-
-    if status != 200 {
-        return Err(AppError::new(
-            "CHECKFORUPDATES",
-            eyre!("Could not get package.json. Status: {}", status.to_string()),
-        ));
-    }
-    let response = response_data.json::<Value>().await.unwrap();
-
-    let current_version_str = response["package"]["version"].as_str().unwrap();
-    let current_version = current_version_str.replace(".", "");
-    let current_version = current_version.parse::<i32>().unwrap();
-
-    let version_str = version;
-    let version = version_str.replace(".", "").parse::<i32>().unwrap();
-
-    let update_state = json!({
-        "update_available": current_version > version,
-        "version": current_version_str,
-        "current_version": version_str,
-        "release_notes": "New version available",
-        "download_url": "https://github.com/Kenya-DK/quantframe-react/releases",
-    });
 
     let rep = json!({
         "app_name": packageinfo.name,
         "app_description": packageinfo.description,
         "app_author": packageinfo.authors,
-        "app_version": update_state,
+        "app_version": version,
     });
 
     Ok(rep)
@@ -219,7 +67,7 @@ pub fn emit_update(update_type: &str, operation: &str, data: Option<Value>) {
     );
 }
 
-pub fn emit_undate_initializ_status(status: &str, data: Option<Value>) {
+pub fn emit_update_initialization_status(status: &str, data: Option<Value>) {
     send_message_to_window(
         "set_initializstatus",
         Some(json!({
@@ -276,19 +124,22 @@ pub struct ZipEntry {
     pub include_dir: bool,
 }
 
-pub fn get_zip_entrys(path: PathBuf, in_subfolders: bool) -> Result<Vec<ZipEntry>, AppError> {
+pub fn read_zip_entries(
+    path: PathBuf,
+    include_subfolders: bool,
+) -> Result<Vec<ZipEntry>, AppError> {
     let mut files: Vec<ZipEntry> = Vec::new();
     for path in fs::read_dir(path).unwrap() {
         let path = path.unwrap().path();
         if path.is_dir() {
             let dir_name = path.file_name().unwrap().to_str().unwrap();
-            let subfiles = get_zip_entrys(path.to_owned(), in_subfolders)?;
-            for mut subfile in subfiles {
-                let sub_path = subfile.sub_path.clone().unwrap_or("".to_string());
+            let file_entries = read_zip_entries(path.to_owned(), include_subfolders)?;
+            for mut archive_entry in file_entries {
+                let sub_path = archive_entry.sub_path.clone().unwrap_or("".to_string());
                 // Remove the first slash if it exists
                 let full_path = format!("{}/{}", dir_name, sub_path);
-                subfile.sub_path = Some(full_path);
-                files.push(subfile);
+                archive_entry.sub_path = Some(full_path);
+                files.push(archive_entry);
             }
         }
         if path.is_file() {
@@ -314,16 +165,16 @@ pub fn create_zip_file(mut files: Vec<ZipEntry>, zip_path: &str) -> Result<(), A
 
     for file_entry in &files {
         if file_entry.include_dir {
-            let subfiles = get_zip_entrys(file_entry.file_path.clone(), true)?;
-            for mut subfile in subfiles {
-                if subfile.sub_path.is_some() {
-                    subfile.sub_path = Some(format!(
+            let file_entries = read_zip_entries(file_entry.file_path.clone(), true)?;
+            for mut file_entry in file_entries {
+                if file_entry.sub_path.is_some() {
+                    file_entry.sub_path = Some(format!(
                         "{}/{}",
                         file_entry.sub_path.clone().unwrap_or("".to_string()),
-                        subfile.sub_path.clone().unwrap_or("".to_string())
+                        file_entry.sub_path.clone().unwrap_or("".to_string())
                     ));
                 }
-                files_to_compress.push(subfile);
+                files_to_compress.push(file_entry);
             }
         }
     }
@@ -393,16 +244,18 @@ pub fn create_zip_file(mut files: Vec<ZipEntry>, zip_path: &str) -> Result<(), A
 
         let mut buffer = Vec::new();
         if file_entry.content.is_some() {
-            buffer.write_all(file_entry.content.clone().unwrap().as_bytes()).map_err(|e| {
-                AppError::new(
-                    "Zip:Write",
-                    eyre!(format!(
-                        "Path: {:?}, Error: {}",
-                        file_entry.file_path,
-                        e.to_string()
-                    )),
-                )
-            })?;
+            buffer
+                .write_all(file_entry.content.clone().unwrap().as_bytes())
+                .map_err(|e| {
+                    AppError::new(
+                        "Zip:Write",
+                        eyre!(format!(
+                            "Path: {:?}, Error: {}",
+                            file_entry.file_path,
+                            e.to_string()
+                        )),
+                    )
+                })?;
         } else {
             io::copy(&mut file.take(u64::MAX), &mut buffer).map_err(|e| {
                 AppError::new(
@@ -413,7 +266,7 @@ pub fn create_zip_file(mut files: Vec<ZipEntry>, zip_path: &str) -> Result<(), A
                         e.to_string()
                     )),
                 )
-            })?;            
+            })?;
         }
 
         zip.write_all(&buffer).map_err(|e| {
@@ -432,226 +285,6 @@ pub fn create_zip_file(mut files: Vec<ZipEntry>, zip_path: &str) -> Result<(), A
     Ok(())
 }
 
-pub fn sort_dataframe(
-    df: DataFrame,
-    filter: Option<Expr>,
-    column: &str,
-    ascending: bool,
-) -> Result<DataFrame, AppError> {
-    let df = match filter {
-        Some(filter) => df
-            .lazy()
-            .filter(filter)
-            .collect()
-            .map_err(|e| AppError::new("Helper", eyre!(e.to_string())))?,
-        None => df,
-    };
-
-    let df = df
-        .clone()
-        .lazy()
-        .sort(
-            column,
-            SortOptions {
-                descending: ascending,
-                nulls_last: false,
-                multithreaded: false,
-            },
-        )
-        .collect()
-        .map_err(|e| AppError::new("Helper", eyre!(e.to_string())))?;
-    Ok(df)
-}
-
-pub fn filter_and_extract(
-    df: DataFrame,
-    filter: Option<Expr>,
-    select_cols: Vec<&str>,
-) -> Result<DataFrame, AppError> {
-    let selected_columns: Vec<_> = select_cols.into_iter().map(col).collect();
-
-    let df = match filter {
-        Some(filter) => df
-            .lazy()
-            .filter(filter)
-            .collect()
-            .map_err(|e| AppError::new("Helper", eyre!(e.to_string())))?,
-        None => df,
-    };
-
-    let df_select = df.lazy().select(&selected_columns).collect();
-    match df_select {
-        Ok(df_select) => Ok(df_select),
-        Err(e) => Err(AppError::new("Helper", eyre!(e.to_string()))),
-    }
-}
-
-pub fn get_column_values(
-    df: DataFrame,
-    filter: Option<Expr>,
-    column: &str,
-    col_type: ColumnType,
-) -> Result<ColumnValues, AppError> {
-    let error = format!(
-        "Column: {:?} ColumnType: {:?} Error: [] [J]{}[J]",
-        column,
-        col_type,
-        serde_json::to_value(&df).unwrap().to_string()
-    );
-
-    let df: DataFrame = match filter {
-        Some(filter) => df.lazy().filter(filter).collect().map_err(|e| {
-            AppError::new("Helper", eyre!(error.replace("[]", e.to_string().as_str())))
-        })?,
-        None => df,
-    };
-
-    let column_series = df
-        .column(column)
-        .map_err(|e| AppError::new("Helper", eyre!(error.replace("[]", e.to_string().as_str()))))?;
-
-    match col_type {
-        ColumnType::Bool => {
-            let values: Vec<bool> = column_series
-                .bool()
-                .map_err(|e| {
-                    AppError::new("Helper", eyre!(error.replace("[]", e.to_string().as_str())))
-                })?
-                .into_iter()
-                .filter_map(|opt_val| opt_val)
-                .collect();
-            Ok(ColumnValues::Bool(values))
-        }
-
-        ColumnType::F64 => {
-            let values: Vec<f64> = column_series
-                .f64()
-                .map_err(|e| {
-                    AppError::new("Helper", eyre!(error.replace("[]", e.to_string().as_str())))
-                })?
-                .into_iter()
-                .filter_map(|opt_val| opt_val)
-                .collect();
-            Ok(ColumnValues::F64(values))
-        }
-
-        ColumnType::I64 => {
-            let values: Vec<i64> = column_series
-                .i64()
-                .map_err(|e| {
-                    AppError::new("Helper", eyre!(error.replace("[]", e.to_string().as_str())))
-                })?
-                .into_iter()
-                .filter_map(|opt_val| opt_val)
-                .collect();
-            Ok(ColumnValues::I64(values))
-        }
-        ColumnType::I32 => {
-            let values: Vec<i32> = column_series
-                .i32()
-                .map_err(|e| {
-                    AppError::new("Helper", eyre!(error.replace("[]", e.to_string().as_str())))
-                })?
-                .into_iter()
-                .filter_map(|opt_val| opt_val)
-                .collect();
-            Ok(ColumnValues::I32(values))
-        }
-        ColumnType::String => {
-            let values = column_series
-                .utf8()
-                .map_err(|e| {
-                    AppError::new("Helper", eyre!(error.replace("[]", e.to_string().as_str())))
-                })?
-                .into_iter()
-                .filter_map(|opt_name| opt_name.map(String::from))
-                .collect::<Vec<_>>()
-                .into_iter()
-                .collect::<Vec<_>>();
-            Ok(ColumnValues::String(values))
-        }
-    }
-}
-pub fn get_column_value(
-    df: DataFrame,
-    filter: Option<Expr>,
-    column: &str,
-    col_type: ColumnType,
-) -> Result<ColumnValue, AppError> {
-    match get_column_values(df, filter, column, col_type)? {
-        ColumnValues::Bool(bool_values) => {
-            let value = bool_values.get(0).cloned();
-            Ok(ColumnValue::Bool(value))
-        }
-        ColumnValues::F64(f64_values) => {
-            let value = f64_values.get(0).cloned();
-            Ok(ColumnValue::F64(value))
-        }
-        ColumnValues::I64(i64_values) => {
-            let value = i64_values.get(0).cloned();
-            Ok(ColumnValue::I64(value))
-        }
-        ColumnValues::I32(i32_values) => {
-            let value = i32_values.get(0).cloned();
-            Ok(ColumnValue::I32(value))
-        }
-        ColumnValues::String(string_values) => {
-            let value = string_values.get(0).cloned();
-            Ok(ColumnValue::String(value))
-        }
-    }
-}
-
-pub fn merge_dataframes(frames: Vec<DataFrame>) -> Result<DataFrame, AppError> {
-    // Check if there are any frames to merge
-    if frames.is_empty() {
-        return Err(AppError::new("Helper", eyre!("No frames to merge")));
-    }
-
-    // Get the column names from the first frame
-    let column_names: Vec<&str> = frames[0].get_column_names();
-
-    // For each column name, stack the series from all frames vertically
-    let mut combined_series: Vec<Series> = Vec::new();
-
-    for &col_name in &column_names {
-        let first_series = frames[0]
-            .column(col_name)
-            .map_err(|e| AppError::new("Helper", eyre!(e.to_string())))?
-            .clone();
-        let mut stacked_series = first_series;
-
-        for frame in frames.iter().skip(1) {
-            let series = frame
-                .column(col_name)
-                .map_err(|e| AppError::new("Helper", eyre!(e.to_string())))?
-                .clone();
-            stacked_series = stacked_series
-                .append(&series)
-                .map_err(|e| AppError::new("Helper", eyre!(e.to_string())))?
-                .clone();
-        }
-
-        combined_series.push(stacked_series);
-    }
-    // Construct a DataFrame from the merged data
-    Ok(DataFrame::new(combined_series)
-        .map_err(|e| AppError::new("Helper", eyre!(e.to_string())))?)
-}
-/// Returns a vector of strings representing the dates of the last `x` days, including today.
-/// The dates are formatted as "YYYY-MM-DD".
-pub fn last_x_days(x: i64) -> Vec<String> {
-    let today = chrono::Local::now().naive_utc();
-    (0..x)
-        .rev()
-        .map(|i| {
-            (today - Duration::days(i + 1))
-                .format("%Y-%m-%d")
-                .to_string()
-        })
-        .rev()
-        .collect()
-}
 pub fn send_message_to_discord(
     webhook: String,
     title: String,
@@ -796,7 +429,7 @@ pub fn calculate_trade_tax(item_tags: Vec<String>, rank: Option<i64>) -> i64 {
 pub fn get_warframe_language() -> WarframeLanguage {
     let path = get_app_local_path().join("Warframe").join("Launcher.log");
 
-    let log_file = "get_warframe_language.log";
+    let _log_file = "get_warframe_language.log";
 
     if !path.exists() {
         return WarframeLanguage::English;
@@ -887,17 +520,17 @@ pub fn validate_json(json: &Value, required: &Value, path: &str) -> (Value, Vec<
     (modified_json, missing_properties)
 }
 
-pub fn loop_through_properties(data: &mut Map<String, Value>, propertys: Vec<String>) {
+pub fn loop_through_properties(data: &mut Map<String, Value>, properties: Vec<String>) {
     // Iterate over each key-value pair in the JSON object
     for (key, value) in data.iter_mut() {
         // Perform actions based on the property key or type
         match value {
             Value::Object(sub_object) => {
                 // If the value is another object, recursively loop through its properties
-                loop_through_properties(sub_object, propertys.clone());
+                loop_through_properties(sub_object, properties.clone());
             }
             _ => {
-                if propertys.contains(&key.to_string()) {
+                if properties.contains(&key.to_string()) {
                     *value = json!("***");
                 }
             }
@@ -905,20 +538,35 @@ pub fn loop_through_properties(data: &mut Map<String, Value>, propertys: Vec<Str
     }
 }
 
-pub fn open_json_and_replace(path: &str, propertys: Vec<String>) -> Result<Value, AppError> {
-    match std::fs::File::open(path.clone()) {
+pub fn read_json_file(path: &str) -> Result<Value, AppError> {
+    match std::fs::File::open(path) {
+        Ok(file) => {
+            let reader = std::io::BufReader::new(file);
+            let data: serde_json::Value = serde_json::from_reader(reader)
+                .map_err(|e| AppError::new("Helper", eyre!(format!("Error: {}", e.to_string()))))
+                .expect("Could not read auth.json");
+            Ok(json!(data))
+        }
+        Err(_) => Err(AppError::new(
+            "Logger",
+            eyre!("Could not open file at path: {}", path),
+        )),
+    }
+}
+
+pub fn open_json_and_replace(path: &str, properties: Vec<String>) -> Result<Value, AppError> {
+    match std::fs::File::open(path) {
         Ok(file) => {
             let reader = std::io::BufReader::new(file);
             let mut data: serde_json::Map<String, Value> = serde_json::from_reader(reader)
-                .map_err(|e| AppError::new("Logger", eyre!(e.to_string()))).expect("Could not read auth.json");
-            loop_through_properties(&mut data, propertys.clone());
+                .map_err(|e| AppError::new("Logger", eyre!(e.to_string())))
+                .expect("Could not read auth.json");
+            loop_through_properties(&mut data, properties.clone());
             Ok(json!(data))
         }
-        Err(_) => {
-            Err(AppError::new(
-                "Logger",
-                eyre!("Could not open file at path: {}", path),
-            ))
-        }
+        Err(_) => Err(AppError::new(
+            "Logger",
+            eyre!("Could not open file at path: {}", path),
+        )),
     }
 }

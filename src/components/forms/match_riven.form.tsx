@@ -40,8 +40,6 @@ export const MatchRivenForm = ({ onSubmit, canToggle, height, weapon, match }: F
 
     filteredObject.attributes = [null, null, null, null];
 
-    console.log("filteredObject", filteredObject);
-
     const positive = match.attributes?.filter((item) => item != null && !item.is_negative);
     if (positive)
       for (let i = 0; i < positive.length; i++)

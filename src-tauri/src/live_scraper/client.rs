@@ -2,12 +2,11 @@ use std::{
     collections::HashMap,
     sync::{
         atomic::{AtomicBool, Ordering},
-        Arc, Mutex, RwLock
+        Arc, Mutex, RwLock,
     },
     time::Duration,
 };
 
-use polars::frame::DataFrame;
 use serde_json::json;
 
 use crate::{
@@ -19,7 +18,6 @@ use crate::{
     handler::MonitorHandler,
     helper,
     logger::{self},
-    price_scraper::PriceScraper,
     settings::SettingsState,
     wfm_client::client::WFMClient,
 };
@@ -29,13 +27,11 @@ use super::modules::{item::ItemModule, riven::RivenModule};
 #[derive(Clone)]
 pub struct LiveScraperClient {
     pub log_file: String,
-    component: String,
-    riven_module:Arc<RwLock<Option<RivenModule>>>,
-    item_module:Arc<RwLock<Option<ItemModule>>>,
-    pub cache_querieds: Arc<Mutex<HashMap<String, DataFrame>>>,
+    pub component: String,
+    riven_module: Arc<RwLock<Option<RivenModule>>>,
+    item_module: Arc<RwLock<Option<ItemModule>>>,
     pub is_running: Arc<AtomicBool>,
     pub settings: Arc<Mutex<SettingsState>>,
-    pub price_scraper: Arc<Mutex<PriceScraper>>,
     pub wfm: Arc<Mutex<WFMClient>>,
     pub auth: Arc<Mutex<AuthState>>,
     pub db: Arc<Mutex<DBClient>>,
@@ -46,7 +42,6 @@ pub struct LiveScraperClient {
 impl LiveScraperClient {
     pub fn new(
         settings: Arc<Mutex<SettingsState>>,
-        price_scraper: Arc<Mutex<PriceScraper>>,
         wfm: Arc<Mutex<WFMClient>>,
         auth: Arc<Mutex<AuthState>>,
         db: Arc<Mutex<DBClient>>,
@@ -56,8 +51,6 @@ impl LiveScraperClient {
         LiveScraperClient {
             log_file: "live_scraper.log".to_string(),
             component: "LiveScraper".to_string(),
-            cache_querieds: Arc::new(Mutex::new(HashMap::new())),
-            price_scraper,
             settings,
             is_running: Arc::new(AtomicBool::new(false)),
             wfm,
@@ -65,8 +58,8 @@ impl LiveScraperClient {
             db,
             cache,
             mh,
-            riven_module:Arc::new(RwLock::new(None)),
-            item_module:Arc::new(RwLock::new(None)),
+            riven_module: Arc::new(RwLock::new(None)),
+            item_module: Arc::new(RwLock::new(None)),
         }
     }
     fn report_error(&self, error: AppError) {
@@ -136,16 +129,29 @@ impl LiveScraperClient {
             logger::info_con(&scraper.component, "Loop live scraper is started");
 
             let mut settings = scraper.settings.lock().unwrap().clone();
-            scraper.send_message("riven.reset", None);
-            db.stock_riven().reset_listed_price().await.unwrap();
-            scraper.send_message("item.reset", None);
-            if settings.live_scraper.stock_item.auto_delete {
+
+            // Check if StockMode is set to Riven or All
+            if settings.live_scraper.stock_mode == StockMode::Riven
+                || settings.live_scraper.stock_mode == StockMode::All
+            {
+                // Reset riven stocks on start
+                scraper.send_message("riven.reset", None);
+                db.stock_riven().reset_listed_price().await.unwrap();
+            }
+
+            if settings.live_scraper.stock_mode == StockMode::Item
+                || settings.live_scraper.stock_mode == StockMode::All
+            {
+                // Reset riven stocks on start
+                scraper.send_message("item.reset", None);
                 db.stock_item().reset_listed_price().await.unwrap();
-                scraper
-                    .item()
-                    .delete_all_orders(OrderMode::Both)
-                    .await
-                    .unwrap();
+                if settings.live_scraper.stock_item.auto_delete {
+                    scraper
+                        .item()
+                        .delete_all_orders(OrderMode::Both)
+                        .await
+                        .unwrap();
+                }
             }
 
             let riven_interval = 5;
@@ -196,12 +202,6 @@ impl LiveScraperClient {
         // Update the stored ItemModule
         *self.item_module.write().unwrap() = Some(module);
     }
-    // pub fn item(&self) -> ItemModule {
-    //     ItemModule {
-    //         client: self,
-    //         debug_id: "live_scraper_item".to_string(),
-    //     }
-    // }
     pub fn riven(&self) -> RivenModule {
         // Lazily initialize ItemModule if not already initialized
         if self.riven_module.read().unwrap().is_none() {
@@ -224,19 +224,5 @@ impl LiveScraperClient {
                 "values": data
             })),
         );
-    }
-    pub fn add_cache_queried(&self, key: String, df: DataFrame) {
-        self.cache_querieds.lock().unwrap().insert(key, df);
-    }
-
-    pub fn get_cache_queried(&self, key: &str) -> Option<DataFrame> {
-        self.cache_querieds.lock().unwrap().get(key).cloned()
-    }
-
-    pub fn remove_cache_queried(&self, key: &str) {
-        self.cache_querieds
-            .lock()
-            .unwrap()
-            .retain(|k, _| !k.starts_with(key));
     }
 }

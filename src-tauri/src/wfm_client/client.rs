@@ -1,21 +1,18 @@
 use std::{
-    borrow::BorrowMut, collections::HashMap, sync::{Arc, Mutex, RwLock}, time::Duration
+    collections::HashMap,
+    sync::{Arc, Mutex, RwLock},
+    time::Duration,
 };
 
 use eyre::eyre;
-use polars::{
-    prelude::{DataFrame, NamedFrom},
-    series::Series,
-};
-use reqwest::{header::HeaderMap, Client, Method, StatusCode, Url};
+use reqwest::{Client, Method, Url};
 use serde::de::DeserializeOwned;
-use serde_json::{json, Value};
+use serde_json::Value;
 
 use crate::{
     auth::AuthState,
     enums::LogLevel,
     error::{ApiResult, AppError, ErrorApiResponse},
-    helper,
     logger::{self},
     rate_limiter::RateLimiter,
 };
@@ -49,7 +46,7 @@ impl WFMClient {
             endpoint: "https://api.warframe.market/v1/".to_string(),
             component: "WarframeMarket".to_string(),
             limiter: Arc::new(tokio::sync::Mutex::new(RateLimiter::new(
-                1.0,
+                2.0,
                 Duration::new(1, 0),
             ))),
             log_file: "wfmAPICalls.log".to_string(),
@@ -154,7 +151,7 @@ impl WFMClient {
         if let Err(e) = response {
             error_def.messages.push(e.to_string());
             return Err(AppError::new_api(
-                "WarframeMarket",
+                self.component.as_str(),
                 error_def,
                 eyre!(format!("There was an error sending the request: {}", e)),
                 LogLevel::Critical,
@@ -293,10 +290,6 @@ impl WFMClient {
         // Unwrapping is safe here because we ensured the item_module is initialized
         self.auth_module.read().unwrap().as_ref().unwrap().clone()
     }
-    pub fn update_auth_module(&self, module: AuthModule) {
-        // Update the stored ItemModule
-        *self.auth_module.write().unwrap() = Some(module);
-    }
 
     pub fn orders(&self) -> OrderModule {
         // Lazily initialize ItemModule if not already initialized
@@ -312,7 +305,6 @@ impl WFMClient {
         *self.order_module.write().unwrap() = Some(module);
     }
 
-
     pub fn items(&self) -> ItemModule {
         // Lazily initialize ItemModule if not already initialized
         if self.item_module.read().unwrap().is_none() {
@@ -322,11 +314,7 @@ impl WFMClient {
         // Unwrapping is safe here because we ensured the item_module is initialized
         self.item_module.read().unwrap().as_ref().unwrap().clone()
     }
-    pub fn update_item_module(&self, module: ItemModule) {
-        // Update the stored ItemModule
-        *self.item_module.write().unwrap() = Some(module);
-    }
-    
+
     pub fn auction(&self) -> AuctionModule {
         // Lazily initialize AuctionModule if not already initialized
         if self.auction_module.read().unwrap().is_none() {
@@ -334,7 +322,12 @@ impl WFMClient {
         }
 
         // Unwrapping is safe here because we ensured the item_module is initialized
-        self.auction_module.read().unwrap().as_ref().unwrap().clone()
+        self.auction_module
+            .read()
+            .unwrap()
+            .as_ref()
+            .unwrap()
+            .clone()
     }
     pub fn update_auction_module(&self, module: AuctionModule) {
         // Update the stored AuctionModule
@@ -349,9 +342,5 @@ impl WFMClient {
 
         // Unwrapping is safe here because we ensured the chat_module is initialized
         self.chat_module.read().unwrap().as_ref().unwrap().clone()
-    }
-    pub fn update_chat_module(&self, module: ChatModule) {
-        // Update the stored ChatModule
-        *self.chat_module.write().unwrap() = Some(module);
     }
 }

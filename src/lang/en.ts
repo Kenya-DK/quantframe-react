@@ -1,3 +1,4 @@
+
 export const en = {
   progress: {
     delete_all_orders: {
@@ -137,9 +138,6 @@ export const en = {
     },
     transactioncontrol: {
       title: "Transaction Control",
-      price_scraper_start: "Start Price Scraper",
-      price_scraper_last_run: "Price Scraper Was Last Run: <blue>{{date}}</blue>",
-      price_scraper_running: "Running",
       live_trading_start: "Start Live Trading",
       live_trading_stop: "Stop Live Trading",
     },
@@ -213,6 +211,8 @@ export const en = {
             auto_trade_description: "Will try to add the items you buy/sell to the stock",
             auto_delete: "Auto Delete",
             auto_delete_description: "Will delete all when you start the live trading",
+            min_sma: "Simple Moving Average of Price",
+            min_sma_description: "Minimum price of the item to be sold for.",
             filter: {
               tax: "Tax Range",
               mr: "MR Range",
@@ -598,13 +598,28 @@ export const en = {
           total_listed_price: "Total Listed Price: <blue>{{price}}</blue>",
           total_purchase_price: "Total Purchase Price: <blue>{{price}}</blue>",
           total_profit: "Total Profit: <blue>{{price}}</blue>",
-          info_boxs: {
-            pending_description: "Pending",
-            live_description: "Live on market",
-            to_low_profit_description: "Profit was too low to sell",
-            no_offers_description: "No offers on market",
-            inactive_description: "Is Private",
-            no_buyers_description: "No buyers on market",
+          info_box: {
+            pending: {
+              title: "Pending",
+            },
+            live: {
+              title: "Live on market",
+            },
+            to_low_profit: {
+              title: "Profit was too low to sell",
+            },
+            no_buyers: {
+              title: "No buyers",
+            },
+            inactive: {
+              title: "Inactive",
+            },
+            sma_limit: {
+              title: "SMA Limit",
+            },
+            order_limit: {
+              title: "Order Limit",
+            }
           },
           buttons: {
             resell: {

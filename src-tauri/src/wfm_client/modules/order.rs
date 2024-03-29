@@ -1,14 +1,9 @@
-use polars::{
-    prelude::{DataFrame, NamedFrom},
-    series::Series,
-};
 use serde_json::json;
-
 use crate::{
     enums::OrderType,
     error::{ApiResult, AppError},
     helper, logger,
-    structs::{Order, Ordres},
+    structs::{Order, Orders},
     wfm_client::client::WFMClient,
 };
 
@@ -60,11 +55,12 @@ impl OrderModule {
         Ok(())
     }
 
-    pub async fn get_user_orders(&mut self, ingame_name: &str) -> Result<Ordres, AppError> {
+    pub async fn get_user_orders(&mut self, ingame_name: &str) -> Result<Orders, AppError> {
         let url = format!("profile/{}/orders", ingame_name);
-        match self.client.get::<Ordres>(&url, None).await {
+        match self.client.get::<Orders>(&url, None).await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 let total_orders = payload.buy_orders.len() + payload.sell_orders.len();
+
                 self.client.debug(
                     &self.debug_id,
                     &self.get_component("GetUserOrders"),
@@ -88,7 +84,7 @@ impl OrderModule {
         }
     }
 
-    pub async fn get_my_orders(&mut self) -> Result<Ordres, AppError> {
+    pub async fn get_my_orders(&mut self) -> Result<Orders, AppError> {
         let auth = self.client.auth.lock()?.clone();
         let orders = self.get_user_orders(auth.ingame_name.as_str()).await?;
         Ok(orders)
@@ -102,33 +98,16 @@ impl OrderModule {
         quantity: i64,
         visible: bool,
         rank: Option<f64>,
-    ) -> Result<Option<Order>, AppError> {
+    ) -> Result<(String, Option<Order>), AppError> {
         let auth = self.client.auth.lock()?.clone();
         let limit = auth.order_limit;
-
-        self.client.debug(
-            &self.debug_id,
-            &self.get_component("Create"),
-            format!(
-                "Creating order Type: {} Item: {}, Platinum: {}, Quantity: {}, Rank: {}, Total Orders: {}, Limit: {}",
-                order_type,
-                item_id,
-                platinum,
-                quantity,
-                rank.unwrap_or(0.0),
-                self.total_orders,
-                limit.clone()
-            )
-            .as_str(),
-            None,
-        );
 
         if self.total_orders >= limit {
             logger::warning_con(
                 &self.get_component("Create"),
                 "You have reached the maximum number of orders",
             );
-            return Ok(None);
+            return Ok(("order_limit_reached".to_string(), None));
         }
 
         // Construct any JSON body
@@ -155,19 +134,20 @@ impl OrderModule {
                     &self.debug_id,
                     &self.get_component("Create"),
                     format!(
-                        "Order created type: {} item: {}, platinum: {}, quantity: {}, rank: {}, total orders: {}",
+                        "Creating order Type: {} Item: {}, Platinum: {}, Quantity: {}, Rank: {}, Total Orders: {}, Limit: {}",
                         order_type,
                         item_id,
                         platinum,
                         quantity,
                         rank.unwrap_or(0.0),
-                        self.total_orders
+                        self.total_orders,
+                        limit.clone()
                     )
                     .as_str(),
                     None,
                 );
                 self.emit("CREATE_OR_UPDATE", serde_json::to_value(&payload).unwrap());
-                return Ok(payload);
+                return Ok(("order_created".to_string(), Some(payload)));
             }
             Ok(ApiResult::Error(error, _headers)) => {
                 let log_level = match error.messages.get(0) {
@@ -288,11 +268,11 @@ impl OrderModule {
 
     pub async fn close(&mut self, item: &str, order_type: OrderType) -> Result<String, AppError> {
         // Get the user orders and find the order
-        let mut ordres_vec = self.get_my_orders().await?;
-        let mut ordres: Vec<Order> = ordres_vec.buy_orders;
-        ordres.append(&mut ordres_vec.sell_orders);
+        let mut orders_vec = self.get_my_orders().await?;
+        let mut orders: Vec<Order> = orders_vec.buy_orders;
+        orders.append(&mut orders_vec.sell_orders);
         // Find Order by name.
-        let order = ordres
+        let order = orders
             .iter()
             .find(|order| {
                 order.item.as_ref().unwrap().url_name == item && order.order_type == order_type
@@ -352,22 +332,9 @@ impl OrderModule {
         self.emit("CREATE_OR_UPDATE", serde_json::to_value(&order).unwrap());
         return Ok("Order Successfully Closed and Updated".to_string());
     }
-
-    pub async fn get_orders_as_dataframe(&mut self) -> Result<(DataFrame, DataFrame), AppError> {
-        let current_orders = self.get_my_orders().await?;
-        let buy_orders = current_orders.buy_orders.clone();
-
-        let sell_orders = current_orders.sell_orders.clone();
-
-        Ok((
-            self.convert_orders_to_dataframe(buy_orders).await?,
-            self.convert_orders_to_dataframe(sell_orders).await?,
-        ))
-    }
     // End Actions User Order
 
-    // Methods
-    pub async fn get_ordres_by_item(&self, item: &str) -> Result<DataFrame, AppError> {
+    pub async fn get_orders_by_item(&self, item: &str) -> Result<Orders, AppError> {
         let url = format!("items/{}/orders", item);
 
         let orders = match self.client.get::<Vec<Order>>(&url, Some("orders")).await {
@@ -393,9 +360,6 @@ impl OrderModule {
             }
         };
 
-        if orders.len() == 0 {
-            return Ok(DataFrame::new_no_checks(vec![]));
-        }
         let mod_rank = orders
             .iter()
             .max_by(|a, b| a.mod_rank.cmp(&b.mod_rank))
@@ -412,102 +376,27 @@ impl OrderModule {
                 }
             })
             .collect();
-        Ok(self.convert_orders_to_dataframe(orders).await?)
-    }
-    // End Methods
 
-    // Helper
+        let mut buy_orders: Vec<Order> = orders
+            .iter()
+            .filter(|order| order.order_type == OrderType::Buy)
+            .cloned()
+            .collect();
+        buy_orders.sort_by(|a, b| b.platinum.cmp(&a.platinum));
 
-    pub async fn convert_orders_to_dataframe(
-        &self,
-        orders: Vec<Order>,
-    ) -> Result<DataFrame, AppError> {
-        let orders_df = DataFrame::new_no_checks(vec![
-            Series::new(
-                "id",
-                orders
-                    .iter()
-                    .map(|order| order.id.clone())
-                    .collect::<Vec<_>>(),
-            ),
-            Series::new(
-                "username",
-                orders
-                    .iter()
-                    .map(|order| {
-                        if let Some(user) = &order.user {
-                            user.ingame_name.clone()
-                        } else {
-                            "None".to_string()
-                        }
-                    })
-                    .collect::<Vec<_>>(),
-            ),
-            Series::new(
-                "visible",
-                orders
-                    .iter()
-                    .map(|order| order.visible.clone())
-                    .collect::<Vec<_>>(),
-            ),
-            Series::new(
-                "url_name",
-                orders
-                    .iter()
-                    .map(|order| {
-                        order
-                            .clone()
-                            .item
-                            .map(|item| item.url_name)
-                            .unwrap_or("".to_string())
-                    })
-                    .collect::<Vec<_>>(),
-            ),
-            Series::new(
-                "platinum",
-                orders
-                    .iter()
-                    .map(|order| order.platinum.clone())
-                    .collect::<Vec<_>>(),
-            ),
-            Series::new(
-                "platform",
-                orders
-                    .iter()
-                    .map(|order| order.platform.clone())
-                    .collect::<Vec<_>>(),
-            ),
-            Series::new(
-                "order_type",
-                orders
-                    .iter()
-                    .map(|order| order.order_type.as_str())
-                    .collect::<Vec<_>>(),
-            ),
-            Series::new(
-                "quantity",
-                orders
-                    .iter()
-                    .map(|order| order.quantity.clone())
-                    .collect::<Vec<_>>(),
-            ),
-            Series::new(
-                "last_update",
-                orders
-                    .iter()
-                    .map(|order| order.last_update.clone())
-                    .collect::<Vec<_>>(),
-            ),
-            Series::new(
-                "creation_date",
-                orders
-                    .iter()
-                    .map(|order| order.creation_date.clone())
-                    .collect::<Vec<_>>(),
-            ),
-        ]);
-        Ok(orders_df)
+        let mut sell_orders: Vec<Order> = orders
+            .iter()
+            .filter(|order| order.order_type == OrderType::Sell)
+            .cloned()
+            .collect();
+        sell_orders.sort_by(|a, b| a.platinum.cmp(&b.platinum));
+
+        Ok(Orders {
+            buy_orders,
+            sell_orders,
+        })
     }
+
     pub fn emit(&self, operation: &str, data: serde_json::Value) {
         helper::emit_update("orders", operation, Some(data));
     }

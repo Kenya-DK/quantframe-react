@@ -78,11 +78,6 @@ const useStyles = createStyles(() => {
         boxShadow: `${boxShadow} ${getOrderStatusColorCode("")};`,
       },
     },
-    tolowprofile: {
-      ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.ToLowProfile)};`,
-      },
-    },
     pending: {
       ['td:first-of-type']: {
         boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.Pending)};`,
@@ -93,39 +88,57 @@ const useStyles = createStyles(() => {
         boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.Live)};`,
       },
     },
-    inactive: {
+    to_low_profit: {
       ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.Inactive)};`,
+        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.ToLowProfit)};`,
       },
     },
-    no_offers: {
+    no_sellers: {
       ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.NoOffers)};`,
+        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.NoSellers)};`,
       },
     },
     no_buyers: {
       ['td:first-of-type']: {
         boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.NoBuyers)};`,
       },
-    }
-
+    },
+    inactive: {
+      ['td:first-of-type']: {
+        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.InActive)};`,
+      },
+    },
+    sma_limit: {
+      ['td:first-of-type']: {
+        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.SMALimit)};`,
+      },
+    },
+    order_limit: {
+      ['td:first-of-type']: {
+        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.OrderLimit)};`,
+      },
+    },
   }
 });
 export const getOrderStatusColorCode = (status: string) => {
   const theme = useMantineTheme();
   switch (status) {
-    case Wfm.OrderStatus.Inactive:
-      return theme.colors.red[7];
-    case Wfm.OrderStatus.Live:
-      return theme.colors.green[7];
     case Wfm.OrderStatus.Pending:
       return theme.colors.violet[7];
-    case Wfm.OrderStatus.ToLowProfile:
-      return theme.colors.orange[7];
-    case Wfm.OrderStatus.NoOffers:
-      return theme.colors.pink[7];
-    case Wfm.OrderStatus.NoBuyers:
+    case Wfm.OrderStatus.Live:
+      return theme.colors.green[7];
+    case Wfm.OrderStatus.ToLowProfit:
       return theme.colors.yellow[7];
+    case Wfm.OrderStatus.NoSellers:
+      return theme.colors.grape[7];
+    case Wfm.OrderStatus.NoBuyers:
+      return theme.colors.teal[7];
+    case Wfm.OrderStatus.InActive:
+      return theme.colors.red[7];
+    case Wfm.OrderStatus.SMALimit:
+      return theme.colors.orange[9];
+    case Wfm.OrderStatus.OrderLimit:
+      return theme.colors.cyan[7];
     default:
       return theme.colors.gray[2];
   }
@@ -147,16 +160,22 @@ export const getTradeClassificationColorCode = (type: string) => {
 export const getOrderStatusColorClass = (status: string) => {
   const { classes } = useStyles();
   switch (status) {
-    case Wfm.OrderStatus.Inactive:
-      return classes.inactive;
-    case Wfm.OrderStatus.Live:
-      return classes.live;
     case Wfm.OrderStatus.Pending:
       return classes.pending;
-    case Wfm.OrderStatus.ToLowProfile:
-      return classes.tolowprofile;
-    case Wfm.OrderStatus.NoOffers:
-      return classes.no_offers;
+    case Wfm.OrderStatus.Live:
+      return classes.live;
+    case Wfm.OrderStatus.ToLowProfit:
+      return classes.to_low_profit;
+    case Wfm.OrderStatus.NoSellers:
+      return classes.no_sellers;
+    case Wfm.OrderStatus.NoBuyers:
+      return classes.no_buyers;
+    case Wfm.OrderStatus.InActive:
+      return classes.inactive;
+    case Wfm.OrderStatus.SMALimit:
+      return classes.sma_limit;
+    case Wfm.OrderStatus.OrderLimit:
+      return classes.order_limit;
     default:
       return classes.default;
   }

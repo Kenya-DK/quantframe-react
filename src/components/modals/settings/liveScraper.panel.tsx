@@ -43,6 +43,7 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
         stock_mode: "",
         stock_item: {
           volume_threshold: 200,
+          min_sma: 3,
           range_threshold: 200,
           avg_price_cap: 200,
           price_shift_threshold: 200,
@@ -167,6 +168,14 @@ export function LiveScraperPanel({ settings, updateSettings, tradable_items }: L
                     description={useTranslateSettingsModal('avg_price_cap_description')}
                     onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.avg_price_cap', Number(value))}
                     error={roleForm.errors.avg_price_cap && 'Invalid Avg Price Cap'}
+                  />
+                  <NumberInput
+                    required
+                    label={useTranslateSettingsModal('min_sma')}
+                    value={roleForm.values.live_trading.stock_item.min_sma}
+                    description={useTranslateSettingsModal('min_sma_description')}
+                    onChange={(value) => roleForm.setFieldValue('live_trading.stock_item.min_sma', Number(value))}
+                    error={roleForm.errors.min_sma && 'Invalid Min SMA'}
                   />
                 </Group>
 

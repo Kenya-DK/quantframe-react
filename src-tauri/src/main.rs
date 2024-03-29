@@ -8,13 +8,12 @@ use error::AppError;
 use handler::MonitorHandler;
 use live_scraper::client::LiveScraperClient;
 use once_cell::sync::Lazy;
-use price_scraper::PriceScraper;
 use settings::SettingsState;
-use std::path::{self, PathBuf};
+
+use std::panic;
 use std::sync::Arc;
 use std::{env, sync::Mutex};
-use std::{fs, panic};
-use tauri::api::notification::Notification;
+
 use tauri::async_runtime::block_on;
 use tauri::{App, Manager, PackageInfo, SystemTrayEvent};
 use wf_ee_log_parser::client::EELogParser;
@@ -32,7 +31,7 @@ mod error;
 mod helper;
 mod live_scraper;
 mod logger;
-mod price_scraper;
+mod qf_client;
 mod rate_limiter;
 mod settings;
 mod system_tray;
@@ -68,8 +67,18 @@ async fn setup_async(app: &mut App) -> Result<(), AppError> {
     )));
     app.manage(wfm_client.clone());
 
+    // create and manage Quantframe client state
+    let qf_client = Arc::new(Mutex::new(qf_client::client::QFClient::new(
+        Arc::clone(&auth_arc),
+        Arc::clone(&settings_arc),
+    )));
+    app.manage(qf_client.clone());
+
     // create and manage Cache state
-    let cache_arc = Arc::new(Mutex::new(CacheClient::new(Arc::clone(&wfm_client))));
+    let cache_arc = Arc::new(Mutex::new(CacheClient::new(
+        Arc::clone(&wfm_client),
+        Arc::clone(&qf_client),
+    )));
     app.manage(cache_arc.clone());
 
     // create and manage DatabaseClient state
@@ -80,17 +89,9 @@ async fn setup_async(app: &mut App) -> Result<(), AppError> {
     ));
     app.manage(database_client.clone());
 
-    // create and manage PriceScraper state
-    let price_scraper: Arc<Mutex<PriceScraper>> = Arc::new(Mutex::new(PriceScraper::new(
-        Arc::clone(&wfm_client),
-        Arc::clone(&auth_arc),
-    )));
-    app.manage(price_scraper.clone());
-
     // create and manage LiveScraper state
     let live_scraper = LiveScraperClient::new(
         Arc::clone(&settings_arc),
-        Arc::clone(&price_scraper),
         Arc::clone(&wfm_client),
         Arc::clone(&auth_arc),
         Arc::clone(&database_client),
@@ -107,13 +108,7 @@ async fn setup_async(app: &mut App) -> Result<(), AppError> {
     );
     app.manage(Arc::new(Mutex::new(ee_log)));
     // create and manage WhisperScraper state
-    let debug_client = DebugClient::new(
-        Arc::clone(&cache_arc),
-        Arc::clone(&wfm_client),
-        Arc::clone(&auth_arc),
-        Arc::clone(&database_client),
-        Arc::clone(&settings_arc),
-    );
+    let debug_client = DebugClient::new(Arc::clone(&cache_arc), Arc::clone(&database_client));
     app.manage(Arc::new(Mutex::new(debug_client)));
 
     Ok(())
@@ -181,8 +176,10 @@ fn main() {
             commands::transaction::delete_transaction_entry,
             commands::transaction::update_transaction_entry,
             commands::live_scraper::toggle_live_scraper,
-            commands::price_scraper::generate_price_history,
             commands::debug::import_warframe_algo_trader_data,
+            commands::debug::get_trades,
+            commands::debug::test_method,
+            commands::debug::simulate_trade,
             commands::debug::reset_data,
             commands::auctions::refresh_auctions,
             commands::orders::refresh_orders,
