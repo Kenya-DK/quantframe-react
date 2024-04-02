@@ -4,8 +4,9 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 
-use crate::enums::{OrderMode, StockMode};
-use crate::error::AppError;
+use crate::database::enums::stock_mode::StockMode;
+use crate::utils::modules::error::AppError;
+use crate::wfm_client::enums::order_mode::OrderMode;
 use crate::{helper, logger};
 use eyre::eyre;
 

@@ -3,7 +3,10 @@ use std::{collections::HashMap, sync::Arc};
 use eyre::eyre;
 use serde_json::{json, Value};
 
-use crate::{cache::client::CacheClient, error::AppError, helper, logger, structs::Item};
+use crate::{
+    cache::client::CacheClient, helper, logger, utils::modules::error::AppError,
+    wfm_client::types::item::Item,
+};
 
 #[derive(Clone, Debug)]
 pub struct ItemModule {
@@ -86,7 +89,7 @@ impl ItemModule {
                 new.tags = Some(tags.clone());
                 new.subtypes = Some(subtypes);
                 new.mod_max_rank = mod_max_rank;
-                new.trade_tax = Some(helper::calculate_trade_tax(tags, mod_max_rank));
+                new.trade_tax = Some(0);
                 new.mr_requirement = mr_requirement;
                 new.wiki_url = wiki_url;
                 // Only send for every 10th item

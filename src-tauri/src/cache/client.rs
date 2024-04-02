@@ -10,10 +10,12 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
 use crate::{
-    error::AppError,
-    helper, logger,
-    structs::{Item, RivenAttributeInfo, RivenTypeInfo},
-    wfm_client::client::WFMClient,
+    helper, logger, utils::modules::error::AppError, wfm_client::{
+        client::WFMClient,
+        types::{
+            item::Item, riven_attribute_info::RivenAttributeInfo, riven_type_info::RivenTypeInfo,
+        },
+    }
 };
 
 use super::modules::{
@@ -221,7 +223,7 @@ impl CacheClient {
             self.download_cache_data().await?;
             self.update_current_cache_id(remote_cache_id)?;
         }
-        
+
         self.arcane().load()?;
         self.warframe().load()?;
         self.arch_gun().load()?;
@@ -238,6 +240,7 @@ impl CacheClient {
         self.pet().load()?;
         self.fish().load()?;
         self.resource().load()?;
+        self.riven().load()?;
         self.parts().load()?;
         self.item_price().load().await?;
 
@@ -654,27 +657,27 @@ impl CacheClient {
     pub fn get_path(&self, path: &str) -> PathBuf {
         let path = self.cache_path.join(path);
         if !path.exists() {
-            std::fs::create_dir_all(&path);
+            std::fs::create_dir_all(&path).expect("Failed to create cache directory");
         }
         path
     }
 
     pub fn read_text_from_file(&self, path: &PathBuf) -> Result<String, AppError> {
         let mut file = File::open(self.cache_path.join(path))
-            .map_err(|e| AppError::new(&self.component, eyre!(e.to_string())))?;
+            .map_err(|e| AppError::new(&self.component, eyre!(format!("Failed to open file: {}, error: {}", path.to_str().unwrap(), e.to_string()))))?;
         let mut content = String::new();
         file.read_to_string(&mut content)
-            .map_err(|e| AppError::new(&self.component, eyre!(e.to_string())))?;
+            .map_err(|e| AppError::new(&self.component, eyre!(format!("Failed to read file: {}, error: {}", path.to_str().unwrap(), e.to_string()))) )?;
 
         Ok(content)
     }
 
     pub fn read_from_file() -> Result<(CacheDataStruct, bool), AppError> {
         let mut file = File::open(Self::get_file_path())
-            .map_err(|e| AppError::new("Cache", eyre!(e.to_string())))?;
+            .map_err(|e| AppError::new("Cache", eyre!(format!("Failed to open file: {}, error: {}", Self::get_file_path().to_str().unwrap(), e.to_string()))))?;
         let mut content = String::new();
         file.read_to_string(&mut content)
-            .map_err(|e| AppError::new("Cache", eyre!(e.to_string())))?;
+            .map_err(|e| AppError::new("Cache", eyre!(format!("Failed to read file: {}, error: {}", Self::get_file_path().to_str().unwrap(), e.to_string()))) )?;
 
         Ok(Self::validate_json(&content)?)
     }

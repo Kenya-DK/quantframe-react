@@ -3,14 +3,12 @@ use std::sync::{Arc, Mutex};
 use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
 
 use crate::{
-    cache::client::CacheClient,
-    error::AppError,
-    helper,
-    logger::{self},
-    wfm_client::client::WFMClient,
+    cache::client::CacheClient, helper, logger, utils::modules::error::AppError, wfm_client::client::WFMClient
 };
 
-use super::modules::{ transaction::TransactionModule, stock_item::StockItemModule, stock_riven::StockRivenModule};
+use super::modules::{
+    stock_item::StockItemModule, stock_riven::StockRivenModule, transaction::TransactionModule,
+};
 #[derive(Clone, Debug)]
 pub struct DBClient {
     pub log_file: String,

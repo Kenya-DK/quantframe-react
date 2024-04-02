@@ -4,11 +4,12 @@ use auth::AuthState;
 use cache::client::CacheClient;
 use database::client::DBClient;
 use debug::DebugClient;
-use error::AppError;
-use handler::MonitorHandler;
 use live_scraper::client::LiveScraperClient;
+use notification::client::NotifyClient;
 use once_cell::sync::Lazy;
 use settings::SettingsState;
+use utils::modules::error::AppError;
+use utils::modules::logger;
 
 use std::panic;
 use std::sync::Arc;
@@ -16,10 +17,7 @@ use std::{env, sync::Mutex};
 
 use tauri::async_runtime::block_on;
 use tauri::{App, Manager, PackageInfo, SystemTrayEvent};
-use wf_ee_log_parser::client::EELogParser;
-mod enums;
-mod handler;
-mod structs;
+mod utils;
 use tauri::SystemTray;
 
 mod auth;
@@ -27,15 +25,12 @@ mod cache;
 mod commands;
 mod database;
 mod debug;
-mod error;
 mod helper;
 mod live_scraper;
-mod logger;
+mod notification;
 mod qf_client;
-mod rate_limiter;
 mod settings;
 mod system_tray;
-mod wf_ee_log_parser;
 mod wfm_client;
 // mod utils;
 
@@ -44,13 +39,11 @@ use helper::WINDOW as HE_WINDOW;
 pub static PACKAGEINFO: Lazy<Mutex<Option<PackageInfo>>> = Lazy::new(|| Mutex::new(None));
 
 async fn setup_async(app: &mut App) -> Result<(), AppError> {
-    // Get the main window
-    let window = app.get_window("main").unwrap().clone();
-    // create and manage PriceScraper state
-    let monitor_handler_arc: Arc<Mutex<MonitorHandler>> = Arc::new(Mutex::new(
-        MonitorHandler::new(window.clone(), app.handle().clone()),
-    ));
-    app.manage(monitor_handler_arc.clone());
+
+    // Create and manage Notification state
+    let notify_arc: Arc<Mutex<NotifyClient>> =
+        Arc::new(Mutex::new(NotifyClient::new(app.handle().clone())));
+    app.manage(notify_arc.clone());
 
     // create and manage Settings state
     let settings_arc = Arc::new(Mutex::new(SettingsState::setup()?));
@@ -96,17 +89,10 @@ async fn setup_async(app: &mut App) -> Result<(), AppError> {
         Arc::clone(&auth_arc),
         Arc::clone(&database_client),
         Arc::clone(&cache_arc),
-        Arc::clone(&monitor_handler_arc),
+        Arc::clone(&notify_arc),
     );
     app.manage(Arc::new(Mutex::new(live_scraper)));
 
-    // create and manage WhisperScraper state
-    let ee_log = EELogParser::new(
-        Arc::clone(&settings_arc),
-        Arc::clone(&monitor_handler_arc),
-        Arc::clone(&cache_arc),
-    );
-    app.manage(Arc::new(Mutex::new(ee_log)));
     // create and manage WhisperScraper state
     let debug_client = DebugClient::new(Arc::clone(&cache_arc), Arc::clone(&database_client));
     app.manage(Arc::new(Mutex::new(debug_client)));
@@ -162,32 +148,34 @@ fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            // Base commands
             commands::base::init,
+            commands::base::log,
             commands::base::update_settings,
             commands::base::open_logs_folder,
             commands::base::export_logs,
             commands::base::show_notification,
             commands::base::on_new_wfm_message,
+            // Auth commands
             commands::auth::login,
             commands::auth::logout,
-            commands::base::log,
             commands::auth::update_user_status,
+            // Transaction commands
             commands::transaction::create_transaction_entry,
             commands::transaction::delete_transaction_entry,
             commands::transaction::update_transaction_entry,
+            // Live Scraper commands
             commands::live_scraper::toggle_live_scraper,
-            commands::debug::import_warframe_algo_trader_data,
-            commands::debug::get_trades,
-            commands::debug::test_method,
-            commands::debug::simulate_trade,
-            commands::debug::reset_data,
+            // Auctions commands
             commands::auctions::refresh_auctions,
+            // Orders commands
             commands::orders::refresh_orders,
             commands::orders::get_orders,
             commands::orders::delete_order,
             commands::orders::create_order,
             commands::orders::update_order,
             commands::orders::delete_all_orders,
+            // Chat commands
             commands::chat::get_chat,
             commands::chat::delete_chat,
             commands::chat::refresh_chats,

@@ -5,9 +5,9 @@ use eyre::eyre;
 use crate::{
     cache::{
         client::CacheClient,
-        structs::{CacheItemComponent, CacheWarframe},
+        types::{cache_item_component::CacheItemComponent, cache_warframe::CacheWarframe},
     },
-    error::AppError,
+    utils::modules::error::AppError,
 };
 use std::collections::HashMap;
 

@@ -10,10 +10,14 @@ use serde_json::{json, Value};
 
 use crate::{
     auth::AuthState,
-    enums::LogLevel,
-    error::{ApiResult, AppError, ErrorApiResponse},
     logger,
-    rate_limiter::RateLimiter,
+    utils::{
+        enums::log_level::LogLevel,
+        modules::{
+            error::{ApiResult, AppError, ErrorApiResponse},
+            rate_limiter::RateLimiter,
+        },
+    },
 };
 
 use super::modules::{cache::CacheModule, price_scraper::PriceScraperModule};
@@ -221,7 +225,7 @@ impl QFClient {
                     self.component.as_str(),
                     error,
                     eyre!("There was an error fetching the bytes"),
-                    crate::enums::LogLevel::Error,
+                    LogLevel::Error,
                 ));
             }
             Err(err) => {
@@ -271,7 +275,8 @@ impl QFClient {
     pub fn price(&self) -> PriceScraperModule {
         // Lazily initialize PriceScraperModule if not already initialized
         if self.price_module.read().unwrap().is_none() {
-            *self.price_module.write().unwrap() = Some(PriceScraperModule::new(self.clone()).clone());
+            *self.price_module.write().unwrap() =
+                Some(PriceScraperModule::new(self.clone()).clone());
         }
 
         // Unwrapping is safe here because we ensured the price_module is initialized

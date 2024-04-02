@@ -1,8 +1,7 @@
-use crate::{database::client::DBClient, error::AppError, helper, logger::{self}, enums::LogLevel};
+use crate::{database::client::DBClient, helper, utils::{enums::log_level::LogLevel, modules::{error::AppError, logger}}};
 use eyre::eyre;
 use sea_query::{ColumnDef, Expr, Iden, InsertStatement, Query, SqliteQueryBuilder, Table, Value};
 use serde::{Deserialize, Serialize};
-
 
 pub struct TransactionModule<'a> {
     pub client: &'a DBClient,
@@ -185,7 +184,7 @@ impl<'a> TransactionModule<'a> {
                 transaction.item_type,
                 transaction.rank
             )
-            .as_str()
+            .as_str(),
         );
 
         let sql = InsertStatement::default()
@@ -257,19 +256,32 @@ impl<'a> TransactionModule<'a> {
 
         if transaction_type.is_some() {
             transaction.transaction_type = transaction_type.unwrap();
-            values.push((Transaction::TransactionType, transaction.transaction_type.clone().into()));
+            values.push((
+                Transaction::TransactionType,
+                transaction.transaction_type.clone().into(),
+            ));
         }
 
         if quantity.is_some() && quantity.unwrap() > -1 {
             transaction.quantity = quantity.unwrap() as i32;
             values.push((Transaction::Quantity, quantity.into()));
         }
-        
+
         if rank.is_some() {
             transaction.rank = rank.unwrap() as i32;
             values.push((Transaction::Rank, rank.into()));
         }
-        logger::info_con("Database", format!("Updating Transaction: {} {} {} {}", transaction.price, transaction.transaction_type, transaction.quantity, transaction.rank).as_str());
+        logger::info_con(
+            "Database",
+            format!(
+                "Updating Transaction: {} {} {} {}",
+                transaction.price,
+                transaction.transaction_type,
+                transaction.quantity,
+                transaction.rank
+            )
+            .as_str(),
+        );
         let sql = Query::update()
             .table(Transaction::Table)
             .values(values)
@@ -286,7 +298,7 @@ impl<'a> TransactionModule<'a> {
         );
         Ok(transaction.clone())
     }
-    
+
     pub async fn delete(&self, id: i64) -> Result<(), AppError> {
         let connection = self.client.connection.lock().unwrap().clone();
 

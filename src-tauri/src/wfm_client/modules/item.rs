@@ -1,7 +1,5 @@
 use crate::{
-    error::{ApiResult, AppError},
-    structs::Item,
-    wfm_client::client::WFMClient,
+    utils::{enums::log_level::LogLevel, modules::error::{ApiResult, AppError}}, wfm_client::{client::WFMClient, types::item::Item}
 };
 
 use eyre::eyre;
@@ -39,7 +37,7 @@ impl ItemModule {
                     "Item:GetAllItems",
                     error,
                     eyre!("There was an error fetching items"),
-                    crate::enums::LogLevel::Error,
+                    LogLevel::Error,
                 ));
             }
             Err(err) => {

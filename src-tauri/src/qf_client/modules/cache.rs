@@ -1,8 +1,9 @@
 use crate::{
-    error::{ApiResult, AppError}, qf_client::{
-        client::QFClient,
-        structs::User,
-    }
+    qf_client::{client::QFClient, structs::User},
+    utils::{
+        enums::log_level::LogLevel,
+        modules::error::{ApiResult, AppError},
+    },
 };
 use eyre::eyre;
 use serde_json::Value;
@@ -29,7 +30,7 @@ impl CacheModule {
     //     self.client.update_cache_module(self.clone());
     // }
     pub async fn get_zip(&self) -> Result<Vec<u8>, AppError> {
-        match self.client.get_bytes("cache/download").await {
+        match self.client.get_bytes("cache/zip/download").await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
                     &self.debug_id,
@@ -44,7 +45,7 @@ impl CacheModule {
                     &self.get_component("GetZip"),
                     error,
                     eyre!("There was an error fetching the cache zip"),
-                    crate::enums::LogLevel::Error,
+                    LogLevel::Error,
                 ));
             }
             Err(err) => {
@@ -54,7 +55,7 @@ impl CacheModule {
     }
 
     pub async fn get_cache_id(&self) -> Result<String, AppError> {
-        match self.client.get::<Value>("cache/md5").await {
+        match self.client.get::<Value>("cache/zip/md5").await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 let md5 = payload["md5"].as_str().unwrap().to_string();
                 return Ok(md5);
@@ -64,7 +65,7 @@ impl CacheModule {
                     &self.get_component("GetCacheId"),
                     error,
                     eyre!("There was an error fetching the cache id"),
-                    crate::enums::LogLevel::Error,
+                    LogLevel::Error,
                 ));
             }
             Err(err) => {

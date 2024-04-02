@@ -9,7 +9,10 @@ use std::{
 use eyre::eyre;
 use serde_json::{json, Value};
 
-use crate::{cache::{client::CacheClient, types::item_price_info::ItemPriceInfo}, error::AppError, helper, logger, structs::Item};
+use crate::{
+    cache::{client::CacheClient, types::item_price_info::ItemPriceInfo},
+    utils::modules::{error::AppError, logger},
+};
 
 #[derive(Clone, Debug)]
 pub struct ItemPriceModule {
@@ -27,7 +30,7 @@ impl ItemPriceModule {
             client,
             debug_id: "ch_client_item_price".to_string(),
             component: "ItemPrice".to_string(),
-            json_file: "item.json".to_string(),
+            json_file: "item_prices.json".to_string(),
             md5_file: "price_id.txt".to_string(),
             folder: "price".to_string(),
         }
@@ -35,15 +38,21 @@ impl ItemPriceModule {
 
     pub fn get_items(&self) -> Result<Vec<ItemPriceInfo>, AppError> {
         let path = self
-        .client
-        .get_path(self.folder.as_str())
-        .join(self.json_file.clone());
-        let content =
-            std::fs::read_to_string(path)
-                .map_err(|e| AppError::new(&self.component, eyre!(format!("Failed to read file: {}", e.to_string()))) )?;
-        let items: Vec<ItemPriceInfo> =
-            serde_json::from_str(&content)
-                .map_err(|e| AppError::new(&self.component, eyre!(format!("Failed to parse json: {}", e.to_string()))) )?;
+            .client
+            .get_path(self.folder.as_str())
+            .join(self.json_file.clone());
+        let content = std::fs::read_to_string(path).map_err(|e| {
+            AppError::new(
+                &self.component,
+                eyre!(format!("Failed to read file: {}", e.to_string())),
+            )
+        })?;
+        let items: Vec<ItemPriceInfo> = serde_json::from_str(&content).map_err(|e| {
+            AppError::new(
+                &self.component,
+                eyre!(format!("Failed to parse json: {}", e.to_string())),
+            )
+        })?;
         Ok(items)
     }
 
@@ -109,7 +118,7 @@ impl ItemPriceModule {
             &self.component,
             format!("Current price cache id: {}", current_cache_id).as_str(),
         );
-        let remote_cache_id = match qf.cache().get_cache_id().await {
+        let remote_cache_id = match qf.price().get_cache_id().await {
             Ok(id) => id,
             Err(e) => {
                 logger::error_con(

@@ -1,9 +1,7 @@
 use once_cell::sync::Lazy;
 
 use crate::{
-    error::{self, AppError},
-    helper,
-    wfm_client::client::WFMClient,
+    helper, utils::modules::error::{self, AppError}, wfm_client::client::WFMClient
 };
 use std::sync::{Arc, Mutex};
 

@@ -3,9 +3,7 @@ use reqwest::header::HeaderMap;
 use serde_json::json;
 
 use crate::{
-    auth::AuthState,
-    error::{self, ApiResult, AppError},
-    wfm_client::client::WFMClient,
+    auth::AuthState, utils::{enums::log_level::LogLevel, modules::error::{self, ApiResult, AppError}}, wfm_client::client::WFMClient
 };
 #[derive(Clone, Debug)]
 pub struct AuthModule {
@@ -50,7 +48,7 @@ impl AuthModule {
                     &self.get_component("Login"),
                     e,
                     eyre!("There was an error logging in"),
-                    crate::enums::LogLevel::Error,
+                    LogLevel::Error,
                 ));
             }
             Err(e) => return Err(e),

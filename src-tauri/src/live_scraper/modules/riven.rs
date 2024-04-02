@@ -1,8 +1,7 @@
 use serde_json::json;
 
 use crate::{
-    database::modules::stock_riven::StockRivenStruct, enums::StockStatus, error::AppError,
-    live_scraper::client::LiveScraperClient, logger, structs::AuctionItem,
+    database::{enums::stock_status::StockStatus, modules::stock_riven::StockRivenStruct}, live_scraper::client::LiveScraperClient, logger, utils::modules::error::AppError, wfm_client::types::auction_item::AuctionItem
 };
 #[derive(Clone)]
 pub struct RivenModule {

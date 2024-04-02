@@ -1,9 +1,9 @@
 use crate::{
-    database::client::DBClient,
-    enums::{LogLevel, StockStatus},
-    error::AppError,
-    helper,
-    structs::{Auction, AuctionOwner, PriceHistory, RivenAttribute},
+    database::{
+        client::DBClient, enums::stock_status::StockStatus, types::price_history::PriceHistory,
+    }, helper, utils::{enums::log_level::LogLevel, modules::error::AppError}, wfm_client::types::{
+        auction::Auction, auction_owner::AuctionOwner, riven_attribute::RivenAttribute,
+    }
 };
 use eyre::eyre;
 use sea_query::{ColumnDef, Expr, Iden, InsertStatement, Query, SqliteQueryBuilder, Table, Value};
@@ -481,7 +481,7 @@ impl<'a> StockRivenModule<'a> {
         let mut stock_riven = stock_riven.unwrap().clone();
         let mut values = vec![];
 
-        if order_id.is_some(){
+        if order_id.is_some() {
             if order_id.clone().unwrap() == "".to_string()
                 || order_id.clone().unwrap() == "null".to_string()
             {
@@ -514,7 +514,10 @@ impl<'a> StockRivenModule<'a> {
             } else {
                 stock_riven.listed_price = listed_price;
             }
-            values.push((StockRiven::ListedPrice, stock_riven.listed_price.clone().into()));
+            values.push((
+                StockRiven::ListedPrice,
+                stock_riven.listed_price.clone().into(),
+            ));
         }
 
         if visibility.is_some() {
@@ -571,7 +574,7 @@ impl<'a> StockRivenModule<'a> {
         self.emit("CREATE_OR_UPDATE", serde_json::to_value(json).unwrap());
         Ok(stock_riven.clone())
     }
-    
+
     pub async fn delete(&self, id: i64) -> Result<StockRivenStruct, AppError> {
         let connection = self.client.connection.lock().unwrap().clone();
         let items = self.get_rivens().await?;

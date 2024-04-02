@@ -1,10 +1,6 @@
 use serde_json::json;
 use crate::{
-    enums::OrderType,
-    error::{ApiResult, AppError},
-    helper, logger,
-    structs::{Order, Orders},
-    wfm_client::client::WFMClient,
+    helper, logger, utils::{enums::log_level::LogLevel, modules::error::{ApiResult, AppError}}, wfm_client::{client::WFMClient, enums::order_type::OrderType, types::{order::Order, orders::Orders}}
 };
 
 use eyre::eyre;
@@ -75,7 +71,7 @@ impl OrderModule {
                     &self.get_component("GetUserOrders"),
                     error,
                     eyre!("There was an error fetching orders for {}", ingame_name),
-                    crate::enums::LogLevel::Error,
+                    LogLevel::Error,
                 ));
             }
             Err(err) => {
@@ -155,9 +151,9 @@ impl OrderModule {
                         if message.contains("app.post_order.already_created_no_duplicates")
                             || message.contains("app.post_order.limit_exceeded") =>
                     {
-                        crate::enums::LogLevel::Warning
+                        LogLevel::Warning
                     }
-                    _ => crate::enums::LogLevel::Error,
+                    _ => LogLevel::Error,
                 };
                 return Err(self.client.create_api_error(
                     &self.get_component("Create"),
@@ -193,9 +189,9 @@ impl OrderModule {
             Ok(ApiResult::Error(error, _headers)) => {
                 let log_level = match error.messages.get(0) {
                     Some(message) if message.contains("app.delete_order.order_not_exist") => {
-                        crate::enums::LogLevel::Warning
+                        LogLevel::Warning
                     }
-                    _ => crate::enums::LogLevel::Error,
+                    _ => LogLevel::Error,
                 };
                 return Err(self.client.create_api_error(
                     &self.get_component("Delete"),
@@ -249,9 +245,9 @@ impl OrderModule {
                         if message.contains("app.form.not_exist")
                             || message.contains("app.form.invalid") =>
                     {
-                        crate::enums::LogLevel::Warning
+                        LogLevel::Warning
                     }
-                    _ => crate::enums::LogLevel::Error,
+                    _ => LogLevel::Error,
                 };
                 return Err(self.client.create_api_error(
                     &self.get_component("Update"),
@@ -307,9 +303,9 @@ impl OrderModule {
                 Ok(ApiResult::Error(error, _headers)) => {
                     let log_level = match error.messages.get(0) {
                         Some(message) if message.contains("app.close_order.order_not_exist") => {
-                            crate::enums::LogLevel::Warning
+                            LogLevel::Warning
                         }
-                        _ => crate::enums::LogLevel::Error,
+                        _ => LogLevel::Error,
                     };
                     return Err(self.client.create_api_error(
                         &self.get_component("Close"),
@@ -352,7 +348,7 @@ impl OrderModule {
                     &self.get_component("GetOrdersByItem"),
                     error,
                     eyre!("There was an error fetching orders for {}", item),
-                    crate::enums::LogLevel::Error,
+                    LogLevel::Error,
                 ));
             }
             Err(err) => {

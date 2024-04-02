@@ -5,9 +5,9 @@ use eyre::eyre;
 use crate::{
     cache::{
         client::CacheClient,
-        structs::{CacheItemComponent, CacheSentinel},
+        types::{cache_item_component::CacheItemComponent, cache_sentinel::CacheSentinel},
     },
-    error::AppError,
+    utils::modules::error::AppError,
 };
 
 #[derive(Clone, Debug)]

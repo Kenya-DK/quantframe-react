@@ -5,10 +5,7 @@ use once_cell::sync::Lazy;
 
 
 use crate::{
-    auth::AuthState,
-    error::{self, AppError},
-    logger,
-    wfm_client::client::WFMClient,
+    auth::AuthState, logger, utils::modules::error::{self, AppError}, wfm_client::client::WFMClient
 };
 
 // Create a static variable to store the log file name

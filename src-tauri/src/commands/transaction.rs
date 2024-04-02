@@ -1,6 +1,5 @@
 use crate::{
-    database::{client::DBClient, modules::transaction::TransactionStruct},
-    error::{self, AppError},
+    database::{client::DBClient, modules::transaction::TransactionStruct}, utils::modules::error::{self, AppError}
 };
 use eyre::eyre;
 use std::sync::{Arc, Mutex};

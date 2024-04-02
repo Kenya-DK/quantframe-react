@@ -10,16 +10,7 @@ use std::{
 use serde_json::json;
 
 use crate::{
-    auth::AuthState,
-    cache::client::CacheClient,
-    database::client::DBClient,
-    enums::{LogLevel, OrderMode, StockMode},
-    error::AppError,
-    handler::MonitorHandler,
-    helper,
-    logger::{self},
-    settings::SettingsState,
-    wfm_client::client::WFMClient,
+    auth::AuthState, cache::client::CacheClient, database::{client::DBClient, enums::stock_mode::StockMode}, helper, logger, notification::client::NotifyClient, settings::SettingsState, utils::{enums::log_level::LogLevel, modules::error::AppError}, wfm_client::{client::WFMClient, enums::order_mode::OrderMode}
 };
 
 use super::modules::{item::ItemModule, riven::RivenModule};
@@ -36,7 +27,7 @@ pub struct LiveScraperClient {
     pub auth: Arc<Mutex<AuthState>>,
     pub db: Arc<Mutex<DBClient>>,
     pub cache: Arc<Mutex<CacheClient>>,
-    pub mh: Arc<Mutex<MonitorHandler>>,
+    pub mh: Arc<Mutex<NotifyClient>>,
 }
 
 impl LiveScraperClient {
@@ -46,7 +37,7 @@ impl LiveScraperClient {
         auth: Arc<Mutex<AuthState>>,
         db: Arc<Mutex<DBClient>>,
         cache: Arc<Mutex<CacheClient>>,
-        mh: Arc<Mutex<MonitorHandler>>,
+        mh: Arc<Mutex<NotifyClient>>,
     ) -> Self {
         LiveScraperClient {
             log_file: "live_scraper.log".to_string(),

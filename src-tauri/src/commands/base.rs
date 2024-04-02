@@ -9,7 +9,17 @@ use tokio::process::Command;
 static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("command_base.log".to_string()));
 
 use crate::{
-    auth::AuthState, cache::client::CacheClient, database::client::DBClient, enums::LogLevel, error::{self, AppError}, handler::MonitorHandler, helper, logger, settings::SettingsState, wf_ee_log_parser::client::EELogParser, wfm_client::client::WFMClient
+    auth::AuthState,
+    cache::client::CacheClient,
+    database::client::DBClient,
+    helper, logger,
+    notification::client::NotifyClient,
+    settings::SettingsState,
+    utils::{
+        enums::log_level::LogLevel,
+        modules::error::{self, AppError},
+    },
+    wfm_client::{client::WFMClient, types::chat_message::ChatMessage},
 };
 
 #[tauri::command]
@@ -18,11 +28,9 @@ pub async fn init(
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
-    ee_log: tauri::State<'_, Arc<std::sync::Mutex<EELogParser>>>,
     db: tauri::State<'_, Arc<Mutex<DBClient>>>,
 ) -> Result<Value, AppError> {
     let db = db.lock()?.clone();
-    let mut ee_log = ee_log.lock()?.clone();
     let settings = settings.lock()?.clone();
     let auth = auth.lock()?.clone();
     let wfm = wfm.lock()?.clone();
@@ -45,9 +53,17 @@ pub async fn init(
     helper::emit_update_initialization_status("Loading Cache...", None);
     match cache.load().await {
         Ok(_) => {
+            response["cache"] = json!({
+                "1": cache.riven().get_wfm_riven_types()?,
+                "2": cache.riven().get_wfm_riven_attributes()?,
+                "riven_items": cache.riven().get_types()?,
+                "riven_attributes": cache.riven().get_attributes()?,
+                "tradable_items": cache.tradable_items().get_items()?,
+            });
             response["items"] = json!(cache.item().get_types()?);
             response["riven_items"] = json!(cache.riven().get_types()?);
             response["riven_attributes"] = json!(cache.riven().get_attributes()?);
+            response["tradable_items"] = json!(cache.tradable_items().get_items()?);
         }
         Err(e) => {
             error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
@@ -139,12 +155,7 @@ pub async fn init(
 
     // Check for updates
     helper::emit_update_initialization_status("Checking for updates...", None);
-    response["app_info"] = helper::get_app_info().await?;
-
-    // Start EE Log Parser
-    if !ee_log.is_running() {
-        ee_log.start_loop();
-    }
+    response["app_info"] = helper::get_app_info()?;
 
     Ok(response)
 }
@@ -184,23 +195,20 @@ pub fn show_notification(
     message: String,
     _icon: Option<String>,
     sound: Option<String>,
-    mh: tauri::State<'_, Arc<std::sync::Mutex<MonitorHandler>>>,
+    notify: tauri::State<'_, Arc<std::sync::Mutex<NotifyClient>>>,
 ) {
-    let mh = mh.lock().unwrap();
-    mh.show_notification(
-        &title,
-        &message,
-        Some("https://i.imgur.com/UggEVVI.jpeg"),
-        sound.as_deref(),
-    );
+    let notify = notify.lock().unwrap();
+    notify
+        .system()
+        .send_notification(&title, &message, None, sound.as_deref());
 }
 
 #[tauri::command]
 pub fn on_new_wfm_message(
-    message: crate::wfm_client::modules::chat::ChatMessage,
+    message: ChatMessage,
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
     settings: tauri::State<'_, Arc<std::sync::Mutex<SettingsState>>>,
-    mh: tauri::State<'_, Arc<std::sync::Mutex<MonitorHandler>>>,
+    mh: tauri::State<'_, Arc<std::sync::Mutex<NotifyClient>>>,
 ) {
     let mh = mh.lock().unwrap();
     let auth = auth.lock().unwrap().clone();
@@ -220,7 +228,7 @@ pub fn on_new_wfm_message(
         &message.raw_message.unwrap_or("".to_string()),
     );
     if settings.system_notify {
-        mh.show_notification(
+        mh.system().send_notification(
             &settings.title,
             &content,
             Some("https://i.imgur.com/UggEVVI.jpeg"),
@@ -256,13 +264,11 @@ pub fn log(
 }
 
 #[tauri::command]
-pub fn export_logs(mh: tauri::State<'_, Arc<std::sync::Mutex<MonitorHandler>>>) {
+pub fn export_logs(notify: tauri::State<'_, Arc<std::sync::Mutex<NotifyClient>>>) {
+    let notify = notify.lock().unwrap().clone();
     logger::export_logs();
-    show_notification(
-        "Logs Exported".to_string(),
-        "Logs exported to desktop".to_string(),
-        None,
-        None,
-        mh,
-    );
+
+    notify
+        .system()
+        .send_notification("Logs Exported", "Logs exported to desktop", None, None);
 }

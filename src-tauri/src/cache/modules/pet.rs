@@ -3,8 +3,8 @@ use std::path::PathBuf;
 use eyre::eyre;
 
 use crate::{
-    cache::{client::CacheClient, structs::CachePet},
-    error::AppError,
+    cache::{client::CacheClient, types::cache_pet::CachePet},
+    utils::modules::error::AppError,
 };
 
 #[derive(Clone, Debug)]

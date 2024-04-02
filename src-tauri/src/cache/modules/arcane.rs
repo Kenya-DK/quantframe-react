@@ -3,8 +3,8 @@ use std::path::PathBuf;
 use eyre::eyre;
 
 use crate::{
-    cache::{client::CacheClient, structs::CacheArcane},
-    error::AppError,
+    cache::{client::CacheClient, types::cache_arcane::CacheArcane}, utils::modules::error::AppError,
+    
 };
 
 #[derive(Clone, Debug)]
@@ -50,7 +50,10 @@ impl ArcaneModule {
     }
     pub fn get_by_name(&self, name: &str, ignore_case: bool) -> Option<CacheArcane> {
         if ignore_case {
-            self.items.iter().find(|x| x.name.to_lowercase() == name.to_lowercase()).cloned()
+            self.items
+                .iter()
+                .find(|x| x.name.to_lowercase() == name.to_lowercase())
+                .cloned()
         } else {
             self.items.iter().find(|x| x.name == name).cloned()
         }

@@ -5,13 +5,8 @@ static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("command_stock.lo
 use crate::{
     database::{
         client::DBClient,
-        modules::{stock_item, stock_riven::MatchRivenStruct},
-    },
-    enums::{LogLevel, OrderType},
-    error::{self, AppError},
-    logger,
-    structs::{Order, RivenAttribute},
-    wfm_client::client::WFMClient,
+        modules::stock_riven::MatchRivenStruct,
+    }, logger, utils::{enums::log_level::LogLevel, modules::error::{self, AppError}}, wfm_client::{client::WFMClient, enums::order_type::OrderType, types::{order::Order, riven_attribute::RivenAttribute}}
 };
 use eyre::eyre;
 use once_cell::sync::Lazy;

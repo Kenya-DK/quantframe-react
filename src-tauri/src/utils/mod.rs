@@ -1,4 +1,3 @@
-pub mod helper_base;
-pub mod helper_discord;
-pub mod helper_path;
-pub mod helper_zip;
+pub mod enums;
+pub mod modules;
+pub mod types;

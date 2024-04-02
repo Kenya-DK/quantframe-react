@@ -1,9 +1,5 @@
 use crate::{
-    database::client::DBClient,
-    enums::{LogLevel, StockStatus},
-    error::AppError,
-    helper,
-    structs::{Order, PriceHistory},
+    database::{client::DBClient, enums::stock_status::StockStatus, types::price_history::PriceHistory}, helper, utils::{enums::log_level::LogLevel, modules::error::AppError}, wfm_client::types::order::Order
 };
 use eyre::eyre;
 

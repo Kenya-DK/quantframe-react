@@ -2,12 +2,7 @@ use once_cell::sync::Lazy;
 use serde_json::{json};
 
 use crate::{
-    database::client::DBClient,
-    error::{self, AppError},
-    helper,
-    settings::SettingsState,
-    structs::Order,
-    wfm_client::client::WFMClient,
+    database::client::DBClient, helper, settings::SettingsState, utils::modules::error::{self, AppError}, wfm_client::{client::WFMClient, types::order::Order}
 };
 use std::sync::{Arc, Mutex};
 
@@ -15,7 +10,7 @@ use std::sync::{Arc, Mutex};
 static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("command_orders.log".to_string()));
 
 #[tauri::command]
-pub async fn get_orders(_wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>) -> Result<(), AppError> {
+pub fn get_orders(_wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>) -> Result<(), AppError> {
     Ok(())
 }
 #[tauri::command]

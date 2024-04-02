@@ -1,4 +1,4 @@
-use crate::error::AppError;
+use crate::utils::modules::error::AppError;
 use crate::{helper, logger};
 use eyre::{eyre, Result};
 use serde::{Deserialize, Serialize};

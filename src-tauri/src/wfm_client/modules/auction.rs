@@ -4,12 +4,14 @@ use eyre::eyre;
 use serde_json::json;
 
 use crate::{
-    error::{ApiResult, AppError},
-    helper, logger,
-    structs::{
-        Auction, AuctionItem, AuctionOwner, RivenAttribute, RivenAttributeInfo, RivenTypeInfo,
-    },
-    wfm_client::client::WFMClient,
+    helper, logger, utils::{enums::log_level::LogLevel, modules::error::{ApiResult, AppError}}, wfm_client::{
+        client::WFMClient,
+        types::{
+            auction::Auction, auction_item::AuctionItem, auction_owner::AuctionOwner,
+            riven_attribute::RivenAttribute, riven_attribute_info::RivenAttributeInfo,
+            riven_type_info::RivenTypeInfo,
+        },
+    }
 };
 #[derive(Clone, Debug)]
 pub struct AuctionModule {
@@ -77,7 +79,7 @@ impl AuctionModule {
                     &self.get_component("GetAllRivenTypes"),
                     error,
                     eyre!("There was an error getting all riven types"),
-                    crate::enums::LogLevel::Error,
+                    LogLevel::Error,
                 ));
             }
             Err(err) => {
@@ -105,7 +107,7 @@ impl AuctionModule {
                     &self.get_component("GetAllRivenAttributeTypes"),
                     error,
                     eyre!("There was an error getting all riven attribute types"),
-                    crate::enums::LogLevel::Error,
+                    LogLevel::Error,
                 ));
             }
             Err(err) => {
@@ -144,7 +146,7 @@ impl AuctionModule {
                         "There was an error getting all auctions for user: {}",
                         ingame_name
                     ),
-                    crate::enums::LogLevel::Error,
+                    LogLevel::Error,
                 ));
             }
             Err(err) => {
@@ -225,7 +227,7 @@ impl AuctionModule {
                     &self.get_component("Create"),
                     error,
                     eyre!("There was an error creating the auction"),
-                    crate::enums::LogLevel::Error,
+                    LogLevel::Error,
                 ));
             }
             Err(err) => {
@@ -273,7 +275,7 @@ impl AuctionModule {
                     &self.get_component("Update"),
                     error,
                     eyre!("There was an error updating the auction"),
-                    crate::enums::LogLevel::Error,
+                    LogLevel::Error,
                 ));
             }
             Err(err) => {
@@ -294,7 +296,7 @@ impl AuctionModule {
         re_rolls_max: Option<i64>,
         buyout_policy: Option<&str>,
         sort_by: Option<&str>,
-        attributes: Option<Vec<crate::structs::RivenAttribute>>,
+        attributes: Option<Vec<RivenAttribute>>,
     ) -> Result<Vec<Auction<AuctionOwner>>, AppError> {
         let base_url = format!("auctions/search?type={}", auction_type);
 
@@ -370,8 +372,8 @@ impl AuctionModule {
             }
             Ok(ApiResult::Error(error, _headers)) => {
                 let log_level = match error.status_code {
-                    400 => crate::enums::LogLevel::Warning,
-                    _ => crate::enums::LogLevel::Error,
+                    400 => LogLevel::Warning,
+                    _ => LogLevel::Error,
                 };
                 return Err(self.client.create_api_error(
                     &self.get_component("Search"),
@@ -387,7 +389,7 @@ impl AuctionModule {
     }
     pub fn calculate_shared_attribute_percentages(
         &self,
-        attributes: Vec<crate::structs::RivenAttribute>,
+        attributes: Vec<RivenAttribute>,
         item2: &AuctionItem,
     ) -> (f64, Vec<RivenAttribute>, Vec<RivenAttribute>) {
         let mut shared_count = 0;
@@ -456,9 +458,9 @@ impl AuctionModule {
                         if message.contains("app.form.not_exist")
                             || message.contains("app.form.invalid") =>
                     {
-                        crate::enums::LogLevel::Warning
+                        LogLevel::Warning
                     }
-                    _ => crate::enums::LogLevel::Error,
+                    _ => LogLevel::Error,
                 };
                 return Err(self.client.create_api_error(
                     &self.get_component("Delete"),

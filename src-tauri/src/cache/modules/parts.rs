@@ -3,11 +3,8 @@ use std::{collections::HashMap, path::PathBuf};
 use eyre::eyre;
 
 use crate::{
-    cache::{
-        client::CacheClient,
-        structs::{CacheItemComponent, CacheSecondary},
-    },
-    error::AppError,
+    cache::{client::CacheClient, types::cache_item_component::CacheItemComponent},
+    utils::modules::error::AppError,
 };
 
 #[derive(Clone, Debug)]
@@ -44,7 +41,7 @@ impl PartModule {
         // Initialize the warframe parts
         self.add_parts("Warframe", cache.warframe().get_parts());
         self.add_parts("Warframe", cache.archwing().get_parts());
-        
+
         // Initialize the weapon parts
         self.add_parts("Weapon", cache.primary().get_parts());
         self.add_parts("Weapon", cache.secondary().get_parts());
@@ -52,7 +49,14 @@ impl PartModule {
         self.add_parts("Weapon", cache.sentinel().get_parts());
         self.add_parts("Weapon", cache.arch_gun().get_parts());
         self.add_parts("Weapon", cache.arch_melee().get_parts());
-        self.add_parts("Weapon", cache.skin().get_by_unique_name("/Lotus/Upgrades/Skins/Kubrows/Collars/PrimeKubrowCollarA").unwrap().get_item_components());
+        self.add_parts(
+            "Weapon",
+            cache
+                .skin()
+                .get_by_unique_name("/Lotus/Upgrades/Skins/Kubrows/Collars/PrimeKubrowCollarA")
+                .unwrap()
+                .get_item_components(),
+        );
 
         // let content = self.client.read_text_from_file(&self.path)?;
         // let items: Vec<CacheSecondary> = serde_json::from_str(&content).map_err(|e| {
@@ -106,17 +110,17 @@ impl PartModule {
             _ => {}
         }
     }
-    pub fn get_part_by_name(&self, category: &str, cache: CacheClient, name: &str, use_external: bool) -> Option<CacheItemComponent> {
-        let items =match category {
-            "Warframe" => {
-                self.warframe_parts.values()
-            }
-            "Weapon" => {
-                self.weapon_parts.values()
-            }
-            "Skin" => {
-                self.skin_parts.values()
-            }
+    pub fn get_part_by_name(
+        &self,
+        category: &str,
+        cache: CacheClient,
+        name: &str,
+        use_external: bool,
+    ) -> Option<CacheItemComponent> {
+        let items = match category {
+            "Warframe" => self.warframe_parts.values(),
+            "Weapon" => self.weapon_parts.values(),
+            "Skin" => self.skin_parts.values(),
             _ => {
                 return None;
             }
@@ -125,7 +129,7 @@ impl PartModule {
         for item in items {
             if use_external {
                 if item.get_real_external_name(cache.clone()) == name {
-                    result = Some(item.clone());                    
+                    result = Some(item.clone());
                     break;
                 }
             }

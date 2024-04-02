@@ -3,8 +3,8 @@ use std::path::PathBuf;
 use eyre::eyre;
 
 use crate::{
-    cache::{client::CacheClient, structs::CacheTradableItem},
-    error::AppError,
+    cache::{client::CacheClient, types::cache_tradable_item::CacheTradableItem},
+    utils::modules::error::AppError,
 };
 
 #[derive(Clone, Debug)]
@@ -21,8 +21,8 @@ impl TradableItemModule {
         TradableItemModule {
             client,
             // debug_id: "ch_client_auction".to_string(),
-            component: "TradableItem".to_string(),
-            path: PathBuf::from("item/TradableItems.json"),
+            component: "TradeableItem".to_string(),
+            path: PathBuf::from("item/tradeableItems.json"),
             items: Vec::new(),
         }
     }
@@ -38,11 +38,18 @@ impl TradableItemModule {
         let items: Vec<CacheTradableItem> = serde_json::from_str(&content).map_err(|e| {
             AppError::new(
                 self.get_component("Load").as_str(),
-                eyre!(format!("Failed to parse TradableItemModule from file: {}", e)),
+                eyre!(format!(
+                    "Failed to parse TradableItemModule from file: {}",
+                    e
+                )),
             )
         })?;
         self.items = items;
         self.update_state();
         Ok(())
+    }
+    // Method to get the list of tradable items
+    pub fn get_items(&self) -> Result<Vec<CacheTradableItem>, AppError> {
+        Ok(self.items.clone())
     }
 }

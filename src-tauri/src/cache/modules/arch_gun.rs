@@ -5,9 +5,9 @@ use eyre::eyre;
 use crate::{
     cache::{
         client::CacheClient,
-        structs::{CacheArchGun, CacheItemComponent},
+        types::{cache_arch_gun::CacheArchGun, cache_item_component::CacheItemComponent},
     },
-    error::AppError,
+    utils::modules::error::AppError,
 };
 
 #[derive(Clone, Debug)]
@@ -66,7 +66,7 @@ impl ArchGunModule {
             result.push(item.clone());
         }
         result
-    }    
+    }
     pub fn get_by_unique_name(&self, id: &str) -> Option<CacheArchGun> {
         self.items.iter().find(|x| x.unique_name == id).cloned()
     }

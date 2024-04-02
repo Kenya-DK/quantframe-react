@@ -1,4 +1,3 @@
-use chrono::Duration;
 use directories::{BaseDirs, UserDirs};
 use eyre::eyre;
 use once_cell::sync::Lazy;
@@ -12,12 +11,7 @@ use std::{
 use tauri::Window;
 use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 
-use crate::{
-    error::AppError,
-    logger::{self},
-    structs::WarframeLanguage,
-    PACKAGEINFO,
-};
+use crate::{logger, utils::modules::error::AppError, PACKAGEINFO};
 pub static WINDOW: Lazy<Mutex<Option<Window>>> = Lazy::new(|| Mutex::new(None));
 
 pub fn send_message_to_window(event: &str, data: Option<Value>) {
@@ -33,7 +27,7 @@ pub fn send_message_to_window(event: &str, data: Option<Value>) {
     }
 }
 
-pub async fn get_app_info() -> Result<serde_json::Value, AppError> {
+pub fn get_app_info() -> Result<serde_json::Value, AppError> {
     let packageinfo = PACKAGEINFO
         .lock()
         .unwrap()
@@ -391,106 +385,6 @@ pub async fn alter_table(
     Ok(false)
 }
 
-pub fn calculate_trade_tax(item_tags: Vec<String>, rank: Option<i64>) -> i64 {
-    // If tags contains "arcane_upgrade" then it is an arcane
-    if item_tags.contains(&"arcane_enhancement".to_string()) {
-        if item_tags.contains(&"common".to_string()) {
-            return 2000;
-        } else if item_tags.contains(&"uncommon".to_string()) {
-            return 4000;
-        } else if item_tags.contains(&"rare".to_string()) {
-            return 8000;
-        } else if item_tags.contains(&"legendary".to_string()) {
-            let rank_tax = Vec::from([100000, 300000, 600000, 1000000, 1500000, 2100000]);
-            let rank = rank.unwrap_or(0);
-            if rank > 0 && rank < 7 {
-                return rank_tax[rank as usize];
-            } else {
-                return rank_tax[0];
-            }
-        }
-    }
-    if item_tags.contains(&"mod".to_string()) {
-        if item_tags.contains(&"common".to_string()) {
-            return 2000;
-        } else if item_tags.contains(&"uncommon".to_string()) {
-            return 4000;
-        } else if item_tags.contains(&"rare".to_string()) {
-            return 8000;
-        } else if item_tags.contains(&"legendary".to_string())
-            || item_tags.contains(&"archon".to_string())
-        {
-            return 1000000;
-        }
-    }
-    2000
-}
-
-pub fn get_warframe_language() -> WarframeLanguage {
-    let path = get_app_local_path().join("Warframe").join("Launcher.log");
-
-    let _log_file = "get_warframe_language.log";
-
-    if !path.exists() {
-        return WarframeLanguage::English;
-    }
-
-    let file_result = fs::File::open(&path);
-    let mut contents = String::new();
-
-    if let Ok(mut file) = file_result {
-        if let Ok(_) = std::io::Read::read_to_string(&mut file, &mut contents) {
-            if let Some(num) = contents.rfind("-language:") {
-                let lang_code = &contents[num + 10..num + 12];
-
-                // Ensure lang_code is exactly two characters
-                if lang_code.len() == 2 {
-                    return WarframeLanguage::from_str(lang_code);
-                } else {
-                    logger::info_con(
-                        "Helper",
-                        format!(
-                            "Could not find language code in Warframe launcher log file at {:?}",
-                            path.to_str()
-                        )
-                        .as_str(),
-                    );
-                }
-            } else {
-                logger::info_con(
-                    "Helper",
-                    format!(
-                        "Could not find language code in Warframe launcher log file at {:?}",
-                        path.to_str()
-                    )
-                    .as_str(),
-                );
-            }
-        } else {
-            logger::info_con(
-                "Helper",
-                format!(
-                    "Could not read Warframe launcher log file at {:?}",
-                    path.to_str()
-                )
-                .as_str(),
-            );
-        }
-    } else {
-        logger::info_con(
-            "Helper",
-            format!(
-                "Could not open Warframe launcher log file at {:?}",
-                path.to_str()
-            )
-            .as_str(),
-        );
-    }
-
-    // Default to English in case of any error
-    WarframeLanguage::English
-}
-
 pub fn validate_json(json: &Value, required: &Value, path: &str) -> (Value, Vec<String>) {
     let mut modified_json = json.clone();
     let mut missing_properties = Vec::new();
@@ -535,22 +429,6 @@ pub fn loop_through_properties(data: &mut Map<String, Value>, properties: Vec<St
                 }
             }
         }
-    }
-}
-
-pub fn read_json_file(path: &str) -> Result<Value, AppError> {
-    match std::fs::File::open(path) {
-        Ok(file) => {
-            let reader = std::io::BufReader::new(file);
-            let data: serde_json::Value = serde_json::from_reader(reader)
-                .map_err(|e| AppError::new("Helper", eyre!(format!("Error: {}", e.to_string()))))
-                .expect("Could not read auth.json");
-            Ok(json!(data))
-        }
-        Err(_) => Err(AppError::new(
-            "Logger",
-            eyre!("Could not open file at path: {}", path),
-        )),
     }
 }
 

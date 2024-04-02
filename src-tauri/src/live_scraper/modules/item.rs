@@ -1,11 +1,14 @@
-use crate::cache::modules::item_price::ItemPriceModule;
+use crate::database::enums::stock_status::StockStatus;
 use crate::database::modules::stock_item::StockItemStruct;
-use crate::enums::{OrderMode, OrderType, StockStatus};
-use crate::error;
+use crate::database::types::price_history::PriceHistory;
 use crate::live_scraper::client::LiveScraperClient;
 
-use crate::structs::{Order, Orders, PriceHistory};
-use crate::{error::AppError, logger};
+use crate::utils::modules::error::{self, AppError};
+use crate::utils::modules::logger;
+use crate::wfm_client::enums::order_mode::OrderMode;
+use crate::wfm_client::enums::order_type::OrderType;
+use crate::wfm_client::types::order::Order;
+use crate::wfm_client::types::orders::Orders;
 use serde_json::json;
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
@@ -196,7 +199,7 @@ impl ItemModule {
             if live_orders.total_count() == 0 {
                 continue;
             }
-            // logger::log_json("live_orders.json", &json!(live_orders))?;
+
             // Check if item is in stock items and get the stock item
             let stock_item = stock_items_interesting_items
                 .clone()
@@ -494,7 +497,7 @@ impl ItemModule {
         let mut status = StockStatus::InActive;
 
         // Get the current orders for the item from the Warframe Market API
-        let (order_id, visibility, price, active) = self
+        let (order_id, visibility, _, active) = self
             .get_my_order_information(item_name, item_rank, &current_orders)
             .await?;
 
@@ -667,7 +670,7 @@ impl ItemModule {
         } else if status == StockStatus::Live && !active {
             match wfm
                 .orders()
-                .create(item_id, "buy", post_price, 1, false, item_rank)
+                .create(item_id, "buy", post_price, 1, true, item_rank)
                 .await
             {
                 Ok((_rep, None)) => {}
@@ -682,40 +685,6 @@ impl ItemModule {
             );
         } else {
         }
-
-        logger::log_json(
-            format!("Buy Stats For {}.json", item_name).as_str(),
-            &json!({
-                "input": json!({
-                    "item_name": item_name,
-                    "item_id": item_id,
-                    "item_rank": item_rank,
-                    "closed_avg": closed_avg,
-                    "stock_item": stock_item
-                }),
-                "settings": json!({
-                    "avg_price_cap": avg_price_cap,
-                    "max_total_price_cap": max_total_price_cap
-                }),
-                "my_order": json!({
-                    "order_id": order_id,
-                    "visibility": visibility,
-                    "price": price,
-                    "active": active,
-                    "list": my_orders
-                }),
-                "status": status,
-                "live_orders": live_orders,
-                "highest_price": highest_price,
-                "price_range": price_range,
-                "post_price": post_price,
-                "bought_price": bought_price,
-                "owned": owned,
-                "closed_avg_metric": closed_avg_metric,
-                "owned": potential_profit,
-            }),
-        )?;
-
         Ok(None)
     }
 
@@ -740,7 +709,7 @@ impl ItemModule {
         let moving_avg = moving_avg as i64;
 
         // Get the current orders for the item from the Warframe Market API
-        let (order_id, visibility, price, active) = self
+        let (order_id, visibility, _, active) = self
             .get_my_order_information(item_name, item_rank, &my_orders)
             .await?;
 
@@ -886,38 +855,6 @@ impl ItemModule {
                 )
                 .await?;
         }
-        // current_orders: DataframeFromType<Vec<Order>>,
-        // live_orders: &DataframeFromType<Vec<Order>>,
-        logger::log_json(
-            format!("Sell Stats For {}.json", item_name).as_str(),
-            &json!({
-                "input": json!({
-                    "item_name": item_name,
-                    "item_id": item_id,
-                    "item_rank": item_rank,
-                    "moving_avg": moving_avg,
-                    "stock_item": stock_item,
-                    "stock_item_original": stock_item_original,
-                }),
-                "order_info": json!({
-                    "order_id": order_id,
-                    "visibility": visibility,
-                    "price": price,
-                    "active": active,
-                }),
-                "restructure": json!({
-                    "sellers": live_orders.sell_orders.len(),
-                }),
-                "current_orders": my_orders,
-                "live_orders": live_orders,
-                "post_price": post_price,
-                "bought_price": bought_price,
-                "profit": profit,
-                "quantity": quantity,
-                "minimum_price": minimum_price,
-                "lowest_price": lowest_price,
-            }),
-        )?;
         return Ok(());
     }
 }

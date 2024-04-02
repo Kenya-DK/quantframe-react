@@ -1,20 +1,14 @@
 use std::sync::{Arc, Mutex};
 
-
 use once_cell::sync::Lazy;
 
-use serde_json::{json};
-
+use serde_json::json;
 
 // Create a static variable to store the log file name
 static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("command_chat.log".to_string()));
 
 use crate::{
-    error::{self, AppError},
-    wfm_client::{
-        client::WFMClient,
-        modules::chat::{ChatData, ChatMessage},
-    },
+    utils::modules::error::{self, AppError}, wfm_client::{client::WFMClient, types::{chat_data::ChatData, chat_message::ChatMessage}}
 };
 
 #[tauri::command]
