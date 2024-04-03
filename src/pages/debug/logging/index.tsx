@@ -1,10 +1,6 @@
 import { Card, MultiSelect } from "@mantine/core";
-import { useLocalStorage } from "@mantine/hooks";
 
 export const Logging = () => {
-  const [dbPath, setDbPath] = useLocalStorage<string>({ key: "dbPath", defaultValue: "" });
-  const [type, setType] = useLocalStorage<string>({ key: "type", defaultValue: "" });
-
   return (
     <Card>
       <MultiSelect
