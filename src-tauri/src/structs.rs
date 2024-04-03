@@ -2,7 +2,7 @@ use serde::{de::DeserializeOwned, Deserialize, Deserializer, Serialize};
 
 use crate::enums::OrderType;
 
-#[derive(PartialEq, Eq, Hash,Debug)]
+#[derive(PartialEq, Eq, Hash, Debug)]
 pub enum WarframeLanguage {
     English, // Add other language variants as needed
     French,
@@ -11,7 +11,7 @@ pub enum WarframeLanguage {
     Russian,
     Unknown,
 }
-#[derive(Clone,Serialize,Deserialize, PartialEq, Eq, Hash,Debug)]
+#[derive(Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Debug)]
 pub enum TradeClassification {
     Sale,
     Purchase,
@@ -34,7 +34,7 @@ impl WarframeLanguage {
             "ru" => WarframeLanguage::Russian,
             _ => WarframeLanguage::Unknown,
         }
-    }    
+    }
 }
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct RivenTypeInfo {
@@ -295,7 +295,7 @@ pub struct OrderByItem {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct User {
     #[serde(rename = "reputation")]
-    pub reputation: i64,
+    pub reputation: f64,
 
     // #[serde(rename = "locale")]
     // pub locale: String,
