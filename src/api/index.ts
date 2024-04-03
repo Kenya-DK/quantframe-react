@@ -1,6 +1,42 @@
 import { SetupResponse, Wfm, TransactionEntryDto, Settings, CreateTransactionEntryDto, CreateStockItemEntryDto, StockItemDto, CreateStockRivenEntryDto, StockRivenDto } from '../types'
 import { invoke } from '@tauri-apps/api';
 import { SendTauriEvent, SendTauriUpdateDataEvent } from '../utils/tauri';
+import { AuctionModule } from './auction';
+import { AuthModule } from './auth';
+import { ChatModule } from './chat';
+import { DebugModule } from './debug';
+import { ItemModule } from './item';
+import { LiveScraperModule } from './live_scraper';
+import { OrderModule } from './order';
+import { StockModule } from './stock';
+import { TransactionModule } from './transaction';
+
+export class TauriClient {
+  constructor() {
+    this.auction = new AuctionModule();
+    this.auth = new AuthModule();
+    this.chat = new ChatModule();
+    this.debug = new DebugModule();
+    this.items = new ItemModule();
+    this.live_scraper = new LiveScraperModule();
+    this.order = new OrderModule();
+    this.stock = new StockModule();
+    this.transaction = new TransactionModule();
+  }
+
+  // Modules
+  auction: AuctionModule;
+  auth: AuthModule;
+  chat: ChatModule;
+  debug: DebugModule;
+  items: ItemModule;
+  live_scraper: LiveScraperModule;
+  order: OrderModule;
+  stock: StockModule;
+  transaction: TransactionModule;
+}
+
+
 const api = {
   base: {
     updatesettings: async (settings: Settings): Promise<Settings | undefined> => {
@@ -222,6 +258,9 @@ const api = {
   },
 }
 
+
+const client = new TauriClient()
+export { client }
 export default api
 
 export const wfmThumbnail = (thumb: string) => `https://warframe.market/static/assets/${thumb}`

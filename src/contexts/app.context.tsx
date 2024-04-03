@@ -41,11 +41,11 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
     queryKey: ['init'],
     queryFn: () => api.auth.init(),
     async onSuccess(data) {
+      console.log(data);
       SendTauriUpdateDataEvent("user", { data: data.user, operation: "SET" })
       SendTauriEvent("Cache:Update:Items", data.items)
       SendTauriEvent("Cache:Update:RivenTypes", data.riven_items)
       SendTauriEvent("Cache:Update:RivenAttributes", data.riven_attributes)
-      SendTauriEvent("PriceScraper:Initialize", { last_run: data.price_scraper_last_run == null ? null : new Date(data.price_scraper_last_run) })
 
       // Stock Context
       SendTauriUpdateDataEvent("StockItems", { data: data.stock_items, operation: "SET" })
