@@ -1,3 +1,5 @@
+import { TauriClient } from "..";
+
 export class DebugModule {
-  constructor() { }
+  constructor(private readonly client: TauriClient) { }
 }

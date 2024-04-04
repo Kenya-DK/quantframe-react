@@ -39,7 +39,6 @@ use helper::WINDOW as HE_WINDOW;
 pub static PACKAGEINFO: Lazy<Mutex<Option<PackageInfo>>> = Lazy::new(|| Mutex::new(None));
 
 async fn setup_async(app: &mut App) -> Result<(), AppError> {
-
     // Create and manage Notification state
     let notify_arc: Arc<Mutex<NotifyClient>> =
         Arc::new(Mutex::new(NotifyClient::new(app.handle().clone())));
@@ -161,9 +160,22 @@ fn main() {
             commands::auth::logout,
             commands::auth::update_user_status,
             // Transaction commands
-            commands::transaction::create_transaction_entry,
-            commands::transaction::delete_transaction_entry,
-            commands::transaction::update_transaction_entry,
+            commands::transaction::tra_get_all,
+            commands::transaction::tra_get_by_id,
+            commands::transaction::tra_update_by_id,
+            commands::transaction::tra_delete_by_id,
+            // Stock Item commands
+            commands::stock_item::stock_item_get_all,
+            commands::stock_item::stock_item_get_by_id,
+            commands::stock_item::stock_item_create,
+            commands::stock_item::stock_item_update,
+            commands::stock_item::stock_item_delete,
+            // Stock Riven commands
+            commands::stock_riven::stock_riven_get_all,
+            commands::stock_riven::stock_riven_get_by_id,
+            commands::stock_riven::stock_riven_create,
+            commands::stock_riven::stock_riven_update,
+            commands::stock_riven::stock_riven_delete,
             // Live Scraper commands
             commands::live_scraper::toggle_live_scraper,
             // Auctions commands

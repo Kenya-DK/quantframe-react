@@ -1,3 +1,5 @@
+import { TauriClient } from "..";
+
 export class ChatModule {
-  constructor() { }
+  constructor(private readonly client: TauriClient) { }
 }

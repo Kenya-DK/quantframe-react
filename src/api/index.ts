@@ -1,6 +1,6 @@
 import { SetupResponse, Wfm, TransactionEntryDto, Settings, CreateTransactionEntryDto, CreateStockItemEntryDto, StockItemDto, CreateStockRivenEntryDto, StockRivenDto } from '../types'
 import { invoke } from '@tauri-apps/api';
-import { SendTauriEvent, SendTauriUpdateDataEvent } from '../utils/tauri';
+import { AppModule } from './app';
 import { AuctionModule } from './auction';
 import { AuthModule } from './auth';
 import { ChatModule } from './chat';
@@ -10,21 +10,63 @@ import { LiveScraperModule } from './live_scraper';
 import { OrderModule } from './order';
 import { StockModule } from './stock';
 import { TransactionModule } from './transaction';
+import { EventModule } from './events';
+import { NotificationModule } from './notification';
+import { StatisticModule } from './statistic';
 
 export class TauriClient {
   constructor() {
-    this.auction = new AuctionModule();
-    this.auth = new AuthModule();
-    this.chat = new ChatModule();
-    this.debug = new DebugModule();
-    this.items = new ItemModule();
-    this.live_scraper = new LiveScraperModule();
-    this.order = new OrderModule();
-    this.stock = new StockModule();
-    this.transaction = new TransactionModule();
+    this.app = new AppModule(this);
+    this.auction = new AuctionModule(this);
+    this.auth = new AuthModule(this);
+    this.chat = new ChatModule(this);
+    this.debug = new DebugModule(this);
+    this.items = new ItemModule(this);
+    this.live_scraper = new LiveScraperModule(this);
+    this.order = new OrderModule(this);
+    this.stock = new StockModule(this);
+    this.transaction = new TransactionModule(this);
+    this.events = new EventModule(this);
+    this.notification = new NotificationModule(this);
+    this.statistic = new StatisticModule(this);
   }
 
+
+  async sendInvoke<T>(command: string, data?: any): Promise<T> {
+    if (data)
+      data = this.convertToCamelCase(data);
+    return await invoke(command, data)
+  }
+
+  convertToCamelCase(payload: Record<string, any>): Record<string, any> {
+    const newPayload: any = {};
+    for (const key in payload) {
+      if (Object.prototype.hasOwnProperty.call(payload, key)) {
+        const newKey = this.toCamelCase(key);
+        newPayload[newKey] = payload[key];
+      }
+    }
+    return newPayload;
+  }
+
+  toCamelCase(text: string): string {
+    // Split the string by underscore
+    const words = text.split('_');
+
+    // Capitalize each word after the first
+    const capitalizedWords = words.map((word, index) =>
+      index === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1)
+    );
+
+    // Join the words back together
+    const camelCaseText = capitalizedWords.join('');
+
+    return camelCaseText;
+  }
+
+
   // Modules
+  app: AppModule;
   auction: AuctionModule;
   auth: AuthModule;
   chat: ChatModule;
@@ -34,13 +76,15 @@ export class TauriClient {
   order: OrderModule;
   stock: StockModule;
   transaction: TransactionModule;
+  events: EventModule;
+  notification: NotificationModule;
+  statistic: StatisticModule;
 }
-
 
 const api = {
   base: {
     updatesettings: async (settings: Settings): Promise<Settings | undefined> => {
-      SendTauriUpdateDataEvent("settings", { data: settings, operation: "SET" })
+      // SendTauriUpdateDataEvent("settings", { data: settings, operation: "SET" })
       return await invoke("update_settings", { settings })
     },
     openLogsFolder: async (): Promise<any> => {
@@ -258,9 +302,16 @@ const api = {
   },
 }
 
-
 const client = new TauriClient()
-export { client }
+
+client.stock.item.getAll().then(console.log).catch(console.error)
+
+const OnTauriEvent = <T>(event: string, callback: (data: T) => void) => client.events.OnEvent(event, callback)
+const OffTauriEvent = <T>(event: string, callback: (data: T) => void) => client.events.OffEvent(event, callback)
+const SendTauriEvent = async (event: string, data?: any) => client.events.FireEvent(event, data)
+const SendNotificationToWindow = async (title: string, message: string, icon?: string, sound?: string) => client.notification.sendNotification(title, message, icon, sound)
+
+export { client, OnTauriEvent, OffTauriEvent, SendTauriEvent, SendNotificationToWindow }
 export default api
 
 export const wfmThumbnail = (thumb: string) => `https://warframe.market/static/assets/${thumb}`

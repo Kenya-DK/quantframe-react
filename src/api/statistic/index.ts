@@ -1,5 +1,5 @@
 import { TauriClient } from "..";
 
-export class LiveScraperModule {
+export class StatisticModule {
   constructor(private readonly client: TauriClient) { }
 }

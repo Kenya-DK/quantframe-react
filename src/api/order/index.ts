@@ -1,3 +1,5 @@
+import { TauriClient } from "..";
+
 export class OrderModule {
-  constructor() { }
+  constructor(private readonly client: TauriClient) { }
 }
