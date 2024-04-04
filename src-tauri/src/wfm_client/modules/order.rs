@@ -102,11 +102,17 @@ impl<'a> OrderModule<'a> {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
+                let log_level = match error.messages.get(0) {
+                    Some(message) if message.contains("app.delete_order.order_not_exist") => {
+                        crate::enums::LogLevel::Warning
+                    }
+                    _ => crate::enums::LogLevel::Error,
+                };
                 return Err(self.client.create_api_error(
                     "Order:Create",
                     error,
                     eyre!("There was an error creating order"),
-                    crate::enums::LogLevel::Error,
+                    log_level,
                 ));
             }
             Err(err) => {
@@ -139,7 +145,7 @@ impl<'a> OrderModule<'a> {
                     "Order:Delete",
                     error,
                     eyre!("There was an error deleting order {}", order_id),
-                    crate::enums::LogLevel::Error,
+                    log_level,
                 ));
             }
             Err(err) => {
@@ -182,11 +188,20 @@ impl<'a> OrderModule<'a> {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
+                let log_level = match error.messages.get(0) {
+                    Some(message)
+                        if message.contains("app.delete_order.order_not_exist")
+                            || message.contains("app.form.not_exist") =>
+                    {
+                        crate::enums::LogLevel::Warning
+                    }
+                    _ => crate::enums::LogLevel::Error,
+                };
                 return Err(self.client.create_api_error(
                     "Order:Update",
                     error,
                     eyre!("There was an error updating order {}", order_id),
-                    crate::enums::LogLevel::Error,
+                    log_level,
                 ));
             }
             Err(err) => {
@@ -234,7 +249,10 @@ impl<'a> OrderModule<'a> {
                 }
                 Ok(ApiResult::Error(error, _headers)) => {
                     let log_level = match error.messages.get(0) {
-                        Some(message) if message.contains("app.close_order.order_not_exist") => {
+                        Some(message)
+                            if message.contains("app.close_order.order_not_exist")
+                                || message.contains("app.form.not_exist") =>
+                        {
                             crate::enums::LogLevel::Warning
                         }
                         _ => crate::enums::LogLevel::Error,
@@ -243,7 +261,7 @@ impl<'a> OrderModule<'a> {
                         "Order:Closeing",
                         error,
                         eyre!("There was an error closing order {}", order.id),
-                        crate::enums::LogLevel::Error,
+                        log_level,
                     ));
                 }
                 Err(err) => {
