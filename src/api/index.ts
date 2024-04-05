@@ -309,7 +309,7 @@ client.stock.item.getAll().then(console.log).catch(console.error)
 const OnTauriEvent = <T>(event: string, callback: (data: T) => void) => client.events.OnEvent(event, callback)
 const OffTauriEvent = <T>(event: string, callback: (data: T) => void) => client.events.OffEvent(event, callback)
 const SendTauriEvent = async (event: string, data?: any) => client.events.FireEvent(event, data)
-const SendNotificationToWindow = async (title: string, message: string, icon?: string, sound?: string) => client.notification.sendNotification(title, message, icon, sound)
+const SendNotificationToWindow = async (title: string, message: string, icon?: string, sound?: string) => client.notification.sendSystemNotification(title, message, icon, sound)
 
 export { client, OnTauriEvent, OffTauriEvent, SendTauriEvent, SendNotificationToWindow }
 export default api
