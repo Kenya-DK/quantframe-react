@@ -1,7 +1,6 @@
 import { TauriClient } from "..";
 
-export class AppModule {
-
+export class CacheModule {
   constructor(private readonly client: TauriClient) { }
 
 }

@@ -13,6 +13,7 @@ import { TransactionModule } from './transaction';
 import { EventModule } from './events';
 import { NotificationModule } from './notification';
 import { StatisticModule } from './statistic';
+import { CacheModule } from './cache';
 
 export class TauriClient {
   constructor() {
@@ -29,6 +30,7 @@ export class TauriClient {
     this.events = new EventModule(this);
     this.notification = new NotificationModule(this);
     this.statistic = new StatisticModule(this);
+    this.cache = new CacheModule(this);
   }
 
 
@@ -79,6 +81,7 @@ export class TauriClient {
   events: EventModule;
   notification: NotificationModule;
   statistic: StatisticModule;
+  cache: CacheModule;
 }
 
 const api = {
@@ -177,7 +180,7 @@ const api = {
       return await invoke("delete_transaction_entry", { id }) as TransactionEntryDto;
     },
     update: async (id: number, transaction: Partial<TransactionEntryDto>): Promise<any> => {
-      return await invoke("update_transaction_entry", {
+      return await invoke("tra_update_by_id", {
         id,
         price: transaction.price,
         transaction_type: transaction.transaction_type,
@@ -304,14 +307,12 @@ const api = {
 
 const client = new TauriClient()
 
-client.stock.item.getAll().then(console.log).catch(console.error)
-
 const OnTauriEvent = <T>(event: string, callback: (data: T) => void) => client.events.OnEvent(event, callback)
 const OffTauriEvent = <T>(event: string, callback: (data: T) => void) => client.events.OffEvent(event, callback)
 const SendTauriEvent = async (event: string, data?: any) => client.events.FireEvent(event, data)
-const SendNotificationToWindow = async (title: string, message: string, icon?: string, sound?: string) => client.notification.sendSystemNotification(title, message, icon, sound)
+// const SendNotificationToWindow = async (title: string, message: string, icon?: string, sound?: string) => client.notification.sendSystemNotification(title, message, icon, sound)
 
-export { client, OnTauriEvent, OffTauriEvent, SendTauriEvent, SendNotificationToWindow }
+export { client, OnTauriEvent, OffTauriEvent, SendTauriEvent }
 export default api
 
 export const wfmThumbnail = (thumb: string) => `https://warframe.market/static/assets/${thumb}`
