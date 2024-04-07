@@ -32,6 +32,9 @@ pub struct CacheTradableItem {
   #[serde(rename = "image_url")]
   pub image_url: String,
 
+  #[serde(rename = "max_rank")]
+  pub max_rank: Option<i64>,
+
   #[serde(rename = "sub_types")]
   pub sub_types: Vec<Option<String>>,
 }

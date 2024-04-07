@@ -1,6 +1,5 @@
+use entity::stock_riven::RivenAttribute;
 use serde::{Deserialize, Serialize};
-
-use super::riven_attribute::RivenAttribute;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AuctionItem {

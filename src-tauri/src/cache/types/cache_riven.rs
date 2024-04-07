@@ -42,6 +42,9 @@ pub struct CacheRivenWfmWeapon {
     #[serde(rename = "wfm_thumb")]
     wfm_thumb: String,
 
+    #[serde(rename = "uniqueName")]
+    unique_name: String,
+
     #[serde(rename = "i18n")]
     i18_n: HashMap<String, I18N>,
 }
@@ -76,7 +79,7 @@ pub struct CacheRivenWfmAttribute {
     effect: String,
 
     #[serde(rename = "exclusive_to")]
-    exclusive_to:Option<Vec<String>>,
+    exclusive_to: Option<Vec<String>>,
 
     #[serde(rename = "group")]
     group: String,

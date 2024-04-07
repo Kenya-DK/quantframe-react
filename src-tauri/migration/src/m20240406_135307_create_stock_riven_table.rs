@@ -1,0 +1,121 @@
+use sea_orm_migration::prelude::*;
+
+#[derive(DeriveMigrationName)]
+pub struct Migration;
+
+#[async_trait::async_trait]
+impl MigrationTrait for Migration {
+    async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        manager
+            .create_table(
+                Table::create()
+                    .table(StockRiven::Table)
+                    .if_not_exists()
+                    .col(
+                        ColumnDef::new(StockRiven::Id)
+                            .integer()
+                            .not_null()
+                            .auto_increment()
+                            .primary_key(),
+                    )
+                    .col(ColumnDef::new(StockRiven::WFMWeaponId).uuid().not_null())
+                    .col(ColumnDef::new(StockRiven::WFMWeaponUrl).string().not_null())
+                    .col(ColumnDef::new(StockRiven::WFMOrderId).uuid())
+                    .col(ColumnDef::new(StockRiven::WeaponName).string().not_null())
+                    .col(ColumnDef::new(StockRiven::WeaponType).string().not_null())
+                    .col(
+                        ColumnDef::new(StockRiven::WeaponUniqueName)
+                            .string()
+                            .not_null()
+                            .default("N/A"),
+                    )
+                    .col(ColumnDef::new(StockRiven::SubType).json())
+                    .col(ColumnDef::new(StockRiven::ModName).string().not_null())
+                    .col(ColumnDef::new(StockRiven::Attributes).json())
+                    .col(
+                        ColumnDef::new(StockRiven::MasteryRank)
+                            .integer()
+                            .not_null()
+                            .default(Value::Int(Some(0))),
+                    )
+                    .col(
+                        ColumnDef::new(StockRiven::ReRolls)
+                            .integer()
+                            .not_null()
+                            .default(Value::Int(Some(0))),
+                    )
+                    .col(ColumnDef::new(StockRiven::Polarity).string().not_null())
+                    .col(
+                        ColumnDef::new(StockRiven::Bought)
+                            .integer()
+                            .not_null()
+                            .default(Value::Int(Some(0))),
+                    )
+                    .col(ColumnDef::new(StockRiven::MinimumPrice).integer())
+                    .col(ColumnDef::new(StockRiven::ListPrice).integer())
+                    .col(ColumnDef::new(StockRiven::Filter).json())
+                    .col(
+                        ColumnDef::new(StockRiven::IsHidden)
+                            .boolean()
+                            .not_null()
+                            .default(Value::Bool(Some(false))),
+                    )
+                    .col(
+                        ColumnDef::new(StockRiven::Comment)
+                            .string()
+                            .not_null()
+                            .default(""),
+                    )
+                    .col(
+                        ColumnDef::new(StockRiven::Status)
+                            .string()
+                            .not_null()
+                            .default("pending"),
+                    )
+                    .col(
+                        ColumnDef::new(StockRiven::PriceHistory)
+                            .json()
+                            .not_null()
+                            .default("[]"),
+                    )
+                    .col(ColumnDef::new(StockRiven::CreatedAt).date_time().not_null())
+                    .col(ColumnDef::new(StockRiven::UpdatedAt).date_time().not_null())
+                    .to_owned(),
+            )
+            .await
+    }
+
+    async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        manager
+            .drop_table(Table::drop().table(StockRiven::Table).to_owned())
+            .await
+    }
+}
+
+#[derive(DeriveIden)]
+enum StockRiven {
+    Table,
+    Id,
+    WFMWeaponId,
+    WFMWeaponUrl,
+    WFMOrderId,
+    WeaponName,
+    WeaponType,
+    WeaponUniqueName,
+    SubType,
+    ModName,
+    Attributes,
+    MasteryRank,
+    ReRolls,
+    Polarity,
+    Bought,
+    MinimumPrice,
+    ListPrice,
+    Filter,
+    IsHidden,
+    Comment,
+    Status,
+    PriceHistory,
+    CreatedAt,
+    UpdatedAt,
+}

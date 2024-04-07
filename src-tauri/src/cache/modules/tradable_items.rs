@@ -52,4 +52,7 @@ impl TradableItemModule {
     pub fn get_items(&self) -> Result<Vec<CacheTradableItem>, AppError> {
         Ok(self.items.clone())
     }
+    pub fn find_by_url_name(&self, url_name: &str) -> Option<CacheTradableItem> {
+        self.items.iter().find(|item| item.wfm_url_name == url_name).cloned()
+    }
 }

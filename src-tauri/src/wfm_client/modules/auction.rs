@@ -1,5 +1,6 @@
 use std::sync::{Arc, Mutex};
 
+use entity::stock_riven::RivenAttribute;
 use eyre::eyre;
 use serde_json::json;
 
@@ -7,8 +8,7 @@ use crate::{
     helper, logger, utils::{enums::log_level::LogLevel, modules::error::{ApiResult, AppError}}, wfm_client::{
         client::WFMClient,
         types::{
-            auction::Auction, auction_item::AuctionItem, auction_owner::AuctionOwner,
-            riven_attribute::RivenAttribute, riven_attribute_info::RivenAttributeInfo,
+            auction::Auction, auction_item::AuctionItem, auction_owner::AuctionOwner, riven_attribute_info::RivenAttributeInfo,
             riven_type_info::RivenTypeInfo,
         },
     }
@@ -207,7 +207,6 @@ impl AuctionModule {
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {
-                self.emit("CREATE_OR_UPDATE", serde_json::to_value(&payload).unwrap());
                 self.add_auction_count(1)?;
                 self.client.debug(
                     &self.debug_id,
@@ -257,7 +256,6 @@ impl AuctionModule {
 
         match self.client.put(&url, Some("auction"), Some(body)).await {
             Ok(ApiResult::Success(payload, _headers)) => {
-                self.emit("CREATE_OR_UPDATE", serde_json::to_value(&payload).unwrap());
                 self.client.debug(
                     &self.debug_id,
                     &self.get_component("Update"),
@@ -442,7 +440,6 @@ impl AuctionModule {
 
         match self.client.put(&url, Some("auction_id"), None).await {
             Ok(ApiResult::Success(payload, _headers)) => {
-                self.emit("CREATE_OR_UPDATE", serde_json::to_value(&payload).unwrap());
                 self.subtract_auction_count(1)?;
                 self.client.debug(
                     &self.debug_id,
@@ -473,9 +470,6 @@ impl AuctionModule {
                 return Err(err);
             }
         };
-    }
-    pub fn emit(&self, operation: &str, data: serde_json::Value) {
-        helper::emit_update("auctions", operation, Some(data));
     }
 }
 

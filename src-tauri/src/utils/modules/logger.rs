@@ -6,7 +6,7 @@ use std::{
     path::PathBuf,
 };
 
-use crate::{helper, utils::enums::log_level::LogLevel, PACKAGEINFO};
+use crate::{helper, utils::enums::log_level::LogLevel};
 
 use super::error::AppError;
 
@@ -91,7 +91,7 @@ pub fn dolog(level: LogLevel, component: &str, msg: &str, console: bool, file: O
 }
 
 pub fn get_log_folder() -> PathBuf {
-    let app_path = helper::get_app_roaming_path();
+    let app_path = helper::get_app_storage_path();
     let log_path = app_path.join("logs");
     // Create the directory if it does not exist
     if !log_path.exists() {
@@ -185,60 +185,60 @@ pub fn export_logs() {
         .format("%Y-%m-%d")
         .to_string();
 
-    let packageinfo = PACKAGEINFO
-        .lock()
-        .unwrap()
-        .clone()
-        .expect("Could not get package info");
-    let version = packageinfo.version.to_string();
+    // let packageinfo = PACKAGEINFO
+    //     .lock()
+    //     .unwrap()
+    //     .clone()
+    //     .expect("Could not get package info");
+    // let version = packageinfo.version.to_string();
 
-    let zip_path = helper::get_desktop_path().join(format!(
-        "{} v{} {} Logs.zip",
-        packageinfo.name, version, date
-    ));
-    let mut files_to_compress: Vec<helper::ZipEntry> = vec![];
+    // let zip_path = helper::get_desktop_path().join(format!(
+    //     "{} v{} {} Logs.zip",
+    //     packageinfo.name, version, date
+    // ));
+    // let mut files_to_compress: Vec<helper::ZipEntry> = vec![];
 
-    let mut logs_path = get_log_folder();
-    logs_path.pop();
+    // let mut logs_path = get_log_folder();
+    // logs_path.pop();
 
-    files_to_compress.push(helper::ZipEntry {
-        file_path: logs_path,
-        sub_path: Some("logs".to_string()),
-        content: None,
-        include_dir: true,
-    });
+    // files_to_compress.push(helper::ZipEntry {
+    //     file_path: logs_path,
+    //     sub_path: Some("logs".to_string()),
+    //     content: None,
+    //     include_dir: true,
+    // });
 
-    let app_path = helper::get_app_roaming_path();
-    for path in fs::read_dir(app_path).unwrap() {
-        let path = path.unwrap().path();
-        // Check if path is auth.json
-        if path.ends_with("auth.json") || path.ends_with("settings.json") {
-            let json = helper::open_json_and_replace(
-                &path.to_str().unwrap(),
-                vec!["access_token".to_string(), "webhook".to_string()],
-            )
-            .expect("Could not open auth.json");
+    // let app_path = helper::get_app_storage_path();
+    // for path in fs::read_dir(app_path).unwrap() {
+    //     let path = path.unwrap().path();
+    //     // Check if path is auth.json
+    //     if path.ends_with("auth.json") || path.ends_with("settings.json") {
+    //         let json = helper::open_json_and_replace(
+    //             &path.to_str().unwrap(),
+    //             vec!["access_token".to_string(), "webhook".to_string()],
+    //         )
+    //         .expect("Could not open auth.json");
 
-            files_to_compress.push(helper::ZipEntry {
-                file_path: path.to_owned(),
-                sub_path: None,
-                content: Some(serde_json::to_string_pretty(&json).unwrap()),
-                include_dir: false,
-            });
-        } else {
-            files_to_compress.push(helper::ZipEntry {
-                file_path: path.to_owned(),
-                sub_path: None,
-                content: None,
-                include_dir: false,
-            });
-        }
-    }
+    //         files_to_compress.push(helper::ZipEntry {
+    //             file_path: path.to_owned(),
+    //             sub_path: None,
+    //             content: Some(serde_json::to_string_pretty(&json).unwrap()),
+    //             include_dir: false,
+    //         });
+    //     } else {
+    //         files_to_compress.push(helper::ZipEntry {
+    //             file_path: path.to_owned(),
+    //             sub_path: None,
+    //             content: None,
+    //             include_dir: false,
+    //         });
+    //     }
+    // }
 
-    match helper::create_zip_file(files_to_compress, zip_path.to_str().unwrap_or_default()) {
-        Ok(_) => {}
-        Err(e) => {
-            println!("Error: {:?}", e);
-        }
-    }
+    // match helper::create_zip_file(files_to_compress, zip_path.to_str().unwrap_or_default()) {
+    //     Ok(_) => {}
+    //     Err(e) => {
+    //         println!("Error: {:?}", e);
+    //     }
+    // }
 }

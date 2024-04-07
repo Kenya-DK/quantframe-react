@@ -46,7 +46,7 @@ impl Default for AuthState {
 }
 impl AuthState {
     fn get_file_path() -> PathBuf {
-        let app_path = helper::get_app_roaming_path();
+        let app_path = helper::get_app_storage_path();
         let auth_path = app_path.join("auth.json");
         auth_path
     }
@@ -119,6 +119,6 @@ impl AuthState {
         Ok((deserialized, missing_properties.is_empty()))
     }
     pub fn send_to_window(&self) {
-        helper::emit_update("user", "SET", Some(json!(self.clone())));
+        
     }
 }

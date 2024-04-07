@@ -3,7 +3,6 @@ pub mod arch_gun;
 pub mod arch_melee;
 pub mod archwing;
 pub mod fish;
-pub mod item;
 pub mod item_price;
 pub mod melee;
 pub mod misc;

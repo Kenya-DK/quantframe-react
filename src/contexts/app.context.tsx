@@ -59,6 +59,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
       setSettings({ ...data.settings })
       setAppInfo(data.app_info);
 
+      debugger;
 
       const { shouldUpdate, manifest } = await checkUpdate()
       if (!shouldUpdate)

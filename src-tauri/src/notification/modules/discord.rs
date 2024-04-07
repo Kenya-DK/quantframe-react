@@ -1,13 +1,4 @@
-use crate::{
-    database::{
-        client::DBClient, enums::stock_status::StockStatus, types::price_history::PriceHistory,
-    }, helper, notification::client::NotifyClient, utils::{enums::log_level::LogLevel, modules::error::AppError}, wfm_client::types::order::Order
-};
-use eyre::eyre;
-
-use sea_query::{ColumnDef, Expr, Iden, InsertStatement, Query, SqliteQueryBuilder, Table, Value};
-use serde::{Deserialize, Serialize};
-use serde_json::json;
+use crate::notification::client::NotifyClient;
 
 #[derive(Clone, Debug)]
 pub struct DiscordModule {

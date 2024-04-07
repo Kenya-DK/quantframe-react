@@ -1,4 +1,5 @@
 use eyre::eyre;
+use migration::DbErr;
 use regex::Regex;
 use reqwest::header::HeaderMap;
 use serde_json::{json, Value};
@@ -49,6 +50,13 @@ impl AppError {
         AppError {
             component: component.to_string(),
             eyre_report: format!("{:?}", eyre_report),
+            log_level: LogLevel::Critical,
+        }
+    }
+    pub fn new_db(component: &str, err: DbErr) -> Self {
+        AppError {
+            component: component.to_string(),
+            eyre_report: format!("{:?}", eyre!(err.to_string())),
             log_level: LogLevel::Critical,
         }
     }

@@ -1,4 +1,11 @@
-use crate::{database::client::DBClient, helper, utils::{enums::log_level::LogLevel, modules::{error::AppError, logger}}};
+use crate::{
+    database::client::DBClient,
+    helper,
+    utils::{
+        enums::log_level::LogLevel,
+        modules::{error::AppError, logger},
+    },
+};
 use eyre::eyre;
 use sea_query::{ColumnDef, Expr, Iden, InsertStatement, Query, SqliteQueryBuilder, Table, Value};
 use serde::{Deserialize, Serialize};

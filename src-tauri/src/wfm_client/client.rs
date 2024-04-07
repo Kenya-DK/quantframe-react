@@ -10,8 +10,7 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 
 use crate::{
-    auth::AuthState,
-    logger, utils::{enums::log_level::LogLevel, modules::{error::{ApiResult, AppError, ErrorApiResponse}, rate_limiter::RateLimiter}},
+    app::client::AppState, auth::AuthState, logger, utils::{enums::log_level::LogLevel, modules::{error::{ApiResult, AppError, ErrorApiResponse}, rate_limiter::RateLimiter}}
 };
 
 use super::modules::{
@@ -32,14 +31,17 @@ pub struct WFMClient {
     pub log_file: String,
     pub auth: Arc<Mutex<AuthState>>,
     pub settings: Arc<Mutex<crate::settings::SettingsState>>,
+    pub app: Arc<Mutex<AppState>>,
 }
 
 impl WFMClient {
     pub fn new(
         auth: Arc<Mutex<AuthState>>,
         settings: Arc<Mutex<crate::settings::SettingsState>>,
+        app: Arc<Mutex<AppState>>,
     ) -> Self {
         WFMClient {
+            app,
             endpoint: "https://api.warframe.market/v1/".to_string(),
             component: "WarframeMarket".to_string(),
             limiter: Arc::new(tokio::sync::Mutex::new(RateLimiter::new(
@@ -103,15 +105,12 @@ impl WFMClient {
         body: Option<Value>,
     ) -> Result<ApiResult<T>, AppError> {
         let auth = self.auth.lock()?.clone();
+        let app = self.app.lock()?.clone();
         let mut rate_limiter = self.limiter.lock().await;
 
         rate_limiter.wait_for_token().await;
 
-        let packageinfo = crate::PACKAGEINFO
-            .lock()
-            .unwrap()
-            .clone()
-            .expect("Could not get package info");
+        let packageinfo = app.get_app_info();
 
         let client = Client::new();
         let new_url = format!("{}{}", self.endpoint, url);

@@ -11,6 +11,5 @@ pub mod order_item;
 pub mod order;
 pub mod orders;
 pub mod riven_attribute_info;
-pub mod riven_attribute;
 pub mod riven_type_info;
 pub mod user;

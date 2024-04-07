@@ -9,15 +9,13 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::{json, Value};
 
 use crate::{
-    auth::AuthState,
-    logger,
-    utils::{
+    app::client::AppState, auth::AuthState, logger, utils::{
         enums::log_level::LogLevel,
         modules::{
             error::{ApiResult, AppError, ErrorApiResponse},
             rate_limiter::RateLimiter,
         },
-    },
+    }
 };
 
 use super::modules::{cache::CacheModule, price_scraper::PriceScraperModule};
@@ -38,12 +36,14 @@ pub struct QFClient {
     pub log_file: String,
     pub auth: Arc<Mutex<AuthState>>,
     pub settings: Arc<Mutex<crate::settings::SettingsState>>,
+    pub app: Arc<Mutex<AppState>>,
 }
 
 impl QFClient {
     pub fn new(
         auth: Arc<Mutex<AuthState>>,
         settings: Arc<Mutex<crate::settings::SettingsState>>,
+        app: Arc<Mutex<AppState>>,
     ) -> Self {
         QFClient {
             endpoint: "http://localhost:6969/api/".to_string(),
@@ -57,6 +57,7 @@ impl QFClient {
             component: "QuantframeApi".to_string(),
             auth,
             settings,
+            app,
         }
     }
     pub fn create_api_error(
@@ -102,15 +103,11 @@ impl QFClient {
         body: Option<Value>,
         is_bytes: bool,
     ) -> Result<ApiResult<T>, AppError> {
+        let app = self.app.lock()?.clone();
         let mut rate_limiter = self.limiter.lock().await;
-
         rate_limiter.wait_for_token().await;
 
-        let packageinfo = crate::PACKAGEINFO
-            .lock()
-            .unwrap()
-            .clone()
-            .expect("Could not get package info");
+        let packageinfo = app.get_app_info();
 
         let client = Client::new();
         let new_url = format!("{}{}", self.endpoint, url);

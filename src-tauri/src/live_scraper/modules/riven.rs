@@ -1,7 +1,9 @@
+use entity::{enums::stock_status::StockStatus, stock_riven};
 use serde_json::json;
+use service::{StockRivenMutation, StockRivenQuery};
 
 use crate::{
-    database::{enums::stock_status::StockStatus, modules::stock_riven::StockRivenStruct}, live_scraper::client::LiveScraperClient, logger, utils::modules::error::AppError, wfm_client::types::auction_item::AuctionItem
+   live_scraper::client::LiveScraperClient, logger, utils::modules::error::AppError, wfm_client::types::auction_item::AuctionItem
 };
 #[derive(Clone)]
 pub struct RivenModule {
@@ -25,14 +27,16 @@ impl RivenModule {
         self.client.update_riven_module(self.clone());
     }
     pub async fn check_stock(&mut self) -> Result<(), AppError> {
-        let db = self.client.db.lock()?.clone();
+        let app = self.client.app.lock()?.clone();
         let wfm = self.client.wfm.lock()?.clone();
         let auth = self.client.auth.lock()?.clone();
         let settings = self.client.settings.lock()?.clone().live_scraper;
         let min_profit = settings.stock_riven.range_threshold;
         logger::info_con("RivenModule", "Run Riven Stock Check");
 
-        let stock_rivens = db.stock_riven().get_rivens().await?;
+        let stock_rivens = StockRivenQuery::get_all(&app.conn)
+            .await.map_err(|e| AppError::new("RivenModule", eyre::eyre!(e)))?;
+        
         let my_auctions = wfm.auction().get_my_auctions().await?;
         let my_rivens = my_auctions
             .iter()
@@ -46,11 +50,6 @@ impl RivenModule {
             // Clone the stock riven
             let stock_riven_original = stock_riven.clone();
 
-            self.client.send_message(
-                "riven.checking",
-                Some(json!({ "name": stock_riven.weapon_name, "count": current_index, "total": total})),
-            );
-
             // Check if client is running
             if self.client.is_running() == false {
                 break;
@@ -59,22 +58,18 @@ impl RivenModule {
             // Find my auction for this riven if exists
             let auction = my_rivens
                 .iter()
-                .find(|a| a.id == stock_riven.order_id.clone().unwrap_or("".to_string()));
+                .find(|a| a.id == stock_riven.wfm_order_id.clone().unwrap_or("".to_string()));
 
             // Check if riven is private
-            if stock_riven.private {
+            if stock_riven.is_hidden {
                 // Update Auction on warframe.market
                 if auction.is_some() {
                     let auction = auction.unwrap();
-                    self.client.send_message(
-                        "riven.deleting",
-                        Some(json!({ "name": stock_riven.weapon_name})),
-                    );
                     wfm.auction().delete(auction.id.as_str()).await?;
                 }
-                stock_riven.status = StockStatus::InActive.to_string();
-                stock_riven.listed_price = Some(-1);
-                stock_riven.order_id = Some("".to_string());
+                stock_riven.status = StockStatus::InActive;
+                stock_riven.list_price = Some(-1);
+                stock_riven.wfm_order_id = Some("".to_string());
                 logger::log_json(
                     format!("{} {}.json", stock_riven.weapon_name, stock_riven.mod_name).as_str(),
                     &json!({
@@ -87,8 +82,8 @@ impl RivenModule {
                 continue;
             }
 
-            let riven_attributes = stock_riven.attributes.iter().cloned().collect::<Vec<_>>();
-            let match_data = stock_riven.match_riven.clone();
+            let riven_attributes = stock_riven.attributes.0.iter().cloned().collect::<Vec<_>>();
+            let match_data = stock_riven.filter.clone();
             let use_match = match_data.enabled.unwrap_or(false);
 
             // Find Positive stats
@@ -121,8 +116,8 @@ impl RivenModule {
             // Match Rerolls
             let mut min_rerolls: Option<i64> = None;
             let mut max_rerolls: Option<i64> = None;
-            if stock_riven.match_riven.re_rolls.is_some() && use_match {
-                let re_rolls = stock_riven.match_riven.re_rolls.clone().unwrap();
+            if stock_riven.filter.re_rolls.is_some() && use_match {
+                let re_rolls = stock_riven.filter.re_rolls.clone().unwrap();
                 if re_rolls.min != 0 {
                     min_rerolls = Some(re_rolls.min);
                 }
@@ -134,8 +129,8 @@ impl RivenModule {
             // Match Mastery Rank
             let mut min_mastery_rank: Option<i64> = None;
             let mut max_mastery_rank: Option<i64> = None;
-            if stock_riven.match_riven.mastery_rank.is_some() && use_match {
-                let mastery_rank = stock_riven.match_riven.mastery_rank.clone().unwrap();
+            if stock_riven.filter.mastery_rank.is_some() && use_match {
+                let mastery_rank = stock_riven.filter.mastery_rank.clone().unwrap();
                 if mastery_rank.min != 0 {
                     min_mastery_rank = Some(mastery_rank.min);
                 }
@@ -159,7 +154,7 @@ impl RivenModule {
                 .auction()
                 .search(
                     "riven",
-                    &stock_riven.weapon_url,
+                    &stock_riven.wfm_weapon_url,
                     Some(positive_stats.clone()),
                     negative_stats.get(0).cloned(),
                     polarity.as_deref(),
@@ -183,7 +178,7 @@ impl RivenModule {
                         && a.owner.status == "ingame"
                         && (a.item.similarity.unwrap_or(0.0)
                             >= if use_match {
-                                match_data.similarity.unwrap_or(0.0)
+                                match_data.similarity.unwrap_or(0) as f64
                             } else {
                                 0.0
                             })
@@ -191,10 +186,10 @@ impl RivenModule {
                 .collect::<Vec<_>>();
 
             // Get the average price of the item.
-            let bought_price = stock_riven.price as i64;
+            let bought_price = stock_riven.bought;
 
             // Get the minimum price of the item.
-            let minimum_price = stock_riven.minium_price;
+            let minimum_price = stock_riven.minimum_price;
 
             // Get the lowest sell order price from the DataFrame of live sell orders
             let lowest_price = if live_auctions.len() > 1 {
@@ -222,57 +217,57 @@ impl RivenModule {
                     // Get the average price of the valid prices
                     valid_prices.iter().sum::<i64>() / valid_prices.len() as i64
                 } else {
-                    stock_riven.status = StockStatus::NoSellers.to_string();
+                    stock_riven.status = StockStatus::NoSellers;
                     0
                 }
             } else {
-                stock_riven.status = StockStatus::NoSellers.to_string();
+                stock_riven.status = StockStatus::NoSellers;
                 0
             };
 
             // The new price of the riven
             let mut post_price = lowest_price;
-            stock_riven.status = StockStatus::Live.to_string();
+            stock_riven.status = StockStatus::Live;
 
             if bought_price > post_price {
-                post_price = bought_price + min_profit + 10 as i64;
+                post_price = bought_price + min_profit + 10;
             }
 
             // If minimum price is set and the post price is less than the minimum price then set the post price to be the minimum price
-            if minimum_price.is_some() && post_price < minimum_price.unwrap() as i64 {
-                post_price = minimum_price.unwrap() as i64;
+            if minimum_price.is_some() && post_price < minimum_price.unwrap()  {
+                post_price = minimum_price.unwrap();
             }
 
-            let profit = post_price - bought_price as i64;
+            let profit = post_price - bought_price;
 
             if profit <= 0 {
-                stock_riven.status = StockStatus::ToLowProfit.to_string();
-                stock_riven.listed_price = Some(-1);
+                stock_riven.status = StockStatus::ToLowProfit;
+                stock_riven.list_price = Some(-1);
             } else {
-                stock_riven.listed_price = Some(post_price as i32);
+                stock_riven.list_price = Some(post_price);
             }
 
             // Get the minimum price of the riven.
-            let minimum_price = stock_riven.minium_price;
+            let minimum_price = stock_riven.minimum_price;
 
             // Check if the rivens price is lower than the minimum price
-            if minimum_price.is_some() && post_price < minimum_price.unwrap() as i64 {
-                post_price = minimum_price.unwrap() as i64;
+            if minimum_price.is_some() && post_price < minimum_price.unwrap() {
+                post_price = minimum_price.unwrap() ;
             }
 
             // Calculate profit of the riven
-            let profit = post_price - stock_riven.price as i64;
+            let profit = post_price - stock_riven.bought;
 
             if profit <= settings.stock_riven.range_threshold {
-                stock_riven.status = StockStatus::ToLowProfit.to_string();
-                stock_riven.listed_price = Some(-1);
+                stock_riven.status = StockStatus::ToLowProfit;
+                stock_riven.list_price = Some(-1);
             } else {
-                stock_riven.listed_price = Some(post_price as i32);
+                stock_riven.list_price = Some(post_price);
             }
 
             match auction {
                 Some(auction) => {
-                    if stock_riven.status == StockStatus::ToLowProfit.to_string() {
+                    if stock_riven.status == StockStatus::ToLowProfit {
                         wfm.auction().delete(auction.id.as_str()).await?;
                     } else if auction.starting_price != post_price as i64
                         || stock_riven.comment.clone().unwrap_or("".to_string()) != auction.note
@@ -290,7 +285,7 @@ impl RivenModule {
                     }
                 }
                 None => {
-                    if stock_riven.status != StockStatus::ToLowProfit.to_string() {
+                    if stock_riven.status != StockStatus::ToLowProfit {
                         let new_aut = wfm
                             .auction()
                             .create(
@@ -307,11 +302,11 @@ impl RivenModule {
                                 false,
                                 AuctionItem {
                                     item_type: "riven".to_string(),
-                                    weapon_url_name: Some(stock_riven.weapon_url.clone()),
+                                    weapon_url_name: Some(stock_riven.wfm_weapon_url.clone()),
                                     re_rolls: Some(stock_riven.re_rolls as i64),
                                     attributes: Some(stock_riven.attributes.0.clone()),
                                     name: Some(stock_riven.mod_name.clone()),
-                                    mod_rank: Some(stock_riven.rank as i64),
+                                    mod_rank: Some(stock_riven.sub_type.clone().unwrap().rank.unwrap_or(0)),
                                     polarity: Some(stock_riven.polarity.clone()),
                                     mastery_level: Some(stock_riven.mastery_rank as i64),
                                     element: None,
@@ -324,7 +319,7 @@ impl RivenModule {
                                 },
                             )
                             .await?;
-                        stock_riven.order_id = Some(new_aut.id);
+                        stock_riven.wfm_order_id = Some(new_aut.id);
                     }
                 }
             }
@@ -338,8 +333,8 @@ impl RivenModule {
                     "profit": profit,
                     "post_price": post_price,
                     "status": stock_riven.status,
-                    "listed_price": stock_riven.listed_price,
-                    "order_id": stock_riven.order_id,
+                    "listed_price": stock_riven.list_price,
+                    "order_id": stock_riven.wfm_weapon_url,
                     "stock_riven_original": stock_riven_original,
                     "stock_riven": stock_riven
                 }),
@@ -348,7 +343,7 @@ impl RivenModule {
                 &self.get_component("CheckStock"),
                 format!(
                     "Name: {} {} | Lowest Price: {} | Sell Price: {} | Profit: {} | Total Sellers: {} | Status: {}",
-                    stock_riven.weapon_name, stock_riven.mod_name, lowest_price, post_price, profit, live_auctions.len(), stock_riven.status
+                    stock_riven.weapon_name, stock_riven.mod_name, lowest_price, post_price, profit, live_auctions.len(), stock_riven.status.as_str()
                 )
                 .as_str(),
             );
@@ -357,24 +352,24 @@ impl RivenModule {
     }
     async fn update_stock(
         &self,
-        stock_riven_original: &StockRivenStruct,
-        stock_riven: &StockRivenStruct,
+        stock_riven_original: &stock_riven::Model,
+        stock_riven: &stock_riven::Model,
     ) -> Result<(), AppError> {
-        let db = self.client.db.lock()?.clone();
+        let app = self.client.app.lock()?.clone();
         let mut need_update = false;
-        if stock_riven_original.order_id != stock_riven.order_id
-            && (stock_riven.order_id == None
-                && stock_riven_original.order_id == Some("".to_string()))
+        if stock_riven_original.wfm_order_id != stock_riven.wfm_order_id
+            && (stock_riven.wfm_order_id == None
+                && stock_riven_original.wfm_order_id == Some("".to_string()))
         {
             need_update = true;
         } else if stock_riven_original.status != stock_riven.status {
             need_update = true;
-        } else if stock_riven_original.listed_price != stock_riven.listed_price {
-            if stock_riven_original.listed_price.is_some() && stock_riven.listed_price.unwrap() <= 0
+        } else if stock_riven_original.list_price != stock_riven.list_price {
+            if stock_riven_original.list_price.is_some() && stock_riven.list_price.unwrap() <= 0
             {
                 need_update = true;
-            } else if stock_riven_original.listed_price != stock_riven.listed_price
-                && stock_riven.listed_price.unwrap() > 0
+            } else if stock_riven_original.list_price != stock_riven.list_price
+                && stock_riven.list_price.unwrap() > 0
             {
                 need_update = true;
             }
@@ -387,31 +382,17 @@ impl RivenModule {
                     "Name: {} {} | Order ID: {:?} -> {:?} | Listed Price: {:?} -> {:?} | Status: {:?} -> {:?}",
                     stock_riven.weapon_name,
                     stock_riven.mod_name,
-                    stock_riven_original.order_id,
-                    stock_riven.order_id,
-                    stock_riven_original.listed_price,
-                    stock_riven.listed_price,
+                    stock_riven_original.wfm_order_id,
+                    stock_riven.wfm_order_id,
+                    stock_riven_original.list_price,
+                    stock_riven.list_price,
                     stock_riven_original.status,
                     stock_riven.status
                 )
                 .as_str(),
             );
-            db.stock_riven()
-                .update_by_id(
-                    stock_riven.id,
-                    stock_riven.order_id.clone(),
-                    None,
-                    stock_riven.listed_price.clone(),
-                    None,
-                    None,
-                    None,
-                    None,
-                    Some(stock_riven.status.clone()),
-                    None,
-                    None,
-                    None,
-                )
-                .await?;
+            StockRivenMutation::update_by_id(&app.conn, stock_riven.id, stock_riven.clone())
+                .await.map_err(|e| AppError::new("RivenModule", eyre::eyre!(e)))?;
         }
         Ok(())
     }

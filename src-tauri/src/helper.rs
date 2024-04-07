@@ -1,6 +1,4 @@
-use directories::{BaseDirs, UserDirs};
 use eyre::eyre;
-use once_cell::sync::Lazy;
 use serde_json::{json, Map, Value};
 use std::{
     fs::{self, File},
@@ -11,103 +9,20 @@ use std::{
 use tauri::Window;
 use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 
-use crate::{logger, utils::modules::error::AppError, PACKAGEINFO};
-pub static WINDOW: Lazy<Mutex<Option<Window>>> = Lazy::new(|| Mutex::new(None));
+use crate::{logger, utils::modules::error::AppError};
 
-pub fn send_message_to_window(event: &str, data: Option<Value>) {
-    let window = WINDOW.lock().unwrap();
-    if let Some(window) = &*window {
-        let rep = window.emit("message", json!({ "event": event, "data": data }));
-        match rep {
-            Ok(_) => {}
-            Err(e) => {
-                println!("Error while sending message to window {:?}", e);
-            }
+pub fn get_app_storage_path() -> PathBuf {
+    let local_path = match tauri::api::path::local_data_dir() {
+        Some(val) => val,
+        None => {
+            panic!("Could not find app path");
         }
+    };
+    let app_path = local_path.join("dev.kenya.quantframe");
+    if !app_path.exists() {
+        fs::create_dir_all(app_path.clone()).unwrap();
     }
-}
-
-pub fn get_app_info() -> Result<serde_json::Value, AppError> {
-    let packageinfo = PACKAGEINFO
-        .lock()
-        .unwrap()
-        .clone()
-        .expect("Could not get package info");
-    let version = packageinfo.version.to_string();
-
-    let rep = json!({
-        "app_name": packageinfo.name,
-        "app_description": packageinfo.description,
-        "app_author": packageinfo.authors,
-        "app_version": version,
-    });
-
-    Ok(rep)
-}
-
-pub fn emit_progress(id: &str, i18n_key: &str, values: Option<Value>, is_completed: bool) {
-    send_message_to_window(
-        "Client:Update:Progress",
-        Some(
-            json!({ "id": id, "i18n_key": i18n_key,"values": values, "isCompleted": is_completed}),
-        ),
-    );
-}
-
-pub fn emit_update(update_type: &str, operation: &str, data: Option<Value>) {
-    send_message_to_window(
-        "Client:Update",
-        Some(json!({ "type": update_type, "operation": operation, "data": data})),
-    );
-}
-
-pub fn emit_update_initialization_status(status: &str, data: Option<Value>) {
-    send_message_to_window(
-        "set_initializstatus",
-        Some(json!({
-            "status": status,
-            "data": data
-        })),
-    );
-}
-
-pub fn get_app_local_path() -> PathBuf {
-    if let Some(base_dirs) = BaseDirs::new() {
-        // App path for csv file
-        let local_path = Path::new(base_dirs.data_local_dir());
-        local_path.to_path_buf()
-    } else {
-        panic!("Could not find app path");
-    }
-}
-
-pub fn get_app_roaming_path() -> PathBuf {
-    if let Some(base_dirs) = BaseDirs::new() {
-        // App path for csv file
-        let roaming_path = Path::new(base_dirs.cache_dir());
-        let app_path = roaming_path.join("dev.kenya.quantframe");
-        // Check if the app path exists, if not create it
-        if !app_path.exists() {
-            fs::create_dir_all(app_path.clone()).unwrap();
-        }
-        app_path
-    } else {
-        panic!("Could not find app path");
-    }
-}
-
-pub fn get_desktop_path() -> PathBuf {
-    if let Some(base_dirs) = UserDirs::new() {
-        let local_path = get_app_roaming_path(); // Ensure local_path lives long enough
-
-        let desktop_path = match base_dirs.desktop_dir() {
-            Some(desktop_path) => desktop_path,
-            None => local_path.as_path(),
-        };
-        desktop_path.to_path_buf()
-    } else {
-        panic!("Could not find app path");
-    }
+    app_path
 }
 
 #[derive(Clone, Debug)]
@@ -302,7 +217,7 @@ pub fn send_message_to_discord(
                     "description": content,
                     "color": 5814783,
                     "footer": {
-                        "text": format!("Quantframe v{}", PACKAGEINFO.lock().unwrap().clone().unwrap().version.to_string()),
+                        "text": format!("Quantframe v{}", "0.1.0"),
                         "timestamp": chrono::Local::now()
                         .naive_utc()
                         .to_string()
@@ -333,56 +248,6 @@ pub fn send_message_to_discord(
             }
         }
     });
-}
-
-pub async fn alter_table(
-    connection: sqlx::Pool<sqlx::Sqlite>,
-    alter_sql: &str,
-) -> Result<bool, AppError> {
-    let re = regex::Regex::new(r#"ALTER TABLE "(?P<table>[^"]+)" ADD COLUMN "(?P<column>[^"]+)"#)
-        .unwrap();
-    if let Some(captures) = re.captures(alter_sql) {
-        let table_name = captures.name("table").map_or("", |m| m.as_str());
-        let column_name = captures.name("column").map_or("", |m| m.as_str());
-        if table_name != "" && column_name != "" {
-            let rep = sqlx::query(format!("PRAGMA table_info(\"{}\")", table_name).as_str())
-                .fetch_all(&connection)
-                .await
-                .map_err(|e| AppError::new("Database", eyre!(e.to_string())));
-            match rep {
-                Ok(r) => {
-                    for row in r {
-                        let name: String = sqlx::Row::get(&row, "name");
-                        if name == column_name {
-                            return Ok(true);
-                        }
-                    }
-                    sqlx::query(&alter_sql)
-                        .execute(&connection)
-                        .await
-                        .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
-                    return Ok(false);
-                }
-                Err(_) => {
-                    return Err(AppError::new(
-                        "Database",
-                        eyre!("Could not find table in database."),
-                    ));
-                }
-            }
-        } else {
-            logger::warning_con(
-                "Helper",
-                "Could not find table name or column name in the SQL.",
-            );
-        }
-    } else {
-        logger::warning_con(
-            "Helper",
-            "Could not find table name or column name in the SQL.",
-        );
-    }
-    Ok(false)
 }
 
 pub fn validate_json(json: &Value, required: &Value, path: &str) -> (Value, Vec<String>) {

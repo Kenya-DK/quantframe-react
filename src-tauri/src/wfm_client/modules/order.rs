@@ -142,7 +142,6 @@ impl OrderModule {
                     .as_str(),
                     None,
                 );
-                self.emit("CREATE_OR_UPDATE", serde_json::to_value(&payload).unwrap());
                 return Ok(("order_created".to_string(), Some(payload)));
             }
             Ok(ApiResult::Error(error, _headers)) => {
@@ -183,7 +182,6 @@ impl OrderModule {
                     .as_str(),
                     None,
                 );
-                self.emit("DELETE", json!({ "id": &payload }));
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
@@ -236,7 +234,6 @@ impl OrderModule {
                     .as_str(),
                     None,
                 );
-                self.emit("CREATE_OR_UPDATE", serde_json::to_value(&payload).unwrap());
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
@@ -320,12 +317,10 @@ impl OrderModule {
             };
 
         if result.is_none() {
-            self.emit("DELETE", json!({ "id": &order.id }));
             return Ok("Order Successfully Closed".to_string());
         }
         let order_data = result.unwrap();
         order.quantity = order_data["quantity"].as_i64().unwrap();
-        self.emit("CREATE_OR_UPDATE", serde_json::to_value(&order).unwrap());
         return Ok("Order Successfully Closed and Updated".to_string());
     }
     // End Actions User Order
@@ -391,10 +386,6 @@ impl OrderModule {
             buy_orders,
             sell_orders,
         })
-    }
-
-    pub fn emit(&self, operation: &str, data: serde_json::Value) {
-        helper::emit_update("orders", operation, Some(data));
     }
     // End Helper
 }

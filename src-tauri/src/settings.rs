@@ -4,9 +4,9 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 
-use crate::database::enums::stock_mode::StockMode;
+use crate::enums::order_mode::OrderMode;
+use crate::enums::stock_mode::StockMode;
 use crate::utils::modules::error::AppError;
-use crate::wfm_client::enums::order_mode::OrderMode;
 use crate::{helper, logger};
 use eyre::eyre;
 
@@ -120,7 +120,7 @@ impl Default for SettingsState {
 }
 impl SettingsState {
     fn get_file_path() -> PathBuf {
-        let app_path = helper::get_app_roaming_path();
+        let app_path = helper::get_app_storage_path();
         let settings_path = app_path.join("settings.json");
         settings_path
     }

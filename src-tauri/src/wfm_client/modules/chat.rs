@@ -105,7 +105,4 @@ impl ChatModule {
             }
         };
     }
-    pub fn emit(&self, operation: &str, data: serde_json::Value) {
-        helper::emit_update("ChatMessages", operation, Some(data));
-    }
 }

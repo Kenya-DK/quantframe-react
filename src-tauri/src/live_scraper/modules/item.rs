@@ -1,15 +1,16 @@
-use crate::database::enums::stock_status::StockStatus;
-use crate::database::modules::stock_item::StockItemStruct;
-use crate::database::types::price_history::PriceHistory;
+use crate::enums::order_mode::OrderMode;
 use crate::live_scraper::client::LiveScraperClient;
 
 use crate::utils::modules::error::{self, AppError};
 use crate::utils::modules::logger;
-use crate::wfm_client::enums::order_mode::OrderMode;
 use crate::wfm_client::enums::order_type::OrderType;
 use crate::wfm_client::types::order::Order;
 use crate::wfm_client::types::orders::Orders;
+use entity::enums::stock_status::StockStatus;
+use entity::price_history::PriceHistory;
+use entity::stock_item;
 use serde_json::json;
+use service::{StockItemMutation, StockItemQuery};
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 use std::vec;
@@ -40,7 +41,7 @@ impl ItemModule {
     pub async fn check_stock(&self) -> Result<(), AppError> {
         logger::info_con(&self.component, "Running Item Stock Check");
         // Load Managers.
-        let db = self.client.db.lock()?.clone();
+        let app = self.client.app.lock()?.clone();
         let auth = self.client.auth.lock()?.clone();
         let wfm = self.client.wfm.lock()?.clone();
         let cache = self.client.cache.lock()?.clone();
@@ -56,15 +57,12 @@ impl ItemModule {
         let price_scraper_interesting_items_new = self.get_interesting_items().await?;
 
         // Get interesting items from stock items if the order mode is sell or both and remove blacklisted items else return None.
-        let stock_items_interesting_items: Option<Vec<StockItemStruct>> =
+        let stock_items_interesting_items: Option<Vec<stock_item::Model>> =
             if order_mode == OrderMode::Sell || order_mode == OrderMode::Both {
                 Some(
-                    db.stock_item()
-                        .get_items()
-                        .await?
-                        .into_iter()
-                        .filter(|item| item.owned > 0 && !item.hidden)
-                        .collect::<Vec<_>>(),
+                    StockItemQuery::get_all_stock_items(&app.conn, 0)
+                        .await
+                        .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?,
                 )
             } else {
                 None
@@ -73,7 +71,7 @@ impl ItemModule {
         match stock_items_interesting_items.clone() {
             Some(items) => {
                 for item in items {
-                    interesting_items.push(item.url);
+                    interesting_items.push(item.wfm_url);
                 }
             }
             None => {}
@@ -167,7 +165,7 @@ impl ItemModule {
                 continue;
             }
             // Find the item in the cache
-            let item_info = match cache.item().find_type(&item)? {
+            let item_info = match cache.tradable_items().find_by_url_name(&item) {
                 Some(item_info) => item_info,
                 None => {
                     logger::warning(
@@ -185,13 +183,12 @@ impl ItemModule {
                 &self.get_component("CheckStock"),
                 format!(
                     "Checking item: {}, ({}/{})",
-                    item_info.item_name.clone(),
+                    item_info.name.clone(),
                     current_index,
                     interesting_items.len()
                 )
                 .as_str(),
             );
-            self.client.send_message("item.checking", Some(json!({ "name": item_info.item_name.clone(), "count": current_index, "total": interesting_items.len()})));
 
             // Get the item orders from Warframe Market
             let mut live_orders = wfm.orders().get_orders_by_item(&item).await?;
@@ -205,24 +202,24 @@ impl ItemModule {
                 .clone()
                 .unwrap_or_else(|| Vec::new())
                 .into_iter()
-                .find(|stock_item| stock_item.url == item_info.url_name);
+                .find(|stock_item| stock_item.wfm_url == item_info.wfm_url_name);
 
             // Get the item stats from the price scraper
             let statistics = price_scraper_interesting_items_new
                 .iter()
-                .find(|item| item.url_name == item_info.url_name);
+                .find(|item| item.url_name == item_info.wfm_url_name);
 
             // Get item_id from statistics or item_info
-            let item_id = item_info.id.clone();
+            let item_id = item_info.wfm_id.clone();
 
             // Get rank from statistics or item_info
             let item_rank: Option<f64> = if statistics.is_some() {
                 statistics.unwrap().mod_rank
             } else {
-                if item_info.mod_max_rank.is_none() {
+                if item_info.max_rank.is_none() {
                     None
                 } else {
-                    Some(item_info.mod_max_rank.clone().unwrap() as f64)
+                    Some(item_info.max_rank.clone().unwrap() as f64)
                 }
             };
             // Get item moving average from statistics or item_info
@@ -277,10 +274,6 @@ impl ItemModule {
         let wfm = self.client.wfm.lock()?.clone();
         let settings = self.client.settings.lock()?.clone().live_scraper;
         let blacklist = settings.stock_item.blacklist.clone();
-        self.client.send_message(
-            "item.deleting_orders",
-            Some(json!({ "count": 0, "total": 0})),
-        );
         let mut current_orders = wfm.orders().get_my_orders().await?;
 
         let mut orders = vec![];
@@ -294,16 +287,8 @@ impl ItemModule {
 
         let mut current_index = 0;
         let total = orders.len();
-        self.client.send_message(
-            "item.deleting_orders",
-            Some(json!({ "count": 0, "total": total})),
-        );
         for order in orders {
             current_index += 1;
-            self.client.send_message(
-                "item.deleting_orders",
-                Some(json!({ "count": current_index, "total": total})),
-            );
             if self.client.is_running() == false {
                 return Ok(());
             }
@@ -330,7 +315,7 @@ impl ItemModule {
     ) -> Result<Vec<crate::cache::types::item_price_info::ItemPriceInfo>, AppError> {
         let settings = self.client.settings.lock()?.clone().live_scraper;
         let cache = self.client.cache.lock()?.clone();
-        let db = self.client.db.lock()?.clone();
+        let app = self.client.app.lock()?.clone();
         let volume_threshold = settings.stock_item.volume_threshold;
         let range_threshold = settings.stock_item.range_threshold;
         let avg_price_cap = settings.stock_item.avg_price_cap;
@@ -338,7 +323,12 @@ impl ItemModule {
         let strict_whitelist = settings.stock_item.strict_whitelist;
         let whitelist = settings.stock_item.whitelist.clone();
         let black_list = settings.stock_item.blacklist.clone();
-        let stock_item = db.stock_item().get_items_names().await?;
+        let stock_item = StockItemQuery::get_all_stock_items(&app.conn, 0)
+            .await
+            .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?
+            .iter()
+            .map(|item| item.wfm_url.clone())
+            .collect::<Vec<String>>();
 
         // Create a query uuid.
         let query_id = format!(
@@ -484,7 +474,7 @@ impl ItemModule {
         my_orders: &mut Vec<Order>,
         live_orders: &Orders,
         closed_avg: f64,
-        stock_item: Option<&StockItemStruct>,
+        stock_item: Option<&stock_item::Model>,
     ) -> Result<Option<Vec<Order>>, AppError> {
         // Load Managers.
         let settings = self.client.settings.lock()?.clone().live_scraper;
@@ -523,7 +513,7 @@ impl ItemModule {
 
         // Get the stock item bought price if it exists.
         let bought_price = if stock_item.is_some() {
-            stock_item.unwrap().price as i64
+            stock_item.unwrap().bought as i64
         } else {
             0
         };
@@ -696,12 +686,12 @@ impl ItemModule {
         moving_avg: f64,
         my_orders: &Vec<Order>,
         live_orders: &Orders,
-        stock_item: Option<StockItemStruct>,
+        stock_item: Option<stock_item::Model>,
     ) -> Result<(), AppError> {
         // Load Managers.
         let settings = self.client.settings.lock()?.clone().live_scraper;
         let wfm = self.client.wfm.lock()?.clone();
-        let db = self.client.db.lock()?.clone();
+        let app = self.client.app.lock()?.clone();
 
         // Get Settings.
         let min_sma = settings.stock_item.min_sma;
@@ -717,11 +707,8 @@ impl ItemModule {
         if stock_item.is_none() && !active {
             return Ok(());
         } else if stock_item.is_none() && active
-            || (stock_item.is_some() && stock_item.clone().unwrap().hidden)
+            || (stock_item.is_some() && stock_item.clone().unwrap().is_hidden)
         {
-            self.client
-                .send_message("item.sell.deleting", Some(json!({ "name": item_name})));
-
             wfm.orders()
                 .delete(order_id.clone().unwrap().as_str())
                 .await?;
@@ -745,13 +732,13 @@ impl ItemModule {
         };
 
         // Get the average price of the item.
-        let bought_price = stock_item.price as i64;
+        let bought_price = stock_item.bought as i64;
 
         // Get the quantity of owned item.
         let quantity = stock_item.owned as i64;
 
         // Get the minimum price of the item.
-        let minimum_price = stock_item.minium_price;
+        let minimum_price = stock_item.minimum_price;
 
         // Get the lowest sell order price from the DataFrame of live sell orders
         let lowest_price = if live_orders.sell_orders.len() > 2 {
@@ -760,13 +747,13 @@ impl ItemModule {
             price_history.name = lowest_order.user.clone().unwrap().ingame_name;
             lowest_order.platinum
         } else {
-            stock_item.status = StockStatus::NoSellers.to_string();
+            stock_item.status = StockStatus::NoSellers;
             0
         };
 
         // Then Price the order will be posted for.
         let mut post_price = lowest_price;
-        stock_item.status = StockStatus::Live.to_string();
+        stock_item.status = StockStatus::Live;
 
         if bought_price > post_price {
             post_price = bought_price + minimum_profit;
@@ -775,7 +762,7 @@ impl ItemModule {
         // If the item is worth less than moving average the set the post price to be the moving average
         if post_price < (moving_avg - min_sma) as i64 {
             post_price = moving_avg;
-            stock_item.status = StockStatus::SMALimit.to_string();
+            stock_item.status = StockStatus::SMALimit;
         }
 
         // If minimum price is set and the post price is less than the minimum price then set the post price to be the minimum price
@@ -789,21 +776,19 @@ impl ItemModule {
         price_history.price = post_price;
 
         if profit <= 0 {
-            stock_item.status = StockStatus::ToLowProfit.to_string();
-            stock_item.listed_price = None;
+            stock_item.status = StockStatus::ToLowProfit;
+            stock_item.list_price = None;
         } else {
-            let last_price_history = stock_item_original.price_history.last();
+            let last_price_history = stock_item_original.price_history.0.last();
             if last_price_history.is_none() || last_price_history.unwrap().price != post_price {
-                stock_item.price_history.push(price_history.clone());
+                stock_item.price_history.0.push(price_history.clone());
             }
-            stock_item.listed_price = Some(post_price as i32);
+            stock_item.list_price = Some(post_price);
         }
 
         if active {
             // If the item is too cheap, delete the order
-            if stock_item.status == StockStatus::ToLowProfit.to_string() {
-                self.client
-                    .send_message("item.sell.deleting", Some(json!({ "name": item_name})));
+            if stock_item.status == StockStatus::ToLowProfit {
                 wfm.orders()
                     .delete(order_id.clone().unwrap().as_str())
                     .await?;
@@ -817,7 +802,7 @@ impl ItemModule {
                     )
                     .await?;
             }
-        } else if stock_item.status != StockStatus::ToLowProfit.to_string() {
+        } else if stock_item.status != StockStatus::ToLowProfit {
             match wfm
                 .orders()
                 .create(item_id, "sell", post_price, quantity, true, item_rank)
@@ -825,8 +810,8 @@ impl ItemModule {
             {
                 Ok((rep, None)) => {
                     if &rep == "order_limit_reached" {
-                        stock_item.status = StockStatus::OrderLimit.to_string();
-                        stock_item.listed_price = None;
+                        stock_item.status = StockStatus::OrderLimit;
+                        stock_item.list_price = None;
                     }
                 }
                 Ok((_, _)) => {}
@@ -837,23 +822,13 @@ impl ItemModule {
         }
 
         // Update the stock item in the database
-        if stock_item.listed_price != stock_item_original.listed_price
+        if stock_item.list_price != stock_item_original.list_price
             || stock_item.status != stock_item_original.status
-            || stock_item.price_history.len() != stock_item_original.price_history.len()
+            || stock_item.price_history.0.len() != stock_item_original.price_history.0.len()
         {
-            db.stock_item()
-                .update_by_id(
-                    stock_item.id,
-                    None,
-                    None,
-                    None,
-                    stock_item.listed_price,
-                    Some(StockStatus::from_string(&stock_item.status)),
-                    None,
-                    Some(price_history),
-                    Some(&live_orders.sell_orders),
-                )
-                .await?;
+            StockItemMutation::update_by_id(&app.conn, stock_item.id, stock_item)
+                .await
+                .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
         }
         return Ok(());
     }
