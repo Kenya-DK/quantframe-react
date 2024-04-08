@@ -8,6 +8,7 @@ use crate::{
     app::client::AppState,
     auth::AuthState,
     cache::client::CacheClient,
+    debug::DebugClient,
     helper, logger,
     notification::client::NotifyClient,
     settings::SettingsState,
@@ -26,6 +27,7 @@ pub async fn init(
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
+    debug: tauri::State<'_, Arc<Mutex<DebugClient>>>,
 ) -> Result<Value, AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
@@ -33,31 +35,12 @@ pub async fn init(
     let auth = auth.lock()?.clone();
     let wfm = wfm.lock()?.clone();
     let cache = cache.lock()?.clone();
+    let debug = debug.lock()?.clone();
+
     let mut response = json!({
         "settings": &settings.clone(),
         "user": &auth.clone(),
     });
-
-
-    TransactionMutation::create(&app.conn, transaction::Model {
-        id:0,
-        wfm_id: "123".to_string(),
-        wfm_url: "https://warframe.market".to_string(),
-        item_name: "Test".to_string(),
-        item_type: "Test".to_string(),
-        item_unique_name: "Test".to_string(),
-        sub_type: None,
-        tags: "Test".to_string(),
-        transaction_type: transaction::TransactionType::Buy,
-        quantity: 1,
-        user_name: "Test".to_string(),
-        price: 1,
-        created_at: "2021-09-01T00:00:00Z".parse().unwrap(),
-        updated_at: "2021-09-01T00:00:00Z".parse().unwrap(),
-        properties: None,
-
-    }).await.unwrap();
-
 
     // Load Cache
     match cache.load().await {
@@ -68,6 +51,14 @@ pub async fn init(
                 "tradable_items": cache.tradable_items().get_items()?,
             });
         }
+        Err(e) => {
+            error::create_log_file("command.log".to_string(), &e);
+            return Err(e);
+        }
+    }
+
+    match debug.migrate_data_base().await {
+        Ok(_) => {}
         Err(e) => {
             error::create_log_file("command.log".to_string(), &e);
             return Err(e);

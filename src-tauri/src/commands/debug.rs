@@ -1,2 +1,10 @@
-// Create a static variable to store the log file name
-// static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("command_debug.log".to_string()));
+use std::sync::{Arc, Mutex};
+
+use crate::{debug::DebugClient, utils::modules::error::AppError};
+
+#[tauri::command]
+pub fn migrate_data_base(// debug_client: tauri_api::State<Arc<Mutex<DebugClient>>>,
+) -> Result<(), AppError> {
+    // let debug_client = debug_client.lock().unwrap();
+    Ok(())
+}

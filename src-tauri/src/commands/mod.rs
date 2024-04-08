@@ -7,7 +7,7 @@ pub mod base;
 // pub mod auctions;
 // pub mod auth;
 // pub mod chat;
-// pub mod debug;
+pub mod debug;
 // pub mod live_scraper;
 // pub mod orders;
 // pub mod stock;

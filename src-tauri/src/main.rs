@@ -37,11 +37,11 @@ mod system_tray;
 
 async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     // Create the database connection and store it
-    let db_path = helper::get_app_storage_path();
+    let storage_path = helper::get_app_storage_path();
 
     let db_url = format!(
         "sqlite://{}/{}",
-        db_path.to_str().unwrap(),
+        storage_path.to_str().unwrap(),
         "quantframeV2.sqlite?mode=rwc"
     );
 
@@ -85,7 +85,6 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
 
     // create and manage Cache state
     let cache_arc = Arc::new(Mutex::new(CacheClient::new(
-        Arc::clone(&wfm_client),
         Arc::clone(&qf_client),
     )));
     app.manage(cache_arc.clone());
@@ -102,7 +101,7 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     app.manage(Arc::new(Mutex::new(live_scraper)));
 
     // create and manage WhisperScraper state
-    let debug_client = DebugClient::new(Arc::clone(&cache_arc));
+    let debug_client = DebugClient::new(Arc::clone(&cache_arc),Arc::clone(&app_arc));
     app.manage(Arc::new(Mutex::new(debug_client)));
 
     Ok(())

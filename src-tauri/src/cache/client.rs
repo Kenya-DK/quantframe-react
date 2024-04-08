@@ -32,7 +32,6 @@ use super::modules::{
 #[derive(Clone, Debug)]
 pub struct CacheClient {
     pub log_file: PathBuf,
-    pub wfm: Arc<Mutex<WFMClient>>,
     pub qf: Arc<Mutex<crate::qf_client::client::QFClient>>,
     item_price_module: Arc<RwLock<Option<ItemPriceModule>>>,
     riven_module: Arc<RwLock<Option<RivenModule>>>,
@@ -60,12 +59,10 @@ pub struct CacheClient {
 
 impl CacheClient {
     pub fn new(
-        wfm: Arc<Mutex<WFMClient>>,
-        qf: Arc<Mutex<crate::qf_client::client::QFClient>>,
+        qf: Arc<Mutex<crate::qf_client::client::QFClient>>
     ) -> Self {
         CacheClient {
             log_file: PathBuf::from("cache"),
-            wfm,
             qf,
             component: "Cache".to_string(),
             md5_file: "cache_id.txt".to_string(),

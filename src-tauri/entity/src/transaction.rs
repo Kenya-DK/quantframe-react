@@ -36,6 +36,16 @@ pub enum TransactionType {
     #[sea_orm(string_value = "buy")]
     Buy,
 }
+
+impl TransactionType {
+    pub fn from_str(s: &str) -> Self {
+        match s {
+            "sell" => Self::Sell,
+            "buy" => Self::Buy,
+            _ => panic!("Invalid transaction type"),
+        }
+    }
+}
 impl Serialize for TransactionType {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where

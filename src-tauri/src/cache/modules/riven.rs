@@ -54,9 +54,27 @@ impl RivenModule {
         let items = self.data.wfm_weapons.clone();
         Ok(items)
     }
+
+    pub fn find_riven_type_by_url_name(&self, url_name: &str) -> Option<CacheRivenWfmWeapon> {
+        let items = self.data.wfm_weapons.clone();
+        let item = items.iter().find(|item| item.wfm_url_name == url_name);
+        match item {
+            Some(item) => Some(item.clone()),
+            None => None,
+        }
+    }
+
     pub fn get_wfm_riven_attributes(&self) -> Result<Vec<CacheRivenWfmAttribute>, AppError> {
         let attributes = self.data.wfm_attributes.clone();
         Ok(attributes)
     }
     
+    pub fn find_riven_attribute_by_url_name(&self, url_name: &str) -> Option<CacheRivenWfmAttribute> {
+        let attributes = self.data.wfm_attributes.clone();
+        let attribute = attributes.iter().find(|attribute| attribute.url_name == url_name);
+        match attribute {
+            Some(attribute) => Some(attribute.clone()),
+            None => None,
+        }
+    }
 }
