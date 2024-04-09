@@ -3,7 +3,11 @@
 use sea_orm::{entity::prelude::*, FromJsonQueryResult};
 use serde::{Deserialize, Serialize};
 
-use crate::{enums::stock_status::StockStatus, price_history::PriceHistory, sub_type::SubType};
+use crate::{
+    enums::stock_status::StockStatus,
+    price_history::{PriceHistory, PriceHistoryVec},
+    sub_type::SubType,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize)]
 #[sea_orm(table_name = "stock_item")]
@@ -24,13 +28,11 @@ pub struct Model {
     pub status: StockStatus,
     #[sea_orm(column_type = "Text")]
     pub price_history: PriceHistoryVec,
+    #[sea_orm(updated_at)]
     pub updated_at: DateTimeUtc,
     #[sea_orm(created_at)]
     pub created_at: DateTimeUtc,
 }
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
-pub struct PriceHistoryVec(pub Vec<PriceHistory>);
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {}

@@ -1,7 +1,7 @@
 use sea_orm::{entity::prelude::*, FromJsonQueryResult};
 use serde::{Deserialize, Serialize};
 
-use crate::{enums::stock_status::StockStatus, price_history::PriceHistory, sub_type::SubType};
+use crate::{enums::stock_status::StockStatus, price_history::{PriceHistory, PriceHistoryVec}, sub_type::SubType};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
 #[sea_orm(table_name = "stock_riven")]
@@ -26,7 +26,7 @@ pub struct Model {
     pub list_price: Option<i64>,
     pub filter: MatchRivenStruct,
     pub is_hidden: bool,
-    pub comment: Option<String>,
+    pub comment:String,
     pub status: StockStatus,
     #[sea_orm(column_type = "Text")]
     pub price_history: PriceHistoryVec,
@@ -35,9 +35,6 @@ pub struct Model {
     #[sea_orm(created_at)]
     pub created_at: DateTimeUtc,
 }
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
-pub struct PriceHistoryVec(pub Vec<PriceHistory>);
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct RivenAttribute {
@@ -49,14 +46,14 @@ pub struct RivenAttribute {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct RivenAttributeVec(pub Vec<RivenAttribute>);
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct MatchRivenStruct {
     pub enabled: Option<bool>,
     pub rank: Option<MinMaxStruct>,
     pub mastery_rank: Option<MinMaxStruct>,
     pub re_rolls: Option<MinMaxStruct>,
     pub polarity: Option<String>,
-    pub similarity: Option<i64>,
+    pub similarity: Option<f64>,
     pub required_negative: Option<bool>,
     pub attributes: Option<Vec<MatchRivenAttributeStruct>>,
 }

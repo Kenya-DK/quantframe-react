@@ -178,7 +178,7 @@ impl RivenModule {
                         && a.owner.status == "ingame"
                         && (a.item.similarity.unwrap_or(0.0)
                             >= if use_match {
-                                match_data.similarity.unwrap_or(0) as f64
+                                match_data.similarity.unwrap_or(0.0) as f64
                             } else {
                                 0.0
                             })
@@ -270,14 +270,14 @@ impl RivenModule {
                     if stock_riven.status == StockStatus::ToLowProfit {
                         wfm.auction().delete(auction.id.as_str()).await?;
                     } else if auction.starting_price != post_price as i64
-                        || stock_riven.comment.clone().unwrap_or("".to_string()) != auction.note
+                        || stock_riven.comment.clone() != auction.note
                     {
                         wfm.auction()
                             .update(
                                 auction.id.as_str(),
                                 post_price as i32,
                                 0,
-                                &stock_riven.comment.clone().unwrap_or("".to_string()),
+                                &stock_riven.comment.clone(),
                                 post_price as i32,
                                 true,
                             )
@@ -293,7 +293,6 @@ impl RivenModule {
                                 stock_riven
                                     .comment
                                     .clone()
-                                    .unwrap_or("".to_string())
                                     .as_str(),
                                 post_price,
                                 post_price,
