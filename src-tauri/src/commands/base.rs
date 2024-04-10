@@ -57,13 +57,20 @@ pub async fn init(
         }
     }
 
-    match debug.migrate_data_base().await {
+    match debug.state().await {
         Ok(_) => {}
         Err(e) => {
             error::create_log_file("command.log".to_string(), &e);
             return Err(e);
         }
     }
+
+
+    logger::log_json("db.json", 
+    &json!(TransactionQuery::get_stats(&app.conn).await
+        .map_err(|e| AppError::new_db("TransactionQuery::get_stats", e))?
+    )
+    ).expect("Could not log db.json");
 
     // Validate Auth
     let is_validate = match wfm.auth().validate().await {

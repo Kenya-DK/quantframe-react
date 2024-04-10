@@ -13,7 +13,7 @@ use eyre::eyre;
 
 use serde_json::{json, Value};
 use service::{
-    sea_orm::{Database, DatabaseConnection},
+    sea_orm::{Database, DatabaseConnection, EntityTrait},
     StockItemMutation, StockItemQuery, StockRivenMutation, StockRivenQuery, TransactionMutation,
     TransactionQuery,
 };
@@ -206,7 +206,6 @@ impl DebugClient {
     }
     pub async fn migrate_data_base(&self) -> Result<(), AppError> {
         let app = self.app.lock()?.clone();
-        let cache = self.cache.lock()?.clone();
 
         // Check if the old database exists
 
@@ -221,9 +220,19 @@ impl DebugClient {
         let old_con = Database::connect(db_url)
             .await
             .expect("Database connection failed");
-        // self.migrate_transactions(&old_con, &app.conn).await?;
-        // self.migrate_stock_item(&old_con, &app.conn).await?;
+        self.migrate_transactions(&old_con, &app.conn).await?;
+        self.migrate_stock_item(&old_con, &app.conn).await?;
         self.migrate_stock_riven(&old_con, &app.conn).await?;
         Ok(())
+    }
+    pub async fn state(&self) -> Result<(), AppError> {
+        let app = self.app.lock()?.clone();
+        let items = transaction::Entity::find().all(&app.conn).await
+            .map_err(|e| AppError::new_db("MigrateDataBase", e))?;
+
+        for item in items {
+            println!("{:?}", item);
+        }
+        return Ok(());
     }
 }

@@ -101,7 +101,7 @@ const GetTransactionProfit = (transactions: TransactionEntryDto[]): StatisticPro
  */
 const GetItemsProfit = (transactions: TransactionEntryDto[]): StatisticProfitItem[] => {
   let items: StatisticProfitItem[] = [];
-  let transactionsgroupBy = groupBy("url", transactions);
+  let transactionsgroupBy = groupBy("wfm_url", transactions);
   for (let item in transactionsgroupBy) {
     // Get the order
     let transactionList = transactionsgroupBy[item];
@@ -122,9 +122,9 @@ const GetItemsProfit = (transactions: TransactionEntryDto[]): StatisticProfitIte
       purchases: buy_transactions.length,
       sales: sell_transactions.length,
       wfm_id: firstTransaction.wfm_id,
-      url: firstTransaction.url,
+      url: firstTransaction.wfm_url,
       item_type: firstTransaction.item_type,
-      name: firstTransaction.name,
+      name: firstTransaction.item_name,
       tags: firstTransaction.tags.split(","),
       quantity: transactionList.reduce((acc, cur) => acc + cur.quantity, 0),
     };
@@ -201,8 +201,8 @@ export const GetTotalProfit = (transactions: TransactionEntryDto[]): StatisticPr
     lastYearLabels.push(`${i} ${year - 1}`);
   }
 
-  const thisYearTransactions = transactions.filter(t => dayjs(t.created).isSame(new Date(), "year"));
-  const lastYearTransactions = transactions.filter(t => dayjs(t.created).isSame(dayjs().subtract(1, "year"), "year"));
+  const thisYearTransactions = transactions.filter(t => dayjs(t.created_at).isSame(new Date(), "year"));
+  const lastYearTransactions = transactions.filter(t => dayjs(t.created_at).isSame(dayjs().subtract(1, "year"), "year"));
 
   const byDateSettings: GroupByDateSettings = { year: true, month: true, day: false, hours: false }
   return {
@@ -225,7 +225,7 @@ export const GetToDayProfit = (transactions: TransactionEntryDto[]): StatisticPr
   const labels = [];
   for (let i = 0; i < 24; i++) labels.push(`${i}:00`);
 
-  transactions = transactions.filter(t => dayjs(t.created).isBetween(today, endToday));
+  transactions = transactions.filter(t => dayjs(t.created_at).isBetween(today, endToday));
   return {
     ...GetTransactionProfit(transactions),
     chart_profit: { ...GetTransactionChartProfit(transactions, { year: false, month: false, day: false, hours: true, labels: labels }) },
@@ -236,7 +236,7 @@ export const GetToDayProfit = (transactions: TransactionEntryDto[]): StatisticPr
 export const GetRecentDaysProfit = (transactions: TransactionEntryDto[], days: number): StatisticProfitTransactionRecentDays => {
   let today = dayjs().subtract(days, "day").endOf('day').toDate();
   let endToday = dayjs().endOf('day').toDate();
-  transactions = transactions.filter(t => dayjs(t.created).isBetween(today, endToday));
+  transactions = transactions.filter(t => dayjs(t.created_at).isBetween(today, endToday));
   const labels = [];
   const date = new Date();
   date.setDate(date.getDate() - (days - 1));
@@ -253,7 +253,7 @@ export const GetRecentDaysProfit = (transactions: TransactionEntryDto[], days: n
 };
 
 export const GetRecentTransactions = (transactions: TransactionEntryDto[], count: number): StatisticRecentTransactions => {
-  transactions = transactions.sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime()).slice(0, count);
+  transactions = transactions.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, count);
   return {
     ...GetTransactionProfit(transactions),
     transactions: transactions
@@ -313,7 +313,7 @@ export const GetStatistic = (transactions: TransactionEntryDto[]): StatisticDto 
     best_seller: GetBestSeller(transactions),
     total: GetTotalProfit(transactions),
     today: GetToDayProfit(transactions),
-    recent_days: GetRecentDaysProfit(transactions, 7),
+    recent_days: GetRecentDaysProfit(transactions, 10),
     recent_transactions: GetRecentTransactions(transactions, 10)
   };
 }

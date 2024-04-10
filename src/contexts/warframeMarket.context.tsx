@@ -85,6 +85,7 @@ export const WarframeMarketContextProvider = ({ children }: WarframeMarketContex
   useEffect(() => {
     if (!transactions) return;
     let statistics = GetStatistic(transactions);
+    console.log("Statistics", statistics);
 
     setStatistics(statistics);
   }, [transactions]);
