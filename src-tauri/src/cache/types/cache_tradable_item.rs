@@ -35,6 +35,22 @@ pub struct CacheTradableItem {
   #[serde(rename = "max_rank")]
   pub max_rank: Option<i64>,
 
-  #[serde(rename = "sub_types")]
-  pub sub_types: Vec<Option<String>>,
+  #[serde(rename = "sub_type")]
+  pub sub_type: Option<SubType>,
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct SubType {
+  #[serde(rename = "max_rank")]
+  pub max_rank: Option<i64>,
+
+  #[serde(rename = "variants")]
+  pub variants: Vec<Option<String>>,
+
+  #[serde(rename = "amber_stars")]
+  pub amber_stars: Option<i64>,
+
+  #[serde(rename = "cyan_stars")]
+  pub cyan_stars: Option<i64>,
+
 }
