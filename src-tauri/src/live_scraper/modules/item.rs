@@ -695,7 +695,7 @@ impl ItemModule {
 
         // Get Settings.
         let min_sma = settings.stock_item.min_sma;
-        let minimum_profit = 10;
+        let minimum_profit = settings.stock_item.min_profit;
         let moving_avg = moving_avg as i64;
 
         // Get the current orders for the item from the Warframe Market API

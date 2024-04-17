@@ -44,6 +44,7 @@ pub struct StockItemSettings {
     pub auto_trade: bool, // Will add order to you stock automatically or remove it if you have it
     pub strict_whitelist: bool,
     pub min_sma: i64,
+    pub min_profit: i64,
     pub auto_delete: bool,
     // What to post sell, buy, or both
     pub order_mode: OrderMode,
@@ -80,6 +81,7 @@ impl Default for SettingsState {
                 webhook: "".to_string(),
                 stock_item: StockItemSettings {
                     min_sma: 3,
+                    min_profit: 10,
                     volume_threshold: 15,
                     range_threshold: 10,
                     avg_price_cap: 600,
