@@ -1,13 +1,12 @@
 use crate::{
-    app::client::AppState, cache::client::CacheClient, helper, logger,
-    utils::modules::error::AppError,
+    app::client::AppState, cache::client::CacheClient, helper, logger, notification::client::NotifyClient, utils::modules::error::AppError
 };
 use entity::{
     enums::stock_status::StockStatus,
     price_history::{PriceHistory, PriceHistoryVec},
     stock_item, stock_riven,
     sub_type::SubType,
-    transaction,
+    transaction::{self, TransactionItemType},
 };
 use eyre::eyre;
 
@@ -29,24 +28,26 @@ pub struct DebugClient {
     log_file: String,
     app: Arc<Mutex<AppState>>,
     cache: Arc<Mutex<CacheClient>>,
+    notify: Arc<Mutex<NotifyClient>>,
 }
 
 impl DebugClient {
-    pub fn new(cache: Arc<Mutex<CacheClient>>, app: Arc<Mutex<AppState>>) -> Self {
+    pub fn new(cache: Arc<Mutex<CacheClient>>, app: Arc<Mutex<AppState>>, notify: Arc<Mutex<NotifyClient>>) -> Self {
         DebugClient {
             log_file: "debug.log".to_string(),
             cache,
             app,
+            notify
         }
     }
 
-    pub async fn migrate_transactions(
+    pub async fn migrate_data_transactions(
         &self,
         old_con: &DatabaseConnection,
         new_con: &DatabaseConnection,
     ) -> Result<(), AppError> {
         let cache = self.cache.lock()?.clone();
-
+        let notify = self.notify.lock()?.clone();
         // Migrate the database transactions
         let old_items = TransactionQuery::get_old_transactions(old_con)
             .await
@@ -64,9 +65,18 @@ impl DebugClient {
             let sub_type = if item.rank > 0 || item.item_type == "riven" {
                 Some(SubType {
                     rank: Some(item.rank as i64),
+                    variant: None,
+                    cyan_stars: None,
+                    amber_stars: None,
                 })
             } else {
                 None
+            };
+
+            let transaction_type = match item.transaction_type.as_str() {
+                "sell" => transaction::TransactionType::Sale,
+                "buy" => transaction::TransactionType::Purchase,
+                _ => panic!("Invalid transaction type"),
             };
 
             TransactionMutation::create_from_old(
@@ -76,13 +86,11 @@ impl DebugClient {
                     wfm_id: item.wfm_id,
                     wfm_url: item.url,
                     item_name: item.name,
-                    item_type: item.item_type,
+                    item_type: TransactionItemType::from_str(&item.item_type),
                     item_unique_name,
                     sub_type,
                     tags: item.tags,
-                    transaction_type: transaction::TransactionType::from_str(
-                        &item.transaction_type,
-                    ),
+                    transaction_type,
                     quantity: item.quantity as i64,
                     user_name: "".to_string(),
                     price: item.price as i64,
@@ -94,15 +102,24 @@ impl DebugClient {
             .await
             .unwrap();
         }
+        let new_items = TransactionQuery::get_all(new_con)
+            .await
+            .map_err(|e| AppError::new_db("MigrateDataBase", e))?;
+        notify.gui().send_event_update(
+            crate::utils::enums::ui_events::UIEvent::UpdateTransaction,
+            crate::utils::enums::ui_events::UIOperationEvent::Set,
+            Some(json!(new_items)),
+        );
         Ok(())
     }
 
-    pub async fn migrate_stock_item(
+    pub async fn migrate_data_stock_item(
         &self,
         old_con: &DatabaseConnection,
         new_con: &DatabaseConnection,
     ) -> Result<(), AppError> {
         let cache = self.cache.lock()?.clone();
+        let notify = self.notify.lock()?.clone();
         let old_items = StockItemQuery::get_old_stock_items(old_con)
             .await
             .map_err(|e| AppError::new_db("MigrateDataBase", e))?;
@@ -119,6 +136,9 @@ impl DebugClient {
             let sub_type = if item.rank > 0 {
                 Some(SubType {
                     rank: Some(item.rank as i64),
+                    variant: None,
+                    cyan_stars: None,
+                    amber_stars: None,
                 })
             } else {
                 None
@@ -147,15 +167,24 @@ impl DebugClient {
             .await
             .unwrap();
         }
+        let new_items = StockItemQuery::get_all(new_con)
+            .await
+            .map_err(|e| AppError::new_db("MigrateDataBase", e))?;
+        notify.gui().send_event_update(
+            crate::utils::enums::ui_events::UIEvent::UpdateStockItems,
+            crate::utils::enums::ui_events::UIOperationEvent::Set,
+            Some(json!(new_items)),
+        );
         Ok(())
     }
 
-    pub async fn migrate_stock_riven(
+    pub async fn migrate_data_stock_riven(
         &self,
         old_con: &DatabaseConnection,
         new_con: &DatabaseConnection,
     ) -> Result<(), AppError> {
         let cache = self.cache.lock()?.clone();
+        let notify = self.notify.lock()?.clone();
         let old_items = StockRivenQuery::get_old_stock_riven(old_con)
             .await
             .map_err(|e| AppError::new_db("MigrateDataBase", e))?;
@@ -169,6 +198,9 @@ impl DebugClient {
             };
             let sub_type = Some(SubType {
                 rank: Some(item.rank as i64),
+                variant: None,
+                cyan_stars: None,
+                amber_stars: None,
             });
 
             StockRivenMutation::create_from_old(
@@ -202,37 +234,23 @@ impl DebugClient {
             .await
             .unwrap();
         }
-        Ok(())
-    }
-    pub async fn migrate_data_base(&self) -> Result<(), AppError> {
-        let app = self.app.lock()?.clone();
-
-        // Check if the old database exists
-
-        let storage_path = helper::get_app_storage_path();
-
-        let db_url = format!(
-            "sqlite://{}/{}",
-            storage_path.to_str().unwrap(),
-            "quantframe.sqlite?mode=rwc"
-        );
-
-        let old_con = Database::connect(db_url)
+        let new_items = StockRivenQuery::get_all(new_con)
             .await
-            .expect("Database connection failed");
-        self.migrate_transactions(&old_con, &app.conn).await?;
-        self.migrate_stock_item(&old_con, &app.conn).await?;
-        self.migrate_stock_riven(&old_con, &app.conn).await?;
+            .map_err(|e| AppError::new_db("MigrateDataBase", e))?;
+        notify.gui().send_event_update(
+            crate::utils::enums::ui_events::UIEvent::UpdateStockRivens,
+            crate::utils::enums::ui_events::UIOperationEvent::Set,
+            Some(json!(new_items)),
+        );
         Ok(())
     }
-    pub async fn state(&self) -> Result<(), AppError> {
-        let app = self.app.lock()?.clone();
-        let items = transaction::Entity::find().all(&app.conn).await
-            .map_err(|e| AppError::new_db("MigrateDataBase", e))?;
-
-        for item in items {
-            println!("{:?}", item);
-        }
-        return Ok(());
+    pub async fn migrate_data_all(&self,
+        old_con: &DatabaseConnection,
+        new_con: &DatabaseConnection
+    ) -> Result<(), AppError> {
+        self.migrate_data_transactions(old_con, new_con).await?;
+        self.migrate_data_stock_item(old_con, new_con).await?;
+        self.migrate_data_stock_riven(old_con, new_con).await?;
+        Ok(())
     }
 }

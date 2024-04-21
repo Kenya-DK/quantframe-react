@@ -33,23 +33,29 @@ pub struct CacheTradableItem {
   pub image_url: String,
 
   #[serde(rename = "max_rank")]
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub max_rank: Option<i64>,
 
   #[serde(rename = "sub_type")]
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub sub_type: Option<SubType>,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct SubType {
+  #[serde(skip_serializing_if = "Option::is_none")]
   #[serde(rename = "max_rank")]
   pub max_rank: Option<i64>,
 
+  #[serde(skip_serializing_if = "Option::is_none")]
   #[serde(rename = "variants")]
-  pub variants: Vec<Option<String>>,
+  pub variants: Option<Vec<String>>,
 
+  #[serde(skip_serializing_if = "Option::is_none")]
   #[serde(rename = "amber_stars")]
   pub amber_stars: Option<i64>,
 
+  #[serde(skip_serializing_if = "Option::is_none")]
   #[serde(rename = "cyan_stars")]
   pub cyan_stars: Option<i64>,
 

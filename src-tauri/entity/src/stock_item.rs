@@ -19,9 +19,12 @@ pub struct Model {
     pub wfm_url: String,
     pub item_name: String,
     pub item_unique_name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub sub_type: Option<SubType>,
     pub bought: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub minimum_price: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub list_price: Option<i64>,
     pub owned: i64,
     pub is_hidden: bool,
@@ -38,3 +41,34 @@ pub struct Model {
 pub enum Relation {}
 
 impl ActiveModelBehavior for ActiveModel {}
+
+impl Model {
+    pub fn new(
+        wfm_id: String,
+        wfm_url: String,
+        item_name: String,
+        item_unique_name: String,
+        sub_type: Option<SubType>,
+        bought: i64,
+        minimum_price: Option<i64>,
+        owned: i64,
+    ) -> Self {
+        Self {
+            id: Default::default(),
+            wfm_id,
+            wfm_url,
+            item_name,
+            item_unique_name,
+            sub_type,
+            bought,
+            minimum_price,
+            list_price: None,
+            owned,
+            is_hidden: false,
+            status: StockStatus::Pending,
+            price_history: PriceHistoryVec(vec![]),
+            updated_at:Default::default(),
+            created_at:Default::default(),
+        }
+    }
+}

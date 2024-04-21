@@ -27,7 +27,7 @@ pub struct ItemPriceInfo {
     pub moving_avg: Option<f64>,
 
     #[serde(rename = "mod_rank")]
-    pub mod_rank: Option<f64>,
+    pub mod_rank: Option<i64>,
 
     #[serde(rename = "median")]
     pub median: f64,

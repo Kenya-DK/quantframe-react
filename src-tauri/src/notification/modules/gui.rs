@@ -1,5 +1,11 @@
-use crate::notification::client::NotifyClient;
+use migration::cli;
+use serde_json::{json, Value};
+use tauri::{window, Manager};
 
+use crate::{
+    notification::client::NotifyClient,
+    utils::{enums::ui_events::{UIEvent, UIOperationEvent}, modules::logger},
+};
 
 #[derive(Clone, Debug)]
 pub struct GUIModule {
@@ -21,5 +27,48 @@ impl GUIModule {
     }
     fn update_state(&self) {
         self.client.update_gui_module(self.clone());
+    }
+
+    pub fn send_event(&self, event: UIEvent, data: Option<Value>) {
+        let window = self.client.app_handler.get_window("main").unwrap().clone();
+        match window.emit("message", json!({ "event": event.as_str(), "data":  data })) {
+            Ok(_) => {
+                logger::info_con(
+                    &self.get_component("SendEvent"),
+                    format!("Event: {}", event.as_str()).as_str(),
+                );
+            }
+            Err(e) => {
+                logger::error_con(
+                    &self.get_component("SendEvent"),
+                    format!("Event: {}", e).as_str(),
+                );
+            }
+        }
+    }
+    pub fn send_event_update(
+        &self,
+        event: UIEvent,
+        operation: UIOperationEvent,
+        data: Option<Value>,
+    ) {
+        let window = self.client.app_handler.get_window("main").unwrap().clone();
+        match window.emit(
+            "message_update",
+            json!({ "event": event.as_str(), "operation":operation.as_str(), "data":  data }),
+        ) {
+            Ok(_) => {
+                logger::info_con(
+                    &self.get_component("SendEventUpdate"),
+                    format!("Event: {}", event.as_str()).as_str(),
+                );
+            }
+            Err(e) => {
+                logger::error_con(
+                    &self.get_component("SendEventUpdate"),
+                    format!("Event: {}", e).as_str(),
+                );
+            }
+        }
     }
 }

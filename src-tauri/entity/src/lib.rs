@@ -1,5 +1,4 @@
 pub mod enums;
-pub mod post;
 pub mod price_history;
 pub mod stock_item;
 pub mod stock_item_old;

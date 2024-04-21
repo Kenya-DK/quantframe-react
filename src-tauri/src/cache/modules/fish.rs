@@ -4,7 +4,7 @@ use eyre::eyre;
 
 use crate::{
     cache::{client::CacheClient, types::cache_fish::CacheFish},
-    utils::modules::error::AppError,
+    utils::modules::{error::AppError, logger},
 };
 
 #[derive(Clone, Debug)]

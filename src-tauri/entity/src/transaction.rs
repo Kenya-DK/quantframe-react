@@ -5,7 +5,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::sub_type::SubType;
 
-#[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize, FromJsonQueryResult)]
+#[derive(
+    Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize, FromJsonQueryResult,
+)]
 #[sea_orm(table_name = "transaction")]
 pub struct Model {
     #[sea_orm(primary_key)]
@@ -14,7 +16,7 @@ pub struct Model {
     pub wfm_id: String,
     pub wfm_url: String,
     pub item_name: String,
-    pub item_type: String,
+    pub item_type: TransactionItemType,
     pub item_unique_name: String,
     pub sub_type: Option<SubType>,
     pub tags: String,
@@ -28,22 +30,66 @@ pub struct Model {
     pub created_at: DateTimeUtc,
     pub properties: Option<serde_json::Value>,
 }
+#[derive(Debug, Clone, PartialEq, sea_orm::EnumIter, sea_orm::DeriveActiveEnum)]
+#[sea_orm(rs_type = "String", db_type = "String(Some(15))")]
+#[derive(Eq)]
+pub enum TransactionItemType {
+    #[sea_orm(string_value = "item")]
+    Item,
+    #[sea_orm(string_value = "riven")]
+    Riven,
+}
 
+impl TransactionItemType {
+    pub fn from_str(s: &str) -> Self {
+        match s {
+            "item" => Self::Item,
+            "riven" => Self::Riven,
+            _ => panic!("Invalid transaction type"),
+        }
+    }
+}
+impl Serialize for TransactionItemType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let value = match self {
+            TransactionItemType::Item => "item",
+            TransactionItemType::Riven => "riven",
+        };
+        serializer.serialize_str(value)
+    }
+}
+
+impl<'de> Deserialize<'de> for TransactionItemType {
+    fn deserialize<D>(deserializer: D) -> Result<TransactionItemType, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let s: String = String::deserialize(deserializer)?;
+        Ok(match s.as_str() {
+            "item" => TransactionItemType::Item,
+            "riven" => TransactionItemType::Riven,
+            _ => panic!("Invalid transaction type"),
+        })
+    }
+}
 #[derive(Debug, Clone, PartialEq, sea_orm::EnumIter, sea_orm::DeriveActiveEnum)]
 #[sea_orm(rs_type = "String", db_type = "String(Some(15))")]
 #[derive(Eq)]
 pub enum TransactionType {
-    #[sea_orm(string_value = "sell")]
-    Sell,
-    #[sea_orm(string_value = "buy")]
-    Buy,
+    #[sea_orm(string_value = "sale")]
+    Sale,
+    #[sea_orm(string_value = "purchase")]
+    Purchase,
 }
 
 impl TransactionType {
     pub fn from_str(s: &str) -> Self {
         match s {
-            "sell" => Self::Sell,
-            "buy" => Self::Buy,
+            "sale" => Self::Sale,
+            "purchase" => Self::Purchase,
             _ => panic!("Invalid transaction type"),
         }
     }
@@ -54,8 +100,8 @@ impl Serialize for TransactionType {
         S: serde::Serializer,
     {
         let value = match self {
-            TransactionType::Buy => "buy",
-            TransactionType::Sell => "sell",
+            TransactionType::Purchase => "purchase",
+            TransactionType::Sale => "sale",
         };
         serializer.serialize_str(value)
     }
@@ -68,8 +114,8 @@ impl<'de> Deserialize<'de> for TransactionType {
     {
         let s: String = String::deserialize(deserializer)?;
         Ok(match s.as_str() {
-            "buy" => TransactionType::Buy,
-            "sell" => TransactionType::Sell,
+            "purchase" => TransactionType::Purchase,
+            "sale" => TransactionType::Sale,
             _ => panic!("Invalid transaction type"),
         })
     }
@@ -79,3 +125,38 @@ impl<'de> Deserialize<'de> for TransactionType {
 pub enum Relation {}
 
 impl ActiveModelBehavior for ActiveModel {}
+
+impl Model {
+    pub fn new(
+        wfm_id: String,
+        wfm_url: String,
+        item_name: String,
+        item_type: TransactionItemType,
+        item_unique_name: String,
+        sub_type: Option<SubType>,
+        tags: Vec<String>,
+        transaction_type: TransactionType,
+        quantity: i64,
+        user_name: String,
+        price: i64,
+        properties: Option<serde_json::Value>,
+    ) -> Self {
+        Self {
+            id: Default::default(),
+            wfm_id,
+            wfm_url,
+            item_name,
+            item_type,
+            item_unique_name,
+            sub_type,
+            tags: tags.join(","),
+            transaction_type,
+            quantity,
+            user_name,
+            price,
+            properties,
+            updated_at: Default::default(),
+            created_at: Default::default(),
+        }
+    }
+}

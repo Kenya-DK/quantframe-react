@@ -1,64 +1,35 @@
 use std::sync::{Arc, Mutex};
 
-use once_cell::sync::Lazy;
-
 use serde_json::json;
 
-// Create a static variable to store the log file name
-static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("command_chat.log".to_string()));
 
 use crate::{
-    utils::modules::error::{self, AppError}, wfm_client::{client::WFMClient, types::{chat_data::ChatData, chat_message::ChatMessage}}
+    notification::client::NotifyClient, utils::{enums::ui_events::{UIEvent, UIOperationEvent}, modules::error::{self, AppError}}, wfm_client::{client::WFMClient, types::{chat_data::ChatData, chat_message::ChatMessage}}
 };
 
 #[tauri::command]
-pub async fn refresh_chats(
-    exclude: Vec<String>,
+pub async fn chat_refresh(
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-) -> Result<Vec<ChatData>, AppError> {
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+) -> Result<(), AppError> {
     let wfm = wfm.lock()?.clone();
-    match wfm.chat().get_chats().await {
-        Ok(chat) => {
-            let mut chats = chat.clone();
-            for id in exclude {
-                chats.retain(|x| x.id != id);
-            }
-            for chat in chats.clone() {
-                wfm.chat().emit("CREATE_OR_UPDATE", json!(chat.clone()));
-            }
-            Ok(chats)
+    let notify = notify.lock()?.clone();
+    let current_orders = match wfm.orders().get_my_orders().await {
+        Ok(mut auctions) => {
+            let mut orders = auctions.buy_orders;
+            orders.append(&mut auctions.sell_orders);
+            orders
         }
         Err(e) => {
-            error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+            error::create_log_file("command_orders.log".to_string(), &e);
             return Err(e);
         }
-    }
-}
-#[tauri::command]
-pub async fn get_chat(
-    id: String,
-    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-) -> Result<Vec<ChatMessage>, AppError> {
-    let wfm = wfm.lock()?.clone();
-    match wfm.chat().get_chat(id).await {
-        Ok(chat) => Ok(chat),
-        Err(e) => {
-            error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
-            return Err(e);
-        }
-    }
-}
-#[tauri::command]
-pub async fn delete_chat(
-    id: String,
-    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-) -> Result<String, AppError> {
-    let wfm = wfm.lock()?.clone();
-    match wfm.chat().delete(id).await {
-        Ok(chat) => Ok(chat),
-        Err(e) => {
-            error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
-            return Err(e);
-        }
-    }
+    };
+    notify.gui().send_event_update(
+        UIEvent::UpdateChats,
+        UIOperationEvent::Set,
+        Some(json!(current_orders)),
+    );
+
+    Ok(())
 }

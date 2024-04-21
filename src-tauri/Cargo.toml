@@ -13,11 +13,12 @@ edition = "2021"
 tauri-build = { version = "1.5", features = [] }
 
 [dependencies]
-tauri = { version = "1.5.2", features = [ "system-tray", "fs-copy-file", "path-all", "fs-write-file", "fs-read-dir", "fs-exists", "notification-all", "http-all", "fs-remove-file", "protocol-all", "updater", "shell-open"] }
+tauri = { version = "1.5.2", features = [ "window-create", "system-tray", "fs-copy-file", "path-all", "fs-write-file", "fs-read-dir", "fs-exists", "notification-all", "http-all", "fs-remove-file", "protocol-all", "updater", "shell-open"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
 tokio = { version = "1.29.0", features = ["full"] }
+tauri-plugin-websocket = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 
 regex = "1.9.1"
 chrono = "0.4"

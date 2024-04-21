@@ -11,10 +11,12 @@ pub struct Model {
     pub id: i64,
     pub wfm_weapon_id: String,
     pub wfm_weapon_url: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub wfm_order_id: Option<String>,
     pub weapon_name: String,
     pub weapon_type: String,
     pub weapon_unique_name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub sub_type: Option<SubType>,
     pub mod_name: String,
     pub attributes: RivenAttributeVec,
@@ -22,7 +24,9 @@ pub struct Model {
     pub re_rolls: i64,
     pub polarity: String,
     pub bought: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub minimum_price: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub list_price: Option<i64>,
     pub filter: MatchRivenStruct,
     pub is_hidden: bool,

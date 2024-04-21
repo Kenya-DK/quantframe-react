@@ -1,4 +1,4 @@
-use ::entity::{stock_item, stock_item::Entity as StockItem};
+use ::entity::{enums::stock_status::StockStatus, stock_item::{self, Entity as StockItem}, sub_type::SubType};
 use sea_orm::*;
 
 pub struct StockItemMutation;
@@ -31,7 +31,7 @@ impl StockItemMutation {
     pub async fn create(
         db: &DbConn,
         form_data: stock_item::Model,
-    ) -> Result<stock_item::ActiveModel, DbErr> {
+    ) -> Result<stock_item::Model, DbErr> {
         stock_item::ActiveModel {
             wfm_id: Set(form_data.wfm_id.to_owned()),
             wfm_url: Set(form_data.wfm_url.to_owned()),
@@ -49,8 +49,35 @@ impl StockItemMutation {
             updated_at: Set(chrono::Utc::now()),
             ..Default::default()
         }
-        .save(db)
+        .insert(db)
         .await
+    }
+
+    pub async fn find_by_url_name(db: &DbConn, url_name: &str) -> Result<Vec<stock_item::Model>, DbErr> {
+        StockItem::find()
+            .filter(stock_item::Column::WfmUrl.contains(url_name))
+            .all(db)
+            .await
+    }
+
+    pub async fn find_by_id(db: &DbConn, id: i64) -> Result<Option<stock_item::Model>, DbErr> {
+        StockItem::find_by_id(id)
+        .one(db)
+        .await
+    }
+
+    pub async fn find_by_url_name_and_sub_type(
+        db: &DbConn,
+        url_name: &str,
+        sub_type: Option<SubType>,
+    ) -> Result<Option<stock_item::Model>, DbErr> {
+        let items = StockItemMutation::find_by_url_name(db, url_name).await?;
+        for item in items {
+            if item.sub_type == sub_type {
+                return Ok(Some(item));
+            }
+        }
+        Ok(None)
     }
 
     pub async fn update_by_id(
@@ -85,17 +112,27 @@ impl StockItemMutation {
         .await
     }
 
-    pub async fn delete(db: &DbConn, id: i32) -> Result<DeleteResult, DbErr> {
+    pub async fn delete_by_id(db: &DbConn, id: i64) -> Result<DeleteResult, DbErr> {
         let post: stock_item::ActiveModel = StockItem::find_by_id(id)
             .one(db)
             .await?
-            .ok_or(DbErr::Custom("Cannot find post.".to_owned()))
+            .ok_or(DbErr::Custom("Cannot find Item.".to_owned()))
             .map(Into::into)?;
 
         post.delete(db).await
     }
 
-    pub async fn delete_all_posts(db: &DbConn) -> Result<DeleteResult, DbErr> {
+    pub async fn update_all(db: &DbConn, status: StockStatus, list_price: Option<i64>) -> Result<Vec<stock_item::Model>, DbErr> {
+        StockItem::update_many()
+            .col_expr(stock_item::Column::Status, status.into())
+            .col_expr(stock_item::Column::ListPrice, list_price.into())
+            .exec(db)
+            .await?;
+
+        StockItem::find().all(db).await
+    }
+
+    pub async fn delete_all(db: &DbConn) -> Result<DeleteResult, DbErr> {
         StockItem::delete_many().exec(db).await
     }
 }

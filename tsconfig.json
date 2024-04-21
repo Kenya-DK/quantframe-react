@@ -2,8 +2,6 @@
   "compilerOptions": {
     "baseUrl": ".",
     "target": "ES2020",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
     "useDefineForClassFields": true,
     "lib": [
       "ES2020",
@@ -20,8 +18,14 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "paths": {
-      "@components/*": [
-        "src/components/*"
+      "@components": [
+        "src/components/index.ts"
+      ],
+      "@pages/*": [
+        "src/pages/*"
+      ],
+      "@models/*": [
+        "src/models/*"
       ],
       "@contexts/*": [
         "src/contexts/*"
@@ -37,9 +41,6 @@
       ],
       "$types/*": [
         "src/types/*"
-      ],
-      "@store/*": [
-        "src/store/*"
       ]
     },
     /* Linting */

@@ -25,7 +25,7 @@ pub struct LiveScraperClient {
     pub wfm: Arc<Mutex<WFMClient>>,
     pub auth: Arc<Mutex<AuthState>>,
     pub cache: Arc<Mutex<CacheClient>>,
-    pub mh: Arc<Mutex<NotifyClient>>,
+    pub notify: Arc<Mutex<NotifyClient>>,
     pub app: Arc<Mutex<AppState>>,
 }
 
@@ -36,7 +36,7 @@ impl LiveScraperClient {
         wfm: Arc<Mutex<WFMClient>>,
         auth: Arc<Mutex<AuthState>>,
         cache: Arc<Mutex<CacheClient>>,
-        mh: Arc<Mutex<NotifyClient>>,
+        notify: Arc<Mutex<NotifyClient>>,
     ) -> Self {
         LiveScraperClient {
             log_file: "live_scraper.log".to_string(),
@@ -47,12 +47,12 @@ impl LiveScraperClient {
             wfm,
             auth,
             cache,
-            mh,
+            notify,
             riven_module: Arc::new(RwLock::new(None)),
             item_module: Arc::new(RwLock::new(None)),
         }
     }
-    fn report_error(&self, error: AppError) {
+    pub fn report_error(&self, error: &AppError) {
         let component = error.component();
         let cause = error.cause();
         let backtrace = error.backtrace();
@@ -60,22 +60,14 @@ impl LiveScraperClient {
         let extra = error.extra_data();
         if log_level == LogLevel::Critical || log_level == LogLevel::Error {
             self.is_running.store(false, Ordering::SeqCst);
-            crate::logger::dolog(
-                log_level.clone(),
-                format!("{}:{}", self.component, component).as_str(),
-                format!("{}, {}, {}", backtrace, cause, extra.to_string()).as_str(),
-                true,
-                Some(self.log_file.as_str()),
-            );
-        } else {
-            crate::logger::dolog(
-                log_level.clone(),
-                format!("{}:{}", self.component, component).as_str(),
-                format!("{}, {}, {}", backtrace, cause, extra.to_string()).as_str(),
-                true,
-                Some(self.log_file.as_str()),
-            );
-        }
+        } 
+        crate::logger::dolog(
+            log_level.clone(),
+            format!("{}:{}", self.component, component).as_str(),
+            format!("{}, {}, {}", backtrace, cause, extra.to_string()).as_str(),
+            true,
+            Some(self.log_file.as_str()),
+        );
     }
     pub fn debug(&self, id: &str, component: &str, msg: &str, file: Option<bool>) {
         let settings = self.settings.lock().unwrap().clone();
@@ -100,6 +92,7 @@ impl LiveScraperClient {
         );
     }
     pub fn stop_loop(&self) {
+        self.send_gui_update("idle", None);
         self.is_running.store(false, Ordering::SeqCst);
     }
 
@@ -151,7 +144,7 @@ impl LiveScraperClient {
                     current_riven_interval = 0;
                     match scraper.riven().check_stock().await {
                         Ok(_) => {}
-                        Err(e) => scraper.report_error(e),
+                        Err(e) => scraper.report_error(&e),
                     }
                 }
 
@@ -160,13 +153,14 @@ impl LiveScraperClient {
                 {
                     match scraper.item().check_stock().await {
                         Ok(_) => {}
-                        Err(e) => scraper.report_error(e),
+                        Err(e) => scraper.report_error(&e),
                     }
                 }
                 current_riven_interval += 1;
                 tokio::time::sleep(Duration::from_secs(1)).await;
-            }
+            }            
             logger::info_con(&scraper.component, "Loop live scraper is stopped");
+            scraper.notify.lock().unwrap().gui().send_event(crate::utils::enums::ui_events::UIEvent::UpdateLiveTradingRunningState, Some(json!(false)));
         });
         Ok(())
     }
@@ -195,5 +189,12 @@ impl LiveScraperClient {
     pub fn update_riven_module(&self, module: RivenModule) {
         // Update the stored ItemModule
         *self.riven_module.write().unwrap() = Some(module);
+    }
+
+    pub fn send_gui_update(&self, i18n_key: &str, values: Option<serde_json::Value>) {
+        let notify = self.notify.lock().unwrap().clone();
+        if self.is_running() {
+            notify.gui().send_event(crate::utils::enums::ui_events::UIEvent::OnLiveTradingMessage, Some(json!({ "i18nKey": i18n_key, "values": values })));            
+        }
     }
 }

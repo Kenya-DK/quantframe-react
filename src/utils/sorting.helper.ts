@@ -25,30 +25,30 @@ export const convertSortingToParams = (params: URLSearchParams, sorting: Sorting
   return params;
 };
 
-export const sortArray = <T extends any[]>(sortings: Array<SortingField>, array: T): T => {
-  if (!Array.isArray(sortings))
+export const sortArray = <T extends any[]>(fields: Array<SortingField>, array: T): T => {
+  if (!Array.isArray(fields))
     throw new Error("Sorting is not an array.");
 
-  if (sortings.length === 0)
+  if (fields.length === 0)
     return array;
   const sortedArray = array.sort((a: any, b: any) => {
     let result = 0;
-    for (let i = 0; i < sortings.length; i++) {
-      const sorting = sortings[i];
+    for (let i = 0; i < fields.length; i++) {
+      const sorting = fields[i];
       let propertyA = a[sorting.field];
       let propertyB = b[sorting.field];
       if (sorting.field.includes(".")) {
-        const propertys = sorting.field.split(".");
-        propertyA = a[propertys[0]];
-        propertyB = b[propertys[0]];
-        for (let i = 1; i < propertys.length; i++) {
+        const properties = sorting.field.split(".");
+        propertyA = a[properties[0]];
+        propertyB = b[properties[0]];
+        for (let i = 1; i < properties.length; i++) {
           if (Array.isArray(propertyA) || propertyA.length === 0) {
-            propertyA = propertyA.map((item: any) => item[propertys[i]]);
-            propertyB = propertyB.map((item: any) => item[propertys[i]]);
+            propertyA = propertyA.map((item: any) => item[properties[i]]);
+            propertyB = propertyB.map((item: any) => item[properties[i]]);
           }
           else {
-            propertyA = propertyA[propertys[i]];
-            propertyB = propertyB[propertys[i]];
+            propertyA = propertyA[properties[i]];
+            propertyB = propertyB[properties[i]];
           }
           if (propertyA === undefined || propertyB === undefined) return 0;
         }

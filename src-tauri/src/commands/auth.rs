@@ -1,18 +1,14 @@
 use std::sync::{Arc, Mutex};
 
 use eyre::eyre;
-use once_cell::sync::Lazy;
 
 
 use crate::{
     auth::AuthState, logger, utils::modules::error::{self, AppError}, wfm_client::client::WFMClient
 };
 
-// Create a static variable to store the log file name
-static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("command_auth.log".to_string()));
-
 #[tauri::command]
-pub async fn login(
+pub async fn auth_login(
     email: String,
     password: String,
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
@@ -26,7 +22,7 @@ pub async fn login(
                     "WarframeMarket",
                     "No access token found for user",
                     true,
-                    Some(LOG_FILE.lock().unwrap().as_str()),
+                    Some("auth_login.log"),
                 );
                 return Err(AppError::new(
                     "WarframeMarket",
@@ -52,17 +48,17 @@ pub async fn login(
             }
 
             auth.save_to_file()?;
-            auth.send_to_window();
             return Ok(auth.clone());
         }
         Err(e) => {
-            error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+            error::create_log_file("auth_login.log".to_string(), &e);
             return Err(e);
         }
     }
 }
+
 #[tauri::command]
-pub async fn update_user_status(
+pub async fn auth_set_status (
     status: String,
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
 ) -> Result<(), AppError> {
@@ -70,11 +66,11 @@ pub async fn update_user_status(
     let mut auth = arced_mutex.lock().expect("Could not lock auth");
     auth.status = Some(status);
     auth.save_to_file()?;
-    auth.send_to_window();
     Ok(())
 }
+
 #[tauri::command]
-pub async fn logout(auth: tauri::State<'_, Arc<Mutex<AuthState>>>) -> Result<(), AppError> {
+pub async fn auth_logout(auth: tauri::State<'_, Arc<Mutex<AuthState>>>) -> Result<(), AppError> {
     let arced_mutex = Arc::clone(&auth);
     let mut auth = arced_mutex.lock().expect("Could not lock auth");
     auth.access_token = None;
@@ -82,6 +78,5 @@ pub async fn logout(auth: tauri::State<'_, Arc<Mutex<AuthState>>>) -> Result<(),
     auth.ingame_name = "".to_string();
     auth.id = "".to_string();
     auth.save_to_file()?;
-    auth.send_to_window();
     Ok(())
 }

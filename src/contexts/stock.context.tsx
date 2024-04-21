@@ -1,15 +1,20 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { StockItemDto, StockRivenDto } from '$types/index';
-import { OnTauriUpdateDataEvent } from "../utils";
+import { QfSocketEvent, QfSocketEventOperation, StockItem, StockRiven } from "@api/types";
+import { OnTauriDataEvent } from "@api/index";
+import api from "@api/index";
 
-type StockContextProps = {
-  items: StockItemDto[];
-  rivens: StockRivenDto[];
+export type StockContextProps = {
+  items: StockItem[];
+  rivens: StockRiven[];
 }
-type StockContextProviderProps = {
+export type StockContextProviderProps = {
   children: React.ReactNode;
 }
+interface Entity {
+  id: string | number;
+}
 
+type SetDataFunction<T> = React.Dispatch<React.SetStateAction<T>>;
 export const StockContextContext = createContext<StockContextProps>({
   rivens: [],
   items: [],
@@ -17,62 +22,39 @@ export const StockContextContext = createContext<StockContextProps>({
 
 export const useStockContextContext = () => useContext(StockContextContext);
 
-export const StockContextProvider = ({ children }: StockContextProviderProps) => {
-  const [items, setItems] = useState<StockItemDto[]>([]);
-  const [rivens, setRivens] = useState<StockRivenDto[]>([]);
+export function StockContextProvider({ children }: StockContextProviderProps) {
+  const [items, setItems] = useState<StockItem[]>([]);
+  const [rivens, setRivens] = useState<StockRiven[]>([]);
 
-  // Handle update, create, delete orders
-  const handleUpdateItems = (operation: string, data: StockItemDto | StockItemDto[] | string) => {
+  const handleUpdate = <T extends Entity>(operation: QfSocketEventOperation, data: T | T[], setData: SetDataFunction<T[]>) => {
     switch (operation) {
-      case "CREATE_OR_UPDATE":
-        {
-          const order = data as StockItemDto;
-          setItems((stocks) => [...stocks.filter((item) => item.id !== order.id), order]);
-        }
+      case QfSocketEventOperation.CREATE_OR_UPDATE:
+        setData((items) => {
+          const index = items.reverse().findIndex((item) => item.id === (data as T).id);
+          if (index == -1)
+            return [...items, data as T];
+          const newItems = [...items];
+          newItems[index] = data as T;
+          return newItems;
+        });
         break;
-      case "DELETE":
-        {
-          const order = data as StockItemDto;
-          setItems((stocks) => [...stocks.filter((item) => item.id !== order.id)]);
-        }
+      case QfSocketEventOperation.DELETE:
+        setData((items) => items.reverse().filter((item) => item.id !== (data as T).id));
         break;
-      case "SET":
-        {
-          const stocks = data as StockItemDto[];
-          setItems(stocks);
-        }
+      case QfSocketEventOperation.SET:
+        setData(data as T[]);
         break;
     }
   }
-  // Handle update, create, delete orders
-  const handleUpdateRiven = (operation: string, data: StockRivenDto | StockRivenDto[] | string) => {
-    switch (operation) {
-      case "CREATE_OR_UPDATE":
-        {
-          const order = data as StockRivenDto;
-          setRivens((stocks) => [...stocks.filter((item) => item.id !== order.id), order]);
-        }
-        break;
-      case "DELETE":
-        {
-          const order = data as StockRivenDto;
-          setRivens((stocks) => [...stocks.filter((item) => item.id !== order.id)]);
-        }
-        break;
-      case "SET":
-        {
-          const stocks = data as StockRivenDto[];
-          setRivens(stocks);
-        }
-        break;
-    }
-  }
+
   // Hook on tauri events from rust side
   useEffect(() => {
-    OnTauriUpdateDataEvent<StockItemDto>("StockItems", ({ data, operation }) => handleUpdateItems(operation, data));
-    OnTauriUpdateDataEvent<StockRivenDto>("StockRivens", ({ data, operation }) => handleUpdateRiven(operation, data));
-
-    return () => { }
+    OnTauriDataEvent<any>(QfSocketEvent.UpdateStockItems, ({ data, operation }) => handleUpdate(operation, data, setItems));
+    OnTauriDataEvent<any>(QfSocketEvent.UpdateStockRivens, ({ data, operation }) => handleUpdate(operation, data, setRivens));
+    return () => {
+      api.events.CleanEvent(QfSocketEvent.UpdateStockItems);
+      api.events.CleanEvent(QfSocketEvent.UpdateStockRivens);
+    }
   }, []);
 
   return (

@@ -1,14 +1,16 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { StatisticDto, TransactionEntryDto, Wfm } from '$types/index';
-import { OnTauriUpdateDataEvent, GetStatistic } from "../utils";
-
-type WarframeMarketContextProps = {
-  transactions: TransactionEntryDto[];
+import { Wfm } from '$types/index';
+import { WFMSocketContextProvider } from "./wfmSocket.context";
+import { ChatContextProvider } from "./chat.context";
+import { QfSocketEventOperation, QfSocketEvent, TransactionDto, StatisticDto } from "@api/types";
+import api, { OnTauriDataEvent } from "@api/index";
+export type WarframeMarketContextProps = {
+  transactions: TransactionDto[];
   orders: Wfm.OrderDto[];
   auctions: Wfm.Auction<string>[];
   statistics: StatisticDto | undefined;
 }
-type WarframeMarketContextProviderProps = {
+export type WarframeMarketContextProviderProps = {
   children: React.ReactNode;
 }
 
@@ -21,87 +23,78 @@ export const WarframeMarketContextContext = createContext<WarframeMarketContextP
 
 export const useWarframeMarketContextContext = () => useContext(WarframeMarketContextContext);
 
-export const WarframeMarketContextProvider = ({ children }: WarframeMarketContextProviderProps) => {
-  const [transactions, setTransactions] = useState<TransactionEntryDto[]>([]);
+interface Entity {
+  id: string | number;
+}
+
+type SetDataFunction<T> = React.Dispatch<React.SetStateAction<T>>;
+
+export function WarframeMarketContextProvider({ children }: WarframeMarketContextProviderProps) {
+  const [transactions, setTransactions] = useState<TransactionDto[]>([]);
   const [statistics, setStatistics] = useState<StatisticDto | undefined>(undefined);
   const [orders, setOrders] = useState<Wfm.OrderDto[]>([]);
   const [auctions, setAuctions] = useState<Wfm.Auction<string>[]>([]);
 
-  // Handle update, create, delete orders
-  const handleUpdateOrders = (operation: string, data: Wfm.OrderDto | Wfm.OrderDto[] | string) => {
+
+  const handleUpdate = <T extends Entity>(operation: QfSocketEventOperation, data: T | T[], setData: SetDataFunction<T[]>) => {
     switch (operation) {
-      case "CREATE_OR_UPDATE":
-        {
-          const order = data as Wfm.OrderDto;
-          setOrders((inventorys) => [...inventorys.filter((item) => item.id !== order.id), order]);
-        }
+      case QfSocketEventOperation.CREATE_OR_UPDATE:
+        setData((items) => {
+          const index = items.reverse().findIndex((item) => item.id === (data as T).id);
+          if (index == -1)
+            return [...items, data as T];
+          const newItems = [...items];
+          newItems[index] = data as T;
+          return newItems;
+        });
         break;
-      case "DELETE":
-        {
-          const order = data as Wfm.OrderDto;
-          setOrders((inventorys) => [...inventorys.filter((item) => item.id !== order.id)]);
-        }
+      case QfSocketEventOperation.DELETE:
+        setData((items) => items.filter((item) => item.id !== (data as T).id));
         break;
-      case "SET":
-        {
-          const orders = data as Wfm.OrderDto[];
-          setOrders(orders);
-        }
+      case QfSocketEventOperation.SET:
+        setData(data as T[]);
         break;
     }
   }
 
-  // Handle update, create, delete transaction
-  const handleUpdateTransaction = (operation: string, data: TransactionEntryDto | TransactionEntryDto[]) => {
-    switch (operation) {
-      case "CREATE_OR_UPDATE":
-        setTransactions((transactions) => [...transactions.filter((item) => item.id !== (data as TransactionEntryDto).id), data as TransactionEntryDto]);
-        break;
-      case "DELETE":
-        setTransactions((transactions) => [...transactions.filter((item) => item.id !== (data as TransactionEntryDto).id)]);
-        break;
-      case "SET":
-        setTransactions(data as TransactionEntryDto[]);
-        break;
-    }
+  // Handle orders
+  const handleUpdateOrders = (operation: QfSocketEventOperation, data: Wfm.OrderDto | Wfm.OrderDto[]) => {
+    handleUpdate(operation, data, setOrders);
   }
 
-  // Handle update, create, delete transaction
-  const handleUpdateAuction = (operation: string, data: Wfm.Auction<string> | Wfm.Auction<string>[]) => {
-    switch (operation) {
-      case "CREATE_OR_UPDATE":
-        setAuctions((auctions) => [...auctions.filter((item) => item.id !== (data as Wfm.Auction<string>).id), data as Wfm.Auction<string>]);
-        break;
-      case "DELETE":
-        setAuctions((auctions) => [...auctions.filter((item) => item.id !== (data as Wfm.Auction<string>).id)]);
-        break;
-      case "SET":
-        setAuctions(data as Wfm.Auction<string>[]);
-        break;
-    }
+  // Handle transactions
+  const handleUpdateTransaction = (operation: QfSocketEventOperation, data: TransactionDto | TransactionDto[]) => {
+    handleUpdate(operation, data, setTransactions);
+  }
+
+  // Handle auctions
+  const handleUpdateAuction = (operation: QfSocketEventOperation, data: Wfm.Auction<string> | Wfm.Auction<string>[]) => {
+    handleUpdate(operation, data, setAuctions);
   }
 
   // Handle update of statistics when transactions change
   useEffect(() => {
     if (!transactions) return;
-    let statistics = GetStatistic(transactions);
-    console.log("Statistics", statistics);
+    let statistics = api.statistic.convertFromTransaction(transactions);
 
     setStatistics(statistics);
   }, [transactions]);
 
   // Hook on tauri events from rust side
   useEffect(() => {
-    OnTauriUpdateDataEvent<TransactionEntryDto>("transactions", ({ data, operation }) => handleUpdateTransaction(operation, data));
-    OnTauriUpdateDataEvent<Wfm.OrderDto>("orders", ({ data, operation }) => handleUpdateOrders(operation, data));
-    OnTauriUpdateDataEvent<Wfm.Auction<string>>("auctions", ({ data, operation }) => handleUpdateAuction(operation, data));
-
+    OnTauriDataEvent<any>(QfSocketEvent.UpdateTransaction, ({ data, operation }) => handleUpdateTransaction(operation, data));
+    OnTauriDataEvent<any>(QfSocketEvent.UpdateOrders, ({ data, operation }) => handleUpdateOrders(operation, data));
+    OnTauriDataEvent<any>(QfSocketEvent.UpdateAuction, ({ data, operation }) => handleUpdateAuction(operation, data));
     return () => { }
   }, []);
 
   return (
     <WarframeMarketContextContext.Provider value={{ transactions, statistics, orders, auctions }}>
-      {children}
+      <ChatContextProvider>
+        <WFMSocketContextProvider>
+          {children}
+        </WFMSocketContextProvider>
+      </ChatContextProvider>
     </WarframeMarketContextContext.Provider>
   )
 }

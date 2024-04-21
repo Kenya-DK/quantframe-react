@@ -1,5 +1,3 @@
-import { createStyles, useMantineTheme } from "@mantine/core";
-import { MatchRivenDto, StockRivenDto, Wfm } from "../types";
 
 export interface GroupByDateSettings {
   labels?: string[]
@@ -60,137 +58,10 @@ export const paginate = <T>(items: Array<T>, page: number, take: number) => {
   const endIndex = page * take;
   return items.slice(startIndex, endIndex);
 }
+
 export const padTo2Digits = (num: number) => {
   return num.toString().padStart(2, '0');
 }
-
-/**
- * Returns the CSS class for the given order status, which can be used to style the order status in the UI.
- * @param status - The order status to get the CSS class for.
- * @returns The CSS class for the given order status.
- */
-const useStyles = createStyles(() => {
-  const boxShadow = `inset 4px 0 0 0`;
-
-  return {
-    default: {
-      ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${getOrderStatusColorCode("")};`,
-      },
-    },
-    pending: {
-      ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.Pending)};`,
-      },
-    },
-    live: {
-      ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.Live)};`,
-      },
-    },
-    to_low_profit: {
-      ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.ToLowProfit)};`,
-      },
-    },
-    no_sellers: {
-      ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.NoSellers)};`,
-      },
-    },
-    no_buyers: {
-      ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.NoBuyers)};`,
-      },
-    },
-    inactive: {
-      ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.InActive)};`,
-      },
-    },
-    sma_limit: {
-      ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.SMALimit)};`,
-      },
-    },
-    order_limit: {
-      ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.OrderLimit)};`,
-      },
-    },
-  }
-});
-export const getOrderStatusColorCode = (status: string) => {
-  const theme = useMantineTheme();
-  switch (status) {
-    case Wfm.OrderStatus.Pending:
-      return theme.colors.violet[7];
-    case Wfm.OrderStatus.Live:
-      return theme.colors.green[7];
-    case Wfm.OrderStatus.ToLowProfit:
-      return theme.colors.yellow[7];
-    case Wfm.OrderStatus.NoSellers:
-      return theme.colors.grape[7];
-    case Wfm.OrderStatus.NoBuyers:
-      return theme.colors.teal[7];
-    case Wfm.OrderStatus.InActive:
-      return theme.colors.red[7];
-    case Wfm.OrderStatus.SMALimit:
-      return theme.colors.orange[9];
-    case Wfm.OrderStatus.OrderLimit:
-      return theme.colors.cyan[7];
-    default:
-      return theme.colors.gray[2];
-  }
-};
-export const getTradeClassificationColorCode = (type: string) => {
-  const theme = useMantineTheme();
-  switch (type) {
-    case Wfm.TradeClassification.Buy:
-      return "red";
-    case Wfm.TradeClassification.Sell:
-      return "green";
-    case Wfm.TradeClassification.Trade:
-      return theme.colors.violet[7];
-    case Wfm.TradeClassification.Buy:
-    default:
-      return theme.colors.gray[2];
-  }
-};
-export const getOrderStatusColorClass = (status: string) => {
-  const { classes } = useStyles();
-  switch (status) {
-    case Wfm.OrderStatus.Pending:
-      return classes.pending;
-    case Wfm.OrderStatus.Live:
-      return classes.live;
-    case Wfm.OrderStatus.ToLowProfit:
-      return classes.to_low_profit;
-    case Wfm.OrderStatus.NoSellers:
-      return classes.no_sellers;
-    case Wfm.OrderStatus.NoBuyers:
-      return classes.no_buyers;
-    case Wfm.OrderStatus.InActive:
-      return classes.inactive;
-    case Wfm.OrderStatus.SMALimit:
-      return classes.sma_limit;
-    case Wfm.OrderStatus.OrderLimit:
-      return classes.order_limit;
-    default:
-      return classes.default;
-  }
-};
-export const getUserStatusColor = (status: Wfm.UserStatus) => {
-  switch (status) {
-    case Wfm.UserStatus.Ingame:
-      return "mediumpurple";
-    case Wfm.UserStatus.Online:
-      return "green";
-    case Wfm.UserStatus.Invisible:
-    default:
-      return "red";
-  }
-};
 
 // format number 1k, 1m, 1b
 export const formatNumber = (num: number) => {
@@ -206,19 +77,6 @@ export const formatNumber = (num: number) => {
   return num;
 }
 
-export const convertStockRivenToMatchRiven = (stockRiven: StockRivenDto): MatchRivenDto => {
-  const match: MatchRivenDto = stockRiven.match_riven;
-  const filteredObject = Object.fromEntries(
-    Object.entries(match).filter(([_, value]) => value !== null)
-  ) as MatchRivenDto;
-  filteredObject.attributes = stockRiven.attributes.map((item) => {
-    if (item == null) return null;
-    const matchAttribute = match.attributes?.find((matchAttribute) => matchAttribute?.url_name === item.url_name);
-    return {
-      is_negative: matchAttribute?.is_negative || !item.positive,
-      is_required: matchAttribute?.is_required || false,
-      url_name: item.url_name,
-    }
-  });
-  return filteredObject;
+export const getCssVariable = (name: string) => {
+  return getComputedStyle(document.documentElement).getPropertyValue(name);
 }

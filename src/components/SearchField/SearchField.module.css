@@ -1,0 +1,25 @@
+.root {
+
+  border: 0.2rem solid var(--mantine-color-gray);
+
+  &[data-user-status='ingame'] .indicator {
+    --indicator-color: var(--user-status-ingame);
+  }
+
+  &[data-user-status='online'] .indicator {
+    --indicator-color: var(--user-status-online);
+  }
+
+  &[data-user-status='invisible'] .indicator {
+    --indicator-color: var(--user-status-invisible);
+  }
+}
+
+.user_status {
+
+  button[data-active='true'] {
+    background-color: var(--mantine-color-default-hover);
+  }
+
+
+}

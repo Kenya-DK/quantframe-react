@@ -1,31 +1,38 @@
-import { Grid, Tabs } from "@mantine/core";
-import { TransactionControl } from "../../components/transactionControl";
-import { StockItemsPanel, StockRivenPanel } from "./tabs";
-import { useTranslatePage } from "../../hooks";
+import { Box, Container, Tabs } from "@mantine/core";
+import { StockItemPanel } from "./tabs/item";
+import { StockRivenPanel } from "./tabs/riven";
+import { useTranslatePages } from "@hooks/index";
+import { LiveTradingControl } from "@components";
 
 export default function LiveTradingPage() {
-  const useTranslate = (key: string, context?: { [key: string]: any }) => useTranslatePage(`live_trading.${key}`, { ...context })
+
+  // Translate general
+  const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`liveTrading.${key}`, { ...context }, i18Key)
+  const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`tabs.${key}`, { ...context }, i18Key)
+
+  const tabs = [
+    { label: useTranslateTabs("item.title"), component: <StockItemPanel />, id: "item", icon: <div>Stocks</div> },
+    { label: useTranslateTabs("riven.title"), component: <StockRivenPanel />, id: "riven" },
+  ];
   return (
-    <Grid>
-      <Grid.Col md={12}>
-        <TransactionControl />
-        <Tabs defaultValue="items">
-          <Tabs.List>
-            <Tabs.Tab value="items" >
-              {useTranslate('tabs.item.title')}
+    <Container size={"100%"}>
+      <Box mt={25}>
+        <LiveTradingControl />
+      </Box>
+      <Tabs defaultValue={tabs[0].id}>
+        <Tabs.List>
+          {tabs.map((tab) => (
+            <Tabs.Tab value={tab.id} key={tab.id}>
+              {tab.label}
             </Tabs.Tab>
-            <Tabs.Tab value="rivens">
-              {useTranslate('tabs.riven.title')}
-            </Tabs.Tab>
-          </Tabs.List>
-          <Tabs.Panel value="items">
-            <StockItemsPanel />
+          ))}
+        </Tabs.List>
+        {tabs.map((tab) => (
+          <Tabs.Panel value={tab.id} key={tab.id}>
+            {tab.component}
           </Tabs.Panel>
-          <Tabs.Panel value="rivens">
-            <StockRivenPanel />
-          </Tabs.Panel>
-        </Tabs>
-      </Grid.Col>
-    </Grid>
+        ))}
+      </Tabs>
+    </Container >
   );
 }

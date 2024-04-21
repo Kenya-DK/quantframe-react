@@ -31,7 +31,7 @@ impl TransactionMutation {
     pub async fn create(
         db: &DbConn,
         form_data: transaction::Model,
-    ) -> Result<transaction::ActiveModel, DbErr> {
+    ) -> Result<transaction::Model, DbErr> {
         transaction::ActiveModel {
             wfm_id: Set(form_data.wfm_id.to_owned()),
             wfm_url: Set(form_data.wfm_url.to_owned()),
@@ -49,7 +49,7 @@ impl TransactionMutation {
             updated_at: Set(chrono::Utc::now()),
             ..Default::default()
         }
-        .save(db)
+        .insert(db)
         .await
     }
 
@@ -95,7 +95,7 @@ impl TransactionMutation {
         post.delete(db).await
     }
 
-    pub async fn delete_all_posts(db: &DbConn) -> Result<DeleteResult, DbErr> {
+    pub async fn delete_all(db: &DbConn) -> Result<DeleteResult, DbErr> {
         Transaction::delete_many().exec(db).await
     }
 }

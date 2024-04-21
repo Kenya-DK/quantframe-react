@@ -118,7 +118,4 @@ impl AuthState {
 
         Ok((deserialized, missing_properties.is_empty()))
     }
-    pub fn send_to_window(&self) {
-        
-    }
 }

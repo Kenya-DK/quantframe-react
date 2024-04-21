@@ -10,7 +10,16 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 
 use crate::{
-    app::client::AppState, auth::AuthState, logger, utils::{enums::log_level::LogLevel, modules::{error::{ApiResult, AppError, ErrorApiResponse}, rate_limiter::RateLimiter}}
+    app::client::AppState,
+    auth::AuthState,
+    logger,
+    utils::{
+        enums::log_level::{self, LogLevel},
+        modules::{
+            error::{ApiResult, AppError, ErrorApiResponse},
+            rate_limiter::RateLimiter,
+        },
+    },
 };
 
 use super::modules::{
@@ -45,7 +54,7 @@ impl WFMClient {
             endpoint: "https://api.warframe.market/v1/".to_string(),
             component: "WarframeMarket".to_string(),
             limiter: Arc::new(tokio::sync::Mutex::new(RateLimiter::new(
-                2.0,
+                1.0,
                 Duration::new(1, 0),
             ))),
             log_file: "wfmAPICalls.log".to_string(),
@@ -146,6 +155,7 @@ impl WFMClient {
 
         if let Err(e) = response {
             error_def.messages.push(e.to_string());
+            
             return Err(AppError::new_api(
                 self.component.as_str(),
                 error_def,
@@ -165,12 +175,18 @@ impl WFMClient {
         let response: Value = serde_json::from_str(content.as_str()).map_err(|e| {
             error_def.messages.push(e.to_string());
             error_def.error = "RequestError".to_string();
+
+            let log_level= match error_def.status_code {
+                400 => LogLevel::Warning,
+                _ => LogLevel::Critical                
+            };
             AppError::new_api(
                 self.component.as_str(),
                 error_def.clone(),
                 eyre!(format!("Could not parse response: {}, {:?}", content, e)),
-                LogLevel::Critical,
-            )
+                log_level,
+            )                
+            
         })?;
 
         // Check if the response is an error

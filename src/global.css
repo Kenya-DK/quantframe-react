@@ -1,0 +1,254 @@
+:root {
+  --user-status-online: var(--mantine-color-green-7);
+  --user-status-invisible: var(--mantine-color-red-7);
+  --user-status-ingame: var(--mantine-color-violet-7);
+
+  --trade-type-purchase: var(--mantine-color-red-7);
+  --trade-type-sale: var(--mantine-color-green-7);
+  --trade-type-trade: var(--mantine-color-violet-7);
+
+  --negative-value: var(--mantine-color-red-7);
+  --positive-value: var(--mantine-color-green-7);
+  --profit-value: var(--mantine-color-violet-7);
+
+  --profit-bar-color: var(--mantine-color-indigo-3);
+
+  --stock-status-pending: var(--mantine-color-violet-7);
+  --stock-status-live: var(--mantine-color-green-7);
+  --stock-status-to-low_profit: var(--mantine-color-yellow-5);
+  --stock-status-no-sellers: var(--mantine-color-orange-9);
+  --stock-status-no-buyers: var(--mantine-color-grape-5);
+  --stock-status-inactive: var(--mantine-color-red-7);
+  --stock-status-sma-limit: var(--mantine-color-indigo-9);
+  --stock-status-order-limit: var(--mantine-color-cyan-8);
+  --stock-status-overpriced: var(--mantine-color-pink-9);
+  --stock-status-underpriced: var(--mantine-color-orange-6);
+}
+
+[data-user-status='online'] {
+  &[data-color-mode='bg'] {
+    background-color: var(--user-status-online);
+  }
+
+  &[data-color-mode='text'] {
+    color: var(--user-status-online);
+  }
+}
+
+[data-user-status='invisible'] {
+  &[data-color-mode='bg'] {
+    background-color: var(--user-status-invisible);
+  }
+
+  &[data-color-mode='text'] {
+    color: var(--user-status-invisible);
+  }
+}
+
+[data-user-status='ingame'] {
+  &[data-color-mode='bg'] {
+    background-color: var(--user-status-ingame);
+  }
+
+  &[data-color-mode='text'] {
+    color: var(--user-status-ingame);
+  }
+
+}
+
+[data-profit='negative'] {
+  &[data-color-mode='bg'] {
+    background-color: var(--negative-value);
+  }
+
+  &[data-color-mode='text'] {
+    color: var(--negative-value);
+  }
+
+  &[data-color-mode='box-shadow'] {
+    box-shadow: inset 4px 0 0 0 var(--negative-value);
+  }
+}
+
+[data-profit='positive'] {
+  &[data-color-mode='bg'] {
+    background-color: var(--positive-value);
+  }
+
+  &[data-color-mode='text'] {
+    color: var(--positive-value);
+  }
+
+  &[data-color-mode='box-shadow'] {
+    box-shadow: inset 4px 0 0 0 var(--positive-value);
+  }
+}
+
+[data-trade-type='purchase'] {
+  &[data-color-mode='bg'] {
+    background-color: var(--trade-type-purchase);
+  }
+
+  &[data-color-mode='text'] {
+    color: var(--trade-type-purchase);
+  }
+
+  &[data-color-mode='box-shadow'] {
+    box-shadow: inset 4px 0 0 0 var(--trade-type-purchase);
+  }
+}
+
+[data-trade-type='sale'] {
+  &[data-color-mode='bg'] {
+    background-color: var(--trade-type-sale);
+  }
+
+  &[data-color-mode='text'] {
+    color: var(--trade-type-sale);
+  }
+
+  &[data-color-mode='box-shadow'] {
+    box-shadow: inset 4px 0 0 0 var(--trade-type-sale);
+  }
+}
+
+[data-stock-status='pending'] {
+  &[data-color-mode='bg'] {
+    background-color: var(--stock-status-pending);
+  }
+
+  &[data-color-mode='text'] {
+    color: var(--stock-status-pending);
+  }
+
+  &[data-color-mode='box-shadow'] {
+    box-shadow: inset 4px 0 0 0 var(--stock-status-pending);
+  }
+}
+
+[data-stock-status='live'] {
+  &[data-color-mode='bg'] {
+    background-color: var(--stock-status-live);
+  }
+
+  &[data-color-mode='text'] {
+    color: var(--stock-status-live);
+  }
+
+  &[data-color-mode='box-shadow'] {
+    box-shadow: inset 4px 0 0 0 var(--stock-status-live);
+  }
+}
+
+[data-stock-status='to_low_profit'] {
+  &[data-color-mode='bg'] {
+    background-color: var(--stock-status-to-low_profit);
+  }
+
+  &[data-color-mode='text'] {
+    color: var(--stock-status-to-low_profit);
+  }
+
+  &[data-color-mode='box-shadow'] {
+    box-shadow: inset 4px 0 0 0 var(--stock-status-to-low_profit);
+  }
+}
+
+[data-stock-status='no_sellers'] {
+  &[data-color-mode='bg'] {
+    background-color: var(--stock-status-no-sellers);
+  }
+
+  &[data-color-mode='text'] {
+    color: var(--stock-status-no-sellers);
+  }
+
+  &[data-color-mode='box-shadow'] {
+    box-shadow: inset 4px 0 0 0 var(--stock-status-no-sellers);
+  }
+}
+
+[data-stock-status='no_buyers'] {
+  &[data-color-mode='bg'] {
+    background-color: var(--stock-status-no-buyers);
+  }
+
+  &[data-color-mode='text'] {
+    color: var(--stock-status-no-buyers);
+  }
+
+  &[data-color-mode='box-shadow'] {
+    box-shadow: inset 4px 0 0 0 var(--stock-status-no-buyers);
+  }
+}
+
+[data-stock-status='inactive'] {
+  &[data-color-mode='bg'] {
+    background-color: var(--stock-status-inactive);
+  }
+
+  &[data-color-mode='text'] {
+    color: var(--stock-status-inactive);
+  }
+
+  &[data-color-mode='box-shadow'] {
+    box-shadow: inset 4px 0 0 0 var(--stock-status-inactive);
+  }
+}
+
+[data-stock-status='sma_limit'] {
+  &[data-color-mode='bg'] {
+    background-color: var(--stock-status-sma-limit);
+  }
+
+  &[data-color-mode='text'] {
+    color: var(--stock-status-sma-limit);
+  }
+
+  &[data-color-mode='box-shadow'] {
+    box-shadow: inset 4px 0 0 0 var(--stock-status-sma-limit);
+  }
+}
+
+[data-stock-status='order_limit'] {
+  &[data-color-mode='bg'] {
+    background-color: var(--stock-status-order-limit);
+  }
+
+  &[data-color-mode='text'] {
+    color: var(--stock-status-order-limit);
+  }
+
+  &[data-color-mode='box-shadow'] {
+    box-shadow: inset 4px 0 0 0 var(--stock-status-order-limit);
+  }
+}
+
+[data-stock-status='overpriced'] {
+  &[data-color-mode='bg'] {
+    background-color: var(--stock-status-overpriced);
+  }
+
+  &[data-color-mode='text'] {
+    color: var(--stock-status-overpriced);
+  }
+
+  &[data-color-mode='box-shadow'] {
+    box-shadow: inset 4px 0 0 0 var(--stock-status-overpriced);
+  }
+}
+
+[data-stock-status='underpriced'] {
+  &[data-color-mode='bg'] {
+    background-color: var(--stock-status-underpriced);
+  }
+
+  &[data-color-mode='text'] {
+    color: var(--stock-status-underpriced);
+  }
+
+  &[data-color-mode='box-shadow'] {
+    box-shadow: inset 4px 0 0 0 var(--stock-status-underpriced);
+  }
+}
+

@@ -23,17 +23,17 @@ use tauri::{App, Manager, SystemTrayEvent};
 mod app;
 mod auth;
 mod cache;
+mod commands;
+mod debug;
 mod enums;
 mod helper;
+mod live_scraper;
 mod notification;
 mod qf_client;
 mod settings;
+mod system_tray;
 mod utils;
 mod wfm_client;
-mod commands;
-mod debug;
-mod live_scraper;
-mod system_tray;
 
 async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     // Create the database connection and store it
@@ -84,9 +84,7 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     app.manage(qf_client.clone());
 
     // create and manage Cache state
-    let cache_arc = Arc::new(Mutex::new(CacheClient::new(
-        Arc::clone(&qf_client),
-    )));
+    let cache_arc = Arc::new(Mutex::new(CacheClient::new(Arc::clone(&qf_client))));
     app.manage(cache_arc.clone());
 
     // create and manage LiveScraper state
@@ -101,7 +99,7 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     app.manage(Arc::new(Mutex::new(live_scraper)));
 
     // create and manage WhisperScraper state
-    let debug_client = DebugClient::new(Arc::clone(&cache_arc),Arc::clone(&app_arc));
+    let debug_client = DebugClient::new(Arc::clone(&cache_arc), Arc::clone(&app_arc), Arc::clone(&notify_arc));
     app.manage(Arc::new(Mutex::new(debug_client)));
 
     Ok(())
@@ -117,7 +115,7 @@ fn main() {
     }));
 
     tauri::Builder::default()
-        // .plugin(tauri_plugin_websocket::init())
+        .plugin(tauri_plugin_websocket::init())
         .system_tray(SystemTray::new().with_menu(system_tray::client::get_tray_menu()))
         .on_system_tray_event(|_app, event| match event {
             SystemTrayEvent::MenuItemClick { id, .. } => {
@@ -147,19 +145,23 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             // Base commands
-            commands::base::init,
+            commands::app::app_init,
             // commands::base::log,
             // commands::base::update_settings,
             // commands::base::open_logs_folder,
             // commands::base::export_logs,
             // commands::base::show_notification,
             // commands::base::on_new_wfm_message,
-            // // Auth commands
-            // commands::auth::login,
-            // commands::auth::logout,
-            // commands::auth::update_user_status,
-            // // Transaction commands
-            // commands::transaction::tra_get_all,
+            // Auth commands
+            commands::auth::auth_login,
+            commands::auth::auth_set_status,
+            commands::auth::auth_logout,
+            // Cache commands
+            commands::cache::cache_get_tradable_items,
+            commands::cache::cache_get_riven_weapons,
+            commands::cache::cache_get_riven_attributes,
+            // Transaction commands
+            commands::transaction::transaction_get_all,
             // commands::transaction::tra_get_by_id,
             // commands::transaction::tra_update_by_id,
             // commands::transaction::tra_delete_by_id,
@@ -177,21 +179,29 @@ fn main() {
             // commands::stock_riven::stock_riven_delete,
             // // Live Scraper commands
             // commands::live_scraper::toggle_live_scraper,
-            // // Auctions commands
-            // commands::auctions::refresh_auctions,
-            // // Orders commands
-            // commands::orders::refresh_orders,
+            // Debug commands
+            commands::debug::debug_db_reset,
+            commands::debug::debug_migrate_data_base,
+            // Auctions commands
+            commands::auctions::auction_refresh,
+            // Orders commands
+            commands::orders::order_refresh,
             // commands::orders::get_orders,
             // commands::orders::delete_order,
             // commands::orders::create_order,
             // commands::orders::update_order,
             // commands::orders::delete_all_orders,
-            // // Chat commands
-            // commands::chat::get_chat,
+            // Chat commands
+            commands::chat::chat_refresh,
+            // Live Trading commands
+            commands::live_scraper::live_scraper_set_running_state,
             // commands::chat::delete_chat,
             // commands::chat::refresh_chats,
             // // Stock commands
-            // commands::stock::create_item_stock,
+            commands::stock_item::stock_item_create,
+            commands::stock_item::stock_item_update,
+            commands::stock_item::stock_item_sell,
+            commands::stock_item::stock_item_delete,
             // commands::stock::delete_item_stock,
             // commands::stock::update_item_stock,
             // commands::stock::sell_item_stock,

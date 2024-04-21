@@ -103,6 +103,7 @@ impl CacheClient {
     fn get_current_cache_id(&self) -> Result<String, AppError> {
         let cache_path = self.cache_path.join(self.md5_file.clone());
         if !cache_path.exists() {
+
             return Ok("N/A".to_string());
         }
         let mut file = File::open(cache_path)
@@ -122,7 +123,7 @@ impl CacheClient {
         let mut archive = zip::ZipArchive::new(reader)
             .map_err(|e| AppError::new(&self.component, eyre!(e.to_string())))?;
 
-        let extract_to = helper::get_app_storage_path();
+        let extract_to = helper::get_app_storage_path().join(self.cache_path.clone());
 
         for i in 0..archive.len() {
             let mut file = archive
@@ -150,12 +151,6 @@ impl CacheClient {
         }
         logger::info_con(&self.component, "Cache data downloaded and extracted");
         Ok(())
-    }
-
-    fn get_file_path() -> PathBuf {
-        let app_path = helper::get_app_storage_path();
-        let settings_path = app_path.join("cache.json");
-        settings_path
     }
 
     pub async fn load(&self) -> Result<(), AppError> {
@@ -195,24 +190,43 @@ impl CacheClient {
         }
 
         self.arcane().load()?;
+        logger::info_con(&self.component, "Arcane data loaded");
         self.warframe().load()?;
+        logger::info_con(&self.component, "Warframe data loaded");
         self.arch_gun().load()?;
+        logger::info_con(&self.component, "ArchGun data loaded");
         self.arch_melee().load()?;
+        logger::info_con(&self.component, "ArchMelee data loaded");
         self.archwing().load()?;
+        logger::info_con(&self.component, "Archwing data loaded");
         self.melee().load()?;
+        logger::info_con(&self.component, "Melee data loaded");
         self.mods().load()?;
+        logger::info_con(&self.component, "Mods data loaded");
         self.primary().load()?;
+        logger::info_con(&self.component, "Primary data loaded");
         self.secondary().load()?;
+        logger::info_con(&self.component, "Secondary data loaded");
         self.sentinel().load()?;
+        logger::info_con(&self.component, "Sentinel data loaded");
         self.tradable_items().load()?;
+        logger::info_con(&self.component, "Tradable items data loaded");
         self.skin().load()?;
+        logger::info_con(&self.component, "Skin data loaded");
         self.misc().load()?;
+        logger::info_con(&self.component, "Misc data loaded");
         self.pet().load()?;
+        logger::info_con(&self.component, "Pet data loaded");
         self.fish().load()?;
+        logger::info_con(&self.component, "Fish data loaded");
         self.resource().load()?;
+        logger::info_con(&self.component, "Resource data loaded");
         self.riven().load()?;
+        logger::info_con(&self.component, "Riven data loaded");
         self.parts().load()?;
+        logger::info_con(&self.component, "Parts data loaded");
         self.item_price().load().await?;
+        logger::info_con(&self.component, "Item price data loaded");
         return Ok(());
     }
 

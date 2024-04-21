@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "Quantframe",
-    "version": "1.0.2"
+    "version": "1.2.0"
   },
   "tauri": {
     "systemTray": {
@@ -20,6 +20,9 @@
       "shell": {
         "all": false,
         "open": true
+      },
+      "window": {
+        "create": true
       },
       "protocol": {
         "all": true,
@@ -53,6 +56,7 @@
     "updater": {
       "active": true,
       "endpoints": [
+        "http://localhost:6969/api/release/{{target}}/{{arch}}/{{current_version}}",
         "https://api.quantframe.app/release/{{target}}/{{arch}}/{{current_version}}"
       ],
       "dialog": false,
@@ -76,6 +80,7 @@
     "windows": [
       {
         "fullscreen": false,
+        "userAgent": "Quantframe",
         "resizable": true,
         "title": "Quantframe",
         "width": 1455,

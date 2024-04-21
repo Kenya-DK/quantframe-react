@@ -1,0 +1,11 @@
+.root {
+  border-radius: 0.5rem;
+  margin-top: 2.0rem;
+}
+
+.icon {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 15%;
+  margin-top: -2.0rem;
+}

@@ -1,27 +1,31 @@
-use once_cell::sync::Lazy;
+use serde_json::json;
 
 use crate::{
-    helper, utils::modules::error::{self, AppError}, wfm_client::client::WFMClient
+    helper, notification::client::NotifyClient, utils::{enums::ui_events::{UIEvent, UIOperationEvent}, modules::error::{self, AppError}}, wfm_client::client::WFMClient
 };
 use std::sync::{Arc, Mutex};
 
 // Create a static variable to store the log file name
-static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("command_auctions.log".to_string()));
 
 #[tauri::command]
-pub async fn refresh_auctions(
+pub async fn auction_refresh(
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-) -> Result<serde_json::Value, AppError> {
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+) -> Result<(), AppError> {
     let wfm = wfm.lock()?.clone();
-    match wfm.auction().get_my_auctions().await {
-        Ok(auctions) => {
-            let json = serde_json::to_value(auctions).unwrap();
-            helper::emit_update("auctions", "SET", Some(json.clone()));
-            Ok(json)
-        }
+    let notify = notify.lock()?.clone();
+    let current_auctions = match wfm.auction().get_my_auctions().await {
+        Ok(mut auctions) => auctions,
         Err(e) => {
-            error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+            error::create_log_file("command_auctions.log".to_string(), &e);
             return Err(e);
         }
-    }
+    };
+    notify.gui().send_event_update(
+        UIEvent::UpdateAuction,
+        UIOperationEvent::Set,
+        Some(json!(current_auctions)),
+    );
+
+    Ok(())
 }

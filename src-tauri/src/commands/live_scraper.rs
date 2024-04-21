@@ -1,25 +1,30 @@
 use std::sync::{Arc, Mutex};
 
-use once_cell::sync::Lazy;
 
-use crate::{live_scraper::client::LiveScraperClient, utils::modules::error};
+use serde_json::json;
 
-// Create a static variable to store the log file name
-static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("command_live_scraper.log".to_string()));
+use crate::{live_scraper::client::LiveScraperClient, notification::client::NotifyClient, utils::{enums::ui_events::UIEvent, modules::error::{self, AppError}}};
 
 #[tauri::command]
-pub fn toggle_live_scraper(
+pub fn live_scraper_set_running_state(
+    enable: bool,
     live_scraper: tauri::State<'_, Arc<std::sync::Mutex<LiveScraperClient>>>,
-) {
-    let mut live_scraper = live_scraper.lock().unwrap();
-    if live_scraper.is_running() {
-        live_scraper.stop_loop();
-    } else {
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+) -> Result<(), AppError> {
+    let notify = notify.lock()?.clone();
+    let mut live_scraper = live_scraper.lock()?;
+    if enable  && !live_scraper.is_running() {
         match live_scraper.start_loop() {
             Ok(_) => {}
             Err(e) => {
-                error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+                error::create_log_file("command.log".to_string(), &e);
+                notify.gui().send_event(UIEvent::OnLiveTradingError, Some(json!(e)));
             }
         }
+    } else {
+        live_scraper.stop_loop();
     }
+    notify.gui().send_event(UIEvent::UpdateLiveTradingRunningState, Some(json!(live_scraper.is_running())));
+    Ok(())
+
 }

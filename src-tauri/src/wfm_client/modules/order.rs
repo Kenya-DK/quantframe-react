@@ -1,7 +1,17 @@
-use serde_json::json;
 use crate::{
-    helper, logger, utils::{enums::log_level::LogLevel, modules::error::{ApiResult, AppError}}, wfm_client::{client::WFMClient, enums::order_type::OrderType, types::{order::Order, orders::Orders}}
+    helper, logger,
+    utils::{
+        enums::log_level::LogLevel,
+        modules::error::{ApiResult, AppError},
+    },
+    wfm_client::{
+        client::WFMClient,
+        enums::order_type::OrderType,
+        types::{order::Order, orders::Orders},
+    },
 };
+use entity::sub_type::SubType;
+use serde_json::json;
 
 use eyre::eyre;
 #[derive(Clone, Debug)]
@@ -93,7 +103,7 @@ impl OrderModule {
         platinum: i64,
         quantity: i64,
         visible: bool,
-        rank: Option<f64>,
+        sub_type: Option<SubType>,
     ) -> Result<(String, Option<Order>), AppError> {
         let auth = self.client.auth.lock()?.clone();
         let limit = auth.order_limit;
@@ -114,9 +124,21 @@ impl OrderModule {
             "quantity": quantity,
             "visible": visible
         });
-        // Add rank to body if it exists
-        if let Some(rank) = rank {
-            body["rank"] = json!(rank);
+
+        // Add SubType data
+        if let Some(item_sub) = sub_type.clone() {
+            if let Some(mod_rank) = item_sub.rank {
+                body["rank"] = json!(mod_rank);
+            }
+            if let Some(subtype) = item_sub.variant {
+                body["subtype"] = json!(subtype);
+            }
+            if let Some(amber_stars) = item_sub.amber_stars {
+                body["amber_stars"] = json!(amber_stars);
+            }
+            if let Some(cyan_stars) = item_sub.cyan_stars {
+                body["cyan_stars"] = json!(cyan_stars);
+            }
         }
 
         match self
@@ -135,7 +157,7 @@ impl OrderModule {
                         item_id,
                         platinum,
                         quantity,
-                        rank.unwrap_or(0.0),
+                        sub_type.unwrap_or(SubType::new_empty()).display(),
                         self.total_orders,
                         limit.clone()
                     )
@@ -207,8 +229,8 @@ impl OrderModule {
     pub async fn update(
         &self,
         order_id: &str,
-        platinum: i32,
-        quantity: i32,
+        platinum: i64,
+        quantity: i64,
         visible: bool,
     ) -> Result<Order, AppError> {
         // Construct any JSON body
@@ -351,17 +373,11 @@ impl OrderModule {
             }
         };
 
-        let mod_rank = orders
-            .iter()
-            .max_by(|a, b| a.mod_rank.cmp(&b.mod_rank))
-            .unwrap()
-            .mod_rank;
-
         let orders: Vec<Order> = orders
             .into_iter()
             .filter(|order| {
                 if let Some(user) = &order.user {
-                    user.status == "ingame" && order.mod_rank == mod_rank
+                    user.status == "ingame"
                 } else {
                     false
                 }

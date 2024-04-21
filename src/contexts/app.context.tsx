@@ -1,24 +1,26 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { AppInfo, RustError, Settings } from '$types/index';
-import { OnTauriEvent, OnTauriUpdateDataEvent, SendNotificationToWindow, SendTauriEvent, SendTauriUpdateDataEvent } from "../utils";
 import { useQuery } from "@tanstack/react-query";
-import api from "../api";
-import { useTranslateGeneral, useTranslateRustError } from "@hooks/index";
-import { SplashScreen } from "../components/splashScreen";
+import api, { OnTauriDataEvent, OnTauriEvent, SendTauriDataEvent } from "@api/index";
+import { useTranslateContexts } from "@hooks/index";
 import { notifications } from "@mantine/notifications";
-import { Button, Text } from "@mantine/core";
+import { Button, Group, Text } from "@mantine/core";
 import {
   checkUpdate, installUpdate,
   // installUpdate,
   // onUpdaterEvent,
 } from '@tauri-apps/api/updater'
 import { relaunch } from "@tauri-apps/api/process";
-type AppContextProps = {
+import { AppInfo, QfSocketEvent, QfSocketEventOperation, Settings } from "@api/types";
+import { AuthContextProvider } from "./auth.context";
+import { QFSocketContextProvider } from "./qfSocket.context";
+import { SplashScreen } from "../components/SplashScreen";
+
+export type AppContextProps = {
   settings: Settings | undefined;
   app_info: AppInfo | undefined;
 }
 
-type AppContextProviderProps = {
+export type AppContextProviderProps = {
   children: React.ReactNode;
 }
 
@@ -29,71 +31,86 @@ export const AppContext = createContext<AppContextProps>({
 
 export const useAppContext = () => useContext(AppContext);
 
-export const AppContextProvider = ({ children }: AppContextProviderProps) => {
+export function AppContextProvider({ children }: AppContextProviderProps) {
   const [settings, setSettings] = useState<Settings | undefined>(undefined);
   const [appInfo, setAppInfo] = useState<AppInfo | undefined>(undefined);
-  const [initializstatus, setInitializstatus] = useState<string>("Initializing..");
+  const [i18Key, setI18Key] = useState<string>('cache');
+  const [isControl, setIsControl] = useState<boolean>(false);
+  // Translate general
+  const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateContexts(`app.${key}`, { ...context }, i18Key)
+  const useTranslateEvents = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`loading_events.${key}`, { ...context }, i18Key)
+  const useTranslateNewUpdate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`new_update.${key}`, { ...context }, i18Key)
+  const useTranslateNewUpdateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateNewUpdate(`buttons.${key}`, { ...context }, i18Key)
 
 
 
   // Fetch data from rust side
-  const { isFetching } = useQuery({
-    queryKey: ['init'],
-    queryFn: () => api.auth.init(),
-    async onSuccess(data) {
-      console.log(data);
-      SendTauriUpdateDataEvent("user", { data: data.user, operation: "SET" })
-      SendTauriEvent("Cache:Update:Items", data.items)
-      SendTauriEvent("Cache:Update:RivenTypes", data.riven_items)
-      SendTauriEvent("Cache:Update:RivenAttributes", data.riven_attributes)
+  const { data, isFetching } = useQuery({
+    queryKey: ['app_init'],
+    queryFn: () => api.app.init(),
+    enabled: !window.location.href.includes('controls'),
+  })
 
-      // Stock Context
-      SendTauriUpdateDataEvent("StockItems", { data: data.stock_items, operation: "SET" })
-      SendTauriUpdateDataEvent("StockRivens", { data: data.stock_rivens, operation: "SET" })
-      SendTauriUpdateDataEvent("transactions", { data: data.transactions, operation: "SET" })
-      if (data.valid) {
-        SendTauriUpdateDataEvent("orders", { data: data.orders, operation: "SET" })
-        SendTauriUpdateDataEvent("auctions", { data: data.auctions, operation: "SET" })
-        SendTauriUpdateDataEvent("ChatMessages", { data: data.chats, operation: "SET" })
-      }
-      setSettings({ ...data.settings })
-      setAppInfo(data.app_info);
 
-      debugger;
+  useEffect(() => {
+    setIsControl(window.location.href.includes('controls'));
 
-      const { shouldUpdate, manifest } = await checkUpdate()
+    OnTauriEvent(QfSocketEvent.OnInitialize, (i18Key: string) => setI18Key(i18Key));
+
+    checkUpdate().then(({ shouldUpdate, manifest }) => {
       if (!shouldUpdate)
         return;
 
       notifications.show({
-        title: useTranslateGeneral("new_release_label", { version: manifest?.version }),
+        title: useTranslateNewUpdate("title", { version: manifest?.version }),
         message: <>
-          <Text>{manifest?.body}</Text>
-          <Button style={{ width: '100%' }} onClick={async () => {
-            // Install the update. This will also restart the app on Windows!
-            await installUpdate()
+          <Text truncate="end">{manifest?.body}</Text>
+          <Group grow justify="space-between">
+            <Button onClick={async () => {
+              // Install the update. This will also restart the app on Windows!
+              await installUpdate();
 
-            // On macOS and Linux you will need to restart the app manually.
-            // You could use this step to display another confirmation dialog.
-            await relaunch()
-          }}>{useTranslateGeneral('new_release_message')}</Button>
+              // On macOS and Linux you will need to restart the app manually.
+              // You could use this step to display another confirmation dialog.
+              await relaunch();
+            }}>{useTranslateNewUpdateButtons('install')}</Button>
+            <Button onClick={async () => {
+              window.open("https://github.com/Kenya-DK/quantframe-react/releases", '_blank');
+            }}>{useTranslateNewUpdateButtons('read_more')}</Button>
+          </Group>
         </>,
         autoClose: false
       });
-    },
-    onError(error: RustError) {
-      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
+
+    }).catch((e) => {
+      console.log(e);
+    })
+  }, [])
+
+
+  useEffect(() => {
+    if (!data) return;
+    SendTauriDataEvent(QfSocketEvent.UpdateUser, QfSocketEventOperation.SET, data.user);
+    SendTauriDataEvent(QfSocketEvent.UpdateStockItems, QfSocketEventOperation.SET, data.stock_items);
+    SendTauriDataEvent(QfSocketEvent.UpdateStockRivens, QfSocketEventOperation.SET, data.stock_items);
+    SendTauriDataEvent(QfSocketEvent.UpdateTransaction, QfSocketEventOperation.SET, data.transactions);
+
+    if (data.valid) {
+      SendTauriDataEvent(QfSocketEvent.UpdateUser, QfSocketEventOperation.SET, data.user);
+      SendTauriDataEvent(QfSocketEvent.UpdateOrders, QfSocketEventOperation.SET, data.orders);
+      SendTauriDataEvent(QfSocketEvent.UpdateAuction, QfSocketEventOperation.SET, data.auctions);
+      SendTauriDataEvent(QfSocketEvent.UpdateChatMessages, QfSocketEventOperation.SET, data.auctions);
     }
-  })
-
-
+    setSettings({ ...data.settings });
+    setAppInfo(data.app_info);
+  }, [data])
   // Handle update, create, delete transaction
-  const handleUpdateSettings = (operation: string, data: Settings) => {
+  const handleUpdateSettings = (operation: QfSocketEventOperation, data: Settings) => {
     switch (operation) {
-      case "UPDATE":
+      case QfSocketEventOperation.CREATE_OR_UPDATE:
         setSettings((settings) => ({ ...settings, ...data }));
         break;
-      case "SET":
+      case QfSocketEventOperation.SET:
         setSettings(data);
         break;
     }
@@ -101,15 +118,18 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
 
   // Hook on tauri events from rust side
   useEffect(() => {
-    OnTauriEvent("set_initializstatus", (data: { status: string }) => setInitializstatus(data.status));
-    OnTauriUpdateDataEvent<Settings>("settings", ({ data, operation }) => handleUpdateSettings(operation, data));
+    OnTauriDataEvent<Settings>(QfSocketEvent.UpdateSettings, ({ data, operation }) => handleUpdateSettings(operation, data));
     return () => { }
   }, []);
 
   return (
     <AppContext.Provider value={{ settings, app_info: appInfo }}>
-      <SplashScreen opened={isFetching} text={initializstatus} />
-      {children}
+      {!isControl && <SplashScreen opened={isFetching} text={useTranslateEvents(i18Key)} />}
+      <AuthContextProvider>
+        <QFSocketContextProvider>
+          {children}
+        </QFSocketContextProvider>
+      </AuthContextProvider>
     </AppContext.Provider>
   )
 }

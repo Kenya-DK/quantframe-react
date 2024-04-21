@@ -1,62 +1,31 @@
-use crate::{
-    database::{client::DBClient, modules::transaction::TransactionStruct}, utils::modules::error::{self, AppError}
+use entity::transaction;
+use service::TransactionQuery;
+use std::{
+    f32::consts::E,
+    sync::{Arc, Mutex},
 };
-use eyre::eyre;
-use std::sync::{Arc, Mutex};
 
-
-#[tauri::command]
-pub async fn tra_get_all(
-    db: tauri::State<'_, Arc<Mutex<DBClient>>>,
-) -> Result<Vec<TransactionStruct>, AppError> {
-    let db = db.lock()?.clone();
-    match db.transaction().get_items().await {
-        Ok(transactions) => Ok(transactions),
-        Err(e) => Err(e),
-    }
-}
+use crate::{
+    app::client::AppState,
+    utils::modules::{
+        error::{self, AppError},
+        logger::error,
+    },
+};
 
 #[tauri::command]
-pub async fn tra_get_by_id(
-    id: i64,
-    db: tauri::State<'_, Arc<Mutex<DBClient>>>,
-) -> Result<Option<TransactionStruct>, AppError> {
-    let db = db.lock()?.clone();
-    match db.transaction().get_by_id(id).await {
-        Ok(transaction) => Ok(transaction),
-        Err(e) => Err(e)
-    }
+pub async fn transaction_get_all(
+    app: tauri::State<'_, Arc<Mutex<AppState>>>,
+) -> Result<Vec<transaction::Model>, AppError> {
+    let app = app.lock()?.clone();
+    match TransactionQuery::get_all(&app.conn).await {
+        Ok(transactions) => {
+            return Ok(transactions);
+        }
+        Err(e) => {
+            let error: AppError = AppError::new_db("TransactionQuery::get_all", e);
+            error::create_log_file("command.log".to_string(), &error);
+            return Err(error);
+        }
+    };
 }
-
-#[tauri::command]
-pub async fn tra_update_by_id(
-    id: i64,
-    price: Option<i64>,
-    transaction_type: Option<String>,
-    quantity: Option<i64>,
-    rank: Option<i64>,
-    db: tauri::State<'_, Arc<Mutex<DBClient>>>,
-) -> Result<TransactionStruct, AppError> {
-    let db = db.lock()?.clone();
-    match db
-        .transaction()
-        .update_by_id(id, price, transaction_type, quantity, rank)
-        .await
-    {
-        Ok(transaction) => Ok(transaction),
-        Err(e) => Err(e),        
-    }
-}
-
-#[tauri::command]
-pub async fn tra_delete_by_id(
-    id: i64,
-    db: tauri::State<'_, Arc<Mutex<DBClient>>>,
-) -> Result<bool, AppError> {
-    let db = db.lock()?.clone();
-    match db.transaction().delete(id).await {
-        Ok(_) => Ok(true),
-        Err(e) => Err(e),
-    }
-}
-

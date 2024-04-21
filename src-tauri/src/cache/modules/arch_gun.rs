@@ -7,7 +7,7 @@ use crate::{
         client::CacheClient,
         types::{cache_arch_gun::CacheArchGun, cache_item_component::CacheItemComponent},
     },
-    utils::modules::error::AppError,
+    utils::modules::{error::AppError, logger},
 };
 
 #[derive(Clone, Debug)]

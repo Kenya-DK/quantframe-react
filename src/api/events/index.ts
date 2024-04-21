@@ -15,6 +15,13 @@ export class EventModule {
       if (event)
         this.listener.fire(event, data);
     })
+    listen("message_update", (eventIn: { payload: { event: string, operation: string, data: any } }) => {
+      console.log("Message update api: ", eventIn.payload);
+
+      const { event, operation, data } = eventIn.payload;
+      if (event && operation)
+        this.listener.fire(event, { operation, data });
+    })
   }
 
   OnEvent<T>(event: string, callback: (data: T) => void) {
@@ -23,10 +30,15 @@ export class EventModule {
 
   OffEvent<T>(event: string, callback: (data: T) => void) {
     this.listener.remove(event, callback);
+    this.listener.clean();
   }
 
   FireEvent<T>(event: string, data: T) {
     this.listener.fire(event, data);
+  }
+
+  CleanEvent(event: string) {
+    this.listener.clean(event);
   }
 
 }

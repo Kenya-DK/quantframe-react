@@ -194,61 +194,6 @@ pub fn create_zip_file(mut files: Vec<ZipEntry>, zip_path: &str) -> Result<(), A
     Ok(())
 }
 
-pub fn send_message_to_discord(
-    webhook: String,
-    title: String,
-    content: String,
-    user_ids: Option<Vec<String>>,
-) {
-    // Check if the webhook is empty
-    if webhook.is_empty() {
-        logger::warning_con("Helper", "Discord webhook is empty");
-        return;
-    }
-    tauri::async_runtime::spawn(async move {
-        let client = reqwest::Client::new();
-
-        let mut body = json!({
-            "username": "Quantframe",
-            "avatar_url": "https://i.imgur.com/bgR6vAd.png",
-            "embeds": [
-                {
-                    "title": title,
-                    "description": content,
-                    "color": 5814783,
-                    "footer": {
-                        "text": format!("Quantframe v{}", "0.1.0"),
-                        "timestamp": chrono::Local::now()
-                        .naive_utc()
-                        .to_string()
-                    }
-                }
-            ]
-        });
-
-        let mut pings: Vec<String> = Vec::new();
-        if let Some(user_ids) = user_ids {
-            for user_id in user_ids {
-                pings.push(format!("<@{}>", user_id));
-            }
-        }
-        if pings.len() > 0 {
-            body["content"] = json!(format!("{}", pings.join(" ")).replace("\"", ""));
-        } else {
-            body["content"] = json!("");
-        }
-
-        let res = client.post(webhook).json(&body).send().await;
-        match res {
-            Ok(_) => {
-                logger::info_con("Helper", "Message sent to discord");
-            }
-            Err(e) => {
-                println!("Error while sending message to discord {:?}", e);
-            }
-        }
-    });
-}
 
 pub fn validate_json(json: &Value, required: &Value, path: &str) -> (Value, Vec<String>) {
     let mut modified_json = json.clone();

@@ -3,7 +3,8 @@ use serde_json::json;
 use service::{StockRivenMutation, StockRivenQuery};
 
 use crate::{
-   live_scraper::client::LiveScraperClient, logger, utils::modules::error::AppError, wfm_client::types::auction_item::AuctionItem
+    live_scraper::client::LiveScraperClient, logger, utils::modules::error::AppError,
+    wfm_client::types::auction_item::AuctionItem,
 };
 #[derive(Clone)]
 pub struct RivenModule {
@@ -31,12 +32,14 @@ impl RivenModule {
         let wfm = self.client.wfm.lock()?.clone();
         let auth = self.client.auth.lock()?.clone();
         let settings = self.client.settings.lock()?.clone().live_scraper;
-        let min_profit = settings.stock_riven.range_threshold;
+        let min_profit = settings.stock_riven.min_profit;
+        let notify = self.client.notify.lock()?.clone();
         logger::info_con("RivenModule", "Run Riven Stock Check");
 
         let stock_rivens = StockRivenQuery::get_all(&app.conn)
-            .await.map_err(|e| AppError::new("RivenModule", eyre::eyre!(e)))?;
-        
+            .await
+            .map_err(|e| AppError::new("RivenModule", eyre::eyre!(e)))?;
+
         let my_auctions = wfm.auction().get_my_auctions().await?;
         let my_rivens = my_auctions
             .iter()
@@ -234,7 +237,7 @@ impl RivenModule {
             }
 
             // If minimum price is set and the post price is less than the minimum price then set the post price to be the minimum price
-            if minimum_price.is_some() && post_price < minimum_price.unwrap()  {
+            if minimum_price.is_some() && post_price < minimum_price.unwrap() {
                 post_price = minimum_price.unwrap();
             }
 
@@ -252,13 +255,13 @@ impl RivenModule {
 
             // Check if the rivens price is lower than the minimum price
             if minimum_price.is_some() && post_price < minimum_price.unwrap() {
-                post_price = minimum_price.unwrap() ;
+                post_price = minimum_price.unwrap();
             }
 
             // Calculate profit of the riven
             let profit = post_price - stock_riven.bought;
 
-            if profit <= settings.stock_riven.range_threshold {
+            if profit <= min_profit {
                 stock_riven.status = StockStatus::ToLowProfit;
                 stock_riven.list_price = Some(-1);
             } else {
@@ -290,10 +293,7 @@ impl RivenModule {
                             .auction()
                             .create(
                                 "riven",
-                                stock_riven
-                                    .comment
-                                    .clone()
-                                    .as_str(),
+                                stock_riven.comment.clone().as_str(),
                                 post_price,
                                 post_price,
                                 0,
@@ -305,7 +305,9 @@ impl RivenModule {
                                     re_rolls: Some(stock_riven.re_rolls as i64),
                                     attributes: Some(stock_riven.attributes.0.clone()),
                                     name: Some(stock_riven.mod_name.clone()),
-                                    mod_rank: Some(stock_riven.sub_type.clone().unwrap().rank.unwrap_or(0)),
+                                    mod_rank: Some(
+                                        stock_riven.sub_type.clone().unwrap().rank.unwrap_or(0),
+                                    ),
                                     polarity: Some(stock_riven.polarity.clone()),
                                     mastery_level: Some(stock_riven.mastery_rank as i64),
                                     element: None,
@@ -364,8 +366,7 @@ impl RivenModule {
         } else if stock_riven_original.status != stock_riven.status {
             need_update = true;
         } else if stock_riven_original.list_price != stock_riven.list_price {
-            if stock_riven_original.list_price.is_some() && stock_riven.list_price.unwrap() <= 0
-            {
+            if stock_riven_original.list_price.is_some() && stock_riven.list_price.unwrap() <= 0 {
                 need_update = true;
             } else if stock_riven_original.list_price != stock_riven.list_price
                 && stock_riven.list_price.unwrap() > 0
@@ -391,7 +392,8 @@ impl RivenModule {
                 .as_str(),
             );
             StockRivenMutation::update_by_id(&app.conn, stock_riven.id, stock_riven.clone())
-                .await.map_err(|e| AppError::new("RivenModule", eyre::eyre!(e)))?;
+                .await
+                .map_err(|e| AppError::new("RivenModule", eyre::eyre!(e)))?;
         }
         Ok(())
     }
