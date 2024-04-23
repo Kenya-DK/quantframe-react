@@ -473,6 +473,7 @@ impl ItemModule {
     fn knapsack(
         &self,
         items: Vec<(i64, f64, String, String)>,
+        avg_price_cap: i64,
         max_weight: i64,
     ) -> Result<
         (
@@ -483,25 +484,19 @@ impl ItemModule {
         AppError,
     > {
         let n = items.len();
-        let mut dp = vec![vec![0; (max_weight + 1) as usize]; (n + 1) as usize];
-
+        let mut dp = vec![0; (n + 1) as usize];
+        
         for i in 1..=n {
-            for w in 1..=max_weight {
-                let (weight, value, _, _) = items[i - 1];
-                if weight <= w {
-                    dp[i][w as usize] =
-                        dp[i - 1][w as usize].max(dp[i - 1][(w - weight) as usize] + value as i64);
-                } else {
-                    dp[i][w as usize] = dp[i - 1][w as usize];
-                }
-            }
+            let (weight, value, _, _) = items[i - 1];
+            dp[i] = (weight <= avg_price_cap).then(|| value as i64).unwrap_or(0);
         }
-
         let mut selected_items = Vec::new();
         let mut unselected_items = Vec::new();
         let mut w = max_weight;
         for i in (0..n).rev() {
-            if dp[i + 1][w as usize] != dp[i][w as usize] {
+            if w - items[i].0 < 0 {
+                unselected_items.push(items[i].clone());
+            } else if dp[i + 1] != 0 {
                 selected_items.push(items[i].clone());
                 w -= items[i].0;
             } else {
@@ -509,8 +504,8 @@ impl ItemModule {
             }
         }
 
-        Ok((dp[n][max_weight as usize], selected_items, unselected_items))
-    }
+        Ok((dp[n], selected_items, unselected_items))
+    }  
 
     pub async fn compare_live_orders_when_buying(
         &self,
@@ -643,11 +638,11 @@ impl ItemModule {
                 "".to_string(),
             )]);
 
-            // Call the `knapsack` method on `self` with the parameters `buy_orders_list` and `max_total_price_cap` cast to i64
+            // Call the `knapsack` method on `self` with the parameters `buy_orders_list`, `avg_price_cap` and `max_total_price_cap` cast to i64
             // The `knapsack` method is expected to return a tuple containing the maximum profit, the selected buy orders, and the unselected buy orders
             // If the method call fails (returns an error), propagate the error with `?`
             let (_, selected_buy_orders, unselected_buy_orders) =
-                self.knapsack(buy_orders_list, max_total_price_cap as i64)?;
+                self.knapsack(buy_orders_list, avg_price_cap, max_total_price_cap)?;
 
             // Get the selected item names from the selected buy orders
             let se_item_names: Vec<String> = selected_buy_orders
