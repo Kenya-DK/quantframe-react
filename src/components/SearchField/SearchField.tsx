@@ -26,7 +26,7 @@ export function SearchField({ value, filter, description, onSearch, onCreate, on
 
   // On change
   useEffect(() => {
-    const buttonWidth = 44;
+    const buttonWidth = 45;
     let width = 0;
     if (filter)
       width += buttonWidth;
@@ -51,11 +51,11 @@ export function SearchField({ value, filter, description, onSearch, onCreate, on
         description={description}
         rightSectionWidth={rightSectionWidth ?? sectionWidth}
         rightSection={
-          <Group gap={"md"}>
+          <Group p={0} m={0} gap={5}>
             <Divider orientation="vertical" />
             {rightSection}
             {filter && (
-              <Tooltip label={useTranslateSearchFieldButtons('filter.tooltip')} position="left" withArrow>
+              <Tooltip label={useTranslateSearchFieldButtons('filter.tooltip')}>
                 <ActionIcon color={openFilter ? "blue.7" : "dark.4"} variant="filled" onClick={async () => setOpenFilter()} >
                   <FontAwesomeIcon icon={faFilter} />
                 </ActionIcon>

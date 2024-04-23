@@ -186,6 +186,39 @@ export const en = {
         },
       }
     },
+    tradableItem_list: {
+      fields: {
+        trade_tax: {
+          label: "Trade Tax Range {{min}} - {{max}}",
+          placeholder: "Trade Tax",
+        },
+        mr_requirement: {
+          label: "MR Requirement Range {{min}} - {{max}}",
+          placeholder: "MR Requirement",
+        },
+        tags: {
+          label: "Tags",
+          placeholder: "Select tags...",
+          options: {
+            prime: "Prime Parts",
+            set: "Set",
+            arcane_enhancement: "Arcane",
+          },
+        }
+      },
+      datatable: {
+        columns: {
+          name: "Name",
+          trade_tax: "Trade Tax",
+          mr_requirement: "MR Requirement",
+        }
+      },
+      buttons: {
+        add_all: {
+          tooltip: "Add all items",
+        },
+      }
+    },
     searchfield: {
       label: "Search",
       placeholder: "Search...",

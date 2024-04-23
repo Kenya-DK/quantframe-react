@@ -24,7 +24,6 @@ pub async fn app_init(
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-    debug: tauri::State<'_, Arc<Mutex<DebugClient>>>,
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
 ) -> Result<Value, AppError> {
     let app = app.lock()?.clone();
@@ -56,7 +55,7 @@ pub async fn app_init(
             return Err(e);
         }
     }
-    
+
     // Validate Auth
     notify
         .gui()

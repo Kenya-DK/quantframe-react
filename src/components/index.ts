@@ -21,3 +21,4 @@ export * from "./StatsWithSegments";
 export * from "./ButtonInterval";
 export * from "./TooltipIcon";
 export * from "./TradableItemList";
+export * from "./SelectMultipleTradableItems";

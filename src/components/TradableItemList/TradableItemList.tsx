@@ -1,18 +1,22 @@
-import { Box, Group, Paper, Text } from '@mantine/core';
+import { ActionIcon, Box, Group, MultiSelect, Paper, RangeSlider, Text, Tooltip } from '@mantine/core';
 import { CacheTradableItem } from '@api/types';
-import classes from './TradableItemList.module.css';
 import { useTranslateComponent } from '@hooks/index';
 import { DataTable, DataTableSortStatus } from 'mantine-datatable';
 import { useEffect, useState } from 'react';
 import { useForm } from '@mantine/form';
 import { sortArray, paginate } from "@utils/index";
+import { SearchField } from '../SearchField';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faAdd } from '@fortawesome/free-solid-svg-icons';
 
 export type TradableItemListProps = {
 	availableItems: CacheTradableItem[];
+	onAddAll?: (items: CacheTradableItem[]) => void;
+	onAddItem?: (item: CacheTradableItem) => void;
 }
 
 
-export function TradableItemList({ availableItems }: TradableItemListProps) {
+export function TradableItemList({ onAddItem, onAddAll, availableItems }: TradableItemListProps) {
 	// States For DataGrid
 	const [page, setPage] = useState(1);
 	const pageSizes = [5, 10, 15, 20, 25, 30, 50, 100];
@@ -24,49 +28,142 @@ export function TradableItemList({ availableItems }: TradableItemListProps) {
 	// Translate general
 	const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateComponent(`tradableItem_list.${key}`, { ...context }, i18Key)
 	const useTranslateDataGridColumns = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`datatable.columns.${key}`, { ...context }, i18Key)
-	// const useTranslateFormFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`fields.${key}`, { ...context }, i18Key)
+	const useTranslateFormFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`fields.${key}`, { ...context }, i18Key)
+	const useTranslateSearchButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`searchfield.buttons.${key}`, { ...context }, i18Key)
+
+	const availableItemTags = [
+		{
+			label: useTranslateFormFields("tags.options.set"),
+			value: 'set',
+		},
+		{
+			label: useTranslateFormFields("tags.options.prime"),
+			value: 'prime',
+		},
+		{
+			label: useTranslateFormFields("tags.options.arcane_enhancement"),
+			value: 'arcane_enhancement',
+		},
+	]
 
 	// Form for filtering
 	const filterForm = useForm({
 		initialValues: {
 			search: '',
+			tags: [] as string[],
+			tradeTaxRange: [0, 2100000] as [number, number],
+			mrRequirementRange: [0, 15] as [number, number],
 		},
 	});
 
-	// Update DataGrid Rows
-	useEffect(() => {
+	const GetFilteredItems = () => {
 		if (!availableItems)
 			return;
-
 		let itemFilter = availableItems;
 
+		if (filterForm.values.search) {
+			const search = filterForm.values.search.toLowerCase();
+			itemFilter = itemFilter.filter((item) => {
+				return item.name.toLowerCase().includes(search);
+			});
+		}
 
-		setTotalRecords(itemFilter.length);
+		if (filterForm.values.tags.length > 0) {
+			itemFilter = itemFilter.filter((item) => {
+				return filterForm.values.tags.includes(item.tags[0]);
+			});
+		}
+
+		itemFilter = itemFilter.filter((item) => {
+			return item.trade_tax >= filterForm.values.tradeTaxRange[0] && item.trade_tax <= filterForm.values.tradeTaxRange[1];
+		});
+
+		itemFilter = itemFilter.filter((item) => {
+			return item.mr_requirement >= filterForm.values.mrRequirementRange[0] && item.mr_requirement <= filterForm.values.mrRequirementRange[1];
+		});
+
 		itemFilter = sortArray([{
 			field: sortStatus.columnAccessor,
 			direction: sortStatus.direction
 		}], itemFilter);
+		return itemFilter;
+	}
 
 
-
+	// Update DataGrid Rows
+	useEffect(() => {
+		let itemFilter = GetFilteredItems();
+		if (!itemFilter)
+			return;
+		setTotalRecords(itemFilter.length);
 		itemFilter = paginate(itemFilter, page, pageSize);
 		setRows(itemFilter);
-
-
-	}, [availableItems, pageSize, page, sortStatus, filterForm])
+	}, [availableItems, sortStatus, filterForm])
 
 	return (
 		<Box>
-			<Group>
-				<Paper shadow="xs" className={classes.paper}>
-					<form onSubmit={filterForm.onSubmit(() => { })}>
-						<Group>
-							<Text>Search</Text>
-							<Text>Sort</Text>
+			<Box>
+				<SearchField
+					value={filterForm.values.search}
+					onChange={(e) => filterForm.setFieldValue('search', e)}
+					filter={
+						<Paper radius="md" p={"sm"} mt={"md"}>
+							<Group>
+								<MultiSelect
+									multiple
+									label={useTranslateFormFields('tags.label')}
+									placeholder={useTranslateFormFields('tags.placeholder')}
+									data={availableItemTags}
+									value={filterForm.values.tags}
+									onChange={(value) => filterForm.setFieldValue('tags', value)}
+									clearable
+								/>
+								<Box>
+									<Text size="sm" mt="xl">{useTranslateFormFields('trade_tax.label', { min: filterForm.values.tradeTaxRange[0], max: filterForm.values.tradeTaxRange[1] })}</Text>
+									<RangeSlider
+										w={300}
+										color="blue"
+										value={filterForm.values.tradeTaxRange}
+										onChange={(value) => filterForm.setFieldValue('tradeTaxRange', value)}
+										step={1000}
+										min={0}
+										max={2100000}
+									/>
+								</Box>
+								<Box>
+									<Text size="sm" mt="xl">{useTranslateFormFields('mr_requirement.label', { min: filterForm.values.mrRequirementRange[0], max: filterForm.values.mrRequirementRange[1] })}</Text>
+									<RangeSlider
+										w={300}
+										step={1}
+										value={filterForm.values.mrRequirementRange}
+										onChange={(value) => filterForm.setFieldValue('mrRequirementRange', value)}
+										color="blue"
+										minRange={1}
+										min={0}
+										max={15}
+									/>
+								</Box>
+							</Group>
+						</Paper>
+					}
+					rightSectionWidth={75}
+					rightSection={
+						<Group gap={5}>
+							<Tooltip label={useTranslateSearchButtons('add_all.tooltip')}>
+								<ActionIcon variant="filled" onClick={async () => {
+									if (onAddAll) {
+										const items = GetFilteredItems();
+										if (!items) return;
+										onAddAll(items);
+									}
+								}} >
+									<FontAwesomeIcon icon={faAdd} />
+								</ActionIcon>
+							</Tooltip>
 						</Group>
-					</form>
-				</Paper>
-			</Group>
+					}
+				/>
+			</Box>
 			<DataTable
 				height={`calc(100vh - 420px)`}
 				mt={"md"}
@@ -76,12 +173,16 @@ export function TradableItemList({ availableItems }: TradableItemListProps) {
 				withColumnBorders
 				page={page}
 				recordsPerPage={pageSize}
-				idAccessor={"id"}
+				idAccessor={"wfm_id"}
 				onPageChange={(p) => setPage(p)}
 				recordsPerPageOptions={pageSizes}
 				onRecordsPerPageChange={setPageSize}
 				sortStatus={sortStatus}
 				onSortStatusChange={setSortStatus}
+				onRowClick={(row) => {
+					if (onAddItem)
+						onAddItem(row.record);
+				}}
 				// define columns
 				columns={[
 					{
