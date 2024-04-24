@@ -1,12 +1,17 @@
-# Release Name vX.X.X (Release Date)
+# Quantframe v1.2.0 (Release Date)
 
 ## Overview
-Brief overview of the release, highlighting key features, improvements, and fixes.
+Total rewrite of the UI and the backend.
+Note: The database was upgrade to V2
+So all your data needs to be migrated, this be be done in the Debug Tab and under the migrate tab.
+
 
 ## Features
-- Feature 1: Description of the feature.
-- Feature 2: Description of the feature.
-- ...
+- Add Rest: Your can now reset all transaction. 
+- Add minium profit in settings.
+- Add minium sma.
+- Remove the price scraper (It is now server).
+- Add listed price history .
 
 ## Enhancements
 - Enhancement 1: Description of the enhancement.
