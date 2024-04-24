@@ -503,6 +503,19 @@ impl ItemModule {
                 unselected_items.push(items[i].clone());
             }
         }
+        
+        // In the `items` parameter, the last element is always not on Warframe Market (the one currently getting checked),
+        // so it should be added only if it's not already posted, unless the price would go over the max price cap limit. 
+        // Because if it is posted and gets added in unselected_items, 
+        // it will be expecting an order_id because the item is posted on Warframe Market.
+        if !selected_items.iter().any(|&(_, _, ref name, _)| name == &items[n-1].2) {
+            if w - items[n-1].0 < 0 {
+                unselected_items.push(items[n-1].clone());
+            } else {
+                selected_items.push(items[n-1].clone());
+            }
+        }
+
 
         Ok((dp[n], selected_items, unselected_items))
     }  
@@ -631,6 +644,9 @@ impl ItemModule {
                     })
                     .collect::<Vec<(i64, f64, String, String)>>();
             }
+
+            // Its important that the currently checking item is appended to `buy_orders_list`
+            // as the last element so that it doesn't break the way knapsack works.
             buy_orders_list.append(&mut vec![(
                 post_price,
                 potential_profit as f64,
