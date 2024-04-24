@@ -39,12 +39,14 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     // Create the database connection and store it
     let storage_path = helper::get_app_storage_path();
 
+    // Create the database path
     let db_url = format!(
         "sqlite://{}/{}",
         storage_path.to_str().unwrap(),
         "quantframeV2.sqlite?mode=rwc"
     );
 
+    // Create the database connection and store it and run the migrations
     let conn = Database::connect(db_url)
         .await
         .expect("Database connection failed");
@@ -146,12 +148,6 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             // Base commands
             commands::app::app_init,
-            // commands::base::log,
-            // commands::base::update_settings,
-            // commands::base::open_logs_folder,
-            // commands::base::export_logs,
-            // commands::base::show_notification,
-            // commands::base::on_new_wfm_message,
             // Auth commands
             commands::auth::auth_login,
             commands::auth::auth_set_status,
@@ -161,58 +157,24 @@ fn main() {
             commands::cache::cache_get_riven_weapons,
             commands::cache::cache_get_riven_attributes,
             // Transaction commands
-            commands::transaction::transaction_get_all,
-            // commands::transaction::tra_get_by_id,
-            // commands::transaction::tra_update_by_id,
-            // commands::transaction::tra_delete_by_id,
-            // // Stock Item commands
-            // commands::stock_item::stock_item_get_all,
-            // commands::stock_item::stock_item_get_by_id,
-            // commands::stock_item::stock_item_create,
-            // commands::stock_item::stock_item_update,
-            // commands::stock_item::stock_item_delete,
-            // // Stock Riven commands
-            // commands::stock_riven::stock_riven_get_all,
-            // commands::stock_riven::stock_riven_get_by_id,
-            // commands::stock_riven::stock_riven_create,
-            // commands::stock_riven::stock_riven_update,
-            // commands::stock_riven::stock_riven_delete,
-            // // Live Scraper commands
-            // commands::live_scraper::toggle_live_scraper,
+            commands::transaction::transaction_get_all,            
             // Debug commands
             commands::debug::debug_db_reset,
             commands::debug::debug_migrate_data_base,
             // Auctions commands
             commands::auctions::auction_refresh,
             // Orders commands
-            commands::orders::order_refresh,
-            // commands::orders::get_orders,
-            // commands::orders::delete_order,
-            // commands::orders::create_order,
-            // commands::orders::update_order,
-            // commands::orders::delete_all_orders,
+            commands::orders::order_refresh,            
             // Chat commands
             commands::chat::chat_refresh,
             // Live Trading commands
             commands::live_scraper::live_scraper_set_running_state,
-            // commands::chat::delete_chat,
-            // commands::chat::refresh_chats,
-            // // Stock commands
+            // Stock Item commands
             commands::stock_item::stock_item_create,
             commands::stock_item::stock_item_update,
             commands::stock_item::stock_item_sell,
-            commands::stock_item::stock_item_delete,
-            // commands::stock::delete_item_stock,
-            // commands::stock::update_item_stock,
-            // commands::stock::sell_item_stock,
-            // commands::stock::sell_item_stock_by_url,
-            // commands::stock::create_riven_stock,
-            // commands::stock::import_auction,
-            // commands::stock::delete_riven_stock,
-            // commands::stock::update_riven_stock,
-            // commands::stock::sell_riven_stock,
-            // // Warframe Market Commands
-            // wfm_client::modules::auction::auction_search,
+            commands::stock_item::stock_item_delete,           
+            // Stock Riven commands
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
