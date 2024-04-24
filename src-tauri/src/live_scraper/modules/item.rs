@@ -644,6 +644,9 @@ impl ItemModule {
                     })
                     .collect::<Vec<(i64, f64, String, String)>>();
             }
+
+            // Its important that the currently checking item is appended to `buy_orders_list`
+            // as the last element so that it doesn't break the way knapsack works.
             buy_orders_list.append(&mut vec![(
                 post_price,
                 potential_profit as f64,
