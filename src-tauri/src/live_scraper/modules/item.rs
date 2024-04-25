@@ -493,7 +493,7 @@ impl ItemModule {
         let mut selected_items = Vec::new();
         let mut unselected_items = Vec::new();
         let mut w = max_weight;
-        for i in (0..n).rev() {
+        for i in 0..n {
             if w - items[i].0 < 0 {
                 unselected_items.push(items[i].clone());
             } else if dp[i + 1] != 0 {
