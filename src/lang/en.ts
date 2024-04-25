@@ -203,6 +203,8 @@ export const en = {
             prime: "Prime Parts",
             set: "Set",
             arcane_enhancement: "Arcane",
+            tax_1m: "Tax 1M",
+            tax_2m: "Tax 2M",
           },
         }
       },

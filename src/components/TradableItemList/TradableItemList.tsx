@@ -44,6 +44,14 @@ export function TradableItemList({ onAddItem, onAddAll, availableItems }: Tradab
 			label: useTranslateFormFields("tags.options.arcane_enhancement"),
 			value: 'arcane_enhancement',
 		},
+		{
+			label: useTranslateFormFields("tags.options.tax_1m"),
+			value: 'tax_1000000',
+		},
+		{
+			label: useTranslateFormFields("tags.options.tax_2m"),
+			value: 'tax_2100000',
+		},
 	]
 
 	// Form for filtering
