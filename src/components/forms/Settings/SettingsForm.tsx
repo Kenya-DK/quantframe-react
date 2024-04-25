@@ -7,13 +7,12 @@ import { NotificationPanel } from './Tabs/Notification';
 
 export type SettingsFormProps = {
   value: Settings
-  onSubmit: (values: { email: string; password: string }) => void;
+  onSubmit: (value: Settings) => void;
   paperProps?: PaperProps;
 }
 
 
-export function SettingsForm({ value }: SettingsFormProps) {
-
+export function SettingsForm({ onSubmit, value }: SettingsFormProps) {
 
   // Translate general
   const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateForms(`settings.${key}`, { ...context }, i18Key)
@@ -21,13 +20,21 @@ export function SettingsForm({ value }: SettingsFormProps) {
 
   const tabs = [
     { label: useTranslateTabs("general.title"), component: <GeneralPanel />, id: "general" },
-    { label: useTranslateTabs("live_trading.title"), component: <LiveTradingPanel value={value.live_scraper} onSubmit={() => { }} />, id: "live_trading" },
-    { label: useTranslateTabs("notification.title"), component: <NotificationPanel value={value.notifications} onSubmit={() => { }} />, id: "notification" },
+    {
+      label: useTranslateTabs("live_trading.title"), component: <LiveTradingPanel value={value.live_scraper} onSubmit={(v) => {
+        onSubmit({ ...value, live_scraper: v })
+      }} />, id: "live_trading"
+    },
+    {
+      label: useTranslateTabs("notification.title"), component: <NotificationPanel value={value.notifications} onSubmit={(v) => {
+        onSubmit({ ...value, notifications: v })
+      }} />, id: "notification"
+    },
 
   ];
   return (
-    <Container size={"100%"}>
-      <Tabs defaultValue={tabs[0].id}>
+    <Container size={"100%"} h={"85vh"} p={0}>
+      <Tabs defaultValue={tabs[1].id}>
         <Tabs.List>
           {tabs.map((tab) => (
             <Tabs.Tab value={tab.id} key={tab.id}>

@@ -11,7 +11,7 @@ use crate::{
     notification::client::NotifyClient,
     settings::SettingsState,
     utils::{
-        enums::ui_events::UIEvent,
+        enums::ui_events::{UIEvent, UIOperationEvent},
         modules::error::{self, AppError},
     },
     wfm_client::client::WFMClient,
@@ -172,3 +172,31 @@ pub async fn app_init(
 
     Ok(response)
 }
+
+#[tauri::command]
+pub async fn app_update_settings(
+    settings: SettingsState,
+    settings_state: tauri::State<'_, Arc<Mutex<SettingsState>>>,
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+) -> Result<bool, AppError> {
+    let notify = notify.lock()?.clone();
+    let arced_mutex = Arc::clone(&settings_state);
+    let mut my_lock = arced_mutex.lock()?;
+
+    // Set Loggin Settings
+    my_lock.debug = settings.debug;
+
+    // Set Live Scraper Settings
+    my_lock.live_scraper = settings.live_scraper;
+
+    // Set Whisper Scraper Settings
+    my_lock.notifications = settings.notifications;
+
+    my_lock.save_to_file().expect("Could not save settings");
+
+    notify
+        .gui()
+        .send_event_update(UIEvent::UpdateSettings, UIOperationEvent::Set, Some(json!(my_lock.clone())));
+    Ok(true)
+}
+

@@ -5,13 +5,18 @@ use eyre::eyre;
 use serde_json::json;
 
 use crate::{
-    helper, logger, utils::{enums::log_level::LogLevel, modules::error::{ApiResult, AppError}}, wfm_client::{
+    helper, logger,
+    utils::{
+        enums::log_level::LogLevel,
+        modules::error::{ApiResult, AppError},
+    },
+    wfm_client::{
         client::WFMClient,
         types::{
-            auction::Auction, auction_item::AuctionItem, auction_owner::AuctionOwner, riven_attribute_info::RivenAttributeInfo,
-            riven_type_info::RivenTypeInfo,
+            auction::Auction, auction_item::AuctionItem, auction_owner::AuctionOwner,
+            riven_attribute_info::RivenAttributeInfo, riven_type_info::RivenTypeInfo,
         },
-    }
+    },
 };
 #[derive(Clone, Debug)]
 pub struct AuctionModule {
@@ -58,62 +63,6 @@ impl AuctionModule {
         *count += increment;
         self.update_state();
         Ok(())
-    }
-    pub async fn get_all_riven_types(&self) -> Result<Vec<RivenTypeInfo>, AppError> {
-        match self
-            .client
-            .get::<Vec<RivenTypeInfo>>("riven/items", Some("items"))
-            .await
-        {
-            Ok(ApiResult::Success(payload, _headers)) => {
-                self.client.debug(
-                    &self.debug_id,
-                    &self.get_component("GetAllRivenTypes"),
-                    format!("Found {} riven types", payload.len()).as_str(),
-                    None,
-                );
-                return Ok(payload);
-            }
-            Ok(ApiResult::Error(error, _headers)) => {
-                return Err(self.client.create_api_error(
-                    &self.get_component("GetAllRivenTypes"),
-                    error,
-                    eyre!("There was an error getting all riven types"),
-                    LogLevel::Error,
-                ));
-            }
-            Err(err) => {
-                return Err(err);
-            }
-        };
-    }
-    pub async fn get_all_riven_attribute_types(&self) -> Result<Vec<RivenAttributeInfo>, AppError> {
-        match self
-            .client
-            .get::<Vec<RivenAttributeInfo>>("riven/attributes", Some("attributes"))
-            .await
-        {
-            Ok(ApiResult::Success(payload, _headers)) => {
-                self.client.debug(
-                    &self.debug_id,
-                    &self.get_component("GetAllRivenAttributeTypes"),
-                    format!("Found {} attributes", payload.len()).as_str(),
-                    None,
-                );
-                return Ok(payload);
-            }
-            Ok(ApiResult::Error(error, _headers)) => {
-                return Err(self.client.create_api_error(
-                    &self.get_component("GetAllRivenAttributeTypes"),
-                    error,
-                    eyre!("There was an error getting all riven attribute types"),
-                    LogLevel::Error,
-                ));
-            }
-            Err(err) => {
-                return Err(err);
-            }
-        };
     }
 
     // User methods (sea-query)

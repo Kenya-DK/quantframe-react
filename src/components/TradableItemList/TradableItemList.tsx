@@ -1,4 +1,4 @@
-import { ActionIcon, Box, Group, MultiSelect, Paper, RangeSlider, Text, Tooltip } from '@mantine/core';
+import { ActionIcon, Box, Grid, Group, MultiSelect, Paper, RangeSlider, Text, Tooltip } from '@mantine/core';
 import { CacheTradableItem } from '@api/types';
 import { useTranslateComponent } from '@hooks/index';
 import { DataTable, DataTableSortStatus } from 'mantine-datatable';
@@ -29,7 +29,7 @@ export function TradableItemList({ onAddItem, onAddAll, availableItems }: Tradab
 	const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateComponent(`tradableItem_list.${key}`, { ...context }, i18Key)
 	const useTranslateDataGridColumns = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`datatable.columns.${key}`, { ...context }, i18Key)
 	const useTranslateFormFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`fields.${key}`, { ...context }, i18Key)
-	const useTranslateSearchButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`searchfield.buttons.${key}`, { ...context }, i18Key)
+	const useTranslateSearchButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`buttons.${key}`, { ...context }, i18Key)
 
 	const availableItemTags = [
 		{
@@ -116,42 +116,46 @@ export function TradableItemList({ onAddItem, onAddAll, availableItems }: Tradab
 					onChange={(e) => filterForm.setFieldValue('search', e)}
 					filter={
 						<Paper radius="md" p={"sm"} mt={"md"}>
-							<Group>
-								<MultiSelect
-									multiple
-									label={useTranslateFormFields('tags.label')}
-									placeholder={useTranslateFormFields('tags.placeholder')}
-									data={availableItemTags}
-									value={filterForm.values.tags}
-									onChange={(value) => filterForm.setFieldValue('tags', value)}
-									clearable
-								/>
-								<Box>
-									<Text size="sm" mt="xl">{useTranslateFormFields('trade_tax.label', { min: filterForm.values.tradeTaxRange[0], max: filterForm.values.tradeTaxRange[1] })}</Text>
-									<RangeSlider
-										w={300}
-										color="blue"
-										value={filterForm.values.tradeTaxRange}
-										onChange={(value) => filterForm.setFieldValue('tradeTaxRange', value)}
-										step={1000}
-										min={0}
-										max={2100000}
+							<Grid>
+								<Grid.Col span={6}>
+									<MultiSelect
+										multiple
+										label={useTranslateFormFields('tags.label')}
+										placeholder={useTranslateFormFields('tags.placeholder')}
+										data={availableItemTags}
+										value={filterForm.values.tags}
+										onChange={(value) => filterForm.setFieldValue('tags', value)}
+										clearable
 									/>
-								</Box>
-								<Box>
-									<Text size="sm" mt="xl">{useTranslateFormFields('mr_requirement.label', { min: filterForm.values.mrRequirementRange[0], max: filterForm.values.mrRequirementRange[1] })}</Text>
-									<RangeSlider
-										w={300}
-										step={1}
-										value={filterForm.values.mrRequirementRange}
-										onChange={(value) => filterForm.setFieldValue('mrRequirementRange', value)}
-										color="blue"
-										minRange={1}
-										min={0}
-										max={15}
-									/>
-								</Box>
-							</Group>
+								</Grid.Col>
+								<Grid.Col span={6}>
+									<Box>
+										<Text size="sm" mt="xl">{useTranslateFormFields('trade_tax.label', { min: filterForm.values.tradeTaxRange[0], max: filterForm.values.tradeTaxRange[1] })}</Text>
+										<RangeSlider
+											w={300}
+											color="blue"
+											value={filterForm.values.tradeTaxRange}
+											onChange={(value) => filterForm.setFieldValue('tradeTaxRange', value)}
+											step={1000}
+											min={0}
+											max={2100000}
+										/>
+									</Box>
+									<Box>
+										<Text size="sm" mt="xl">{useTranslateFormFields('mr_requirement.label', { min: filterForm.values.mrRequirementRange[0], max: filterForm.values.mrRequirementRange[1] })}</Text>
+										<RangeSlider
+											w={300}
+											step={1}
+											value={filterForm.values.mrRequirementRange}
+											onChange={(value) => filterForm.setFieldValue('mrRequirementRange', value)}
+											color="blue"
+											minRange={1}
+											min={0}
+											max={15}
+										/>
+									</Box>
+								</Grid.Col>
+							</Grid>
 						</Paper>
 					}
 					rightSectionWidth={75}
@@ -173,7 +177,7 @@ export function TradableItemList({ onAddItem, onAddAll, availableItems }: Tradab
 				/>
 			</Box>
 			<DataTable
-				height={`calc(100vh - 420px)`}
+				height={"50vh"}
 				mt={"md"}
 				records={rows}
 				totalRecords={totalRecords}

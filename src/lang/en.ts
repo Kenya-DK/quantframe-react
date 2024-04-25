@@ -102,6 +102,11 @@ export const en = {
                 error: "Invalid min profit",
                 tooltip: "The minimum profit",
               },
+              auto_delete: {
+                label: "Auto Delete",
+                error: "Invalid auto delete",
+                tooltip: "Automatically delete stock items",
+              },
               stock_mode: {
                 label: "Stock Mode",
                 description: {
@@ -137,6 +142,30 @@ export const en = {
                 error: "Invalid strict whitelist",
                 tooltip: "Only trade items in the whitelist",
               },
+              blacklist: {
+                description: "The blacklist is a list of items that will not be ignored by the bot. (Sell/Buy)",
+                left_title: "Available Items",
+                right_title: "Blacklisted Items",
+              },
+              whitelist: {
+                description: "The whitelist is a list of items that will buy no matter the profit",
+                left_title: "Available Items",
+                right_title: "Whitelisted Items",
+              },
+            },
+            buttons: {
+              save: {
+                label: "Save",
+              },
+              blacklist: {
+                label: "Blacklist",
+              },
+              whitelist: {
+                label: "Whitelist",
+              },
+              go_back: {
+                label: "Go Back",
+              },
             },
           },
           notification: {
@@ -165,6 +194,43 @@ export const en = {
             }
           }
         },
+      },
+      notification: {
+        fields: {
+          title: {
+            label: "Title",
+            placeholder: "Title",
+            error: "Invalid title",
+          },
+          content: {
+            label: "Content",
+            placeholder: "Content",
+            error: "Invalid content",
+          },
+          webhook: {
+            label: "Webhook",
+            placeholder: "Webhook",
+            description: "Discord webhook URL",
+            error: "Invalid webhook",
+          },
+          user_ids: {
+            label: "User IDs",
+            placeholder: "User IDs",
+            description: "Discord user's (Numbers) separated by comma",
+            error: "Invalid user IDs",
+          }
+        },
+        buttons: {
+          system: {
+            tooltip: "System Notification",
+          },
+          save: {
+            label: "Save",
+          },
+          discord: {
+            tooltip: "Discord Notification",
+          },
+        }
       },
       log_in: {
         title: "Warframe Market - Login",
@@ -270,12 +336,20 @@ export const en = {
         logout: {
           title: "Logout Error",
           message: "An error occurred while trying to logout.",
+        },
+        update_settings: {
+          title: "Update Settings Error",
+          message: "An error occurred while trying to update settings.",
         }
       },
       success: {
         logout: {
           title: "Logout Success",
           message: "You have been successfully logged out.",
+        },
+        update_settings: {
+          title: "Update Settings Success",
+          message: "Settings have been successfully updated.",
         }
       },
     },

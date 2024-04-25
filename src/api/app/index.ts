@@ -13,7 +13,7 @@ export class AppModule {
   }
 
   async updateSettings(settings: Settings) {
-    const [err] = await this.client.sendInvoke('app_update_settings', settings);
+    const [err] = await this.client.sendInvoke('app_update_settings', { settings });
     if (err)
       throw err;
   }

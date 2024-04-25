@@ -38,6 +38,7 @@ export interface SettingsStockRiven {
 export interface SettingsNotifications {
   on_new_conversation: SettingsNotification;
   on_wfm_chat_message: SettingsNotification;
+  on_new_trade: SettingsNotification;
 }
 
 export interface SettingsNotification {

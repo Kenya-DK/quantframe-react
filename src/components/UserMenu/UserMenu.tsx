@@ -1,7 +1,7 @@
 import { Text, Group, Menu, Avatar, Button, Indicator } from '@mantine/core';
-import { useAuthContext, useWFMSocketContext } from '@contexts/index';
+import { useAppContext, useAuthContext, useWFMSocketContext } from '@contexts/index';
 import api, { SendTauriDataEvent, WFMThumbnail } from '@api/index';
-import { QfSocketEvent, QfSocketEventOperation, UserStatus } from '@api/types';
+import { QfSocketEvent, QfSocketEventOperation, Settings, UserStatus } from '@api/types';
 import classes from './UserMenu.module.css';
 import { useTranslateComponent, useTranslateEnums } from '@hooks/index';
 import { faGear, faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
@@ -9,10 +9,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useMutation } from '@tanstack/react-query';
 import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router-dom';
+import { SettingsForm } from '../Forms';
+import { modals } from '@mantine/modals';
 export function UserMenu() {
 	// States
 	const navigate = useNavigate();
 	const { user } = useAuthContext();
+	const { settings } = useAppContext();
 	const { isConnected, inErrorState } = useWFMSocketContext();
 
 	// Translate general
@@ -31,11 +34,18 @@ export function UserMenu() {
 		},
 		onError: () => notifications.show({ title: useTranslateErrors("logout.title"), message: useTranslateErrors("logout.message"), color: "green.7" })
 	})
+	const updateSettingsMutation = useMutation({
+		mutationFn: (s: Settings) => api.app.updateSettings(s),
+		onSuccess: () => {
+			notifications.show({ title: useTranslateSuccess("update_settings.title"), message: useTranslateSuccess("update_settings.message"), color: "green.7" });
+		},
+		onError: () => notifications.show({ title: useTranslateErrors("update_settings.title"), message: useTranslateErrors("update_settings.message"), color: "green.7" })
+	})
+
 
 	return (
 		<Menu shadow="md" width={200}
 			transitionProps={{ transition: "fade-down", duration: 150 }}
-			trigger="hover"
 		>
 			<Menu.Target>
 				<Group>
@@ -78,7 +88,17 @@ export function UserMenu() {
 				</Group>
 				<Menu.Divider />
 				<Menu.Label>{useTranslateUserMenu("items.app_label")}</Menu.Label>
-				<Menu.Item leftSection={<FontAwesomeIcon icon={faGear} />} onClick={() => { }}>{useTranslateUserMenu("items.settings")}</Menu.Item>
+				<Menu.Item leftSection={<FontAwesomeIcon icon={faGear} />} onClick={() => {
+					if (!settings) return;
+					modals.open({
+						size: "100%",
+						withCloseButton: false,
+						children: <SettingsForm value={settings} onSubmit={async (s) => {
+							await updateSettingsMutation.mutateAsync(s);
+							modals.closeAll();
+						}} />,
+					})
+				}}>{useTranslateUserMenu("items.settings")}</Menu.Item>
 				<Menu.Item leftSection={<FontAwesomeIcon icon={faRightFromBracket} />} onClick={async () => { await logOutMutation.mutateAsync() }}>{useTranslateUserMenu("items.logout")}</Menu.Item>
 			</Menu.Dropdown>
 		</Menu>

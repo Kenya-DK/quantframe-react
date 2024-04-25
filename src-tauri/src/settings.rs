@@ -69,6 +69,7 @@ pub struct Notification {
 pub struct Notifications {
     pub on_new_conversation: Notification,
     pub on_wfm_chat_message: Notification,
+    pub on_new_trade: Notification,
 }
 // Allow us to run AuthState::default()
 impl Default for SettingsState {
@@ -111,6 +112,14 @@ impl Default for SettingsState {
                     system_notify: true,
                     content: "From: <WFM_MESSAGE>".to_string(),
                     title: "New WFM Message".to_string(),
+                    webhook: Some("".to_string()),
+                    user_ids: Some(vec![]),
+                },
+                on_new_trade: Notification {
+                    discord_notify: false,
+                    system_notify: true,
+                    content: "From: <PLAYER_NAME>".to_string(),
+                    title: "New Trade".to_string(),
                     webhook: Some("".to_string()),
                     user_ids: Some(vec![]),
                 },

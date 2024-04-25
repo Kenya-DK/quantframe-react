@@ -148,6 +148,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             // Base commands
             commands::app::app_init,
+            commands::app::app_update_settings,
             // Auth commands
             commands::auth::auth_login,
             commands::auth::auth_set_status,
