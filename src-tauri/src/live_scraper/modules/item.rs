@@ -833,12 +833,7 @@ impl ItemModule {
         let stock_item_original = stock_item.clone();
 
         // Create a PriceHistory struct
-        let mut price_history = PriceHistory {
-            user_id: "N/A".to_string(),
-            name: "N/A".to_string(),
-            price: 0,
-            created_at: chrono::Local::now().naive_local().to_string(),
-        };
+        let mut price_history = PriceHistory::new("N/A".to_string(), "N/A".to_string(), 0, chrono::Local::now().naive_local().to_string());
 
         // Remove all orders where the sub type is not the same as the stock item sub type.
         let live_orders = live_orders.filter_by_sub_type(stock_item.sub_type.as_ref(), false);
@@ -968,7 +963,14 @@ impl ItemModule {
             StockItemMutation::update_by_id(&app.conn, stock_item.id, stock_item.clone())
                 .await
                 .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
-            self.send_stock_update(UIOperationEvent::CreateOrUpdate, json!(stock_item));
+            let mut payload = json!(stock_item);
+            payload["extra"] = json!({
+                "price_history": json!(stock_item.price_history.0),
+                "profit": profit,
+                "sma_price": moving_avg,
+                "trades": live_orders.sell_orders,
+            });
+            self.send_stock_update(UIOperationEvent::CreateOrUpdate, json!(payload));
         }
         return Ok(());
     }

@@ -18,3 +18,13 @@ pub struct PriceHistory {
     #[serde(rename = "price")]
     pub price: i64,
 }
+impl PriceHistory {
+    pub fn new(user_id: String, name: String, created_at: String, price: i64) -> Self {
+        Self {
+            user_id,
+            name,
+            created_at,
+            price,
+        }
+    }
+}
