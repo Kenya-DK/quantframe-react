@@ -1,3 +1,5 @@
+import { upperFirst } from "@mantine/hooks";
+import { SubType } from "../api/types";
 
 export interface GroupByDateSettings {
   labels?: string[]
@@ -79,4 +81,15 @@ export const formatNumber = (num: number) => {
 
 export const getCssVariable = (name: string) => {
   return getComputedStyle(document.documentElement).getPropertyValue(name);
+}
+
+export const GetSubTypeDisplay = (subType: SubType | undefined) => {
+  if (!subType) return "";
+  const { rank, variant, amber_stars, cyan_stars } = subType;
+  let display = "";
+  if (rank != undefined) display += `(R${rank})`;
+  if (variant) display += ` [${upperFirst(variant)}]`;
+  if (amber_stars) display += ` ${amber_stars}A`;
+  if (cyan_stars) display += ` ${cyan_stars}C`;
+  return display;
 }

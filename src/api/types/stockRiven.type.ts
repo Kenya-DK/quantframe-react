@@ -39,3 +39,24 @@ export interface StockRivenFilterAttribute {
   is_required: boolean;
   url_name: string;
 }
+
+export interface CreateStockRiven {
+  wfm_url: string;
+  bought: number;
+  quantity: number;
+  minimum_price?: number;
+}
+
+export interface UpdateStockRiven {
+  id?: number;
+  bought?: number;
+  quantity?: number;
+  minimum_price?: number;
+  is_hidden?: boolean;
+}
+
+export interface SellStockRiven {
+  id: number;
+  quantity: number;
+  price: number;
+}

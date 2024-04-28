@@ -207,7 +207,6 @@ impl ItemModule {
             // Send GUI Update.
             self.send_msg("checking_item", Some(json!({ "current": current_index,"total": interesting_items.len(), "name": item_info.name.clone()})));
 
-            current_index -= 1;
             // Log the current item
             logger::info_con(
                 &self.get_component("CheckStock"),
@@ -274,18 +273,20 @@ impl ItemModule {
 
             // Only check if the order mode is buy or both and if the item is in stock items
             if order_mode == OrderMode::Buy || order_mode == OrderMode::Both {
-                match self.compare_live_orders_when_buying(
-                    &item_info,
-                    item_rank,
-                    &mut my_orders,
-                    live_orders.clone(),
-                    closed_avg,
-                )
-                .await {
+                match self
+                    .compare_live_orders_when_buying(
+                        &item_info,
+                        item_rank,
+                        &mut my_orders,
+                        live_orders.clone(),
+                        closed_avg,
+                    )
+                    .await
+                {
                     Ok(_) => {}
                     Err(e) => {
                         if e.log_level() == LogLevel::Warning {
-                            self.client.report_error(&e);                                                        
+                            self.client.report_error(&e);
                         } else {
                             return Err(e);
                         }
@@ -297,24 +298,27 @@ impl ItemModule {
             if (order_mode == OrderMode::Sell || order_mode == OrderMode::Both)
                 && stock_item.is_some()
             {
-               match self.compare_live_orders_when_selling(
-                    &item_info,
-                    moving_avg,
-                    &mut my_orders,
-                    live_orders.clone(),
-                    &mut stock_item.unwrap(),
-                )
-                .await {
+                match self
+                    .compare_live_orders_when_selling(
+                        &item_info,
+                        moving_avg,
+                        &mut my_orders,
+                        live_orders.clone(),
+                        &mut stock_item.unwrap(),
+                    )
+                    .await
+                {
                     Ok(_) => {}
                     Err(e) => {
                         if e.log_level() == LogLevel::Warning {
-                            self.client.report_error(&e);                                                        
+                            self.client.report_error(&e);
                         } else {
                             return Err(e);
                         }
                     }
                 }
             }
+            current_index -= 1;
         }
         Ok(())
     }
@@ -485,7 +489,7 @@ impl ItemModule {
     > {
         let n = items.len();
         let mut dp = vec![0; (n + 1) as usize];
-        
+
         for i in 1..=n {
             let (weight, value, _, _) = items[i - 1];
             dp[i] = (weight <= avg_price_cap).then(|| value as i64).unwrap_or(0);
@@ -503,22 +507,24 @@ impl ItemModule {
                 unselected_items.push(items[i].clone());
             }
         }
-        
+
         // In the `items` parameter, the last element is always not on Warframe Market (the one currently getting checked),
-        // so it should be added only if it's not already posted, unless the price would go over the max price cap limit. 
-        // Because if it is posted and gets added in unselected_items, 
+        // so it should be added only if it's not already posted, unless the price would go over the max price cap limit.
+        // Because if it is posted and gets added in unselected_items,
         // it will be expecting an order_id because the item is posted on Warframe Market.
-        if !selected_items.iter().any(|&(_, _, ref name, _)| name == &items[n-1].2) {
-            if w - items[n-1].0 < 0 {
-                unselected_items.push(items[n-1].clone());
+        if !selected_items
+            .iter()
+            .any(|&(_, _, ref name, _)| name == &items[n - 1].2)
+        {
+            if w - items[n - 1].0 < 0 {
+                unselected_items.push(items[n - 1].clone());
             } else {
-                selected_items.push(items[n-1].clone());
+                selected_items.push(items[n - 1].clone());
             }
         }
 
-
         Ok((dp[n], selected_items, unselected_items))
-    }  
+    }
 
     pub async fn compare_live_orders_when_buying(
         &self,
@@ -554,7 +560,6 @@ impl ItemModule {
             None => Order::default(),
         };
 
-
         // Remove all orders where the sub_type is not equal to the sub_type.
         let live_orders = live_orders.filter_by_sub_type(sub_type.as_ref(), false);
 
@@ -575,7 +580,7 @@ impl ItemModule {
 
         // Set the post price to the highest price.
         let mut post_price = highest_price;
-        
+
         // // Get the stock item bought price if it exists.
         // let bought_price = if stock_item.is_some() {
         //     stock_item.unwrap().bought as i64
@@ -833,7 +838,10 @@ impl ItemModule {
         let stock_item_original = stock_item.clone();
 
         // Create a PriceHistory struct
-        let mut price_history = PriceHistory::new("N/A".to_string(), "N/A".to_string(), 0, chrono::Local::now().naive_local().to_string());
+        let mut price_history = PriceHistory::new(
+            chrono::Local::now().naive_local().to_string(),
+            0,
+        );
 
         // Remove all orders where the sub type is not the same as the stock item sub type.
         let live_orders = live_orders.filter_by_sub_type(stock_item.sub_type.as_ref(), false);
@@ -850,8 +858,6 @@ impl ItemModule {
         // Get the lowest sell order price from the DataFrame of live sell orders
         let lowest_price = if live_orders.sell_orders.len() > 2 {
             let lowest_order = live_orders.lowest_order(OrderType::Sell).unwrap();
-            price_history.user_id = lowest_order.user.clone().unwrap().id;
-            price_history.name = lowest_order.user.clone().unwrap().ingame_name;
             lowest_order.platinum
         } else {
             stock_item.status = StockStatus::NoSellers;
@@ -893,6 +899,12 @@ impl ItemModule {
             stock_item.list_price = Some(post_price);
         }
 
+        // Extra Information for the GUI
+        let extra = json!({
+            "profit": profit,
+            "sma_price": moving_avg,
+        });
+
         if user_order.visible {
             // If the item is too cheap, delete the order
             if stock_item.status == StockStatus::ToLowProfit {
@@ -913,8 +925,10 @@ impl ItemModule {
                     user_order.platinum = post_price;
                     user_order.quantity = quantity;
                     my_orders.update_order(user_order.clone());
+                    let mut payload = json!(stock_item);
+                    payload["extra"] = extra.clone();
                     self.send_order_update(UIOperationEvent::CreateOrUpdate, json!(user_order));
-                    self.send_stock_update(UIOperationEvent::CreateOrUpdate, json!(stock_item));
+                    self.send_stock_update(UIOperationEvent::CreateOrUpdate, json!(payload));
                 }
             }
         } else if stock_item.status != StockStatus::ToLowProfit {
@@ -964,12 +978,7 @@ impl ItemModule {
                 .await
                 .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
             let mut payload = json!(stock_item);
-            payload["extra"] = json!({
-                "price_history": json!(stock_item.price_history.0),
-                "profit": profit,
-                "sma_price": moving_avg,
-                "trades": live_orders.sell_orders,
-            });
+            payload["extra"] = extra;
             self.send_stock_update(UIOperationEvent::CreateOrUpdate, json!(payload));
         }
         return Ok(());

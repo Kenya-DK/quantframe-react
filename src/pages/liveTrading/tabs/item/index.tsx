@@ -1,10 +1,10 @@
 import { useTranslateEnums, useTranslatePages } from "@hooks/index";
 import { useLiveScraperContext, useStockContextContext } from "@contexts/index";
-import { sortArray, paginate, getCssVariable } from "@utils/index";
+import { sortArray, paginate, getCssVariable, GetSubTypeDisplay } from "@utils/index";
 import { useEffect, useState } from "react";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
-import { CreateStockItem, StockItem, StockStatus, UpdateStockItem, SellStockItem, SubType } from "@api/types";
-import { ColorInfo, CreateStockItemForm, SearchField, StatsWithSegments, ButtonInterval } from "@components";
+import { CreateStockItem, StockItem, StockStatus, UpdateStockItem, SellStockItem } from "@api/types";
+import { ColorInfo, CreateStockItemForm, SearchField, StatsWithSegments, ButtonInterval, TextTranslate, StockItemInfo } from "@components";
 import { ActionIcon, Box, Grid, Group, NumberFormatter, Text, Tooltip } from "@mantine/core";
 import { useMutation } from "@tanstack/react-query";
 import api from "@api/index";
@@ -12,7 +12,6 @@ import { notifications } from "@mantine/notifications";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faEye, faEyeSlash, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { modals } from "@mantine/modals";
-import { upperFirst } from "@mantine/hooks";
 interface StockItemPanelProps {
 }
 export const StockItemPanel = ({ }: StockItemPanelProps) => {
@@ -37,15 +36,17 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
 
     // Translate general
     const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`liveTrading.${key}`, { ...context }, i18Key)
+    const useTranslateSegments = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`segments.${key}`, { ...context }, i18Key)
     const useTranslateTabItem = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`tabs.item.${key}`, { ...context }, i18Key)
     const useTranslateStockStatus = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateEnums(`stock_status.${key}`, { ...context }, i18Key)
     const useTranslateDataGridColumns = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateTabItem(`datatable.columns.${key}`, { ...context }, i18Key)
+    const useTranslateDataGridBaseColumns = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`datatable.columns.${key}`, { ...context }, i18Key)
     const useTranslateErrors = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateTabItem(`errors.${key}`, { ...context }, i18Key)
     const useTranslateSuccess = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateTabItem(`success.${key}`, { ...context }, i18Key)
     const useTranslatePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`prompts.${key}`, { ...context }, i18Key)
     const useTranslateNotifications = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`notifications.${key}`, { ...context }, i18Key)
 
-    // Update DataGrid Rows
+    // Update Database Rows
     useEffect(() => {
         if (!items)
             return;
@@ -92,23 +93,11 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
         const listedPercentage = (totalListedPrice / totalCount) * 100;
         const profitPercentage = (totalProfit / totalCount) * 100;
         setSegments([
-            { label: useTranslateTabItem("segments.bought"), count: totalPurchasePrice, part: boughtPercentage, color: getCssVariable("--negative-value") },
-            { label: useTranslateTabItem("segments.listed"), count: totalListedPrice, part: listedPercentage, color: getCssVariable("--positive-value") },
-            { label: useTranslateTabItem("segments.profit"), count: totalProfit, part: profitPercentage, color: getCssVariable("--profit-value") },
+            { label: useTranslateSegments("bought"), count: totalPurchasePrice, part: boughtPercentage, color: getCssVariable("--negative-value") },
+            { label: useTranslateSegments("listed"), count: totalListedPrice, part: listedPercentage, color: getCssVariable("--positive-value") },
+            { label: useTranslateSegments("profit"), count: totalProfit, part: profitPercentage, color: getCssVariable("--profit-value") },
         ]);
     }, [items])
-
-    // Functions
-    const GetSubTypeDisplay = (subType: SubType | undefined) => {
-        if (!subType) return "";
-        const { rank, variant, amber_stars, cyan_stars } = subType;
-        let display = "";
-        if (rank) display += `(R${rank})`;
-        if (variant) display += ` [${upperFirst(variant)}]`;
-        if (amber_stars) display += ` ${amber_stars}A`;
-        if (cyan_stars) display += ` ${cyan_stars}C`;
-        return display;
-    }
 
     // Mutations
     const createStockMutation = useMutation({
@@ -206,6 +195,15 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
         })
     }
 
+    const OpenInfoModal = (item: StockItem) => {
+        modals.open({
+            size: "100%",
+            title: item.item_name,
+            children: (<StockItemInfo value={item} />),
+
+        })
+    }
+
     return (
         <Box>
             <Grid>
@@ -263,25 +261,25 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
                 columns={[
                     {
                         accessor: 'item_name',
-                        title: useTranslateDataGridColumns('item_name'),
+                        title: useTranslateDataGridBaseColumns('name.title'),
                         sortable: true,
                         render: ({ item_name, sub_type }) => (
-                            <Group gap={"sm"} align="center">
-                                <Text>{item_name}</Text>
-                                <Text size="xs">{GetSubTypeDisplay(sub_type)}</Text>
-                            </Group>
+                            <TextTranslate color="gray.4" i18nKey={useTranslateDataGridBaseColumns("name.value", undefined, true)} values={{
+                                name: item_name,
+                                sub_type: GetSubTypeDisplay(sub_type)
+                            }} />
                         ),
                     },
                     {
                         accessor: 'bought',
-                        title: useTranslateDataGridColumns('bought'),
+                        title: useTranslateDataGridBaseColumns('bought'),
                         sortable: true,
                         render: ({ bought }) => <NumberFormatter thousandSeparator="." decimalSeparator="," value={bought} />,
                     },
                     {
                         accessor: 'minimum_price',
                         width: 310,
-                        title: useTranslateDataGridColumns('minimum_price.title'),
+                        title: useTranslateDataGridBaseColumns('minimum_price.title'),
                         render: ({ id, minimum_price }) => (
                             <Group gap={"sm"} justify="space-between">
                                 <Text>{minimum_price || "N/A"}</Text>
@@ -297,7 +295,7 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
                                         minimum_price = minimum_price || 0;
                                         await updateStockMutation.mutateAsync({ id, minimum_price: minimum_price + int });
                                     }} />
-                                    <Tooltip label={useTranslateDataGridColumns('minimum_price.btn.edit.tooltip')} position="top">
+                                    <Tooltip label={useTranslateDataGridBaseColumns('minimum_price.btn.edit.tooltip')} position="top">
                                         <ActionIcon size={"sm"} color={"blue.7"} variant="filled" onClick={async (e) => {
                                             e.stopPropagation();
                                             if (!id) return;
@@ -312,7 +310,7 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
                     },
                     {
                         accessor: 'list_price',
-                        title: useTranslateDataGridColumns('list_price'),
+                        title: useTranslateDataGridBaseColumns('list_price'),
                     },
                     {
                         accessor: 'owned',
@@ -320,11 +318,11 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
                     },
                     {
                         accessor: 'actions',
-                        title: useTranslateDataGridColumns('actions.title'),
+                        title: useTranslateDataGridBaseColumns('actions.title'),
                         width: 180,
                         render: (row) => (
                             <Group gap={"sm"} justify="flex-end">
-                                <Tooltip label={useTranslateDataGridColumns('actions.buttons.sell_manual.tooltip')} position="top">
+                                <Tooltip label={useTranslateDataGridBaseColumns('actions.buttons.sell_manual.tooltip')} position="top">
                                     <ActionIcon size={"sm"} color={"green.7"} variant="filled" onClick={async (e) => {
                                         e.stopPropagation();
                                         OpenSellModal(row.id);
@@ -332,7 +330,7 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
                                         <FontAwesomeIcon size="xs" icon={faPen} />
                                     </ActionIcon>
                                 </Tooltip>
-                                <Tooltip label={useTranslateDataGridColumns('actions.buttons.sell_auto.tooltip')} position="top">
+                                <Tooltip label={useTranslateDataGridBaseColumns('actions.buttons.sell_auto.tooltip')} position="top">
                                     <ActionIcon disabled={!row.list_price} size={"sm"} color={"blue.7"} variant="filled" onClick={async (e) => {
                                         e.stopPropagation();
                                         if (!row.id || !row.list_price) return;
@@ -341,7 +339,7 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
                                         <FontAwesomeIcon size="xs" icon={faHammer} />
                                     </ActionIcon>
                                 </Tooltip>
-                                <Tooltip label={useTranslateDataGridColumns(`actions.buttons.hide.${row.is_hidden ? "disabled_tooltip" : "enabled_tooltip"}`)} position="top">
+                                <Tooltip label={useTranslateDataGridBaseColumns(`actions.buttons.hide.${row.is_hidden ? "disabled_tooltip" : "enabled_tooltip"}`)} position="top">
                                     <ActionIcon size={"sm"} color={`${row.is_hidden ? "red.7" : "green.7"}`} variant="filled" onClick={async (e) => {
                                         e.stopPropagation();
                                         await updateStockMutation.mutateAsync({ id: row.id, is_hidden: !row.is_hidden });
@@ -349,14 +347,15 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
                                         <FontAwesomeIcon size="xs" icon={row.is_hidden ? faEyeSlash : faEye} />
                                     </ActionIcon>
                                 </Tooltip>
-                                <Tooltip label={useTranslateDataGridColumns('actions.buttons.info.tooltip')} position="top">
+                                <Tooltip label={useTranslateDataGridBaseColumns('actions.buttons.info.tooltip')} position="top">
                                     <ActionIcon size={"sm"} color={"blue.7"} variant="filled" onClick={async (e) => {
                                         e.stopPropagation();
+                                        OpenInfoModal(row);
                                     }} >
                                         <FontAwesomeIcon size="xs" icon={faInfo} />
                                     </ActionIcon>
                                 </Tooltip>
-                                <Tooltip label={useTranslateDataGridColumns('actions.buttons.delete.tooltip')} position="top">
+                                <Tooltip label={useTranslateDataGridBaseColumns('actions.buttons.delete.tooltip')} position="top">
                                     <ActionIcon size={"sm"} color={"red.7"} variant="filled" onClick={async (e) => {
                                         e.stopPropagation();
                                         await deleteStockMutation.mutateAsync(row.id);

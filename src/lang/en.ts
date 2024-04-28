@@ -173,6 +173,25 @@ export const en = {
           },
         }
       },
+      update_stock_riven: {
+        fields: {
+          minimum_price: {
+            label: "Minimum Price",
+            placeholder: "Minimum Price",
+            description: "Set 0 for auto price",
+            error: "Invalid minimum price",
+          },
+          use_hidden: {
+            label: "Use Hidden",
+          },
+          is_hidden: {
+            label: "Is Hidden",
+          },
+        },
+        buttons: {
+          submit: "Update",
+        },
+      },
       create_stock_item: {
         fields: {
           quantity: {
@@ -251,6 +270,34 @@ export const en = {
           submit: "Log In",
         },
       }
+    },
+    stock_item_info: {
+      fields: {
+        created_at: "Created At",
+        updated_at: "Updated At",
+        status: "Status",
+        bought: "Bought",
+        minimum_price: "Minimum Price",
+        owned: "Owned",
+        listed: "Listed Prices History",
+      },
+      buttons: {
+        wfm: "Warframe Market",
+        wiki: "Wiki",
+      }
+    },
+    stock_riven_info: {
+      fields: {
+        created_at: "Created At",
+        updated_at: "Updated At",
+        status: "Status",
+        bought: "Bought",
+        minimum_price: "Minimum Price",
+        listed: "Listed Prices History",
+      }
+    },
+    riven_attribute: {
+      effect: "{{value}} {{name}}",
     },
     tradableItem_list: {
       fields: {
@@ -375,16 +422,21 @@ export const en = {
         stop: "Stop Live Trading",
       },
       item: {
-        stating: "Starting Item Live Trading",
+        stating: "Starting Item Trading",
         deleting_orders: "Deleting Orders {{current}}/{{total}}",
         not_in_inventory: "Item <red>{{name}}</red> not in inventory deleting.",
         low_profit_delete: "Deleting Item <red>{{name}}</red> low profit",
         order_limit_reached: "Order limit reached for <red>{{name}}</red>",
         knapsack_delete: "Delete Item <red>{{name}}</red>",
         underpriced_delete: "Delete Underpriced Item <red>{{name}}</red>",
-        created: "Created Buy Order for <blue>{{name}}</blue> at <blue>{{price}}</blue>  platinum potential profit <blue>{{profit}}</blue> ",
+        created: "Created Buy Order for <blue>{{name}}</blue> at <blue>{{price}}</blue> platinum potential profit <blue>{{profit}}</blue> ",
         checking_item: "Checking Item <blue>{{name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
-      }
+      },
+      riven: {
+        stating: "Starting Riven Trading",
+        searching_riven: "Searching Riven {{weapon_name}} {{mod_name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        riven_created: "Created Riven <blue>{{weapon_name}} {{mod_name}}</blue> at <blue>{{price}}</blue> platinum potential profit <blue>{{profit}}</blue>",
+      },
     }
   },
   context: {
@@ -491,6 +543,50 @@ export const en = {
       }
     },
     liveTrading: {
+      segments: {
+        bought: "Bought",
+        listed: "Listed",
+        profit: "Profit",
+      },
+      datatable: {
+        columns: {
+          name: {
+            title: "Name",
+            value: "{{name}} <blue>{{sub_type}}</blue>",
+          },
+          bought: "Bought",
+          minimum_price: {
+            title: "Minimum Price",
+            btn: {
+              edit: {
+                tooltip: "Set minimum price"
+              }
+            }
+          },
+          list_price: "List Price",
+          actions: {
+            title: "Actions",
+            buttons: {
+              sell_manual: {
+                tooltip: "Sell manually",
+              },
+              sell_auto: {
+                tooltip: "Sell as listed price",
+              },
+              hide: {
+                enabled_tooltip: "Hide",
+                disabled_tooltip: "Unhide",
+              },
+              info: {
+                tooltip: "Show Info",
+              },
+              delete: {
+                tooltip: "Delete",
+              },
+            }
+          },
+        }
+      },
       prompts: {
         minimum_price: {
           title: "Minimum Price",
@@ -518,47 +614,11 @@ export const en = {
       tabs: {
         item: {
           title: "Stock Items",
-          segments: {
-            bought: "Bought",
-            listed: "Listed",
-            profit: "Profit",
-          },
           datatable: {
             columns: {
               item_name: "Name",
               quantity: "Quantity",
-              bought: "Bought",
-              minimum_price: {
-                title: "Minimum Price",
-                btn: {
-                  edit: {
-                    tooltip: "Set minimum price"
-                  }
-                }
-              },
-              list_price: "List Price",
               owned: "Owned",
-              actions: {
-                title: "Actions",
-                buttons: {
-                  sell_manual: {
-                    tooltip: "Sell manually",
-                  },
-                  sell_auto: {
-                    tooltip: "Sell as listed price",
-                  },
-                  hide: {
-                    enabled_tooltip: "Hide",
-                    disabled_tooltip: "Unhide",
-                  },
-                  info: {
-                    tooltip: "Show Info",
-                  },
-                  delete: {
-                    tooltip: "Delete",
-                  },
-                }
-              },
             }
           },
           errors: {
@@ -600,6 +660,55 @@ export const en = {
         },
         riven: {
           title: "Stock Rivens",
+          datatable: {
+            columns: {
+              mastery_rank: "MR",
+              attributes: "Attributes",
+              re_rolls: "Re-Rolls",
+            }
+          },
+          prompts: {
+            update_bulk: {
+              title: "Update Bulk",
+            }
+          },
+          buttons: {
+            update_bulk: {
+              tooltip: "Update Bulk",
+            },
+            delete_bulk: {
+              tooltip: "Delete Bulk",
+            },
+          },
+
+          errors: {
+            update_stock: {
+              title: "Update Stock Error",
+              message: "An error occurred while trying to update stock.",
+            },
+            sell_stock: {
+              title: "Sell Stock Error",
+              message: "An error occurred while trying to sell stock.",
+            },
+            delete_stock: {
+              title: "Delete Stock Error",
+              message: "An error occurred while trying to delete stock.",
+            }
+          },
+          success: {
+            update_stock: {
+              title: "Update Stock Success",
+              message: "Stock riven {{name}} has been successfully updated.",
+            },
+            sell_stock: {
+              title: "Sell Stock Success",
+              message: "Stock riven {{name}} has been successfully sold.",
+            },
+            delete_stock: {
+              title: "Delete Stock Success",
+              message: "Stock riven has been successfully deleted.",
+            }
+          }
         }
       }
     },

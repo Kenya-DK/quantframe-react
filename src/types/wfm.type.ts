@@ -24,6 +24,7 @@ export namespace Wfm {
     // avatar: string,
     banned: boolean
   }
+
   export interface LinkedAccountsDto {
     steam_profile: boolean;
     patreon_profile: boolean;
@@ -74,11 +75,17 @@ export namespace Wfm {
     region: string;
     creation_date: string;
     last_update: string;
+    user: OrderUser;
     subtype?: string;
     visible: boolean;
-    item: OrderItemDto;
+    item?: OrderItemDto;
   }
-
+  export interface OrderUser {
+    id: string;
+    ingame_name: string;
+    reputation: number;
+    status: string;
+  }
   export interface OrderItemDto {
     id: string;
     url_name: string;

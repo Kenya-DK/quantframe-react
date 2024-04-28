@@ -1,16 +1,15 @@
 import { SocketBase } from "./socketBase";
 
 export class QfSocket extends SocketBase {
-  static jwt: { name: string } = { name: "QuantframeMain" };
-  public constructor(host: string, token: string) {
-    super(host, token);
+  public constructor(host: string, token: string, deviceId: string) {
+    super(host, token, deviceId);
   }
 
   // Override the OnEvent method
   protected OnEvent = (data: Record<string, any>) => {
     try {
       const { id, payload } = data as { id: string, payload: any };
-      const payloadData = JSON.parse(atob(payload));
+      const payloadData = JSON.parse(payload);
       console.log("Received event", payloadData);
       this.FireEvent(id, payloadData);
     } catch (error) {
@@ -26,5 +25,4 @@ export class QfSocket extends SocketBase {
     });
   }
 }
-console.log("QfSocket");
-export const qfSocket = new QfSocket("ws://localhost:7891", btoa(JSON.stringify(QfSocket.jwt)));
+export const qfSocket = new QfSocket("ws://localhost:7891", "Quantframe", "DEVICEID");

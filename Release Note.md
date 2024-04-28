@@ -11,7 +11,8 @@ So all your data needs to be migrated, this be be done in the Debug Tab and unde
 - Add minium profit in settings.
 - Add minium sma.
 - Remove the price scraper (It is now server).
-- Add listed price history .
+- Add listed price history.
+- Add mass edit on stock Rivens.
 
 ## Enhancements
 - Enhancement 1: Description of the enhancement.

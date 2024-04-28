@@ -1,9 +1,14 @@
-use entity::{enums::stock_status::StockStatus, stock_riven};
+use entity::{enums::stock_status::StockStatus, price_history::PriceHistory, stock_riven};
 use serde_json::json;
 use service::{StockRivenMutation, StockRivenQuery};
 
 use crate::{
-    live_scraper::client::LiveScraperClient, logger, utils::modules::error::AppError,
+    live_scraper::client::LiveScraperClient,
+    logger,
+    utils::{
+        enums::ui_events::{UIEvent, UIOperationEvent},
+        modules::error::AppError,
+    },
     wfm_client::types::auction_item::AuctionItem,
 };
 #[derive(Clone)]
@@ -27,14 +32,32 @@ impl RivenModule {
     fn update_state(&self) {
         self.client.update_riven_module(self.clone());
     }
+    pub fn send_msg(&self, i18n_key: &str, values: Option<serde_json::Value>) {
+        self.client
+            .send_gui_update(format!("riven.{}", i18n_key).as_str(), values);
+    }
+    pub fn send_stock_update(&self, operation: UIOperationEvent, value: serde_json::Value) {
+        let notify = self.client.notify.lock().unwrap().clone();
+        notify
+            .gui()
+            .send_event_update(UIEvent::UpdateStockRivens, operation, Some(value));
+    }
+    pub fn send_auction_update(&self, operation: UIOperationEvent, value: serde_json::Value) {
+        let notify = self.client.notify.lock().unwrap().clone();
+        notify
+            .gui()
+            .send_event_update(UIEvent::UpdateAuction, operation, Some(value));
+    }
     pub async fn check_stock(&mut self) -> Result<(), AppError> {
         let app = self.client.app.lock()?.clone();
         let wfm = self.client.wfm.lock()?.clone();
         let auth = self.client.auth.lock()?.clone();
         let settings = self.client.settings.lock()?.clone().live_scraper;
         let min_profit = settings.stock_riven.min_profit;
-        let notify = self.client.notify.lock()?.clone();
         logger::info_con("RivenModule", "Run Riven Stock Check");
+
+        // Send GUI Update.
+        self.send_msg("stating", None);
 
         let stock_rivens = StockRivenQuery::get_all(&app.conn)
             .await
@@ -48,8 +71,6 @@ impl RivenModule {
         let mut current_index = stock_rivens.len();
         let total = stock_rivens.len();
         for mut stock_riven in stock_rivens {
-            current_index -= 1;
-
             // Clone the stock riven
             let stock_riven_original = stock_riven.clone();
 
@@ -71,8 +92,8 @@ impl RivenModule {
                     wfm.auction().delete(auction.id.as_str()).await?;
                 }
                 stock_riven.status = StockStatus::InActive;
-                stock_riven.list_price = Some(-1);
-                stock_riven.wfm_order_id = Some("".to_string());
+                stock_riven.list_price = None;
+                stock_riven.wfm_order_id = None;
                 logger::log_json(
                     format!("{} {}.json", stock_riven.weapon_name, stock_riven.mod_name).as_str(),
                     &json!({
@@ -80,7 +101,8 @@ impl RivenModule {
                         "stock_riven": stock_riven
                     }),
                 )?;
-                self.update_stock(&stock_riven_original, &stock_riven)
+
+                self.update_stock(&stock_riven_original, &mut stock_riven)
                     .await?;
                 continue;
             }
@@ -151,6 +173,12 @@ impl RivenModule {
                     polarity = Some(match_data.polarity.clone().unwrap());
                 }
             }
+
+            // Send GUI Update.
+            self.send_msg(
+                "searching_riven",
+                Some(json!({ "current": current_index,"total": total, "weapon_name": stock_riven.weapon_name.clone(), "mod_name": stock_riven.mod_name.clone()})),
+            );
 
             // Get live auctions for this riven
             let live_auctions = wfm
@@ -321,10 +349,15 @@ impl RivenModule {
                             )
                             .await?;
                         stock_riven.wfm_order_id = Some(new_aut.id);
+                        // Send GUI Update.
+                        self.send_msg(
+                            "riven_created",
+                            Some(json!({ "weapon_name": stock_riven.weapon_name.clone(), "mod_name": stock_riven.mod_name.clone(),"price": post_price, "profit": profit})),
+                        );
                     }
                 }
             }
-            self.update_stock(&stock_riven_original, &stock_riven)
+            self.update_stock(&stock_riven_original, &mut stock_riven)
                 .await?;
             logger::log_json(
                 format!("{} {}.json", stock_riven.weapon_name, stock_riven.mod_name).as_str(),
@@ -348,31 +381,37 @@ impl RivenModule {
                 )
                 .as_str(),
             );
+            current_index -= 1;
         }
         Ok(())
     }
     async fn update_stock(
         &self,
         stock_riven_original: &stock_riven::Model,
-        stock_riven: &stock_riven::Model,
+        stock_riven: &mut stock_riven::Model,
     ) -> Result<(), AppError> {
         let app = self.client.app.lock()?.clone();
         let mut need_update = false;
-        if stock_riven_original.wfm_order_id != stock_riven.wfm_order_id
-            && (stock_riven.wfm_order_id == None
-                && stock_riven_original.wfm_order_id == Some("".to_string()))
-        {
+
+        // Check if the stock riven needs to be updated
+        if stock_riven_original.wfm_order_id != stock_riven.wfm_order_id {
             need_update = true;
         } else if stock_riven_original.status != stock_riven.status {
             need_update = true;
         } else if stock_riven_original.list_price != stock_riven.list_price {
-            if stock_riven_original.list_price.is_some() && stock_riven.list_price.unwrap() <= 0 {
-                need_update = true;
-            } else if stock_riven_original.list_price != stock_riven.list_price
-                && stock_riven.list_price.unwrap() > 0
-            {
-                need_update = true;
+            // Create a PriceHistory struct
+            if stock_riven_original.list_price.is_some() {
+                let post_price = stock_riven.list_price.unwrap_or(0);
+                let price_history = PriceHistory::new(
+                    chrono::Local::now().naive_local().to_string(),
+                    post_price,
+                );
+                let last_price_history = stock_riven_original.price_history.0.last();
+                if last_price_history.is_none() || last_price_history.unwrap().price != post_price {
+                    stock_riven.price_history.0.push(price_history.clone());
+                }
             }
+            need_update = true;
         }
 
         if need_update {
@@ -391,6 +430,7 @@ impl RivenModule {
                 )
                 .as_str(),
             );
+            self.send_stock_update(UIOperationEvent::CreateOrUpdate, json!(stock_riven));
             StockRivenMutation::update_by_id(&app.conn, stock_riven.id, stock_riven.clone())
                 .await
                 .map_err(|e| AppError::new("RivenModule", eyre::eyre!(e)))?;

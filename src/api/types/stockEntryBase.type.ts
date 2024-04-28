@@ -5,8 +5,8 @@ import { PriceHistory, SubType } from ".";
 export interface StockEntryBase {
   id: number;
   bought: number;
-  minimum_price?: number | null;
-  list_price: number | null;
+  minimum_price?: number;
+  list_price?: number;
   sub_type?: SubType;
   status: StockStatus;
   created_at: string;

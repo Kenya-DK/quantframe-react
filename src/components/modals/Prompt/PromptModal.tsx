@@ -152,10 +152,10 @@ export function PromptModal({ context, id, innerProps }: ContextModalProps<Promp
           context.closeModal(id);
           onCancel(id);
         }} radius="xl">
-          {cancelLabel || i18next.t('components.modals.base.buttons.confirm')}
+          {cancelLabel || i18next.t('components.modals.base.buttons.cancel')}
         </Button>
         <Button type="submit" color='green' radius="xl" >
-          {confirmLabel || i18next.t('components.modals.base.buttons.cancel')}
+          {confirmLabel || i18next.t('components.modals.base.buttons.confirm')}
         </Button>
       </Group>
     </form>

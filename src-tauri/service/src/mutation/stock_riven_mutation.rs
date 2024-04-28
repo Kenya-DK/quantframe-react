@@ -79,7 +79,7 @@ impl StockRivenMutation {
             .ok_or(DbErr::Custom("Cannot find post.".to_owned()))
             .map(Into::into)?;
 
-            stock_riven::ActiveModel {
+        stock_riven::ActiveModel {
             id: post.id,
             wfm_weapon_id: Set(form_data.wfm_weapon_id.to_owned()),
             wfm_weapon_url: Set(form_data.wfm_weapon_url.to_owned()),
@@ -107,8 +107,11 @@ impl StockRivenMutation {
         .update(db)
         .await
     }
+    pub async fn find_by_id(db: &DbConn, id: i64) -> Result<Option<stock_riven::Model>, DbErr> {
+        StockRiven::find_by_id(id).one(db).await
+    }
 
-    pub async fn delete(db: &DbConn, id: i32) -> Result<DeleteResult, DbErr> {
+    pub async fn delete(db: &DbConn, id: i64) -> Result<DeleteResult, DbErr> {
         let post: stock_riven::ActiveModel = StockRiven::find_by_id(id)
             .one(db)
             .await?

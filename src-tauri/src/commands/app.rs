@@ -194,9 +194,10 @@ pub async fn app_update_settings(
 
     my_lock.save_to_file().expect("Could not save settings");
 
-    notify
-        .gui()
-        .send_event_update(UIEvent::UpdateSettings, UIOperationEvent::Set, Some(json!(my_lock.clone())));
+    notify.gui().send_event_update(
+        UIEvent::UpdateSettings,
+        UIOperationEvent::Set,
+        Some(json!(my_lock.clone())),
+    );
     Ok(true)
 }
-

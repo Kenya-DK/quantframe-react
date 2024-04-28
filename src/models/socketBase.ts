@@ -8,11 +8,14 @@ export class SocketBase {
   private _token = "";
   private _last_event_received: Date | undefined;
   private _reconnect_interval = 3 * 60 * 1000; // 3 minutes
-  public constructor(host: string, token?: string) {
+  private _cookieKey = "JWT";
+  public constructor(host: string, token?: string, cookieKey?: string) {
     this._host = host;
     if (token)
       this._token = token;
-    console.log("Connecting to socket");
+    if (cookieKey)
+      this._cookieKey = cookieKey;
+    console.log(`SocketBase initialized with host: ${this._host}, cookieKey: ${this._cookieKey}`);
     this.reconnect();
     this.scheduleReconnectionCheck();
   }
@@ -26,7 +29,7 @@ export class SocketBase {
 
     WebSocket.connect(this._host, {
       headers: {
-        Cookie: `JWT=${this._token}`
+        Cookie: `${this._cookieKey}=${this._token}`
       }
     }).then((ws) => {
       this.listener.fire("connect");

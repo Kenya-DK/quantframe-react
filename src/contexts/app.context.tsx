@@ -92,7 +92,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     if (!data) return;
     SendTauriDataEvent(QfSocketEvent.UpdateUser, QfSocketEventOperation.SET, data.user);
     SendTauriDataEvent(QfSocketEvent.UpdateStockItems, QfSocketEventOperation.SET, data.stock_items);
-    SendTauriDataEvent(QfSocketEvent.UpdateStockRivens, QfSocketEventOperation.SET, data.stock_items);
+    SendTauriDataEvent(QfSocketEvent.UpdateStockRivens, QfSocketEventOperation.SET, data.stock_rivens);
     SendTauriDataEvent(QfSocketEvent.UpdateTransaction, QfSocketEventOperation.SET, data.transactions);
 
     if (data.valid) {
