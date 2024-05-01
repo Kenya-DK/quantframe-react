@@ -54,6 +54,8 @@ impl RivenModule {
         let auth = self.client.auth.lock()?.clone();
         let settings = self.client.settings.lock()?.clone().live_scraper;
         let min_profit = settings.stock_riven.min_profit;
+        let threshold_percentage = settings.stock_riven.threshold_percentage / 100;
+        let limit_to = settings.stock_riven.limit_to;
         logger::info_con("RivenModule", "Run Riven Stock Check");
 
         // Send GUI Update.
@@ -228,14 +230,14 @@ impl RivenModule {
                 let top_lowest = live_auctions
                     .iter()
                     .map(|a| a.starting_price)
-                    .take(5)
+                    .take(limit_to)
                     .collect::<Vec<_>>();
 
                 // Find maximum and minimum prices
                 let max_price = *top_lowest.iter().max().unwrap_or(&0);
 
                 // Calculate 15% of the maximum price
-                let threshold = max_price as f64 * 0.15;
+                let threshold = max_price as f64 * threshold_percentage;
 
                 // Filter out prices that are less than 15% lower than the maximum price
                 let valid_prices: Vec<i64> = top_lowest
@@ -244,13 +246,8 @@ impl RivenModule {
                     .cloned()
                     .collect();
 
-                if valid_prices.len() > 0 {
-                    // Get the average price of the valid prices
-                    valid_prices.iter().sum::<i64>() / valid_prices.len() as i64
-                } else {
-                    stock_riven.status = StockStatus::NoSellers;
-                    0
-                }
+                // Get the average price of the valid prices
+                valid_prices.iter().sum::<i64>() / valid_prices.len() as i64
             } else {
                 stock_riven.status = StockStatus::NoSellers;
                 0

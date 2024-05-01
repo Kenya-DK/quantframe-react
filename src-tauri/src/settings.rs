@@ -52,6 +52,8 @@ pub struct StockItemSettings {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StockRivenSettings {
     pub min_profit: i64,
+    pub threshold_percentage: i64,
+    pub limit_to: i64,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -96,7 +98,11 @@ impl Default for SettingsState {
                     auto_delete: true,
                     order_mode: OrderMode::Both,
                 },
-                stock_riven: StockRivenSettings { min_profit: 25 },
+                stock_riven: StockRivenSettings { 
+                    min_profit: 25,
+                    threshold_percentage: 15,
+                    limit_to: 5,
+                },
             },
             notifications: Notifications {
                 on_new_conversation: Notification {

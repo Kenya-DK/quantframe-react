@@ -33,6 +33,8 @@ export interface SettingsStockItem {
 
 export interface SettingsStockRiven {
   min_profit: number;
+  threshold_percentage: number;
+  limit_to: number;
 }
 
 export interface SettingsNotifications {
