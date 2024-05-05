@@ -24,7 +24,6 @@ pub struct Model {
     pub minium_price: Option<i32>,
     pub listed_price: Option<i32>,
     pub price_history: PriceHistoryVec,
-    pub match_riven: MatchRivenStruct,
     pub private: bool,
     pub status: String,
     pub comment: Option<String>,

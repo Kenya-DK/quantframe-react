@@ -96,13 +96,6 @@ impl RivenModule {
                 stock_riven.status = StockStatus::InActive;
                 stock_riven.list_price = None;
                 stock_riven.wfm_order_id = None;
-                logger::log_json(
-                    format!("{} {}.json", stock_riven.weapon_name, stock_riven.mod_name).as_str(),
-                    &json!({
-                        "stock_riven_original": stock_riven_original,
-                        "stock_riven": stock_riven
-                    }),
-                )?;
 
                 self.update_stock(&stock_riven_original, &mut stock_riven)
                     .await?;
@@ -120,7 +113,7 @@ impl RivenModule {
                 .unwrap_or_default()
                 .iter()
                 .cloned()
-                .filter(|a| !a.is_negative && a.is_required && use_match)
+                .filter(|a| a.positive && a.is_required && use_match)
                 .map(|a| a.url_name.clone())
                 .collect::<Vec<_>>();
 
@@ -131,7 +124,7 @@ impl RivenModule {
                 .unwrap_or_default()
                 .iter()
                 .cloned()
-                .filter(|a| a.is_negative && a.is_required && use_match)
+                .filter(|a| !a.positive && a.is_required && use_match)
                 .map(|a| a.url_name.clone())
                 .collect::<Vec<_>>();
 
@@ -148,9 +141,7 @@ impl RivenModule {
                 if re_rolls.min != 0 {
                     min_rerolls = Some(re_rolls.min);
                 }
-                if re_rolls.max != 0 {
-                    max_rerolls = Some(re_rolls.max);
-                }
+                max_rerolls = re_rolls.max;
             }
 
             // Match Mastery Rank
@@ -161,9 +152,7 @@ impl RivenModule {
                 if mastery_rank.min != 0 {
                     min_mastery_rank = Some(mastery_rank.min);
                 }
-                if mastery_rank.max != 0 {
-                    max_mastery_rank = Some(mastery_rank.max);
-                }
+                max_mastery_rank = mastery_rank.max;
             }
 
             // Match Polarity
@@ -230,14 +219,14 @@ impl RivenModule {
                 let top_lowest = live_auctions
                     .iter()
                     .map(|a| a.starting_price)
-                    .take(limit_to)
+                    .take(limit_to as usize)
                     .collect::<Vec<_>>();
 
                 // Find maximum and minimum prices
                 let max_price = *top_lowest.iter().max().unwrap_or(&0);
 
                 // Calculate 15% of the maximum price
-                let threshold = max_price as f64 * threshold_percentage;
+                let threshold = max_price * threshold_percentage;
 
                 // Filter out prices that are less than 15% lower than the maximum price
                 let valid_prices: Vec<i64> = top_lowest
@@ -249,14 +238,18 @@ impl RivenModule {
                 // Get the average price of the valid prices
                 valid_prices.iter().sum::<i64>() / valid_prices.len() as i64
             } else {
-                stock_riven.status = StockStatus::NoSellers;
                 0
             };
 
             // The new price of the riven
             let mut post_price = lowest_price;
-            stock_riven.status = StockStatus::Live;
 
+            // Check if the lowest price is 0 then set the status to NoSellers
+            if lowest_price == 0 {
+                stock_riven.status = StockStatus::NoSellers;
+            } else {
+                stock_riven.status = StockStatus::Live;
+            }
             if bought_price > post_price {
                 post_price = bought_price + min_profit + 10;
             }
@@ -293,9 +286,17 @@ impl RivenModule {
                 stock_riven.list_price = Some(post_price);
             }
 
+            // Check if there are no sellers
+            if live_auctions.len() == 0 {
+                stock_riven.status = StockStatus::NoSellers;
+                stock_riven.list_price = None;
+            }
+
             match auction {
                 Some(auction) => {
-                    if stock_riven.status == StockStatus::ToLowProfit {
+                    if stock_riven.status == StockStatus::ToLowProfit
+                        || stock_riven.status == StockStatus::NoSellers
+                    {
                         wfm.auction().delete(auction.id.as_str()).await?;
                     } else if auction.starting_price != post_price as i64
                         || stock_riven.comment.clone() != auction.note
@@ -367,7 +368,8 @@ impl RivenModule {
                     "listed_price": stock_riven.list_price,
                     "order_id": stock_riven.wfm_weapon_url,
                     "stock_riven_original": stock_riven_original,
-                    "stock_riven": stock_riven
+                    "stock_riven": stock_riven,
+                    "live_auctions": live_auctions
                 }),
             )?;
             logger::debug_con(
@@ -399,10 +401,8 @@ impl RivenModule {
             // Create a PriceHistory struct
             if stock_riven_original.list_price.is_some() {
                 let post_price = stock_riven.list_price.unwrap_or(0);
-                let price_history = PriceHistory::new(
-                    chrono::Local::now().naive_local().to_string(),
-                    post_price,
-                );
+                let price_history =
+                    PriceHistory::new(chrono::Local::now().naive_local().to_string(), post_price);
                 let last_price_history = stock_riven_original.price_history.0.last();
                 if last_price_history.is_none() || last_price_history.unwrap().price != post_price {
                     stock_riven.price_history.0.push(price_history.clone());

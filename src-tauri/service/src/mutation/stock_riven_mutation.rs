@@ -39,7 +39,7 @@ impl StockRivenMutation {
     pub async fn create(
         db: &DbConn,
         form_data: stock_riven::Model,
-    ) -> Result<stock_riven::ActiveModel, DbErr> {
+    ) -> Result<stock_riven::Model, DbErr> {
         stock_riven::ActiveModel {
             wfm_weapon_id: Set(form_data.wfm_weapon_id.to_owned()),
             wfm_weapon_url: Set(form_data.wfm_weapon_url.to_owned()),
@@ -64,7 +64,7 @@ impl StockRivenMutation {
             updated_at: Set(chrono::Utc::now()),
             ..Default::default()
         }
-        .save(db)
+        .insert(db)
         .await
     }
 

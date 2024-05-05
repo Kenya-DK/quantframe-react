@@ -5,8 +5,11 @@ use std::{
 };
 
 use entity::{
-    enums::stock_status::StockStatus, price_history::PriceHistoryVec,
-    stock_riven::MatchRivenStruct, sub_type::SubType, transaction::TransactionItemType,
+    enums::stock_status::StockStatus,
+    price_history::PriceHistoryVec,
+    stock_riven::{self, MatchRivenStruct, RivenAttribute, RivenAttributeVec},
+    sub_type::SubType,
+    transaction::TransactionItemType,
 };
 use eyre::eyre;
 use serde_json::{json, Value};
@@ -27,21 +30,114 @@ use crate::{
 pub async fn stock_riven_create(
     wfm_url: String,
     bought: i64,
+    mod_name: String,
+    mastery_rank: i64,
+    re_rolls: i64,
+    polarity: String,
+    rank: i64,
+    attributes: Vec<RivenAttribute>,
     minimum_price: Option<i64>,
-    sub_type: Option<SubType>,
-    quantity: i64,
+    is_hidden: Option<bool>,
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-) -> Result<bool, AppError> {
+) -> Result<stock_riven::Model, AppError> {
     let app = app.lock()?.clone();
     let cache = cache.lock()?.clone();
     let notify = notify.lock()?.clone();
-    return Err(AppError::new("StockItemCreate", eyre!("Not implemented")));
 
-    // Send Update to the UI
+    // Check if the weapon is exist in the cache.
+    let weapon = match cache.riven().find_riven_type_by_url_name(&wfm_url) {
+        Some(weapon) => weapon,
+        None => {
+            return Err(AppError::new(
+                "StockRivenCreate",
+                eyre!(format!("Weapon not found: {}", wfm_url)),
+            ))
+        }
+    };
 
-    // Ok(false)
+    // Validate the attributes
+    for attribute in attributes.iter() {
+        match cache
+            .riven()
+            .find_riven_attribute_by_url_name(&attribute.url_name)
+        {
+            Some(_) => {}
+            None => {
+                return Err(AppError::new(
+                    "StockRivenCreate",
+                    eyre!(format!("Invalid attribute: {:?}", attribute)),
+                ))
+            }
+        }
+    }
+
+    // Create the stock item
+    let stock = entity::stock_riven::Model::new(
+        weapon.wfm_id.clone(),
+        wfm_url.clone(),
+        None,
+        weapon.i18_n["en"].name.clone(),
+        weapon.riven_type.clone(),
+        weapon.unique_name.clone(),
+        rank,
+        mod_name,
+        RivenAttributeVec(attributes),
+        mastery_rank,
+        re_rolls,
+        polarity,
+        bought,
+        minimum_price,
+        is_hidden.unwrap_or(true),
+        "".to_string(),
+    );
+    match StockRivenMutation::create(&app.conn, stock.clone()).await {
+        Ok(stock) => {
+            notify.gui().send_event_update(
+                UIEvent::UpdateStockRivens,
+                UIOperationEvent::CreateOrUpdate,
+                Some(json!(stock)),
+            );
+        }
+        Err(e) => return Err(AppError::new("StockRivenCreate", eyre!(e))),
+    }
+    if bought == 0 {
+        return Ok(stock);
+    }
+    // Add Transaction to the database
+    let transaction = entity::transaction::Model::new(
+        stock.wfm_weapon_id.clone(),
+        stock.wfm_weapon_url.clone(),
+        stock.weapon_name.clone(),
+        TransactionItemType::Riven,
+        stock.weapon_unique_name.clone(),
+        stock.sub_type.clone(),
+        vec![stock.weapon_type.clone()],
+        entity::transaction::TransactionType::Purchase,
+        1,
+        "".to_string(),
+        bought,
+        Some(json!({
+            "mod_name": stock.mod_name,
+            "mastery_rank": stock.mastery_rank,
+            "re_rolls": stock.re_rolls,
+            "polarity": stock.polarity,
+            "attributes": stock.attributes,
+        })),
+    );
+
+    match TransactionMutation::create(&app.conn, transaction).await {
+        Ok(inserted) => {
+            notify.gui().send_event_update(
+                UIEvent::UpdateTransaction,
+                UIOperationEvent::CreateOrUpdate,
+                Some(json!(inserted)),
+            );
+        }
+        Err(e) => return Err(AppError::new("StockItemCreate", eyre!(e))),
+    }
+    Ok(stock)
 }
 
 #[tauri::command]
@@ -112,7 +208,7 @@ pub async fn stock_riven_update_bulk(
 ) -> Result<i64, AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
-    let mut total:i64= 0;
+    let mut total: i64 = 0;
     for id in ids {
         let stock = match StockRivenMutation::find_by_id(&app.conn, id).await {
             Ok(stock) => stock,
@@ -125,7 +221,7 @@ pub async fn stock_riven_update_bulk(
                 eyre!(format!("Stock Riven not found: {}", id)),
             ));
         }
-        total+=1;
+        total += 1;
         let mut stock = stock.unwrap();
 
         if let Some(minimum_price) = minimum_price {
@@ -146,6 +242,26 @@ pub async fn stock_riven_update_bulk(
                 );
             }
             Err(e) => return Err(AppError::new("StockItemUpdate", eyre!(e))),
+        }
+    }
+    Ok(total)
+}
+#[tauri::command]
+pub async fn stock_riven_delete_bulk(
+    ids: Vec<i64>,
+    app: tauri::State<'_, Arc<Mutex<AppState>>>,
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+) -> Result<i64, AppError> {
+    let mut total: i64 = 0;
+    for id in ids {
+        match stock_riven_delete(id, app.clone(), notify.clone(), wfm.clone()).await {
+            Ok(_) => {
+                total += 1;
+            }
+            Err(e) => {
+                return Err(e);
+            }
         }
     }
     Ok(total)

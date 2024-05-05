@@ -93,3 +93,17 @@ export const GetSubTypeDisplay = (subType: SubType | undefined) => {
   if (cyan_stars) display += ` ${cyan_stars}C`;
   return display;
 }
+
+export const CreateTradeMessage = (prefix: string, items: { price: number, name: string }[], suffix: string) => {
+  const groupByPrice = groupBy("price", items);
+  const prices = Object.keys(groupByPrice).map((key) => parseInt(key)).sort((a, b) => b - a);
+  let message = `${prefix} `;
+  for (const price of prices) {
+    const names = groupByPrice[price].map((item) => item.name);
+    message += `${names.join("")}${price}p `;
+  }
+  message = message.trim();
+  message += suffix;
+  return message;
+}
+

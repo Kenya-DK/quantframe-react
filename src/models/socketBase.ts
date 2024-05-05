@@ -24,7 +24,8 @@ export class SocketBase {
     if (!this._token) return false;
     if (this.socket) {
       this.listener.fire("disconnect");
-      this.socket.disconnect();
+      await this.socket.disconnect();
+      this.socket = undefined;
     }
 
     WebSocket.connect(this._host, {
@@ -34,6 +35,7 @@ export class SocketBase {
     }).then((ws) => {
       this.listener.fire("connect");
       console.log("Connected to socket successfully");
+      this._last_event_received = new Date();
       ws.addListener((cd) => {
         try {
           if (!cd.data || typeof cd.data !== "string") return;
@@ -67,15 +69,19 @@ export class SocketBase {
   }
   private scheduleReconnectionCheck = () => {
     setInterval(async () => {
-      // If the last event received is more than 3 minutes ago, reconnect
-      if (this.shouldReconnect()) {
-        {
-          if (await this.reconnect())
-            this._reconnect_interval = 3 * 60 * 1000; // Reset the interval to 3 minutes
-          else
-            this._reconnect_interval = 10 * 1000; // Retry after 10 seconds
-          this._last_event_received = new Date();
+      try {
+        // If the last event received is more than 3 minutes ago, reconnect
+        if (this.shouldReconnect()) {
+          {
+            if (await this.reconnect())
+              this._reconnect_interval = 1 * 60 * 1000; // Reset the interval to 3 minutes
+            else
+              this._reconnect_interval = 10 * 1000; // Retry after 10 seconds
+            this._last_event_received = new Date();
+          }
         }
+      } catch (e) {
+        this.socket = undefined;
       }
     }, 1000);
   }

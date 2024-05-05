@@ -8,9 +8,9 @@ import { useTranslateComponent } from '@hooks/index';
 
 export type RivenFilterAttributeProps = {
 	value: StockRivenFilterAttribute;
-	onChanges: (value: StockRivenFilterAttribute) => void;
+	onChange: (value: StockRivenFilterAttribute) => void;
 }
-export function RivenFilterAttribute({ value, onChanges }: RivenFilterAttributeProps) {
+export function RivenFilterAttribute({ value, onChange: onChanges }: RivenFilterAttributeProps) {
 
 	const [nameMap, setNameMap] = useState<{ [key: string]: string }>({});
 
@@ -34,9 +34,9 @@ export function RivenFilterAttribute({ value, onChanges }: RivenFilterAttributeP
 	const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateComponent(`riven_filter_attribute.${key}`, { ...context }, i18Key)
 	const useTranslateFormFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateForm(`fields.${key}`, { ...context }, i18Key)
 	return (
-		<Box data-positive={!value.is_negative} className={classes.root}>
+		<Box data-positive={value.positive} className={classes.root}>
 			<Text >{nameMap[value.url_name]}</Text>
-			<Tooltip label={useTranslateFormFields("is_required.label")} position='left'>
+			<Tooltip label={useTranslateFormFields("is_required.tooltip")} position='left'>
 				<span>
 					<Switch color='blue' checked={value.is_required}
 						onChange={(event) => { onChanges({ ...value, is_required: event.currentTarget.checked }); }}

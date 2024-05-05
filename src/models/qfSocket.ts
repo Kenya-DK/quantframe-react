@@ -8,10 +8,13 @@ export class QfSocket extends SocketBase {
   // Override the OnEvent method
   protected OnEvent = (data: Record<string, any>) => {
     try {
-      const { id, payload } = data as { id: string, payload: any };
-      const payloadData = JSON.parse(payload);
+      const { event, payload } = data as { event: string, payload: any };
+      let payloadData = payload;
       console.log("Received event", payloadData);
-      this.FireEvent(id, payloadData);
+      if (payload === "string")
+        this.FireEvent(event, JSON.parse(payload));
+      else
+        this.FireEvent(event, payload);
     } catch (error) {
       console.error("Error while processing event", error);
     }
@@ -25,4 +28,4 @@ export class QfSocket extends SocketBase {
     });
   }
 }
-export const qfSocket = new QfSocket("ws://localhost:7891", "Quantframe", "DEVICEID");
+export const qfSocket = new QfSocket("ws://localhost:9999", "Quantframe", "DEVICEID");

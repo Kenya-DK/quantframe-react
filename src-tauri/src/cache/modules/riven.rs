@@ -1,4 +1,4 @@
-use std::{path::PathBuf, sync::Arc};
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 use eyre::eyre;
 use serde_json::json;
@@ -6,7 +6,10 @@ use serde_json::json;
 use crate::{
     cache::{
         client::CacheClient,
-        types::cache_riven::{CacheRiven, CacheRivenWfmAttribute, CacheRivenWfmWeapon},
+        types::cache_riven::{
+            CacheRiven, CacheRivenDataByRivenInternalID, CacheRivenWfmAttribute,
+            CacheRivenWfmWeapon, CacheWeaponStat, RivenStat,
+        },
     },
     helper, logger,
     utils::modules::error::AppError,
@@ -68,13 +71,64 @@ impl RivenModule {
         let attributes = self.data.wfm_attributes.clone();
         Ok(attributes)
     }
-    
-    pub fn find_riven_attribute_by_url_name(&self, url_name: &str) -> Option<CacheRivenWfmAttribute> {
+
+    pub fn find_riven_attribute_by_url_name(
+        &self,
+        url_name: &str,
+    ) -> Option<CacheRivenWfmAttribute> {
         let attributes = self.data.wfm_attributes.clone();
-        let attribute = attributes.iter().find(|attribute| attribute.url_name == url_name);
+        let attribute = attributes
+            .iter()
+            .find(|attribute| attribute.url_name == url_name);
         match attribute {
             Some(attribute) => Some(attribute.clone()),
             None => None,
         }
     }
+
+    pub fn get_riven_raw_mod(
+        &self,
+        internal_id: &str,
+    ) -> Option<&CacheRivenDataByRivenInternalID> {
+        let riven = self.data.riven_internal_id.get(internal_id);
+        riven
+    }
+
+    pub fn get_weapon_stat(
+        &self,
+        internal_id: &str,
+    ) -> Option<&CacheWeaponStat> {
+        let weapon = self.data.weapon_stat.get(internal_id);
+        weapon
+    }
+    
+    pub fn get_weapon_upgrades(
+        &self,
+        internal_id: &str,
+    ) -> Option<HashMap<String, RivenStat>> {
+        // Get the weapon stat
+        let weapon_stat = self.get_weapon_stat(internal_id);
+        if weapon_stat.is_none() {
+            logger::warning_con(
+                self.get_component("get_weapon_upgrades").as_str(),
+                format!("Failed to get weapon stat for internal_id: {}", internal_id).as_str(),
+            );
+            return None;
+        }
+        let weapon_stat = weapon_stat.unwrap();
+        let raw_riven = self.get_riven_raw_mod(&weapon_stat.riven_uid);
+        if raw_riven.is_none() {
+            logger::warning_con(
+                self.get_component("get_weapon_upgrades").as_str(),
+                format!("Failed to get raw riven for internal_id: {}", internal_id).as_str(),
+            );
+            return None;
+        }
+        let raw_riven = raw_riven.unwrap();
+        let upgrades = raw_riven.riven_stats.clone();
+        upgrades
+    }
+
+
+
 }

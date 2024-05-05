@@ -24,18 +24,18 @@ export interface StockRiven extends StockEntryBase {
 
 
 export interface StockRivenFilter {
-  attributes: StockRivenFilterAttribute[];
+  attributes?: StockRivenFilterAttribute[];
   enabled: boolean;
-  mastery_rank: MinMaxDto;
-  polarity: string;
-  rank: MinMaxDto;
-  re_rolls: MinMaxDto;
-  required_negative: boolean;
-  similarity: null | number;
+  mastery_rank?: MinMaxDto;
+  polarity?: string;
+  rank?: MinMaxDto;
+  re_rolls?: MinMaxDto;
+  required_negative?: boolean;
+  similarity?: null | number;
 }
 
 export interface StockRivenFilterAttribute {
-  is_negative: boolean;
+  positive: boolean;
   is_required: boolean;
   url_name: string;
 }
@@ -43,8 +43,14 @@ export interface StockRivenFilterAttribute {
 export interface CreateStockRiven {
   wfm_url: string;
   bought: number;
-  quantity: number;
+  mod_name: string;
+  mastery_rank: number;
+  re_rolls: number;
+  polarity: string;
+  rank: number;
+  attributes: RivenAttribute[];
   minimum_price?: number;
+  is_hidden?: boolean;
 }
 
 export interface UpdateStockRiven {
@@ -53,6 +59,7 @@ export interface UpdateStockRiven {
   quantity?: number;
   minimum_price?: number;
   is_hidden?: boolean;
+  filter?: StockRivenFilter;
 }
 
 export interface SellStockRiven {

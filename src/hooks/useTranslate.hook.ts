@@ -14,3 +14,5 @@ export const useTranslatePages = (key: string, context?: { [key: string]: any },
 export const useTranslateModals = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateComponent(`modals.${key}`, { ...context }, i18Key) as string
 
 export const useTranslateContexts = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => i18Key ? `context.${key}` : i18next.t(`context.${key}`, { ...context }) as string
+
+export const useTranslateSockets = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => i18Key ? `sockets.${key}` : i18next.t(`sockets.${key}`, { ...context }) as string

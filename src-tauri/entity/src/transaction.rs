@@ -18,6 +18,7 @@ pub struct Model {
     pub item_name: String,
     pub item_type: TransactionItemType,
     pub item_unique_name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub sub_type: Option<SubType>,
     pub tags: String,
     pub transaction_type: TransactionType,

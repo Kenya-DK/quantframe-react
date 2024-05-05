@@ -1,11 +1,12 @@
 import { TauriClient } from "..";
-import { CacheRivenAttribute, CacheRivenWeapon, CacheTradableItem } from "@api/types";
+import { CacheRivenAttribute, CacheRivenUpgrade, CacheRivenWeapon, CacheTradableItem } from "@api/types";
 
 
 enum CacheType {
   TradableItems = 'tradable_items',
   RivenWeapons = 'riven_weapons',
   RivenAttributes = 'riven_attributes',
+  RivenDataByInternalId = 'riven_data_by_internal_id',
 }
 
 export class CacheModule {
@@ -23,6 +24,7 @@ export class CacheModule {
     return items;
   }
 
+  // Rivens
   async getRivenWeapons(): Promise<CacheRivenWeapon[]> {
     if (this._cache.has(CacheType.RivenWeapons))
       return this._cache.get(CacheType.RivenWeapons);
@@ -42,4 +44,12 @@ export class CacheModule {
     this._cache.set(CacheType.RivenAttributes, items);
     return items;
   }
+
+  async getWeaponUpgrades(internalId: string): Promise<Record<string, CacheRivenUpgrade>> {
+    const [err, items] = await this.client.sendInvoke<Record<string, CacheRivenUpgrade>>('cache_get_weapon_upgrades', { internalId });
+    if (err)
+      throw err;
+    return items;
+  }
+
 }

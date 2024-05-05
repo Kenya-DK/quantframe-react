@@ -1,10 +1,12 @@
 use crate::{
-    app::client::AppState, cache::client::CacheClient, helper, logger, notification::client::NotifyClient, utils::modules::error::AppError
+    app::client::AppState, cache::client::CacheClient, helper, logger,
+    notification::client::NotifyClient, utils::modules::error::AppError,
 };
 use entity::{
     enums::stock_status::StockStatus,
     price_history::{PriceHistory, PriceHistoryVec},
-    stock_item, stock_riven,
+    stock_item,
+    stock_riven::{self, MatchRivenStruct},
     sub_type::SubType,
     transaction::{self, TransactionItemType},
 };
@@ -32,12 +34,16 @@ pub struct DebugClient {
 }
 
 impl DebugClient {
-    pub fn new(cache: Arc<Mutex<CacheClient>>, app: Arc<Mutex<AppState>>, notify: Arc<Mutex<NotifyClient>>) -> Self {
+    pub fn new(
+        cache: Arc<Mutex<CacheClient>>,
+        app: Arc<Mutex<AppState>>,
+        notify: Arc<Mutex<NotifyClient>>,
+    ) -> Self {
         DebugClient {
             log_file: "debug.log".to_string(),
             cache,
             app,
-            notify
+            notify,
         }
     }
 
@@ -222,7 +228,7 @@ impl DebugClient {
                     bought: item.price as i64,
                     minimum_price: item.minium_price.map(|price| price as i64),
                     list_price: item.listed_price.map(|price| price as i64),
-                    filter: item.match_riven,
+                    filter: MatchRivenStruct::new(),
                     is_hidden: item.private,
                     status: StockStatus::from_string(&item.status),
                     comment: item.comment.unwrap_or("".to_string()),
@@ -244,9 +250,10 @@ impl DebugClient {
         );
         Ok(())
     }
-    pub async fn migrate_data_all(&self,
+    pub async fn migrate_data_all(
+        &self,
         old_con: &DatabaseConnection,
-        new_con: &DatabaseConnection
+        new_con: &DatabaseConnection,
     ) -> Result<(), AppError> {
         self.migrate_data_transactions(old_con, new_con).await?;
         self.migrate_data_stock_item(old_con, new_con).await?;

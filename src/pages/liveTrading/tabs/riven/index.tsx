@@ -1,13 +1,13 @@
 import { Text, ActionIcon, Box, Grid, Group, Tooltip, NumberFormatter } from "@mantine/core";
 import { useLiveScraperContext, useStockContextContext } from "@contexts/index";
 import { useEffect, useState } from "react";
-import { sortArray, paginate, getCssVariable, GetSubTypeDisplay } from "@utils/index";
+import { sortArray, paginate, getCssVariable, GetSubTypeDisplay, CreateTradeMessage } from "@utils/index";
 import { useTranslateEnums, useTranslatePages } from "@hooks/index";
 import { SellStockRiven, StockRiven, StockStatus, UpdateStockRiven } from "@api/types";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
-import { ColorInfo, RivenAttributeCom, SearchField, StatsWithSegments, StockRivenInfo, TextTranslate, UpdateRivenBulk } from "@components";
+import { ColorInfo, RivenAttributeCom, RivenFilter, SearchField, StatsWithSegments, StockRivenInfo, TextTranslate, UpdateRivenBulk } from "@components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faEye, faEyeSlash, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faComment, faEdit, faEye, faEyeSlash, faFilter, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { useMutation } from "@tanstack/react-query";
@@ -77,9 +77,12 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
 
         rivensFilter = paginate(rivensFilter, page, pageSize);
         setRows(rivensFilter);
-
-
+        setSelectedRecords([]);
     }, [rivens, query, pageSize, page, sortStatus, filterStatus])
+
+    useEffect(() => {
+        setSelectedRecords([]);
+    }, [query, pageSize, page, sortStatus, filterStatus])
 
 
     // Calculate Stats
@@ -103,7 +106,22 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
         ]);
     }, [rivens])
     // Functions
-
+    const CreateWTSMessages = async (items: StockRiven[]) => {
+        items = items.filter((x) => !!x.list_price).sort((a, b) => {
+            if (a.list_price && b.list_price) {
+                return b.list_price - a.list_price;
+            }
+            return 0;
+        });
+        let msg = CreateTradeMessage("WTS Rivens", items.map((x) => ({ price: x.list_price || 0, name: `[${x.weapon_name} ${x.mod_name}]` })), "");
+        notifications.show({ title: useTranslateNotifications("copied.title"), message: msg.trim(), color: "green.7" });
+        navigator.clipboard.writeText(msg.trim());
+    }
+    const CreateRivenSelection = async (items: StockRiven[]) => {
+        let message = items.map((x, i) => `${i + 1}: [${x.weapon_name} ${x.mod_name}]`).join(" ");
+        notifications.show({ title: useTranslateNotifications("copied.title"), message: message, color: "green.7" });
+        navigator.clipboard.writeText(message);
+    }
     // Mutations
     const updateStockMutation = useMutation({
         mutationFn: (data: UpdateStockRiven) => api.stock.riven.update(data),
@@ -221,7 +239,6 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
 
         })
     }
-
     const OpenUpdateModal = (items: UpdateStockRiven[]) => {
         modals.open({
             title: useTranslatePrompt('update_bulk.title'),
@@ -231,12 +248,26 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
             }} />)
         })
     }
+    const OpenRivenFilterModal = (item: StockRiven) => {
+        const filter = item.filter || { enabled: false, attributes: [] };
+        if (!filter.attributes)
+            filter.attributes = item.attributes.map((x) => ({ positive: x.positive, url_name: x.url_name, is_required: false }));
+
+        modals.open({
+            title: useTranslatePrompt('update_filter.title'),
+            size: "75vw",
+            children: (<RivenFilter value={filter} onSubmit={async (data) => {
+                await updateStockMutation.mutateAsync({ id: item.id, filter: data })
+                modals.closeAll();
+            }} />)
+        })
+    }
     return (
         <Box>
             <Grid>
                 <Grid.Col span={8}>
                     <SearchField value={query} onChange={(text) => setQuery(text)}
-                        rightSectionWidth={75}
+                        rightSectionWidth={140}
                         rightSection={
                             <Group gap={5}>
                                 <Tooltip label={useTranslateButtons('update_bulk.tooltip')} position="top">
@@ -244,7 +275,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                                         e.stopPropagation();
                                         OpenUpdateModal(selectedRecords);
                                     }} >
-                                        <FontAwesomeIcon size="xs" icon={faEdit} />
+                                        <FontAwesomeIcon icon={faEdit} />
                                     </ActionIcon>
                                 </Tooltip>
                                 <Tooltip label={useTranslateButtons('delete_bulk.tooltip')} position="top">
@@ -252,14 +283,30 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                                         e.stopPropagation();
                                         await deleteBulkStockMutation.mutateAsync(selectedRecords.map((x) => x.id));
                                     }} >
-                                        <FontAwesomeIcon size="xs" icon={faTrashCan} />
+                                        <FontAwesomeIcon icon={faTrashCan} />
+                                    </ActionIcon>
+                                </Tooltip>
+                                <Tooltip label={useTranslateButtons('wts.tooltip')} position="top">
+                                    <ActionIcon disabled={selectedRecords.length < 1} color={"green.7"} variant="filled" onClick={async (e) => {
+                                        e.stopPropagation();
+                                        CreateWTSMessages(selectedRecords);
+                                    }} >
+                                        <FontAwesomeIcon icon={faComment} />
+                                    </ActionIcon>
+                                </Tooltip>
+                                <Tooltip label={useTranslateButtons('selection.tooltip')} position="top">
+                                    <ActionIcon disabled={selectedRecords.length < 1} color={"green.7"} variant="filled" onClick={async (e) => {
+                                        e.stopPropagation();
+                                        CreateRivenSelection(selectedRecords);
+                                    }} >
+                                        <FontAwesomeIcon icon={faComment} />
                                     </ActionIcon>
                                 </Tooltip>
                             </Group>
                         }
                     />
                     <Group gap={"md"} mt={"md"} >
-                        {[StockStatus.Live, StockStatus.InActive, StockStatus.ToLowProfit].map((status) => (
+                        {[StockStatus.Live, StockStatus.InActive, StockStatus.ToLowProfit, StockStatus.NoSellers].map((status) => (
                             <ColorInfo active={status == filterStatus} key={status} onClick={() => {
                                 setFilterStatus(s => s === status ? undefined : status);
                             }} infoProps={{
@@ -364,7 +411,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                     {
                         accessor: 'actions',
                         title: useTranslateDataGridBaseColumns('actions.title'),
-                        width: 180,
+                        width: 220,
                         render: (row) => (
                             <Group gap={"sm"} justify="flex-end">
                                 <Tooltip label={useTranslateDataGridBaseColumns('actions.buttons.sell_manual.tooltip')} position="top">
@@ -373,6 +420,14 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                                         OpenSellModal(row.id);
                                     }} >
                                         <FontAwesomeIcon size="xs" icon={faPen} />
+                                    </ActionIcon>
+                                </Tooltip>
+                                <Tooltip label={useTranslateDataGridColumns('actions.buttons.filter.tooltip')} position="top">
+                                    <ActionIcon size={"sm"} color={"blue.9"} variant="filled" onClick={async (e) => {
+                                        e.stopPropagation();
+                                        OpenRivenFilterModal(row);
+                                    }} >
+                                        <FontAwesomeIcon size="xs" icon={faFilter} />
                                     </ActionIcon>
                                 </Tooltip>
                                 <Tooltip label={useTranslateDataGridBaseColumns('actions.buttons.sell_auto.tooltip')} position="top">

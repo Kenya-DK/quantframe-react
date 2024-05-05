@@ -101,7 +101,11 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     app.manage(Arc::new(Mutex::new(live_scraper)));
 
     // create and manage WhisperScraper state
-    let debug_client = DebugClient::new(Arc::clone(&cache_arc), Arc::clone(&app_arc), Arc::clone(&notify_arc));
+    let debug_client = DebugClient::new(
+        Arc::clone(&cache_arc),
+        Arc::clone(&app_arc),
+        Arc::clone(&notify_arc),
+    );
     app.manage(Arc::new(Mutex::new(debug_client)));
 
     Ok(())
@@ -157,15 +161,18 @@ fn main() {
             commands::cache::cache_get_tradable_items,
             commands::cache::cache_get_riven_weapons,
             commands::cache::cache_get_riven_attributes,
+            commands::cache::cache_get_riven_raw_mod,
+            commands::cache::cache_get_weapon_stat,
+            commands::cache::cache_get_weapon_upgrades,
             // Transaction commands
-            commands::transaction::transaction_get_all,            
+            commands::transaction::transaction_get_all,
             // Debug commands
             commands::debug::debug_db_reset,
             commands::debug::debug_migrate_data_base,
             // Auctions commands
             commands::auctions::auction_refresh,
             // Orders commands
-            commands::orders::order_refresh,            
+            commands::orders::order_refresh,
             // Chat commands
             commands::chat::chat_refresh,
             // Live Trading commands
@@ -174,13 +181,14 @@ fn main() {
             commands::stock_item::stock_item_create,
             commands::stock_item::stock_item_update,
             commands::stock_item::stock_item_sell,
-            commands::stock_item::stock_item_delete,           
+            commands::stock_item::stock_item_delete,
             // Stock Riven commands
             commands::stock_riven::stock_riven_create,
             commands::stock_riven::stock_riven_update,
             commands::stock_riven::stock_riven_update_bulk,
+            commands::stock_riven::stock_riven_delete_bulk,
             commands::stock_riven::stock_riven_sell,
-            commands::stock_riven::stock_riven_delete,           
+            commands::stock_riven::stock_riven_delete,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

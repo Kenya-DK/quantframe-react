@@ -96,7 +96,7 @@ export const en = {
                 error: "Invalid min SMA",
                 tooltip: "How low the price can go below the SMA.",
               },
-              min_profit: {
+              item_min_profit: {
                 label: "Min Profit",
                 placeholder: "Min Profit",
                 error: "Invalid min profit",
@@ -152,6 +152,28 @@ export const en = {
                 left_title: "Available Items",
                 right_title: "Whitelisted Items",
               },
+              riven_min_profit: {
+                label: "Min Profit",
+                placeholder: "Min Profit",
+                error: "Invalid min profit",
+                tooltip: "The minimum profit",
+              },
+              limit_to: {
+                label: "Average Price Cap",
+                placeholder: "5",
+                error: "Invalid limit to",
+                tooltip: "Will use use the first {{count}} rivens to calculate the average price",
+              },
+              threshold_percentage: {
+                label: "Minimum Price Shift",
+                placeholder: "0",
+                error: "Invalid threshold percentage",
+                tooltip: "Ignore rivens that have less than {{value}}% price shift from the most expensive riven",
+              },
+            },
+            tabs: {
+              item: "Item Settings",
+              riven: "Riven Settings",
             },
             buttons: {
               save: {
@@ -213,6 +235,33 @@ export const en = {
             }
           }
         },
+      },
+      riven_filter: {
+        fields: {
+          enabled: {
+            label: "Enabled",
+          },
+          similarity: {
+            label: "Similarity",
+          },
+          rank: {
+            label: "Rank",
+          },
+          mastery_rank: {
+            label: "Mastery Rank",
+          },
+          required_negative: {
+            label: "Required Negative",
+          },
+          re_rolls: {
+            label: "Re-Rolls",
+          },
+        },
+        buttons: {
+          save: {
+            label: "Save",
+          },
+        }
       },
       notification: {
         fields: {
@@ -437,6 +486,13 @@ export const en = {
         searching_riven: "Searching Riven {{weapon_name}} {{mod_name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
         riven_created: "Created Riven <blue>{{weapon_name}} {{mod_name}}</blue> at <blue>{{price}}</blue> platinum potential profit <blue>{{profit}}</blue>",
       },
+    },
+    riven_filter_attribute: {
+      fields: {
+        is_required: {
+          tooltip: "Is Required",
+        },
+      },
     }
   },
   context: {
@@ -461,6 +517,23 @@ export const en = {
         check_updates: "Checking for updates...",
       }
     }
+  },
+  sockets: {
+    qf_socket: {
+      events: {
+        OnAddRivenAlecaFrame: {
+          errors: {
+            title: "Add Riven Error",
+            weapon_not_found: "Weapon not found {{name}}",
+            attribute_not_found: "Attribute not found {{name}}",
+          },
+          success: {
+            title: "Add Riven Success",
+            message: "Riven {{name}} added successfully",
+          }
+        }
+      }
+    },
   },
   pages: {
     home: {
@@ -665,12 +738,22 @@ export const en = {
               mastery_rank: "MR",
               attributes: "Attributes",
               re_rolls: "Re-Rolls",
+              actions: {
+                buttons: {
+                  filter: {
+                    tooltip: "Edit Filter",
+                  },
+                }
+              }
             }
           },
           prompts: {
             update_bulk: {
               title: "Update Bulk",
-            }
+            },
+            update_filter: {
+              title: "Update Filter",
+            },
           },
           buttons: {
             update_bulk: {
@@ -679,12 +762,26 @@ export const en = {
             delete_bulk: {
               tooltip: "Delete Bulk",
             },
+            wts: {
+              tooltip: "Create WTS Message",
+            },
+            selection: {
+              tooltip: "Create Selection Message",
+            },
           },
 
           errors: {
             update_stock: {
               title: "Update Stock Error",
               message: "An error occurred while trying to update stock.",
+            },
+            update_bulk_stock: {
+              title: "Update Bulk Stock Error",
+              message: "An error occurred while trying to update bulk stock.",
+            },
+            delete_bulk_stock: {
+              title: "Delete Bulk Stock Error",
+              message: "An error occurred while trying to delete bulk stock.",
             },
             sell_stock: {
               title: "Sell Stock Error",
@@ -699,6 +796,14 @@ export const en = {
             update_stock: {
               title: "Update Stock Success",
               message: "Stock riven {{name}} has been successfully updated.",
+            },
+            update_bulk_stock: {
+              title: "Update Bulk Stock Success",
+              message: "Stock rivens have been successfully updated.",
+            },
+            delete_bulk_stock: {
+              title: "Delete Bulk Stock Success",
+              message: "Stock rivens have been successfully deleted.",
             },
             sell_stock: {
               title: "Sell Stock Success",
