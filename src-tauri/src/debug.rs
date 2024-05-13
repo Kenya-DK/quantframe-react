@@ -6,7 +6,7 @@ use entity::{
     enums::stock_status::StockStatus,
     price_history::{PriceHistory, PriceHistoryVec},
     stock_item,
-    stock_riven::{self, MatchRivenStruct},
+    stock_riven::{self, MatchRivenStruct, RivenAttribute},
     sub_type::SubType,
     transaction::{self, TransactionItemType},
 };
@@ -59,7 +59,7 @@ impl DebugClient {
             .await
             .map_err(|e| AppError::new_db("MigrateDataBase", e))?;
         for item in old_items {
-            println!("Migrating transaction: {:?}", item.name);
+            logger::info_con("MigrateDataBase:Transaction",format!("Migrating transaction Id: {:?} | Name: {:?}", item.id, item.name).as_str());
 
             let item_unique_name = match cache.tradable_items().find_by_url_name(&item.url) {
                 Some(item) => item.unique_name,
@@ -85,6 +85,55 @@ impl DebugClient {
                 _ => panic!("Invalid transaction type"),
             };
 
+
+            let properties = match item.item_type.as_str() {
+                "riven" => {
+
+                    let old_properties = item.properties.or_else(|| Some(json!({}))).unwrap();
+                    let mut new_properties:Value = json!({});
+
+                    match old_properties["name"].as_str() {
+                        Some(name) => {
+                            new_properties["mod_name"] = json!(name.replace(&item.name, ""));
+                        }
+                        None => {}
+                    }
+                    match old_properties["polarity"].as_str() {
+                        Some(name) => {
+                            new_properties["polarity"] = json!(name);
+                        }
+                        None => {}
+                    }
+                    match old_properties["mastery_level"].as_i64() {
+                        Some(name) => {
+                            new_properties["mastery_level"] = json!(name);
+                        }
+                        None => {}
+                    }
+                    match old_properties["re_rolls"].as_i64() {
+                        Some(name) => {
+                            new_properties["re_rolls"] = json!(name);
+                        }
+                        None => {}
+                    }
+
+                    match old_properties["attributes"].as_array() {
+                        Some(attributes) => {
+                            let mut new_attributes = vec![];
+                            for attribute in attributes {
+                                let attribute:RivenAttribute =serde_json::from_value(attribute.clone()).unwrap();
+                                new_attributes.push(attribute);
+                            }
+                            new_properties["attributes"] = json!(new_attributes);
+                        }                        
+                        None => {}
+                    };
+                    Some(new_properties) 
+                }
+                _ => None,
+            };
+
+
             TransactionMutation::create_from_old(
                 new_con,
                 transaction::Model {
@@ -102,7 +151,7 @@ impl DebugClient {
                     price: item.price as i64,
                     created_at: item.created.parse().unwrap(),
                     updated_at: item.created.parse().unwrap(),
-                    properties: item.properties,
+                    properties: properties,
                 },
             )
             .await
