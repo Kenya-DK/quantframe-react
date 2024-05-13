@@ -1,15 +1,15 @@
 import { useTranslateEnums, useTranslatePages } from "@hooks/index";
 import { useLiveScraperContext, useStockContextContext } from "@contexts/index";
-import { sortArray, paginate, getCssVariable, GetSubTypeDisplay } from "@utils/index";
+import { sortArray, paginate, getCssVariable, GetSubTypeDisplay, CreateTradeMessage } from "@utils/index";
 import { useEffect, useState } from "react";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { CreateStockItem, StockItem, StockStatus, UpdateStockItem, SellStockItem } from "@api/types";
-import { ColorInfo, CreateStockItemForm, SearchField, StatsWithSegments, ButtonInterval, TextTranslate, StockItemInfo, ActionWithTooltip, Loading } from "@components";
+import { ColorInfo, CreateStockItemForm, SearchField, StatsWithSegments, ButtonInterval, TextTranslate, StockItemInfo, ActionWithTooltip, Loading, UpdateItemBulk } from "@components";
 import { Box, Grid, Group, NumberFormatter, Text } from "@mantine/core";
 import { useMutation } from "@tanstack/react-query";
 import api from "@api/index";
 import { notifications } from "@mantine/notifications";
-import { faEdit, faEye, faEyeSlash, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faComment, faEdit, faEye, faEyeSlash, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { modals } from "@mantine/modals";
 interface StockItemPanelProps {
 }
@@ -25,6 +25,7 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
     const [rows, setRows] = useState<StockItem[]>([]);
     const [totalRecords, setTotalRecords] = useState<number>(0);
     const [sortStatus, setSortStatus] = useState<DataTableSortStatus<StockItem>>({ columnAccessor: 'name', direction: 'desc' });
+    const [selectedRecords, setSelectedRecords] = useState<StockItem[]>([]);
 
     const [query, setQuery] = useState<string>("");
     const [filterStatus, setFilterStatus] = useState<StockStatus | undefined>(undefined);
@@ -42,8 +43,10 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
     const useTranslateDataGridBaseColumns = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`datatable.columns.${key}`, { ...context }, i18Key)
     const useTranslateErrors = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateTabItem(`errors.${key}`, { ...context }, i18Key)
     const useTranslateSuccess = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateTabItem(`success.${key}`, { ...context }, i18Key)
-    const useTranslatePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`prompts.${key}`, { ...context }, i18Key)
+    const useTranslateBasePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`prompts.${key}`, { ...context }, i18Key)
+    const useTranslatePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateTabItem(`prompts.${key}`, { ...context }, i18Key)
     const useTranslateNotifications = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`notifications.${key}`, { ...context }, i18Key)
+    const useTranslateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateTabItem(`buttons.${key}`, { ...context }, i18Key)
 
     // Update Database Rows
     useEffect(() => {
@@ -73,9 +76,11 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
 
         rivensFilter = paginate(rivensFilter, page, pageSize);
         setRows(rivensFilter);
-
-
+        setSelectedRecords([]);
     }, [items, query, pageSize, page, sortStatus, filterStatus])
+    useEffect(() => {
+        setSelectedRecords([]);
+    }, [query, pageSize, page, sortStatus, filterStatus])
 
     // Calculate Stats
     useEffect(() => {
@@ -97,7 +102,17 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
             { label: useTranslateSegments("profit"), count: totalProfit, part: profitPercentage, color: getCssVariable("--profit-value") },
         ]);
     }, [items])
-
+    // Functions
+    const CreateWTSMessages = async (items: StockItem[]) => {
+        items = items.filter((x) => !!x.list_price).sort((a, b) => {
+            if (a.list_price && b.list_price)
+                return b.list_price - a.list_price;
+            return 0;
+        });
+        let msg = CreateTradeMessage("WTS Rivens", items.map((x) => ({ price: x.list_price || 0, name: `[${x.item_name}]` })), "");
+        notifications.show({ title: useTranslateNotifications("copied.title"), message: msg.trim(), color: "green.7" });
+        navigator.clipboard.writeText(msg.trim());
+    }
     // Mutations
     const createStockMutation = useMutation({
         mutationFn: (data: CreateStockItem) => api.stock.item.create(data),
@@ -117,6 +132,16 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
         onError: (e) => {
             console.error(e);
             notifications.show({ title: useTranslateErrors("update_stock.title"), message: useTranslateErrors("update_stock.message"), color: "red.7" })
+        }
+    })
+    const updateBulkStockMutation = useMutation({
+        mutationFn: (data: { ids: number[], entry: UpdateStockItem }) => api.stock.item.updateBulk(data.ids, data.entry),
+        onSuccess: async (u) => {
+            notifications.show({ title: useTranslateSuccess("update_bulk_stock.title"), message: useTranslateSuccess("update_bulk_stock.message", { count: u }), color: "green.7" });
+        },
+        onError: (e) => {
+            console.error(e);
+            notifications.show({ title: useTranslateErrors("update_bulk_stock.title"), message: useTranslateErrors("update_bulk_stock.message"), color: "red.7" })
         }
     })
     const sellStockMutation = useMutation({
@@ -139,20 +164,30 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
             notifications.show({ title: useTranslateErrors("delete_stock.title"), message: useTranslateErrors("delete_stock.message"), color: "red.7" })
         }
     })
+    const deleteBulkStockMutation = useMutation({
+        mutationFn: (ids: number[]) => api.stock.item.deleteBulk(ids),
+        onSuccess: async () => {
+            notifications.show({ title: useTranslateSuccess("delete_bulk_stock.title"), message: useTranslateSuccess("delete_bulk_stock.message"), color: "green.7" });
+        },
+        onError: (e) => {
+            console.error(e);
+            notifications.show({ title: useTranslateErrors("delete_bulk_stock.title"), message: useTranslateErrors("delete_bulk_stock.message"), color: "red.7" })
+        }
+    })
 
     // Modal's
     const OpenMinimumPriceModal = (id: number, minimum_price: number) => {
         modals.openContextModal({
             modal: 'prompt',
-            title: useTranslatePrompt('minimum_price.title'),
+            title: useTranslateBasePrompt('minimum_price.title'),
             innerProps: {
                 fields: [
                     {
                         name: 'minimum_price',
-                        label: useTranslatePrompt('minimum_price.fields.minimum_price.label'),
+                        label: useTranslateBasePrompt('minimum_price.fields.minimum_price.label'),
                         attributes: {
                             min: 0,
-                            description: useTranslatePrompt('minimum_price.fields.minimum_price.description')
+                            description: useTranslateBasePrompt('minimum_price.fields.minimum_price.description')
                         },
                         value: minimum_price,
                         type: 'number',
@@ -171,12 +206,12 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
     const OpenSellModal = (id: number) => {
         modals.openContextModal({
             modal: 'prompt',
-            title: useTranslatePrompt('sell.title'),
+            title: useTranslateBasePrompt('sell.title'),
             innerProps: {
                 fields: [
                     {
                         name: 'sell',
-                        label: useTranslatePrompt('sell.fields.sell.label'),
+                        label: useTranslateBasePrompt('sell.fields.sell.label'),
                         attributes: {
                             min: 0,
                         },
@@ -203,6 +238,15 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
         })
     }
 
+    const OpenUpdateModal = (items: UpdateStockItem[]) => {
+        modals.open({
+            title: useTranslatePrompt('update_bulk.title'),
+            children: (<UpdateItemBulk onSubmit={async (data) => {
+                await updateBulkStockMutation.mutateAsync({ ids: items.map((x) => x.id || 0), entry: data })
+                modals.closeAll();
+            }} />)
+        })
+    }
     return (
         <Box>
             <Grid>
@@ -225,7 +269,59 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
                     <StatsWithSegments segments={segments} />
                 </Grid.Col>
             </Grid>
-            <SearchField value={query} onChange={(text) => setQuery(text)} />
+            <SearchField value={query} onChange={(text) => setQuery(text)}
+                rightSectionWidth={115}
+                rightSection={
+                    <Group gap={5}>
+                        <ActionWithTooltip
+                            tooltip={useTranslateButtons('update_bulk.tooltip')}
+                            icon={faEdit}
+                            color={"green.7"}
+                            actionProps={{
+                                disabled: selectedRecords.length < 1
+                            }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                OpenUpdateModal(selectedRecords);
+                            }}
+                        />
+                        <ActionWithTooltip
+                            tooltip={useTranslateButtons('delete_bulk.tooltip')}
+                            icon={faTrashCan}
+                            color={"red.7"}
+                            actionProps={{
+                                disabled: selectedRecords.length < 1
+                            }}
+                            onClick={async (e) => {
+                                e.stopPropagation();
+                                modals.openConfirmModal({
+                                    title: useTranslateBasePrompt('delete.title'),
+                                    children: (
+                                        <Text size="sm">
+                                            {useTranslateBasePrompt('delete.message', { count: selectedRecords.length })}
+                                        </Text>
+                                    ),
+                                    labels: { confirm: useTranslateBasePrompt('delete.confirm'), cancel: useTranslateBasePrompt('delete.cancel') },
+                                    onCancel: async () => await deleteBulkStockMutation.mutateAsync(selectedRecords.map((x) => x.id)),
+                                });
+                            }}
+                        />
+                        <ActionWithTooltip
+                            tooltip={useTranslateButtons('wts.tooltip')}
+                            icon={faComment}
+                            color={"green.7"}
+                            actionProps={{
+                                disabled: selectedRecords.length < 1
+                            }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                CreateWTSMessages(selectedRecords);
+                            }}
+                        />
+                    </Group>
+                }
+
+            />
             <DataTable
                 height={`calc(100vh - ${!is_running ? "400px" : "420px"})`}
                 mt={"md"}
@@ -239,7 +335,7 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
                 }}
                 withTableBorder
                 customLoader={<Loading />}
-                fetching={createStockMutation.isPending || updateStockMutation.isPending || sellStockMutation.isPending || deleteStockMutation.isPending}
+                fetching={createStockMutation.isPending || updateStockMutation.isPending || sellStockMutation.isPending || deleteStockMutation.isPending || updateBulkStockMutation.isPending || deleteBulkStockMutation.isPending}
                 withColumnBorders
                 page={page}
                 recordsPerPage={pageSize}
@@ -249,6 +345,8 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
                 onRecordsPerPageChange={setPageSize}
                 sortStatus={sortStatus}
                 onSortStatusChange={setSortStatus}
+                selectedRecords={selectedRecords}
+                onSelectedRecordsChange={setSelectedRecords}
                 onCellClick={({ record, column }) => {
                     switch (column.accessor) {
                         case "item_name":
@@ -375,7 +473,16 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
                                     iconProps={{ size: "xs" }}
                                     onClick={async (e) => {
                                         e.stopPropagation();
-                                        await deleteStockMutation.mutateAsync(row.id);
+                                        modals.openConfirmModal({
+                                            title: useTranslateBasePrompt('delete.title'),
+                                            children: (
+                                                <Text size="sm">
+                                                    {useTranslateBasePrompt('delete.message', { count: 1 })}
+                                                </Text>
+                                            ),
+                                            labels: { confirm: useTranslateBasePrompt('delete.confirm'), cancel: useTranslateBasePrompt('delete.cancel') },
+                                            onCancel: async () => await deleteStockMutation.mutateAsync(row.id),
+                                        });
                                     }}
                                 />
                             </Group>

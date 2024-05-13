@@ -39,7 +39,7 @@ export interface CreateStockItem {
 }
 
 export interface UpdateStockItem {
-  id: number;
+  id?: number;
   bought?: number;
   quantity?: number;
   minimum_price?: number;

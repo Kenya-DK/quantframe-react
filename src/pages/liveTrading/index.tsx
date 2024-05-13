@@ -19,7 +19,7 @@ export default function LiveTradingPage() {
       <Box mt={25}>
         <LiveTradingControl />
       </Box>
-      <Tabs defaultValue={tabs[1].id}>
+      <Tabs defaultValue={tabs[0].id}>
         <Tabs.List>
           {tabs.map((tab) => (
             <Tabs.Tab value={tab.id} key={tab.id}>

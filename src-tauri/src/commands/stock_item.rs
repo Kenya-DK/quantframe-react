@@ -195,6 +195,59 @@ pub async fn stock_item_update(
 
     Ok(new_item)
 }
+#[tauri::command]
+pub async fn stock_item_update_bulk(
+    ids: Vec<i64>,
+    minimum_price: Option<i64>,
+    is_hidden: Option<bool>,
+    app: tauri::State<'_, Arc<Mutex<AppState>>>,
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+) -> Result<i64, AppError> {
+    let mut total: i64 = 0;
+    for id in ids {
+        match stock_item_update(
+            id,
+            None,
+            None,
+            minimum_price,
+            None,
+            is_hidden,
+            app.clone(),
+            notify.clone()
+        )
+        .await
+        {
+            Ok(_) => {
+                total += 1;
+            }
+            Err(e) => {
+                return Err(e);
+            }
+        }
+    }
+    Ok(total)
+}
+
+#[tauri::command]
+pub async fn stock_item_delete_bulk(
+    ids: Vec<i64>,
+    app: tauri::State<'_, Arc<Mutex<AppState>>>,
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+) -> Result<i64, AppError> {
+    let mut total: i64 = 0;
+    for id in ids {
+        match stock_item_delete(id, app.clone(), notify.clone(), wfm.clone()).await {
+            Ok(_) => {
+                total += 1;
+            }
+            Err(e) => {
+                return Err(e);
+            }
+        }
+    }
+    Ok(total)
+}
 
 #[tauri::command]
 pub async fn stock_item_sell(

@@ -214,6 +214,25 @@ export const en = {
           submit: "Update",
         },
       },
+      update_stock_item: {
+        fields: {
+          minimum_price: {
+            label: "Minimum Price",
+            placeholder: "Minimum Price",
+            description: "Set 0 for auto price",
+            error: "Invalid minimum price",
+          },
+          use_hidden: {
+            label: "Use Hidden",
+          },
+          is_hidden: {
+            label: "Is Hidden",
+          },
+        },
+        buttons: {
+          submit: "Update",
+        },
+      },
       create_stock_item: {
         fields: {
           quantity: {
@@ -689,6 +708,12 @@ export const en = {
             }
           },
         },
+        delete: {
+          title: "Delete Item's",
+          message: "Are you sure you want to delete(s) {{count}}, this action cannot be undone.",
+          confirm: "Yes, delete",
+          cancel: "No, cancel",
+        },
       },
       notifications: {
         copied: {
@@ -705,6 +730,22 @@ export const en = {
               owned: "Owned",
             }
           },
+          prompts: {
+            update_bulk: {
+              title: "Update Bulk",
+            }
+          },
+          buttons: {
+            update_bulk: {
+              tooltip: "Update Bulk",
+            },
+            delete_bulk: {
+              tooltip: "Delete Bulk",
+            },
+            wts: {
+              tooltip: "Create WTS Message",
+            },
+          },
           errors: {
             create_stock: {
               title: "Create Stock Error",
@@ -714,6 +755,10 @@ export const en = {
               title: "Update Stock Error",
               message: "An error occurred while trying to update stock.",
             },
+            update_bulk_stock: {
+              title: "Update Bulk Stock Error",
+              message: "An error occurred while trying to update bulk stock.",
+            },
             sell_stock: {
               title: "Sell Stock Error",
               message: "An error occurred while trying to sell stock.",
@@ -721,7 +766,11 @@ export const en = {
             delete_stock: {
               title: "Delete Stock Error",
               message: "An error occurred while trying to delete stock.",
-            }
+            },
+            delete_bulk_stock: {
+              title: "Delete Bulk Stock Error",
+              message: "An error occurred while trying to delete bulk stock.",
+            },
           },
           success: {
             create_stock: {
@@ -732,6 +781,10 @@ export const en = {
               title: "Update Stock Success",
               message: "Stock item {{name}} has been successfully updated.",
             },
+            update_bulk_stock: {
+              title: "Update Bulk Stock Success",
+              message: "Stock rivens have been successfully updated.",
+            },
             sell_stock: {
               title: "Sell Stock Success",
               message: "Stock item {{name}} has been successfully sold.",
@@ -739,7 +792,11 @@ export const en = {
             delete_stock: {
               title: "Delete Stock Success",
               message: "Stock item has been successfully deleted.",
-            }
+            },
+            delete_bulk_stock: {
+              title: "Delete Bulk Stock Success",
+              message: "Stock rivens have been successfully deleted.",
+            },
           }
         },
         riven: {
@@ -812,10 +869,6 @@ export const en = {
               title: "Update Bulk Stock Success",
               message: "Stock rivens have been successfully updated.",
             },
-            delete_bulk_stock: {
-              title: "Delete Bulk Stock Success",
-              message: "Stock rivens have been successfully deleted.",
-            },
             sell_stock: {
               title: "Sell Stock Success",
               message: "Stock riven {{name}} has been successfully sold.",
@@ -823,7 +876,11 @@ export const en = {
             delete_stock: {
               title: "Delete Stock Success",
               message: "Stock riven has been successfully deleted.",
-            }
+            },
+            delete_bulk_stock: {
+              title: "Delete Bulk Stock Success",
+              message: "Stock rivens have been successfully deleted.",
+            },
           }
         }
       }

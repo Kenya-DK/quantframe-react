@@ -144,7 +144,6 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
         }
     })
 
-
     const sellStockMutation = useMutation({
         mutationFn: (data: SellStockRiven) => api.stock.riven.sell(data),
         onSuccess: async (u) => {
@@ -290,7 +289,16 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                                     }}
                                     onClick={async (e) => {
                                         e.stopPropagation();
-                                        await deleteBulkStockMutation.mutateAsync(selectedRecords.map((x) => x.id));
+                                        modals.openConfirmModal({
+                                            title: useTranslateBasePrompt('delete.title'),
+                                            children: (
+                                                <Text size="sm">
+                                                    {useTranslateBasePrompt('delete.message', { count: selectedRecords.length })}
+                                                </Text>
+                                            ),
+                                            labels: { confirm: useTranslateBasePrompt('delete.confirm'), cancel: useTranslateBasePrompt('delete.cancel') },
+                                            onCancel: async () => await deleteBulkStockMutation.mutateAsync(selectedRecords.map((x) => x.id)),
+                                        });
                                     }}
                                 />
                                 <ActionWithTooltip
@@ -494,7 +502,16 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                                     iconProps={{ size: "xs" }}
                                     onClick={async (e) => {
                                         e.stopPropagation();
-                                        await deleteStockMutation.mutateAsync(row.id);
+                                        modals.openConfirmModal({
+                                            title: useTranslateBasePrompt('delete.title'),
+                                            children: (
+                                                <Text size="sm">
+                                                    {useTranslateBasePrompt('delete.message', { count: 1 })}
+                                                </Text>
+                                            ),
+                                            labels: { confirm: useTranslateBasePrompt('delete.confirm'), cancel: useTranslateBasePrompt('delete.cancel') },
+                                            onCancel: async () => await deleteStockMutation.mutateAsync(row.id),
+                                        });
                                     }}
                                 />
                             </Group>

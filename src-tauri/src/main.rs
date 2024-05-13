@@ -180,15 +180,17 @@ fn main() {
             // Stock Item commands
             commands::stock_item::stock_item_create,
             commands::stock_item::stock_item_update,
+            commands::stock_item::stock_item_update_bulk,
             commands::stock_item::stock_item_sell,
             commands::stock_item::stock_item_delete,
+            commands::stock_item::stock_item_delete_bulk,
             // Stock Riven commands
             commands::stock_riven::stock_riven_create,
             commands::stock_riven::stock_riven_update,
             commands::stock_riven::stock_riven_update_bulk,
-            commands::stock_riven::stock_riven_delete_bulk,
             commands::stock_riven::stock_riven_sell,
             commands::stock_riven::stock_riven_delete,
+            commands::stock_riven::stock_riven_delete_bulk,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
