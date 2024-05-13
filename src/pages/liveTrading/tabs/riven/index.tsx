@@ -1,12 +1,11 @@
-import { Text, ActionIcon, Box, Grid, Group, Tooltip, NumberFormatter } from "@mantine/core";
+import { Text, Box, Grid, Group, NumberFormatter } from "@mantine/core";
 import { useLiveScraperContext, useStockContextContext } from "@contexts/index";
 import { useEffect, useState } from "react";
 import { sortArray, paginate, getCssVariable, GetSubTypeDisplay, CreateTradeMessage } from "@utils/index";
 import { useTranslateEnums, useTranslatePages } from "@hooks/index";
 import { SellStockRiven, StockRiven, StockStatus, UpdateStockRiven } from "@api/types";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
-import { ColorInfo, RivenAttributeCom, RivenFilter, SearchField, StatsWithSegments, StockRivenInfo, TextTranslate, UpdateRivenBulk } from "@components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ActionWithTooltip, ColorInfo, Loading, RivenAttributeCom, RivenFilter, SearchField, StatsWithSegments, StockRivenInfo, TextTranslate, UpdateRivenBulk } from "@components";
 import { faComment, faEdit, faEye, faEyeSlash, faFilter, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
@@ -270,38 +269,54 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                         rightSectionWidth={140}
                         rightSection={
                             <Group gap={5}>
-                                <Tooltip label={useTranslateButtons('update_bulk.tooltip')} position="top">
-                                    <ActionIcon disabled={selectedRecords.length < 1} color={"green.7"} variant="filled" onClick={async (e) => {
+                                <ActionWithTooltip
+                                    tooltip={useTranslateButtons('update_bulk.tooltip')}
+                                    icon={faEdit}
+                                    color={"green.7"}
+                                    actionProps={{
+                                        disabled: selectedRecords.length < 1
+                                    }}
+                                    onClick={(e) => {
                                         e.stopPropagation();
                                         OpenUpdateModal(selectedRecords);
-                                    }} >
-                                        <FontAwesomeIcon icon={faEdit} />
-                                    </ActionIcon>
-                                </Tooltip>
-                                <Tooltip label={useTranslateButtons('delete_bulk.tooltip')} position="top">
-                                    <ActionIcon disabled={selectedRecords.length < 1} color={"red.7"} variant="filled" onClick={async (e) => {
+                                    }}
+                                />
+                                <ActionWithTooltip
+                                    tooltip={useTranslateButtons('delete_bulk.tooltip')}
+                                    icon={faTrashCan}
+                                    color={"red.7"}
+                                    actionProps={{
+                                        disabled: selectedRecords.length < 1
+                                    }}
+                                    onClick={async (e) => {
                                         e.stopPropagation();
                                         await deleteBulkStockMutation.mutateAsync(selectedRecords.map((x) => x.id));
-                                    }} >
-                                        <FontAwesomeIcon icon={faTrashCan} />
-                                    </ActionIcon>
-                                </Tooltip>
-                                <Tooltip label={useTranslateButtons('wts.tooltip')} position="top">
-                                    <ActionIcon disabled={selectedRecords.length < 1} color={"green.7"} variant="filled" onClick={async (e) => {
+                                    }}
+                                />
+                                <ActionWithTooltip
+                                    tooltip={useTranslateButtons('wts.tooltip')}
+                                    icon={faComment}
+                                    color={"green.7"}
+                                    actionProps={{
+                                        disabled: selectedRecords.length < 1
+                                    }}
+                                    onClick={(e) => {
                                         e.stopPropagation();
                                         CreateWTSMessages(selectedRecords);
-                                    }} >
-                                        <FontAwesomeIcon icon={faComment} />
-                                    </ActionIcon>
-                                </Tooltip>
-                                <Tooltip label={useTranslateButtons('selection.tooltip')} position="top">
-                                    <ActionIcon disabled={selectedRecords.length < 1} color={"green.7"} variant="filled" onClick={async (e) => {
+                                    }}
+                                />
+                                <ActionWithTooltip
+                                    tooltip={useTranslateButtons('selection.tooltip')}
+                                    icon={faComment}
+                                    color={"green.7"}
+                                    actionProps={{
+                                        disabled: selectedRecords.length < 1
+                                    }}
+                                    onClick={(e) => {
                                         e.stopPropagation();
                                         CreateRivenSelection(selectedRecords);
-                                    }} >
-                                        <FontAwesomeIcon icon={faComment} />
-                                    </ActionIcon>
-                                </Tooltip>
+                                    }}
+                                />
                             </Group>
                         }
                     />
@@ -332,6 +347,8 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                     }
                 }}
                 withTableBorder
+                customLoader={<Loading />}
+                fetching={updateStockMutation.isPending || sellStockMutation.isPending || deleteStockMutation.isPending || deleteBulkStockMutation.isPending}
                 withColumnBorders
                 page={page}
                 recordsPerPage={pageSize}
@@ -380,15 +397,17 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                             <Group gap={"sm"} justify="space-between">
                                 <Text>{minimum_price || "N/A"}</Text>
                                 <Group gap={"xs"}>
-                                    <Tooltip label={useTranslateDataGridBaseColumns('minimum_price.btn.edit.tooltip')} position="top">
-                                        <ActionIcon size={"sm"} color={"blue.7"} variant="filled" onClick={async (e) => {
+                                    <ActionWithTooltip
+                                        tooltip={useTranslateDataGridBaseColumns('minimum_price.btn.edit.tooltip')}
+                                        icon={faEdit}
+                                        actionProps={{ size: "sm" }}
+                                        iconProps={{ size: "xs" }}
+                                        onClick={(e) => {
                                             e.stopPropagation();
                                             if (!id) return;
                                             OpenMinimumPriceModal(id, minimum_price || 0);
-                                        }} >
-                                            <FontAwesomeIcon size="xs" icon={faEdit} />
-                                        </ActionIcon>
-                                    </Tooltip>
+                                        }}
+                                    />
                                 </Group>
                             </Group>
                         ),
@@ -414,55 +433,70 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                         width: 220,
                         render: (row) => (
                             <Group gap={"sm"} justify="flex-end">
-                                <Tooltip label={useTranslateDataGridBaseColumns('actions.buttons.sell_manual.tooltip')} position="top">
-                                    <ActionIcon size={"sm"} color={"green.7"} variant="filled" onClick={async (e) => {
+                                <ActionWithTooltip
+                                    tooltip={useTranslateDataGridBaseColumns('actions.buttons.sell_manual.tooltip')}
+                                    icon={faPen}
+                                    color={"green.7"}
+                                    actionProps={{ size: "sm" }}
+                                    iconProps={{ size: "xs" }}
+                                    onClick={(e) => {
                                         e.stopPropagation();
                                         OpenSellModal(row.id);
-                                    }} >
-                                        <FontAwesomeIcon size="xs" icon={faPen} />
-                                    </ActionIcon>
-                                </Tooltip>
-                                <Tooltip label={useTranslateDataGridColumns('actions.buttons.filter.tooltip')} position="top">
-                                    <ActionIcon size={"sm"} color={"blue.9"} variant="filled" onClick={async (e) => {
+                                    }}
+                                />
+                                <ActionWithTooltip
+                                    tooltip={useTranslateDataGridBaseColumns('actions.buttons.filter.tooltip')}
+                                    icon={faFilter}
+                                    actionProps={{ size: "sm" }}
+                                    iconProps={{ size: "xs" }}
+                                    onClick={(e) => {
                                         e.stopPropagation();
                                         OpenRivenFilterModal(row);
-                                    }} >
-                                        <FontAwesomeIcon size="xs" icon={faFilter} />
-                                    </ActionIcon>
-                                </Tooltip>
-                                <Tooltip label={useTranslateDataGridBaseColumns('actions.buttons.sell_auto.tooltip')} position="top">
-                                    <ActionIcon disabled={!row.list_price} size={"sm"} color={"blue.7"} variant="filled" onClick={async (e) => {
+                                    }}
+                                />
+                                <ActionWithTooltip
+                                    tooltip={useTranslateDataGridBaseColumns('actions.buttons.sell_auto.tooltip')}
+                                    icon={faHammer}
+                                    actionProps={{ size: "sm", disabled: !row.list_price }}
+                                    iconProps={{ size: "xs" }}
+                                    onClick={async (e) => {
                                         e.stopPropagation();
                                         if (!row.id || !row.list_price) return;
                                         await sellStockMutation.mutateAsync({ id: row.id, price: row.list_price, quantity: 1 });
-                                    }} >
-                                        <FontAwesomeIcon size="xs" icon={faHammer} />
-                                    </ActionIcon>
-                                </Tooltip>
-                                <Tooltip label={useTranslateDataGridBaseColumns(`actions.buttons.hide.${row.is_hidden ? "disabled_tooltip" : "enabled_tooltip"}`)} position="top">
-                                    <ActionIcon size={"sm"} color={`${row.is_hidden ? "red.7" : "green.7"}`} variant="filled" onClick={async (e) => {
+                                    }}
+                                />
+                                <ActionWithTooltip
+                                    tooltip={useTranslateDataGridBaseColumns(`actions.buttons.hide.${row.is_hidden ? "disabled_tooltip" : "enabled_tooltip"}`)}
+                                    icon={row.is_hidden ? faEyeSlash : faEye}
+                                    color={`${row.is_hidden ? "red.7" : "green.7"}`}
+                                    actionProps={{ size: "sm" }}
+                                    iconProps={{ size: "xs" }}
+                                    onClick={async (e) => {
                                         e.stopPropagation();
                                         await updateStockMutation.mutateAsync({ id: row.id, is_hidden: !row.is_hidden });
-                                    }} >
-                                        <FontAwesomeIcon size="xs" icon={row.is_hidden ? faEyeSlash : faEye} />
-                                    </ActionIcon>
-                                </Tooltip>
-                                <Tooltip label={useTranslateDataGridBaseColumns('actions.buttons.info.tooltip')} position="top">
-                                    <ActionIcon size={"sm"} color={"blue.7"} variant="filled" onClick={async (e) => {
+                                    }}
+                                />
+                                <ActionWithTooltip
+                                    tooltip={useTranslateDataGridBaseColumns('actions.buttons.info.tooltip')}
+                                    icon={faInfo}
+                                    actionProps={{ size: "sm" }}
+                                    iconProps={{ size: "xs" }}
+                                    onClick={(e) => {
                                         e.stopPropagation();
                                         OpenInfoModal(row);
-                                    }} >
-                                        <FontAwesomeIcon size="xs" icon={faInfo} />
-                                    </ActionIcon>
-                                </Tooltip>
-                                <Tooltip label={useTranslateDataGridBaseColumns('actions.buttons.delete.tooltip')} position="top">
-                                    <ActionIcon size={"sm"} color={"red.7"} variant="filled" onClick={async (e) => {
+                                    }}
+                                />
+                                <ActionWithTooltip
+                                    tooltip={useTranslateDataGridBaseColumns('actions.buttons.delete.tooltip')}
+                                    icon={faTrashCan}
+                                    color="red.7"
+                                    actionProps={{ size: "sm" }}
+                                    iconProps={{ size: "xs" }}
+                                    onClick={async (e) => {
                                         e.stopPropagation();
                                         await deleteStockMutation.mutateAsync(row.id);
-                                    }} >
-                                        <FontAwesomeIcon size="xs" icon={faTrashCan} />
-                                    </ActionIcon>
-                                </Tooltip>
+                                    }}
+                                />
                             </Group>
                         ),
                     },

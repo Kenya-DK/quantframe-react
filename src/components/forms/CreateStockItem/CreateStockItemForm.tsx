@@ -1,11 +1,11 @@
-import { Group, NumberInput, BoxProps, Box, Tooltip, ActionIcon } from '@mantine/core';
+import { Group, NumberInput, BoxProps, Box } from '@mantine/core';
 import { useTranslateForms } from '@hooks/index';
 import { useForm } from '@mantine/form';
 import { CreateStockItem, SubType } from '@api/types';
 import { SelectTradableItem } from '../../SelectTradableItem';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAppContext } from '../../../contexts';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
+import { ActionWithTooltip } from '../..';
 
 export type CreateStockItemFormProps = {
 	onSubmit: (values: CreateStockItem) => void;
@@ -66,11 +66,16 @@ export function CreateStockItemForm({ disabled, boxProps, onSubmit }: CreateStoc
 						error={form.errors.bought && useTranslateFormFields('bought.error')}
 						radius="md"
 						rightSection={
-							<Tooltip label={useTranslateButtons(`add.tooltip.${settings?.live_scraper.stock_item.report_to_wfm ? "description_with_report" : "description_without_report"}`)}>
-								<ActionIcon loading={disabled} type="submit" variant="filled" color="green" disabled={form.values.wfm_url.length <= 0} >
-									<FontAwesomeIcon icon={faShoppingCart} />
-								</ActionIcon>
-							</Tooltip>
+							<ActionWithTooltip
+								tooltip={useTranslateButtons(`add.tooltip.${settings?.live_scraper.stock_item.report_to_wfm ? "description_with_report" : "description_without_report"}`)}
+								icon={faShoppingCart}
+								color='green.7'
+								onClick={() => { }}
+								actionProps={{
+									type: "submit",
+									disabled: form.values.wfm_url.length <= 0
+								}}
+							/>
 						}
 						rightSectionWidth={40}
 					/>

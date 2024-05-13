@@ -1,4 +1,4 @@
-import { Text, MantineSize, MantineStyleProp } from '@mantine/core';
+import { Text, MantineSize, MantineStyleProp, TextProps } from '@mantine/core';
 import { faCubes, faEnvelope, faHandshake } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Trans } from 'react-i18next';
@@ -10,11 +10,13 @@ export type TextTranslateProps = {
 	style?: MantineStyleProp;
 	values: { [key: string]: number | string }
 	components?: { [key: string]: React.ReactNode }
+	content?: React.ReactNode;
+	textProps?: TextProps;
 }
-export function TextTranslate({ style, size, color, i18nKey, values, components }: TextTranslateProps) {
+export function TextTranslate({ textProps, style, size, color, i18nKey, values, components, content }: TextTranslateProps) {
 
 	return (
-		<Text style={{ ...style }} size={size ? size : "sm"} c={color ? color : "gray.6"}>
+		<Text {...textProps} style={{ ...style }} size={size ? size : "sm"} c={color ? color : "gray.6"}>
 			<Trans
 				i18nKey={i18nKey}
 				values={values}
@@ -43,5 +45,6 @@ export function TextTranslate({ style, size, color, i18nKey, values, components 
 					}
 				}
 			/>
+			{content}
 		</Text>);
 }

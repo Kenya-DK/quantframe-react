@@ -1,10 +1,9 @@
-import { PaperProps, Card, Group, Text, Tooltip, ActionIcon, Divider, TextInput, Collapse } from '@mantine/core';
+import { PaperProps, Card, Group, Text, Divider, TextInput, Collapse } from '@mantine/core';
 import { SettingsNotification } from '@api/types';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useTranslateForms } from '@hooks/index';
 import { faBell } from '@fortawesome/free-solid-svg-icons';
 import { faDiscord } from '@fortawesome/free-brands-svg-icons';
-import { TooltipIcon } from '../../TooltipIcon';
+import { ActionWithTooltip, TooltipIcon } from '@components';
 
 export type NotificationFormProps = {
   title: string;
@@ -27,18 +26,18 @@ export function NotificationForm({ onChanges, title, value }: NotificationFormPr
       <Group justify="space-between" mt="md" mb="xs">
         <Text fw={500}>{title}</Text>
         <Group>
-          <Tooltip position="top" label={useTranslateButtons('system.tooltip')}>
-            <ActionIcon color={value.system_notify ? "green.7" : "blue.7"} variant="filled" onClick={() => {
-              onChanges({ ...value, system_notify: !value.system_notify })
-            }} >
-              <FontAwesomeIcon icon={faBell} />
-            </ActionIcon>
-          </Tooltip>
-          <Tooltip position="top" label={useTranslateButtons('discord.tooltip')}>
-            <ActionIcon color={value.discord_notify ? "green.7" : "blue.7"} variant="filled" onClick={() => onChanges({ ...value, discord_notify: !value.discord_notify })} >
-              <FontAwesomeIcon icon={faDiscord} />
-            </ActionIcon>
-          </Tooltip>
+          <ActionWithTooltip
+            tooltip={useTranslateButtons('system.tooltip')}
+            color={value.system_notify ? "green.7" : "blue.7"}
+            icon={faBell}
+            onClick={() => { onChanges({ ...value, system_notify: !value.system_notify }) }}
+          />
+          <ActionWithTooltip
+            tooltip={useTranslateButtons('discord.tooltip')}
+            icon={faDiscord}
+            color={value.discord_notify ? "green.7" : "blue.7"}
+            onClick={() => { onChanges({ ...value, discord_notify: !value.discord_notify }) }}
+          />
         </Group>
       </Group>
       <Divider />

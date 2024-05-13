@@ -320,6 +320,11 @@ export const en = {
         },
       }
     },
+    auction_list_item: {
+      weapon_name: "{{weapon}} {{mod_name}}",
+      footer: "Mr: <blue>{{mastery_level}}</blue> Ranks: <blue>{{mod_rank}}</blue> Re-rolls: <blue>{{re_rolls}}</blue> Polarity: <polarity/>",
+      user_name: "{{name}} <status/> <face/> {{reputation}}",
+    },
     stock_item_info: {
       fields: {
         created_at: "Created At",
@@ -342,6 +347,12 @@ export const en = {
         status: "Status",
         bought: "Bought",
         minimum_price: "Minimum Price",
+        re_rolls: "Re-Rolls",
+        list_price: "List Price",
+        profit: "Profit",
+        total_sellers: "Total Sellers",
+        highest_price: "Highest Price",
+        lowest_price: "Lowest Price",
         listed: "Listed Prices History",
       }
     },

@@ -8,6 +8,7 @@ import { sortArray, paginate } from "@utils/index";
 import { SearchField } from '../SearchField';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAdd } from '@fortawesome/free-solid-svg-icons';
+import { ActionWithTooltip } from '@components';
 
 export type TradableItemListProps = {
 	availableItems: CacheTradableItem[];
@@ -161,17 +162,17 @@ export function TradableItemList({ onAddItem, onAddAll, availableItems }: Tradab
 					rightSectionWidth={75}
 					rightSection={
 						<Group gap={5}>
-							<Tooltip label={useTranslateSearchButtons('add_all.tooltip')}>
-								<ActionIcon variant="filled" onClick={async () => {
+							<ActionWithTooltip
+								tooltip={useTranslateSearchButtons('add_all.tooltip')}
+								icon={faAdd}
+								onClick={() => {
 									if (onAddAll) {
 										const items = GetFilteredItems();
 										if (!items) return;
 										onAddAll(items);
 									}
-								}} >
-									<FontAwesomeIcon icon={faAdd} />
-								</ActionIcon>
-							</Tooltip>
+								}}
+							/>						
 						</Group>
 					}
 				/>

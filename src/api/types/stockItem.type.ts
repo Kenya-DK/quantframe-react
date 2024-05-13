@@ -1,5 +1,5 @@
 
-import { StockEntryBase, SubType } from ".";
+import { StockEntryBase, SubType, UserStatus } from ".";
 import { Wfm } from "$types/index";
 
 export interface StockItem extends StockEntryBase {
@@ -25,11 +25,8 @@ export interface User {
   id: string;
   ingame_name: string;
   reputation: number;
-  status: Status;
-}
-
-export enum Status {
-  Ingame = "ingame",
+  avatar?: string;
+  status: UserStatus;
 }
 
 

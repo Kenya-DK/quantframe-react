@@ -1,9 +1,9 @@
-import { Group, Box, TextInput, Collapse, Divider, Tooltip, ActionIcon } from '@mantine/core';
+import { Group, Box, TextInput, Collapse, Divider } from '@mantine/core';
 import { useTranslateComponent } from '@hooks/index';
-import { faAdd, faFilter, faSearch } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFilter, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { useToggle } from '@mantine/hooks';
 import { useEffect, useState } from 'react';
+import { ActionWithTooltip } from '@components';
 
 export type SearchFieldProps = {
   value: string;
@@ -55,28 +55,31 @@ export function SearchField({ value, filter, description, onSearch, onCreate, on
             <Divider orientation="vertical" />
             {rightSection}
             {filter && (
-              <Tooltip label={useTranslateSearchFieldButtons('filter.tooltip')}>
-                <ActionIcon color={openFilter ? "blue.7" : "dark.4"} variant="filled" onClick={async () => setOpenFilter()} >
-                  <FontAwesomeIcon icon={faFilter} />
-                </ActionIcon>
-              </Tooltip>
+              <ActionWithTooltip
+                tooltip={useTranslateSearchFieldButtons('filter.tooltip')}
+                icon={faFilter}
+                color={openFilter ? "blue.7" : "dark.4"}
+                onClick={async () => setOpenFilter()}
+              />
             )}
             {onSearch &&
-              <Tooltip label={useTranslateSearchFieldButtons('search.tooltip')}>
-                <ActionIcon color="blue.7" variant="filled" onClick={async () => {
+              <ActionWithTooltip
+                tooltip={useTranslateSearchFieldButtons('search.tooltip')}
+                icon={faSearch}
+                color={"blue.7"}
+                onClick={async () => {
                   if (onSearch)
                     onSearch(value);
-                }} >
-                  <FontAwesomeIcon icon={faSearch} />
-                </ActionIcon>
-              </Tooltip>
+                }}
+              />
             }
             {onCreate &&
-              <Tooltip label={useTranslateSearchFieldButtons('create.tooltip')}>
-                <ActionIcon variant="filled" color="green" onClick={async () => onCreate()} >
-                  <FontAwesomeIcon icon={faAdd} />
-                </ActionIcon>
-              </Tooltip>
+              <ActionWithTooltip
+                tooltip={useTranslateSearchFieldButtons('create.tooltip')}
+                icon={faFilter}
+                color={"green"}
+                onClick={async () => onCreate()}
+              />
             }
           </Group>
         }
