@@ -149,10 +149,11 @@ pub async fn stock_riven_update(
     filter: Option<MatchRivenStruct>,
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<entity::stock_riven::Model, AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
-
+    let wfm = wfm.lock()?.clone();
     let stock = match StockRivenMutation::find_by_id(&app.conn, id).await {
         Ok(stock) => stock,
         Err(e) => return Err(AppError::new("StockRivenUpdate", eyre!(e))),
@@ -184,6 +185,35 @@ pub async fn stock_riven_update(
     }
     stock.updated_at = chrono::Utc::now();
 
+    if stock.wfm_order_id.is_some()
+        && stock.status == StockStatus::Live
+        && stock.list_price.unwrap_or(0) < stock.minimum_price.unwrap_or(0)
+    {
+        let post_price = stock.minimum_price.unwrap();
+
+        match wfm
+            .auction()
+            .update(
+                stock.wfm_order_id.clone().unwrap().as_str(),
+                post_price as i32,
+                0,
+                &stock.comment.clone(),
+                post_price as i32,
+                true,
+            )
+            .await
+        {
+            Ok(updated) => {
+                notify.gui().send_event_update(
+                    UIEvent::UpdateAuction,
+                    UIOperationEvent::CreateOrUpdate,
+                    Some(json!(updated)),
+                );
+            }
+            Err(e) => return Err(e),
+        }
+    }
+
     match StockRivenMutation::update_by_id(&app.conn, stock.id, stock.clone()).await {
         Ok(updated) => {
             notify.gui().send_event_update(
@@ -205,43 +235,28 @@ pub async fn stock_riven_update_bulk(
     is_hidden: Option<bool>,
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<i64, AppError> {
-    let app = app.lock()?.clone();
-    let notify = notify.lock()?.clone();
     let mut total: i64 = 0;
     for id in ids {
-        let stock = match StockRivenMutation::find_by_id(&app.conn, id).await {
-            Ok(stock) => stock,
-            Err(e) => return Err(AppError::new("StockRivenUpdate", eyre!(e))),
-        };
-
-        if stock.is_none() {
-            return Err(AppError::new(
-                "StockRivenUpdate",
-                eyre!(format!("Stock Riven not found: {}", id)),
-            ));
-        }
-        total += 1;
-        let mut stock = stock.unwrap();
-
-        if let Some(minimum_price) = minimum_price {
-            stock.minimum_price = Some(minimum_price);
-        }
-
-        if let Some(is_hidden) = is_hidden {
-            stock.is_hidden = is_hidden;
-        }
-        stock.updated_at = chrono::Utc::now();
-
-        match StockRivenMutation::update_by_id(&app.conn, stock.id, stock.clone()).await {
-            Ok(updated) => {
-                notify.gui().send_event_update(
-                    UIEvent::UpdateStockRivens,
-                    UIOperationEvent::CreateOrUpdate,
-                    Some(json!(updated)),
-                );
+        match stock_riven_update(
+            id,
+            minimum_price,
+            None,
+            is_hidden,
+            None,
+            app.clone(),
+            notify.clone(),
+            wfm.clone(),
+        )
+        .await
+        {
+            Ok(_) => {
+                total += 1;
             }
-            Err(e) => return Err(AppError::new("StockItemUpdate", eyre!(e))),
+            Err(e) => {
+                return Err(e);
+            }
         }
     }
     Ok(total)
@@ -329,7 +344,15 @@ pub async fn stock_riven_sell(
         1,
         "".to_string(),
         price,
-        None,
+        Some(
+            json!({
+                "mod_name": stock.mod_name,
+                "mastery_rank": stock.mastery_rank,
+                "re_rolls": stock.re_rolls,
+                "polarity": stock.polarity,
+                "attributes": stock.attributes,
+            })
+        ),
     );
 
     match TransactionMutation::create(&app.conn, transaction).await {
