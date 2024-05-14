@@ -492,6 +492,8 @@ export const en = {
           statistics: "Statistics",
           warframe_market: "Warframe Market",
           debug: "Debug",
+          buy_me_a_coffee: "Donate",
+          website: "Website",
         },
       },
     },

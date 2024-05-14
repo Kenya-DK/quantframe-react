@@ -1,4 +1,9 @@
 :root {
+  --rainbow-colors: linear-gradient(45deg,
+    #ffff00, #00ff00, #0099ff, #001aff, #a200ff, #ff0055, #ff0000,
+    #ff0055, #ff0000, #ffff00, #00ff00, #0099ff, #001aff, #a200ff
+  );
+
   --user-status-online: var(--mantine-color-green-7);
   --user-status-invisible: var(--mantine-color-red-7);
   --user-status-ingame: var(--mantine-color-violet-7);
@@ -251,4 +256,3 @@
     box-shadow: inset 4px 0 0 0 var(--stock-status-underpriced);
   }
 }
-

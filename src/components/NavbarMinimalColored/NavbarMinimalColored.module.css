@@ -2,6 +2,7 @@
   padding: var(--mantine-spacing-xs);
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 .navbarMain {
@@ -10,6 +11,7 @@
 
 .link {
   --size: rem(50px);
+  position: relative;
   width: var(--size);
   height: var(--size);
   border-radius: var(--mantine-radius-md);
@@ -21,9 +23,9 @@
   &:hover {
     background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-5));
   }
-
+  
   &[data-active] {
-
+    
     &,
     &:hover {
       background-color: var(--mantine-color-blue-light);
