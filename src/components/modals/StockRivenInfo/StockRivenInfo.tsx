@@ -1,4 +1,4 @@
-import { Group, TextInput, Grid, Title, Tabs } from '@mantine/core';
+import { Group, TextInput, Grid, Title, Tabs, Center } from '@mantine/core';
 import { StockRiven } from '@api/types';
 import { useTranslateComponent, useTranslateEnums } from '@hooks/index';
 import dayjs from 'dayjs';
@@ -18,7 +18,7 @@ export function StockRivenInfo({ value }: StockRivenInfoProps) {
   const useTranslateStockStatus = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateEnums(`stock_status.${key}`, { ...context }, i18Key)
 
   return (
-    <Tabs defaultValue="general">
+    <Tabs defaultValue="general" h={"75vh"}>
       <Tabs.List>
         <Tabs.Tab value="general" >
           General
@@ -53,15 +53,33 @@ export function StockRivenInfo({ value }: StockRivenInfoProps) {
           </Grid.Col>
           <Grid.Col span={6}>
             <Title order={3}>{useTranslateFields("listed")}</Title>
-            {value.price_history.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5).map((price, index) => (
-              <PriceHistoryListItem key={index} history={price} />
-            ))}
+            {
+              value.price_history.length >= 0 && (
+                <Center h={"100%"}>
+                  <Title order={3}>{useTranslateFields("no_listed")}</Title>
+                </Center>
+              )
+            }
+            {
+              value.price_history.length < 0 && (
+                value.price_history.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5).map((price, index) => (
+                  <PriceHistoryListItem key={index} history={price} />
+                ))
+              )
+            }
           </Grid.Col>
         </Grid>
       </Tabs.Panel>
 
-      <Tabs.Panel value="auctions">
-        {value.info?.auctions.map((auction, index) => <AuctionListItem key={index} auction={auction} />)}
+      <Tabs.Panel value="auctions" h={"90%"}>
+        {
+          !value.info?.auctions?.length && (
+            <Center h={"100%"}>
+              <Title order={3}>{useTranslateFields("no_auctions")}</Title>
+            </Center>
+          )
+        }
+        {(value.info?.auctions?.length || 0) > 0 && value.info?.auctions?.map((auction, index) => <AuctionListItem key={index} auction={auction} />)}
       </Tabs.Panel>
     </Tabs>
 

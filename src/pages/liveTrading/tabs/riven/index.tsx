@@ -55,16 +55,18 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
 
         let rivensFilter = rivens;
 
+        console.log(rivensFilter.map((x) => x.id));
+
         setStatusCount(Object.values(StockStatus).reduce((acc, status) => {
-            acc[status] = rivensFilter.filter((item) => item.status === status).length;
+            acc[status] = rivensFilter.reverse().filter((item) => item.status === status).length;
             return acc;
         }, {} as { [key: string]: number }));
 
         if (query !== "")
-            rivensFilter = rivensFilter.filter((item) => item.weapon_name.toLowerCase().includes(query.toLowerCase()));
+            rivensFilter = rivensFilter.reverse().filter((item) => item.weapon_name.toLowerCase().includes(query.toLowerCase()));
 
         if (filterStatus)
-            rivensFilter = rivensFilter.filter((item) => item.status === filterStatus);
+            rivensFilter = rivensFilter.reverse().filter((item) => item.status === filterStatus);
 
         setTotalRecords(rivensFilter.length);
         rivensFilter = sortArray([{

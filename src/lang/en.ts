@@ -373,6 +373,8 @@ export const en = {
         highest_price: "Highest Price",
         lowest_price: "Lowest Price",
         listed: "Listed Prices History",
+        no_auctions: "No auctions was found for this riven.",
+        no_listed: "No previous listed prices",
       }
     },
     riven_attribute: {
