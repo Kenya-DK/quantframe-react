@@ -1,5 +1,5 @@
 
-import { StockEntryBase, SubType, UserStatus } from ".";
+import { StockEntryBase, SubType } from ".";
 import { Wfm } from "$types/index";
 
 export interface StockItem extends StockEntryBase {
@@ -20,15 +20,6 @@ export interface StockItemExtra {
   sma_price: number;
   trades: Wfm.OrderDto[];
 }
-
-export interface User {
-  id: string;
-  ingame_name: string;
-  reputation: number;
-  avatar?: string;
-  status: UserStatus;
-}
-
 
 export interface CreateStockItem {
   wfm_url: string;

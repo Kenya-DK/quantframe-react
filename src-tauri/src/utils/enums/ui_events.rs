@@ -6,6 +6,8 @@ use crate::utils::modules::logger;
 pub enum UIEvent {
     OnInitialize,
     UpdateSettings,
+    UpdateAppInfo,
+    UpdateError,
     UpdateOrders,
     UpdateTransaction,
     UpdateAuction,
@@ -20,10 +22,11 @@ pub enum UIEvent {
 }
 impl UIEvent {
     pub fn as_str(&self) -> &str {
-
         match *self {
             UIEvent::OnInitialize => "App:OnInitialize",
             UIEvent::UpdateSettings => "App:UpdateSettings",
+            UIEvent::UpdateAppInfo => "App:UpdateAppInfo",
+            UIEvent::UpdateError => "App:UpdateError",
             UIEvent::UpdateOrders => "WFM:UpdateOrders",
             UIEvent::UpdateTransaction => "WFM:UpdateTransaction",
             UIEvent::UpdateAuction => "WFM:UpdateAuction",

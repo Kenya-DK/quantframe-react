@@ -62,13 +62,21 @@ export function QFSocketContextProvider({ children }: QFSocketContextProviderPro
         color: "green",
       });
     };
+
+    const OnConversationEvent = async () => { };
+    const OnTradeEvent = async () => { };
+
     qfSocket.on('connect', OnConnect);
     qfSocket.on('disconnect', onDisconnect);
     qfSocket.on('OnAddRivenAlecaFrame', AddRivenFromAlecaFrame);
+    qfSocket.on('OnConversationEvent', OnConversationEvent);
+    qfSocket.on('OnTradeEvent', OnTradeEvent);
     return () => {
       qfSocket.off('connect', OnConnect);
       qfSocket.off('disconnect', onDisconnect);
       qfSocket.off('OnAddRivenAlecaFrame', AddRivenFromAlecaFrame);
+      qfSocket.off('OnConversationEvent', OnConversationEvent);
+      qfSocket.off('OnTradeEvent', OnTradeEvent);
     };
   }, []);
 

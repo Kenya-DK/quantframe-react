@@ -123,11 +123,12 @@ impl WFMClient {
 
         let client = Client::new();
         let new_url = format!("{}{}", self.endpoint, url);
+
         let request = client
             .request(method.clone(), Url::parse(&new_url).unwrap())
             .header(
                 "Authorization",
-                format!("JWT {}", auth.access_token.unwrap_or("".to_string())),
+                format!("JWT {}", auth.wfm_access_token.unwrap_or("".to_string())),
             )
             .header(
                 "User-Agent",
@@ -226,10 +227,14 @@ impl WFMClient {
         }
 
         // Get the payload from the response if it exists
-        let mut data = response["payload"].clone();
-        if let Some(payload_key) = payload_key {
-            data = response["payload"][payload_key].clone();
+        let mut data = response.clone();
+        if response.get("payload").is_some() {
+            data = response["payload"].clone();
         }
+
+        if let Some(payload_key) = payload_key {
+            data = data[payload_key].clone();
+        }        
 
         // Convert the response to a T object
         match serde_json::from_value(data.clone()) {

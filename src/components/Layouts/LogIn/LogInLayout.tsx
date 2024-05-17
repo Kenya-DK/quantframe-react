@@ -5,8 +5,11 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCrown, faDesktop, faEnvelope, faGlobe, faHome } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateComponent } from "@hooks/index";
-import { useChatContext } from "@contexts/index";
+import { useAppContext, useChatContext } from "@contexts/index";
+import { useEffect } from "react";
 export function LogInLayout() {
+  // Contexts
+  const { app_error } = useAppContext();
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateComponent(`layout.log_in.${key}`, { ...context }, i18Key)
   const useTranslateNavBar = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`navbar.${key}`, { ...context }, i18Key)
@@ -27,7 +30,11 @@ export function LogInLayout() {
     { align: 'bottom', web: true, link: "https://quantframe.app", icon: <FontAwesomeIcon icon={faGlobe} />, label: useTranslateNavBar("website"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
     { align: 'bottom', web: true, link: "https://www.buymeacoffee.com/kenyadk", icon: <FontAwesomeIcon color="#ffa000" icon={faCrown} />, label: useTranslateNavBar("buy_me_a_coffee"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
   ];
-
+  // Effects
+  useEffect(() => {
+    if (app_error)
+      navigate('/error')
+  }, [app_error])
 
   const handleNavigate = (link: NavbarLinkProps) => {
     if (link.web)

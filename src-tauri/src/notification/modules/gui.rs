@@ -4,7 +4,10 @@ use tauri::{window, Manager};
 
 use crate::{
     notification::client::NotifyClient,
-    utils::{enums::ui_events::{UIEvent, UIOperationEvent}, modules::logger},
+    utils::{
+        enums::ui_events::{UIEvent, UIOperationEvent},
+        modules::logger,
+    },
 };
 
 #[derive(Clone, Debug)]

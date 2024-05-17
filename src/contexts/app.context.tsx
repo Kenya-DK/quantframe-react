@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import api, { OnTauriDataEvent, OnTauriEvent, SendTauriDataEvent } from "@api/index";
+import api, { OnTauriDataEvent, OnTauriEvent } from "@api/index";
 import { useTranslateContexts } from "@hooks/index";
 import { notifications } from "@mantine/notifications";
 import { Button, Group, Text } from "@mantine/core";
@@ -10,7 +10,7 @@ import {
   // onUpdaterEvent,
 } from '@tauri-apps/api/updater'
 import { relaunch } from "@tauri-apps/api/process";
-import { AppInfo, QfSocketEvent, QfSocketEventOperation, Settings } from "@api/types";
+import { AppInfo, QfSocketEvent, QfSocketEventOperation, ResponseError, Settings } from "@api/types";
 import { AuthContextProvider } from "./auth.context";
 import { QFSocketContextProvider } from "./qfSocket.context";
 import { SplashScreen } from "../components/SplashScreen";
@@ -18,6 +18,7 @@ import { SplashScreen } from "../components/SplashScreen";
 export type AppContextProps = {
   settings: Settings | undefined;
   app_info: AppInfo | undefined;
+  app_error?: ResponseError;
 }
 
 export type AppContextProviderProps = {
@@ -27,6 +28,7 @@ export type AppContextProviderProps = {
 export const AppContext = createContext<AppContextProps>({
   settings: undefined,
   app_info: undefined,
+  app_error: undefined,
 });
 
 export const useAppContext = () => useContext(AppContext);
@@ -36,6 +38,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
   const [appInfo, setAppInfo] = useState<AppInfo | undefined>(undefined);
   const [i18Key, setI18Key] = useState<string>('cache');
   const [isControl, setIsControl] = useState<boolean>(false);
+  const [appError, setAppError] = useState<ResponseError | undefined>(undefined);
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateContexts(`app.${key}`, { ...context }, i18Key)
   const useTranslateEvents = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`loading_events.${key}`, { ...context }, i18Key)
@@ -45,7 +48,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
 
 
   // Fetch data from rust side
-  const { data, isFetching } = useQuery({
+  const { isFetching, error } = useQuery({
     queryKey: ['app_init'],
     queryFn: () => api.app.init(),
     enabled: !window.location.href.includes('controls'),
@@ -89,22 +92,10 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
 
 
   useEffect(() => {
-    if (!data) return;
-    SendTauriDataEvent(QfSocketEvent.UpdateUser, QfSocketEventOperation.SET, data.user);
-    SendTauriDataEvent(QfSocketEvent.UpdateStockItems, QfSocketEventOperation.SET, data.stock_items);
-    SendTauriDataEvent(QfSocketEvent.UpdateStockRivens, QfSocketEventOperation.SET, data.stock_rivens);
-    SendTauriDataEvent(QfSocketEvent.UpdateTransaction, QfSocketEventOperation.SET, data.transactions);
-
-    if (data.valid) {
-      SendTauriDataEvent(QfSocketEvent.UpdateUser, QfSocketEventOperation.SET, data.user);
-      SendTauriDataEvent(QfSocketEvent.UpdateOrders, QfSocketEventOperation.SET, data.orders);
-      SendTauriDataEvent(QfSocketEvent.UpdateAuction, QfSocketEventOperation.SET, data.auctions);
-      SendTauriDataEvent(QfSocketEvent.UpdateChatMessages, QfSocketEventOperation.SET, data.auctions);
-    }
-    setSettings({ ...data.settings });
-    setAppInfo(data.app_info);
-  }, [data])
-  // Handle update, create, delete transaction
+    if (error == undefined) return;
+    setAppError(error as ResponseError);
+  }, [error])
+  // Handle update, create, delete
   const handleUpdateSettings = (operation: QfSocketEventOperation, data: Settings) => {
     switch (operation) {
       case QfSocketEventOperation.CREATE_OR_UPDATE:
@@ -115,15 +106,27 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
         break;
     }
   }
+  const handleUpdateAppInfo = (operation: QfSocketEventOperation, data: AppInfo) => {
+    switch (operation) {
+      case QfSocketEventOperation.CREATE_OR_UPDATE:
+        setAppInfo((settings) => ({ ...settings, ...data }));
+        break;
+      case QfSocketEventOperation.SET:
+        setAppInfo(data);
+        break;
+    }
+  }
 
   // Hook on tauri events from rust side
   useEffect(() => {
     OnTauriDataEvent<Settings>(QfSocketEvent.UpdateSettings, ({ data, operation }) => handleUpdateSettings(operation, data));
+    OnTauriDataEvent<AppInfo>(QfSocketEvent.UpdateAppInfo, ({ data, operation }) => handleUpdateAppInfo(operation, data));
+    OnTauriEvent<ResponseError>(QfSocketEvent.UpdateAppError, (data) => setAppError(data));
     return () => { }
   }, []);
 
   return (
-    <AppContext.Provider value={{ settings, app_info: appInfo }}>
+    <AppContext.Provider value={{ settings, app_info: appInfo, app_error: appError }}>
       {!isControl && <SplashScreen opened={isFetching} text={useTranslateEvents(i18Key)} />}
       <AuthContextProvider>
         <QFSocketContextProvider>

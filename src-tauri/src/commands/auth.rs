@@ -1,10 +1,14 @@
 use std::sync::{Arc, Mutex};
 
 use eyre::eyre;
-
+use serde_json::json;
 
 use crate::{
-    auth::AuthState, logger, utils::modules::error::{self, AppError}, wfm_client::client::WFMClient
+    auth::{self, AuthState},
+    logger,
+    qf_client::{client::QFClient, types::user::User},
+    utils::modules::error::{self, AppError, ErrorApiResponse},
+    wfm_client::client::WFMClient,
 };
 
 #[tauri::command]
@@ -13,52 +17,72 @@ pub async fn auth_login(
     password: String,
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<AuthState, AppError> {
     let wfm = wfm.lock().expect("Could not lock wfm").clone();
-    match wfm.auth().login(email, password).await {
-        Ok(user) => {
-            if user.access_token.is_none() {
-                logger::critical(
-                    "WarframeMarket",
-                    "No access token found for user",
-                    true,
-                    Some("auth_login.log"),
-                );
-                return Err(AppError::new(
-                    "WarframeMarket",
-                    eyre!("No access token found for user"),
-                ));
-            }
-
-            let arced_mutex = Arc::clone(&auth);
-            let mut auth = arced_mutex.lock().expect("Could not lock auth");
-            auth.banned = user.banned;
-            auth.id = user.id;
-            auth.access_token = user.access_token;
-            auth.avatar = user.avatar;
-            auth.ingame_name = user.ingame_name;
-            auth.locale = user.locale;
-            auth.platform = user.platform;
-            auth.region = user.region;
-            auth.role = user.role.clone();
-
-            if user.role != "user" {
-                auth.order_limit = 999;
-                auth.auctions_limit = 999;
-            }
-
-            auth.save_to_file()?;
-            return Ok(auth.clone());
-        }
+    let qf = qf.lock().expect("Could not lock qf").clone();
+    let mut auth_state = auth.lock()?.clone();
+    // Login to Warframe Market
+    let (wfm_user, wfm_token) = match wfm.auth().login(&email, &password).await {
+        Ok((user, token)) => (user, token),
         Err(e) => {
             error::create_log_file("auth_login.log".to_string(), &e);
             return Err(e);
         }
+    };
+    auth_state.update_from_wfm_user_profile(&wfm_user, None);
+
+    if wfm_user.anonymous || wfm_user.banned || !wfm_user.verification {
+        return Ok(auth_state);
     }
+
+    // Login to QuantFrame
+    let (mut qf_user, mut qf_token) = match qf
+        .auth()
+        .login(&auth_state.get_username(), &auth_state.get_password())
+        .await
+    {
+        Ok(user) => (Some(user.clone()), user.token),
+        Err(e) => {
+            let json = e.extra_data()["ApiError"].clone();
+            let ex: ErrorApiResponse = serde_json::from_value(json).unwrap();
+            let msg = ex.messages.get(0);
+            if msg.is_none() {
+                error::create_log_file("auth_login.log".to_string(), &e);
+                return Err(e);
+            }
+            let msg = msg.unwrap().to_owned();
+            (None, Some(msg))
+        }
+    };
+
+    // Check if the user registered on QuantFrame
+    if qf_user.is_none() {
+        match qf
+            .auth()
+            .register(&auth_state.get_username(), &auth_state.get_password())
+            .await
+        {
+            Ok(user) => {
+                qf_user = Some(user.clone());
+                qf_token = user.token;
+            }
+            Err(e) => {
+                error::create_log_file("auth_login.log".to_string(), &e);
+                return Err(e);
+            }
+        }
+    }
+    let arced_mutex = Arc::clone(&auth);
+    let mut auth = arced_mutex.lock().expect("Could not lock auth");
+    auth.update_from_wfm_user_profile(&wfm_user, wfm_token);
+    auth.update_from_qf_user_profile(&qf_user.unwrap(), qf_token);
+    auth.save_to_file()?;
+    Ok(auth_state)
 }
 
 #[tauri::command]
-pub async fn auth_set_status (
+pub async fn auth_set_status(
     status: String,
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
 ) -> Result<(), AppError> {
@@ -73,7 +97,9 @@ pub async fn auth_set_status (
 pub async fn auth_logout(auth: tauri::State<'_, Arc<Mutex<AuthState>>>) -> Result<(), AppError> {
     let arced_mutex = Arc::clone(&auth);
     let mut auth = arced_mutex.lock().expect("Could not lock auth");
-    auth.access_token = None;
+    auth.wfm_access_token = None;
+    auth.qf_access_token = None;
+    auth.check_code = "".to_string();
     auth.avatar = None;
     auth.ingame_name = "".to_string();
     auth.id = "".to_string();

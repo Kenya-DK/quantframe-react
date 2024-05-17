@@ -9,6 +9,7 @@ use crate::{
     cache::client::CacheClient,
     debug::DebugClient,
     notification::client::NotifyClient,
+    qf_client::{self, client::QFClient},
     settings::SettingsState,
     utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
@@ -20,64 +21,90 @@ use crate::{
 #[tauri::command]
 pub async fn app_init(
     settings: tauri::State<'_, Arc<Mutex<SettingsState>>>,
-    auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
-) -> Result<Value, AppError> {
+) -> Result<bool, AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
     let settings = settings.lock()?.clone();
-    let auth = auth.lock()?.clone();
     let wfm = wfm.lock()?.clone();
     let cache = cache.lock()?.clone();
+    let qf = qf.lock()?.clone();
 
-    let mut response = json!({
-        "settings": &settings.clone(),
-        "user": &auth.clone(),
-    });
+    // Send App Info to UI
+    let app_info = app.get_app_info();
+    notify.gui().send_event_update(
+        UIEvent::UpdateAppInfo,
+        UIOperationEvent::Set,
+        Some(json!({
+            "version": app_info.version,
+            "name": app_info.name,
+            "description": app_info.description,
+            "authors": app_info.authors
+        })),
+    );
 
-    // Load Cache
-    notify
-        .gui()
-        .send_event(UIEvent::OnInitialize, Some(json!("cache")));
-    match cache.load().await {
-        Ok(_) => {
-            response["cache"] = json!({
-                "riven_items": cache.riven().get_wfm_riven_types()?,
-                "riven_attributes": cache.riven().get_wfm_riven_attributes()?,
-                "tradable_items": cache.tradable_items().get_items()?,
-            });
-        }
-        Err(e) => {
-            error::create_log_file("command.log".to_string(), &e);
-            return Err(e);
-        }
-    }
+    // Send Settings to UI
+    notify.gui().send_event_update(
+        UIEvent::UpdateSettings,
+        UIOperationEvent::Set,
+        Some(json!(&settings)),
+    );
 
-    // Validate Auth
+    // Validate WFM Auth
     notify
         .gui()
         .send_event(UIEvent::OnInitialize, Some(json!("validation")));
-    let is_validate = match wfm.auth().validate().await {
-        Ok(is_validate) => {
-            response["valid"] = json!(is_validate);
-            is_validate
-        }
+    let mut wfm_user = match wfm.auth().validate().await {
+        Ok(user) => user,
         Err(e) => {
             error::create_log_file("command.log".to_string(), &e);
             return Err(e);
         }
     };
 
+    let qf_user = match qf.auth().validate().await {
+        Ok(user) => user,
+        Err(e) => {
+            error::create_log_file("command.log".to_string(), &e);
+            return Err(e);
+        }
+    };
+    if qf_user.is_some() && !wfm_user.anonymous && wfm_user.verification{
+        wfm_user.update_from_qf_user_profile(&qf_user.unwrap(), wfm_user.qf_access_token.clone());        
+        // Send User to UI
+        notify.gui().send_event_update(
+            UIEvent::UpdateUser,
+            UIOperationEvent::Set,
+            Some(json!(&wfm_user)),
+        );
+    }
+    // Load Cache
+    notify
+        .gui()
+        .send_event(UIEvent::OnInitialize, Some(json!("cache")));
+    match cache.load().await {
+        Ok(_) => {}
+        Err(e) => {
+            error::create_log_file("command.log".to_string(), &e);
+            return Err(e);
+        }
+    }
     // Load Stock Items
     notify
         .gui()
         .send_event(UIEvent::OnInitialize, Some(json!("stock_items")));
     match StockItemQuery::get_all(&app.conn).await {
         Ok(items) => {
-            response["stock_items"] = json!(items);
+            // Send Stock Items to UI
+            notify.gui().send_event_update(
+                UIEvent::UpdateStockItems,
+                UIOperationEvent::Set,
+                Some(json!(&items)),
+            );
         }
         Err(e) => {
             let error = AppError::new_db("StockItemQuery::get_all", e);
@@ -91,7 +118,12 @@ pub async fn app_init(
         .send_event(UIEvent::OnInitialize, Some(json!("stock_rivens")));
     match StockRivenQuery::get_all(&app.conn).await {
         Ok(items) => {
-            response["stock_rivens"] = json!(items);
+            // Send Stock Rivens to UI
+            notify.gui().send_event_update(
+                UIEvent::UpdateStockRivens,
+                UIOperationEvent::Set,
+                Some(json!(&items)),
+            );
         }
         Err(e) => {
             let error = AppError::new_db("StockRivenQuery::get_all", e);
@@ -106,7 +138,12 @@ pub async fn app_init(
         .send_event(UIEvent::OnInitialize, Some(json!("transactions")));
     match TransactionQuery::get_all(&app.conn).await {
         Ok(transactions) => {
-            response["transactions"] = json!(transactions);
+            // Send Transactions to UI
+            notify.gui().send_event_update(
+                UIEvent::UpdateTransaction,
+                UIOperationEvent::Set,
+                Some(json!(&transactions)),
+            );
         }
         Err(e) => {
             let error = AppError::new_db("TransactionQuery::get_all", e);
@@ -114,8 +151,7 @@ pub async fn app_init(
             return Err(error);
         }
     };
-
-    if is_validate {
+    if !wfm_user.anonymous && !wfm_user.verification {
         // Load User Orders
         notify
             .gui()
@@ -129,48 +165,52 @@ pub async fn app_init(
         };
         let mut orders = orders_vec.buy_orders;
         orders.append(&mut orders_vec.sell_orders);
-        response["orders"] = json!(orders);
+        // Send Orders to UI
+        notify.gui().send_event_update(
+            UIEvent::UpdateTransaction,
+            UIOperationEvent::Set,
+            Some(json!(&orders)),
+        );
 
         // Load User Auctions
         notify
             .gui()
             .send_event(UIEvent::OnInitialize, Some(json!("user_auctions")));
-        let auctions_vec = match wfm.auction().get_my_auctions().await {
-            Ok(auctions_vec) => auctions_vec,
+        match wfm.auction().get_my_auctions().await {
+            Ok(auctions) =>{
+                // Send Auctions to UI
+                notify.gui().send_event_update(
+                    UIEvent::UpdateAuction,
+                    UIOperationEvent::Set,
+                    Some(json!(&auctions)),
+                );
+            }
             Err(e) => {
                 error::create_log_file("command.log".to_string(), &e);
                 return Err(e);
             }
         };
-        response["auctions"] = json!(auctions_vec);
 
         // Load User Chats
         notify
             .gui()
             .send_event(UIEvent::OnInitialize, Some(json!("user_chats")));
-        let chats_vec = match wfm.chat().get_chats().await {
-            Ok(chats_vec) => chats_vec,
+        match wfm.chat().get_chats().await {
+            Ok(chats_vec) => {
+                // Send Chats to UI
+                notify.gui().send_event_update(
+                    UIEvent::UpdateChats,
+                    UIOperationEvent::Set,
+                    Some(json!(&chats_vec)),
+                );
+            }
             Err(e) => {
                 error::create_log_file("command.log".to_string(), &e);
                 return Err(e);
             }
         };
-        response["chats"] = json!(chats_vec);
     }
-
-    // Check for updates
-    notify
-        .gui()
-        .send_event(UIEvent::OnInitialize, Some(json!("check_updates")));
-    let app_info = app.get_app_info();
-    response["app_info"] = json!({
-        "version": app_info.version,
-        "name": app_info.name,
-        "description": app_info.description,
-        "authors": app_info.authors
-    });
-
-    Ok(response)
+    Ok(false)
 }
 
 #[tauri::command]

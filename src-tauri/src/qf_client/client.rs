@@ -9,16 +9,19 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::{json, Value};
 
 use crate::{
-    app::client::AppState, auth::AuthState, logger, utils::{
+    app::client::AppState,
+    auth::AuthState,
+    logger,
+    utils::{
         enums::log_level::LogLevel,
         modules::{
             error::{ApiResult, AppError, ErrorApiResponse},
             rate_limiter::RateLimiter,
         },
-    }
+    },
 };
 
-use super::modules::{cache::CacheModule, price_scraper::PriceScraperModule};
+use super::modules::{auth::AuthModule, cache::CacheModule, price_scraper::PriceScraperModule};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ByteResponse {
@@ -30,6 +33,7 @@ pub struct ByteResponse {
 pub struct QFClient {
     endpoint: String,
     limiter: Arc<tokio::sync::Mutex<RateLimiter>>,
+    auth_module: Arc<RwLock<Option<AuthModule>>>,
     cache_module: Arc<RwLock<Option<CacheModule>>>,
     price_module: Arc<RwLock<Option<PriceScraperModule>>>,
     pub component: String,
@@ -51,6 +55,7 @@ impl QFClient {
                 3.0,
                 Duration::new(1, 0),
             ))),
+            auth_module: Arc::new(RwLock::new(None)),
             cache_module: Arc::new(RwLock::new(None)),
             price_module: Arc::new(RwLock::new(None)),
             log_file: "qfAPICalls.log".to_string(),
@@ -104,6 +109,7 @@ impl QFClient {
         is_bytes: bool,
     ) -> Result<ApiResult<T>, AppError> {
         let app = self.app.lock()?.clone();
+        let auth = self.auth.lock()?.clone();
         let mut rate_limiter = self.limiter.lock().await;
         rate_limiter.wait_for_token().await;
 
@@ -113,10 +119,11 @@ impl QFClient {
         let new_url = format!("{}{}", self.endpoint, url);
         let request = client
             .request(method.clone(), Url::parse(&new_url).unwrap())
-            .header(
-                "User-Agent",
-                format!("Quantframe {}", packageinfo.version.to_string()),
-            );
+            .header("Authorization", format!("JWT {}", auth.qf_access_token.unwrap_or("".to_string())))
+            .header("app", packageinfo.name.to_string())
+            .header("v", packageinfo.version.to_string())
+            .header("user", auth.ingame_name)
+            .header("id", auth.id);
 
         let request = match body.clone() {
             Some(content) => request.json(&content),
@@ -156,19 +163,14 @@ impl QFClient {
         } else {
             response_data.text().await.unwrap_or_default()
         };
-        // let mut content = response_data.text().await.unwrap_or_default();
-        // if is_bytes {
-        //     let content_bytes = response_data.bytes().await.unwrap_or_default();
-        //     content = format!("{{\"data\": \"{:?}\"}}", content_bytes.to_vec());
-        // }
+        error_def.raw_response = Some(content.clone());
 
-        let mut response: Value = serde_json::from_str(content.as_str()).map_err(|e| {
+        let response: Value = serde_json::from_str(content.as_str()).map_err(|e| {
             error_def.messages.push(e.to_string());
             AppError::new_api(
                 self.component.as_str(),
                 error_def.clone(),
-                // eyre!(format!("Could not parse response: {}, {:?}", content, e)),
-                eyre!(""),
+                eyre!(format!("Could not parse response: {}, {:?}", content, e)),
                 LogLevel::Critical,
             )
         })?;
@@ -178,19 +180,19 @@ impl QFClient {
             && response.get("message").is_some()
         {
             if response.get("message").unwrap().is_string() {
-                let msg = response.get("message");
-                response["message"] = json!([msg]);
+                let msg = response.get("message").unwrap().as_str();
+                error_def.messages.push(msg.unwrap_or_default().to_string());
             }
-
-            let error: ErrorApiResponse = match serde_json::from_value(response.clone()) {
-                Ok(payload) => payload,
-                Err(e) => {
-                    error_def.messages.push(e.to_string());
-                    error_def.clone()
+            if response.get("message").unwrap().is_array() {
+                let msg = response.get("message").unwrap().as_array();
+                for m in msg.unwrap() {
+                    error_def.messages.push(m.to_string());
                 }
-            };
-            error_def.error = error.error;
-            error_def.messages = error.messages;
+            }
+            if response.get("error").unwrap().is_string() {
+                let msg = response.get("error").unwrap().as_str();
+                error_def.error = msg.unwrap_or_default().to_string();
+            }
             return Ok(ApiResult::Error(error_def, headers));
         }
 
@@ -278,5 +280,14 @@ impl QFClient {
 
         // Unwrapping is safe here because we ensured the price_module is initialized
         self.price_module.read().unwrap().as_ref().unwrap().clone()
+    }
+    pub fn auth(&self) -> AuthModule {
+        // Lazily initialize PriceScraperModule if not already initialized
+        if self.auth_module.read().unwrap().is_none() {
+            *self.auth_module.write().unwrap() = Some(AuthModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the price_module is initialized
+        self.auth_module.read().unwrap().as_ref().unwrap().clone()
     }
 }

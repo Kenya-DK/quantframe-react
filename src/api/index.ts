@@ -37,11 +37,11 @@ export class TauriClient {
   async sendInvoke<T>(command: string, data?: any): Promise<ErrOrResult<T>> {
     if (data)
       data = this.convertToCamelCase(data);
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       invoke(command, data).then((res) => {
         resolve([null, res] as ErrOrResult<T>)
       }).catch((err) => {
-        reject([err, null] as ErrOrResult<T>)
+        resolve([err, null] as ErrOrResult<T>)
       })
     });
   }

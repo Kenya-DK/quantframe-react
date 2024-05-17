@@ -2,6 +2,8 @@ export enum QfSocketEvent {
   // App
   OnInitialize = "App:OnInitialize",
   UpdateSettings = "App:UpdateSettings",
+  UpdateAppInfo = "App:UpdateAppInfo",
+  UpdateAppError = "App:UpdateAppError",
 
   // Warframe Market
   UpdateOrders = "WFM:UpdateOrders",

@@ -940,9 +940,17 @@ export const en = {
       },
     },
     auth: {
+      progress: {
+        logging_in: "Logging In",
+        refreshing_orders: "Refreshing Orders",
+        refreshing_auctions: "Refreshing Auctions",
+        refreshing_chat: "Refreshing Chat",
+      },
       errors: {
         login: {
           title: "Login Error",
+          email_not_exist: "Email not exist",
+          password_invalid: "Password invalid",
           message: "An error occurred while trying to login.",
         }
       },

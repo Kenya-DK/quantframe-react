@@ -19,6 +19,8 @@ import PLiveTrading from '@pages/liveTrading'
 // Debug Routes
 import PDebug from '@pages/debug'
 
+// Error Routes
+import PError from '@pages/error'
 
 export function AppRoutes() {
   return (
@@ -42,6 +44,9 @@ export function AppRoutes() {
         </Route>
         <Route path="controls" >
           <Route path='live-trading' element={<LiveTradingControl />} />
+        </Route>
+        <Route path="/error" element={<LogOutLayout />}>
+          <Route index element={<PError />} />
         </Route>
         <Route path="*" element={<PHome />} />
       </Routes>

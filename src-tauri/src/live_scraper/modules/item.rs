@@ -3,6 +3,7 @@ use crate::cache::types::cache_tradable_item::CacheTradableItem;
 use crate::enums::order_mode::OrderMode;
 use crate::live_scraper::client::LiveScraperClient;
 
+use crate::live_scraper::types::item_extra_info::StockItemDetails;
 use crate::utils::enums::log_level::LogLevel;
 use crate::utils::enums::ui_events::{UIEvent, UIOperationEvent};
 use crate::utils::modules::error::{self, AppError};
@@ -24,6 +25,7 @@ pub struct ItemModule {
     pub client: LiveScraperClient,
     pub debug_id: String,
     component: String,
+    stock_info: HashMap<i64, StockItemDetails>,
     interesting_items_cache:
         Arc<Mutex<HashMap<String, Vec<crate::cache::types::item_price_info::ItemPriceInfo>>>>,
 }
@@ -35,6 +37,7 @@ impl ItemModule {
             debug_id: "wfm_client_item".to_string(),
             component: "Item".to_string(),
             interesting_items_cache: Arc::new(Mutex::new(HashMap::new())),
+            stock_info: HashMap::new(),
         }
     }
     fn get_component(&self, component: &str) -> String {

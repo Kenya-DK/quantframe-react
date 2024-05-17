@@ -27,4 +27,5 @@ export * from "./OrderListItem";
 export * from "./PriceHistory";
 export * from "./ActionWithTooltip";
 export * from "./AuctionListItem";
+export * from "./ButtonProgress";
 export * from "./Loading";

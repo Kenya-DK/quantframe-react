@@ -59,7 +59,14 @@ impl DebugClient {
             .await
             .map_err(|e| AppError::new_db("MigrateDataBase", e))?;
         for item in old_items {
-            logger::info_con("MigrateDataBase:Transaction",format!("Migrating transaction Id: {:?} | Name: {:?}", item.id, item.name).as_str());
+            logger::info_con(
+                "MigrateDataBase:Transaction",
+                format!(
+                    "Migrating transaction Id: {:?} | Name: {:?}",
+                    item.id, item.name
+                )
+                .as_str(),
+            );
 
             let item_unique_name = match cache.tradable_items().find_by_url_name(&item.url) {
                 Some(item) => item.unique_name,
@@ -85,12 +92,10 @@ impl DebugClient {
                 _ => panic!("Invalid transaction type"),
             };
 
-
             let properties = match item.item_type.as_str() {
                 "riven" => {
-
                     let old_properties = item.properties.or_else(|| Some(json!({}))).unwrap();
-                    let mut new_properties:Value = json!({});
+                    let mut new_properties: Value = json!({});
 
                     match old_properties["name"].as_str() {
                         Some(name) => {
@@ -121,18 +126,18 @@ impl DebugClient {
                         Some(attributes) => {
                             let mut new_attributes = vec![];
                             for attribute in attributes {
-                                let attribute:RivenAttribute =serde_json::from_value(attribute.clone()).unwrap();
+                                let attribute: RivenAttribute =
+                                    serde_json::from_value(attribute.clone()).unwrap();
                                 new_attributes.push(attribute);
                             }
                             new_properties["attributes"] = json!(new_attributes);
-                        }                        
+                        }
                         None => {}
                     };
-                    Some(new_properties) 
+                    Some(new_properties)
                 }
                 _ => None,
             };
-
 
             TransactionMutation::create_from_old(
                 new_con,
