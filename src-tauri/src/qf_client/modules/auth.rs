@@ -27,9 +27,18 @@ impl AuthModule {
         }
     }
     fn get_component(&self, component: &str) -> String {
-        format!("{}:{}:{}",self.client.component, self.component, component)
+        format!("{}:{}:{}", self.client.component, self.component, component)
     }
     pub async fn me(&self) -> Result<User, AppError> {
+        let settings = self.client.settings.lock()?.clone();
+        if settings.dev_mode {
+            logger::warning_con(
+                &self.get_component("Me"),
+                "Dev Mode is enabled, returning default user",
+            );
+            return Ok(User::default());
+        }
+
         match self.client.get::<User>("auth/profile").await {
             Ok(ApiResult::Success(user, _)) => {
                 return Ok(user);
@@ -46,6 +55,14 @@ impl AuthModule {
         };
     }
     pub async fn login(&self, username: &str, password: &str) -> Result<User, AppError> {
+        let settings = self.client.settings.lock()?.clone();
+        if settings.dev_mode {
+            logger::warning_con(
+                &self.get_component("Login"),
+                "Dev Mode is enabled, returning default user",
+            );
+            return Ok(User::default());
+        }
         let app = self.client.app.lock()?.clone();
         let body = json!({
             "username": username,
@@ -95,6 +112,14 @@ impl AuthModule {
         return Ok(user);
     }
     pub async fn validate(&self) -> Result<Option<User>, AppError> {
+        let settings = self.client.settings.lock()?.clone();
+        if settings.dev_mode {
+            logger::warning_con(
+                &self.get_component("Validate"),
+                "Dev Mode is enabled, returning default user",
+            );
+            return Ok(Some(User::default()));
+        }
         let mut auth = self.client.auth.lock()?.clone();
         // Validate Auth
         let user = match self.me().await {

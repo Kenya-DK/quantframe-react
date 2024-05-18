@@ -15,3 +15,17 @@ pub struct UserRole {
     #[serde(rename = "permissions")]
     pub permissions: String,
 }
+
+impl Default for UserRole {
+    fn default() -> Self {
+        UserRole {
+            id: "".to_string(),
+            created_at: "".to_string(),
+            updated_at: "".to_string(),
+            name: "".to_string(),
+            can_managed: false,
+            permissions: "".to_string(),
+        }
+    }
+    
+}

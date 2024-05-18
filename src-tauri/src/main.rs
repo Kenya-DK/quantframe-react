@@ -86,7 +86,10 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     app.manage(qf_client.clone());
 
     // create and manage Cache state
-    let cache_arc = Arc::new(Mutex::new(CacheClient::new(Arc::clone(&qf_client))));
+    let cache_arc = Arc::new(Mutex::new(CacheClient::new(
+        Arc::clone(&qf_client),
+        Arc::clone(&settings_arc),
+    )));
     app.manage(cache_arc.clone());
 
     // create and manage LiveScraper state

@@ -25,3 +25,18 @@ pub struct User {
     pub token: Option<String>,
 }
 
+impl Default for User {
+    fn default() -> Self {
+        User {
+            id: "".to_string(),
+            created_at: "".to_string(),
+            updated_at: "".to_string(),
+            username: "".to_string(),
+            banned: false,
+            current_version: "".to_string(),
+            role: Some(UserRole::default()),
+            token: None,
+        }
+    }
+    
+}

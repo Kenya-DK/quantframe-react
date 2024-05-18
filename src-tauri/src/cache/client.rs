@@ -10,14 +10,12 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
 use crate::{
-    helper, logger,
-    utils::modules::error::AppError,
-    wfm_client::{
+    helper, logger, settings::SettingsState, utils::modules::error::AppError, wfm_client::{
         client::WFMClient,
         types::{
             item::Item, riven_attribute_info::RivenAttributeInfo, riven_type_info::RivenTypeInfo,
         },
-    },
+    }
 };
 
 use super::modules::{
@@ -33,6 +31,7 @@ use super::modules::{
 pub struct CacheClient {
     pub log_file: PathBuf,
     pub qf: Arc<Mutex<crate::qf_client::client::QFClient>>,
+    pub settings: Arc<Mutex<SettingsState>>,
     item_price_module: Arc<RwLock<Option<ItemPriceModule>>>,
     riven_module: Arc<RwLock<Option<RivenModule>>>,
     arcane_module: Arc<RwLock<Option<ArcaneModule>>>,
@@ -59,11 +58,13 @@ pub struct CacheClient {
 
 impl CacheClient {
     pub fn new(
-        qf: Arc<Mutex<crate::qf_client::client::QFClient>>
+        qf: Arc<Mutex<crate::qf_client::client::QFClient>>,
+        settings: Arc<Mutex<SettingsState>>,
     ) -> Self {
         CacheClient {
             log_file: PathBuf::from("cache"),
             qf,
+            settings,
             component: "Cache".to_string(),
             md5_file: "cache_id.txt".to_string(),
             item_price_module: Arc::new(RwLock::new(None)),
@@ -155,38 +156,42 @@ impl CacheClient {
 
     pub async fn load(&self) -> Result<(), AppError> {
         let qf = self.qf.lock()?.clone();
-
-        let current_cache_id = self.get_current_cache_id()?;
-        logger::info_con(
-            &self.component,
-            format!("Current cache id: {}", current_cache_id).as_str(),
-        );
-        let remote_cache_id = match qf.cache().get_cache_id().await {
-            Ok(id) => id,
-            Err(e) => {
-                logger::error_con(
-                    &self.component,
-                    format!(
-                        "There was an error downloading the cache from the server: {:?}",
-                        e
-                    )
-                    .as_str(),
-                );
-                logger::info_con(&self.component, "Using the current cache data");
-                current_cache_id.clone()
-            }
-        };
-        logger::info_con(
-            &self.component,
-            format!("Remote cache id: {}", remote_cache_id).as_str(),
-        );
-        if current_cache_id != remote_cache_id {
+        let settings = self.settings.lock()?.clone();
+        if !settings.dev_mode {
+            let current_cache_id = self.get_current_cache_id()?;
             logger::info_con(
                 &self.component,
-                "Cache id mismatch, downloading new cache data",
+                format!("Current cache id: {}", current_cache_id).as_str(),
             );
-            self.download_cache_data().await?;
-            self.update_current_cache_id(remote_cache_id)?;
+            let remote_cache_id = match qf.cache().get_cache_id().await {
+                Ok(id) => id,
+                Err(e) => {
+                    logger::error_con(
+                        &self.component,
+                        format!(
+                            "There was an error downloading the cache from the server: {:?}",
+                            e
+                        )
+                        .as_str(),
+                    );
+                    logger::info_con(&self.component, "Using the current cache data");
+                    current_cache_id.clone()
+                }
+            };
+            logger::info_con(
+                &self.component,
+                format!("Remote cache id: {}", remote_cache_id).as_str(),
+            );
+            if current_cache_id != remote_cache_id {
+                logger::info_con(
+                    &self.component,
+                    "Cache id mismatch, downloading new cache data",
+                );
+                self.download_cache_data().await?;
+                self.update_current_cache_id(remote_cache_id)?;
+            }
+        }else {
+            logger::warning_con(&self.component, "Dev Mode is enabled, skipping cache download using current cache data");
         }
 
         self.arcane().load()?;
