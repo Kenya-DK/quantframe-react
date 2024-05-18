@@ -74,8 +74,6 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
             direction: sortStatus.direction
         }], rivensFilter);
 
-
-
         rivensFilter = paginate(rivensFilter, page, pageSize);
         setRows(rivensFilter);
         setSelectedRecords([]);

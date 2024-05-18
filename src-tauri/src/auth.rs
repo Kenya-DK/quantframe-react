@@ -5,15 +5,15 @@ use eyre::{eyre, Result};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use serde_json::Value;
+use sha256::digest;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::path::PathBuf;
-use sha256::digest;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AuthState {
     pub anonymous: bool,
-    pub verification: bool,    
+    pub verification: bool,
     pub wfm_banned: bool,
     pub qf_banned: bool,
     pub id: String,
@@ -97,7 +97,11 @@ impl AuthState {
         digest(format!("hashStart-{}-hashEnd", self.check_code).as_bytes())
     }
 
-    pub fn update_from_wfm_user_profile(&mut self, user_profile: &UserProfile, token: Option<String>) {
+    pub fn update_from_wfm_user_profile(
+        &mut self,
+        user_profile: &UserProfile,
+        token: Option<String>,
+    ) {
         self.id = user_profile.id.clone();
         self.anonymous = user_profile.anonymous;
         self.verification = user_profile.verification;
@@ -116,9 +120,7 @@ impl AuthState {
             self.order_limit = 100;
             self.auctions_limit = 50;
         }
-
     }
-
 
     pub fn reset(&mut self) {
         self.anonymous = true;
@@ -139,8 +141,12 @@ impl AuthState {
         self.auctions_limit = 50;
         self.status = Some("invisible".to_string());
     }
-    
-    pub fn update_from_qf_user_profile(&mut self, user_profile: &crate::qf_client::types::user::User, token: Option<String>) {
+
+    pub fn update_from_qf_user_profile(
+        &mut self,
+        user_profile: &crate::qf_client::types::user::User,
+        token: Option<String>,
+    ) {
         self.qf_access_token = token;
         self.qf_banned = user_profile.banned;
         self.role = user_profile.role.clone();

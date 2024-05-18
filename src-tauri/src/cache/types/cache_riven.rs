@@ -166,9 +166,11 @@ pub struct RivenStat {
     #[serde(rename = "modifierTag")]
     pub modifier_tag: String,
     #[serde(rename = "prefixTag")]
-    pub prefix_tag: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prefix: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "suffixTag")]
-    pub suffix_tag: String,
+    pub suffix_tag: Option<String>,
     #[serde(rename = "baseValue")]
     pub base_value: f64,
     #[serde(rename = "localizationString")]
