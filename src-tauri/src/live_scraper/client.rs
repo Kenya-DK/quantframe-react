@@ -53,6 +53,7 @@ impl LiveScraperClient {
         }
     }
     pub fn report_error(&self, error: &AppError) {
+        let notify = self.notify.lock().unwrap().clone();
         let component = error.component();
         let cause = error.cause();
         let backtrace = error.backtrace();
@@ -68,6 +69,7 @@ impl LiveScraperClient {
             true,
             Some(self.log_file.as_str()),
         );
+        notify.gui().send_event(crate::utils::enums::ui_events::UIEvent::OnLiveTradingError, Some(json!(error)));
     }
     pub fn debug(&self, id: &str, component: &str, msg: &str, file: Option<bool>) {
         let settings = self.settings.lock().unwrap().clone();

@@ -550,7 +550,15 @@ export const en = {
         user_chats: "Loading warframe market chats...",
         check_updates: "Checking for updates...",
       }
-    }
+    },
+    live_scraper: {
+      errors: {
+        run: {
+          title: "Live Scraper Error",
+          message: "An error occurred in component {{component}} at {{backtrace}} see logs for more information.",
+        },
+      }
+    },
   },
   sockets: {
     qf_socket: {

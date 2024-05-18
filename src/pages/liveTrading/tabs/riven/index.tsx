@@ -61,7 +61,9 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
         }, {} as { [key: string]: number }));
 
         if (query !== "")
-            rivensFilter = rivensFilter.reverse().filter((item) => item.weapon_name.toLowerCase().includes(query.toLowerCase()));
+            rivensFilter = rivensFilter.reverse().filter((item) => item.weapon_name.toLowerCase().includes(query.toLowerCase())
+                || item.mod_name.toLowerCase().includes(query.toLowerCase()) || `${item.weapon_name} ${item.mod_name}`.toLowerCase().includes(query.toLowerCase())
+            );
 
         if (filterStatus)
             rivensFilter = rivensFilter.reverse().filter((item) => item.status === filterStatus);
@@ -329,7 +331,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                         }
                     />
                     <Group gap={"md"} mt={"md"} >
-                        {[StockStatus.Live, StockStatus.InActive, StockStatus.ToLowProfit, StockStatus.NoSellers].map((status) => (
+                        {[StockStatus.Pending, StockStatus.Live, StockStatus.InActive, StockStatus.ToLowProfit, StockStatus.NoSellers].map((status) => (
                             <ColorInfo active={status == filterStatus} key={status} onClick={() => {
                                 setFilterStatus(s => s === status ? undefined : status);
                             }} infoProps={{

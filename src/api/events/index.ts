@@ -9,12 +9,21 @@ export class EventModule {
   }
   private async Initializer() {
     listen("message", (eventIn: { payload: { event: string, data: any } }) => {
-      const { event, data } = eventIn.payload;
+      const { event, data } = eventIn.payload
+      console.group("Tauri Event");
+      console.log(`Event: ${event}`);
+      console.log(`Payload:`, data);;
+      console.groupEnd();
       if (event)
         this.listener.fire(event, data);
     })
     listen("message_update", (eventIn: { payload: { event: string, operation: string, data: any } }) => {
       const { event, operation, data } = eventIn.payload;
+      console.group("Tauri Event");
+      console.log(`Event: ${event}`);
+      console.log(`Operation: ${operation}`);
+      console.log(`Payload:`, data);;
+      console.groupEnd();
       if (event && operation)
         this.listener.fire(event, { operation, data });
     })

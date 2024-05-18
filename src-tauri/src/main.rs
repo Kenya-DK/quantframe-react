@@ -17,8 +17,8 @@ use std::sync::Arc;
 use std::{env, sync::Mutex};
 
 use tauri::async_runtime::block_on;
-use tauri::{SystemTray, Window};
 use tauri::{App, Manager, SystemTrayEvent};
+use tauri::{SystemTray, Window};
 
 mod app;
 mod auth;
