@@ -32,7 +32,6 @@ export const NotificationPanel = ({ value, onSubmit }: NotificationPanelProps) =
             title="New Conversation"
             value={form.values.on_new_conversation}
             onChanges={(n) => {
-              console.log(n)
               form.setFieldValue('on_new_conversation', n)
             }}
           />

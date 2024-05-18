@@ -42,7 +42,6 @@ export function QFSocketContextProvider({ children }: QFSocketContextProviderPro
       }
       stockRiven.wfm_url = weapon.wfm_url_name;
       const cacheRivenAttributes = await api.cache.getWeaponUpgrades(weapon.uniqueName);
-
       for (const attribute of stockRiven.attributes) {
         const attr = Object.values(cacheRivenAttributes).find((x) => x.shortString.replace(/<[^>]*>/g, '') === attribute.url_name);
         if (!attr) {

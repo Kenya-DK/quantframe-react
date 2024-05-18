@@ -31,8 +31,6 @@ export function AuctionListItem({ compacted, auction }: AuctionListItemItemProps
 	})
 
 	useEffect(() => {
-		console.log(auction.item.weapon_url_name);
-
 		if (auction.private) {
 			setMode('private');
 		} else

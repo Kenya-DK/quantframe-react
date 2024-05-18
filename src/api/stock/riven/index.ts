@@ -19,7 +19,6 @@ export class StockRivenModule {
   }
 
   async update(entry: UpdateStockRiven): Promise<StockRiven> {
-    console.log(entry);
     const [, stockItem] = await this.client.sendInvoke<StockRiven>('stock_riven_update', entry);
     if (!stockItem)
       throw new Error("Failed to create stock item");

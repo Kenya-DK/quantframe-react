@@ -86,7 +86,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
       });
 
     }).catch((e) => {
-      console.log(e);
+      console.error(e);
     })
   }, [])
 

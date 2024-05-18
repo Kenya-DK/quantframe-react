@@ -9,7 +9,6 @@ export class WFMSocket extends SocketBase {
   protected OnEvent = (data: Record<string, any>) => {
     const { type, payload } = data as { type: string, payload: any };
     const event = type.replace("@WS/", "");
-    console.log("Event received", event, payload);
     this.FireEvent(event, payload);
   }
 }

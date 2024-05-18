@@ -34,7 +34,7 @@ export class SocketBase {
       }
     }).then((ws) => {
       this.listener.fire("connect");
-      console.log("Connected to socket successfully");
+      console.log(`Socket connected to ${this._host}`);
       this._last_event_received = new Date();
       ws.addListener((cd) => {
         try {
@@ -43,7 +43,7 @@ export class SocketBase {
           this._last_event_received = new Date();
           this.OnEvent(json);
         } catch (e) {
-          console.log("Error while receiving event", e);
+          console.log(`Error while parsing event for ${this._host}`, e);
           this.socket = undefined;
           this.listener.fire("disconnect");
           this.listener.fire("error", e);
@@ -52,7 +52,7 @@ export class SocketBase {
       })
       this.socket = ws;
     }).catch((e) => {
-      console.log("Error while connecting to socket", e);
+      console.log(`Error while connecting to ${this._host}`, e);
       this.socket = undefined;
       this.listener.fire("disconnect");
       this.listener.fire("error", e);
@@ -96,8 +96,6 @@ export class SocketBase {
     this._token = token;
     this.reconnect();
   }
-
-
   public on = (event: string, callback: (payload: any) => void) => {
     this.listener.add(event, callback);
   }

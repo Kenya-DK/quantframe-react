@@ -369,7 +369,6 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                 selectedRecords={selectedRecords}
                 onSelectedRecordsChange={setSelectedRecords}
                 onCellClick={({ record, column }) => {
-                    console.log(column);
                     switch (column.accessor) {
                         case "weapon_name":
                             navigator.clipboard.writeText(record.weapon_name + " " + record.mod_name);

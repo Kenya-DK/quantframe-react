@@ -47,7 +47,7 @@ export default function LoginPage() {
       // navigate('/')
     },
     onError: ([err]: [ResponseError, null]) => {
-      console.log(err);
+      console.error(err);
       const { ApiError }: { ApiError: { messages: string[] } } = err.extra_data as any;
       if (ApiError.messages.some((m) => m.includes("app.account.email_not_exist")))
         return notifications.show({ title: useTranslateErrors("login.title"), message: useTranslateErrors("login.email_not_exist"), color: "red.7" });
