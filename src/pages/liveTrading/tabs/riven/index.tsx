@@ -76,7 +76,6 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
 
         rivensFilter = paginate(rivensFilter, page, pageSize);
         setRows(rivensFilter);
-        setSelectedRecords([]);
     }, [rivens, query, pageSize, page, sortStatus, filterStatus])
 
     useEffect(() => {
@@ -452,8 +451,9 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                                     }}
                                 />
                                 <ActionWithTooltip
-                                    tooltip={useTranslateDataGridBaseColumns('actions.buttons.filter.tooltip')}
+                                    tooltip={useTranslateDataGridColumns(`actions.buttons.filter.tooltip`)}
                                     icon={faFilter}
+                                    color={row.filter?.enabled ? "blue.7" : "gray.7"}
                                     actionProps={{ size: "sm" }}
                                     iconProps={{ size: "xs" }}
                                     onClick={(e) => {
