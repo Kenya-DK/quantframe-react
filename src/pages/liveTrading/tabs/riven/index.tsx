@@ -55,8 +55,6 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
 
         let rivensFilter = rivens;
 
-        console.log(rivensFilter.map((x) => x.id));
-
         setStatusCount(Object.values(StockStatus).reduce((acc, status) => {
             acc[status] = rivensFilter.reverse().filter((item) => item.status === status).length;
             return acc;
@@ -299,7 +297,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                                                 </Text>
                                             ),
                                             labels: { confirm: useTranslateBasePrompt('delete.confirm'), cancel: useTranslateBasePrompt('delete.cancel') },
-                                            onCancel: async () => await deleteBulkStockMutation.mutateAsync(selectedRecords.map((x) => x.id)),
+                                            onConfirm: async () => await deleteBulkStockMutation.mutateAsync(selectedRecords.map((x) => x.id)),
                                         });
                                     }}
                                 />
@@ -512,7 +510,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                                                 </Text>
                                             ),
                                             labels: { confirm: useTranslateBasePrompt('delete.confirm'), cancel: useTranslateBasePrompt('delete.cancel') },
-                                            onCancel: async () => await deleteStockMutation.mutateAsync(row.id),
+                                            onConfirm: async () => await deleteStockMutation.mutateAsync(row.id),
                                         });
                                     }}
                                 />
