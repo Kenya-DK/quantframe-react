@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { QfSocketEvent, ResponseError } from "@api/types";
-import { OnTauriEvent } from "../api";
+import { OffTauriEvent, OnTauriEvent } from "../api";
 import { useTranslateContexts } from "@hooks/index";
 import { notifications } from "@mantine/notifications";
 export type LiveScraperContextProps = {
@@ -54,9 +54,9 @@ export function LiveScraperContextProvider({ children }: LiveScraperContextProvi
     OnTauriEvent<ResponseError>(QfSocketEvent.OnLiveTradingError, OnUpdateError)
     OnTauriEvent<LiveScraperMessage>(QfSocketEvent.OnLiveTradingMessage, OnUpdateMessage)
     return () => {
-      OnTauriEvent<boolean>(QfSocketEvent.UpdateLiveTradingRunningState, OnUpdateRunningState)
-      OnTauriEvent<ResponseError>(QfSocketEvent.OnLiveTradingError, OnUpdateError)
-      OnTauriEvent<LiveScraperMessage>(QfSocketEvent.OnLiveTradingMessage, OnUpdateMessage)
+      OffTauriEvent<boolean>(QfSocketEvent.UpdateLiveTradingRunningState, OnUpdateRunningState)
+      OffTauriEvent<ResponseError>(QfSocketEvent.OnLiveTradingError, OnUpdateError)
+      OffTauriEvent<LiveScraperMessage>(QfSocketEvent.OnLiveTradingMessage, OnUpdateMessage)
     }
   }, []);
 

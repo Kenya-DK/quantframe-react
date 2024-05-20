@@ -1,46 +1,32 @@
 export interface User {
-  access_token: null;
   anonymous: boolean;
   auctions_limit: number;
-  avatar: null;
+  avatar: string;
   check_code: string;
   id: string;
   ingame_name: string;
   locale: string;
   order_limit: number;
   platform: string;
-  qf_access_token: null;
+  qf_access_token: string;
   qf_banned: boolean;
   region: string;
-  role: string;
-  verification: boolean;
-  wfm_access_token: null;
-  wfm_banned: boolean;
+  role: Role;
   status: UserStatus;
+  verification: boolean;
+  wfm_access_token: string;
+  wfm_banned: boolean;
 }
-
+export interface Role {
+  can_managed: boolean;
+  created_at: Date;
+  id: string;
+  name: string;
+  permissions: string;
+  updated_at: Date;
+}
 export enum UserStatus {
   Online = 'online',
   Invisible = 'invisible',
   Ingame = 'ingame',
-}
-
-export interface TopLevel {
-  anonymous: boolean;
-  auctions_limit: number;
-  avatar: null;
-  check_code: string;
-  id: string;
-  ingame_name: string;
-  locale: string;
-  order_limit: number;
-  platform: string;
-  qf_access_token: null;
-  qf_banned: boolean;
-  region: string;
-  role: string;
-  status: string;
-  verification: boolean;
-  wfm_access_token: null;
-  wfm_banned: boolean;
 }
