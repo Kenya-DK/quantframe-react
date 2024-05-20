@@ -817,24 +817,22 @@ impl ItemModule {
         };
 
         // If the order is visible and the item is hidden, delete the order.
-        if user_order.visible && stock_item.is_hidden {
+        if stock_item.is_hidden {
+            
+            stock_item.status = StockStatus::InActive   ;
+            if user_order.visible {
+                self.send_order_update(UIOperationEvent::Delete, json!({"id": user_order.id}));
+                wfm.orders().delete(&user_order.id).await?;
+                my_orders.delete_order_by_id(OrderType::Sell, &user_order.id);
+            }
+
+
             // Send GUI Update.
             self.send_msg(
-                "not_in_inventory",
+                "is_hidden",
                 Some(json!({ "name": item_info.name.clone()})),
             );
-            self.send_order_update(UIOperationEvent::Delete, json!({"id": user_order.id}));
-            wfm.orders().delete(&user_order.id).await?;
-            my_orders.delete_order_by_id(OrderType::Sell, &user_order.id);
-
-            logger::info_con(
-                &self.get_component("CompareOrdersWhenSelling"),
-                format!(
-                    "Item {} is not in your inventory. Deleted order.",
-                    item_info.name
-                )
-                .as_str(),
-            );
+            self.send_stock_update(UIOperationEvent::CreateOrUpdate, json!(stock_item));            
             return Ok(());
         }
 
