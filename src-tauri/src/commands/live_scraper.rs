@@ -18,7 +18,6 @@ pub fn live_scraper_set_running_state(
             Ok(_) => {}
             Err(e) => {
                 error::create_log_file("command.log".to_string(), &e);
-                notify.gui().send_event(UIEvent::OnLiveTradingError, Some(json!(e)));
             }
         }
     } else {
