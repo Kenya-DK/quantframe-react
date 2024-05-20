@@ -67,7 +67,7 @@ impl RivenModule {
         // Send GUI Update.
         self.send_msg("stating", None);
 
-        let stock_rivens = StockRivenQuery::get_all(&app.conn)
+        let stock_ids = StockRivenQuery::get_all_ids(&app.conn)
             .await
             .map_err(|e| AppError::new("RivenModule", eyre::eyre!(e)))?;
 
@@ -76,9 +76,18 @@ impl RivenModule {
             .iter()
             .filter(|a| a.item.item_type == "riven".to_string())
             .collect::<Vec<_>>();
-        let mut current_index = stock_rivens.len();
-        let total = stock_rivens.len();
-        for mut stock_riven in stock_rivens {
+        let mut current_index = stock_ids.len();
+        let total = stock_ids.len();
+        for id in stock_ids {
+            // Get the stock riven
+            let stock_riven = StockRivenQuery::get_by_id(&app.conn, id)
+                .await
+                .map_err(|e| AppError::new("RivenModule", eyre::eyre!(e)))?;
+            if stock_riven.is_none() {
+                continue;
+            }
+            let mut stock_riven = stock_riven.unwrap();
+
             // Clone the stock riven
             let stock_riven_original = stock_riven.clone();
 
@@ -103,8 +112,12 @@ impl RivenModule {
                 stock_riven.list_price = None;
                 stock_riven.wfm_order_id = None;
 
-                self.update_stock(&stock_riven_original, &mut stock_riven, StockRivenDetails::new(None, None, None, None, None))
-                    .await?;
+                self.update_stock(
+                    &stock_riven_original,
+                    &mut stock_riven,
+                    StockRivenDetails::new(None, None, None, None, None),
+                )
+                .await?;
                 continue;
             }
 
@@ -295,7 +308,6 @@ impl RivenModule {
                 Some(live_auctions.clone()),
             );
 
-
             match auction {
                 Some(auction) => {
                     if stock_riven.status == StockStatus::ToLowProfit
@@ -399,7 +411,6 @@ impl RivenModule {
         let app = self.client.app.lock()?.clone();
         let mut need_update = false;
 
-
         // Get Stock Cache Info
         let stock_info = self.stock_info.get(&stock_riven.id);
 
@@ -413,7 +424,11 @@ impl RivenModule {
                 need_update = true;
             } else if stock_info.highest_price != details.highest_price {
                 need_update = true;
-            } else if stock_info.auctions.is_some() && details.auctions.is_some() &&(stock_info.auctions.clone().unwrap().len() != details.auctions.clone().unwrap().len()){
+            } else if stock_info.auctions.is_some()
+                && details.auctions.is_some()
+                && (stock_info.auctions.clone().unwrap().len()
+                    != details.auctions.clone().unwrap().len())
+            {
                 need_update = true;
             }
         } else {
@@ -428,13 +443,13 @@ impl RivenModule {
         } else if stock_riven_original.status != stock_riven.status {
             need_update = true;
         } else if stock_riven_original.list_price != stock_riven.list_price {
+            println!("{:?} {:?}", stock_riven_original.list_price, stock_riven.list_price);
             // Create a PriceHistory struct
-            if stock_riven_original.list_price.is_some() {
-                let post_price = stock_riven.list_price.unwrap_or(0);
+            if stock_riven.list_price.is_some() {
                 let price_history =
-                    PriceHistory::new(chrono::Local::now().naive_local().to_string(), post_price);
+                    PriceHistory::new(chrono::Local::now().naive_local().to_string(), stock_riven.list_price.unwrap());
                 let last_price_history = stock_riven_original.price_history.0.last();
-                if last_price_history.is_none() || last_price_history.unwrap().price != post_price {
+                if last_price_history.is_none() || last_price_history.unwrap().price != stock_riven.list_price.unwrap() {
                     stock_riven.price_history.0.push(price_history.clone());
                 }
             }

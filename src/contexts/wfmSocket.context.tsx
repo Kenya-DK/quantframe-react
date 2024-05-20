@@ -33,9 +33,9 @@ export function WFMSocketContextProvider({ children }: WFMSocketContextProviderP
   const { user } = useAuthContext();
 
   useEffect(() => {
-    if (user?.access_token)
-      wfmSocket.updateToken(user.access_token);
-  }, [user?.access_token]);
+    if (user?.wfm_access_token)
+      wfmSocket.updateToken(user.wfm_access_token);
+  }, [user?.wfm_access_token]);
 
   // Socket event listeners
   useEffect(() => {

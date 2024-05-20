@@ -342,7 +342,6 @@ export const en = {
     auction_list_item: {
       weapon_name: "{{weapon}} {{mod_name}}",
       footer: "Mr: <blue>{{mastery_level}}</blue> Ranks: <blue>{{mod_rank}}</blue> Re-rolls: <blue>{{re_rolls}}</blue> Polarity: <polarity/>",
-      user_name: "{{name}} <status/> <face/> {{reputation}}",
     },
     stock_item_info: {
       fields: {
@@ -507,7 +506,7 @@ export const en = {
       item: {
         stating: "Starting Item Trading",
         deleting_orders: "Deleting Orders {{current}}/{{total}}",
-        not_in_inventory: "Item <red>{{name}}</red> not in inventory deleting.",
+        is_hidden: "Item <red>{{name}}</red> is hidden",
         low_profit_delete: "Deleting Item <red>{{name}}</red> low profit",
         order_limit_reached: "Order limit reached for <red>{{name}}</red>",
         knapsack_delete: "Delete Item <red>{{name}}</red>",

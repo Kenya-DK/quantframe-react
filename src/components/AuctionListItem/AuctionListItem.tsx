@@ -1,7 +1,7 @@
 import { Image, Group, Paper, Stack, Divider, Text, Avatar, Box, Skeleton } from '@mantine/core';
 import classes from './AuctionListItem.module.css';
 import { ActionWithTooltip } from '../ActionWithTooltip';
-import { faFaceSmile, faFilter } from '@fortawesome/free-solid-svg-icons';
+import { faFilter } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useState } from 'react';
 import { Wfm } from '$types/index';
 import api, { WFMThumbnail } from '@api/index';
@@ -10,7 +10,6 @@ import { useQuery } from '@tanstack/react-query';
 import { CacheRivenWeapon } from '@api/types';
 import { useTranslateComponent, useTranslateEnums } from '@hooks/index';
 import { getCssVariable } from '../../utils';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 export type AuctionListItemItemProps = {
 	compacted?: boolean;
 	auction: Wfm.Auction<any>;
@@ -118,15 +117,10 @@ export function AuctionListItem({ compacted, auction }: AuctionListItemItemProps
 						<Divider />
 						<Group align='center'>
 							<Avatar size={"sm"} src={auction.owner.avatar ? WFMThumbnail(auction.owner.avatar) : "https://cataas.com/cat"} alt="no image here" />
-							<TextTranslate i18nKey={useTranslateBase("user_name", undefined, true)} values={{
-								name: auction.owner.ingame_name,
-								status: useTranslateUserStatus(auction.owner.status),
-								reputation: auction.owner.reputation
-							}}
-								components={{
-									"face": <FontAwesomeIcon icon={faFaceSmile} />,
-									"status": <Text component="span" data-color-mode='text' data-user-status={auction.owner.status}> {useTranslateUserStatus(auction.owner.status)}</Text>,
-								}} />
+							<Group>
+								<Text> {auction.owner.ingame_name}</Text>
+								<Text data-color-mode='text' data-user-status={auction.owner.status}> {useTranslateUserStatus(auction.owner.status)}</Text>
+							</Group>
 						</Group>
 					</Stack>
 				)}
