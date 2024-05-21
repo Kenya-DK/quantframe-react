@@ -53,39 +53,6 @@ impl RivenModule {
         Ok(())
     }
 
-    pub fn get_wfm_riven_types(&self) -> Result<Vec<CacheRivenWfmWeapon>, AppError> {
-        let items = self.data.wfm_weapons.clone();
-        Ok(items)
-    }
-
-    pub fn find_riven_type_by_url_name(&self, url_name: &str) -> Option<CacheRivenWfmWeapon> {
-        let items = self.data.wfm_weapons.clone();
-        let item = items.iter().find(|item| item.wfm_url_name == url_name);
-        match item {
-            Some(item) => Some(item.clone()),
-            None => None,
-        }
-    }
-
-    pub fn get_wfm_riven_attributes(&self) -> Result<Vec<CacheRivenWfmAttribute>, AppError> {
-        let attributes = self.data.wfm_attributes.clone();
-        Ok(attributes)
-    }
-
-    pub fn find_riven_attribute_by_url_name(
-        &self,
-        url_name: &str,
-    ) -> Option<CacheRivenWfmAttribute> {
-        let attributes = self.data.wfm_attributes.clone();
-        let attribute = attributes
-            .iter()
-            .find(|attribute| attribute.url_name == url_name);
-        match attribute {
-            Some(attribute) => Some(attribute.clone()),
-            None => None,
-        }
-    }
-
     pub fn get_riven_raw_mod(
         &self,
         internal_id: &str,
@@ -129,6 +96,47 @@ impl RivenModule {
         upgrades
     }
 
+    // WFM Rivens Methods
+    pub fn get_wfm_riven_types(&self) -> Result<Vec<CacheRivenWfmWeapon>, AppError> {
+        let items = self.data.wfm_weapons.clone();
+        Ok(items)
+    }
 
+    pub fn get_wfm_riven_type_by_name(&self, name: &str, i18_n: &str) -> Option<CacheRivenWfmWeapon> {
+        let items = self.data.wfm_weapons.clone();
+        let item = items.iter().find(|item| item.i18_n[i18_n].name == name);
+        match item {
+            Some(item) => Some(item.clone()),
+            None => None,
+        }
+    }
+
+    pub fn find_riven_type_by_url_name(&self, url_name: &str) -> Option<CacheRivenWfmWeapon> {
+        let items = self.data.wfm_weapons.clone();
+        let item = items.iter().find(|item| item.wfm_url_name == url_name);
+        match item {
+            Some(item) => Some(item.clone()),
+            None => None,
+        }
+    }
+
+    pub fn get_wfm_riven_attributes(&self) -> Result<Vec<CacheRivenWfmAttribute>, AppError> {
+        let attributes = self.data.wfm_attributes.clone();
+        Ok(attributes)
+    }
+
+    pub fn find_riven_attribute_by_url_name(
+        &self,
+        url_name: &str,
+    ) -> Option<CacheRivenWfmAttribute> {
+        let attributes = self.data.wfm_attributes.clone();
+        let attribute = attributes
+            .iter()
+            .find(|attribute| attribute.url_name == url_name);
+        match attribute {
+            Some(attribute) => Some(attribute.clone()),
+            None => None,
+        }
+    }
 
 }

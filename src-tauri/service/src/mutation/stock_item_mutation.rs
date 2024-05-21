@@ -1,4 +1,8 @@
-use ::entity::{enums::stock_status::StockStatus, stock_item::{self, Entity as StockItem}, sub_type::SubType};
+use ::entity::{
+    enums::stock_status::StockStatus,
+    stock::item::stock_item::{self, Entity as StockItem},
+    sub_type::SubType,
+};
 use sea_orm::*;
 
 pub struct StockItemMutation;
@@ -53,7 +57,10 @@ impl StockItemMutation {
         .await
     }
 
-    pub async fn find_by_url_name(db: &DbConn, url_name: &str) -> Result<Vec<stock_item::Model>, DbErr> {
+    pub async fn find_by_url_name(
+        db: &DbConn,
+        url_name: &str,
+    ) -> Result<Vec<stock_item::Model>, DbErr> {
         StockItem::find()
             .filter(stock_item::Column::WfmUrl.contains(url_name))
             .all(db)
@@ -61,9 +68,7 @@ impl StockItemMutation {
     }
 
     pub async fn find_by_id(db: &DbConn, id: i64) -> Result<Option<stock_item::Model>, DbErr> {
-        StockItem::find_by_id(id)
-        .one(db)
-        .await
+        StockItem::find_by_id(id).one(db).await
     }
 
     pub async fn find_by_url_name_and_sub_type(
@@ -122,7 +127,11 @@ impl StockItemMutation {
         post.delete(db).await
     }
 
-    pub async fn update_all(db: &DbConn, status: StockStatus, list_price: Option<i64>) -> Result<Vec<stock_item::Model>, DbErr> {
+    pub async fn update_all(
+        db: &DbConn,
+        status: StockStatus,
+        list_price: Option<i64>,
+    ) -> Result<Vec<stock_item::Model>, DbErr> {
         StockItem::update_many()
             .col_expr(stock_item::Column::Status, status.into())
             .col_expr(stock_item::Column::ListPrice, list_price.into())

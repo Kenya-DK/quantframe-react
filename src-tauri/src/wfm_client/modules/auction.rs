@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use entity::stock_riven::RivenAttribute;
+use entity::stock::riven::attribute::RivenAttribute;
 use eyre::eyre;
 use serde_json::json;
 

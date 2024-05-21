@@ -1,5 +1,5 @@
-use ::entity::{stock_item, stock_item::Entity as StockItem};
-use ::entity::{stock_item_old, stock_item_old::Entity as StockItemOld};
+use ::entity::stock::item::{stock_item, stock_item::Entity as StockItem};
+use ::entity::stock::item::{stock_item_old, stock_item_old::Entity as StockItemOld};
 
 use sea_orm::{sea_query::Expr, *};
 

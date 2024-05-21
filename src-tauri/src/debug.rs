@@ -1,29 +1,23 @@
 use crate::{
-    app::client::AppState, cache::client::CacheClient, helper, logger,
+    app::client::AppState, cache::client::CacheClient, logger,
     notification::client::NotifyClient, utils::modules::error::AppError,
 };
 use entity::{
     enums::stock_status::StockStatus,
-    price_history::{PriceHistory, PriceHistoryVec},
-    stock_item,
-    stock_riven::{self, MatchRivenStruct, RivenAttribute},
+    price_history::PriceHistoryVec,
     sub_type::SubType,
     transaction::{self, TransactionItemType},
 };
-use eyre::eyre;
 
 use serde_json::{json, Value};
 use service::{
-    sea_orm::{Database, DatabaseConnection, EntityTrait},
+    sea_orm::DatabaseConnection,
     StockItemMutation, StockItemQuery, StockRivenMutation, StockRivenQuery, TransactionMutation,
     TransactionQuery,
 };
-use std::{
-    fs,
-    io::Read as _,
-    path::Path,
-    sync::{Arc, Mutex},
-};
+use std::
+    sync::{Arc, Mutex}
+;
 
 #[derive(Clone, Debug)]
 pub struct DebugClient {
@@ -126,7 +120,7 @@ impl DebugClient {
                         Some(attributes) => {
                             let mut new_attributes = vec![];
                             for attribute in attributes {
-                                let attribute: RivenAttribute =
+                                let attribute: entity::stock::riven::attribute::RivenAttribute =
                                     serde_json::from_value(attribute.clone()).unwrap();
                                 new_attributes.push(attribute);
                             }
@@ -206,7 +200,7 @@ impl DebugClient {
 
             StockItemMutation::create_from_old(
                 new_con,
-                stock_item::Model {
+                entity::stock::item::stock_item::Model {
                     id: 0,
                     wfm_id: item.wfm_id,
                     wfm_url: item.url,
@@ -265,7 +259,7 @@ impl DebugClient {
 
             StockRivenMutation::create_from_old(
                 new_con,
-                stock_riven::Model {
+                entity::stock::riven::stock_riven::Model {
                     id: 0,
                     wfm_order_id: item.order_id,
                     wfm_weapon_id: item.weapon_id,
@@ -282,7 +276,7 @@ impl DebugClient {
                     bought: item.price as i64,
                     minimum_price: item.minium_price.map(|price| price as i64),
                     list_price: item.listed_price.map(|price| price as i64),
-                    filter: MatchRivenStruct::new(),
+                    filter: entity::stock::riven::match_riven::MatchRivenStruct::new(),
                     is_hidden: item.private,
                     status: StockStatus::from_string(&item.status),
                     comment: item.comment.unwrap_or("".to_string()),

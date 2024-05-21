@@ -1,12 +1,9 @@
-use std::{
-    fs::File,
-    io::Write,
-    sync::{Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 
-use entity::{enums::stock_status::StockStatus, price_history::PriceHistoryVec, sub_type::SubType, transaction::TransactionItemType};
+use entity::{sub_type::SubType, transaction::TransactionItemType};
+use entity::stock::item::*;
 use eyre::eyre;
-use serde_json::{json, Value};
+use serde_json::json;
 use service::{StockItemMutation, TransactionMutation};
 
 use crate::{
@@ -15,9 +12,9 @@ use crate::{
     notification::client::NotifyClient,
     utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
-        modules::{error::AppError, logger},
+        modules::error::AppError,
     },
-    wfm_client::{client::WFMClient, enums::order_type::OrderType, types::order_by_item},
+    wfm_client::{client::WFMClient, enums::order_type::OrderType},
 };
 
 #[tauri::command]
@@ -30,7 +27,7 @@ pub async fn stock_item_create(
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-) -> Result<entity::stock_item::Model, AppError> {
+) -> Result<stock_item::Model, AppError> {
     let app = app.lock()?.clone();
     let cache = cache.lock()?.clone();
     let notify = notify.lock()?.clone();
@@ -70,7 +67,7 @@ pub async fn stock_item_create(
             Err(e) => return Err(AppError::new("StockItemCreate", eyre!(e))),
         }
     } else {
-        let stock_item = entity::stock_item::Model::new(
+        let stock_item = entity::stock::item::stock_item::Model::new(
             item.wfm_id,
             item.wfm_url_name,
             item.name,
@@ -139,7 +136,7 @@ pub async fn stock_item_update(
     is_hidden: Option<bool>,
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-) -> Result<entity::stock_item::Model, AppError> {
+) -> Result<stock_item::Model, AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
 
@@ -258,7 +255,7 @@ pub async fn stock_item_sell(
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-) -> Result<entity::stock_item::Model, AppError> {
+) -> Result<stock_item::Model, AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
     let cache = cache.lock()?.clone();

@@ -1,11 +1,13 @@
-use sea_orm::{entity::prelude::*, FromJsonQueryResult};
+use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::{
     enums::stock_status::StockStatus,
-    price_history::{PriceHistory, PriceHistoryVec},
+    price_history::PriceHistoryVec,
     sub_type::SubType,
 };
+
+use super::{attribute::RivenAttributeVec, match_riven::MatchRivenStruct};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
 #[sea_orm(table_name = "stock_riven")]
@@ -44,64 +46,6 @@ pub struct Model {
     pub created_at: DateTimeUtc,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct RivenAttribute {
-    pub positive: bool,
-    pub value: f64,
-    pub url_name: String,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, FromJsonQueryResult)]
-pub struct RivenAttributeVec(pub Vec<RivenAttribute>);
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, FromJsonQueryResult)]
-pub struct MatchRivenStruct {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub enabled: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub rank: Option<MinMaxStruct>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub mastery_rank: Option<MinMaxStruct>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub re_rolls: Option<MinMaxStruct>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub polarity: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub similarity: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub required_negative: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub attributes: Option<Vec<MatchRivenAttributeStruct>>,
-}
-
-impl MatchRivenStruct {
-    pub fn new() -> Self {
-        Self {
-            enabled: Some(false),
-            rank: None,
-            mastery_rank: None,
-            re_rolls: None,
-            polarity: None,
-            similarity: None,
-            required_negative: None,
-            attributes: None,
-        }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct MatchRivenAttributeStruct {
-    pub url_name: String,
-    pub positive: bool,
-    pub is_required: bool,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct MinMaxStruct {
-    pub min: i64,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub max: Option<i64>,
-}
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {}

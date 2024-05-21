@@ -1,7 +1,9 @@
-use sea_orm::{entity::prelude::*, FromJsonQueryResult};
+use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::{enums::stock_status::StockStatus, price_history::{PriceHistory, PriceHistoryVec}, stock_riven::{MatchRivenStruct, RivenAttributeVec}, sub_type::SubType};
+use crate::price_history::PriceHistoryVec;
+
+use super::attribute::RivenAttributeVec;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
 #[sea_orm(table_name = "stock_riven")]

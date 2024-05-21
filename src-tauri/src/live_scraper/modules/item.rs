@@ -13,7 +13,7 @@ use crate::wfm_client::types::order::Order;
 use crate::wfm_client::types::orders::Orders;
 use entity::enums::stock_status::StockStatus;
 use entity::price_history::PriceHistory;
-use entity::stock_item;
+use entity::stock::item::stock_item;
 use entity::sub_type::SubType;
 use serde_json::json;
 use service::{StockItemMutation, StockItemQuery};

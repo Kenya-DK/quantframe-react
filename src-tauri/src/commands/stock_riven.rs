@@ -1,19 +1,13 @@
-use std::{
-    fs::File,
-    io::Write,
-    sync::{Arc, Mutex},
+use std::sync::{Arc, Mutex};
+
+use entity::stock::riven::*;
+use entity::{
+    enums::stock_status::StockStatus, sub_type::SubType, transaction::TransactionItemType,
 };
 
-use entity::{
-    enums::stock_status::StockStatus,
-    price_history::PriceHistoryVec,
-    stock_riven::{self, MatchRivenStruct, RivenAttribute, RivenAttributeVec},
-    sub_type::SubType,
-    transaction::TransactionItemType,
-};
 use eyre::eyre;
-use serde_json::{json, Value};
-use service::{StockItemMutation, StockRivenMutation, TransactionMutation};
+use serde_json::json;
+use service::{StockRivenMutation, TransactionMutation};
 
 use crate::{
     app::client::AppState,
@@ -23,7 +17,7 @@ use crate::{
         enums::ui_events::{UIEvent, UIOperationEvent},
         modules::{error::AppError, logger},
     },
-    wfm_client::{client::WFMClient, enums::order_type::OrderType, types::order_by_item},
+    wfm_client::client::WFMClient,
 };
 
 #[tauri::command]
@@ -35,7 +29,7 @@ pub async fn stock_riven_create(
     re_rolls: i64,
     polarity: String,
     rank: i64,
-    attributes: Vec<RivenAttribute>,
+    attributes: Vec<attribute::RivenAttribute>,
     minimum_price: Option<i64>,
     is_hidden: Option<bool>,
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
@@ -74,7 +68,7 @@ pub async fn stock_riven_create(
     }
 
     // Create the stock item
-    let stock = entity::stock_riven::Model::new(
+    let stock = stock_riven::Model::new(
         weapon.wfm_id.clone(),
         wfm_url.clone(),
         None,
@@ -83,7 +77,7 @@ pub async fn stock_riven_create(
         weapon.unique_name.clone(),
         rank,
         mod_name,
-        RivenAttributeVec(attributes),
+        attribute::RivenAttributeVec(attributes),
         mastery_rank,
         re_rolls,
         polarity,
@@ -146,11 +140,11 @@ pub async fn stock_riven_update(
     minimum_price: Option<i64>,
     sub_type: Option<SubType>,
     is_hidden: Option<bool>,
-    filter: Option<MatchRivenStruct>,
+    filter: Option<match_riven::MatchRivenStruct>,
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-) -> Result<entity::stock_riven::Model, AppError> {
+) -> Result<stock_riven::Model, AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
     let wfm = wfm.lock()?.clone();
@@ -289,7 +283,7 @@ pub async fn stock_riven_sell(
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-) -> Result<entity::stock_riven::Model, AppError> {
+) -> Result<stock_riven::Model, AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
     let wfm = wfm.lock()?.clone();
@@ -344,15 +338,13 @@ pub async fn stock_riven_sell(
         1,
         "".to_string(),
         price,
-        Some(
-            json!({
-                "mod_name": stock.mod_name,
-                "mastery_rank": stock.mastery_rank,
-                "re_rolls": stock.re_rolls,
-                "polarity": stock.polarity,
-                "attributes": stock.attributes,
-            })
-        ),
+        Some(json!({
+            "mod_name": stock.mod_name,
+            "mastery_rank": stock.mastery_rank,
+            "re_rolls": stock.re_rolls,
+            "polarity": stock.polarity,
+            "attributes": stock.attributes,
+        })),
     );
 
     match TransactionMutation::create(&app.conn, transaction).await {

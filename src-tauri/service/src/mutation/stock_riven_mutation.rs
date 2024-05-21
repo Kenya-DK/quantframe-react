@@ -1,4 +1,4 @@
-use ::entity::{stock_riven, stock_riven::Entity as StockRiven};
+use ::entity::stock::riven::{stock_riven, stock_riven::Entity as StockRiven};
 use sea_orm::*;
 
 pub struct StockRivenMutation;

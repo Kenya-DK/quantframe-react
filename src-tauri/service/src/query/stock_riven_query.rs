@@ -1,5 +1,5 @@
-use ::entity::{stock_riven, stock_riven::Entity as StockRiven};
-use ::entity::{stock_riven_old, stock_riven_old::Entity as StockRivenOld};
+use ::entity::stock::riven::{stock_riven, stock_riven::Entity as StockRiven};
+use ::entity::stock::riven::{stock_riven_old, stock_riven_old::Entity as StockRivenOld};
 
 use sea_orm::{sea_query::Expr, *};
 
