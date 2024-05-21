@@ -13,7 +13,7 @@ use utils::modules::error::AppError;
 use utils::modules::logger;
 
 use std::panic;
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 use std::{env, sync::Mutex};
 
 use tauri::async_runtime::block_on;
@@ -24,6 +24,7 @@ mod app;
 mod auth;
 mod cache;
 mod commands;
+mod http_client;
 mod debug;
 mod enums;
 mod helper;
@@ -34,6 +35,8 @@ mod settings;
 mod system_tray;
 mod utils;
 mod wfm_client;
+
+pub static APP: OnceLock<tauri::AppHandle> = OnceLock::new();
 
 async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     // Create the database connection and store it
@@ -92,6 +95,12 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     )));
     app.manage(cache_arc.clone());
 
+    // create and manage HTTP client state
+    let http_client_arc = Arc::new(Mutex::new(http_client::client::HttpClient::setup(
+        Arc::clone(&settings_arc),
+    )?));
+    app.manage(http_client_arc.clone());
+
     // create and manage LiveScraper state
     let live_scraper = LiveScraperClient::new(
         Arc::clone(&app_arc),
@@ -133,6 +142,7 @@ fn main() {
             _ => {}
         })
         .setup(move |app| {
+            _ = APP.get_or_init(|| app.app_handle());
             // Setup Manages for the app
             match block_on(setup_manages(app)) {
                 Ok(_) => {}

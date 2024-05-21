@@ -15,6 +15,7 @@ pub struct SettingsState {
     // Debug Mode
     pub debug: Vec<String>,
     pub dev_mode: bool,
+    pub http: HttpConfig,
     pub live_scraper: LiveScraperSettings,
     pub notifications: Notifications,
 }
@@ -73,12 +74,21 @@ pub struct Notifications {
     pub on_wfm_chat_message: Notification,
     pub on_new_trade: Notification,
 }
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct HttpConfig {
+    pub host: String,
+    pub port: i64,
+}
 // Allow us to run AuthState::default()
 impl Default for SettingsState {
     fn default() -> Self {
         Self {
             debug: vec!["*".to_string()],
             dev_mode: false,
+            http: HttpConfig {
+                host: "localhost".to_string(),
+                port: 8080,
+            },
             live_scraper: LiveScraperSettings {
                 stock_mode: StockMode::All,
                 webhook: "".to_string(),
