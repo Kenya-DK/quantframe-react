@@ -1,10 +1,11 @@
-use sea_orm::entity::prelude::*;
+use sea_orm::entity::{self, prelude::*};
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 use crate::{
     enums::stock_status::StockStatus,
     price_history::PriceHistoryVec,
-    sub_type::SubType,
+    sub_type::SubType, transaction,
 };
 
 use super::{attribute::RivenAttributeVec, match_riven::MatchRivenStruct};
@@ -96,5 +97,27 @@ impl Model {
             updated_at:Default::default(),
             created_at:Default::default(),
         }
+    }
+    pub fn to_transaction(&self,user_name:&str, price: i64, transaction_type: transaction::TransactionType) -> transaction::Model {
+        transaction::Model::new(
+            self.wfm_weapon_id.clone(),
+            self.wfm_weapon_url.clone(),
+            self.weapon_name.clone(),
+            transaction::TransactionItemType::Riven,
+            self.weapon_unique_name.clone(),
+            self.sub_type.clone(),
+            vec![self.weapon_type.clone()],
+            transaction_type,
+            1,
+            user_name.to_string(),
+            price,
+            Some(json!({
+             "mod_name": self.mod_name,
+             "mastery_rank": self.mastery_rank,
+             "re_rolls": self.re_rolls,
+             "polarity": self.polarity,
+             "attributes": self.attributes,
+            })),
+        )
     }
 }

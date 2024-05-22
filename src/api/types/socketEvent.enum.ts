@@ -26,6 +26,10 @@ export enum QfSocketEvent {
   OnLiveTradingError = "LiveTrading:OnError",
   OnLiveTradingMessage = "LiveTrading:OnMessage",
 
+  // Notification
+  OnNotificationError = "Notification:OnError",
+  OnNotificationWarn = "Notification:OnWarn",
+  OnNotificationSuccess = "Notification:OnSuccess",
 }
 
 export enum QfSocketEventOperation {

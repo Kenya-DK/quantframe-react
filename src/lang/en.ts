@@ -1,6 +1,18 @@
 
 export const en = {
   months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+  notifications: {
+    add_riven: {
+      success: {
+        title: "Riven Added",
+        message: "Riven {{name}} has been added to the stock.",
+      },
+      error: {
+        title: "Riven Add Error",
+        message: "An error occurred in {{component}} at {{backtrace}} see logs for more information.",
+      },
+    },
+  },
   enums: {
     user_status: {
       online: "Online",
@@ -556,23 +568,6 @@ export const en = {
           title: "Live Scraper Error",
           message: "An error occurred in component {{component}} at {{backtrace}} see logs for more information.",
         },
-      }
-    },
-  },
-  sockets: {
-    qf_socket: {
-      events: {
-        OnAddRivenAlecaFrame: {
-          errors: {
-            title: "Add Riven Error",
-            weapon_not_found: "Weapon not found {{name}}",
-            attribute_not_found: "Attribute not found {{name}}",
-          },
-          success: {
-            title: "Add Riven Success",
-            message: "Riven {{name}} added successfully",
-          }
-        }
       }
     },
   },

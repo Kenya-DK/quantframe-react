@@ -1,6 +1,8 @@
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
+use entity::stock::riven::create::CreateStockRiven;
 use eyre::eyre;
+use regex::Regex;
 use serde_json::json;
 
 use crate::{
@@ -53,26 +55,17 @@ impl RivenModule {
         Ok(())
     }
 
-    pub fn get_riven_raw_mod(
-        &self,
-        internal_id: &str,
-    ) -> Option<&CacheRivenDataByRivenInternalID> {
+    pub fn get_riven_raw_mod(&self, internal_id: &str) -> Option<&CacheRivenDataByRivenInternalID> {
         let riven = self.data.riven_internal_id.get(internal_id);
         riven
     }
 
-    pub fn get_weapon_stat(
-        &self,
-        internal_id: &str,
-    ) -> Option<&CacheWeaponStat> {
+    pub fn get_weapon_stat(&self, internal_id: &str) -> Option<&CacheWeaponStat> {
         let weapon = self.data.weapon_stat.get(internal_id);
         weapon
     }
-    
-    pub fn get_weapon_upgrades(
-        &self,
-        internal_id: &str,
-    ) -> Option<HashMap<String, RivenStat>> {
+
+    pub fn get_weapon_upgrades(&self, internal_id: &str) -> Option<HashMap<String, RivenStat>> {
         // Get the weapon stat
         let weapon_stat = self.get_weapon_stat(internal_id);
         if weapon_stat.is_none() {
@@ -102,41 +95,148 @@ impl RivenModule {
         Ok(items)
     }
 
-    pub fn get_wfm_riven_type_by_name(&self, name: &str, i18_n: &str) -> Option<CacheRivenWfmWeapon> {
-        let items = self.data.wfm_weapons.clone();
-        let item = items.iter().find(|item| item.i18_n[i18_n].name == name);
-        match item {
-            Some(item) => Some(item.clone()),
-            None => None,
-        }
-    }
-
-    pub fn find_riven_type_by_url_name(&self, url_name: &str) -> Option<CacheRivenWfmWeapon> {
-        let items = self.data.wfm_weapons.clone();
-        let item = items.iter().find(|item| item.wfm_url_name == url_name);
-        match item {
-            Some(item) => Some(item.clone()),
-            None => None,
-        }
-    }
-
     pub fn get_wfm_riven_attributes(&self) -> Result<Vec<CacheRivenWfmAttribute>, AppError> {
         let attributes = self.data.wfm_attributes.clone();
         Ok(attributes)
     }
 
-    pub fn find_riven_attribute_by_url_name(
+
+    pub fn find_rive_attribute_by(
         &self,
-        url_name: &str,
-    ) -> Option<CacheRivenWfmAttribute> {
-        let attributes = self.data.wfm_attributes.clone();
-        let attribute = attributes
-            .iter()
-            .find(|attribute| attribute.url_name == url_name);
-        match attribute {
-            Some(attribute) => Some(attribute.clone()),
-            None => None,
+        input: &str,
+        by: &str
+    ) -> Result<Option<CacheRivenWfmAttribute>, AppError> {
+        let items = self.data.wfm_attributes.clone();
+        let args = helper::parse_args_from_string(by);
+        let mode = args.get("--attribute_by");
+        if mode.is_none() {
+            return Err(AppError::new(
+                "get_rive_attribute_by",
+                eyre!("Missing attribute_by argument"),
+            ));
         }
+        let mode = mode.unwrap();
+
+        let riven_attribute = if mode =="name" {
+            items.iter().find(|x| x.effect == input).cloned()
+        } else if by == "url_name" {
+            items.iter().find(|x| x.url_name == input).cloned()
+        } else {
+            return Err(AppError::new(
+                "get_rive_attribute_by",
+                eyre!("Invalid by value: {}", by),
+            ));
+        };
+        Ok(riven_attribute)
     }
 
+    pub fn find_rive_type_by(
+        &self,
+        input: &str,
+        by: &str,
+    ) -> Result<Option<CacheRivenWfmWeapon>, AppError> {
+        let items = self.data.wfm_weapons.clone();
+        let args = helper::parse_args_from_string(by);
+        let mode = args.get("--weapon_by");
+        if mode.is_none() {
+            return Err(AppError::new(
+                "get_rive_type_by",
+                eyre!("Missing weapon_by argument"),
+            ));
+        }
+        let mode = mode.unwrap();
+
+        let riven_type = if mode =="name" {
+            let lang = args.get("--weapon_lang");
+            if lang.is_none() {
+                return Err(AppError::new(
+                    "get_rive_type_by",
+                    eyre!("Missing weapon_lang argument"),
+                ));
+            }
+            items.iter().find(|x| x.i18_n[lang.unwrap()].name == input).cloned()
+        } else if by == "url_name" {
+            items.iter().find(|x| x.wfm_url_name == input).cloned()
+        } else if by == "unique_name" {
+             items.iter().find(|x| x.unique_name == input).cloned()
+        } else {
+            return Err(AppError::new(
+                "get_rive_type_by",
+                eyre!("Invalid by value: {}", by),
+            ));
+        };
+        Ok(riven_type)
+    }
+
+    pub fn validate_create_riven(
+        &self,
+        input: &mut CreateStockRiven,
+        by: &str,
+    ) -> Result<CreateStockRiven, AppError> {
+        let component = "ValidateCreateRiven";
+
+        let args = helper::parse_args_from_string(by);
+        let mode = args.get("--weapon_by");
+        if mode.is_none() {
+            return Err(AppError::new(
+                component,
+                eyre!("Missing weapon_by argument"),
+            ));
+        }
+        let mode = mode.unwrap();
+
+        let attribute_by = args.get("--attribute_by");
+        if attribute_by.is_none() {
+            return Err(AppError::new(
+                component,
+                eyre!("Missing attribute_by argument"),
+            ));
+        }
+        let attribute_by = attribute_by.unwrap();
+
+        let weapon = self.find_rive_type_by(&input.wfm_url, by)?;
+        if weapon.is_none() {
+            return Err(AppError::new(
+                component,
+                eyre!("Invalid mode value: {}", mode),
+            ));
+        }
+        let weapon = weapon.unwrap();
+        input.wfm_id = weapon.wfm_id.clone();
+        input.wfm_url = weapon.wfm_url_name.clone();
+        input.weapon_type = weapon.wfm_group.clone();
+        input.weapon_unique_name = weapon.unique_name.clone();
+        input.weapon_name = weapon.i18_n["en"].name.clone();
+
+        let upgrades = self.get_weapon_upgrades(&weapon.unique_name);
+        if upgrades.is_none() {
+            return Err(AppError::new(
+                component,
+                eyre!("Failed to get weapon upgrades for: {}", weapon.unique_name),
+            ));
+        }
+        let upgrades = upgrades.unwrap().values().cloned().collect::<Vec<RivenStat>>();
+
+        for att in input.attributes.iter_mut() {
+            if attribute_by == "name" || attribute_by == "url_name" {
+                
+            } else if attribute_by == "upgrades" {
+                let re = Regex::new(r"<.*?>").unwrap();
+                let upgrade = upgrades.iter().find(|x| re.replace_all(&x.short_string, "").to_string() == att.url_name);
+                if upgrade.is_none() {
+                    return Err(AppError::new(
+                        component,
+                        eyre!("Attribute not found: {}", att.url_name),
+                    ));
+                }
+                att.url_name = upgrade.unwrap().wfm_id.clone();
+            }  else {
+                return Err(AppError::new(
+                    component,
+                    eyre!("Invalid attribute_by value: {}", attribute_by),
+                ));
+            }
+        }
+        Ok(input.clone())
+    }
 }

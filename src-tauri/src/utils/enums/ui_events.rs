@@ -19,6 +19,10 @@ pub enum UIEvent {
     UpdateLiveTradingRunningState,
     OnLiveTradingError,
     OnLiveTradingMessage,
+    // Notification
+    OnNotificationError,
+    OnNotificationWarn,
+    OnNotificationSuccess,
 }
 impl UIEvent {
     pub fn as_str(&self) -> &str {
@@ -38,6 +42,9 @@ impl UIEvent {
             UIEvent::UpdateLiveTradingRunningState => "LiveTrading:UpdateRunningState",
             UIEvent::OnLiveTradingError => "LiveTrading:OnError",
             UIEvent::OnLiveTradingMessage => "LiveTrading:OnMessage",
+            UIEvent::OnNotificationError => "Notification:OnError",
+            UIEvent::OnNotificationWarn => "Notification:OnWarn",
+            UIEvent::OnNotificationSuccess => "Notification:OnSuccess",
         }
     }
 }

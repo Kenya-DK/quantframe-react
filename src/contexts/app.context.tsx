@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api, { OnTauriDataEvent, OnTauriEvent } from "@api/index";
-import { useTranslateContexts } from "@hooks/index";
+import { useTranslateContexts, useTranslateNotifications } from "@hooks/index";
 import { notifications } from "@mantine/notifications";
 import { Button, Group, Text } from "@mantine/core";
 import {
@@ -13,6 +13,14 @@ import { relaunch } from "@tauri-apps/api/process";
 import { AppInfo, QfSocketEvent, QfSocketEventOperation, ResponseError, Settings } from "@api/types";
 import { AuthContextProvider } from "./auth.context";
 import { SplashScreen } from "../components/SplashScreen";
+
+
+type NotificationPayload = {
+  i18n_key_title: string;
+  i18n_key_message: string;
+  values: { [key: string]: string | number };
+}
+
 
 export type AppContextProps = {
   settings: Settings | undefined;
@@ -42,9 +50,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateContexts(`app.${key}`, { ...context }, i18Key)
   const useTranslateEvents = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`loading_events.${key}`, { ...context }, i18Key)
   const useTranslateNewUpdate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`new_update.${key}`, { ...context }, i18Key)
-  const useTranslateNewUpdateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateNewUpdate(`buttons.${key}`, { ...context }, i18Key)
-
-
+  const useTranslateNewUpdateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateNewUpdate(`buttons.${key}`, { ...context }, i18Key);
 
   // Fetch data from rust side
   const { isFetching, error } = useQuery({
@@ -115,12 +121,21 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
         break;
     }
   }
-
+  const handleNotification = (payload: NotificationPayload, color: string) => {
+    notifications.show({
+      title: useTranslateNotifications(payload.i18n_key_title),
+      message: useTranslateNotifications(payload.i18n_key_message, payload.values),
+      color: color,
+    });
+  }
   // Hook on tauri events from rust side
   useEffect(() => {
     OnTauriDataEvent<Settings>(QfSocketEvent.UpdateSettings, ({ data, operation }) => handleUpdateSettings(operation, data));
     OnTauriDataEvent<AppInfo>(QfSocketEvent.UpdateAppInfo, ({ data, operation }) => handleUpdateAppInfo(operation, data));
     OnTauriEvent<ResponseError>(QfSocketEvent.UpdateAppError, (data) => setAppError(data));
+    OnTauriEvent<NotificationPayload>(QfSocketEvent.OnNotificationError, (data) => handleNotification(data, 'red.7'));
+    OnTauriEvent<NotificationPayload>(QfSocketEvent.OnNotificationWarn, (data) => handleNotification(data, 'yellow.7'));
+    OnTauriEvent<NotificationPayload>(QfSocketEvent.OnNotificationSuccess, (data) => handleNotification(data, 'green.7'));
     return () => { }
   }, []);
 

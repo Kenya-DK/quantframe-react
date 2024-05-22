@@ -1,10 +1,7 @@
 use eyre::eyre;
 use serde_json::{json, Map, Value};
 use std::{
-    fs::{self, File},
-    io::{self, Read, Write},
-    path::{Path, PathBuf},
-    sync::Mutex,
+    collections::HashMap, fs::{self, File}, io::{self, Read, Write}, path::{Path, PathBuf}, sync::Mutex
 };
 use tauri::Window;
 use zip::{write::FileOptions, CompressionMethod, ZipWriter};
@@ -192,6 +189,24 @@ pub fn create_zip_file(mut files: Vec<ZipEntry>, zip_path: &str) -> Result<(), A
     zip.finish()
         .map_err(|e| AppError::new("Zip:Done", eyre!(format!("Error: {}", e.to_string()))))?;
     Ok(())
+}
+
+pub fn parse_args_from_string(args: &str) -> HashMap<String, String> {
+    let mut args_map = HashMap::new();
+    let mut parts = args.split_whitespace().peekable();
+
+    while let Some(part) = parts.next() {
+        if part.starts_with("--") {
+            if let Some(value) = parts.peek() {
+                if !value.starts_with("--") {
+                    args_map.insert(part.to_string(), value.to_string());
+                    parts.next();
+                }
+            }
+        }
+    }
+
+    args_map
 }
 
 
