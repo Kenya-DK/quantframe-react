@@ -51,7 +51,6 @@ export function StockRivenInfo({ value }: StockRivenInfoProps) {
             </Group>
           </Grid.Col>
           <Grid.Col span={6}>
-            <pre>{JSON.stringify(value.price_history, null, 2)}</pre>
             <Title order={3}>{useTranslateFields("listed")}</Title>
             {
               value.price_history.length <= 0 && (
