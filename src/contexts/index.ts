@@ -10,9 +10,6 @@ export type { ChatContextProps, ChatContextProviderProps } from './chat.context'
 export { LiveScraperContext, useLiveScraperContext, LiveScraperContextProvider } from './liveScraper.context'
 export type { LiveScraperContextProps, LiveScraperContextProviderProps, LiveScraperMessage } from './liveScraper.context'
 
-export { QfSocketContext, useQfSocketContext, QFSocketContextProvider } from './qfSocket.context'
-export type { QFSocketContextProps, QFSocketContextProviderProps } from './qfSocket.context'
-
 export { StockContextContext, useStockContextContext, StockContextProvider } from './stock.context'
 export type { StockContextProps, StockContextProviderProps } from './stock.context'
 

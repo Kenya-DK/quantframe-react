@@ -12,7 +12,6 @@ import {
 import { relaunch } from "@tauri-apps/api/process";
 import { AppInfo, QfSocketEvent, QfSocketEventOperation, ResponseError, Settings } from "@api/types";
 import { AuthContextProvider } from "./auth.context";
-import { QFSocketContextProvider } from "./qfSocket.context";
 import { SplashScreen } from "../components/SplashScreen";
 
 export type AppContextProps = {
@@ -129,9 +128,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     <AppContext.Provider value={{ settings, app_info: appInfo, app_error: appError }}>
       {!isControl && <SplashScreen opened={isFetching} text={useTranslateEvents(i18Key)} />}
       <AuthContextProvider>
-        <QFSocketContextProvider>
-          {children}
-        </QFSocketContextProvider>
+        {children}
       </AuthContextProvider>
     </AppContext.Provider>
   )
