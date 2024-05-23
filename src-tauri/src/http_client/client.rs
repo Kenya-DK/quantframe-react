@@ -5,7 +5,7 @@ use actix_web::{web, App, HttpServer};
 
 use crate::{settings::SettingsState, utils::modules::error::AppError};
 
-use super::modules::stock::{add_item, add_riven};
+use super::modules::{conversation::new_conversation, stock::{add_item, add_riven}};
 
 #[derive(Clone, Debug)]
 pub struct HttpClient {}
@@ -24,6 +24,7 @@ impl HttpClient {
                             .expose_any_header(),
                     )
                     .service(web::scope("/stock").service(add_riven).service(add_item))
+                    .service(new_conversation)
             })
             .bind((settings.http.clone().host, settings.http.port as u16))
             .map_err(|e| AppError::new("HttpServer", eyre::eyre!(e)))?
