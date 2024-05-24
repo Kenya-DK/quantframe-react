@@ -37,6 +37,7 @@ pub struct WFMClient {
     chat_module: Arc<RwLock<Option<ChatModule>>>,
     auction_module: Arc<RwLock<Option<AuctionModule>>>,
     auth_module: Arc<RwLock<Option<AuthModule>>>,
+    user_module: Arc<RwLock<Option<UserModule>>>,
     pub log_file: String,
     pub auth: Arc<Mutex<AuthState>>,
     pub settings: Arc<Mutex<crate::settings::SettingsState>>,
@@ -65,6 +66,7 @@ impl WFMClient {
             chat_module: Arc::new(RwLock::new(None)),
             auction_module: Arc::new(RwLock::new(None)),
             auth_module: Arc::new(RwLock::new(None)),
+            user_module: Arc::new(RwLock::new(None)),
         }
     }
 
@@ -359,5 +361,15 @@ impl WFMClient {
 
         // Unwrapping is safe here because we ensured the chat_module is initialized
         self.chat_module.read().unwrap().as_ref().unwrap().clone()
+    }
+
+    pub fn user(&self) -> UserModule {
+        // Lazily initialize UserModule if not already initialized
+        if self.user_module.read().unwrap().is_none() {
+            *self.user_module.write().unwrap() = Some(UserModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the user_module is initialized
+        self.user_module.read().unwrap().as_ref().unwrap().clone()
     }
 }
