@@ -17,6 +17,8 @@ pub async fn add_riven(riven: web::Json<CreateStockRiven>) -> impl Responder {
     let component = "HTTPAddRiven";
     let app_handle = APP.get().expect("failed to get app handle");
     let app_state: State<Arc<Mutex<AppState>>> = app_handle.state();
+    let settings_state: State<Arc<Mutex<SettingsClient>>> = app_handle.state();
+    let settings = settings_state.lock().expect("failed to lock settings state");
     let app = app_state.lock().expect("failed to lock app state");
     let notify_state: State<Arc<Mutex<NotifyClient>>> = app_handle.state();
     let notify = notify_state.lock().expect("failed to lock notify state");
@@ -85,9 +87,4 @@ pub async fn add_riven(riven: web::Json<CreateStockRiven>) -> impl Responder {
         }
     }
     HttpResponse::Ok().body(serde_json::to_string(&riven).unwrap())
-}
-
-#[post("/add_item")]
-pub async fn add_item() -> impl Responder {
-    HttpResponse::Ok().body("Hello World!")
 }

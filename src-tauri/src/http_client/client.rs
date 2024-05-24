@@ -5,8 +5,7 @@ use actix_web::{web, App, HttpServer};
 
 use crate::{settings::SettingsState, utils::modules::error::AppError};
 
-use super::modules::{conversation::new_conversation, stock::{add_item, add_riven}};
-
+use super::modules::{conversation::new_conversation, trade::progress, stock::{add_item, add_riven}};
 #[derive(Clone, Debug)]
 pub struct HttpClient {}
 
@@ -23,13 +22,18 @@ impl HttpClient {
                             .allow_any_method()
                             .expose_any_header(),
                     )
-                    .service(web::scope("/stock").service(add_riven).service(add_item))
+                    .service(web::scope("/stock")
+                        .service(add_riven)
+                        .service(add_item)
+                    )
+                    .service(web::scope("/trading").service(progress))
                     .service(new_conversation)
             })
             .bind((settings.http.clone().host, settings.http.port as u16))
             .map_err(|e| AppError::new("HttpServer", eyre::eyre!(e)))?
             .run(),
         );
+        logger::info!("Http server started on {}:{}", settings.http.host, settings.http.port);
         return Ok(HttpClient {});
     }
 }
