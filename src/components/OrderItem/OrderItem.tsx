@@ -1,119 +1,58 @@
 import { Image, Group, Paper, Stack, Divider, Text, Avatar, Title } from '@mantine/core';
 import classes from './OrderItem.module.css';
-import { ActionWithTooltip } from '../ActionWithTooltip';
-import { faCartShopping, faFilter, faPen, faTrashCan } from '@fortawesome/free-solid-svg-icons';
-import { Wfm } from '../../types';
-
+import { Wfm } from '$types/index';
+import { WFMThumbnail } from '@api/index';
+import { useTranslateComponent, useTranslateEnums } from '@hooks/index';
+import { TextTranslate } from '../TextTranslate';
 
 export type OrderItemProps = {
 	order: Wfm.OrderDto;
+	show_user?: boolean;
+	footer?: React.ReactNode;
 }
 
-export function OrderItem({ order }: OrderItemProps) {
-	// State
+export function OrderItem({ order, footer, show_user }: OrderItemProps) {
+
+	// Translate general
+	const useTranslateStockItemInfo = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateComponent(`order_item.${key}`, { ...context }, i18Key)
+	const useTranslateFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateStockItemInfo(`fields.${key}`, { ...context }, i18Key)
+	const useTranslateUserStatus = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateEnums(`user_status.${key}`, { ...context }, i18Key)
 
 	return (
 		<Paper mt={5} classNames={classes} p={7} data-order-type={order.order_type}>
 			<Stack gap={3}>
 				<Group justify='space-between'>
 					<Group>
-						<Title order={4}>{order.item?.en.item_name}</Title>
+						<Title order={4}>{order.item?.en?.item_name}</Title>
 					</Group>
 					<Group>
-						<ActionWithTooltip
-							tooltip='Mark as favorite'
-							icon={faFilter}
-							onClick={() => { }}
-						/>
+						<TextTranslate i18nKey={useTranslateFields("quantity", undefined, true)} values={{ quantity: order.quantity }} />
 					</Group>
 				</Group>
 				<Divider />
 				<Group justify='space-between'>
 					<Group>
-						<Image width={48} height={48} fit="contain" src={"https://warframe.market/static/assets/items/images/en/thumbs/glaive.7b1c251b4f1fcc0afe64ce5233a39891.128x128.png"} />
+						<Image width={48} height={48} fit="contain" src={WFMThumbnail(order.item?.icon || "")} />
 						<Text size="md">{order.platinum}</Text>
 					</Group>
 					<Group>
 
 					</Group>
 				</Group>
-				<Divider />
+				{(show_user || footer) && <Divider />}
 				<Group align='center' grow>
-					<Group>
-						<Avatar size={"sm"} src={"https://warframe.market/static/assets/user/avatar/5b855e84f7af4800475db904.png?72ba463726786a0826b0bbd622675f1c"} alt="no image here" />
-					</Group>
-					<Group gap={"xs"} justify='flex-end'>
-						<ActionWithTooltip
-							tooltip='Mark as favorite'
-							color="blue.7"
-							icon={faPen}
-							onClick={() => { }}
-						/>
-						<ActionWithTooltip
-							tooltip='Mark as favorite'
-							color="green.7"
-							icon={faCartShopping}
-							onClick={() => { }}
-						/>
-						<ActionWithTooltip
-							tooltip='Mark as favorite'
-							color="red.7"
-							icon={faTrashCan}
-							onClick={() => { }}
-						/>
-					</Group>
+					{show_user && (
+						<Group>
+							<Avatar size={"sm"} src={WFMThumbnail(order.user.avatar || "https://cataas.com/cat")} alt="no image here" />
+							<Group>
+								<Text> {order.user.ingame_name}</Text>
+								<Text data-color-mode='text' data-user-status={order.user.status}> {useTranslateUserStatus(order.user.status)}</Text>
+							</Group>
+						</Group>
+					)}
+					{footer}
 				</Group>
 			</Stack>
 		</Paper>
 	);
-}
-
-export interface Auction {
-	buyout_price: number;
-	note: string;
-	visible: boolean;
-	item: Item;
-	starting_price: number;
-	minimal_reputation: number;
-	owner: Owner;
-	platform: string;
-	closed: boolean;
-	top_bid: null;
-	winner: null;
-	is_marked_for: null;
-	marked_operation_at: null;
-	created: Date;
-	updated: Date;
-	note_raw: string;
-	is_direct_sell: boolean;
-	id: string;
-	private: boolean;
-}
-
-export interface Item {
-	type: string;
-	mod_rank: number;
-	weapon_url_name: string;
-	attributes: Attribute[];
-	name: string;
-	re_rolls: number;
-	polarity: string;
-	mastery_level: number;
-}
-
-export interface Attribute {
-	value: number;
-	positive: boolean;
-	url_name: string;
-}
-
-export interface Owner {
-	reputation: number;
-	locale: string;
-	avatar: string;
-	last_seen: Date;
-	ingame_name: string;
-	status: string;
-	id: string;
-	region: string;
 }

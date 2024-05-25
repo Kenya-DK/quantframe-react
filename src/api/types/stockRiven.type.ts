@@ -70,9 +70,9 @@ export interface SellStockRiven {
   price: number;
 }
 export interface StockRivenDetails {
-  auctions:      Wfm.Auction<Wfm.AuctionOwner>[];
+  auctions: Wfm.Auction<Wfm.AuctionOwner>[];
   highest_price: number;
-  lowest_price:  number;
-  profit:        number;
+  lowest_price: number;
+  profit: number;
   total_sellers: number;
 }

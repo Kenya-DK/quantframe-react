@@ -12,18 +12,18 @@ export function StockRivenInfo({ value }: StockRivenInfoProps) {
 
   // Translate general
   const useTranslateStockRivenInfo = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateComponent(`stock_riven_info.${key}`, { ...context }, i18Key)
+  const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateStockRivenInfo(`tabs.${key}`, { ...context }, i18Key)
   const useTranslateFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateStockRivenInfo(`fields.${key}`, { ...context }, i18Key)
-  // const useTranslateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateStockItemInfo(`buttons.${key}`, { ...context }, i18Key)
   const useTranslateStockStatus = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateEnums(`stock_status.${key}`, { ...context }, i18Key)
 
   return (
     <Tabs defaultValue="general" h={"75vh"}>
       <Tabs.List>
         <Tabs.Tab value="general" >
-          General
+          {useTranslateTabs("general.title")}
         </Tabs.Tab>
         <Tabs.Tab value="auctions">
-          Auctions
+          {useTranslateTabs("auctions.title")}
         </Tabs.Tab>
       </Tabs.List>
 

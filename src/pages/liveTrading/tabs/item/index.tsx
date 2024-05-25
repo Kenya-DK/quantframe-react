@@ -234,7 +234,6 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
             size: "100%",
             title: item.item_name,
             children: (<StockItemInfo value={item} />),
-
         })
     }
 

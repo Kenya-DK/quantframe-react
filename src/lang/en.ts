@@ -391,21 +391,50 @@ export const en = {
       footer: "Mr: <blue>{{mastery_level}}</blue> Ranks: <blue>{{mod_rank}}</blue> Re-rolls: <blue>{{re_rolls}}</blue> Polarity: <polarity/>",
     },
     stock_item_info: {
+      tabs: {
+        general: {
+          title: "General",
+        },
+        orders: {
+          title: "Orders",
+        },
+      },
       fields: {
         created_at: "Created At",
         updated_at: "Updated At",
+        minimum_price: "Minimum Price",
+        moving_avg: "Moving Avg",
+        list_price: "List Price",
+        profit: "Profit",
+        total_sellers: "Total Sellers",
+        highest_price: "Highest Price",
+        lowest_price: "Lowest Price",
         status: "Status",
         bought: "Bought",
-        minimum_price: "Minimum Price",
         owned: "Owned",
         listed: "Listed Prices History",
+        no_orders: "No orders was found for this item.",
+        no_listed: "No previous listed prices",
       },
       buttons: {
         wfm: "Warframe Market",
         wiki: "Wiki",
       }
     },
+    order_item: {
+      fields: {
+        quantity: "<qty/> <blue>{{quantity}}</blue>",
+      },
+    },
     stock_riven_info: {
+      tabs: {
+        general: {
+          title: "General",
+        },
+        auctions: {
+          title: "Auctions",
+        },
+      },
       fields: {
         created_at: "Created At",
         updated_at: "Updated At",

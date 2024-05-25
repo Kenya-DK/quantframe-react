@@ -12,14 +12,9 @@ export interface StockItem extends StockEntryBase {
   updated_at: string;
   wfm_id: string;
   wfm_url: string;
-  extra?: StockItemExtra;
+  info?: StockItemDetails;
 }
 
-export interface StockItemExtra {
-  profit: number;
-  sma_price: number;
-  trades: Wfm.OrderDto[];
-}
 
 export interface CreateStockItem {
   wfm_url: string;
@@ -42,4 +37,13 @@ export interface SellStockItem {
   id: number;
   quantity: number;
   price: number;
+}
+
+export interface StockItemDetails {
+  highest_price: number;
+  lowest_price: number;
+  moving_avg: number;
+  orders: Wfm.OrderDto[];
+  profit: number;
+  total_sellers: number;
 }

@@ -818,31 +818,20 @@ impl ItemModule {
 
         // If the order is visible and the item is hidden, delete the order.
         if stock_item.is_hidden {
-            
-            stock_item.status = StockStatus::InActive   ;
+            stock_item.status = StockStatus::InActive;
             if user_order.visible {
                 self.send_order_update(UIOperationEvent::Delete, json!({"id": user_order.id}));
                 wfm.orders().delete(&user_order.id).await?;
                 my_orders.delete_order_by_id(OrderType::Sell, &user_order.id);
             }
 
-
             // Send GUI Update.
-            self.send_msg(
-                "is_hidden",
-                Some(json!({ "name": item_info.name.clone()})),
-            );
-            self.send_stock_update(UIOperationEvent::CreateOrUpdate, json!(stock_item));            
+            self.send_msg("is_hidden", Some(json!({ "name": item_info.name.clone()})));
+            self.send_stock_update(UIOperationEvent::CreateOrUpdate, json!(stock_item));
             return Ok(());
         }
 
         let stock_item_original = stock_item.clone();
-
-        // Create a PriceHistory struct
-        let mut price_history = PriceHistory::new(
-            chrono::Local::now().naive_local().to_string(),
-            0,
-        );
 
         // Remove all orders where the sub type is not the same as the stock item sub type.
         let live_orders = live_orders.filter_by_sub_type(stock_item.sub_type.as_ref(), false);
@@ -858,13 +847,15 @@ impl ItemModule {
 
         // Get the lowest sell order price from the DataFrame of live sell orders
         let lowest_price = if live_orders.sell_orders.len() > 2 {
-            let lowest_order = live_orders.lowest_order(OrderType::Sell).unwrap();
-            lowest_order.platinum
+            live_orders.lowest_price(OrderType::Sell)
         } else {
             stock_item.status = StockStatus::NoSellers;
             0
         };
 
+        // Get the highest sell order price from the DataFrame of live sell orders
+        let highest_price = live_orders.highest_price(OrderType::Sell);
+        
         // Then Price the order will be posted for.
         let mut post_price = lowest_price;
         stock_item.status = StockStatus::Live;
@@ -887,24 +878,12 @@ impl ItemModule {
         // Calculate the profit from the post price
         let profit = post_price - bought_price as i64;
 
-        price_history.price = post_price;
-
         if profit <= 0 {
             stock_item.status = StockStatus::ToLowProfit;
             stock_item.list_price = None;
         } else {
-            let last_price_history = stock_item_original.price_history.0.last();
-            if last_price_history.is_none() || last_price_history.unwrap().price != post_price {
-                stock_item.price_history.0.push(price_history.clone());
-            }
             stock_item.list_price = Some(post_price);
         }
-
-        // Extra Information for the GUI
-        let extra = json!({
-            "profit": profit,
-            "sma_price": moving_avg,
-        });
 
         if user_order.visible {
             // If the item is too cheap, delete the order
@@ -926,10 +905,7 @@ impl ItemModule {
                     user_order.platinum = post_price;
                     user_order.quantity = quantity;
                     my_orders.update_order(user_order.clone());
-                    let mut payload = json!(stock_item);
-                    payload["extra"] = extra.clone();
                     self.send_order_update(UIOperationEvent::CreateOrUpdate, json!(user_order));
-                    self.send_stock_update(UIOperationEvent::CreateOrUpdate, json!(payload));
                 }
             }
         } else if stock_item.status != StockStatus::ToLowProfit {
@@ -970,16 +946,72 @@ impl ItemModule {
             }
         }
 
+        // Get Stock Information.
+        let stock_info = self.stock_info.get(&stock_item.id);
+        let details = StockItemDetails::new(
+            Some(live_orders.sell_orders.len() as i64),
+            Some(profit),
+            Some(lowest_price),
+            Some(moving_avg),
+            Some(highest_price),
+            Some(live_orders.sell_orders),
+        );
+
+        // Need UI Update
+        let mut need_ui_update = false;
+
+        if stock_info.is_some() {
+            let stock_info = stock_info.unwrap();
+            if stock_info.total_sellers != details.total_sellers {
+                need_ui_update = true;
+            } else if stock_info.profit != details.profit {
+                need_ui_update = true;
+            } else if stock_info.lowest_price != details.lowest_price {
+                need_ui_update = true;
+            } else if stock_info.highest_price != details.highest_price {
+                need_ui_update = true;
+            } else if stock_info.orders.is_some()
+                && details.orders.is_some()
+                && (stock_info.orders.clone().unwrap().len()
+                    != details.orders.clone().unwrap().len())
+            {
+                need_ui_update = true;
+            }
+        } else {
+            need_ui_update = true;
+        }
+
+        if stock_item.list_price != stock_item_original.list_price {
+            // Create a PriceHistory struct
+            if stock_item.list_price.is_some() {
+                let price_history = PriceHistory::new(
+                    chrono::Local::now().naive_local().to_string(),
+                    stock_item.list_price.unwrap(),
+                );
+                let last_price_history = stock_item_original.price_history.0.last();
+                if last_price_history.is_none()
+                    || last_price_history.unwrap().price != stock_item.list_price.unwrap()
+                {
+                    stock_item.price_history.0.push(price_history.clone());
+                }
+            }
+            need_ui_update = true;
+        } else if stock_item.status != stock_item_original.status {
+            need_ui_update = true;
+        } else if stock_item.price_history.0.len() != stock_item_original.price_history.0.len() {
+            need_ui_update = true;
+        }
+
         // Update the stock item in the database
-        if stock_item.list_price != stock_item_original.list_price
-            || stock_item.status != stock_item_original.status
-            || stock_item.price_history.0.len() != stock_item_original.price_history.0.len()
-        {
+        // if stock_item.list_price != stock_item_original.list_price
+        //     || stock_item.status != stock_item_original.status
+        //     || stock_item.price_history.0.len() != stock_item_original.price_history.0.len()
+        if need_ui_update {
             StockItemMutation::update_by_id(&app.conn, stock_item.id, stock_item.clone())
                 .await
                 .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
             let mut payload = json!(stock_item);
-            payload["extra"] = extra;
+            payload["info"] = json!(details);
             self.send_stock_update(UIOperationEvent::CreateOrUpdate, json!(payload));
         }
         return Ok(());

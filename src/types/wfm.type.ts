@@ -75,16 +75,10 @@ export namespace Wfm {
     region: string;
     creation_date: string;
     last_update: string;
-    user: OrderUser;
+    user: UserDto;
     subtype?: string;
     visible: boolean;
     item?: OrderItemDto;
-  }
-  export interface OrderUser {
-    id: string;
-    ingame_name: string;
-    reputation: number;
-    status: string;
   }
   export interface OrderItemDto {
     id: string;
@@ -99,17 +93,17 @@ export namespace Wfm {
     ducats: number;
     vaulted?: boolean;
     quantity_for_set: number;
-    en: LangItemNameDto;
-    ru: LangItemNameDto;
-    ko: LangItemNameDto;
-    fr: LangItemNameDto;
-    de: LangItemNameDto;
-    sv: LangItemNameDto;
-    zh_hant: LangItemNameDto;
-    zh_hans: LangItemNameDto;
-    pt: LangItemNameDto;
-    es: LangItemNameDto;
-    pl: LangItemNameDto;
+    en?: LangItemNameDto;
+    ru?: LangItemNameDto;
+    ko?: LangItemNameDto;
+    fr?: LangItemNameDto;
+    de?: LangItemNameDto;
+    sv?: LangItemNameDto;
+    zh_hant?: LangItemNameDto;
+    zh_hans?: LangItemNameDto;
+    pt?: LangItemNameDto;
+    es?: LangItemNameDto;
+    pl?: LangItemNameDto;
   }
 
   export interface LangItemNameDto {
