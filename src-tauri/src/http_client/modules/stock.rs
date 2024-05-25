@@ -9,7 +9,7 @@ use regex::Regex;
 use  entity::stock::{self, riven::{attribute, create::CreateStockRiven, stock_riven}};
 
 use crate::{
-    app::client::AppState, cache::{client::CacheClient, modules::riven, types::cache_riven::RivenStat}, notification::client::NotifyClient, utils::{enums::ui_events::{UIEvent, UIOperationEvent}, modules::error::{self, AppError}}, APP
+    app::client::AppState, cache::{client::CacheClient, modules::riven, types::cache_riven::RivenStat}, notification::client::NotifyClient, settings::SettingsState, utils::{enums::ui_events::{UIEvent, UIOperationEvent}, modules::error::{self, AppError}}, APP
 };
 
 #[post("/add_riven")]
@@ -17,7 +17,7 @@ pub async fn add_riven(riven: web::Json<CreateStockRiven>) -> impl Responder {
     let component = "HTTPAddRiven";
     let app_handle = APP.get().expect("failed to get app handle");
     let app_state: State<Arc<Mutex<AppState>>> = app_handle.state();
-    let settings_state: State<Arc<Mutex<SettingsClient>>> = app_handle.state();
+    let settings_state: State<Arc<Mutex<SettingsState>>> = app_handle.state();
     let settings = settings_state.lock().expect("failed to lock settings state");
     let app = app_state.lock().expect("failed to lock app state");
     let notify_state: State<Arc<Mutex<NotifyClient>>> = app_handle.state();
@@ -72,7 +72,7 @@ pub async fn add_riven(riven: web::Json<CreateStockRiven>) -> impl Responder {
         return HttpResponse::Ok().body(serde_json::to_string(&stock).unwrap());
     }
 
-    let transaction = stock.to_transaction("", stock.bought, entity::transaction::TransactionType::Purchase);
+    let transaction = stock.to_transaction("", stock.bought, entity::transaction::transaction::TransactionType::Purchase);
 
     match TransactionMutation::create(&app.conn, transaction).await {
         Ok(inserted) => {

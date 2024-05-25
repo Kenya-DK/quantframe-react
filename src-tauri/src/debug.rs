@@ -6,7 +6,7 @@ use entity::{
     enums::stock_status::StockStatus,
     price_history::PriceHistoryVec,
     sub_type::SubType,
-    transaction::{self, TransactionItemType},
+    transaction::transaction::{self, TransactionItemType},
 };
 
 use serde_json::{json, Value};

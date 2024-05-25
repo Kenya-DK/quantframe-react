@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use entity::stock::riven::*;
 use entity::{
-    enums::stock_status::StockStatus, sub_type::SubType, transaction::TransactionItemType,
+    enums::stock_status::StockStatus, sub_type::SubType, transaction::transaction::TransactionItemType,
 };
 
 use eyre::eyre;
@@ -326,7 +326,7 @@ pub async fn stock_riven_sell(
     }
 
     // Add Transaction to the database
-    let transaction = entity::transaction::Model::new(
+    let transaction = entity::transaction::transaction::Model::new(
         stock.wfm_weapon_id.clone(),
         stock.wfm_weapon_url.clone(),
         stock.weapon_name.clone(),
@@ -334,7 +334,7 @@ pub async fn stock_riven_sell(
         stock.weapon_unique_name.clone(),
         stock.sub_type.clone(),
         vec![stock.weapon_type.clone()],
-        entity::transaction::TransactionType::Sale,
+        entity::transaction::transaction::TransactionType::Sale,
         1,
         "".to_string(),
         price,

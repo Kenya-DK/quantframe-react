@@ -98,12 +98,12 @@ impl Model {
             created_at:Default::default(),
         }
     }
-    pub fn to_transaction(&self,user_name:&str, price: i64, transaction_type: transaction::TransactionType) -> transaction::Model {
-        transaction::Model::new(
+    pub fn to_transaction(&self,user_name:&str, price: i64, transaction_type: transaction::transaction::TransactionType) -> transaction::transaction::Model {
+        transaction::transaction::Model::new(
             self.wfm_weapon_id.clone(),
             self.wfm_weapon_url.clone(),
             self.weapon_name.clone(),
-            transaction::TransactionItemType::Riven,
+            transaction::transaction::TransactionItemType::Riven,
             self.weapon_unique_name.clone(),
             self.sub_type.clone(),
             vec![self.weapon_type.clone()],

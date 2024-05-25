@@ -1,4 +1,4 @@
-use ::entity::{transaction, transaction::Entity as Transaction};
+use ::entity::transaction::{transaction, transaction::Entity as Transaction};
 use sea_orm::*;
 
 pub struct TransactionMutation;
@@ -55,7 +55,7 @@ impl TransactionMutation {
 
     pub async fn update_by_id(
         db: &DbConn,
-        id: i32,
+        id: i64,
         form_data: transaction::Model,
     ) -> Result<transaction::Model, DbErr> {
         let post: transaction::ActiveModel = Transaction::find_by_id(id)
@@ -85,7 +85,8 @@ impl TransactionMutation {
         .await
     }
 
-    pub async fn delete(db: &DbConn, id: i32) -> Result<DeleteResult, DbErr> {
+    
+    pub async fn delete_by_id(db: &DbConn, id: i64) -> Result<DeleteResult, DbErr> {
         let post: transaction::ActiveModel = Transaction::find_by_id(id)
             .one(db)
             .await?

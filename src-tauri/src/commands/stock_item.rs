@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use entity::{sub_type::SubType, transaction::TransactionItemType};
+use entity::{sub_type::SubType, transaction::transaction::TransactionItemType};
 use entity::stock::item::*;
 use eyre::eyre;
 use serde_json::json;
@@ -95,7 +95,7 @@ pub async fn stock_item_create(
         return Ok(new_item);
     }
     // Add Transaction to the database
-    let transaction = entity::transaction::Model::new(
+    let transaction = entity::transaction::transaction::Model::new(
         new_item.wfm_id.clone(),
         new_item.wfm_url.clone(),
         new_item.item_name.clone(),
@@ -103,7 +103,7 @@ pub async fn stock_item_create(
         new_item.item_unique_name.clone(),
         new_item.sub_type.clone(),
         item.tags,
-        entity::transaction::TransactionType::Purchase,
+        entity::transaction::transaction::TransactionType::Purchase,
         quantity,
         "".to_string(),
         bought,
@@ -292,7 +292,7 @@ pub async fn stock_item_sell(
         })?;
 
     // Add Transaction to the database
-    let transaction = entity::transaction::Model::new(
+    let transaction = entity::transaction::transaction::Model::new(
         new_item.wfm_id.clone(),
         new_item.wfm_url.clone(),
         new_item.item_name.clone(),
@@ -300,7 +300,7 @@ pub async fn stock_item_sell(
         new_item.item_unique_name.clone(),
         new_item.sub_type.clone(),
         item_info.tags,
-        entity::transaction::TransactionType::Sale,
+        entity::transaction::transaction::TransactionType::Sale,
         quantity,
         "".to_string(),
         price,
