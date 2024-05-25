@@ -24,10 +24,10 @@ mod app;
 mod auth;
 mod cache;
 mod commands;
-mod http_client;
 mod debug;
 mod enums;
 mod helper;
+mod http_client;
 mod live_scraper;
 mod notification;
 mod qf_client;
@@ -179,6 +179,8 @@ fn main() {
             commands::cache::cache_get_weapon_upgrades,
             // Transaction commands
             commands::transaction::transaction_get_all,
+            commands::transaction::transaction_update,
+            commands::transaction::transaction_delete,
             // Debug commands
             commands::debug::debug_db_reset,
             commands::debug::debug_migrate_data_base,

@@ -114,10 +114,9 @@ impl ItemPriceModule {
         let qf = self.client.qf.lock()?.clone();
         let settings = self.client.settings.lock()?.clone();
         if settings.dev_mode {
-            logger::warning_con(&self.component, "Dev Mode is enabled, using old item prices");
+            logger::warning_con(&self.component, "DevMode is enabled, using old item prices");
             return Ok(());
         }
-
 
         let current_cache_id = self.get_cache_id()?;
         logger::info_con(

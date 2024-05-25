@@ -43,8 +43,7 @@ pub async fn new_conversation(input: web::Json<Conversation>) -> impl Responder 
         Err(e) => {
             None
         }
-    }
-
+    };
 
     HttpResponse::Ok().body(serde_json::to_string(&input).unwrap())
 }

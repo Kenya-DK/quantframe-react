@@ -24,7 +24,7 @@ use crate::{
 
 use super::modules::{
     auction::AuctionModule, auth::AuthModule, chat::ChatModule, item::ItemModule,
-    order::OrderModule,
+    order::OrderModule, user::UserModule,
 };
 
 #[derive(Clone, Debug)]

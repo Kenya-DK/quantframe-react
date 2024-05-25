@@ -28,6 +28,9 @@
   --stock-status-order-limit: var(--mantine-color-cyan-8);
   --stock-status-overpriced: var(--mantine-color-pink-9);
   --stock-status-underpriced: var(--mantine-color-orange-6);
+
+  --item-type-riven: var(--mantine-color-violet-7);
+  --item-type-item: var(--mantine-color-blue-7);
 }
 
 [data-user-status='online'] {
@@ -48,6 +51,28 @@
   &[data-color-mode='text'] {
     color: var(--user-status-invisible);
   }
+}
+
+[data-item-type='riven'] {
+  &[data-color-mode='bg'] {
+    background-color: var(--item-type-riven);
+  }
+
+  &[data-color-mode='text'] {
+    color: var(--item-type-riven);
+  }
+
+}
+
+[data-item-type='item'] {
+  &[data-color-mode='bg'] {
+    background-color: var(--item-type-item);
+  }
+
+  &[data-color-mode='text'] {
+    color: var(--item-type-item);
+  }
+
 }
 
 [data-user-status='ingame'] {

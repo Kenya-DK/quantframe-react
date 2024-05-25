@@ -3,9 +3,9 @@ use std::sync::{Arc, Mutex};
 use actix_cors::Cors;
 use actix_web::{web, App, HttpServer};
 
-use crate::{settings::SettingsState, utils::modules::error::AppError};
+use crate::{settings::SettingsState, utils::modules::{error::AppError, logger}};
 
-use super::modules::{conversation::new_conversation, trade::progress, stock::{add_item, add_riven}};
+use super::modules::{conversation::new_conversation, trade::progress, stock::add_riven};
 #[derive(Clone, Debug)]
 pub struct HttpClient {}
 
@@ -24,7 +24,7 @@ impl HttpClient {
                     )
                     .service(web::scope("/stock")
                         .service(add_riven)
-                        .service(add_item)
+                        // .service(add_item)
                     )
                     .service(web::scope("/trading").service(progress))
                     .service(new_conversation)
@@ -33,7 +33,7 @@ impl HttpClient {
             .map_err(|e| AppError::new("HttpServer", eyre::eyre!(e)))?
             .run(),
         );
-        logger::info!("Http server started on {}:{}", settings.http.host, settings.http.port);
+        logger::info_con("HttpServer", format!("HTTP Server started on {}:{}", settings.http.host, settings.http.port).as_str());
         return Ok(HttpClient {});
     }
 }

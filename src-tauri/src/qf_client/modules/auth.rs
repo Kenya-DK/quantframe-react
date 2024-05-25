@@ -34,7 +34,7 @@ impl AuthModule {
         if settings.dev_mode {
             logger::warning_con(
                 &self.get_component("Me"),
-                "Dev Mode is enabled, returning default user",
+                "DevMode is enabled, returning default user",
             );
             return Ok(User::default());
         }
@@ -59,7 +59,7 @@ impl AuthModule {
         if settings.dev_mode {
             logger::warning_con(
                 &self.get_component("Login"),
-                "Dev Mode is enabled, returning default user",
+                "DevMode is enabled, returning default user",
             );
             return Ok(User::default());
         }
@@ -116,7 +116,7 @@ impl AuthModule {
         if settings.dev_mode {
             logger::warning_con(
                 &self.get_component("Validate"),
-                "Dev Mode is enabled, returning default user",
+                "DevMode is enabled, returning default user",
             );
             return Ok(Some(User::default()));
         }

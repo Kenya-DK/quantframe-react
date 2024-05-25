@@ -28,3 +28,9 @@ export enum TransactionItemType {
   Item = "item",
   Riven = "riven",
 }
+
+export interface UpdateTransactionDto {
+  id: number;
+  price: number;
+  quantity: number;
+}

@@ -14,6 +14,22 @@ export const en = {
     },
   },
   enums: {
+    transaction_type: {
+      purchase: "Purchase",
+      sale: "Sale",
+      details: {
+        purchase: "Purchase",
+        sale: "Sale",
+      }
+    },
+    item_type: {
+      riven: "Riven",
+      item: "Item",
+      details: {
+        riven: "Riven",
+        item: "Item",
+      }
+    },
     user_status: {
       online: "Online",
       ingame: "Ingame",
@@ -265,6 +281,25 @@ export const en = {
               description_without_report: "Add item to stock",
             }
           }
+        },
+      },
+      update_transaction: {
+        fields: {
+          price: {
+            label: "Price",
+            placeholder: "Price",
+            description: "The price of the transaction",
+            error: "Invalid price",
+          },
+          quantity: {
+            label: "Quantity",
+            placeholder: "Quantity",
+            description: "The quantity of the transaction",
+            error: "Invalid quantity",
+          },
+        },
+        buttons: {
+          submit: "Update",
         },
       },
       riven_filter: {
@@ -895,6 +930,71 @@ export const en = {
       tabs: {
         transaction: {
           title: "Transactions",
+          prompts: {
+            delete: {
+              title: "Delete Transaction",
+              message: "Are you sure you want to delete transaction {{name}}, this action cannot be undone.",
+              confirm: "Yes, delete",
+              cancel: "No, cancel",
+            },
+            update: {
+              title: "Update Transaction",
+            },
+          },
+          datatable: {
+            columns: {
+              id: {
+                title: "ID",
+              },
+              name: {
+                title: "Name",
+                value: "{{name}} {{mod_name}} <blue>{{sub_type}}</blue>",
+              },
+              item_type: {
+                title: "Item Type",
+              },
+              quantity: {
+                title: "Quantity",
+              },
+              price: {
+                title: "Price",
+              },
+              created_at: {
+                title: "Created At",
+              },
+              actions: {
+                title: "Actions",
+                buttons: {
+                  update: {
+                    tooltip: "Update",
+                  },
+                  delete: {
+                    tooltip: "Delete",
+                  },
+                }
+              }
+            }
+          },
+          success: {
+            update_transaction: {
+              title: "Update Transaction Success",
+              message: "Transaction {{name}} has been successfully updated.",
+            },
+            delete_transaction: {
+              title: "Delete Transaction Success",
+              message: "Transaction has been successfully deleted.",
+            },
+          },
+          errors: {
+            update_transaction: {
+              title: "Update Transaction Error",
+              message: "An error occurred while trying to update transaction.",
+            },
+            delete_transaction: {
+              title: "Delete Transaction Error",
+              message: "An error occurred while trying to delete transaction.",
+            },
+          },
         },
         database: {
           title: "Database",

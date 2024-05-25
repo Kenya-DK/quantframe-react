@@ -4,15 +4,10 @@ import { faBoxOpen, faCalendarAlt, faCartShopping, faHandHoldingDollar, faHandsh
 import { useWarframeMarketContextContext } from "@contexts/warframeMarket.context";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { getCssVariable } from "@utils/helper";
-// import { StatisticProfitBase, TransactionType } from "@api/types";
 import { DataTable } from "mantine-datatable";
 import { useEffect, useState } from "react";
-import { TextTranslate } from "../../components/TextTranslate/TextTranslate";
-import { StatsWithIcon } from "../../components/StatsWithIcon/StatsWithIcon";
-import { BarCardChart } from "../../components/BarCardChart/BarCardChart";
-import { ColorInfo } from "../../components/ColorInfo/ColorInfo";
-import { TransactionListItem } from "../../components/TransactionListItem/TransactionListItem";
-import { StatisticProfitBase, TransactionType } from "../../api/types";
+import { TextTranslate, StatsWithIcon, BarCardChart, ColorInfo, TransactionListItem } from "@components";
+import { StatisticProfitBase, TransactionType } from "@api/types";
 
 
 const BarChartFooter = ({ i18nKey, statistics }: { i18nKey: string, statistics: StatisticProfitBase }) => {

@@ -4,6 +4,7 @@ export * from "./Settings";
 export * from "./Notification";
 export * from "./UpdateRivenBulk";
 export * from "./UpdateItemBulk";
+export * from "./UpdateTransaction";
 export * from "./MinMax";
 export * from "./RivenFilter";
 export * from "./RivenFilterAttribute";

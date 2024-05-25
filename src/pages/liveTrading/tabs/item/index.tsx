@@ -481,7 +481,7 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
                                                 </Text>
                                             ),
                                             labels: { confirm: useTranslateBasePrompt('delete.confirm'), cancel: useTranslateBasePrompt('delete.cancel') },
-                                            onCancel: async () => await deleteStockMutation.mutateAsync(row.id),
+                                            onConfirm: async () => await deleteStockMutation.mutateAsync(row.id),
                                         });
                                     }}
                                 />
