@@ -1,5 +1,5 @@
 use crate::enums::LogLevel;
-use crate::error::{AppError, ApiResult, ErrorApiResponse};
+use crate::error::{ApiResult, AppError, ErrorApiResponse};
 use crate::wfm_client::client::WFMClient;
 use crate::{helper, logger};
 use eyre::eyre;
@@ -81,18 +81,22 @@ impl PriceScraper {
     /// The `platform` argument should be one of "pc", "ps4", or "xb1".
     /// The `day` argument should be a string in the format "YYYY-MM-DD".
     /// If the request fails, returns a `AppError` with information about the error.
-    async fn get_price_by_day(&self, platform: &str, day: &str) -> Result<ApiResult<Value>, AppError> {
-        let mut url = format!("https://relics.run/history/price_history_{}.json", day);
+    async fn get_price_by_day(
+        &self,
+        platform: &str,
+        day: &str,
+    ) -> Result<ApiResult<Value>, AppError> {
+        let mut url = format!("http://relics.run/history/price_history_{}.json", day);
         if platform != "pc" {
             url = format!(
-                "https://relics.run/history/{}/price_history_{}.json",
+                "http://relics.run/history/{}/price_history_{}.json",
                 platform, day
             );
         }
         let client = Client::new();
         let request = client.request(Method::GET, Url::parse(&url).unwrap());
         let response = request.send().await;
-        
+
         // Define the error response
         let mut error_def = ErrorApiResponse {
             status_code: 500,
@@ -103,7 +107,6 @@ impl PriceScraper {
             url: Some(url.clone()),
             method: Some("GET".to_string()),
         };
-
 
         if let Err(e) = response {
             error_def.messages.push(e.to_string());
@@ -122,21 +125,22 @@ impl PriceScraper {
         let content = response_data.text().await.unwrap_or_default();
         error_def.raw_response = Some(content.clone());
 
-        if error_def.status_code != 200{
-            return Ok(ApiResult::Error(error_def,headers));
+        if error_def.status_code != 200 {
+            return Ok(ApiResult::Error(error_def, headers));
         }
 
         // Convert the response to a Value object
         let response: Value = serde_json::from_str(content.as_str()).map_err(|e| {
-        error_def.messages.push(e.to_string());
-        error_def.error = "ParseError".to_string();
-        AppError::new_api(
-            "PriceScraper",
-            error_def.clone(),
-            eyre!(""),
-            LogLevel::Critical,
-        )})?;
-        return Ok(ApiResult::Success(response,headers));
+            error_def.messages.push(e.to_string());
+            error_def.error = "ParseError".to_string();
+            AppError::new_api(
+                "PriceScraper",
+                error_def.clone(),
+                eyre!(""),
+                LogLevel::Critical,
+            )
+        })?;
+        return Ok(ApiResult::Success(response, headers));
     }
     /// Returns true if the given vector of item data is valid for price scraping, false otherwise.
     /// A valid item data vector must have at least one element, and the first element must have either 3 or 6 keys.
@@ -349,10 +353,13 @@ impl PriceScraper {
                             }
                         }
                     }
-                },
+                }
                 Ok(ApiResult::Error(e, _headers)) => {
-                    if e.status_code == 404{
-                        logger::info_con("PriceScraper", format!("No data for day: {}", day).as_str());
+                    if e.status_code == 404 {
+                        logger::info_con(
+                            "PriceScraper",
+                            format!("No data for day: {}", day).as_str(),
+                        );
                     } else {
                         logger::error_file(
                             "PriceScraper",

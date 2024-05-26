@@ -43,7 +43,7 @@ impl<'a> ItemModule<'a> {
 
         helper::emit_undate_initializ_status("Downloading Item Data from Relics.Run...", None);
         let response: HashMap<String, Value> =
-            reqwest::get("https://relics.run/history/item_data/item_info.json")
+            reqwest::get("http://relics.run/history/item_data/item_info.json")
                 .await
                 .map_err(|e| AppError::new("CacheItems", eyre!(e.to_string())))?
                 .json()
