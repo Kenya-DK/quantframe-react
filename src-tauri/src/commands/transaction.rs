@@ -19,6 +19,30 @@ use std::{
 };
 
 #[tauri::command]
+pub async fn transaction_reload(
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    app: tauri::State<'_, Arc<Mutex<AppState>>>,
+) -> Result<(), AppError> {
+    let app = app.lock()?.clone();
+    let notify = notify.lock()?.clone();
+
+    match TransactionQuery::get_all(&app.conn).await {
+        Ok(transactions) => {
+            notify.gui().send_event_update(
+                UIEvent::UpdateTransaction,
+                UIOperationEvent::Set,
+                Some(json!(transactions)),
+            );
+        }
+        Err(e) => {
+            let error: AppError = AppError::new_db("TransactionQuery::reload", e);
+            error::create_log_file("command.log".to_string(), &error);
+            return Err(error);
+        }
+    };
+    Ok(())
+}
+#[tauri::command]
 pub async fn transaction_get_all(
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
 ) -> Result<Vec<transaction::Model>, AppError> {

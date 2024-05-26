@@ -4,6 +4,11 @@ import { CreateStockRiven, SellStockRiven, StockRiven, UpdateStockRiven } from "
 export class StockRivenModule {
   constructor(private readonly client: TauriClient) { }
 
+  async reload(): Promise<void> {
+    await this.client.sendInvoke<void>('stock_riven_reload');
+  }
+
+
   async getAll(): Promise<StockRiven[]> {
     const [, stockItems] = await this.client.sendInvoke<StockRiven[]>('stock_riven_get_all');
     if (!stockItems)

@@ -4,6 +4,12 @@ import { ErrOrResult, TransactionDto, UpdateTransactionDto } from "../types";
 export class TransactionModule {
   constructor(private readonly client: TauriClient) { }
 
+  async reload(): Promise<void> {
+    const [err] = await this.client.sendInvoke<void>("transaction_reload");
+    if (err)
+      throw err;
+  }
+
   async getAll(): Promise<Promise<ErrOrResult<TransactionDto[]>>> {
     return this.client.sendInvoke("transaction_get_all");
   }

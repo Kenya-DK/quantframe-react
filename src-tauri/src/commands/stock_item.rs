@@ -4,8 +4,9 @@ use entity::{sub_type::SubType, transaction::transaction::TransactionItemType};
 use entity::stock::item::*;
 use eyre::eyre;
 use serde_json::json;
-use service::{StockItemMutation, TransactionMutation};
+use service::{StockItemMutation, StockItemQuery, TransactionMutation};
 
+use crate::utils::modules::error;
 use crate::{
     app::client::AppState,
     cache::client::CacheClient,
@@ -17,6 +18,30 @@ use crate::{
     wfm_client::{client::WFMClient, enums::order_type::OrderType},
 };
 
+#[tauri::command]
+pub async fn stock_item_reload(
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    app: tauri::State<'_, Arc<Mutex<AppState>>>,
+) -> Result<(), AppError> {
+    let app = app.lock()?.clone();
+    let notify = notify.lock()?.clone();
+
+    match StockItemQuery::get_all(&app.conn).await {
+        Ok(rivens) => {
+            notify.gui().send_event_update(
+                UIEvent::UpdateStockItems,
+                UIOperationEvent::Set,
+                Some(json!(rivens)),
+            );
+        }
+        Err(e) => {
+            let error: AppError = AppError::new_db("StockItemQuery::reload", e);
+            error::create_log_file("command.log".to_string(), &error);
+            return Err(error);
+        }
+    };
+    Ok(())
+}
 #[tauri::command]
 pub async fn stock_item_create(
     wfm_url: String,

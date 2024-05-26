@@ -4,6 +4,11 @@ import { CreateStockItem, StockItem, SellStockItem, UpdateStockItem } from "@api
 export class StockItemModule {
   constructor(private readonly client: TauriClient) { }
 
+  async reload(): Promise<void> {
+    await this.client.sendInvoke<void>('stock_item_reload');
+  }
+
+
   async getAll(): Promise<StockItem[]> {
     const [, stockItems] = await this.client.sendInvoke<StockItem[]>('stock_item_get_all');
     if (!stockItems)

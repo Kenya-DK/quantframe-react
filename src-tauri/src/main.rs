@@ -171,6 +171,7 @@ fn main() {
             commands::auth::auth_set_status,
             commands::auth::auth_logout,
             // Cache commands
+            commands::cache::cache_reload,
             commands::cache::cache_get_tradable_items,
             commands::cache::cache_get_riven_weapons,
             commands::cache::cache_get_riven_attributes,
@@ -178,6 +179,7 @@ fn main() {
             commands::cache::cache_get_weapon_stat,
             commands::cache::cache_get_weapon_upgrades,
             // Transaction commands
+            commands::transaction::transaction_reload,
             commands::transaction::transaction_get_all,
             commands::transaction::transaction_update,
             commands::transaction::transaction_delete,
@@ -193,6 +195,7 @@ fn main() {
             // Live Trading commands
             commands::live_scraper::live_scraper_set_running_state,
             // Stock Item commands
+            commands::stock_item::stock_item_reload,
             commands::stock_item::stock_item_create,
             commands::stock_item::stock_item_update,
             commands::stock_item::stock_item_update_bulk,
@@ -200,6 +203,7 @@ fn main() {
             commands::stock_item::stock_item_delete,
             commands::stock_item::stock_item_delete_bulk,
             // Stock Riven commands
+            commands::stock_riven::stock_riven_reload,
             commands::stock_riven::stock_riven_update,
             commands::stock_riven::stock_riven_update_bulk,
             commands::stock_riven::stock_riven_sell,

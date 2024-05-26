@@ -14,6 +14,11 @@ export class CacheModule {
 
   constructor(private readonly client: TauriClient) { }
 
+  async reload(): Promise<void> {
+    await this.client.sendInvoke<void>('cache_reload');
+    this._cache.clear();
+  }
+
   async getTradableItems(): Promise<CacheTradableItem[]> {
     if (this._cache.has(CacheType.TradableItems))
       return this._cache.get(CacheType.TradableItems);

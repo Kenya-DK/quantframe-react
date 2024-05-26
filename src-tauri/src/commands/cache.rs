@@ -19,6 +19,21 @@ use crate::{
 };
 
 #[tauri::command]
+pub async fn cache_reload(
+    cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
+) -> Result<(), AppError> {
+    let cache = cache.lock()?.clone();
+    match cache.load().await {
+        Ok(_) => {}
+        Err(e) => {
+            error::create_log_file("cache.log".to_string(), &e);
+            return Err(e);
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn cache_get_tradable_items(
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
 ) -> Result<Vec<CacheTradableItem>, AppError> {

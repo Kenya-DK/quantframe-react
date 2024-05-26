@@ -61,7 +61,7 @@ pub async fn app_init(
     let mut wfm_user = match wfm.auth().validate().await {
         Ok(user) => user,
         Err(e) => {
-            error::create_log_file("command.log".to_string(), &e);
+            error::create_log_file("wfm_validation.log".to_string(), &e);
             return Err(e);
         }
     };
@@ -69,19 +69,26 @@ pub async fn app_init(
     let qf_user = match qf.auth().validate().await {
         Ok(user) => user,
         Err(e) => {
-            error::create_log_file("command.log".to_string(), &e);
+            error::create_log_file("qf_validate.log".to_string(), &e);
             return Err(e);
         }
     };
+
     if qf_user.is_some() && !wfm_user.anonymous && wfm_user.verification{
-        wfm_user.update_from_qf_user_profile(&qf_user.unwrap(), wfm_user.qf_access_token.clone());        
-        // Send User to UI
-        notify.gui().send_event_update(
-            UIEvent::UpdateUser,
-            UIOperationEvent::Set,
-            Some(json!(&wfm_user)),
-        );
+        wfm_user.update_from_qf_user_profile(&qf_user.clone().unwrap(), wfm_user.qf_access_token.clone());        
     }
+    // Send User to UI
+    notify.gui().send_event_update(
+        UIEvent::UpdateUser,
+        UIOperationEvent::Set,
+        Some(json!(&wfm_user)),
+    );
+
+    if qf_user.is_none() {
+        return Ok(true);
+    }
+
+
     // Load Cache
     notify
         .gui()
@@ -89,7 +96,7 @@ pub async fn app_init(
     match cache.load().await {
         Ok(_) => {}
         Err(e) => {
-            error::create_log_file("command.log".to_string(), &e);
+            error::create_log_file("cache.log".to_string(), &e);
             return Err(e);
         }
     }
@@ -151,7 +158,7 @@ pub async fn app_init(
             return Err(error);
         }
     };
-    if !wfm_user.anonymous && !wfm_user.verification {
+    if !wfm_user.anonymous && wfm_user.verification {
         // Load User Orders
         notify
             .gui()
@@ -167,7 +174,7 @@ pub async fn app_init(
         orders.append(&mut orders_vec.sell_orders);
         // Send Orders to UI
         notify.gui().send_event_update(
-            UIEvent::UpdateTransaction,
+            UIEvent::UpdateOrders,
             UIOperationEvent::Set,
             Some(json!(&orders)),
         );

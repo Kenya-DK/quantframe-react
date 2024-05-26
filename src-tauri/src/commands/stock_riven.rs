@@ -7,8 +7,9 @@ use entity::{
 
 use eyre::eyre;
 use serde_json::json;
-use service::{StockRivenMutation, TransactionMutation};
+use service::{StockRivenMutation, StockRivenQuery, TransactionMutation};
 
+use crate::utils::modules::error;
 use crate::{
     app::client::AppState,
     cache::client::CacheClient,
@@ -20,119 +21,30 @@ use crate::{
     wfm_client::client::WFMClient,
 };
 
-// #[tauri::command]
-// pub async fn stock_riven_create(
-//     wfm_url: String,
-//     bought: i64,
-//     mod_name: String,
-//     mastery_rank: i64,
-//     re_rolls: i64,
-//     polarity: String,
-//     rank: i64,
-//     attributes: Vec<attribute::RivenAttribute>,
-//     minimum_price: Option<i64>,
-//     is_hidden: Option<bool>,
-//     app: tauri::State<'_, Arc<Mutex<AppState>>>,
-//     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
-//     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-// ) -> Result<stock_riven::Model, AppError> {
-//     let app = app.lock()?.clone();
-//     let cache = cache.lock()?.clone();
-//     let notify = notify.lock()?.clone();
+#[tauri::command]
+pub async fn stock_riven_reload(
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    app: tauri::State<'_, Arc<Mutex<AppState>>>,
+) -> Result<(), AppError> {
+    let app = app.lock()?.clone();
+    let notify = notify.lock()?.clone();
 
-//     // Check if the weapon is exist in the cache.
-//     let weapon = match cache.riven().find_riven_type_by_url_name(&wfm_url) {
-//         Some(weapon) => weapon,
-//         None => {
-//             return Err(AppError::new(
-//                 "StockRivenCreate",
-//                 eyre!(format!("Weapon not found: {}", wfm_url)),
-//             ))
-//         }
-//     };
-
-//     // Validate the attributes
-//     for attribute in attributes.iter() {
-//         match cache
-//             .riven()
-//             .find_riven_attribute_by_url_name(&attribute.url_name)
-//         {
-//             Some(_) => {}
-//             None => {
-//                 return Err(AppError::new(
-//                     "StockRivenCreate",
-//                     eyre!(format!("Invalid attribute: {:?}", attribute)),
-//                 ))
-//             }
-//         }
-//     }
-
-//     // Create the stock item
-//     let stock = stock_riven::Model::new(
-//         weapon.wfm_id.clone(),
-//         wfm_url.clone(),
-//         None,
-//         weapon.i18_n["en"].name.clone(),
-//         weapon.riven_type.clone(),
-//         weapon.unique_name.clone(),
-//         rank,
-//         mod_name,
-//         attribute::RivenAttributeVec(attributes),
-//         mastery_rank,
-//         re_rolls,
-//         polarity,
-//         bought,
-//         minimum_price,
-//         is_hidden.unwrap_or(true),
-//         "".to_string(),
-//     );
-//     match StockRivenMutation::create(&app.conn, stock.clone()).await {
-//         Ok(stock) => {
-//             notify.gui().send_event_update(
-//                 UIEvent::UpdateStockRivens,
-//                 UIOperationEvent::CreateOrUpdate,
-//                 Some(json!(stock)),
-//             );
-//         }
-//         Err(e) => return Err(AppError::new("StockRivenCreate", eyre!(e))),
-//     }
-//     if bought == 0 {
-//         return Ok(stock);
-//     }
-//     // Add Transaction to the database
-//     let transaction = entity::transaction::Model::new(
-//         stock.wfm_weapon_id.clone(),
-//         stock.wfm_weapon_url.clone(),
-//         stock.weapon_name.clone(),
-//         TransactionItemType::Riven,
-//         stock.weapon_unique_name.clone(),
-//         stock.sub_type.clone(),
-//         vec![stock.weapon_type.clone()],
-//         entity::transaction::TransactionType::Purchase,
-//         1,
-//         "".to_string(),
-//         bought,
-//         Some(json!({
-//             "mod_name": stock.mod_name,
-//             "mastery_rank": stock.mastery_rank,
-//             "re_rolls": stock.re_rolls,
-//             "polarity": stock.polarity,
-//             "attributes": stock.attributes,
-//         })),
-//     );
-
-//     match TransactionMutation::create(&app.conn, transaction).await {
-//         Ok(inserted) => {
-//             notify.gui().send_event_update(
-//                 UIEvent::UpdateTransaction,
-//                 UIOperationEvent::CreateOrUpdate,
-//                 Some(json!(inserted)),
-//             );
-//         }
-//         Err(e) => return Err(AppError::new("StockItemCreate", eyre!(e))),
-//     }
-//     Ok(stock)
-// }
+    match StockRivenQuery::get_all(&app.conn).await {
+        Ok(rivens) => {
+            notify.gui().send_event_update(
+                UIEvent::UpdateStockRivens,
+                UIOperationEvent::Set,
+                Some(json!(rivens)),
+            );
+        }
+        Err(e) => {
+            let error: AppError = AppError::new_db("StockRivenQuery::reload", e);
+            error::create_log_file("command.log".to_string(), &error);
+            return Err(error);
+        }
+    };
+    Ok(())
+}
 
 #[tauri::command]
 pub async fn stock_riven_update(

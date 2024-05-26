@@ -9,7 +9,15 @@ use std::{
 use serde_json::json;
 
 use crate::{
-    app::client::AppState, auth::AuthState, cache::client::CacheClient, enums::{order_mode::OrderMode, stock_mode::StockMode}, helper, logger, notification::client::NotifyClient, settings::SettingsState, utils::{enums::log_level::LogLevel, modules::error::AppError}, wfm_client::client::WFMClient
+    app::client::AppState,
+    auth::AuthState,
+    cache::client::CacheClient,
+    enums::{order_mode::OrderMode, stock_mode::StockMode},
+    helper, logger,
+    notification::client::NotifyClient,
+    settings::SettingsState,
+    utils::{enums::log_level::LogLevel, modules::error::AppError},
+    wfm_client::client::WFMClient,
 };
 
 use super::modules::{item::ItemModule, riven::RivenModule};
@@ -61,7 +69,7 @@ impl LiveScraperClient {
         let extra = error.extra_data();
         if log_level == LogLevel::Critical || log_level == LogLevel::Error {
             self.is_running.store(false, Ordering::SeqCst);
-        } 
+        }
         crate::logger::dolog(
             log_level.clone(),
             format!("{}:{}", self.component, component).as_str(),
@@ -69,7 +77,10 @@ impl LiveScraperClient {
             true,
             Some(self.log_file.as_str()),
         );
-        notify.gui().send_event(crate::utils::enums::ui_events::UIEvent::OnLiveTradingError, Some(json!(error)));
+        notify.gui().send_event(
+            crate::utils::enums::ui_events::UIEvent::OnLiveTradingError,
+            Some(json!(error)),
+        );
     }
     pub fn debug(&self, id: &str, component: &str, msg: &str, file: Option<bool>) {
         let settings = self.settings.lock().unwrap().clone();
@@ -123,7 +134,6 @@ impl LiveScraperClient {
             if settings.live_scraper.stock_mode == StockMode::Item
                 || settings.live_scraper.stock_mode == StockMode::All
             {
-                // db.stock_item().reset_listed_price().await.unwrap();
                 if settings.live_scraper.stock_item.auto_delete {
                     scraper
                         .item()
@@ -160,9 +170,12 @@ impl LiveScraperClient {
                 }
                 current_riven_interval += 1;
                 tokio::time::sleep(Duration::from_secs(1)).await;
-            }            
+            }
             logger::info_con(&scraper.component, "Loop live scraper is stopped");
-            scraper.notify.lock().unwrap().gui().send_event(crate::utils::enums::ui_events::UIEvent::UpdateLiveTradingRunningState, Some(json!(false)));
+            scraper.notify.lock().unwrap().gui().send_event(
+                crate::utils::enums::ui_events::UIEvent::UpdateLiveTradingRunningState,
+                Some(json!(false)),
+            );
         });
         Ok(())
     }
@@ -196,7 +209,10 @@ impl LiveScraperClient {
     pub fn send_gui_update(&self, i18n_key: &str, values: Option<serde_json::Value>) {
         let notify = self.notify.lock().unwrap().clone();
         if self.is_running() {
-            notify.gui().send_event(crate::utils::enums::ui_events::UIEvent::OnLiveTradingMessage, Some(json!({ "i18nKey": i18n_key, "values": values })));            
+            notify.gui().send_event(
+                crate::utils::enums::ui_events::UIEvent::OnLiveTradingMessage,
+                Some(json!({ "i18nKey": i18n_key, "values": values })),
+            );
         }
     }
 }
