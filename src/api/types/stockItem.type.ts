@@ -38,6 +38,12 @@ export interface SellStockItem {
   quantity: number;
   price: number;
 }
+export interface SellByWfmOrder {
+  url: string;
+  sub_type?: SubType;
+  quantity: number;
+  price: number;
+}
 
 export interface StockItemDetails {
   highest_price: number;

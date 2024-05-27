@@ -1,5 +1,5 @@
 import { TauriClient } from "../..";
-import { CreateStockItem, StockItem, SellStockItem, UpdateStockItem } from "@api/types";
+import { CreateStockItem, StockItem, SellStockItem, UpdateStockItem, SellByWfmOrder } from "@api/types";
 
 export class StockItemModule {
   constructor(private readonly client: TauriClient) { }
@@ -47,6 +47,13 @@ export class StockItemModule {
 
   async sell(entry: SellStockItem): Promise<StockItem> {
     const [, stockItem] = await this.client.sendInvoke<StockItem>('stock_item_sell', entry);
+    if (!stockItem)
+      throw new Error("Failed to create stock item");
+    return stockItem;
+  }
+
+  async sellByWfmOrder(entry: SellByWfmOrder): Promise<StockItem> {
+    const [, stockItem] = await this.client.sendInvoke<StockItem>('stock_item_sell_by_wfm_order', entry);
     if (!stockItem)
       throw new Error("Failed to create stock item");
     return stockItem;
