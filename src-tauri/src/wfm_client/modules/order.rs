@@ -37,11 +37,73 @@ impl OrderModule {
     fn update_state(&self) {
         self.client.update_order_module(self.clone());
     }
+    
     pub fn set_order_count(&mut self, increment: i64) -> Result<(), AppError> {
         let ref mut count = self.total_orders;
         *count = increment;
         self.update_state();
         Ok(())
+    }
+
+    /// This method is used to progress an order.
+    ///
+    /// # Arguments
+    ///
+    /// * `url` - A string slice that holds the URL.
+    /// * `sub_type` - An optional SubType.
+    /// * `quantity` - A 64-bit integer that holds the quantity.
+    /// * `order_type` - An OrderType that holds the type of the order.
+    ///
+    /// # Returns
+    ///
+    /// * A Result containing a tuple of a string and an optional Order, or an AppError.
+    pub async fn progress_order(&mut self, url: &str, sub_type: Option<SubType>, mut quantity: i64, order_type: OrderType) -> Result<(String, Option<Order>), AppError> {
+        let settings = self.client.settings.lock()?.clone();
+
+        // Set quantity to 1 if it's less than 1
+        if quantity <= 0 {
+            quantity = 1;
+        }
+
+        // Check if the order is a Buy order and report_to_wfm is true, or if the order is a Sale order
+        if (order_type == OrderType::Buy && settings.live_scraper.stock_item.report_to_wfm) || order_type == OrderType::Sale {
+            // Get WFM Order
+            let orders = wfm.orders().get_my_orders().await?;
+            let order = orders.find_order_by_url_sub_type(
+                &url,
+                order_type,
+                sub_type,
+            );
+            
+            // Check if order exists
+            if order.is_some() {
+                let order = order.unwrap();
+                // Subtract quantity from order
+                order.quantity -= quantity;
+
+                // If report_to_wfm is true, close the order
+                if settings.live_scraper.stock_item.report_to_wfm {
+                    self.close(&order.id).await?;                    
+                } else {
+                    // Delete order if quantity is less than or equal to 0 and update if not
+                    if order.quantity <= 0 {
+                        self.delete(&order.id).await?;
+                    } else {
+                        self.update(&order.id, order.platinum, order.quantity, order.visible).await?;
+                    }
+                }   
+                // Return order_deleted if quantity is less than or equal to 0, else return order_updated
+                if order.quantity <= 0 {
+                    return Ok(("order_deleted".to_string(), Some(order)));
+                } else {
+                    return Ok(("order_updated".to_string(), Some(order)));
+                }
+            }
+            // Return order_not_found if order does not exist
+            return Ok(("order_not_found".to_string(), None));
+        }
+        // Return order_not_reported if the order is not a Buy order or a Sale order
+        return Ok(("order_not_reported".to_string(), None));
     }
 
     pub fn subtract_order_count(&mut self, increment: i64) -> Result<(), AppError> {
@@ -281,26 +343,8 @@ impl OrderModule {
         }
     }
 
-    pub async fn close(&mut self, item: &str, order_type: OrderType) -> Result<String, AppError> {
-        // Get the user orders and find the order
-        let mut orders_vec = self.get_my_orders().await?;
-        let mut orders: Vec<Order> = orders_vec.buy_orders;
-        orders.append(&mut orders_vec.sell_orders);
-        // Find Order by name.
-        let order = orders
-            .iter()
-            .find(|order| {
-                order.item.as_ref().unwrap().url_name == item && order.order_type == order_type
-            })
-            .clone();
-
-        if order.is_none() {
-            return Ok("No Order Found".to_string());
-        }
-
-        let mut order = order.unwrap().to_owned();
-
-        let url = format!("profile/orders/close/{}", order.id);
+    pub async fn close(&mut self, id: &str) -> Result<String, AppError> {
+         let url = format!("profile/orders/close/{}", order.id);
 
         let result: Option<serde_json::Value> =
             match self.client.put(&url, Some("order"), None).await {
@@ -310,9 +354,8 @@ impl OrderModule {
                         &self.debug_id,
                         &self.get_component("Close"),
                         format!(
-                            "Order {} type: {} was closed.",
-                            order.id,
-                            order.order_type.as_str()
+                            "Order {} was closed.",
+                            id,
                         )
                         .as_str(),
                         None,
