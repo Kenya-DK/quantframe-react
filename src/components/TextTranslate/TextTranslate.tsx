@@ -2,6 +2,7 @@ import { Text, MantineSize, MantineStyleProp, TextProps } from '@mantine/core';
 import { faCubes, faEnvelope, faHandshake } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Trans } from 'react-i18next';
+import { SvgIcon, SvgType } from '../SvgIcon';
 
 export type TextTranslateProps = {
 	i18nKey: string;
@@ -39,7 +40,7 @@ export function TextTranslate({ textProps, style, size, color, i18nKey, values, 
 						dark: <Text component="span" size={size ? size : "sm"} c="dark.3" />,
 						qty: <FontAwesomeIcon icon={faCubes} />,
 						mail: <FontAwesomeIcon icon={faEnvelope} />,
-						// plat: <SvgIcon svgProp={{ width: 16, height: 16, }} iconType={SvgType.Default} iconName={"plat"} />,
+						plat: <SvgIcon svgProp={{ width: 16, height: 16, }} iconType={SvgType.Default} iconName={"plat"} />,
 						trade: <FontAwesomeIcon icon={faHandshake} />,
 						// credits: <Image src={"/imgs/credits.png"} width={16} height={16} />,
 					}

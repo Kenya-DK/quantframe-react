@@ -85,10 +85,12 @@ function SvgCore(props: SvgCoreProps) {
         <div className="rounded-full bg-slate-400 animate-pulse h-8 w-8"></div>
       )}
       {dynamicSvg.SvgIcon && (
-        <dynamicSvg.SvgIcon {...{
-          ...svgProp,
-          fill: color,
-        }} />
+        <span>
+          <dynamicSvg.SvgIcon {...{
+            ...svgProp,
+            fill: color,
+          }} />
+        </span>
       )}
     </>
   );
