@@ -35,14 +35,31 @@ export default function LoginPage() {
       setInterval(1);
       setProgressText(useTranslateProgress("refreshing_orders"));
       await api.order.refresh();
+
       setProgressText(useTranslateProgress("refreshing_auctions"));
       setInterval(2);
       await api.auction.refresh();
+
       setProgressText(useTranslateProgress("refreshing_chat"));
       setInterval(3);
       await api.chat.refresh();
-      setProgressText(useTranslateProgress("login.progress_text_4"));
+
+      setProgressText(useTranslateProgress("refreshing_cache"));
       setInterval(4);
+      await api.cache.reload();
+
+      setProgressText(useTranslateProgress("refreshing_transaction"));
+      setInterval(5);
+      await api.transaction.reload();
+      setProgressText(useTranslateProgress("refreshing_stock_items"));
+      setInterval(6);
+      await api.stock.item.reload();
+      setProgressText(useTranslateProgress("refreshing_stock_riven"));
+      setInterval(7);
+      await api.stock.riven.reload();
+
+      setProgressText(useTranslateProgress("login.progress_text_4"));
+      setInterval(8);
       SendTauriDataEvent(QfSocketEvent.UpdateUser, QfSocketEventOperation.SET, u);
       // navigate('/')
     },
@@ -62,7 +79,7 @@ export default function LoginPage() {
     <Center w={"100%"} h={"92vh"}>
       <LogInForm is_loading={is_loading} onSubmit={(d: { email: string; password: string }) => logInMutation.mutate(d)} footerContent={is_loading ?
         <Progress.Root size="xl">
-          <Progress.Section value={interval / 4 * 100} >
+          <Progress.Section value={interval / 8 * 100} >
             <Progress.Label>{progressText}</Progress.Label>
           </Progress.Section>
         </Progress.Root>
