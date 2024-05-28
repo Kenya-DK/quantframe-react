@@ -23,6 +23,9 @@ impl StockItemQuery {
             .all(db)
             .await
     }
+    pub async fn get_by_id(db: &DbConn, id: i64) -> Result<Option<stock_item::Model>, DbErr> {
+        StockItem::find_by_id(id).one(db).await
+    }
     pub async fn get_old_stock_items(db: &DbConn) -> Result<Vec<stock_item_old::Model>, DbErr> {
         StockItemOld::find().all(db).await
     }

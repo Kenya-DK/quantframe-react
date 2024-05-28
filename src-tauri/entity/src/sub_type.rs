@@ -1,3 +1,4 @@
+use std::hash::{Hash, Hasher};
 use sea_orm::FromJsonQueryResult;
 use serde::{Deserialize, Serialize};
 
@@ -52,5 +53,13 @@ impl SubType {
             display.push_str(&format!("Cyan Stars: {} ", cyan_stars));
         }
         display
+    }
+}
+impl Hash for SubType {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.rank.hash(state);
+        self.variant.hash(state);
+        self.amber_stars.hash(state);
+        self.cyan_stars.hash(state);
     }
 }

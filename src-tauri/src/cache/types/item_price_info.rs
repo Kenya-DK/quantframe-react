@@ -1,3 +1,4 @@
+use entity::sub_type::SubType;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -26,9 +27,6 @@ pub struct ItemPriceInfo {
     #[serde(rename = "moving_avg")]
     pub moving_avg: Option<f64>,
 
-    #[serde(rename = "mod_rank")]
-    pub mod_rank: Option<i64>,
-
     #[serde(rename = "median")]
     pub median: f64,
 
@@ -37,6 +35,10 @@ pub struct ItemPriceInfo {
 
     #[serde(rename = "week_price_shift")]
     pub week_price_shift: f64,
+
+    #[serde(rename = "sub_type")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sub_type: Option<SubType>,
 }
 
 
