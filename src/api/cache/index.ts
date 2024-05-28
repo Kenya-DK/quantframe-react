@@ -15,7 +15,9 @@ export class CacheModule {
   constructor(private readonly client: TauriClient) { }
 
   async reload(): Promise<void> {
-    await this.client.sendInvoke<void>('cache_reload');
+    const [err, _] = await this.client.sendInvoke<void>('cache_reload');
+    if (err)
+      throw err;
     this._cache.clear();
   }
 

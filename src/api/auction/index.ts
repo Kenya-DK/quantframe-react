@@ -4,6 +4,9 @@ export class AuctionModule {
   constructor(private readonly client: TauriClient) { }
 
   async refresh(): Promise<void> {
-    await this.client.sendInvoke<void>('auction_refresh');
+    const [err, res] = await this.client.sendInvoke<void>('auction_refresh');
+    if (err)
+      throw err;
+    return res;
   }
 }

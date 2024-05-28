@@ -1,5 +1,5 @@
 import { TauriClient } from "..";
-import { ErrOrResult, TransactionDto, UpdateTransactionDto } from "../types";
+import { TransactionDto, UpdateTransactionDto } from "../types";
 
 export class TransactionModule {
   constructor(private readonly client: TauriClient) { }
@@ -10,8 +10,11 @@ export class TransactionModule {
       throw err;
   }
 
-  async getAll(): Promise<Promise<ErrOrResult<TransactionDto[]>>> {
-    return this.client.sendInvoke("transaction_get_all");
+  async getAll(): Promise<TransactionDto[]> {
+    const [err, res] = await this.client.sendInvoke<TransactionDto[]>("transaction_get_all");
+    if (err)
+      throw err;
+    return res;
   }
 
   async update(entry: UpdateTransactionDto): Promise<TransactionDto> {

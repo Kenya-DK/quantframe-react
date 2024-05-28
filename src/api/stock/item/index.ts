@@ -10,55 +10,59 @@ export class StockItemModule {
 
 
   async getAll(): Promise<StockItem[]> {
-    const [, stockItems] = await this.client.sendInvoke<StockItem[]>('stock_item_get_all');
-    if (!stockItems)
-      return [];
+    const [err, stockItems] = await this.client.sendInvoke<StockItem[]>('stock_item_get_all');
+    if (err)
+      throw err;
     return stockItems;
   }
 
   async create(entry: CreateStockItem): Promise<StockItem> {
-    const [, stockItem] = await this.client.sendInvoke<StockItem>('stock_item_create', entry);
-    if (!stockItem)
-      throw new Error("Failed to create stock item");
+    const [err, stockItem] = await this.client.sendInvoke<StockItem>('stock_item_create', entry);
+    if (err)
+      throw err;
     return stockItem;
   }
 
   async update(entry: UpdateStockItem): Promise<StockItem> {
-    const [, stockItem] = await this.client.sendInvoke<StockItem>('stock_item_update', entry);
-    if (!stockItem)
-      throw new Error("Failed to update stock item");
+    const [err, stockItem] = await this.client.sendInvoke<StockItem>('stock_item_update', entry);
+    if (err)
+      throw err;
     return stockItem;
   }
 
   async updateBulk(ids: number[], entry: UpdateStockItem): Promise<number> {
-    const [, stockItem] = await this.client.sendInvoke<number>('stock_item_update_bulk', { ...entry, ids });
-    if (!stockItem)
-      throw new Error("Failed to update stock item");
+    const [err, stockItem] = await this.client.sendInvoke<number>('stock_item_update_bulk', { ...entry, ids });
+    if (err)
+      throw err;
     return stockItem;
   }
 
   async delete(id: number): Promise<void> {
-    await this.client.sendInvoke<void>('stock_item_delete', { id });
+    const [err, res] = await this.client.sendInvoke<void>('stock_item_delete', { id });
+    if (err)
+      throw err;
+    return res;
   }
 
   async deleteBulk(ids: number[]): Promise<void> {
-    await this.client.sendInvoke<void>('stock_item_delete_bulk', { ids });
+    const [err, res] = await this.client.sendInvoke<void>('stock_item_delete_bulk', { ids });
+    if (err)
+      throw err;
+    return res;
   }
 
   async sell(entry: SellStockItem): Promise<StockItem> {
-    const [, stockItem] = await this.client.sendInvoke<StockItem>('stock_item_sell', entry);
-    if (!stockItem)
-      throw new Error("Failed to create stock item");
+    const [err, stockItem] = await this.client.sendInvoke<StockItem>('stock_item_sell', entry);
+    if (err)
+      throw err;
     return stockItem;
   }
 
   async sellByWfmOrder(entry: SellByWfmOrder): Promise<StockItem> {
-    const [, stockItem] = await this.client.sendInvoke<StockItem>('stock_item_sell_by_wfm_order', entry);
-    if (!stockItem)
-      throw new Error("Failed to create stock item");
+    const [err, stockItem] = await this.client.sendInvoke<StockItem>('stock_item_sell_by_wfm_order', entry);
+    if (err)
+      throw err;
     return stockItem;
   }
-
-
 
 }

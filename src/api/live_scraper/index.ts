@@ -12,6 +12,9 @@ export class LiveScraperModule {
   }
 
   private async runningState(enable: boolean) {
-    return this.client.sendInvoke('live_scraper_set_running_state', { enable })
+    const [err, res] = await this.client.sendInvoke('live_scraper_set_running_state', { enable })
+    if (err)
+      throw err;
+    return res;
   }
 }

@@ -4,6 +4,9 @@ export class ChatModule {
   constructor(private readonly client: TauriClient) { }
 
   async refresh(): Promise<void> {
-    await this.client.sendInvoke<void>('chat_refresh');
+    const [err, res] = await this.client.sendInvoke<void>('chat_refresh');
+    if (err)
+      throw err;
+    return res;
   }
 }
