@@ -1,6 +1,7 @@
 pub mod item {
-    pub mod stock_item;
-    pub mod stock_item_old;
+  pub mod create;
+  pub mod stock_item;
+  pub mod stock_item_old;
 }
 
 pub mod riven {

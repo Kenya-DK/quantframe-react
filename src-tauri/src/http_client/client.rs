@@ -24,7 +24,7 @@ impl HttpClient {
                     )
                     .service(web::scope("/stock")
                         .service(add_riven)
-                        // .service(add_item)
+                        .service(add_item)
                     )
                     .service(web::scope("/trading").service(progress))
                     .service(new_conversation)
