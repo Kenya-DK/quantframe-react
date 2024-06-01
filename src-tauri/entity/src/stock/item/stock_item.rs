@@ -4,9 +4,8 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    enums::stock_status::StockStatus,
-    price_history::PriceHistoryVec,
-    sub_type::SubType,
+    enums::stock_status::StockStatus, price_history::PriceHistoryVec, sub_type::SubType,
+    transaction,
 };
 
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize)]
@@ -52,6 +51,7 @@ impl Model {
         bought: i64,
         minimum_price: Option<i64>,
         owned: i64,
+        is_hidden: bool,
     ) -> Self {
         Self {
             id: Default::default(),
@@ -64,11 +64,34 @@ impl Model {
             minimum_price,
             list_price: None,
             owned,
-            is_hidden: false,
+            is_hidden,
             status: StockStatus::Pending,
             price_history: PriceHistoryVec(vec![]),
-            updated_at:Default::default(),
-            created_at:Default::default(),
+            updated_at: Default::default(),
+            created_at: Default::default(),
         }
+    }
+    pub fn to_transaction(
+        &self,
+        user_name: &str,
+        tags: Vec<String>,
+        quantity: i64,
+        price: i64,
+        transaction_type: transaction::transaction::TransactionType,
+    ) -> transaction::transaction::Model {
+        transaction::transaction::Model::new(
+            self.wfm_id.clone(),
+            self.wfm_url.clone(),
+            self.item_name.clone(),
+            transaction::transaction::TransactionItemType::Item,
+            self.item_unique_name.clone(),
+            self.sub_type.clone(),
+            tags,
+            transaction_type,
+            quantity,
+            user_name.to_string(),
+            price,
+            None,
+        )
     }
 }

@@ -85,6 +85,99 @@ impl StockItemMutation {
         Ok(None)
     }
 
+    pub async fn sold_by_id(
+        db: &DbConn,
+        id: i64,
+        mut quantity: i64,
+    ) -> Result<(String, Option<stock_item::Model>), DbErr> {
+        // Find the item by id
+        let item = StockItem::find_by_id(id).one(db).await?;
+        if item.is_none() {
+            return Ok(("Item not found".to_string(), None));
+        }
+
+        // If quantity is 0, set it to 1
+        if quantity == 0 {
+            quantity = 1;
+        }
+
+        // Update the item
+        let mut item = item.unwrap();
+        item.owned = item.owned - quantity;
+        if item.owned <= 0 {
+            match StockItemMutation::delete_by_id(db, id).await {
+                Ok(_) => {
+                    return Ok(("Item deleted".to_string(), Some(item)));
+                }
+                Err(e) => {
+                    return Err(e);
+                }
+            }
+        } else {
+            match StockItemMutation::update_by_id(db, id, item.clone()).await {
+                Ok(_) => {
+                    return Ok(("Item updated".to_string(), Some(item)));
+                }
+                Err(e) => {
+                    return Err(e);
+                }
+            }
+        }
+    }
+
+    pub async fn sell_by_url_name_and_sub_type(
+        db: &DbConn,
+        url_name: &str,
+        sub_type: Option<SubType>,
+        quantity: i64,
+    ) -> Result<(String, Option<stock_item::Model>), DbErr> {
+        let items = StockItemMutation::find_by_url_name(db, url_name).await?;
+        for item in items {
+            if item.sub_type == sub_type {
+                return StockItemMutation::sold_by_id(db, item.id, quantity).await;
+            }
+        }
+        Ok(("Item not found".to_string(), None))
+    }
+
+    pub async fn add_item(
+        db: &DbConn,
+        stock: stock_item::Model,
+    ) -> Result<Option<stock_item::Model>, DbErr> {
+        // Find the item by id
+        let item =
+            StockItemMutation::find_by_url_name_and_sub_type(db, &stock.wfm_url, stock.sub_type.clone())
+                .await?;
+        if item.is_none() {
+            match StockItemMutation::create(db, stock.clone()).await {
+                Ok(insert) => {
+                    return Ok(Some(insert));
+                }
+                Err(e) => {
+                    return Err(e);
+                }
+            }
+        }
+        // Update the item
+        let mut item = item.unwrap();
+        let total_owned = item.owned + stock.owned;
+
+        // Get Price Per Unit
+        let total_bought = (item.bought * item.owned) + stock.bought;
+        let weighted_average = total_bought / total_owned;
+        item.owned = total_owned;
+        item.bought = weighted_average;
+        item.updated_at = chrono::Utc::now();
+        match StockItemMutation::update_by_id(db, item.id, item.clone()).await {
+            Ok(_) => {
+                return Ok(Some(item));
+            }
+            Err(e) => {
+                return Err(e);
+            }
+        }
+    }
+
     pub async fn update_by_id(
         db: &DbConn,
         id: i64,
