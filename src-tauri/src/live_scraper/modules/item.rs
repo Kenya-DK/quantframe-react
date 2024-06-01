@@ -205,7 +205,7 @@ impl ItemModule {
                 continue;
             }
             // Find the item in the cache
-            let item_info = match cache.tradable_items().find_by_url_name(&item_entry.wfm_url) {
+            let item_info = match cache.tradable_items().find_item(&item_entry.wfm_url, "--item_by url_name --item_lang en")? {
                 Some(item_info) => item_info,
                 None => {
                     logger::warning(
@@ -594,20 +594,6 @@ impl ItemModule {
         // Set the post price to the highest price.
         let mut post_price = highest_price;
 
-        // // Get the stock item bought price if it exists.
-        // let bought_price = if stock_item.is_some() {
-        //     stock_item.unwrap().bought as i64
-        // } else {
-        //     0
-        // };
-
-        // // Get owned quantity.
-        // let owned = if stock_item.is_some() {
-        //     stock_item.unwrap().owned as i64
-        // } else {
-        //     0
-        // };
-
         // If there are no buyers, and the average price is greater than 25p, then we should probably update/create our listing.
         if post_price == 0 && closed_avg > 25.0 {
             // Calculate the post price
@@ -748,7 +734,7 @@ impl ItemModule {
                 &self.get_component("CompareOrdersWhenBuying"),
                 format!("Item {} is underpriced. Deleted order.", item_info.name).as_str(),
             );
-        } else if status == StockStatus::Live && user_order.visible {
+        } else if status == StockStatus::Live && user_order.id != "N/A" {
             wfm.orders()
                 .update(&user_order.id, post_price, 1, user_order.visible)
                 .await?;
@@ -761,12 +747,19 @@ impl ItemModule {
                 &self.get_component("CompareOrdersWhenBuying"),
                 format!("Item {} Updated", item_info.name).as_str(),
             );
-        } else if status == StockStatus::Live && !user_order.visible {
+        } else if status == StockStatus::Live && user_order.id == "N/A" {
             // Send GUI Update.
             self.send_msg("created", Some(json!({ "name": item_info.name, "price": post_price, "profit": potential_profit})));
             match wfm
                 .orders()
-                .create(&item_info.wfm_id, "buy", post_price, 1, true, item.sub_type)
+                .create(
+                    &item_info.wfm_id,
+                    "buy",
+                    post_price,
+                    1,
+                    false,
+                    item.sub_type,
+                )
                 .await
             {
                 Ok((rep, None)) => {
@@ -894,7 +887,7 @@ impl ItemModule {
             stock_item.list_price = Some(post_price);
         }
 
-        if user_order.visible {
+        if user_order.id != "N/A" {
             // If the item is too cheap, delete the order
             if stock_item.status == StockStatus::ToLowProfit {
                 // Send GUI Update.
@@ -932,7 +925,7 @@ impl ItemModule {
                     "sell",
                     post_price,
                     quantity,
-                    true,
+                    false,
                     stock_item.sub_type.clone(),
                 )
                 .await
