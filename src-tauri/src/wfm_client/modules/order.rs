@@ -37,7 +37,7 @@ impl OrderModule {
     fn update_state(&self) {
         self.client.update_order_module(self.clone());
     }
-    
+
     pub fn set_order_count(&mut self, increment: i64) -> Result<(), AppError> {
         let ref mut count = self.total_orders;
         *count = increment;
@@ -57,7 +57,15 @@ impl OrderModule {
     /// # Returns
     ///
     /// * A Result containing a tuple of a string and an optional Order, or an AppError.
-    pub async fn progress_order(&mut self, url: &str, sub_type: Option<SubType>, mut quantity: i64, order_type: OrderType) -> Result<(String, Option<Order>), AppError> {
+    pub async fn progress_order(
+        &mut self,
+        url: &str,
+        sub_type: Option<SubType>,
+        mut quantity: i64,
+        order_type: OrderType,
+        need_update: bool,
+    ) -> Result<(String, Option<Order>), AppError> {
+        let wfm = self.client.clone();
         let settings = self.client.settings.lock()?.clone();
 
         // Set quantity to 1 if it's less than 1
@@ -66,32 +74,31 @@ impl OrderModule {
         }
 
         // Check if the order is a Buy order and report_to_wfm is true, or if the order is a Sale order
-        if (order_type == OrderType::Buy && settings.live_scraper.stock_item.report_to_wfm) || order_type == OrderType::Sale {
+        if order_type == OrderType::Buy && settings.live_scraper.stock_item.report_to_wfm
+            || order_type == OrderType::Sell
+        {
             // Get WFM Order
             let orders = wfm.orders().get_my_orders().await?;
-            let order = orders.find_order_by_url_sub_type(
-                &url,
-                order_type,
-                sub_type,
-            );
-            
+            let order = orders.find_order_by_url_sub_type(&url, order_type, sub_type.as_ref());
+
             // Check if order exists
             if order.is_some() {
-                let order = order.unwrap();
+                let mut order = order.unwrap();
                 // Subtract quantity from order
                 order.quantity -= quantity;
 
                 // If report_to_wfm is true, close the order
                 if settings.live_scraper.stock_item.report_to_wfm {
-                    self.close(&order.id).await?;                    
+                    self.close(&order.id).await?;
                 } else {
                     // Delete order if quantity is less than or equal to 0 and update if not
                     if order.quantity <= 0 {
                         self.delete(&order.id).await?;
-                    } else {
-                        self.update(&order.id, order.platinum, order.quantity, order.visible).await?;
+                    } else if need_update {
+                        self.update(&order.id, order.platinum, order.quantity, order.visible)
+                            .await?;
                     }
-                }   
+                }
                 // Return order_deleted if quantity is less than or equal to 0, else return order_updated
                 if order.quantity <= 0 {
                     return Ok(("order_deleted".to_string(), Some(order)));
@@ -343,24 +350,13 @@ impl OrderModule {
         }
     }
 
-    pub async fn close(&mut self, id: &str) -> Result<String, AppError> {
-         let url = format!("profile/orders/close/{}", order.id);
+    pub async fn close(&mut self, id: &str) -> Result<bool, AppError> {
+        let url = format!("profile/orders/close/{}", id);
 
-        let result: Option<serde_json::Value> =
-            match self.client.put(&url, Some("order"), None).await {
-                Ok(ApiResult::Success(payload, _headers)) => {
-                    self.subtract_order_count(1)?;
-                    self.client.debug(
-                        &self.debug_id,
-                        &self.get_component("Close"),
-                        format!(
-                            "Order {} was closed.",
-                            id,
-                        )
-                        .as_str(),
-                        None,
-                    );
-                    payload
+            match self.client.put::<serde_json::Value>(&url, Some("order"), None).await {
+                Ok(ApiResult::Success(_payload, _headers)) => {
+                    self.subtract_order_count(1)?;                    
+                    return Ok(true);
                 }
                 Ok(ApiResult::Error(error, _headers)) => {
                     let log_level = match error.messages.get(0) {
@@ -372,7 +368,7 @@ impl OrderModule {
                     return Err(self.client.create_api_error(
                         &self.get_component("Close"),
                         error,
-                        eyre!("There was an error closing order {}", order.id),
+                        eyre!("There was an error closing order {}", id),
                         log_level,
                     ));
                 }
@@ -380,13 +376,6 @@ impl OrderModule {
                     return Err(err);
                 }
             };
-
-        if result.is_none() {
-            return Ok("Order Successfully Closed".to_string());
-        }
-        let order_data = result.unwrap();
-        order.quantity = order_data["quantity"].as_i64().unwrap();
-        return Ok("Order Successfully Closed and Updated".to_string());
     }
     // End Actions User Order
 

@@ -158,7 +158,7 @@ impl WFMClient {
 
         if let Err(e) = response {
             error_def.messages.push(e.to_string());
-            
+
             return Err(AppError::new_api(
                 self.component.as_str(),
                 error_def,
@@ -179,17 +179,16 @@ impl WFMClient {
             error_def.messages.push(e.to_string());
             error_def.error = "RequestError".to_string();
 
-            let log_level= match error_def.status_code {
+            let log_level = match error_def.status_code {
                 400 => LogLevel::Warning,
-                _ => LogLevel::Critical                
+                _ => LogLevel::Critical,
             };
             AppError::new_api(
                 self.component.as_str(),
                 error_def.clone(),
                 eyre!(format!("Could not parse response: {}, {:?}", content, e)),
                 log_level,
-            )                
-            
+            )
         })?;
 
         // Check if the response is an error
@@ -236,7 +235,7 @@ impl WFMClient {
 
         if let Some(payload_key) = payload_key {
             data = data[payload_key].clone();
-        }        
+        }
 
         // Convert the response to a T object
         match serde_json::from_value(data.clone()) {
