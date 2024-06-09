@@ -1,4 +1,4 @@
-import { ActionIcon, Box, Grid, Group, MultiSelect, Paper, RangeSlider, Text, Tooltip } from '@mantine/core';
+import { Box, Grid, Group, MultiSelect, Paper, RangeSlider, Text } from '@mantine/core';
 import { CacheTradableItem } from '@api/types';
 import { useTranslateComponent } from '@hooks/index';
 import { DataTable, DataTableSortStatus } from 'mantine-datatable';
@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react';
 import { useForm } from '@mantine/form';
 import { sortArray, paginate } from "@utils/index";
 import { SearchField } from '../SearchField';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAdd } from '@fortawesome/free-solid-svg-icons';
 import { ActionWithTooltip } from '@components';
 
@@ -79,7 +78,7 @@ export function TradableItemList({ onAddItem, onAddAll, availableItems }: Tradab
 
 		if (filterForm.values.tags.length > 0) {
 			itemFilter = itemFilter.filter((item) => {
-				return filterForm.values.tags.includes(item.tags[0]);
+				return item.tags.some((tag) => filterForm.values.tags.includes(tag));
 			});
 		}
 
@@ -172,7 +171,7 @@ export function TradableItemList({ onAddItem, onAddAll, availableItems }: Tradab
 										onAddAll(items);
 									}
 								}}
-							/>						
+							/>
 						</Group>
 					}
 				/>
