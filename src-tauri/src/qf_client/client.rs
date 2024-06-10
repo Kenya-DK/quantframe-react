@@ -36,6 +36,7 @@ pub struct QFClient {
     auth_module: Arc<RwLock<Option<AuthModule>>>,
     cache_module: Arc<RwLock<Option<CacheModule>>>,
     price_module: Arc<RwLock<Option<PriceScraperModule>>>,
+    analytics_module: Arc<RwLock<Option<AnalyticsModule>>>,
     pub component: String,
     pub log_file: String,
     pub auth: Arc<Mutex<AuthState>>,
@@ -58,6 +59,7 @@ impl QFClient {
             auth_module: Arc::new(RwLock::new(None)),
             cache_module: Arc::new(RwLock::new(None)),
             price_module: Arc::new(RwLock::new(None)),
+            analytics_module: Arc::new(RwLock::new(None)),
             log_file: "qfAPICalls.log".to_string(),
             component: "QuantframeApi".to_string(),
             auth,
@@ -289,5 +291,15 @@ impl QFClient {
 
         // Unwrapping is safe here because we ensured the price_module is initialized
         self.auth_module.read().unwrap().as_ref().unwrap().clone()
+    }
+    
+    pub fn analytics(&self) -> AnalyticsModule {
+        // Lazily initialize AnalyticsModule if not already initialized
+        if self.analytics_module.read().unwrap().is_none() {
+            *self.analytics_module.write().unwrap() = Some(AnalyticsModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the analytics_module is initialized
+        self.analytics_module.read().unwrap().as_ref().unwrap().clone()
     }
 }
