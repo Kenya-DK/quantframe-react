@@ -189,6 +189,8 @@ fn main() {
             // Auctions commands
             commands::auctions::auction_refresh,
             // Orders commands
+            commands::orders::order_delete,
+            commands::orders::order_delete_all,
             commands::orders::order_refresh,
             // Chat commands
             commands::chat::chat_refresh,

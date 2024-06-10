@@ -64,20 +64,28 @@ export namespace Wfm {
     ducats: number;
   }
   // Order stuff below
-  export type OrderType = 'sell' | 'buy';
+  export enum OrderType {
+    Buy = 'buy',
+    Sell = 'sell',
+  }
   export interface OrderDto {
     id: string;
     platinum: number;
     quantity: number;
-    mod_rank?: number;
     order_type: OrderType;
     platform: string;
     region: string;
     creation_date: string;
     last_update: string;
     user: UserDto;
-    subtype?: string;
     visible: boolean;
+    // Mod
+    mod_rank?: number;
+    // Ayatan Sculpture
+    cyan_stars?: number;
+    amber_stars?: number;
+    // Subtype
+    subtype?: string;
     item?: OrderItemDto;
   }
   export interface OrderItemDto {
@@ -90,7 +98,7 @@ export namespace Wfm {
     mod_max_rank: number;
     subtypes: string[];
     tags: string[];
-    ducats: number;
+    ducats?: number;
     vaulted?: boolean;
     quantity_for_set: number;
     en?: LangItemNameDto;

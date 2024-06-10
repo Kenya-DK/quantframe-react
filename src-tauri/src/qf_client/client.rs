@@ -21,7 +21,7 @@ use crate::{
     },
 };
 
-use super::modules::{auth::AuthModule, cache::CacheModule, price_scraper::PriceScraperModule};
+use super::modules::{auth::AuthModule, cache::CacheModule, analytics::AnalyticsModule, price_scraper::PriceScraperModule};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ByteResponse {
@@ -60,7 +60,7 @@ impl QFClient {
             cache_module: Arc::new(RwLock::new(None)),
             price_module: Arc::new(RwLock::new(None)),
             analytics_module: Arc::new(RwLock::new(None)),
-            log_file: "qfAPICalls.log".to_string(),
+            log_file: "qfAPIaCalls.log".to_string(),
             component: "QuantframeApi".to_string(),
             auth,
             settings,

@@ -31,7 +31,37 @@
 
   --item-type-riven: var(--mantine-color-violet-7);
   --item-type-item: var(--mantine-color-blue-7);
+
+  --order-type-buy: var(--mantine-color-red-6);
+  --order-type-sell: var(--mantine-color-violet-7);
 }
+
+[data-order-type='buy'] {
+  &[data-color-mode='bg'] {
+    background-color: var(--order-type-buy);
+  }
+
+  &[data-color-mode='text'] {
+    color: var(--order-type-buy);
+  }
+  &[data-color-mode='box-shadow'] {
+    box-shadow: inset 4px 0 0 0 var(--order-type-buy);
+  }
+}
+
+[data-order-type='sell'] {
+  &[data-color-mode='bg'] {
+    background-color: var(--order-type-sell);
+  }
+
+  &[data-color-mode='text'] {
+    color: var(--order-type-sell);
+  }
+  &[data-color-mode='box-shadow'] {
+    box-shadow: inset 4px 0 0 0 var(--order-type-sell);
+  }
+}
+
 
 [data-user-status='online'] {
   &[data-color-mode='bg'] {

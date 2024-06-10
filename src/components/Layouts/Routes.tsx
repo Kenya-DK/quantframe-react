@@ -16,6 +16,9 @@ import PLogin from '@pages/auth/login'
 // Live Trading routes
 import PLiveTrading from '@pages/liveTrading'
 
+// Live Trading routes
+import PWarframeMarket from '@pages/warframeMarket'
+
 // Debug Routes
 import PDebug from '@pages/debug'
 
@@ -39,6 +42,9 @@ export function AppRoutes() {
             </Route>
             <Route path="debug" >
               <Route index element={<PDebug />} />
+            </Route>
+            <Route path="warframe-market" >
+              <Route index element={<PWarframeMarket />} />
             </Route>
           </Route>
         </Route>

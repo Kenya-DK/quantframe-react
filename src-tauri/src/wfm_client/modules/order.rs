@@ -72,7 +72,6 @@ impl OrderModule {
         if quantity <= 0 {
             quantity = 1;
         }
-
         // Check if the order is a Buy order and report_to_wfm is true, or if the order is a Sale order
         if order_type == OrderType::Buy && settings.live_scraper.stock_item.report_to_wfm
             || order_type == OrderType::Sell

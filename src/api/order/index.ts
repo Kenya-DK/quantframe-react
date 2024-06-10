@@ -12,14 +12,14 @@ export class OrderModule {
   }
 
   async delete(orderId: string): Promise<Wfm.OrderDto> {
-    const [err, order] = await this.client.sendInvoke<Wfm.OrderDto>('order_delete', orderId);
+    const [err, order] = await this.client.sendInvoke<Wfm.OrderDto>('order_delete', { id: orderId });
     if (err)
       throw err;
     return order;
   }
 
-  async refresh(): Promise<void> {
-    const [err, res] = await this.client.sendInvoke<void>('order_refresh');
+  async refresh(): Promise<number> {
+    const [err, res] = await this.client.sendInvoke<number>('order_refresh');
     if (err)
       throw err;
     return res;

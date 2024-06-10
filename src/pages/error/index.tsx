@@ -1,9 +1,10 @@
-import { Alert, Center } from "@mantine/core";
+import { Alert, Center, Text } from "@mantine/core";
 import { useEffect } from "react";
 import { useAppContext } from "@contexts/index";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { useTranslatePages } from "../../hooks";
 
 export default function ErrorPage() {
   const { app_error } = useAppContext();
@@ -15,18 +16,16 @@ export default function ErrorPage() {
 
   // States
 
-  // // Translate general
-  // const useTranslatePage = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`auth.${key}`, { ...context }, i18Key)
-  // const useTranslateErrors = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePage(`errors.${key}`, { ...context }, i18Key)
-  // const useTranslateSuccess = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePage(`success.${key}`, { ...context }, i18Key)
-  // const useTranslateProgress = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePage(`progress.${key}`, { ...context }, i18Key)
+  // Translate general
+  const useTranslatePage = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`error.${key}`, { ...context }, i18Key)
 
   return (
     <Center w={"100%"} h={"92vh"}>
-      <Alert color="red" title="Alert title" icon={<FontAwesomeIcon icon={faExclamationTriangle} />} maw={"75%"}>
-        <code>
-          {JSON.stringify(app_error, null, 2)}
-        </code>
+      <Alert color="red" title={useTranslatePage("title", { component: app_error?.component })} icon={<FontAwesomeIcon icon={faExclamationTriangle} />} maw={"75%"}>
+        <Text>{useTranslatePage("backtrace", { backtrace: app_error?.backtrace })}</Text>
+        <Text>{useTranslatePage("cause", { cause: app_error?.cause })}</Text>
+        <Text>{useTranslatePage("backtrace", { backtrace: app_error?.backtrace })}</Text>
+        <Text>{useTranslatePage("footer", {})}</Text>
       </Alert>
     </Center>
   );

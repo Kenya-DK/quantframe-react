@@ -35,6 +35,14 @@ export const en = {
       ingame: "Ingame",
       invisible: "Offline",
     },
+    order_type: {
+      buy: "Buy Order",
+      sell: "Sell Order",
+      details: {
+        buy: "Buy",
+        sell: "Sell",
+      }
+    },
     stock_mode: {
       all: "All",
       riven: "Riven",
@@ -424,6 +432,9 @@ export const en = {
     order_item: {
       fields: {
         quantity: "<qty/> <blue>{{quantity}}</blue>",
+        platinum: "<blue>{{platinum}}</blue> <plat/>",
+        mod_rank: "Rank: <blue>{{mod_rank}}</blue>/<blue>{{mod_max_rank}}</blue>",
+        subtype: "<blue>{{sub_type}}</blue>",
       },
     },
     stock_riven_info: {
@@ -1078,6 +1089,10 @@ export const en = {
         refreshing_orders: "Refreshing Orders",
         refreshing_auctions: "Refreshing Auctions",
         refreshing_chat: "Refreshing Chat",
+        refreshing_cache: "Refreshing Cache",
+        refreshing_transaction: "Refreshing Transaction",
+        refreshing_stock_items: "Refreshing Stock Items",
+        refreshing_stock_riven: "Refreshing Stock Rivens",
       },
       errors: {
         login: {
@@ -1093,6 +1108,124 @@ export const en = {
           message: "Welcome back! {{name}}",
         }
       }
-    }
+    },
+    error: {
+      title: "Error in {{component}} component",
+      backtrace: "Location: {{backtrace}}",
+      cause: "Cause: {{cause}}",
+      footer: "If you think this is a bug, please report it to the developer. Thank you.",
+    },
+    warframe_market: {
+      tabs: {
+        orders: {
+          title: "Orders",
+          buttons: {
+            sell_manual: {
+              buy: {
+                tooltip: "Bought manually",
+              },
+              sell: {
+                tooltip: "Sold manually",
+              },
+            },
+            sell_auto: {
+              buy: {
+                tooltip: "Bought for listed price",
+              },
+              sell: {
+                tooltip: "Sold for listed price",
+              },
+            },
+            delete: {
+              tooltip: "Delete"
+            },
+            refresh: {
+              tooltip: "Refresh"
+            },
+            delete_all: {
+              tooltip: "Delete All"
+            },
+          },
+          prompts: {
+            delete: {
+              title: "Delete Order",
+              message: "Are you sure you want to delete order {{name}}, this action cannot be undone.",
+              confirm: "Yes, delete",
+              cancel: "No, cancel",
+            },
+            delete_all: {
+              title: "Delete All Orders",
+              message: "Are you sure you want to delete all orders, this action cannot be undone.",
+              confirm: "Yes, delete",
+              cancel: "No, cancel",
+            },
+            sell: {
+              title: "Manual Sell",
+              field: {
+                label: "Sold For",
+              },
+            },
+            buy: {
+              title: "Manual Buy",
+              field: {
+                label: "Bought For",
+              },
+            },
+          },
+          success: {
+            create_stock: {
+              title: "Create Stock Success",
+              message: "Stock item {{name}} has been successfully created.",
+            },
+            sell_stock: {
+              title: "Sell Stock Success",
+              message: "Stock item {{name}} has been successfully sold.",
+            },
+            refresh: {
+              title: "Refresh Success",
+              message: "Total {{count}} orders have been successfully refreshed.",
+            },
+            delete: {
+              title: "Delete Success",
+              message: "Order has been successfully deleted.",
+            },
+            delete_all: {
+              title: "Delete All Success",
+              message: "All orders have been successfully deleted.",
+            },
+          },
+          errors: {
+            create_stock: {
+              title: "Create Stock Error",
+              message: "An error occurred while trying to create stock.",
+            },
+            sell_stock: {
+              title: "Sell Stock Error",
+              message: "An error occurred while trying to sell stock.",
+            },
+            refresh: {
+              title: "Refresh Error",
+              message: "An error occurred while trying to refresh orders.",
+            },
+            delete: {
+              title: "Delete Error",
+              message: "An error occurred while trying to delete order.",
+            },
+            delete_all: {
+              title: "Delete All Error",
+              message: "An error occurred while trying to delete all orders.",
+            },
+          },
+        },
+        auctions: {
+          title: "Auctions",
+          buttons: {
+            delete: {
+              tooltip: "Delete"
+            }
+          },
+        },
+      }
+    },
   },
 }
