@@ -189,7 +189,7 @@ export const en = {
             range_threshold: "Range Threshold",
             range_threshold_description: "Volume of plat profit per item flip the bot will look to buy/resell",
             riven_range_threshold: "Riven Range Threshold",
-            riven_range_threshold_description: "Volume of profit for then riven to be sold.",
+            riven_range_threshold_description: "Volume of profit for the riven to be sold.",
             avg_price_cap: "Average Price Cap",
             avg_price_cap_description: "Average price of the items it wants to buy",
             price_shift_threshold: "Price Shift Threshold",

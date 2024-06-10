@@ -24,7 +24,7 @@ export const ImportAlgoTrader = () => {
   return (
     <Card h={180}>
       <Group position="apart" mb="xs">
-        <Text weight={500}>Warefream Import Algo Trader</Text>
+        <Text weight={500}>Warframe Import Algo Trader</Text>
       </Group>
       <Group grow mt="xs">
         <TextInput
