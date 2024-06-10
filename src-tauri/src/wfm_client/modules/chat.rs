@@ -1,7 +1,7 @@
 use eyre::eyre;
 
 use crate::{
-    helper, utils::{enums::log_level::LogLevel, modules::error::{ApiResult, AppError}}, wfm_client::{client::WFMClient, types::{chat_data::ChatData, chat_message::ChatMessage}}
+    utils::{enums::log_level::LogLevel, modules::error::{ApiResult, AppError}}, wfm_client::{client::WFMClient, types::{chat_data::ChatData, chat_message::ChatMessage}}
 };
 #[derive(Clone, Debug)]
 pub struct ChatModule {

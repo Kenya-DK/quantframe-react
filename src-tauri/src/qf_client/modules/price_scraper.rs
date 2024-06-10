@@ -1,5 +1,5 @@
 use crate::{
-    qf_client::{client::QFClient, structs::User},
+    qf_client::{client::QFClient},
     utils::{
         enums::log_level::LogLevel,
         modules::error::{ApiResult, AppError},

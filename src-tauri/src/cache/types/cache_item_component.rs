@@ -30,7 +30,7 @@ pub struct CacheItemComponent {
     pub component_type: String,
 }
 impl CacheItemComponent {
-    pub fn get_real_external_name(&self, cache: CacheClient) -> String {
+    pub fn get_real_external_name(&self, _cache: CacheClient) -> String {
         let mut real_external_name = self.name.clone();
         let part_of = self.part_of.clone();
         if real_external_name == "Forma" {

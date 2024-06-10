@@ -1,4 +1,4 @@
-use sea_orm::entity::{self, prelude::*};
+use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 

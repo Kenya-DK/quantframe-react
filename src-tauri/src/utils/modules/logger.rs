@@ -1,7 +1,7 @@
 use eyre::eyre;
 use serde_json::Value;
 use std::{
-    fs::{self, File, OpenOptions},
+    fs::{self, OpenOptions},
     io::Write,
     path::PathBuf,
 };
@@ -180,7 +180,7 @@ pub fn log_json(file_path: &str, data: &Value) -> Result<(), AppError> {
     Ok(())
 }
 pub fn export_logs() {
-    let date = chrono::Local::now()
+    let _date = chrono::Local::now()
         .naive_utc()
         .format("%Y-%m-%d")
         .to_string();

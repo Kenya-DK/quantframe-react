@@ -5,7 +5,7 @@ use crate::{
     },
     wfm_client::{
         client::WFMClient,
-        types::{item::Item, user_profile::UserProfile},
+        types::{user_profile::UserProfile},
     },
 };
 

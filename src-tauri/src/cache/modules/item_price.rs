@@ -1,13 +1,10 @@
 use std::{
-    collections::HashMap,
     fs::File,
     io::{Read, Write},
-    path::PathBuf,
-    sync::Arc,
 };
 
 use eyre::eyre;
-use serde_json::{json, Value};
+
 
 use crate::{
     cache::{client::CacheClient, types::item_price_info::ItemPriceInfo},

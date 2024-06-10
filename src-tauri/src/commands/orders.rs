@@ -1,14 +1,13 @@
 use serde_json::json;
 
 use crate::{
-    helper,
     notification::client::NotifyClient,
-    settings::{self, SettingsState},
+    settings::{SettingsState},
     utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
         modules::error::{self, AppError},
     },
-    wfm_client::{client::WFMClient, types::order::Order},
+    wfm_client::{client::WFMClient},
 };
 use std::sync::{Arc, Mutex};
 

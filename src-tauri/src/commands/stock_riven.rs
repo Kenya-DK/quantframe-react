@@ -12,7 +12,6 @@ use service::{StockRivenMutation, StockRivenQuery, TransactionMutation};
 use crate::utils::modules::error;
 use crate::{
     app::client::AppState,
-    cache::client::CacheClient,
     notification::client::NotifyClient,
     utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},

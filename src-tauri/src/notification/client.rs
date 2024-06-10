@@ -2,7 +2,7 @@ use std::sync::{Arc, RwLock};
 
 use tauri::AppHandle;
 
-use crate::utils::modules::error::AppError;
+
 
 use super::modules::{discord::DiscordModule, gui::GUIModule, system::SystemModule};
 

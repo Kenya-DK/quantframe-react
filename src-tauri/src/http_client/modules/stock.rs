@@ -1,20 +1,19 @@
 use std::sync::{Arc, Mutex};
 
 use actix_web::{post, web, HttpResponse, Responder};
-use regex::Regex;
+
 use serde_json::json;
 use service::{StockRivenMutation, TransactionMutation};
 use tauri::{Manager, State};
 
 use entity::stock::{
-    self,
-    item::{create::CreateStockItem, stock_item},
-    riven::{attribute, create::CreateStockRiven, stock_riven},
+    item::{create::CreateStockItem},
+    riven::{create::CreateStockRiven},
 };
 
 use crate::{
     app::client::AppState,
-    cache::{client::CacheClient, modules::riven, types::cache_riven::RivenStat},
+    cache::{client::CacheClient},
     notification::client::NotifyClient,
     settings::SettingsState,
     utils::{
@@ -30,7 +29,7 @@ pub async fn add_riven(riven: web::Json<CreateStockRiven>) -> impl Responder {
     let app_handle = APP.get().expect("failed to get app handle");
     let app_state: State<Arc<Mutex<AppState>>> = app_handle.state();
     let settings_state: State<Arc<Mutex<SettingsState>>> = app_handle.state();
-    let settings = settings_state
+    let _settings = settings_state
         .lock()
         .expect("failed to lock settings state");
     let app = app_state.lock().expect("failed to lock app state");
@@ -113,19 +112,19 @@ pub async fn add_riven(riven: web::Json<CreateStockRiven>) -> impl Responder {
 }
 
 #[post("/add_item")]
-pub async fn add_item(riven: web::Json<CreateStockItem>) -> impl Responder {
-    let component = "HTTPAddItem";
+pub async fn add_item(_riven: web::Json<CreateStockItem>) -> impl Responder {
+    let _component = "HTTPAddItem";
     let app_handle = APP.get().expect("failed to get app handle");
     let app_state: State<Arc<Mutex<AppState>>> = app_handle.state();
     let settings_state: State<Arc<Mutex<SettingsState>>> = app_handle.state();
-    let settings = settings_state
+    let _settings = settings_state
         .lock()
         .expect("failed to lock settings state");
-    let app = app_state.lock().expect("failed to lock app state");
+    let _app = app_state.lock().expect("failed to lock app state");
     let notify_state: State<Arc<Mutex<NotifyClient>>> = app_handle.state();
-    let notify = notify_state.lock().expect("failed to lock notify state");
+    let _notify = notify_state.lock().expect("failed to lock notify state");
     let cache_state: State<Arc<Mutex<CacheClient>>> = app_handle.state();
-    let cache = cache_state.lock().expect("failed to lock notify state");
+    let _cache = cache_state.lock().expect("failed to lock notify state");
 
     HttpResponse::Ok().body("Not implemented")
 }

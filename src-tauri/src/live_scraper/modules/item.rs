@@ -1,4 +1,4 @@
-use crate::cache::types::cache_item_base::CacheItemBase;
+
 use crate::cache::types::cache_tradable_item::CacheTradableItem;
 use crate::enums::order_mode::OrderMode;
 use crate::live_scraper::client::LiveScraperClient;
@@ -15,7 +15,7 @@ use crate::wfm_client::types::orders::Orders;
 use entity::enums::stock_status::StockStatus;
 use entity::price_history::PriceHistory;
 use entity::stock::item::stock_item;
-use entity::sub_type::SubType;
+
 use serde_json::json;
 use service::{StockItemMutation, StockItemQuery};
 use std::collections::{HashMap, HashSet};
@@ -350,7 +350,7 @@ impl ItemModule {
     pub async fn delete_all_orders(&self, mode: OrderMode) -> Result<(), AppError> {
         let wfm = self.client.wfm.lock()?.clone();
         let app = self.client.app.lock()?.clone();
-        let notify = self.client.notify.lock()?.clone();
+        let _notify = self.client.notify.lock()?.clone();
         let settings = self.client.settings.lock()?.clone().live_scraper;
         let blacklist = settings.stock_item.blacklist.clone();
         let mut current_orders = wfm.orders().get_my_orders().await?;

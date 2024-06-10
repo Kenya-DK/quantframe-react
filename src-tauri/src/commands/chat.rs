@@ -4,7 +4,7 @@ use serde_json::json;
 
 
 use crate::{
-    notification::client::NotifyClient, utils::{enums::ui_events::{UIEvent, UIOperationEvent}, modules::error::{self, AppError}}, wfm_client::{client::WFMClient, types::{chat_data::ChatData, chat_message::ChatMessage}}
+    notification::client::NotifyClient, utils::{enums::ui_events::{UIEvent, UIOperationEvent}, modules::error::{self, AppError}}, wfm_client::{client::WFMClient}
 };
 
 #[tauri::command]

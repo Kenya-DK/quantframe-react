@@ -1,6 +1,6 @@
-use migration::cli;
+
 use serde_json::{json, Value};
-use tauri::{window, Manager};
+use tauri::{Manager};
 
 use crate::{
     notification::client::NotifyClient,

@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use create::CreateStockItem;
 use entity::stock::item::*;
 use entity::transaction::transaction::TransactionType;
-use entity::{sub_type::SubType, transaction::transaction::TransactionItemType};
+use entity::{sub_type::SubType};
 use eyre::eyre;
 use serde_json::json;
 use service::{StockItemMutation, StockItemQuery, TransactionMutation};
@@ -383,7 +383,7 @@ pub async fn stock_item_sell(
 pub async fn stock_item_sell_by_wfm_order(
     url: String,
     sub_type: Option<SubType>,
-    mut quantity: i64,
+    quantity: i64,
     price: i64,
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,

@@ -2,17 +2,11 @@ use crate::{
     app::client::AppState, cache::client::CacheClient, logger,
     notification::client::NotifyClient, utils::modules::error::AppError,
 };
-use entity::{
-    enums::stock_status::StockStatus,
-    price_history::PriceHistoryVec,
-    sub_type::SubType,
-    transaction::transaction::{self, TransactionItemType},
-};
 
-use serde_json::{json, Value};
+
+use serde_json::{json};
 use service::{
     sea_orm::DatabaseConnection,
-    StockItemMutation, StockItemQuery, StockRivenMutation, StockRivenQuery, TransactionMutation,
     TransactionQuery,
 };
 use std::
@@ -46,7 +40,7 @@ impl DebugClient {
         old_con: &DatabaseConnection,
         new_con: &DatabaseConnection,
     ) -> Result<(), AppError> {
-        let cache = self.cache.lock()?.clone();
+        let _cache = self.cache.lock()?.clone();
         let notify = self.notify.lock()?.clone();
         // Migrate the database transactions
         let old_items = TransactionQuery::get_old_transactions(old_con)
@@ -170,8 +164,8 @@ impl DebugClient {
 
     pub async fn migrate_data_stock_item(
         &self,
-        old_con: &DatabaseConnection,
-        new_con: &DatabaseConnection,
+        _old_con: &DatabaseConnection,
+        _new_con: &DatabaseConnection,
     ) -> Result<(), AppError> {
         return Err(AppError::new("MigrateDataBase", eyre::eyre!("Failed to migrate data")));
         // let cache = self.cache.lock()?.clone();
@@ -236,8 +230,8 @@ impl DebugClient {
 
     pub async fn migrate_data_stock_riven(
         &self,
-        old_con: &DatabaseConnection,
-        new_con: &DatabaseConnection,
+        _old_con: &DatabaseConnection,
+        _new_con: &DatabaseConnection,
     ) -> Result<(), AppError> {
         return Err(AppError::new("MigrateDataBase", eyre::eyre!("Failed to migrate data")));
         // let cache = self.cache.lock()?.clone();

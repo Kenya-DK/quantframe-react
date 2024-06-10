@@ -1,12 +1,11 @@
 use std::sync::{Arc, Mutex};
 
-use eyre::eyre;
-use serde_json::json;
+
+
 
 use crate::{
-    auth::{self, AuthState},
-    logger,
-    qf_client::{client::QFClient, types::user::User},
+    auth::{AuthState},
+    qf_client::{client::QFClient},
     utils::modules::error::{self, AppError, ErrorApiResponse},
     wfm_client::client::WFMClient,
 };

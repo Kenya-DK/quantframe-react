@@ -4,9 +4,9 @@ use std::{
 };
 
 use eyre::eyre;
-use reqwest::{header::HeaderMap, Client, Method, StatusCode, Url};
+use reqwest::{Client, Method, Url};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value};
 
 use crate::{
     app::client::AppState,

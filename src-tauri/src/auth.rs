@@ -3,7 +3,7 @@ use crate::wfm_client::types::user_profile::UserProfile;
 use crate::{helper, logger};
 use eyre::{eyre, Result};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
+
 use serde_json::Value;
 use sha256::digest;
 use std::fs::File;

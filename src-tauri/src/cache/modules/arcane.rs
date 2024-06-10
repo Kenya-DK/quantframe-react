@@ -4,7 +4,7 @@ use eyre::eyre;
 
 use crate::{
     cache::{client::CacheClient, types::cache_arcane::CacheArcane},
-    utils::modules::{error::AppError, logger},
+    utils::modules::{error::AppError},
 };
 
 #[derive(Clone, Debug)]

@@ -5,7 +5,6 @@ use crate::{
         enums::ui_events::{UIEvent, UIOperationEvent},
         modules::{
             error::{self, AppError},
-            logger::error,
         },
     },
 };
@@ -14,7 +13,6 @@ use eyre::eyre;
 use serde_json::json;
 use service::{TransactionMutation, TransactionQuery};
 use std::{
-    f32::consts::E,
     sync::{Arc, Mutex},
 };
 

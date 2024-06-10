@@ -14,7 +14,7 @@ use crate::{
     auth::AuthState,
     logger,
     utils::{
-        enums::log_level::{self, LogLevel},
+        enums::log_level::{LogLevel},
         modules::{
             error::{ApiResult, AppError, ErrorApiResponse},
             rate_limiter::RateLimiter,

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use entity::{enums::stock_status::StockStatus, price_history::PriceHistory};
 use entity::stock::riven::*;
-use serde::de;
+
 use serde_json::json;
 use service::{StockRivenMutation, StockRivenQuery};
 

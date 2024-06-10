@@ -1,12 +1,12 @@
 use eyre::eyre;
 use serde_json::{json, Map, Value};
 use std::{
-    collections::HashMap, fs::{self, File}, io::{self, Read, Write}, path::{Path, PathBuf}, sync::Mutex
+    collections::HashMap, fs::{self, File}, io::{self, Read, Write}, path::{Path, PathBuf}
 };
-use tauri::Window;
+
 use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 
-use crate::{logger, utils::modules::error::AppError};
+use crate::{utils::modules::error::AppError};
 
 pub fn get_app_storage_path() -> PathBuf {
     let local_path = match tauri::api::path::local_data_dir() {

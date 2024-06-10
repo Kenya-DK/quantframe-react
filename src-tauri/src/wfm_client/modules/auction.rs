@@ -1,11 +1,11 @@
-use std::sync::{Arc, Mutex};
+
 
 use entity::stock::riven::attribute::RivenAttribute;
 use eyre::eyre;
 use serde_json::json;
 
 use crate::{
-    helper, logger,
+    logger,
     utils::{
         enums::log_level::LogLevel,
         modules::error::{ApiResult, AppError},
@@ -14,7 +14,6 @@ use crate::{
         client::WFMClient,
         types::{
             auction::Auction, auction_item::AuctionItem, auction_owner::AuctionOwner,
-            riven_attribute_info::RivenAttributeInfo, riven_type_info::RivenTypeInfo,
         },
     },
 };

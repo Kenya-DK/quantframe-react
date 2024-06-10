@@ -1,8 +1,7 @@
-use ::entity::transaction::transaction::TransactionType;
 use ::entity::transaction::{transaction, transaction::Entity as Transaction};
 use ::entity::transaction::{transaction_old, transaction_old::Entity as TransactionOld};
 
-use sea_orm::{sea_query::Expr, *};
+use sea_orm::*;
 
 pub struct TransactionQuery;
 

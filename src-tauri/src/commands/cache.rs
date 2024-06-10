@@ -5,7 +5,6 @@ use std::{
 
 use crate::{
     cache::{
-        self,
         client::CacheClient,
         types::{
             cache_riven::{

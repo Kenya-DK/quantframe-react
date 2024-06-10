@@ -1,6 +1,6 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::{collections::HashMap};
 
-use eyre::eyre;
+
 
 use crate::{
     cache::{client::CacheClient, types::cache_item_component::CacheItemComponent},

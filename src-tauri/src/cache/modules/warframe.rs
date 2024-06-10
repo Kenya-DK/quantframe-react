@@ -1,4 +1,4 @@
-use std::{iter::Map, path::PathBuf};
+use std::{path::PathBuf};
 
 use eyre::eyre;
 

@@ -1,7 +1,7 @@
 use serde_json::json;
 
 use crate::{
-    helper, notification::client::NotifyClient, utils::{enums::ui_events::{UIEvent, UIOperationEvent}, modules::error::{self, AppError}}, wfm_client::client::WFMClient
+    notification::client::NotifyClient, utils::{enums::ui_events::{UIEvent, UIOperationEvent}, modules::error::{self, AppError}}, wfm_client::client::WFMClient
 };
 use std::sync::{Arc, Mutex};
 
@@ -15,7 +15,7 @@ pub async fn auction_refresh(
     let wfm = wfm.lock()?.clone();
     let notify = notify.lock()?.clone();
     let current_auctions = match wfm.auction().get_my_auctions().await {
-        Ok(mut auctions) => auctions,
+        Ok(auctions) => auctions,
         Err(e) => {
             error::create_log_file("command_auctions.log".to_string(), &e);
             return Err(e);
