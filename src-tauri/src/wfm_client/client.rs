@@ -23,7 +23,7 @@ use crate::{
 };
 
 use super::modules::{
-    auction::AuctionModule, auth::AuthModule, chat::ChatModule, item::ItemModule,
+    auction::AuctionModule, auth::AuthModule, chat::ChatModule,
     order::OrderModule, user::UserModule,
 };
 
@@ -33,7 +33,6 @@ pub struct WFMClient {
     pub component: String,
     limiter: Arc<tokio::sync::Mutex<RateLimiter>>,
     order_module: Arc<RwLock<Option<OrderModule>>>,
-    item_module: Arc<RwLock<Option<ItemModule>>>,
     chat_module: Arc<RwLock<Option<ChatModule>>>,
     auction_module: Arc<RwLock<Option<AuctionModule>>>,
     auth_module: Arc<RwLock<Option<AuthModule>>>,
@@ -61,7 +60,6 @@ impl WFMClient {
             log_file: "wfmAPICalls.log".to_string(),
             auth,
             settings,
-            item_module: Arc::new(RwLock::new(None)),
             order_module: Arc::new(RwLock::new(None)),
             chat_module: Arc::new(RwLock::new(None)),
             auction_module: Arc::new(RwLock::new(None)),
@@ -321,16 +319,6 @@ impl WFMClient {
     pub fn update_order_module(&self, module: OrderModule) {
         // Update the stored ItemModule
         *self.order_module.write().unwrap() = Some(module);
-    }
-
-    pub fn items(&self) -> ItemModule {
-        // Lazily initialize ItemModule if not already initialized
-        if self.item_module.read().unwrap().is_none() {
-            *self.item_module.write().unwrap() = Some(ItemModule::new(self.clone()).clone());
-        }
-
-        // Unwrapping is safe here because we ensured the item_module is initialized
-        self.item_module.read().unwrap().as_ref().unwrap().clone()
     }
 
     pub fn auction(&self) -> AuctionModule {
