@@ -1,4 +1,4 @@
-import { Image, Group, Paper, Stack, Divider, Text, Avatar, Rating, Box, useMantineTheme } from '@mantine/core';
+import { Image, Group, Paper, Stack, Divider, Text, Avatar, Rating, Box, useMantineTheme, PaperProps } from '@mantine/core';
 import classes from './OrderItem.module.css';
 import { Wfm } from '$types/index';
 import { WFMThumbnail } from '@api/index';
@@ -11,9 +11,11 @@ export type OrderItemProps = {
 	order: Wfm.OrderDto;
 	show_user?: boolean;
 	footer?: React.ReactNode;
+	show_border?: boolean;
+	paperProps?: PaperProps;
 }
 
-export function OrderItem({ order, footer, show_user }: OrderItemProps) {
+export function OrderItem({ show_border, paperProps, order, footer, show_user }: OrderItemProps) {
 	// State
 	const theme = useMantineTheme();
 
@@ -24,7 +26,7 @@ export function OrderItem({ order, footer, show_user }: OrderItemProps) {
 	const useTranslateUserStatus = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateEnums(`user_status.${key}`, { ...context }, i18Key)
 
 	return (
-		<Paper classNames={classes} p={7} data-color-mode='box-shadow' data-order-type={order.order_type}>
+		<Paper {...paperProps} classNames={classes} p={7} data-border={show_border} data-color-mode='box-shadow' data-order-type={order.order_type}>
 			<Stack gap={3}>
 				<Group ml={"xs"} justify='space-between'>
 					<Group>

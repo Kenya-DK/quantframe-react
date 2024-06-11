@@ -105,26 +105,28 @@ export function StockItemInfo({ value }: StockItemInfoProps) {
               </Center>
             )
           }
-          {(value.info?.orders?.length || 0) > 0 && value.info?.orders?.slice(0, 5).map((order, index) => <OrderItem key={index} show_user order={{
-            ...order,
-
-            item: {
-              en: {
-                item_name: item?.name || ""
-              },
-              id: item?.wfm_id || "",
-              url_name: item?.wfm_url_name || "",
-              icon: item?.image_url || "",
-              icon_format: "png",
-              thumb: item?.image_url || "",
-              sub_icon: "",
-              mod_max_rank: item?.sub_type?.max_rank || 0,
-              subtypes: [],
-              tags: [],
-              ducats: 0,
-              quantity_for_set: 0
-            }
-          }} />)}
+          {(value.info?.orders?.length || 0) > 0 && value.info?.orders?.slice(0, 5).map((order, index) => <OrderItem
+            show_border
+            paperProps={{ mb: "sm" }}
+            key={index} show_user order={{
+              ...order,
+              item: {
+                en: {
+                  item_name: item?.name || ""
+                },
+                id: item?.wfm_id || "",
+                url_name: item?.wfm_url_name || "",
+                icon: item?.image_url || "",
+                icon_format: "png",
+                thumb: item?.image_url || "",
+                sub_icon: "",
+                mod_max_rank: item?.sub_type?.max_rank || 0,
+                subtypes: [],
+                tags: [],
+                ducats: 0,
+                quantity_for_set: 0
+              }
+            }} />)}
         </ScrollArea>
       </Tabs.Panel>
     </Tabs>
