@@ -1,1 +1,1 @@
-
+pub mod analytics_events;
