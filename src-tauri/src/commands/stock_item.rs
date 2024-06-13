@@ -174,7 +174,7 @@ pub async fn stock_item_update(
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
 
-    let stock = match StockItemMutation::find_by_id(&app.conn, id).await {
+    let stock = match StockItemQuery::find_by_id(&app.conn, id).await {
         Ok(stock) => stock,
         Err(e) => return Err(AppError::new("StockItemUpdate", eyre!(e))),
     };
@@ -394,7 +394,7 @@ pub async fn stock_item_sell_by_wfm_order(
 
     // Get the stock item returned None if not found
     let stock_item =
-        match StockItemMutation::find_by_url_name_and_sub_type(&app_state.conn, &url, sub_type)
+        match StockItemQuery::find_by_url_name_and_sub_type(&app_state.conn, &url, sub_type)
             .await
         {
             Ok(stock) => stock,
@@ -423,7 +423,7 @@ pub async fn stock_item_delete(
     let notify = notify.lock()?.clone();
     let wfm = wfm.lock()?.clone();
 
-    let stock_item = match StockItemMutation::find_by_id(&app.conn, id).await {
+    let stock_item = match StockItemQuery::find_by_id(&app.conn, id).await {
         Ok(stock) => stock,
         Err(e) => return Err(AppError::new("StockItemSell", eyre!(e))),
     };

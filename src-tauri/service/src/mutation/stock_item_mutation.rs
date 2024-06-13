@@ -5,6 +5,8 @@ use ::entity::{
 };
 use sea_orm::*;
 
+use crate::StockItemQuery;
+
 pub struct StockItemMutation;
 
 impl StockItemMutation {
@@ -57,34 +59,6 @@ impl StockItemMutation {
         .await
     }
 
-    pub async fn find_by_url_name(
-        db: &DbConn,
-        url_name: &str,
-    ) -> Result<Vec<stock_item::Model>, DbErr> {
-        StockItem::find()
-            .filter(stock_item::Column::WfmUrl.contains(url_name))
-            .all(db)
-            .await
-    }
-
-    pub async fn find_by_id(db: &DbConn, id: i64) -> Result<Option<stock_item::Model>, DbErr> {
-        StockItem::find_by_id(id).one(db).await
-    }
-
-    pub async fn find_by_url_name_and_sub_type(
-        db: &DbConn,
-        url_name: &str,
-        sub_type: Option<SubType>,
-    ) -> Result<Option<stock_item::Model>, DbErr> {
-        let items = StockItemMutation::find_by_url_name(db, url_name).await?;
-        for item in items {
-            if item.sub_type == sub_type {
-                return Ok(Some(item));
-            }
-        }
-        Ok(None)
-    }
-
     pub async fn sold_by_id(
         db: &DbConn,
         id: i64,
@@ -131,7 +105,7 @@ impl StockItemMutation {
         sub_type: Option<SubType>,
         quantity: i64,
     ) -> Result<(String, Option<stock_item::Model>), DbErr> {
-        let items = StockItemMutation::find_by_url_name(db, url_name).await?;
+        let items = StockItemQuery::find_by_url_name(db, url_name).await?;
         for item in items {
             if item.sub_type == sub_type {
                 return StockItemMutation::sold_by_id(db, item.id, quantity).await;
@@ -145,9 +119,12 @@ impl StockItemMutation {
         stock: stock_item::Model,
     ) -> Result<Option<stock_item::Model>, DbErr> {
         // Find the item by id
-        let item =
-            StockItemMutation::find_by_url_name_and_sub_type(db, &stock.wfm_url, stock.sub_type.clone())
-                .await?;
+        let item = StockItemQuery::find_by_url_name_and_sub_type(
+            db,
+            &stock.wfm_url,
+            stock.sub_type.clone(),
+        )
+        .await?;
         if item.is_none() {
             match StockItemMutation::create(db, stock.clone()).await {
                 Ok(insert) => {
