@@ -1,4 +1,3 @@
-
 use crate::cache::types::cache_tradable_item::CacheTradableItem;
 use crate::enums::order_mode::OrderMode;
 use crate::live_scraper::client::LiveScraperClient;
@@ -757,14 +756,7 @@ impl ItemModule {
             self.send_msg("created", Some(json!({ "name": item_info.name, "price": post_price, "profit": potential_profit})));
             match wfm
                 .orders()
-                .create(
-                    &item_info.wfm_id,
-                    "buy",
-                    post_price,
-                    1,
-                    false,
-                    item.sub_type,
-                )
+                .create(&item_info.wfm_id, "buy", post_price, 1, true, item.sub_type)
                 .await
             {
                 Ok((rep, None)) => {
@@ -930,7 +922,7 @@ impl ItemModule {
                     "sell",
                     post_price,
                     quantity,
-                    false,
+                    true,
                     stock_item.sub_type.clone(),
                 )
                 .await
