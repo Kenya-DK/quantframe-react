@@ -16,7 +16,7 @@ export default function WarframeMarketPage() {
   ];
   return (
     <Container p={20} size={"100%"}>
-      <Tabs defaultValue={tabs[0].id}>
+      <Tabs defaultValue={tabs[1].id}>
         <Tabs.List>
           {tabs.map((tab) => (
             <Tabs.Tab value={tab.id} key={tab.id}>

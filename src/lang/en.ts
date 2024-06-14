@@ -396,6 +396,11 @@ export const en = {
     },
     auction_list_item: {
       weapon_name: "{{weapon}} {{mod_name}}",
+      selling_price: "Selling Price: <blue>{{price}}</blue> <plat/>",
+      starting_price: "Starting Price: <blue>{{price}}</blue> <plat/>",
+      buyout_price: "Buyout Price: <blue>{{price}}</blue> <plat/>",
+      top_bid: "Top Bid: <blue>{{bid}}</blue> <plat/>",
+      no_bids: "No Bids",
       footer: "Mr: <blue>{{mastery_level}}</blue> Ranks: <blue>{{mod_rank}}</blue> Re-rolls: <blue>{{re_rolls}}</blue> Polarity: <polarity/>",
     },
     stock_item_info: {
@@ -1220,8 +1225,56 @@ export const en = {
         auctions: {
           title: "Auctions",
           buttons: {
+            refresh: {
+              tooltip: "Refresh"
+            },
+            delete_all: {
+              tooltip: "Delete All"
+            },
             delete: {
               tooltip: "Delete"
+            },
+          },
+          prompts: {
+            delete: {
+              title: "Delete Auction",
+              message: "Are you sure you want to delete auction, this action cannot be undone.",
+              confirm: "Yes, delete",
+              cancel: "No, cancel",
+            },
+            delete_all: {
+              title: "Delete All Auctions",
+              message: "Are you sure you want to delete all auctions, this action cannot be undone.",
+              confirm: "Yes, delete",
+              cancel: "No, cancel",
+            },
+          },
+          success: {
+            refresh: {
+              title: "Refresh Success",
+              message: "Total {{count}} auctions have been successfully refreshed.",
+            },
+            delete: {
+              title: "Delete Success",
+              message: "Auction has been successfully deleted.",
+            },
+            delete_all: {
+              title: "Delete All Success",
+              message: "All orders have been successfully deleted.",
+            }
+          },
+          errors: {
+            refresh: {
+              title: "Refresh Error",
+              message: "An error occurred while trying to refresh auctions.",
+            },
+            delete: {
+              title: "Delete Error",
+              message: "An error occurred while trying to delete auction.",
+            },
+            delete_all: {
+              title: "Delete All Success",
+              message: "An error occurred while trying to delete all auctions.",
             }
           },
         },

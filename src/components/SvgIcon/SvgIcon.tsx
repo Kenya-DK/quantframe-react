@@ -12,6 +12,7 @@ export type SvgProps = {
   iconName: string;
   iconType: SvgType;
   style?: React.CSSProperties;
+  className?: string;
   svgProp?: React.SVGProps<SVGSVGElement>;
   selected?: boolean;
 }
@@ -59,12 +60,13 @@ export type SvgCoreProps = {
   dynamicSvg: {
     error: any, loading: boolean, SvgIcon: React.FC<React.SVGProps<SVGElement>> | undefined
   }
+  className?: string;
   style?: React.CSSProperties;
   svgProp?: React.SVGProps<SVGSVGElement>;
   selected?: boolean;
 }
 function SvgCore(props: SvgCoreProps) {
-  const { svgProp, selected, dynamicSvg } = props;
+  const { className, svgProp, selected, dynamicSvg } = props;
   const [color, setColor] = useState<string>("gray");
 
   useEffect(() => {
@@ -89,7 +91,9 @@ function SvgCore(props: SvgCoreProps) {
           <dynamicSvg.SvgIcon {...{
             ...svgProp,
             fill: color,
-          }} />
+          }}
+            className={className}
+          />
         </span>
       )}
     </>

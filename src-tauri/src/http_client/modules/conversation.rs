@@ -35,6 +35,6 @@ pub async fn new_conversation(input: web::Json<Conversation>) -> impl Responder 
             None
         }
     };
-
+    println!("User: {:?}", _user);
     HttpResponse::Ok().body(serde_json::to_string(&input).unwrap())
 }

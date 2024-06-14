@@ -17,8 +17,8 @@ use std::sync::{Arc, OnceLock};
 use std::{env, sync::Mutex};
 
 use tauri::async_runtime::block_on;
+use tauri::SystemTray;
 use tauri::{App, Manager, SystemTrayEvent};
-use tauri::{SystemTray};
 
 mod app;
 mod auth;
@@ -188,6 +188,8 @@ fn main() {
             commands::debug::debug_migrate_data_base,
             // Auctions commands
             commands::auctions::auction_refresh,
+            commands::auctions::auction_delete,
+            commands::auctions::auction_delete_all,
             // Orders commands
             commands::orders::order_delete,
             commands::orders::order_delete_all,

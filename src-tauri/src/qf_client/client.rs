@@ -122,10 +122,10 @@ impl QFClient {
         let request = client
             .request(method.clone(), Url::parse(&new_url).unwrap())
             .header("Authorization", format!("JWT {}", auth.qf_access_token.unwrap_or("".to_string())))
-            .header("app", packageinfo.name.to_string())
-            .header("v", packageinfo.version.to_string())
-            .header("user", auth.ingame_name)
-            .header("id", auth.id);
+            .header("App", packageinfo.name.to_string())
+            .header("Version", packageinfo.version.to_string())
+            .header("UserName", auth.ingame_name)
+            .header("UserId", auth.id);
 
         let request = match body.clone() {
             Some(content) => request.json(&content),

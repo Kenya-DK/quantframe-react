@@ -8,7 +8,7 @@ use crate::{
     logger,
     utils::{
         enums::log_level::LogLevel,
-        modules::error::{ApiResult, AppError},
+        modules::error::{self, ApiResult, AppError},
     },
     wfm_client::{
         client::WFMClient,
@@ -107,6 +107,23 @@ impl AuctionModule {
         let auth = self.client.auth.lock()?.clone();
         let auctions = self.get_user_auctions(auth.ingame_name.as_str()).await?;
         Ok(auctions)
+    }
+
+    pub async fn get_auction_by_id(&self, auction_id: &str) -> Result<Option<Auction<String>>, AppError> {
+        match self.client.auction().get_my_auctions().await {
+            Ok(auctions) => {
+                for auction in auctions {
+                    if auction.id == auction_id {
+                        return Ok(Some(auction));
+                    }
+                }
+                return Ok(None);
+            }
+            Err(e) => {
+                error::create_log_file("get_auction_by_id.log".to_string(), &e);
+                return Err(e);
+            }            
+        }       
     }
 
     pub async fn create(

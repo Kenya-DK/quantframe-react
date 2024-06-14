@@ -107,6 +107,10 @@ impl RivenModule {
                 // Update Auction on warframe.market
                 if auction.is_some() {
                     let auction = auction.unwrap();
+                    self.send_auction_update(
+                        UIOperationEvent::CreateOrUpdate,
+                        json!({ "id": auction.id}),
+                    );
                     wfm.auction().delete(auction.id.as_str()).await?;
                 }
                 stock_riven.status = StockStatus::InActive;
@@ -315,6 +319,10 @@ impl RivenModule {
                         || stock_riven.status == StockStatus::NoSellers
                     {
                         wfm.auction().delete(auction.id.as_str()).await?;
+                        self.send_auction_update(
+                            UIOperationEvent::Delete,
+                            json!({ "id": auction.id}),
+                        );
                     } else if auction.starting_price != post_price as i64
                         || stock_riven.comment.clone() != auction.note
                     {
@@ -328,6 +336,11 @@ impl RivenModule {
                                 true,
                             )
                             .await?;
+                        // Send GUI Update.
+                        self.send_auction_update(
+                            UIOperationEvent::CreateOrUpdate,
+                            json!(auction),
+                        );
                     }
                 }
                 None => {
@@ -365,11 +378,15 @@ impl RivenModule {
                                 },
                             )
                             .await?;
-                        stock_riven.wfm_order_id = Some(new_aut.id);
+                        stock_riven.wfm_order_id = Some(new_aut.id.clone());
                         // Send GUI Update.
                         self.send_msg(
                             "riven_created",
                             Some(json!({ "weapon_name": stock_riven.weapon_name.clone(), "mod_name": stock_riven.mod_name.clone(),"price": post_price, "profit": profit})),
+                        );
+                        self.send_auction_update(
+                            UIOperationEvent::CreateOrUpdate,
+                            json!(new_aut),
                         );
                     }
                 }
@@ -444,7 +461,6 @@ impl RivenModule {
         } else if stock_riven_original.status != stock_riven.status {
             need_update = true;
         } else if stock_riven_original.list_price != stock_riven.list_price {
-            println!("{:?} {:?}", stock_riven_original.list_price, stock_riven.list_price);
             // Create a PriceHistory struct
             if stock_riven.list_price.is_some() {
                 let price_history =

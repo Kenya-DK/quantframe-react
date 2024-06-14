@@ -4,7 +4,9 @@ use entity::stock::item::create::CreateStockItem;
 use eyre::eyre;
 
 use crate::{
-    cache::{client::CacheClient, types::cache_tradable_item::CacheTradableItem}, helper, utils::modules::error::AppError
+    cache::{client::CacheClient, types::cache_tradable_item::CacheTradableItem},
+    helper,
+    utils::modules::error::AppError,
 };
 
 #[derive(Clone, Debug)]
@@ -53,23 +55,16 @@ impl TradableItemModule {
         Ok(self.items.clone())
     }
 
-    pub fn find_item(
-        &self,
-        input: &str,
-        by: &str,
-    ) -> Result<Option<CacheTradableItem>, AppError> {
+    pub fn find_item(&self, input: &str, by: &str) -> Result<Option<CacheTradableItem>, AppError> {
         let items = self.items.clone();
         let args = helper::parse_args_from_string(by);
         let mode = args.get("--item_by");
         if mode.is_none() {
-            return Err(AppError::new(
-                "FindItem",
-                eyre!("Missing item_by argument"),
-            ));
+            return Err(AppError::new("FindItem", eyre!("Missing item_by argument")));
         }
         let mode = mode.unwrap();
 
-        let riven_type = if mode =="name" {
+        let riven_type = if mode == "name" {
             let lang = args.get("--item_lang");
             if lang.is_none() {
                 return Err(AppError::new(
@@ -81,12 +76,9 @@ impl TradableItemModule {
         } else if mode == "url_name" {
             items.iter().find(|x| x.wfm_url_name == input).cloned()
         } else if mode == "unique_name" {
-             items.iter().find(|x| x.unique_name == input).cloned()
+            items.iter().find(|x| x.unique_name == input).cloned()
         } else {
-            return Err(AppError::new(
-                "FindItem",
-                eyre!("Invalid by value: {}", by),
-            ));
+            return Err(AppError::new("FindItem", eyre!("Invalid by value: {}", by)));
         };
         Ok(riven_type)
     }
@@ -102,7 +94,13 @@ impl TradableItemModule {
         if item.is_none() {
             return Err(AppError::new(
                 component,
-                eyre!("Invalid item value Name: {} | Url: {} | Unique: {} | By: {}", input.item_name, input.wfm_url, input.item_unique_name, by),
+                eyre!(
+                    "Invalid item value Name: {} | Url: {} | Unique: {} | By: {}",
+                    input.item_name,
+                    input.wfm_url,
+                    input.item_unique_name,
+                    by
+                ),
             ));
         }
 
@@ -114,6 +112,4 @@ impl TradableItemModule {
         input.tags = item.tags.clone();
         Ok(input.clone())
     }
-
-
 }

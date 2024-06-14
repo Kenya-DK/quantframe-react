@@ -79,7 +79,7 @@ export function StockRivenInfo({ value }: StockRivenInfoProps) {
               </Center>
             )
           }
-          {(value.info?.auctions?.length || 0) > 0 && value.info?.auctions?.slice(0, 5).map((auction, index) => <AuctionListItem key={index} auction={auction} />)}
+          {(value.info?.auctions?.length || 0) > 0 && value.info?.auctions?.slice(0, 5).map((auction, index) => <AuctionListItem show_border key={index} auction={auction} />)}
         </ScrollArea>
       </Tabs.Panel>
     </Tabs>

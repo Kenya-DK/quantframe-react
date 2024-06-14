@@ -198,6 +198,11 @@ export namespace Wfm {
     id: string;
     private: boolean;
   }
+  export enum AuctionStatus {
+    Private = 'private',
+    Visible = 'visible',
+    Closed = 'closed',
+  }
   export interface AuctionItem {
     mastery_level: number;
     re_rolls: number;

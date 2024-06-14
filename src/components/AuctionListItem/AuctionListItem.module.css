@@ -1,3 +1,7 @@
 .root {
-  border: 1px solid var(--mantine-color-dark-3);
+  border: 0.1rem solid transparent;
+  border-radius: 0.2em;
+  &[data-border] {
+    border-color: var(--mantine-color-gray-8);
+  }
 }
