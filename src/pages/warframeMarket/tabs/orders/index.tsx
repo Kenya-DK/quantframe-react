@@ -156,7 +156,7 @@ export const OrderPanel = ({ }: OrderPanelProps) => {
                 await sellStockMutation.mutateAsync({
                     url: order.item?.url_name || "",
                     sub_type: sub_type,
-                    quantity: order.quantity,
+                    quantity: 1,
                     price: price,
                 });
                 break;
