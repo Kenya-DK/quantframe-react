@@ -9,32 +9,29 @@ use tauri::{Manager, State};
 
 
 use crate::{
-    wfm_client::client::WFMClient,
-    http_client::types::conversation::Conversation,
-    notification::client::NotifyClient,
-    APP,
+    http_client::types::conversation::Conversation, notification::client::NotifyClient, settings::SettingsState, wfm_client::client::WFMClient, APP
 };
 
 #[post("/new_conversation")]
 pub async fn new_conversation(input: web::Json<Conversation>) -> impl Responder {
     let app_handle = APP.get().expect("failed to get app handle");
-    let wfm_state: State<Arc<Mutex<WFMClient>>> = app_handle.state();
-    let wfm = wfm_state.lock().expect("failed to lock notify state");
 
     let notify_state: State<Arc<Mutex<NotifyClient>>> = app_handle.state();
-    let _notify = notify_state.lock().expect("failed to lock notify state");
+    let notify = notify_state.lock().expect("failed to lock notify state");
+    let settings_state: State<Arc<Mutex<SettingsState>>> = app_handle.state();
+    let settings = settings_state.lock().expect("failed to lock settings state");
 
+    let content = settings.notifications.on_new_conversation.content.replace("<PLAYER_NAME>", input.user_name.as_str());
 
-
-    // Look up the user on the Warframe Market API
-    let _user = match wfm.user().user_profile(&input.user_name).await {
-        Ok(user) => {
-            Some(user)
+    // Send a notification to the system
+    if settings.notifications.on_new_conversation.system_notify || settings.notifications.on_new_conversation.discord_notify{
+        let info = settings.notifications.on_new_conversation.clone();
+        if settings.notifications.on_new_conversation.system_notify {
+            notify.system().send_notification(&info.title, &content, None, None);
         }
-        Err(_e) => {
-            None
+        if settings.notifications.on_new_conversation.discord_notify && info.webhook.clone().unwrap_or("".to_string()) != "" {
+            notify.discord().send_notification(info.webhook.unwrap(), info.title, content, info.user_ids);
         }
-    };
-    println!("User: {:?}", _user);
+    }
     HttpResponse::Ok().body(serde_json::to_string(&input).unwrap())
 }

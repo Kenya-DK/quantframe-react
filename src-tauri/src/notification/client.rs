@@ -1,8 +1,8 @@
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Mutex, RwLock};
 
 use tauri::AppHandle;
 
-
+use crate::app::client::AppState;
 
 use super::modules::{discord::DiscordModule, gui::GUIModule, system::SystemModule};
 
@@ -11,6 +11,7 @@ pub struct NotifyClient {
     pub log_file: String,
     pub app_handler: AppHandle,
     pub component: String,
+    pub app: Arc<Mutex<AppState>>,
     // Modules will be added here
     pub system_module: Arc<RwLock<Option<SystemModule>>>,
     pub gui_module: Arc<RwLock<Option<GUIModule>>>,
@@ -18,9 +19,10 @@ pub struct NotifyClient {
 }
 
 impl NotifyClient {
-    pub fn new(app_handler: AppHandle) -> Self {
-        NotifyClient {      
-            app_handler,      
+    pub fn new(app: Arc<Mutex<AppState>>, app_handler: AppHandle) -> Self {
+        NotifyClient {
+            app,
+            app_handler,
             log_file: "notify.log".to_string(),
             component: "NotifyClient".to_string(),
             system_module: Arc::new(RwLock::new(None)),
