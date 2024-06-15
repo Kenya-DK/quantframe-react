@@ -280,15 +280,7 @@ impl RivenModule {
             if minimum_price.is_some() && post_price < minimum_price.unwrap() {
                 post_price = minimum_price.unwrap();
             }
-
-            // Get the minimum price of the riven.
-            let minimum_price = stock_riven.minimum_price;
-
-            // Check if the rivens price is lower than the minimum price
-            if minimum_price.is_some() && post_price < minimum_price.unwrap() {
-                post_price = minimum_price.unwrap();
-            }
-
+            
             // Calculate profit of the riven
             let profit = post_price - bought_price;
 
