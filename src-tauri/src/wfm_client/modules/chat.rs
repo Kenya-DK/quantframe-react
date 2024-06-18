@@ -126,7 +126,7 @@ pub struct ChatData {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ChatMessageWith {
     #[serde(rename = "reputation")]
-    pub reputation: i64,
+    pub reputation: f64,
 
     #[serde(rename = "locale")]
     pub locale: String,
