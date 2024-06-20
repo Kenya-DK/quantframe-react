@@ -14,12 +14,7 @@ use crate::{
 };
 
 use super::modules::{
-    arcane::ArcaneModule, arch_gun::ArchGunModule, arch_melee::ArchMeleeModule,
-    archwing::ArchwingModule, fish::FishModule, item_price::ItemPriceModule,
-    melee::MeleeModule, misc::MiscModule, mods::ModModule, parts::PartModule, pet::PetModule,
-    primary::PrimaryModule, resource::ResourceModule, riven::RivenModule,
-    secondary::SecondaryModule, sentinel::SentinelModule, skin::SkinModule,
-    tradable_items::TradableItemModule, warframe::WarframeModule,
+    arcane::ArcaneModule, arch_gun::ArchGunModule, arch_melee::ArchMeleeModule, archwing::ArchwingModule, fish::FishModule, item_price::ItemPriceModule, melee::MeleeModule, misc::MiscModule, mods::ModModule, parts::PartModule, pet::PetModule, primary::PrimaryModule, Relics::RelicsModule, resource::ResourceModule, riven::RivenModule, secondary::SecondaryModule, sentinel::SentinelModule, skin::SkinModule, tradable_items::TradableItemModule, warframe::WarframeModule
 };
 
 #[derive(Clone, Debug)]
@@ -28,6 +23,7 @@ pub struct CacheClient {
     pub qf: Arc<Mutex<crate::qf_client::client::QFClient>>,
     pub settings: Arc<Mutex<SettingsState>>,
     item_price_module: Arc<RwLock<Option<ItemPriceModule>>>,
+    relics_module: Arc<RwLock<Option<RelicsModule>>>,
     riven_module: Arc<RwLock<Option<RivenModule>>>,
     arcane_module: Arc<RwLock<Option<ArcaneModule>>>,
     warframe_module: Arc<RwLock<Option<WarframeModule>>>,
@@ -64,6 +60,7 @@ impl CacheClient {
             md5_file: "cache_id.txt".to_string(),
             item_price_module: Arc::new(RwLock::new(None)),
             riven_module: Arc::new(RwLock::new(None)),
+            relics_module: Arc::new(RwLock::new(None)),
             arcane_module: Arc::new(RwLock::new(None)),
             warframe_module: Arc::new(RwLock::new(None)),
             arch_gun_module: Arc::new(RwLock::new(None)),
@@ -227,6 +224,8 @@ impl CacheClient {
         logger::info_con(&self.component, "Parts data loaded");
         self.item_price().load().await?;
         logger::info_con(&self.component, "Item price data loaded");
+        self.relics().load()?;
+        logger::info_con(&self.component, "Relics data loaded");
         return Ok(());
     }
 
@@ -262,6 +261,21 @@ impl CacheClient {
     pub fn update_riven_module(&self, module: RivenModule) {
         // Update the stored ItemModule
         *self.riven_module.write().unwrap() = Some(module);
+    }
+
+    pub fn relics(&self) -> RelicsModule {
+        // Lazily initialize RelicsModule if not already initialized
+        if self.relics_module.read().unwrap().is_none() {
+            *self.relics_module.write().unwrap() = Some(RelicsModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the relics_module is initialized
+        self.relics_module.read().unwrap().as_ref().unwrap().clone()
+    }
+
+    pub fn update_relics_module(&self, module: RelicsModule) {
+        // Update the stored RelicsModule
+        *self.relics_module.write().unwrap() = Some(module);
     }
 
     pub fn arcane(&self) -> ArcaneModule {

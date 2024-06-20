@@ -50,7 +50,8 @@ impl MeleeModule {
         // loop through items and add parts to parts
         for item in items {
             let components = item.get_item_components();
-            for part in components {
+            for mut part in components {
+                part.part_of =Some(item.convert_to_base_item());
                 self.add_part(part);
             }
         }

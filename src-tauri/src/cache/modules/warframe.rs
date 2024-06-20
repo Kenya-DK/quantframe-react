@@ -1,4 +1,4 @@
-use std::{path::PathBuf};
+use std::path::PathBuf;
 
 use eyre::eyre;
 
@@ -51,7 +51,8 @@ impl WarframeModule {
         // loop through items and add parts to parts
         for item in items {
             let components = item.get_item_components();
-            for part in components {
+            for mut part in components {
+                part.part_of = Some(item.convert_to_base_item());
                 self.add_part(part);
             }
         }
@@ -67,5 +68,18 @@ impl WarframeModule {
             result.push(item.clone());
         }
         result
+    }
+    pub fn get_part(&self, name: &str) -> Option<CacheItemComponent> {
+        let mut parts = self
+            .get_parts()
+            .iter()
+            .filter(|x| {
+                x.get_real_external_name()
+                    .contains(&name.replace(" Blueprint", ""))
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        parts.sort_by_key(|key| key.get_real_external_name() == name);
+        parts.get(0).cloned()
     }
 }

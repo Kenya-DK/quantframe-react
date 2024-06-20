@@ -163,9 +163,9 @@ pub fn critical_file(component: &str, msg: &str, file: Option<&str>) {
 pub fn warning(component: &str, msg: &str, console: bool, file: Option<&str>) {
     dolog(LogLevel::Warning, component, msg, console, file);
 }
-// pub fn warning_file(component: &str, msg: &str, file: Option<&str>) {
-//     warning(component, msg, false, file);
-// }
+pub fn warning_file(component: &str, msg: &str, file: Option<&str>) {
+    warning(component, msg, true, file);
+}
 pub fn warning_con(component: &str, msg: &str) {
     warning(component, msg, true, None);
 }

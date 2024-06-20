@@ -45,6 +45,9 @@ impl MiscModule {
         self.update_state();
         Ok(())
     }
+    pub fn get_items(&self) -> Vec<CacheMisc> {
+        self.items.clone()
+    }
     pub fn get_by_unique_name(&self, id: &str) -> Option<CacheMisc> {
         self.items.iter().find(|x| x.unique_name == id).cloned()
     }

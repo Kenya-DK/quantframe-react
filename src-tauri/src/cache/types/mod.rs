@@ -16,5 +16,6 @@ pub mod cache_secondary;
 pub mod cache_sentinel;
 pub mod cache_skin;
 pub mod cache_tradable_item;
+pub mod cache_relics;
 pub mod cache_warframe;
 pub mod item_price_info;

@@ -1,6 +1,4 @@
-use std::{collections::HashMap};
-
-
+use std::collections::HashMap;
 
 use crate::{
     cache::{client::CacheClient, types::cache_item_component::CacheItemComponent},
@@ -113,22 +111,14 @@ impl PartModule {
     pub fn get_part_by_name(
         &self,
         category: &str,
-        cache: CacheClient,
         name: &str,
         use_external: bool,
     ) -> Option<CacheItemComponent> {
-        let items = match category {
-            "Warframe" => self.warframe_parts.values(),
-            "Weapon" => self.weapon_parts.values(),
-            "Skin" => self.skin_parts.values(),
-            _ => {
-                return None;
-            }
-        };
+        let items = self.get_parts(category);
         let mut result: Option<CacheItemComponent> = None;
         for item in items {
             if use_external {
-                if item.get_real_external_name(cache.clone()) == name {
+                if item.get_real_external_name() == name {
                     result = Some(item.clone());
                     break;
                 }
@@ -139,5 +129,23 @@ impl PartModule {
             }
         }
         result
+    }
+    pub fn get_parts(&self, category: &str) -> Vec<CacheItemComponent> {
+        let items = match category {
+            "All" => {
+                let mut all_items: Vec<CacheItemComponent> = Vec::new();
+                all_items.extend(self.warframe_parts.values().cloned());
+                all_items.extend(self.weapon_parts.values().cloned());
+                all_items.extend(self.skin_parts.values().cloned());
+                all_items
+            },
+            "Warframe" => self.warframe_parts.values().cloned().collect(),
+            "Weapon" => self.weapon_parts.values().cloned().collect(),
+            "Skin" => self.skin_parts.values().cloned().collect(),
+            _ => {
+                return Vec::new();
+            }
+        };
+        items
     }
 }

@@ -45,4 +45,14 @@ impl PetModule {
         self.update_state();
         Ok(())
     }
+    pub fn get_by_name(&self, name: &str, ignore_case: bool) -> Option<CachePet> {
+        if ignore_case {
+            self.items
+                .iter()
+                .find(|x| x.name.to_lowercase() == name.to_lowercase())
+                .cloned()
+        } else {
+            self.items.iter().find(|x| x.name == name).cloned()
+        }
+    }
 }

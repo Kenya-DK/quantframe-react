@@ -45,6 +45,9 @@ impl ModModule {
         self.update_state();
         Ok(())
     }
+    pub fn get_items(&self) -> Vec<CacheMod> {
+        self.items.clone()
+    }
     pub fn get_by_unique_name(&self, id: &str) -> Option<CacheMod> {
         self.items.iter().find(|x| x.unique_name == id).cloned()
     }

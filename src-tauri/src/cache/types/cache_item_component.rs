@@ -13,7 +13,7 @@ pub struct CacheItemComponent {
     #[serde(rename = "name")]
     pub name: String,
     #[serde(rename = "itemCount")]
-    pub item_count: i32,
+    pub item_count: i64,
     #[serde(rename = "imageName")]
     pub image_name: String,
     #[serde(rename = "tradable")]
@@ -30,7 +30,7 @@ pub struct CacheItemComponent {
     pub component_type: String,
 }
 impl CacheItemComponent {
-    pub fn get_real_external_name(&self, _cache: CacheClient) -> String {
+    pub fn get_real_external_name(&self) -> String {
         let mut real_external_name = self.name.clone();
         let part_of = self.part_of.clone();
         if real_external_name == "Forma" {
