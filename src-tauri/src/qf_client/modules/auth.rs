@@ -44,12 +44,18 @@ impl AuthModule {
                 return Ok(user);
             }
             Ok(ApiResult::Error(e, _headers)) => {
+                let log_level = if e.status_code != 500 {
+                    LogLevel::Warning
+                } else {
+                    LogLevel::Critical
+                };
                 return Err(self.client.create_api_error(
                     &self.get_component("Login"),
                     e,
                     eyre!("There was an error fetching user profile"),
-                    LogLevel::Error,
-                ));
+                    log_level,
+                ));                    
+
             }
             Err(e) => return Err(e),
         };
@@ -125,7 +131,10 @@ impl AuthModule {
         let user = match self.me().await {
             Ok(user) => Some(user),
             Err(e) => {
-                error::create_log_file("command.log".to_string(), &e);
+                if e.log_level() == LogLevel::Critical {
+                    error::create_log_file("qf_validate.log".to_string(), &e);
+                    return Err(e);
+                }
                 None
             }
         };

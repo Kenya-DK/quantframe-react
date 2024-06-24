@@ -56,6 +56,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
   const { isFetching, error } = useQuery({
     queryKey: ['app_init'],
     queryFn: () => api.app.init(),
+    retry: 0,
     enabled: !window.location.href.includes('controls'),
   })
 
