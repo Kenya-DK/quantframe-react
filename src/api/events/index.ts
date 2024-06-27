@@ -1,10 +1,9 @@
 import { listen } from "@tauri-apps/api/event";
 import { ComposedListener } from "../../utils/listener/Composed.listener";
-import { TauriClient } from "..";
 
 export class EventModule {
   private listener = new ComposedListener();
-  constructor(private readonly client: TauriClient) {
+  constructor() {
     this.Initializer();
   }
   private async Initializer() {

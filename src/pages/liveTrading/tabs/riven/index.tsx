@@ -194,7 +194,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                         type: 'number',
                     },
                 ],
-                onConfirm: async (data) => {
+                onConfirm: async (data: any) => {
                     if (!id) return;
                     const { minimum_price } = data;
                     await updateStockMutation.mutateAsync({ id, minimum_price })
@@ -219,7 +219,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                         type: 'number',
                     },
                 ],
-                onConfirm: async (data) => {
+                onConfirm: async (data: any) => {
                     if (!id) return;
                     const { sell } = data;
                     await sellStockMutation.mutateAsync({ id, price: sell, quantity: 1 })

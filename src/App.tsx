@@ -29,10 +29,8 @@ const modals = {
   prompt: PromptModal
   /* ...other modals */
 };
-declare module '@mantine/modals' {
-  export interface MantineModalsOverride {
-    modals: typeof modals;
-  }
+export interface MantineModalsOverride {
+  modals: typeof modals;
 }
 
 

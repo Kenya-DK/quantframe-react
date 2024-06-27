@@ -255,10 +255,7 @@ export class StatisticModule {
   async getStatistic(): Promise<StatisticDto> {
     if (this._statistic)
       return this._statistic;
-    const [err, transactions] = await this.client.transaction.getAll();
-    if (err || !transactions)
-      throw err;
-
+    const transactions = await this.client.transaction.getAll();
     this._statistic = this.convertFromTransaction(transactions);
     return this._statistic;
   }

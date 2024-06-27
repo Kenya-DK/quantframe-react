@@ -4,13 +4,11 @@ import { AuctionModule } from './auction';
 import { AuthModule } from './auth';
 import { ChatModule } from './chat';
 import { DebugModule } from './debug';
-import { ItemModule } from './item';
 import { LiveScraperModule } from './live_scraper';
 import { OrderModule } from './order';
 import { StockModule } from './stock';
 import { TransactionModule } from './transaction';
 import { EventModule } from './events';
-import { NotificationModule } from './notification';
 import { StatisticModule } from './statistic';
 import { CacheModule } from './cache';
 import { ErrOrResult, QfSocketEventOperation } from './types';
@@ -22,13 +20,13 @@ export class TauriClient {
     this.auth = new AuthModule(this);
     this.chat = new ChatModule(this);
     this.debug = new DebugModule(this);
-    this.items = new ItemModule(this);
+    // this.items = new ItemModule(this);
     this.live_scraper = new LiveScraperModule(this);
     this.order = new OrderModule(this);
     this.stock = new StockModule(this);
     this.transaction = new TransactionModule(this);
-    this.events = new EventModule(this);
-    this.notification = new NotificationModule(this);
+    this.events = new EventModule();
+    // this.notification = new NotificationModule(this);
     this.statistic = new StatisticModule(this);
     this.cache = new CacheModule(this);
   }
@@ -79,13 +77,13 @@ export class TauriClient {
   auth: AuthModule;
   chat: ChatModule;
   debug: DebugModule;
-  items: ItemModule;
+  // items: ItemModule;
   live_scraper: LiveScraperModule;
   order: OrderModule;
   stock: StockModule;
   transaction: TransactionModule;
   events: EventModule;
-  notification: NotificationModule;
+  // notification: NotificationModule;
   statistic: StatisticModule;
   cache: CacheModule;
 }
