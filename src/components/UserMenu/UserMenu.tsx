@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useMutation } from '@tanstack/react-query';
 import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router-dom';
-import { SettingsForm } from '../Forms';
+import { SettingsForm } from '../forms';
 import { modals } from '@mantine/modals';
 export function UserMenu() {
 	// States

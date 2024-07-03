@@ -4,9 +4,9 @@ use std::sync::{Arc, Mutex};
 
 
 use crate::{
-    auth::{AuthState},
-    qf_client::{client::QFClient},
-    utils::modules::error::{self, AppError, ErrorApiResponse},
+    auth::AuthState,
+    qf_client::client::QFClient,
+    utils::modules::{error::{self, AppError, ErrorApiResponse}, logger},
     wfm_client::client::WFMClient,
 };
 
@@ -30,8 +30,10 @@ pub async fn auth_login(
         }
     };
     auth_state.update_from_wfm_user_profile(&wfm_user, None);
+    auth_state.authorized = true;
 
-    if wfm_user.anonymous || wfm_user.banned || !wfm_user.verification {
+    if  wfm_user.banned || !auth_state.authorized {
+        logger::warning_con("auth_login", "literally how");
         return Ok(auth_state);
     }
 

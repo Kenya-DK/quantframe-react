@@ -12,7 +12,7 @@ import {
 import { relaunch } from "@tauri-apps/api/process";
 import { AppInfo, QfSocketEvent, QfSocketEventOperation, ResponseError, Settings } from "@api/types";
 import { AuthContextProvider } from "./auth.context";
-import { SplashScreen } from "../components/SplashScreen";
+import { splashScreen } from "../components/splashScreen";
 
 
 type NotificationPayload = {
@@ -142,7 +142,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
 
   return (
     <AppContext.Provider value={{ settings, app_info: appInfo, app_error: appError }}>
-      {!isControl && <SplashScreen opened={isFetching} text={useTranslateEvents(i18Key)} />}
+      {!isControl && <splashScreen opened={isFetching} text={useTranslateEvents(i18Key)} />}
       <AuthContextProvider>
         {children}
       </AuthContextProvider>

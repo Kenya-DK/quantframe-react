@@ -12,8 +12,6 @@ use std::path::PathBuf;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AuthState {
-    pub anonymous: bool,
-    pub verification: bool,
     pub wfm_banned: bool,
     pub qf_banned: bool,
     pub id: String,
@@ -33,13 +31,12 @@ pub struct AuthState {
     #[serde(default = "AuthState::auctions_limit")]
     pub auctions_limit: i64,
     pub status: Option<String>,
+    pub authorized: bool,
 }
 // Allow us to run AuthState::default()
 impl Default for AuthState {
     fn default() -> Self {
         Self {
-            anonymous: true,
-            verification: false,
             wfm_banned: false,
             qf_banned: false,
             id: "".to_string(),
@@ -55,6 +52,7 @@ impl Default for AuthState {
             order_limit: 100,
             auctions_limit: 50,
             status: Some("invisible".to_string()),
+            authorized: false,
         }
     }
 }
@@ -103,8 +101,6 @@ impl AuthState {
         token: Option<String>,
     ) {
         self.id = user_profile.id.clone();
-        self.anonymous = user_profile.anonymous;
-        self.verification = user_profile.verification;
         self.wfm_banned = user_profile.banned;
         self.ingame_name = user_profile.ingame_name.clone().unwrap_or("".to_string());
         self.avatar = user_profile.avatar.clone();
@@ -123,8 +119,6 @@ impl AuthState {
     }
 
     pub fn reset(&mut self) {
-        self.anonymous = true;
-        self.verification = false;
         self.wfm_banned = false;
         self.qf_banned = false;
         self.id = "".to_string();
@@ -140,6 +134,7 @@ impl AuthState {
         self.order_limit = 100;
         self.auctions_limit = 50;
         self.status = Some("invisible".to_string());
+        self.authorized = false;
     }
 
     pub fn update_from_qf_user_profile(

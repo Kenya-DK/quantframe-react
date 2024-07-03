@@ -7,10 +7,8 @@ export namespace Wfm {
     // has_mail: number
     // check_code: string,
     // written_reviews: string,
-    // verification: boolean,
     ingame_name: string,
     avatar: string,
-    // anonymous: boolean,
     platform: 'pc',
     // reputation: number,
     // linked_accounts: {}
@@ -22,7 +20,8 @@ export namespace Wfm {
     role: 'user',
     status: UserStatus,
     // avatar: string,
-    banned: boolean
+    banned: boolean,
+    // authorized: boolean
   }
 
   export interface LinkedAccountsDto {

@@ -11,7 +11,7 @@ use crate::{
             logger,
         },
     },
-    wfm_client::{client::WFMClient, types::user_profile::UserProfile},
+    wfm_client::{client::WFMClient, modules::jwt_validation::jwt_is_valid, types::user_profile::UserProfile},
 };
 #[derive(Clone, Debug)]
 pub struct AuthModule {
@@ -107,18 +107,18 @@ impl AuthModule {
     pub async fn validate(&self) -> Result<AuthState, AppError> {
         let mut auth = self.client.auth.lock()?.clone();
 
-        // Validate Auth
-        let user = match self.me().await {
-            Ok(user) => user,
-            Err(e) => {
-                error::create_log_file("command.log".to_string(), &e);
-                return Err(e);
+        let authorized = {
+            if let Some(token) = auth.clone().wfm_access_token {
+                jwt_is_valid(token.as_str(), &self.get_component("Validate"))?
+            } else {
+                false
             }
         };
-        if user.anonymous || !user.verification {
+
+        if !authorized {
             logger::warning_con(
                 &self.get_component("Validate"),
-                "Validation failed for user, user is anonymous or not verified",
+                "Validation failed for user, unable to validate JWT",
             );
         } else {
             logger::info_con(
@@ -126,8 +126,7 @@ impl AuthModule {
                 "User validated successfully",
             );
         }
-        auth.update_from_wfm_user_profile(&user, auth.wfm_access_token.clone());
+        auth.authorized = authorized;
         auth.save_to_file()?;
-        return Ok(auth);
-    }
+        return Ok(auth); }
 }

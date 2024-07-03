@@ -6,7 +6,6 @@ use service::{StockItemQuery, StockRivenQuery, TransactionQuery};
 use crate::{
     app::client::AppState,
     cache::client::CacheClient,
-    log_parser,
     notification::client::NotifyClient,
     qf_client::client::QFClient,
     settings::SettingsState,
@@ -25,7 +24,6 @@ pub async fn app_init(
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
-    log_parser: tauri::State<'_, Arc<Mutex<log_parser::client::LogParser>>>,
 ) -> Result<bool, AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
@@ -33,7 +31,6 @@ pub async fn app_init(
     let wfm = wfm.lock()?.clone();
     let cache = cache.lock()?.clone();
     let qf = qf.lock()?.clone();
-    let log_parser = log_parser.lock()?.clone();
 
     // Send App Info to UI
     let app_info = app.get_app_info();
@@ -75,7 +72,7 @@ pub async fn app_init(
         }
     };
 
-    if qf_user.is_some() && !wfm_user.anonymous && wfm_user.verification {
+    if qf_user.is_some() && wfm_user.authorized {
         wfm_user.update_from_qf_user_profile(
             &qf_user.clone().unwrap(),
             wfm_user.qf_access_token.clone(),
@@ -161,7 +158,7 @@ pub async fn app_init(
             return Err(error);
         }
     };
-    if !wfm_user.anonymous && wfm_user.verification {
+    if wfm_user.authorized {
         // Load User Orders
         notify
             .gui()
@@ -221,17 +218,6 @@ pub async fn app_init(
         };
     }
 
-    // Start Log Parser
-    notify
-    .gui()
-    .send_event(UIEvent::OnInitialize, Some(json!("log_parser")));
-    match log_parser.start_loop() {
-        Ok(_) => {}
-        Err(e) => {
-            error::create_log_file("log_parser.log".to_string(), &e);
-            return Err(e);
-        }
-    }
     Ok(false)
 }
 

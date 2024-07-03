@@ -2,16 +2,12 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct UserProfile {
-    #[serde(rename = "anonymous")]
-    pub anonymous: bool,
     #[serde(rename = "role")]
     pub role: String,
     #[serde(rename = "avatar")]
     pub avatar: Option<String>,
     #[serde(rename = "linked_accounts")]
     pub linked_accounts: LinkedAccounts,
-    #[serde(rename = "verification")]
-    pub verification: bool,
     #[serde(rename = "written_reviews")]
     pub written_reviews: i32,
     #[serde(rename = "background")]

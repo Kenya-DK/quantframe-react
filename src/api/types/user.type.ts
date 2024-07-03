@@ -1,5 +1,4 @@
 export interface User {
-  anonymous: boolean;
   auctions_limit: number;
   avatar: string;
   check_code: string;
@@ -13,9 +12,9 @@ export interface User {
   region: string;
   role: Role;
   status: UserStatus;
-  verification: boolean;
   wfm_access_token: string;
   wfm_banned: boolean;
+  authorized: boolean;
 }
 export interface Role {
   can_managed: boolean;
