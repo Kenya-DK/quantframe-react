@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 
 use entity::stock::item::create::CreateStockItem;
 use eyre::eyre;
@@ -55,32 +55,43 @@ impl TradableItemModule {
         Ok(self.items.clone())
     }
 
-    pub fn find_item(&self, input: &str, by: &str) -> Result<Option<CacheTradableItem>, AppError> {
+    pub fn get_by(&self, input: &str, by: &str) -> Result<Option<CacheTradableItem>, AppError> {
         let items = self.items.clone();
-        let args = helper::parse_args_from_string(by);
-        let mode = args.get("--item_by");
-        if mode.is_none() {
-            return Err(AppError::new("FindItem", eyre!("Missing item_by argument")));
-        }
-        let mode = mode.unwrap();
-
-        let riven_type = if mode == "name" {
-            let lang = args.get("--item_lang");
-            if lang.is_none() {
-                return Err(AppError::new(
-                    "item_lang",
-                    eyre!("Missing item_lang argument"),
-                ));
-            }
-            items.iter().find(|x| x.name == input).cloned()
-        } else if mode == "url_name" {
-            items.iter().find(|x| x.wfm_url_name == input).cloned()
-        } else if mode == "unique_name" {
-            items.iter().find(|x| x.unique_name == input).cloned()
-        } else {
-            return Err(AppError::new("FindItem", eyre!("Invalid by value: {}", by)));
+        let args = match helper::validate_args(by, vec!["--item_by"]) {
+            Ok(args) => args,
+            Err(e) => return Err(e),
         };
-        Ok(riven_type)
+        let mode = args.get("--item_by").unwrap();
+        let case_insensitive = args.get("--case_insensitive").is_some();
+        // let lang = args.get("--item_lang").unwrap_or(&"en".to_string());
+        let remove_string = args.get("--remove_string");
+
+        let item = if mode == "name" {
+            items
+                .iter()
+                .find(|x| helper::create_key(&x.name, case_insensitive, remove_string) == input)
+                .cloned()
+        } else if mode == "url_name" {
+            items
+                .iter()
+                .find(|x| {
+                    helper::create_key(&x.wfm_url_name, case_insensitive, remove_string) == input
+                })
+                .cloned()
+        } else if mode == "unique_name" {
+            items
+                .iter()
+                .find(|x| {
+                    helper::create_key(&x.unique_name, case_insensitive, remove_string) == input
+                })
+                .cloned()
+        } else {
+            return Err(AppError::new(
+                &self.get_component("GetBy"),
+                eyre!("Invalid by value: {}", by),
+            ));
+        };
+        Ok(item)
     }
 
     pub fn validate_create_item(
@@ -90,17 +101,11 @@ impl TradableItemModule {
     ) -> Result<CreateStockItem, AppError> {
         let component = "ValidateCreateItem";
 
-        let item = self.find_item(&input.wfm_url, by)?;
+        let item = self.get_by(&input.raw, by)?;
         if item.is_none() {
             return Err(AppError::new(
                 component,
-                eyre!(
-                    "Invalid item value Name: {} | Url: {} | Unique: {} | By: {}",
-                    input.item_name,
-                    input.wfm_url,
-                    input.item_unique_name,
-                    by
-                ),
+                eyre!("Item Not Found From: {} | By: {}", input.raw, by),
             ));
         }
 

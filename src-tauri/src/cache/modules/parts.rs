@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 
+use serde_json::json;
+
 use crate::{
     cache::{client::CacheClient, types::cache_item_component::CacheItemComponent},
-    utils::modules::error::AppError,
+    utils::modules::{error::AppError, logger},
 };
 
 #[derive(Clone, Debug)]
@@ -51,26 +53,11 @@ impl PartModule {
             "Weapon",
             cache
                 .skin()
-                .get_by_unique_name("/Lotus/Upgrades/Skins/Kubrows/Collars/PrimeKubrowCollarA")
+                .get_by("/Lotus/Upgrades/Skins/Kubrows/Collars/PrimeKubrowCollarA", "--item_by unique_name")?
                 .unwrap()
                 .get_item_components(),
         );
-
-        // let content = self.client.read_text_from_file(&self.path)?;
-        // let items: Vec<CacheSecondary> = serde_json::from_str(&content).map_err(|e| {
-        //     AppError::new(
-        //         self.get_component("Load").as_str(),
-        //         eyre!(format!("Failed to parse PartModule from file: {}", e)),
-        //     )
-        // })?;
-        // self.items = items.clone();
-        // // loop through items and add parts to parts
-        // for item in items {
-        //     let components = item.get_item_components();
-        //     for part in components {
-        //         self.add_part(part);
-        //     }
-        // }
+        
         self.update_state();
         Ok(())
     }

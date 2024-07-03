@@ -208,7 +208,7 @@ impl ItemModule {
             // Find the item in the cache
             let item_info = match cache
                 .tradable_items()
-                .find_item(&item_entry.wfm_url, "--item_by url_name --item_lang en")?
+                .get_by(&item_entry.wfm_url, "--item_by url_name --item_lang en")?
             {
                 Some(item_info) => item_info,
                 None => {

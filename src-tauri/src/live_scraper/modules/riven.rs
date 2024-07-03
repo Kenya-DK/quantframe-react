@@ -385,21 +385,7 @@ impl RivenModule {
             }
             self.update_stock(&stock_riven_original, &mut stock_riven, details)
                 .await?;
-            logger::log_json(
-                format!("{} {}.json", stock_riven.weapon_name, stock_riven.mod_name).as_str(),
-                &json!({
-                    "lowest_price": lowest_price,
-                    "match_data": match_data,
-                    "profit": profit,
-                    "post_price": post_price,
-                    "status": stock_riven.status,
-                    "listed_price": stock_riven.list_price,
-                    "order_id": stock_riven.wfm_weapon_url,
-                    "stock_riven_original": stock_riven_original,
-                    "stock_riven": stock_riven,
-                    "live_auctions": live_auctions
-                }),
-            )?;
+
             logger::debug_con(
                 &self.get_component("CheckStock"),
                 format!(

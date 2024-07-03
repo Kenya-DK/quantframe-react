@@ -2,8 +2,8 @@ use std::sync::{Arc, Mutex};
 
 use create::CreateStockItem;
 use entity::stock::item::*;
+use entity::sub_type::SubType;
 use entity::transaction::transaction::TransactionType;
-use entity::{sub_type::SubType};
 use eyre::eyre;
 use serde_json::json;
 use service::{StockItemMutation, StockItemQuery, TransactionMutation};
@@ -62,11 +62,7 @@ pub async fn stock_item_create(
     let wfm = wfm.lock()?.clone();
 
     let mut created_stock = CreateStockItem::new(
-        wfm_url.clone(),
-        wfm_url.clone(),
-        "".to_string(),
-        "".to_string(),
-        vec![], // tags
+        wfm_url,
         sub_type.clone(),
         Some(bought),
         minimum_price,
@@ -355,7 +351,7 @@ pub async fn stock_item_sell(
 
     let item_info = cache
         .tradable_items()
-        .find_item(&stock_item.wfm_url, "--item_by url_name --item_lang en")
+        .get_by(&stock_item.wfm_url, "--item_by url_name --item_lang en")
         .or_else(|e| {
             return Err(e);
         })?;
@@ -393,13 +389,16 @@ pub async fn stock_item_sell_by_wfm_order(
     let app_state = app.lock()?.clone();
 
     // Get the stock item returned None if not found
-    let stock_item =
-        match StockItemQuery::find_by_url_name_and_sub_type(&app_state.conn, &url, sub_type)
-            .await
-        {
-            Ok(stock) => stock,
-            Err(e) => return Err(AppError::new("StockItemSellByWFMOrder", eyre!(e))),
-        };
+    let stock_item = match StockItemQuery::find_by_url_name_and_sub_type(
+        &app_state.conn,
+        &url,
+        sub_type,
+    )
+    .await
+    {
+        Ok(stock) => stock,
+        Err(e) => return Err(AppError::new("StockItemSellByWFMOrder", eyre!(e))),
+    };
 
     if stock_item.is_none() {
         return Err(AppError::new(

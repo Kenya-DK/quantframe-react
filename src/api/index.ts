@@ -88,19 +88,25 @@ export class TauriClient {
   cache: CacheModule;
 }
 
-const api = new TauriClient()
+declare global {
+  interface Window {
+    api: TauriClient;
+  }
+}
 
-const OnTauriEvent = <T>(event: string, callback: (data: T) => void) => api.events.OnEvent(event, callback)
-const OnTauriDataEvent = <T>(event: string, callback: (data: { operation: QfSocketEventOperation, data: T }) => void) => api.events.OnEvent(event, callback)
+window.api = new TauriClient()
+// (window as any).api = api as
+const OnTauriEvent = <T>(event: string, callback: (data: T) => void) => window.api.events.OnEvent(event, callback)
+const OnTauriDataEvent = <T>(event: string, callback: (data: { operation: QfSocketEventOperation, data: T }) => void) => window.api.events.OnEvent(event, callback)
 
-const OffTauriEvent = <T>(event: string, callback: (data: T) => void) => api.events.OffEvent(event, callback)
-const OffTauriDataEvent = <T>(event: string, callback: (data: { operation: QfSocketEventOperation, data: T }) => void) => api.events.OffEvent(event, callback)
+const OffTauriEvent = <T>(event: string, callback: (data: T) => void) => window.api.events.OffEvent(event, callback)
+const OffTauriDataEvent = <T>(event: string, callback: (data: { operation: QfSocketEventOperation, data: T }) => void) => window.api.events.OffEvent(event, callback)
 
-const SendTauriEvent = async (event: string, data?: any) => api.events.FireEvent(event, data)
-const SendTauriDataEvent = async (event: string, operation: QfSocketEventOperation, data: any) => api.events.FireEvent(event, { operation, data })
+const SendTauriEvent = async (event: string, data?: any) => window.api.events.FireEvent(event, data)
+const SendTauriDataEvent = async (event: string, operation: QfSocketEventOperation, data: any) => window.api.events.FireEvent(event, { operation, data })
 
 const WFMThumbnail = (thumb: string) => `https://warframe.market/static/assets/${thumb}`
 // const SendNotificationToWindow = async (title: string, message: string, icon?: string, sound?: string) => client.notification.sendSystemNotification(title, message, icon, sound)
 
 export { OnTauriEvent, OnTauriDataEvent, OffTauriEvent, OffTauriDataEvent, SendTauriEvent, SendTauriDataEvent, WFMThumbnail }
-export default api
+export default window.api

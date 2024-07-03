@@ -30,7 +30,12 @@ export class CacheModule {
     this._cache.set(CacheType.TradableItems, items);
     return items;
   }
-
+  async getTradableItem(input: string, by: string): Promise<CacheTradableItem> {
+    const [err, res] = await this.client.sendInvoke<CacheTradableItem>('cache_get_tradable_item', { input, by });
+    if (err)
+      throw err;
+    return res;
+  }
   // Rivens
   async getRivenWeapons(): Promise<CacheRivenWeapon[]> {
     if (this._cache.has(CacheType.RivenWeapons))

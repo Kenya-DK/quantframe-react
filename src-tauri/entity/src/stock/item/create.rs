@@ -5,6 +5,9 @@ use crate::sub_type::SubType;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CreateStockItem {
+    #[serde(rename = "raw")]
+    pub raw: String,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "bought")]
     pub bought: Option<i64>,
@@ -42,6 +45,28 @@ pub struct CreateStockItem {
 
 impl CreateStockItem {
     pub fn new(
+        raw: String,
+        sub_type: Option<SubType>,
+        bought: Option<i64>,
+        minimum_price: Option<i64>,
+        quantity: i64,
+        is_hidden: bool,
+    ) -> Self {
+        CreateStockItem {
+            raw,
+            wfm_id: "".to_string(),
+            wfm_url: "".to_string(),
+            item_name: "".to_string(),
+            item_unique_name: "".to_string(),
+            tags: vec![],
+            sub_type,
+            bought,
+            minimum_price,
+            quantity,
+            is_hidden,
+        }
+    }
+    pub fn new_valid(
         wfm_id: String,
         wfm_url: String,
         item_name: String,
@@ -54,6 +79,7 @@ impl CreateStockItem {
         is_hidden: bool,
     ) -> Self {
         CreateStockItem {
+            raw: "".to_string(),
             wfm_id,
             wfm_url,
             item_name,
@@ -66,6 +92,9 @@ impl CreateStockItem {
             is_hidden,
         }
     }
+
+
+
     pub fn to_stock(&self) -> super::stock_item::Model {
         super::stock_item::Model::new(
             self.wfm_id.clone(),

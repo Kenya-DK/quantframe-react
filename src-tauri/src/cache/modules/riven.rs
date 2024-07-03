@@ -4,7 +4,6 @@ use entity::stock::riven::create::CreateStockRiven;
 use eyre::eyre;
 use regex::Regex;
 
-
 use crate::{
     cache::{
         client::CacheClient,
@@ -99,24 +98,19 @@ impl RivenModule {
         Ok(attributes)
     }
 
-
     pub fn find_rive_attribute_by(
         &self,
         input: &str,
-        by: &str
+        by: &str,
     ) -> Result<Option<CacheRivenWfmAttribute>, AppError> {
         let items = self.data.wfm_attributes.clone();
-        let args = helper::parse_args_from_string(by);
-        let mode = args.get("--attribute_by");
-        if mode.is_none() {
-            return Err(AppError::new(
-                "get_rive_attribute_by",
-                eyre!("Missing attribute_by argument"),
-            ));
-        }
-        let mode = mode.unwrap();
+        let args = match helper::validate_args(by, vec!["--attribute_by"]) {
+            Ok(args) => args,
+            Err(e) => return Err(e),
+        };
+        let mode = args.get("--attribute_by").unwrap();
 
-        let riven_attribute = if mode =="name" {
+        let riven_attribute = if mode == "name" {
             items.iter().find(|x| x.effect == input).cloned()
         } else if by == "url_name" {
             items.iter().find(|x| x.url_name == input).cloned()
@@ -135,29 +129,22 @@ impl RivenModule {
         by: &str,
     ) -> Result<Option<CacheRivenWfmWeapon>, AppError> {
         let items = self.data.wfm_weapons.clone();
-        let args = helper::parse_args_from_string(by);
-        let mode = args.get("--weapon_by");
-        if mode.is_none() {
-            return Err(AppError::new(
-                "get_rive_type_by",
-                eyre!("Missing weapon_by argument"),
-            ));
-        }
-        let mode = mode.unwrap();
+        let args = match helper::validate_args(by, vec!["--weapon_by"]) {
+            Ok(args) => args,
+            Err(e) => return Err(e),
+        };
+        let mode = args.get("--weapon_by").unwrap();
 
-        let riven_type = if mode =="name" {
-            let lang = args.get("--weapon_lang");
-            if lang.is_none() {
-                return Err(AppError::new(
-                    "get_rive_type_by",
-                    eyre!("Missing weapon_lang argument"),
-                ));
-            }
-            items.iter().find(|x| x.i18_n[lang.unwrap()].name == input).cloned()
+        let riven_type = if mode == "name" {
+            let lang: String = args.get("--weapon_lang").unwrap().clone();
+            items
+                .iter()
+                .find(|x| x.i18_n[lang.as_str()].name == input)
+                .cloned()
         } else if by == "url_name" {
             items.iter().find(|x| x.wfm_url_name == input).cloned()
         } else if by == "unique_name" {
-             items.iter().find(|x| x.unique_name == input).cloned()
+            items.iter().find(|x| x.unique_name == input).cloned()
         } else {
             return Err(AppError::new(
                 "get_rive_type_by",
@@ -174,15 +161,43 @@ impl RivenModule {
     ) -> Result<CreateStockRiven, AppError> {
         let component = "ValidateCreateRiven";
 
-        let args = helper::parse_args_from_string(by);
-        let mode = args.get("--weapon_by");
-        if mode.is_none() {
-            return Err(AppError::new(
-                component,
-                eyre!("Missing weapon_by argument"),
-            ));
+        // Validate the riven type
+        match self.find_rive_type_by(&input.raw, by) {
+            Ok(weapon) => {
+                if weapon.is_none() {
+                    return Err(AppError::new(
+                        component,
+                        eyre!("Invalid riven type: {}", input.wfm_url),
+                    ));
+                }
+                let weapon = weapon.unwrap();
+                input.wfm_id = weapon.wfm_id.clone();
+                input.wfm_url = weapon.wfm_url_name.clone();
+                input.weapon_type = weapon.wfm_group.clone();
+                input.weapon_unique_name = weapon.unique_name.clone();
+                input.weapon_name = weapon.i18_n["en"].name.clone();
+            }
+            Err(e) => {
+                return Err(e);
+            }
         }
-        let mode = mode.unwrap();
+
+        let mut ignore_attributes = false;
+        let required_attributes = if !by.contains(&"--ignore_attributes".to_string()) {
+            vec!["--attribute_by"]
+        } else {
+            ignore_attributes = true;
+            vec![]
+        };
+
+        if ignore_attributes {
+            return Ok(input.clone());
+        }
+
+        let args = match helper::validate_args(by, required_attributes) {
+            Ok(args) => args,
+            Err(e) => return Err(e),
+        };
 
         let attribute_by = args.get("--attribute_by");
         if attribute_by.is_none() {
@@ -193,35 +208,29 @@ impl RivenModule {
         }
         let attribute_by = attribute_by.unwrap();
 
-        let weapon = self.find_rive_type_by(&input.wfm_url, by)?;
-        if weapon.is_none() {
-            return Err(AppError::new(
-                component,
-                eyre!("Invalid mode value: {}", mode),
-            ));
-        }
-        let weapon = weapon.unwrap();
-        input.wfm_id = weapon.wfm_id.clone();
-        input.wfm_url = weapon.wfm_url_name.clone();
-        input.weapon_type = weapon.wfm_group.clone();
-        input.weapon_unique_name = weapon.unique_name.clone();
-        input.weapon_name = weapon.i18_n["en"].name.clone();
-
-        let upgrades = self.get_weapon_upgrades(&weapon.unique_name);
+        let upgrades = self.get_weapon_upgrades(&input.weapon_unique_name);
         if upgrades.is_none() {
             return Err(AppError::new(
                 component,
-                eyre!("Failed to get weapon upgrades for: {}", weapon.unique_name),
+                eyre!(
+                    "Failed to get weapon upgrades for: {}",
+                    input.weapon_unique_name
+                ),
             ));
         }
-        let upgrades = upgrades.unwrap().values().cloned().collect::<Vec<RivenStat>>();
+        let upgrades = upgrades
+            .unwrap()
+            .values()
+            .cloned()
+            .collect::<Vec<RivenStat>>();
 
         for att in input.attributes.iter_mut() {
             if attribute_by == "name" || attribute_by == "url_name" {
-                
             } else if attribute_by == "upgrades" {
                 let re = Regex::new(r"<.*?>").unwrap();
-                let upgrade = upgrades.iter().find(|x| re.replace_all(&x.short_string, "").to_string() == att.url_name);
+                let upgrade = upgrades
+                    .iter()
+                    .find(|x| re.replace_all(&x.short_string, "").to_string() == att.url_name);
                 if upgrade.is_none() {
                     return Err(AppError::new(
                         component,
@@ -229,7 +238,7 @@ impl RivenModule {
                     ));
                 }
                 att.url_name = upgrade.unwrap().wfm_id.clone();
-            }  else {
+            } else {
                 return Err(AppError::new(
                     component,
                     eyre!("Invalid attribute_by value: {}", attribute_by),

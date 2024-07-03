@@ -1,7 +1,7 @@
 use std::{
     fs::File,
     io::{Read, Write},
-    path::{PathBuf},
+    path::PathBuf,
     sync::{Arc, Mutex, RwLock},
 };
 
@@ -14,7 +14,7 @@ use crate::{
 };
 
 use super::modules::{
-    arcane::ArcaneModule, arch_gun::ArchGunModule, arch_melee::ArchMeleeModule, archwing::ArchwingModule, fish::FishModule, item_price::ItemPriceModule, melee::MeleeModule, misc::MiscModule, mods::ModModule, parts::PartModule, pet::PetModule, primary::PrimaryModule, Relics::RelicsModule, resource::ResourceModule, riven::RivenModule, secondary::SecondaryModule, sentinel::SentinelModule, skin::SkinModule, tradable_items::TradableItemModule, warframe::WarframeModule
+    arcane::ArcaneModule, arch_gun::ArchGunModule, arch_melee::ArchMeleeModule, archwing::ArchwingModule, fish::FishModule, item_price::ItemPriceModule, melee::MeleeModule, misc::MiscModule, mods::ModModule, parts::PartModule, pet::PetModule, primary::PrimaryModule, relics::RelicsModule, resource::ResourceModule, riven::RivenModule, secondary::SecondaryModule, sentinel::SentinelModule, skin::SkinModule, tradable_items::TradableItemModule, warframe::WarframeModule
 };
 
 #[derive(Clone, Debug)]

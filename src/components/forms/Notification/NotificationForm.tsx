@@ -1,4 +1,4 @@
-import { PaperProps, Card, Group, Text, Divider, TextInput, Collapse } from '@mantine/core';
+import { PaperProps, Card, Group, Text, Divider, TextInput, Collapse, Textarea } from '@mantine/core';
 import { SettingsNotification } from '@api/types';
 import { useTranslateForms } from '@hooks/index';
 import { faBell } from '@fortawesome/free-solid-svg-icons';
@@ -50,13 +50,15 @@ export function NotificationForm({ onChanges, title, value }: NotificationFormPr
           onChange={(event) => onChanges({ ...value, title: event.currentTarget.value })}
           radius="md"
         />
-        <TextInput
+        <Textarea
           required
           label={useTranslateFormFields('content.label')}
           placeholder={useTranslateFormFields('content.placeholder')}
           value={value.content}
           onChange={(event) => onChanges({ ...value, content: event.currentTarget.value })}
           radius="md"
+          rows={3}
+          maxRows={3}
         />
         {value.discord_notify && (
           <Group grow>

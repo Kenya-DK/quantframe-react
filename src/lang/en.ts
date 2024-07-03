@@ -640,6 +640,7 @@ export const en = {
         user_auctions: "Loading warframe market auctions...",
         user_chats: "Loading warframe market chats...",
         check_updates: "Checking for updates...",
+        log_parser: "Starting log parser...",
       }
     },
     live_scraper: {

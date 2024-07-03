@@ -99,13 +99,13 @@ impl StockItemMutation {
         }
     }
 
-    pub async fn sell_by_url_name_and_sub_type(
+    pub async fn sold_by_url_and_sub_type(
         db: &DbConn,
-        url_name: &str,
+        url: &str,
         sub_type: Option<SubType>,
         quantity: i64,
     ) -> Result<(String, Option<stock_item::Model>), DbErr> {
-        let items = StockItemQuery::find_by_url_name(db, url_name).await?;
+        let items = StockItemQuery::find_by_url_name(db, url).await?;
         for item in items {
             if item.sub_type == sub_type {
                 return StockItemMutation::sold_by_id(db, item.id, quantity).await;

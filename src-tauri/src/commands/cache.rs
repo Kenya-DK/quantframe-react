@@ -125,3 +125,20 @@ pub fn cache_get_weapon_upgrades(
         }
     }
 }
+
+#[tauri::command]
+pub fn cache_get_tradable_item(
+    input: String,
+    by: String,
+    cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
+) -> Result<Option<CacheTradableItem>, AppError> {
+    let cache = cache.lock()?.clone();
+    match cache.tradable_items().get_by(&input, &by) {
+        Ok(item) => {
+            return Ok(item);
+        }
+        Err(e) => {
+            return Err(e);
+        }
+    }
+}

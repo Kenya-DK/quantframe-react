@@ -3,8 +3,7 @@ use std::path::PathBuf;
 use eyre::eyre;
 
 use crate::{
-    cache::{client::CacheClient, types::cache_fish::CacheFish},
-    utils::modules::{error::AppError},
+    cache::{client::CacheClient, types::cache_fish::CacheFish}, helper, utils::modules::error::AppError
 };
 
 #[derive(Clone, Debug)]
@@ -45,17 +44,24 @@ impl FishModule {
         self.update_state();
         Ok(())
     }
-    pub fn get_by_unique_name(&self, id: &str) -> Option<CacheFish> {
-        self.items.iter().find(|x| x.unique_name == id).cloned()
-    }
-    pub fn get_by_name(&self, name: &str, ignore_case: bool) -> Option<CacheFish> {
-        if ignore_case {
-            self.items
-                .iter()
-                .find(|x| x.name.to_lowercase() == name.to_lowercase())
-                .cloned()
+    pub fn get_by(&self, input: &str, by: &str) -> Result<Option<CacheFish>, AppError> {
+        let items = self.items.clone();
+        let args = match helper::validate_args(by, vec!["--item_by"]) {
+            Ok(args) => args,
+            Err(e) => return Err(e),            
+        };
+        let mode = args.get("--item_by").unwrap();
+        let case_insensitive = args.get("--case_insensitive").is_some();
+        // let lang = args.get("--item_lang").unwrap_or(&"en".to_string());
+        let remove_string = args.get("--remove_string");
+
+        let item = if mode == "name" {            
+            items.iter().find(|x| helper::create_key(&x.name, case_insensitive, remove_string) == input).cloned()
+        } else if mode == "unique_name" {
+            items.iter().find(|x| helper::create_key(&x.unique_name, case_insensitive, remove_string) == input).cloned()
         } else {
-            self.items.iter().find(|x| x.name == name).cloned()
-        }
+            return Err(AppError::new(&self.get_component("GetBy"), eyre!("Invalid by value: {}", by)));
+        };
+        Ok(item)
     }
 }

@@ -18,4 +18,4 @@ pub mod sentinel;
 pub mod skin;
 pub mod tradable_items;
 pub mod warframe;
-pub mod Relics;
+pub mod relics;

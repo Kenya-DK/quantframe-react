@@ -1,4 +1,4 @@
-import { Image, Group, Paper, Stack, Divider, Text, Avatar, Skeleton, PaperProps, Grid, Box } from '@mantine/core';
+import { Image, Group, Paper, Stack, Divider, Text, Avatar, Skeleton, PaperProps, Grid, Box, RingProgress } from '@mantine/core';
 import classes from './AuctionListItem.module.css';
 import { useEffect, useState } from 'react';
 import { Wfm } from '$types/index';
@@ -85,7 +85,19 @@ export function AuctionListItem({ overrideMode, show_border, show_image, header,
 									{auction.item.attributes.map((attr, index) => <RivenAttributeCom key={index} value={attr} />)}
 								</Group>
 							</Grid.Col>
-							<Grid.Col span={3} display="flex" style={{ justifyContent: "flex-end", alignItems: "center" }} h={"90px"}>
+							<Grid.Col span={3} display="flex" style={{ justifyContent: "flex-end", flexDirection: "column", alignItems: "center" }} h={"90px"}>
+								{auction.item.similarity &&
+									<RingProgress
+										size={60}
+										thickness={3}
+										sections={[{ value: auction.item.similarity, color: 'blue' }]}
+										label={
+											<Text c="blue" ta="center" size="md">
+												{auction.item.similarity.toFixed(1)}%
+											</Text>
+										}
+									/>
+								}
 								{auction.is_direct_sell ?
 									(
 										<TextTranslate i18nKey={useTranslateBase("selling_price", undefined, true)} values={{

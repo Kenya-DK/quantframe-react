@@ -9,9 +9,7 @@ use crate::{
 };
 
 use super::modules::{
-    conversation::new_conversation,
     stock::{add_item, add_riven},
-    trade::progress,
 };
 #[derive(Clone, Debug)]
 pub struct HttpClient {}
@@ -30,8 +28,6 @@ impl HttpClient {
                             .expose_any_header(),
                     )
                     .service(web::scope("/stock").service(add_riven).service(add_item))
-                    .service(web::scope("/trading").service(progress))
-                    .service(new_conversation)
             })
             .bind((settings.http.clone().host, settings.http.port as u16))
             .map_err(|e| AppError::new("HttpServer", eyre::eyre!(e)))?

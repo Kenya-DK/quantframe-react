@@ -108,7 +108,7 @@ impl Default for SettingsState {
                     auto_delete: true,
                     order_mode: OrderMode::Both,
                 },
-                stock_riven: StockRivenSettings { 
+                stock_riven: StockRivenSettings {
                     min_profit: 25,
                     threshold_percentage: 15,
                     limit_to: 5,
@@ -134,7 +134,8 @@ impl Default for SettingsState {
                 on_new_trade: Notification {
                     discord_notify: false,
                     system_notify: true,
-                    content: "From: <PLAYER_NAME>".to_string(),
+                    content: "From: <PLAYER_NAME>\nOffered: <OF_COUNT> Received: <RE_COUNT>"
+                        .to_string(),
                     title: "New Trade".to_string(),
                     webhook: Some("".to_string()),
                     user_ids: Some(vec![]),

@@ -2,6 +2,7 @@ use ::entity::enums::stock_status::StockStatus;
 use ::entity::stock::riven::{stock_riven, stock_riven::Entity as StockRiven};
 use ::entity::stock::riven::{stock_riven_old, stock_riven_old::Entity as StockRivenOld};
 
+use ::entity::sub_type::SubType;
 use sea_orm::*;
 use sea_query::Expr;
 
@@ -42,5 +43,18 @@ impl StockRivenQuery {
 
     pub async fn get_old_stock_riven(db: &DbConn) -> Result<Vec<stock_riven_old::Model>, DbErr> {
         StockRivenOld::find().all(db).await
+    }
+
+    pub async fn get_by_riven_name(
+        db: &DbConn,
+        weapon_url: &str,
+        mod_name: &str,
+        sub_type: SubType,
+    ) -> Result<Option<stock_riven::Model>, DbErr> {
+        StockRiven::find()
+            .filter(stock_riven::Column::WfmWeaponUrl.eq(weapon_url))
+            .filter(stock_riven::Column::ModName.eq(mod_name))
+            .filter(stock_riven::Column::SubType.eq(sub_type))
+            .one(db).await
     }
 }

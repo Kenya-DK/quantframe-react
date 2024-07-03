@@ -1,4 +1,5 @@
 use eyre::eyre;
+use regex::Regex;
 use serde_json::{json, Map, Value};
 use std::{
     collections::HashMap, fs::{self, File}, io::{self, Read, Write}, path::{Path, PathBuf}
@@ -20,6 +21,44 @@ pub fn get_app_storage_path() -> PathBuf {
         fs::create_dir_all(app_path.clone()).unwrap();
     }
     app_path
+}
+pub fn remove_special_characters(input: &str) -> String {
+    // Define the pattern for special characters except _ and space
+    let pattern = Regex::new("[^a-zA-Z0-9_ ]").unwrap();
+
+    // Replace special characters with empty string
+    let result = pattern.replace_all(input, "");
+
+    result.into_owned()
+}
+pub fn get_local_data_path() -> PathBuf {
+    let local_path = match tauri::api::path::local_data_dir() {
+        Some(val) => val,
+        None => {
+            panic!("Could not find app path");
+        }
+    };
+    local_path
+}
+
+pub fn match_pattern(
+    input: &str,
+    regex: Vec<String>,
+) -> Result<(bool, Vec<Option<String>>), regex::Error> {
+    for regex in regex {
+        let re: Regex = Regex::new(&regex)?;
+        if let Some(captures) = re.captures(input) {
+            let mut result: Vec<Option<String>> = vec![];
+            for i in 1..captures.len() {
+                let group = captures.get(i).map(|m| m.as_str().to_string());
+                let group: Option<String> =
+                    group.map(|s| s.chars().filter(|c| c.is_ascii()).collect());
+                result.push(group);
+            }
+            return Ok((true, result));
+        }
+    }
+    Ok((false, vec![]))
 }
 
 #[derive(Clone, Debug)]
@@ -207,6 +246,31 @@ pub fn parse_args_from_string(args: &str) -> HashMap<String, String> {
     }
 
     args_map
+}
+
+pub fn validate_args(args: &str, required: Vec<&str>) -> Result<HashMap<String, String>, AppError> {
+    let args_map = parse_args_from_string(args);
+    for arg in required {
+        if !args_map.contains_key(arg) {
+            return Err(AppError::new(
+                "ValidateArgs",
+                eyre!(format!("Missing required argument: {}", arg)),
+            ));
+        }
+    }
+    Ok(args_map)
+}
+
+pub fn create_key(value: &str, case_insensitive: bool, remove_string: Option<&String>) -> String {
+    let mut key = value.to_string();
+    if let Some(remove_string) = remove_string {        
+        key = key.replace(remove_string, "");                    
+    }
+    if case_insensitive {
+        key.to_lowercase()
+    } else {
+        key
+    }
 }
 
 

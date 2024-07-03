@@ -3,9 +3,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::{
-    enums::stock_status::StockStatus,
-    price_history::PriceHistoryVec,
-    sub_type::SubType, transaction,
+    enums::stock_status::StockStatus, price_history::PriceHistoryVec, sub_type::SubType,
+    transaction,
 };
 
 use super::{attribute::RivenAttributeVec, match_riven::MatchRivenStruct};
@@ -46,7 +45,6 @@ pub struct Model {
     #[sea_orm(created_at)]
     pub created_at: DateTimeUtc,
 }
-
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {}
@@ -94,11 +92,16 @@ impl Model {
             comment,
             status: StockStatus::Pending,
             price_history: PriceHistoryVec(vec![]),
-            updated_at:Default::default(),
-            created_at:Default::default(),
+            updated_at: Default::default(),
+            created_at: Default::default(),
         }
     }
-    pub fn to_transaction(&self,user_name:&str, price: i64, transaction_type: transaction::transaction::TransactionType) -> transaction::transaction::Model {
+    pub fn to_transaction(
+        &self,
+        user_name: &str,
+        price: i64,
+        transaction_type: transaction::transaction::TransactionType,
+    ) -> transaction::transaction::Model {
         transaction::transaction::Model::new(
             self.wfm_weapon_id.clone(),
             self.wfm_weapon_url.clone(),

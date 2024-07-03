@@ -30,6 +30,15 @@ impl SubType {
             cyan_stars,
         }
     }
+
+    pub fn rank(rank: i64) -> Self {
+        Self {
+            rank: Some(rank),
+            variant: None,
+            amber_stars: None,
+            cyan_stars: None,
+        }
+    }
     pub fn new_empty() -> Self {
         Self {
             rank: None,
@@ -39,6 +48,7 @@ impl SubType {
         }
     }
     pub fn display(&self) -> String {
+        
         let mut display = String::new();
         if let Some(rank) = self.rank {
             display.push_str(&format!("Rank: {} ", rank));

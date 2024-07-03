@@ -1,4 +1,5 @@
 use serde_json::json;
+use tokio::join;
 
 use crate::{helper, notification::client::NotifyClient, utils::modules::logger};
 
@@ -37,15 +38,19 @@ impl DiscordModule {
 
     pub fn send_notification(
         &self,
-        webhook: String,
-        title: String,
-        content: String,
+        webhook: &str,
+        title: &str,
+        content: &str,
         user_ids: Option<Vec<String>>,
     ) {
         let app = self.client.app.lock().unwrap().clone();
         let packageinfo = app.get_app_info();
         let component = self.get_component("SendNotification");
-        let tags =self.create_tag_string(user_ids);
+        let tags = self.create_tag_string(user_ids);
+
+        let title = title.to_string();
+        let content = content.to_string();
+        let webhook = webhook.to_string();
         tauri::async_runtime::spawn(async move {
             let client = reqwest::Client::new();
 
@@ -69,8 +74,7 @@ impl DiscordModule {
                 ]
             });
             if tags != "" {
-                body["content"] =
-                    json!(format!("{}", tags).replace("\"", ""));
+                body["content"] = json!(format!("{}", tags).replace("\"", ""));
             }
             let res = client.post(webhook).json(&body).send().await;
             match res {
@@ -78,12 +82,10 @@ impl DiscordModule {
                     logger::info_con("Helper", "Message sent to discord");
                 }
                 Err(e) => {
-                    logger::error_con(
-                        &component,
-                        &format!("Error: {:?}", e),
-                    );
+                    logger::error_con(&component, &format!("Error: {:?}", e));
                 }
             }
         });
     }
+   
 }

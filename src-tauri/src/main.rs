@@ -5,6 +5,7 @@ use auth::AuthState;
 use cache::client::CacheClient;
 use debug::DebugClient;
 use live_scraper::client::LiveScraperClient;
+use log_parser::client::LogParser;
 use migration::{Migrator, MigratorTrait};
 use notification::client::NotifyClient;
 use service::sea_orm::Database;
@@ -35,6 +36,7 @@ mod settings;
 mod system_tray;
 mod utils;
 mod wfm_client;
+mod log_parser;
 
 pub static APP: OnceLock<tauri::AppHandle> = OnceLock::new();
 
@@ -42,12 +44,23 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     // Create the database connection and store it
     let storage_path = helper::get_app_storage_path();
 
+    let db_file_name = "quantframeV2.sqlite";
+
     // Create the database path
     let db_url = format!(
-        "sqlite://{}/{}",
+        "sqlite://{}/{}?mode=rwc",
         storage_path.to_str().unwrap(),
-        "quantframeV2.sqlite?mode=rwc"
+        db_file_name,
     );
+
+
+    // Create a copy of the database file if it exists for backup
+    let db_file_path = format!("{}/{}", storage_path.to_str().unwrap(), db_file_name);
+    let db_file_path_backup = format!("{}/{}_backup", storage_path.to_str().unwrap(), db_file_name);
+    if std::path::Path::new(&db_file_path).exists() {
+        std::fs::copy(&db_file_path, &db_file_path_backup).expect("Failed to create a backup of the database file");
+    }
+
 
     // Create the database connection and store it and run the migrations
     let conn = Database::connect(db_url)
@@ -120,6 +133,16 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     );
     app.manage(Arc::new(Mutex::new(debug_client)));
 
+    let log_parser = LogParser::new(
+        Arc::clone(&app_arc),
+        Arc::clone(&settings_arc),
+        Arc::clone(&wfm_client),
+        Arc::clone(&auth_arc),
+        Arc::clone(&cache_arc),
+        Arc::clone(&notify_arc),
+    );
+    app.manage(Arc::new(Mutex::new(log_parser)));
+
     Ok(())
 }
 fn main() {
@@ -178,6 +201,7 @@ fn main() {
             commands::cache::cache_get_riven_raw_mod,
             commands::cache::cache_get_weapon_stat,
             commands::cache::cache_get_weapon_upgrades,
+            commands::cache::cache_get_tradable_item,
             // Transaction commands
             commands::transaction::transaction_reload,
             commands::transaction::transaction_get_all,

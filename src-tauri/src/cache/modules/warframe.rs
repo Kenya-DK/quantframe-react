@@ -7,6 +7,7 @@ use crate::{
         client::CacheClient,
         types::{cache_item_component::CacheItemComponent, cache_warframe::CacheWarframe},
     },
+    helper,
     utils::modules::error::AppError,
 };
 use std::collections::HashMap;
@@ -81,5 +82,36 @@ impl WarframeModule {
             .collect::<Vec<_>>();
         parts.sort_by_key(|key| key.get_real_external_name() == name);
         parts.get(0).cloned()
+    }
+    pub fn get_by(&self, input: &str, by: &str) -> Result<Option<CacheWarframe>, AppError> {
+        let items = self.items.clone();
+        let args = match helper::validate_args(by, vec!["--item_by"]) {
+            Ok(args) => args,
+            Err(e) => return Err(e),
+        };
+        let mode = args.get("--item_by").unwrap();
+        let case_insensitive = args.get("--case_insensitive").is_some();
+        // let lang = args.get("--item_lang").unwrap_or(&"en".to_string());
+        let remove_string = args.get("--remove_string");
+
+        let item = if mode == "name" {
+            items
+                .iter()
+                .find(|x| helper::create_key(&x.name, case_insensitive, remove_string) == input)
+                .cloned()
+        } else if mode == "unique_name" {
+            items
+                .iter()
+                .find(|x| {
+                    helper::create_key(&x.unique_name, case_insensitive, remove_string) == input
+                })
+                .cloned()
+        } else {
+            return Err(AppError::new(
+                &self.get_component("GetBy"),
+                eyre!("Invalid by value: {}", by),
+            ));
+        };
+        Ok(item)
     }
 }

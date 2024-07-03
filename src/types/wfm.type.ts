@@ -212,7 +212,7 @@ export namespace Wfm {
     name: string;
     mod_rank: number;
     polarity: string;
-    similarity: number;
+    similarity?: number;
     missing_attributes: RivenAttribute[];
     extra_attributes: RivenAttribute[];
     //Liches And Sister
