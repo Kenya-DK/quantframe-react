@@ -5,7 +5,7 @@ use crate::{
     },
     wfm_client::{
         client::WFMClient,
-        types::{user_profile::UserProfile},
+        types::user_profile::UserProfile,
     },
 };
 
@@ -30,9 +30,16 @@ impl UserModule {
     }
 
     pub async fn user_profile(&self, user_name: &str) -> Result<UserProfile, AppError> {
+        let url: String;
+        if user_name == "" {
+            url = "profile".to_string();
+        } else {
+            url = format!("profile/{}", user_name);
+        }
+
         match self
             .client
-            .get::<UserProfile>(&format!("profile/{}", user_name), Some("profile"))
+            .get::<UserProfile>(&url, Some("profile"))
             .await
         {
             Ok(ApiResult::Success(user, _)) => {

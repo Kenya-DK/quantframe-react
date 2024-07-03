@@ -12,7 +12,7 @@ use crate::{
     settings::SettingsState,
     utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
-        modules::error::{self, AppError},
+        modules::{error::{self, AppError}, logger},
     },
     wfm_client::client::WFMClient,
 };
@@ -162,6 +162,16 @@ pub async fn app_init(
         }
     };
     if wfm_user.authorized {
+        // Load User Profile
+        let profile = match wfm.user().user_profile("").await {
+            Ok(v) => v,
+            Err(e) => {
+                error::create_log_file("command.log".to_string(), &e);
+                return Err(e);
+            }
+        };
+        wfm_user.update_from_wfm_user_profile(&profile, wfm_user.wfm_access_token.clone());
+
         // Load User Orders
         notify
             .gui()
