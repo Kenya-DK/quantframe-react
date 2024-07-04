@@ -38,6 +38,8 @@ export function StockRivenInfo({ value }: StockRivenInfoProps) {
               <TextInput label={useTranslateFields("status")} value={useTranslateStockStatus(value.status)} readOnly />
               <TextInput label={useTranslateFields("minimum_price")} value={value.minimum_price || "N/A"} readOnly />
               <TextInput label={useTranslateFields("re_rolls")} value={value.re_rolls || 0} readOnly />
+              <TextInput label={useTranslateFields("mastery_rank")} value={value.mastery_rank || 0} readOnly />
+              <TextInput label={useTranslateFields("rank")} value={value.sub_type?.rank || 0} readOnly />
             </Group>
             <Group grow>
               <TextInput label={useTranslateFields("bought")} value={value.bought} readOnly />

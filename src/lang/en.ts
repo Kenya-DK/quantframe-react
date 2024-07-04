@@ -466,6 +466,8 @@ export const en = {
         listed: "Listed Prices History",
         no_auctions: "No auctions was found for this riven.",
         no_listed: "No previous listed prices",
+        mastery_rank: "Master Rank",
+        rank: "Rank",
       }
     },
     riven_attribute: {
