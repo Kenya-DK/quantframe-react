@@ -60,7 +60,7 @@ impl LogParser {
             notify,
             log_file: helper::get_local_data_path()
                 .join("Warframe")
-                .join("EEBG.log"),
+                .join("EE.log"),
             is_running: Arc::new(AtomicBool::new(false)),
             component: "LogParser".to_string(),
             last_file_size: Arc::new(Mutex::new(0)),
@@ -77,7 +77,6 @@ impl LogParser {
         self.is_running.load(Ordering::SeqCst)
     }
     pub fn start_loop(self) -> Result<(), AppError> {
-        return Ok(());
         self.is_running.store(true, Ordering::SeqCst);
         let is_running = Arc::clone(&self.is_running);
         let forced_stop = Arc::clone(&self.is_running);
