@@ -104,7 +104,7 @@ impl RivenModule {
         by: &str,
     ) -> Result<Option<CacheRivenWfmAttribute>, AppError> {
         let items = self.data.wfm_attributes.clone();
-        let args = match helper::validate_args(by, vec!["--attribute_by"]) {
+        let args = match helper::validate_args(by, vec!["--attribute_by","--attribute_by:upgrades| --weapon_unique --upgrade_by"]) {
             Ok(args) => args,
             Err(e) => return Err(e),
         };
@@ -112,8 +112,48 @@ impl RivenModule {
 
         let riven_attribute = if mode == "name" {
             items.iter().find(|x| x.effect == input).cloned()
-        } else if by == "url_name" {
+        } else if mode == "url_name" {
             items.iter().find(|x| x.url_name == input).cloned()
+        } else if mode == "upgrades" {
+            let re = Regex::new(r"<.*?>").unwrap();
+            let unique = args.get("--weapon_unique").unwrap();
+            let upgrades = self.get_weapon_upgrades(unique);
+            if upgrades.is_none() {
+                return Err(AppError::new(
+                    "find_rive_attribute_by",
+                    eyre!("Failed to get weapon upgrades for: {}", unique),
+                ));
+            }
+            
+            let upgrades = upgrades
+                .unwrap()
+                .values()
+                .cloned()
+                .collect::<Vec<RivenStat>>();
+
+            let upgrade_by = args.get("--upgrade_by").unwrap();
+            match upgrade_by.as_str() {
+                "short_string" => {
+                    let upgrade = upgrades
+                        .iter()
+                        .find(|x| re.replace_all(&x.short_string, "").to_string() == input);
+                    if upgrade.is_none() {
+                        return Err(AppError::new(
+                            "find_rive_attribute_by",
+                            eyre!("Attribute not found: {}", input),
+                        ));
+                    }
+                    let upgrade = upgrade.unwrap();
+                    items.iter().find(|x| x.url_name == upgrade.wfm_id).cloned()
+                }
+                // If not found return an error
+                _=> {
+                    return Err(AppError::new(
+                        "find_rive_attribute_by",
+                        eyre!("Invalid upgrade_by value: {}", upgrade_by),
+                    ));
+                }
+            }
         } else {
             return Err(AppError::new(
                 "get_rive_attribute_by",
@@ -141,9 +181,9 @@ impl RivenModule {
                 .iter()
                 .find(|x| x.i18_n[lang.as_str()].name == input)
                 .cloned()
-        } else if by == "url_name" {
+        } else if mode == "url_name" {
             items.iter().find(|x| x.wfm_url_name == input).cloned()
-        } else if by == "unique_name" {
+        } else if mode == "unique_name" {
             items.iter().find(|x| x.unique_name == input).cloned()
         } else {
             return Err(AppError::new(
@@ -182,67 +222,27 @@ impl RivenModule {
             }
         }
 
-        let mut ignore_attributes = false;
-        let required_attributes = if !by.contains(&"--ignore_attributes".to_string()) {
-            vec!["--attribute_by"]
-        } else {
-            ignore_attributes = true;
-            vec![]
-        };
-
-        if ignore_attributes {
+        if by.contains(&"--ignore_attributes".to_string()) {
             return Ok(input.clone());
         }
 
-        let args = match helper::validate_args(by, required_attributes) {
-            Ok(args) => args,
-            Err(e) => return Err(e),
-        };
-
-        let attribute_by = args.get("--attribute_by");
-        if attribute_by.is_none() {
-            return Err(AppError::new(
-                component,
-                eyre!("Missing attribute_by argument"),
-            ));
-        }
-        let attribute_by = attribute_by.unwrap();
-
-        let upgrades = self.get_weapon_upgrades(&input.weapon_unique_name);
-        if upgrades.is_none() {
-            return Err(AppError::new(
-                component,
-                eyre!(
-                    "Failed to get weapon upgrades for: {}",
-                    input.weapon_unique_name
-                ),
-            ));
-        }
-        let upgrades = upgrades
-            .unwrap()
-            .values()
-            .cloned()
-            .collect::<Vec<RivenStat>>();
+        let by = format!("{} --weapon_unique {}", by, input.weapon_unique_name);
 
         for att in input.attributes.iter_mut() {
-            if attribute_by == "name" || attribute_by == "url_name" {
-            } else if attribute_by == "upgrades" {
-                let re = Regex::new(r"<.*?>").unwrap();
-                let upgrade = upgrades
-                    .iter()
-                    .find(|x| re.replace_all(&x.short_string, "").to_string() == att.url_name);
-                if upgrade.is_none() {
-                    return Err(AppError::new(
-                        component,
-                        eyre!("Attribute not found: {}", att.url_name),
-                    ));
+            match self.find_rive_attribute_by(&att.url_name, &by) {
+                Ok(attribute) => {
+                    if attribute.is_none() {
+                        return Err(AppError::new(
+                            component,
+                            eyre!("Invalid riven attribute: {}", att.url_name),
+                        ));
+                    }
+                    let attribute = attribute.unwrap();
+                    att.url_name = attribute.url_name.clone();
                 }
-                att.url_name = upgrade.unwrap().wfm_id.clone();
-            } else {
-                return Err(AppError::new(
-                    component,
-                    eyre!("Invalid attribute_by value: {}", attribute_by),
-                ));
+                Err(e) => {
+                    return Err(e);
+                }
             }
         }
         Ok(input.clone())

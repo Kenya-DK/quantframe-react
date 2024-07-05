@@ -248,16 +248,50 @@ pub fn parse_args_from_string(args: &str) -> HashMap<String, String> {
     args_map
 }
 
-pub fn validate_args(args: &str, required: Vec<&str>) -> Result<HashMap<String, String>, AppError> {
+pub fn validate_args(
+    args: &str,
+    requirements: Vec<&str>,
+) -> Result<HashMap<String, String>, AppError> {
     let args_map = parse_args_from_string(args);
-    for arg in required {
-        if !args_map.contains_key(arg) {
-            return Err(AppError::new(
-                "ValidateArgs",
-                eyre!(format!("Missing required argument: {}", arg)),
-            ));
+
+    for req in requirements {
+        // Split the requirement to check for conditional requirements
+        let parts: Vec<&str> = req.split(':').collect();
+        if parts.len() == 1 {
+            // Simple required argument
+            let arg = parts[0];
+            if !args_map.contains_key(arg) {
+                return Err(AppError::new(
+                    "ValidateArgs",
+                    eyre!(format!("Missing required argument: {}", arg)),
+                ));
+            }
+        } else if parts.len() == 2 {
+            // Conditional required arguments
+            let conditional_parts: Vec<&str> = parts[1].split('|').collect();
+            if conditional_parts.len() == 2 {
+                let (value, additional_args_str) = (conditional_parts[0], conditional_parts[1]);
+                let additional_args: Vec<&str> = additional_args_str.split_whitespace().collect();
+
+                if let Some(arg_value) = args_map.get(parts[0]) {
+                    if arg_value == value {
+                        for additional_arg in additional_args {
+                            if !args_map.contains_key(additional_arg) {
+                                return Err(AppError::new(
+                                    "ValidateArgs",
+                                    eyre!(format!(
+                                        "Missing required argument due to {}={}: {}",
+                                        parts[0], value, additional_arg
+                                    )),
+                                ));
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
+
     Ok(args_map)
 }
 

@@ -1,5 +1,12 @@
-
-use entity::{enums::stock_type::StockType, stock::{item::create::CreateStockItem, riven::{attribute::RivenAttribute, create::CreateStockRiven}}, sub_type::SubType};
+use entity::{
+    enums::stock_type::StockType,
+    stock::{
+        item::create::CreateStockItem,
+        riven::{attribute::RivenAttribute, create::CreateStockRiven},
+    },
+    sub_type::SubType,
+    transaction,
+};
 use serde::{Deserialize, Serialize};
 
 use crate::{cache::client::CacheClient, utils::modules::error::AppError};
@@ -8,7 +15,7 @@ use crate::{cache::client::CacheClient, utils::modules::error::AppError};
 pub struct CreateStockEntity {
     #[serde(rename = "raw")]
     pub raw: String,
-    
+
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "bought")]
     pub bought: Option<i64>,
@@ -49,10 +56,14 @@ pub struct CreateStockEntity {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sub_type: Option<SubType>,
 
+    #[serde(rename = "is_validated")]
+    #[serde(default = "bool::default")]
+    pub is_validated: bool,
+
     // Riven specific fields
     #[serde(rename = "mod_name")]
     pub mod_name: String,
-   
+
     #[serde(rename = "mastery_rank")]
     #[serde(default = "i64::default")]
     pub mastery_rank: i64,
@@ -93,6 +104,7 @@ impl Default for CreateStockEntity {
             quantity: 1,
             is_hidden: false,
             sub_type: None,
+            is_validated: false,
             mod_name: "".to_string(),
             mastery_rank: 0,
             re_rolls: 0,
@@ -108,24 +120,76 @@ impl CreateStockEntity {
             raw: raw.to_string(),
             bought: Some(bought),
             ..Default::default()
-        }        
+        }
     }
     pub fn to_stock_item(&self) -> CreateStockItem {
-        CreateStockItem::new(self.raw.clone(), self.sub_type.clone(), self.bought, self.minimum_price, self.quantity, self.is_hidden)
+        if !self.is_validated {
+            CreateStockItem::new(
+                self.raw.clone(),
+                self.sub_type.clone(),
+                self.bought,
+                self.minimum_price,
+                self.quantity,
+                self.is_hidden,
+            )
+        } else {
+            CreateStockItem::new_valid(
+                self.wfm_id.clone(),
+                self.wfm_url.clone(),
+                self.name.clone(),
+                self.unique_name.clone(),
+                self.tags.clone(),
+                self.sub_type.clone(),
+                self.bought,
+                self.minimum_price,
+                self.quantity,
+                self.is_hidden,
+            )
+        }
     }
     pub fn to_stock_riven(&self) -> CreateStockRiven {
-        let mut rank:i64 = 0;
+        let mut rank: i64 = 0;
         if self.sub_type.is_some() {
             let sub_type = self.sub_type.as_ref().unwrap();
             if sub_type.rank.is_some() {
                 rank = sub_type.rank.unwrap_or(0);
             }
         }
-        CreateStockRiven::new(self.raw.clone(), self.mod_name.clone(), self.mastery_rank, self.re_rolls, self.polarity.clone(), self.attributes.clone(),rank)
+        if !self.is_validated {
+            CreateStockRiven::new(
+                self.raw.clone(),
+                self.mod_name.clone(),
+                self.mastery_rank,
+                self.re_rolls,
+                self.polarity.clone(),
+                self.attributes.clone(),
+                rank,
+            )
+        } else {
+            CreateStockRiven::new_valid(
+                self.wfm_id.clone(),
+                self.wfm_id.clone(),
+                self.wfm_url.clone(),
+                self.name.clone(),
+                self.unique_name.clone(),
+                self.tags.join(","),
+                self.mod_name.clone(),
+                self.mastery_rank,
+                self.re_rolls.clone(),
+                self.polarity.clone(),
+                self.attributes.clone(),
+                self.minimum_price,
+                self.bought,
+                rank,
+            )
+        }
     }
-    pub fn validate_entity(&mut self, cache: &CacheClient, by:&str) -> Result<(), AppError> {
+    pub fn validate_entity(&mut self, cache: &CacheClient, by: &str) -> Result<(), AppError> {
         if self.entity_type == StockType::Unknown {
-            return Err(AppError::new("ValidateStockEntity", eyre::eyre!("Invalid entity type: {}", self.entity_type.as_str())));
+            return Err(AppError::new(
+                "ValidateStockEntity",
+                eyre::eyre!("Invalid entity type: {}", self.entity_type.as_str()),
+            ));
         }
         if self.entity_type == StockType::Riven {
             let mut c_riven = self.to_stock_riven();
@@ -135,17 +199,63 @@ impl CreateStockEntity {
             self.name = riven.weapon_name.clone();
             self.unique_name = riven.weapon_unique_name.clone();
             self.tags = vec![riven.weapon_type.clone()];
-
-            
-        } else if self.entity_type == StockType::Item{
+            self.is_validated = true;
+        } else if self.entity_type == StockType::Item {
             let mut c_item = self.to_stock_item();
-            let item = cache.tradable_items().validate_create_item(&mut c_item, by)?;
+            let item = cache
+                .tradable_items()
+                .validate_create_item(&mut c_item, by)?;
             self.wfm_id = item.wfm_id.clone();
             self.wfm_url = item.wfm_url.clone();
             self.name = item.item_name.clone();
             self.unique_name = item.item_unique_name.clone();
             self.tags = item.tags.clone();
+            self.is_validated = true;
+        } else {
+            return Err(AppError::new(
+                "ValidateStockEntity",
+                eyre::eyre!("Invalid entity type: {}", self.entity_type.as_str()),
+            ));
         }
-        Ok(())        
+        Ok(())
+    }
+    pub fn to_transaction(
+        &self,
+        user_name: &str,
+        transaction_type: transaction::transaction::TransactionType,
+    ) -> Result<transaction::transaction::Model, AppError> {
+        if !self.is_validated {
+            return Err(AppError::new(
+                "CreateTransaction",
+                eyre::eyre!("Entity is not validated"),
+            ));
+        }
+
+        match self.entity_type {
+            StockType::Item => {
+                let item = self.to_stock_item();
+                let transaction = item.to_stock().to_transaction(
+                    user_name,
+                    self.tags.clone(),
+                    self.quantity,
+                    self.bought.unwrap_or(0),
+                    transaction_type,
+                );
+                Ok(transaction)
+            }
+            StockType::Riven => {
+                let riven = self.to_stock_riven();
+                let transaction = riven.to_stock().to_transaction(
+                    user_name,
+                    self.bought.unwrap_or(0),
+                    transaction_type,
+                );
+                Ok(transaction)
+            }
+            _ => Err(AppError::new(
+                "CreateTransaction",
+                eyre::eyre!("Invalid entity type: {}", self.entity_type.as_str()),
+            )),
+        }
     }
 }

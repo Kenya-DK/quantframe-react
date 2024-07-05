@@ -44,7 +44,7 @@ export function MigrateCard() {
 							{ value: "transaction", label: "Transactions" },
 						]}
 					/>
-					<Button onClick={async () => migrateDataMutation.mutateAsync(selected)} color="red" >
+					<Button loading={migrateDataMutation.isPending} onClick={async () => migrateDataMutation.mutateAsync(selected)} color="red" >
 						{useTranslateButtons("migrate.title")}
 					</Button>
 				</Group>

@@ -40,7 +40,7 @@ pub async fn add_riven(riven: web::Json<CreateStockRiven>) -> impl Responder {
     // Validate the riven
     match cache.riven().validate_create_riven(
         &mut riven,
-        "--weapon_by name --weapon_lang en --attribute_by upgrades",
+        "--weapon_by name --weapon_lang en --attribute_by upgrades --upgrade_by short_string",
     ) {
         Ok(_) => (),
         Err(e) => {

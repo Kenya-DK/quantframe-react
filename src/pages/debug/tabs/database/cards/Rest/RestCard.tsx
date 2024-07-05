@@ -44,7 +44,7 @@ export function RestCard() {
 							{ value: "transaction", label: "Transactions" },
 						]}
 					/>
-					<Button onClick={async () => resetDataMutation.mutateAsync(selected)} color="red" >
+					<Button loading={resetDataMutation.isPending} onClick={async () => resetDataMutation.mutateAsync(selected)} color="red" >
 						{useTranslateButtons("rest.title")}
 					</Button>
 				</Group>
