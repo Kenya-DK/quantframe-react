@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Mutex};
+use std::{clone, collections::HashMap, sync::Mutex};
 
 use entity::{
     enums::stock_type::StockType, stock::item::create::CreateStockItem, sub_type::SubType,
@@ -405,6 +405,7 @@ impl OnTradeEvent {
 
         logger::info_con(&self.get_component("TradeAccepted"), &trade.display());
 
+        let client = self.clone();
         tokio::task::spawn(async move {
             if auto_trade {
                 // Handle Riven Mods Sale
@@ -424,14 +425,14 @@ impl OnTradeEvent {
                         Err(e) => {
                             error::create_log_file(
                                 "trade_accepted.log".to_string(),
-                                &AppError::new_db("AddItem", e),
+                                &AppError::new_db(&client.get_component("AutoTrade"), e),
                             );
                             None
                         }
                     };
                     if stock.is_none() {
                         logger::warning_con(
-                            "TradeAccepted",
+                            &client.get_component("AutoTrade"),
                             &format!(
                                 "Riven Mod not found: {} {}",
                                 created_stock.wfm_url, created_stock.mod_name
@@ -453,7 +454,7 @@ impl OnTradeEvent {
                         Err(e) => {
                             error::create_log_file(
                                 "trade_accepted.log".to_string(),
-                                &AppError::new_db("AddItem", e),
+                                &AppError::new_db(&client.get_component("AutoTrade"), e),
                             );
                         }
                     }
@@ -477,7 +478,7 @@ impl OnTradeEvent {
                             Err(e) => {
                                 if e.cause().contains("app.form.not_exist") {
                                     logger::info_con(
-                                        "StockRivenSell",
+                                        &client.get_component("AutoTrade"),
                                         format!("Error deleting auction: {}", e.cause()).as_str(),
                                     );
                                 } else {
@@ -502,7 +503,7 @@ impl OnTradeEvent {
                         Err(e) => {
                             error::create_log_file(
                                 "trade_accepted.log".to_string(),
-                                &AppError::new_db("CreateTransaction", e),
+                                &AppError::new_db(&client.get_component("AutoTrade"), e),
                             );
                         }
                     }
@@ -511,7 +512,7 @@ impl OnTradeEvent {
                 else if created_stock.entity_type == StockType::Riven
                     && trade.trade_type == TradeClassification::Purchase
                 {
-                    logger::info_con("TradeAccepted", "Riven Mod Purchase");
+                    logger::info_con(&client.get_component("AutoTrade"), "Riven Mod Purchase");
                 }
                 // Handle Item Sale
                 else if created_stock.entity_type == StockType::Item
@@ -534,7 +535,7 @@ impl OnTradeEvent {
                                 error::create_log_file(
                                     "trade_accepted.log".to_string(),
                                     &AppError::new_with_level(
-                                        "StockItemSell",
+                                        &client.get_component("AutoTrade"),
                                         eyre!(format!(
                                             "Stock Item not found: {}",
                                             created_stock.raw
@@ -559,7 +560,7 @@ impl OnTradeEvent {
                         Err(e) => {
                             error::create_log_file(
                                 "trade_accepted.log".to_string(),
-                                &AppError::new_db("AddItem", e),
+                                &AppError::new_db(&client.get_component("AutoTrade"), e),
                             );
                         }
                     }
@@ -619,7 +620,7 @@ impl OnTradeEvent {
                         Err(e) => {
                             error::create_log_file(
                                 "trade_accepted.log".to_string(),
-                                &AppError::new_db("CreateTransaction", e),
+                                &AppError::new_db(&client.get_component("AutoTrade"), e),
                             );
                         }
                     }
@@ -645,7 +646,7 @@ impl OnTradeEvent {
                         Err(e) => {
                             error::create_log_file(
                                 "trade_accepted.log".to_string(),
-                                &AppError::new_db("AddItem", e),
+                                &AppError::new_db(&client.get_component("AutoTrade"), e),
                             );
                         }
                     }
@@ -705,7 +706,7 @@ impl OnTradeEvent {
                         Err(e) => {
                             error::create_log_file(
                                 "trade_accepted.log".to_string(),
-                                &AppError::new_db("CreateTransaction", e),
+                                &AppError::new_db(&client.get_component("AutoTrade"), e),
                             );
                         }
                     }

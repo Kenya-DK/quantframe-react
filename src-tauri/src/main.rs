@@ -30,13 +30,13 @@ mod enums;
 mod helper;
 mod http_client;
 mod live_scraper;
+mod log_parser;
 mod notification;
 mod qf_client;
 mod settings;
 mod system_tray;
 mod utils;
 mod wfm_client;
-mod log_parser;
 
 pub static APP: OnceLock<tauri::AppHandle> = OnceLock::new();
 
@@ -53,14 +53,13 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
         db_file_name,
     );
 
-
     // Create a copy of the database file if it exists for backup
     let db_file_path = format!("{}/{}", storage_path.to_str().unwrap(), db_file_name);
     let db_file_path_backup = format!("{}/{}_backup", storage_path.to_str().unwrap(), db_file_name);
     if std::path::Path::new(&db_file_path).exists() {
-        std::fs::copy(&db_file_path, &db_file_path_backup).expect("Failed to create a backup of the database file");
+        std::fs::copy(&db_file_path, &db_file_path_backup)
+            .expect("Failed to create a backup of the database file");
     }
-
 
     // Create the database connection and store it and run the migrations
     let conn = Database::connect(db_url)
@@ -73,8 +72,10 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     app.manage(app_arc.clone());
 
     // Create and manage Notification state
-    let notify_arc: Arc<Mutex<NotifyClient>> =
-        Arc::new(Mutex::new(NotifyClient::new(Arc::clone(&app_arc), app.handle().clone())));
+    let notify_arc: Arc<Mutex<NotifyClient>> = Arc::new(Mutex::new(NotifyClient::new(
+        Arc::clone(&app_arc),
+        app.handle().clone(),
+    )));
     app.manage(notify_arc.clone());
 
     // create and manage Settings state
