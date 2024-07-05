@@ -178,12 +178,6 @@ impl Orders {
         let orders = match order_type {
             OrderType::Sell => &self.sell_orders,
             OrderType::Buy => &self.buy_orders,
-            OrderType::BuySell => {
-                let mut combined_orders = Vec::new();
-                combined_orders.extend_from_slice(&self.sell_orders);
-                combined_orders.extend_from_slice(&self.buy_orders);
-                return combined_orders;
-            }
             _ => return vec![],
         };
         let filtered_orders = orders

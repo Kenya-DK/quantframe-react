@@ -1,6 +1,5 @@
-
 use serde_json::{json, Value};
-use tauri::{Manager};
+use tauri::Manager;
 
 use crate::{
     notification::client::NotifyClient,
@@ -27,9 +26,6 @@ impl GUIModule {
     }
     fn get_component(&self, component: &str) -> String {
         format!("{}:{}:{}", self.client.component, self.component, component)
-    }
-    fn update_state(&self) {
-        self.client.update_gui_module(self.clone());
     }
 
     pub fn send_event(&self, event: UIEvent, data: Option<Value>) {

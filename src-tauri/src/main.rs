@@ -1,4 +1,5 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
+#![allow(non_snake_case)]
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use app::client::AppState;
 use auth::AuthState;
@@ -127,11 +128,7 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     app.manage(Arc::new(Mutex::new(live_scraper)));
 
     // create and manage WhisperScraper state
-    let debug_client = DebugClient::new(
-        Arc::clone(&cache_arc),
-        Arc::clone(&app_arc),
-        Arc::clone(&notify_arc),
-    );
+    let debug_client = DebugClient::new(Arc::clone(&cache_arc), Arc::clone(&notify_arc));
     app.manage(Arc::new(Mutex::new(debug_client)));
 
     let log_parser = LogParser::new(

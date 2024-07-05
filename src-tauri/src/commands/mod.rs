@@ -1,5 +1,4 @@
 pub mod app;
-pub mod base;
 pub mod transaction;
 pub mod auth;
 pub mod cache;

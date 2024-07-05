@@ -42,25 +42,6 @@ impl Default for PlayerTrade {
 }
 
 impl PlayerTrade {
-    pub fn new(
-        player_name: String,
-        trade_time: String,
-        trade_type: TradeClassification,
-        platinum: i64,
-        offered_items: Vec<TradeItem>,
-        received_items: Vec<TradeItem>,
-    ) -> Self {
-        PlayerTrade {
-            player_name,
-            trade_time,
-            trade_type,
-            platinum,
-            offered_items,
-            received_items,
-            file_logs: vec![],
-            logs: vec![],
-        }
-    }
     pub fn get_received_plat(&self) -> i64 {
         self.received_items
             .iter()
@@ -145,11 +126,5 @@ impl TradeItem {
             item_type: source,
             properties,
         }
-    }
-    pub fn display(&self) -> String {
-        format!(
-            "Name: {} | Quantity: {} | Unique Name: {} | Source: {}",
-            self.name, self.quantity, self.unique_name, self.item_type
-        )
     }
 }

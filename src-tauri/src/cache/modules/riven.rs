@@ -18,7 +18,6 @@ use crate::{
 #[derive(Clone, Debug)]
 pub struct RivenModule {
     pub client: CacheClient,
-    debug_id: String,
     component: String,
     path: PathBuf,
     data: CacheRiven,
@@ -28,7 +27,6 @@ impl RivenModule {
     pub fn new(client: CacheClient) -> Self {
         RivenModule {
             client,
-            debug_id: "ch_client_auction".to_string(),
             path: PathBuf::from("riven/rivens.json"),
             data: CacheRiven::new(),
             component: "RivenModule".to_string(),
@@ -104,7 +102,13 @@ impl RivenModule {
         by: &str,
     ) -> Result<Option<CacheRivenWfmAttribute>, AppError> {
         let items = self.data.wfm_attributes.clone();
-        let args = match helper::validate_args(by, vec!["--attribute_by","--attribute_by:upgrades| --weapon_unique --upgrade_by"]) {
+        let args = match helper::validate_args(
+            by,
+            vec![
+                "--attribute_by",
+                "--attribute_by:upgrades| --weapon_unique --upgrade_by",
+            ],
+        ) {
             Ok(args) => args,
             Err(e) => return Err(e),
         };
@@ -124,7 +128,7 @@ impl RivenModule {
                     eyre!("Failed to get weapon upgrades for: {}", unique),
                 ));
             }
-            
+
             let upgrades = upgrades
                 .unwrap()
                 .values()
@@ -147,7 +151,7 @@ impl RivenModule {
                     items.iter().find(|x| x.url_name == upgrade.wfm_id).cloned()
                 }
                 // If not found return an error
-                _=> {
+                _ => {
                     return Err(AppError::new(
                         "find_rive_attribute_by",
                         eyre!("Invalid upgrade_by value: {}", upgrade_by),

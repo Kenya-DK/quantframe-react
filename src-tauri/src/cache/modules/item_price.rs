@@ -14,7 +14,6 @@ use crate::{
 #[derive(Clone, Debug)]
 pub struct ItemPriceModule {
     pub client: CacheClient,
-    debug_id: String,
     component: String,
     json_file: String,
     md5_file: String,
@@ -25,7 +24,6 @@ impl ItemPriceModule {
     pub fn new(client: CacheClient) -> Self {
         ItemPriceModule {
             client,
-            debug_id: "ch_client_item_price".to_string(),
             component: "ItemPrice".to_string(),
             json_file: "item_prices.json".to_string(),
             md5_file: "price_id.txt".to_string(),

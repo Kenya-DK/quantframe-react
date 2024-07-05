@@ -1,22 +1,16 @@
-use std::{clone, collections::HashMap, sync::Mutex};
+use std::collections::HashMap;
 
 use entity::{
-    enums::stock_type::StockType, stock::item::create::CreateStockItem, sub_type::SubType,
-    transaction::transaction::TransactionType,
+    enums::stock_type::StockType, sub_type::SubType, transaction::transaction::TransactionType,
 };
 use eyre::eyre;
-use migration::RcOrArc;
-use reqwest::header::HeaderMap;
+
 use serde_json::{json, Value};
-use service::{
-    sea_orm::ColIdx, StockItemMutation, StockRivenMutation, StockRivenQuery, TransactionMutation,
-};
-use sha256::async_digest;
-use tauri::async_runtime;
+use service::{StockItemMutation, StockRivenMutation, StockRivenQuery, TransactionMutation};
 
 use crate::{
     cache::{client::CacheClient, types::cache_item_component::CacheItemComponent},
-    commands, helper,
+    helper,
     log_parser::{
         client::LogParser,
         enums::trade_classification::TradeClassification,
@@ -26,15 +20,13 @@ use crate::{
             trade_detection::TradeDetection,
         },
     },
-    qf_client::{client::QFClient, types::user::User},
-    settings,
     utils::{
         enums::{
             log_level::LogLevel,
             ui_events::{UIEvent, UIOperationEvent},
         },
         modules::{
-            error::{self, ApiResult, AppError},
+            error::{self, AppError},
             logger,
         },
     },
@@ -372,7 +364,7 @@ impl OnTradeEvent {
             _ => vec![],
         };
 
-        let mut notify_payload = json!({
+        let _notify_payload = json!({
             "trade": trade,
             "status": "accepted",
         });

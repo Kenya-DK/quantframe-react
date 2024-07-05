@@ -81,28 +81,7 @@ impl LiveScraperClient {
             Some(json!(error)),
         );
     }
-    pub fn debug(&self, id: &str, component: &str, msg: &str, file: Option<bool>) {
-        let settings = self.settings.lock().unwrap().clone();
-        if !settings.debug.contains(&"*".to_owned()) && !settings.debug.contains(&id.to_owned()) {
-            return;
-        }
 
-        if file.is_none() {
-            logger::debug(
-                format!("{}:{}", self.component, component).as_str(),
-                msg,
-                true,
-                None,
-            );
-            return;
-        }
-        logger::debug(
-            format!("{}:{}", self.component, component).as_str(),
-            msg,
-            true,
-            Some(&self.log_file),
-        );
-    }
     pub fn stop_loop(&self) {
         self.send_gui_update("idle", None);
         self.is_running.store(false, Ordering::SeqCst);

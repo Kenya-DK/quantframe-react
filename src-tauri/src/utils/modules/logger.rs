@@ -123,9 +123,7 @@ pub fn debug_con(component: &str, msg: &str) {
 pub fn error(component: &str, msg: &str, console: bool, file: Option<&str>) {
     dolog(LogLevel::Error, component, msg, console, file);
 }
-pub fn error_file(component: &str, msg: &str, file: Option<&str>) {
-    error(component, msg, false, file);
-}
+
 pub fn error_con(component: &str, msg: &str) {
     error(component, msg, true, None);
 }

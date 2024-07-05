@@ -1,17 +1,15 @@
 use std::collections::HashMap;
 
-use serde_json::json;
+
 
 use crate::{
     cache::{client::CacheClient, types::cache_item_component::CacheItemComponent},
-    utils::modules::{error::AppError, logger},
+    utils::modules::error::AppError,
 };
 
 #[derive(Clone, Debug)]
 pub struct PartModule {
     pub client: CacheClient,
-    // debug_id: String,
-    component: String,
     pub warframe_parts: HashMap<String, CacheItemComponent>,
     pub weapon_parts: HashMap<String, CacheItemComponent>,
     pub skin_parts: HashMap<String, CacheItemComponent>,
@@ -21,16 +19,12 @@ impl PartModule {
     pub fn new(client: CacheClient) -> Self {
         PartModule {
             client,
-            // debug_id: "ch_client_auction".to_string(),
-            component: "Part".to_string(),
             warframe_parts: HashMap::new(),
             weapon_parts: HashMap::new(),
             skin_parts: HashMap::new(),
         }
     }
-    fn get_component(&self, component: &str) -> String {
-        format!("{}:{}", self.component, component)
-    }
+
     fn update_state(&self) {
         self.client.update_part_module(self.clone());
     }
@@ -76,23 +70,8 @@ impl PartModule {
         }
     }
     fn add_parts(&mut self, category: &str, items: Vec<CacheItemComponent>) {
-        match category {
-            "Warframe" => {
-                for item in items {
-                    self.warframe_parts.insert(item.unique_name.clone(), item);
-                }
-            }
-            "Weapon" => {
-                for item in items {
-                    self.weapon_parts.insert(item.unique_name.clone(), item);
-                }
-            }
-            "Skin" => {
-                for item in items {
-                    self.skin_parts.insert(item.unique_name.clone(), item);
-                }
-            }
-            _ => {}
+        for item in items {
+            self.add_part(category, item);
         }
     }
     pub fn get_part_by_name(

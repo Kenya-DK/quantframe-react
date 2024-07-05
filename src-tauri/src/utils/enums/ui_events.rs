@@ -7,12 +7,10 @@ pub enum UIEvent {
     OnInitialize,
     UpdateSettings,
     UpdateAppInfo,
-    UpdateError,
     UpdateOrders,
     UpdateTransaction,
     UpdateAuction,
     UpdateChats,
-    UpdateChatMessages,
     UpdateStockItems,
     UpdateStockRivens,
     UpdateUser,
@@ -21,7 +19,6 @@ pub enum UIEvent {
     OnLiveTradingMessage,
     // Notification
     OnNotificationError,
-    OnNotificationWarn,
     OnNotificationSuccess,
 }
 impl UIEvent {
@@ -30,12 +27,10 @@ impl UIEvent {
             UIEvent::OnInitialize => "App:OnInitialize",
             UIEvent::UpdateSettings => "App:UpdateSettings",
             UIEvent::UpdateAppInfo => "App:UpdateAppInfo",
-            UIEvent::UpdateError => "App:UpdateError",
             UIEvent::UpdateOrders => "WFM:UpdateOrders",
             UIEvent::UpdateTransaction => "WFM:UpdateTransaction",
             UIEvent::UpdateAuction => "WFM:UpdateAuction",
             UIEvent::UpdateChats => "WFM:UpdateChats",
-            UIEvent::UpdateChatMessages => "WFM:UpdateChatMessages",
             UIEvent::UpdateStockItems => "Stock:UpdateStockItems",
             UIEvent::UpdateStockRivens => "Stock:UpdateStockRivens",
             UIEvent::UpdateUser => "User:Update",
@@ -43,7 +38,6 @@ impl UIEvent {
             UIEvent::OnLiveTradingError => "LiveTrading:OnError",
             UIEvent::OnLiveTradingMessage => "LiveTrading:OnMessage",
             UIEvent::OnNotificationError => "Notification:OnError",
-            UIEvent::OnNotificationWarn => "Notification:OnWarn",
             UIEvent::OnNotificationSuccess => "Notification:OnSuccess",
         }
     }

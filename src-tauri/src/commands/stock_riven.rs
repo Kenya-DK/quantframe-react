@@ -3,7 +3,6 @@ use std::sync::{Arc, Mutex};
 use entity::stock::riven::*;
 use entity::{
     enums::stock_status::StockStatus, sub_type::SubType,
-    transaction::transaction::TransactionItemType,
 };
 
 use eyre::eyre;

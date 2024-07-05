@@ -244,10 +244,6 @@ impl CacheClient {
             .unwrap()
             .clone()
     }
-    pub fn update_item_price_module(&self, module: ItemPriceModule) {
-        // Update the stored ItemModule
-        *self.item_price_module.write().unwrap() = Some(module);
-    }
 
     pub fn riven(&self) -> RivenModule {
         // Lazily initialize ItemModule if not already initialized

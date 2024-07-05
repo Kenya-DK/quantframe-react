@@ -1,8 +1,8 @@
 use std::{collections::HashMap, path::PathBuf};
 
 use eyre::eyre;
-use regex::Regex;
-use serde_json::json;
+
+
 
 use crate::{
     cache::{
@@ -10,19 +10,14 @@ use crate::{
         types::{
             cache_item_component::CacheItemComponent,
             cache_relics::CacheRelics,
-            cache_riven::{
-                CacheRiven, CacheRivenDataByRivenInternalID, CacheRivenWfmAttribute,
-                CacheRivenWfmWeapon, CacheWeaponStat, RivenStat,
-            },
         },
     },
-    helper, logger,
+    helper,
     utils::modules::error::AppError,
 };
 #[derive(Clone, Debug)]
 pub struct RelicsModule {
     pub client: CacheClient,
-    debug_id: String,
     component: String,
     path: PathBuf,
     pub relics: Vec<CacheRelics>,
@@ -33,7 +28,6 @@ impl RelicsModule {
     pub fn new(client: CacheClient) -> Self {
         RelicsModule {
             client,
-            debug_id: "ch_client_auction".to_string(),
             component: "RelicsModule".to_string(),
             relic_drops_real_names: HashMap::new(),
             path: PathBuf::from("item/Relics.json"),
@@ -109,12 +103,6 @@ impl RelicsModule {
         }
         self.update_state();
         Ok(())
-    }
-
-    pub fn get_relic_by_name(&self, name: &str) -> Option<CacheItemComponent> {
-        self.relic_drops_real_names
-            .get(&name.to_lowercase())
-            .cloned()
     }
 
     pub fn get_by(&self, input: &str, by: &str) -> Result<Option<CacheRelics>, AppError> {

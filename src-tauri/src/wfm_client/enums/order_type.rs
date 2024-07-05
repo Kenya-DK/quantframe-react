@@ -6,19 +6,7 @@ use crate::logger;
 pub enum OrderType {
     Buy,
     Sell,
-    BuySell,
     Unknown(String),
-}
-impl OrderType {
-    // Create method to convert `OrderType` to a `&str`
-    pub fn as_str(&self) -> &str {
-        match *self {
-            OrderType::Buy => "buy",
-            OrderType::Sell => "sell",
-            OrderType::BuySell => "buy_sell",
-            OrderType::Unknown(ref i) => i,
-        }
-    }
 }
 
 impl Serialize for OrderType {
@@ -29,7 +17,6 @@ impl Serialize for OrderType {
         let value = match self {
             OrderType::Buy => "buy",
             OrderType::Sell => "sell",
-            OrderType::BuySell => "buy_sell",
             OrderType::Unknown(i) => {
                 logger::critical_file(
                     "OrderType",

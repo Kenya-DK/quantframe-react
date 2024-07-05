@@ -9,17 +9,6 @@ pub enum OrderMode {
     Both,
     Unknown(String),
 }
-impl OrderMode {
-    // Create method to convert `OrderType` to a `&str`
-    pub fn as_str(&self) -> &str {
-        match *self {
-            OrderMode::Buy => "buy",
-            OrderMode::Sell => "sell",
-            OrderMode::Both => "both",
-            OrderMode::Unknown(ref i) => i,
-        }
-    }
-}
 impl Serialize for OrderMode {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where

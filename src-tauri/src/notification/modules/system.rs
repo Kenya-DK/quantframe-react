@@ -5,7 +5,6 @@ use tauri::api::notification::Notification;
 pub struct SystemModule {
     client: NotifyClient,
     pub debug_id: String,
-    component: String,
 }
 
 impl SystemModule {
@@ -13,14 +12,7 @@ impl SystemModule {
         SystemModule {
             client,
             debug_id: "SystemModule".to_string(),
-            component: "SystemNotification".to_string(),
         }
-    }
-    fn get_component(&self, component: &str) -> String {
-        format!("{}:{}:{}", self.client.component, self.component, component)
-    }
-    fn update_state(&self) {
-        self.client.update_system_module(self.clone());
     }
 
     pub fn send_notification(

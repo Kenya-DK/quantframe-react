@@ -6,7 +6,7 @@ use std::{
 use eyre::eyre;
 use reqwest::{Client, Method, Url};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use serde_json::{Value};
+use serde_json::Value;
 
 use crate::{
     app::client::AppState,
@@ -21,7 +21,10 @@ use crate::{
     },
 };
 
-use super::modules::{auth::AuthModule, cache::CacheModule, analytics::AnalyticsModule, price_scraper::PriceScraperModule};
+use super::modules::{
+    analytics::AnalyticsModule, auth::AuthModule, cache::CacheModule,
+    price_scraper::PriceScraperModule,
+};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ByteResponse {
@@ -121,7 +124,10 @@ impl QFClient {
         let new_url = format!("{}{}", self.endpoint, url);
         let request = client
             .request(method.clone(), Url::parse(&new_url).unwrap())
-            .header("Authorization", format!("JWT {}", auth.qf_access_token.unwrap_or("".to_string())))
+            .header(
+                "Authorization",
+                format!("JWT {}", auth.qf_access_token.unwrap_or("".to_string())),
+            )
             .header("App", packageinfo.name.to_string())
             .header("Version", packageinfo.version.to_string())
             .header("UserName", auth.ingame_name)
@@ -249,10 +255,6 @@ impl QFClient {
             .await?)
     }
 
-    pub async fn delete<T: DeserializeOwned>(&self, url: &str) -> Result<ApiResult<T>, AppError> {
-        Ok(self.send_request(Method::DELETE, url, None, false).await?)
-    }
-
     pub async fn put<T: DeserializeOwned>(
         &self,
         url: &str,
@@ -269,10 +271,7 @@ impl QFClient {
         // Unwrapping is safe here because we ensured the cache_module is initialized
         self.cache_module.read().unwrap().as_ref().unwrap().clone()
     }
-    // pub fn update_cache_module(&self, module: CacheModule) {
-    //     // Update the stored CacheModule
-    //     *self.cache_module.write().unwrap() = Some(module);
-    // }
+
     pub fn price(&self) -> PriceScraperModule {
         // Lazily initialize PriceScraperModule if not already initialized
         if self.price_module.read().unwrap().is_none() {
@@ -292,14 +291,20 @@ impl QFClient {
         // Unwrapping is safe here because we ensured the price_module is initialized
         self.auth_module.read().unwrap().as_ref().unwrap().clone()
     }
-    
+
     pub fn analytics(&self) -> AnalyticsModule {
         // Lazily initialize AnalyticsModule if not already initialized
         if self.analytics_module.read().unwrap().is_none() {
-            *self.analytics_module.write().unwrap() = Some(AnalyticsModule::new(self.clone()).clone());
+            *self.analytics_module.write().unwrap() =
+                Some(AnalyticsModule::new(self.clone()).clone());
         }
 
         // Unwrapping is safe here because we ensured the analytics_module is initialized
-        self.analytics_module.read().unwrap().as_ref().unwrap().clone()
+        self.analytics_module
+            .read()
+            .unwrap()
+            .as_ref()
+            .unwrap()
+            .clone()
     }
 }

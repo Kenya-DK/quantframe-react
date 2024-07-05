@@ -1,7 +1,6 @@
 use serde_json::json;
-use tokio::join;
 
-use crate::{helper, notification::client::NotifyClient, utils::modules::logger};
+use crate::{notification::client::NotifyClient, utils::modules::logger};
 
 #[derive(Clone, Debug)]
 pub struct DiscordModule {
@@ -20,9 +19,6 @@ impl DiscordModule {
     }
     fn get_component(&self, component: &str) -> String {
         format!("{}:{}:{}", self.client.component, self.component, component)
-    }
-    fn update_state(&self) {
-        self.client.update_discord_module(self.clone());
     }
     pub fn create_tag_string(&self, tags: Option<Vec<String>>) -> String {
         if tags.is_none() {
@@ -87,5 +83,4 @@ impl DiscordModule {
             }
         });
     }
-   
 }

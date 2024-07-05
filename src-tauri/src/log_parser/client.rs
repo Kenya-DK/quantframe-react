@@ -1,7 +1,7 @@
 use std::{
     fs::File,
     io::{BufRead, BufReader, Seek, SeekFrom},
-    path::{Path, PathBuf},
+    path::PathBuf,
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc, Mutex, RwLock,
@@ -69,13 +69,13 @@ impl LogParser {
             on_conversation_event: Arc::new(RwLock::new(None)),
         }
     }
-    pub fn stop_loop(&self) {
-        self.is_running.store(false, Ordering::SeqCst);
-    }
+    // pub fn stop_loop(&self) {
+    //     self.is_running.store(false, Ordering::SeqCst);
+    // }
 
-    pub fn is_running(&self) -> bool {
-        self.is_running.load(Ordering::SeqCst)
-    }
+    // pub fn is_running(&self) -> bool {
+    //     self.is_running.load(Ordering::SeqCst)
+    // }
     pub fn start_loop(self) -> Result<(), AppError> {
         self.is_running.store(true, Ordering::SeqCst);
         let is_running = Arc::clone(&self.is_running);
@@ -170,7 +170,7 @@ impl LogParser {
         Ok(())
     }
 
-    pub fn get_logs_between(&self, start: u64, end: u64) -> Result<Vec<String>, AppError> {
+    pub fn get_logs_between(&self, start: u64, _end: u64) -> Result<Vec<String>, AppError> {
         let mut file = File::open(&self.log_file).map_err(|e| {
             AppError::new(
                 &self.component,

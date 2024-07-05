@@ -1,19 +1,14 @@
 use eyre::eyre;
-use regex::Regex;
-use reqwest::header::HeaderMap;
-use serde_json::json;
+
+
+
 
 use crate::{
     helper,
     log_parser::client::LogParser,
-    qf_client::{
-        client::QFClient,
-        types::user::{self, User},
-    },
     utils::{
-        enums::log_level::LogLevel,
         modules::{
-            error::{self, ApiResult, AppError},
+            error::{AppError},
             logger,
         },
     },
