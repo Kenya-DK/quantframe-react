@@ -12,6 +12,7 @@ import { EventModule } from './events';
 import { StatisticModule } from './statistic';
 import { CacheModule } from './cache';
 import { ErrOrResult, QfSocketEventOperation } from './types';
+import { LogModule } from './log';
 
 export class TauriClient {
   constructor() {
@@ -29,6 +30,7 @@ export class TauriClient {
     // this.notification = new NotificationModule(this);
     this.statistic = new StatisticModule(this);
     this.cache = new CacheModule(this);
+    this.log = new LogModule(this);
   }
 
 
@@ -86,6 +88,7 @@ export class TauriClient {
   // notification: NotificationModule;
   statistic: StatisticModule;
   cache: CacheModule;
+  log: LogModule;
 }
 
 declare global {

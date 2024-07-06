@@ -2,6 +2,7 @@ import { PaperProps, Container, Tabs } from '@mantine/core';
 import { useTranslateForms } from '@hooks/index';
 import { Settings } from '@api/types';
 import { GeneralPanel } from './Tabs/General';
+import { LogPanel } from './Tabs/Log';
 import { LiveTradingPanel } from './Tabs/LiveTrading';
 import { NotificationPanel } from './Tabs/Notification';
 
@@ -29,6 +30,9 @@ export function SettingsForm({ onSubmit, value }: SettingsFormProps) {
       label: useTranslateTabs("notification.title"), component: <NotificationPanel value={value.notifications} onSubmit={(v) => {
         onSubmit({ ...value, notifications: v })
       }} />, id: "notification"
+    },
+    {
+      label: useTranslateTabs("log.title"), component: <LogPanel />, id: "log"
     },
 
   ];

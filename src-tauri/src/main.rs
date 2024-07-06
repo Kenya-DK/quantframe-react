@@ -208,6 +208,9 @@ fn main() {
             // Debug commands
             commands::debug::debug_db_reset,
             commands::debug::debug_migrate_data_base,
+            // Log commands
+            commands::log::log_open_folder,
+            commands::log::log_export,
             // Auctions commands
             commands::auctions::auction_refresh,
             commands::auctions::auction_delete,

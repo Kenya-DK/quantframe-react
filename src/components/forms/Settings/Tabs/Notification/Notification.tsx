@@ -21,7 +21,7 @@ export const NotificationPanel = ({ value, onSubmit }: NotificationPanelProps) =
     validate: {},
   });
   return (
-    <Box>
+    <Box p={"md"}>
       <form onSubmit={(e) => {
         e.preventDefault();
         if (onSubmit)

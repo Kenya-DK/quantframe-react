@@ -41,6 +41,16 @@ pub fn get_local_data_path() -> PathBuf {
     local_path
 }
 
+pub fn get_desktop_path() -> PathBuf {
+    let desktop_path = match tauri::api::path::desktop_dir() {
+        Some(val) => val,
+        None => {
+            panic!("Could not find desktop path");
+        }
+    };
+    desktop_path
+}
+
 pub fn match_pattern(
     input: &str,
     regex: Vec<String>,

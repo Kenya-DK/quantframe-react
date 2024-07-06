@@ -229,6 +229,17 @@ export const en = {
           notification: {
             title: "Notification",
           },
+          log: {
+            title: "Log",
+            buttons: {
+              open: {
+                label: "Open Log Folder",
+              },
+              export: {
+                label: "Export Logs",
+              },
+            },
+          },
         }
       },
       update_stock_riven: {
