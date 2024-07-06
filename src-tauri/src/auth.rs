@@ -59,6 +59,9 @@ impl Default for AuthState {
     }
 }
 impl AuthState {
+    pub fn is_logged_in(&self) -> bool {
+        !self.anonymous && self.verification && !self.wfm_banned && !self.qf_banned
+    }
     fn get_file_path() -> PathBuf {
         let app_path = helper::get_app_storage_path();
         let auth_path = app_path.join("auth.json");

@@ -70,7 +70,7 @@ impl AuctionModule {
         ingame_name: &str,
     ) -> Result<Vec<Auction<String>>, AppError> {
         let url = format!("profile/{}/auctions", ingame_name);
-
+        self.client.auth().is_logged_in()?;
         match self
             .client
             .get::<Vec<Auction<String>>>(&url, Some("auctions"))
@@ -104,6 +104,7 @@ impl AuctionModule {
     }
 
     pub async fn get_my_auctions(&mut self) -> Result<Vec<Auction<String>>, AppError> {
+        self.client.auth().is_logged_in()?;
         let auth = self.client.auth.lock()?.clone();
         let auctions = self.get_user_auctions(auth.ingame_name.as_str()).await?;
         Ok(auctions)
@@ -137,6 +138,7 @@ impl AuctionModule {
         private: bool,
         item: AuctionItem,
     ) -> Result<Auction<String>, AppError> {
+        self.client.auth().is_logged_in()?;
         // Construct any JSON body
         let mut body = json!({
             "note": note,
@@ -209,6 +211,7 @@ impl AuctionModule {
         starting_price: i32,
         visible: bool,
     ) -> Result<Auction<String>, AppError> {
+        self.client.auth().is_logged_in()?;
         // Construct any JSON body
         let body = json!({
             "buyout_price": buyout_price,
@@ -402,7 +405,8 @@ impl AuctionModule {
     }
     pub async fn delete(&mut self, auction_id: &str) -> Result<Option<String>, AppError> {
         let url = format!("auctions/entry/{}/close", auction_id);
-
+        
+        self.client.auth().is_logged_in()?;
         match self.client.put(&url, Some("auction_id"), None).await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.subtract_auction_count(1)?;

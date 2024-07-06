@@ -31,6 +31,19 @@ impl AuthModule {
     fn get_component(&self, component: &str) -> String {
         format!("{}:{}:{}", self.client.component, self.component, component)
     }
+
+    pub fn is_logged_in(&self) -> Result<(), AppError> {
+        let auth = self.client.auth.lock().unwrap();
+        if !auth.is_logged_in() {
+            return Err(AppError::new_with_level(
+                &self.get_component("IsLoggedIn"),
+                eyre!("User is not logged in"),
+                LogLevel::Error,
+            ));
+        }
+        Ok(())
+    }
+
     pub async fn me(&self) -> Result<UserProfile, AppError> {
         match self
             .client

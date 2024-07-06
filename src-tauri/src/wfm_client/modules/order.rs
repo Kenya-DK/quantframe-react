@@ -173,6 +173,7 @@ impl OrderModule {
         visible: bool,
         sub_type: Option<SubType>,
     ) -> Result<(String, Option<Order>), AppError> {
+        self.client.auth().is_logged_in()?;
         let auth = self.client.auth.lock()?.clone();
         let limit = auth.order_limit;
 
@@ -259,6 +260,7 @@ impl OrderModule {
 
     pub async fn delete(&mut self, order_id: &str) -> Result<String, AppError> {
         let url = format!("profile/orders/{}", order_id);
+        self.client.auth().is_logged_in()?;
         match self.client.delete(&url, Some("order_id")).await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.subtract_order_count(1)?;
@@ -308,6 +310,7 @@ impl OrderModule {
             "visible": visible
         });
         let url = format!("profile/orders/{}", order_id);
+        self.client.auth().is_logged_in()?;
         match self
             .client
             .put::<Order>(&url, Some("order"), Some(body))
@@ -351,30 +354,35 @@ impl OrderModule {
 
     pub async fn close(&mut self, id: &str) -> Result<bool, AppError> {
         let url = format!("profile/orders/close/{}", id);
+        self.client.auth().is_logged_in()?;
 
-            match self.client.put::<serde_json::Value>(&url, Some("order"), None).await {
-                Ok(ApiResult::Success(_payload, _headers)) => {
-                    self.subtract_order_count(1)?;                    
-                    return Ok(true);
-                }
-                Ok(ApiResult::Error(error, _headers)) => {
-                    let log_level = match error.messages.get(0) {
-                        Some(message) if message.contains("app.close_order.order_not_exist") => {
-                            LogLevel::Warning
-                        }
-                        _ => LogLevel::Error,
-                    };
-                    return Err(self.client.create_api_error(
-                        &self.get_component("Close"),
-                        error,
-                        eyre!("There was an error closing order {}", id),
-                        log_level,
-                    ));
-                }
-                Err(err) => {
-                    return Err(err);
-                }
-            };
+        match self
+            .client
+            .put::<serde_json::Value>(&url, Some("order"), None)
+            .await
+        {
+            Ok(ApiResult::Success(_payload, _headers)) => {
+                self.subtract_order_count(1)?;
+                return Ok(true);
+            }
+            Ok(ApiResult::Error(error, _headers)) => {
+                let log_level = match error.messages.get(0) {
+                    Some(message) if message.contains("app.close_order.order_not_exist") => {
+                        LogLevel::Warning
+                    }
+                    _ => LogLevel::Error,
+                };
+                return Err(self.client.create_api_error(
+                    &self.get_component("Close"),
+                    error,
+                    eyre!("There was an error closing order {}", id),
+                    log_level,
+                ));
+            }
+            Err(err) => {
+                return Err(err);
+            }
+        };
     }
     // End Actions User Order
 

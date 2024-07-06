@@ -26,7 +26,6 @@ export function LogInForm(props: LogInFormProps) {
       password: '',
       terms: true,
     },
-
     validate: {
       email: (val) => (/^\S+@\S+$/.test(val) ? null : 'Invalid email'),
     },

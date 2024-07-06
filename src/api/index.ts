@@ -94,6 +94,7 @@ export class TauriClient {
 declare global {
   interface Window {
     api: TauriClient;
+    data: any;
   }
 }
 

@@ -53,7 +53,7 @@ export function UserMenu() {
 						<Indicator
 							inline size={16} offset={7} position="bottom-start" withBorder
 							classNames={classes}
-							disabled={!user}
+							disabled={(!user || user?.anonymous || !isConnected)}
 							data-user-status={user?.status || UserStatus.Invisible}
 						>
 							<Avatar
@@ -73,20 +73,24 @@ export function UserMenu() {
 			</Menu.Target>
 
 			<Menu.Dropdown>
-				<Menu.Item leftSection={<Avatar variant="subtle" src={WFMThumbnail(user?.avatar || "")} alt={user?.ingame_name} radius="xl" size={"md"} />}>
-					{user?.ingame_name || "Unknown"}
-				</Menu.Item>
-				<Menu.Divider />
-				<Group gap={3} mt="xs" classNames={{ root: classes.user_status }}>
-					{Object.values(UserStatus).map((status) => (
-						<Button key={status} p={3} fullWidth variant="subtle" data-active={status == user?.status} onClick={() => api.auth.update_status(status)}>
-							<Text tt="uppercase" data-color-mode='text' data-user-status={status} fw={500}>
-								{useTranslateUserStatus(status)}
-							</Text>
-						</Button>
-					))}
-				</Group>
-				<Menu.Divider />
+				{(isConnected && !inErrorState && user && !user.anonymous) && (
+					<>
+						<Menu.Item leftSection={<Avatar variant="subtle" src={WFMThumbnail(user?.avatar || "")} alt={user?.ingame_name} radius="xl" size={"md"} />}>
+							{user?.ingame_name || "Unknown"}
+						</Menu.Item>
+						<Menu.Divider />
+						<Group gap={3} mt="xs" classNames={{ root: classes.user_status }}>
+							{Object.values(UserStatus).map((status) => (
+								<Button key={status} p={3} fullWidth variant="subtle" data-active={status == user?.status} onClick={() => api.auth.update_status(status)}>
+									<Text tt="uppercase" data-color-mode='text' data-user-status={status} fw={500}>
+										{useTranslateUserStatus(status)}
+									</Text>
+								</Button>
+							))}
+						</Group>
+						<Menu.Divider />
+					</>
+				)}
 				<Menu.Label>{useTranslateUserMenu("items.app_label")}</Menu.Label>
 				<Menu.Item leftSection={<FontAwesomeIcon icon={faGear} />} onClick={() => {
 					if (!settings) return;

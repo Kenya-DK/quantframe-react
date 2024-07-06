@@ -1,11 +1,8 @@
 use std::sync::{Arc, Mutex};
 
-
-
-
 use crate::{
-    auth::{AuthState},
-    qf_client::{client::QFClient},
+    auth::AuthState,
+    qf_client::client::QFClient,
     utils::modules::error::{self, AppError, ErrorApiResponse},
     wfm_client::client::WFMClient,
 };
@@ -20,16 +17,16 @@ pub async fn auth_login(
 ) -> Result<AuthState, AppError> {
     let wfm = wfm.lock().expect("Could not lock wfm").clone();
     let qf = qf.lock().expect("Could not lock qf").clone();
-    let mut auth_state = auth.lock()?.clone();
+    let auth_state = auth.lock()?.clone();
     // Login to Warframe Market
     let (wfm_user, wfm_token) = match wfm.auth().login(&email, &password).await {
         Ok((user, token)) => (user, token),
         Err(e) => {
+            println!("{:?}", e);
             error::create_log_file("auth_login.log".to_string(), &e);
             return Err(e);
         }
     };
-    auth_state.update_from_wfm_user_profile(&wfm_user, None);
 
     if wfm_user.anonymous || wfm_user.banned || !wfm_user.verification {
         return Ok(auth_state);
@@ -74,10 +71,10 @@ pub async fn auth_login(
     }
     let arced_mutex = Arc::clone(&auth);
     let mut auth = arced_mutex.lock().expect("Could not lock auth");
-    auth.update_from_wfm_user_profile(&wfm_user, wfm_token);
+    auth.update_from_wfm_user_profile(&wfm_user, wfm_token.clone());
     auth.update_from_qf_user_profile(&qf_user.unwrap(), qf_token);
     auth.save_to_file()?;
-    Ok(auth_state)
+    Ok(auth.clone())
 }
 
 #[tauri::command]

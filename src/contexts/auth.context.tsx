@@ -21,6 +21,7 @@ export function AuthContextProvider({ children }: TauriContextProviderProps) {
 
   // Handle update, create, delete transaction
   const handleUpdateUser = (operation: string, data: User) => {
+    window.data = data;
     switch (operation) {
       case QfSocketEventOperation.CREATE_OR_UPDATE:
         setUser((user) => ({ ...user, ...data }));

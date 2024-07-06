@@ -6,11 +6,11 @@ import { notifications } from "@mantine/notifications";
 import { useTranslatePages } from "@hooks/index";
 import { QfSocketEvent, QfSocketEventOperation, ResponseError } from "@api/types";
 import { useState } from "react";
+import { wfmSocket } from "../../models";
 
 export default function LoginPage() {
   // States
   // const navigate = useNavigate();
-  const [is_loading, setIsLoading] = useState(false);
   const [interval, setInterval] = useState(0);
   const [progressText, setProgressText] = useState("")
 
@@ -20,12 +20,9 @@ export default function LoginPage() {
   const useTranslateSuccess = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePage(`success.${key}`, { ...context }, i18Key)
   const useTranslateProgress = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePage(`progress.${key}`, { ...context }, i18Key)
 
-
-
   // Mutations
   const logInMutation = useMutation({
     mutationFn: (data: { email: string; password: string }) => {
-      setIsLoading(true);
       setInterval(0);
       setProgressText(useTranslateProgress("logging_in"));
       return api.auth.login(data.email, data.password)
@@ -61,9 +58,10 @@ export default function LoginPage() {
       setProgressText(useTranslateProgress("login.progress_text_4"));
       setInterval(8);
       SendTauriDataEvent(QfSocketEvent.UpdateUser, QfSocketEventOperation.SET, u);
-      // navigate('/')
+      if (u.wfm_access_token)
+        wfmSocket.updateToken(u.wfm_access_token);
     },
-    onError: ([err]: [ResponseError, null]) => {
+    onError: (err: ResponseError) => {
       console.error(err);
       const { ApiError }: { ApiError: { messages: string[] } } = err.extra_data as any;
       if (ApiError.messages.some((m) => m.includes("app.account.email_not_exist")))
@@ -77,13 +75,17 @@ export default function LoginPage() {
 
   return (
     <Center w={"100%"} h={"92vh"}>
-      <LogInForm is_loading={is_loading} onSubmit={(d: { email: string; password: string }) => logInMutation.mutate(d)} footerContent={is_loading ?
-        <Progress.Root size="xl">
-          <Progress.Section value={interval / 8 * 100} >
-            <Progress.Label>{progressText}</Progress.Label>
-          </Progress.Section>
-        </Progress.Root>
-        : null} />
+      <LogInForm is_loading={logInMutation.isPending} onSubmit={(d: { email: string; password: string }) => logInMutation.mutate(d)} footerContent={
+        <>
+          {logInMutation.isPending && (
+            <Progress.Root size="xl">
+              <Progress.Section value={interval / 8 * 100} >
+                <Progress.Label>{progressText}</Progress.Label>
+              </Progress.Section>
+            </Progress.Root>
+          )}
+        </>}
+      />
     </Center>
   );
 }
