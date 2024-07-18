@@ -12,6 +12,42 @@ export const en = {
         message: "An error occurred in {{component}} at {{backtrace}} see logs for more information.",
       },
     },
+    on_trade_event: {
+      success: {
+        riven: {
+          title: "Trade with {{player_name}} complete",
+          message: "x{{quantity}} {{item_name}}",
+        },
+        item: {
+          title: "Trade with {{player_name}} complete",
+          message: "x{{quantity}} {{item_name}} Order:{{order}} Stock:{{stock}} Transaction:{{transaction}}",
+        },
+      },
+      warning: {
+        riven: {
+          title: "Trade Warning",
+          message: "⚠️ Trade was not processed.",
+        },
+        item: {
+          title: "Trade Warning",
+          message: "⚠️ Trade was not processed.",
+        },
+        created_stock: {
+          title: "Trade Warning",
+          message: "⚠️ Trade was not processed.",
+        }
+      },
+      error: {
+        item: {
+          title: "Trade Error",
+          message: "An error occurred while trying to trade item {{name}}.",
+        },
+        riven: {
+          title: "Trade Error",
+          message: "An error occurred while trying to trade riven {{name}}.",
+        },
+      },
+    },
   },
   enums: {
     transaction_type: {

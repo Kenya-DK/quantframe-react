@@ -7,11 +7,10 @@ use crate::{
     cache::{
         client::CacheClient,
         types::{
-            cache_riven::{
+            cache_relics::CacheRelics, cache_riven::{
                 CacheRivenDataByRivenInternalID, CacheRivenWfmAttribute, CacheRivenWfmWeapon,
                 CacheWeaponStat, RivenStat,
-            },
-            cache_tradable_item::CacheTradableItem,
+            }, cache_tradable_item::CacheTradableItem
         },
     },
     utils::modules::error::{self, AppError},
@@ -126,14 +125,30 @@ pub fn cache_get_weapon_upgrades(
     }
 }
 
+// #[tauri::command]
+// pub fn cache_get_tradable_item(
+//     input: String,
+//     by: String,
+//     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
+// ) -> Result<Option<CacheTradableItem>, AppError> {
+//     let cache = cache.lock()?.clone();
+//     match cache.tradable_items().get_by(&input, &by) {
+//         Ok(item) => {
+//             return Ok(item);
+//         }
+//         Err(e) => {
+//             return Err(e);
+//         }
+//     }
+// }
 #[tauri::command]
 pub fn cache_get_tradable_item(
     input: String,
     by: String,
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
-) -> Result<Option<CacheTradableItem>, AppError> {
+) -> Result<Option<CacheRelics>, AppError> {
     let cache = cache.lock()?.clone();
-    match cache.tradable_items().get_by(&input, &by) {
+    match cache.relics().get_by(&input, &by) {
         Ok(item) => {
             return Ok(item);
         }

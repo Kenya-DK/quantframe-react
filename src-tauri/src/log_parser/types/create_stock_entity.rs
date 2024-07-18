@@ -258,4 +258,32 @@ impl CreateStockEntity {
             )),
         }
     }
+    pub fn get_name(&self) -> Result<String, AppError> {
+        if !self.is_validated {
+            return Err(AppError::new(
+                "GetEntityName",
+                eyre::eyre!("Entity is not validated"),
+            ));
+        }
+
+        match self.entity_type {
+            StockType::Item => {     
+                let name = match self.sub_type.as_ref() {
+                    Some(sub_type) => {
+                        format!("{} ({})", self.name.clone(), sub_type.shot_display())
+                    }
+                    None => self.name.clone(),                    
+                };           
+                Ok(name)
+            }
+            StockType::Riven => {
+                Ok(self.name.clone() +" "+ &self.mod_name.clone())
+            }
+            _ => Err(AppError::new(
+                "CreateTransaction",
+                eyre::eyre!("Invalid entity type: {}", self.entity_type.as_str()),
+            )),
+        }
+    }
+
 }

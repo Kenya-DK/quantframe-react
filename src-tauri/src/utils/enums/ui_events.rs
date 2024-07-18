@@ -19,6 +19,7 @@ pub enum UIEvent {
     OnLiveTradingMessage,
     // Notification
     OnNotificationError,
+    OnNotificationWarning,
     OnNotificationSuccess,
 }
 impl UIEvent {
@@ -38,6 +39,7 @@ impl UIEvent {
             UIEvent::OnLiveTradingError => "LiveTrading:OnError",
             UIEvent::OnLiveTradingMessage => "LiveTrading:OnMessage",
             UIEvent::OnNotificationError => "Notification:OnError",
+            UIEvent::OnNotificationWarning => "Notification:OnWarning",
             UIEvent::OnNotificationSuccess => "Notification:OnSuccess",
         }
     }

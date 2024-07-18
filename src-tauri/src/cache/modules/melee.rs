@@ -74,14 +74,14 @@ impl MeleeModule {
             Err(e) => return Err(e),            
         };
         let mode = args.get("--item_by").unwrap();
-        let case_insensitive = args.get("--case_insensitive").is_some();
+        let case_insensitive = args.get("--ignore_case").is_some();
         // let lang = args.get("--item_lang").unwrap_or(&"en".to_string());
         let remove_string = args.get("--remove_string");
 
         let item = if mode == "name" {            
-            items.iter().find(|x| helper::create_key(&x.name, case_insensitive, remove_string) == input).cloned()
+            items.iter().find(|x| helper::is_match(&x.name,input, case_insensitive, remove_string)).cloned()
         } else if mode == "unique_name" {
-            items.iter().find(|x| helper::create_key(&x.unique_name, case_insensitive, remove_string) == input).cloned()
+            items.iter().find(|x| helper::is_match(&x.unique_name,input, case_insensitive, remove_string)).cloned()
         } else {
             return Err(AppError::new(&self.get_component("GetBy"), eyre!("Invalid by value: {}", by)));
         };

@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import api, { OnTauriDataEvent, OnTauriEvent } from "@api/index";
 import { useTranslateContexts, useTranslateNotifications } from "@hooks/index";
 import { notifications } from "@mantine/notifications";
-import { Button, Group, Text } from "@mantine/core";
+import { Box, Button, Group, Text } from "@mantine/core";
 import {
   checkUpdate, installUpdate,
   // installUpdate,
@@ -13,6 +13,7 @@ import { relaunch } from "@tauri-apps/api/process";
 import { AppInfo, QfSocketEvent, QfSocketEventOperation, ResponseError, Settings } from "@api/types";
 import { AuthContextProvider } from "./auth.context";
 import { SplashScreen } from "../components/SplashScreen";
+import { TextTranslate } from "../components";
 
 
 type NotificationPayload = {
@@ -124,8 +125,10 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
   }
   const handleNotification = (payload: NotificationPayload, color: string) => {
     notifications.show({
-      title: useTranslateNotifications(payload.i18n_key_title),
-      message: useTranslateNotifications(payload.i18n_key_message, payload.values),
+      title: useTranslateNotifications(payload.i18n_key_title, payload.values),
+      message: <Box>
+        <TextTranslate i18nKey={useTranslateNotifications(payload.i18n_key_message, undefined, true)} values={payload.values} />
+      </Box>,
       color: color,
     });
   }
@@ -135,7 +138,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     OnTauriDataEvent<AppInfo>(QfSocketEvent.UpdateAppInfo, ({ data, operation }) => handleUpdateAppInfo(operation, data));
     OnTauriEvent<ResponseError>(QfSocketEvent.UpdateAppError, (data) => setAppError(data));
     OnTauriEvent<NotificationPayload>(QfSocketEvent.OnNotificationError, (data) => handleNotification(data, 'red.7'));
-    OnTauriEvent<NotificationPayload>(QfSocketEvent.OnNotificationWarn, (data) => handleNotification(data, 'yellow.7'));
+    OnTauriEvent<NotificationPayload>(QfSocketEvent.OnNotificationWarning, (data) => handleNotification(data, 'yellow.7'));
     OnTauriEvent<NotificationPayload>(QfSocketEvent.OnNotificationSuccess, (data) => handleNotification(data, 'green.7'));
     return () => { }
   }, []);

@@ -5,6 +5,7 @@ use entity::{
 };
 use eyre::eyre;
 
+use migration::value;
 use serde_json::{json, Value};
 use service::{StockItemMutation, StockRivenMutation, StockRivenQuery, TransactionMutation};
 
@@ -80,15 +81,24 @@ impl OnTradeEvent {
     fn update_state(&self) {
         self.client.update_trade_event(self.clone());
     }
+    fn debug(&self, message: &str) {
+        logger::debug_file(
+            &self.get_component("Debug"),
+            message,
+            Some("on_trade_event.log"),
+        );
+    }
     pub fn process_line(&mut self, line: &str, pos: u64) -> Result<bool, AppError> {
         while self.getting_trade_message_multiline {
+            // Check if the line is the end of the trade
             if line.contains("[Info]") || line.contains("[Error]") || line.contains("[Warning]") {
-                self.end_pos = pos;
                 self.getting_trade_message_multiline = false;
                 self.trade_finished();
                 self.waiting_confirmation = true;
+                self.debug(format!("Trade finished: {}", line).as_str());
                 self.update_state();
             } else {
+                self.debug(format!("Getting trade message: {}", line).as_str());
                 self.add_trade_message(line);
                 return Ok(true);
             }
@@ -98,6 +108,7 @@ impl OnTradeEvent {
             && self.is_beginning_of_trade(line)
         {
             self.trade_started(line);
+            self.debug(format!("Trade started: {}", line).as_str());
             self.start_pos = pos;
             if line
                 .contains(", leftItem=/Menu/Confirm_Item_Ok, rightItem=/Menu/Confirm_Item_Cancel)")
@@ -113,7 +124,9 @@ impl OnTradeEvent {
         else if self.waiting_confirmation
             && line.contains("[Info]: Dialog.lua: Dialog::CreateOk(description=")
         {
+            self.end_pos = pos;
             if self.was_trade_successful(line) {
+                self.debug(format!("Trade successful: {}", line).as_str());
                 match self.trade_accepted() {
                     Ok(_) => {}
                     Err(e) => {
@@ -121,8 +134,10 @@ impl OnTradeEvent {
                     }
                 }
             } else if self.was_trade_failed(line) {
+                self.debug(format!("Trade failed: {}", line).as_str());
                 self.trade_failed();
             } else if self.was_trade_cancelled(line) {
+                self.debug(format!("Trade cancelled: {}", line).as_str());
                 self.trade_cancelled();
             }
             self.reset();
@@ -348,6 +363,7 @@ impl OnTradeEvent {
     }
     pub fn trade_accepted(&self) -> Result<(), AppError> {
         let file_path = "tradings.json";
+        let gui_id = "on_trade_event";
         let settings = self.client.settings.lock().unwrap().clone();
         let notify_user = settings.notifications.on_new_trade;
         let auto_trade = settings.live_scraper.stock_item.auto_trade;
@@ -357,6 +373,12 @@ impl OnTradeEvent {
         let wfm = self.client.wfm.lock()?.clone();
         let app = self.client.app.lock()?.clone();
 
+        // If the trade is not a sale or purchase, return
+        if trade.trade_type == TradeClassification::Trade {
+            logger::info_con(&self.get_component("TradeAccepted"), &trade.display());
+            return Ok(());
+        }
+
         // Get Trade Items
         let items = match trade.trade_type {
             TradeClassification::Sale => trade.offered_items.clone(),
@@ -364,30 +386,56 @@ impl OnTradeEvent {
             _ => vec![],
         };
 
-        let _notify_payload = json!({
-            "trade": trade,
-            "status": "accepted",
-        });
+    // Set Notification's Data    
+    let mut notify_type = "success";
+    let mut notify_payload = json!({
+        "i18n_key_title": "",
+        "i18n_key_message": "",
+    });
+    let mut notify_value = json!({
+        "player_name": trade.player_name,
+        "trade_type": trade.trade_type,
+        "platinum": trade.platinum,
+        "order": "❔",
+        "auction": "❔",
+        "stock": "❔",
+        "order": "❔",
+    });
 
+        // Append the trade to the file
+        // match self.append_to_file(file_path, trade.clone()) {
+        //     Ok(_) => {}
+        //     Err(err) => {
+        //         error::create_log_file("append_to_file.log".to_string(), &err);
+        //     }
+        // }
         // Validate the items
         let created_stock = match self.get_stock_item(&cache, items, trade.platinum) {
             Ok(item) => item,
             Err(err) => {
-                match self.append_to_file(file_path, trade.clone()) {
-                    Ok(_) => {}
-                    Err(err) => {
-                        error::create_log_file("append_to_file.log".to_string(), &err);
-                    }
-                }
+                notify_payload["i18n_key_title"] =
+                    format!("{}.warning.created_stock.title", gui_id).into();
+                notify_payload["i18n_key_message"] =
+                    format!("{}.warning.created_stock.message", gui_id).into();
+                notify
+                    .gui()
+                    .send_event(UIEvent::OnNotificationWarning, Some(notify_payload));
                 return Err(err);
             }
         };
-        match self.append_to_file(file_path, trade.clone()) {
-            Ok(_) => {}
-            Err(err) => {
-                error::create_log_file("append_to_file.log".to_string(), &err);
-            }
-        }
+
+       // Set Item Name
+        notify_value["item_name"] = json!(created_stock.get_name()?);
+        notify_value["quantity"] = json!(created_stock.quantity);
+        let notify_entity = match created_stock.entity_type {
+            StockType::Item => "item",
+            StockType::Riven => "riven",
+            _ => "",
+        };
+        
+
+        notify_payload["i18n_key_title"] = format!("{}.{}.{}.title", gui_id, notify_type, notify_entity).into();
+        notify_payload["i18n_key_message"] = format!("{}.{}.{}.message", gui_id, notify_type, notify_entity).into();
 
         let content = notify_user
             .content
@@ -415,6 +463,9 @@ impl OnTradeEvent {
                     {
                         Ok(stock_riven) => stock_riven,
                         Err(e) => {
+                            notify
+                                .gui()
+                                .send_event(UIEvent::OnNotificationWarning, Some(notify_payload.clone()));
                             error::create_log_file(
                                 "trade_accepted.log".to_string(),
                                 &AppError::new_db(&client.get_component("AutoTrade"), e),
@@ -423,12 +474,11 @@ impl OnTradeEvent {
                         }
                     };
                     if stock.is_none() {
-                        logger::warning_con(
-                            &client.get_component("AutoTrade"),
-                            &format!(
-                                "Riven Mod not found: {} {}",
-                                created_stock.wfm_url, created_stock.mod_name
-                            ),
+                        notify_value["stock"] = json!("⚠️");
+                        notify_payload["values"] = notify_value;
+                        notify.gui().send_event(
+                            UIEvent::OnNotificationWarning,
+                            Some(json!(created_stock)),
                         );
                         return;
                     }
@@ -442,8 +492,10 @@ impl OnTradeEvent {
                                 UIOperationEvent::Delete,
                                 Some(json!({ "id": stock.id })),
                             );
+                            notify_value["stock"] = json!("✅");
                         }
                         Err(e) => {
+                            notify_value["stock"] = json!("❌");
                             error::create_log_file(
                                 "trade_accepted.log".to_string(),
                                 &AppError::new_db(&client.get_component("AutoTrade"), e),
@@ -465,19 +517,28 @@ impl OnTradeEvent {
                                         UIOperationEvent::Delete,
                                         Some(json!({ "id": stock.wfm_order_id.clone().unwrap() })),
                                     );
+                                    notify_value["auction"] = json!("✅");
+                                } else {
+                                    notify_value["auction"] = json!("⚠️");
+                                    notify_type = "warning";
                                 }
                             }
                             Err(e) => {
                                 if e.cause().contains("app.form.not_exist") {
+                                    notify_value["auction"] = json!("⚠️");
+                                    notify_type = "warning";
                                     logger::info_con(
                                         &client.get_component("AutoTrade"),
                                         format!("Error deleting auction: {}", e.cause()).as_str(),
                                     );
                                 } else {
                                     error::create_log_file("trade_accepted.log".to_string(), &e);
+                                    notify_value["auction"] = json!("❌");
+                                    notify_type = "error";
                                 }
                             }
                         }
+                    } else {
                     }
                     let transaction = stock.to_transaction(
                         &trade.player_name,
@@ -486,6 +547,7 @@ impl OnTradeEvent {
                     );
                     match TransactionMutation::create(&app.conn, transaction).await {
                         Ok(inserted) => {
+                            notify_value["transaction"] = json!("✅");
                             notify.gui().send_event_update(
                                 UIEvent::UpdateTransaction,
                                 UIOperationEvent::CreateOrUpdate,
@@ -493,6 +555,8 @@ impl OnTradeEvent {
                             );
                         }
                         Err(e) => {
+                            notify_value["transaction"] = json!("❌");
+                            notify_type = "error";
                             error::create_log_file(
                                 "trade_accepted.log".to_string(),
                                 &AppError::new_db(&client.get_component("AutoTrade"), e),
@@ -524,24 +588,17 @@ impl OnTradeEvent {
                     {
                         Ok((operation, order)) => {
                             if operation == "Item not found" {
-                                error::create_log_file(
-                                    "trade_accepted.log".to_string(),
-                                    &AppError::new_with_level(
-                                        &client.get_component("AutoTrade"),
-                                        eyre!(format!(
-                                            "Stock Item not found: {}",
-                                            created_stock.raw
-                                        )),
-                                        LogLevel::Warning,
-                                    ),
-                                );
+                                notify_type = "warning";
+                                notify_value["stock"] = json!("⚠️");
                             } else if operation == "Item deleted" {
+                                notify_value["stock"] = json!("✅");
                                 notify.gui().send_event_update(
                                     UIEvent::UpdateStockItems,
                                     UIOperationEvent::Delete,
                                     Some(json!({ "id": order.unwrap().id })),
                                 );
                             } else if operation == "Item updated" {
+                                notify_value["stock"] = json!("✅");
                                 notify.gui().send_event_update(
                                     UIEvent::UpdateStockItems,
                                     UIOperationEvent::CreateOrUpdate,
@@ -550,6 +607,8 @@ impl OnTradeEvent {
                             }
                         }
                         Err(e) => {
+                            notify_value["stock"] = json!("❌");
+                            notify_type = "error";
                             error::create_log_file(
                                 "trade_accepted.log".to_string(),
                                 &AppError::new_db(&client.get_component("AutoTrade"), e),
@@ -571,20 +630,27 @@ impl OnTradeEvent {
                     {
                         Ok((operation, order)) => {
                             if operation == "order_deleted" {
+                                notify_value["order"] = json!("✅");                                
                                 notify.gui().send_event_update(
                                     UIEvent::UpdateOrders,
                                     UIOperationEvent::Delete,
                                     Some(json!({ "id": order.unwrap().id })),
                                 );
                             } else if operation == "order_updated" {
+                                notify_value["order"] = json!("✅");
                                 notify.gui().send_event_update(
                                     UIEvent::UpdateOrders,
                                     UIOperationEvent::CreateOrUpdate,
                                     Some(json!(order)),
-                                );
+                                );                            
+                            } else if operation == "order_not_found" {
+                                notify_value["order"] = json!("⚠️");
+                                notify_type = "warning";
                             }
                         }
                         Err(e) => {
+                            notify_value["order"] = json!("❌");
+                            notify_type = "error";
                             error::create_log_file("trade_accepted.log".to_string(), &e);
                         }
                     }
@@ -603,6 +669,7 @@ impl OnTradeEvent {
                     .await
                     {
                         Ok(inserted) => {
+                            notify_value["transaction"] = json!("✅");
                             notify.gui().send_event_update(
                                 UIEvent::UpdateTransaction,
                                 UIOperationEvent::CreateOrUpdate,
@@ -610,6 +677,8 @@ impl OnTradeEvent {
                             );
                         }
                         Err(e) => {
+                            notify_value["transaction"] = json!("❌");
+                            notify_type = "error";
                             error::create_log_file(
                                 "trade_accepted.log".to_string(),
                                 &AppError::new_db(&client.get_component("AutoTrade"), e),
@@ -629,6 +698,8 @@ impl OnTradeEvent {
                         .await
                     {
                         Ok(inserted) => {
+                            notify_value["stock"] = json!("✅");
+
                             notify.gui().send_event_update(
                                 UIEvent::UpdateStockItems,
                                 UIOperationEvent::CreateOrUpdate,
@@ -636,6 +707,8 @@ impl OnTradeEvent {
                             );
                         }
                         Err(e) => {
+                            notify_value["stock"] = json!("❌");
+                            notify_type = "error";
                             error::create_log_file(
                                 "trade_accepted.log".to_string(),
                                 &AppError::new_db(&client.get_component("AutoTrade"), e),
@@ -657,17 +730,22 @@ impl OnTradeEvent {
                     {
                         Ok((operation, order)) => {
                             if operation == "order_deleted" {
+                                notify_value["order"] = json!("✅");
                                 notify.gui().send_event_update(
                                     UIEvent::UpdateOrders,
                                     UIOperationEvent::Delete,
                                     Some(json!({ "id": order.unwrap().id })),
                                 );
                             } else if operation == "order_updated" {
+                                notify_value["order"] = json!("✅");
                                 notify.gui().send_event_update(
                                     UIEvent::UpdateOrders,
                                     UIOperationEvent::CreateOrUpdate,
                                     Some(json!(order)),
                                 );
+                            } else if operation == "order_not_found" {
+                                notify_type = "warning";
+                                notify_value["order"] = json!("⚠️");
                             }
                         }
                         Err(e) => {
@@ -689,6 +767,7 @@ impl OnTradeEvent {
                     .await
                     {
                         Ok(inserted) => {
+                            notify_value["transaction"] = json!("✅");
                             notify.gui().send_event_update(
                                 UIEvent::UpdateTransaction,
                                 UIOperationEvent::CreateOrUpdate,
@@ -696,6 +775,8 @@ impl OnTradeEvent {
                             );
                         }
                         Err(e) => {
+                            notify_value["transaction"] = json!("❌");
+                            notify_type = "error";
                             error::create_log_file(
                                 "trade_accepted.log".to_string(),
                                 &AppError::new_db(&client.get_component("AutoTrade"), e),
@@ -707,12 +788,14 @@ impl OnTradeEvent {
                     return;
                 }
             }
-
+            
+            notify_payload["values"] = notify_value;
             if notify_user.system_notify {
                 notify
                     .system()
                     .send_notification(&notify_user.title, &content, None, None);
             }
+
             if notify_user.discord_notify
                 && notify_user.webhook.clone().unwrap_or("".to_string()) != ""
             {
@@ -722,6 +805,20 @@ impl OnTradeEvent {
                     &content,
                     notify_user.user_ids.clone(),
                 );
+            }
+
+            if notify_type == "success" {
+                notify
+                    .gui()
+                    .send_event(UIEvent::OnNotificationSuccess, Some(notify_payload));
+            } else if notify_type == "warning" {
+                notify
+                    .gui()
+                    .send_event(UIEvent::OnNotificationWarning, Some(notify_payload));
+            } else if notify_type == "error" {
+                notify
+                    .gui()
+                    .send_event(UIEvent::OnNotificationError, Some(notify_payload));
             }
         });
         return Ok(());
@@ -826,9 +923,7 @@ impl OnTradeEvent {
                 if main_part.name.to_lowercase().contains("dual decurion") {
                     num /= 2
                 }
-                stock_item.raw = format!("{}_Set", main_part.name)
-                    .to_lowercase()
-                    .replace(" ", "_");
+                stock_item.raw = format!("{} Set", main_part.name);
                 stock_item.quantity = num;
                 stock_item.entity_type = StockType::Item;
             } else {
@@ -843,7 +938,7 @@ impl OnTradeEvent {
             }
         } else if items.len() == 1 {
             let item = items.first().unwrap();
-            stock_item.raw = item.wfm_url.clone().unwrap_or("".to_string());
+            stock_item.raw = item.name.clone();
             stock_item.quantity = item.quantity;
             stock_item.sub_type = item.sub_type.clone();
             stock_item.unique_name = item.unique_name.clone();
@@ -900,7 +995,7 @@ impl OnTradeEvent {
         // Validate the stock entity
         stock_item.validate_entity(
             &cache,
-            "--item_by url_name --item_lang en --weapon_by name --weapon_lang en --ignore_attributes",
+            "--item_by name --item_lang en --weapon_by name --weapon_lang en --ignore_attributes",
         )?;
 
         return Ok(stock_item);
@@ -913,8 +1008,6 @@ impl OnTradeEvent {
                 let mut modified_data = data;
 
                 let mut json_data = json!(trade.clone());
-                json_data["file_logs"] = json!([]);
-                json_data["logs"] = json!([]);
                 modified_data.push(json_data);
 
                 // Write the modified data back to the JSON file
@@ -958,7 +1051,7 @@ impl OnTradeEvent {
 }
 
 pub fn parse_item(cache: &CacheClient, item: &mut TradeItem) -> Result<bool, AppError> {
-    let default_by = "--item_by name --item_lang en";
+    let default_by = "--item_by name --item_lang en --ignore_case";
 
     if item.name == "plat" {
         item.name = "Platinum".to_string();
@@ -966,6 +1059,7 @@ pub fn parse_item(cache: &CacheClient, item: &mut TradeItem) -> Result<bool, App
         item.item_type = "Plat".to_string();
         return Ok(true);
     }
+
     if item.name.starts_with("Imprint of") {
         item.unique_name = format!(
             "/QF_Special/Imprint/{}",
@@ -974,6 +1068,7 @@ pub fn parse_item(cache: &CacheClient, item: &mut TradeItem) -> Result<bool, App
         item.item_type = "Imprint".to_string();
         return Ok(true);
     }
+
     if item.name.starts_with("Legendary Core") {
         item.unique_name = "/QF_Special/Legendary Fusion Core".to_string();
         item.item_type = "Fusion Core".to_string();
@@ -993,6 +1088,7 @@ pub fn parse_item(cache: &CacheClient, item: &mut TradeItem) -> Result<bool, App
         item.item_type = misc_item.category;
         return Ok(true);
     }
+
     // Check Mods, Rivens, Fish
     if item.name.contains("(") && item.name.contains(")") {
         let index = item.name.find("(").unwrap() as usize;
@@ -1063,6 +1159,7 @@ pub fn parse_item(cache: &CacheClient, item: &mut TradeItem) -> Result<bool, App
             }
         }
     }
+
     // Check Arcane
     if item.name.len() != item.name.chars().count() || item.name.ends_with("???") {
         let index = item.name.rfind(' ').unwrap_or(0);
@@ -1157,7 +1254,7 @@ pub fn parse_item(cache: &CacheClient, item: &mut TradeItem) -> Result<bool, App
         if str.split(' ').count() == 2 {
             str += " [INTACT]";
         }
-        let compare_name = str.replace("[", "").replace("]", "").to_lowercase();
+        let compare_name = str.replace("[", "").replace("]", "");
         let relic = cache.relics().get_by(&compare_name, default_by)?;
         if let Some(relic) = relic {
             item.name = relic.name.clone();

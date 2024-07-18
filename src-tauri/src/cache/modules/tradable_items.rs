@@ -1,4 +1,4 @@
-use std::{path::PathBuf};
+use std::path::PathBuf;
 
 use entity::stock::item::create::CreateStockItem;
 use eyre::eyre;
@@ -62,27 +62,27 @@ impl TradableItemModule {
             Err(e) => return Err(e),
         };
         let mode = args.get("--item_by").unwrap();
-        let case_insensitive = args.get("--case_insensitive").is_some();
+        let case_insensitive = args.get("--ignore_case").is_some();
         // let lang = args.get("--item_lang").unwrap_or(&"en".to_string());
         let remove_string = args.get("--remove_string");
 
         let item = if mode == "name" {
             items
                 .iter()
-                .find(|x| helper::create_key(&x.name, case_insensitive, remove_string) == input)
+                .find(|x| helper::is_match(&x.name,input, case_insensitive, remove_string))
                 .cloned()
         } else if mode == "url_name" {
             items
                 .iter()
                 .find(|x| {
-                    helper::create_key(&x.wfm_url_name, case_insensitive, remove_string) == input
+                    helper::is_match(&x.wfm_url_name,input, case_insensitive, remove_string)
                 })
                 .cloned()
         } else if mode == "unique_name" {
             items
                 .iter()
                 .find(|x| {
-                    helper::create_key(&x.unique_name, case_insensitive, remove_string) == input
+                    helper::is_match(&x.unique_name,input, case_insensitive, remove_string)
                 })
                 .cloned()
         } else {
@@ -103,9 +103,10 @@ impl TradableItemModule {
 
         let item = self.get_by(&input.raw, by)?;
         if item.is_none() {
-            return Err(AppError::new(
+            return Err(AppError::new_with_level(
                 component,
                 eyre!("Item Not Found From: {} | By: {}", input.raw, by),
+                crate::utils::enums::log_level::LogLevel::Warning,
             ));
         }
 

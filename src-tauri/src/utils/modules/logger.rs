@@ -98,7 +98,7 @@ pub fn get_log_folder() -> PathBuf {
     if !log_path.exists() {
         fs::create_dir_all(&log_path).unwrap();
     }
-    //create a folder for the current date
+    //create a folder for the current local date
     let date = chrono::Local::now()
         .naive_utc()
         .format("%Y-%m-%d")
@@ -114,9 +114,9 @@ pub fn get_log_folder() -> PathBuf {
 pub fn debug(component: &str, msg: &str, console: bool, file: Option<&str>) {
     dolog(LogLevel::Debug, component, msg, console, file);
 }
-// pub fn debug_file(component: &str, msg: &str, file: Option<&str>) {
-//     debug(component, msg, false, file);
-// }
+pub fn debug_file(component: &str, msg: &str, file: Option<&str>) {
+    debug(component, msg, false, file);
+}
 pub fn debug_con(component: &str, msg: &str) {
     debug(component, msg, true, None);
 }

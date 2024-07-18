@@ -2,12 +2,15 @@ use eyre::eyre;
 use regex::Regex;
 use serde_json::{json, Map, Value};
 use std::{
-    collections::HashMap, fs::{self, File}, io::{self, Read, Write}, path::{Path, PathBuf}
+    collections::HashMap,
+    fs::{self, File},
+    io::{self, Read, Write},
+    path::{Path, PathBuf},
 };
 
 use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 
-use crate::{utils::modules::error::AppError};
+use crate::utils::modules::error::AppError;
 
 pub fn get_app_storage_path() -> PathBuf {
     let local_path = match tauri::api::path::local_data_dir() {
@@ -251,6 +254,8 @@ pub fn parse_args_from_string(args: &str) -> HashMap<String, String> {
                     args_map.insert(part.to_string(), value.to_string());
                     parts.next();
                 }
+            } else {
+                args_map.insert(part.to_string(), "".to_string());
             }
         }
     }
@@ -305,18 +310,22 @@ pub fn validate_args(
     Ok(args_map)
 }
 
-pub fn create_key(value: &str, case_insensitive: bool, remove_string: Option<&String>) -> String {
-    let mut key = value.to_string();
-    if let Some(remove_string) = remove_string {        
-        key = key.replace(remove_string, "");                    
+pub fn is_match(
+    input: &str,
+    to_match: &str,
+    ignore_case: bool,
+    remove_string: Option<&String>,
+) -> bool {
+    let mut input = input.to_string();
+    if let Some(remove_string) = remove_string {
+        input = input.replace(remove_string, "");
     }
-    if case_insensitive {
-        key.to_lowercase()
+    if ignore_case {
+        input.to_lowercase() == to_match.to_lowercase()
     } else {
-        key
+        input == to_match
     }
 }
-
 
 pub fn validate_json(json: &Value, required: &Value, path: &str) -> (Value, Vec<String>) {
     let mut modified_json = json.clone();

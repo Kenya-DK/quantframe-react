@@ -81,6 +81,7 @@ impl LogParser {
         let is_running = Arc::clone(&self.is_running);
         let forced_stop = Arc::clone(&self.is_running);
         let scraper = self.clone();
+        logger::info_con(&scraper.component, "Starting the log parser");
         tauri::async_runtime::spawn(async move {
             while is_running.load(Ordering::SeqCst) && forced_stop.load(Ordering::SeqCst) {
                 match scraper.check_for_new_logs(self.cold_start.load(Ordering::SeqCst)) {
@@ -105,6 +106,7 @@ impl LogParser {
                 scraper.cold_start.store(false, Ordering::SeqCst);
                 tokio::time::sleep(Duration::from_millis(1)).await;
             }
+            logger::info_con(&scraper.component, "Log parser stopped");
         });
         Ok(())
     }

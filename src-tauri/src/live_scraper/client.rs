@@ -121,7 +121,7 @@ impl LiveScraperClient {
                 }
             }
 
-            let riven_interval = 5;
+            let riven_interval = 30;
             let mut current_riven_interval = riven_interval.clone();
 
             while is_running.load(Ordering::SeqCst) && forced_stop.load(Ordering::SeqCst) {

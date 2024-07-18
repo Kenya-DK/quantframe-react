@@ -28,7 +28,7 @@ export enum QfSocketEvent {
 
   // Notification
   OnNotificationError = "Notification:OnError",
-  OnNotificationWarn = "Notification:OnWarn",
+  OnNotificationWarning = "Notification:OnWarning",
   OnNotificationSuccess = "Notification:OnSuccess",
 }
 

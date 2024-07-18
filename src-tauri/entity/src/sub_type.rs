@@ -64,6 +64,23 @@ impl SubType {
         }
         display
     }
+    pub fn shot_display(&self) -> String {
+        
+        let mut display = String::new();
+        if let Some(rank) = self.rank {
+            display.push_str(&format!("R {} ", rank));
+        }
+        if let Some(variant) = &self.variant {
+            display.push_str(&format!("V {} ", variant));
+        }
+        if let Some(amber_stars) = self.amber_stars {
+            display.push_str(&format!("A {} ", amber_stars));
+        }
+        if let Some(cyan_stars) = self.cyan_stars {
+            display.push_str(&format!("C {} ", cyan_stars));
+        }
+        display.trim().to_string()
+    }
 }
 impl Hash for SubType {
     fn hash<H: Hasher>(&self, state: &mut H) {
