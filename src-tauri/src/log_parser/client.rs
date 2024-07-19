@@ -79,6 +79,13 @@ impl LogParser {
     pub fn start_loop(self) -> Result<(), AppError> {
         self.is_running.store(true, Ordering::SeqCst);
         let is_running = Arc::clone(&self.is_running);
+
+        // Return if it's already running
+        if is_running.load(Ordering::SeqCst) {
+            logger::info_con(&self.component, "Log parser is already running");
+            return Ok(());
+        }
+
         let forced_stop = Arc::clone(&self.is_running);
         let scraper = self.clone();
         logger::info_con(&scraper.component, "Starting the log parser");

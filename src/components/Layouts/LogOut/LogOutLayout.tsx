@@ -18,7 +18,7 @@ export function LogOutLayout() {
       header={{ height: 65 }}
     >
       <AppShell.Header withBorder={false}>
-        <Header isHidden />
+        <Header />
       </AppShell.Header>
 
       <AppShell.Main>

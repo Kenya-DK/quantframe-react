@@ -488,6 +488,12 @@ export const en = {
         mod_rank: "Rank: <blue>{{mod_rank}}</blue>/<blue>{{mod_max_rank}}</blue>",
         subtype: "<blue>{{sub_type}}</blue>",
       },
+      notifications: {
+        copied: {
+          title: "Copied",
+          message: "{{message}} has been copied to clipboard.",
+        },
+      }
     },
     stock_riven_info: {
       tabs: {

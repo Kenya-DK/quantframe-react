@@ -80,7 +80,7 @@ export function RivenPreview({ paperProps, riven }: RivenPreviewProps) {
 						width: 20,
 						height: 20,
 					}} iconType={SvgType.Polarity} iconName={polarity} />
-					<Text className={classes.weapon}>{weapon?.i18n["en"].name}</Text>
+					<Text className={classes.weapon}>{weapon?.name}</Text>
 					<Text className={classes.mod_name}>{modName}</Text>
 					<Box className={classes.attributes} style={{
 						display: 'flex',

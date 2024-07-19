@@ -1,11 +1,12 @@
-import { Image, Group, Paper, Stack, Divider, Text, Avatar, Rating, Box, useMantineTheme, PaperProps } from '@mantine/core';
+import { Paper, Stack, PaperProps, useMantineTheme, Group, Divider, Box, Avatar, Rating, Text, Image } from '@mantine/core';
 import classes from './OrderItem.module.css';
 import { Wfm } from '$types/index';
-import { WFMThumbnail } from '@api/index';
 import { useTranslateComponent, useTranslateEnums } from '@hooks/index';
 import { TextTranslate } from '../TextTranslate';
-import { upperFirst } from '@mantine/hooks';
+import { WFMThumbnail } from '../../api';
 import { SvgIcon, SvgType } from '../SvgIcon';
+import { upperFirst } from '@mantine/hooks';
+import { notifications } from '@mantine/notifications';
 
 export type OrderItemProps = {
 	order: Wfm.OrderDto;
@@ -19,18 +20,21 @@ export function OrderItem({ show_border, paperProps, order, footer, show_user }:
 	// State
 	const theme = useMantineTheme();
 
-
 	// Translate general
 	const useTranslateStockItemInfo = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateComponent(`order_item.${key}`, { ...context }, i18Key)
 	const useTranslateFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateStockItemInfo(`fields.${key}`, { ...context }, i18Key)
 	const useTranslateUserStatus = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateEnums(`user_status.${key}`, { ...context }, i18Key)
+	const useTranslateNotifications = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateStockItemInfo(`notifications.${key}`, { ...context }, i18Key)
 
 	return (
 		<Paper {...paperProps} classNames={classes} p={7} data-border={show_border} data-color-mode='box-shadow' data-order-type={order.order_type}>
 			<Stack gap={3}>
 				<Group ml={"xs"} justify='space-between'>
 					<Group>
-						<Text size='lg' fw={700}>{order.item?.en?.item_name}</Text>
+						<Text style={{ cursor: "copy" }} onClick={() => {
+							navigator.clipboard.writeText(order.item?.en?.item_name || "");
+							notifications.show({ title: useTranslateNotifications("copied.title"), message: useTranslateNotifications("copied.message", { message: order.item?.en?.item_name || "" }), color: "green.7" });
+						}} size='lg' fw={700}>{order.item?.en?.item_name}</Text>
 					</Group>
 					<Group>
 						<TextTranslate size='md' i18nKey={useTranslateFields("quantity", undefined, true)} values={{ quantity: order.quantity }} />

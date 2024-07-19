@@ -53,7 +53,7 @@ export function LogInLayout() {
 
     >
       <AppShell.Header withBorder={false}>
-        <Header isHidden={false} />
+        <Header />
       </AppShell.Header>
 
       <AppShell.Navbar withBorder={false}>
