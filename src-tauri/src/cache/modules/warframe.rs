@@ -27,7 +27,7 @@ impl WarframeModule {
             client,
             // debug_id: "ch_client_auction".to_string(),
             component: "Warframe".to_string(),
-            path: PathBuf::from("item/Warframes.json"),
+            path: PathBuf::from("items/Warframes.json"),
             items: Vec::new(),
             parts: HashMap::new(),
         }

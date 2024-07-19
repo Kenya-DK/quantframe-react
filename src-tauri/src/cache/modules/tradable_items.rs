@@ -24,7 +24,7 @@ impl TradableItemModule {
             client,
             // debug_id: "ch_client_auction".to_string(),
             component: "TradeableItem".to_string(),
-            path: PathBuf::from("item/tradeableItems.json"),
+            path: PathBuf::from("items/TradableItemItems.json"),
             items: Vec::new(),
         }
     }
@@ -69,21 +69,17 @@ impl TradableItemModule {
         let item = if mode == "name" {
             items
                 .iter()
-                .find(|x| helper::is_match(&x.name,input, case_insensitive, remove_string))
+                .find(|x| helper::is_match(&x.name, input, case_insensitive, remove_string))
                 .cloned()
         } else if mode == "url_name" {
             items
                 .iter()
-                .find(|x| {
-                    helper::is_match(&x.wfm_url_name,input, case_insensitive, remove_string)
-                })
+                .find(|x| helper::is_match(&x.wfm_url_name, input, case_insensitive, remove_string))
                 .cloned()
         } else if mode == "unique_name" {
             items
                 .iter()
-                .find(|x| {
-                    helper::is_match(&x.unique_name,input, case_insensitive, remove_string)
-                })
+                .find(|x| helper::is_match(&x.unique_name, input, case_insensitive, remove_string))
                 .cloned()
         } else {
             return Err(AppError::new(

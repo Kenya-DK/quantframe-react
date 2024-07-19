@@ -196,9 +196,6 @@ fn main() {
             commands::cache::cache_get_tradable_items,
             commands::cache::cache_get_riven_weapons,
             commands::cache::cache_get_riven_attributes,
-            commands::cache::cache_get_riven_raw_mod,
-            commands::cache::cache_get_weapon_stat,
-            commands::cache::cache_get_weapon_upgrades,
             commands::cache::cache_get_tradable_item,
             // Transaction commands
             commands::transaction::transaction_reload,

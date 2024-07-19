@@ -25,7 +25,7 @@ impl ArchMeleeModule {
             client,
             // debug_id: "ch_client_auction".to_string(),
             component: "ArchMelee".to_string(),
-            path: PathBuf::from("item/Arch-Melee.json"),
+            path: PathBuf::from("items/Arch-Melee.json"),
             items: Vec::new(),
             parts: HashMap::new(),
         }

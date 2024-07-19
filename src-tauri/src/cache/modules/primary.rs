@@ -25,7 +25,7 @@ impl PrimaryModule {
             client,
             // debug_id: "ch_client_auction".to_string(),
             component: "Primary".to_string(),
-            path: PathBuf::from("item/Primary.json"),
+            path: PathBuf::from("items/Primary.json"),
             items: Vec::new(),
             parts: HashMap::new(),
         }

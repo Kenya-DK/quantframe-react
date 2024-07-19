@@ -6,7 +6,8 @@ use crate::{
     cache::{
         client::CacheClient,
         types::{cache_item_component::CacheItemComponent, cache_sentinel::CacheSentinel},
-    }, utils::modules::error::AppError
+    },
+    utils::modules::error::AppError,
 };
 
 #[derive(Clone, Debug)]
@@ -25,7 +26,7 @@ impl SentinelModule {
             client,
             // debug_id: "ch_client_auction".to_string(),
             component: "Sentinel".to_string(),
-            path: PathBuf::from("item/Sentinels.json"),
+            path: PathBuf::from("items/Sentinels.json"),
             items: Vec::new(),
             parts: HashMap::new(),
         }

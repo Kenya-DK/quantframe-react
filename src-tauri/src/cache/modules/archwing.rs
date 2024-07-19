@@ -25,7 +25,7 @@ impl ArchwingModule {
             client,
             // debug_id: "ch_client_auction".to_string(),
             component: "Archwing".to_string(),
-            path: PathBuf::from("item/Archwing.json"),
+            path: PathBuf::from("items/Archwing.json"),
             items: Vec::new(),
             parts: HashMap::new(),
         }

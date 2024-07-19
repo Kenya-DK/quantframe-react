@@ -8,9 +8,6 @@ pub struct CacheTradableItem {
   #[serde(rename = "uniqueName")]
   pub unique_name: String,
 
-  #[serde(rename = "description")]
-  pub description: String,
-
   #[serde(rename = "wfm_id")]
   pub wfm_id: String,
 

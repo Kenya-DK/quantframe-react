@@ -8,8 +8,7 @@ use crate::{
     cache::{
         client::CacheClient,
         types::cache_riven::{
-            CacheRiven, CacheRivenDataByRivenInternalID, CacheRivenWfmAttribute,
-            CacheRivenWfmWeapon, CacheWeaponStat, RivenStat,
+            CacheRiven, CacheRivenAttribute, CacheRivenUpgrade, CacheRivenWFMAttribute, CacheRivenWeapon
         },
     },
     helper, logger,
@@ -27,7 +26,7 @@ impl RivenModule {
     pub fn new(client: CacheClient) -> Self {
         RivenModule {
             client,
-            path: PathBuf::from("riven/rivens.json"),
+            path: PathBuf::from("items/Riven.json"),
             data: CacheRiven::new(),
             component: "RivenModule".to_string(),
         }
@@ -51,57 +50,48 @@ impl RivenModule {
         Ok(())
     }
 
-    pub fn get_riven_raw_mod(&self, internal_id: &str) -> Option<&CacheRivenDataByRivenInternalID> {
-        let riven = self.data.riven_internal_id.get(internal_id);
-        riven
+    // WFM Rivens Methods
+    pub fn get_wfm_riven_types(&self) -> Result<Vec<CacheRivenWeapon>, AppError> {
+        let items = self.data.weapons.clone();
+        Ok(items)
     }
 
-    pub fn get_weapon_stat(&self, internal_id: &str) -> Option<&CacheWeaponStat> {
-        let weapon = self.data.weapon_stat.get(internal_id);
-        weapon
+    pub fn get_wfm_riven_attributes(&self) -> Result<Vec<CacheRivenWFMAttribute>, AppError> {
+        let attributes = self.data.available_attributes.clone();
+        Ok(attributes)
     }
 
-    pub fn get_weapon_upgrades(&self, internal_id: &str) -> Option<HashMap<String, RivenStat>> {
+
+    pub fn get_weapon_upgrades(&self, internal_id: &str) -> Result<Option<Vec<CacheRivenUpgrade>>, AppError> {
         // Get the weapon stat
-        let weapon_stat = self.get_weapon_stat(internal_id);
+        let weapon_stat = self.find_rive_type_by(internal_id,"--weapon_by unique_name")?;
         if weapon_stat.is_none() {
             logger::warning_con(
                 self.get_component("get_weapon_upgrades").as_str(),
                 format!("Failed to get weapon stat for internal_id: {}", internal_id).as_str(),
             );
-            return None;
+            return Ok(None);
         }
         let weapon_stat = weapon_stat.unwrap();
-        let raw_riven = self.get_riven_raw_mod(&weapon_stat.riven_uid);
+        let raw_riven = self.find_raw_riven_attribute_by(&weapon_stat.upgrade_type,"--weapon_by unique_name")?;
         if raw_riven.is_none() {
             logger::warning_con(
                 self.get_component("get_weapon_upgrades").as_str(),
                 format!("Failed to get raw riven for internal_id: {}", internal_id).as_str(),
             );
-            return None;
+            return Ok(None);
         }
         let raw_riven = raw_riven.unwrap();
-        let upgrades = raw_riven.riven_stats.clone();
-        upgrades
+        let upgrades = raw_riven.upgrades.clone();
+        Ok(Some(upgrades))
     }
 
-    // WFM Rivens Methods
-    pub fn get_wfm_riven_types(&self) -> Result<Vec<CacheRivenWfmWeapon>, AppError> {
-        let items = self.data.wfm_weapons.clone();
-        Ok(items)
-    }
-
-    pub fn get_wfm_riven_attributes(&self) -> Result<Vec<CacheRivenWfmAttribute>, AppError> {
-        let attributes = self.data.wfm_attributes.clone();
-        Ok(attributes)
-    }
-
-    pub fn find_rive_attribute_by(
+    pub fn find_wfm_riven_attribute_by(
         &self,
         input: &str,
         by: &str,
-    ) -> Result<Option<CacheRivenWfmAttribute>, AppError> {
-        let items = self.data.wfm_attributes.clone();
+    ) -> Result<Option<CacheRivenWFMAttribute>, AppError> {
+        let items = self.data.available_attributes.clone();
         let args = match helper::validate_args(
             by,
             vec![
@@ -121,20 +111,15 @@ impl RivenModule {
         } else if mode == "upgrades" {
             let re = Regex::new(r"<.*?>").unwrap();
             let unique = args.get("--weapon_unique").unwrap();
-            let upgrades = self.get_weapon_upgrades(unique);
+            let upgrades = self.get_weapon_upgrades(unique)?;
             if upgrades.is_none() {
                 return Err(AppError::new(
                     "find_rive_attribute_by",
                     eyre!("Failed to get weapon upgrades for: {}", unique),
                 ));
             }
-
-            let upgrades = upgrades
-                .unwrap()
-                .values()
-                .cloned()
-                .collect::<Vec<RivenStat>>();
-
+            
+            let upgrades = upgrades.unwrap();
             let upgrade_by = args.get("--upgrade_by").unwrap();
             match upgrade_by.as_str() {
                 "short_string" => {
@@ -148,7 +133,7 @@ impl RivenModule {
                         ));
                     }
                     let upgrade = upgrade.unwrap();
-                    items.iter().find(|x| x.url_name == upgrade.wfm_id).cloned()
+                    items.iter().find(|x| x.url_name == upgrade.wfm_url).cloned()
                 }
                 // If not found return an error
                 _ => {
@@ -166,13 +151,36 @@ impl RivenModule {
         };
         Ok(riven_attribute)
     }
+    
+    pub fn find_raw_riven_attribute_by(
+        &self,
+        input: &str,
+        by: &str,
+    ) -> Result<Option<CacheRivenAttribute>, AppError> {
+        let items = self.data.rivens_attributes.clone();
+        let args = match helper::validate_args(by, vec!["--weapon_by"]) {
+            Ok(args) => args,
+            Err(e) => return Err(e),
+        };
+        let mode = args.get("--weapon_by").unwrap();
+
+        let riven_type = if mode == "unique_name" {
+            items.iter().find(|x| x.unique_name == input).cloned()
+        } else {
+            return Err(AppError::new(
+                "get_rive_type_by",
+                eyre!("Invalid by value: {}", by),
+            ));
+        };
+        Ok(riven_type)
+    }
 
     pub fn find_rive_type_by(
         &self,
         input: &str,
         by: &str,
-    ) -> Result<Option<CacheRivenWfmWeapon>, AppError> {
-        let items = self.data.wfm_weapons.clone();
+    ) -> Result<Option<CacheRivenWeapon>, AppError> {
+        let items: Vec<CacheRivenWeapon> = self.data.weapons.clone();
         let args = match helper::validate_args(by, vec!["--weapon_by"]) {
             Ok(args) => args,
             Err(e) => return Err(e),
@@ -183,7 +191,7 @@ impl RivenModule {
             let lang: String = args.get("--weapon_lang").unwrap().clone();
             items
                 .iter()
-                .find(|x| x.i18_n[lang.as_str()].name == input)
+                .find(|x| x.name == input)
                 .cloned()
         } else if mode == "url_name" {
             items.iter().find(|x| x.wfm_url_name == input).cloned()
@@ -219,7 +227,7 @@ impl RivenModule {
                 input.wfm_url = weapon.wfm_url_name.clone();
                 input.weapon_type = weapon.wfm_group.clone();
                 input.weapon_unique_name = weapon.unique_name.clone();
-                input.weapon_name = weapon.i18_n["en"].name.clone();
+                input.weapon_name = weapon.name.clone();
             }
             Err(e) => {
                 return Err(e);
@@ -233,7 +241,7 @@ impl RivenModule {
         let by = format!("{} --weapon_unique {}", by, input.weapon_unique_name);
 
         for att in input.attributes.iter_mut() {
-            match self.find_rive_attribute_by(&att.url_name, &by) {
+            match self.find_wfm_riven_attribute_by(&att.url_name, &by) {
                 Ok(attribute) => {
                     if attribute.is_none() {
                         return Err(AppError::new(

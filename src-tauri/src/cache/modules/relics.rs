@@ -30,7 +30,7 @@ impl RelicsModule {
             client,
             component: "RelicsModule".to_string(),
             relic_drops_real_names: HashMap::new(),
-            path: PathBuf::from("item/Relics.json"),
+            path: PathBuf::from("items/Relics.json"),
             relics: Vec::new(),
         }
     }

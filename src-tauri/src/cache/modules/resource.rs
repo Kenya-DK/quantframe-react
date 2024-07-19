@@ -23,7 +23,7 @@ impl ResourceModule {
             client,
             // debug_id: "ch_client_auction".to_string(),
             component: "Resource".to_string(),
-            path: PathBuf::from("item/Resources.json"),
+            path: PathBuf::from("items/Resources.json"),
             items: Vec::new(),
         }
     }

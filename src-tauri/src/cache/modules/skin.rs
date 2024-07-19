@@ -23,7 +23,7 @@ impl SkinModule {
             client,
             // debug_id: "ch_client_auction".to_string(),
             component: "Skin".to_string(),
-            path: PathBuf::from("item/Skins.json"),
+            path: PathBuf::from("items/Skins.json"),
             items: Vec::new(),
         }
     }

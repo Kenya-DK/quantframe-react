@@ -21,7 +21,7 @@ impl MiscModule {
             client,
             // debug_id: "ch_client_auction".to_string(),
             component: "Misc".to_string(),
-            path: PathBuf::from("item/Misc.json"),
+            path: PathBuf::from("items/Misc.json"),
             items: Vec::new(),
         }
     }

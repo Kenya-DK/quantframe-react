@@ -21,7 +21,7 @@ impl ModModule {
             client,
             // debug_id: "ch_client_auction".to_string(),
             component: "Mod".to_string(),
-            path: PathBuf::from("item/Mods.json"),
+            path: PathBuf::from("items/Mods.json"),
             items: Vec::new(),
         }
     }

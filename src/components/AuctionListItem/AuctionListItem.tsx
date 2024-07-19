@@ -44,7 +44,7 @@ export function AuctionListItem({ overrideMode, show_border, show_image, header,
 		else if (auction.visible)
 			setStatus(Wfm.AuctionStatus.Visible);
 
-
+		console.log(data)
 		if (data)
 			setWeapon(data.find((item) => item.wfm_url_name == auction.item.weapon_url_name));
 	}, [auction, data, overrideMode]);
@@ -61,7 +61,7 @@ export function AuctionListItem({ overrideMode, show_border, show_image, header,
 								fw: 700,
 								fs: "lg",
 							}} color='gray.4' i18nKey={useTranslateBase("weapon_name", undefined, true)} values={{
-								weapon: weapon?.i18n["en"].name || "",
+								weapon: weapon?.name || "",
 								mod_name: auction.item.name
 							}} />
 						</Group>

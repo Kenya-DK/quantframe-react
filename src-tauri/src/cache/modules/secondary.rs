@@ -25,7 +25,7 @@ impl SecondaryModule {
             client,
             // debug_id: "ch_client_auction".to_string(),
             component: "Secondary".to_string(),
-            path: PathBuf::from("item/Secondary.json"),
+            path: PathBuf::from("items/Secondary.json"),
             items: Vec::new(),
             parts: HashMap::new(),
         }

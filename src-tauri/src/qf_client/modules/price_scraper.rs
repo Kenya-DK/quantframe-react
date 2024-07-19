@@ -30,7 +30,7 @@ impl PriceScraperModule {
     //     self.client.update_cache_module(self.clone());
     // }
     pub async fn get_json_file(&self) -> Result<Vec<u8>, AppError> {
-        match self.client.get_bytes("cache/price/download").await {
+        match self.client.get_bytes("items/price/download").await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
                     &self.debug_id,
@@ -55,7 +55,7 @@ impl PriceScraperModule {
     }
 
     pub async fn get_cache_id(&self) -> Result<String, AppError> {
-        match self.client.get::<Value>("cache/price/md5").await {
+        match self.client.get::<Value>("items/price/id").await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 let md5 = payload["md5"].as_str().unwrap().to_string();
                 return Ok(md5);

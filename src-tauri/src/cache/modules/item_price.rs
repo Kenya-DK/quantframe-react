@@ -25,9 +25,9 @@ impl ItemPriceModule {
         ItemPriceModule {
             client,
             component: "ItemPrice".to_string(),
-            json_file: "item_prices.json".to_string(),
+            json_file: "ItemPrices.json".to_string(),
             md5_file: "price_id.txt".to_string(),
-            folder: "price".to_string(),
+            folder: "items".to_string(),
         }
     }
 

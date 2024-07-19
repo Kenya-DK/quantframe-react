@@ -21,7 +21,7 @@ impl ArcaneModule {
             client,
             // debug_id: "ch_client_auction".to_string(),
             component: "Arcane".to_string(),
-            path: PathBuf::from("item/Arcanes.json"),
+            path: PathBuf::from("items/Arcanes.json"),
             items: Vec::new(),
         }
     }

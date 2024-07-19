@@ -25,7 +25,7 @@ impl ArchGunModule {
             client,
             // debug_id: "ch_client_auction".to_string(),
             component: "ArchGun".to_string(),
-            path: PathBuf::from("item/Arch-Gun.json"),
+            path: PathBuf::from("items/Arch-Gun.json"),
             items: Vec::new(),
             parts: HashMap::new(),
         }

@@ -21,7 +21,7 @@ impl FishModule {
             client,
             // debug_id: "ch_client_auction".to_string(),
             component: "Fish".to_string(),
-            path: PathBuf::from("item/Fish.json"),
+            path: PathBuf::from("items/Fish.json"),
             items: Vec::new(),
         }
     }

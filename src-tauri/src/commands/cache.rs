@@ -7,10 +7,7 @@ use crate::{
     cache::{
         client::CacheClient,
         types::{
-            cache_relics::CacheRelics, cache_riven::{
-                CacheRivenDataByRivenInternalID, CacheRivenWfmAttribute, CacheRivenWfmWeapon,
-                CacheWeaponStat, RivenStat,
-            }, cache_tradable_item::CacheTradableItem
+            cache_relics::CacheRelics, cache_riven::{CacheRivenWFMAttribute, CacheRivenWeapon}, cache_tradable_item::CacheTradableItem
         },
     },
     utils::modules::error::{self, AppError},
@@ -50,7 +47,7 @@ pub async fn cache_get_tradable_items(
 #[tauri::command]
 pub async fn cache_get_riven_weapons(
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
-) -> Result<Vec<CacheRivenWfmWeapon>, AppError> {
+) -> Result<Vec<CacheRivenWeapon>, AppError> {
     let cache = cache.lock()?.clone();
     match cache.riven().get_wfm_riven_types() {
         Ok(items) => {
@@ -66,7 +63,7 @@ pub async fn cache_get_riven_weapons(
 #[tauri::command]
 pub async fn cache_get_riven_attributes(
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
-) -> Result<Vec<CacheRivenWfmAttribute>, AppError> {
+) -> Result<Vec<CacheRivenWFMAttribute>, AppError> {
     let cache = cache.lock()?.clone();
     match cache.riven().get_wfm_riven_attributes() {
         Ok(items) => {
@@ -79,68 +76,6 @@ pub async fn cache_get_riven_attributes(
     }
 }
 
-#[tauri::command]
-pub async fn cache_get_riven_raw_mod(
-    internal_id: String,
-    cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
-) -> Result<Option<CacheRivenDataByRivenInternalID>, AppError> {
-    let cache = cache.lock()?.clone();
-    match cache.riven().get_riven_raw_mod(&internal_id) {
-        Some(riven) => {
-            return Ok(Some(riven.clone()));
-        }
-        None => {
-            return Ok(None);
-        }
-    }
-}
-#[tauri::command]
-pub fn cache_get_weapon_stat(
-    internal_id: String,
-    cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
-) -> Result<Option<CacheWeaponStat>, AppError> {
-    let cache = cache.lock()?.clone();
-    match cache.riven().get_weapon_stat(&internal_id) {
-        Some(riven) => {
-            return Ok(Some(riven.clone()));
-        }
-        None => {
-            return Ok(None);
-        }
-    }
-}
-#[tauri::command]
-pub fn cache_get_weapon_upgrades(
-    internal_id: String,
-    cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
-) -> Result<Option<HashMap<String, RivenStat>>, AppError> {
-    let cache = cache.lock()?.clone();
-    match cache.riven().get_weapon_upgrades(&internal_id) {
-        Some(riven) => {
-            return Ok(Some(riven.clone()));
-        }
-        None => {
-            return Ok(None);
-        }
-    }
-}
-
-// #[tauri::command]
-// pub fn cache_get_tradable_item(
-//     input: String,
-//     by: String,
-//     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
-// ) -> Result<Option<CacheTradableItem>, AppError> {
-//     let cache = cache.lock()?.clone();
-//     match cache.tradable_items().get_by(&input, &by) {
-//         Ok(item) => {
-//             return Ok(item);
-//         }
-//         Err(e) => {
-//             return Err(e);
-//         }
-//     }
-// }
 #[tauri::command]
 pub fn cache_get_tradable_item(
     input: String,

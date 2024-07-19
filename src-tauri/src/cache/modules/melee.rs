@@ -25,7 +25,7 @@ impl MeleeModule {
             client,
             // debug_id: "ch_client_auction".to_string(),
             component: "Melee".to_string(),
-            path: PathBuf::from("item/Melee.json"),
+            path: PathBuf::from("items/Melee.json"),
             items: Vec::new(),
             parts: HashMap::new(),
         }

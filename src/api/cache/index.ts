@@ -1,5 +1,5 @@
 import { TauriClient } from "..";
-import { CacheRivenAttribute, CacheRivenUpgrade, CacheRivenWeapon, CacheTradableItem } from "@api/types";
+import { CacheRivenAttribute, CacheRivenWeapon, CacheTradableItem } from "@api/types";
 
 
 enum CacheType {
@@ -56,12 +56,4 @@ export class CacheModule {
     this._cache.set(CacheType.RivenAttributes, items);
     return items;
   }
-
-  async getWeaponUpgrades(internalId: string): Promise<Record<string, CacheRivenUpgrade>> {
-    const [err, items] = await this.client.sendInvoke<Record<string, CacheRivenUpgrade>>('cache_get_weapon_upgrades', { internalId });
-    if (err)
-      throw err;
-    return items;
-  }
-
 }
