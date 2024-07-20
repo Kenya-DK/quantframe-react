@@ -1,5 +1,5 @@
 import { Grid, Title } from '@mantine/core';
-import { TradableItemList } from '../TradableItemList';
+import { TradableItemList } from '@components/TradableItemList';
 import { CacheTradableItem } from '@api/types';
 import { useQuery } from '@tanstack/react-query';
 import api from '@api/index';

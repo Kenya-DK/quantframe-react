@@ -1,12 +1,12 @@
 import { Center, Progress } from "@mantine/core";
-import { LogInForm } from "@components";
+import { LogInForm } from "@components/Forms/LogIn";
 import api, { SendTauriDataEvent } from "@api/index";
 import { useMutation } from "@tanstack/react-query";
 import { notifications } from "@mantine/notifications";
-import { useTranslatePages } from "@hooks/index";
+import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { QfSocketEvent, QfSocketEventOperation, ResponseError } from "@api/types";
 import { useState } from "react";
-import { wfmSocket } from "../../models";
+import { wfmSocket } from "@models/wfmSocket";
 
 export default function LoginPage() {
   // States

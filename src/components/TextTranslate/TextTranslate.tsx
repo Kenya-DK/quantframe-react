@@ -2,7 +2,7 @@ import { Text, MantineSize, MantineStyleProp, TextProps } from '@mantine/core';
 import { faCubes, faEnvelope, faHandshake } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Trans } from 'react-i18next';
-import { SvgIcon, SvgType } from '../SvgIcon';
+import { SvgIcon, SvgType } from '@components/SvgIcon';
 
 export type TextTranslateProps = {
 	i18nKey: string;

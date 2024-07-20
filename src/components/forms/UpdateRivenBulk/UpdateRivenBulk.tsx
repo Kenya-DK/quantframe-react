@@ -1,5 +1,5 @@
 import { Group, NumberInput, Box, Checkbox, Collapse, Switch, Button } from '@mantine/core';
-import { useTranslateForms } from '@hooks/index';
+import { useTranslateForms } from '@hooks/useTranslate.hook';
 import { useForm } from '@mantine/form';
 import { UpdateStockRiven } from '@api/types';
 

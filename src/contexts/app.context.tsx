@@ -1,19 +1,15 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api, { OnTauriDataEvent, OnTauriEvent } from "@api/index";
-import { useTranslateContexts, useTranslateNotifications } from "@hooks/index";
+import { useTranslateContexts, useTranslateNotifications } from "@hooks/useTranslate.hook";
 import { notifications } from "@mantine/notifications";
 import { Box, Button, Group, Text } from "@mantine/core";
-import {
-  checkUpdate, installUpdate,
-  // installUpdate,
-  // onUpdaterEvent,
-} from '@tauri-apps/api/updater'
+import { checkUpdate, installUpdate } from '@tauri-apps/api/updater'
 import { relaunch } from "@tauri-apps/api/process";
 import { AppInfo, QfSocketEvent, QfSocketEventOperation, ResponseError, Settings } from "@api/types";
 import { AuthContextProvider } from "./auth.context";
-import { SplashScreen } from "../components/SplashScreen";
-import { TextTranslate } from "../components";
+import { SplashScreen } from "@components/SplashScreen";
+import { TextTranslate } from "@components/TextTranslate";
 
 
 type NotificationPayload = {

@@ -1,12 +1,15 @@
 import { AppShell, Indicator } from "@mantine/core";
-import { Header, NavbarMinimalColored, NavbarLinkProps, SvgIcon, SvgType } from "@components";
 import classes from "./LogInLayout.module.css";
 import { Outlet, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCrown, faDesktop, faEnvelope, faGlobe, faHome } from "@fortawesome/free-solid-svg-icons";
-import { useTranslateComponent } from "@hooks/index";
-import { useAppContext, useChatContext } from "@contexts/index";
+import { useTranslateComponent } from "@hooks/useTranslate.hook";
+import { useAppContext } from "@contexts/app.context";
+import { useChatContext } from "@contexts/chat.context";
 import { useEffect } from "react";
+import { NavbarLinkProps, NavbarMinimalColored } from "@components/NavbarMinimalColored";
+import { SvgIcon, SvgType } from "@components/SvgIcon";
+import { Header } from "@components/Header";
 export function LogInLayout() {
   // Contexts
   const { app_error } = useAppContext();

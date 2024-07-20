@@ -1,5 +1,5 @@
 import React, { createContext, useEffect, useState } from "react";
-import { wfmSocket } from "@models/index";
+import { wfmSocket } from "@models/wfmSocket";
 import { useAuthContext } from "./auth.context";
 import { Wfm } from "../types";
 import api from "../api/index";

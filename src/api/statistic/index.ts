@@ -3,7 +3,7 @@ import isBetween from 'dayjs/plugin/isBetween';
 dayjs.extend(isBetween);
 import { TauriClient } from "..";
 import { TransactionDto, TransactionType, ChartMultipleDto, StatisticProfitTransaction, StatisticProfitItem, CategoryItemProfitLink, StatisticItemCategoryProfit, StatisticProfitTransactionTotal, StatisticProfitTransactionToday, StatisticProfitTransactionRecentDays, StatisticRecentTransactions, StatisticItemBestSeller, StatisticDto } from "../types";
-import { GroupByDateSettings, getGroupByDate, groupBy } from "../../utils";
+import { GroupByDateSettings, getGroupByDate, groupBy } from "@utils/helper";
 import i18next from "i18next";
 
 export class StatisticModule {

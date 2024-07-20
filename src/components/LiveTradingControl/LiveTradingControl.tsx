@@ -1,11 +1,11 @@
-import { useLiveScraperContext } from "@contexts/index";
+import { useLiveScraperContext } from "@contexts/liveScraper.context";
 import { Button, Center, Group, Stack } from "@mantine/core";
 import { useMutation } from "@tanstack/react-query";
 import { notifications } from "@mantine/notifications";
 import api from "@api/index";
-import { TextTranslate } from "@components";
+import { TextTranslate } from "@components/TextTranslate";
 import { useEffect, useState } from "react";
-import { useTranslateComponent } from "@hooks/index";
+import { useTranslateComponent } from "@hooks/useTranslate.hook";
 
 export function LiveTradingControl() {
 

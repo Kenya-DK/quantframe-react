@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useDynamicSvgImport, useDynamicPolaritySvgImport } from "@hooks/index";
+import { useDynamicSvgImport, useDynamicPolaritySvgImport } from "@hooks/useDynamicSvgImport.hook";
 
 // SvgType is an enum that is used to determine which svg icon to render
 export enum SvgType {

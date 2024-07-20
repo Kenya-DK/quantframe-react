@@ -1,9 +1,10 @@
 import { Button, Checkbox, Group, NumberInput, Select, Stack, Tooltip, Text, Divider, Tabs, Box } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { OrderMode, SettingsLiveScraper, StockMode } from "@api/types";
-import { SelectMultipleTradableItems, TooltipIcon } from "@components";
-import { useTranslateEnums, useTranslateForms } from "@hooks/index";
+import { useTranslateEnums, useTranslateForms } from "@hooks/useTranslate.hook";
 import { useState } from "react";
+import { TooltipIcon } from "@components/TooltipIcon";
+import { SelectMultipleTradableItems } from "@components/SelectMultipleTradableItems";
 
 export type LiveTradingPanelProps = {
   value: SettingsLiveScraper;

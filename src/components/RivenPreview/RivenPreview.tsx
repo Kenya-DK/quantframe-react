@@ -5,7 +5,7 @@ import { CacheRivenWeapon, CacheRivenAttribute, RivenAttribute, StockRiven } fro
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '@api/index';
-import { SvgIcon, SvgType } from '../SvgIcon';
+import { SvgIcon, SvgType } from '@components/SvgIcon';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
 import { useHover } from '@mantine/hooks';

@@ -1,10 +1,10 @@
 import { Alert, Center, Text } from "@mantine/core";
 import { useEffect } from "react";
-import { useAppContext } from "@contexts/index";
+import { useAppContext } from "@contexts/app.context";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
-import { useTranslatePages } from "../../hooks";
+import { useTranslatePages } from "@hooks/useTranslate.hook";
 
 export default function ErrorPage() {
   const { app_error } = useAppContext();

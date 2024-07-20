@@ -1,10 +1,10 @@
 import { Paper, Stack, PaperProps, useMantineTheme, Group, Divider, Box, Avatar, Rating, Text, Image } from '@mantine/core';
 import classes from './OrderItem.module.css';
 import { Wfm } from '$types/index';
-import { useTranslateComponent, useTranslateEnums } from '@hooks/index';
-import { TextTranslate } from '../TextTranslate';
-import { WFMThumbnail } from '../../api';
-import { SvgIcon, SvgType } from '../SvgIcon';
+import { useTranslateComponent, useTranslateEnums } from '@hooks/useTranslate.hook';
+import { TextTranslate } from '@components/TextTranslate';
+import { WFMThumbnail } from '@api/index';
+import { SvgIcon, SvgType } from '@components/SvgIcon';
 import { upperFirst } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 

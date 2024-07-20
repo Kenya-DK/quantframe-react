@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import api, { OnTauriDataEvent } from "@api/index";
 import { QfSocketEvent, QfSocketEventOperation, User, UserStatus } from "@api/types";
-import { wfmSocket } from "@models/index";
+import { wfmSocket } from "@models/wfmSocket";
 import { Wfm } from "../types";
 export type AuthContextProps = {
   user: User | undefined;

@@ -1,8 +1,8 @@
 import { Group, useMantineTheme } from '@mantine/core';
 import classes from './Header.module.css';
-import { Logo } from '../Logo';
-import { Clock } from '../Clock/Clock';
-import { UserMenu } from '../UserMenu';
+import { Logo } from '@components/Logo';
+import { Clock } from '@components/Clock';
+import { UserMenu } from '@components/UserMenu';
 
 export type HeaderProps = {
 }

@@ -1,5 +1,5 @@
 import { PaperProps, Container, Tabs } from '@mantine/core';
-import { useTranslateForms } from '@hooks/index';
+import { useTranslateForms } from '@hooks/useTranslate.hook';
 import { Settings } from '@api/types';
 import { GeneralPanel } from './Tabs/General';
 import { LogPanel } from './Tabs/Log';

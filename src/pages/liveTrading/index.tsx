@@ -1,8 +1,8 @@
 import { Box, Container, Tabs } from "@mantine/core";
 import { StockItemPanel } from "./tabs/item";
 import { StockRivenPanel } from "./tabs/riven";
-import { useTranslatePages } from "@hooks/index";
-import { LiveTradingControl } from "@components";
+import { useTranslatePages } from "@hooks/useTranslate.hook";
+import { LiveTradingControl } from "@components/LiveTradingControl";
 
 export default function LiveTradingPage() {
 

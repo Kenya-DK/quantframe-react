@@ -1,5 +1,5 @@
 import { Container, Tabs } from "@mantine/core";
-import { useTranslatePages } from "@hooks/index";
+import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { OrderPanel } from "./tabs/orders";
 import { AuctionPanel } from "./tabs/auctions";
 

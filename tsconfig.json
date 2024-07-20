@@ -18,8 +18,8 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "paths": {
-      "@components": [
-        "src/components/index.ts"
+      "@components/*": [
+        "src/components/*"
       ],
       "@pages/*": [
         "src/pages/*"

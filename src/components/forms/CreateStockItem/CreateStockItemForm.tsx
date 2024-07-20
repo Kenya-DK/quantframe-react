@@ -1,11 +1,11 @@
 import { Group, NumberInput, BoxProps, Box } from '@mantine/core';
-import { useTranslateForms } from '@hooks/index';
+import { useTranslateForms } from '@hooks/useTranslate.hook';
 import { useForm } from '@mantine/form';
 import { CreateStockItem, SubType } from '@api/types';
-import { SelectTradableItem } from '../../SelectTradableItem';
-import { useAppContext } from '../../../contexts';
+import { SelectTradableItem } from '@components/SelectTradableItem';
+import { useAppContext } from '@contexts/app.context';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
-import { ActionWithTooltip } from '../..';
+import { ActionWithTooltip } from '@components/ActionWithTooltip';
 
 export type CreateStockItemFormProps = {
 	onSubmit: (values: CreateStockItem) => void;

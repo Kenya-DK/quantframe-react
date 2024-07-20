@@ -1,8 +1,9 @@
 import { Group, TextInput, Grid, Title, Tabs, Center, ScrollArea } from '@mantine/core';
 import { StockRiven } from '@api/types';
-import { useTranslateComponent, useTranslateEnums } from '@hooks/index';
+import { useTranslateComponent, useTranslateEnums } from '@hooks/useTranslate.hook';
 import dayjs from 'dayjs';
-import { AuctionListItem, PriceHistoryListItem } from '@components';
+import { PriceHistoryListItem } from '@components/PriceHistory';
+import { AuctionListItem } from '@components/AuctionListItem';
 
 
 export type StockRivenInfoProps = {

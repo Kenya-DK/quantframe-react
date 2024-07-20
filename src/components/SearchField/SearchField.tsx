@@ -1,9 +1,9 @@
 import { Group, Box, TextInput, Collapse, Divider } from '@mantine/core';
-import { useTranslateComponent } from '@hooks/index';
+import { useTranslateComponent } from '@hooks/useTranslate.hook';
 import { faFilter, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { useToggle } from '@mantine/hooks';
 import { useEffect, useState } from 'react';
-import { ActionWithTooltip } from '@components';
+import { ActionWithTooltip } from '@components/ActionWithTooltip';
 
 export type SearchFieldProps = {
   value: string;

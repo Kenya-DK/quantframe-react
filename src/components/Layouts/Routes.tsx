@@ -1,11 +1,11 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 // Layouts
-import { LiveTradingControl, LogOutLayout, LogInLayout } from '@components'
+import { LogInLayout } from './LogIn'
+import { LogOutLayout } from './LogOut'
 
 // Permissions Gate
 import AuthenticatedGate from '../AuthenticatedGate'
-
 
 // Home Routes
 import PHome from '@pages/home'
@@ -24,6 +24,9 @@ import PDebug from '@pages/debug'
 
 // Error Routes
 import PError from '@pages/error'
+
+// Control Routes
+import { LiveTradingControl } from '../LiveTradingControl'
 
 export function AppRoutes() {
   return (

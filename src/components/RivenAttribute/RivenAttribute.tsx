@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import api, { } from "@api/index";
 import classes from './RivenAttribute.module.css';
 import { useEffect, useState } from 'react';
-import { TextTranslate } from '../TextTranslate';
-import { useTranslateComponent } from '@hooks/index';
+import { TextTranslate } from '@components/TextTranslate';
+import { useTranslateComponent } from '@hooks/useTranslate.hook';
 
 export type RivenAttributeComProps = {
   value: RivenAttribute;

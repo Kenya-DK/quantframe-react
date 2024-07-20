@@ -2,7 +2,7 @@ import { Text, Card, Group, Button, Select } from '@mantine/core';
 import { useMutation } from '@tanstack/react-query';
 import api from '@api/index';
 import { notifications } from '@mantine/notifications';
-import { useTranslatePages } from '@hooks/index';
+import { useTranslatePages } from '@hooks/useTranslate.hook';
 import { useState } from 'react';
 
 export function RestCard() {

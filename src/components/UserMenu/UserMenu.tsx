@@ -1,16 +1,18 @@
 import { Text, Group, Menu, Avatar, Button, Indicator } from '@mantine/core';
-import { useAppContext, useAuthContext, useWFMSocketContext } from '@contexts/index';
 import api, { SendTauriDataEvent, WFMThumbnail } from '@api/index';
 import { QfSocketEvent, QfSocketEventOperation, Settings, UserStatus } from '@api/types';
 import classes from './UserMenu.module.css';
-import { useTranslateComponent, useTranslateEnums } from '@hooks/index';
+import { useTranslateComponent, useTranslateEnums } from '@hooks/useTranslate.hook';
 import { faGear, faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useMutation } from '@tanstack/react-query';
 import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router-dom';
-import { SettingsForm } from '../Forms';
+import { SettingsForm } from '@components/Forms/Settings';
 import { modals } from '@mantine/modals';
+import { useAppContext } from '@contexts/app.context';
+import { useAuthContext } from '@contexts/auth.context';
+import { useWFMSocketContext } from '@contexts/wfmSocket.context';
 export function UserMenu() {
 	// States
 	const navigate = useNavigate();

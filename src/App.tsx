@@ -1,13 +1,17 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ModalsProvider } from '@mantine/modals';
-import { AppContextProvider, LiveScraperContextProvider, StockContextProvider, WarframeMarketContextProvider } from './contexts';
-import { AppRoutes, PromptModal } from '@components';
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import { en } from './lang/en'
 import { dk } from './lang/dk'
 
 import { IconDefinition, library, dom, IconPrefix, IconName } from '@fortawesome/fontawesome-svg-core'
+import { AppRoutes } from '@components/Layouts/Routes';
+import { PromptModal } from '@components/Modals/Prompt';
+import { AppContextProvider } from '@contexts/app.context';
+import { LiveScraperContextProvider } from '@contexts/liveScraper.context';
+import { StockContextProvider } from '@contexts/stock.context';
+import { WarframeMarketContextProvider } from '@contexts/warframeMarket.context';
 
 const faCustomIcon: IconDefinition = {
   prefix: 'fac' as IconPrefix,

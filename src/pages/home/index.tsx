@@ -6,8 +6,12 @@ import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { getCssVariable } from "@utils/helper";
 import { DataTable } from "mantine-datatable";
 import { useEffect, useState } from "react";
-import { TextTranslate, StatsWithIcon, BarCardChart, ColorInfo, TransactionListItem } from "@components";
 import { StatisticProfitBase, TransactionType } from "@api/types";
+import { TextTranslate } from "@components/TextTranslate";
+import { StatsWithIcon } from "@components/StatsWithIcon";
+import { BarCardChart } from "@components/BarCardChart";
+import { ColorInfo } from "@components/ColorInfo";
+import { TransactionListItem } from "@components/TransactionListItem";
 
 
 const BarChartFooter = ({ i18nKey, statistics }: { i18nKey: string, statistics: StatisticProfitBase }) => {

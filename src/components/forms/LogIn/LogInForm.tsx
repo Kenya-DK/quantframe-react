@@ -1,6 +1,6 @@
 import { Anchor, PaperProps, Button, Divider, Group, Paper, PasswordInput, Stack, TextInput, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { useTranslateForms } from '@hooks/index';
+import { useTranslateForms } from '@hooks/useTranslate.hook';
 
 export type LogInFormProps = {
   onSubmit: (values: { email: string; password: string }) => void;

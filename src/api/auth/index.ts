@@ -1,6 +1,6 @@
 import { TauriClient } from "..";
 import { User, UserStatus } from "@api/types";
-import { wfmSocket } from "@models/index";
+import { wfmSocket } from "@models/wfmSocket";
 import { Wfm } from "../../types";
 export class AuthModule {
   constructor(private readonly client: TauriClient) { }

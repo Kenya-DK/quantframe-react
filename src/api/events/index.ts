@@ -1,5 +1,5 @@
 import { listen } from "@tauri-apps/api/event";
-import { ComposedListener } from "../../utils/listener/Composed.listener";
+import { ComposedListener } from "@utils/listener/Composed.listener";
 
 export class EventModule {
   private listener = new ComposedListener();

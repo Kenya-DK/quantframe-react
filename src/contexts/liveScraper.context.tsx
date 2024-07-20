@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { QfSocketEvent, ResponseError } from "@api/types";
 import { OffTauriEvent, OnTauriEvent } from "../api";
-import { useTranslateContexts } from "@hooks/index";
+import { useTranslateContexts } from "@hooks/useTranslate.hook";
 import { notifications } from "@mantine/notifications";
 export type LiveScraperContextProps = {
   is_running: boolean;

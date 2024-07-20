@@ -2,7 +2,7 @@ import { Group, Paper, Text } from '@mantine/core';
 import { TransactionDto, TransactionItemType } from '@api/types';
 import dayjs from 'dayjs';
 import classes from './TransactionListItem.module.css';
-import { GetSubTypeDisplay } from '@utils/index';
+import { GetSubTypeDisplay } from '@utils/helper';
 export type TransactionListItemProps = {
 	transaction: TransactionDto;
 }

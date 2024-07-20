@@ -1,5 +1,5 @@
 import { Box, Button, Group } from "@mantine/core";
-import { useTranslateForms } from "@hooks/index";
+import { useTranslateForms } from "@hooks/useTranslate.hook";
 import api from "@api/index";
 import { useMutation } from "@tanstack/react-query";
 

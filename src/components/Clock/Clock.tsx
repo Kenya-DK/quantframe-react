@@ -1,8 +1,8 @@
 import { Group } from '@mantine/core';
 import classes from './Clock.module.css';
 import { useEffect, useState } from 'react';
-import { useTranslateComponent } from '../../hooks';
-import { TextTranslate } from '..';
+import { useTranslateComponent } from '@hooks/useTranslate.hook';
+import { TextTranslate } from '@components/TextTranslate';
 
 export function Clock() {
 	const [currentTime, setCurrentTime] = useState("");

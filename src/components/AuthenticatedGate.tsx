@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useIsAuthenticated } from "@hooks/index";
+import { useIsAuthenticated } from "@hooks/useIsAuthenticated.hook";
 
 type Props = {
   RenderError?: React.ComponentType,

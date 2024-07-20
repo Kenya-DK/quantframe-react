@@ -1,11 +1,12 @@
 import { Group, TextInput, Button, Grid, Title, Tabs, Center, ScrollArea } from '@mantine/core';
 import { CacheTradableItem, StockItem } from '@api/types';
-import { useTranslateComponent, useTranslateEnums } from '@hooks/index';
+import { useTranslateComponent, useTranslateEnums } from '@hooks/useTranslate.hook';
 import dayjs from 'dayjs';
-import { OrderItem, PriceHistoryListItem } from '@components';
 import { useQuery } from '@tanstack/react-query';
 import api from '@api/index';
 import { useEffect, useState } from 'react';
+import { PriceHistoryListItem } from '@components/PriceHistory';
+import { OrderItem } from '@components/OrderItem';
 
 
 export type StockItemInfoProps = {

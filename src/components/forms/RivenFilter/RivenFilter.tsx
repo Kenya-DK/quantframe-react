@@ -1,9 +1,9 @@
 import { Group, Box, Button, Collapse, Switch, Grid, NumberInput, Stack } from '@mantine/core';
-import { useTranslateForms } from '@hooks/index';
+import { useTranslateForms } from '@hooks/useTranslate.hook';
 import { useForm } from '@mantine/form';
 import { StockRivenFilter } from '@api/types';
-import { MinMax } from '../MinMax';
-import { RivenFilterAttribute } from '../RivenFilterAttribute';
+import { MinMax } from '@components/Forms/MinMax';
+import { RivenFilterAttribute } from '@components/Forms/RivenFilterAttribute';
 
 export type RivenFilterProps = {
 	value: StockRivenFilter;

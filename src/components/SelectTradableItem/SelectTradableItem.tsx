@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import api, { } from "@api/index";
 import { CacheTradableItem, CacheTradableItemSubType, SubType } from "@api/types";
 import { useEffect, useState } from 'react';
-import { useTranslateComponent } from '@hooks/index';
+import { useTranslateComponent } from '@hooks/useTranslate.hook';
 import { upperFirst } from '@mantine/hooks';
 
 export type SelectTradableItemProps = {

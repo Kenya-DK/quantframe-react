@@ -1,9 +1,10 @@
 import { PaperProps, Card, Group, Text, Divider, TextInput, Collapse, Textarea } from '@mantine/core';
 import { SettingsNotification } from '@api/types';
-import { useTranslateForms } from '@hooks/index';
+import { useTranslateForms } from '@hooks/useTranslate.hook';
 import { faBell } from '@fortawesome/free-solid-svg-icons';
 import { faDiscord } from '@fortawesome/free-brands-svg-icons';
-import { ActionWithTooltip, TooltipIcon } from '@components';
+import { ActionWithTooltip } from '@components/ActionWithTooltip';
+import { TooltipIcon } from '@components/TooltipIcon';
 
 export type NotificationFormProps = {
   title: string;

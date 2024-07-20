@@ -1,5 +1,5 @@
 import { Group, NumberInput, Box, Button } from '@mantine/core';
-import { useTranslateForms } from '@hooks/index';
+import { useTranslateForms } from '@hooks/useTranslate.hook';
 import { useForm } from '@mantine/form';
 import { UpdateTransactionDto } from '@api/types';
 

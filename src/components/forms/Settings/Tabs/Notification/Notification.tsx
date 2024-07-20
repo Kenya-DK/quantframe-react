@@ -1,7 +1,7 @@
 import { Box, Button, Group, SimpleGrid } from "@mantine/core";
 import { SettingsNotifications } from "@api/types";
-import { NotificationForm } from "@components";
-import { useTranslateForms } from "@hooks/index";
+import { NotificationForm } from "@components/Forms/Notification";
+import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { useForm } from "@mantine/form";
 
 export type NotificationPanelProps = {

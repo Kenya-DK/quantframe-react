@@ -1,8 +1,8 @@
 import { AppShell } from "@mantine/core";
 import { Outlet, useNavigate } from "react-router-dom";
-import { Header } from "@components";
+import { Header } from "@components/Header";
 import classes from "./LogOutLayout.module.css";
-import { useAppContext } from "@contexts/index";
+import { useAppContext } from "@contexts/app.context";
 import { useEffect } from "react";
 
 export function LogOutLayout() {
