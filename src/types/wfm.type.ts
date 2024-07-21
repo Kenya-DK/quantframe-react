@@ -1,4 +1,4 @@
-import { RivenAttribute, UserStatus } from "@api/types";
+import { PriceHistory, RivenAttribute, UserStatus } from "@api/types";
 
 export namespace Wfm {
 
@@ -69,15 +69,19 @@ export namespace Wfm {
     Sell = 'sell',
   }
   export interface OrderDto {
+    closed_avg: number;
+    creation_date: Date;
     id: string;
-    platinum: number;
-    quantity: number;
-    order_type: OrderType;
+    info?: OrderInfo;
+    last_update: Date;
+    user?: UserDto;
+    operation: string;
+    order_type: string;
     platform: string;
+    platinum: number;
+    profit: number;
+    quantity: number;
     region: string;
-    creation_date: string;
-    last_update: string;
-    user: UserDto;
     visible: boolean;
     // Mod
     mod_rank?: number;
@@ -88,6 +92,15 @@ export namespace Wfm {
     subtype?: string;
     item?: OrderItemDto;
   }
+
+  export interface OrderInfo {
+    highest_price: number;
+    lowest_price: number;
+    orders: OrderDto[];
+    price_history: PriceHistory[];
+    total_buyers: number;
+  }
+
   export interface OrderItemDto {
     id: string;
     url_name: string;

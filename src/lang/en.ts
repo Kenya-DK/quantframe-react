@@ -481,6 +481,32 @@ export const en = {
         wiki: "Wiki",
       }
     },
+    order_details: {
+      tabs: {
+        general: {
+          title: "General",
+        },
+        orders: {
+          title: "Orders",
+        },
+      },
+      fields: {
+        created_at: "Created At",
+        updated_at: "Updated At",
+        list_price: "List Price",
+        profit: "Profit",
+        total_buyers: "Total Buyers",
+        highest_price: "Highest Price",
+        lowest_price: "Lowest Price",
+        listed: "Listed Prices History",
+        no_listed: "No previous listed prices",
+        no_orders: "No orders was found for this item.",
+      },
+      buttons: {
+        wfm: "Warframe Market",
+        wiki: "Wiki",
+      }
+    },
     order_item: {
       fields: {
         quantity: "<qty/> <blue>{{quantity}}</blue>",
@@ -1205,6 +1231,9 @@ export const en = {
             },
             delete_all: {
               tooltip: "Delete All"
+            },
+            info: {
+              tooltip: "Show Info"
             },
           },
           prompts: {

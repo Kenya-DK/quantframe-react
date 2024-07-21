@@ -1,7 +1,7 @@
 use entity::sub_type::SubType;
 use serde::{Deserialize, Serialize};
 
-use crate::wfm_client::enums::order_type::OrderType;
+use crate::{live_scraper::types::order_extra_info::OrderDetails, wfm_client::enums::order_type::OrderType};
 
 use super::order::Order;
 

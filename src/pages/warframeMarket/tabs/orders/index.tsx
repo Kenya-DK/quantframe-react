@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Wfm } from "$types/index";
 import { useWarframeMarketContextContext } from "@contexts/warframeMarket.context";
 import { paginate } from "@utils/helper";
-import { faCartShopping, faPen, faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faCartShopping, faInfoCircle, faPen, faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { CreateStockItem, SellByWfmOrder } from "@api/types";
@@ -15,6 +15,7 @@ import { ColorInfo } from "@components/ColorInfo";
 import { Loading } from "@components/Loading";
 import { OrderItem } from "@components/OrderItem";
 import { SearchField } from "@components/SearchField";
+import { OrderDetails } from "@components/Modals/OrderDetails/OrderDetails";
 
 interface OrderPanelProps {
 }
@@ -192,6 +193,14 @@ export const OrderPanel = ({ }: OrderPanelProps) => {
         })
     }
 
+    // Models
+    const OpenInfoModal = (order: Wfm.OrderDto) => {
+        modals.open({
+            size: "100%",
+            title: order.item?.en?.item_name,
+            children: (<OrderDetails value={order} />),
+        })
+    }
     return (
         <Box>
             <SearchField value={query} onChange={(text) => setQuery(text)}
@@ -275,6 +284,17 @@ export const OrderPanel = ({ }: OrderPanelProps) => {
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         HandleSellOrBuy(order, order.platinum);
+                                    }}
+                                />
+                                <ActionWithTooltip
+                                    tooltip={useTranslateButtons('info.tooltip')}
+                                    icon={faInfoCircle}
+                                    color={"blue.7"}
+                                    actionProps={{ size: "sm" }}
+                                    iconProps={{ size: "xs" }}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        OpenInfoModal(order);
                                     }}
                                 />
                                 <ActionWithTooltip

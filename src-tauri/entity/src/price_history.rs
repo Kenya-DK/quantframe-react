@@ -6,7 +6,6 @@ pub struct PriceHistoryVec(pub Vec<PriceHistory>);
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PriceHistory {
-
     #[serde(rename = "created_at")]
     pub created_at: String,
 
@@ -15,9 +14,6 @@ pub struct PriceHistory {
 }
 impl PriceHistory {
     pub fn new(created_at: String, price: i64) -> Self {
-        Self {
-            created_at,
-            price,
-        }
+        Self { created_at, price }
     }
 }
