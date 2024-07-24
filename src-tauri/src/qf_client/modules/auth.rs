@@ -44,7 +44,7 @@ impl AuthModule {
                 return Ok(user);
             }
             Ok(ApiResult::Error(e, _headers)) => {
-                let log_level = if e.status_code != 500 {
+                let log_level = if e.status_code < 200 || e.status_code > 299 {
                     LogLevel::Warning
                 } else {
                     LogLevel::Critical
@@ -54,8 +54,7 @@ impl AuthModule {
                     e,
                     eyre!("There was an error fetching user profile"),
                     log_level,
-                ));                    
-
+                ));
             }
             Err(e) => return Err(e),
         };

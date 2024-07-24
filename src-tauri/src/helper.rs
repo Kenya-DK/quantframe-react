@@ -12,6 +12,30 @@ use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 
 use crate::utils::modules::error::AppError;
 
+static APP_PATH: &str = "dev.kenya.quantframe";
+
+pub fn get_device_id() -> String {
+    let home_dir = match tauri::api::path::home_dir() {
+        Some(val) => val,
+        None => {
+            panic!("Could not find app path");
+        }
+    };
+    let device_name = home_dir.file_name().unwrap().to_str().unwrap();
+    device_name.to_string()
+}
+
+pub fn dose_app_exist() -> bool {
+    let local_path = match tauri::api::path::local_data_dir() {
+        Some(val) => val,
+        None => {
+            panic!("Could not find app path");
+        }
+    };
+    let app_path = local_path.join(APP_PATH);
+    app_path.exists()
+}
+
 pub fn get_app_storage_path() -> PathBuf {
     let local_path = match tauri::api::path::local_data_dir() {
         Some(val) => val,
@@ -19,12 +43,14 @@ pub fn get_app_storage_path() -> PathBuf {
             panic!("Could not find app path");
         }
     };
-    let app_path = local_path.join("dev.kenya.quantframe");
+
+    let app_path = local_path.join(APP_PATH);
     if !app_path.exists() {
-        fs::create_dir_all(app_path.clone()).unwrap();
+        fs::create_dir_all(&app_path).unwrap()
     }
     app_path
 }
+
 pub fn remove_special_characters(input: &str) -> String {
     // Define the pattern for special characters except _ and space
     let pattern = Regex::new("[^a-zA-Z0-9_ ]").unwrap();
@@ -34,6 +60,7 @@ pub fn remove_special_characters(input: &str) -> String {
 
     result.into_owned()
 }
+
 pub fn get_local_data_path() -> PathBuf {
     let local_path = match tauri::api::path::local_data_dir() {
         Some(val) => val,

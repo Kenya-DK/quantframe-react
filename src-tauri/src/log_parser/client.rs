@@ -82,7 +82,7 @@ impl LogParser {
             logger::info_con(&self.component, "Log parser is already running");
             return Ok(());
         }
-        
+
         self.is_running.store(true, Ordering::SeqCst);
         let is_running = Arc::clone(&self.is_running);
 

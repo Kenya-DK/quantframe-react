@@ -80,6 +80,9 @@ pub async fn app_init(
             &qf_user.clone().unwrap(),
             wfm_user.qf_access_token.clone(),
         );
+    } else {
+        wfm_user.anonymous = true;
+        wfm_user.verification = false;
     }
     // Send User to UI
     notify.gui().send_event_update(
@@ -87,10 +90,6 @@ pub async fn app_init(
         UIOperationEvent::Set,
         Some(json!(&wfm_user)),
     );
-
-    if qf_user.is_none() {
-        return Ok(true);
-    }
 
     // Load Cache
     notify
@@ -223,8 +222,8 @@ pub async fn app_init(
 
     // Start Log Parser
     notify
-    .gui()
-    .send_event(UIEvent::OnInitialize, Some(json!("log_parser")));
+        .gui()
+        .send_event(UIEvent::OnInitialize, Some(json!("log_parser")));
     match log_parser.start_loop() {
         Ok(_) => {}
         Err(e) => {
@@ -245,7 +244,7 @@ pub async fn app_update_settings(
     let arced_mutex = Arc::clone(&settings_state);
     let mut my_lock = arced_mutex.lock()?;
 
-    // Set Loggin Settings
+    // Set Logging Settings
     my_lock.debug = settings.debug;
 
     // Set Live Scraper Settings

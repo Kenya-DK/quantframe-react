@@ -93,11 +93,19 @@ impl AuthState {
     }
 
     pub fn get_username(&self) -> String {
-        digest(format!("hashStart-{}-hashEnd", self.id).as_bytes())
+        self.id.clone()
+        // digest(format!("hashStart-{}-hashEnd", self.id).as_bytes())
     }
 
     pub fn get_password(&self) -> String {
-        digest(format!("hashStart-{}-hashEnd", self.check_code).as_bytes())
+        // TODO: Enable This
+        self.check_code.clone()
+        // digest(format!("hashStart-{}-hashEnd", self.check_code).as_bytes())
+    }
+
+    pub fn get_device_id(&self) -> String {
+        let device_id = helper::get_device_id();
+        digest(format!("hashStart-{}-hashEnd", device_id).as_bytes())
     }
 
     pub fn update_from_wfm_user_profile(

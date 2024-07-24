@@ -42,25 +42,51 @@ mod wfm_client;
 pub static APP: OnceLock<tauri::AppHandle> = OnceLock::new();
 
 async fn setup_manages(app: &mut App) -> Result<(), AppError> {
+
+    let is_first_install = !helper::dose_app_exist();
+
+    println!("Is first install: {:?}", is_first_install);
     // Create the database connection and store it
     let storage_path = helper::get_app_storage_path();
 
-    let db_file_name = "quantframeV2.sqlite";
+    let mut db_file_name = "quantframeV2.sqlite";
+    let db_debug_file_name = "quantframeV2_debug.sqlite";
+    let debug_db = false;
 
-    // Create the database path
+    // Create the path to the database file
+    let db_file_path = format!("{}/{}", storage_path.to_str().unwrap(), db_file_name);
+
+    // Create a backup of the database file
+    let db_file_path_backup = format!("{}/{}_backup", storage_path.to_str().unwrap(), db_file_name);
+    logger::info_con("Setup:Database", "Creating a backup of the database file");
+    if std::path::Path::new(&db_file_path).exists() {
+        std::fs::copy(&db_file_path, &db_file_path_backup)
+            .expect("Failed to create a backup of the database file");
+    }
+
+    // Create the path to the debug database file
+    let db_debug_file_path_backup = db_file_path.replace(db_file_name, db_debug_file_name);
+    if debug_db {
+        db_file_name = db_debug_file_name;
+        logger::warning_con(
+            "Setup:Database",
+            "Debug mode is enabled, using the debug database file no data wil be saved",
+        );
+        if std::path::Path::new(&db_file_path).exists() {
+            std::fs::copy(&db_file_path, &db_debug_file_path_backup)
+                .expect("Failed to create a backup of the database file");
+        }
+    }
+
+    // Create the database connection URL
     let db_url = format!(
         "sqlite://{}/{}?mode=rwc",
         storage_path.to_str().unwrap(),
         db_file_name,
     );
 
-    // Create a copy of the database file if it exists for backup
-    let db_file_path = format!("{}/{}", storage_path.to_str().unwrap(), db_file_name);
-    let db_file_path_backup = format!("{}/{}_backup", storage_path.to_str().unwrap(), db_file_name);
-    if std::path::Path::new(&db_file_path).exists() {
-        std::fs::copy(&db_file_path, &db_file_path_backup)
-            .expect("Failed to create a backup of the database file");
-    }
+
+    println!("DB URL: {:?}", storage_path);
 
     // Create the database connection and store it and run the migrations
     let conn = Database::connect(db_url)
@@ -69,7 +95,7 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     Migrator::up(&conn, None).await.unwrap();
 
     // Create and manage Notification state
-    let app_arc: Arc<Mutex<AppState>> = Arc::new(Mutex::new(AppState::new(conn, app.handle())));
+    let app_arc: Arc<Mutex<AppState>> = Arc::new(Mutex::new(AppState::new(conn, app.handle(), is_first_install)));
     app.manage(app_arc.clone());
 
     // Create and manage Notification state

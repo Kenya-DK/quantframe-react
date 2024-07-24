@@ -115,6 +115,7 @@ impl QFClient {
     ) -> Result<ApiResult<T>, AppError> {
         let app = self.app.lock()?.clone();
         let auth = self.auth.lock()?.clone();
+
         let mut rate_limiter = self.limiter.lock().await;
         rate_limiter.wait_for_token().await;
 
@@ -126,9 +127,13 @@ impl QFClient {
             .request(method.clone(), Url::parse(&new_url).unwrap())
             .header(
                 "Authorization",
-                format!("JWT {}", auth.qf_access_token.unwrap_or("".to_string())),
+                format!(
+                    "JWT {}",
+                    auth.qf_access_token.clone().unwrap_or("".to_string())
+                ),
             )
             .header("App", packageinfo.name.to_string())
+            .header("Device", auth.get_device_id())
             .header("Version", packageinfo.version.to_string())
             .header("UserName", auth.ingame_name)
             .header("UserId", auth.id);
@@ -182,22 +187,19 @@ impl QFClient {
                 LogLevel::Critical,
             )
         })?;
-
-        if response.get("statusCode").is_some()
-            && response.get("error").is_some()
-            && response.get("message").is_some()
-        {
-            if response.get("message").unwrap().is_string() {
+        // If the status code is not between 200 and 204, it's an error
+        if error_def.status_code < 200 || error_def.status_code > 299 {
+            if response.get("message").is_some() && response.get("message").unwrap().is_string() {
                 let msg = response.get("message").unwrap().as_str();
                 error_def.messages.push(msg.unwrap_or_default().to_string());
             }
-            if response.get("message").unwrap().is_array() {
+            if response.get("message").is_some() && response.get("message").unwrap().is_array() {
                 let msg = response.get("message").unwrap().as_array();
                 for m in msg.unwrap() {
                     error_def.messages.push(m.to_string());
                 }
             }
-            if response.get("error").unwrap().is_string() {
+            if response.get("error").is_some() && response.get("error").unwrap().is_string() {
                 let msg = response.get("error").unwrap().as_str();
                 error_def.error = msg.unwrap_or_default().to_string();
             }

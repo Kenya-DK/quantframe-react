@@ -17,7 +17,7 @@ pub async fn auth_login(
 ) -> Result<AuthState, AppError> {
     let wfm = wfm.lock().expect("Could not lock wfm").clone();
     let qf = qf.lock().expect("Could not lock qf").clone();
-    let auth_state = auth.lock()?.clone();
+    let mut auth_state = auth.lock()?.clone();
     // Login to Warframe Market
     let (wfm_user, wfm_token) = match wfm.auth().login(&email, &password).await {
         Ok((user, token)) => (user, token),
@@ -31,7 +31,7 @@ pub async fn auth_login(
     if wfm_user.anonymous || wfm_user.banned || !wfm_user.verification {
         return Ok(auth_state);
     }
-
+    auth_state.update_from_wfm_user_profile(&wfm_user, wfm_token.clone());
     // Login to QuantFrame
     let (mut qf_user, mut qf_token) = match qf
         .auth()
@@ -69,6 +69,7 @@ pub async fn auth_login(
             }
         }
     }
+    // Update The current AuthState
     let arced_mutex = Arc::clone(&auth);
     let mut auth = arced_mutex.lock().expect("Could not lock auth");
     auth.update_from_wfm_user_profile(&wfm_user, wfm_token.clone());
