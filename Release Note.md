@@ -13,4 +13,5 @@ So all your data needs to be migrated, this be be done in the Debug Tab and unde
 - Remove the price scraper (It is now server).
 - Add listed price history.
 - Add mass edit on stock Rivens.
+- Add Trading Tax Cap.
 - Add Auto Trade: Note this can be buggy so use it at y own risk...
