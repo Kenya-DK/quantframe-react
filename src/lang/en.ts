@@ -148,7 +148,13 @@ export const en = {
                 label: "Average Price Cap",
                 placeholder: "Average Price Cap",
                 error: "Invalid average price cap",
-                tooltip: "The maximum average price cap.",
+                tooltip: "The maximum price cap per buy order.",
+              },
+              trading_tax_cap: {
+                label: "Trading Tax Cap",
+                placeholder: "Trading Tax Cap",
+                error: "Invalid trading tax cap",
+                tooltip: "The maximum credit tax per buy order use -1 for unlimited.",
               },
               max_total_price_cap: {
                 label: "Max Total Price Cap",

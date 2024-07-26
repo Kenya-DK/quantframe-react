@@ -19,6 +19,7 @@ export interface SettingsStockItem {
   auto_delete: boolean;
   auto_trade: boolean;
   avg_price_cap: number;
+  trading_tax_cap: number;
   blacklist: string[];
   max_total_price_cap: number;
   min_sma: number;

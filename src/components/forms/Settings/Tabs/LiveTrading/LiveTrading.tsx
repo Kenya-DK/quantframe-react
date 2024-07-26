@@ -81,6 +81,15 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
                   radius="md"
                 />
                 <NumberInput
+                  label={useTranslateFormFields('trading_tax_cap.label')}
+                  placeholder={useTranslateFormFields('trading_tax_cap.placeholder')}
+                  value={form.values.stock_item.trading_tax_cap}
+                  onChange={(event) => form.setFieldValue('stock_item.trading_tax_cap', Number(event))}
+                  error={form.errors.trading_tax_cap && useTranslateFormFields('trading_tax_cap.error')}
+                  rightSection={<TooltipIcon label={useTranslateFormFields('trading_tax_cap.tooltip')} />}
+                  radius="md"
+                />
+                <NumberInput
                   label={useTranslateFormFields('max_total_price_cap.label')}
                   placeholder={useTranslateFormFields('max_total_price_cap.placeholder')}
                   value={form.values.stock_item.max_total_price_cap}

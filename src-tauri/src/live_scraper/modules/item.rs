@@ -419,6 +419,7 @@ impl ItemModule {
         let volume_threshold = settings.stock_item.volume_threshold;
         let range_threshold = settings.stock_item.range_threshold;
         let avg_price_cap = settings.stock_item.avg_price_cap;
+        let trading_tax_cap = settings.stock_item.trading_tax_cap;
         let price_shift_threshold = settings.stock_item.price_shift_threshold;
         let strict_whitelist = settings.stock_item.strict_whitelist;
         let whitelist = settings.stock_item.whitelist.clone();
@@ -432,10 +433,11 @@ impl ItemModule {
 
         // Create a query uuid.
         let query_id = format!(
-            "get_buy|vol:{:?}ran:{:?}avg_p{:?}price_shift:{:?}strict_whitelist:{:?}whitelist{:?}blacklist:{:?}:mode:{:?}", 
+            "get_buy|vol:{:?}ran:{:?}avg_p{:?}tax_p{:?}price_shift:{:?}strict_whitelist:{:?}whitelist{:?}blacklist:{:?}:mode:{:?}", 
             volume_threshold.clone(),
             range_threshold.clone(),
             avg_price_cap.clone(),
+            trading_tax_cap.clone(),
             price_shift_threshold.clone(),
             strict_whitelist.clone(),
             whitelist.clone().join(","),
@@ -467,6 +469,7 @@ impl ItemModule {
                                 && item.avg_price <= avg_price_cap as f64)
                             && item.week_price_shift >= price_shift_threshold as f64))
                     && item.week_price_shift >= price_shift_threshold as f64
+                    && (trading_tax_cap >-1 && item.trading_tax <= trading_tax_cap as f64)
                     || (stock_item.contains(&item.url_name) && item.order_type == "closed")
             })
             .cloned()
