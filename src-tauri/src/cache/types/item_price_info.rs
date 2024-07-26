@@ -33,6 +33,9 @@ pub struct ItemPriceInfo {
     #[serde(rename = "range")]
     pub range: f64,
 
+    #[serde(rename = "trading_tax")]
+    pub trading_tax: f64,
+
     #[serde(rename = "week_price_shift")]
     pub week_price_shift: f64,
 
