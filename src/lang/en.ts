@@ -1172,6 +1172,35 @@ export const en = {
                 }
               },
             },
+            import_algo_trader: {
+              title: "Import Algo Trader",
+              fields: {
+                db_path: {
+                  label: "File",
+                  placeholder: "Select file...",
+                }
+              },
+              buttons: {
+                import: {
+                  title: "Import",
+                },
+                open_file: {
+                  tooltip: "Open File",
+                }
+              },
+              errors: {
+                import: {
+                  title: "Import Error",
+                  message: "An error occurred while trying to import.",
+                }
+              },
+              success: {
+                import: {
+                  title: "Import Success",
+                  message: "Import has been successfully completed.",
+                }
+              },
+            },
           }
         }
       },

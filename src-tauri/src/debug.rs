@@ -1,8 +1,11 @@
 use crate::{
-    cache::client::CacheClient, log_parser::types::create_stock_entity::CreateStockEntity,
-    notification::client::NotifyClient, utils::modules::error::AppError,
+    cache::client::CacheClient,
+    log_parser::types::create_stock_entity::CreateStockEntity,
+    notification::client::NotifyClient,
+    utils::modules::{error::AppError, logger},
 };
 
+use chrono::{DateTime, NaiveDateTime, Utc};
 use entity::{
     enums::stock_type::StockType, sub_type::SubType, transaction::transaction::TransactionType,
 };
@@ -236,6 +239,128 @@ impl DebugClient {
         self.migrate_data_transactions(old_con, new_con).await?;
         self.migrate_data_stock_item(old_con, new_con).await?;
         self.migrate_data_stock_riven(old_con, new_con).await?;
+        Ok(())
+    }
+
+    pub async fn import_algo_trader(
+        &self,
+        old_con: &DatabaseConnection,
+        new_con: &DatabaseConnection,
+    ) -> Result<(), AppError> {
+        let cache = self.cache.lock()?.clone();
+        let notify = self.notify.lock()?.clone();
+        let old_items = StockItemQuery::get_wat_stock_items(old_con)
+            .await
+            .map_err(|e| AppError::new_db("MigrateDataBase", e))?;
+        for item in old_items {
+            let mut entity = CreateStockEntity::new(&item.name, item.bought as i64);
+            entity.entity_type = StockType::Item;
+
+            match entity.validate_entity(&cache, "--item_by url_name --item_lang en") {
+                Ok(_) => {}
+                Err(e) => {
+                    println!("Error: {:?}", e);
+                    continue;
+                }
+            }
+            let tradable_item = cache
+                .tradable_items()
+                .get_by(&item.name, "--item_by url_name --item_lang en")?;
+            if entity.tags.contains(&"mod".to_string()) && tradable_item.is_some() {
+                let tradable_item = tradable_item.unwrap();
+                entity.sub_type = Some(SubType::new(tradable_item.max_rank, None, None, None));
+            }
+            let stock_riven = entity.to_stock_item().to_stock();
+            match StockItemMutation::create(&new_con, stock_riven).await {
+                Ok(stock) => {
+                    logger::info_con("MigrateDataBase", &format!("Created: {}", stock.item_name));
+                }
+                Err(e) => {
+                    return Err(AppError::new_db("MigrateDataBase", e));
+                }
+            }
+        }
+        match StockItemQuery::get_all(new_con).await {
+            Ok(new_items) => {
+                notify.gui().send_event_update(
+                    crate::utils::enums::ui_events::UIEvent::UpdateStockItems,
+                    crate::utils::enums::ui_events::UIOperationEvent::Set,
+                    Some(json!(new_items)),
+                );
+            }
+            Err(e) => {
+                return Err(AppError::new_db("MigrateDataBase", e));
+            }
+        }
+
+        let transactions = TransactionQuery::get_wat_transactions(old_con)
+            .await
+            .map_err(|e| AppError::new_db("MigrateDataBase", e))?;
+        for item in transactions {
+            let mut entity = CreateStockEntity::new(&item.name, item.price as i64);
+            entity.entity_type = StockType::Item;
+
+            match entity.validate_entity(&cache, "--item_by url_name --item_lang en") {
+                Ok(_) => {}
+                Err(e) => {
+                    println!("Error: {:?}", e);
+                    continue;
+                }
+            }
+            let tradable_item = cache
+                .tradable_items()
+                .get_by(&item.name, "--item_by url_name --item_lang en")?;
+            if entity.tags.contains(&"mod".to_string()) && tradable_item.is_some() {
+                let tradable_item = tradable_item.unwrap();
+                entity.sub_type = Some(SubType::new(tradable_item.max_rank, None, None, None));
+            }
+
+            let transaction_type = match item.transaction_type.as_str() {
+                "buy" => TransactionType::Purchase,
+                "sell" => TransactionType::Sale,
+                _ => {
+                    return Err(AppError::new(
+                        "MigrateDataBase",
+                        eyre::eyre!("Invalid transaction type"),
+                    ));
+                }
+            };
+            // Define the format of the input date string
+            let format = "%Y-%m-%d %H:%M:%S%.f";
+            let mut transaction = entity.to_transaction("", transaction_type)?;
+            // Parse the string to a NaiveDateTime
+            match NaiveDateTime::parse_from_str(&item.datetime, format) {
+                Ok(naive_date_time) => {
+                    // Convert NaiveDateTime to DateTime<Utc>
+                    let date_time_utc: DateTime<Utc> =
+                        DateTime::from_naive_utc_and_offset(naive_date_time, Utc);
+                        transaction.created_at = date_time_utc;
+                }
+                Err(e) => {
+                    println!("Failed to parse date and time: {}", e);
+                }
+            }
+            match TransactionMutation::create_from_old(&new_con, transaction).await {
+                Ok(stock) => {
+                    logger::info_con("MigrateDataBase", &format!("Created: {}", stock.item_name));
+                }
+                Err(e) => {
+                    return Err(AppError::new_db("MigrateDataBase", e));
+                }
+            }
+        }
+        match TransactionQuery::get_all(new_con).await {
+            Ok(new_items) => {
+                notify.gui().send_event_update(
+                    crate::utils::enums::ui_events::UIEvent::UpdateTransaction,
+                    crate::utils::enums::ui_events::UIOperationEvent::Set,
+                    Some(json!(new_items)),
+                );
+            }
+            Err(e) => {
+                return Err(AppError::new_db("MigrateDataBase", e));
+            }
+        }
         Ok(())
     }
 }
