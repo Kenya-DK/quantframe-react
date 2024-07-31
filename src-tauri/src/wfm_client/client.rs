@@ -10,16 +10,13 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 
 use crate::{
-    app::client::AppState,
-    auth::AuthState,
-    logger,
-    utils::{
+    app::client::AppState, auth::AuthState, logger, qf_client::client::QFClient, utils::{
         enums::log_level::LogLevel,
         modules::{
             error::{ApiResult, AppError, ErrorApiResponse},
             rate_limiter::RateLimiter,
         },
-    },
+    }
 };
 
 use super::modules::{
@@ -39,6 +36,7 @@ pub struct WFMClient {
     pub auth: Arc<Mutex<AuthState>>,
     pub settings: Arc<Mutex<crate::settings::SettingsState>>,
     pub app: Arc<Mutex<AppState>>,
+    pub qf: Arc<Mutex<QFClient>>,
 }
 
 impl WFMClient {
@@ -46,6 +44,7 @@ impl WFMClient {
         auth: Arc<Mutex<AuthState>>,
         settings: Arc<Mutex<crate::settings::SettingsState>>,
         app: Arc<Mutex<AppState>>,
+        qf: Arc<Mutex<QFClient>>,
     ) -> Self {
         WFMClient {
             app,
@@ -58,6 +57,7 @@ impl WFMClient {
             log_file: "wfmAPICalls.log".to_string(),
             auth,
             settings,
+            qf,
             order_module: Arc::new(RwLock::new(None)),
             chat_module: Arc::new(RwLock::new(None)),
             auction_module: Arc::new(RwLock::new(None)),

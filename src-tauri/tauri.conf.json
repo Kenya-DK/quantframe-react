@@ -17,6 +17,14 @@
     },
     "allowlist": {
       "all": false,
+      "dialog": {
+        "all": false,
+        "ask": false,
+        "confirm": false,
+        "message": false,
+        "open": true,
+        "save": false
+      },
       "shell": {
         "all": false,
         "open": true

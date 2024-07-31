@@ -55,6 +55,78 @@ pub async fn app_init(
         Some(json!(&settings)),
     );
 
+
+    // Start Log Parser
+    notify
+        .gui()
+        .send_event(UIEvent::OnInitialize, Some(json!("log_parser")));
+    match log_parser.start_loop() {
+        Ok(_) => {}
+        Err(e) => {
+            error::create_log_file("log_parser.log".to_string(), &e);
+            return Err(e);
+        }
+    }
+
+    // Load Stock Items
+    notify
+    .gui()
+    .send_event(UIEvent::OnInitialize, Some(json!("stock_items")));
+    match StockItemQuery::get_all(&app.conn).await {
+    Ok(items) => {
+        // Send Stock Items to UI
+        notify.gui().send_event_update(
+            UIEvent::UpdateStockItems,
+            UIOperationEvent::Set,
+            Some(json!(&items)),
+        );
+    }
+    Err(e) => {
+        let error = AppError::new_db("StockItemQuery::get_all", e);
+        error::create_log_file("command.log".to_string(), &error);
+        return Err(error);
+    }
+    };
+    // Load Stock Rivens
+    notify
+    .gui()
+    .send_event(UIEvent::OnInitialize, Some(json!("stock_rivens")));
+    match StockRivenQuery::get_all(&app.conn).await {
+    Ok(items) => {
+        // Send Stock Rivens to UI
+        notify.gui().send_event_update(
+            UIEvent::UpdateStockRivens,
+            UIOperationEvent::Set,
+            Some(json!(&items)),
+        );
+    }
+    Err(e) => {
+        let error = AppError::new_db("StockRivenQuery::get_all", e);
+        error::create_log_file("command.log".to_string(), &error);
+        return Err(error);
+    }
+    };
+
+    // Load Transactions
+    notify
+    .gui()
+    .send_event(UIEvent::OnInitialize, Some(json!("transactions")));
+    match TransactionQuery::get_all(&app.conn).await {
+    Ok(transactions) => {
+        // Send Transactions to UI
+        notify.gui().send_event_update(
+            UIEvent::UpdateTransaction,
+            UIOperationEvent::Set,
+            Some(json!(&transactions)),
+        );
+    }
+    Err(e) => {
+        let error = AppError::new_db("TransactionQuery::get_all", e);
+        error::create_log_file("command.log".to_string(), &error);
+        return Err(error);
+    }
+    };
+
     // Validate WFM Auth
     notify
         .gui()
@@ -84,6 +156,18 @@ pub async fn app_init(
         wfm_user.anonymous = true;
         wfm_user.verification = false;
     }
+
+    // Start The Analytics Module
+    if qf_user.is_some() {
+        match qf.analytics().init() {
+            Ok(_) => {}
+            Err(e) => {
+                error::create_log_file("analytics.log".to_string(), &e);
+                return Err(e);
+            }
+        }
+    }
+
     // Send User to UI
     notify.gui().send_event_update(
         UIEvent::UpdateUser,
@@ -102,64 +186,7 @@ pub async fn app_init(
             return Err(e);
         }
     }
-    // Load Stock Items
-    notify
-        .gui()
-        .send_event(UIEvent::OnInitialize, Some(json!("stock_items")));
-    match StockItemQuery::get_all(&app.conn).await {
-        Ok(items) => {
-            // Send Stock Items to UI
-            notify.gui().send_event_update(
-                UIEvent::UpdateStockItems,
-                UIOperationEvent::Set,
-                Some(json!(&items)),
-            );
-        }
-        Err(e) => {
-            let error = AppError::new_db("StockItemQuery::get_all", e);
-            error::create_log_file("command.log".to_string(), &error);
-            return Err(error);
-        }
-    };
-    // Load Stock Rivens
-    notify
-        .gui()
-        .send_event(UIEvent::OnInitialize, Some(json!("stock_rivens")));
-    match StockRivenQuery::get_all(&app.conn).await {
-        Ok(items) => {
-            // Send Stock Rivens to UI
-            notify.gui().send_event_update(
-                UIEvent::UpdateStockRivens,
-                UIOperationEvent::Set,
-                Some(json!(&items)),
-            );
-        }
-        Err(e) => {
-            let error = AppError::new_db("StockRivenQuery::get_all", e);
-            error::create_log_file("command.log".to_string(), &error);
-            return Err(error);
-        }
-    };
-
-    // Load Transactions
-    notify
-        .gui()
-        .send_event(UIEvent::OnInitialize, Some(json!("transactions")));
-    match TransactionQuery::get_all(&app.conn).await {
-        Ok(transactions) => {
-            // Send Transactions to UI
-            notify.gui().send_event_update(
-                UIEvent::UpdateTransaction,
-                UIOperationEvent::Set,
-                Some(json!(&transactions)),
-            );
-        }
-        Err(e) => {
-            let error = AppError::new_db("TransactionQuery::get_all", e);
-            error::create_log_file("command.log".to_string(), &error);
-            return Err(error);
-        }
-    };
+    
     if !wfm_user.anonymous && wfm_user.verification {
         // Load User Orders
         notify
@@ -218,18 +245,6 @@ pub async fn app_init(
                 return Err(e);
             }
         };
-    }
-
-    // Start Log Parser
-    notify
-        .gui()
-        .send_event(UIEvent::OnInitialize, Some(json!("log_parser")));
-    match log_parser.start_loop() {
-        Ok(_) => {}
-        Err(e) => {
-            error::create_log_file("log_parser.log".to_string(), &e);
-            return Err(e);
-        }
     }
     Ok(false)
 }

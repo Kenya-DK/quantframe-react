@@ -6,6 +6,7 @@ export type NavbarLinkProps = {
   icon: React.ReactNode;
   label: string;
   link: string;
+  id?: string;
   active?: boolean;
   align?: string;
   web?: boolean;

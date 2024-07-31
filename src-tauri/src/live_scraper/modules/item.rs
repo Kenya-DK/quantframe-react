@@ -462,6 +462,8 @@ impl ItemModule {
                 item.order_type == "closed"
                     && item.volume > volume_threshold as f64
                     && item.range > range_threshold as f64
+                    && ((trading_tax_cap >= -1 && item.trading_tax <= trading_tax_cap as f64)
+                        || trading_tax_cap <= -1)
                     && !black_list.contains(&item.url_name)
                     && ((strict_whitelist && whitelist.contains(&item.url_name))
                         || ((!strict_whitelist
@@ -469,7 +471,6 @@ impl ItemModule {
                                 && item.avg_price <= avg_price_cap as f64)
                             && item.week_price_shift >= price_shift_threshold as f64))
                     && item.week_price_shift >= price_shift_threshold as f64
-                    && (trading_tax_cap >-1 && item.trading_tax <= trading_tax_cap as f64)
                     || (stock_item.contains(&item.url_name) && item.order_type == "closed")
             })
             .cloned()

@@ -45,18 +45,6 @@ impl OrderModule {
         Ok(())
     }
 
-    /// This method is used to progress an order.
-    ///
-    /// # Arguments
-    ///
-    /// * `url` - A string slice that holds the URL.
-    /// * `sub_type` - An optional SubType.
-    /// * `quantity` - A 64-bit integer that holds the quantity.
-    /// * `order_type` - An OrderType that holds the type of the order.
-    ///
-    /// # Returns
-    ///
-    /// * A Result containing a tuple of a string and an optional Order, or an AppError.
     pub async fn progress_order(
         &mut self,
         url: &str,
@@ -174,9 +162,12 @@ impl OrderModule {
         sub_type: Option<SubType>,
     ) -> Result<(String, Option<Order>), AppError> {
         self.client.auth().is_logged_in()?;
+        let qf = self.client.qf.lock()?.clone();
         let auth = self.client.auth.lock()?.clone();
         let limit = auth.order_limit;
 
+        let metric_key = "WFM_OrderCreated";
+        let mut metric_value = format!("I:{}|T:{}|P:{}|Q:{}",item_id, order_type, platinum, quantity);
         if self.total_orders >= limit {
             logger::warning_con(
                 &self.get_component("Create"),
@@ -194,19 +185,24 @@ impl OrderModule {
             "visible": visible
         });
 
+
         // Add SubType data
         if let Some(item_sub) = sub_type.clone() {
             if let Some(mod_rank) = item_sub.rank {
                 body["rank"] = json!(mod_rank);
+                metric_value.push_str(&format!("|R:{}", mod_rank));
             }
             if let Some(subtype) = item_sub.variant {
                 body["subtype"] = json!(subtype);
+                metric_value.push_str(&format!("|V:{}", subtype));
             }
             if let Some(amber_stars) = item_sub.amber_stars {
                 body["amber_stars"] = json!(amber_stars);
+                metric_value.push_str(&format!("|A:{}", amber_stars));
             }
             if let Some(cyan_stars) = item_sub.cyan_stars {
                 body["cyan_stars"] = json!(cyan_stars);
+                metric_value.push_str(&format!("|C:{}", cyan_stars));
             }
         }
 
@@ -217,6 +213,7 @@ impl OrderModule {
         {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.add_order_count(1)?;
+                qf.analytics().add_metric(metric_key, format!("{}|RE:{}", metric_value, "success").as_str());
                 self.client.debug(
                     &self.debug_id,
                     &self.get_component("Create"),
@@ -236,6 +233,7 @@ impl OrderModule {
                 return Ok(("order_created".to_string(), Some(payload)));
             }
             Ok(ApiResult::Error(error, _headers)) => {
+                qf.analytics().add_metric(metric_key, format!("{}|RE:{}", metric_value, "failed").as_str());
                 let log_level = match error.messages.get(0) {
                     Some(message)
                         if message.contains("app.post_order.already_created_no_duplicates")
@@ -259,11 +257,13 @@ impl OrderModule {
     }
 
     pub async fn delete(&mut self, order_id: &str) -> Result<String, AppError> {
+        let qf = self.client.qf.lock()?.clone();
         let url = format!("profile/orders/{}", order_id);
         self.client.auth().is_logged_in()?;
         match self.client.delete(&url, Some("order_id")).await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.subtract_order_count(1)?;
+                qf.analytics().add_metric("WFM_OrderDeleted", "success");
                 self.client.debug(
                     &self.debug_id,
                     &self.get_component("Delete"),
@@ -277,6 +277,7 @@ impl OrderModule {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
+                qf.analytics().add_metric("WFM_OrderDeleted", "failed");
                 let log_level = match error.messages.get(0) {
                     Some(message) if message.contains("app.delete_order.order_not_exist") => {
                         LogLevel::Warning
@@ -303,6 +304,7 @@ impl OrderModule {
         quantity: i64,
         visible: bool,
     ) -> Result<Order, AppError> {
+        let qf = self.client.qf.lock()?.clone();
         // Construct any JSON body
         let body = json!({
             "platinum": platinum,
@@ -317,6 +319,7 @@ impl OrderModule {
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {
+                qf.analytics().add_metric("WFM_OrderUpdated", "success");
                 self.client.debug(
                     &self.debug_id,
                     &self.get_component("Update"),
@@ -330,6 +333,7 @@ impl OrderModule {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
+                qf.analytics().add_metric("WFM_OrderUpdated", "failed");
                 let log_level = match error.messages.get(0) {
                     Some(message)
                         if message.contains("app.form.not_exist")
@@ -353,6 +357,7 @@ impl OrderModule {
     }
 
     pub async fn close(&mut self, id: &str) -> Result<bool, AppError> {
+        let qf = self.client.qf.lock()?.clone();
         let url = format!("profile/orders/close/{}", id);
         self.client.auth().is_logged_in()?;
 
@@ -362,10 +367,12 @@ impl OrderModule {
             .await
         {
             Ok(ApiResult::Success(_payload, _headers)) => {
+                qf.analytics().add_metric("WFM_OrderClosed", "success");
                 self.subtract_order_count(1)?;
                 return Ok(true);
             }
             Ok(ApiResult::Error(error, _headers)) => {
+                qf.analytics().add_metric("WFM_OrderClosed", "failed");
                 let log_level = match error.messages.get(0) {
                     Some(message) if message.contains("app.close_order.order_not_exist") => {
                         LogLevel::Warning

@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::{path::PathBuf, sync::{Arc, Mutex}};
 
 use serde_json::json;
 use service::{sea_orm::Database, StockItemMutation, StockRivenMutation, TransactionMutation};
@@ -11,6 +11,37 @@ use crate::{
     utils::{enums::ui_events::UIOperationEvent, modules::error::AppError},
 };
 
+#[tauri::command]
+pub async fn debug_import_algo_trader (
+    db_path: String,
+    debug: tauri::State<'_, Arc<Mutex<DebugClient>>>,
+    app: tauri::State<'_, Arc<Mutex<AppState>>>,
+) -> Result<bool, AppError> {
+    let debug = debug.lock()?.clone();
+    let app = app.lock()?.clone();
+
+    // Check if the old database exists
+    let old_db_path = PathBuf::from(db_path);
+    if !old_db_path.exists() {
+        return Err(AppError::new(
+            "DebugDbReset",
+            eyre::eyre!("Old database not found"),
+        ));
+    }
+
+    let db_url = format!("sqlite://{}?mode=rwc", old_db_path.to_str().unwrap());
+    let old_con = Database::connect(db_url)
+        .await
+        .expect("Database connection failed");
+
+    match debug.import_algo_trader(&old_con, &app.conn).await {
+        Ok(_) => {}
+        Err(e) => {
+            return Err(e);
+        }
+    }
+    Ok(true)
+}
 #[tauri::command]
 pub async fn debug_migrate_data_base(
     target: String,

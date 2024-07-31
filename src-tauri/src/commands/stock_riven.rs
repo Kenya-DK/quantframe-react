@@ -9,6 +9,7 @@ use eyre::eyre;
 use serde_json::json;
 use service::{StockRivenMutation, StockRivenQuery, TransactionMutation};
 
+use crate::qf_client::client::QFClient;
 use crate::utils::modules::error;
 use crate::{
     app::client::AppState,
@@ -194,10 +195,12 @@ pub async fn stock_riven_sell(
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<stock_riven::Model, AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
     let wfm = wfm.lock()?.clone();
+    let qf = qf.lock()?.clone();
     let stock = match StockRivenMutation::find_by_id(&app.conn, id).await {
         Ok(stock) => stock,
         Err(e) => return Err(AppError::new("StockRivenSell", eyre!(e))),
@@ -249,13 +252,16 @@ pub async fn stock_riven_sell(
 
     match TransactionMutation::create(&app.conn, transaction).await {
         Ok(inserted) => {
+            qf.analytics().add_metric("Transaction_CreateRiven", "success");
             notify.gui().send_event_update(
                 UIEvent::UpdateTransaction,
                 UIOperationEvent::CreateOrUpdate,
                 Some(json!(inserted)),
             );
         }
-        Err(e) => return Err(AppError::new("StockItemSell", eyre!(e))),
+        Err(e) => {
+            qf.analytics().add_metric("Transaction_CreateRiven", "failed");
+            return Err(AppError::new("StockItemSell", eyre!(e)))},
     }
 
     // Delete the stock from the database

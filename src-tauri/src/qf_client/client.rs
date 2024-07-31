@@ -309,4 +309,8 @@ impl QFClient {
             .unwrap()
             .clone()
     }
+    pub fn update_analytics_module(&self, module: AnalyticsModule) {
+        // Update the stored AnalyticsModule
+        *self.analytics_module.write().unwrap() = Some(module);
+    }
 }

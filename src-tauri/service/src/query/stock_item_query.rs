@@ -1,5 +1,6 @@
+use ::entity::stock::item::stock_item_wat;
 use ::entity::stock::item::{stock_item, stock_item::Entity as StockItem};
-use ::entity::stock::item::{stock_item_old, stock_item_old::Entity as StockItemOld};
+use ::entity::stock::item::{stock_item_old, stock_item_old::Entity as StockItemOld, stock_item_wat::Entity as StockItemWat};
 
 use ::entity::sub_type::SubType;
 use sea_orm::{sea_query::Expr, *};
@@ -56,5 +57,8 @@ impl StockItemQuery {
     }
     pub async fn get_old_stock_items(db: &DbConn) -> Result<Vec<stock_item_old::Model>, DbErr> {
         StockItemOld::find().all(db).await
+    }
+    pub async fn get_wat_stock_items(db: &DbConn) -> Result<Vec<stock_item_wat::Model>, DbErr> {
+        StockItemWat::find().all(db).await
     }
 }

@@ -13,6 +13,7 @@ import { StatisticModule } from './statistic';
 import { CacheModule } from './cache';
 import { ErrOrResult, QfSocketEventOperation } from './types';
 import { LogModule } from './log';
+import { AnalyticsModule } from './analytics';
 
 export class TauriClient {
   constructor() {
@@ -31,6 +32,7 @@ export class TauriClient {
     this.statistic = new StatisticModule(this);
     this.cache = new CacheModule(this);
     this.log = new LogModule(this);
+    this.analytics = new AnalyticsModule(this);
   }
 
 
@@ -88,6 +90,7 @@ export class TauriClient {
   // notification: NotificationModule;
   statistic: StatisticModule;
   cache: CacheModule;
+  analytics: AnalyticsModule;
   log: LogModule;
 }
 

@@ -1,4 +1,3 @@
-
 use serde::{Deserialize, Serialize};
 
 use crate::sub_type::SubType;
@@ -41,6 +40,9 @@ pub struct CreateStockItem {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sub_type: Option<SubType>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub available_sub_types: Option<SubType>,
 }
 
 impl CreateStockItem {
@@ -64,6 +66,7 @@ impl CreateStockItem {
             minimum_price,
             quantity,
             is_hidden,
+            available_sub_types: None,
         }
     }
     pub fn new_valid(
@@ -90,6 +93,7 @@ impl CreateStockItem {
             minimum_price,
             quantity,
             is_hidden,
+            available_sub_types: None,
         }
     }
 

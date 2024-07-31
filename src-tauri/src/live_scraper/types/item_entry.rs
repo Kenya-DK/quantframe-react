@@ -28,6 +28,7 @@ impl Hash for ItemEntry {
         self.sub_type.hash(state);
     }
 }
+
 impl ItemEntry {
     pub fn from_stock_item(stock_item: &stock_item::Model) -> ItemEntry {
         ItemEntry {

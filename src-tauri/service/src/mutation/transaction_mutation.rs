@@ -7,7 +7,7 @@ impl TransactionMutation {
     pub async fn create_from_old(
         db: &DbConn,
         form_data: transaction::Model,
-    ) -> Result<transaction::ActiveModel, DbErr> {
+    ) -> Result<transaction::Model, DbErr> {
         transaction::ActiveModel {
             wfm_id: Set(form_data.wfm_id.to_owned()),
             wfm_url: Set(form_data.wfm_url.to_owned()),
@@ -25,7 +25,7 @@ impl TransactionMutation {
             updated_at: Set(form_data.updated_at.to_owned()),
             ..Default::default()
         }
-        .save(db)
+        .insert(db)
         .await
     }
     pub async fn create(

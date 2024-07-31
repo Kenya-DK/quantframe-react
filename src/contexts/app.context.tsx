@@ -64,6 +64,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     OnTauriEvent(QfSocketEvent.OnInitialize, (i18Key: string) => setI18Key(i18Key));
 
     checkUpdate().then(({ shouldUpdate, manifest }) => {
+      console.log('shouldUpdate', shouldUpdate, manifest);
       if (!shouldUpdate)
         return;
 

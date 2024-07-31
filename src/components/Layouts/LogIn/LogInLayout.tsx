@@ -6,11 +6,14 @@ import { faCrown, faDesktop, faEnvelope, faGlobe, faHome } from "@fortawesome/fr
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
 import { useAppContext } from "@contexts/app.context";
 import { useChatContext } from "@contexts/chat.context";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { NavbarLinkProps, NavbarMinimalColored } from "@components/NavbarMinimalColored";
 import { SvgIcon, SvgType } from "@components/SvgIcon";
 import { Header } from "@components/Header";
+import api from "@api/index";
 export function LogInLayout() {
+  // States
+  const [lastPage, setLastPage] = useState<string>("");
   // Contexts
   const { app_error } = useAppContext();
   // Translate general
@@ -20,18 +23,18 @@ export function LogInLayout() {
   // States
   const navigate = useNavigate();
   const links = [
-    { align: 'top', link: "/", icon: <FontAwesomeIcon icon={faHome} />, label: useTranslateNavBar("home"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
-    { align: 'top', link: "live-trading", icon: <FontAwesomeIcon icon={faGlobe} />, label: useTranslateNavBar("live_trading"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
+    { align: 'top', id: "home", link: "/", icon: <FontAwesomeIcon icon={faHome} />, label: useTranslateNavBar("home"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
+    { align: 'top', id: "live-trading", link: "live-trading", icon: <FontAwesomeIcon icon={faGlobe} />, label: useTranslateNavBar("live_trading"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
     {
-      align: 'top', hide: false, link: "chats", icon: <Indicator disabled={unread_messages == 0} label={unread_messages > 0 ? unread_messages : undefined} inline size={16} position="top-start"  >
+      align: 'top', id: "chats", hide: false, link: "chats", icon: <Indicator disabled={unread_messages == 0} label={unread_messages > 0 ? unread_messages : undefined} inline size={16} position="top-start"  >
         <FontAwesomeIcon icon={faEnvelope} />
       </Indicator>, label: useTranslateNavBar("chats")
     },
     // { link: "statistics", icon: <FontAwesomeIcon icon={faChartSimple} />, label: useTranslate("statistics") },
-    { align: 'top', link: "warframe-market", icon: <SvgIcon svgProp={{ width: 32, height: 32, fill: "#d5d7e0" }} iconType={SvgType.Default} iconName={"wfm_logo"} />, label: useTranslateNavBar("warframe_market"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
-    { align: 'top', link: "debug", icon: <FontAwesomeIcon icon={faDesktop} />, label: useTranslateNavBar("debug"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
-    { align: 'bottom', web: true, link: "https://quantframe.app", icon: <FontAwesomeIcon icon={faGlobe} />, label: useTranslateNavBar("website"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
-    { align: 'bottom', web: true, link: "https://www.buymeacoffee.com/kenyadk", icon: <FontAwesomeIcon color="#ffa000" icon={faCrown} />, label: useTranslateNavBar("buy_me_a_coffee"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
+    { align: 'top', id: "warframe_market", link: "warframe-market", icon: <SvgIcon svgProp={{ width: 32, height: 32, fill: "#d5d7e0" }} iconType={SvgType.Default} iconName={"wfm_logo"} />, label: useTranslateNavBar("warframe_market"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
+    { align: 'top', id: "debug", link: "debug", icon: <FontAwesomeIcon icon={faDesktop} />, label: useTranslateNavBar("debug"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
+    { align: 'bottom', id: "website", web: true, link: "https://quantframe.app", icon: <FontAwesomeIcon icon={faGlobe} />, label: useTranslateNavBar("website"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
+    { align: 'bottom', id: "buy_me_a_coffee", web: true, link: "https://www.buymeacoffee.com/kenyadk", icon: <FontAwesomeIcon color="#ffa000" icon={faCrown} />, label: useTranslateNavBar("buy_me_a_coffee"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
   ];
   // Effects
   useEffect(() => {
@@ -44,6 +47,21 @@ export function LogInLayout() {
       window.open(link.link, "_blank");
     else
       navigate(link.link);
+
+    if (link.id == lastPage || !link.id)
+      return;
+    setLastPage(link.id || "");
+    switch (link.id) {
+      case "website":
+        api.analytics.sendMetric("Website_WebOpened", "");
+        break;
+      case "buy_me_a_coffee":
+        api.analytics.sendMetric("BuyMeACoffee_WebOpened", "");
+        break;
+      default:
+        api.analytics.sendMetric("active_page", link.id);
+        break;
+    }
   };
   return (
     <AppShell

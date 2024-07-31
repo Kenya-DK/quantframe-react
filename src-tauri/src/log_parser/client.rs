@@ -10,17 +10,10 @@ use std::{
 };
 
 use crate::{
-    app::client::AppState,
-    auth::AuthState,
-    cache::client::CacheClient,
-    helper,
-    notification::client::NotifyClient,
-    settings::SettingsState,
-    utils::modules::{
+    app::client::AppState, auth::AuthState, cache::client::CacheClient, helper, notification::client::NotifyClient, qf_client::client::QFClient, settings::SettingsState, utils::modules::{
         error::{self, AppError},
         logger,
-    },
-    wfm_client::client::WFMClient,
+    }, wfm_client::client::WFMClient
 };
 
 use super::modules::{on_conversation::OnConversationEvent, on_trading::OnTradeEvent};
@@ -40,6 +33,7 @@ pub struct LogParser {
     pub cache: Arc<Mutex<CacheClient>>,
     pub notify: Arc<Mutex<NotifyClient>>,
     pub app: Arc<Mutex<AppState>>,
+    pub qf: Arc<Mutex<QFClient>>,
 }
 
 impl LogParser {
@@ -50,6 +44,7 @@ impl LogParser {
         auth: Arc<Mutex<AuthState>>,
         cache: Arc<Mutex<CacheClient>>,
         notify: Arc<Mutex<NotifyClient>>,
+        qf: Arc<Mutex<QFClient>>,
     ) -> Self {
         LogParser {
             app,
@@ -58,6 +53,7 @@ impl LogParser {
             auth,
             cache,
             notify,
+            qf,
             log_file: helper::get_local_data_path()
                 .join("Warframe")
                 .join("EE.log"),

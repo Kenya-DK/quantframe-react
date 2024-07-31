@@ -7,6 +7,7 @@ export class AuthModule {
 
   async login(email: string, password: string): Promise<User> {
     const [err, rep] = await this.client.sendInvoke<User>('auth_login', { email, password });
+    await await this.client.analytics.sendMetric('Auth_Login', err ? 'failed' : 'success');
     if (err)
       throw err;
     return rep;
@@ -24,6 +25,7 @@ export class AuthModule {
 
   async logout() {
     const [err] = await this.client.sendInvoke('auth_logout');
+    await await this.client.analytics.sendMetric('Auth_Logout', err ? 'failed' : 'success');
     if (err)
       throw err;
   }

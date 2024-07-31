@@ -1,5 +1,3 @@
-
-
 use entity::stock::riven::attribute::RivenAttribute;
 use eyre::eyre;
 use serde_json::json;
@@ -12,9 +10,7 @@ use crate::{
     },
     wfm_client::{
         client::WFMClient,
-        types::{
-            auction::Auction, auction_item::AuctionItem, auction_owner::AuctionOwner,
-        },
+        types::{auction::Auction, auction_item::AuctionItem, auction_owner::AuctionOwner},
     },
 };
 #[derive(Clone, Debug)]
@@ -110,7 +106,10 @@ impl AuctionModule {
         Ok(auctions)
     }
 
-    pub async fn get_auction_by_id(&self, auction_id: &str) -> Result<Option<Auction<String>>, AppError> {
+    pub async fn get_auction_by_id(
+        &self,
+        auction_id: &str,
+    ) -> Result<Option<Auction<String>>, AppError> {
         match self.client.auction().get_my_auctions().await {
             Ok(auctions) => {
                 for auction in auctions {
@@ -123,8 +122,8 @@ impl AuctionModule {
             Err(e) => {
                 error::create_log_file("get_auction_by_id.log".to_string(), &e);
                 return Err(e);
-            }            
-        }       
+            }
+        }
     }
 
     pub async fn create(
@@ -139,6 +138,7 @@ impl AuctionModule {
         item: AuctionItem,
     ) -> Result<Auction<String>, AppError> {
         self.client.auth().is_logged_in()?;
+        let qf = self.client.qf.lock()?.clone();
         // Construct any JSON body
         let mut body = json!({
             "note": note,
@@ -167,13 +167,13 @@ impl AuctionModule {
                 "Item auctions are not yet supported",
             );
         }
-
         match self
             .client
             .post("auctions/create", Some("auction"), body)
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {
+                qf.analytics().add_metric("WFM_AuctionCreate", "success");
                 self.add_auction_count(1)?;
                 self.client.debug(
                     &self.debug_id,
@@ -189,6 +189,7 @@ impl AuctionModule {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
+                qf.analytics().add_metric("WFM_AuctionCreate", "failed");
                 return Err(self.client.create_api_error(
                     &self.get_component("Create"),
                     error,
@@ -212,6 +213,7 @@ impl AuctionModule {
         visible: bool,
     ) -> Result<Auction<String>, AppError> {
         self.client.auth().is_logged_in()?;
+        let qf = self.client.qf.lock()?.clone();
         // Construct any JSON body
         let body = json!({
             "buyout_price": buyout_price,
@@ -224,6 +226,7 @@ impl AuctionModule {
 
         match self.client.put(&url, Some("auction"), Some(body)).await {
             Ok(ApiResult::Success(payload, _headers)) => {
+                qf.analytics().add_metric("WFM_AuctionUpdate", "success");
                 self.client.debug(
                     &self.debug_id,
                     &self.get_component("Update"),
@@ -237,6 +240,7 @@ impl AuctionModule {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
+                qf.analytics().add_metric("WFM_AuctionUpdate", "failed");
                 return Err(self.client.create_api_error(
                     &self.get_component("Update"),
                     error,
@@ -404,11 +408,13 @@ impl AuctionModule {
         )
     }
     pub async fn delete(&mut self, auction_id: &str) -> Result<Option<String>, AppError> {
+        let qf = self.client.qf.lock()?.clone();
         let url = format!("auctions/entry/{}/close", auction_id);
-        
+
         self.client.auth().is_logged_in()?;
         match self.client.put(&url, Some("auction_id"), None).await {
             Ok(ApiResult::Success(payload, _headers)) => {
+                qf.analytics().add_metric("WFM_AuctionDelete", "success");
                 self.subtract_auction_count(1)?;
                 self.client.debug(
                     &self.debug_id,
@@ -419,6 +425,7 @@ impl AuctionModule {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
+                qf.analytics().add_metric("WFM_AuctionDelete", "failed");
                 let log_level = match error.messages.get(0) {
                     Some(message)
                         if message.contains("app.form.not_exist")

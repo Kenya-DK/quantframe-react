@@ -12,6 +12,8 @@ import { AppContextProvider } from '@contexts/app.context';
 import { LiveScraperContextProvider } from '@contexts/liveScraper.context';
 import { StockContextProvider } from '@contexts/stock.context';
 import { WarframeMarketContextProvider } from '@contexts/warframeMarket.context';
+import { useEffect } from 'react';
+import api from './api';
 
 const faCustomIcon: IconDefinition = {
   prefix: 'fac' as IconPrefix,
@@ -60,6 +62,12 @@ const queryClient = new QueryClient({
 })
 
 function App() {
+
+  useEffect(() => {
+    window.onclick = async () => {
+      await api.analytics.setLastUserActivity()
+    }
+  }, [])
 
   return (
     <QueryClientProvider client={queryClient}>

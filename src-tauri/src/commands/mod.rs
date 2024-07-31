@@ -9,6 +9,7 @@ pub mod live_scraper;
 pub mod stock_item;
 pub mod stock_riven;
 pub mod log;
+pub mod analytics;
 // pub mod transaction;
 // // Stock
 // pub mod stock_item;

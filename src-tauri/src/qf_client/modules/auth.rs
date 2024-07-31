@@ -59,7 +59,12 @@ impl AuthModule {
             Err(e) => return Err(e),
         };
     }
-    pub async fn login(&self, username: &str, password: &str) -> Result<User, AppError> {
+    pub async fn login(
+        &self,
+        username: &str,
+        password: &str,
+        in_game_name: &str,
+    ) -> Result<User, AppError> {
         let settings = self.client.settings.lock()?.clone();
         if settings.dev_mode {
             logger::warning_con(
@@ -72,6 +77,7 @@ impl AuthModule {
         let body = json!({
             "username": username,
             "password": password,
+            "ingame_name": in_game_name,
             "current_version": app.get_app_info().version.to_string(),
         });
         match self.client.post::<User>("auth/login", body).await {
@@ -89,12 +95,13 @@ impl AuthModule {
             Err(e) => return Err(e),
         }
     }
-    pub async fn register(&self, username: &str, password: &str) -> Result<User, AppError> {
+    pub async fn register(&self, username: &str, password: &str, in_game_name: &str,) -> Result<User, AppError> {
         let app = self.client.app.lock()?.clone();
         let body = json!({
             "username": username,
             "password": password,
             "password_confirmation": password,
+            "ingame_name": in_game_name,
             "current_version": app.get_app_info().version.to_string(),
         });
 

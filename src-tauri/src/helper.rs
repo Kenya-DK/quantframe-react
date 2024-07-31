@@ -36,6 +36,19 @@ pub fn dose_app_exist() -> bool {
     app_path.exists()
 }
 
+pub fn delete_app_folder() -> PathBuf {
+    let local_path = match tauri::api::path::local_data_dir() {
+        Some(val) => val,
+        None => {
+            panic!("Could not find app path");
+        }
+    };
+    let app_path = local_path.join(APP_PATH);
+    if app_path.exists() {
+        fs::remove_dir_all(&app_path).unwrap();
+    }
+    app_path
+}
 pub fn get_app_storage_path() -> PathBuf {
     let local_path = match tauri::api::path::local_data_dir() {
         Some(val) => val,

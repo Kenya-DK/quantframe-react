@@ -1,9 +1,12 @@
-import { Text, Card, Group, Button, TextInput } from '@mantine/core';
+import { Text, Card, Group, Button, TextInput, Box } from '@mantine/core';
 import { useMutation } from '@tanstack/react-query';
 import api from '@api/index';
 import { notifications } from '@mantine/notifications';
 import { useTranslatePages } from '@hooks/useTranslate.hook';
 import { useState } from 'react';
+import { open } from '@tauri-apps/api/dialog';
+import { faFile } from '@fortawesome/free-solid-svg-icons';
+import { ActionWithTooltip } from '@components/ActionWithTooltip';
 
 export function ImportATraderCard() {
 	const [selected, setSelected] = useState<string>("");
@@ -22,8 +25,19 @@ export function ImportATraderCard() {
 		onSuccess: () => {
 			notifications.show({ title: useTranslateSuccess("import.title"), message: useTranslateSuccess("import.message"), color: "green.7" });
 		},
-		onError: () => notifications.show({ title: useTranslateErrors("import.title"), message: useTranslateErrors("import.message"), color: "green.7" })
+		onError: () => notifications.show({ title: useTranslateErrors("import.title"), message: useTranslateErrors("import.message"), color: "red.7" })
 	})
+
+	const openDialog = async () => {
+		const selected = await open({
+			multiple: false,
+			filters: [{
+				name: 'Database',
+				extensions: ['db']
+			}]
+		});
+		setSelected(selected as string);
+	}
 
 	return (
 		<Card withBorder shadow="sm" radius="md">
@@ -34,7 +48,7 @@ export function ImportATraderCard() {
 			</Card.Section>
 
 			<Card.Section inheritPadding mt="sm" pb="md">
-				<Group>
+				<Box >
 					<TextInput
 						required
 						label={useTranslateFormFields('db_path.label')}
@@ -42,12 +56,19 @@ export function ImportATraderCard() {
 						value={selected}
 						onChange={(event) => setSelected(event.currentTarget.value)}
 						radius="md"
-						rightSection={<Button onClick={() => setSelected("")} variant="link" color="red">{useTranslateButtons("clear")}</Button>}
+						rightSection={
+							<ActionWithTooltip
+								tooltip={useTranslateButtons(`open_file.tooltip`)}
+								icon={faFile}
+								color='green.7'
+								onClick={() => openDialog()}
+							/>
+						}
 					/>
-					<Button loading={importDataMutation.isPending} onClick={async () => importDataMutation.mutateAsync(selected)} color="red" >
+					<Button mt={"md"} loading={importDataMutation.isPending} onClick={async () => importDataMutation.mutateAsync(selected)} color="red" >
 						{useTranslateButtons("import.title")}
 					</Button>
-				</Group>
+				</Box>
 			</Card.Section>
 		</Card>
 	);

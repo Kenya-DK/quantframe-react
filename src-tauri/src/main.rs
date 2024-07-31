@@ -42,16 +42,15 @@ mod wfm_client;
 pub static APP: OnceLock<tauri::AppHandle> = OnceLock::new();
 
 async fn setup_manages(app: &mut App) -> Result<(), AppError> {
-
+    // Check if the app is being run for the first time
     let is_first_install = !helper::dose_app_exist();
 
-    println!("Is first install: {:?}", is_first_install);
     // Create the database connection and store it
     let storage_path = helper::get_app_storage_path();
 
     let mut db_file_name = "quantframeV2.sqlite";
     let db_debug_file_name = "quantframeV2_debug.sqlite";
-    let debug_db = false;
+    let debug_db = true;
 
     // Create the path to the database file
     let db_file_path = format!("{}/{}", storage_path.to_str().unwrap(), db_file_name);
@@ -85,9 +84,6 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
         db_file_name,
     );
 
-
-    println!("DB URL: {:?}", storage_path);
-
     // Create the database connection and store it and run the migrations
     let conn = Database::connect(db_url)
         .await
@@ -95,7 +91,11 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     Migrator::up(&conn, None).await.unwrap();
 
     // Create and manage Notification state
-    let app_arc: Arc<Mutex<AppState>> = Arc::new(Mutex::new(AppState::new(conn, app.handle(), is_first_install)));
+    let app_arc: Arc<Mutex<AppState>> = Arc::new(Mutex::new(AppState::new(
+        conn,
+        app.handle(),
+        is_first_install,
+    )));
     app.manage(app_arc.clone());
 
     // Create and manage Notification state
@@ -112,15 +112,7 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     // create and manage Auth state
     let auth_arc = Arc::new(Mutex::new(AuthState::setup()?));
     app.manage(auth_arc.clone());
-
-    // create and manage Warframe Market API client state
-    let wfm_client = Arc::new(Mutex::new(wfm_client::client::WFMClient::new(
-        Arc::clone(&auth_arc),
-        Arc::clone(&settings_arc),
-        Arc::clone(&app_arc),
-    )));
-    app.manage(wfm_client.clone());
-
+    
     // create and manage Quantframe client state
     let qf_client = Arc::new(Mutex::new(qf_client::client::QFClient::new(
         Arc::clone(&auth_arc),
@@ -128,6 +120,16 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
         Arc::clone(&app_arc),
     )));
     app.manage(qf_client.clone());
+
+    // create and manage Warframe Market API client state
+    let wfm_client = Arc::new(Mutex::new(wfm_client::client::WFMClient::new(
+        Arc::clone(&auth_arc),
+        Arc::clone(&settings_arc),
+        Arc::clone(&app_arc),
+        Arc::clone(&qf_client),
+    )));
+    app.manage(wfm_client.clone());
+
 
     // create and manage Cache state
     let cache_arc = Arc::new(Mutex::new(CacheClient::new(
@@ -150,6 +152,7 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
         Arc::clone(&auth_arc),
         Arc::clone(&cache_arc),
         Arc::clone(&notify_arc),
+        Arc::clone(&qf_client),
     );
     app.manage(Arc::new(Mutex::new(live_scraper)));
 
@@ -164,9 +167,9 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
         Arc::clone(&auth_arc),
         Arc::clone(&cache_arc),
         Arc::clone(&notify_arc),
+        Arc::clone(&qf_client),
     );
     app.manage(Arc::new(Mutex::new(log_parser)));
-
     Ok(())
 }
 fn main() {
@@ -178,6 +181,9 @@ fn main() {
             Some("panic.log"),
         );
     }));
+
+    // Delete Folder
+    // helper::delete_app_folder();
 
     tauri::Builder::default()
         .plugin(tauri_plugin_websocket::init())
@@ -229,8 +235,12 @@ fn main() {
             commands::transaction::transaction_update,
             commands::transaction::transaction_delete,
             // Debug commands
+            commands::analytics::analytics_set_last_user_activity,
+            commands::analytics::analytics_send_metric,
+            // Debug commands
             commands::debug::debug_db_reset,
             commands::debug::debug_migrate_data_base,
+            commands::debug::debug_import_algo_trader,
             // Log commands
             commands::log::log_open_folder,
             commands::log::log_export,

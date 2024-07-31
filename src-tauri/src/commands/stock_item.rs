@@ -8,6 +8,7 @@ use eyre::eyre;
 use serde_json::json;
 use service::{StockItemMutation, StockItemQuery, TransactionMutation};
 
+use crate::qf_client::client::QFClient;
 use crate::utils::modules::error;
 use crate::{
     app::client::AppState,
@@ -55,11 +56,13 @@ pub async fn stock_item_create(
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<stock_item::Model, AppError> {
     let app = app.lock()?.clone();
     let cache = cache.lock()?.clone();
     let notify = notify.lock()?.clone();
     let wfm = wfm.lock()?.clone();
+    let qf = qf.lock()?.clone();
 
     let mut created_stock = CreateStockItem::new(
         wfm_url,
@@ -144,13 +147,16 @@ pub async fn stock_item_create(
     .await
     {
         Ok(inserted) => {
+            qf.analytics().add_metric("Transaction_CreateItem", "success");
             notify.gui().send_event_update(
                 UIEvent::UpdateTransaction,
                 UIOperationEvent::CreateOrUpdate,
                 Some(json!(inserted)),
             );
         }
-        Err(e) => return Err(AppError::new("StockItemCreate", eyre!(e))),
+        Err(e) =>{
+            qf.analytics().add_metric("Transaction_CreateItem", "failed");
+             return Err(AppError::new("StockItemCreate", eyre!(e)))},
     }
 
     Ok(stock)
