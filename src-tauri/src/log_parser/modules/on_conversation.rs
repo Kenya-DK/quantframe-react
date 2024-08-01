@@ -36,6 +36,7 @@ impl OnConversationEvent {
         let component = self.get_component("ProcessLine");
         let settings = self.client.settings.lock().unwrap();
         let notify = self.client.notify.lock().unwrap();
+        let qf = self.client.qf.lock()?.clone();
 
         if !line.contains("ChatRedux::AddTab: Adding tab with channel name") {
             return Ok(false);
@@ -44,6 +45,7 @@ impl OnConversationEvent {
         let (found, captures) = helper::match_pattern(line, self.regex.clone())
             .map_err(|e| AppError::new("OnNewConversationEvent", eyre!(e)))?;
         if found {
+            qf.analytics().add_metric("EE_NewConversation", "");
             let username = captures.get(0).unwrap().clone().unwrap();
             let content = settings
                 .notifications

@@ -372,6 +372,7 @@ impl OnTradeEvent {
         let cache = self.client.cache.lock()?;
         let wfm = self.client.wfm.lock()?.clone();
         let app = self.client.app.lock()?.clone();
+        let qf = self.client.qf.lock()?.clone();
 
         // If the trade is not a sale or purchase, return
         if trade.trade_type == TradeClassification::Trade {
@@ -409,6 +410,7 @@ impl OnTradeEvent {
                 error::create_log_file("append_to_file.log".to_string(), &err);
             }
         }
+        
         // Validate the items
         let created_stock = match self.get_stock_item(&cache, items, trade.platinum) {
             Ok(item) => item,
@@ -420,9 +422,11 @@ impl OnTradeEvent {
                 notify
                     .gui()
                     .send_event(UIEvent::OnNotificationWarning, Some(notify_payload));
+                qf.analytics().add_metric("EE_NewTrade", "failed");
                 return Err(err);
             }
         };
+        qf.analytics().add_metric("EE_NewTrade", "success");
 
         // Set Item Name
         notify_value["item_name"] = json!(created_stock.get_name()?);
