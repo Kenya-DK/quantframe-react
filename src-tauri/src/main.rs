@@ -42,6 +42,18 @@ mod wfm_client;
 pub static APP: OnceLock<tauri::AppHandle> = OnceLock::new();
 
 async fn setup_manages(app: &mut App) -> Result<(), AppError> {
+    // Get the update channel
+    let context = tauri::generate_context!();
+    let updater = context.config_mut().tauri.updater;
+
+    let mut is_pre_release = false;
+    for arg in updater.endpoints {
+        if arg.contains("prerelease") {
+            is_pre_release = true;
+        }
+    }
+
+
     // Check if the app is being run for the first time
     let is_first_install = !helper::dose_app_exist();
 

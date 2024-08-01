@@ -132,6 +132,7 @@ impl QFClient {
                     auth.qf_access_token.clone().unwrap_or("".to_string())
                 ),
             )
+            .header("AppId", app.app_id.to_string())
             .header("App", packageinfo.name.to_string())
             .header("Device", auth.get_device_id())
             .header("Version", packageinfo.version.to_string())

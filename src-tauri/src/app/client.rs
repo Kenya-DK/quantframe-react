@@ -4,17 +4,21 @@ use tauri::PackageInfo;
 
 #[derive(Clone, Debug)]
 pub struct AppState {
+    pub app_id: String,
     pub conn: DatabaseConnection,
     pub is_first_install: bool,
+    pub is_pre_release: bool,
     pub tauri_app: AppHandle,
 }
 
 impl AppState {
-    pub fn new(conn: DatabaseConnection, tauri_app: AppHandle, is_first_install: bool) -> AppState {
+    pub fn new(conn: DatabaseConnection, tauri_app: AppHandle, is_first_install: bool, is_pre_release: bool) -> AppState {
         AppState {
+            app_id: "app".to_string(),
             conn,
             tauri_app,
             is_first_install,
+            is_pre_release,
         }
     }
 
