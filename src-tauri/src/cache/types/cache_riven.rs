@@ -38,7 +38,7 @@ pub struct CacheRivenWeapon {
     pub wfm_icon_format: Option<String>,
     #[serde(rename = "wfm_thumb")]
     pub wfm_thumb: String,
-    #[serde(rename = "uniqueName")]
+    #[serde(rename = "unique_name")]
     pub unique_name: String,
     #[serde(rename = "name")]
     pub name: String,
@@ -46,9 +46,9 @@ pub struct CacheRivenWeapon {
     pub disposition: f64,
     #[serde(rename = "upgrade_type")]
     pub upgrade_type: String,
-    #[serde(rename = "godRoll")]
+    #[serde(rename = "rolls")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub god_roll: Option<CacheRivenGodRoll>,
+    pub god_roll: Option<CacheRivenRolls>,
 }
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CacheRivenGoodRoll {
@@ -59,7 +59,7 @@ pub struct CacheRivenGoodRoll {
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
-pub struct CacheRivenGodRoll {
+pub struct CacheRivenRolls {
     #[serde(rename = "weapon_url_name")]
     pub weapon_url_name: String,
     #[serde(rename = "good_rolls")]
@@ -69,7 +69,7 @@ pub struct CacheRivenGodRoll {
 }
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CacheRivenAttribute {
-    #[serde(rename = "uniqueName")]
+    #[serde(rename = "unique_name")]
     pub unique_name: String,
     #[serde(rename = "upgrades")]
     pub upgrades: Vec<CacheRivenUpgrade>,
@@ -78,19 +78,19 @@ pub struct CacheRivenAttribute {
 pub struct CacheRivenUpgrade {
     #[serde(rename = "wfm_url")]
     pub wfm_url: String,
-    #[serde(rename = "modifierTag")]
+    #[serde(rename = "modifier_tag")]
     pub modifier_tag: String,
-    #[serde(rename = "prefixTag")]
+    #[serde(rename = "prefix")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub prefix: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "suffixTag")]
-    pub suffix_tag: Option<String>,
-    #[serde(rename = "baseValue")]
-    pub base_value: f64,
-    #[serde(rename = "localizationString")]
+    #[serde(rename = "suffix")]
+    pub suffix: Option<String>,
+    #[serde(rename = "value")]
+    pub value: f64,
+    #[serde(rename = "localization_string")]
     pub localization_string: String,
-    #[serde(rename = "shortString")]
+    #[serde(rename = "short_string")]
     pub short_string: String,
 }
 
