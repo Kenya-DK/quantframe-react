@@ -68,7 +68,7 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
 
     let mut db_file_name = "quantframeV2.sqlite";
     let db_debug_file_name = "quantframeV2_debug.sqlite";
-    let debug_db = true;
+    let debug_db = false;
 
     // Create the path to the database file
     let db_file_path = format!("{}/{}", storage_path.to_str().unwrap(), db_file_name);
