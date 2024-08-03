@@ -11,6 +11,7 @@ use migration::{Migrator, MigratorTrait};
 use notification::client::NotifyClient;
 use service::sea_orm::Database;
 use settings::SettingsState;
+use tauri::utils::config::UpdaterEndpoint;
 use utils::modules::error::AppError;
 use utils::modules::logger;
 
@@ -42,17 +43,22 @@ mod wfm_client;
 pub static APP: OnceLock<tauri::AppHandle> = OnceLock::new();
 
 async fn setup_manages(app: &mut App) -> Result<(), AppError> {
+    // Dev Settings for the app
+    let dev_folder = env::current_dir().unwrap();
+
     // Get the update channel
     let context = tauri::generate_context!();
-    let updater = context.config_mut().tauri.updater;
+    let updater = context.config().tauri.updater.clone();
 
     let mut is_pre_release = false;
-    for arg in updater.endpoints {
-        if arg.contains("prerelease") {
-            is_pre_release = true;
+    if updater.active && updater.endpoints.is_some() {
+        let endpoints = updater.endpoints.as_ref().unwrap();
+        for endpoint in endpoints {
+            if endpoint.to_string().contains("prerelease") {
+                is_pre_release = true;
+            }
         }
     }
-
 
     // Check if the app is being run for the first time
     let is_first_install = !helper::dose_app_exist();
@@ -107,6 +113,7 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
         conn,
         app.handle(),
         is_first_install,
+        is_pre_release,
     )));
     app.manage(app_arc.clone());
 
@@ -124,7 +131,7 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     // create and manage Auth state
     let auth_arc = Arc::new(Mutex::new(AuthState::setup()?));
     app.manage(auth_arc.clone());
-    
+
     // create and manage Quantframe client state
     let qf_client = Arc::new(Mutex::new(qf_client::client::QFClient::new(
         Arc::clone(&auth_arc),
@@ -135,13 +142,13 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
 
     // create and manage Warframe Market API client state
     let wfm_client = Arc::new(Mutex::new(wfm_client::client::WFMClient::new(
+        app.handle(),
         Arc::clone(&auth_arc),
         Arc::clone(&settings_arc),
         Arc::clone(&app_arc),
         Arc::clone(&qf_client),
     )));
     app.manage(wfm_client.clone());
-
 
     // create and manage Cache state
     let cache_arc = Arc::new(Mutex::new(CacheClient::new(
@@ -193,9 +200,6 @@ fn main() {
             Some("panic.log"),
         );
     }));
-
-    // Delete Folder
-    // helper::delete_app_folder();
 
     tauri::Builder::default()
         .plugin(tauri_plugin_websocket::init())

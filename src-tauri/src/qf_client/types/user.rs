@@ -16,6 +16,8 @@ pub struct User {
     pub banned: bool,
     #[serde(rename = "current_version")]
     pub current_version: String,
+    #[serde(rename = "banned_reason")]
+    pub banned_reason: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "role")]
     pub role: Option<UserRole>,
@@ -33,10 +35,10 @@ impl Default for User {
             updated_at: "".to_string(),
             username: "".to_string(),
             banned: false,
+            banned_reason: None,
             current_version: "".to_string(),
             role: Some(UserRole::default()),
             token: None,
         }
     }
-    
 }

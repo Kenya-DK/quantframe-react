@@ -33,7 +33,7 @@ impl AuthModule {
     }
 
     pub fn is_logged_in(&self) -> Result<(), AppError> {
-        let auth = self.client.auth.lock().unwrap();
+        let auth = self.client.auth.lock()?;
         if !auth.is_logged_in() {
             return Err(AppError::new_with_level(
                 &self.get_component("IsLoggedIn"),
@@ -117,9 +117,7 @@ impl AuthModule {
         Ok((user, token))
     }
 
-    pub async fn validate(&self) -> Result<AuthState, AppError> {
-        let mut auth = self.client.auth.lock()?.clone();
-
+    pub async fn validate(&self) -> Result<UserProfile, AppError> {
         // Validate Auth
         let user = match self.me().await {
             Ok(user) => user,
@@ -139,8 +137,6 @@ impl AuthModule {
                 "User validated successfully",
             );
         }
-        auth.update_from_wfm_user_profile(&user, auth.wfm_access_token.clone());
-        auth.save_to_file()?;
-        return Ok(auth);
+        return Ok(user);
     }
 }

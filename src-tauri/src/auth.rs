@@ -15,7 +15,9 @@ pub struct AuthState {
     pub anonymous: bool,
     pub verification: bool,
     pub wfm_banned: bool,
+    pub wfm_banned_reason: Option<String>,
     pub qf_banned: bool,
+    pub qf_banned_reason: Option<String>,
     pub id: String,
     pub wfm_access_token: Option<String>,
     pub qf_access_token: Option<String>,
@@ -41,7 +43,9 @@ impl Default for AuthState {
             anonymous: true,
             verification: false,
             wfm_banned: false,
+            wfm_banned_reason: None,
             qf_banned: false,
+            qf_banned_reason: None,
             id: "".to_string(),
             wfm_access_token: None,
             qf_access_token: None,
@@ -137,7 +141,9 @@ impl AuthState {
         self.anonymous = true;
         self.verification = false;
         self.wfm_banned = false;
+        self.wfm_banned_reason = None;
         self.qf_banned = false;
+        self.qf_banned_reason = None;
         self.id = "".to_string();
         self.wfm_access_token = None;
         self.qf_access_token = None;
@@ -160,6 +166,7 @@ impl AuthState {
     ) {
         self.qf_access_token = token;
         self.qf_banned = user_profile.banned;
+        self.qf_banned_reason = user_profile.banned_reason.clone();
         self.role = user_profile.role.clone();
     }
 

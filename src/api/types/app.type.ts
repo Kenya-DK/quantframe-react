@@ -4,4 +4,5 @@ export interface AppInfo {
   description: string;
   name: string;
   version: string;
+  is_pre_release: boolean;
 }

@@ -5,10 +5,10 @@ import { useTranslateForms } from '@hooks/useTranslate.hook';
 export type LogInFormProps = {
   onSubmit: (values: { email: string; password: string }) => void;
   is_loading?: boolean;
+  hide_submit?: boolean;
   paperProps?: PaperProps;
   footerContent?: React.ReactNode;
 }
-
 
 export function LogInForm(props: LogInFormProps) {
 
@@ -69,7 +69,7 @@ export function LogInForm(props: LogInFormProps) {
           <Anchor component="button" type="button" c="dimmed" size="xs">
             {useTranslateForm('register')}
           </Anchor>
-          <Button loading={props.is_loading} type="submit" radius="xl">
+          <Button disabled={props.hide_submit} loading={props.is_loading} type="submit" radius="xl">
             {useTranslateButtons('submit')}
           </Button>
         </Group>

@@ -10,12 +10,14 @@ export interface User {
   platform: string;
   qf_access_token: string;
   qf_banned: boolean;
+  qf_banned_reason?: string;
   region: string;
   role: Role;
   status: UserStatus;
   verification: boolean;
   wfm_access_token: string;
   wfm_banned: boolean;
+  wfm_banned_reason?: string;
 }
 export interface Role {
   can_managed: boolean;

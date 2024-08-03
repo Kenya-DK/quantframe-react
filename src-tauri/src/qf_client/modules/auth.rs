@@ -95,7 +95,67 @@ impl AuthModule {
             Err(e) => return Err(e),
         }
     }
-    pub async fn register(&self, username: &str, password: &str, in_game_name: &str,) -> Result<User, AppError> {
+    pub async fn logout(&self) -> Result<(), AppError> {
+        let settings = self.client.settings.lock()?.clone();
+        if settings.dev_mode {
+            logger::warning_con(
+                &self.get_component("Logout"),
+                "DevMode is enabled, returning default user",
+            );
+            return Ok(());
+        }
+        match self.client.post::<()>("auth/logout", json!({})).await {
+            Ok(ApiResult::Success(_, _)) => {
+                return Ok(());
+            }
+            Ok(ApiResult::Error(e, _headers)) => {
+                return Err(self.client.create_api_error(
+                    &self.get_component("Logout"),
+                    e,
+                    eyre!("There was an error logging out"),
+                    LogLevel::Error,
+                ));
+            }
+            Err(e) => return Err(e),
+        }
+    }
+    pub async fn login_or_register(
+        &self,
+        username: &str,
+        password: &str,
+        in_game_name: &str,
+    ) -> Result<User, AppError> {
+        // Try to login first
+        match self.login(username, password, in_game_name).await {
+            Ok(user) => {
+                return Ok(user);
+            }
+            Err(e) => {
+                if e.log_level() == LogLevel::Critical {
+                    error::create_log_file("auth_login.log".to_string(), &e);
+                    return Err(e);
+                }
+            }
+        };
+        // Try to register if login fails
+        match self.register(username, password, in_game_name).await {
+            Ok(user) => {
+                return Ok(user);
+            }
+            Err(e) => {
+                if e.log_level() == LogLevel::Critical {
+                    error::create_log_file("auth_register.log".to_string(), &e);
+                }
+                return Err(e);
+            }
+        };
+    }
+    pub async fn register(
+        &self,
+        username: &str,
+        password: &str,
+        in_game_name: &str,
+    ) -> Result<User, AppError> {
         let app = self.client.app.lock()?.clone();
         let body = json!({
             "username": username,
@@ -146,12 +206,10 @@ impl AuthModule {
         };
         if user.is_some() {
             logger::info_con(&self.get_component("Validate"), "User is logged in");
-            auth.update_from_qf_user_profile(&user.clone().unwrap(), auth.qf_access_token.clone());
         } else {
             logger::warning_con(&self.get_component("Validate"), "User is not logged in");
             auth.reset();
         }
-        auth.save_to_file()?;
         return Ok(user);
     }
 }

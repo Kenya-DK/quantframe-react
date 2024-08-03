@@ -1,4 +1,8 @@
-use std::{collections::HashMap, sync::{Arc, Mutex, OnceLock}, time::Duration};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex, OnceLock},
+    time::Duration,
+};
 
 use eyre::eyre;
 use serde_json::{json, Value};
@@ -14,7 +18,8 @@ use crate::{
             error::{self, ApiResult, AppError},
             logger,
         },
-    }, APP,
+    },
+    APP,
 };
 #[derive(Clone, Debug)]
 pub struct AnalyticsModule {
@@ -88,10 +93,17 @@ impl AnalyticsModule {
                 // Create Timer for sending metrics
                 let mut last_analytics_time = Instant::now();
                 let mut last_metric_time = Instant::now();
-                
+
                 if is_first_install {
-                    logger::info_con(&&qf.analytics().get_component("init"), "Detected first install");
-                    match qf.analytics().try_send_analytics("install", 3, json!({})).await {
+                    logger::info_con(
+                        &&qf.analytics().get_component("init"),
+                        "Detected first install",
+                    );
+                    match qf
+                        .analytics()
+                        .try_send_analytics("install", 3, json!({}))
+                        .await
+                    {
                         Ok(_) => {}
                         Err(e) => {
                             error::create_log_file("analytics.log".to_string(), &e);
@@ -99,29 +111,56 @@ impl AnalyticsModule {
                     };
                 }
                 loop {
-                                    
-                if last_analytics_time.elapsed() > Duration::from_secs(36000) {
-                    last_analytics_time = Instant::now();
-                    match qf.analytics().try_send_analytics("periodic", 3, json!({})).await {
-                        Ok(_) => {}
-                        Err(_) => {}
-                    };
-                }
-
-                if last_metric_time.elapsed() > Duration::from_secs(15) || qf.analytics().is_user_active() {
-                    if last_metric_time.elapsed() > Duration::from_secs(60) && qf.analytics().is_user_active() {
-                        continue;
+                    if last_analytics_time.elapsed() > Duration::from_secs(36000) {
+                        last_analytics_time = Instant::now();
+                        match qf
+                            .analytics()
+                            .try_send_analytics("periodic", 3, json!({}))
+                            .await
+                        {
+                            Ok(_) => {}
+                            Err(_) => {}
+                        };
                     }
 
-                    last_metric_time = Instant::now();
-                    logger::info_con(&qf.analytics().get_component("init"), "Sending user activity");
-                    match qf.analytics().try_send_analytics("metrics/periodic", 3, json!(qf.analytics().metricAndLabelPairsScheduledToSend)).await {
-                        Ok(_) => { qf.analytics().clear_metrics();}
-                        Err(_) => {}
-                    };
+                    if last_metric_time.elapsed() > Duration::from_secs(15)
+                        || qf.analytics().is_user_active()
+                    {
+                        if last_metric_time.elapsed() > Duration::from_secs(60)
+                            && qf.analytics().is_user_active()
+                        {
+                            continue;
+                        }
+
+                        last_metric_time = Instant::now();
+                        logger::info_con(
+                            &qf.analytics().get_component("TrySendAnalytics"),
+                            "Sending user activity",
+                        );
+                        match qf
+                            .analytics()
+                            .try_send_analytics(
+                                "metrics/periodic",
+                                3,
+                                json!(qf.analytics().metricAndLabelPairsScheduledToSend),
+                            )
+                            .await
+                        {
+                            Ok(_) => {
+                                qf.analytics().clear_metrics();
+                            }
+                            Err(e) => {
+                                if e.cause().contains("Unauthorized") {
+                                    error::create_log_file("analytics.log".to_string(), &e);
+                                    break;
+                                }
+                                error::create_log_file("analytics.log".to_string(), &e);
+                            }
+                        };
+                    }
+                    tokio::time::sleep(std::time::Duration::from_secs(5)).await;
                 }
-                tokio::time::sleep(std::time::Duration::from_secs(5)).await;
-                }
+                qf.analytics().is_init = false;
             }
         });
         Ok(())
@@ -132,16 +171,18 @@ impl AnalyticsModule {
         mut retry_count: i64,
         data: Value,
     ) -> Result<(), AppError> {
-        let mut parameters:Vec<String> = vec![];
+        let mut parameters: Vec<String> = vec![];
         if self.is_user_active() {
             parameters.push(format!("active_page={}", self.current_page));
         }
 
-
         while retry_count >= 0 {
             let err = match self
                 .client
-                .post::<Value>(format!("analytics/{}?{}", url,parameters.join("&")).as_str(), data.clone())
+                .post::<Value>(
+                    format!("analytics/{}?{}", url, parameters.join("&")).as_str(),
+                    data.clone(),
+                )
                 .await
             {
                 Ok(ApiResult::Success(_, _)) => {
@@ -160,7 +201,7 @@ impl AnalyticsModule {
             }
             retry_count -= 1;
             logger::warning_con(
-                &self.get_component("try_send_analytics"),
+                &self.get_component("TrySendAnalytics"),
                 &format!(
                     "Failed to send analytics, retrying in 5 seconds, retries left: {}",
                     retry_count

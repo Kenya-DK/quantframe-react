@@ -1,2 +1,2 @@
-export { StockRivenInfo } from './StockRivenInfo';
-export type { StockRivenInfoProps } from './StockRivenInfo';
+export { OrderDetails } from './OrderDetails';
+export type { OrderDetailsProps } from './OrderDetails';

@@ -67,7 +67,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
       console.log('shouldUpdate', shouldUpdate, manifest);
       if (!shouldUpdate)
         return;
-
+      console.log('shouldUpdate', appInfo, manifest);
       notifications.show({
         title: useTranslateNewUpdate("title", { version: manifest?.version }),
         message: <>
@@ -75,6 +75,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
           <Group grow justify="space-between">
             <Button onClick={async () => {
               // Install the update. This will also restart the app on Windows!
+              api.analytics.sendMetric("NewUpdate_Install", `NewVersion: ${manifest?.version}`)
               await installUpdate();
 
               // On macOS and Linux you will need to restart the app manually.

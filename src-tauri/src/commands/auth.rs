@@ -17,12 +17,13 @@ pub async fn auth_login(
 ) -> Result<AuthState, AppError> {
     let wfm = wfm.lock().expect("Could not lock wfm").clone();
     let qf = qf.lock().expect("Could not lock qf").clone();
+
     let mut auth_state = auth.lock()?.clone();
+
     // Login to Warframe Market
     let (wfm_user, wfm_token) = match wfm.auth().login(&email, &password).await {
         Ok((user, token)) => (user, token),
         Err(e) => {
-            println!("{:?}", e);
             error::create_log_file("auth_login.log".to_string(), &e);
             return Err(e);
         }
@@ -31,12 +32,12 @@ pub async fn auth_login(
     if wfm_user.anonymous || wfm_user.banned || !wfm_user.verification {
         return Ok(auth_state);
     }
-    println!("{:?}", wfm_user.ingame_name);
+
     auth_state.update_from_wfm_user_profile(&wfm_user, wfm_token.clone());
-    // Login to QuantFrame
-    let (mut qf_user, mut qf_token) = match qf
+    // Login/Register to Quantframe
+    let (qf_user, qf_token) = match qf
         .auth()
-        .login(
+        .login_or_register(
             &auth_state.get_username(),
             &auth_state.get_password(),
             wfm_user.ingame_name.clone().unwrap().as_str(),
@@ -57,23 +58,6 @@ pub async fn auth_login(
         }
     };
 
-    // Check if the user registered on QuantFrame
-    if qf_user.is_none() {
-        match qf
-            .auth()
-            .register(&auth_state.get_username(), &auth_state.get_password(),wfm_user.ingame_name.clone().unwrap().as_str())
-            .await
-        {
-            Ok(user) => {
-                qf_user = Some(user.clone());
-                qf_token = user.token;
-            }
-            Err(e) => {
-                error::create_log_file("auth_login.log".to_string(), &e);
-                return Err(e);
-            }
-        }
-    }
     match qf.analytics().init() {
         Ok(_) => {}
         Err(e) => {

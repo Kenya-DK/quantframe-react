@@ -17,6 +17,7 @@ export const AuthContext = createContext<AuthContextProps>({
 export const useAuthContext = () => useContext(AuthContext);
 
 export function AuthContextProvider({ children }: TauriContextProviderProps) {
+  // States
   const [user, setUser] = useState<User | undefined>(undefined);
 
   // Handle update, create, delete transaction

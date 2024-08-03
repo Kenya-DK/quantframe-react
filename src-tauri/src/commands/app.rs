@@ -5,6 +5,7 @@ use service::{StockItemQuery, StockRivenQuery, TransactionQuery};
 
 use crate::{
     app::client::AppState,
+    auth::AuthState,
     cache::client::CacheClient,
     log_parser,
     notification::client::NotifyClient,
@@ -17,8 +18,15 @@ use crate::{
     wfm_client::client::WFMClient,
 };
 
+pub fn save_auth_state(auth: tauri::State<'_, Arc<Mutex<AuthState>>>, auth_state: AuthState) {
+    let arced_mutex = Arc::clone(&auth);
+    let mut my_lock = arced_mutex.lock().expect("Could not lock auth");
+    *my_lock = auth_state.clone();
+}
+
 #[tauri::command]
 pub async fn app_init(
+    auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
     settings: tauri::State<'_, Arc<Mutex<SettingsState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
     qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
@@ -30,10 +38,11 @@ pub async fn app_init(
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
     let settings = settings.lock()?.clone();
-    let wfm = wfm.lock()?.clone();
+    let mut wfm = wfm.lock()?.clone();
     let cache = cache.lock()?.clone();
     let qf = qf.lock()?.clone();
     let log_parser = log_parser.lock()?.clone();
+    let mut auth_state = auth.lock()?.clone();
 
     // Send App Info to UI
     let app_info = app.get_app_info();
@@ -44,7 +53,8 @@ pub async fn app_init(
             "version": app_info.version,
             "name": app_info.name,
             "description": app_info.description,
-            "authors": app_info.authors
+            "authors": app_info.authors,
+            "is_pre_release": app.is_pre_release,
         })),
     );
 
@@ -54,7 +64,6 @@ pub async fn app_init(
         UIOperationEvent::Set,
         Some(json!(&settings)),
     );
-
 
     // Start Log Parser
     notify
@@ -70,76 +79,77 @@ pub async fn app_init(
 
     // Load Stock Items
     notify
-    .gui()
-    .send_event(UIEvent::OnInitialize, Some(json!("stock_items")));
+        .gui()
+        .send_event(UIEvent::OnInitialize, Some(json!("stock_items")));
     match StockItemQuery::get_all(&app.conn).await {
-    Ok(items) => {
-        // Send Stock Items to UI
-        notify.gui().send_event_update(
-            UIEvent::UpdateStockItems,
-            UIOperationEvent::Set,
-            Some(json!(&items)),
-        );
-    }
-    Err(e) => {
-        let error = AppError::new_db("StockItemQuery::get_all", e);
-        error::create_log_file("command.log".to_string(), &error);
-        return Err(error);
-    }
+        Ok(items) => {
+            // Send Stock Items to UI
+            notify.gui().send_event_update(
+                UIEvent::UpdateStockItems,
+                UIOperationEvent::Set,
+                Some(json!(&items)),
+            );
+        }
+        Err(e) => {
+            let error = AppError::new_db("StockItemQuery::get_all", e);
+            error::create_log_file("command.log".to_string(), &error);
+            return Err(error);
+        }
     };
     // Load Stock Rivens
     notify
-    .gui()
-    .send_event(UIEvent::OnInitialize, Some(json!("stock_rivens")));
+        .gui()
+        .send_event(UIEvent::OnInitialize, Some(json!("stock_rivens")));
     match StockRivenQuery::get_all(&app.conn).await {
-    Ok(items) => {
-        // Send Stock Rivens to UI
-        notify.gui().send_event_update(
-            UIEvent::UpdateStockRivens,
-            UIOperationEvent::Set,
-            Some(json!(&items)),
-        );
-    }
-    Err(e) => {
-        let error = AppError::new_db("StockRivenQuery::get_all", e);
-        error::create_log_file("command.log".to_string(), &error);
-        return Err(error);
-    }
+        Ok(items) => {
+            // Send Stock Rivens to UI
+            notify.gui().send_event_update(
+                UIEvent::UpdateStockRivens,
+                UIOperationEvent::Set,
+                Some(json!(&items)),
+            );
+        }
+        Err(e) => {
+            let error = AppError::new_db("StockRivenQuery::get_all", e);
+            error::create_log_file("command.log".to_string(), &error);
+            return Err(error);
+        }
     };
 
     // Load Transactions
     notify
-    .gui()
-    .send_event(UIEvent::OnInitialize, Some(json!("transactions")));
+        .gui()
+        .send_event(UIEvent::OnInitialize, Some(json!("transactions")));
     match TransactionQuery::get_all(&app.conn).await {
-    Ok(transactions) => {
-        // Send Transactions to UI
-        notify.gui().send_event_update(
-            UIEvent::UpdateTransaction,
-            UIOperationEvent::Set,
-            Some(json!(&transactions)),
-        );
-    }
-    Err(e) => {
-        let error = AppError::new_db("TransactionQuery::get_all", e);
-        error::create_log_file("command.log".to_string(), &error);
-        return Err(error);
-    }
+        Ok(transactions) => {
+            // Send Transactions to UI
+            notify.gui().send_event_update(
+                UIEvent::UpdateTransaction,
+                UIOperationEvent::Set,
+                Some(json!(&transactions)),
+            );
+        }
+        Err(e) => {
+            let error = AppError::new_db("TransactionQuery::get_all", e);
+            error::create_log_file("command.log".to_string(), &error);
+            return Err(error);
+        }
     };
 
     // Validate WFM Auth
     notify
         .gui()
         .send_event(UIEvent::OnInitialize, Some(json!("validation")));
-    let mut wfm_user = match wfm.auth().validate().await {
+    let wfm_user = match wfm.auth().validate().await {
         Ok(user) => user,
         Err(e) => {
             error::create_log_file("wfm_validation.log".to_string(), &e);
             return Err(e);
         }
     };
+    auth_state.update_from_wfm_user_profile(&wfm_user, auth_state.wfm_access_token.clone());
 
-    let qf_user = match qf.auth().validate().await {
+    let mut qf_user = match qf.auth().validate().await {
         Ok(user) => user,
         Err(e) => {
             error::create_log_file("qf_validate.log".to_string(), &e);
@@ -147,47 +157,65 @@ pub async fn app_init(
         }
     };
 
-    if qf_user.is_some() && !wfm_user.anonymous && wfm_user.verification {
-        wfm_user.update_from_qf_user_profile(
-            &qf_user.clone().unwrap(),
-            wfm_user.qf_access_token.clone(),
-        );
-    } else {
-        wfm_user.anonymous = true;
-        wfm_user.verification = false;
-    }
-
-    // Start The Analytics Module
-    if qf_user.is_some() {
-        match qf.analytics().init() {
-            Ok(_) => {}
+    if qf_user.is_none() && !wfm_user.anonymous && wfm_user.verification {
+        // Login to QuantFrame
+        qf_user = match qf
+            .auth()
+            .login_or_register(
+                &auth_state.get_username(),
+                &auth_state.get_password(),
+                &auth_state.ingame_name.clone(),
+            )
+            .await
+        {
+            Ok(user) => {
+                auth_state.update_from_qf_user_profile(&user.clone(), user.token.clone());
+                Some(user.clone())
+            }
             Err(e) => {
-                error::create_log_file("analytics.log".to_string(), &e);
+                error::create_log_file("auth_login.log".to_string(), &e);
                 return Err(e);
             }
         }
     }
 
+    // Start The Analytics Module
+    if qf_user.is_some() {
+        let user = qf_user.clone().unwrap();
+        auth_state.update_from_qf_user_profile(&user, user.token.clone());
+        if !user.banned {
+            match qf.analytics().init() {
+                Ok(_) => {}
+                Err(e) => {
+                    error::create_log_file("analytics.log".to_string(), &e);
+                    return Err(e);
+                }
+            }
+        }
+    }
     // Send User to UI
     notify.gui().send_event_update(
         UIEvent::UpdateUser,
         UIOperationEvent::Set,
-        Some(json!(&wfm_user)),
+        Some(json!(&auth_state.clone())),
     );
 
-    // Load Cache
-    notify
-        .gui()
-        .send_event(UIEvent::OnInitialize, Some(json!("cache")));
-    match cache.load().await {
-        Ok(_) => {}
-        Err(e) => {
-            error::create_log_file("cache.log".to_string(), &e);
-            return Err(e);
+    // Save AuthState to Tauri State
+    save_auth_state(auth.clone(), auth_state.clone());
+    if !wfm_user.anonymous && wfm_user.verification && qf_user.is_some() && !qf_user.unwrap().banned
+    {
+        // Load Cache
+        notify
+            .gui()
+            .send_event(UIEvent::OnInitialize, Some(json!("cache")));
+        match cache.load().await {
+            Ok(_) => {}
+            Err(e) => {
+                error::create_log_file("cache.log".to_string(), &e);
+                return Err(e);
+            }
         }
-    }
-    
-    if !wfm_user.anonymous && wfm_user.verification {
+
         // Load User Orders
         notify
             .gui()
@@ -246,6 +274,13 @@ pub async fn app_init(
             }
         };
     }
+    // Save AuthState
+    auth_state.save_to_file()?;
+    // Update The current AuthState
+
+    // let arced_mutex = Arc::clone(&auth);
+    // let mut my_lock = arced_mutex.lock().expect("Could not lock auth");
+    // *my_lock = auth_state.clone();
     Ok(false)
 }
 

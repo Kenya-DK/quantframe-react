@@ -8,6 +8,7 @@ use eyre::eyre;
 use reqwest::{Client, Method, Url};
 use serde::de::DeserializeOwned;
 use serde_json::Value;
+use tauri::AppHandle;
 
 use crate::{
     app::client::AppState, auth::AuthState, logger, qf_client::client::QFClient, utils::{
@@ -32,6 +33,7 @@ pub struct WFMClient {
     chat_module: Arc<RwLock<Option<ChatModule>>>,
     auction_module: Arc<RwLock<Option<AuctionModule>>>,
     auth_module: Arc<RwLock<Option<AuthModule>>>,
+    pub app_handle: AppHandle,
     pub log_file: String,
     pub auth: Arc<Mutex<AuthState>>,
     pub settings: Arc<Mutex<crate::settings::SettingsState>>,
@@ -41,6 +43,7 @@ pub struct WFMClient {
 
 impl WFMClient {
     pub fn new(
+        app_handle: AppHandle,
         auth: Arc<Mutex<AuthState>>,
         settings: Arc<Mutex<crate::settings::SettingsState>>,
         app: Arc<Mutex<AppState>>,
@@ -48,6 +51,7 @@ impl WFMClient {
     ) -> Self {
         WFMClient {
             app,
+            app_handle,
             endpoint: "https://api.warframe.market/v1/".to_string(),
             component: "WarframeMarket".to_string(),
             limiter: Arc::new(tokio::sync::Mutex::new(RateLimiter::new(

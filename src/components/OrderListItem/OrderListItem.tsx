@@ -12,7 +12,7 @@ export function OrderListItem({ order }: OrderListItemProps) {
 		<Paper mt={5} classNames={classes} p={5} data-order-type={order.order_type}>
 			<Group justify="space-between" >
 				<Group ml={10} w={"35%"}>
-					<Text c="gray.4">{order.user.ingame_name}</Text>
+					<Text c="gray.4">{order.user?.ingame_name}</Text>
 					{order.quantity > 1 && <Text c="gray.4">{order.quantity}x</Text>}
 					{/* <Text c="blue.5">{GetSubTypeDisplay(order.sub_type)} </Text> */}
 				</Group>

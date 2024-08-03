@@ -63,7 +63,7 @@ export function OrderItem({ show_border, paperProps, order, footer, show_user }:
 						{footer}
 					</Group>
 				</Group>
-				{show_user && (
+				{(show_user && order.user) && (
 					<Group>
 						<Avatar size={"sm"} src={WFMThumbnail(order.user.avatar || "https://cataas.com/cat")} alt="no image here" />
 						<Group>

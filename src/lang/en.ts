@@ -1222,6 +1222,8 @@ export const en = {
           email_not_exist: "Email not exist",
           password_invalid: "Password invalid",
           message: "An error occurred while trying to login.",
+          banned: "You are banned",
+          ban_reason: "<red>Reason: {{reason}}</red>",
         }
       },
       success: {
@@ -1236,6 +1238,16 @@ export const en = {
       backtrace: "Location: {{backtrace}}",
       cause: "Cause: {{cause}}",
       footer: "If you think this is a bug, please report it to the developer. Thank you.",
+    },
+    banned: {
+      wfm: {
+        title: "Account Suspended",
+        message: "Unable to connect to Warframe Market, please try again later.",
+      },
+      qf: {
+        title: "Account Suspended",
+        reason: "Reason: {{reason}}",
+      },
     },
     warframe_market: {
       tabs: {

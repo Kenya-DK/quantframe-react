@@ -51,7 +51,7 @@ export function UserMenu() {
 		>
 			<Menu.Target>
 				<Group>
-					{(isConnected && !inErrorState) ? (
+					{(isConnected && !inErrorState && !user?.qf_banned && !user?.wfm_banned) ? (
 						<Indicator
 							inline size={16} offset={7} position="bottom-start" withBorder
 							classNames={classes}
@@ -75,7 +75,7 @@ export function UserMenu() {
 			</Menu.Target>
 
 			<Menu.Dropdown>
-				{(isConnected && !inErrorState && user && !user.anonymous) && (
+				{(isConnected && !inErrorState && user && !user.anonymous && !user?.qf_banned && !user?.wfm_banned) && (
 					<>
 						<Menu.Item leftSection={<Avatar variant="subtle" src={WFMThumbnail(user?.avatar || "")} alt={user?.ingame_name} radius="xl" size={"md"} />}>
 							{user?.ingame_name || "Unknown"}

@@ -11,11 +11,13 @@ import { NavbarLinkProps, NavbarMinimalColored } from "@components/NavbarMinimal
 import { SvgIcon, SvgType } from "@components/SvgIcon";
 import { Header } from "@components/Header";
 import api from "@api/index";
+import { useAuthContext } from "@contexts/auth.context";
 export function LogInLayout() {
   // States
   const [lastPage, setLastPage] = useState<string>("");
   // Contexts
   const { app_error } = useAppContext();
+  const { user } = useAuthContext();
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateComponent(`layout.log_in.${key}`, { ...context }, i18Key)
   const useTranslateNavBar = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`navbar.${key}`, { ...context }, i18Key)
@@ -41,7 +43,10 @@ export function LogInLayout() {
     if (app_error)
       navigate('/error')
   }, [app_error])
-
+  useEffect(() => {
+    if (user?.qf_banned || user?.wfm_banned)
+      navigate('/error/banned')
+  }, [user])
   const handleNavigate = (link: NavbarLinkProps) => {
     if (link.web)
       window.open(link.link, "_blank");

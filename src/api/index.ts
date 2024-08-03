@@ -37,6 +37,7 @@ export class TauriClient {
 
 
   async sendInvoke<T>(command: string, data?: any): Promise<ErrOrResult<T>> {
+    console.log(`Sending invoke: ${command}`, data)
     if (data)
       data = this.convertToCamelCase(data);
     return new Promise((resolve) => {

@@ -4,6 +4,7 @@ import api, { SendTauriDataEvent } from "@api/index";
 import { useMutation } from "@tanstack/react-query";
 import { notifications } from "@mantine/notifications";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
+import { TextTranslate } from "@components/TextTranslate";
 import { QfSocketEvent, QfSocketEventOperation, ResponseError } from "@api/types";
 import { useState } from "react";
 import { wfmSocket } from "@models/wfmSocket";
@@ -13,6 +14,8 @@ export default function LoginPage() {
   // const navigate = useNavigate();
   const [interval, setInterval] = useState(0);
   const [progressText, setProgressText] = useState("")
+  const [is_banned, setIsBanned] = useState(false);
+  const [banned_reason, setBannedReason] = useState<string | undefined>(undefined)
 
   // Translate general
   const useTranslatePage = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`auth.${key}`, { ...context }, i18Key)
@@ -28,6 +31,12 @@ export default function LoginPage() {
       return api.auth.login(data.email, data.password)
     },
     onSuccess: async (u) => {
+      if (!u) return;
+      setIsBanned(u.qf_banned);
+      if (u.qf_banned)
+        return notifications.show({ title: useTranslateErrors("login.title"), message: useTranslateErrors("login.banned"), color: "red.7" });
+
+      setBannedReason(u.qf_banned_reason);
       notifications.show({ title: useTranslateSuccess("login.title"), message: useTranslateSuccess("login.message", { name: u.ingame_name }), color: "green.7" });
       setInterval(1);
       setProgressText(useTranslateProgress("refreshing_orders"));
@@ -75,7 +84,7 @@ export default function LoginPage() {
 
   return (
     <Center w={"100%"} h={"92vh"}>
-      <LogInForm is_loading={logInMutation.isPending} onSubmit={(d: { email: string; password: string }) => logInMutation.mutate(d)} footerContent={
+      <LogInForm hide_submit={is_banned} is_loading={logInMutation.isPending} onSubmit={(d: { email: string; password: string }) => logInMutation.mutate(d)} footerContent={
         <>
           {logInMutation.isPending && (
             <Progress.Root size="xl">
@@ -83,6 +92,11 @@ export default function LoginPage() {
                 <Progress.Label>{progressText}</Progress.Label>
               </Progress.Section>
             </Progress.Root>
+          )}
+          {is_banned && (
+            <TextTranslate i18nKey={useTranslateErrors("login.ban_reason")}
+              values={{ reason: banned_reason || "" }}
+            />
           )}
         </>}
       />

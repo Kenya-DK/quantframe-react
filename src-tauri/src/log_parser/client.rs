@@ -10,10 +10,18 @@ use std::{
 };
 
 use crate::{
-    app::client::AppState, auth::AuthState, cache::client::CacheClient, helper, notification::client::NotifyClient, qf_client::client::QFClient, settings::SettingsState, utils::modules::{
+    app::client::AppState,
+    auth::AuthState,
+    cache::client::CacheClient,
+    helper,
+    notification::client::NotifyClient,
+    qf_client::client::QFClient,
+    settings::SettingsState,
+    utils::modules::{
         error::{self, AppError},
         logger,
-    }, wfm_client::client::WFMClient
+    },
+    wfm_client::client::WFMClient,
 };
 
 use super::modules::{on_conversation::OnConversationEvent, on_trading::OnTradeEvent};

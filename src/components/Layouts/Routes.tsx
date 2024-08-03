@@ -25,6 +25,9 @@ import PDebug from '@pages/debug'
 // Error Routes
 import PError from '@pages/error'
 
+// Banned Routes
+import PBanned from '@pages/banned'
+
 // Control Routes
 import { LiveTradingControl } from '../LiveTradingControl'
 
@@ -56,6 +59,7 @@ export function AppRoutes() {
         </Route>
         <Route path="/error" element={<LogOutLayout />}>
           <Route index element={<PError />} />
+          <Route path="banned" element={<PBanned />} />
         </Route>
         <Route path="*" element={<PHome />} />
       </Routes>

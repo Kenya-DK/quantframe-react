@@ -167,7 +167,10 @@ impl OrderModule {
         let limit = auth.order_limit;
 
         let metric_key = "WFM_OrderCreated";
-        let mut metric_value = format!("I:{}|T:{}|P:{}|Q:{}",item_id, order_type, platinum, quantity);
+        let mut metric_value = format!(
+            "I:{}|T:{}|P:{}|Q:{}",
+            item_id, order_type, platinum, quantity
+        );
         if self.total_orders >= limit {
             logger::warning_con(
                 &self.get_component("Create"),
@@ -184,7 +187,6 @@ impl OrderModule {
             "quantity": quantity,
             "visible": visible
         });
-
 
         // Add SubType data
         if let Some(item_sub) = sub_type.clone() {
@@ -213,7 +215,10 @@ impl OrderModule {
         {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.add_order_count(1)?;
-                qf.analytics().add_metric(metric_key, format!("{}|RE:{}", metric_value, "success").as_str());
+                qf.analytics().add_metric(
+                    metric_key,
+                    format!("{}|RE:{}", metric_value, "success").as_str(),
+                );
                 self.client.debug(
                     &self.debug_id,
                     &self.get_component("Create"),
@@ -233,7 +238,10 @@ impl OrderModule {
                 return Ok(("order_created".to_string(), Some(payload)));
             }
             Ok(ApiResult::Error(error, _headers)) => {
-                qf.analytics().add_metric(metric_key, format!("{}|RE:{}", metric_value, "failed").as_str());
+                qf.analytics().add_metric(
+                    metric_key,
+                    format!("{}|RE:{}", metric_value, "failed").as_str(),
+                );
                 let log_level = match error.messages.get(0) {
                     Some(message)
                         if message.contains("app.post_order.already_created_no_duplicates")
