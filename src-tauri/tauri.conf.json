@@ -64,8 +64,8 @@
     "updater": {
       "active": true,
       "endpoints": [
-        "http://localhost:6969/api/prerelease/{{target}}/{{arch}}/{{current_version}}",
-        "https://api.quantframe.app/release/{{target}}/{{arch}}/{{current_version}}"
+        "http://localhost:6969/prerelease/{{target}}/{{arch}}/{{current_version}}",
+        "https://api.quantframe.app/prerelease/{{target}}/{{arch}}/{{current_version}}"
       ],
       "dialog": false,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQ3NEIwMTI1MzA3Q0E1OEYKUldTUHBYd3dKUUZMMTczQ2pIYTR0bklLQXlaMkxvK0V0a0RMQytNMTdqZzBCWitQRnNIWDhxYnAK"
@@ -90,7 +90,7 @@
         "fullscreen": false,
         "userAgent": "Quantframe",
         "resizable": true,
-        "title": "Quantframe",
+        "title": "Quantframe v1.2.0 - Pre-release By Kenya-DK",
         "width": 1455,
         "height": 912
       }
