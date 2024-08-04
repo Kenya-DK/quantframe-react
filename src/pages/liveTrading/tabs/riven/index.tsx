@@ -354,7 +354,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                 </Grid.Col>
             </Grid>
             <DataTable
-                height={`calc(100vh - ${!is_running ? "400px" : "362px"})`}
+                height={`calc(100vh - ${!is_running ? "339px" : "362px"})`}
                 mt={"md"}
                 records={rows}
                 totalRecords={totalRecords}
