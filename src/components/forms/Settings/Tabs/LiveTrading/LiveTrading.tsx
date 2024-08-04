@@ -130,6 +130,7 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
               </Group>
               <Group gap="md">
                 <Select
+                  allowDeselect={false}
                   label={useTranslateFormFields('stock_mode.label')}
                   description={useTranslateFormFields(`stock_mode.description.${form.values.stock_mode}`)}
                   placeholder={useTranslateFormFields('stock_mode.placeholder')}
@@ -142,6 +143,7 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
                   radius="md"
                 />
                 <Select
+                  allowDeselect={false}
                   label={useTranslateFormFields('order_mode.label')}
                   description={useTranslateFormFields(`order_mode.description.${form.values.stock_item.order_mode}`)}
                   placeholder={useTranslateFormFields('order_mode.placeholder')}
