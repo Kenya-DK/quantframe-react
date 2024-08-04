@@ -169,7 +169,7 @@ pub async fn app_init(
             .await
         {
             Ok(user) => {
-                auth_state.update_from_qf_user_profile(&user.clone(), user.token.clone());
+                auth_state.update_from_qf_user_profile(&user, user.token.clone());
                 Some(user.clone())
             }
             Err(e) => {
@@ -177,22 +177,10 @@ pub async fn app_init(
                 return Err(e);
             }
         }
+    } else {
+        auth_state.update_from_qf_user_profile(&qf_user.clone().unwrap(), auth_state.qf_access_token.clone());
     }
 
-    // Start The Analytics Module
-    if qf_user.is_some() {
-        let user = qf_user.clone().unwrap();
-        auth_state.update_from_qf_user_profile(&user, user.token.clone());
-        if !user.banned {
-            match qf.analytics().init() {
-                Ok(_) => {}
-                Err(e) => {
-                    error::create_log_file("analytics.log".to_string(), &e);
-                    return Err(e);
-                }
-            }
-        }
-    }
     // Send User to UI
     notify.gui().send_event_update(
         UIEvent::UpdateUser,
@@ -202,8 +190,18 @@ pub async fn app_init(
 
     // Save AuthState to Tauri State
     save_auth_state(auth.clone(), auth_state.clone());
+
     if !wfm_user.anonymous && wfm_user.verification && qf_user.is_some() && !qf_user.unwrap().banned
     {
+        // Initialize QF Analytics
+        match qf.analytics().init() {
+            Ok(_) => {}
+            Err(e) => {
+                error::create_log_file("analytics.log".to_string(), &e);
+                return Err(e);
+            }
+        }
+
         // Load Cache
         notify
             .gui()
