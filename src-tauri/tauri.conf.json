@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "Quantframe",
-    "version": "1.2.0"
+    "version": "1.2.1"
   },
   "tauri": {
     "systemTray": {
@@ -90,7 +90,7 @@
         "fullscreen": false,
         "userAgent": "Quantframe",
         "resizable": true,
-        "title": "Quantframe v1.2.0 - Pre-release By Kenya-DK",
+        "title": "Quantframe v1.2.1 - Pre-release By Kenya-DK",
         "width": 1455,
         "height": 912
       }
