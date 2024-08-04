@@ -46,7 +46,6 @@ export function AuctionListItem({ overrideMode, show_border, show_image, header,
 		else if (auction.visible)
 			setStatus(Wfm.AuctionStatus.Visible);
 
-		console.log(data)
 		if (data)
 			setWeapon(data.find((item) => item.wfm_url_name == auction.item.weapon_url_name));
 	}, [auction, data, overrideMode]);
