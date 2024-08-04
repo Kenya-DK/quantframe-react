@@ -35,6 +35,8 @@ pub struct ByteResponse {
 #[derive(Clone, Debug)]
 pub struct QFClient {
     endpoint: String,
+    endpoint_dev: String,
+    is_dev: bool,
     limiter: Arc<tokio::sync::Mutex<RateLimiter>>,
     auth_module: Arc<RwLock<Option<AuthModule>>>,
     cache_module: Arc<RwLock<Option<CacheModule>>>,
@@ -55,6 +57,8 @@ impl QFClient {
     ) -> Self {
         QFClient {
             endpoint: "https://api.quantframe.app/".to_string(),
+            endpoint_dev: "http://localhost:6969/".to_string(),
+            is_dev: false,
             limiter: Arc::new(tokio::sync::Mutex::new(RateLimiter::new(
                 3.0,
                 Duration::new(1, 0),
@@ -122,7 +126,12 @@ impl QFClient {
         let packageinfo = app.get_app_info();
 
         let client = Client::new();
-        let new_url = format!("{}{}", self.endpoint, url);
+        let base_url = if self.is_dev {
+            self.endpoint_dev.clone()
+        } else {
+            self.endpoint.clone()
+        };
+        let new_url = format!("{}{}", base_url, url);
         let request = client
             .request(method.clone(), Url::parse(&new_url).unwrap())
             .header(
