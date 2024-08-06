@@ -569,6 +569,12 @@ impl ItemModule {
         // Load Managers.
         let settings = self.client.settings.lock()?.clone().live_scraper;
         let wfm = self.client.wfm.lock()?.clone();
+        let blacklist = settings.stock_item.blacklist.clone();
+
+        // Check if the item is in the blacklist and skip if it is
+        if blacklist.contains(&item_info.wfm_url_name) {
+            return Ok(None);
+        }
 
         // Get Settings.
         let avg_price_cap = settings.stock_item.avg_price_cap;
@@ -831,6 +837,12 @@ impl ItemModule {
         let settings = self.client.settings.lock()?.clone().live_scraper;
         let wfm = self.client.wfm.lock()?.clone();
         let app = self.client.app.lock()?.clone();
+        let blacklist = settings.stock_item.blacklist.clone();
+
+        // Check if the item is in the blacklist and skip if it is
+        if blacklist.contains(&item_info.wfm_url_name) {
+            return Ok(());
+        }
 
         // Get Settings.
         let min_sma = settings.stock_item.min_sma;
