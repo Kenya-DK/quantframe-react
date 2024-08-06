@@ -181,7 +181,13 @@ impl ItemModule {
         // Remove duplicates from the interesting items.
         logger::log_json("interesting_items.json", &json!(interesting_items.clone()))?;
 
-        let interesting_items: HashSet<ItemEntry> = HashSet::from_iter(interesting_items);
+        let mut interesting_items: HashSet<ItemEntry> = HashSet::from_iter(interesting_items);
+        // Remove empty items from the interesting items.
+        interesting_items = interesting_items
+            .into_iter()
+            .filter(|item| item.wfm_url != "")
+            .collect();
+
         let mut current_index = interesting_items.len();
         logger::info_file(
             &self.get_component("CheckStock"),
@@ -200,6 +206,12 @@ impl ItemModule {
             &self.get_component("CheckStock"),
             format!("Checking {} items", interesting_items.len()).as_str(),
         );
+
+        // Sort the interesting items by the priority.
+        let mut interesting_items: Vec<ItemEntry> = interesting_items.into_iter().collect();
+        interesting_items.sort_by(|a, b| a.priority.cmp(&b.priority));
+
+
         // Loop through all interesting items
         for item_entry in interesting_items.clone() {
             if self.client.is_running() == false {
@@ -929,7 +941,6 @@ impl ItemModule {
         }
 
         // Get Order Info
-        let order_info_original = user_order.info.clone();
         let mut order_info = match user_order.info {
             Some(order_info) => order_info,
             None => OrderDetails::default(),
