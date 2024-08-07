@@ -31,6 +31,7 @@ impl AuthModule {
     }
     pub async fn me(&self) -> Result<User, AppError> {
         let settings = self.client.settings.lock()?.clone();
+        let app = self.client.app.lock()?.clone();
         if settings.dev_mode {
             logger::warning_con(
                 &self.get_component("Me"),
@@ -39,7 +40,7 @@ impl AuthModule {
             return Ok(User::default());
         }
 
-        match self.client.get::<User>("auth/profile").await {
+        match self.client.get::<User>(&format!("auth/profile?v={}",app.get_app_info().version)).await {
             Ok(ApiResult::Success(user, _)) => {
                 return Ok(user);
             }
