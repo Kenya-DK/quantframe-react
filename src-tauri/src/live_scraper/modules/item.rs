@@ -211,7 +211,6 @@ impl ItemModule {
         let mut interesting_items: Vec<ItemEntry> = interesting_items.into_iter().collect();
         interesting_items.sort_by(|a, b| a.priority.cmp(&b.priority));
 
-
         // Loop through all interesting items
         for item_entry in interesting_items.clone() {
             if self.client.is_running() == false {

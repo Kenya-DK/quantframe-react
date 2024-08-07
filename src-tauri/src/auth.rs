@@ -203,6 +203,21 @@ impl AuthState {
         let json_value: Value = serde_json::from_str(json_str)
             .map_err(|e| AppError::new("AuthState", eyre!(e.to_string())))?;
 
+
+        // If role is string, convert it to Null
+        let json_value = match json_value.get("role") {
+            Some(role) => {
+                if role.is_string() {
+                    let mut json_value = json_value.clone();
+                    json_value.as_object_mut().unwrap().insert("role".to_string(), Value::Null);
+                    json_value                    
+                } else {
+                    json_value.clone()
+                }
+            }
+            None => json_value.clone(),
+        };
+
         // Required properties for the settings.json file
         let required_json = serde_json::to_value(AuthState::default())
             .map_err(|e| AppError::new("AuthState", eyre!(e.to_string())))?;
