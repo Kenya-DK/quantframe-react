@@ -147,7 +147,6 @@ pub async fn app_init(
             return Err(e);
         }
     };
-    println!("WFM User: {:?}", wfm_user);
     auth_state.update_from_wfm_user_profile(&wfm_user, auth_state.wfm_access_token.clone());
 
     // Validate QF Auth
