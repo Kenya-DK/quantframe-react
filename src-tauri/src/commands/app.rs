@@ -147,8 +147,10 @@ pub async fn app_init(
             return Err(e);
         }
     };
+    println!("WFM User: {:?}", wfm_user);
     auth_state.update_from_wfm_user_profile(&wfm_user, auth_state.wfm_access_token.clone());
 
+    // Validate QF Auth
     let mut qf_user = match qf.auth().validate().await {
         Ok(user) => user,
         Err(e) => {
@@ -177,8 +179,11 @@ pub async fn app_init(
                 return Err(e);
             }
         }
-    } else {
-        auth_state.update_from_qf_user_profile(&qf_user.clone().unwrap(), auth_state.qf_access_token.clone());
+    } else if qf_user.is_some() {
+        auth_state.update_from_qf_user_profile(
+            &qf_user.clone().unwrap(),
+            auth_state.qf_access_token.clone(),
+        );
     }
 
     // Send User to UI

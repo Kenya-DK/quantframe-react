@@ -43,8 +43,6 @@ mod wfm_client;
 pub static APP: OnceLock<tauri::AppHandle> = OnceLock::new();
 
 async fn setup_manages(app: &mut App) -> Result<(), AppError> {
-    // Dev Settings for the app
-    let dev_folder = env::current_dir().unwrap();
 
     // Get the update channel
     let context = tauri::generate_context!();

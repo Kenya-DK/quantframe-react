@@ -327,7 +327,6 @@ impl OrderModule {
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {
-                qf.analytics().add_metric("WFM_OrderUpdated", "success");
                 self.client.debug(
                     &self.debug_id,
                     &self.get_component("Update"),
@@ -341,7 +340,6 @@ impl OrderModule {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
-                qf.analytics().add_metric("WFM_OrderUpdated", "failed");
                 let log_level = match error.messages.get(0) {
                     Some(message)
                         if message.contains("app.form.not_exist")
