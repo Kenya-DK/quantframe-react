@@ -68,7 +68,7 @@ impl AnalyticsModule {
     pub fn add_metric(&mut self, key: &str, value: &str) {
         let mut map = HashMap::new();
         map.insert(key.to_string(), value.to_string());
-        if key == "active_page" {
+        if key == "Active_Page" {
             self.set_current_page(value);
             self.set_last_user_activity();
         }
@@ -173,7 +173,7 @@ impl AnalyticsModule {
     ) -> Result<(), AppError> {
         let mut parameters: Vec<String> = vec![];
         if self.is_user_active() {
-            parameters.push(format!("active_page={}", self.current_page));
+            parameters.push(format!("Active_Page={}", self.current_page));
         }
 
         while retry_count >= 0 {

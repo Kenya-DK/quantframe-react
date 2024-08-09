@@ -43,6 +43,7 @@ impl StockRivenMutation {
         stock_riven::ActiveModel {
             wfm_weapon_id: Set(form_data.wfm_weapon_id.to_owned()),
             wfm_weapon_url: Set(form_data.wfm_weapon_url.to_owned()),
+            wfm_order_id: Set(form_data.wfm_order_id.to_owned()),
             weapon_name: Set(form_data.weapon_name.to_owned()),
             weapon_type: Set(form_data.weapon_type.to_owned()),
             weapon_unique_name: Set(form_data.weapon_unique_name.to_owned()),

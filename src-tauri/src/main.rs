@@ -262,6 +262,7 @@ fn main() {
             commands::auctions::auction_refresh,
             commands::auctions::auction_delete,
             commands::auctions::auction_delete_all,
+            commands::auctions::auction_import,
             // Orders commands
             commands::orders::order_delete,
             commands::orders::order_delete_all,

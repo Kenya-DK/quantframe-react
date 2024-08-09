@@ -83,7 +83,41 @@ export const AuctionPanel = ({ }: AuctionPanelProps) => {
             notifications.show({ title: useTranslateErrors("delete_all.title"), message: useTranslateErrors("delete_all.message"), color: "red.7" })
         }
     })
-
+    const createRivenFromAuctionsMutation = useMutation({
+        mutationFn: (a: Wfm.Auction<string> & { price: number }) =>
+            api.auction.import_auction(a, a.price),
+        onSuccess: async (u) => {
+            notifications.show({ title: useTranslateSuccess("import_riven.title"), message: useTranslateSuccess("import_riven.message", { count: u }), color: "green.7" });
+        },
+        onError: (e) => {
+            console.error(e);
+            notifications.show({ title: useTranslateErrors("import_riven.title"), message: useTranslateErrors("import_riven.message"), color: "red.7" })
+        }
+    })
+    const OpenCreateStockRiven = (auction: Wfm.Auction<string>) => {
+        modals.openContextModal({
+            modal: 'prompt',
+            title: useTranslatePrompt(`import_riven.title`),
+            innerProps: {
+                fields: [
+                    {
+                        name: 'price',
+                        label: useTranslatePrompt(`import_riven.bought.label`),
+                        attributes: {
+                            min: 0,
+                        },
+                        value: 0,
+                        type: 'number',
+                    },
+                ],
+                onConfirm: async (data: { price: number }) => {
+                    if (!auction) return;
+                    createRivenFromAuctionsMutation.mutateAsync({ ...auction, price: data.price });
+                },
+                onCancel: (id: string) => modals.close(id),
+            },
+        })
+    }
     return (
         <Box>
             <SearchField value={query} onChange={(text) => setQuery(text)}
@@ -133,7 +167,6 @@ export const AuctionPanel = ({ }: AuctionPanelProps) => {
                     cols={{ base: 1, sm: 2, lg: 2 }}
                     spacing="lg"
                 >
-
                     {rows.map((order, i) => (
                         <AuctionListItem
                             key={i}
@@ -150,7 +183,7 @@ export const AuctionPanel = ({ }: AuctionPanelProps) => {
                                         iconProps={{ size: "xs" }}
                                         onClick={(e) => {
                                             e.stopPropagation();
-
+                                            OpenCreateStockRiven(order);
                                         }}
                                     /> : null}
 

@@ -4,7 +4,7 @@ import { paginate, getCssVariable, GetSubTypeDisplay, CreateTradeMessage } from 
 import { useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { SellStockRiven, StockRiven, StockStatus, UpdateStockRiven } from "@api/types";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
-import { faComment, faEdit, faEye, faEyeSlash, faFilter, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faAdd, faComment, faEdit, faEye, faEyeSlash, faFilter, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { useMutation } from "@tanstack/react-query";
@@ -19,6 +19,7 @@ import { RivenAttributeCom } from "@components/RivenAttribute";
 import { SearchField } from "@components/SearchField";
 import { StatsWithSegments } from "@components/StatsWithSegments";
 import { TextTranslate } from "@components/TextTranslate";
+import { CreateRiven } from "@components/Forms/CreateRiven";
 import { useLiveScraperContext } from "@contexts/liveScraper.context";
 import { useStockContextContext } from "@contexts/stock.context";
 import { sortArray } from "@utils/sorting.helper";
@@ -247,6 +248,15 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
 
         })
     }
+    const OpenCreateRiven = () => {
+        modals.open({
+            title: useTranslatePrompt('create_riven.title'),
+            size: "100%",
+            children: (<CreateRiven onSubmit={async (_data) => {
+
+            }} />)
+        })
+    }
     const OpenUpdateModal = (items: UpdateStockRiven[]) => {
         modals.open({
             title: useTranslatePrompt('update_bulk.title'),
@@ -275,7 +285,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
             <Grid>
                 <Grid.Col span={8}>
                     <SearchField value={query} onChange={(text) => setQuery(text)}
-                        rightSectionWidth={140}
+                        rightSectionWidth={165}
                         rightSection={
                             <Group gap={5}>
                                 <ActionWithTooltip
@@ -333,6 +343,15 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         CreateRivenSelection(selectedRecords);
+                                    }}
+                                />
+                                <ActionWithTooltip
+                                    tooltip={useTranslateButtons('create_riven.tooltip')}
+                                    icon={faAdd}
+                                    color={"green.7"}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        OpenCreateRiven();
                                     }}
                                 />
                             </Group>
