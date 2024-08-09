@@ -67,7 +67,7 @@ export default function HomePage() {
                   sales: statistics?.total.sales || 0,
                   purchases: statistics?.total.purchases || 0,
                   quantity: (statistics?.total.sales || 0) + (statistics?.total?.purchases || 0),
-                  profit_margin: ((statistics?.today.profit_margin || 0) * 100).toFixed(2),
+                  profit_margin: ((statistics?.total.profit_margin || 0) * 100).toFixed(2),
                 }}
               />
             }
