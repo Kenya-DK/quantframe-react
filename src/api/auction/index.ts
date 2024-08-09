@@ -1,5 +1,6 @@
 import { TauriClient } from "..";
 import { Wfm } from "../../types";
+import { StockRiven } from "../types";
 
 export class AuctionModule {
   constructor(private readonly client: TauriClient) { }
@@ -24,6 +25,14 @@ export class AuctionModule {
   async deleteAll(): Promise<void> {
     const [err, res] = await this.client.sendInvoke<void>('auction_delete_all');
     await this.client.analytics.sendMetric('WFM_AuctionDeleteAll', err ? 'failed' : 'success');
+    if (err)
+      throw err;
+    return res;
+  }
+
+  async import_auction(auction: Wfm.Auction<string>, bought: number): Promise<StockRiven> {
+    const [err, res] = await this.client.sendInvoke<StockRiven>('auction_import', { auction, bought });
+    await this.client.analytics.sendMetric('WFM_AuctionImportToStock', err ? 'failed' : 'success');
     if (err)
       throw err;
     return res;

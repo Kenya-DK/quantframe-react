@@ -3,12 +3,13 @@ use service::{StockRivenMutation, StockRivenQuery};
 
 use crate::{
     app::client::AppState,
+    cache::{client::CacheClient, types::item_price_info::StockRiven},
     notification::client::NotifyClient,
     utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
         modules::error::{self, AppError},
     },
-    wfm_client::client::WFMClient,
+    wfm_client::{client::WFMClient, types::auction::Auction},
 };
 use std::sync::{Arc, Mutex};
 
@@ -135,7 +136,6 @@ pub async fn auction_delete_all(
         Some(json!([])),
     );
 
-
     // Clear all WfmOrderId in StockRiven
     match StockRivenQuery::clear_all_order_id(&app.conn).await {
         Ok(stock) => {
@@ -153,4 +153,46 @@ pub async fn auction_delete_all(
     }
 
     Ok(total)
+}
+#[tauri::command]
+pub async  fn auction_import(
+    auction: Auction<String>,
+    bought: i64,
+    app: tauri::State<'_, Arc<Mutex<AppState>>>,
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
+) -> Result<entity::stock::riven::stock_riven::Model, AppError> {
+    let app = app.lock()?.clone();
+    let notify = notify.lock()?.clone();
+    let cache = cache.lock()?.clone();
+
+    let mut entity = match auction.convert_to_create_stock(bought) {
+        Ok(stock) => stock,
+        Err(e) => {
+            error::create_log_file("command_auctions.log".to_string(), &e);
+            return Err(e);
+        }
+    };
+
+    // Validate the stock
+    entity.validate_entity(&cache, "--weapon_by url_name --weapon_lang en --attribute_by url_name")?;
+
+    let mut stock = entity.to_stock_riven().to_stock();
+    stock.wfm_order_id = Some(auction.id.clone());
+    match StockRivenMutation::create(&app.conn, stock.clone()).await {
+        Ok(item) => {
+            notify.gui().send_event_update(
+                UIEvent::UpdateStockRivens,
+                UIOperationEvent::CreateOrUpdate,
+                Some(json!(item)),
+            );
+        }
+        Err(e) => {
+            let err = AppError::new_db("Command:AuctionImport", e);
+            error::create_log_file("command_auctions.log".to_string(), &err);
+            return Err(err);
+        }
+        
+    }
+    return Ok(stock);
 }

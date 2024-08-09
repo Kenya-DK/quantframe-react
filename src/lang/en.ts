@@ -445,6 +445,45 @@ export const en = {
         buttons: {
           submit: "Log In",
         },
+      },
+      create_riven_attributes: {
+        fields: {
+          positive: {
+            title: "Positive Attributes",
+            add: "Add",
+          },
+          negative: {
+            title: "Negative Attributes",
+          },
+        },
+      },
+      create_riven: {
+        fields: {
+          mastery_rank: {
+            label: "Mastery Rank",
+            placeholder: "8",
+            error: "Invalid mastery rank",
+          },
+          re_rolls: {
+            label: "Re-Rolls",
+            placeholder: "0",
+            error: "Invalid re-rolls",
+          },
+          rank: {
+            label: "Rank",
+            placeholder: "0",
+            error: "Invalid rank",
+          },
+          polarity: {
+            label: "Polarity",
+            error: "Invalid polarity",
+          },
+          weapon: {
+            label: "Weapon Name",
+            placeholder: "Weapon",
+            error: "Invalid weapon",
+          },
+        },
       }
     },
     auction_list_item: {
@@ -996,6 +1035,9 @@ export const en = {
             update_filter: {
               title: "Update Filter",
             },
+            create_riven: {
+              title: "Create Riven",
+            },
           },
           buttons: {
             update_bulk: {
@@ -1010,8 +1052,10 @@ export const en = {
             selection: {
               tooltip: "Create Selection Message",
             },
+            create_riven: {
+              tooltip: "Create Riven",
+            },
           },
-
           errors: {
             update_stock: {
               title: "Update Stock Error",
@@ -1366,8 +1410,17 @@ export const en = {
             delete: {
               tooltip: "Delete"
             },
+            import: {
+              tooltip: "Import auction to stock"
+            },
           },
           prompts: {
+            import_riven: {
+              title: "Import riven to stock",
+              bought: {
+                label: "Bought For",
+              },
+            },
             delete: {
               title: "Delete Auction",
               message: "Are you sure you want to delete auction, this action cannot be undone.",
@@ -1382,6 +1435,10 @@ export const en = {
             },
           },
           success: {
+            import_riven: {
+              title: "Import Success",
+              message: "Riven has been successfully imported to stock.",
+            },
             refresh: {
               title: "Refresh Success",
               message: "Total {{count}} auctions have been successfully refreshed.",
@@ -1399,6 +1456,10 @@ export const en = {
             refresh: {
               title: "Refresh Error",
               message: "An error occurred while trying to refresh auctions.",
+            },
+            import_riven: {
+              title: "Import Error",
+              message: "An error occurred while trying to import riven.",
             },
             delete: {
               title: "Delete Error",
