@@ -64,7 +64,7 @@ export function LogInLayout() {
         api.analytics.sendMetric("BuyMeACoffee_WebOpened", "");
         break;
       default:
-        api.analytics.sendMetric("active_page", link.id);
+        api.analytics.sendMetric("Active_Page", link.id);
         break;
     }
   };

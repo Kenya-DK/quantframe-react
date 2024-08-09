@@ -14,7 +14,7 @@ pub struct AppState {
 impl AppState {
     pub fn new(conn: DatabaseConnection, tauri_app: AppHandle, is_first_install: bool, is_pre_release: bool) -> AppState {
         AppState {
-            app_id: "app".to_string(),
+            app_id: "rqf6ahg*RFY3wkn4neq".to_string(),
             conn,
             tauri_app,
             is_first_install,
