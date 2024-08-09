@@ -4,7 +4,7 @@ use crate::{helper, logger};
 use eyre::{eyre, Result};
 use serde::{Deserialize, Serialize};
 
-use serde_json::Value;
+use serde_json::{json, Value};
 use sha256::digest;
 use std::fs::File;
 use std::io::{Read, Write};
@@ -128,13 +128,15 @@ impl AuthState {
         self.region = user_profile.region.clone();
         self.check_code = user_profile.check_code.clone().unwrap_or("".to_string());
         self.wfm_access_token = token;
-        if user_profile.role != "user" {
-            self.order_limit = 999;
-            self.auctions_limit = 999;
-        } else {
-            self.order_limit = 100;
-            self.auctions_limit = 50;
-        }
+        self.order_limit = 100;
+        self.auctions_limit = 50;
+        if user_profile.patreon_profile.is_some() {
+            let us = user_profile.patreon_profile.clone().unwrap();
+            if us.subscription {
+                self.order_limit = -1;
+                self.auctions_limit = -1;
+            }
+        } 
     }
 
     pub fn reset(&mut self) {
@@ -203,14 +205,16 @@ impl AuthState {
         let json_value: Value = serde_json::from_str(json_str)
             .map_err(|e| AppError::new("AuthState", eyre!(e.to_string())))?;
 
-
         // If role is string, convert it to Null
         let json_value = match json_value.get("role") {
             Some(role) => {
                 if role.is_string() {
                     let mut json_value = json_value.clone();
-                    json_value.as_object_mut().unwrap().insert("role".to_string(), Value::Null);
-                    json_value                    
+                    json_value
+                        .as_object_mut()
+                        .unwrap()
+                        .insert("role".to_string(), Value::Null);
+                    json_value
                 } else {
                     json_value.clone()
                 }

@@ -10,15 +10,21 @@ pub struct UserProfile {
     pub avatar: Option<String>,
     #[serde(rename = "linked_accounts")]
     pub linked_accounts: LinkedAccounts,
+    #[serde(rename = "patreon_profile")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub patreon_profile: Option<PatreonProfile>,
     #[serde(rename = "verification")]
     pub verification: bool,
     #[serde(rename = "written_reviews")]
     pub written_reviews: i32,
     #[serde(rename = "background")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub background: Option<String>,
     #[serde(rename = "ingame_name")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ingame_name: Option<String>,
     #[serde(rename = "check_code")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub check_code: Option<String>,
     #[serde(rename = "unread_messages")]
     pub unread_messages: i32,
@@ -36,6 +42,7 @@ pub struct UserProfile {
     pub banned: bool,
     #[serde(rename = "reputation")]
     pub reputation: i32,
+    
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -50,4 +57,14 @@ pub struct LinkedAccounts {
     pub discord_profile: bool,
     #[serde(rename = "github_profile")]
     pub github_profile: bool,
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct PatreonProfile {
+    #[serde(rename = "patreon_founder")]
+    pub patreon_founder: bool,
+    #[serde(rename = "subscription")]
+    pub subscription: bool,
+    #[serde(rename = "patreon_badge")]
+    pub patreon_badge: String,
 }

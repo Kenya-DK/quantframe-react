@@ -171,7 +171,7 @@ impl OrderModule {
             "I:{}|T:{}|P:{}|Q:{}",
             item_id, order_type, platinum, quantity
         );
-        if self.total_orders >= limit {
+        if limit != -1 && self.total_orders >= limit {
             logger::warning_con(
                 &self.get_component("Create"),
                 "You have reached the maximum number of orders",
@@ -312,7 +312,6 @@ impl OrderModule {
         quantity: i64,
         visible: bool,
     ) -> Result<Order, AppError> {
-        let qf = self.client.qf.lock()?.clone();
         // Construct any JSON body
         let body = json!({
             "platinum": platinum,

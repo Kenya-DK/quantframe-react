@@ -211,8 +211,6 @@ impl ItemModule {
         let mut interesting_items: Vec<ItemEntry> = interesting_items.into_iter().collect();
         interesting_items.sort_by(|a, b| b.priority.cmp(&a.priority));
 
-        logger::log_json("interesting_items.json", &json!(interesting_items.clone()))?;
-        return Ok(());
         // Loop through all interesting items
         for item_entry in interesting_items.clone() {
             if self.client.is_running() == false {
