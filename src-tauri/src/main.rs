@@ -43,7 +43,6 @@ mod wfm_client;
 pub static APP: OnceLock<tauri::AppHandle> = OnceLock::new();
 
 async fn setup_manages(app: &mut App) -> Result<(), AppError> {
-
     // Get the update channel
     let context = tauri::generate_context!();
     let updater = context.config().tauri.updater.clone();

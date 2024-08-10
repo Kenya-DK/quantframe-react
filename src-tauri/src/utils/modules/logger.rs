@@ -1,11 +1,11 @@
 use eyre::eyre;
 use serde_json::Value;
-use tauri::PackageInfo;
 use std::{
     fs::{self, OpenOptions},
     io::Write,
     path::PathBuf,
 };
+use tauri::PackageInfo;
 
 use crate::{helper, utils::enums::log_level::LogLevel};
 
@@ -178,7 +178,7 @@ pub fn log_json(file_path: &str, data: &Value) -> Result<(), AppError> {
         .map_err(|e| AppError::new("log_json", eyre!(e.to_string())))?;
     Ok(())
 }
-pub fn export_logs(info: PackageInfo) -> String{
+pub fn export_logs(info: PackageInfo) -> String {
     let date = chrono::Local::now()
         .naive_utc()
         .format("%Y-%m-%d")
@@ -186,10 +186,8 @@ pub fn export_logs(info: PackageInfo) -> String{
 
     let version = info.version.to_string();
 
-    let zip_path = helper::get_desktop_path().join(format!(
-        "{} v{} {} Logs.zip",
-        info.name, version, date
-    ));
+    let zip_path =
+        helper::get_desktop_path().join(format!("{} v{} {} Logs.zip", info.name, version, date));
     let mut files_to_compress: Vec<helper::ZipEntry> = vec![];
 
     let mut logs_path = get_log_folder();
