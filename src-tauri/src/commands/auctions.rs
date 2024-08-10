@@ -1,5 +1,5 @@
 use serde_json::json;
-use service::{StockRivenMutation, StockRivenQuery};
+use service::{StockRivenMutation, StockRivenQuery, TransactionMutation};
 
 use crate::{
     app::client::AppState,
@@ -179,20 +179,45 @@ pub async  fn auction_import(
 
     let mut stock = entity.to_stock_riven().to_stock();
     stock.wfm_order_id = Some(auction.id.clone());
-    match StockRivenMutation::create(&app.conn, stock.clone()).await {
-        Ok(item) => {
+    stock =  match StockRivenMutation::create(&app.conn, stock).await {
+        Ok(inserted) => {
             notify.gui().send_event_update(
                 UIEvent::UpdateStockRivens,
                 UIOperationEvent::CreateOrUpdate,
-                Some(json!(item)),
+                Some(json!(inserted)),
             );
+            inserted
         }
         Err(e) => {
             let err = AppError::new_db("Command:AuctionImport", e);
             error::create_log_file("command_auctions.log".to_string(), &err);
             return Err(err);
         }
-        
+    };
+
+    if stock.bought == 0 {
+        return Ok(stock);
     }
-    return Ok(stock);
+
+    let transaction = stock.to_transaction(
+        "",
+        stock.bought,
+        entity::transaction::transaction::TransactionType::Purchase,
+    );
+
+    match TransactionMutation::create(&app.conn, transaction).await {
+        Ok(inserted) => {
+            notify.gui().send_event_update(
+                UIEvent::UpdateTransaction,
+                UIOperationEvent::CreateOrUpdate,
+                Some(json!(inserted)),
+            );
+        }
+        Err(e) => { 
+            let err = AppError::new_db("Command:AuctionImport", e);
+            error::create_log_file("command_auctions.log".to_string(), &err);
+            return Err(err);
+        }
+    }
+    Ok(stock)
 }
