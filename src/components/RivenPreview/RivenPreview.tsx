@@ -66,7 +66,26 @@ export function RivenPreview({ paperProps, riven }: RivenPreviewProps) {
 			setRank(auction.item.mod_rank);
 		}
 		if (typeof (riven.id) == "number") {
-			weapon_url_name = (riven as StockRiven).wfm_weapon_url;
+			const stockRiven = riven as StockRiven;
+			weapon_url_name = stockRiven.wfm_weapon_url;
+			setPolarity(stockRiven.polarity)
+			setModName(stockRiven.mod_name)
+			if (stockRiven.attributes)
+				setAttributes(stockRiven.attributes.map((item) => {
+					const attribute = allAttributes?.find((attribute) => attribute.url_name == item.url_name);
+					let symbol = "";
+					if (attribute?.units == "multiply") symbol = "+";
+					if (attribute?.units == "percent") symbol = "%";
+					return {
+						...item,
+						effect: attribute?.effect || "",
+						units: attribute?.units || "",
+						symbol,
+					}
+				}));
+			setMastery(stockRiven.mastery_rank);
+			setReRolls(stockRiven.re_rolls);
+			setRank(stockRiven.sub_type?.rank || 0);
 
 		}
 		if (weapons && weapon_url_name != "")
@@ -95,7 +114,7 @@ export function RivenPreview({ paperProps, riven }: RivenPreviewProps) {
 							)
 						})}
 					</Box>
-					<Text className={classes.mastery}>MR {mastery}</Text>
+					<Text className={classes.mastery}>MR {mastery > 16 ? 16 : mastery}</Text>
 					{reRolls > 0 &&
 						<Text className={classes.reroll}>
 							<FontAwesomeIcon icon={faArrowsRotate} />
@@ -107,7 +126,7 @@ export function RivenPreview({ paperProps, riven }: RivenPreviewProps) {
 				</>
 			)}
 			<Box className={classes.rank}>
-				{Array.from(Array(rank).keys()).map((i) => {
+				{Array.from(Array(Math.min(rank, 8))).map((_, i) => {
 					return <Text key={i} className={classes.circle} size="sm" component="span">●</Text>
 				})}
 			</Box>

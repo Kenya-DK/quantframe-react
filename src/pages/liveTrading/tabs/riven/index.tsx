@@ -2,7 +2,7 @@ import { Text, Box, Grid, Group, NumberFormatter } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { paginate, getCssVariable, GetSubTypeDisplay, CreateTradeMessage } from "@utils/helper";
 import { useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
-import { SellStockRiven, StockRiven, StockStatus, UpdateStockRiven } from "@api/types";
+import { CreateStockRiven, SellStockRiven, StockRiven, StockStatus, UpdateStockRiven } from "@api/types";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { faAdd, faComment, faEdit, faEye, faEyeSlash, faFilter, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { modals } from "@mantine/modals";
@@ -188,6 +188,17 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
         }
     })
 
+    const createStockMutation = useMutation({
+        mutationFn: (riven: CreateStockRiven) => api.stock.riven.create(riven),
+        onSuccess: async (r) => {
+            notifications.show({ title: useTranslateSuccess("create_riven.title"), message: useTranslateSuccess("create_riven.message", { name: `${r.weapon_name} ${r.mod_name}` }), color: "green.7" });
+        },
+        onError: (e) => {
+            console.error(e);
+            notifications.show({ title: useTranslateErrors("create_riven.title"), message: useTranslateErrors("create_riven.message"), color: "red.7" })
+        }
+    })
+
     // Modal's
     const OpenMinimumPriceModal = (id: number, minimum_price: number) => {
         modals.openContextModal({
@@ -253,7 +264,18 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
             title: useTranslatePrompt('create_riven.title'),
             size: "100%",
             children: (<CreateRiven onSubmit={async (_data) => {
-
+                await createStockMutation.mutateAsync({
+                    raw: _data.wfm_weapon_url,
+                    mastery_rank: _data.mastery_rank,
+                    re_rolls: _data.re_rolls,
+                    mod_name: _data.mod_name,
+                    wfm_url: _data.wfm_weapon_url,
+                    polarity: _data.polarity,
+                    bought: _data.bought || 0,
+                    rank: _data.sub_type?.rank || 0,
+                    attributes: _data.attributes,
+                });
+                modals.closeAll();
             }} />)
         })
     }
@@ -285,16 +307,15 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
             <Grid>
                 <Grid.Col span={8}>
                     <SearchField value={query} onChange={(text) => setQuery(text)}
-                        rightSectionWidth={165}
+                        rightSectionWidth={145}
                         rightSection={
                             <Group gap={5}>
                                 <ActionWithTooltip
                                     tooltip={useTranslateButtons('update_bulk.tooltip')}
                                     icon={faEdit}
                                     color={"green.7"}
-                                    actionProps={{
-                                        disabled: selectedRecords.length < 1
-                                    }}
+                                    actionProps={{ size: "sm", disabled: selectedRecords.length < 1 }}
+                                    iconProps={{ size: "xs" }}
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         OpenUpdateModal(selectedRecords);
@@ -304,9 +325,8 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                                     tooltip={useTranslateButtons('delete_bulk.tooltip')}
                                     icon={faTrashCan}
                                     color={"red.7"}
-                                    actionProps={{
-                                        disabled: selectedRecords.length < 1
-                                    }}
+                                    actionProps={{ size: "sm", disabled: selectedRecords.length < 1 }}
+                                    iconProps={{ size: "xs" }}
                                     onClick={async (e) => {
                                         e.stopPropagation();
                                         modals.openConfirmModal({
@@ -325,9 +345,8 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                                     tooltip={useTranslateButtons('wts.tooltip')}
                                     icon={faComment}
                                     color={"green.7"}
-                                    actionProps={{
-                                        disabled: selectedRecords.length < 1
-                                    }}
+                                    actionProps={{ size: "sm", disabled: selectedRecords.length < 1 }}
+                                    iconProps={{ size: "xs" }}
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         CreateWTSMessages(selectedRecords);
@@ -337,9 +356,8 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                                     tooltip={useTranslateButtons('selection.tooltip')}
                                     icon={faComment}
                                     color={"green.7"}
-                                    actionProps={{
-                                        disabled: selectedRecords.length < 1
-                                    }}
+                                    actionProps={{ size: "sm", disabled: selectedRecords.length < 1 }}
+                                    iconProps={{ size: "xs" }}
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         CreateRivenSelection(selectedRecords);
@@ -348,6 +366,8 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                                 <ActionWithTooltip
                                     tooltip={useTranslateButtons('create_riven.tooltip')}
                                     icon={faAdd}
+                                    actionProps={{ size: "sm" }}
+                                    iconProps={{ size: "xs" }}
                                     color={"green.7"}
                                     onClick={(e) => {
                                         e.stopPropagation();

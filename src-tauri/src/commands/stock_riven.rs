@@ -1,5 +1,7 @@
 use std::sync::{Arc, Mutex};
 
+use create::CreateStockRiven;
+use entity::enums::stock_type::StockType;
 use entity::stock::riven::*;
 use entity::{
     enums::stock_status::StockStatus, sub_type::SubType,
@@ -9,6 +11,8 @@ use eyre::eyre;
 use serde_json::json;
 use service::{StockRivenMutation, StockRivenQuery, TransactionMutation};
 
+use crate::cache::client::CacheClient;
+use crate::log_parser::types::create_stock_entity::CreateStockEntity;
 use crate::qf_client::client::QFClient;
 use crate::utils::modules::error;
 use crate::{
@@ -186,6 +190,82 @@ pub async fn stock_riven_delete_bulk(
         }
     }
     Ok(total)
+}
+#[tauri::command]
+pub async fn stock_riven_create(
+    riven_entry: CreateStockRiven,
+    app: tauri::State<'_, Arc<Mutex<AppState>>>,
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
+) -> Result<entity::stock::riven::stock_riven::Model, AppError> {
+    let app = app.lock()?.clone();
+    let notify = notify.lock()?.clone();
+    let cache = cache.lock()?.clone();
+
+    let mut entry = CreateStockEntity::new( &riven_entry.wfm_url,riven_entry.bought.unwrap_or(0)  );
+
+    entry.entity_type = StockType::Riven;
+    entry.mod_name = riven_entry.mod_name.clone();
+    entry.mastery_rank = riven_entry.mastery_rank;
+    entry.re_rolls = riven_entry.re_rolls;
+    entry.polarity = riven_entry.polarity.clone();
+    entry.attributes = riven_entry.attributes.clone();
+    entry.sub_type = Some(SubType {
+         rank: Some(riven_entry.rank),
+         variant: None,
+         cyan_stars: None,
+         amber_stars: None,
+     });
+    match entry.validate_entity(&cache, "--weapon_by url_name --weapon_lang en --attribute_by url_name") {
+        Ok(_) => {}
+        Err(e) => {
+            error::create_log_file("command.log".to_string(), &e);
+            return Err(e);
+        }
+    }
+
+
+    let stock =  match StockRivenMutation::create(&app.conn, entry.to_stock_riven().to_stock()).await {
+        Ok(inserted) => {
+            notify.gui().send_event_update(
+                UIEvent::UpdateStockRivens,
+                UIOperationEvent::CreateOrUpdate,
+                Some(json!(inserted)),
+            );
+            inserted
+        }
+        Err(e) => {
+            let err = AppError::new_db("Command:AuctionImport", e);
+            error::create_log_file("command_auctions.log".to_string(), &err);
+            return Err(err);
+        }
+    };
+
+    if stock.bought == 0 {
+        return Ok(stock);
+    }
+
+    let transaction = stock.to_transaction(
+        "",
+        stock.bought,
+        entity::transaction::transaction::TransactionType::Purchase,
+    );
+
+    match TransactionMutation::create(&app.conn, transaction).await {
+        Ok(inserted) => {
+            notify.gui().send_event_update(
+                UIEvent::UpdateTransaction,
+                UIOperationEvent::CreateOrUpdate,
+                Some(json!(inserted)),
+            );
+        }
+        Err(e) => { 
+            let err = AppError::new_db("Command:AuctionImport", e);
+            error::create_log_file("command_auctions.log".to_string(), &err);
+            return Err(err);
+        }
+    }
+    Ok(stock)
 }
 
 #[tauri::command]

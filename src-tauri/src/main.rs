@@ -286,6 +286,7 @@ fn main() {
             commands::stock_riven::stock_riven_sell,
             commands::stock_riven::stock_riven_delete,
             commands::stock_riven::stock_riven_delete_bulk,
+            commands::stock_riven::stock_riven_create,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

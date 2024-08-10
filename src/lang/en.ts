@@ -458,6 +458,11 @@ export const en = {
         },
       },
       create_riven: {
+        buttons: {
+          submit: {
+            label: "Create",
+          }
+        },
         fields: {
           mastery_rank: {
             label: "Mastery Rank",
@@ -482,6 +487,20 @@ export const en = {
             label: "Weapon Name",
             placeholder: "Weapon",
             error: "Invalid weapon",
+          },
+          bought: {
+            label: "Bought",
+            placeholder: "Bought",
+            error: "Invalid bought",
+          },
+          attributes: {
+            label: "Attributes",
+            error: "Riven must have at least 2 positive attributes",
+          },
+          mod_name: {
+            label: "Mod Name",
+            placeholder: "Mod Name",
+            error: "Invalid mod name",
           },
         },
       }
@@ -1057,6 +1076,10 @@ export const en = {
             },
           },
           errors: {
+            create_riven: {
+              title: "Create Riven Error",
+              message: "An error occurred while trying to create riven.",
+            },
             update_stock: {
               title: "Update Stock Error",
               message: "An error occurred while trying to update stock.",
@@ -1079,6 +1102,10 @@ export const en = {
             }
           },
           success: {
+            create_riven: {
+              title: "Create Riven Success",
+              message: "Riven {{name}} has been successfully created.",
+            },
             update_stock: {
               title: "Update Stock Success",
               message: "Stock riven {{name}} has been successfully updated.",

@@ -43,6 +43,7 @@ export interface StockRivenFilterAttribute {
 }
 
 export interface CreateStockRiven {
+  raw: string;
   wfm_url: string;
   bought: number;
   mod_name: string;
