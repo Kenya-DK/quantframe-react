@@ -60,6 +60,9 @@ impl DiscordModule {
                         "title": title,
                         "description": content,
                         "color": 5814783,
+                        "thumbnail": {
+                            "url": "https://cataas.com/cat"
+                        },
                         "footer": {
                             "text": format!("Quantframe v{} BY Kenya-DK", packageinfo.version.to_string()),
                             "timestamp": chrono::Local::now()
