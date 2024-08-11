@@ -9,7 +9,7 @@ use std::{
 use serde_json::json;
 
 use crate::{
-    app::client::AppState, auth::AuthState, cache::client::CacheClient, enums::{order_mode::OrderMode, stock_mode::StockMode}, logger, notification::client::NotifyClient, qf_client::client::QFClient, settings::SettingsState, utils::{enums::log_level::LogLevel, modules::error::AppError}, wfm_client::client::WFMClient
+    app::client::AppState, auth::AuthState, cache::client::CacheClient, enums::{order_mode::OrderMode, stock_mode::StockMode}, logger, notification::client::NotifyClient, qf_client::client::QFClient, settings::SettingsState, utils::{enums::{log_level::LogLevel, ui_events::UIEvent}, modules::error::AppError}, wfm_client::client::WFMClient
 };
 
 use super::modules::{item::ItemModule, riven::RivenModule};
@@ -85,6 +85,14 @@ impl LiveScraperClient {
 
     pub fn is_running(&self) -> bool {
         self.is_running.load(Ordering::SeqCst)
+    }
+
+    pub fn set_can_run(&self, can_run: bool) {
+        let notify = self.notify.lock().unwrap().clone();
+        notify.gui().send_event(
+            UIEvent::OnToggleControl,
+            Some(json!({"id": "live_trading", "state": can_run})),
+        );
     }
 
     pub fn start_loop(&mut self) -> Result<(), AppError> {

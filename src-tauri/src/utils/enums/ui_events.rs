@@ -1,7 +1,3 @@
-
-
-
-
 #[derive(PartialEq, Debug, Clone)]
 pub enum UIEvent {
     OnInitialize,
@@ -21,6 +17,7 @@ pub enum UIEvent {
     OnNotificationError,
     OnNotificationWarning,
     OnNotificationSuccess,
+    OnToggleControl,
 }
 impl UIEvent {
     pub fn as_str(&self) -> &str {
@@ -41,6 +38,7 @@ impl UIEvent {
             UIEvent::OnNotificationError => "Notification:OnError",
             UIEvent::OnNotificationWarning => "Notification:OnWarning",
             UIEvent::OnNotificationSuccess => "Notification:OnSuccess",
+            UIEvent::OnToggleControl => "Control:OnToggleControl",
         }
     }
 }

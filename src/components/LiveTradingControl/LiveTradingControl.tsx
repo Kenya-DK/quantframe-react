@@ -10,7 +10,7 @@ import { useTranslateComponent } from "@hooks/useTranslate.hook";
 export function LiveTradingControl() {
 
   // States
-  const { is_running, message } = useLiveScraperContext();
+  const { is_running, message, can_run } = useLiveScraperContext();
   const [showMessage, setShowMessage] = useState<boolean>(false);
 
   // Translate general
@@ -36,7 +36,7 @@ export function LiveTradingControl() {
     <Center>
       <Stack gap={5} justify="center">
         <Group justify="center">
-          <Button onClick={() => is_running ? api.live_scraper.stop() : StartTradingMutation.mutate()}>{useTranslateButtons(is_running ? "stop" : "start")}{ }</Button>
+          <Button disabled={!can_run} onClick={() => is_running ? api.live_scraper.stop() : StartTradingMutation.mutate()}>{useTranslateButtons(is_running ? "stop" : "start")}{ }</Button>
         </Group>
         {showMessage && (<TextTranslate i18nKey={useTranslateLiveTrading(message?.i18nKey || "", undefined, true)} values={message?.values || {}} />)}
       </Stack>

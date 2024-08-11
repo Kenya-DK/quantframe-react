@@ -1,10 +1,11 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { QfSocketEvent, ResponseError } from "@api/types";
+import { OnToggleControlPayload, QfSocketEvent, ResponseError } from "@api/types";
 import { OffTauriEvent, OnTauriEvent } from "../api";
 import { useTranslateContexts } from "@hooks/useTranslate.hook";
 import { notifications } from "@mantine/notifications";
 export type LiveScraperContextProps = {
   is_running: boolean;
+  can_run: boolean;
   message: { i18nKey: string, values: { [key: string]: number | string } } | undefined;
   error: ResponseError | null;
 }
@@ -19,6 +20,7 @@ export type LiveScraperMessage = {
 
 export const LiveScraperContext = createContext<LiveScraperContextProps>({
   is_running: false,
+  can_run: true,
   message: undefined,
   error: null,
 });
@@ -29,6 +31,7 @@ export function LiveScraperContextProvider({ children }: LiveScraperContextProvi
   const [is_running, setIsRunning] = useState(false);
   const [error, setError] = useState<ResponseError | null>(null);
   const [message, setMessage] = useState<LiveScraperMessage | undefined>(undefined);
+  const [can_run, setCanRun] = useState(false);
   // Translate general
   const useTranslateContext = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateContexts(`live_scraper.${key}`, { ...context }, i18Key)
   const useTranslateErrors = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateContext(`errors.${key}`, { ...context }, i18Key)
@@ -47,10 +50,14 @@ export function LiveScraperContextProvider({ children }: LiveScraperContextProvi
     setMessage(undefined);
   }
   const OnUpdateMessage = (messageIn: LiveScraperMessage) => setMessage(messageIn);
-
+  const OnToggleControl = (messageIn: OnToggleControlPayload) => {
+    if (messageIn.id === "live_trading")
+      setCanRun(messageIn.state);
+  }
 
   useEffect(() => {
     OnTauriEvent<boolean>(QfSocketEvent.UpdateLiveTradingRunningState, OnUpdateRunningState)
+    OnTauriEvent<OnToggleControlPayload>(QfSocketEvent.OnToggleControl, OnToggleControl)
     OnTauriEvent<ResponseError>(QfSocketEvent.OnLiveTradingError, OnUpdateError)
     OnTauriEvent<LiveScraperMessage>(QfSocketEvent.OnLiveTradingMessage, OnUpdateMessage)
     return () => {
@@ -61,7 +68,7 @@ export function LiveScraperContextProvider({ children }: LiveScraperContextProvi
   }, []);
 
   return (
-    <LiveScraperContext.Provider value={{ is_running, error, message }}>
+    <LiveScraperContext.Provider value={{ is_running, error, message, can_run }}>
       {children}
     </LiveScraperContext.Provider>
   )

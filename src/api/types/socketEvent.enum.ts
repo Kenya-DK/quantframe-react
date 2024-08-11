@@ -30,6 +30,9 @@ export enum QfSocketEvent {
   OnNotificationError = "Notification:OnError",
   OnNotificationWarning = "Notification:OnWarning",
   OnNotificationSuccess = "Notification:OnSuccess",
+
+  // Control
+  OnToggleControl = "Control:OnToggleControl",
 }
 
 export enum QfSocketEventOperation {

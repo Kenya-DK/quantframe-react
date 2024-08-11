@@ -6,3 +6,7 @@ export interface AppInfo {
   version: string;
   is_pre_release: boolean;
 }
+export interface OnToggleControlPayload {
+  id: string;
+  state: boolean;
+}
