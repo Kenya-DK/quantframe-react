@@ -2,7 +2,10 @@ use crate::{
     cache::client::CacheClient,
     log_parser::types::create_stock_entity::CreateStockEntity,
     notification::client::NotifyClient,
-    utils::modules::{error::AppError, logger},
+    utils::modules::{
+        error::{self, AppError},
+        logger,
+    },
 };
 
 use chrono::{DateTime, NaiveDateTime, Utc};
@@ -106,8 +109,27 @@ impl DebugClient {
             };
 
             let mut transaction = entity.to_transaction("", transaction_type)?;
-            transaction.created_at = item.created.parse().unwrap();
-            transaction.updated_at = item.created.parse().unwrap();
+            match item.created.parse() {
+                Ok(date) => {
+                    transaction.created_at = date;
+                }
+                Err(e) => {
+                    let err = AppError::new(
+                        "MigrateDataBase",
+                        eyre::eyre!(format!("Failed to parse date and time: {}, Item: ", e)),
+                    );
+                    if !item.created.contains("+") {
+                        let naive_datetime =
+                            NaiveDateTime::parse_from_str(&item.created, "%Y-%m-%d %H:%M:%S%.f")
+                                .unwrap();
+                        transaction.created_at = naive_datetime.and_utc();
+                    } else {
+                        error::create_log_file("migrate_data_transactions.log".to_string(), &err);
+                        continue;
+                    }
+                }
+            }
+            transaction.updated_at = transaction.created_at.clone();
             match TransactionMutation::create_from_old(&new_con, transaction).await {
                 Ok(_) => {}
                 Err(e) => {
@@ -334,7 +356,7 @@ impl DebugClient {
                     // Convert NaiveDateTime to DateTime<Utc>
                     let date_time_utc: DateTime<Utc> =
                         DateTime::from_naive_utc_and_offset(naive_date_time, Utc);
-                        transaction.created_at = date_time_utc;
+                    transaction.created_at = date_time_utc;
                 }
                 Err(e) => {
                     println!("Failed to parse date and time: {}", e);
