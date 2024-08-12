@@ -31,7 +31,7 @@ export function LiveScraperContextProvider({ children }: LiveScraperContextProvi
   const [is_running, setIsRunning] = useState(false);
   const [error, setError] = useState<ResponseError | null>(null);
   const [message, setMessage] = useState<LiveScraperMessage | undefined>(undefined);
-  const [can_run, setCanRun] = useState(false);
+  const [can_run, setCanRun] = useState(true);
   // Translate general
   const useTranslateContext = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateContexts(`live_scraper.${key}`, { ...context }, i18Key)
   const useTranslateErrors = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateContext(`errors.${key}`, { ...context }, i18Key)
