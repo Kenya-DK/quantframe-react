@@ -196,14 +196,12 @@ pub fn create_zip_file(mut files: Vec<ZipEntry>, zip_path: &str) -> Result<(), A
         // Adding the file to the ZIP archive.
         if file_entry.sub_path.is_some() && file_entry.sub_path.clone().unwrap() != "" {
             let mut sub_path = file_entry.sub_path.clone().unwrap();
-            println!("sub_path: {:?}", sub_path);
             if sub_path.starts_with("/") {
                 sub_path = sub_path[1..].to_string();
             }
             if sub_path.ends_with("/") {
                 sub_path = sub_path[..sub_path.len() - 1].to_string();
             }
-            println!("files: {:?},{:?}", sub_path, file_name);
             zip.start_file(format!("{}/{}", sub_path, file_name), options)
                 .map_err(|e| {
                     AppError::new(
