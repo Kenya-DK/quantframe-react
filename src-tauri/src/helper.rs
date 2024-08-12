@@ -151,16 +151,16 @@ pub fn create_zip_file(mut files: Vec<ZipEntry>, zip_path: &str) -> Result<(), A
 
     for file_entry in &files {
         if file_entry.include_dir {
-            let file_entries = read_zip_entries(file_entry.file_path.clone(), true)?;
-            for mut file_entry in file_entries {
-                if file_entry.sub_path.is_some() {
-                    file_entry.sub_path = Some(format!(
+            let sub_file_entries = read_zip_entries(file_entry.file_path.clone(), true)?;
+            for mut sub_file_entry in sub_file_entries {
+                if sub_file_entry.sub_path.is_some() {
+                    sub_file_entry.sub_path = Some(format!(
                         "{}/{}",
                         file_entry.sub_path.clone().unwrap_or("".to_string()),
-                        file_entry.sub_path.clone().unwrap_or("".to_string())
+                        sub_file_entry.sub_path.clone().unwrap_or("".to_string())
                     ));
                 }
-                files_to_compress.push(file_entry);
+                files_to_compress.push(sub_file_entry);
             }
         }
     }
@@ -193,16 +193,17 @@ pub fn create_zip_file(mut files: Vec<ZipEntry>, zip_path: &str) -> Result<(), A
             )
         })?;
         let file_name = file_path.file_name().unwrap().to_str().unwrap();
-
         // Adding the file to the ZIP archive.
         if file_entry.sub_path.is_some() && file_entry.sub_path.clone().unwrap() != "" {
             let mut sub_path = file_entry.sub_path.clone().unwrap();
+            println!("sub_path: {:?}", sub_path);
             if sub_path.starts_with("/") {
                 sub_path = sub_path[1..].to_string();
             }
             if sub_path.ends_with("/") {
                 sub_path = sub_path[..sub_path.len() - 1].to_string();
             }
+            println!("files: {:?},{:?}", sub_path, file_name);
             zip.start_file(format!("{}/{}", sub_path, file_name), options)
                 .map_err(|e| {
                     AppError::new(
