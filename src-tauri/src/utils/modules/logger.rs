@@ -207,7 +207,7 @@ pub fn export_logs(info: PackageInfo) -> String {
         if path.ends_with("auth.json") || path.ends_with("settings.json") {
             let json = helper::open_json_and_replace(
                 &path.to_str().unwrap(),
-                vec!["access_token".to_string(), "webhook".to_string()],
+                vec!["check_code".to_string(), "qf_access_token".to_string(), "wfm_access_token".to_string(), "webhook".to_string()],
             )
             .expect("Could not open auth.json");
 
