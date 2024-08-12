@@ -75,7 +75,7 @@ export function SelectTradableItem({ value, onChange }: SelectTradableItemProps)
         w={300}
         label={useTranslateFormFields('item.label')}
         placeholder={useTranslateFormFields('item.placeholder')}
-        data={items}
+        data={filteredItems}
         searchable
         limit={10}
         required
@@ -85,9 +85,10 @@ export function SelectTradableItem({ value, onChange }: SelectTradableItemProps)
           setLastKeyPressed(event.key);
         }}
         onSearchChange={(searchValue) => {
-          setFilteredItems(
-            items.filter(item => item.label.toLowerCase().includes(searchValue.toLowerCase()))
-          );
+          setFilteredItems(() => {
+            const sortedItems = items.filter(item => item.label.toLowerCase().startsWith(searchValue.toLowerCase()));
+            return sortedItems.sort((a, b) => a.label.localeCompare(b.label));
+          });
         }}
         onBlur={() => {
           if (lastKeyPressed === 'Tab' && filteredItems.length > 0) {
