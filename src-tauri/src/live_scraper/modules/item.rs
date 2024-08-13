@@ -914,10 +914,6 @@ impl ItemModule {
         let mut post_price = lowest_price;
         stock_item.status = StockStatus::Live;
 
-        if bought_price > post_price {
-            post_price = bought_price + minimum_profit;
-        }
-
         // If the item is worth less than moving average the set the post price to be the moving average
         if post_price < (moving_avg - min_sma) as i64 {
             post_price = moving_avg;
@@ -932,7 +928,7 @@ impl ItemModule {
         // Calculate the profit from the post price
         let profit = post_price - bought_price as i64;
 
-        if profit <= 0 {
+        if profit < minimum_profit {
             stock_item.status = StockStatus::ToLowProfit;
             stock_item.list_price = None;
         } else {
