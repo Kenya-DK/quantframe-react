@@ -2,7 +2,7 @@ import { AppShell, Indicator } from "@mantine/core";
 import classes from "./LogInLayout.module.css";
 import { Outlet, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCrown, faDesktop, faEnvelope, faGlobe, faHome } from "@fortawesome/free-solid-svg-icons";
+import { faCrown, faDesktop, faEnvelope, faGlobe, faHome, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
 import { useAppContext } from "@contexts/app.context";
 import { useChatContext } from "@contexts/chat.context";
@@ -37,6 +37,7 @@ export function LogInLayout() {
     { align: 'top', id: "debug", link: "debug", icon: <FontAwesomeIcon icon={faDesktop} />, label: useTranslateNavBar("debug"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
     { align: 'bottom', id: "website", web: true, link: "https://quantframe.app", icon: <FontAwesomeIcon icon={faGlobe} />, label: useTranslateNavBar("website"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
     { align: 'bottom', id: "buy_me_a_coffee", web: true, link: "https://www.buymeacoffee.com/kenyadk", icon: <FontAwesomeIcon color="#ffa000" icon={faCrown} />, label: useTranslateNavBar("buy_me_a_coffee"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
+    { align: 'bottom', id: "about", link: "about", icon: <FontAwesomeIcon icon={faInfoCircle} />, label: useTranslateNavBar("about"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
   ];
   // Effects
   useEffect(() => {

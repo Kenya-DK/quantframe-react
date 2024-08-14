@@ -1,0 +1,15 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+  border: 3px solid var(--mantine-color-gray-6);
+  border-radius: "50px";
+  cursor: pointer;
+  &:hover {
+    border-color: var(--mantine-color-primary);
+    box-shadow: 0 0 10px var(--mantine-color-primary);
+    background-color: var(--mantine-color-gray-7);
+  }
+}

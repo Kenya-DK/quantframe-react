@@ -28,6 +28,9 @@ import PError from '@pages/error'
 // Banned Routes
 import PBanned from '@pages/banned'
 
+// Banned Routes
+import PAbout from '@pages/about'
+
 // Control Routes
 import { LiveTradingControl } from '../LiveTradingControl'
 
@@ -51,6 +54,9 @@ export function AppRoutes() {
             </Route>
             <Route path="warframe-market" >
               <Route index element={<PWarframeMarket />} />
+            </Route>
+            <Route path="about" >
+              <Route index element={<PAbout />} />
             </Route>
           </Route>
         </Route>
