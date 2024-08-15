@@ -730,8 +730,7 @@ export const en = {
           statistics: "Statistics",
           warframe_market: "Warframe Market",
           debug: "Debug",
-          buy_me_a_coffee: "Donate",
-          website: "Website",
+          about: "About",
         },
       },
     },
@@ -875,6 +874,26 @@ export const en = {
             sale: "Sale {{count}}",
           }
         },
+      }
+    },
+    about: {
+      cards: {
+        coffee: {
+          title: "Buy me a coffee",
+        },
+        discord: {
+          title: "Discord",
+        },
+        faq: {
+          title: "FAQ",
+        },
+        guide: {
+          title: "Wiki/Guide",
+        },
+      },
+      text: {
+        version: "Version: <blue>{{version}}</blue>",
+        disclaimer: "Quantframe is a third party app and is not affiliated with Digital Extremes.",
       }
     },
     liveTrading: {

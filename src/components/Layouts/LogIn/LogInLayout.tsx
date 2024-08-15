@@ -2,7 +2,7 @@ import { AppShell, Indicator } from "@mantine/core";
 import classes from "./LogInLayout.module.css";
 import { Outlet, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCrown, faDesktop, faEnvelope, faGlobe, faHome, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import { faDesktop, faEnvelope, faGlobe, faHome, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
 import { useAppContext } from "@contexts/app.context";
 import { useChatContext } from "@contexts/chat.context";
@@ -35,9 +35,7 @@ export function LogInLayout() {
     // { link: "statistics", icon: <FontAwesomeIcon icon={faChartSimple} />, label: useTranslate("statistics") },
     { align: 'top', id: "warframe_market", link: "warframe-market", icon: <SvgIcon svgProp={{ width: 32, height: 32, fill: "#d5d7e0" }} iconType={SvgType.Default} iconName={"wfm_logo"} />, label: useTranslateNavBar("warframe_market"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
     { align: 'top', id: "debug", link: "debug", icon: <FontAwesomeIcon icon={faDesktop} />, label: useTranslateNavBar("debug"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
-    { align: 'bottom', id: "website", web: true, link: "https://quantframe.app", icon: <FontAwesomeIcon icon={faGlobe} />, label: useTranslateNavBar("website"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
-    { align: 'bottom', id: "buy_me_a_coffee", web: true, link: "https://www.buymeacoffee.com/kenyadk", icon: <FontAwesomeIcon color="#ffa000" icon={faCrown} />, label: useTranslateNavBar("buy_me_a_coffee"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
-    { align: 'bottom', id: "about", link: "about", icon: <FontAwesomeIcon icon={faInfoCircle} />, label: useTranslateNavBar("about"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
+    { align: 'bottom', id: "nav_about", link: "about", icon: <FontAwesomeIcon icon={faInfoCircle} />, label: useTranslateNavBar("about"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
   ];
   // Effects
   useEffect(() => {
@@ -58,12 +56,6 @@ export function LogInLayout() {
       return;
     setLastPage(link.id || "");
     switch (link.id) {
-      case "website":
-        api.analytics.sendMetric("Website_WebOpened", "");
-        break;
-      case "buy_me_a_coffee":
-        api.analytics.sendMetric("BuyMeACoffee_WebOpened", "");
-        break;
       default:
         api.analytics.sendMetric("Active_Page", link.id);
         break;
