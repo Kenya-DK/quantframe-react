@@ -5,6 +5,7 @@ export interface Settings {
   dev_mode: boolean;
   live_scraper: SettingsLiveScraper;
   notifications: SettingsNotifications;
+  analytics: SettingsAnalytics;
 }
 
 export interface SettingsLiveScraper {
@@ -37,7 +38,9 @@ export interface SettingsStockRiven {
   threshold_percentage: number;
   limit_to: number;
 }
-
+export interface SettingsAnalytics {
+  transaction: boolean;
+}
 export interface SettingsNotifications {
   on_new_conversation: SettingsNotification;
   on_wfm_chat_message: SettingsNotification;

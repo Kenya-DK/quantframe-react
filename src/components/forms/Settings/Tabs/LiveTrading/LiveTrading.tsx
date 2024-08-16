@@ -274,7 +274,6 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
           </Stack>)}
 
         {viewMode == ViewMode.General && (
-
           <Group justify="flex-end" style={{
             position: "absolute",
             bottom: 25,

@@ -29,6 +29,8 @@ pub struct LiveScraperSettings {
     pub stock_item: StockItemSettings,
     // Stock Riven Settings
     pub stock_riven: StockRivenSettings,
+    // Analytics Settings
+    pub analytics: AnalyticsSettings,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StockItemSettings {
@@ -50,6 +52,10 @@ pub struct StockItemSettings {
     pub auto_delete: bool,
     // What to post sell, buy, or both
     pub order_mode: OrderMode,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct AnalyticsSettings {
+    pub transaction: bool,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StockRivenSettings {
@@ -142,6 +148,9 @@ impl Default for SettingsState {
                     webhook: Some("".to_string()),
                     user_ids: Some(vec![]),
                 },
+            },
+            analytics: AnalyticsSettings {
+                transaction: true
             },
         }
     }

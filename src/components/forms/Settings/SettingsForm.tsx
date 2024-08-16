@@ -5,6 +5,7 @@ import { GeneralPanel } from './Tabs/General';
 import { LogPanel } from './Tabs/Log';
 import { LiveTradingPanel } from './Tabs/LiveTrading';
 import { NotificationPanel } from './Tabs/Notification';
+import { AnalyticPanel } from './Tabs/Analytic';
 
 export type SettingsFormProps = {
   value: Settings
@@ -29,6 +30,11 @@ export function SettingsForm({ onSubmit, value }: SettingsFormProps) {
     {
       label: useTranslateTabs("notification.title"), component: <NotificationPanel value={value.notifications} onSubmit={(v) => {
         onSubmit({ ...value, notifications: v })
+      }} />, id: "notification"
+    },
+    {
+      label: useTranslateTabs("analytic.title"), component: <AnalyticPanel value={value.analytics} onSubmit={(v) => {
+        onSubmit({ ...value, analytics: v })
       }} />, id: "notification"
     },
     {
