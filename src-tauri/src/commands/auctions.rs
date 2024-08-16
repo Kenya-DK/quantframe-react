@@ -2,14 +2,10 @@ use serde_json::json;
 use service::{StockRivenMutation, StockRivenQuery, TransactionMutation};
 
 use crate::{
-    app::client::AppState,
-    cache::{client::CacheClient, types::item_price_info::StockRiven},
-    notification::client::NotifyClient,
-    utils::{
+    app::client::AppState, cache::{client::CacheClient, types::item_price_info::StockRiven}, notification::client::NotifyClient, qf_client::client::QFClient, utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
         modules::error::{self, AppError},
-    },
-    wfm_client::{client::WFMClient, types::auction::Auction},
+    }, wfm_client::{client::WFMClient, types::auction::Auction}
 };
 use std::sync::{Arc, Mutex};
 
@@ -155,17 +151,18 @@ pub async fn auction_delete_all(
     Ok(total)
 }
 #[tauri::command]
-pub async  fn auction_import(
+pub async fn auction_import(
     auction: Auction<String>,
     bought: i64,
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<entity::stock::riven::stock_riven::Model, AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
     let cache = cache.lock()?.clone();
-
+    let qf = qf.lock()?.clone();
     let mut entity = match auction.convert_to_create_stock(bought) {
         Ok(stock) => stock,
         Err(e) => {
@@ -186,6 +183,7 @@ pub async  fn auction_import(
                 UIOperationEvent::CreateOrUpdate,
                 Some(json!(inserted)),
             );
+            qf.analytics().add_metric("StockRiven_ImportCreate", &inserted.get_metric_value());
             inserted
         }
         Err(e) => {
@@ -212,12 +210,13 @@ pub async  fn auction_import(
                 UIOperationEvent::CreateOrUpdate,
                 Some(json!(inserted)),
             );
+            qf.analytics().add_metric("Transaction_Create", &inserted.get_metric_value());
         }
         Err(e) => { 
             let err = AppError::new_db("Command:AuctionImport", e);
             error::create_log_file("command_auctions.log".to_string(), &err);
             return Err(err);
         }
-    }
+    };
     Ok(stock)
 }

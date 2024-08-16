@@ -20,7 +20,6 @@ export class StockRivenModule {
 
   async create(riven_entry: CreateStockRiven): Promise<StockRiven> {
     const [err, stockItem] = await this.client.sendInvoke<StockRiven>('stock_riven_create', { rivenEntry: riven_entry });
-    await this.client.analytics.sendMetric('StockRiven_Create', err ? 'failed' : 'success');
     if (err)
       throw err;
     return stockItem;

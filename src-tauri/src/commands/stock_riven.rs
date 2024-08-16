@@ -3,9 +3,7 @@ use std::sync::{Arc, Mutex};
 use create::CreateStockRiven;
 use entity::enums::stock_type::StockType;
 use entity::stock::riven::*;
-use entity::{
-    enums::stock_status::StockStatus, sub_type::SubType,
-};
+use entity::{enums::stock_status::StockStatus, sub_type::SubType};
 
 use eyre::eyre;
 use serde_json::json;
@@ -197,12 +195,14 @@ pub async fn stock_riven_create(
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<entity::stock::riven::stock_riven::Model, AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
     let cache = cache.lock()?.clone();
+    let qf = qf.lock()?.clone();
 
-    let mut entry = CreateStockEntity::new( &riven_entry.wfm_url,riven_entry.bought.unwrap_or(0)  );
+    let mut entry = CreateStockEntity::new(&riven_entry.wfm_url, riven_entry.bought.unwrap_or(0));
 
     entry.entity_type = StockType::Riven;
     entry.mod_name = riven_entry.mod_name.clone();
@@ -211,12 +211,15 @@ pub async fn stock_riven_create(
     entry.polarity = riven_entry.polarity.clone();
     entry.attributes = riven_entry.attributes.clone();
     entry.sub_type = Some(SubType {
-         rank: Some(riven_entry.rank),
-         variant: None,
-         cyan_stars: None,
-         amber_stars: None,
-     });
-    match entry.validate_entity(&cache, "--weapon_by url_name --weapon_lang en --attribute_by url_name") {
+        rank: Some(riven_entry.rank),
+        variant: None,
+        cyan_stars: None,
+        amber_stars: None,
+    });
+    match entry.validate_entity(
+        &cache,
+        "--weapon_by url_name --weapon_lang en --attribute_by url_name",
+    ) {
         Ok(_) => {}
         Err(e) => {
             error::create_log_file("command.log".to_string(), &e);
@@ -224,14 +227,16 @@ pub async fn stock_riven_create(
         }
     }
 
-
-    let stock =  match StockRivenMutation::create(&app.conn, entry.to_stock_riven().to_stock()).await {
+    let stock = match StockRivenMutation::create(&app.conn, entry.to_stock_riven().to_stock()).await
+    {
         Ok(inserted) => {
             notify.gui().send_event_update(
                 UIEvent::UpdateStockRivens,
                 UIOperationEvent::CreateOrUpdate,
                 Some(json!(inserted)),
             );
+            qf.analytics()
+                .add_metric("StockRiven_Create", &inserted.get_metric_value());
             inserted
         }
         Err(e) => {
@@ -257,9 +262,11 @@ pub async fn stock_riven_create(
                 UIEvent::UpdateTransaction,
                 UIOperationEvent::CreateOrUpdate,
                 Some(json!(inserted)),
-            );
+            );     
+            qf.analytics()
+            .add_metric("Transaction_Create", &inserted.get_metric_value());       
         }
-        Err(e) => { 
+        Err(e) => {
             let err = AppError::new_db("Command:AuctionImport", e);
             error::create_log_file("command_auctions.log".to_string(), &err);
             return Err(err);
@@ -332,18 +339,16 @@ pub async fn stock_riven_sell(
 
     match TransactionMutation::create(&app.conn, transaction).await {
         Ok(inserted) => {
-            qf.analytics().add_metric("Transaction_CreateRiven", "success");
             notify.gui().send_event_update(
                 UIEvent::UpdateTransaction,
                 UIOperationEvent::CreateOrUpdate,
                 Some(json!(inserted)),
             );
+            qf.analytics()
+            .add_metric("Transaction_Create", &inserted.get_metric_value());
         }
-        Err(e) => {
-            qf.analytics().add_metric("Transaction_CreateRiven", "failed");
-            return Err(AppError::new("StockItemSell", eyre!(e)))},
-    }
-
+        Err(e) => return Err(AppError::new("StockItemSell", eyre!(e))),
+    };
     // Delete the stock from the database
     match StockRivenMutation::delete(&app.conn, stock.id).await {
         Ok(_) => {

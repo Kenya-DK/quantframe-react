@@ -87,11 +87,15 @@ pub async fn stock_item_create(
     // Add the stock item to the database and send the update to the UI
     match StockItemMutation::add_item(&app.conn, stock.clone()).await {
         Ok(inserted) => {
-            notify.gui().send_event_update(
-                UIEvent::UpdateStockItems,
-                UIOperationEvent::CreateOrUpdate,
-                Some(json!(inserted)),
-            );
+            if inserted.is_some() {
+                notify.gui().send_event_update(
+                    UIEvent::UpdateStockItems,
+                    UIOperationEvent::CreateOrUpdate,
+                    Some(json!(inserted)),
+                );
+                qf.analytics()
+                    .add_metric("StockItem_Create", &inserted.unwrap().get_metric_value());
+            }
         }
         Err(e) => return Err(AppError::new("StockItemCreate", eyre!(e))),
     }
@@ -147,18 +151,16 @@ pub async fn stock_item_create(
     .await
     {
         Ok(inserted) => {
-            qf.analytics().add_metric("Transaction_CreateItem", "success");
             notify.gui().send_event_update(
                 UIEvent::UpdateTransaction,
                 UIOperationEvent::CreateOrUpdate,
                 Some(json!(inserted)),
             );
+            qf.analytics()
+                .add_metric("Transaction_Create", &inserted.get_metric_value());
         }
-        Err(e) =>{
-            qf.analytics().add_metric("Transaction_CreateItem", "failed");
-             return Err(AppError::new("StockItemCreate", eyre!(e)))},
+        Err(e) => return Err(AppError::new("StockItemCreate", eyre!(e))),
     }
-
     Ok(stock)
 }
 
@@ -291,11 +293,13 @@ pub async fn stock_item_sell(
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<stock_item::Model, AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
     let cache = cache.lock()?.clone();
     let wfm = wfm.lock()?.clone();
+    let qf = qf.lock()?.clone();
 
     // Sell the item
     let stock_item = match StockItemMutation::sold_by_id(&app.conn, id, quantity).await {
@@ -374,10 +378,11 @@ pub async fn stock_item_sell(
                 UIOperationEvent::CreateOrUpdate,
                 Some(json!(inserted)),
             );
+            qf.analytics()
+                .add_metric("Transaction_Create", &inserted.get_metric_value());
         }
         Err(e) => return Err(AppError::new("StockItemCreate", eyre!(e))),
-    }
-
+    };
     Ok(stock_item)
 }
 
@@ -391,6 +396,7 @@ pub async fn stock_item_sell_by_wfm_order(
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<stock_item::Model, AppError> {
     let app_state = app.lock()?.clone();
 
@@ -413,7 +419,7 @@ pub async fn stock_item_sell_by_wfm_order(
         ));
     }
     let stock_item = stock_item.unwrap();
-    stock_item_sell(stock_item.id, quantity, price, app, cache, notify, wfm).await?;
+    stock_item_sell(stock_item.id, quantity, price, app, cache, notify, wfm, qf).await?;
     Ok(stock_item)
 }
 

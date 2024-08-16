@@ -410,7 +410,7 @@ impl OnTradeEvent {
                 error::create_log_file("append_to_file.log".to_string(), &err);
             }
         }
-        
+
         // Validate the items
         let created_stock = match self.get_stock_item(&cache, items, trade.platinum) {
             Ok(item) => item,
@@ -558,6 +558,8 @@ impl OnTradeEvent {
                                 UIOperationEvent::CreateOrUpdate,
                                 Some(json!(inserted)),
                             );
+                            qf.analytics()
+                                .add_metric("Transaction_AutoCreate", &inserted.get_metric_value());
                         }
                         Err(e) => {
                             notify_value["transaction"] = json!("❌");
@@ -680,6 +682,8 @@ impl OnTradeEvent {
                                 UIOperationEvent::CreateOrUpdate,
                                 Some(json!(inserted)),
                             );
+                            qf.analytics()
+                            .add_metric("Transaction_AutoCreate", &inserted.get_metric_value());
                         }
                         Err(e) => {
                             notify_value["transaction"] = json!("❌");
@@ -709,6 +713,10 @@ impl OnTradeEvent {
                                 UIEvent::UpdateStockItems,
                                 UIOperationEvent::CreateOrUpdate,
                                 Some(json!(inserted)),
+                            );
+                            qf.analytics().add_metric(
+                                "StockItem_AutoCreate",
+                                &inserted.unwrap().get_metric_value(),
                             );
                         }
                         Err(e) => {
@@ -778,6 +786,8 @@ impl OnTradeEvent {
                                 UIOperationEvent::CreateOrUpdate,
                                 Some(json!(inserted)),
                             );
+                            qf.analytics()
+                            .add_metric("Transaction_AutoCreate", &inserted.get_metric_value());
                         }
                         Err(e) => {
                             notify_value["transaction"] = json!("❌");

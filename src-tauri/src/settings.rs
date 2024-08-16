@@ -18,6 +18,8 @@ pub struct SettingsState {
     pub http: HttpConfig,
     pub live_scraper: LiveScraperSettings,
     pub notifications: Notifications,
+    // Analytics Settings
+    pub analytics: AnalyticsSettings,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct LiveScraperSettings {
@@ -29,8 +31,6 @@ pub struct LiveScraperSettings {
     pub stock_item: StockItemSettings,
     // Stock Riven Settings
     pub stock_riven: StockRivenSettings,
-    // Analytics Settings
-    pub analytics: AnalyticsSettings,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StockItemSettings {
@@ -149,9 +149,7 @@ impl Default for SettingsState {
                     user_ids: Some(vec![]),
                 },
             },
-            analytics: AnalyticsSettings {
-                transaction: true
-            },
+            analytics: AnalyticsSettings { transaction: true },
         }
     }
 }

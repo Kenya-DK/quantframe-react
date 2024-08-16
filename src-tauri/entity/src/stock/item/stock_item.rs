@@ -94,4 +94,21 @@ impl Model {
             None,
         )
     }
+    pub fn get_metric_value(&self) -> String {
+        let mut metric_value: String = String::new();
+        metric_value.push_str(&format!("I:{}", self.wfm_id));
+        metric_value.push_str(&format!("|B:{}", self.bought));
+        if let Some(sub_type) = self.sub_type.clone() {
+            metric_value.push_str(&format!("{}", sub_type.get_metric_value()));
+        }
+        if let Some(minimum_price) = self.minimum_price {
+            metric_value.push_str(&format!("|MI:{}", minimum_price));
+        }
+        if let Some(list_price) = self.list_price {
+            metric_value.push_str(&format!("|LI:{}", list_price));
+        }
+        metric_value.push_str(&format!("|Q:{}", self.owned));
+        metric_value.push_str(&format!("|ST:{}", self.status.as_str()));
+        metric_value
+    }
 }

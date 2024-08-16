@@ -20,7 +20,6 @@ export class StockItemModule {
 
   async create(entry: CreateStockItem): Promise<StockItem> {
     const [err, stockItem] = await this.client.sendInvoke<StockItem>('stock_item_create', entry);
-    await this.client.analytics.sendMetric('StockItem_Create', err ? 'failed' : 'success');
     if (err)
       throw err;
     return stockItem;

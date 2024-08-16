@@ -1,6 +1,6 @@
-use std::hash::{Hash, Hasher};
 use sea_orm::FromJsonQueryResult;
 use serde::{Deserialize, Serialize};
+use std::hash::{Hash, Hasher};
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct SubType {
@@ -22,7 +22,12 @@ pub struct SubType {
 }
 
 impl SubType {
-    pub fn new(rank: Option<i64>, variant: Option<String>, amber_stars: Option<i64>, cyan_stars: Option<i64>) -> Self {
+    pub fn new(
+        rank: Option<i64>,
+        variant: Option<String>,
+        amber_stars: Option<i64>,
+        cyan_stars: Option<i64>,
+    ) -> Self {
         Self {
             rank,
             variant,
@@ -48,7 +53,6 @@ impl SubType {
         }
     }
     pub fn display(&self) -> String {
-        
         let mut display = String::new();
         if let Some(rank) = self.rank {
             display.push_str(&format!("Rank: {} ", rank));
@@ -65,7 +69,6 @@ impl SubType {
         display
     }
     pub fn shot_display(&self) -> String {
-        
         let mut display = String::new();
         if let Some(rank) = self.rank {
             display.push_str(&format!("R {} ", rank));
@@ -80,6 +83,23 @@ impl SubType {
             display.push_str(&format!("C {} ", cyan_stars));
         }
         display.trim().to_string()
+    }
+    pub fn get_metric_value(&self) -> String {
+        //I:5adf872a931bcf00574adc13|T:buy|P:201|Q:1|RE:success
+        let mut metric_value:String= String::new();
+        if let Some(mod_rank) = self.rank {
+            metric_value.push_str(&format!("|R:{}", mod_rank));
+        }
+        if let Some(subtype) = self.variant.clone() {
+            metric_value.push_str(&format!("|V:{}", subtype));
+        }
+        if let Some(amber_stars) = self.amber_stars {
+            metric_value.push_str(&format!("|A:{}", amber_stars));
+        }
+        if let Some(cyan_stars) = self.cyan_stars {
+            metric_value.push_str(&format!("|C:{}", cyan_stars));
+        }
+        metric_value
     }
 }
 impl Hash for SubType {

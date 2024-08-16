@@ -190,21 +190,18 @@ impl OrderModule {
 
         // Add SubType data
         if let Some(item_sub) = sub_type.clone() {
+            metric_value.push_str(&format!("{}", item_sub.get_metric_value()));
             if let Some(mod_rank) = item_sub.rank {
                 body["rank"] = json!(mod_rank);
-                metric_value.push_str(&format!("|R:{}", mod_rank));
             }
             if let Some(subtype) = item_sub.variant {
                 body["subtype"] = json!(subtype);
-                metric_value.push_str(&format!("|V:{}", subtype));
             }
             if let Some(amber_stars) = item_sub.amber_stars {
                 body["amber_stars"] = json!(amber_stars);
-                metric_value.push_str(&format!("|A:{}", amber_stars));
             }
             if let Some(cyan_stars) = item_sub.cyan_stars {
                 body["cyan_stars"] = json!(cyan_stars);
-                metric_value.push_str(&format!("|C:{}", cyan_stars));
             }
         }
 

@@ -1,5 +1,4 @@
-pub mod auth;
 pub mod analytics;
+pub mod auth;
 pub mod cache;
-pub mod transaction;
 pub mod price_scraper;

@@ -7,11 +7,11 @@ use serde_json::json;
 use service::{StockRivenMutation, TransactionMutation};
 use tauri::{Manager, State};
 
-
 use crate::{
     app::client::AppState,
-    cache::{client::CacheClient},
+    cache::client::CacheClient,
     notification::client::NotifyClient,
+    qf_client::client::QFClient,
     settings::SettingsState,
     utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
@@ -34,6 +34,8 @@ pub async fn add_riven(riven: web::Json<CreateStockRiven>) -> impl Responder {
     let notify = notify_state.lock().expect("failed to lock notify state");
     let cache_state: State<Arc<Mutex<CacheClient>>> = app_handle.state();
     let cache = cache_state.lock().expect("failed to lock notify state");
+    let qf_state: State<Arc<Mutex<QFClient>>> = app_handle.state();
+    let qf = qf_state.lock().expect("failed to lock notify state");
 
     let mut riven = riven.into_inner();
 
@@ -81,7 +83,8 @@ pub async fn add_riven(riven: web::Json<CreateStockRiven>) -> impl Responder {
                 .body(serde_json::to_string(&AppError::new(component, eyre::eyre!(e))).unwrap());
         }
     }
-
+    qf.analytics()
+        .add_metric("StockRiven_WebCreate", &stock.get_metric_value());
     if stock.bought == 0 {
         return HttpResponse::Ok().body(serde_json::to_string(&stock).unwrap());
     }
@@ -98,13 +101,16 @@ pub async fn add_riven(riven: web::Json<CreateStockRiven>) -> impl Responder {
                 UIEvent::UpdateTransaction,
                 UIOperationEvent::CreateOrUpdate,
                 Some(json!(inserted)),
-            );
+            );        
+            qf.analytics()
+            .add_metric("Transaction_WebCreate", &inserted.get_metric_value());    
         }
         Err(e) => {
             return HttpResponse::BadRequest()
                 .body(serde_json::to_string(&AppError::new(component, eyre::eyre!(e))).unwrap());
         }
     }
+
     HttpResponse::Ok().body(serde_json::to_string(&riven).unwrap())
 }
 
