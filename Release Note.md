@@ -1,3 +1,23 @@
+# Quantframe v1.2.3 (Release Date)
+
+## Overview
+Total rewrite of the UI and the backend.
+Note: The database was upgrade to V2
+So all your data needs to be migrated, this be be done in the Debug Tab and under the migrate tab.
+
+## Fix's
+- 🛠️ Order limit not updating.
+- 🛠️ A bug in migrate dataBase.
+- 🛠️ Fix a bug in export logs.
+- 🛠️ Fix some items not sowing in select item.
+- 🛠️ Fix min profix.
+
+## Features
+- ✅ Add Import Riven from wfm auctions
+- ✅ Add Create Riven
+- ✅ Add Better Update box
+- ✅ Add Cat!!
+
 # Quantframe v1.2.0 (Release Date)
 
 ## Overview

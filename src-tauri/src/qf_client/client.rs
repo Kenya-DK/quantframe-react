@@ -24,6 +24,7 @@ use crate::{
 use super::modules::{
     analytics::AnalyticsModule, auth::AuthModule, cache::CacheModule,
     price_scraper::PriceScraperModule,
+    transaction::TransactionModule,
 };
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -42,6 +43,7 @@ pub struct QFClient {
     cache_module: Arc<RwLock<Option<CacheModule>>>,
     price_module: Arc<RwLock<Option<PriceScraperModule>>>,
     analytics_module: Arc<RwLock<Option<AnalyticsModule>>>,
+    transaction_module: Arc<RwLock<Option<TransactionModule>>>,
     pub component: String,
     pub log_file: String,
     pub auth: Arc<Mutex<AuthState>>,
@@ -67,6 +69,7 @@ impl QFClient {
             cache_module: Arc::new(RwLock::new(None)),
             price_module: Arc::new(RwLock::new(None)),
             analytics_module: Arc::new(RwLock::new(None)),
+            transaction_module: Arc::new(RwLock::new(None)),
             log_file: "qfAPIaCalls.log".to_string(),
             component: "QuantframeApi".to_string(),
             auth,
@@ -319,8 +322,30 @@ impl QFClient {
             .unwrap()
             .clone()
     }
+
     pub fn update_analytics_module(&self, module: AnalyticsModule) {
         // Update the stored AnalyticsModule
         *self.analytics_module.write().unwrap() = Some(module);
+    }
+
+    pub fn transaction(&self) -> TransactionModule {
+        // Lazily initialize TransactionModule if not already initialized
+        if self.transaction_module.read().unwrap().is_none() {
+            *self.transaction_module.write().unwrap() =
+                Some(TransactionModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the transaction_module is initialized
+        self.transaction_module
+            .read()
+            .unwrap()
+            .as_ref()
+            .unwrap()
+            .clone()
+    }
+    
+    pub fn update_transaction_module(&self, module: TransactionModule) {
+        // Update the stored TransactionModule
+        *self.transaction_module.write().unwrap() = Some(module);
     }
 }
