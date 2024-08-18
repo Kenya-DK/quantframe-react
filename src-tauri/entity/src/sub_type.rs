@@ -84,23 +84,6 @@ impl SubType {
         }
         display.trim().to_string()
     }
-    pub fn get_metric_value(&self) -> String {
-        //I:5adf872a931bcf00574adc13|T:buy|P:201|Q:1|RE:success
-        let mut metric_value:String= String::new();
-        if let Some(mod_rank) = self.rank {
-            metric_value.push_str(&format!("|R:{}", mod_rank));
-        }
-        if let Some(subtype) = self.variant.clone() {
-            metric_value.push_str(&format!("|V:{}", subtype));
-        }
-        if let Some(amber_stars) = self.amber_stars {
-            metric_value.push_str(&format!("|A:{}", amber_stars));
-        }
-        if let Some(cyan_stars) = self.cyan_stars {
-            metric_value.push_str(&format!("|C:{}", cyan_stars));
-        }
-        metric_value
-    }
 }
 impl Hash for SubType {
     fn hash<H: Hasher>(&self, state: &mut H) {

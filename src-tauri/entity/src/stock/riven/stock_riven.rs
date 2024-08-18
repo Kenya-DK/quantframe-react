@@ -123,30 +123,4 @@ impl Model {
             })),
         )
     }
-    pub fn get_metric_value(&self) -> String {
-        let mut metric_value: String = String::new();
-        metric_value.push_str(&format!("I:{}", self.wfm_weapon_id));
-        metric_value.push_str(&format!("|MN:{}", self.mod_name));
-        metric_value.push_str(&format!("|MR:{}", self.mastery_rank));
-        metric_value.push_str(&format!("|RE:{}", self.re_rolls));
-        metric_value.push_str(&format!("|P:{}", self.polarity));
-        metric_value.push_str(&format!("|B:{}", self.bought));
-        metric_value.push_str(&format!("|MN:{}", self.mod_name));
-        if let Some(sub_type) = self.sub_type.clone() {
-            metric_value.push_str(&format!("{}", sub_type.get_metric_value()));
-        }
-        if let Some(minimum_price) = self.minimum_price {
-            metric_value.push_str(&format!("|MI:{}", minimum_price));
-        }
-        if let Some(list_price) = self.list_price {
-            metric_value.push_str(&format!("|LI:{}", list_price));
-        }
-        metric_value.push_str(&format!("|ST:{}", self.status.as_str()));
-        let mut metric_att_value: String = String::new();
-        for attribute in self.attributes.0.iter() {
-            metric_att_value.push_str(&format!("|{}", attribute.get_metric_value()));
-        }
-        metric_value.push_str(&format!("|A:{}", metric_att_value.replace("|", "#")));
-        metric_value
-    }
 }

@@ -160,18 +160,4 @@ impl Model {
             created_at: Default::default(),
         }
     }
-    pub fn get_metric_value(&self) -> String {
-        let mut metric_value: String = String::new();
-        metric_value.push_str(&format!("I:{}", self.wfm_id));
-        metric_value.push_str(&format!("|IT:{:?}", self.item_type));
-        metric_value.push_str(&format!("|T:{:?}", self.transaction_type));
-        metric_value.push_str(&format!("|Q:{}", self.quantity));
-        if let Some(sub_type) = self.sub_type.clone() {
-            metric_value.push_str(&format!("{}", sub_type.get_metric_value()));
-        }
-        metric_value.push_str(&format!("|UN:{}", self.user_name));
-        metric_value.push_str(&format!("|P:{}", self.price));
-        metric_value.push_str(&format!("|PRO:{}", self.properties.as_ref().unwrap()));
-        metric_value
-    }
 }
