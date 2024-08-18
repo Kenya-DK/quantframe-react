@@ -282,6 +282,20 @@ export const en = {
               },
             },
           },
+          analytics: {
+            title: "Analytics",
+            fields: {
+              transaction: {
+                label: "Transaction",
+                tooltip: "Will send a transaction to QF Api",
+              },
+            },
+            buttons: {
+              save: {
+                label: "Save",
+              },
+            },
+          }
         }
       },
       update_stock_riven: {

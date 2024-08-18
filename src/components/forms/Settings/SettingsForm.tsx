@@ -33,9 +33,9 @@ export function SettingsForm({ onSubmit, value }: SettingsFormProps) {
       }} />, id: "notification"
     },
     {
-      label: useTranslateTabs("analytic.title"), component: <AnalyticPanel value={value.analytics} onSubmit={(v) => {
+      label: useTranslateTabs("analytics.title"), component: <AnalyticPanel value={value.analytics} onSubmit={(v) => {
         onSubmit({ ...value, analytics: v })
-      }} />, id: "notification"
+      }} />, id: "analytics"
     },
     {
       label: useTranslateTabs("log.title"), component: <LogPanel />, id: "log"

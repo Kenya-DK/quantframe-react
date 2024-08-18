@@ -11,7 +11,7 @@ export type AnalyticPanelProps = {
 export const AnalyticPanel = ({ value, onSubmit }: AnalyticPanelProps) => {
 
   // Translate general
-  const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateForms(`settings.tabs.analytic.${key}`, { ...context }, i18Key)
+  const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateForms(`settings.tabs.analytics.${key}`, { ...context }, i18Key)
   const useTranslateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateForm(`buttons.${key}`, { ...context }, i18Key)
   const useTranslateFormFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateForm(`fields.${key}`, { ...context }, i18Key)
 

@@ -38,7 +38,7 @@ pub async fn app_init(
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
     let settings = settings.lock()?.clone();
-    let mut wfm = wfm.lock()?.clone();
+    let wfm = wfm.lock()?.clone();
     let cache = cache.lock()?.clone();
     let qf = qf.lock()?.clone();
     let log_parser = log_parser.lock()?.clone();
@@ -278,11 +278,6 @@ pub async fn app_init(
     }
     // Save AuthState
     auth_state.save_to_file()?;
-    // Update The current AuthState
-
-    // let arced_mutex = Arc::clone(&auth);
-    // let mut my_lock = arced_mutex.lock().expect("Could not lock auth");
-    // *my_lock = auth_state.clone();
     Ok(false)
 }
 
@@ -304,6 +299,9 @@ pub async fn app_update_settings(
 
     // Set Whisper Scraper Settings
     my_lock.notifications = settings.notifications;
+
+    // Set Analytics Settings
+    my_lock.analytics = settings.analytics;
 
     my_lock.save_to_file().expect("Could not save settings");
 
