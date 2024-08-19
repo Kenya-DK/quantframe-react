@@ -215,7 +215,7 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
         })
     }
 
-    const OpenSellModal = (id: number) => {
+    const OpenSellModal = (stock: StockItem) => {
         modals.openContextModal({
             modal: 'prompt',
             title: useTranslateBasePrompt('sell.title'),
@@ -232,9 +232,9 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
                     },
                 ],
                 onConfirm: async (data: { sell: number }) => {
-                    if (!id) return;
+                    if (!stock) return;
                     const { sell } = data;
-                    await sellStockMutation.mutateAsync({ id, price: sell, quantity: 1 })
+                    await sellStockMutation.mutateAsync({ url: stock.wfm_url, sub_type: stock.sub_type, price: sell, quantity: 1, is_from_order: false })
                 },
                 onCancel: (id: string) => modals.close(id),
             },
@@ -313,7 +313,7 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
                                         </Text>
                                     ),
                                     labels: { confirm: useTranslateBasePrompt('delete.confirm'), cancel: useTranslateBasePrompt('delete.cancel') },
-                                    onCancel: async () => await deleteBulkStockMutation.mutateAsync(selectedRecords.map((x) => x.id)),
+                                    onConfirm: async () => await deleteBulkStockMutation.mutateAsync(selectedRecords.map((x) => x.id)),
                                 });
                             }}
                         />
@@ -441,7 +441,7 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
                                     iconProps={{ size: "xs" }}
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        OpenSellModal(row.id);
+                                        OpenSellModal(row);
                                     }}
                                 />
                                 <ActionWithTooltip
@@ -452,7 +452,7 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
                                     onClick={async (e) => {
                                         e.stopPropagation();
                                         if (!row.id || !row.list_price) return;
-                                        await sellStockMutation.mutateAsync({ id: row.id, price: row.list_price, quantity: 1 });
+                                        await sellStockMutation.mutateAsync({ url: row.wfm_url, sub_type: row.sub_type, price: row.list_price, quantity: 1, is_from_order: false });
                                     }}
                                 />
                                 <ActionWithTooltip
