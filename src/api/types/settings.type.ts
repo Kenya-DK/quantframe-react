@@ -40,6 +40,8 @@ export interface SettingsStockRiven {
 }
 export interface SettingsAnalytics {
   transaction: boolean;
+  stock_item: boolean;
+  stock_riven: boolean;
 }
 export interface SettingsNotifications {
   on_new_conversation: SettingsNotification;

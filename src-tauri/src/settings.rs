@@ -56,6 +56,8 @@ pub struct StockItemSettings {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AnalyticsSettings {
     pub transaction: bool,
+    pub stock_item: bool,
+    pub stock_riven: bool,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StockRivenSettings {
@@ -149,7 +151,11 @@ impl Default for SettingsState {
                     user_ids: Some(vec![]),
                 },
             },
-            analytics: AnalyticsSettings { transaction: true },
+            analytics: AnalyticsSettings { 
+                transaction: true,
+                stock_item: true,
+                stock_riven: true,
+            },
         }
     }
 }

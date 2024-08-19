@@ -287,7 +287,15 @@ export const en = {
             fields: {
               transaction: {
                 label: "Transaction",
-                tooltip: "Will send a transaction to QF Api",
+                tooltip: "If enabled will send transaction events to QF Api",
+              },
+              stock_item: {
+                label: "Stock Item",
+                tooltip: "if enabled will send stock item to QF Api",
+              },
+              stock_riven: {
+                label: "Stock Riven",
+                tooltip: "if enabled will send stock riven to QF Api",
               },
             },
             buttons: {

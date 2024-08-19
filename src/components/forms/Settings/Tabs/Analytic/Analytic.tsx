@@ -36,6 +36,22 @@ export const AnalyticPanel = ({ value, onSubmit }: AnalyticPanelProps) => {
               error={form.errors.transaction && useTranslateFormFields('transaction.error')}
             />
           </Tooltip>
+          <Tooltip label={useTranslateFormFields('stock_item.tooltip')}>
+            <Checkbox
+              label={useTranslateFormFields('stock_item.label')}
+              checked={form.values.stock_item}
+              onChange={(event) => form.setFieldValue('stock_item', event.currentTarget.checked)}
+              error={form.errors.stock_item && useTranslateFormFields('stock_item.error')}
+            />
+          </Tooltip>
+          <Tooltip label={useTranslateFormFields('stock_riven.tooltip')}>
+            <Checkbox
+              label={useTranslateFormFields('stock_riven.label')}
+              checked={form.values.stock_riven}
+              onChange={(event) => form.setFieldValue('stock_riven', event.currentTarget.checked)}
+              error={form.errors.stock_riven && useTranslateFormFields('stock_riven.error')}
+            />
+          </Tooltip>
 
         </Group>
         <Group justify="flex-end" style={{
