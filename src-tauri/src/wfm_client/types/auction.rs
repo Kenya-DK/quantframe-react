@@ -1,4 +1,4 @@
-use entity::{enums::stock_type::StockType, stock::item, sub_type::SubType};
+use entity::{enums::stock_type::StockType, stock::{item, riven::create::CreateStockRiven}, sub_type::SubType};
 use serde::{Deserialize, Serialize};
 
 use crate::{log_parser::types::create_stock_entity::CreateStockEntity, utils::modules::error::AppError};
@@ -62,25 +62,23 @@ pub struct Auction<T> {
     // pub private: bool,
 }
 impl Auction<String> {
-    pub fn convert_to_create_stock(&self,buyout_price: i64) -> Result<CreateStockEntity, AppError> {
+    pub fn convert_to_create_stock(&self, buyout_price: i64) -> Result<CreateStockRiven, AppError> {
         let item = self.item.clone();
         if item.item_type != "riven" {
             return Err(AppError::new("Auction",eyre::eyre!("Item type is not riven")));
         }
-        let mut stock = CreateStockEntity::new(&item.weapon_url_name.unwrap_or("".to_string()),buyout_price);
-        // Get Item
-       stock.entity_type = StockType::Riven;
-       stock.mod_name = item.name.clone().unwrap_or("".to_string());
-       stock.mastery_rank = item.mastery_level.unwrap_or(0);
-       stock.re_rolls = item.re_rolls.unwrap_or(0);
-       stock.polarity = item.polarity.clone().unwrap_or("".to_string());
-       stock.attributes = item.attributes.clone().unwrap_or(vec![]);
-       stock.sub_type = Some(SubType {
-            rank: item.mod_rank,
-            variant: None,
-            cyan_stars: None,
-            amber_stars: None,
-        });
-        Ok(stock)
+        let stock_item = CreateStockRiven::new(
+            item.weapon_url_name.unwrap_or("".to_string()),
+            item.name.clone().unwrap_or("".to_string()),
+            item.mastery_level.unwrap_or(8),
+            item.re_rolls.unwrap_or(0),
+            item.polarity.clone().unwrap_or("".to_string()),
+            item.attributes.clone().unwrap_or(vec![]),
+            item.mod_rank.unwrap_or(0),
+            Some(buyout_price),
+            Some(self.id.clone()),
+            None
+        );
+        Ok(stock_item)
     }  
 }

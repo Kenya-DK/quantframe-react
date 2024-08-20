@@ -76,6 +76,10 @@ pub struct CreateStockEntity {
     #[serde(default = "String::default")]
     pub polarity: String,
 
+    #[serde(rename = "wfm_order_id")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub wfm_order_id: Option<String>,
+
     #[serde(rename = "attributes")]
     #[serde(default)]
     pub attributes: Vec<RivenAttribute>,
@@ -108,6 +112,7 @@ impl Default for CreateStockEntity {
             mod_name: "".to_string(),
             mastery_rank: 0,
             re_rolls: 0,
+            wfm_order_id: None,
             polarity: "".to_string(),
             attributes: vec![],
         }
@@ -164,6 +169,8 @@ impl CreateStockEntity {
                 self.polarity.clone(),
                 self.attributes.clone(),
                 rank,
+                None,
+                None,
                 None,
             )
         } else {

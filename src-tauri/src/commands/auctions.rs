@@ -2,15 +2,10 @@ use serde_json::json;
 use service::{StockRivenMutation, StockRivenQuery, TransactionMutation};
 
 use crate::{
-    app::client::AppState,
-    cache::{client::CacheClient, types::item_price_info::StockRiven},
-    notification::client::NotifyClient,
-    qf_client::client::QFClient,
-    utils::{
+    app::client::AppState, cache::{client::CacheClient, types::item_price_info::StockRiven}, helper, notification::client::NotifyClient, qf_client::client::QFClient, utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
         modules::error::{self, AppError},
-    },
-    wfm_client::{client::WFMClient, types::auction::Auction},
+    }, wfm_client::{client::WFMClient, enums::order_type::OrderType, types::auction::Auction}
 };
 use std::sync::{Arc, Mutex};
 
@@ -174,12 +169,15 @@ pub async fn auction_import(
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
     qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<entity::stock::riven::stock_riven::Model, AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
     let cache = cache.lock()?.clone();
     let qf = qf.lock()?.clone();
-    let mut entity = match auction.convert_to_create_stock(bought) {
+    let wfm = wfm.lock()?.clone();
+    
+    let mut riven_entry = match auction.convert_to_create_stock(bought) {
         Ok(stock) => stock,
         Err(e) => {
             error::create_log_file("command_auctions.log".to_string(), &e);
@@ -187,57 +185,27 @@ pub async fn auction_import(
         }
     };
 
-    // Validate the stock
-    entity.validate_entity(
-        &cache,
+
+    match helper::progress_stock_riven(
+        &mut riven_entry,
         "--weapon_by url_name --weapon_lang en --attribute_by url_name",
-    )?;
-
-    let mut stock = entity.to_stock_riven().to_stock();
-    stock.wfm_order_id = Some(auction.id.clone());
-    stock = match StockRivenMutation::create(&app.conn, stock).await {
-        Ok(inserted) => {
-            notify.gui().send_event_update(
-                UIEvent::UpdateStockRivens,
-                UIOperationEvent::CreateOrUpdate,
-                Some(json!(inserted)),
-            );
-            qf.analytics()
-                .add_metric("Stock_RivenCreate", "manual_auction_import");
-            inserted
-        }
-        Err(e) => {
-            let err = AppError::new_db("Command:AuctionImport", e);
-            error::create_log_file("command_auctions.log".to_string(), &err);
-            return Err(err);
-        }
-    };
-
-    if stock.bought == 0 {
-        return Ok(stock);
-    }
-
-    let transaction = stock.to_transaction(
         "",
-        stock.bought,
-        entity::transaction::transaction::TransactionType::Purchase,
-    );
-
-    match TransactionMutation::create(&app.conn, transaction).await {
-        Ok(inserted) => {
-            notify.gui().send_event_update(
-                UIEvent::UpdateTransaction,
-                UIOperationEvent::CreateOrUpdate,
-                Some(json!(inserted)),
-            );
-            qf.analytics()
-                .add_metric("Transaction_Create", &json!(inserted).to_string());
+        OrderType::Buy,
+        "manual_auction_import",
+        app,
+        cache,
+        notify,
+        wfm,
+        qf,
+    )
+    .await
+    {
+        Ok((stock, _)) => {
+            return Ok(stock);
         }
         Err(e) => {
-            let err = AppError::new_db("Command:AuctionImport", e);
-            error::create_log_file("command_auctions.log".to_string(), &err);
-            return Err(err);
+            error::create_log_file("command_stock_riven_create.log".to_string(), &e);
+            return Err(e);
         }
-    };
-    Ok(stock)
+    }
 }

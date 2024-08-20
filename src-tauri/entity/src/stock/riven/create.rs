@@ -69,6 +69,8 @@ impl CreateStockRiven {
         polarity: String,
         attributes: Vec<RivenAttribute>,
         rank: i64,
+        bought: Option<i64>,
+        wfm_order_id: Option<String>,
         stock_id: Option<i64>,
     ) -> Self {
         CreateStockRiven {
@@ -84,10 +86,10 @@ impl CreateStockRiven {
             polarity,
             attributes,
             minimum_price: None,
-            bought: None,
+            bought,
             rank,
             stock_id,
-            wfm_order_id: None,
+            wfm_order_id,
         }
     }
     pub fn new_valid(
@@ -130,7 +132,7 @@ impl CreateStockRiven {
         super::stock_riven::Model::new(
             self.wfm_id.clone(),
             self.wfm_url.clone(),
-            None,
+            self.wfm_order_id.clone(),
             self.weapon_name.clone(),
             self.weapon_type.clone(),
             self.weapon_unique_name.clone(),
