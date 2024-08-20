@@ -164,6 +164,7 @@ impl CreateStockEntity {
                 self.polarity.clone(),
                 self.attributes.clone(),
                 rank,
+                None,
             )
         } else {
             CreateStockRiven::new_valid(
@@ -181,6 +182,7 @@ impl CreateStockEntity {
                 self.minimum_price,
                 self.bought,
                 rank,
+                None,
             )
         }
     }

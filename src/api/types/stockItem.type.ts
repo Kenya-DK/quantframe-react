@@ -34,15 +34,11 @@ export interface UpdateStockItem {
 }
 
 export interface SellStockItem {
-  id: number;
-  quantity: number;
-  price: number;
-}
-export interface SellByWfmOrder {
   url: string;
   sub_type?: SubType;
   quantity: number;
   price: number;
+  is_from_order: boolean;
 }
 
 export interface StockItemDetails {

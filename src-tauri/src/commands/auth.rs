@@ -33,6 +33,8 @@ pub async fn auth_login(
         return Ok(auth_state);
     }
 
+    qf.analytics()
+        .add_metric("Auth_LoginWFM", "manual");
     auth_state.update_from_wfm_user_profile(&wfm_user, wfm_token.clone());
     // Login/Register to Quantframe
     let (qf_user, qf_token) = match qf

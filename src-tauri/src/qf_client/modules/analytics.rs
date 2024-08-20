@@ -66,6 +66,10 @@ impl AnalyticsModule {
         self.update_state();
     }
     pub fn add_metric(&mut self, key: &str, value: &str) {
+        let settings = self.client.settings.lock().unwrap().clone();
+        if !settings.analytics.transaction && key.starts_with("Transaction_") {
+            return;
+        }
         let mut map = HashMap::new();
         map.insert(key.to_string(), value.to_string());
         if key == "Active_Page" {

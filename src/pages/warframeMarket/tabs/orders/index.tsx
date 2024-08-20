@@ -7,7 +7,7 @@ import { paginate } from "@utils/helper";
 import { faCartShopping, faInfoCircle, faPen, faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
-import { CreateStockItem, SellByWfmOrder } from "@api/types";
+import { CreateStockItem, SellStockItem } from "@api/types";
 import api from "@api/index";
 import { useMutation } from "@tanstack/react-query";
 import { ActionWithTooltip } from "@components/ActionWithTooltip";
@@ -51,7 +51,7 @@ export const OrderPanel = ({ }: OrderPanelProps) => {
         }
     })
     const sellStockMutation = useMutation({
-        mutationFn: (data: SellByWfmOrder) => api.stock.item.sellByWfmOrder(data),
+        mutationFn: (data: SellStockItem) => api.stock.item.sell(data),
         onSuccess: async (u) => {
             notifications.show({ title: useTranslateSuccess("sell_stock.title"), message: useTranslateSuccess("sell_stock.message", { name: u.item_name }), color: "green.7" });
         },
@@ -163,6 +163,7 @@ export const OrderPanel = ({ }: OrderPanelProps) => {
                     sub_type: sub_type,
                     quantity: 1,
                     price: price,
+                    is_from_order: true
                 });
                 break;
         }

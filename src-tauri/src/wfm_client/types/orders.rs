@@ -13,6 +13,12 @@ pub struct Orders {
     pub buy_orders: Vec<Order>,
 }
 impl Orders {
+    pub fn get_all_orders(&mut self) -> Vec<Order> {
+        let mut orders = self.sell_orders.clone();
+        orders.append(&mut self.buy_orders.clone());
+        orders
+    }
+
     pub fn sort_by_platinum(&mut self) {
         self.sell_orders.sort_by(|a, b| a.platinum.cmp(&b.platinum));
         self.buy_orders.sort_by(|a, b| b.platinum.cmp(&a.platinum));

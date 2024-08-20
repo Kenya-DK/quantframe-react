@@ -31,7 +31,12 @@ impl StockRivenQuery {
             .one(db)
             .await
     }
-
+    pub async fn find_by_ids(db: &DbConn, ids: Vec<i64>) -> Result<Vec<stock_riven::Model>, DbErr> {
+        StockRiven::find()
+            .filter(Expr::col(stock_riven::Column::Id).is_in(ids))
+            .all(db)
+            .await
+    }
     pub async fn clear_all_order_id(db: &DbConn) -> Result<Vec<stock_riven::Model>, DbErr> {
         StockRiven::update_many()
             .col_expr(stock_riven::Column::WfmOrderId, Expr::value(Option::<String>::None))
@@ -56,5 +61,25 @@ impl StockRivenQuery {
             .filter(stock_riven::Column::ModName.eq(mod_name))
             .filter(stock_riven::Column::SubType.eq(sub_type))
             .one(db).await
+    }
+
+    pub async fn update_bulk(
+        db: &DbConn,
+        ids: Vec<i64>,
+        minimum_price: Option<i64>,
+        is_hidden: Option<bool>,
+    ) -> Result<Vec<stock_riven::Model>, DbErr> {
+        let mut query = StockRiven::update_many();
+
+        if let Some(minimum_price) = minimum_price {
+            query = query.col_expr(stock_riven::Column::MinimumPrice, minimum_price.into());
+        }
+        if let Some(is_hidden) = is_hidden {
+            query = query.col_expr(stock_riven::Column::IsHidden, is_hidden.into());
+        }
+        query = query.filter(Expr::col(stock_riven::Column::Id).is_in(ids));
+
+        query.exec(db).await?;
+        StockRiven::find().all(db).await
     }
 }

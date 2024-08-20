@@ -9,17 +9,21 @@ use crate::{
         types::{
             cache_relics::CacheRelics, cache_riven::{CacheRivenWFMAttribute, CacheRivenWeapon}, cache_tradable_item::CacheTradableItem
         },
-    },
-    utils::modules::error::{self, AppError},
+    }, qf_client::client::QFClient, utils::modules::error::{self, AppError}
 };
 
 #[tauri::command]
 pub async fn cache_reload(
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<(), AppError> {
     let cache = cache.lock()?.clone();
+    let qf = qf.lock()?.clone();
     match cache.load().await {
-        Ok(_) => {}
+        Ok(_) => {
+            qf.analytics()
+                .add_metric("Cache_Reload", "manual");
+        }
         Err(e) => {
             error::create_log_file("cache.log".to_string(), &e);
             return Err(e);

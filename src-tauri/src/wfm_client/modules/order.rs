@@ -166,11 +166,6 @@ impl OrderModule {
         let auth = self.client.auth.lock()?.clone();
         let limit = auth.order_limit;
 
-        let metric_key = "WFM_OrderCreated";
-        let mut metric_value = format!(
-            "I:{}|T:{}|P:{}|Q:{}",
-            item_id, order_type, platinum, quantity
-        );
         if limit != -1 && self.total_orders >= limit {
             logger::warning_con(
                 &self.get_component("Create"),
@@ -190,7 +185,6 @@ impl OrderModule {
 
         // Add SubType data
         if let Some(item_sub) = sub_type.clone() {
-            metric_value.push_str(&format!("{}", item_sub.get_metric_value()));
             if let Some(mod_rank) = item_sub.rank {
                 body["rank"] = json!(mod_rank);
             }
@@ -212,10 +206,6 @@ impl OrderModule {
         {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.add_order_count(1)?;
-                qf.analytics().add_metric(
-                    metric_key,
-                    format!("{}|RE:{}", metric_value, "success").as_str(),
-                );
                 self.client.debug(
                     &self.debug_id,
                     &self.get_component("Create"),
@@ -235,10 +225,6 @@ impl OrderModule {
                 return Ok(("order_created".to_string(), Some(payload)));
             }
             Ok(ApiResult::Error(error, _headers)) => {
-                qf.analytics().add_metric(
-                    metric_key,
-                    format!("{}|RE:{}", metric_value, "failed").as_str(),
-                );
                 let log_level = match error.messages.get(0) {
                     Some(message)
                         if message.contains("app.post_order.already_created_no_duplicates")
@@ -262,13 +248,11 @@ impl OrderModule {
     }
 
     pub async fn delete(&mut self, order_id: &str) -> Result<String, AppError> {
-        let qf = self.client.qf.lock()?.clone();
         let url = format!("profile/orders/{}", order_id);
         self.client.auth().is_logged_in()?;
         match self.client.delete(&url, Some("order_id")).await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.subtract_order_count(1)?;
-                qf.analytics().add_metric("WFM_OrderDeleted", "success");
                 self.client.debug(
                     &self.debug_id,
                     &self.get_component("Delete"),
@@ -282,7 +266,6 @@ impl OrderModule {
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
-                qf.analytics().add_metric("WFM_OrderDeleted", "failed");
                 let log_level = match error.messages.get(0) {
                     Some(message) if message.contains("app.delete_order.order_not_exist") => {
                         LogLevel::Warning
@@ -369,12 +352,10 @@ impl OrderModule {
             .await
         {
             Ok(ApiResult::Success(_payload, _headers)) => {
-                qf.analytics().add_metric("WFM_OrderClosed", "success");
                 self.subtract_order_count(1)?;
                 return Ok(true);
             }
             Ok(ApiResult::Error(error, _headers)) => {
-                qf.analytics().add_metric("WFM_OrderClosed", "failed");
                 let log_level = match error.messages.get(0) {
                     Some(message) if message.contains("app.close_order.order_not_exist") => {
                         LogLevel::Warning

@@ -7,7 +7,6 @@ export class AuctionModule {
 
   async delete(id: string): Promise<Wfm.Auction<string>> {
     const [err, auction] = await this.client.sendInvoke<Wfm.Auction<string>>('auction_delete', { id: id });
-    await this.client.analytics.sendMetric('WFM_AuctionDelete', err ? 'failed' : 'success');
     if (err)
       throw err;
     return auction;
@@ -15,7 +14,6 @@ export class AuctionModule {
 
   async refresh(): Promise<number> {
     const [err, res] = await this.client.sendInvoke<number>('auction_refresh');
-    await this.client.analytics.sendMetric('WFM_AuctionRefresh', err ? 'failed' : 'success');
     if (err)
       throw err;
 
@@ -24,7 +22,6 @@ export class AuctionModule {
 
   async deleteAll(): Promise<void> {
     const [err, res] = await this.client.sendInvoke<void>('auction_delete_all');
-    await this.client.analytics.sendMetric('WFM_AuctionDeleteAll', err ? 'failed' : 'success');
     if (err)
       throw err;
     return res;
@@ -32,7 +29,6 @@ export class AuctionModule {
 
   async import_auction(auction: Wfm.Auction<string>, bought: number): Promise<StockRiven> {
     const [err, res] = await this.client.sendInvoke<StockRiven>('auction_import', { auction, bought });
-    await this.client.analytics.sendMetric('WFM_AuctionImportToStock', err ? 'failed' : 'success');
     if (err)
       throw err;
     return res;

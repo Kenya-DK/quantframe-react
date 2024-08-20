@@ -52,6 +52,12 @@ pub struct CreateStockRiven {
 
     #[serde(rename = "rank")]
     pub rank: i64,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stock_id: Option<i64>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub wfm_order_id: Option<String>,
 }
 
 impl CreateStockRiven {
@@ -63,6 +69,7 @@ impl CreateStockRiven {
         polarity: String,
         attributes: Vec<RivenAttribute>,
         rank: i64,
+        stock_id: Option<i64>,
     ) -> Self {
         CreateStockRiven {
             raw,
@@ -79,6 +86,8 @@ impl CreateStockRiven {
             minimum_price: None,
             bought: None,
             rank,
+            stock_id,
+            wfm_order_id: None,
         }
     }
     pub fn new_valid(
@@ -96,6 +105,7 @@ impl CreateStockRiven {
         minimum_price: Option<i64>,
         bought: Option<i64>,
         rank: i64,
+        order_id: Option<String>,
     ) -> Self {
         CreateStockRiven {
             raw,
@@ -112,6 +122,8 @@ impl CreateStockRiven {
             minimum_price,
             bought,
             rank,
+            stock_id: None,
+            wfm_order_id: order_id,
         }
     }
     pub fn to_stock(&self) -> super::stock_riven::Model {

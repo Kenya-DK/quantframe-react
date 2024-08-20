@@ -123,4 +123,29 @@ impl Model {
             })),
         )
     }
+    pub fn to_create(&self) -> super::create::CreateStockRiven {
+        let rank = if self.sub_type.is_some() {
+            let sub_type = self.sub_type.as_ref().unwrap();
+            sub_type.rank.unwrap_or(0)
+        } else {
+            0
+        };
+        super::create::CreateStockRiven::new_valid(
+            self.wfm_weapon_url.clone(),
+            self.wfm_weapon_id.clone(),
+            self.wfm_weapon_url.clone(),
+            self.weapon_name.clone(),
+            self.weapon_unique_name.clone(),
+            self.weapon_type.clone(),
+            self.mod_name.clone(),
+            self.mastery_rank,
+            self.re_rolls,
+            self.polarity.clone(),
+            self.attributes.0.clone(),
+            self.minimum_price,
+            Some(self.bought),
+            rank,
+            self.wfm_order_id.clone(),
+        )
+    }
 }

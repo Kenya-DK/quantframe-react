@@ -15,7 +15,6 @@ export class LiveScraperModule {
 
   private async runningState(enable: boolean) {
     const [err, res] = await this.client.sendInvoke('live_scraper_set_running_state', { enable })
-    this.client.analytics.sendMetric(`LiveScraper_SetState_${enable ? 'Start' : 'Stop'}`, err ? 'failed' : 'success');
     if (err)
       throw err;
     return res;

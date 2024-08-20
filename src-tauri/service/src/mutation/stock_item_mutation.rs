@@ -3,6 +3,7 @@ use ::entity::{
     stock::item::stock_item::{self, Entity as StockItem},
     sub_type::SubType,
 };
+use prelude::Expr;
 use sea_orm::*;
 
 use crate::StockItemQuery;
@@ -93,7 +94,7 @@ impl StockItemMutation {
     pub async fn add_item(
         db: &DbConn,
         stock: stock_item::Model,
-    ) -> Result<Option<stock_item::Model>, DbErr> {
+    ) -> Result<stock_item::Model, DbErr> {
         // Find the item by id
         let item = StockItemQuery::find_by_url_name_and_sub_type(
             db,
@@ -104,7 +105,7 @@ impl StockItemMutation {
         if item.is_none() {
             match StockItemMutation::create(db, stock.clone()).await {
                 Ok(insert) => {
-                    return Ok(Some(insert));
+                    return Ok(insert);
                 }
                 Err(e) => {
                     return Err(e);
@@ -122,8 +123,8 @@ impl StockItemMutation {
         item.bought = weighted_average;
         item.updated_at = chrono::Utc::now();
         match StockItemMutation::update_by_id(db, item.id, item.clone()).await {
-            Ok(_) => {
-                return Ok(Some(item));
+            Ok(up_item) => {
+                return Ok(up_item);
             }
             Err(e) => {
                 return Err(e);
@@ -172,6 +173,27 @@ impl StockItemMutation {
 
         post.delete(db).await
     }
+
+    pub async fn update_bulk(
+        db: &DbConn,
+        ids: Vec<i64>,
+        minimum_price: Option<i64>,
+        is_hidden: Option<bool>,
+    ) -> Result<Vec<stock_item::Model>, DbErr> {
+        let mut query = StockItem::update_many();
+
+        if let Some(minimum_price) = minimum_price {
+            query = query.col_expr(stock_item::Column::MinimumPrice, minimum_price.into());
+        }
+        if let Some(is_hidden) = is_hidden {
+            query = query.col_expr(stock_item::Column::IsHidden, is_hidden.into());
+        }
+        query = query.filter(Expr::col(stock_item::Column::Id).is_in(ids));
+
+        query.exec(db).await?;
+        StockItem::find().all(db).await
+    }
+
 
     pub async fn update_all(
         db: &DbConn,

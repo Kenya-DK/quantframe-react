@@ -1,4 +1,5 @@
 use ::entity::stock::riven::{stock_riven, stock_riven::Entity as StockRiven};
+use prelude::Expr;
 use sea_orm::*;
 
 pub struct StockRivenMutation;
@@ -121,7 +122,25 @@ impl StockRivenMutation {
 
         post.delete(db).await
     }
+    pub async fn update_bulk(
+        db: &DbConn,
+        ids: Vec<i64>,
+        minimum_price: Option<i64>,
+        is_hidden: Option<bool>,
+    ) -> Result<Vec<stock_riven::Model>, DbErr> {
+        let mut query = StockRiven::update_many();
 
+        if let Some(minimum_price) = minimum_price {
+            query = query.col_expr(stock_riven::Column::MinimumPrice, minimum_price.into());
+        }
+        if let Some(is_hidden) = is_hidden {
+            query = query.col_expr(stock_riven::Column::IsHidden, is_hidden.into());
+        }
+        query = query.filter(Expr::col(stock_riven::Column::Id).is_in(ids));
+
+        query.exec(db).await?;
+        StockRiven::find().all(db).await
+    }
     pub async fn delete_all(db: &DbConn) -> Result<DeleteResult, DbErr> {
         StockRiven::delete_many().exec(db).await
     }

@@ -41,6 +41,12 @@ impl StockItemQuery {
     pub async fn find_by_id(db: &DbConn, id: i64) -> Result<Option<stock_item::Model>, DbErr> {
         StockItem::find_by_id(id).one(db).await
     }
+    pub async fn find_by_ids(db: &DbConn, ids: Vec<i64>) -> Result<Vec<stock_item::Model>, DbErr> {
+        StockItem::find()
+            .filter(Expr::col(stock_item::Column::Id).is_in(ids))
+            .all(db)
+            .await
+    }
 
     pub async fn find_by_url_name_and_sub_type(
         db: &DbConn,

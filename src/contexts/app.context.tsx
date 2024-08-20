@@ -22,7 +22,6 @@ type NotificationPayload = {
   values: { [key: string]: string | number };
 }
 
-
 export type AppContextProps = {
   settings: Settings | undefined;
   app_info: AppInfo | undefined;

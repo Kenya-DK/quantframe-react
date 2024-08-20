@@ -276,7 +276,6 @@ fn main() {
             commands::stock_item::stock_item_update,
             commands::stock_item::stock_item_update_bulk,
             commands::stock_item::stock_item_sell,
-            commands::stock_item::stock_item_sell_by_wfm_order,
             commands::stock_item::stock_item_delete,
             commands::stock_item::stock_item_delete_bulk,
             // Stock Riven commands

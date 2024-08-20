@@ -1,4 +1,7 @@
-use std::{path::PathBuf, sync::{Arc, Mutex}};
+use std::{
+    path::PathBuf,
+    sync::{Arc, Mutex},
+};
 
 use serde_json::json;
 use service::{sea_orm::Database, StockItemMutation, StockRivenMutation, TransactionMutation};
@@ -8,17 +11,20 @@ use crate::{
     debug::DebugClient,
     helper,
     notification::client::NotifyClient,
+    qf_client::client::QFClient,
     utils::{enums::ui_events::UIOperationEvent, modules::error::AppError},
 };
 
 #[tauri::command]
-pub async fn debug_import_algo_trader (
+pub async fn debug_import_algo_trader(
     db_path: String,
     debug: tauri::State<'_, Arc<Mutex<DebugClient>>>,
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<bool, AppError> {
     let debug = debug.lock()?.clone();
     let app = app.lock()?.clone();
+    let qf = qf.lock()?.clone();
 
     // Check if the old database exists
     let old_db_path = PathBuf::from(db_path);
@@ -35,7 +41,10 @@ pub async fn debug_import_algo_trader (
         .expect("Database connection failed");
 
     match debug.import_algo_trader(&old_con, &app.conn).await {
-        Ok(_) => {}
+        Ok(_) => {
+            qf.analytics()
+                .add_metric("Debug_ImportAlgoTrader", "manual");
+        }
         Err(e) => {
             return Err(e);
         }
@@ -47,9 +56,11 @@ pub async fn debug_migrate_data_base(
     target: String,
     debug: tauri::State<'_, Arc<Mutex<DebugClient>>>,
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<bool, AppError> {
     let debug = debug.lock()?.clone();
     let app = app.lock()?.clone();
+    let qf = qf.lock()?.clone();
 
     // Check if the old database exists
     let old_db_path = helper::get_app_storage_path().join("quantframe.sqlite");
@@ -68,15 +79,22 @@ pub async fn debug_migrate_data_base(
     match target.as_str() {
         "all" => {
             debug.migrate_data_all(&old_con, &app.conn).await?;
+            qf.analytics().add_metric("Debug_MigrateDataBase", "all");
         }
         "stock_item" => {
             debug.migrate_data_stock_item(&old_con, &app.conn).await?;
+            qf.analytics()
+                .add_metric("Debug_MigrateDataBase", "stock_item");
         }
         "stock_riven" => {
             debug.migrate_data_stock_riven(&old_con, &app.conn).await?;
+            qf.analytics()
+                .add_metric("Debug_MigrateDataBase", "stock_riven");
         }
         "transaction" => {
             debug.migrate_data_transactions(&old_con, &app.conn).await?;
+            qf.analytics()
+                .add_metric("Debug_MigrateDataBase", "transaction");
         }
         _ => {
             return Err(AppError::new("DebugDbReset", eyre::eyre!("Invalid target")));
@@ -90,9 +108,11 @@ pub async fn debug_db_reset(
     target: String,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<bool, AppError> {
     let notify = notify.lock()?.clone();
     let app = app.lock()?.clone();
+    let qf = qf.lock()?.clone();
     match target.as_str() {
         "all" => {
             StockItemMutation::delete_all(&app.conn)
@@ -104,6 +124,7 @@ pub async fn debug_db_reset(
             TransactionMutation::delete_all(&app.conn)
                 .await
                 .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
+            qf.analytics().add_metric("Debug_DbReset", "all");
             notify.gui().send_event_update(
                 crate::utils::enums::ui_events::UIEvent::UpdateStockItems,
                 UIOperationEvent::Set,
@@ -124,6 +145,7 @@ pub async fn debug_db_reset(
             StockItemMutation::delete_all(&app.conn)
                 .await
                 .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
+            qf.analytics().add_metric("Debug_DbReset", "stock_item");
             notify.gui().send_event_update(
                 crate::utils::enums::ui_events::UIEvent::UpdateStockItems,
                 UIOperationEvent::Set,
@@ -134,6 +156,7 @@ pub async fn debug_db_reset(
             StockRivenMutation::delete_all(&app.conn)
                 .await
                 .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
+            qf.analytics().add_metric("Debug_DbReset", "stock_riven");
             notify.gui().send_event_update(
                 crate::utils::enums::ui_events::UIEvent::UpdateStockRivens,
                 UIOperationEvent::Set,
@@ -144,6 +167,7 @@ pub async fn debug_db_reset(
             TransactionMutation::delete_all(&app.conn)
                 .await
                 .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
+            qf.analytics().add_metric("Debug_DbReset", "transaction");
             notify.gui().send_event_update(
                 crate::utils::enums::ui_events::UIEvent::UpdateTransaction,
                 UIOperationEvent::Set,

@@ -2,10 +2,15 @@ use serde_json::json;
 use service::{StockRivenMutation, StockRivenQuery, TransactionMutation};
 
 use crate::{
-    app::client::AppState, cache::{client::CacheClient, types::item_price_info::StockRiven}, notification::client::NotifyClient, qf_client::client::QFClient, utils::{
+    app::client::AppState,
+    cache::{client::CacheClient, types::item_price_info::StockRiven},
+    notification::client::NotifyClient,
+    qf_client::client::QFClient,
+    utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
         modules::error::{self, AppError},
-    }, wfm_client::{client::WFMClient, types::auction::Auction}
+    },
+    wfm_client::{client::WFMClient, types::auction::Auction},
 };
 use std::sync::{Arc, Mutex};
 
@@ -15,9 +20,11 @@ use std::sync::{Arc, Mutex};
 pub async fn auction_refresh(
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<(), AppError> {
     let wfm = wfm.lock()?.clone();
     let notify = notify.lock()?.clone();
+    let qf = qf.lock()?.clone();
     let current_auctions = match wfm.auction().get_my_auctions().await {
         Ok(auctions) => auctions,
         Err(e) => {
@@ -25,6 +32,7 @@ pub async fn auction_refresh(
             return Err(e);
         }
     };
+    qf.analytics().add_metric("Auction_Refresh", "manual");
     notify.gui().send_event_update(
         UIEvent::UpdateAuction,
         UIOperationEvent::Set,
@@ -39,11 +47,12 @@ pub async fn auction_delete(
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<(), AppError> {
     let app = app.lock()?.clone();
     let wfm = wfm.lock()?.clone();
     let notify = notify.lock()?.clone();
-
+    let qf = qf.lock()?.clone();
     // Get the my auctions from the WFM
     let auction = match wfm.auction().get_auction_by_id(&id).await {
         Ok(auction) => auction,
@@ -62,6 +71,7 @@ pub async fn auction_delete(
                     UIOperationEvent::Delete,
                     Some(json!({ "id": auction.id })),
                 );
+                qf.analytics().add_metric("Auction_Delete", "manual");
             }
             Err(e) => {
                 error::create_log_file("command_auctions.log".to_string(), &e);
@@ -83,6 +93,8 @@ pub async fn auction_delete(
         stock.wfm_order_id = None;
         match StockRivenMutation::update_by_id(&app.conn, stock.id, stock.clone()).await {
             Ok(_) => {
+                qf.analytics()
+                    .add_metric("Stock_RivenUpdate", "manual_auction_delete");
                 notify.gui().send_event_update(
                     UIEvent::UpdateStockRivens,
                     UIOperationEvent::CreateOrUpdate,
@@ -104,10 +116,13 @@ pub async fn auction_delete_all(
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<i64, AppError> {
     let app = app.lock()?.clone();
     let wfm = wfm.lock()?.clone();
     let notify = notify.lock()?.clone();
+    let qf = qf.lock()?.clone();
+
     let current_auctions = match wfm.auction().get_my_auctions().await {
         Ok(auctions) => auctions,
         Err(e) => {
@@ -116,6 +131,7 @@ pub async fn auction_delete_all(
         }
     };
     let total = current_auctions.len() as i64;
+    qf.analytics().add_metric("Auction_DeleteAll", "manual");
     for auction in current_auctions {
         // Delete the auction form the WFM if it exists
         match wfm.auction().delete(&auction.id).await {
@@ -172,18 +188,22 @@ pub async fn auction_import(
     };
 
     // Validate the stock
-    entity.validate_entity(&cache, "--weapon_by url_name --weapon_lang en --attribute_by url_name")?;
+    entity.validate_entity(
+        &cache,
+        "--weapon_by url_name --weapon_lang en --attribute_by url_name",
+    )?;
 
     let mut stock = entity.to_stock_riven().to_stock();
     stock.wfm_order_id = Some(auction.id.clone());
-    stock =  match StockRivenMutation::create(&app.conn, stock).await {
+    stock = match StockRivenMutation::create(&app.conn, stock).await {
         Ok(inserted) => {
             notify.gui().send_event_update(
                 UIEvent::UpdateStockRivens,
                 UIOperationEvent::CreateOrUpdate,
                 Some(json!(inserted)),
             );
-            qf.analytics().add_metric("StockRiven_ImportCreate", &inserted.get_metric_value());
+            qf.analytics()
+                .add_metric("Stock_RivenCreate", "manual_auction_import");
             inserted
         }
         Err(e) => {
@@ -210,9 +230,10 @@ pub async fn auction_import(
                 UIOperationEvent::CreateOrUpdate,
                 Some(json!(inserted)),
             );
-            qf.analytics().add_metric("Transaction_Create", &inserted.get_metric_value());
+            qf.analytics()
+                .add_metric("Transaction_Create", &json!(inserted).to_string());
         }
-        Err(e) => { 
+        Err(e) => {
             let err = AppError::new_db("Command:AuctionImport", e);
             error::create_log_file("command_auctions.log".to_string(), &err);
             return Err(err);

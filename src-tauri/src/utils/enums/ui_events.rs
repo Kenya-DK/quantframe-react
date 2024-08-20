@@ -18,6 +18,7 @@ pub enum UIEvent {
     OnNotificationWarning,
     OnNotificationSuccess,
     OnToggleControl,
+    SendMetrics,
 }
 impl UIEvent {
     pub fn as_str(&self) -> &str {
@@ -39,6 +40,7 @@ impl UIEvent {
             UIEvent::OnNotificationWarning => "Notification:OnWarning",
             UIEvent::OnNotificationSuccess => "Notification:OnSuccess",
             UIEvent::OnToggleControl => "Control:OnToggleControl",
+            UIEvent::SendMetrics => "App:SendMetrics",
         }
     }
 }

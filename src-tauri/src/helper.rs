@@ -1,19 +1,47 @@
+use entity::{
+    stock::{
+        item::{create::CreateStockItem, stock_item},
+        riven::{create::CreateStockRiven, stock_riven},
+    },
+    transaction::transaction::TransactionType,
+};
 use eyre::eyre;
 use regex::Regex;
 use serde_json::{json, Map, Value};
+use service::{StockItemMutation, StockRivenMutation, TransactionMutation};
 use std::{
     collections::HashMap,
     fs::{self, File},
     io::{self, Read, Write},
     path::{Path, PathBuf},
+    sync::{Arc, Mutex},
 };
 use tauri::api::dir;
 
 use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 
-use crate::utils::modules::error::AppError;
+use crate::{
+    app::client::AppState,
+    cache::client::CacheClient,
+    log_parser::enums::trade_classification::TradeClassification,
+    notification::client::NotifyClient,
+    qf_client::client::QFClient,
+    utils::{
+        enums::ui_events::{UIEvent, UIOperationEvent},
+        modules::error::AppError,
+    },
+    wfm_client::{client::WFMClient, enums::order_type::OrderType},
+};
 
 pub static APP_PATH: &str = "dev.kenya.quantframe";
+
+#[derive(Clone, Debug)]
+pub struct ZipEntry {
+    pub file_path: PathBuf,
+    pub sub_path: Option<String>,
+    pub content: Option<String>,
+    pub include_dir: bool,
+}
 
 pub fn get_device_id() -> String {
     let home_dir = match tauri::api::path::home_dir() {
@@ -100,14 +128,6 @@ pub fn match_pattern(
         }
     }
     Ok((false, vec![]))
-}
-
-#[derive(Clone, Debug)]
-pub struct ZipEntry {
-    pub file_path: PathBuf,
-    pub sub_path: Option<String>,
-    pub content: Option<String>,
-    pub include_dir: bool,
 }
 
 pub fn read_zip_entries(
@@ -416,4 +436,302 @@ pub fn open_json_and_replace(path: &str, properties: Vec<String>) -> Result<Valu
             eyre!("Could not open file at path: {}", path),
         )),
     }
+}
+
+pub async fn progress_stock_item(
+    entity: &mut CreateStockItem,
+    validate_by: &str,
+    user_name: &str,
+    operation: OrderType,
+    options: Vec<String>,
+    from: &str,
+    app: AppState,
+    cache: CacheClient,
+    notify: NotifyClient,
+    wfm: WFMClient,
+    qf: QFClient,
+) -> Result<(stock_item::Model, Vec<String>), AppError> {
+    let mut response = vec![];
+    // Validate the stock item
+    match cache
+        .tradable_items()
+        .validate_create_item(entity, validate_by)
+    {
+        Ok(_) => {}
+        Err(e) => {
+            return Err(e);
+        }
+    };
+
+    //Get stock item from the entity
+    let stock = entity.to_stock();
+
+    // Progress the stock item based on the operation
+    if operation == OrderType::Sell {
+        match StockItemMutation::sold_by_url_and_sub_type(
+            &app.conn,
+            &entity.wfm_url,
+            entity.sub_type.clone(),
+            entity.quantity,
+        )
+        .await
+        {
+            Ok((operation, item)) => {
+                if operation == "Item not found" {
+                    response.push("StockItemNotFound".to_string());
+                    if !options.contains(&"StockContinueOnError".to_string()) {
+
+                        return Err(AppError::new(
+                            "StockItemSell",
+                            eyre!(format!(
+                                "Stock Item not found: {} {:?}",
+                                entity.wfm_url, entity.sub_type
+                            )),
+                        ));
+                    }
+                } else if operation == "Item deleted" {
+                    response.push("StockItemDeleted".to_string());
+                    notify.gui().send_event_update(
+                        UIEvent::UpdateStockItems,
+                        UIOperationEvent::Delete,
+                        Some(json!({ "id": item.unwrap().id })),
+                    );
+                } else if operation == "Item updated" {
+                    response.push("StockItemUpdated".to_string());
+                    notify.gui().send_event_update(
+                        UIEvent::UpdateStockItems,
+                        UIOperationEvent::CreateOrUpdate,
+                        Some(json!(item)),
+                    );
+                }
+                qf.analytics()
+                    .add_metric("Stock_ItemSold", from);
+                response.push("Stock Item sold".to_string());
+            }
+            Err(e) => {
+                response.push("StockDbError".to_string());
+                return Err(AppError::new("StockItemSell", eyre!(e)));
+            }
+        }
+    } else if operation == OrderType::Buy {
+        match StockItemMutation::add_item(&app.conn, stock.clone()).await {
+            Ok(inserted) => {
+                response.push("StockItemAdd".to_string());
+                notify.gui().send_event_update(
+                    UIEvent::UpdateStockItems,
+                    UIOperationEvent::CreateOrUpdate,
+                    Some(json!(inserted)),
+                );
+                qf.analytics()
+                    .add_metric("Stock_ItemCreate", from);
+            }
+            Err(e) => {
+                response.push("StockDbError".to_string());
+                return Err(AppError::new("StockItemCreate", eyre!(e)));
+            }
+        }
+    } else {
+        return Err(AppError::new(
+            "ProgressStockItem",
+            eyre!("Invalid operation"),
+        ));
+    }
+
+    // Process the order on WFM
+    match wfm
+        .orders()
+        .progress_order(
+            &entity.wfm_url,
+            entity.sub_type.clone(),
+            entity.quantity,
+            operation.clone(),
+            operation == OrderType::Sell,
+        )
+        .await
+    {
+        Ok((operation, order)) => {
+            if operation == "order_deleted" && order.is_some() {
+                qf.analytics()
+                    .add_metric("WFM_OrderDeleted", from);
+                response.push("WFMOrderDeleted".to_string());
+                notify.gui().send_event_update(
+                    UIEvent::UpdateOrders,
+                    UIOperationEvent::Delete,
+                    Some(json!({ "id": order.unwrap().id })),
+                );
+            } else if operation == "order_updated" {
+                qf.analytics()
+                    .add_metric("WFM_OrderUpdated", from);
+                response.push("WFMOrderUpdated".to_string());
+                notify.gui().send_event_update(
+                    UIEvent::UpdateOrders,
+                    UIOperationEvent::CreateOrUpdate,
+                    Some(json!(order)),
+                );
+            }
+        }
+        Err(e) => {
+            response.push("WFMOrderError".to_string());
+            if !options.contains(&"WFMContinueOnError".to_string()) {
+                return Err(e);
+            }
+        }
+    }
+
+    if entity.bought.unwrap_or(0) <= 0 {
+        return Ok((stock, response));
+    }
+
+    // Add Transaction to the database
+    let transaction_type = if operation == OrderType::Buy {
+        TransactionType::Purchase
+    } else {
+        TransactionType::Sale
+    };
+    let transaction = stock.to_transaction(
+        user_name,
+        entity.tags.clone(),
+        entity.quantity,
+        entity.bought.unwrap_or(0),
+        transaction_type,
+    );
+
+    match TransactionMutation::create(&app.conn, transaction).await {
+        Ok(inserted) => {
+            qf.analytics()
+                .add_metric("Transaction_ItemCreate", from);
+            response.push("TransactionCreated".to_string());
+            notify.gui().send_event_update(
+                UIEvent::UpdateTransaction,
+                UIOperationEvent::CreateOrUpdate,
+                Some(json!(inserted)),
+            );
+        }
+        Err(e) => {
+            response.push("TransactionDbError".to_string());
+            return Err(AppError::new_db("StockItemCreate", e));
+        }
+    };
+
+    return Ok((stock, response));
+}
+
+pub async fn progress_stock_riven(
+    entity: &mut CreateStockRiven,
+    validate_by: &str,
+    user_name: &str,
+    operation: OrderType,
+    from: &str,
+    app: AppState,
+    cache: CacheClient,
+    notify: NotifyClient,
+    wfm: WFMClient,
+    qf: QFClient,
+) -> Result<(stock_riven::Model, Vec<String>), AppError> {
+    let mut response = vec![];
+    // Validate the stock item
+    match cache.riven().validate_create_riven(entity, validate_by) {
+        Ok(_) => {}
+        Err(e) => {
+            return Err(e);
+        }
+    };
+
+    //Get stock riven from the entity
+    let stock = entity.to_stock();
+
+    // Progress the stock riven based on the operation
+    if operation == OrderType::Sell && entity.stock_id.is_some() {
+        // Delete the stock from the database
+        match StockRivenMutation::delete(&app.conn, entity.stock_id.unwrap()).await {
+            Ok(_) => {
+                response.push("StockRivenDeleted".to_string());
+                qf.analytics()
+                    .add_metric("Stock_RivenDeleted", from);
+                notify.gui().send_event_update(
+                    UIEvent::UpdateStockRivens,
+                    UIOperationEvent::Delete,
+                    Some(json!({ "id": entity.stock_id })),
+                );
+            }
+            Err(e) => return Err(AppError::new("StockItemSell", eyre!(e))),
+        }
+    } else if operation == OrderType::Buy {
+        match StockRivenMutation::create(&app.conn, stock.clone()).await {
+            Ok(inserted) => {
+                qf.analytics()
+                    .add_metric("Stock_RivenCreate", from);
+                response.push("StockRivenAdd".to_string());
+                notify.gui().send_event_update(
+                    UIEvent::UpdateStockRivens,
+                    UIOperationEvent::CreateOrUpdate,
+                    Some(json!(inserted)),
+                );
+            }
+            Err(e) => {
+                response.push("StockDbError".to_string());
+                let err = AppError::new_db("ProgressStockRiven", e);
+                return Err(err);
+            }
+        }
+    } else {
+        return Err(AppError::new(
+            "ProgressStockRiven",
+            eyre!("Invalid operation"),
+        ));
+    }
+
+    // Process the action on WFM
+    if operation == OrderType::Sell && entity.wfm_order_id.is_some() {
+        let id = entity.wfm_order_id.clone().unwrap();
+        match wfm.auction().delete(&id).await {
+            Ok(updated) => {
+                qf.analytics()
+                    .add_metric("WFM_RivenDeleted", from);
+                response.push("WFMRivenDeleted".to_string());
+                notify.gui().send_event_update(
+                    UIEvent::UpdateAuction,
+                    UIOperationEvent::CreateOrUpdate,
+                    Some(json!(updated)),
+                );
+            }
+            Err(e) => {
+                if e.cause().contains("app.form.not_exist") {
+                    response.push("WFMRivenNotExist".to_string());
+                }
+                response.push("WFMRivenError".to_string());
+            }
+        }
+    }
+
+    if entity.bought.unwrap_or(0) <= 0 {
+        return Ok((stock, response));
+    }
+
+    // Add Transaction to the database
+    let transaction_type = if operation == OrderType::Buy {
+        TransactionType::Purchase
+    } else {
+        TransactionType::Sale
+    };
+    let transaction = stock.to_transaction(user_name, entity.bought.unwrap_or(0), transaction_type);
+
+    match TransactionMutation::create(&app.conn, transaction).await {
+        Ok(inserted) => {
+            qf.analytics()
+                .add_metric("Transaction_RivenCreate", from);
+            response.push("TransactionCreated".to_string());
+            notify.gui().send_event_update(
+                UIEvent::UpdateTransaction,
+                UIOperationEvent::CreateOrUpdate,
+                Some(json!(inserted)),
+            );
+        }
+        Err(e) => {
+            response.push("TransactionDbError".to_string());
+            return Err(AppError::new_db("StockItemCreate", e));
+        }
+    };
+
+    return Ok((stock, response));
 }

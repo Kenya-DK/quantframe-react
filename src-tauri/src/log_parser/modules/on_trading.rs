@@ -369,7 +369,7 @@ impl OnTradeEvent {
         let auto_trade = settings.live_scraper.stock_item.auto_trade;
         let notify = self.client.notify.lock().unwrap().clone();
         let trade = self.current_trade.clone();
-        let cache = self.client.cache.lock()?;
+        let cache = self.client.cache.lock()?.clone();
         let wfm = self.client.wfm.lock()?.clone();
         let app = self.client.app.lock()?.clone();
         let qf = self.client.qf.lock()?.clone();
@@ -422,11 +422,11 @@ impl OnTradeEvent {
                 notify
                     .gui()
                     .send_event(UIEvent::OnNotificationWarning, Some(notify_payload));
-                qf.analytics().add_metric("EE_NewTrade", "failed");
+                qf.analytics().add_metric("EE_NewTrade", "not_found");
                 return Err(err);
             }
         };
-        qf.analytics().add_metric("EE_NewTrade", "success");
+        qf.analytics().add_metric("EE_NewTrade", "found");
 
         // Set Item Name
         notify_value["item_name"] = json!(created_stock.get_name()?);
@@ -489,313 +489,103 @@ impl OnTradeEvent {
                     }
                     let stock = stock.unwrap();
 
-                    // Delete Stock
-                    match StockRivenMutation::delete(&app.conn, stock.id).await {
-                        Ok(_) => {
-                            notify.gui().send_event_update(
-                                UIEvent::UpdateStockRivens,
-                                UIOperationEvent::Delete,
-                                Some(json!({ "id": stock.id })),
-                            );
-                            notify_value["stock"] = json!("✅");
+                    match helper::progress_stock_riven(
+                        &mut stock.to_create(),
+                        "--weapon_by url_name --weapon_lang en --attribute_by url_name",
+                        &trade.player_name,
+                        OrderType::Sell,
+                        "auto",
+                        app,
+                        cache,
+                        notify.clone(),
+                        wfm,
+                        qf,
+                    )
+                    .await
+                    {
+                        Ok((_, rep)) => {
+                            if rep.contains(&"StockRivenDeleted".to_string()) {
+                                notify_value["stock"] = json!("✅");
+                            } else {
+                                notify_type = "warning";
+                                notify_value["stock"] = json!("⚠️");
+                            }
+
+                            if rep.contains(&"WFMRivenDeleted".to_string()) {
+                                notify_value["auction"] = json!("✅");
+                            } else {
+                                notify_type = "warning";
+                                notify_value["auction"] = json!("⚠️");
+                            }
                         }
                         Err(e) => {
                             notify_value["stock"] = json!("❌");
-                            error::create_log_file(
-                                "trade_accepted.log".to_string(),
-                                &AppError::new_db(&client.get_component("AutoTrade"), e),
-                            );
-                        }
-                    }
-
-                    // Find Wfm Auction and Delete
-                    if stock.wfm_order_id.is_some() {
-                        match wfm
-                            .auction()
-                            .delete(&stock.wfm_order_id.clone().unwrap())
-                            .await
-                        {
-                            Ok(auction) => {
-                                if auction.is_some() {
-                                    notify.gui().send_event_update(
-                                        UIEvent::UpdateAuction,
-                                        UIOperationEvent::Delete,
-                                        Some(json!({ "id": stock.wfm_order_id.clone().unwrap() })),
-                                    );
-                                    notify_value["auction"] = json!("✅");
-                                } else {
-                                    notify_value["auction"] = json!("⚠️");
-                                    notify_type = "warning";
-                                }
-                            }
-                            Err(e) => {
-                                if e.cause().contains("app.form.not_exist") {
-                                    notify_value["auction"] = json!("⚠️");
-                                    notify_type = "warning";
-                                    logger::info_con(
-                                        &client.get_component("AutoTrade"),
-                                        format!("Error deleting auction: {}", e.cause()).as_str(),
-                                    );
-                                } else {
-                                    error::create_log_file("trade_accepted.log".to_string(), &e);
-                                    notify_value["auction"] = json!("❌");
-                                    notify_type = "error";
-                                }
-                            }
-                        }
-                    } else {
-                    }
-                    let transaction = stock.to_transaction(
-                        &trade.player_name,
-                        trade.platinum,
-                        TransactionType::Sale,
-                    );
-                    match TransactionMutation::create(&app.conn, transaction).await {
-                        Ok(inserted) => {
-                            notify_value["transaction"] = json!("✅");
-                            notify.gui().send_event_update(
-                                UIEvent::UpdateTransaction,
-                                UIOperationEvent::CreateOrUpdate,
-                                Some(json!(inserted)),
-                            );
-                            qf.analytics()
-                                .add_metric("Transaction_AutoCreate", &inserted.get_metric_value());
-                        }
-                        Err(e) => {
-                            notify_value["transaction"] = json!("❌");
-                            notify_type = "error";
-                            error::create_log_file(
-                                "trade_accepted.log".to_string(),
-                                &AppError::new_db(&client.get_component("AutoTrade"), e),
-                            );
+                            error::create_log_file("trade_accepted.log".to_string(), &e);
                         }
                     }
                 }
-                // Handle Item Sale
+                // Handle Riven Mods Purchase
                 else if created_stock.entity_type == StockType::Riven
                     && trade.trade_type == TradeClassification::Purchase
                 {
                     logger::info_con(&client.get_component("AutoTrade"), "Riven Mod Purchase");
                 }
-                // Handle Item Sale
+                // Handle Item Sale & Purchase
                 else if created_stock.entity_type == StockType::Item
-                    && trade.trade_type == TradeClassification::Sale
+                    && (trade.trade_type == TradeClassification::Sale
+                        || trade.trade_type == TradeClassification::Purchase)
                 {
                     // Create Stock Item
-                    let stock_item = created_stock.to_stock_item();
+                    let mut stock_item = created_stock.to_stock_item();
 
-                    // Handle Stock
-                    match StockItemMutation::sold_by_url_and_sub_type(
-                        &app.conn,
-                        &created_stock.wfm_url,
-                        created_stock.clone().sub_type,
-                        created_stock.quantity,
+                    let order_type = if trade.trade_type == TradeClassification::Sale {
+                        OrderType::Sell
+                    } else {
+                        OrderType::Buy
+                    };
+                    match helper::progress_stock_item(
+                        &mut stock_item,
+                        "--item_by url_name --item_lang en",
+                        &trade.player_name,
+                        order_type,
+                        vec![
+                            "StockContinueOnError".to_string(),
+                            "WFMContinueOnError".to_string(),
+                        ],
+                        "auto",
+                        app,
+                        cache,
+                        notify.clone(),
+                        wfm,
+                        qf,
                     )
                     .await
                     {
-                        Ok((operation, order)) => {
-                            if operation == "Item not found" {
-                                notify_type = "warning";
+                        Ok((_, rep)) => {
+                            if !rep.contains(&"StockItemNotFound".to_string()) {
+                                notify_value["stock"] = json!("✅");
+                            } else {
                                 notify_value["stock"] = json!("⚠️");
-                            } else if operation == "Item deleted" {
-                                notify_value["stock"] = json!("✅");
-                                notify.gui().send_event_update(
-                                    UIEvent::UpdateStockItems,
-                                    UIOperationEvent::Delete,
-                                    Some(json!({ "id": order.unwrap().id })),
-                                );
-                            } else if operation == "Item updated" {
-                                notify_value["stock"] = json!("✅");
-                                notify.gui().send_event_update(
-                                    UIEvent::UpdateStockItems,
-                                    UIOperationEvent::CreateOrUpdate,
-                                    Some(json!(order)),
-                                );
                             }
-                        }
-                        Err(e) => {
-                            notify_value["stock"] = json!("❌");
-                            notify_type = "error";
-                            error::create_log_file(
-                                "trade_accepted.log".to_string(),
-                                &AppError::new_db(&client.get_component("AutoTrade"), e),
-                            );
-                        }
-                    }
 
-                    // Handle Wfm Orders
-                    match wfm
-                        .orders()
-                        .progress_order(
-                            &created_stock.wfm_url,
-                            created_stock.sub_type.clone(),
-                            created_stock.quantity,
-                            OrderType::Sell,
-                            true,
-                        )
-                        .await
-                    {
-                        Ok((operation, order)) => {
-                            if operation == "order_deleted" {
+                            if rep.contains(&"WFMOrderDeleted".to_string())
+                                || rep.contains(&"WFMOrderUpdated".to_string())
+                            {
                                 notify_value["order"] = json!("✅");
-                                notify.gui().send_event_update(
-                                    UIEvent::UpdateOrders,
-                                    UIOperationEvent::Delete,
-                                    Some(json!({ "id": order.unwrap().id })),
-                                );
-                            } else if operation == "order_updated" {
-                                notify_value["order"] = json!("✅");
-                                notify.gui().send_event_update(
-                                    UIEvent::UpdateOrders,
-                                    UIOperationEvent::CreateOrUpdate,
-                                    Some(json!(order)),
-                                );
-                            } else if operation == "order_not_found" {
+                            } else {
                                 notify_value["order"] = json!("⚠️");
-                                notify_type = "warning";
                             }
-                        }
-                        Err(e) => {
-                            notify_value["order"] = json!("❌");
-                            notify_type = "error";
-                            error::create_log_file("trade_accepted.log".to_string(), &e);
-                        }
-                    }
 
-                    // Handle Transactions
-                    match TransactionMutation::create(
-                        &app.conn,
-                        stock_item.to_stock().to_transaction(
-                            &trade.player_name,
-                            created_stock.tags,
-                            created_stock.quantity,
-                            created_stock.bought.unwrap_or(0),
-                            TransactionType::Sale,
-                        ),
-                    )
-                    .await
-                    {
-                        Ok(inserted) => {
-                            notify_value["transaction"] = json!("✅");
-                            notify.gui().send_event_update(
-                                UIEvent::UpdateTransaction,
-                                UIOperationEvent::CreateOrUpdate,
-                                Some(json!(inserted)),
-                            );
-                            qf.analytics()
-                            .add_metric("Transaction_AutoCreate", &inserted.get_metric_value());
-                        }
-                        Err(e) => {
-                            notify_value["transaction"] = json!("❌");
-                            notify_type = "error";
-                            error::create_log_file(
-                                "trade_accepted.log".to_string(),
-                                &AppError::new_db(&client.get_component("AutoTrade"), e),
-                            );
-                        }
-                    }
-                }
-                // Handle Item Purchase
-                else if created_stock.entity_type == StockType::Item
-                    && trade.trade_type == TradeClassification::Purchase
-                {
-                    // Create Stock Item
-                    let stock_item = created_stock.to_stock_item();
-
-                    // Handle Stock
-                    match StockItemMutation::add_item(&app.conn, stock_item.to_stock().clone())
-                        .await
-                    {
-                        Ok(inserted) => {
-                            notify_value["stock"] = json!("✅");
-
-                            notify.gui().send_event_update(
-                                UIEvent::UpdateStockItems,
-                                UIOperationEvent::CreateOrUpdate,
-                                Some(json!(inserted)),
-                            );
-                            qf.analytics().add_metric(
-                                "StockItem_AutoCreate",
-                                &inserted.unwrap().get_metric_value(),
-                            );
-                        }
-                        Err(e) => {
-                            notify_value["stock"] = json!("❌");
-                            notify_type = "error";
-                            error::create_log_file(
-                                "trade_accepted.log".to_string(),
-                                &AppError::new_db(&client.get_component("AutoTrade"), e),
-                            );
-                        }
-                    }
-
-                    // Handle Wfm Orders
-                    match wfm
-                        .orders()
-                        .progress_order(
-                            &created_stock.wfm_url,
-                            created_stock.sub_type.clone(),
-                            created_stock.quantity,
-                            OrderType::Buy,
-                            false,
-                        )
-                        .await
-                    {
-                        Ok((operation, order)) => {
-                            if operation == "order_deleted" {
-                                notify_value["order"] = json!("✅");
-                                notify.gui().send_event_update(
-                                    UIEvent::UpdateOrders,
-                                    UIOperationEvent::Delete,
-                                    Some(json!({ "id": order.unwrap().id })),
-                                );
-                            } else if operation == "order_updated" {
-                                notify_value["order"] = json!("✅");
-                                notify.gui().send_event_update(
-                                    UIEvent::UpdateOrders,
-                                    UIOperationEvent::CreateOrUpdate,
-                                    Some(json!(order)),
-                                );
-                            } else if operation == "order_not_found" {
-                                notify_type = "warning";
+                            if rep.contains(&"TransactionCreated".to_string()) {
+                                notify_value["transaction"] = json!("✅");
+                            } else {
                                 notify_value["order"] = json!("⚠️");
                             }
                         }
-                        Err(e) => {
-                            error::create_log_file("trade_accepted.log".to_string(), &e);
-                        }
-                    }
-
-                    // Handle Transactions
-                    match TransactionMutation::create(
-                        &app.conn,
-                        stock_item.to_stock().to_transaction(
-                            &trade.player_name,
-                            created_stock.tags,
-                            created_stock.quantity,
-                            created_stock.bought.unwrap_or(0),
-                            TransactionType::Purchase,
-                        ),
-                    )
-                    .await
-                    {
-                        Ok(inserted) => {
-                            notify_value["transaction"] = json!("✅");
-                            notify.gui().send_event_update(
-                                UIEvent::UpdateTransaction,
-                                UIOperationEvent::CreateOrUpdate,
-                                Some(json!(inserted)),
-                            );
-                            qf.analytics()
-                            .add_metric("Transaction_AutoCreate", &inserted.get_metric_value());
-                        }
-                        Err(e) => {
+                        Err(_) => {
+                            notify_type = "warning";
+                            notify_value["stock"] = json!("⚠️");
                             notify_value["transaction"] = json!("❌");
-                            notify_type = "error";
-                            error::create_log_file(
-                                "trade_accepted.log".to_string(),
-                                &AppError::new_db(&client.get_component("AutoTrade"), e),
-                            );
                         }
                     }
                 } else {
