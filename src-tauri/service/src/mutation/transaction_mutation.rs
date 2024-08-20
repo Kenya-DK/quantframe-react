@@ -30,7 +30,7 @@ impl TransactionMutation {
     }
     pub async fn create(
         db: &DbConn,
-        form_data: transaction::Model,
+        form_data: &transaction::Model,
     ) -> Result<transaction::Model, DbErr> {
         transaction::ActiveModel {
             wfm_id: Set(form_data.wfm_id.to_owned()),

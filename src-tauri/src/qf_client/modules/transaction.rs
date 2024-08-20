@@ -25,22 +25,14 @@ use crate::{
 #[derive(Clone, Debug)]
 pub struct TransactionModule {
     pub client: QFClient,
-    is_init: bool,
-    current_page: String,
     component: String,
-    metricAndLabelPairsScheduledToSend: Vec<HashMap<String, String>>,
-    last_user_activity: Arc<Mutex<Instant>>,
 }
 
 impl TransactionModule {
     pub fn new(client: QFClient) -> Self {
         TransactionModule {
             client,
-            current_page: "home".to_string(),
             component: "Transaction".to_string(),
-            is_init: false,
-            last_user_activity: Arc::new(Mutex::new(Instant::now())),
-            metricAndLabelPairsScheduledToSend: vec![],
         }
     }
     fn get_component(&self, component: &str) -> String {
@@ -51,17 +43,28 @@ impl TransactionModule {
     }
     pub async fn create_transaction(
         &self,
-        transaction: entity::transaction::transaction::Model,
+        transaction: &entity::transaction::transaction::Model,
     ) -> Result<(), AppError> {
         let settings = self.client.settings.lock()?.clone();
-        
-        match self.client.analytics().try_send_analytics("transaction/add", 3, json!(transaction)).await {
-            Ok(_) => {
+        let analytics = settings.analytics;
+
+        if !analytics.transaction {
+            return Ok(());            
+        }
+
+        match self.client.post::<Value>("stats/transaction/add", json!(transaction)).await {
+            Ok(ApiResult::Success(_, _)) => {
                 return Ok(());
             }
-            Err(e) => {                
-                return Err(e);
+            Ok(ApiResult::Error(e, _headers)) => {
+                return Err(self.client.create_api_error(
+                    &self.get_component("Login"),
+                    e,
+                    eyre!("There was an error logging in"),
+                    LogLevel::Error,
+                ));
             }
-        };
+            Err(e) => return Err(e),
+        }
     }
 }
