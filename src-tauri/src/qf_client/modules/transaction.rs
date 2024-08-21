@@ -49,10 +49,14 @@ impl TransactionModule {
         let analytics = settings.analytics;
 
         if !analytics.transaction {
-            return Ok(());            
+            return Ok(());
         }
 
-        match self.client.post::<Value>("stats/transaction/add", json!(transaction)).await {
+        match self
+            .client
+            .post::<Value>("stats/transaction/add", json!(transaction))
+            .await
+        {
             Ok(ApiResult::Success(_, _)) => {
                 return Ok(());
             }
