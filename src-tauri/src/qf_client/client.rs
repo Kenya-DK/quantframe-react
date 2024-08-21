@@ -43,6 +43,8 @@ pub struct QFClient {
     price_module: Arc<RwLock<Option<PriceScraperModule>>>,
     analytics_module: Arc<RwLock<Option<AnalyticsModule>>>,
     transaction_module: Arc<RwLock<Option<TransactionModule>>>,
+    stock_riven_module: Arc<RwLock<Option<StockRivenModule>>>,
+    stock_item_module: Arc<RwLock<Option<StockItemModule>>>,
     pub component: String,
     pub log_file: String,
     pub auth: Arc<Mutex<AuthState>>,
@@ -345,5 +347,45 @@ impl QFClient {
     pub fn update_transaction_module(&self, module: TransactionModule) {
         // Update the stored TransactionModule
         *self.transaction_module.write().unwrap() = Some(module);
+    }
+
+    pub fn stock_riven(&self) -> StockRivenModule {
+        // Lazily initialize StockRivenModule if not already initialized
+        if self.stock_riven_module.read().unwrap().is_none() {
+            *self.stock_riven_module.write().unwrap() =
+                Some(StockRivenModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the stock_riven_module is initialized
+        self.stock_riven_module
+            .read()
+            .unwrap()
+            .as_ref()
+            .unwrap()
+            .clone()
+    }
+    pub fn update_stock_riven_module(&self, module: StockRivenModule) {
+        // Update the stored StockRivenModule
+        *self.stock_riven_module.write().unwrap() = Some(module);
+    }
+
+    pub fn stock_item(&self) -> StockItemModule {
+        // Lazily initialize StockItemModule if not already initialized
+        if self.stock_item_module.read().unwrap().is_none() {
+            *self.stock_item_module.write().unwrap() =
+                Some(StockItemModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the stock_item_module is initialized
+        self.stock_item_module
+            .read()
+            .unwrap()
+            .as_ref()
+            .unwrap()
+            .clone()
+    }
+    pub fn update_stock_item_module(&self, module: StockItemModule) {
+        // Update the stored StockItemModule
+        *self.stock_item_module.write().unwrap() = Some(module);
     }
 }

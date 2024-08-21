@@ -23,44 +23,44 @@ use crate::{
     APP,
 };
 #[derive(Clone, Debug)]
-pub struct TransactionModule {
+pub struct StockItemModule {
     pub client: QFClient,
     component: String,
 }
 
-impl TransactionModule {
+impl StockItemModule {
     pub fn new(client: QFClient) -> Self {
-        TransactionModule {
+        StockItemModule {
             client,
-            component: "Transaction".to_string(),
+            component: "StockItem".to_string(),
         }
     }
     fn get_component(&self, component: &str) -> String {
         format!("{}:{}:{}", self.client.component, self.component, component)
     }
     fn update_state(&self) {
-        self.client.update_transaction_module(self.clone());
+        self.client.update_stock_item_module(self.clone());
     }
-    pub async fn create_transaction(
+    pub async fn create_stock_item(
         &self,
-        transaction: &entity::transaction::transaction::Model,
+        stock_item: &entity::stock_item::stock_item::Model,
     ) -> Result<(), AppError> {
         let settings = self.client.settings.lock()?.clone();
         let analytics = settings.analytics;
 
-        if !analytics.transaction {
+        if !analytics.stock_item {
             return Ok(());            
         }
 
-        match self.client.post::<Value>("stats/transaction/add", json!(transaction)).await {
+        match self.client.post::<Value>("stats/stock_item/add", json!(stock_item)).await {
             Ok(ApiResult::Success(_, _)) => {
                 return Ok(());
             }
             Ok(ApiResult::Error(e, _headers)) => {
                 return Err(self.client.create_api_error(
-                    &self.get_component("TransactionCreate"),
+                    &self.get_component("StockItemCreate"),
                     e,
-                    eyre!("There was an error creating the transaction"),
+                    eyre!("There was an error creating the stock item"),
                     LogLevel::Error,
                 ));
             }
