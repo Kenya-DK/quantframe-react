@@ -29,19 +29,19 @@ export interface NavbarMinimalColoredProps {
 }
 
 export function NavbarMinimalColored({ links }: NavbarMinimalColoredProps) {
-  const [active, setActive] = useState(0);
+  const [active, setActive] = useState("home");
 
 
   const GetActiveLinkByAlign = (align: 'top' | 'bottom') => {
     if (!links) return <></>;
 
-    return links.filter((link) => link.align == align).map((link, index) => (
+    return links.filter((link) => link.align == align).map((link) => (
       <NavbarLink
         {...link}
         key={link.label}
-        active={index === active && !link.web}
+        active={link.id === active && !link.web}
         onClick={() => {
-          setActive(index);
+          setActive(link.id || "");
           link.onClick && link.onClick(link);
         }}
       />
