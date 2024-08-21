@@ -22,6 +22,7 @@ export interface CreateStockItem {
   quantity: number;
   minimum_price?: number;
   sub_type?: SubType;
+  is_from_order?: boolean;
 }
 
 export interface UpdateStockItem {

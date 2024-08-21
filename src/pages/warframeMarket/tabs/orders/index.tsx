@@ -155,6 +155,7 @@ export const OrderPanel = ({ }: OrderPanelProps) => {
                     quantity: order.quantity,
                     minimum_price: 0,
                     sub_type: sub_type,
+                    is_from_order: true
                 });
                 break;
             case Wfm.OrderType.Sell:
