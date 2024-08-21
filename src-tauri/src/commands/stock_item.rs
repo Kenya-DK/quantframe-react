@@ -35,7 +35,7 @@ pub async fn stock_item_reload(
 
     match StockItemQuery::get_all(&app.conn).await {
         Ok(rivens) => {
-            qf.analytics().add_metric("Stock_ItemReload", "manual");
+            helper::add_metric("Stock_ItemReload", "manual");
             notify.gui().send_event_update(
                 UIEvent::UpdateStockItems,
                 UIOperationEvent::Set,
@@ -57,6 +57,7 @@ pub async fn stock_item_create(
     minimum_price: Option<i64>,
     sub_type: Option<SubType>,
     quantity: i64,
+    is_from_order: bool,
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
@@ -68,6 +69,12 @@ pub async fn stock_item_create(
     let notify = notify.lock()?.clone();
     let wfm = wfm.lock()?.clone();
     let qf = qf.lock()?.clone();
+
+    let from = if is_from_order {
+        "manual_wfm"
+    } else {
+        "manual"
+    };
 
     let mut created_stock = CreateStockItem::new(
         wfm_url,
@@ -83,7 +90,7 @@ pub async fn stock_item_create(
         "",
         OrderType::Buy,
         vec![],
-        "manual",
+        from,
         app,
         cache,
         notify,
@@ -159,7 +166,7 @@ pub async fn stock_item_update(
 
     match StockItemMutation::update_by_id(&app.conn, new_item.id, new_item.clone()).await {
         Ok(updated) => {
-            qf.analytics().add_metric("Stock_ItemUpdate", "manual");
+            helper::add_metric("Stock_ItemUpdate", "manual");
             notify.gui().send_event_update(
                 UIEvent::UpdateStockItems,
                 UIOperationEvent::CreateOrUpdate,
@@ -192,7 +199,7 @@ pub async fn stock_item_update_bulk(
 
     match StockItemMutation::update_bulk(&app.conn, ids, minimum_price, is_hidden).await {
         Ok(items) => {
-            qf.analytics().add_metric("Stock_ItemUpdateBulk", "manual");
+            helper::add_metric("Stock_ItemUpdateBulk", "manual");
             notify.gui().send_event_update(
                 UIEvent::UpdateStockItems,
                 UIOperationEvent::Set,
@@ -221,7 +228,7 @@ pub async fn stock_item_delete_bulk(
     let wfm = wfm.lock()?.clone();
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
-    qf.analytics().add_metric("Stock_ItemDeleteBulk", "manual");
+    helper::add_metric("Stock_ItemDeleteBulk", "manual");
 
     let mut my_orders = wfm.orders().get_my_orders().await?;
     let stocks = match StockItemQuery::find_by_ids(&app.conn, ids.clone()).await {
@@ -368,7 +375,7 @@ pub async fn stock_item_delete(
     match StockItemMutation::delete_by_id(&app.conn, id).await {
         Ok(deleted) => {
             if deleted.rows_affected > 0 {
-                qf.analytics().add_metric("Stock_ItemDelete", "manual");
+                helper::add_metric("Stock_ItemDelete", "manual");
                 notify.gui().send_event_update(
                     UIEvent::UpdateStockItems,
                     UIOperationEvent::Delete,

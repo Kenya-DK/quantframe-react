@@ -1,6 +1,8 @@
 use std::sync::{Arc, Mutex};
 
-use crate::{qf_client::{client::QFClient, modules::analytics::AnalyticsModule}, utils::modules::error::AppError};
+use crate::{
+    helper, qf_client::{client::QFClient, modules::analytics::AnalyticsModule}, utils::modules::error::AppError
+};
 
 #[tauri::command]
 pub fn analytics_set_last_user_activity(
@@ -15,9 +17,7 @@ pub fn analytics_set_last_user_activity(
 pub fn analytics_send_metric(
     key: String,
     value: String,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<(), AppError> {
-    let qf = qf.lock()?;
-    qf.analytics().add_metric(&key, &value);
+    helper::add_metric(&key, &value);
     Ok(())
 }

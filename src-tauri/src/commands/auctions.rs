@@ -2,10 +2,16 @@ use serde_json::json;
 use service::{StockRivenMutation, StockRivenQuery, TransactionMutation};
 
 use crate::{
-    app::client::AppState, cache::{client::CacheClient, types::item_price_info::StockRiven}, helper, notification::client::NotifyClient, qf_client::client::QFClient, utils::{
+    app::client::AppState,
+    cache::{client::CacheClient, types::item_price_info::StockRiven},
+    helper,
+    notification::client::NotifyClient,
+    qf_client::client::QFClient,
+    utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
         modules::error::{self, AppError},
-    }, wfm_client::{client::WFMClient, enums::order_type::OrderType, types::auction::Auction}
+    },
+    wfm_client::{client::WFMClient, enums::order_type::OrderType, types::auction::Auction},
 };
 use std::sync::{Arc, Mutex};
 
@@ -27,7 +33,7 @@ pub async fn auction_refresh(
             return Err(e);
         }
     };
-    qf.analytics().add_metric("Auction_Refresh", "manual");
+    helper::add_metric("Auction_Refresh", "manual");
     notify.gui().send_event_update(
         UIEvent::UpdateAuction,
         UIOperationEvent::Set,
@@ -66,7 +72,7 @@ pub async fn auction_delete(
                     UIOperationEvent::Delete,
                     Some(json!({ "id": auction.id })),
                 );
-                qf.analytics().add_metric("Auction_Delete", "manual");
+                helper::add_metric("Auction_Delete", "manual");
             }
             Err(e) => {
                 error::create_log_file("command_auctions.log".to_string(), &e);
@@ -126,7 +132,7 @@ pub async fn auction_delete_all(
         }
     };
     let total = current_auctions.len() as i64;
-    qf.analytics().add_metric("Auction_DeleteAll", "manual");
+    helper::add_metric("Auction_DeleteAll", "manual");
     for auction in current_auctions {
         // Delete the auction form the WFM if it exists
         match wfm.auction().delete(&auction.id).await {
@@ -176,7 +182,7 @@ pub async fn auction_import(
     let cache = cache.lock()?.clone();
     let qf = qf.lock()?.clone();
     let wfm = wfm.lock()?.clone();
-    
+
     let mut riven_entry = match auction.convert_to_create_stock(bought) {
         Ok(stock) => stock,
         Err(e) => {
@@ -184,7 +190,6 @@ pub async fn auction_import(
             return Err(e);
         }
     };
-
 
     match helper::progress_stock_riven(
         &mut riven_entry,

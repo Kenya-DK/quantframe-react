@@ -422,11 +422,11 @@ impl OnTradeEvent {
                 notify
                     .gui()
                     .send_event(UIEvent::OnNotificationWarning, Some(notify_payload));
-                qf.analytics().add_metric("EE_NewTrade", "not_found");
+                helper::add_metric("EE_NewTrade", "not_found");
                 return Err(err);
             }
         };
-        qf.analytics().add_metric("EE_NewTrade", "found");
+        helper::add_metric("EE_NewTrade", "found");
 
         // Set Item Name
         notify_value["item_name"] = json!(created_stock.get_name()?);

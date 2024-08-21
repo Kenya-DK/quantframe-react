@@ -16,7 +16,7 @@ use std::{
     path::{Path, PathBuf},
     sync::{Arc, Mutex},
 };
-use tauri::api::dir;
+use tauri::{api::dir, Manager, State};
 
 use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 
@@ -31,6 +31,7 @@ use crate::{
         modules::error::AppError,
     },
     wfm_client::{client::WFMClient, enums::order_type::OrderType},
+    APP,
 };
 
 pub static APP_PATH: &str = "dev.kenya.quantframe";
@@ -43,6 +44,19 @@ pub struct ZipEntry {
     pub include_dir: bool,
 }
 
+pub fn add_metric(key: &str, value: &str) {
+    let key = key.to_string();
+    let value = value.to_string();
+    tauri::async_runtime::spawn({
+        async move {
+            // Create a new instance of the QFClient and store it in the app state
+            let qf_handle = APP.get().expect("failed to get app handle");
+            let qf_state: State<Arc<Mutex<QFClient>>> = qf_handle.state();
+            let qf = qf_state.lock().expect("failed to lock app state").clone();
+            qf.analytics().add_metric(&key, &value);
+        }
+    });
+}
 pub fn get_device_id() -> String {
     let home_dir = match tauri::api::path::home_dir() {
         Some(val) => val,
@@ -503,7 +517,7 @@ pub async fn progress_stock_item(
                         Some(json!(item)),
                     );
                 }
-                qf.analytics().add_metric("Stock_ItemSold", from);
+                add_metric("Stock_ItemSold", from);
                 response.push("Stock Item sold".to_string());
             }
             Err(e) => {
@@ -520,7 +534,7 @@ pub async fn progress_stock_item(
                     UIOperationEvent::CreateOrUpdate,
                     Some(json!(inserted)),
                 );
-                qf.analytics().add_metric("Stock_ItemCreate", from);
+                add_metric("Stock_ItemCreate", from);
             }
             Err(e) => {
                 response.push("StockDbError".to_string());
@@ -548,7 +562,7 @@ pub async fn progress_stock_item(
     {
         Ok((operation, order)) => {
             if operation == "order_deleted" && order.is_some() {
-                qf.analytics().add_metric("WFM_OrderDeleted", from);
+                add_metric("WFM_OrderDeleted", from);
                 response.push("WFMOrderDeleted".to_string());
                 notify.gui().send_event_update(
                     UIEvent::UpdateOrders,
@@ -556,7 +570,7 @@ pub async fn progress_stock_item(
                     Some(json!({ "id": order.unwrap().id })),
                 );
             } else if operation == "order_updated" {
-                qf.analytics().add_metric("WFM_OrderUpdated", from);
+                add_metric("WFM_OrderUpdated", from);
                 response.push("WFMOrderUpdated".to_string());
                 notify.gui().send_event_update(
                     UIEvent::UpdateOrders,
@@ -593,7 +607,7 @@ pub async fn progress_stock_item(
 
     match TransactionMutation::create(&app.conn, &transaction).await {
         Ok(inserted) => {
-            qf.analytics().add_metric("Transaction_ItemCreate", from);
+            add_metric("Transaction_ItemCreate", from);
             response.push("TransactionCreated".to_string());
             notify.gui().send_event_update(
                 UIEvent::UpdateTransaction,
@@ -648,7 +662,7 @@ pub async fn progress_stock_riven(
         match StockRivenMutation::delete(&app.conn, entity.stock_id.unwrap()).await {
             Ok(_) => {
                 response.push("StockRivenDeleted".to_string());
-                qf.analytics().add_metric("Stock_RivenDeleted", from);
+                add_metric("Stock_RivenDeleted", from);
                 notify.gui().send_event_update(
                     UIEvent::UpdateStockRivens,
                     UIOperationEvent::Delete,
@@ -660,7 +674,7 @@ pub async fn progress_stock_riven(
     } else if operation == OrderType::Buy {
         match StockRivenMutation::create(&app.conn, stock.clone()).await {
             Ok(inserted) => {
-                qf.analytics().add_metric("Stock_RivenCreate", from);
+                add_metric("Stock_RivenCreate", from);
                 response.push("StockRivenAdd".to_string());
                 notify.gui().send_event_update(
                     UIEvent::UpdateStockRivens,
@@ -686,7 +700,7 @@ pub async fn progress_stock_riven(
         let id = entity.wfm_order_id.clone().unwrap();
         match wfm.auction().delete(&id).await {
             Ok(updated) => {
-                qf.analytics().add_metric("WFM_RivenDeleted", from);
+                add_metric("WFM_RivenDeleted", from);
                 response.push("WFMRivenDeleted".to_string());
                 notify.gui().send_event_update(
                     UIEvent::UpdateAuction,
@@ -717,7 +731,7 @@ pub async fn progress_stock_riven(
 
     match TransactionMutation::create(&app.conn, &transaction).await {
         Ok(inserted) => {
-            qf.analytics().add_metric("Transaction_RivenCreate", from);
+            add_metric("Transaction_RivenCreate", from);
             response.push("TransactionCreated".to_string());
             notify.gui().send_event_update(
                 UIEvent::UpdateTransaction,

@@ -79,7 +79,7 @@ pub async fn debug_migrate_data_base(
     match target.as_str() {
         "all" => {
             debug.migrate_data_all(&old_con, &app.conn).await?;
-            qf.analytics().add_metric("Debug_MigrateDataBase", "all");
+            helper::add_metric("Debug_MigrateDataBase", "all");
         }
         "stock_item" => {
             debug.migrate_data_stock_item(&old_con, &app.conn).await?;
@@ -124,7 +124,7 @@ pub async fn debug_db_reset(
             TransactionMutation::delete_all(&app.conn)
                 .await
                 .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
-            qf.analytics().add_metric("Debug_DbReset", "all");
+            helper::add_metric("Debug_DbReset", "all");
             notify.gui().send_event_update(
                 crate::utils::enums::ui_events::UIEvent::UpdateStockItems,
                 UIOperationEvent::Set,
@@ -145,7 +145,7 @@ pub async fn debug_db_reset(
             StockItemMutation::delete_all(&app.conn)
                 .await
                 .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
-            qf.analytics().add_metric("Debug_DbReset", "stock_item");
+            helper::add_metric("Debug_DbReset", "stock_item");
             notify.gui().send_event_update(
                 crate::utils::enums::ui_events::UIEvent::UpdateStockItems,
                 UIOperationEvent::Set,
@@ -156,7 +156,7 @@ pub async fn debug_db_reset(
             StockRivenMutation::delete_all(&app.conn)
                 .await
                 .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
-            qf.analytics().add_metric("Debug_DbReset", "stock_riven");
+            helper::add_metric("Debug_DbReset", "stock_riven");
             notify.gui().send_event_update(
                 crate::utils::enums::ui_events::UIEvent::UpdateStockRivens,
                 UIOperationEvent::Set,
@@ -167,7 +167,7 @@ pub async fn debug_db_reset(
             TransactionMutation::delete_all(&app.conn)
                 .await
                 .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
-            qf.analytics().add_metric("Debug_DbReset", "transaction");
+            helper::add_metric("Debug_DbReset", "transaction");
             notify.gui().send_event_update(
                 crate::utils::enums::ui_events::UIEvent::UpdateTransaction,
                 UIOperationEvent::Set,

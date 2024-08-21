@@ -35,7 +35,7 @@ pub async fn stock_riven_reload(
 
     match StockRivenQuery::get_all(&app.conn).await {
         Ok(rivens) => {
-            qf.analytics().add_metric("Stock_RivenReload", "manual");
+            helper::add_metric("Stock_RivenReload", "manual");
             notify.gui().send_event_update(
                 UIEvent::UpdateStockRivens,
                 UIOperationEvent::Set,
@@ -118,7 +118,7 @@ pub async fn stock_riven_update(
             .await
         {
             Ok(updated) => {
-                qf.analytics().add_metric("WFM_RivenUpdate", "stock_riven");
+                helper::add_metric("WFM_RivenUpdate", "stock_riven");
                 notify.gui().send_event_update(
                     UIEvent::UpdateAuction,
                     UIOperationEvent::CreateOrUpdate,
@@ -134,7 +134,7 @@ pub async fn stock_riven_update(
 
     match StockRivenMutation::update_by_id(&app.conn, stock.id, stock.clone()).await {
         Ok(updated) => {
-            qf.analytics().add_metric("Stock_RivenUpdate", "manual");
+            helper::add_metric("Stock_RivenUpdate", "manual");
             notify.gui().send_event_update(
                 UIEvent::UpdateStockRivens,
                 UIOperationEvent::CreateOrUpdate,
@@ -169,7 +169,7 @@ pub async fn stock_riven_update_bulk(
             .await
         {
             Ok(updated) => {
-                qf.analytics().add_metric("Stock_RivenUpdateBulk", "manual");
+                helper::add_metric("Stock_RivenUpdateBulk", "manual");
                 notify.gui().send_event_update(
                     UIEvent::UpdateStockRivens,
                     UIOperationEvent::Set,
@@ -207,7 +207,7 @@ pub async fn stock_riven_update_bulk(
             .await
         {
             Ok(updated) => {
-                qf.analytics().add_metric("WFM_RivenUpdate", "stock_riven");
+                helper::add_metric("WFM_RivenUpdate", "stock_riven");
                 notify.gui().send_event_update(
                     UIEvent::UpdateAuction,
                     UIOperationEvent::CreateOrUpdate,
@@ -235,7 +235,7 @@ pub async fn stock_riven_delete_bulk(
     let wfm = wfm.lock()?.clone();
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
-    qf.analytics().add_metric("Stock_RivenDeleteBulk", "manual");
+    helper::add_metric("Stock_RivenDeleteBulk", "manual");
 
     let stocks = match StockRivenQuery::find_by_ids(&app.conn, ids.clone()).await {
         Ok(stocks) => stocks,
@@ -454,7 +454,7 @@ pub async fn stock_riven_delete(
         {
             Ok(auction) => {
                 if auction.is_some() {
-                    qf.analytics().add_metric("WFM_RivenDelete", "stock_riven");
+                    helper::add_metric("WFM_RivenDeleted", "stock_riven");
                     notify.gui().send_event_update(
                         UIEvent::UpdateAuction,
                         UIOperationEvent::Delete,
@@ -478,7 +478,7 @@ pub async fn stock_riven_delete(
     match StockRivenMutation::delete(&app.conn, stock_item.id).await {
         Ok(deleted) => {
             if deleted.rows_affected > 0 {
-                qf.analytics().add_metric("Stock_RivenDelete", "manual");
+                helper::add_metric("Stock_RivenDelete", "manual");
                 notify.gui().send_event_update(
                     UIEvent::UpdateStockRivens,
                     UIOperationEvent::Delete,
