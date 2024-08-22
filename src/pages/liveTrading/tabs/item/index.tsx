@@ -263,7 +263,7 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
             <Grid>
                 <Grid.Col span={8}>
                     <CreateStockItemForm disabled={createStockMutation.isPending || updateStockMutation.isPending || sellStockMutation.isPending || deleteStockMutation.isPending} onSubmit={async (item) => {
-                        createStockMutation.mutate(item);
+                        createStockMutation.mutate({ ...item, is_from_order: false });
                     }} />
                     <Group gap={"md"} mt={"md"}>
                         {Object.values(StockStatus).map((status) => (
