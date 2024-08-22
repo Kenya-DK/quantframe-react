@@ -28,7 +28,7 @@ use crate::{
     qf_client::client::QFClient,
     utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
-        modules::error::AppError,
+        modules::{error::AppError, logger},
     },
     wfm_client::{client::WFMClient, enums::order_type::OrderType},
     APP,
@@ -597,7 +597,7 @@ pub async fn progress_stock_item(
     } else {
         TransactionType::Sale
     };
-    let transaction = stock.to_transaction(
+    let mut transaction = stock.to_transaction(
         user_name,
         entity.tags.clone(),
         entity.quantity,
@@ -614,6 +614,7 @@ pub async fn progress_stock_item(
                 UIOperationEvent::CreateOrUpdate,
                 Some(json!(inserted)),
             );
+            transaction.id = inserted.id;
         }
         Err(e) => {
             response.push("TransactionDbError".to_string());
@@ -727,7 +728,8 @@ pub async fn progress_stock_riven(
     } else {
         TransactionType::Sale
     };
-    let transaction = stock.to_transaction(user_name, entity.bought.unwrap_or(0), transaction_type);
+    let mut transaction =
+        stock.to_transaction(user_name, entity.bought.unwrap_or(0), transaction_type);
 
     match TransactionMutation::create(&app.conn, &transaction).await {
         Ok(inserted) => {
@@ -738,12 +740,20 @@ pub async fn progress_stock_riven(
                 UIOperationEvent::CreateOrUpdate,
                 Some(json!(inserted)),
             );
+            transaction.id = inserted.id;
         }
         Err(e) => {
             response.push("TransactionDbError".to_string());
             return Err(AppError::new_db("StockItemCreate", e));
         }
     };
-
+    // Add the transaction to the QuantFrame analytics stars
+    match qf.transaction().create_transaction(&transaction).await {
+        Ok(_) => {}
+        Err(e) => {
+            response.push("TransactionAnalyticsError".to_string());
+            return Err(e);
+        }
+    }
     return Ok((stock, response));
 }
