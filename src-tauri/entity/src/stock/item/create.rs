@@ -43,6 +43,10 @@ pub struct CreateStockItem {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub available_sub_types: Option<SubType>,
+
+    #[serde(rename = "is_validated")]
+    #[serde(default = "bool::default")]
+    pub is_validated: bool,
 }
 
 impl CreateStockItem {
@@ -67,6 +71,7 @@ impl CreateStockItem {
             quantity,
             is_hidden,
             available_sub_types: None,
+            is_validated: false,
         }
     }
     pub fn new_valid(
@@ -94,6 +99,7 @@ impl CreateStockItem {
             quantity,
             is_hidden,
             available_sub_types: None,
+            is_validated: true,
         }
     }
 

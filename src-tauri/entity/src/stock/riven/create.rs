@@ -108,6 +108,7 @@ impl CreateStockRiven {
         bought: Option<i64>,
         rank: i64,
         order_id: Option<String>,
+        stock_id: Option<i64>,
     ) -> Self {
         CreateStockRiven {
             raw,
@@ -124,7 +125,7 @@ impl CreateStockRiven {
             minimum_price,
             bought,
             rank,
-            stock_id: None,
+            stock_id,
             wfm_order_id: order_id,
         }
     }

@@ -64,7 +64,7 @@ impl LogParser {
             qf,
             log_file: helper::get_local_data_path()
                 .join("Warframe")
-                .join("EE.log"),
+                .join("EEBG.log"),
             is_running: Arc::new(AtomicBool::new(false)),
             component: "LogParser".to_string(),
             last_file_size: Arc::new(Mutex::new(0)),
@@ -135,7 +135,7 @@ impl LogParser {
                 eyre::eyre!("Error opening log file: {}", e),
             )
         })?;
-        
+
         let metadata = file.metadata().map_err(|e| {
             AppError::new(
                 &self.component,
@@ -168,14 +168,12 @@ impl LogParser {
         for (_, line) in reader.lines().enumerate() {
             if let Ok(line) = line {
                 if self.trade_event().process_line(&line, *last_file_size)? {
-                    println!("Trade event");
                     continue;
                 }
                 if self
                     .conversation_event()
                     .process_line(&line, *last_file_size)?
                 {
-                    println!("Conversation event");
                     continue;
                 }
             }
@@ -235,7 +233,7 @@ impl LogParser {
         // Lazily initialize ItemModule if not already initialized
         if self.on_conversation_event.read().unwrap().is_none() {
             *self.on_conversation_event.write().unwrap() =
-                Some(OnConversationEvent::new(self.clone(),self.qf.clone()).clone());
+                Some(OnConversationEvent::new(self.clone()).clone());
         }
 
         // Unwrapping is safe here because we ensured the on_conversation_event is initialized

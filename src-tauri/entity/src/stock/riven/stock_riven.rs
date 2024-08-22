@@ -123,7 +123,7 @@ impl Model {
             })),
         )
     }
-    pub fn to_create(&self) -> super::create::CreateStockRiven {
+    pub fn to_create(&self, price:i64) -> super::create::CreateStockRiven {
         let rank = if self.sub_type.is_some() {
             let sub_type = self.sub_type.as_ref().unwrap();
             sub_type.rank.unwrap_or(0)
@@ -143,9 +143,10 @@ impl Model {
             self.polarity.clone(),
             self.attributes.0.clone(),
             self.minimum_price,
-            Some(self.bought),
+            Some(price),
             rank,
             self.wfm_order_id.clone(),
+            Some(self.id),
         )
     }
 }

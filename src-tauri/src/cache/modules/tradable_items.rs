@@ -97,6 +97,10 @@ impl TradableItemModule {
     ) -> Result<CreateStockItem, AppError> {
         let component = "ValidateCreateItem";
 
+        if input.is_validated {
+            return Ok(input.clone());            
+        }
+
         let item = self.get_by(&input.raw, by)?;
         if item.is_none() {
             return Err(AppError::new_with_level(

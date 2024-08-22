@@ -490,7 +490,7 @@ impl OnTradeEvent {
                     let stock = stock.unwrap();
 
                     match helper::progress_stock_riven(
-                        &mut stock.to_create(),
+                        &mut stock.to_create(trade.platinum),
                         "--weapon_by url_name --weapon_lang en --attribute_by url_name",
                         &trade.player_name,
                         OrderType::Sell,

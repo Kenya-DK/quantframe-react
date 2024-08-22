@@ -390,10 +390,7 @@ pub async fn stock_riven_sell(
     }
     let stock = stock.unwrap();
 
-    let mut entry = stock.to_create();
-    entry.bought = Some(price);
-    entry.stock_id = Some(id);
-    entry.wfm_order_id = stock.wfm_order_id.clone();
+    let mut entry = stock.to_create(price);
 
     match helper::progress_stock_riven(
         &mut entry,

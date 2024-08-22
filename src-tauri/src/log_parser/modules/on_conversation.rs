@@ -2,29 +2,24 @@ use std::sync::{Arc, Mutex};
 
 use eyre::eyre;
 
-
-
-
 use crate::{
-    helper, log_parser::client::LogParser, qf_client::client::QFClient, utils::modules::{
-            error::AppError,
-            logger,
-        }
+    helper,
+    log_parser::client::LogParser,
+    qf_client::client::QFClient,
+    utils::modules::{error::AppError, logger},
 };
 
 #[derive(Clone, Debug)]
 pub struct OnConversationEvent {
     pub client: LogParser,
-    qf: Arc<Mutex<QFClient>>,  
     component: String,
     regex: Vec<String>,
 }
 
 impl OnConversationEvent {
-    pub fn new(client: LogParser, qf: Arc<Mutex<QFClient>>) -> Self {
+    pub fn new(client: LogParser) -> Self {
         OnConversationEvent {
             client,
-            qf,
             component: "OnConversationEvent".to_string(),
             regex: vec![r"Script \[Info\]: ChatRedux\.lua: ChatRedux::AddTab: Adding tab with channel name: F(?<name>.+) to index.+".to_string()],
         }
@@ -36,7 +31,6 @@ impl OnConversationEvent {
         let component = self.get_component("ProcessLine");
         let settings = self.client.settings.lock().unwrap();
         let notify = self.client.notify.lock().unwrap();
-        let qf = self.qf.lock()?;
 
         if !line.contains("ChatRedux::AddTab: Adding tab with channel name") {
             return Ok(false);
@@ -47,16 +41,16 @@ impl OnConversationEvent {
         if found {
             let username = captures.get(0).unwrap().clone().unwrap();
             let content = settings
-            .notifications
-            .on_new_conversation
+                .notifications
+                .on_new_conversation
                 .content
                 .replace("<PLAYER_NAME>", username.as_str());
-            
+
             logger::info_con(
                 &self.get_component(&component),
                 &format!("New conversation with {}", username),
             );
-           helper::add_metric("EE_NewConversation", "");
+            helper::add_metric("EE_NewConversation", "");
             // Send a notification to the system
             if settings.notifications.on_new_conversation.system_notify
                 || settings.notifications.on_new_conversation.discord_notify

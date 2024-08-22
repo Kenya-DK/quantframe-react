@@ -190,6 +190,7 @@ impl CreateStockEntity {
                 self.bought,
                 rank,
                 None,
+                None,
             )
         }
     }
