@@ -57,7 +57,9 @@ export function OrderItem({ show_border, paperProps, order, footer, show_user }:
 				<Divider />
 				<Group align='center' grow p={3}>
 					<Group>
-						<TextTranslate size='lg' i18nKey={useTranslateFields("platinum", undefined, true)} values={{ platinum: order.platinum }} />
+						<TextTranslate textProps={{
+							span: true,
+						}} size='lg' i18nKey={useTranslateFields("platinum", undefined, true)} values={{ platinum: order.platinum }} />
 					</Group>
 					<Group gap={"sm"} justify="flex-end">
 						{footer}
