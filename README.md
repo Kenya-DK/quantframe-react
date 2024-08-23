@@ -21,7 +21,7 @@ Inspired by [Akmayer's Warframe-Algo-Trader](https://github.com/akmayer/Warframe
 
 ## Installation
 ### Download installer
-You can download the latest release from [here](https://github.com/Kenya-DK/quantframe-react)
+You can download the latest release from [here](https://github.com/Kenya-DK/quantframe-react/releases)
 
 ### OR Build it from source
 If you prefer to build it locally for whatever reason, heres what you need:
