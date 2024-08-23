@@ -36,7 +36,7 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
     const [pageSize, setPageSize] = useState(pageSizes[4]);
     const [rows, setRows] = useState<StockItem[]>([]);
     const [totalRecords, setTotalRecords] = useState<number>(0);
-    const [sortStatus, setSortStatus] = useState<DataTableSortStatus<StockItem>>({ columnAccessor: 'name', direction: 'desc' });
+    const [sortStatus, setSortStatus] = useState<DataTableSortStatus<StockItem>>({ columnAccessor: 'item_name', direction: 'desc' });
     const [selectedRecords, setSelectedRecords] = useState<StockItem[]>([]);
 
     const [query, setQuery] = useState<string>("");
@@ -65,6 +65,7 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
         if (!items)
             return;
 
+
         let rivensFilter = items;
 
         setStatusCount(Object.values(StockStatus).reduce((acc, status) => {
@@ -84,7 +85,8 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
             direction: sortStatus.direction
         }], rivensFilter);
 
-
+        const ids = items.map((x) => x.id);
+        console.log("Updating Database Rows", ids);
 
         rivensFilter = paginate(rivensFilter, page, pageSize);
         setRows(rivensFilter);

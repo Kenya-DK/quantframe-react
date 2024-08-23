@@ -37,7 +37,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
     const [pageSize, setPageSize] = useState(pageSizes[4]);
     const [rows, setRows] = useState<StockRiven[]>([]);
     const [totalRecords, setTotalRecords] = useState<number>(0);
-    const [sortStatus, setSortStatus] = useState<DataTableSortStatus<StockRiven>>({ columnAccessor: 'name', direction: 'desc' });
+    const [sortStatus, setSortStatus] = useState<DataTableSortStatus<StockRiven>>({ columnAccessor: 'weapon_name', direction: 'desc' });
     const [selectedRecords, setSelectedRecords] = useState<StockRiven[]>([]);
 
     const [query, setQuery] = useState<string>("");
