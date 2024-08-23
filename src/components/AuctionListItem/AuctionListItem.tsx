@@ -67,7 +67,7 @@ export function AuctionListItem({ overrideMode, show_border, show_image, header,
 							}} />
 						</Group>
 						{compacted && (
-							<TextTranslate i18nKey={useTranslateBase("footer", undefined, true)} values={{
+							<TextTranslate i18nKey={useTranslateBase("footer", undefined, true)} textProps={{ span: true }} values={{
 								mastery_level: auction.item.mastery_level,
 								mod_rank: auction.item.mod_rank,
 								re_rolls: auction.item.re_rolls,
@@ -101,22 +101,22 @@ export function AuctionListItem({ overrideMode, show_border, show_image, header,
 								}
 								{auction.is_direct_sell ?
 									(
-										<TextTranslate i18nKey={useTranslateBase("selling_price", undefined, true)} values={{
+										<TextTranslate textProps={{ span: true }} i18nKey={useTranslateBase("selling_price", undefined, true)} values={{
 											price: auction.starting_price,
 										}} />
 									) : (
 										<Group>
 											<Box style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-												<TextTranslate i18nKey={useTranslateBase("buyout_price", undefined, true)} values={{
+												<TextTranslate textProps={{ span: true }} i18nKey={useTranslateBase("buyout_price", undefined, true)} values={{
 													price: auction.buyout_price,
 												}} />
-												<TextTranslate i18nKey={useTranslateBase("starting_price", undefined, true)} values={{
+												<TextTranslate textProps={{ span: true }} i18nKey={useTranslateBase("starting_price", undefined, true)} values={{
 													price: auction.starting_price,
 												}} />
 											</Box>
 											<Group>
 												{auction.top_bid ? (
-													<TextTranslate i18nKey={useTranslateBase("top_bid", undefined, true)} values={{
+													<TextTranslate textProps={{ span: true }} i18nKey={useTranslateBase("top_bid", undefined, true)} values={{
 														bid: auction.top_bid,
 													}} />
 												) : (
@@ -129,7 +129,7 @@ export function AuctionListItem({ overrideMode, show_border, show_image, header,
 						</Grid>
 					}
 					{!compacted && (
-						<TextTranslate i18nKey={useTranslateBase("footer", undefined, true)} values={{
+						<TextTranslate textProps={{ span: true }} i18nKey={useTranslateBase("footer", undefined, true)} values={{
 							mastery_level: auction.item.mastery_level,
 							mod_rank: auction.item.mod_rank,
 							re_rolls: auction.item.re_rolls,
