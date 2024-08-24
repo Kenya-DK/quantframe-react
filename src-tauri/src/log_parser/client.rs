@@ -64,7 +64,7 @@ impl LogParser {
             qf,
             log_file: helper::get_local_data_path()
                 .join("Warframe")
-                .join("EEBG.log"),
+                .join("EE.log"),
             is_running: Arc::new(AtomicBool::new(false)),
             component: "LogParser".to_string(),
             last_file_size: Arc::new(Mutex::new(0)),
