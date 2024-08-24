@@ -92,7 +92,7 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
 
 		const weapon = weapons?.find((item) => item.wfm_url_name == form.values.wfm_weapon_url);
 
-		const avAttributes = attributes.filter((item) => !item.exclusive_to || item.exclusive_to.includes(weapon?.wfm_group || ""));
+		const avAttributes = attributes.filter((item) => !item.exclusive_to || item.exclusive_to.includes(weapon?.riven_type || ""));
 		setAvailableAttributes(avAttributes);
 	}, [form.values, attributes]);
 	useEffect(() => {
@@ -165,7 +165,7 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
 							/>
 						</Group>
 						<CreateRivenAttributes attributes={availableAttributes} value={form.values.attributes || []} onSubmit={(values) => form.setFieldValue('attributes', values)} />
-						{form.errors.attributes && <Text color="red">{form.errors.attributes}</Text>}
+						{form.errors.attributes && <Text c="red">{form.errors.attributes}</Text>}
 						<Group grow>
 							<Select
 								required

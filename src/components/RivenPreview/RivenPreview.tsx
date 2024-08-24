@@ -132,7 +132,7 @@ export function RivenPreview({ paperProps, riven }: RivenPreviewProps) {
 			</Box>
 			<Collapse in={hovered} className={classes.hover}>
 				<Text size="sm" c="gray" className={classes.hover_text}>
-					<pre>					</pre>
+
 				</Text>
 			</Collapse>
 		</Box>

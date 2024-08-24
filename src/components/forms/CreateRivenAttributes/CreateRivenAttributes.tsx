@@ -34,26 +34,24 @@ export function CreateRivenAttribute({ availableAttributes, onChange, value }: C
 
 	return (
 		<Box w={"100%"} mt={"md"}>
-			<form>
-				<Group gap={"xs"}>
-					<Select
-						searchable
-						clearable
-						limit={5}
-						w={"80%"}
-						value={form.values.url_name || ""}
-						onChange={(event) => form.setFieldValue('url_name', event || "")}
-						data={getAvailableAttributes()}
-					/>
-					<NumberInput
-						w={"15%"}
-						value={form.values.value || 0}
-						onChange={(event) => form.setFieldValue('value', Number(event))}
-						error={form.errors.value && useTranslateFormFields('value.error')}
-						radius="md"
-					/>
-				</Group>
-			</form>
+			<Group gap={"xs"}>
+				<Select
+					searchable
+					clearable
+					limit={5}
+					w={"80%"}
+					value={form.values.url_name || ""}
+					onChange={(event) => form.setFieldValue('url_name', event || "")}
+					data={getAvailableAttributes()}
+				/>
+				<NumberInput
+					w={"15%"}
+					value={form.values.value || 0}
+					onChange={(event) => form.setFieldValue('value', Number(event))}
+					error={form.errors.value && useTranslateFormFields('value.error')}
+					radius="md"
+				/>
+			</Group>
 		</Box>
 	);
 }
@@ -114,7 +112,6 @@ export function CreateRivenAttributes({ attributes, onSubmit }: CreateRivenAttri
 			if (attr && !avAttributes.includes(attr))
 				avAttributes.push(attr);
 		}
-
 		return avAttributes;
 	}
 
