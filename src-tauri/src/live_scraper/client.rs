@@ -3,13 +3,25 @@ use std::{
         atomic::{AtomicBool, Ordering},
         Arc, Mutex, RwLock,
     },
-    time::Duration,
+    time::{Duration, Instant},
 };
 
 use serde_json::json;
 
 use crate::{
-    app::client::AppState, auth::AuthState, cache::client::CacheClient, enums::{order_mode::OrderMode, stock_mode::StockMode}, logger, notification::client::NotifyClient, qf_client::client::QFClient, settings::SettingsState, utils::{enums::{log_level::LogLevel, ui_events::UIEvent}, modules::error::AppError}, wfm_client::client::WFMClient
+    app::client::AppState,
+    auth::AuthState,
+    cache::client::CacheClient,
+    enums::{order_mode::OrderMode, stock_mode::StockMode},
+    logger,
+    notification::client::NotifyClient,
+    qf_client::client::QFClient,
+    settings::SettingsState,
+    utils::{
+        enums::{log_level::LogLevel, ui_events::UIEvent},
+        modules::error::AppError,
+    },
+    wfm_client::client::WFMClient,
 };
 
 use super::modules::{item::ItemModule, riven::RivenModule};
@@ -125,17 +137,18 @@ impl LiveScraperClient {
                 }
             }
 
-            let riven_interval = 30;
-            let mut current_riven_interval = riven_interval.clone();
+            // Start Riven last update timer
+            let riven_interval = 1; // 5 min
+            let mut last_riven_update = Instant::now() - Duration::from_secs(riven_interval + 20);
 
             while is_running.load(Ordering::SeqCst) && forced_stop.load(Ordering::SeqCst) {
                 settings = scraper.settings.lock().unwrap().clone();
 
                 if (settings.live_scraper.stock_mode == StockMode::Riven
                     || settings.live_scraper.stock_mode == StockMode::All)
-                    && current_riven_interval >= riven_interval
+                    && last_riven_update.elapsed() > Duration::from_secs(riven_interval)
                 {
-                    current_riven_interval = 0;
+                    last_riven_update = Instant::now();
                     match scraper.riven().check_stock().await {
                         Ok(_) => {}
                         Err(e) => scraper.report_error(&e),
@@ -150,7 +163,6 @@ impl LiveScraperClient {
                         Err(e) => scraper.report_error(&e),
                     }
                 }
-                current_riven_interval += 1;
                 tokio::time::sleep(Duration::from_secs(1)).await;
             }
             logger::info_con(&scraper.component, "Loop live scraper is stopped");

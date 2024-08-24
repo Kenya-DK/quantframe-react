@@ -318,21 +318,28 @@ impl RivenModule {
                     } else if auction.starting_price != post_price as i64
                         || stock_riven.comment.clone() != auction.note
                     {
-                        wfm.auction()
-                            .update(
-                                auction.id.as_str(),
-                                post_price as i32,
-                                0,
-                                &stock_riven.comment.clone(),
-                                post_price as i32,
-                                true,
-                            )
-                            .await?;
-                        // Send GUI Update.
-                        self.send_auction_update(
-                            UIOperationEvent::CreateOrUpdate,
-                            json!(auction),
-                        );
+                        match wfm.auction()
+                        .update(
+                            auction.id.as_str(),
+                            post_price as i32,
+                            0,
+                            &stock_riven.comment.clone(),
+                            post_price as i32,
+                            true,
+                        )
+                        .await
+                        {
+                            Ok(a) => {
+                                // Send GUI Update.
+                                self.send_auction_update(
+                                    UIOperationEvent::CreateOrUpdate,
+                                    json!(a),
+                                );
+                            }
+                            Err(e) => { return Err(e); }
+                            
+                        }
+                        
                     }
                 }
                 None => {

@@ -83,6 +83,9 @@ impl AppError {
                 if content["email"].is_string() {
                     content["email"] = json!("********");
                 }
+                if content["check_code"].is_string() {
+                    content["check_code"] = json!("********");
+                }
                 content.clone()
             }
             None => json!({}),
