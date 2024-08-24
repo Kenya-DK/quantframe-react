@@ -39,6 +39,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
     const [totalRecords, setTotalRecords] = useState<number>(0);
     const [sortStatus, setSortStatus] = useState<DataTableSortStatus<StockRiven>>({ columnAccessor: 'weapon_name', direction: 'desc' });
     const [selectedRecords, setSelectedRecords] = useState<StockRiven[]>([]);
+    const [formattedRivens, setFormattedRivens] = useState<StockRiven[]>([]);
 
     const [query, setQuery] = useState<string>("");
     const [filterStatus, setFilterStatus] = useState<StockStatus | undefined>(undefined);
@@ -62,10 +63,10 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
 
     // Update Database Rows
     useEffect(() => {
-        if (!rivens)
+        if (!formattedRivens)
             return;
 
-        let rivensFilter = rivens;
+        let rivensFilter = formattedRivens;
 
         setStatusCount(Object.values(StockStatus).reduce((acc, status) => {
             acc[status] = rivensFilter.reverse().filter((item) => item.status === status).length;
@@ -88,7 +89,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
 
         rivensFilter = paginate(rivensFilter, page, pageSize);
         setRows(rivensFilter);
-    }, [rivens, query, pageSize, page, sortStatus, filterStatus])
+    }, [formattedRivens, query, pageSize, page, sortStatus, filterStatus])
 
     useEffect(() => {
         setSelectedRecords([]);
@@ -114,6 +115,21 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
             { label: useTranslateSegments("listed"), count: totalListedPrice, part: listedPercentage, color: getCssVariable("--positive-value") },
             { label: useTranslateSegments("profit"), count: totalProfit, part: profitPercentage, color: getCssVariable("--profit-value") },
         ]);
+
+        const SetAttribute = async () => {
+            const items = await api.cache.getRivenAttributes();
+            const map: { [key: string]: string } = {};
+            items.forEach((item) => {
+                map[item.url_name] = item.effect;
+            });
+            let formatted = rivens.map((row) => {
+                row.attributes = row.attributes.map((attribute) => ({ ...attribute, effect: map[attribute.url_name] || attribute.effect }));
+                return row;
+            });
+            console.log("Formatted Rivens", formatted);
+            setFormattedRivens(formatted);
+        }
+        SetAttribute();
     }, [rivens])
     // Functions
     const CreateWTSMessages = async (items: StockRiven[]) => {
@@ -478,7 +494,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                         render: ({ attributes }) => (
                             <Group gap={"sm"} justify="flex-start">
                                 {attributes.map((attribute, index) => (
-                                    <RivenAttributeCom key={index} value={attribute} />
+                                    <RivenAttributeCom key={index} value={{ ...attribute }} />
                                 ))}
                             </Group>
                         ),

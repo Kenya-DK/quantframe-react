@@ -18,6 +18,7 @@ export function RivenAttributeCom({ value }: RivenAttributeComProps) {
   const { data } = useQuery({
     queryKey: ['cache_riven_attributes'],
     queryFn: () => api.cache.getRivenAttributes(),
+    enabled: !value.effect
   })
 
   // Set name map
@@ -38,7 +39,7 @@ export function RivenAttributeCom({ value }: RivenAttributeComProps) {
   return (
     <Box data-positive={value.positive} className={classes.root}>
       <TextTranslate color={value.positive ? "green.9" : "red.7"} i18nKey={useTranslateRivenAttribute("effect", undefined, true)} values={{
-        name: nameMap[value.url_name],
+        name: nameMap[value.url_name] || value.effect || value.url_name,
         value: value.value
       }} />
     </Box>

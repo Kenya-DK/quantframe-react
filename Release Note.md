@@ -1,3 +1,15 @@
+# Quantframe v1.2.4 (Release Date)
+
+## Overview
+Total rewrite of the UI and the backend.
+Note: The database was upgrade to V2
+So all your data needs to be migrated, this be be done in the Debug Tab and under the migrate tab.
+
+## Fix's
+- 🛠️ Some attributes was missing form the create riven.
+- 🛠️ A bug in migrate dataBase.
+
+
 # Quantframe v1.2.3 (Release Date)
 
 ## Overview

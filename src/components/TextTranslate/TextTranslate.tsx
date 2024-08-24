@@ -15,7 +15,6 @@ export type TextTranslateProps = {
 	textProps?: TextProps;
 }
 export function TextTranslate({ textProps, style, size, color, i18nKey, values, components, content }: TextTranslateProps) {
-
 	return (
 		<Text {...textProps} style={{ ...style }} size={size ? size : "sm"} c={color ? color : "gray.6"}>
 			<Trans
