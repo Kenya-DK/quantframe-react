@@ -14,8 +14,9 @@ export type SearchFieldProps = {
   rightSection?: React.ReactNode;
   rightSectionWidth?: number;
   filter?: React.ReactNode;
+  onFilterToggle?: (open: boolean) => void;
 }
-export function SearchField({ value, filter, description, onSearch, onCreate, onChange, rightSection, rightSectionWidth }: SearchFieldProps) {
+export function SearchField({ value, filter, description, onSearch, onCreate, onChange, rightSection, onFilterToggle, rightSectionWidth }: SearchFieldProps) {
   // States
   const [openFilter, setOpenFilter] = useToggle();
   const [sectionWidth, setSectionWidth] = useState(115);
@@ -36,6 +37,11 @@ export function SearchField({ value, filter, description, onSearch, onCreate, on
       width += buttonWidth;
     setSectionWidth(width);
   }, [onChange, onSearch, onCreate, filter]);
+
+  useEffect(() => {
+    if (onFilterToggle)
+      onFilterToggle(openFilter);
+  }, [openFilter]);
 
   return (
     <Box>
@@ -85,11 +91,9 @@ export function SearchField({ value, filter, description, onSearch, onCreate, on
         }
 
       />
-      {openFilter && (
-        <Collapse in={openFilter}>
-          {filter}
-        </Collapse>
-      )}
+      <Collapse in={openFilter}>
+        {filter}
+      </Collapse>
     </Box>
   );
 }
