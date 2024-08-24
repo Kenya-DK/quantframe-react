@@ -20,7 +20,6 @@ pub struct Model {
     pub price: f64,
     pub minium_price: Option<i32>,
     pub listed_price: Option<i32>,
-    pub price_history: PriceHistoryVec,
     pub owned: i32,
     pub hidden: bool,
     pub status: String,

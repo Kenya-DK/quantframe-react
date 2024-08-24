@@ -21,7 +21,7 @@ export function MigrateCard() {
 		onSuccess: () => {
 			notifications.show({ title: useTranslateSuccess("migrate.title"), message: useTranslateSuccess("migrate.message"), color: "green.7" });
 		},
-		onError: () => notifications.show({ title: useTranslateErrors("migrate.title"), message: useTranslateErrors("migrate.message"), color: "green.7" })
+		onError: () => notifications.show({ title: useTranslateErrors("migrate.title"), message: useTranslateErrors("migrate.message"), color: "red.7" })
 	})
 
 	return (

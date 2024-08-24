@@ -25,11 +25,8 @@ pub struct Model {
     pub price: f64,
     pub minium_price: Option<i32>,
     pub listed_price: Option<i32>,
-    pub price_history: PriceHistoryVec,
     pub private: bool,
     pub status: String,
-    pub comment: Option<String>,
-    pub created: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
