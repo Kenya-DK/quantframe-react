@@ -10,7 +10,7 @@ So all your data needs to be migrated, this be be done in the Debug Tab and unde
 - 🛠️ A bug in migrate dataBase.
 - 🛠️ Fix a bug in export logs.
 - 🛠️ Fix some items not sowing in select item.
-- 🛠️ Fix min profix.
+- 🛠️ Fix min profit.
 
 ## Features
 - ✅ Add Import Riven from wfm auctions

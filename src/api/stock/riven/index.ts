@@ -5,7 +5,7 @@ export class StockRivenModule {
   constructor(private readonly client: TauriClient) { }
 
   async reload(): Promise<void> {
-    const [err] = await this.client.sendInvoke<void>('stock_riven_reload');
+    await this.client.sendInvoke<void>('stock_riven_reload');
   }
 
 

@@ -58,7 +58,7 @@ impl QFClient {
         QFClient {
             endpoint: "https://api.quantframe.app/".to_string(),
             endpoint_dev: "http://localhost:6969/".to_string(),
-            is_dev: true,
+            is_dev: false,
             limiter: Arc::new(tokio::sync::Mutex::new(RateLimiter::new(
                 3.0,
                 Duration::new(1, 0),
