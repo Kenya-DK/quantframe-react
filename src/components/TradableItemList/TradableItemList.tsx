@@ -9,6 +9,7 @@ import { SearchField } from '@components/SearchField';
 import { ActionWithTooltip } from '@components/ActionWithTooltip';
 import { faAdd } from '@fortawesome/free-solid-svg-icons';
 import { sortArray } from '@utils/sorting.helper';
+import classes from './TradableItemList.module.css';
 
 export type TradableItemListProps = {
 	availableItems: CacheTradableItem[];
@@ -25,6 +26,7 @@ export function TradableItemList({ onAddItem, onAddAll, availableItems }: Tradab
 	const [rows, setRows] = useState<CacheTradableItem[]>([]);
 	const [totalRecords, setTotalRecords] = useState<number>(0);
 	const [sortStatus, setSortStatus] = useState<DataTableSortStatus<CacheTradableItem>>({ columnAccessor: 'name', direction: 'desc' });
+	const [is_filter_open, setFilterOpen] = useState(false);
 
 	// Translate general
 	const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateComponent(`tradableItem_list.${key}`, { ...context }, i18Key)
@@ -159,6 +161,7 @@ export function TradableItemList({ onAddItem, onAddAll, availableItems }: Tradab
 							</Grid>
 						</Paper>
 					}
+					onFilterToggle={(open) => setFilterOpen(open)}
 					rightSectionWidth={75}
 					rightSection={
 						<Group gap={5}>
@@ -177,44 +180,44 @@ export function TradableItemList({ onAddItem, onAddAll, availableItems }: Tradab
 					}
 				/>
 			</Box>
-			<DataTable
-				height={"50vh"}
-				mt={"md"}
-				records={rows}
-				totalRecords={totalRecords}
-				withTableBorder
-				withColumnBorders
-				page={page}
-				recordsPerPage={pageSize}
-				idAccessor={"wfm_id"}
-				onPageChange={(p) => setPage(p)}
-				recordsPerPageOptions={pageSizes}
-				onRecordsPerPageChange={setPageSize}
-				sortStatus={sortStatus}
-				onSortStatusChange={setSortStatus}
-				onRowClick={(row) => {
-					if (onAddItem)
-						onAddItem(row.record);
-				}}
-				// define columns
-				columns={[
-					{
-						accessor: 'name',
-						title: useTranslateDataGridColumns('name'),
-						sortable: true,
-					},
-					{
-						accessor: 'trade_tax',
-						title: useTranslateDataGridColumns('trade_tax'),
-						sortable: true,
-					},
-					{
-						accessor: 'mr_requirement',
-						title: useTranslateDataGridColumns('mr_requirement'),
-						sortable: true,
-					}
-				]}
-			/>
+			<Box mt={"md"} className={classes.dataTable} data-filter={is_filter_open}>
+				<DataTable
+					records={rows}
+					totalRecords={totalRecords}
+					withTableBorder
+					withColumnBorders
+					page={page}
+					recordsPerPage={pageSize}
+					idAccessor={"wfm_id"}
+					onPageChange={(p) => setPage(p)}
+					recordsPerPageOptions={pageSizes}
+					onRecordsPerPageChange={setPageSize}
+					sortStatus={sortStatus}
+					onSortStatusChange={setSortStatus}
+					onRowClick={(row) => {
+						if (onAddItem)
+							onAddItem(row.record);
+					}}
+					// define columns
+					columns={[
+						{
+							accessor: 'name',
+							title: useTranslateDataGridColumns('name'),
+							sortable: true,
+						},
+						{
+							accessor: 'trade_tax',
+							title: useTranslateDataGridColumns('trade_tax'),
+							sortable: true,
+						},
+						{
+							accessor: 'mr_requirement',
+							title: useTranslateDataGridColumns('mr_requirement'),
+							sortable: true,
+						}
+					]}
+				/>
+			</Box>
 		</Box>
 	);
 }
