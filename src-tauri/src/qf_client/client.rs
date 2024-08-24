@@ -22,7 +22,8 @@ use crate::{
 };
 
 use super::modules::{
-    analytics::AnalyticsModule, auth::AuthModule, cache::CacheModule, price_scraper::PriceScraperModule, transaction::TransactionModule
+    analytics::AnalyticsModule, auth::AuthModule, cache::CacheModule,
+    price_scraper::PriceScraperModule, transaction::TransactionModule,
 };
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -58,7 +59,7 @@ impl QFClient {
         QFClient {
             endpoint: "https://api.quantframe.app/".to_string(),
             endpoint_dev: "http://localhost:6969/".to_string(),
-            is_dev: false,
+            is_dev: true,
             limiter: Arc::new(tokio::sync::Mutex::new(RateLimiter::new(
                 3.0,
                 Duration::new(1, 0),
@@ -268,10 +269,7 @@ impl QFClient {
             .await?)
     }
 
-    pub async fn delete<T: DeserializeOwned>(
-        &self,
-        url: &str,
-    ) -> Result<ApiResult<T>, AppError> {
+    pub async fn delete<T: DeserializeOwned>(&self, url: &str) -> Result<ApiResult<T>, AppError> {
         Ok(self.send_request(Method::DELETE, url, None, false).await?)
     }
     pub async fn put<T: DeserializeOwned>(
