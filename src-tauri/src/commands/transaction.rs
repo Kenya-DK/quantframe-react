@@ -25,8 +25,7 @@ pub async fn transaction_reload(
 
     match TransactionQuery::get_all(&app.conn).await {
         Ok(transactions) => {
-            qf.analytics()
-                .add_metric("Transaction_Reload", "manual");
+            qf.analytics().add_metric("Transaction_Reload", "manual");
             notify.gui().send_event_update(
                 UIEvent::UpdateTransaction,
                 UIOperationEvent::Set,
@@ -35,7 +34,7 @@ pub async fn transaction_reload(
         }
         Err(e) => {
             let error: AppError = AppError::new_db("TransactionQuery::reload", e);
-            error::create_log_file("command.log".to_string(), &error);
+            error::create_log_file("transaction_reload.log".to_string(), &error);
             return Err(error);
         }
     };
@@ -52,7 +51,7 @@ pub async fn transaction_get_all(
         }
         Err(e) => {
             let error: AppError = AppError::new_db("TransactionQuery::get_all", e);
-            error::create_log_file("command.log".to_string(), &error);
+            error::create_log_file("transaction_get_all.log".to_string(), &error);
             return Err(error);
         }
     };
@@ -100,8 +99,7 @@ pub async fn transaction_update(
 
     match TransactionMutation::update_by_id(&app.conn, id, new_item.clone()).await {
         Ok(updated) => {
-           qf.analytics()
-                .add_metric("Transaction_Update", "manual");
+            qf.analytics().add_metric("Transaction_Update", "manual");
             notify.gui().send_event_update(
                 UIEvent::UpdateTransaction,
                 UIOperationEvent::CreateOrUpdate,
@@ -110,10 +108,17 @@ pub async fn transaction_update(
         }
         Err(e) => {
             let error: AppError = AppError::new_db("TransactionQuery::get_all", e);
-            error::create_log_file("command.log".to_string(), &error);
+            error::create_log_file("transaction_update.log".to_string(), &error);
             return Err(error);
         }
     };
+    match qf.transaction().update_transaction(&new_item).await {
+        Ok(_) => (),
+        Err(e) => {
+            error::create_log_file("transaction_update.log".to_string(), &e);
+            return Err(e);
+        }
+    }
     Ok(new_item)
 }
 
@@ -126,12 +131,11 @@ pub async fn transaction_delete(
 ) -> Result<(), AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
-    let qf = qf.lock()?.clone();
+    let qf: QFClient = qf.lock()?.clone();
     match TransactionMutation::delete_by_id(&app.conn, id).await {
         Ok(deleted) => {
             if deleted.rows_affected > 0 {
-                qf.analytics()
-                    .add_metric("Transaction_Delete", "manual");
+                qf.analytics().add_metric("Transaction_Delete", "manual");
                 notify.gui().send_event_update(
                     UIEvent::UpdateTransaction,
                     UIOperationEvent::Delete,
@@ -141,9 +145,17 @@ pub async fn transaction_delete(
         }
         Err(e) => {
             let error: AppError = AppError::new_db("TransactionMutation::delete", e);
-            error::create_log_file("command.log".to_string(), &error);
+            error::create_log_file("transaction_delete.log".to_string(), &error);
             return Err(error);
         }
     };
+
+    match qf.transaction().delete_transaction(id).await {
+        Ok(_) => (),
+        Err(e) => {
+            error::create_log_file("transaction_delete.log".to_string(), &e);
+            return Err(e);
+        }
+    }
     Ok(())
 }
