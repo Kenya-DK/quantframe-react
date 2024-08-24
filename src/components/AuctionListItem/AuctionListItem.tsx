@@ -63,7 +63,7 @@ export function AuctionListItem({ overrideMode, show_border, show_image, header,
 								fs: "lg",
 							}} color='gray.4' i18nKey={useTranslateBase("weapon_name", undefined, true)} values={{
 								weapon: weapon?.name || "",
-								mod_name: auction.item.name
+								mod_name: auction.item?.name || "Unknown",
 							}} />
 						</Group>
 						{compacted && (
