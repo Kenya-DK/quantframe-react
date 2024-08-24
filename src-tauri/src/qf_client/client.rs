@@ -268,6 +268,12 @@ impl QFClient {
             .await?)
     }
 
+    pub async fn delete<T: DeserializeOwned>(
+        &self,
+        url: &str,
+    ) -> Result<ApiResult<T>, AppError> {
+        Ok(self.send_request(Method::DELETE, url, None, false).await?)
+    }
     pub async fn put<T: DeserializeOwned>(
         &self,
         url: &str,
