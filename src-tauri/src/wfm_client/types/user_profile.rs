@@ -66,5 +66,5 @@ pub struct PatreonProfile {
     #[serde(rename = "subscription")]
     pub subscription: bool,
     #[serde(rename = "patreon_badge")]
-    pub patreon_badge: String,
+    pub patreon_badge: Option<String>
 }
