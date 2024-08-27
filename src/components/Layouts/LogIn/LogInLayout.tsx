@@ -2,7 +2,7 @@ import { AppShell, Indicator } from "@mantine/core";
 import classes from "./LogInLayout.module.css";
 import { Outlet, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDesktop, faEnvelope, faGlobe, faHome, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import { faBug, faDesktop, faEnvelope, faGlobe, faHome, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
 import { useAppContext } from "@contexts/app.context";
 import { useChatContext } from "@contexts/chat.context";
@@ -35,6 +35,7 @@ export function LogInLayout() {
     // { link: "statistics", icon: <FontAwesomeIcon icon={faChartSimple} />, label: useTranslate("statistics") },
     { align: 'top', id: "warframe_market", link: "warframe-market", icon: <SvgIcon svgProp={{ width: 32, height: 32, fill: "#d5d7e0" }} iconType={SvgType.Default} iconName={"wfm_logo"} />, label: useTranslateNavBar("warframe_market"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
     { align: 'top', id: "debug", link: "debug", icon: <FontAwesomeIcon icon={faDesktop} />, label: useTranslateNavBar("debug"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
+    { align: 'top', id: "test", link: "test", hide: !import.meta.env.DEV, icon: <FontAwesomeIcon icon={faBug} color="red" />, label: useTranslateNavBar("test"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
     { align: 'bottom', id: "nav_about", link: "about", icon: <FontAwesomeIcon icon={faInfoCircle} />, label: useTranslateNavBar("about"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
   ];
   // Effects

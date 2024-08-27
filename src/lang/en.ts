@@ -639,6 +639,7 @@ export const en = {
       effect: "{{value}} {{name}}",
     },
     tradableItem_list: {
+      pagination: "{{start}} - {{end}} / {{totalRecords}}",
       fields: {
         trade_tax: {
           label: "Trade Tax Range {{min}} - {{max}}",
@@ -753,6 +754,7 @@ export const en = {
           warframe_market: "Warframe Market",
           debug: "Debug",
           about: "About",
+          test: "Test",
         },
       },
     },
@@ -771,6 +773,7 @@ export const en = {
         underpriced_delete: "Delete Underpriced Item <red>{{name}}</red>",
         created: "Created Buy Order for <blue>{{name}}</blue> at <blue>{{price}}</blue> platinum potential profit <blue>{{profit}}</blue> ",
         checking_item: "Checking Item <blue>{{name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        no_data: "<dark_red>No data found for item {{name}} {{current}}/{{total}}</dark_red>",
       },
       riven: {
         stating: "Starting Riven Trading",

@@ -10,6 +10,7 @@ export type NavbarLinkProps = {
   active?: boolean;
   align?: string;
   web?: boolean;
+  hide?: boolean;
   onClick?(e: NavbarLinkProps): void;
 }
 
@@ -35,7 +36,7 @@ export function NavbarMinimalColored({ links }: NavbarMinimalColoredProps) {
   const GetActiveLinkByAlign = (align: 'top' | 'bottom') => {
     if (!links) return <></>;
 
-    return links.filter((link) => link.align == align).map((link) => (
+    return links.filter((link) => link.align == align && !link.hide).map((link) => (
       <NavbarLink
         {...link}
         key={link.label}

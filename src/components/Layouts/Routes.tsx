@@ -31,6 +31,9 @@ import PBanned from '@pages/banned'
 // Banned Routes
 import PAbout from '@pages/about'
 
+// Banned Routes
+import PTest from '@pages/test'
+
 // Control Routes
 import { LiveTradingControl } from '../LiveTradingControl'
 
@@ -57,6 +60,9 @@ export function AppRoutes() {
             </Route>
             <Route path="about" >
               <Route index element={<PAbout />} />
+            </Route>
+            <Route path="test" >
+              <Route index element={<PTest />} />
             </Route>
           </Route>
         </Route>
