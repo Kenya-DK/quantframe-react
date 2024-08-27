@@ -1,9 +1,8 @@
 import { useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { paginate, getCssVariable, GetSubTypeDisplay, CreateTradeMessage } from "@utils/helper";
 import { useEffect, useState } from "react";
-import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { CreateStockItem, StockItem, StockStatus, UpdateStockItem, SellStockItem } from "@api/types";
-import { Box, Grid, Group, NumberFormatter, Text } from "@mantine/core";
+import { Box, Checkbox, Divider, Grid, Group, NumberFormatter, Pagination, ScrollArea, Table, Text } from "@mantine/core";
 import { useMutation } from "@tanstack/react-query";
 import api from "@api/index";
 import { notifications } from "@mantine/notifications";
@@ -15,14 +14,12 @@ import { ColorInfo } from "@components/ColorInfo";
 import { StatsWithSegments } from "@components/StatsWithSegments";
 import { ActionWithTooltip } from "@components/ActionWithTooltip";
 import { ButtonInterval } from "@components/ButtonInterval";
-import { Loading } from "@components/Loading";
 import { SearchField } from "@components/SearchField";
 import { TextTranslate } from "@components/TextTranslate";
 import { UpdateItemBulk } from "@components/Forms/UpdateItemBulk";
 import { CreateStockItemForm } from "@components/Forms/CreateStockItem";
 import { useLiveScraperContext } from "@contexts/liveScraper.context";
 import { useStockContextContext } from "@contexts/stock.context";
-import { sortArray } from "@utils/sorting.helper";
 interface StockItemPanelProps {
 }
 export const StockItemPanel = ({ }: StockItemPanelProps) => {
@@ -33,10 +30,12 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
     // States For DataGrid
     const [page, setPage] = useState(1);
     const pageSizes = [5, 10, 15, 20, 25, 30, 50, 100];
-    const [pageSize, setPageSize] = useState(pageSizes[4]);
+    const [pageSize] = useState(pageSizes[4]);
     const [rows, setRows] = useState<StockItem[]>([]);
     const [totalRecords, setTotalRecords] = useState<number>(0);
-    const [sortStatus, setSortStatus] = useState<DataTableSortStatus<StockItem>>({ columnAccessor: 'item_name', direction: 'desc' });
+    const [start, setStart] = useState(0);
+    const [end, setEnd] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
     const [selectedRecords, setSelectedRecords] = useState<StockItem[]>([]);
 
     const [query, setQuery] = useState<string>("");
@@ -79,22 +78,20 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
         if (filterStatus)
             rivensFilter = rivensFilter.filter((item) => item.status === filterStatus);
 
-        setTotalRecords(rivensFilter.length);
-        rivensFilter = sortArray([{
-            field: sortStatus.columnAccessor,
-            direction: sortStatus.direction
-        }], rivensFilter);
-
         const ids = items.map((x) => x.id);
         console.log("Updating Database Rows", ids);
 
+        setTotalRecords(rivensFilter.length);
+        setTotalPages(Math.ceil(rivensFilter.length / pageSize));
+        setStart((page - 1) * pageSize + 1);
+        setEnd(Math.min(page * pageSize, rivensFilter.length));
         rivensFilter = paginate(rivensFilter, page, pageSize);
         setRows(rivensFilter);
         setSelectedRecords([]);
-    }, [items, query, pageSize, page, sortStatus, filterStatus])
+    }, [items, query, pageSize, page, filterStatus])
     useEffect(() => {
         setSelectedRecords([]);
-    }, [query, pageSize, page, sortStatus, filterStatus])
+    }, [query, pageSize, page, filterStatus])
 
     // Calculate Stats
     useEffect(() => {
@@ -335,7 +332,175 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
                 }
 
             />
-            <DataTable
+            <Box mt={"md"}>
+                <ScrollArea.Autosize h={`calc(100vh - ${!is_running ? "470px" : "490px"})`} type="auto" offsetScrollbars='y'>
+                    <Table verticalSpacing="sm" stickyHeader>
+                        <Table.Thead>
+                            <Table.Tr>
+                                <Table.Th>
+                                    <Checkbox
+                                        aria-label="Select all rows"
+                                        checked={selectedRecords.length === rows.length}
+                                        onChange={(event) =>
+                                            setSelectedRecords(
+                                                event.currentTarget.checked ? rows : []
+                                            )
+                                        }
+                                    />
+                                </Table.Th>
+                                <Table.Th>{useTranslateDataGridBaseColumns('name.title')}</Table.Th>
+                                <Table.Th>{useTranslateDataGridBaseColumns('bought')}</Table.Th>
+                                <Table.Th>{useTranslateDataGridBaseColumns('minimum_price.title')}</Table.Th>
+                                <Table.Th>{useTranslateDataGridBaseColumns('list_price')}</Table.Th>
+                                <Table.Th>{useTranslateDataGridColumns('owned')}</Table.Th>
+                                <Table.Th>{useTranslateDataGridBaseColumns('actions.title')}</Table.Th>
+                            </Table.Tr>
+                        </Table.Thead>
+
+                        <Table.Tbody>
+                            {rows.map((record, index) => (
+                                <Table.Tr key={index} >
+                                    <Table.Td w={30}>
+                                        <Checkbox
+                                            aria-label="Select row"
+                                            checked={selectedRecords.includes(record)}
+                                            onChange={(event) =>
+                                                setSelectedRecords(
+                                                    event.currentTarget.checked
+                                                        ? [...selectedRecords, record]
+                                                        : selectedRecords.filter((x) => x !== record)
+                                                )
+                                            }
+                                        />
+                                    </Table.Td>
+                                    <Table.Td onClick={() => {
+                                        navigator.clipboard.writeText(record.item_name);
+                                        notifications.show({ title: useTranslateNotifications("copied.title"), message: record.item_name, color: "green.7" });
+                                    }}>
+                                        <TextTranslate color="gray.4" i18nKey={useTranslateDataGridBaseColumns("name.value", undefined, true)} values={{
+                                            name: record.item_name,
+                                            sub_type: GetSubTypeDisplay(record.sub_type)
+                                        }} />
+                                    </Table.Td>
+                                    <Table.Td>
+                                        <NumberFormatter thousandSeparator="." decimalSeparator="," value={record.bought} /></Table.Td>
+                                    <Table.Td w={310}>
+                                        <Group gap={"sm"} justify="space-between">
+                                            <Text>{record.minimum_price || "N/A"}</Text>
+                                            <Group gap={"xs"}>
+                                                <ButtonInterval color="red.7" intervals={[5, 10]} prefix="-" OnClick={async (int) => {
+                                                    if (!record.id) return;
+                                                    record.minimum_price = record.minimum_price || 0;
+                                                    if (record.minimum_price - int < 0) return;
+                                                    await updateStockMutation.mutateAsync({ id: record.id, minimum_price: record.minimum_price - int });
+                                                }} />
+                                                <ButtonInterval color="green.7" intervals={[5, 10]} prefix="+" OnClick={async (int) => {
+                                                    if (!record.id) return;
+                                                    record.minimum_price = record.minimum_price || 0;
+                                                    await updateStockMutation.mutateAsync({ id: record.id, minimum_price: record.minimum_price + int });
+                                                }} />
+                                                <ActionWithTooltip
+                                                    tooltip={useTranslateDataGridBaseColumns('minimum_price.btn.edit.tooltip')}
+                                                    icon={faEdit}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (!record.id) return;
+                                                        OpenMinimumPriceModal(record.id, record.minimum_price || 0);
+                                                    }}
+                                                    actionProps={{ size: "sm" }}
+                                                    iconProps={{ size: "xs" }}
+                                                />
+                                            </Group>
+                                        </Group>
+                                    </Table.Td>
+                                    <Table.Td>
+                                        {record.list_price}
+                                    </Table.Td>
+                                    <Table.Td>
+                                        {record.owned}
+                                    </Table.Td>
+                                    <Table.Td w={180}>
+                                        <Group gap={"sm"} justify="flex-end">
+                                            <ActionWithTooltip
+                                                tooltip={useTranslateDataGridBaseColumns('actions.buttons.sell_manual.tooltip')}
+                                                icon={faPen}
+                                                color={"green.7"}
+                                                actionProps={{ size: "sm" }}
+                                                iconProps={{ size: "xs" }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    OpenSellModal(record);
+                                                }}
+                                            />
+                                            <ActionWithTooltip
+                                                tooltip={useTranslateDataGridBaseColumns('actions.buttons.sell_auto.tooltip')}
+                                                icon={faHammer}
+                                                actionProps={{ disabled: !record.list_price, size: "sm" }}
+                                                iconProps={{ size: "xs" }}
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    if (!record.id || !record.list_price) return;
+                                                    await sellStockMutation.mutateAsync({ url: record.wfm_url, sub_type: record.sub_type, price: record.list_price, quantity: 1, is_from_order: false });
+                                                }}
+                                            />
+                                            <ActionWithTooltip
+                                                tooltip={useTranslateDataGridBaseColumns(`actions.buttons.hide.${record.is_hidden ? "disabled_tooltip" : "enabled_tooltip"}`)}
+                                                icon={record.is_hidden ? faEyeSlash : faEye}
+                                                color={`${record.is_hidden ? "red.7" : "green.7"}`}
+                                                actionProps={{ size: "sm" }}
+                                                iconProps={{ size: "xs" }}
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    await updateStockMutation.mutateAsync({ id: record.id, is_hidden: !record.is_hidden });
+                                                }}
+                                            />
+                                            <ActionWithTooltip
+                                                tooltip={useTranslateDataGridBaseColumns('actions.buttons.info.tooltip')}
+                                                icon={faInfo}
+                                                actionProps={{ size: "sm" }}
+                                                iconProps={{ size: "xs" }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    OpenInfoModal(record);
+                                                }}
+                                            />
+                                            <ActionWithTooltip
+                                                tooltip={useTranslateDataGridBaseColumns('actions.buttons.delete.tooltip')}
+                                                color={"red.7"}
+                                                icon={faTrashCan}
+                                                actionProps={{ size: "sm" }}
+                                                iconProps={{ size: "xs" }}
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    modals.openConfirmModal({
+                                                        title: useTranslateBasePrompt('delete.title'),
+                                                        children: (
+                                                            <Text size="sm">
+                                                                {useTranslateBasePrompt('delete.message', { count: 1 })}
+                                                            </Text>
+                                                        ),
+                                                        labels: { confirm: useTranslateBasePrompt('delete.confirm'), cancel: useTranslateBasePrompt('delete.cancel') },
+                                                        onConfirm: async () => await deleteStockMutation.mutateAsync(record.id),
+                                                    });
+                                                }}
+                                            />
+                                        </Group>
+                                    </Table.Td>
+                                </Table.Tr>
+                            ))}
+                        </Table.Tbody>
+
+                    </Table>
+                </ScrollArea.Autosize>
+                <Divider mt={"md"} />
+                <Group h={"35px"} justify="space-between" mt={"md"}>
+                    <Text size="sm">{useTranslate('pagination', { start, end, totalRecords })}</Text>
+                    <Pagination value={page} onChange={setPage} total={totalPages} />
+                </Group>
+
+            </Box>
+
+            {/* <DataTable
                 height={`calc(100vh - ${!is_running ? "400px" : "420px"})`}
                 mt={"md"}
                 records={rows}
@@ -501,7 +666,7 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
                             </Group>
                         ),
                     },
-                ]} />
+                ]} /> */}
         </Box>
     );
 };

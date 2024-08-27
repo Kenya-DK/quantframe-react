@@ -922,6 +922,7 @@ export const en = {
       }
     },
     liveTrading: {
+      pagination: "{{start}} - {{end}} / {{totalRecords}}",
       segments: {
         bought: "Bought",
         listed: "Listed",
