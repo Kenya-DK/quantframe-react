@@ -261,14 +261,6 @@ impl ItemModule {
             // Remove all orders where the sub type is not the same as the stock item sub type.
             live_orders = live_orders.filter_by_sub_type(item_entry.sub_type.as_ref(), false);
 
-            // Check if item_orders_df is empty and skip if it is
-            if live_orders.total_count() == 0 {
-                logger::info_con(
-                    &self.get_component("CheckStock"),
-                    format!("Item {} has no orders. Skipping.", item_info.name).as_str(),
-                );
-                continue;
-            }
             let stock_item = match item_entry.stock_id {
                 Some(stock_id) => match StockItemQuery::get_by_id(&app.conn, stock_id).await {
                     Ok(stock_item) => stock_item,
@@ -283,6 +275,16 @@ impl ItemModule {
                 None => None,
             };
 
+            // Check if item_orders_df is empty and skip if it is
+            if live_orders.total_count() == 0 {
+                logger::warning_con(
+                    &self.get_component("CheckStock"),
+                    format!("Item {} has no orders. Skipping.", item_info.name).as_str(),
+                );
+                // Send GUI Update.
+                self.send_msg("no_data", Some(json!({ "current": current_index, "total": interesting_items.len(), "name": item_info.name.clone()})));
+                continue;
+            }
             // Get the item stats from the price scraper
             let statistics = price_scraper_interesting_items_new.iter().find(|item| {
                 item.url_name == item_info.wfm_url_name && item.sub_type == item_entry.sub_type
