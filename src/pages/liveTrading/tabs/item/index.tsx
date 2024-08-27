@@ -359,7 +359,7 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
 
                         <Table.Tbody>
                             {rows.map((record, index) => (
-                                <Table.Tr key={index} >
+                                <Table.Tr key={index} data-color-mode="box-shadow" data-stock-status={record.status}>
                                     <Table.Td w={30}>
                                         <Checkbox
                                             aria-label="Select row"
