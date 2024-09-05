@@ -55,7 +55,7 @@ pub struct Order {
     // Default implementation for string
     #[serde(rename = "operation")]
     #[serde(default)]
-    pub operation: String,
+    pub operation: Vec<String>,
 
     // Subtype's
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -74,9 +74,8 @@ pub struct Order {
     #[serde(rename = "mod_rank")]
     pub mod_rank: Option<i64>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "info")]
-    pub info: Option<OrderDetails>,
+    #[serde(rename = "info", default = "Default::default")]
+    pub info: OrderDetails,
 }
 impl Default for Order {
     fn default() -> Self {
@@ -91,7 +90,7 @@ impl Default for Order {
             platform: "".to_string(),
             creation_date: "".to_string(),
             quantity: 0,
-            operation: "N/A".to_string(),
+            operation: vec!["New".to_string()],
             item: None,
             profit: None,
             closed_avg: None,
@@ -99,7 +98,7 @@ impl Default for Order {
             amber_stars: None,
             subtype: None,
             mod_rank: None,
-            info: None,
+            info: Default::default(),
         }
     }
 }

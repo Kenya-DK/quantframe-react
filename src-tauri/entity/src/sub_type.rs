@@ -20,6 +20,16 @@ pub struct SubType {
     #[serde(rename = "cyan_stars")]
     pub cyan_stars: Option<i64>,
 }
+impl Default for SubType {
+    fn default() -> Self {
+        Self {
+            rank: None,
+            variant: None,
+            amber_stars: None,
+            cyan_stars: None,
+        }
+    }
+}
 
 impl SubType {
     pub fn new(

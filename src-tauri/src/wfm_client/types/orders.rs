@@ -144,10 +144,15 @@ impl Orders {
         order.unwrap().platinum
     }
 
-    pub fn get_price_range(&self) -> i64 {
+    pub fn get_price_range(&self, order_type: OrderType) -> i64 {
         let lowest_price = self.lowest_price(OrderType::Sell);
         let highest_price = self.highest_price(OrderType::Buy);
-        return lowest_price - highest_price;
+        if order_type == OrderType::Sell {
+            return highest_price - lowest_price;
+        } else if order_type == OrderType::Buy {
+            return lowest_price - highest_price;
+        }
+        return 0;
     }
 
     pub fn total_count(&self) -> i64 {

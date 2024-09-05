@@ -1,4 +1,4 @@
-use std::hash::{Hash, Hasher};
+use std::{fmt::Formatter, hash::{Hash, Hasher}};
 
 use entity::{stock::item::stock_item, sub_type::SubType};
 use serde::{Deserialize, Serialize};
@@ -30,6 +30,15 @@ impl Hash for ItemEntry {
 }
 
 impl ItemEntry {
+    pub fn display(&self) -> String {
+        format!(
+            "Stock ID: {:?}, WFM URL: {}, Sub Type: {:?}, Priority: {}",
+            self.stock_id,
+            self.wfm_url,
+            self.sub_type.clone().unwrap_or(SubType::default()).shot_display(),
+            self.priority
+        )
+    }
     pub fn from_stock_item(stock_item: &stock_item::Model) -> ItemEntry {
         ItemEntry {
             stock_id: Some(stock_item.id),

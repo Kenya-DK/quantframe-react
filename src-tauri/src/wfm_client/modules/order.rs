@@ -1,5 +1,5 @@
 use crate::{
-    logger,
+    helper, logger,
     utils::{
         enums::log_level::LogLevel,
         modules::error::{ApiResult, AppError},
@@ -342,7 +342,6 @@ impl OrderModule {
     }
 
     pub async fn close(&mut self, id: &str) -> Result<bool, AppError> {
-        let qf = self.client.qf.lock()?.clone();
         let url = format!("profile/orders/close/{}", id);
         self.client.auth().is_logged_in()?;
 
@@ -378,7 +377,6 @@ impl OrderModule {
 
     pub async fn get_orders_by_item(&self, item: &str) -> Result<Orders, AppError> {
         let url = format!("items/{}/orders", item);
-
         let orders = match self.client.get::<Vec<Order>>(&url, Some("orders")).await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(

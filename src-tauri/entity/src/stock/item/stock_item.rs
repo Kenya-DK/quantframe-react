@@ -34,6 +34,14 @@ pub struct Model {
     pub updated_at: DateTimeUtc,
     #[sea_orm(created_at)]
     pub created_at: DateTimeUtc,
+
+    #[sea_orm(ignore)]
+    #[serde(rename = "is_dirty", default)]
+    pub is_dirty: bool,
+
+    #[sea_orm(ignore)]
+    #[serde(rename = "locked", default)]
+    pub locked: bool,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -69,6 +77,8 @@ impl Model {
             price_history: PriceHistoryVec(vec![]),
             updated_at: Default::default(),
             created_at: Default::default(),
+            is_dirty: true,
+            locked: false,
         }
     }
     pub fn to_transaction(
@@ -93,5 +103,25 @@ impl Model {
             price,
             None,
         )
+    }
+    fn set_if_changed<T: PartialEq>(current: &mut T, new_value: T, is_dirty: &mut bool) {
+        if *current != new_value {
+            *current = new_value;
+            *is_dirty = true;
+        }
+    }
+
+    pub fn set_list_price(&mut self, list_price: Option<i64>) {
+        if self.locked {
+            return;
+        }
+        Self::set_if_changed(&mut self.list_price, list_price, &mut self.is_dirty);
+    }
+
+    pub fn set_status(&mut self, status: StockStatus) {
+        if self.locked {
+            return;
+        }
+        Self::set_if_changed(&mut self.status, status, &mut self.is_dirty);
     }
 }
