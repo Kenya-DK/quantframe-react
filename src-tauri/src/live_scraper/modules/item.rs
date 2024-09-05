@@ -771,43 +771,12 @@ impl ItemModule {
                 } else {
                     user_order.operation = vec!["NotOptimal".to_string()];
                 }
-                logger::log_json(
-                    "selected_buy_orders.json",
-                    &json!(selected_buy_orders.clone()),
-                )?;
-                logger::log_json(
-                    "unselected_buy_orders.json",
-                    &json!(unselected_buy_orders.clone()),
-                )?;
             }
         } else if user_order.operation.contains(&"Updated".to_string()) {
             user_order.operation.push("Deleted".to_string());
         } else {
             user_order.operation = vec!["NotProfitable".to_string()];
         }
-
-        logger::log_json("buy_orders_list.json", &json!(buy_orders_list.clone()))?;
-
-        logger::log_json("buy_live_orders.json", &json!(live_orders.clone()))?;
-
-        logger::log_json("order_infos.json", &json!(self.order_info.clone()))?;
-
-        logger::log_json("buy_user_order.json", &json!(user_order.clone()))?;
-
-        logger::log_json(
-            "buy_stats.json",
-            &json!({
-                "url_name": item_info.wfm_url_name,
-                "avg_price_cap": avg_price_cap,
-                "max_total_price_cap": max_total_price_cap,
-                "highest_price": highest_price,
-                "price_range": price_range,
-                "post_price": post_price,
-                "closed_avg": closed_avg,
-                "closed_avg_metric": closed_avg_metric,
-                "potential_profit": potential_profit,
-            }),
-        )?;
 
         if user_order.operation.contains(&"Created".to_string())
             && !user_order.operation.contains(&"Deleted".to_string())
@@ -1174,31 +1143,6 @@ impl ItemModule {
         };
         stock_item.price_history =
             PriceHistoryVec(stock_info.price_history.clone().into_iter().collect());
-
-        logger::log_json("sell_live_orders.json", &json!(live_orders.clone()))?;
-
-        logger::log_json("order_infos.json", &json!(self.order_info.clone()))?;
-
-        logger::log_json("stock_info.json", &json!(self.stock_info.clone()))?;
-
-        logger::log_json("stock_info.json", &json!(stock_info.clone()))?;
-
-        logger::log_json("sell_user_order.json", &json!(user_order.clone()))?;
-
-        logger::log_json("stock_item.json", &json!(stock_item.clone()))?;
-
-        logger::log_json(
-            "sell_stats.json",
-            &json!({
-                "highest_price": highest_price,
-                "post_price": post_price,
-                "bought_price": bought_price,
-                "quantity": quantity,
-                "lowest_price": lowest_price,
-                "minimum_price": minimum_price,
-                "profit": profit,
-            }),
-        )?;
 
         if stock_info.is_dirty || stock_item.is_dirty {
             StockItemMutation::update_by_id(&app.conn, stock_item.id, stock_item.clone())
