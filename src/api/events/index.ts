@@ -3,10 +3,11 @@ import { ComposedListener } from "@utils/listener/Composed.listener";
 
 export class EventModule {
   private listener = new ComposedListener();
-  private debug_filter: string[] = ["*"];
+  // private debug_filter: string[] = ["*"];
+  private debug_filter: string[] = ["WFM:UpdateOrders", "Stock:UpdateStockItems"];
   private _colors = [
-    'color: #18FF00',
-    'color: #00FFF0',
+    'color: #000',
+    'color: #000',
   ];
   constructor() {
     this.Initializer();
@@ -18,7 +19,7 @@ export class EventModule {
         this.listener.fire(event, data);
       if (!this.debug_filter.includes(event) && !this.debug_filter.includes("*")) return;
       console.group("%cTauri Event", this._colors[0]);
-      console.log(`%cEvent: %c${event}`, this._colors[0], "color: #FFFC00");
+      console.log(`%cEvent: %c${event}`, this._colors[0], "color: #000");
       console.log(`%cPayload:`, this._colors[0], data);;
       console.groupEnd();
     })
@@ -28,8 +29,8 @@ export class EventModule {
         this.listener.fire(event, { operation, data });
       if (!this.debug_filter.includes(event) && !this.debug_filter.includes("*")) return;
       console.group("%cTauri Event Data", this._colors[1]);
-      console.log(`%cEvent: %c${event}`, this._colors[1], "color: #FFFC00");
-      console.log(`%cOperation: %c${operation}`, this._colors[1], "color: #FFFC00");
+      console.log(`%cEvent: %c${event}`, this._colors[1], "color: #000");
+      console.log(`%cOperation: %c${operation}`, this._colors[1], "color: #000");
       console.log(`%cPayload:`, this._colors[1], data,);;
       console.groupEnd();
     })
