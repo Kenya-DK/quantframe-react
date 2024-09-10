@@ -42,6 +42,11 @@ pub struct Model {
     #[sea_orm(ignore)]
     #[serde(rename = "locked", default)]
     pub locked: bool,
+
+    #[sea_orm(ignore)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "changes")]
+    pub changes: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -79,6 +84,7 @@ impl Model {
             created_at: Default::default(),
             is_dirty: true,
             locked: false,
+            changes: None,
         }
     }
     pub fn to_transaction(
@@ -104,24 +110,30 @@ impl Model {
             None,
         )
     }
-    fn set_if_changed<T: PartialEq>(current: &mut T, new_value: T, is_dirty: &mut bool) {
+    fn set_if_changed<T: PartialEq>(current: &mut T, new_value: T, is_dirty: &mut bool) -> bool {
         if *current != new_value {
             *current = new_value;
             *is_dirty = true;
+            return true;
         }
+        false
     }
 
     pub fn set_list_price(&mut self, list_price: Option<i64>) {
         if self.locked {
             return;
         }
-        Self::set_if_changed(&mut self.list_price, list_price, &mut self.is_dirty);
+        if Self::set_if_changed(&mut self.list_price, list_price, &mut self.is_dirty) {
+            self.changes = Some("list_price".to_string());
+        }
     }
 
     pub fn set_status(&mut self, status: StockStatus) {
         if self.locked {
             return;
         }
-        Self::set_if_changed(&mut self.status, status, &mut self.is_dirty);
+        if Self::set_if_changed(&mut self.status, status, &mut self.is_dirty) {
+            self.changes = Some("status".to_string());
+        }
     }
 }
