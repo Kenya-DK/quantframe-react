@@ -2,7 +2,7 @@ export type IOperatorType = "eq" | "neq" | "gt" | "gteq" | "lt" | "lteq" | "in" 
 export type IPropertyType = "string" | "number" | "boolean" | "date" | "array" | "object" | "any";
 
 export interface ISearchKeyParameter {
-  [key: string]: ISearchParameter;
+  [key: string]: ISearchParameter | undefined
 }
 
 export interface ISearchParameter {

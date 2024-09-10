@@ -3,7 +3,7 @@ import { IOperatorType, IPropertyType, ISearchFilter, ISearchOrParameter, ISearc
 export const validateSearchParameter = (searchParams: ISearchKeyParameter): string | null => {
   for (const key in searchParams) {
     if (Object.prototype.hasOwnProperty.call(searchParams, key)) {
-      const searchParam: ISearchParameter = searchParams[key];
+      const searchParam: ISearchParameter = searchParams[key] as ISearchParameter;
       // Validate type
       const validTypes: IPropertyType[] = ["string", "number", "boolean", "date", "array", "object", "any"];
       if (searchParam.type && !validTypes.includes(searchParam.type))
@@ -87,8 +87,9 @@ export const searchByProperty = <T>(data: T[], propertyName: string, query: ISea
   });
 }
 export const searchByProperties = <T>(data: T[], queys: ISearchKeyParameter): T[] => {
-  const keys = Object.keys(queys);
-  const queryValues = Object.values(queys);
+  // Filter out undefined values
+  const keys = Object.keys(queys).filter((key) => queys[key] !== undefined);
+  const queryValues = Object.values(queys).filter((value) => value !== undefined) as ISearchParameter[];
   return data.filter((item: T) => {
     let result = true;
     for (let index = 0; index < queryValues.length; index++) {

@@ -1,18 +1,38 @@
 import { Container, Text } from "@mantine/core";
-import { SelectMultipleTradableItems } from "../../components/SelectMultipleTradableItems";
-
-
+import { useQuery } from "@tanstack/react-query";
+import api from "../../api";
+import { DataGrid } from "@components/DataGrid";
+import { Loading } from "../../components/Loading";
 
 export default function TestPage() {
+
+  const { data } = useQuery({
+    queryKey: ['cache_items'],
+    queryFn: () => api.cache.getTradableItems(),
+  })
   return (
     <Container size={"100%"}>
-      <SelectMultipleTradableItems
-        leftTitle={"Tradable Items"}
-        rightTitle={"Blacklisted Items"}
-        // onChange={(items) => { form.setFieldValue('stock_item.blacklist', items) }}
-        // selectedItems={form.values.stock_item.blacklist || []} />
-        onChange={(items) => { console.log(items) }}
-        selectedItems={[]} />
+      <DataGrid
+        height={500}
+        customLoader={<Loading />}
+        columns={[
+          {
+            accessor: 'wfm_id',
+          },
+          {
+            accessor: 'wfm_url_name',
+          },
+          {
+            accessor: 'trade_tax',
+          },
+          {
+            accessor: 'mr_requirement',
+            render: (value) => <TextTranslate i18nKey={value.image_url} />
+          }
+        ]}
+        fetching={true}
+        records={data || []}
+      />
     </Container>
   );
 }

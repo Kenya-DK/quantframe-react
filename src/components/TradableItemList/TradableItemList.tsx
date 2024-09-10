@@ -1,7 +1,7 @@
-import { Box, Divider, Grid, Group, MultiSelect, Pagination, Paper, RangeSlider, ScrollArea, Table, Text } from '@mantine/core';
+import { Box, Grid, Group, MultiSelect, Paper, RangeSlider, Text } from '@mantine/core';
 import { CacheTradableItem } from '@api/types';
 import { useTranslateComponent } from '@hooks/useTranslate.hook';
-import { DataTableSortStatus } from 'mantine-datatable';
+import { DataTable, DataTableSortStatus } from 'mantine-datatable';
 import { useEffect, useState } from 'react';
 import { useForm } from '@mantine/form';
 import { paginate } from "@utils/helper";
@@ -18,19 +18,14 @@ export type TradableItemListProps = {
 }
 
 
-export function TradableItemList({ onAddAll, availableItems, onAddItem }: TradableItemListProps) {
+export function TradableItemList({ onAddItem, onAddAll, availableItems }: TradableItemListProps) {
 	// States For DataGrid
 	const [page, setPage] = useState(1);
 	const pageSizes = [5, 10, 15, 20, 25, 30, 50, 100];
-	const [pageSize] = useState(pageSizes[4]);
+	const [pageSize, setPageSize] = useState(pageSizes[4]);
 	const [rows, setRows] = useState<CacheTradableItem[]>([]);
-	const [totalPages, setTotalPages] = useState(0);
-	const [totalRecords, setTotalRecords] = useState(0);
-	const [start, setStart] = useState(0);
-	const [end, setEnd] = useState(0);
-
-
-	const [sortStatus, _setSortStatus] = useState<DataTableSortStatus<CacheTradableItem>>({ columnAccessor: 'name', direction: 'desc' });
+	const [totalRecords, setTotalRecords] = useState<number>(0);
+	const [sortStatus, setSortStatus] = useState<DataTableSortStatus<CacheTradableItem>>({ columnAccessor: 'name', direction: 'desc' });
 	const [is_filter_open, setFilterOpen] = useState(false);
 
 	// Translate general
@@ -112,9 +107,6 @@ export function TradableItemList({ onAddAll, availableItems, onAddItem }: Tradab
 		if (!itemFilter)
 			return;
 		setTotalRecords(itemFilter.length);
-		setTotalPages(Math.ceil(itemFilter.length / pageSize));
-		setStart((page - 1) * pageSize + 1);
-		setEnd(Math.min(page * pageSize, itemFilter.length));
 		itemFilter = paginate(itemFilter, page, pageSize);
 		setRows(itemFilter);
 	}, [availableItems, sortStatus, filterForm])
@@ -188,38 +180,43 @@ export function TradableItemList({ onAddAll, availableItems, onAddItem }: Tradab
 					}
 				/>
 			</Box>
-			<Box mt={"md"}>
-				<ScrollArea.Autosize className={classes.dataTable} data-filter={is_filter_open} type="auto" offsetScrollbars='y'>
-					<Table verticalSpacing="sm" stickyHeader>
-						<Table.Thead>
-							<Table.Tr>
-								<Table.Th>{useTranslateDataGridColumns('name')}</Table.Th>
-								<Table.Th>{useTranslateDataGridColumns('trade_tax')}</Table.Th>
-								<Table.Th>{useTranslateDataGridColumns('mr_requirement')}</Table.Th>
-							</Table.Tr>
-						</Table.Thead>
-
-						<Table.Tbody>
-							{rows.map((record, index) => (
-								<Table.Tr key={index} onClick={() => {
-									if (onAddItem)
-										onAddItem(record);
-								}}>
-									<Table.Td>{record.name}</Table.Td>
-									<Table.Td>{record.trade_tax}</Table.Td>
-									<Table.Td>{record.mr_requirement}</Table.Td>
-								</Table.Tr>
-							))}
-						</Table.Tbody>
-
-					</Table>
-				</ScrollArea.Autosize>
-				<Divider mt={"md"} />
-				<Group h={"35px"} justify="space-between" mt={"md"}>
-					<Text size="sm">{useTranslate('pagination', { start, end, totalRecords })}</Text>
-					<Pagination value={page} onChange={setPage} total={totalPages} />
-				</Group>
-
+			<Box mt={"md"} className={classes.dataTable} data-filter={is_filter_open}>
+				<DataTable
+					records={rows}
+					totalRecords={totalRecords}
+					withTableBorder
+					withColumnBorders
+					page={page}
+					recordsPerPage={pageSize}
+					idAccessor={"wfm_id"}
+					onPageChange={(p) => setPage(p)}
+					recordsPerPageOptions={pageSizes}
+					onRecordsPerPageChange={setPageSize}
+					sortStatus={sortStatus}
+					onSortStatusChange={setSortStatus}
+					onRowClick={(row) => {
+						if (onAddItem)
+							onAddItem(row.record);
+					}}
+					// define columns
+					columns={[
+						{
+							accessor: 'name',
+							title: useTranslateDataGridColumns('name'),
+							sortable: true,
+						},
+						{
+							accessor: 'trade_tax',
+							title: useTranslateDataGridColumns('trade_tax'),
+							sortable: true,
+						},
+						{
+							accessor: 'mr_requirement',
+							title: useTranslateDataGridColumns('mr_requirement'),
+							sortable: true,
+						}
+					]}
+				/>
 			</Box>
 		</Box>
 	);
