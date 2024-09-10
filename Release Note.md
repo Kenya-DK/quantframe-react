@@ -6,8 +6,9 @@ Note: The database was upgrade to V2
 So all your data needs to be migrated, this be be done in the Debug Tab and under the migrate tab.
 
 ## Fix's
-- 🛠️ Some attributes was missing form the create riven.
-- 🛠️ A bug in migrate dataBase.
+- 🛠️ WTB/WTS Orders not getting updated
+- 🛠️ Fix som ui flicking in the stock riven screen.
+- 🛠️ Fix not able to add item's to blacklist/whitelist
 
 
 # Quantframe v1.2.3 (Release Date)
