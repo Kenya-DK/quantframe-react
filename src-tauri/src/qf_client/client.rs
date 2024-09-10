@@ -118,6 +118,7 @@ impl QFClient {
         url: &str,
         body: Option<Value>,
         is_bytes: bool,
+        is_string: bool,
     ) -> Result<ApiResult<T>, AppError> {
         let app = self.app.lock()?.clone();
         let auth = self.auth.lock()?.clone();
@@ -182,12 +183,17 @@ impl QFClient {
         error_def.status_code = response_data.status().as_u16() as i64;
         let headers = response_data.headers().clone();
 
-        let content = if is_bytes {
+        let mut content = if is_bytes {
             let content_bytes = response_data.bytes().await.unwrap_or_default();
             format!("{{\"data\": {:?}}}", content_bytes.to_vec())
         } else {
             response_data.text().await.unwrap_or_default()
         };
+
+        // If T is a string, return the content as a string
+        if is_string {
+            content = Value::String(content).to_string();
+        }
         error_def.raw_response = Some(content.clone());
 
         let response: Value = serde_json::from_str(content.as_str()).map_err(|e| {
@@ -235,7 +241,7 @@ impl QFClient {
 
     pub async fn get_bytes(&self, url: &str) -> Result<ApiResult<Vec<u8>>, AppError> {
         match self
-            .send_request::<ByteResponse>(Method::GET, url, None, true)
+            .send_request::<ByteResponse>(Method::GET, url, None, true,false)
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {
@@ -255,8 +261,8 @@ impl QFClient {
         };
     }
 
-    pub async fn get<T: DeserializeOwned>(&self, url: &str) -> Result<ApiResult<T>, AppError> {
-        Ok(self.send_request(Method::GET, url, None, false).await?)
+    pub async fn get<T: DeserializeOwned>(&self, url: &str, is_string: bool,) -> Result<ApiResult<T>, AppError> {
+        Ok(self.send_request(Method::GET, url, None, false, is_string).await?)
     }
 
     pub async fn post<T: DeserializeOwned>(
@@ -265,19 +271,19 @@ impl QFClient {
         body: Value,
     ) -> Result<ApiResult<T>, AppError> {
         Ok(self
-            .send_request(Method::POST, url, Some(body), false)
+            .send_request(Method::POST, url, Some(body), false, false)
             .await?)
     }
 
     pub async fn delete<T: DeserializeOwned>(&self, url: &str) -> Result<ApiResult<T>, AppError> {
-        Ok(self.send_request(Method::DELETE, url, None, false).await?)
+        Ok(self.send_request(Method::DELETE, url, None, false, false).await?)
     }
     pub async fn put<T: DeserializeOwned>(
         &self,
         url: &str,
         body: Option<Value>,
     ) -> Result<ApiResult<T>, AppError> {
-        Ok(self.send_request(Method::PUT, url, body, false).await?)
+        Ok(self.send_request(Method::PUT, url, body, false, false).await?)
     }
     pub fn cache(&self) -> CacheModule {
         // Lazily initialize ItemModule if not already initialized

@@ -55,10 +55,9 @@ impl CacheModule {
     }
 
     pub async fn get_cache_id(&self) -> Result<String, AppError> {
-        match self.client.get::<Value>("cache/id").await {
+        match self.client.get::<String>("cache/md5", true).await {
             Ok(ApiResult::Success(payload, _headers)) => {
-                let md5 = payload["md5"].as_str().unwrap().to_string();
-                return Ok(md5);
+                return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
                 return Err(self.client.create_api_error(

@@ -40,7 +40,7 @@ impl AuthModule {
             return Ok(User::default());
         }
 
-        match self.client.get::<User>(&format!("auth/profile?v={}",app.get_app_info().version)).await {
+        match self.client.get::<User>(&format!("auth/profile?v={}",app.get_app_info().version), false).await {
             Ok(ApiResult::Success(user, _)) => {
                 return Ok(user);
             }
