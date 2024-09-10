@@ -18,7 +18,7 @@ pub struct OrderDetails {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "profit")]
     pub profit: Option<i64>,
-    
+
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "lowest_price")]
     pub lowest_price: Option<i64>,
@@ -39,6 +39,10 @@ pub struct OrderDetails {
 
     #[serde(rename = "is_dirty")]
     pub is_dirty: bool,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "changes")]
+    pub changes: Option<String>,
 }
 
 // Default implementation for OrderDetails
@@ -54,6 +58,7 @@ impl Default for OrderDetails {
             moving_avg: None,
             orders: Vec::new(),
             price_history: VecDeque::new(),
+            changes: None,
         }
     }
 }
@@ -79,37 +84,46 @@ impl OrderDetails {
             orders,
             price_history: price_history.into_iter().collect(),
             is_dirty: true,
+            changes: None,
         }
     }
     // Helper to set dirty flag when values are changed
-    fn set_if_changed<T: PartialEq>(current: &mut T, new_value: T, is_dirty: &mut bool) {
+    fn set_if_changed<T: PartialEq>(current: &mut T, new_value: T, is_dirty: &mut bool) -> bool {
         if *current != new_value {
             *current = new_value;
             *is_dirty = true;
+            return true;
         }
+        false
     }
     pub fn set_total_buyers(&mut self, total_buyers: i64) {
-        Self::set_if_changed(
+        if Self::set_if_changed(
             &mut self.total_buyers,
             Some(total_buyers),
             &mut self.is_dirty,
-        );
+        ) {
+            self.changes = Some("total_buyers".to_string());
+        }
     }
 
     pub fn set_lowest_price(&mut self, lowest_price: i64) {
-        Self::set_if_changed(
+        if Self::set_if_changed(
             &mut self.lowest_price,
             Some(lowest_price),
             &mut self.is_dirty,
-        );
+        ) {
+            self.changes = Some("lowest_price".to_string());
+        }
     }
 
     pub fn set_highest_price(&mut self, highest_price: i64) {
-        Self::set_if_changed(
+        if Self::set_if_changed(
             &mut self.highest_price,
             Some(highest_price),
             &mut self.is_dirty,
-        );
+        ) {
+            self.changes = Some("highest_price".to_string());
+        }
     }
 
     pub fn set_orders(&mut self, orders: Vec<Order>) {
@@ -117,19 +131,25 @@ impl OrderDetails {
     }
 
     pub fn set_moving_avg(&mut self, moving_avg: i64) {
-        Self::set_if_changed(&mut self.moving_avg, Some(moving_avg), &mut self.is_dirty);
+        if Self::set_if_changed(&mut self.moving_avg, Some(moving_avg), &mut self.is_dirty) {
+            self.changes = Some("moving_avg".to_string());
+        }
     }
 
     pub fn set_profit(&mut self, profit: i64) {
-        Self::set_if_changed(&mut self.profit, Some(profit), &mut self.is_dirty);
+        if Self::set_if_changed(&mut self.profit, Some(profit), &mut self.is_dirty) {
+            self.changes = Some("profit".to_string());
+        }
     }
 
     pub fn set_total_sellers(&mut self, total_sellers: i64) {
-        Self::set_if_changed(
+        if Self::set_if_changed(
             &mut self.total_sellers,
             Some(total_sellers),
             &mut self.is_dirty,
-        );
+        ) {
+            self.changes = Some("total_sellers".to_string());
+        }
     }
 
     pub fn add_price_history(&mut self, price_history: PriceHistory) {
@@ -144,6 +164,7 @@ impl OrderDetails {
             }
             self.price_history.push_back(price_history);
             self.is_dirty = true;
+            self.changes = Some("price_history".to_string());
         }
     }
 }

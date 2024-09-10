@@ -43,6 +43,10 @@ impl RivenModule {
         self.client
             .send_gui_update(format!("riven.{}", i18n_key).as_str(), values);
     }
+    pub fn reset(&mut self) {
+        self.stock_info = HashMap::new();    
+        self.update_state();
+    }
     pub fn send_stock_update(&self, operation: UIOperationEvent, value: serde_json::Value) {
         let notify = self.client.notify.lock().unwrap().clone();
         notify

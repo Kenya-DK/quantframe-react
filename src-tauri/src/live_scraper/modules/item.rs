@@ -11,6 +11,7 @@ use crate::utils::modules::logger;
 use crate::wfm_client::enums::order_type::OrderType;
 use crate::wfm_client::types::order::Order;
 use crate::wfm_client::types::orders::Orders;
+use actix_web::web::Json;
 use entity::enums::stock_status::StockStatus;
 use entity::price_history::{self, PriceHistory, PriceHistoryVec};
 use entity::stock::item::stock_item;
@@ -63,6 +64,12 @@ impl ItemModule {
         notify
             .gui()
             .send_event_update(UIEvent::UpdateOrders, operation, Some(value));
+    }
+
+    pub fn reset(&mut self) {
+        self.stock_info = HashMap::new();
+        self.order_info = HashMap::new();
+        self.update_state();
     }
 
     pub async fn check_stock(&mut self) -> Result<(), AppError> {
@@ -363,7 +370,7 @@ impl ItemModule {
         Ok(())
     }
 
-    pub async fn delete_all_orders(&self, mode: OrderMode) -> Result<(), AppError> {
+    pub async fn delete_all_orders(&mut self, mode: OrderMode) -> Result<(), AppError> {
         let wfm = self.client.wfm.lock()?.clone();
         let app = self.client.app.lock()?.clone();
         let _notify = self.client.notify.lock()?.clone();
@@ -423,6 +430,7 @@ impl ItemModule {
                 }
             };
         }
+        self.reset();
         Ok(())
     }
 
@@ -554,7 +562,7 @@ impl ItemModule {
                 unselected_items.push(items[i].clone());
             }
         }
-        
+
         // In the `items` parameter, the last element is always not on Warframe Market (the one currently getting checked),
         // so it should be added only if it's not already posted, unless the price would go over the max price cap limit.
         // Because if it is posted and gets added in unselected_items,
@@ -750,22 +758,28 @@ impl ItemModule {
                                 )
                                 .as_str(),
                             );
-                            // Send GUI Update.
-                            self.send_msg(
-                                "knapsack_delete",
-                                Some(json!({ "name": item_info.name})),
-                            );
-                            self.send_order_update(
-                                UIOperationEvent::Delete,
-                                json!({"id": unselected_item.3}),
-                            );
-
-                            wfm.orders().delete(&unselected_item.3).await?;
-                            if user_order.id == unselected_item.3 {
-                                user_order.operation = vec!["Skip".to_string()];
+                            match wfm.orders().delete(&unselected_item.3).await {
+                                Ok(_) => {
+                                    // Send GUI Update.
+                                    self.send_msg(
+                                        "knapsack_delete",
+                                        Some(json!({ "name": item_info.name})),
+                                    );
+                                    self.send_order_update(
+                                        UIOperationEvent::Delete,
+                                        json!({"id": unselected_item.3}),
+                                    );
+                                    if user_order.id == unselected_item.3 {
+                                        user_order.operation = vec!["Skip".to_string()];
+                                    }
+                                    my_orders
+                                        .delete_order_by_id(OrderType::Buy, &unselected_item.3);
+                                    self.order_info.remove(&unselected_item.3);
+                                }
+                                Err(e) => {
+                                    return Err(e);
+                                }
                             }
-                            my_orders.delete_order_by_id(OrderType::Buy, &unselected_item.3);
-                            self.order_info.remove(&unselected_item.3);
                         }
                     }
                 } else {
@@ -831,6 +845,7 @@ impl ItemModule {
                         user_order.profit = Some(potential_profit as f64);
                         my_orders.update_order(user_order.clone());
                         user_order.info.is_dirty = false;
+                        user_order.info.changes = None;
                         if self.order_info.contains_key(&user_order.id) {
                             *self.order_info.get_mut(&user_order.id).unwrap() =
                                 user_order.info.clone();
@@ -843,7 +858,6 @@ impl ItemModule {
                     }
                 }
                 Err(e) => {
-                    self.client.stop_loop();
                     return Err(e);
                 }
             }
@@ -858,11 +872,10 @@ impl ItemModule {
                     self.update_state();
                 }
                 Err(e) => {
+                    self.client.stop_loop();
                     return Err(e);
                 }
             }
-        } else {
-            println!("Nothing");
         }
 
         Ok(None)
@@ -1151,6 +1164,7 @@ impl ItemModule {
             let mut payload = json!(stock_item);
             payload["info"] = json!(stock_info);
             stock_info.is_dirty = false;
+            stock_info.changes = None;
             if self.stock_info.contains_key(&stock_item.id) {
                 *self.stock_info.get_mut(&stock_item.id).unwrap() = stock_info.clone();
             } else {
