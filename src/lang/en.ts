@@ -252,6 +252,9 @@ export const en = {
             tabs: {
               item: "Item Settings",
               riven: "Riven Settings",
+              general: "General Settings",
+              wtb: "WTB Settings",
+              wts: "WTS Settings",
             },
             buttons: {
               save: {
