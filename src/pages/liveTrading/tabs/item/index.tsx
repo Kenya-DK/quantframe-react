@@ -1,7 +1,6 @@
 import { useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
-import { paginate, getCssVariable, GetSubTypeDisplay, CreateTradeMessage } from "@utils/helper";
+import { getCssVariable, GetSubTypeDisplay, CreateTradeMessage } from "@utils/helper";
 import { useEffect, useState } from "react";
-import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { CreateStockItem, StockItem, StockStatus, UpdateStockItem, SellStockItem } from "@api/types";
 import { Box, Grid, Group, NumberFormatter, Text } from "@mantine/core";
 import { useMutation } from "@tanstack/react-query";
@@ -16,13 +15,14 @@ import { StatsWithSegments } from "@components/StatsWithSegments";
 import { ActionWithTooltip } from "@components/ActionWithTooltip";
 import { ButtonInterval } from "@components/ButtonInterval";
 import { Loading } from "@components/Loading";
-import { SearchField } from "@components/SearchField";
 import { TextTranslate } from "@components/TextTranslate";
 import { UpdateItemBulk } from "@components/Forms/UpdateItemBulk";
 import { CreateStockItemForm } from "@components/Forms/CreateStockItem";
 import { useLiveScraperContext } from "@contexts/liveScraper.context";
 import { useStockContextContext } from "@contexts/stock.context";
-import { sortArray } from "@utils/sorting.helper";
+import { DataTableSearch } from "@components/DataTableSearch";
+import { ISearchKeyParameter } from "$types/index";
+
 interface StockItemPanelProps {
 }
 export const StockItemPanel = ({ }: StockItemPanelProps) => {
@@ -31,15 +31,10 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
     const { is_running } = useLiveScraperContext();
 
     // States For DataGrid
-    const [page, setPage] = useState(1);
-    const pageSizes = [5, 10, 15, 20, 25, 30, 50, 100];
-    const [pageSize, setPageSize] = useState(pageSizes[4]);
-    const [rows, setRows] = useState<StockItem[]>([]);
-    const [totalRecords, setTotalRecords] = useState<number>(0);
-    const [sortStatus, setSortStatus] = useState<DataTableSortStatus<StockItem>>({ columnAccessor: 'item_name', direction: 'desc' });
+    const [query, setQuery] = useState<string>("");
+    const [filters, setFilters] = useState<ISearchKeyParameter>({});
     const [selectedRecords, setSelectedRecords] = useState<StockItem[]>([]);
 
-    const [query, setQuery] = useState<string>("");
     const [filterStatus, setFilterStatus] = useState<StockStatus | undefined>(undefined);
     const [statusCount, setStatusCount] = useState<{ [key: string]: number }>({}); // Count of each status
 
@@ -62,39 +57,43 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
 
     // Update Database Rows
     useEffect(() => {
+        let filter: ISearchKeyParameter = {};
         if (!items)
             return;
 
-
-        let rivensFilter = items;
-
         setStatusCount(Object.values(StockStatus).reduce((acc, status) => {
-            acc[status] = rivensFilter.filter((item) => item.status === status).length;
+            acc[status] = items.filter((item) => item.status === status).length;
             return acc;
         }, {} as { [key: string]: number }));
 
-        if (query !== "")
-            rivensFilter = rivensFilter.filter((item) => item.item_name.toLowerCase().includes(query.toLowerCase()));
-
+        if (query)
+            filter = {
+                ...filter,
+                item_name: {
+                    filters: [
+                        {
+                            value: query,
+                            operator: "like",
+                            isCaseSensitive: false,
+                        }
+                    ]
+                }
+            };
         if (filterStatus)
-            rivensFilter = rivensFilter.filter((item) => item.status === filterStatus);
-
-        setTotalRecords(rivensFilter.length);
-        rivensFilter = sortArray([{
-            field: sortStatus.columnAccessor,
-            direction: sortStatus.direction
-        }], rivensFilter);
-
-        const ids = items.map((x) => x.id);
-        console.log("Updating Database Rows", ids);
-
-        rivensFilter = paginate(rivensFilter, page, pageSize);
-        setRows(rivensFilter);
+            filter = {
+                ...filter,
+                status: {
+                    filters: [
+                        {
+                            value: filterStatus,
+                            operator: "eq",
+                        }
+                    ]
+                }
+            };
+        setFilters(filter);
         setSelectedRecords([]);
-    }, [items, query, pageSize, page, sortStatus, filterStatus])
-    useEffect(() => {
-        setSelectedRecords([]);
-    }, [query, pageSize, page, sortStatus, filterStatus])
+    }, [items, query, filterStatus])
 
     // Calculate Stats
     useEffect(() => {
@@ -282,7 +281,19 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
                     <StatsWithSegments segments={segments} />
                 </Grid.Col>
             </Grid>
-            <SearchField value={query} onChange={(text) => setQuery(text)}
+            <DataTableSearch
+                height={`calc(100vh - ${!is_running ? "400px" : "420px"})`}
+                mt={"md"}
+                records={items || []}
+                customRowAttributes={(record) => {
+                    return {
+                        "data-color-mode": "box-shadow",
+                        "data-stock-status": record.status,
+                    }
+                }}
+                query={query}
+                filters={filters}
+                onSearchChange={(text) => setQuery(text)}
                 rightSectionWidth={115}
                 rightSection={
                     <Group gap={5}>
@@ -333,31 +344,9 @@ export const StockItemPanel = ({ }: StockItemPanelProps) => {
                         />
                     </Group>
                 }
-
-            />
-            <DataTable
-                height={`calc(100vh - ${!is_running ? "400px" : "420px"})`}
-                mt={"md"}
-                records={rows}
-                totalRecords={totalRecords}
-                customRowAttributes={(record) => {
-                    return {
-                        "data-color-mode": "box-shadow",
-                        "data-stock-status": record.status,
-                    }
-                }}
-                withTableBorder
                 customLoader={<Loading />}
                 fetching={createStockMutation.isPending || updateStockMutation.isPending || sellStockMutation.isPending || deleteStockMutation.isPending || updateBulkStockMutation.isPending || deleteBulkStockMutation.isPending}
-                withColumnBorders
-                page={page}
-                recordsPerPage={pageSize}
                 idAccessor={"id"}
-                onPageChange={(p) => setPage(p)}
-                recordsPerPageOptions={pageSizes}
-                onRecordsPerPageChange={setPageSize}
-                sortStatus={sortStatus}
-                onSortStatusChange={setSortStatus}
                 selectedRecords={selectedRecords}
                 onSelectedRecordsChange={setSelectedRecords}
                 onCellClick={({ record, column }) => {

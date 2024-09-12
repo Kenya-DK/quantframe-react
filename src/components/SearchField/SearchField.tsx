@@ -8,8 +8,8 @@ import { ActionWithTooltip } from '@components/ActionWithTooltip';
 export type SearchFieldProps = {
   value: string;
   onChange: (text: string) => void;
-  description?: string;
   onSearch?: (text: string) => void;
+  description?: string;
   onCreate?: () => void;
   rightSection?: React.ReactNode;
   rightSectionWidth?: number;
@@ -62,9 +62,12 @@ export function SearchField({ value, filter, description, onSearch, onCreate, on
             {rightSection}
             {filter && (
               <ActionWithTooltip
+
                 tooltip={useTranslateSearchFieldButtons('filter.tooltip')}
                 icon={faFilter}
                 color={openFilter ? "blue.7" : "dark.4"}
+                actionProps={{ size: "sm" }}
+                iconProps={{ size: "xs" }}
                 onClick={async () => setOpenFilter()}
               />
             )}

@@ -1,10 +1,35 @@
-import { Container, Text } from "@mantine/core";
+import { Container, Group } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../api";
-import { DataGrid } from "@components/DataGrid";
+import { DataTableSearch } from "@components/DataTableSearch";
 import { Loading } from "../../components/Loading";
+import { useEffect, useState } from "react";
+import { ISearchKeyParameter } from "$types/index";
+import { ActionWithTooltip } from "../../components/ActionWithTooltip";
+import { faEdit } from "@fortawesome/free-solid-svg-icons";
 
 export default function TestPage() {
+
+  const [query, setQuery] = useState<string>("");
+  const [filters, setFilters] = useState<ISearchKeyParameter>({});
+
+  useEffect(() => {
+    let filter: ISearchKeyParameter = {};
+    if (query)
+      filter = {
+        ...filter,
+        name: {
+          filters: [
+            {
+              value: query,
+              operator: "like",
+              isCaseSensitive: false,
+            }
+          ]
+        }
+      };
+    setFilters(filter);
+  }, [query]);
 
   const { data } = useQuery({
     queryKey: ['cache_items'],
@@ -12,10 +37,44 @@ export default function TestPage() {
   })
   return (
     <Container size={"100%"}>
-      <DataGrid
+      <DataTableSearch
         height={500}
         customLoader={<Loading />}
+        query={query}
+        onSearchChange={(text) => setQuery(text)}
+        filters={filters}
+        rightSectionWidth={145}
+        filter={<Group gap={5}>
+          <ActionWithTooltip
+            tooltip={"Create New Item"}
+            icon={faEdit}
+            color={"green.7"}
+            actionProps={{ size: "sm" }}
+            iconProps={{ size: "xs" }}
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          />
+        </Group>
+        }
+        rightSection={
+          <Group gap={5}>
+            <ActionWithTooltip
+              tooltip={"Create New Item"}
+              icon={faEdit}
+              color={"green.7"}
+              actionProps={{ size: "sm" }}
+              iconProps={{ size: "xs" }}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            />
+          </Group>
+        }
         columns={[
+          {
+            accessor: 'name',
+          },
           {
             accessor: 'wfm_id',
           },
@@ -24,26 +83,11 @@ export default function TestPage() {
           },
           {
             accessor: 'trade_tax',
-          },
-          {
-            accessor: 'mr_requirement',
-            render: (value) => <TextTranslate i18nKey={value.image_url} />
+            sortable: true,
           }
         ]}
-        fetching={true}
         records={data || []}
       />
     </Container>
   );
-}
-
-export type TextTranslateProps = {
-  i18nKey: string;
-}
-export function TextTranslate({ i18nKey }: TextTranslateProps) {
-  console.log("Render TextTranslate");
-  return (
-    <Text >
-      {i18nKey}
-    </Text>);
 }

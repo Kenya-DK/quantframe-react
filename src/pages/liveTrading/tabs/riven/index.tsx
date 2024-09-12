@@ -1,9 +1,8 @@
 import { Text, Box, Grid, Group, NumberFormatter } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { paginate, getCssVariable, GetSubTypeDisplay, CreateTradeMessage } from "@utils/helper";
+import { getCssVariable, GetSubTypeDisplay, CreateTradeMessage } from "@utils/helper";
 import { useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { CreateStockRiven, SellStockRiven, StockRiven, StockStatus, UpdateStockRiven } from "@api/types";
-import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { faAdd, faComment, faEdit, faEye, faEyeSlash, faFilter, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
@@ -16,13 +15,13 @@ import { UpdateRivenBulk } from "@components/Forms/UpdateRivenBulk";
 import { Loading } from "@components/Loading";
 import { StockRivenInfo } from "@components/Modals/StockRivenInfo";
 import { RivenAttributeCom } from "@components/RivenAttribute";
-import { SearchField } from "@components/SearchField";
 import { StatsWithSegments } from "@components/StatsWithSegments";
 import { TextTranslate } from "@components/TextTranslate";
 import { CreateRiven } from "@components/Forms/CreateRiven";
 import { useLiveScraperContext } from "@contexts/liveScraper.context";
 import { useStockContextContext } from "@contexts/stock.context";
-import { sortArray } from "@utils/sorting.helper";
+import { DataTableSearch } from "@components/DataTableSearch";
+import { ISearchKeyParameter } from "$types/index";
 
 interface StockRivenPanelProps {
 }
@@ -32,15 +31,10 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
     const { is_running } = useLiveScraperContext();
 
     // States For Database
-    const [page, setPage] = useState(1);
-    const pageSizes = [5, 10, 15, 20, 25, 30, 50, 100];
-    const [pageSize, setPageSize] = useState(pageSizes[4]);
-    const [rows, setRows] = useState<StockRiven[]>([]);
-    const [totalRecords, setTotalRecords] = useState<number>(0);
-    const [sortStatus, setSortStatus] = useState<DataTableSortStatus<StockRiven>>({ columnAccessor: 'weapon_name', direction: 'desc' });
     const [selectedRecords, setSelectedRecords] = useState<StockRiven[]>([]);
 
     const [query, setQuery] = useState<string>("");
+    const [filters, setFilters] = useState<ISearchKeyParameter>({});
     const [filterStatus, setFilterStatus] = useState<StockStatus | undefined>(undefined);
     const [statusCount, setStatusCount] = useState<{ [key: string]: number }>({}); // Count of each status
 
@@ -62,38 +56,42 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
 
     // Update Database Rows
     useEffect(() => {
+        let filter: ISearchKeyParameter = {};
         if (!rivens)
             return;
 
-        let rivensFilter = rivens;
-
         setStatusCount(Object.values(StockStatus).reduce((acc, status) => {
-            acc[status] = rivensFilter.reverse().filter((item) => item.status === status).length;
+            acc[status] = rivens.reverse().filter((item) => item.status === status).length;
             return acc;
         }, {} as { [key: string]: number }));
 
-        if (query !== "")
-            rivensFilter = rivensFilter.reverse().filter((item) => item.weapon_name.toLowerCase().includes(query.toLowerCase())
-                || item.mod_name.toLowerCase().includes(query.toLowerCase()) || `${item.weapon_name} ${item.mod_name}`.toLowerCase().includes(query.toLowerCase())
-            );
-
+        if (query)
+            filter = {
+                ...filter,
+                weapon_name: {
+                    filters: [
+                        {
+                            value: query,
+                            operator: "like",
+                            isCaseSensitive: false,
+                        }
+                    ]
+                }
+            };
         if (filterStatus)
-            rivensFilter = rivensFilter.reverse().filter((item) => item.status === filterStatus);
-
-        setTotalRecords(rivensFilter.length);
-        rivensFilter = sortArray([{
-            field: sortStatus.columnAccessor,
-            direction: sortStatus.direction
-        }], rivensFilter);
-
-        rivensFilter = paginate(rivensFilter, page, pageSize);
-        setRows(rivensFilter);
-    }, [rivens, query, pageSize, page, sortStatus, filterStatus])
-
-    useEffect(() => {
-        setSelectedRecords([]);
-    }, [query, pageSize, page, sortStatus, filterStatus])
-
+            filter = {
+                ...filter,
+                status: {
+                    filters: [
+                        {
+                            value: filterStatus,
+                            operator: "eq",
+                        }
+                    ]
+                }
+            };
+        setFilters(filter);
+    }, [rivens, query, filterStatus])
 
     // Calculate Stats
     useEffect(() => {
@@ -306,77 +304,6 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
         <Box>
             <Grid>
                 <Grid.Col span={8}>
-                    <SearchField value={query} onChange={(text) => setQuery(text)}
-                        rightSectionWidth={145}
-                        rightSection={
-                            <Group gap={5}>
-                                <ActionWithTooltip
-                                    tooltip={useTranslateButtons('update_bulk.tooltip')}
-                                    icon={faEdit}
-                                    color={"green.7"}
-                                    actionProps={{ size: "sm", disabled: selectedRecords.length < 1 }}
-                                    iconProps={{ size: "xs" }}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        OpenUpdateModal(selectedRecords);
-                                    }}
-                                />
-                                <ActionWithTooltip
-                                    tooltip={useTranslateButtons('delete_bulk.tooltip')}
-                                    icon={faTrashCan}
-                                    color={"red.7"}
-                                    actionProps={{ size: "sm", disabled: selectedRecords.length < 1 }}
-                                    iconProps={{ size: "xs" }}
-                                    onClick={async (e) => {
-                                        e.stopPropagation();
-                                        modals.openConfirmModal({
-                                            title: useTranslateBasePrompt('delete.title'),
-                                            children: (
-                                                <Text size="sm">
-                                                    {useTranslateBasePrompt('delete.message', { count: selectedRecords.length })}
-                                                </Text>
-                                            ),
-                                            labels: { confirm: useTranslateBasePrompt('delete.confirm'), cancel: useTranslateBasePrompt('delete.cancel') },
-                                            onConfirm: async () => await deleteBulkStockMutation.mutateAsync(selectedRecords.map((x) => x.id)),
-                                        });
-                                    }}
-                                />
-                                <ActionWithTooltip
-                                    tooltip={useTranslateButtons('wts.tooltip')}
-                                    icon={faComment}
-                                    color={"green.7"}
-                                    actionProps={{ size: "sm", disabled: selectedRecords.length < 1 }}
-                                    iconProps={{ size: "xs" }}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        CreateWTSMessages(selectedRecords);
-                                    }}
-                                />
-                                <ActionWithTooltip
-                                    tooltip={useTranslateButtons('selection.tooltip')}
-                                    icon={faComment}
-                                    color={"green.7"}
-                                    actionProps={{ size: "sm", disabled: selectedRecords.length < 1 }}
-                                    iconProps={{ size: "xs" }}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        CreateRivenSelection(selectedRecords);
-                                    }}
-                                />
-                                <ActionWithTooltip
-                                    tooltip={useTranslateButtons('create_riven.tooltip')}
-                                    icon={faAdd}
-                                    actionProps={{ size: "sm" }}
-                                    iconProps={{ size: "xs" }}
-                                    color={"green.7"}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        OpenCreateRiven();
-                                    }}
-                                />
-                            </Group>
-                        }
-                    />
                     <Group gap={"md"} mt={"md"} >
                         {[StockStatus.Pending, StockStatus.Live, StockStatus.InActive, StockStatus.ToLowProfit, StockStatus.NoSellers].map((status) => (
                             <ColorInfo active={status == filterStatus} key={status} onClick={() => {
@@ -392,29 +319,91 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
                     <StatsWithSegments segments={segments} />
                 </Grid.Col>
             </Grid>
-            <DataTable
-                height={`calc(100vh - ${!is_running ? "339px" : "362px"})`}
+            <DataTableSearch
+                height={`calc(100vh - ${!is_running ? "395px" : "420px"})`}
                 mt={"md"}
-                records={rows}
-                totalRecords={totalRecords}
+                query={query}
+                onSearchChange={(text) => setQuery(text)}
+                filters={filters}
+                rightSectionWidth={145}
+                rightSection={
+                    <Group gap={5}>
+                        <ActionWithTooltip
+                            tooltip={useTranslateButtons('update_bulk.tooltip')}
+                            icon={faEdit}
+                            color={"green.7"}
+                            actionProps={{ size: "sm", disabled: selectedRecords.length < 1 }}
+                            iconProps={{ size: "xs" }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                OpenUpdateModal(selectedRecords);
+                            }}
+                        />
+                        <ActionWithTooltip
+                            tooltip={useTranslateButtons('delete_bulk.tooltip')}
+                            icon={faTrashCan}
+                            color={"red.7"}
+                            actionProps={{ size: "sm", disabled: selectedRecords.length < 1 }}
+                            iconProps={{ size: "xs" }}
+                            onClick={async (e) => {
+                                e.stopPropagation();
+                                modals.openConfirmModal({
+                                    title: useTranslateBasePrompt('delete.title'),
+                                    children: (
+                                        <Text size="sm">
+                                            {useTranslateBasePrompt('delete.message', { count: selectedRecords.length })}
+                                        </Text>
+                                    ),
+                                    labels: { confirm: useTranslateBasePrompt('delete.confirm'), cancel: useTranslateBasePrompt('delete.cancel') },
+                                    onConfirm: async () => await deleteBulkStockMutation.mutateAsync(selectedRecords.map((x) => x.id)),
+                                });
+                            }}
+                        />
+                        <ActionWithTooltip
+                            tooltip={useTranslateButtons('wts.tooltip')}
+                            icon={faComment}
+                            color={"green.7"}
+                            actionProps={{ size: "sm", disabled: selectedRecords.length < 1 }}
+                            iconProps={{ size: "xs" }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                CreateWTSMessages(selectedRecords);
+                            }}
+                        />
+                        <ActionWithTooltip
+                            tooltip={useTranslateButtons('selection.tooltip')}
+                            icon={faComment}
+                            color={"green.7"}
+                            actionProps={{ size: "sm", disabled: selectedRecords.length < 1 }}
+                            iconProps={{ size: "xs" }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                CreateRivenSelection(selectedRecords);
+                            }}
+                        />
+                        <ActionWithTooltip
+                            tooltip={useTranslateButtons('create_riven.tooltip')}
+                            icon={faAdd}
+                            actionProps={{ size: "sm" }}
+                            iconProps={{ size: "xs" }}
+                            color={"green.7"}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                OpenCreateRiven();
+                            }}
+                        />
+                    </Group>
+                }
+                records={rivens || []}
                 customRowAttributes={(record) => {
                     return {
                         "data-color-mode": "box-shadow",
                         "data-stock-status": record.status,
                     }
                 }}
-                withTableBorder
                 customLoader={<Loading />}
                 fetching={updateStockMutation.isPending || sellStockMutation.isPending || deleteStockMutation.isPending || deleteBulkStockMutation.isPending}
-                withColumnBorders
-                page={page}
-                recordsPerPage={pageSize}
                 idAccessor={"id"}
-                onPageChange={(p) => setPage(p)}
-                recordsPerPageOptions={pageSizes}
-                onRecordsPerPageChange={setPageSize}
-                sortStatus={sortStatus}
-                onSortStatusChange={setSortStatus}
                 selectedRecords={selectedRecords}
                 onSelectedRecordsChange={setSelectedRecords}
                 onCellClick={({ record, column }) => {

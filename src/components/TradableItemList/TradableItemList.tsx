@@ -168,6 +168,8 @@ export function TradableItemList({ onAddItem, onAddAll, availableItems }: Tradab
 							<ActionWithTooltip
 								tooltip={useTranslateSearchButtons('add_all.tooltip')}
 								icon={faAdd}
+								actionProps={{ size: "sm" }}
+								iconProps={{ size: "xs" }}
 								onClick={() => {
 									if (onAddAll) {
 										const items = GetFilteredItems();
