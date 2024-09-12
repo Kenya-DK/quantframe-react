@@ -655,7 +655,7 @@ impl ItemModule {
                 &self.get_component("CompareOrdersWhenBuying"),
                 format!("Item {} is overpriced, base of your average price cap of {} and the current price is {}", item_info.name, avg_price_cap, post_price).as_str(),
             );
-            user_order.operation.push("Overpriced".to_string());
+            user_order.operation.push("Deleted".to_string());
         }
 
         // Return if no buy orders are found.
