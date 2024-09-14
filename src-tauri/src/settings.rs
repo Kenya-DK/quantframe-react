@@ -4,8 +4,9 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 
-use crate::enums::{OrderMode, StockMode};
-use crate::error::AppError;
+use crate::enums::order_mode::OrderMode;
+use crate::enums::stock_mode::StockMode;
+use crate::utils::modules::error::AppError;
 use crate::{helper, logger};
 use eyre::eyre;
 
@@ -14,8 +15,11 @@ pub struct SettingsState {
     // Debug Mode
     pub debug: Vec<String>,
     pub dev_mode: bool,
+    pub http: HttpConfig,
     pub live_scraper: LiveScraperSettings,
     pub notifications: Notifications,
+    // Analytics Settings
+    pub analytics: AnalyticsSettings,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct LiveScraperSettings {
@@ -35,6 +39,7 @@ pub struct StockItemSettings {
     // pub maximum_profit: i64,
     pub range_threshold: i64,
     pub avg_price_cap: i64,
+    pub trading_tax_cap: i64,
     pub max_total_price_cap: i64,
     pub price_shift_threshold: i64,
     pub blacklist: Vec<String>,
@@ -42,12 +47,23 @@ pub struct StockItemSettings {
     pub report_to_wfm: bool,
     pub auto_trade: bool, // Will add order to you stock automatically or remove it if you have it
     pub strict_whitelist: bool,
+    pub min_sma: i64,
+    pub min_profit: i64,
+    pub auto_delete: bool,
     // What to post sell, buy, or both
     pub order_mode: OrderMode,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct AnalyticsSettings {
+    pub transaction: bool,
+    pub stock_item: bool,
+    pub stock_riven: bool,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StockRivenSettings {
-    pub range_threshold: i64,
+    pub min_profit: i64,
+    pub threshold_percentage: i64,
+    pub limit_to: i64,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -65,6 +81,12 @@ pub struct Notification {
 pub struct Notifications {
     pub on_new_conversation: Notification,
     pub on_wfm_chat_message: Notification,
+    pub on_new_trade: Notification,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct HttpConfig {
+    pub host: String,
+    pub port: i64,
 }
 // Allow us to run AuthState::default()
 impl Default for SettingsState {
@@ -72,13 +94,20 @@ impl Default for SettingsState {
         Self {
             debug: vec!["*".to_string()],
             dev_mode: false,
+            http: HttpConfig {
+                host: "localhost".to_string(),
+                port: 8080,
+            },
             live_scraper: LiveScraperSettings {
                 stock_mode: StockMode::All,
                 webhook: "".to_string(),
                 stock_item: StockItemSettings {
+                    min_sma: 3,
+                    min_profit: 10,
                     volume_threshold: 15,
                     range_threshold: 10,
                     avg_price_cap: 600,
+                    trading_tax_cap: -1,
                     max_total_price_cap: 100000,
                     price_shift_threshold: -1,
                     blacklist: vec![],
@@ -86,10 +115,13 @@ impl Default for SettingsState {
                     strict_whitelist: false,
                     report_to_wfm: true,
                     auto_trade: true,
+                    auto_delete: true,
                     order_mode: OrderMode::Both,
                 },
                 stock_riven: StockRivenSettings {
-                    range_threshold: 25,
+                    min_profit: 25,
+                    threshold_percentage: 15,
+                    limit_to: 5,
                 },
             },
             notifications: Notifications {
@@ -109,21 +141,35 @@ impl Default for SettingsState {
                     webhook: Some("".to_string()),
                     user_ids: Some(vec![]),
                 },
+                on_new_trade: Notification {
+                    discord_notify: false,
+                    system_notify: true,
+                    content: "From: <PLAYER_NAME>\nOffered: <OF_COUNT> Received: <RE_COUNT>"
+                        .to_string(),
+                    title: "New Trade".to_string(),
+                    webhook: Some("".to_string()),
+                    user_ids: Some(vec![]),
+                },
+            },
+            analytics: AnalyticsSettings { 
+                transaction: true,
+                stock_item: true,
+                stock_riven: true,
             },
         }
     }
 }
 impl SettingsState {
     fn get_file_path() -> PathBuf {
-        let app_path = helper::get_app_roaming_path();
+        let app_path = helper::get_app_storage_path();
         let settings_path = app_path.join("settings.json");
         settings_path
     }
     pub fn setup() -> Result<Self, AppError> {
         let path_ref = Self::get_file_path();
         if path_ref.exists() {
-            let (se, vaild) = Self::read_from_file()?;
-            if vaild {
+            let (se, valid) = Self::read_from_file()?;
+            if valid {
                 Ok(se)
             } else {
                 se.save_to_file()?;

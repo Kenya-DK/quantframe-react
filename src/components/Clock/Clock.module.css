@@ -1,0 +1,5 @@
+.clock {
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+}

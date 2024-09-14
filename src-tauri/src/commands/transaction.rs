@@ -1,90 +1,161 @@
 use crate::{
-    database::{client::DBClient, modules::transaction::TransactionStruct},
-    error::{self, AppError},
+    app::client::AppState,
+    notification::client::NotifyClient,
+    qf_client::client::QFClient,
+    utils::{
+        enums::ui_events::{UIEvent, UIOperationEvent},
+        modules::error::{self, AppError},
+    },
 };
+use entity::transaction::transaction;
 use eyre::eyre;
-use once_cell::sync::Lazy;
+use serde_json::json;
+use service::{TransactionMutation, TransactionQuery};
 use std::sync::{Arc, Mutex};
-// Create a static variable to store the log file name
-static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("command_transaction.log".to_string()));
 
 #[tauri::command]
-pub async fn create_transaction_entry(
-    id: String,
-    ttype: String,
-    item_type: String,
-    quantity: i32,
-    rank: i32,
-    price: i32,
-    db: tauri::State<'_, Arc<Mutex<DBClient>>>,
-) -> Result<TransactionStruct, AppError> {
-    let db = db.lock()?.clone();
-    let transaction = db
-        .transaction()
-        .create(&id, &item_type, &ttype, quantity, price, rank, None)
-        .await
-        .unwrap();
-    db.transaction().emit(
-        "CREATE_OR_UPDATE",
-        serde_json::to_value(transaction.clone()).unwrap(),
-    );
-    Ok(transaction)
-}
-#[tauri::command]
-pub async fn update_transaction_entry(
-    id: i64,
-    price: Option<i64>,
-    transaction_type: Option<String>,
-    quantity: Option<i64>,
-    rank: Option<i64>,
-    db: tauri::State<'_, Arc<Mutex<DBClient>>>,
-) -> Result<TransactionStruct, AppError> {
-    let db = db.lock()?.clone();
-    // Find Riven in Stock
-    let transaction = db.transaction().get_by_id(id).await?;
-    if transaction.is_none() {
-        return Err(AppError::new(
-            "Command:Transaction",
-            eyre!("Transaction not found"),
-        ));
-    }
+pub async fn transaction_reload(
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    app: tauri::State<'_, Arc<Mutex<AppState>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
+) -> Result<(), AppError> {
+    let app = app.lock()?.clone();
+    let notify = notify.lock()?.clone();
+    let qf = qf.lock()?.clone();
 
-    // Update Riven in Stock
-    match db
-        .transaction()
-        .update_by_id(id, price, transaction_type, quantity, rank)
-        .await
-    {
-        Ok(transaction) => {
-            return Ok(transaction);
+    match TransactionQuery::get_all(&app.conn).await {
+        Ok(transactions) => {
+            qf.analytics().add_metric("Transaction_Reload", "manual");
+            notify.gui().send_event_update(
+                UIEvent::UpdateTransaction,
+                UIOperationEvent::Set,
+                Some(json!(transactions)),
+            );
         }
         Err(e) => {
-            error::create_log_file(db.log_file.clone(), &e);
-            return Err(e);
+            let error: AppError = AppError::new_db("TransactionQuery::reload", e);
+            error::create_log_file("transaction_reload.log".to_string(), &error);
+            return Err(error);
+        }
+    };
+    Ok(())
+}
+#[tauri::command]
+pub async fn transaction_get_all(
+    app: tauri::State<'_, Arc<Mutex<AppState>>>,
+) -> Result<Vec<transaction::Model>, AppError> {
+    let app = app.lock()?.clone();
+    match TransactionQuery::get_all(&app.conn).await {
+        Ok(transactions) => {
+            return Ok(transactions);
+        }
+        Err(e) => {
+            let error: AppError = AppError::new_db("TransactionQuery::get_all", e);
+            error::create_log_file("transaction_get_all.log".to_string(), &error);
+            return Err(error);
         }
     };
 }
 
 #[tauri::command]
-pub async fn delete_transaction_entry(
+pub async fn transaction_update(
     id: i64,
-    db: tauri::State<'_, Arc<Mutex<DBClient>>>,
-) -> Result<TransactionStruct, AppError> {
-    let db = db.lock()?.clone();
+    price: Option<i64>,
+    quantity: Option<i64>,
+    app: tauri::State<'_, Arc<Mutex<AppState>>>,
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
+) -> Result<transaction::Model, AppError> {
+    let app = app.lock()?.clone();
+    let notify = notify.lock()?.clone();
+    let qf = qf.lock()?.clone();
 
-    // Find Transaction
-    let transaction = db.transaction().get_by_id(id).await?;
+    // Find the transaction by id
+    let transaction = match TransactionQuery::find_by_id(&app.conn, id).await {
+        Ok(transaction) => transaction,
+        Err(e) => {
+            let error: AppError = AppError::new_db("TransactionQuery::get_by_id", e);
+            error::create_log_file("command.log".to_string(), &error);
+            return Err(error);
+        }
+    };
+
     if transaction.is_none() {
         return Err(AppError::new(
-            "Command:Transaction",
-            eyre!("Transaction not found"),
+            "TransactionUpdate",
+            eyre!(format!("Transaction with id {} not found", id)),
         ));
     }
 
-    let transaction = transaction.unwrap().clone();
-    // Delete Transaction
-    db.transaction().delete(id).await?;
-    db.transaction()
-        .emit("DELETE", serde_json::to_value(transaction.clone()).unwrap());
-    Ok(transaction)
+    let mut new_item = transaction.unwrap();
+
+    if let Some(price) = price {
+        new_item.price = price;
+    }
+
+    if let Some(quantity) = quantity {
+        new_item.quantity = quantity;
+    }
+
+    match TransactionMutation::update_by_id(&app.conn, id, new_item.clone()).await {
+        Ok(updated) => {
+            qf.analytics().add_metric("Transaction_Update", "manual");
+            notify.gui().send_event_update(
+                UIEvent::UpdateTransaction,
+                UIOperationEvent::CreateOrUpdate,
+                Some(json!(updated)),
+            );
+        }
+        Err(e) => {
+            let error: AppError = AppError::new_db("TransactionQuery::get_all", e);
+            error::create_log_file("transaction_update.log".to_string(), &error);
+            return Err(error);
+        }
+    };
+    match qf.transaction().update_transaction(&new_item).await {
+        Ok(_) => (),
+        Err(e) => {
+            error::create_log_file("transaction_update.log".to_string(), &e);
+            return Err(e);
+        }
+    }
+    Ok(new_item)
+}
+
+#[tauri::command]
+pub async fn transaction_delete(
+    id: i64,
+    app: tauri::State<'_, Arc<Mutex<AppState>>>,
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
+) -> Result<(), AppError> {
+    let app = app.lock()?.clone();
+    let notify = notify.lock()?.clone();
+    let qf: QFClient = qf.lock()?.clone();
+    match TransactionMutation::delete_by_id(&app.conn, id).await {
+        Ok(deleted) => {
+            if deleted.rows_affected > 0 {
+                qf.analytics().add_metric("Transaction_Delete", "manual");
+                notify.gui().send_event_update(
+                    UIEvent::UpdateTransaction,
+                    UIOperationEvent::Delete,
+                    Some(json!({ "id": id })),
+                );
+            }
+        }
+        Err(e) => {
+            let error: AppError = AppError::new_db("TransactionMutation::delete", e);
+            error::create_log_file("transaction_delete.log".to_string(), &error);
+            return Err(error);
+        }
+    };
+
+    match qf.transaction().delete_transaction(id).await {
+        Ok(_) => (),
+        Err(e) => {
+            error::create_log_file("transaction_delete.log".to_string(), &e);
+            return Err(e);
+        }
+    }
+    Ok(())
 }

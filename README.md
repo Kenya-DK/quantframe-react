@@ -21,7 +21,7 @@ Inspired by [Akmayer's Warframe-Algo-Trader](https://github.com/akmayer/Warframe
 
 ## Installation
 ### Download installer
-You can download the latest release from [here](https://github.com/Kenya-DK/quantframe-react/releases)
+You can download the latest release from [here](https://github.com/Kenya-DK/quantframe-react)
 
 ### OR Build it from source
 If you prefer to build it locally for whatever reason, heres what you need:
@@ -56,8 +56,8 @@ Then type in `powershell` and hit enter
 </details>
 
 ```bash
-pnpm i # Install nodejs deps 
-pnpm run tauri build
+npm i # Install nodejs deps 
+npm run tauri build
 ```
 > For developers, you can also use yarn or pnpm if you prefer. (pnpm is the fastest package manager)
 

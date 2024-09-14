@@ -1,0 +1,9 @@
+.dataTable {
+  height: 55vh;
+  transition: height 200ms ease-out;
+  overflow: hidden;
+  &[data-filter="true"] {
+    height: 35.6vh;
+    transition: height 50ms ease-in;
+  }
+}

@@ -1,207 +1,172 @@
-use chrono::{format, Duration};
-use directories::{BaseDirs, UserDirs};
-use eyre::eyre;
-use once_cell::sync::Lazy;
-use polars::{
-    lazy::dsl::col,
-    prelude::{DataFrame, Expr, IntoLazy, SortOptions},
-    series::Series,
+use entity::{
+    stock::{
+        item::{create::CreateStockItem, stock_item},
+        riven::{create::CreateStockRiven, stock_riven},
+    },
+    transaction::transaction::TransactionType,
 };
-use serde_json::{json, Value};
+use eyre::eyre;
+use regex::Regex;
+use serde_json::{json, Map, Value};
+use service::{StockItemMutation, StockRivenMutation, TransactionMutation};
 use std::{
+    collections::HashMap,
     fs::{self, File},
     io::{self, Read, Write},
     path::{Path, PathBuf},
-    sync::Mutex,
+    sync::{Arc, Mutex},
 };
-use tauri::{api::file, Window};
+use tauri::{api::dir, Manager, State};
+
 use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 
 use crate::{
-    error::AppError,
-    logger::{self},
-    structs::WarframeLanguage,
-    PACKAGEINFO,
+    app::client::AppState,
+    cache::client::CacheClient,
+    log_parser::enums::trade_classification::TradeClassification,
+    notification::client::NotifyClient,
+    qf_client::client::QFClient,
+    utils::{
+        enums::ui_events::{UIEvent, UIOperationEvent},
+        modules::{error::AppError, logger},
+    },
+    wfm_client::{client::WFMClient, enums::order_type::OrderType},
+    APP,
 };
-pub static WINDOW: Lazy<Mutex<Option<Window>>> = Lazy::new(|| Mutex::new(None));
 
-#[derive(Debug)]
-pub enum ColumnType {
-    Bool,
-    F64,
-    I64,
-    I32,
-    String,
-}
-pub enum ColumnValues {
-    Bool(Vec<bool>),
-    F64(Vec<f64>),
-    I64(Vec<i64>),
-    I32(Vec<i32>),
-    String(Vec<String>),
-}
-pub enum ColumnValue {
-    Bool(Option<bool>),
-    F64(Option<f64>),
-    I64(Option<i64>),
-    I32(Option<i32>),
-    String(Option<String>),
-}
-
-pub fn send_message_to_window(event: &str, data: Option<Value>) {
-    let window = WINDOW.lock().unwrap();
-    if let Some(window) = &*window {
-        let rep = window.emit("message", json!({ "event": event, "data": data }));
-        match rep {
-            Ok(_) => {}
-            Err(e) => {
-                println!("Error while sending message to window {:?}", e);
-            }
-        }
-    }
-}
-
-pub async fn get_app_info() -> Result<serde_json::Value, AppError> {
-    let packageinfo = PACKAGEINFO
-        .lock()
-        .unwrap()
-        .clone()
-        .expect("Could not get package info");
-    let version = packageinfo.version.to_string();
-    let url = "https://raw.githubusercontent.com/Kenya-DK/quantframe-react/main/src-tauri/tauri.conf.json";
-    let client = reqwest::Client::new();
-    let request = client.request(reqwest::Method::GET, reqwest::Url::parse(&url).unwrap());
-    let response = request.send().await;
-    if let Err(e) = response {
-        return Err(AppError::new("CHECKFORUPDATES", eyre!(e.to_string())));
-    }
-    let response_data = response.unwrap();
-    let status = response_data.status();
-
-    if status != 200 {
-        return Err(AppError::new(
-            "CHECKFORUPDATES",
-            eyre!("Could not get package.json. Status: {}", status.to_string()),
-        ));
-    }
-    let response = response_data.json::<Value>().await.unwrap();
-
-    let current_version_str = response["package"]["version"].as_str().unwrap();
-    let current_version = current_version_str.replace(".", "");
-    let current_version = current_version.parse::<i32>().unwrap();
-
-    let version_str = version;
-    let version = version_str.replace(".", "").parse::<i32>().unwrap();
-
-    let update_state = json!({
-        "update_available": current_version > version,
-        "version": current_version_str,
-        "current_version": version_str,
-        "release_notes": "New version available",
-        "download_url": "https://github.com/Kenya-DK/quantframe-react/releases",
-    });
-
-    let rep = json!({
-        "app_name": packageinfo.name,
-        "app_description": packageinfo.description,
-        "app_author": packageinfo.authors,
-        "app_version": update_state,
-    });
-
-    Ok(rep)
-}
-
-pub fn emit_progress(id: &str, i18n_key: &str, values: Option<Value>, is_completed: bool) {
-    send_message_to_window(
-        "Client:Update:Progress",
-        Some(
-            json!({ "id": id, "i18n_key": i18n_key,"values": values, "isCompleted": is_completed}),
-        ),
-    );
-}
-
-pub fn emit_update(update_type: &str, operation: &str, data: Option<Value>) {
-    send_message_to_window(
-        "Client:Update",
-        Some(json!({ "type": update_type, "operation": operation, "data": data})),
-    );
-}
-
-pub fn emit_undate_initializ_status(status: &str, data: Option<Value>) {
-    send_message_to_window(
-        "set_initializstatus",
-        Some(json!({
-            "status": status,
-            "data": data
-        })),
-    );
-}
-
-pub fn get_app_local_path() -> PathBuf {
-    if let Some(base_dirs) = BaseDirs::new() {
-        // App path for csv file
-        let local_path = Path::new(base_dirs.data_local_dir());
-        local_path.to_path_buf()
-    } else {
-        panic!("Could not find app path");
-    }
-}
-
-pub fn get_app_roaming_path() -> PathBuf {
-    if let Some(base_dirs) = BaseDirs::new() {
-        // App path for csv file
-        let roaming_path = Path::new(base_dirs.cache_dir());
-        let app_path = roaming_path.join("dev.kenya.quantframe");
-        // Check if the app path exists, if not create it
-        if !app_path.exists() {
-            fs::create_dir_all(app_path.clone()).unwrap();
-        }
-        app_path
-    } else {
-        panic!("Could not find app path");
-    }
-}
-
-pub fn get_desktop_path() -> PathBuf {
-    if let Some(base_dirs) = UserDirs::new() {
-        let local_path = get_app_roaming_path(); // Ensure local_path lives long enough
-
-        let desktop_path = match base_dirs.desktop_dir() {
-            Some(desktop_path) => desktop_path,
-            None => local_path.as_path(),
-        };
-        desktop_path.to_path_buf()
-    } else {
-        panic!("Could not find app path");
-    }
-}
+pub static APP_PATH: &str = "dev.kenya.quantframe";
 
 #[derive(Clone, Debug)]
 pub struct ZipEntry {
     pub file_path: PathBuf,
     pub sub_path: Option<String>,
+    pub content: Option<String>,
     pub include_dir: bool,
 }
 
-pub fn get_zip_entrys(path: PathBuf, in_subfolders: bool) -> Result<Vec<ZipEntry>, AppError> {
+pub fn add_metric(key: &str, value: &str) {
+    let key = key.to_string();
+    let value = value.to_string();
+    tauri::async_runtime::spawn({
+        async move {
+            // Create a new instance of the QFClient and store it in the app state
+            let qf_handle = APP.get().expect("failed to get app handle");
+            let qf_state: State<Arc<Mutex<QFClient>>> = qf_handle.state();
+            let qf = qf_state.lock().expect("failed to lock app state").clone();
+            qf.analytics().add_metric(&key, &value);
+        }
+    });
+}
+pub fn get_device_id() -> String {
+    let home_dir = match tauri::api::path::home_dir() {
+        Some(val) => val,
+        None => {
+            panic!("Could not find app path");
+        }
+    };
+    let device_name = home_dir.file_name().unwrap().to_str().unwrap();
+    device_name.to_string()
+}
+
+pub fn dose_app_exist() -> bool {
+    let local_path = match tauri::api::path::local_data_dir() {
+        Some(val) => val,
+        None => {
+            panic!("Could not find app path");
+        }
+    };
+    let app_path = local_path.join(APP_PATH);
+    app_path.exists()
+}
+
+pub fn get_app_storage_path() -> PathBuf {
+    let local_path = match tauri::api::path::local_data_dir() {
+        Some(val) => val,
+        None => {
+            panic!("Could not find app path");
+        }
+    };
+
+    let app_path = local_path.join(APP_PATH);
+    if !app_path.exists() {
+        fs::create_dir_all(&app_path).unwrap()
+    }
+    app_path
+}
+
+pub fn remove_special_characters(input: &str) -> String {
+    // Define the pattern for special characters except _ and space
+    let pattern = Regex::new("[^a-zA-Z0-9_ ]").unwrap();
+
+    // Replace special characters with empty string
+    let result = pattern.replace_all(input, "");
+
+    result.into_owned()
+}
+
+pub fn get_local_data_path() -> PathBuf {
+    let local_path = match tauri::api::path::local_data_dir() {
+        Some(val) => val,
+        None => {
+            panic!("Could not find app path");
+        }
+    };
+    local_path
+}
+
+pub fn get_desktop_path() -> PathBuf {
+    let desktop_path = match tauri::api::path::desktop_dir() {
+        Some(val) => val,
+        None => {
+            panic!("Could not find desktop path");
+        }
+    };
+    desktop_path
+}
+
+pub fn match_pattern(
+    input: &str,
+    regex: Vec<String>,
+) -> Result<(bool, Vec<Option<String>>), regex::Error> {
+    for regex in regex {
+        let re: Regex = Regex::new(&regex)?;
+        if let Some(captures) = re.captures(input) {
+            let mut result: Vec<Option<String>> = vec![];
+            for i in 1..captures.len() {
+                let group = captures.get(i).map(|m| m.as_str().to_string());
+                let group: Option<String> =
+                    group.map(|s| s.chars().filter(|c| c.is_ascii()).collect());
+                result.push(group);
+            }
+            return Ok((true, result));
+        }
+    }
+    Ok((false, vec![]))
+}
+
+pub fn read_zip_entries(
+    path: PathBuf,
+    include_subfolders: bool,
+) -> Result<Vec<ZipEntry>, AppError> {
     let mut files: Vec<ZipEntry> = Vec::new();
     for path in fs::read_dir(path).unwrap() {
         let path = path.unwrap().path();
         if path.is_dir() {
             let dir_name = path.file_name().unwrap().to_str().unwrap();
-            let subfiles = get_zip_entrys(path.to_owned(), in_subfolders)?;
-            for mut subfile in subfiles {
-                let sub_path = subfile.sub_path.clone().unwrap_or("".to_string());
+            let file_entries = read_zip_entries(path.to_owned(), include_subfolders)?;
+            for mut archive_entry in file_entries {
+                let sub_path = archive_entry.sub_path.clone().unwrap_or("".to_string());
                 // Remove the first slash if it exists
                 let full_path = format!("{}/{}", dir_name, sub_path);
-                subfile.sub_path = Some(full_path);
-                files.push(subfile);
+                archive_entry.sub_path = Some(full_path);
+                files.push(archive_entry);
             }
         }
         if path.is_file() {
             files.push(ZipEntry {
                 file_path: path.clone(),
                 sub_path: None,
+                content: None,
                 include_dir: false,
             });
         }
@@ -220,16 +185,16 @@ pub fn create_zip_file(mut files: Vec<ZipEntry>, zip_path: &str) -> Result<(), A
 
     for file_entry in &files {
         if file_entry.include_dir {
-            let subfiles = get_zip_entrys(file_entry.file_path.clone(), true)?;
-            for mut subfile in subfiles {
-                if subfile.sub_path.is_some() {
-                    subfile.sub_path = Some(format!(
+            let sub_file_entries = read_zip_entries(file_entry.file_path.clone(), true)?;
+            for mut sub_file_entry in sub_file_entries {
+                if sub_file_entry.sub_path.is_some() {
+                    sub_file_entry.sub_path = Some(format!(
                         "{}/{}",
                         file_entry.sub_path.clone().unwrap_or("".to_string()),
-                        subfile.sub_path.clone().unwrap_or("".to_string())
+                        sub_file_entry.sub_path.clone().unwrap_or("".to_string())
                     ));
                 }
-                files_to_compress.push(subfile);
+                files_to_compress.push(sub_file_entry);
             }
         }
     }
@@ -262,7 +227,6 @@ pub fn create_zip_file(mut files: Vec<ZipEntry>, zip_path: &str) -> Result<(), A
             )
         })?;
         let file_name = file_path.file_name().unwrap().to_str().unwrap();
-
         // Adding the file to the ZIP archive.
         if file_entry.sub_path.is_some() && file_entry.sub_path.clone().unwrap() != "" {
             let mut sub_path = file_entry.sub_path.clone().unwrap();
@@ -296,17 +260,33 @@ pub fn create_zip_file(mut files: Vec<ZipEntry>, zip_path: &str) -> Result<(), A
                 )
             })?;
         }
+
         let mut buffer = Vec::new();
-        io::copy(&mut file.take(u64::MAX), &mut buffer).map_err(|e| {
-            AppError::new(
-                "Zip:Copy",
-                eyre!(format!(
-                    "Path: {:?}, Error: {}",
-                    file_entry.file_path,
-                    e.to_string()
-                )),
-            )
-        })?;
+        if file_entry.content.is_some() {
+            buffer
+                .write_all(file_entry.content.clone().unwrap().as_bytes())
+                .map_err(|e| {
+                    AppError::new(
+                        "Zip:Write",
+                        eyre!(format!(
+                            "Path: {:?}, Error: {}",
+                            file_entry.file_path,
+                            e.to_string()
+                        )),
+                    )
+                })?;
+        } else {
+            io::copy(&mut file.take(u64::MAX), &mut buffer).map_err(|e| {
+                AppError::new(
+                    "Zip:Copy",
+                    eyre!(format!(
+                        "Path: {:?}, Error: {}",
+                        file_entry.file_path,
+                        e.to_string()
+                    )),
+                )
+            })?;
+        }
 
         zip.write_all(&buffer).map_err(|e| {
             AppError::new(
@@ -324,416 +304,88 @@ pub fn create_zip_file(mut files: Vec<ZipEntry>, zip_path: &str) -> Result<(), A
     Ok(())
 }
 
-pub fn sort_dataframe(df: DataFrame, column: &str, ascending: bool) -> Result<DataFrame, AppError> {
-    let df = df
-        .clone()
-        .lazy()
-        .sort(
-            column,
-            SortOptions {
-                descending: ascending,
-                nulls_last: false,
-                multithreaded: false,
-            },
-        )
-        .collect()
-        .map_err(|e| AppError::new("Helper", eyre!(e.to_string())))?;
-    Ok(df)
-}
+pub fn parse_args_from_string(args: &str) -> HashMap<String, String> {
+    let mut args_map = HashMap::new();
+    let mut parts = args.split_whitespace().peekable();
 
-pub fn filter_and_extract(
-    df: DataFrame,
-    filter: Option<Expr>,
-    select_cols: Vec<&str>,
-) -> Result<DataFrame, AppError> {
-    let selected_columns: Vec<_> = select_cols.into_iter().map(col).collect();
-
-    let df = match filter {
-        Some(filter) => df
-            .lazy()
-            .filter(filter)
-            .collect()
-            .map_err(|e| AppError::new("Helper", eyre!(e.to_string())))?,
-        None => df,
-    };
-
-    let df_select = df.lazy().select(&selected_columns).collect();
-    match df_select {
-        Ok(df_select) => Ok(df_select),
-        Err(e) => Err(AppError::new("Helper", eyre!(e.to_string()))),
-    }
-}
-
-pub fn get_column_values(
-    df: DataFrame,
-    filter: Option<Expr>,
-    column: &str,
-    col_type: ColumnType,
-) -> Result<ColumnValues, AppError> {
-    let error = format!(
-        "Column: {:?} ColumnType: {:?} Error: [] [J]{}[J]",
-        column,
-        col_type,
-        serde_json::to_value(&df).unwrap().to_string()
-    );
-
-    let df: DataFrame = match filter {
-        Some(filter) => df.lazy().filter(filter).collect().map_err(|e| {
-            AppError::new("Helper", eyre!(error.replace("[]", e.to_string().as_str())))
-        })?,
-        None => df,
-    };
-
-    let column_series = df
-        .column(column)
-        .map_err(|e| AppError::new("Helper", eyre!(error.replace("[]", e.to_string().as_str()))))?;
-
-    match col_type {
-        ColumnType::Bool => {
-            let values: Vec<bool> = column_series
-                .bool()
-                .map_err(|e| {
-                    AppError::new("Helper", eyre!(error.replace("[]", e.to_string().as_str())))
-                })?
-                .into_iter()
-                .filter_map(|opt_val| opt_val)
-                .collect();
-            Ok(ColumnValues::Bool(values))
-        }
-
-        ColumnType::F64 => {
-            let values: Vec<f64> = column_series
-                .f64()
-                .map_err(|e| {
-                    AppError::new("Helper", eyre!(error.replace("[]", e.to_string().as_str())))
-                })?
-                .into_iter()
-                .filter_map(|opt_val| opt_val)
-                .collect();
-            Ok(ColumnValues::F64(values))
-        }
-
-        ColumnType::I64 => {
-            let values: Vec<i64> = column_series
-                .i64()
-                .map_err(|e| {
-                    AppError::new("Helper", eyre!(error.replace("[]", e.to_string().as_str())))
-                })?
-                .into_iter()
-                .filter_map(|opt_val| opt_val)
-                .collect();
-            Ok(ColumnValues::I64(values))
-        }
-        ColumnType::I32 => {
-            let values: Vec<i32> = column_series
-                .i32()
-                .map_err(|e| {
-                    AppError::new("Helper", eyre!(error.replace("[]", e.to_string().as_str())))
-                })?
-                .into_iter()
-                .filter_map(|opt_val| opt_val)
-                .collect();
-            Ok(ColumnValues::I32(values))
-        }
-        ColumnType::String => {
-            let values = column_series
-                .utf8()
-                .map_err(|e| {
-                    AppError::new("Helper", eyre!(error.replace("[]", e.to_string().as_str())))
-                })?
-                .into_iter()
-                .filter_map(|opt_name| opt_name.map(String::from))
-                .collect::<Vec<_>>()
-                .into_iter()
-                .collect::<Vec<_>>();
-            Ok(ColumnValues::String(values))
-        }
-    }
-}
-pub fn get_column_value(
-    df: DataFrame,
-    filter: Option<Expr>,
-    column: &str,
-    col_type: ColumnType,
-) -> Result<ColumnValue, AppError> {
-    match get_column_values(df, filter, column, col_type)? {
-        ColumnValues::Bool(bool_values) => {
-            let value = bool_values.get(0).cloned();
-            Ok(ColumnValue::Bool(value))
-        }
-        ColumnValues::F64(f64_values) => {
-            let value = f64_values.get(0).cloned();
-            Ok(ColumnValue::F64(value))
-        }
-        ColumnValues::I64(i64_values) => {
-            let value = i64_values.get(0).cloned();
-            Ok(ColumnValue::I64(value))
-        }
-        ColumnValues::I32(i32_values) => {
-            let value = i32_values.get(0).cloned();
-            Ok(ColumnValue::I32(value))
-        }
-        ColumnValues::String(string_values) => {
-            let value = string_values.get(0).cloned();
-            Ok(ColumnValue::String(value))
-        }
-    }
-}
-
-pub fn merge_dataframes(frames: Vec<DataFrame>) -> Result<DataFrame, AppError> {
-    // Check if there are any frames to merge
-    if frames.is_empty() {
-        return Err(AppError::new("Helper", eyre!("No frames to merge")));
-    }
-
-    // Get the column names from the first frame
-    let column_names: Vec<&str> = frames[0].get_column_names();
-
-    // For each column name, stack the series from all frames vertically
-    let mut combined_series: Vec<Series> = Vec::new();
-
-    for &col_name in &column_names {
-        let first_series = frames[0]
-            .column(col_name)
-            .map_err(|e| AppError::new("Helper", eyre!(e.to_string())))?
-            .clone();
-        let mut stacked_series = first_series;
-
-        for frame in frames.iter().skip(1) {
-            let series = frame
-                .column(col_name)
-                .map_err(|e| AppError::new("Helper", eyre!(e.to_string())))?
-                .clone();
-            stacked_series = stacked_series
-                .append(&series)
-                .map_err(|e| AppError::new("Helper", eyre!(e.to_string())))?
-                .clone();
-        }
-
-        combined_series.push(stacked_series);
-    }
-    // Construct a DataFrame from the merged data
-    Ok(DataFrame::new(combined_series)
-        .map_err(|e| AppError::new("Helper", eyre!(e.to_string())))?)
-}
-/// Returns a vector of strings representing the dates of the last `x` days, including today.
-/// The dates are formatted as "YYYY-MM-DD".
-pub fn last_x_days(x: i64) -> Vec<String> {
-    let today = chrono::Local::now().naive_utc();
-    (0..x)
-        .rev()
-        .map(|i| {
-            (today - Duration::days(i + 1))
-                .format("%Y-%m-%d")
-                .to_string()
-        })
-        .rev()
-        .collect()
-}
-pub fn send_message_to_discord(
-    webhook: String,
-    title: String,
-    content: String,
-    user_ids: Option<Vec<String>>,
-) {
-    // Check if the webhook is empty
-    if webhook.is_empty() {
-        logger::warning_con("Helper", "Discord webhook is empty");
-        return;
-    }
-    tauri::async_runtime::spawn(async move {
-        let client = reqwest::Client::new();
-
-        let mut body = json!({
-            "username": "Quantframe",
-            "avatar_url": "https://i.imgur.com/bgR6vAd.png",
-            "embeds": [
-                {
-                    "title": title,
-                    "description": content,
-                    "color": 5814783,
-                    "footer": {
-                        "text": format!("Quantframe v{}", PACKAGEINFO.lock().unwrap().clone().unwrap().version.to_string()),
-                        "timestamp": chrono::Local::now()
-                        .naive_utc()
-                        .to_string()
-                    }
+    while let Some(part) = parts.next() {
+        if part.starts_with("--") {
+            if let Some(value) = parts.peek() {
+                if !value.starts_with("--") {
+                    args_map.insert(part.to_string(), value.to_string());
+                    parts.next();
                 }
-            ]
-        });
+            } else {
+                args_map.insert(part.to_string(), "".to_string());
+            }
+        }
+    }
 
-        let mut pings: Vec<String> = Vec::new();
-        if let Some(user_ids) = user_ids {
-            for user_id in user_ids {
-                pings.push(format!("<@{}>", user_id));
-            }
-        }
-        if pings.len() > 0 {
-            body["content"] = json!(format!("{}", pings.join(" ")).replace("\"", ""));
-        } else {
-            body["content"] = json!("");
-        }
-
-        let res = client.post(webhook).json(&body).send().await;
-        match res {
-            Ok(_) => {
-                logger::info_con("Helper", "Message sent to discord");
-            }
-            Err(e) => {
-                println!("Error while sending message to discord {:?}", e);
-            }
-        }
-    });
+    args_map
 }
 
-pub async fn alter_table(
-    connection: sqlx::Pool<sqlx::Sqlite>,
-    alter_sql: &str,
-) -> Result<bool, AppError> {
-    let re = regex::Regex::new(r#"ALTER TABLE "(?P<table>[^"]+)" ADD COLUMN "(?P<column>[^"]+)"#)
-        .unwrap();
-    if let Some(captures) = re.captures(alter_sql) {
-        let table_name = captures.name("table").map_or("", |m| m.as_str());
-        let column_name = captures.name("column").map_or("", |m| m.as_str());
-        if table_name != "" && column_name != "" {
-            let rep = sqlx::query(format!("PRAGMA table_info(\"{}\")", table_name).as_str())
-                .fetch_all(&connection)
-                .await
-                .map_err(|e| AppError::new("Database", eyre!(e.to_string())));
-            match rep {
-                Ok(r) => {
-                    for row in r {
-                        let name: String = sqlx::Row::get(&row, "name");
-                        if name == column_name {
-                            return Ok(true);
+pub fn validate_args(
+    args: &str,
+    requirements: Vec<&str>,
+) -> Result<HashMap<String, String>, AppError> {
+    let args_map = parse_args_from_string(args);
+
+    for req in requirements {
+        // Split the requirement to check for conditional requirements
+        let parts: Vec<&str> = req.split(':').collect();
+        if parts.len() == 1 {
+            // Simple required argument
+            let arg = parts[0];
+            if !args_map.contains_key(arg) {
+                return Err(AppError::new(
+                    "ValidateArgs",
+                    eyre!(format!("Missing required argument: {}", arg)),
+                ));
+            }
+        } else if parts.len() == 2 {
+            // Conditional required arguments
+            let conditional_parts: Vec<&str> = parts[1].split('|').collect();
+            if conditional_parts.len() == 2 {
+                let (value, additional_args_str) = (conditional_parts[0], conditional_parts[1]);
+                let additional_args: Vec<&str> = additional_args_str.split_whitespace().collect();
+
+                if let Some(arg_value) = args_map.get(parts[0]) {
+                    if arg_value == value {
+                        for additional_arg in additional_args {
+                            if !args_map.contains_key(additional_arg) {
+                                return Err(AppError::new(
+                                    "ValidateArgs",
+                                    eyre!(format!(
+                                        "Missing required argument due to {}={}: {}",
+                                        parts[0], value, additional_arg
+                                    )),
+                                ));
+                            }
                         }
                     }
-                    sqlx::query(&alter_sql)
-                        .execute(&connection)
-                        .await
-                        .map_err(|e| AppError::new("Database", eyre!(e.to_string())))?;
-                    return Ok(false);
-                }
-                Err(_) => {
-                    return Err(AppError::new(
-                        "Database",
-                        eyre!("Could not find table in database."),
-                    ));
                 }
             }
-        } else {
-            logger::warning_con(
-                "Helper",
-                "Could not find table name or column name in the SQL.",
-            );
         }
-    } else {
-        logger::warning_con(
-            "Helper",
-            "Could not find table name or column name in the SQL.",
-        );
     }
-    Ok(false)
+
+    Ok(args_map)
 }
 
-pub fn calculate_trade_tax(item_tags: Vec<String>, rank: Option<i64>) -> i64 {
-    // If tags contains "arcane_upgrade" then it is an arcane
-    if item_tags.contains(&"arcane_enhancement".to_string()) {
-        if item_tags.contains(&"common".to_string()) {
-            return 2000;
-        } else if item_tags.contains(&"uncommon".to_string()) {
-            return 4000;
-        } else if item_tags.contains(&"rare".to_string()) {
-            return 8000;
-        } else if item_tags.contains(&"legendary".to_string()) {
-            let rank_tax = Vec::from([100000, 300000, 600000, 1000000, 1500000, 2100000]);
-            let rank = rank.unwrap_or(0);
-            if rank > 0 && rank < 7 {
-                return rank_tax[rank as usize];
-            } else {
-                return rank_tax[0];
-            }
-        }
+pub fn is_match(
+    input: &str,
+    to_match: &str,
+    ignore_case: bool,
+    remove_string: Option<&String>,
+) -> bool {
+    let mut input = input.to_string();
+    if let Some(remove_string) = remove_string {
+        input = input.replace(remove_string, "");
     }
-    if item_tags.contains(&"mod".to_string()) {
-        if item_tags.contains(&"common".to_string()) {
-            return 2000;
-        } else if item_tags.contains(&"uncommon".to_string()) {
-            return 4000;
-        } else if item_tags.contains(&"rare".to_string()) {
-            return 8000;
-        } else if item_tags.contains(&"legendary".to_string())
-            || item_tags.contains(&"archon".to_string())
-        {
-            return 1000000;
-        }
-    }
-    2000
-}
-
-pub fn get_warframe_language() -> WarframeLanguage {
-    let path = get_app_local_path().join("Warframe").join("Launcher.log");
-
-    let log_file = "get_warframe_language.log";
-
-    if !path.exists() {
-        return WarframeLanguage::English;
-    }
-
-    let file_result = fs::File::open(&path);
-    let mut contents = String::new();
-
-    if let Ok(mut file) = file_result {
-        if let Ok(_) = std::io::Read::read_to_string(&mut file, &mut contents) {
-            if let Some(num) = contents.rfind("-language:") {
-                let lang_code = &contents[num + 10..num + 12];
-
-                // Ensure lang_code is exactly two characters
-                if lang_code.len() == 2 {
-                    return WarframeLanguage::from_str(lang_code);
-                } else {
-                    logger::info_con(
-                        "Helper",
-                        format!(
-                            "Could not find language code in Warframe launcher log file at {:?}",
-                            path.to_str()
-                        )
-                        .as_str(),
-                    );
-                }
-            } else {
-                logger::info_con(
-                    "Helper",
-                    format!(
-                        "Could not find language code in Warframe launcher log file at {:?}",
-                        path.to_str()
-                    )
-                    .as_str(),
-                );
-            }
-        } else {
-            logger::info_con(
-                "Helper",
-                format!(
-                    "Could not read Warframe launcher log file at {:?}",
-                    path.to_str()
-                )
-                .as_str(),
-            );
-        }
+    if ignore_case {
+        input.to_lowercase() == to_match.to_lowercase()
     } else {
-        logger::info_con(
-            "Helper",
-            format!(
-                "Could not open Warframe launcher log file at {:?}",
-                path.to_str()
-            )
-            .as_str(),
-        );
+        input == to_match
     }
-
-    // Default to English in case of any error
-    WarframeLanguage::English
 }
 
 pub fn validate_json(json: &Value, required: &Value, path: &str) -> (Value, Vec<String>) {
@@ -763,4 +415,345 @@ pub fn validate_json(json: &Value, required: &Value, path: &str) -> (Value, Vec<
     }
 
     (modified_json, missing_properties)
+}
+
+pub fn loop_through_properties(data: &mut Map<String, Value>, properties: Vec<String>) {
+    // Iterate over each key-value pair in the JSON object
+    for (key, value) in data.iter_mut() {
+        // Perform actions based on the property key or type
+        match value {
+            Value::Object(sub_object) => {
+                // If the value is another object, recursively loop through its properties
+                loop_through_properties(sub_object, properties.clone());
+            }
+            _ => {
+                if properties.contains(&key.to_string()) {
+                    *value = json!("***");
+                }
+            }
+        }
+    }
+}
+
+pub fn open_json_and_replace(path: &str, properties: Vec<String>) -> Result<Value, AppError> {
+    match std::fs::File::open(path) {
+        Ok(file) => {
+            let reader = std::io::BufReader::new(file);
+            let mut data: serde_json::Map<String, Value> = serde_json::from_reader(reader)
+                .map_err(|e| AppError::new("Logger", eyre!(e.to_string())))
+                .expect("Could not read auth.json");
+            loop_through_properties(&mut data, properties.clone());
+            Ok(json!(data))
+        }
+        Err(_) => Err(AppError::new(
+            "Logger",
+            eyre!("Could not open file at path: {}", path),
+        )),
+    }
+}
+
+pub async fn progress_stock_item(
+    entity: &mut CreateStockItem,
+    validate_by: &str,
+    user_name: &str,
+    operation: OrderType,
+    options: Vec<String>,
+    from: &str,
+    app: AppState,
+    cache: CacheClient,
+    notify: NotifyClient,
+    wfm: WFMClient,
+    qf: QFClient,
+) -> Result<(stock_item::Model, Vec<String>), AppError> {
+    let mut response = vec![];
+    // Validate the stock item
+    match cache
+        .tradable_items()
+        .validate_create_item(entity, validate_by)
+    {
+        Ok(_) => {}
+        Err(e) => {
+            return Err(e);
+        }
+    };
+
+    //Get stock item from the entity
+    let stock = entity.to_stock();
+
+    // Progress the stock item based on the operation
+    if operation == OrderType::Sell {
+        match StockItemMutation::sold_by_url_and_sub_type(
+            &app.conn,
+            &entity.wfm_url,
+            entity.sub_type.clone(),
+            entity.quantity,
+        )
+        .await
+        {
+            Ok((operation, item)) => {
+                if operation == "Item not found" {
+                    response.push("StockItemNotFound".to_string());
+                    if !options.contains(&"StockContinueOnError".to_string()) {
+                        return Err(AppError::new(
+                            "StockItemSell",
+                            eyre!(format!(
+                                "Stock Item not found: {} {:?}",
+                                entity.wfm_url, entity.sub_type
+                            )),
+                        ));
+                    }
+                } else if operation == "Item deleted" {
+                    response.push("StockItemDeleted".to_string());
+                    notify.gui().send_event_update(
+                        UIEvent::UpdateStockItems,
+                        UIOperationEvent::Delete,
+                        Some(json!({ "id": item.unwrap().id })),
+                    );
+                } else if operation == "Item updated" {
+                    response.push("StockItemUpdated".to_string());
+                    notify.gui().send_event_update(
+                        UIEvent::UpdateStockItems,
+                        UIOperationEvent::CreateOrUpdate,
+                        Some(json!(item)),
+                    );
+                }
+                add_metric("Stock_ItemSold", from);
+                response.push("Stock Item sold".to_string());
+            }
+            Err(e) => {
+                response.push("StockDbError".to_string());
+                return Err(AppError::new("StockItemSell", eyre!(e)));
+            }
+        }
+    } else if operation == OrderType::Buy {
+        match StockItemMutation::add_item(&app.conn, stock.clone()).await {
+            Ok(inserted) => {
+                response.push("StockItemAdd".to_string());
+                notify.gui().send_event_update(
+                    UIEvent::UpdateStockItems,
+                    UIOperationEvent::CreateOrUpdate,
+                    Some(json!(inserted)),
+                );
+                add_metric("Stock_ItemCreate", from);
+            }
+            Err(e) => {
+                response.push("StockDbError".to_string());
+                return Err(AppError::new("StockItemCreate", eyre!(e)));
+            }
+        }
+    } else {
+        return Err(AppError::new(
+            "ProgressStockItem",
+            eyre!("Invalid operation"),
+        ));
+    }
+
+    // Process the order on WFM
+    match wfm
+        .orders()
+        .progress_order(
+            &entity.wfm_url,
+            entity.sub_type.clone(),
+            entity.quantity,
+            operation.clone(),
+            operation == OrderType::Sell,
+        )
+        .await
+    {
+        Ok((operation, order)) => {
+            if operation == "order_deleted" && order.is_some() {
+                add_metric("WFM_OrderDeleted", from);
+                response.push("WFMOrderDeleted".to_string());
+                notify.gui().send_event_update(
+                    UIEvent::UpdateOrders,
+                    UIOperationEvent::Delete,
+                    Some(json!({ "id": order.unwrap().id })),
+                );
+            } else if operation == "order_updated" {
+                add_metric("WFM_OrderUpdated", from);
+                response.push("WFMOrderUpdated".to_string());
+                notify.gui().send_event_update(
+                    UIEvent::UpdateOrders,
+                    UIOperationEvent::CreateOrUpdate,
+                    Some(json!(order)),
+                );
+            }
+        }
+        Err(e) => {
+            response.push("WFMOrderError".to_string());
+            if !options.contains(&"WFMContinueOnError".to_string()) {
+                return Err(e);
+            }
+        }
+    }
+
+    if entity.bought.unwrap_or(0) <= 0 {
+        return Ok((stock, response));
+    }
+
+    // Add Transaction to the database
+    let transaction_type = if operation == OrderType::Buy {
+        TransactionType::Purchase
+    } else {
+        TransactionType::Sale
+    };
+    let mut transaction = stock.to_transaction(
+        user_name,
+        entity.tags.clone(),
+        entity.quantity,
+        entity.bought.unwrap_or(0),
+        transaction_type,
+    );
+
+    match TransactionMutation::create(&app.conn, &transaction).await {
+        Ok(inserted) => {
+            add_metric("Transaction_ItemCreate", from);
+            response.push("TransactionCreated".to_string());
+            notify.gui().send_event_update(
+                UIEvent::UpdateTransaction,
+                UIOperationEvent::CreateOrUpdate,
+                Some(json!(inserted)),
+            );
+            transaction.id = inserted.id;
+        }
+        Err(e) => {
+            response.push("TransactionDbError".to_string());
+            return Err(AppError::new_db("StockItemCreate", e));
+        }
+    };
+
+    // Add the transaction to the QuantFrame analytics stars
+    match qf.transaction().create_transaction(&transaction).await {
+        Ok(_) => {}
+        Err(e) => {
+            response.push("TransactionAnalyticsError".to_string());
+            return Err(e);
+        }
+    }
+    return Ok((stock, response));
+}
+
+pub async fn progress_stock_riven(
+    entity: &mut CreateStockRiven,
+    validate_by: &str,
+    user_name: &str,
+    operation: OrderType,
+    from: &str,
+    app: AppState,
+    cache: CacheClient,
+    notify: NotifyClient,
+    wfm: WFMClient,
+    qf: QFClient,
+) -> Result<(stock_riven::Model, Vec<String>), AppError> {
+    let mut response = vec![];
+    // Validate the stock item
+    match cache.riven().validate_create_riven(entity, validate_by) {
+        Ok(_) => {}
+        Err(e) => {
+            return Err(e);
+        }
+    };
+
+    //Get stock riven from the entity
+    let stock = entity.to_stock();
+
+    // Progress the stock riven based on the operation
+    if operation == OrderType::Sell && entity.stock_id.is_some() {
+        // Delete the stock from the database
+        match StockRivenMutation::delete(&app.conn, entity.stock_id.unwrap()).await {
+            Ok(_) => {
+                response.push("StockRivenDeleted".to_string());
+                add_metric("Stock_RivenDeleted", from);
+                notify.gui().send_event_update(
+                    UIEvent::UpdateStockRivens,
+                    UIOperationEvent::Delete,
+                    Some(json!({ "id": entity.stock_id })),
+                );
+            }
+            Err(e) => return Err(AppError::new("StockItemSell", eyre!(e))),
+        }
+    } else if operation == OrderType::Buy {
+        match StockRivenMutation::create(&app.conn, stock.clone()).await {
+            Ok(inserted) => {
+                add_metric("Stock_RivenCreate", from);
+                response.push("StockRivenAdd".to_string());
+                notify.gui().send_event_update(
+                    UIEvent::UpdateStockRivens,
+                    UIOperationEvent::CreateOrUpdate,
+                    Some(json!(inserted)),
+                );
+            }
+            Err(e) => {
+                response.push("StockDbError".to_string());
+                let err = AppError::new_db("ProgressStockRiven", e);
+                return Err(err);
+            }
+        }
+    } else {
+        return Err(AppError::new(
+            "ProgressStockRiven",
+            eyre!("Invalid operation"),
+        ));
+    }
+
+    // Process the action on WFM
+    if operation == OrderType::Sell && entity.wfm_order_id.is_some() {
+        let id = entity.wfm_order_id.clone().unwrap();
+        match wfm.auction().delete(&id).await {
+            Ok(updated) => {
+                add_metric("WFM_RivenDeleted", from);
+                response.push("WFMRivenDeleted".to_string());
+                notify.gui().send_event_update(
+                    UIEvent::UpdateAuction,
+                    UIOperationEvent::CreateOrUpdate,
+                    Some(json!(updated)),
+                );
+            }
+            Err(e) => {
+                if e.cause().contains("app.form.not_exist") {
+                    response.push("WFMRivenNotExist".to_string());
+                }
+                response.push("WFMRivenError".to_string());
+            }
+        }
+    }
+
+    if entity.bought.unwrap_or(0) <= 0 {
+        return Ok((stock, response));
+    }
+
+    // Add Transaction to the database
+    let transaction_type = if operation == OrderType::Buy {
+        TransactionType::Purchase
+    } else {
+        TransactionType::Sale
+    };
+    let mut transaction =
+        stock.to_transaction(user_name, entity.bought.unwrap_or(0), transaction_type);
+
+    match TransactionMutation::create(&app.conn, &transaction).await {
+        Ok(inserted) => {
+            add_metric("Transaction_RivenCreate", from);
+            response.push("TransactionCreated".to_string());
+            notify.gui().send_event_update(
+                UIEvent::UpdateTransaction,
+                UIOperationEvent::CreateOrUpdate,
+                Some(json!(inserted)),
+            );
+            transaction.id = inserted.id;
+        }
+        Err(e) => {
+            response.push("TransactionDbError".to_string());
+            return Err(AppError::new_db("StockItemCreate", e));
+        }
+    };
+    // Add the transaction to the QuantFrame analytics stars
+    match qf.transaction().create_transaction(&transaction).await {
+        Ok(_) => {}
+        Err(e) => {
+            response.push("TransactionAnalyticsError".to_string());
+            return Err(e);
+        }
+    }
+    return Ok((stock, response));
 }

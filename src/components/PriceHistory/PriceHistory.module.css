@@ -1,0 +1,6 @@
+.root {
+  border: 1px solid var(--mantine-color-dark-3);
+  &[data-order-type='sell'] {
+    box-shadow: inset 4px 0 0 0 var(--trade-type-sale);
+  }
+}

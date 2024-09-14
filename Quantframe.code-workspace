@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": ".\\"
+		},
+		{
+			"path": "../../../../../AppData/Local/dev.kenya.quantframe"
+		}
+	],
+	"settings": {
+		"cssVariables.lookupFiles": [
+			"**/*.css",
+			"**/*.scss",
+			"**/*.sass",
+			"**/*.less",
+			"node_modules/@mantine/core/styles.css"
+		],
+		"liveServer.settings.multiRootWorkspaceName": "quantframe-react"
+	}
+}

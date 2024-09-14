@@ -63,13 +63,13 @@ export const searchByProperty = <T>(data: T[], propertyName: string, query: ISea
     for (let filter of query.filters) {
       let property = (item as any)[propertyName];
       if (propertyName.includes(".")) {
-        const propertys = propertyName.split(".");
-        property = (item as any)[propertys[0]];
-        for (let i = 1; i < propertys.length; i++) {
+        const properties = propertyName.split(".");
+        property = (item as any)[properties[0]];
+        for (let i = 1; i < properties.length; i++) {
           if (Array.isArray(property) || property.length === 0)
-            property = property.map((item: any) => item[propertys[i]]);
+            property = property.map((item: any) => item[properties[i]]);
           else
-            property = property[propertys[i]];
+            property = property[properties[i]];
           if (property === undefined) return false;
         }
       }
@@ -86,9 +86,9 @@ export const searchByProperty = <T>(data: T[], propertyName: string, query: ISea
     return found;
   });
 }
-export const searchByPropertys = <T>(data: T[], querys: ISearchKeyParameter): T[] => {
-  const keys = Object.keys(querys);
-  const queryValues = Object.values(querys);
+export const searchByProperties = <T>(data: T[], queys: ISearchKeyParameter): T[] => {
+  const keys = Object.keys(queys);
+  const queryValues = Object.values(queys);
   return data.filter((item: T) => {
     let result = true;
     for (let index = 0; index < queryValues.length; index++) {

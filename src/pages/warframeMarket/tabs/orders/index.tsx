@@ -1,315 +1,338 @@
-import { Divider, Group, Stack, Text, Image, Box, Grid, Tooltip, ActionIcon, Paper, SimpleGrid, ScrollArea, useMantineTheme } from "@mantine/core";
-import { useCacheContext, useWarframeMarketContextContext } from "@contexts/index";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faTrashCan, faRefresh, faCartShopping, faShoppingCart, faPen } from "@fortawesome/free-solid-svg-icons";
-import { Wfm, CreateStockItemEntryDto, RustError } from "$types/index";
-import { useTranslatePage, useTranslateRustError } from "@hooks/index";
-import api, { wfmThumbnail } from "@api/index";
-import { useMutation } from "@tanstack/react-query";
-import { notifications } from "@mantine/notifications";
-import { SearchField } from "@components/searchfield";
+import { Box, Divider, Group, Pagination, ScrollArea, Text, SimpleGrid } from "@mantine/core";
+import { useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { useEffect, useState } from "react";
+import { Wfm } from "$types/index";
+import { useWarframeMarketContextContext } from "@contexts/warframeMarket.context";
+import { paginate } from "@utils/helper";
+import { faCartShopping, faInfoCircle, faPen, faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { modals } from "@mantine/modals";
-import { TextColor } from "@components/textColor";
-import { InfoBox } from "@components/InfoBox";
-import { SendNotificationToWindow, formatNumber } from "@utils/index";
-interface OrdersPanelProps {
-}
-interface PurchaseNewItemProps {
-  item: Wfm.ItemDto | undefined;
-  ordre: Wfm.OrderDto;
-  type: "buy" | "sell";
-}
-const OrderItem = ({ item, ordre }: PurchaseNewItemProps) => {
-  const useTranslateNotifaications = (key: string, context?: { [key: string]: any }) => useTranslateOrdersPanel(`notifaications.${key}`, { ...context })
-  const useTranslatePrompt = (key: string, context?: { [key: string]: any }) => useTranslateOrdersPanel(`prompt.${key}`, { ...context });
-  const theme = useMantineTheme();
-  const createStockItemEntryMutation = useMutation((data: CreateStockItemEntryDto) => api.stock.item.create(data), {
-    onSuccess: async (data) => {
-      notifications.show({
-        title: useTranslateNotifaications("createStockItem.title"),
-        icon: <FontAwesomeIcon icon={faCheck} />,
-        message: useTranslateNotifaications("createStockItem.message", { name: data.name }),
-        color: "green"
-      });
-    },
-    onError(error: RustError) {
-      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
-    }
-  })
+import { notifications } from "@mantine/notifications";
+import { CreateStockItem, SellStockItem } from "@api/types";
+import api from "@api/index";
+import { useMutation } from "@tanstack/react-query";
+import { ActionWithTooltip } from "@components/ActionWithTooltip";
+import { ColorInfo } from "@components/ColorInfo";
+import { Loading } from "@components/Loading";
+import { OrderItem } from "@components/OrderItem";
+import { SearchField } from "@components/SearchField";
+import { OrderDetails } from "@components/modals/OrderDetails/OrderDetails";
 
-  const sellStockItemEntryMutation = useMutation((data: { url: string, price: number }) => api.stock.item.sell_by_name(data.url, data.price, 1), {
-    onSuccess: async (data) => {
-      notifications.show({
-        title: useTranslateNotifaications("sellStockItem.title"),
-        icon: <FontAwesomeIcon icon={faCheck} />,
-        message: useTranslateNotifaications("sellStockItem.message", { name: data.name, price: data.listed_price }),
-        color: "green"
-      });
-    },
-    onError(error: RustError) {
-      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
-    }
-  })
-  const deleteOrdreEntryMutation = useMutation((data: { id: string }) => api.orders.deleteOrder(data.id), {
-    onSuccess: async (data) => {
-      notifications.show({
-        title: useTranslateNotifaications("delete_ordre.title"),
-        icon: <FontAwesomeIcon icon={faCheck} />,
-        message: useTranslateNotifaications("delete_ordre.message", { name: data.item.en.item_name }),
-        color: "green"
-      });
-    },
-    onError(error: RustError) {
-      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
-    }
-  })
-  const useTranslateOrdersPanel = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePage(`warframe_market.tabs.orders.${key}`, { ...context }, i18Key)
-  const handleCartClick = async (price?: number) => {
-    switch (ordre.order_type) {
-      case "buy":
-        createStockItemEntryMutation.mutate({
-          item_id: ordre.item.url_name,
-          price: price || ordre.platinum,
-          quantity: 1,
-          rank: ordre.mod_rank || 0
+interface OrderPanelProps {
+}
+export const OrderPanel = ({ }: OrderPanelProps) => {
+    // State's
+    const [query, setQuery] = useState<string>("");
+    const [statusCount, setStatusCount] = useState<{ [key: string]: string }>({}); // Count of each status
+    const [page, setPage] = useState(1);
+    const pageSizes = [1, 5, 10, 15, 20, 25, 30, 50, 100];
+    const [pageSize, _setPageSize] = useState(pageSizes[4]);
+    const [totalPages, setTotalPages] = useState(0);
+    const [rows, setRows] = useState<Wfm.OrderDto[]>([]);
+    const { orders } = useWarframeMarketContextContext();
+    const [filterOrderType, setFilterOrderType] = useState<Wfm.OrderType | undefined>(undefined);
+
+    // Translate general
+    const useTranslateTabOrder = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`warframe_market.tabs.orders.${key}`, { ...context }, i18Key)
+    const useTranslateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateTabOrder(`buttons.${key}`, { ...context }, i18Key)
+    const useTranslateOrderType = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateEnums(`order_type.${key}`, { ...context }, i18Key)
+    const useTranslatePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateTabOrder(`prompts.${key}`, { ...context }, i18Key)
+    const useTranslateErrors = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateTabOrder(`errors.${key}`, { ...context }, i18Key)
+    const useTranslateSuccess = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateTabOrder(`success.${key}`, { ...context }, i18Key)
+
+    // Mutations
+    const createStockMutation = useMutation({
+        mutationFn: (data: CreateStockItem) => api.stock.item.create(data),
+        onSuccess: async (u) => {
+            notifications.show({ title: useTranslateSuccess("create_stock.title"), message: useTranslateSuccess("create_stock.message", { name: u.item_name }), color: "green.7" });
+        },
+        onError: (e) => {
+            console.error(e);
+            notifications.show({ title: useTranslateErrors("create_stock.title"), message: useTranslateErrors("create_stock.message"), color: "red.7" })
+        }
+    })
+    const sellStockMutation = useMutation({
+        mutationFn: (data: SellStockItem) => api.stock.item.sell(data),
+        onSuccess: async (u) => {
+            notifications.show({ title: useTranslateSuccess("sell_stock.title"), message: useTranslateSuccess("sell_stock.message", { name: u.item_name }), color: "green.7" });
+        },
+        onError: (e) => {
+            console.error(e);
+            notifications.show({ title: useTranslateErrors("sell_stock.title"), message: useTranslateErrors("sell_stock.message"), color: "red.7" })
+        }
+    })
+    const refreshOrdersMutation = useMutation({
+        mutationFn: () => api.order.refresh(),
+        onSuccess: async (u) => {
+            notifications.show({ title: useTranslateSuccess("refresh.title"), message: useTranslateSuccess("refresh.message", { count: u }), color: "green.7" });
+        },
+        onError: (e) => {
+            console.error(e);
+            notifications.show({ title: useTranslateErrors("refresh.title"), message: useTranslateErrors("refresh.message"), color: "red.7" })
+        }
+    })
+    const deleteOrderMutation = useMutation({
+        mutationFn: (id: string) => api.order.delete(id),
+        onSuccess: async (name) => {
+            notifications.show({ title: useTranslateSuccess("delete.title"), message: useTranslateSuccess("delete.message", { name }), color: "green.7" });
+        },
+        onError: (e) => {
+            console.error(e);
+            notifications.show({ title: useTranslateErrors("delete.title"), message: useTranslateErrors("delete.message"), color: "red.7" })
+        }
+    })
+    const deleteAllOrdersMutation = useMutation({
+        mutationFn: () => api.order.deleteAll(),
+        onSuccess: async (u) => {
+            notifications.show({ title: useTranslateSuccess("delete_all.title"), message: useTranslateSuccess("delete_all.message", { count: u }), color: "green.7" });
+        },
+        onError: (e) => {
+            console.error(e);
+            notifications.show({ title: useTranslateErrors("delete_all.title"), message: useTranslateErrors("delete_all.message"), color: "red.7" })
+        }
+    })
+
+    // Update Database Rows
+    useEffect(() => {
+        let ordersF = orders;
+        setStatusCount(() => {
+            let items: { [key: string]: string } = {};
+            // Create a transaction type count
+            Object.values(Wfm.OrderType).forEach((type) => {
+                let fOrders = orders.filter((item) => item.order_type === type);
+                let total_platinum = fOrders.reduce((acc, item) => acc + (item.platinum * item.quantity), 0);
+                items[type] = `${fOrders.length} (${total_platinum})`
+            });
+            return items
         });
-        break;
-      case "sell":
-        sellStockItemEntryMutation.mutate({
-          url: ordre.item.url_name,
-          price: price || ordre.platinum
+
+        // Filter by type
+        if (filterOrderType)
+            ordersF = ordersF.filter((order) => order.order_type === filterOrderType);
+
+        // Filter by query
+        if (query)
+            ordersF = ordersF.filter((order) => order.item?.en?.item_name.toLowerCase().includes(query.toLowerCase()));
+
+        // Update total pages
+        setTotalPages(Math.ceil(ordersF.length / pageSize));
+
+        // Sort by order_type
+        ordersF = ordersF.sort((a, b) => {
+            if (a.order_type == Wfm.OrderType.Buy && b.order_type == Wfm.OrderType.Sell)
+                return 1;
+            if (a.order_type == Wfm.OrderType.Sell && b.order_type == Wfm.OrderType.Buy)
+                return -1;
+            return 0;
         });
-        break;
-      default:
-        break;
 
-    }
-  }
+        setRows(paginate(ordersF, page, pageSize));
+    }, [orders, filterOrderType, query, pageSize, page]);
 
-  return (
-    <Paper p={10} sx={{
-      boxShadow: `inset 4px 0 0 0 ${ordre.order_type === "buy" ? theme.colors.green[7] : theme.colors.violet[7]}`,
-    }}>
-      <Stack spacing={0}>
-        <Group position="apart">
-          <Group w={"75%"} >
-            <Text size="lg" weight={700} truncate="end">
-              {ordre.item.en.item_name}
-            </Text>
-          </Group>
-          <Group position="right">
-            <TextColor size={"lg"} sx={{ float: "inline-end" }} color="gray.6" i18nKey={useTranslateOrdersPanel("quantity_label", undefined, true)} values={{ quantity: ordre.quantity }} />
-          </Group>
-        </Group>
-        <Divider />
-        <Grid mt={5} mb={5}>
-          <Grid.Col sm={4} md={4} lg={2.5}>
-            <Tooltip label={ordre.item.en.item_name}>
-              <Image ml={15} width={64} height={64} fit="contain" src={wfmThumbnail(ordre.item.icon)} />
-            </Tooltip>
-          </Grid.Col>
-          <Grid.Col sm={9} md={9} lg={8.6} sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
-            <Stack spacing={0}>
-              {ordre.mod_rank && (
-                <TextColor size={"md"} color="gray.6" i18nKey={useTranslateOrdersPanel("rank_label", undefined, true)} values={{ max_rank: item?.mod_max_rank || 0, rank: ordre.item.mod_max_rank }} />
-              )}
-              {ordre.subtype && (
-                <Text size="sm" color="gray.6">
-                  Rank: {ordre.subtype}
-                </Text>
-              )}
-              {ordre.item.vaulted && (
-                <Text size="sm" color="yellow.6">
-                  Vaulted
-                </Text>
-              )}
-            </Stack>
-          </Grid.Col>
-        </Grid>
+    // Functions
+    const HandleSellOrBuy = async (order: Wfm.OrderDto, price: number) => {
+        if (!price) return;
+        if (!order || !order.item) return;
 
-        <Divider />
-        <Grid mt={5} p={0}>
-          <Grid.Col md={8} p={0} pl={10} >
-            <TextColor size={"lg"} sx={{ float: "inline-start", marginRight: 15 }} color="gray.6" i18nKey={useTranslateOrdersPanel("plat_label", undefined, true)} values={{ plat: ordre.platinum }} />
-            <TextColor size={"lg"} sx={{ display: "flex", alignItems: "center" }} color="gray.6" i18nKey={useTranslateOrdersPanel("credits_label", undefined, true)} values={{ credits: formatNumber(item?.trade_tax || 0) }} />
-          </Grid.Col>
-          <Grid.Col md={4} p={0}>
-            <Group spacing={1}>
-
-              <Tooltip label={useTranslateOrdersPanel(ordre.order_type === "buy" ? "tolltip.buy_add_to_stock" : "tolltip.sell_remove_from_stock")}>
-                <ActionIcon loading={deleteOrdreEntryMutation.isLoading} color="bule.7" onClick={async (e) => {
-                  e.stopPropagation();
-                  modals.openContextModal({
-                    modal: 'prompt',
-                    title: useTranslatePrompt("sell.title"),
-                    innerProps: {
-                      fields: [{ name: 'price', description: useTranslatePrompt("sell.description"), label: useTranslatePrompt("sell.label"), type: 'number', value: 0, }],
-                      onConfirm: async (data: { price: number }) => {
-                        const { price } = data;
-                        if (!price || price <= 0) return;
-                        await handleCartClick(price);
-                      },
-                      onCancel: (id: string) => modals.close(id),
-                    },
-                  })
-                }} >
-                  <FontAwesomeIcon icon={faPen} />
-                </ActionIcon>
-              </Tooltip>
-              <Tooltip label={useTranslateOrdersPanel(ordre.order_type === "buy" ? "tolltip.buy_add_to_stock" : "tolltip.sell_remove_from_stock")}>
-                <ActionIcon loading={sellStockItemEntryMutation.isLoading || createStockItemEntryMutation.isLoading} color="green.7" onClick={async () => handleCartClick()} >
-                  <FontAwesomeIcon icon={faCartShopping} />
-                </ActionIcon>
-              </Tooltip>
-              <Tooltip label={useTranslateOrdersPanel("tolltip.delete")}>
-                <ActionIcon loading={deleteOrdreEntryMutation.isLoading} color="red.7" onClick={async () => {
-                  deleteOrdreEntryMutation.mutate({ id: ordre.id })
-                }} >
-                  <FontAwesomeIcon icon={faTrashCan} />
-                </ActionIcon>
-              </Tooltip>
-            </Group>
-          </Grid.Col>
-        </Grid>
-      </Stack>
-    </Paper>
-  );
-}
-
-export const OrdersPanel = ({ }: OrdersPanelProps) => {
-  const useTranslateOrdersPanel = (key: string, context?: { [key: string]: any }) => useTranslatePage(`warframe_market.tabs.orders.${key}`, { ...context })
-  const useTranslateNotifaications = (key: string, context?: { [key: string]: any }) => useTranslateOrdersPanel(`notifaications.${key}`, { ...context })
-  const useTranslatePrompt = (key: string, context?: { [key: string]: any }) => useTranslateOrdersPanel(`prompt.${key}`, { ...context })
-  const { orders } = useWarframeMarketContextContext();
-  const { items } = useCacheContext();
-  const [query, setQuery] = useState<string>("");
-  const [order_type, setOrderType] = useState<"buy" | "sell" | "all">("all");
-  const theme = useMantineTheme();
-
-  const [buyOrders, setBuyOrders] = useState<Wfm.OrderDto[]>([]);
-  const [sellOrders, setSellOrders] = useState<Wfm.OrderDto[]>([]);
-
-  useEffect(() => {
-    setBuyOrders(orders.filter(x => x.order_type == "buy"));
-    setSellOrders(orders.filter(x => x.order_type == "sell"));
-  }, [orders]);
-
-  const refreshOrdersMutation = useMutation(() => api.orders.refresh(), {
-    onSuccess: async () => {
-      notifications.show({
-        title: useTranslateNotifaications("refresh.title"),
-        icon: <FontAwesomeIcon icon={faCheck} />,
-        message: useTranslateNotifaications("refresh.message"),
-        color: "green"
-      });
-    },
-    onError(error: RustError) {
-      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
-    }
-  })
-
-  const deleteAllOrdersMutation = useMutation(() => api.orders.delete_all(), {
-    onSuccess: async () => { },
-    onError(error: RustError) {
-      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
-    }
-  })
-
-  const getFilterOrders = () => {
-    let ordersF = orders;
-    if (order_type != "all")
-      ordersF = orders.filter(x => x.order_type == order_type);
-    else
-      ordersF = orders;
-
-    if (query != "")
-      ordersF = ordersF.filter((x) => x.item.en.item_name.toLowerCase().includes(query.toLowerCase()));
-
-    // Sort by order_type
-    return ordersF.sort((a, b) => {
-      if (a.order_type == "buy" && b.order_type == "sell")
-        return 1;
-      if (a.order_type == "sell" && b.order_type == "buy")
-        return -1;
-      return 0;
-    });
-  }
-
-  return (
-    <Box >
-      <Grid>
-        <Grid.Col span={12}>
-          <SearchField value={query} onChange={(text) => setQuery(text)}
-            rightSectionWidth={100}
-            rightSection={
-              <Group spacing={5}>
-                <Tooltip label={useTranslateOrdersPanel('tolltip.refresh')}>
-                  <ActionIcon variant="filled" color="green.7" onClick={() => {
-                    refreshOrdersMutation.mutate();
-                  }}>
-                    <FontAwesomeIcon icon={faRefresh} />
-                  </ActionIcon>
-                </Tooltip>
-                <Tooltip label={useTranslateOrdersPanel(`sort.${order_type}`)}>
-                  <ActionIcon variant="filled"
-                    color={order_type == "buy" ? "green.7" : order_type == "sell" ? "violet.7" : "gray.7"}
-                    onClick={() => {
-                      // Switch order type
-                      if (order_type == "buy")
-                        setOrderType("sell");
-                      else if (order_type == "sell")
-                        setOrderType("all");
-                      else
-                        setOrderType("buy");
-                    }}>
-                    <FontAwesomeIcon icon={faShoppingCart} />
-                  </ActionIcon>
-                </Tooltip>
-                <Tooltip label={useTranslateOrdersPanel('tolltip.delete_all')}>
-                  <ActionIcon loading={deleteAllOrdersMutation.isLoading} variant="filled" color="red.7" onClick={() => {
-                    modals.openConfirmModal({
-                      title: useTranslatePrompt('delete_all.title'),
-                      children: (<Text>
-                        {useTranslatePrompt('delete_all.message')}
-                      </Text>),
-                      labels: {
-                        confirm: useTranslatePrompt('delete_all.confirm'),
-                        cancel: useTranslatePrompt('delete_all.cancel')
-                      },
-                      confirmProps: { color: 'red' },
-                      onConfirm: async () => {
-                        deleteAllOrdersMutation.mutate();
-                      }
-                    })
-                  }}>
-                    <FontAwesomeIcon icon={faTrashCan} />
-                  </ActionIcon>
-                </Tooltip>
-              </Group>
+        let sub_type = undefined;
+        if (order.amber_stars || order.cyan_stars) {
+            sub_type = {
+                amber_stars: order.amber_stars,
+                cyan_stars: order.cyan_stars,
             }
-          />
-          <Group mt={15} >
-            <InfoBox text={useTranslateOrdersPanel("info.buy", { count: buyOrders.length, plat: buyOrders.reduce((a, b) => a + (b.platinum || 0) * b.quantity, 0) || 0 })} color={theme.colors.green[7]} />
-            <InfoBox text={useTranslateOrdersPanel("info.sell", { count: sellOrders.length, plat: sellOrders.reduce((a, b) => a + (b.platinum || 0) * b.quantity, 0) || 0 })} color={theme.colors.violet[7]} />
-          </Group>
-        </Grid.Col>
-      </Grid>
-      <ScrollArea mt={25} h={"calc(100vh - 243px)"} pr={15} pl={15}>
-        <SimpleGrid
-          cols={4}
-          spacing="lg"
-          breakpoints={[
-            { maxWidth: '80rem', cols: 3, spacing: 'lg' },
-            { maxWidth: '62rem', cols: 3, spacing: 'md' },
-            { maxWidth: '48rem', cols: 2, spacing: 'sm' },
-            { maxWidth: '36rem', cols: 1, spacing: 'sm' },
-          ]}
-        >
-          {getFilterOrders().map((order, i) => (
-            <OrderItem key={i} type={order.order_type} item={items.find(x => x.id == order.item.id)} ordre={order} />
-          ))}
-        </SimpleGrid>
-      </ScrollArea>
-    </Box>)
-}
+        } else if (order.subtype) {
+            sub_type = { variant: order.subtype }
+        } else if (order.mod_rank) {
+            sub_type = { rank: order.mod_rank }
+        }
+
+
+
+        switch (order.order_type) {
+            case Wfm.OrderType.Buy:
+                await createStockMutation.mutateAsync({
+                    wfm_url: order.item?.url_name || "",
+                    bought: price,
+                    quantity: order.quantity,
+                    minimum_price: 0,
+                    sub_type: sub_type,
+                    is_from_order: true
+                });
+                break;
+            case Wfm.OrderType.Sell:
+                await sellStockMutation.mutateAsync({
+                    url: order.item?.url_name || "",
+                    sub_type: sub_type,
+                    quantity: 1,
+                    price: price,
+                    is_from_order: true
+                });
+                break;
+        }
+    }
+
+    const OpenSellOrBuyModal = (order: Wfm.OrderDto) => {
+        modals.openContextModal({
+            modal: 'prompt',
+            title: useTranslatePrompt(`${order.order_type}.title`),
+            innerProps: {
+                fields: [
+                    {
+                        name: 'price',
+                        label: useTranslatePrompt(`${order.order_type}.field.label`),
+                        attributes: {
+                            min: 0,
+                        },
+                        value: 0,
+                        type: 'number',
+                    },
+                ],
+                onConfirm: async (data: { price: number }) => {
+                    if (!order) return;
+                    HandleSellOrBuy(order, data.price);
+                },
+                onCancel: (id: string) => modals.close(id),
+            },
+        })
+    }
+
+    // Models
+    const OpenInfoModal = (order: Wfm.OrderDto) => {
+        modals.open({
+            size: "100%",
+            title: order.item?.en?.item_name,
+            children: (<OrderDetails value={order} />),
+        })
+    }
+    return (
+        <Box>
+            <SearchField value={query} onChange={(text) => setQuery(text)}
+                rightSectionWidth={63}
+                rightSection={
+                    <Group gap={5}>
+                        <ActionWithTooltip
+                            tooltip={useTranslateButtons('refresh.tooltip')}
+                            icon={faRefresh}
+                            color={"green.7"}
+                            actionProps={{ size: "sm" }}
+                            iconProps={{ size: "xs" }}
+                            loading={createStockMutation.isPending || sellStockMutation.isPending || refreshOrdersMutation.isPending || deleteOrderMutation.isPending || deleteAllOrdersMutation.isPending}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                refreshOrdersMutation.mutateAsync();
+                            }}
+                        />
+                        <ActionWithTooltip
+                            tooltip={useTranslateButtons('delete_all.tooltip')}
+                            icon={faTrashCan}
+                            loading={createStockMutation.isPending || sellStockMutation.isPending || refreshOrdersMutation.isPending || deleteOrderMutation.isPending || deleteAllOrdersMutation.isPending}
+                            color={"red.7"}
+                            actionProps={{ size: "sm" }}
+                            iconProps={{ size: "xs" }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                modals.openConfirmModal({
+                                    title: useTranslatePrompt('delete_all.title'),
+                                    children: (
+                                        <Text size="sm">
+                                            {useTranslatePrompt('delete_all.message')}
+                                        </Text>
+                                    ),
+                                    labels: { confirm: useTranslatePrompt('delete_all.confirm'), cancel: useTranslatePrompt('delete.cancel') },
+                                    onConfirm: async () => await deleteAllOrdersMutation.mutateAsync(),
+                                });
+                            }}
+                        />
+                    </Group>
+                }
+            />
+            <Group gap={"sm"} mt={"md"}>
+                {Object.values(Wfm.OrderType).map((type) => (
+                    <ColorInfo active={type == filterOrderType} key={type} onClick={() => {
+                        setFilterOrderType(s => s === type ? undefined : type);
+                    }} infoProps={{
+                        "data-color-mode": "bg",
+                        "data-order-type": type,
+                    }} text={useTranslateOrderType(`${type}`) + `${!statusCount[type] ? "" : ` ${statusCount[type]}`}`} tooltip={useTranslateOrderType(`details.${type}`)} />
+                ))}
+            </Group>
+            <ScrollArea mt={"md"} h={"calc(100vh - 340px)"} >
+                {createStockMutation.isPending || sellStockMutation.isPending || refreshOrdersMutation.isPending || deleteOrderMutation.isPending || deleteAllOrdersMutation.isPending ? <Loading /> : null}
+                <SimpleGrid
+                    cols={4}
+                    spacing="lg"
+                >
+                    {rows.map((order, i) => (
+                        <OrderItem
+                            key={i}
+                            order={order}
+                            footer={<>
+                                <ActionWithTooltip
+                                    tooltip={useTranslateButtons('sell_manual.' + (order.order_type == Wfm.OrderType.Buy ? 'buy.tooltip' : 'sell.tooltip'))}
+                                    icon={faPen}
+                                    color={"blue.7"}
+                                    actionProps={{ size: "sm" }}
+                                    iconProps={{ size: "xs" }}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        OpenSellOrBuyModal(order);
+                                    }}
+                                />
+                                <ActionWithTooltip
+                                    tooltip={useTranslateButtons('sell_auto.' + (order.order_type == Wfm.OrderType.Buy ? 'buy.tooltip' : 'sell.tooltip'))}
+                                    icon={faCartShopping}
+                                    color={"green.7"}
+                                    actionProps={{ size: "sm" }}
+                                    iconProps={{ size: "xs" }}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        HandleSellOrBuy(order, order.platinum);
+                                    }}
+                                />
+                                <ActionWithTooltip
+                                    tooltip={useTranslateButtons('info.tooltip')}
+                                    icon={faInfoCircle}
+                                    color={"blue.7"}
+                                    actionProps={{ size: "sm" }}
+                                    iconProps={{ size: "xs" }}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        OpenInfoModal(order);
+                                    }}
+                                />
+                                <ActionWithTooltip
+                                    tooltip={useTranslateButtons('delete.tooltip')}
+                                    icon={faTrashCan}
+                                    color={"red.7"}
+                                    actionProps={{ size: "sm" }}
+                                    iconProps={{ size: "xs" }}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        modals.openConfirmModal({
+                                            title: useTranslatePrompt('delete.title'),
+                                            children: (
+                                                <Text size="sm">
+                                                    {useTranslatePrompt('delete.message', { name: order.item?.en?.item_name })}
+                                                </Text>
+                                            ),
+                                            labels: { confirm: useTranslatePrompt('delete.confirm'), cancel: useTranslatePrompt('delete.cancel') },
+                                            onConfirm: async () => await deleteOrderMutation.mutateAsync(order.id),
+                                        });
+                                    }}
+                                />
+                            </>}
+
+                        />
+                    ))}
+                </SimpleGrid>
+            </ScrollArea>
+            <Divider mt={"md"} />
+            <Group grow mt={"md"}>
+                <Group>
+                </Group>
+                <Group justify="flex-end">
+                    <Pagination value={page} onChange={setPage} total={totalPages} />
+                </Group>
+            </Group>
+        </Box>
+    );
+};

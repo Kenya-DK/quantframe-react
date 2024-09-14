@@ -1,217 +1,120 @@
-import { SetupResponse, Wfm, TransactionEntryDto, Settings, CreateTransactionEntryDto, CreateStockItemEntryDto, StockItemDto, CreateStockRivenEntryDto, StockRivenDto } from '../types'
 import { invoke } from '@tauri-apps/api';
-import { SendTauriEvent, SendTauriUpdateDataEvent } from '../utils/tauri';
-const api = {
-  base: {
-    updatesettings: async (settings: Settings): Promise<Settings | undefined> => {
-      SendTauriUpdateDataEvent("settings", { data: settings, operation: "SET" })
-      return await invoke("update_settings", { settings })
-    },
-    openLogsFolder: async (): Promise<any> => {
-      return await invoke("open_logs_folder")
-    },
-    export_logs: async (): Promise<any> => {
-      return await invoke("export_logs")
-    },
-  },
-  chat: {
-    refresh_chats: async (exclude: string[]): Promise<any> => {
-      return await invoke("refresh_chats", { exclude });
-    },
-    delete_all: async (): Promise<number> => {
-      const rep = await invoke("delete_all_chats") as { count: number };
-      return rep.count;
-    },
-    delete: async (id: string): Promise<any> => {
-      return await invoke("delete_chat", { id });
-    },
-    getChat: async (id: string): Promise<Wfm.ChatMessage[]> => {
-      return await invoke("get_chat", { id }) as Wfm.ChatMessage[];
-    },
-    on_new_wfm_message: async (message: Wfm.ChatMessage) => {
-      return await invoke("on_new_wfm_message", { message });
-    },
-  },
-  debug: {
-    importWarframeAlgoTraderData: async (dbPath: string, type: string): Promise<any> => {
-      try {
-        return await invoke("import_warframe_algo_trader_data", { dbPath, importType: type })
-      } catch (error) {
-        console.error(error)
-      }
-    },
-    reset_data: async (reset_type: string): Promise<any> => {
-      try {
-        return await invoke("reset_data", { resetType: reset_type })
-      } catch (error) {
-        console.error(error)
-      }
-    }
-  },
-  auth: {
-    async login(email: string, password: string): Promise<Wfm.UserDto> {
-      const user = await invoke("login", {
-        email: email,
-        password: password,
-      }) as Wfm.UserDto;
-      return user
-    },
-    async logout() {
-      await invoke("logout")
-    },
-    init: async (): Promise<SetupResponse> => {
-      const data = await invoke("init") as SetupResponse;
-      return data;
-    },
-    async update_user_status(status: Wfm.UserStatus): Promise<any> {
-      await invoke("update_user_status", { status })
-    },
-  },
-  items: {},
-  transactions: {
-    async create(input: CreateTransactionEntryDto): Promise<TransactionEntryDto> {
-      return await invoke("create_transaction_entry", {
-        id: input.item_id,
-        itemType: input.item_type,
-        ttype: input.transaction_type || "buy",
-        quantity: input.quantity,
-        price: input.price,
-        rank: input.rank,
-        subType: input.sub_type,
-        attributes: input.attributes,
-        masteryRank: input.mastery_rank,
-        reRolls: input.re_rolls,
-        polarity: input.polarity
-      }) as TransactionEntryDto;
-    },
-    async delete(id: number): Promise<TransactionEntryDto> {
-      return await invoke("delete_transaction_entry", { id }) as TransactionEntryDto;
-    },
-    update: async (id: number, transaction: Partial<TransactionEntryDto>): Promise<any> => {
-      return await invoke("update_transaction_entry", {
-        id,
-        price: transaction.price,
-        transaction_type: transaction.transaction_type,
-        quantity: transaction.quantity,
-        rank: transaction.rank
-      }) as TransactionEntryDto;
-    }
-  },
-  price_scraper: {
-    async start_scraper(days: number): Promise<any> {
-      SendTauriEvent("PriceScraper:OnChange", { max: 7, min: 0, current: 0.1 })
-      await invoke("generate_price_history", { platform: "pc", days })
-    },
-  },
-  live_scraper: {
-    async start_scraper(): Promise<any> {
-      SendTauriEvent("LiveScraper:Toggle")
-      await invoke("toggle_live_scraper")
-    }
-  },
-  stock: {
-    item: {
-      create: async (input: CreateStockItemEntryDto): Promise<StockItemDto> => {
-        return await invoke("create_item_stock", {
-          urlName: input.item_id,
-          quantity: input.quantity,
-          price: input.price,
-          miniumPrice: input.minium_price,
-          rank: input.rank,
-          subType: input.sub_type
-        }) as StockItemDto;
-      },
-      delete: async (id: number): Promise<StockItemDto> => {
-        return await invoke("delete_item_stock", { id }) as StockItemDto;
-      },
-      sell: async (id: number, price: number, quantity: number): Promise<StockItemDto> => {
-        return await invoke("sell_item_stock", { id, price, quantity }) as StockItemDto;
-      },
-      sell_by_name: async (name: string, price: number, quantity: number): Promise<StockItemDto> => {
-        return await invoke("sell_item_stock_by_url", { name, price, quantity }) as StockItemDto;
-      },
-      update: async (id: number, item: Partial<StockItemDto>): Promise<StockItemDto> => {
-        return await invoke("update_item_stock", { id, miniumPrice: item.minium_price, hidden: item.hidden }) as StockItemDto;
-      }
-    },
-    riven: {
-      create: async (input: CreateStockRivenEntryDto): Promise<StockRivenDto> => {
-        return await invoke("create_riven_stock", {
-          id: input.item_id,
-          price: input.price,
-          miniumPrice: input.minium_price,
-          rank: input.rank,
-          attributes: input.attributes,
-          masteryRank: input.mastery_rank,
-          matchRiven: input.match_riven,
-          reRolls: input.re_rolls,
-          polarity: input.polarity,
-          modName: input.mod_name,
-        }) as StockRivenDto;
-      },
-      delete: async (id: number): Promise<StockRivenDto> => {
-        return await invoke("delete_riven_stock", { id }) as StockRivenDto;
-      },
-      sell: async (id: number, price: number): Promise<StockRivenDto> => {
-        return await invoke("sell_riven_stock", { id, price }) as StockRivenDto;
-      },
-      import_auction: async (id: string, price: number): Promise<StockRivenDto> => {
-        return await invoke("import_auction", { id, price }) as StockRivenDto;
-      },
-      update: async (id: number, riven: Partial<StockRivenDto>): Promise<StockRivenDto> => {
-        if (riven.minium_price && riven.minium_price <= 0)
-          riven.minium_price = -1;
-        return await invoke("update_riven_stock", { id, private: riven.private, attributes: riven.attributes, matchRiven: riven.match_riven, miniumPrice: riven.minium_price }) as StockRivenDto;
+import { AppModule } from './app';
+import { AuctionModule } from './auction';
+import { AuthModule } from './auth';
+import { ChatModule } from './chat';
+import { DebugModule } from './debug';
+import { LiveScraperModule } from './live_scraper';
+import { OrderModule } from './order';
+import { StockModule } from './stock';
+import { TransactionModule } from './transaction';
+import { EventModule } from './events';
+import { StatisticModule } from './statistic';
+import { CacheModule } from './cache';
+import { ErrOrResult, QfSocketEventOperation } from './types';
+import { LogModule } from './log';
+import { AnalyticsModule } from './analytics';
+
+export class TauriClient {
+  constructor() {
+    this.app = new AppModule(this);
+    this.auction = new AuctionModule(this);
+    this.auth = new AuthModule(this);
+    this.chat = new ChatModule(this);
+    this.debug = new DebugModule(this);
+    // this.items = new ItemModule(this);
+    this.live_scraper = new LiveScraperModule(this);
+    this.order = new OrderModule(this);
+    this.stock = new StockModule(this);
+    this.transaction = new TransactionModule(this);
+    this.events = new EventModule();
+    // this.notification = new NotificationModule(this);
+    this.statistic = new StatisticModule(this);
+    this.cache = new CacheModule(this);
+    this.log = new LogModule(this);
+    this.analytics = new AnalyticsModule(this);
+  }
+
+
+  async sendInvoke<T>(command: string, data?: any): Promise<ErrOrResult<T>> {
+    console.log(`Sending invoke: ${command}`, data)
+    if (data)
+      data = this.convertToCamelCase(data);
+    return new Promise((resolve) => {
+      invoke(command, data).then((res) => {
+        resolve([null, res] as ErrOrResult<T>)
+      }).catch((err) => {
+        resolve([err, null] as ErrOrResult<T>)
+      })
+    });
+  }
+
+  convertToCamelCase(payload: Record<string, any>): Record<string, any> {
+    const newPayload: any = {};
+    for (const key in payload) {
+      if (Object.prototype.hasOwnProperty.call(payload, key)) {
+        const newKey = this.toCamelCase(key);
+        newPayload[newKey] = payload[key];
       }
     }
-  },
-  auction: {
-    search: async (query: Wfm.AuctionSearchQueryDto): Promise<Wfm.Auction<Wfm.AuctionOwner>[]> => {
-      return await invoke("auction_search", {
-        ...query,
-        auctionType: query.auction_type,
-        weaponUrlName: query.weapon_url_name,
-        positiveStats: query.positive_stats,
-        negativeStats: query.negative_stats,
-        masteryRankMin: query.mastery_rank_min,
-        masteryRankMax: query.mastery_rank_max,
-        reRollsMin: query.re_rolls_min,
-        reRollsMax: query.re_rolls_max,
-        buyoutPolicy: query.buyout_policy,
-        sortBy: query.sort_by,
-      }) as Wfm.Auction<Wfm.AuctionOwner>[];
-    },
-    refresh: async () => {
-      await invoke("refresh_auctions");
-    },
-    async delete_all(): Promise<number> {
-      const rep = await invoke("delete_all_auctions") as { count: number };
-      return rep.count;
-    }
-  },
-  orders: {
-    refresh: async () => {
-      await invoke("refresh_orders");
-    },
-    async getOrders(): Promise<Wfm.OrderDto[]> {
-      return await invoke("get_orders") as Wfm.OrderDto[];
-    },
-    async deleteOrder(id: string): Promise<Wfm.OrderDto> {
-      return await invoke("delete_order", { id }) as Wfm.OrderDto;
-    },
-    async createOrder(id: string, quantity: number, price: number, rank: number, type: string): Promise<Wfm.OrderDto> {
-      return await invoke("create_order", { id, order_type: type, quantity, price, rank }) as Wfm.OrderDto;
-    },
-    async updateOrder(id: string, quantity: number, price: number, rank: number, type: string): Promise<Wfm.OrderDto> {
-      return await invoke("update_order", { id, order_type: type, quantity, price, rank }) as Wfm.OrderDto;
-    },
-    async delete_all(): Promise<number> {
-      const rep = await invoke("delete_all_orders") as { count: number };
-      return rep.count;
-    }
-  },
+    return newPayload;
+  }
+
+  toCamelCase(text: string): string {
+    // Split the string by underscore
+    const words = text.split('_');
+
+    // Capitalize each word after the first
+    const capitalizedWords = words.map((word, index) =>
+      index === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1)
+    );
+
+    // Join the words back together
+    const camelCaseText = capitalizedWords.join('');
+
+    return camelCaseText;
+  }
+
+
+  // Modules
+  app: AppModule;
+  auction: AuctionModule;
+  auth: AuthModule;
+  chat: ChatModule;
+  debug: DebugModule;
+  // items: ItemModule;
+  live_scraper: LiveScraperModule;
+  order: OrderModule;
+  stock: StockModule;
+  transaction: TransactionModule;
+  events: EventModule;
+  // notification: NotificationModule;
+  statistic: StatisticModule;
+  cache: CacheModule;
+  analytics: AnalyticsModule;
+  log: LogModule;
 }
 
-export default api
+declare global {
+  interface Window {
+    api: TauriClient;
+    data: any;
+  }
+}
 
-export const wfmThumbnail = (thumb: string) => `https://warframe.market/static/assets/${thumb}`
+window.api = new TauriClient()
+// (window as any).api = api as
+const OnTauriEvent = <T>(event: string, callback: (data: T) => void) => window.api.events.OnEvent(event, callback)
+const OnTauriDataEvent = <T>(event: string, callback: (data: { operation: QfSocketEventOperation, data: T }) => void) => window.api.events.OnEvent(event, callback)
+
+const OffTauriEvent = <T>(event: string, callback: (data: T) => void) => window.api.events.OffEvent(event, callback)
+const OffTauriDataEvent = <T>(event: string, callback: (data: { operation: QfSocketEventOperation, data: T }) => void) => window.api.events.OffEvent(event, callback)
+
+const SendTauriEvent = async (event: string, data?: any) => window.api.events.FireEvent(event, data)
+const SendTauriDataEvent = async (event: string, operation: QfSocketEventOperation, data: any) => window.api.events.FireEvent(event, { operation, data })
+
+const WFMThumbnail = (thumb: string) => `https://warframe.market/static/assets/${thumb}`
+// const SendNotificationToWindow = async (title: string, message: string, icon?: string, sound?: string) => client.notification.sendSystemNotification(title, message, icon, sound)
+
+export { OnTauriEvent, OnTauriDataEvent, OffTauriEvent, OffTauriDataEvent, SendTauriEvent, SendTauriDataEvent, WFMThumbnail }
+export default window.api

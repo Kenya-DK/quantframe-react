@@ -60,10 +60,16 @@ export class ComposedListener {
 		}
 	};
 
-	public clean = (): void => {
-		if (this.count > 0) {
+	public clean = (event?: string): void => {
+		if (event) {
+			const entry = this.listeners[event];
+			if (entry) {
+				entry.clean();
+				delete this.listeners[event];
+			}
+		} else {
 			this.count = 0;
 			this.listeners = {};
 		}
-	};
+	}
 }

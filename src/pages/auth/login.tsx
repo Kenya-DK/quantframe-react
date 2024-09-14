@@ -1,99 +1,105 @@
-import { Box, Button, Center, Container, PasswordInput, TextInput, Title, Paper } from "@mantine/core";
-import { useForm } from "@mantine/form";
-import api from "@api/index";
-import { notifications } from "@mantine/notifications";
-import { useNavigate } from "react-router-dom";
+import { Center, Progress } from "@mantine/core";
+import { LogInForm } from "@components/forms/LogIn";
+import api, { SendTauriDataEvent } from "@api/index";
 import { useMutation } from "@tanstack/react-query";
-import i18next from "i18next";
-import { useTranslatePage } from "@hooks/index";
-import { Wfm } from "../../types";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { notifications } from "@mantine/notifications";
+import { useTranslatePages } from "@hooks/useTranslate.hook";
+import { TextTranslate } from "@components/TextTranslate";
+import { QfSocketEvent, QfSocketEventOperation, ResponseError } from "@api/types";
+import { useState } from "react";
+import { wfmSocket } from "@models/wfmSocket";
 
 export default function LoginPage() {
-  const useTraLogin = (key: string, context?: { [key: string]: any }) => useTranslatePage(`auth.${key}`, { ...context })
+  // States
+  // const navigate = useNavigate();
+  const [interval, setInterval] = useState(0);
+  const [progressText, setProgressText] = useState("")
+  const [is_banned, setIsBanned] = useState(false);
+  const [banned_reason, setBannedReason] = useState<string | undefined>(undefined)
 
-  const navigate = useNavigate();
-  const logInMutation = useMutation((data: { email: string, password: string }) => api.auth.login(data.email, data.password), {
-    onSuccess: async (data: Wfm.UserDto) => {
-      notifications.show({
-        title: i18next.t('success.auth.login_title'),
-        message: i18next.t('success.auth.login_message', { name: data.ingame_name }),
-        color: 'success',
-        autoClose: 5000,
-      });
-      api.auction.refresh();
-      api.orders.refresh();
-      navigate('/')
+  // Translate general
+  const useTranslatePage = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`auth.${key}`, { ...context }, i18Key)
+  const useTranslateErrors = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePage(`errors.${key}`, { ...context }, i18Key)
+  const useTranslateSuccess = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePage(`success.${key}`, { ...context }, i18Key)
+  const useTranslateProgress = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePage(`progress.${key}`, { ...context }, i18Key)
+
+  // Mutations
+  const logInMutation = useMutation({
+    mutationFn: (data: { email: string; password: string }) => {
+      setInterval(0);
+      setProgressText(useTranslateProgress("logging_in"));
+      return api.auth.login(data.email, data.password)
     },
-    onError: () => {
-      notifications.show({
-        title: i18next.t('error.auth.login_title'),
-        message: i18next.t('error.auth.login_message', { name: "" }),
-        color: 'red',
-        icon: <FontAwesomeIcon icon={faExclamationTriangle} />,
-        autoClose: 5000,
-      });
+    onSuccess: async (u) => {
+      if (!u) return;
+      setIsBanned(u.qf_banned);
+      if (u.qf_banned)
+        return notifications.show({ title: useTranslateErrors("login.title"), message: useTranslateErrors("login.banned"), color: "red.7" });
+
+      setBannedReason(u.qf_banned_reason);
+      notifications.show({ title: useTranslateSuccess("login.title"), message: useTranslateSuccess("login.message", { name: u.ingame_name }), color: "green.7" });
+      setInterval(1);
+      setProgressText(useTranslateProgress("refreshing_orders"));
+      await api.order.refresh();
+
+      setProgressText(useTranslateProgress("refreshing_auctions"));
+      setInterval(2);
+      await api.auction.refresh();
+
+      setProgressText(useTranslateProgress("refreshing_chat"));
+      setInterval(3);
+      await api.chat.refresh();
+
+      setProgressText(useTranslateProgress("refreshing_cache"));
+      setInterval(4);
+      await api.cache.reload();
+
+      setProgressText(useTranslateProgress("refreshing_transaction"));
+      setInterval(5);
+      await api.transaction.reload();
+      setProgressText(useTranslateProgress("refreshing_stock_items"));
+      setInterval(6);
+      await api.stock.item.reload();
+      setProgressText(useTranslateProgress("refreshing_stock_riven"));
+      setInterval(7);
+      await api.stock.riven.reload();
+
+      setProgressText(useTranslateProgress("login.progress_text_4"));
+      setInterval(8);
+      SendTauriDataEvent(QfSocketEvent.UpdateUser, QfSocketEventOperation.SET, u);
+      if (u.wfm_access_token)
+        wfmSocket.updateToken(u.wfm_access_token);
     },
+    onError: (err: ResponseError) => {
+      console.error(err);
+      const { ApiError }: { ApiError: { messages: string[] } } = err.extra_data as any;
+      if (ApiError.messages.some((m) => m.includes("app.account.email_not_exist")))
+        return notifications.show({ title: useTranslateErrors("login.title"), message: useTranslateErrors("login.email_not_exist"), color: "red.7" });
+      if (ApiError.messages.some((m) => m.includes("app.account.password_invalid")))
+        return notifications.show({ title: useTranslateErrors("login.title"), message: useTranslateErrors("login.password_invalid"), color: "red.7" });
+
+      return notifications.show({ title: useTranslateErrors("login.title"), message: useTranslateErrors("login.message"), color: "red.7" });
+    }
   })
 
-
-
-
-  const form = useForm({
-    initialValues: {
-      email: '',
-      password: '',
-      rememberMe: false,
-    },
-    validate: {
-      // email: (val) => (/^\S+@\S+$/.test(val) ? null : 'Invalid email'),
-      // password: (val) => (val.length <= 6 ? 'Password should include at least 6 characters' : null),
-    },
-  });
-
   return (
-    <Center w={"100%"} h={"100%"}>
-      <Box>
-        <form onSubmit={form.onSubmit(async () => {
-          await logInMutation.mutateAsync(form.values)
-        })}>
-          <Container >
-            <Title
-              align="center"
-              sx={(theme) => ({
-                fontFamily: `Greycliff CF, ${theme.fontFamily}`,
-                fontWeight: 900,
-              })}
-            >
-              {useTraLogin('login.title')}
-            </Title>
-
-            <Paper withBorder shadow="md" p={30} mt={30} radius="md">
-              <TextInput
-                required
-                label={useTraLogin('login.email')}
-                placeholder="Your email"
-                value={form.values.email}
-                onChange={(event) => form.setFieldValue('email', event.currentTarget.value)}
-                error={form.errors.email && i18next.t('error.invalid_email')}
-                radius="md" />
-              <PasswordInput
-                required
-                label={useTraLogin('login.password')}
-                placeholder="Your password"
-                value={form.values.password}
-                onChange={(event) => form.setFieldValue('password', event.currentTarget.value)}
-                error={form.errors.password && i18next.t('error.auth.password_invalid')}
-                radius="md"
-              />
-              <Button loading={logInMutation.isLoading} type="submit" fullWidth mt="xl">
-                {useTraLogin('login.submit')}
-              </Button>
-            </Paper>
-          </Container>
-        </form>
-      </Box>
+    <Center w={"100%"} h={"92vh"}>
+      <LogInForm hide_submit={is_banned} is_loading={logInMutation.isPending} onSubmit={(d: { email: string; password: string }) => logInMutation.mutate(d)} footerContent={
+        <>
+          {logInMutation.isPending && (
+            <Progress.Root size="xl">
+              <Progress.Section value={interval / 8 * 100} >
+                <Progress.Label>{progressText}</Progress.Label>
+              </Progress.Section>
+            </Progress.Root>
+          )}
+          {is_banned && (
+            <TextTranslate i18nKey={useTranslateErrors("login.ban_reason")}
+              values={{ reason: banned_reason || "" }}
+            />
+          )}
+        </>}
+      />
     </Center>
   );
 }

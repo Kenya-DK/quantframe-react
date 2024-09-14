@@ -4,41 +4,97 @@ use serde_json::json;
 
 use crate::{
     auth::AuthState,
-    error::{self, ApiResult, AppError},
-    wfm_client::client::WFMClient,
+    utils::{
+        enums::log_level::LogLevel,
+        modules::{
+            error::{self, ApiResult, AppError},
+            logger,
+        },
+    },
+    wfm_client::{client::WFMClient, types::user_profile::UserProfile},
 };
-pub struct AuthModule<'a> {
-    pub client: &'a WFMClient,
+#[derive(Clone, Debug)]
+pub struct AuthModule {
+    pub client: WFMClient,
     pub debug_id: String,
+    component: String,
 }
 
-impl<'a> AuthModule<'a> {
-    pub async fn login(&self, email: String, password: String) -> Result<AuthState, AppError> {
+impl AuthModule {
+    pub fn new(client: WFMClient) -> Self {
+        AuthModule {
+            client,
+            debug_id: "wfm_client_auth".to_string(),
+            component: "Auth".to_string(),
+        }
+    }
+    fn get_component(&self, component: &str) -> String {
+        format!("{}:{}:{}", self.client.component, self.component, component)
+    }
+
+    pub fn is_logged_in(&self) -> Result<(), AppError> {
+        let auth = self.client.auth.lock()?;
+        if !auth.is_logged_in() {
+            return Err(AppError::new_with_level(
+                &self.get_component("IsLoggedIn"),
+                eyre!("User is not logged in"),
+                LogLevel::Error,
+            ));
+        }
+        Ok(())
+    }
+
+    pub async fn me(&self) -> Result<UserProfile, AppError> {
+        match self
+            .client
+            .get::<UserProfile>("/profile", Some("profile"))
+            .await
+        {
+            Ok(ApiResult::Success(user, _)) => {
+                return Ok(user);
+            }
+            Ok(ApiResult::Error(e, _headers)) => {
+                return Err(self.client.create_api_error(
+                    &self.get_component("Login"),
+                    e,
+                    eyre!("There was an error fetching user profile"),
+                    LogLevel::Error,
+                ));
+            }
+            Err(e) => return Err(e),
+        };
+    }
+    pub async fn login(
+        &self,
+        email: &str,
+        password: &str,
+    ) -> Result<(UserProfile, Option<String>), AppError> {
         let body = json!({
             "email": email,
             "password": password
         });
 
-        let (mut user, headers): (AuthState, HeaderMap) = match self
+        let (user, headers): (UserProfile, HeaderMap) = match self
             .client
-            .post::<AuthState>("/auth/signin", Some("user"), body)
+            .post::<UserProfile>("/auth/signin", Some("user"), body)
             .await
         {
             Ok(ApiResult::Success(user, headers)) => {
-                self.client.debug(
-                    &self.debug_id,
-                    "User:Login",
-                    format!("User logged in: {}", user.ingame_name).as_str(),
-                    None,
+                logger::info_con(
+                    &self.get_component("Login"),
+                    &format!(
+                        "User logged in: {}",
+                        user.ingame_name.clone().unwrap_or("".to_string())
+                    ),
                 );
                 (user, headers)
             }
             Ok(ApiResult::Error(e, _headers)) => {
                 return Err(self.client.create_api_error(
-                    "Auth:Login",
+                    &self.get_component("Login"),
                     e,
                     eyre!("There was an error logging in"),
-                    crate::enums::LogLevel::Error,
+                    LogLevel::Error,
                 ));
             }
             Err(e) => return Err(e),
@@ -47,49 +103,40 @@ impl<'a> AuthModule<'a> {
         // Get the "set-cookie" header
         let cookies = headers.get("set-cookie");
         // Check if the header is present
-        if let Some(cookie_value) = cookies {
+        let token = if let Some(cookie_value) = cookies {
             // Convert HeaderValue to String
             let cookie_str = cookie_value.to_str().unwrap_or_default();
 
             // The slicing and splitting logic
             let access_token: Option<String> =
                 Some(cookie_str[4..].split(';').next().unwrap_or("").to_string());
-            user.access_token = access_token;
-            user.avatar = user.avatar;
+            access_token
         } else {
-            user.clone().access_token = None;
-        }
-        Ok(user)
+            None
+        };
+        Ok((user, token))
     }
 
-    pub async fn validate(&self) -> Result<bool, AppError> {
-        let mut auth = self.client.auth.lock()?.clone();
-        if auth.access_token.is_none() {
-            return Ok(false);
-        }
-
-        match self
-            .client
-            .orders()
-            .create("56783f24cbfa8f0432dd89a2", "buy", 1, 1, false, None)
-            .await
-        {
-            Ok(order) => {
-                self.client.orders().delete(&order.id.clone()).await?;
-                Ok(true)
-            }
+    pub async fn validate(&self) -> Result<UserProfile, AppError> {
+        // Validate Auth
+        let user = match self.me().await {
+            Ok(user) => user,
             Err(e) => {
-                if e.cause()
-                    .contains("app.post_order.already_created_no_duplicates")
-                {
-                    return Ok(true);
-                }
-                auth.access_token = None;
-                auth.id = "".to_string();
-                auth.save_to_file()?;
-                error::create_log_file("auth.log".to_string(), &e);
-                Ok(false)
+                error::create_log_file("command.log".to_string(), &e);
+                return Err(e);
             }
+        };
+        if user.anonymous || !user.verification {
+            logger::warning_con(
+                &self.get_component("Validate"),
+                "Validation failed for user, user is anonymous or not verified",
+            );
+        } else {
+            logger::info_con(
+                &self.get_component("Validate"),
+                "User validated successfully",
+            );
         }
+        return Ok(user);
     }
 }

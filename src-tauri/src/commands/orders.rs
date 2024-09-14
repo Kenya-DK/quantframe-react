@@ -1,120 +1,125 @@
-use once_cell::sync::Lazy;
-use serde_json::{json, Value};
+use serde_json::json;
 
 use crate::{
-    database::client::DBClient,
-    error::{self, AppError},
-    helper,
-    settings::SettingsState,
-    structs::Order,
-    wfm_client::client::WFMClient,
+    live_scraper::client::LiveScraperClient, notification::client::NotifyClient, qf_client::client::QFClient, settings::SettingsState, utils::{
+        enums::ui_events::{UIEvent, UIOperationEvent},
+        modules::error::{self, AppError},
+    }, wfm_client::client::WFMClient
 };
 use std::sync::{Arc, Mutex};
 
-// Create a static variable to store the log file name
-static LOG_FILE: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new("command_orders.log".to_string()));
-
 #[tauri::command]
-pub async fn get_orders(_wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>) -> Result<(), AppError> {
-    Ok(())
-}
-#[tauri::command]
-pub async fn delete_order(
-    id: String,
+pub async fn order_refresh(
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-) -> Result<(), AppError> {
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
+) -> Result<i32, AppError> {
     let wfm = wfm.lock()?.clone();
-    match wfm.orders().delete(id.as_str()).await {
-        Ok(_) => {}
-        Err(e) => {
-            error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
-            return Err(e);
-        }
-    }
-    Ok(())
-}
-#[tauri::command]
-pub async fn create_order(_wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>) -> Result<(), AppError> {
-    Ok(())
-}
-#[tauri::command]
-pub async fn update_order(_wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>) -> Result<(), AppError> {
-    Ok(())
-}
-
-#[tauri::command]
-pub async fn refresh_orders(wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>) -> Result<(), AppError> {
-    let wfm = wfm.lock()?.clone();
+    let notify = notify.lock()?.clone();
+    let qf = qf.lock()?.clone();
     let current_orders = match wfm.orders().get_my_orders().await {
         Ok(mut auctions) => {
+            qf.analytics()
+                .add_metric("Order_Refresh", "manual");
             let mut orders = auctions.buy_orders;
             orders.append(&mut auctions.sell_orders);
             orders
         }
         Err(e) => {
-            error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+            error::create_log_file("command_order_refresh.log".to_string(), &e);
             return Err(e);
         }
     };
-    helper::emit_update(
-        "orders",
-        "SET",
-        Some(serde_json::to_value(current_orders).unwrap()),
+    notify.gui().send_event_update(
+        UIEvent::UpdateOrders,
+        UIOperationEvent::Set,
+        Some(json!(current_orders)),
     );
-    Ok(())
+
+    Ok(current_orders.len() as i32)
 }
 #[tauri::command]
-pub async fn delete_all_orders(
+pub async fn order_delete(
+    id: String,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-    db: tauri::State<'_, Arc<Mutex<DBClient>>>,
-    settings: tauri::State<'_, Arc<Mutex<SettingsState>>>,
-) -> Result<serde_json::Value, AppError> {
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
+) -> Result<(), AppError> {
     let wfm = wfm.lock()?.clone();
-    let db = db.lock()?.clone();
-    let settings = settings.lock()?.clone();
-    let blacklist = settings.live_scraper.stock_item.blacklist.clone();
-    helper::emit_progress("Orders:Delete:All:Progress", "delete_all_orders.starting", None, false);
-    match db.stock_item().reset_listed_price().await {
-        Ok(_) => {}
+    let notify = notify.lock()?.clone();
+    let qf = qf.lock()?.clone();
+
+    match wfm.orders().delete(&id).await {
+        Ok(_) => {
+            qf.analytics()
+                .add_metric("Order_Delete", "manual");
+            notify.gui().send_event_update(
+                UIEvent::UpdateOrders,
+                UIOperationEvent::Delete,
+                Some(json!({"id": id})),
+            );
+        }
         Err(e) => {
-            error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+            error::create_log_file("command_order_delete.log".to_string(), &e);
             return Err(e);
         }
-    };
-    helper::emit_progress("Orders:Delete:All:Progress", "delete_all_orders.loading", None, false);
-    let current_orders: Vec<Order> = match wfm.orders().get_my_orders().await {
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn order_delete_all(
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    settings: tauri::State<'_, Arc<Mutex<SettingsState>>>,
+    live_scraper    : tauri::State<'_, Arc<Mutex<LiveScraperClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
+) -> Result<i32, AppError> {
+    let wfm = wfm.lock()?.clone();
+    let notify = notify.lock()?.clone();
+    let settings = settings.lock()?.clone();
+    let live_scraper = live_scraper.lock()?.clone();
+    let qf = qf.lock()?.clone();
+
+    live_scraper.stop_loop();
+    live_scraper.set_can_run(false);
+
+    let current_orders = match wfm.orders().get_my_orders().await {
         Ok(mut auctions) => {
+            qf.analytics()
+                .add_metric("Order_DeleteAll", "manual");
             let mut orders = auctions.buy_orders;
             orders.append(&mut auctions.sell_orders);
             orders
-                .into_iter()
-                .filter(|order| !blacklist.contains(&order.item.clone().unwrap().url_name))
-                .collect()
         }
         Err(e) => {
-            error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
+            error::create_log_file("command_order_delete_all.log".to_string(), &e);
+            live_scraper.set_can_run(true);
             return Err(e);
         }
     };
-
-    let count = current_orders.len();
-    let mut current_count = 0;
-    for order in current_orders {
-        current_count += 1;
-        helper::emit_progress("Orders:Delete:All:Progress", "delete_all_orders.progress",Some(json!({
-            "current": current_count,
-            "total": count
-        })), false);
-        match wfm.orders().delete(&order.id).await {
-            Ok(_) => {}
-            Err(e) => {
-                error::create_log_file(LOG_FILE.lock().unwrap().to_owned(), &e);
-                return Err(e);
-            }
-        };
+    let mut total = 0;
+    for order in current_orders.iter() {
+        if settings
+            .live_scraper
+            .stock_item
+            .blacklist
+            .contains(&order.item.clone().unwrap().url_name)
+        {
+            continue;
+        }
+        if let Err(e) = wfm.orders().delete(&order.id).await {
+            live_scraper.set_can_run(true);
+            error::create_log_file("command_order_delete_all.log".to_string(), &e);
+            return Err(e);
+        }
+        total += 1;
+        notify.gui().send_event_update(
+            UIEvent::UpdateOrders,
+            UIOperationEvent::Delete,
+            Some(json!({"id": order.id})),
+        );
     }
-    helper::emit_progress("Orders:Delete:All:Progress", "delete_all_orders.completed", Some(json!({
-        "total": count
-    })), true);
-    Ok(json!({"count": count}))
+    live_scraper.set_can_run(true);
+    Ok(total)
 }

@@ -1,148 +1,225 @@
-import { ActionIcon, Box, Grid, Group, Stack, Tooltip, Text, ScrollArea } from "@mantine/core";
+import { Text, Box, Divider, Group, Pagination, ScrollArea, SimpleGrid } from "@mantine/core";
+import { useEffect, useState } from "react";
+import { Wfm } from "$types/index";
+import { faFileImport, faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { paginate } from "@utils/helper";
+import { useTranslatePages } from "@hooks/useTranslate.hook";
 import api from "@api/index";
-import { useStockContextContext, useWarframeMarketContextContext } from "@contexts/index";
-import Auction from "@components/auction";
-import { modals } from "@mantine/modals";
-import { useMutation } from "@tanstack/react-query";
 import { notifications } from "@mantine/notifications";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
-import { useTranslatePage, useTranslateRustError } from "@hooks/index";
-import { useState } from "react";
-import { SearchField } from "@components/searchfield";
-import { RustError, Wfm } from "$types/index";
-import { SendNotificationToWindow, getOrderStatusColorCode } from "@utils/index";
-import { InfoBox } from "../../../../components/InfoBox";
+import { useMutation } from "@tanstack/react-query";
+import { modals } from "@mantine/modals";
+import { ActionWithTooltip } from "@components/ActionWithTooltip";
+import { AuctionListItem } from "@components/AuctionListItem";
+import { Loading } from "@components/Loading";
+import { SearchField } from "@components/SearchField";
+import { useStockContextContext } from "@contexts/stock.context";
+import { useWarframeMarketContextContext } from "@contexts/warframeMarket.context";
 
-interface AuctionsPanelProps {
+interface AuctionPanelProps {
 }
-export const AuctionsPanel = ({ }: AuctionsPanelProps) => {
-  const useTranslateAuctionsPanel = (key: string, context?: { [key: string]: any }) => useTranslatePage(`warframe_market.tabs.auctions.${key}`, { ...context })
-  const useTranslateNotifaications = (key: string, context?: { [key: string]: any }) => useTranslateAuctionsPanel(`notifaications.${key}`, { ...context })
-  const useTranslatePrompts = (key: string, context?: { [key: string]: any }) => useTranslateAuctionsPanel(`prompt.${key}`, { ...context })
-  const [query, setQuery] = useState<string>("");
-  const { auctions } = useWarframeMarketContextContext();
-  const { rivens } = useStockContextContext();
-  const importRivenEntryMutation = useMutation((data: { id: string, price: number }) => api.stock.riven.import_auction(data.id, data.price), {
-    onSuccess: async (data) => {
-      notifications.show({
-        title: useTranslateNotifaications("import.title"),
-        icon: <FontAwesomeIcon icon={faCheck} />,
-        message: useTranslateNotifaications("import.message", { name: `${data.name} ${data.mod_name}` }),
-        color: "green"
-      });
-    },
-    onError(error: RustError) {
-      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
-    }
-  })
-  const refreshAuctionsMutation = useMutation(() => api.auction.refresh(), {
-    onSuccess: async () => {
-      notifications.show({
-        title: useTranslateNotifaications("refresh.title"),
-        icon: <FontAwesomeIcon icon={faCheck} />,
-        message: useTranslateNotifaications("refresh.message"),
-        color: "green"
-      });
-    },
-    onError(error: RustError) {
-      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
-    }
-  })
-  const deleteAllAuctionsMutation = useMutation(() => api.auction.delete_all(), {
-    onSuccess: async (count) => {
-      notifications.show({
-        title: useTranslateNotifaications("delete_all.title"),
-        icon: <FontAwesomeIcon icon={faCheck} />,
-        message: useTranslateNotifaications("delete_all.message", { count: count }),
-        color: "green"
-      });
-    },
-    onError(error: RustError) {
-      SendNotificationToWindow(useTranslateRustError("title", { component: error.component }), useTranslateRustError("message", { loc: error.component }));
-    }
-  })
+export const AuctionPanel = ({ }: AuctionPanelProps) => {
+    // State's
+    const [query, setQuery] = useState<string>("");
+    const [page, setPage] = useState(1);
+    const pageSizes = [1, 5, 10, 15, 20, 25, 30, 50, 100];
+    const [pageSize, _setPageSize] = useState(pageSizes[4]);
+    const [totalPages, setTotalPages] = useState(0);
+    const [rows, setRows] = useState<Wfm.Auction<string>[]>([]);
+    const { auctions } = useWarframeMarketContextContext();
+    const { rivens } = useStockContextContext();
+    useStockContextContext();
 
-  const getAuctions = () => {
-    const aut = auctions.filter((x) => x.item && x.item.type.toLowerCase().includes("riven"));
-    if (query.length > 0)
-      return aut.filter((x) => x.item.name.toLowerCase().includes(query.toLowerCase()) ||
-        x.item.weapon_url_name.toLowerCase().includes(query.toLowerCase()));
-    return aut;
-  }
-  const getFindStock = (id: string) => {
-    return rivens.find(x => x.order_id === id);
-  }
-  return (
-    <Box>
-      <Grid>
-        <Grid.Col span={12}>
-          <SearchField value={query} onChange={(text) => setQuery(text)}
-            rightSectionWidth={80}
-            rightSection={
-              <Group spacing={5}>
+    // Update Database Rows
+    useEffect(() => {
+        let auctionsF = auctions;
 
-                <Tooltip label={useTranslateAuctionsPanel('tolltip.refresh')}>
-                  <ActionIcon variant="filled" color="green.7" onClick={() => {
-                    refreshAuctionsMutation.mutate();
-                  }}>
-                    <FontAwesomeIcon icon={faRefresh} />
-                  </ActionIcon>
-                </Tooltip>
-                <Tooltip label={useTranslateAuctionsPanel('tolltip.delete_all')}>
-                  <ActionIcon loading={deleteAllAuctionsMutation.isLoading} variant="filled" color="red.7" onClick={() => {
-                    modals.openConfirmModal({
-                      title: useTranslatePrompts('delete_all.title'),
-                      children: (<Text>
-                        {useTranslatePrompts('delete_all.message')}
-                      </Text>),
-                      labels: {
-                        confirm: useTranslatePrompts('delete_all.confirm'),
-                        cancel: useTranslatePrompts('delete_all.cancel')
-                      },
-                      confirmProps: { color: 'red' },
-                      onConfirm: async () => {
-                        deleteAllAuctionsMutation.mutate();
-                      }
-                    })
-                  }}>
-                    <FontAwesomeIcon icon={faTrashCan} />
-                  </ActionIcon>
-                </Tooltip>
-              </Group>
-            }
-          />
-          <Group mt={15} >
-            <InfoBox text={useTranslateAuctionsPanel("info.inactive")} color={getOrderStatusColorCode(Wfm.OrderStatus.Inactive)} />
-            <InfoBox text={useTranslateAuctionsPanel("info.is_imported")} color={getOrderStatusColorCode(Wfm.OrderStatus.Live)} />
-            <InfoBox text={useTranslateAuctionsPanel("info.is_not_imported")} color={getOrderStatusColorCode(Wfm.OrderStatus.Pending)} />
-          </Group>
-        </Grid.Col>
-      </Grid>
-      <ScrollArea p="xs" scrollbarSize={1} h={"calc(100vh - 215px)"} >
-        <Stack mt={25}>
-          {getAuctions().map((auction) => (
-            <Auction key={auction.id} stock_item={getFindStock(auction.id)} auction={auction}
-              onImport={(a) => {
-                modals.openContextModal({
-                  modal: 'prompt',
-                  title: useTranslatePrompts("import.title"),
-                  innerProps: {
-                    fields: [{ name: 'price', description: useTranslatePrompts("import.description"), label: useTranslatePrompts("import.label"), type: 'number', value: 0, placeholder: useTranslatePrompts("import.placeholder") }],
-                    onConfirm: async (data: { price: number }) => {
-                      const { price } = data;
-                      importRivenEntryMutation.mutate({
-                        id: a.id,
-                        price
-                      });
+        // Filter by query
+        if (query)
+            auctionsF = auctionsF.filter((order) => order.item.name.toLowerCase().includes(query.toLowerCase()))
+                || auctionsF.filter((order) => order.item.weapon_url_name.toLowerCase().includes(query.toLowerCase()));
+
+        // Update total pages
+        setTotalPages(Math.ceil(auctionsF.length / pageSize));
+
+
+        setRows(paginate(auctionsF, page, pageSize));
+    }, [auctions, query, pageSize, page]);
+
+    // Translate general
+    const useTranslateTabOrder = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`warframe_market.tabs.auctions.${key}`, { ...context }, i18Key)
+    const useTranslateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateTabOrder(`buttons.${key}`, { ...context }, i18Key)
+    const useTranslatePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateTabOrder(`prompts.${key}`, { ...context }, i18Key)
+    const useTranslateErrors = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateTabOrder(`errors.${key}`, { ...context }, i18Key)
+    const useTranslateSuccess = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateTabOrder(`success.${key}`, { ...context }, i18Key)
+
+    // Mutations    
+    const refreshAuctionsMutation = useMutation({
+        mutationFn: () => api.auction.refresh(),
+        onSuccess: async (u) => {
+            notifications.show({ title: useTranslateSuccess("refresh.title"), message: useTranslateSuccess("refresh.message", { count: u }), color: "green.7" });
+        },
+        onError: (e) => {
+            console.error(e);
+            notifications.show({ title: useTranslateErrors("refresh.title"), message: useTranslateErrors("refresh.message"), color: "red.7" })
+        }
+    })
+    const deleteAuctionsMutation = useMutation({
+        mutationFn: (id: string) => api.auction.delete(id),
+        onSuccess: async (name) => {
+            notifications.show({ title: useTranslateSuccess("delete.title"), message: useTranslateSuccess("delete.message", { name }), color: "green.7" });
+        },
+        onError: (e) => {
+            console.error(e);
+            notifications.show({ title: useTranslateErrors("delete.title"), message: useTranslateErrors("delete.message"), color: "red.7" })
+        }
+    })
+    const deleteAllAuctionsMutation = useMutation({
+        mutationFn: () => api.auction.deleteAll(),
+        onSuccess: async (u) => {
+            notifications.show({ title: useTranslateSuccess("delete_all.title"), message: useTranslateSuccess("delete_all.message", { count: u }), color: "green.7" });
+        },
+        onError: (e) => {
+            console.error(e);
+            notifications.show({ title: useTranslateErrors("delete_all.title"), message: useTranslateErrors("delete_all.message"), color: "red.7" })
+        }
+    })
+    const createRivenFromAuctionsMutation = useMutation({
+        mutationFn: (a: Wfm.Auction<string> & { price: number }) =>
+            api.auction.import_auction(a, a.price),
+        onSuccess: async (u) => {
+            notifications.show({ title: useTranslateSuccess("import_riven.title"), message: useTranslateSuccess("import_riven.message", { count: u }), color: "green.7" });
+        },
+        onError: (e) => {
+            console.error(e);
+            notifications.show({ title: useTranslateErrors("import_riven.title"), message: useTranslateErrors("import_riven.message"), color: "red.7" })
+        }
+    })
+    const OpenCreateStockRiven = (auction: Wfm.Auction<string>) => {
+        modals.openContextModal({
+            modal: 'prompt',
+            title: useTranslatePrompt(`import_riven.title`),
+            innerProps: {
+                fields: [
+                    {
+                        name: 'price',
+                        label: useTranslatePrompt(`import_riven.bought.label`),
+                        attributes: {
+                            min: 0,
+                        },
+                        value: 0,
+                        type: 'number',
                     },
-                    onCancel: (id: string) => modals.close(id),
-                  },
-                })
-              }} />
-          ))}
-        </Stack>
-      </ScrollArea>
-    </Box>
-  )
-}
+                ],
+                onConfirm: async (data: { price: number }) => {
+                    if (!auction) return;
+                    createRivenFromAuctionsMutation.mutateAsync({ ...auction, price: data.price });
+                },
+                onCancel: (id: string) => modals.close(id),
+            },
+        })
+    }
+    return (
+        <Box>
+            <SearchField value={query} onChange={(text) => setQuery(text)}
+                rightSectionWidth={63}
+                rightSection={
+                    <Group gap={5}>
+
+                        <ActionWithTooltip
+                            tooltip={useTranslateButtons('refresh.tooltip')}
+                            icon={faRefresh}
+                            loading={refreshAuctionsMutation.isPending || deleteAuctionsMutation.isPending || deleteAllAuctionsMutation.isPending}
+                            color={"green.7"}
+                            actionProps={{ size: "sm" }}
+                            iconProps={{ size: "xs" }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                refreshAuctionsMutation.mutateAsync();
+                            }}
+                        />
+                        <ActionWithTooltip
+                            tooltip={useTranslateButtons('delete_all.tooltip')}
+                            icon={faTrashCan}
+                            loading={refreshAuctionsMutation.isPending || deleteAuctionsMutation.isPending || deleteAllAuctionsMutation.isPending}
+                            color={"red.7"}
+                            actionProps={{ size: "sm" }}
+                            iconProps={{ size: "xs" }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                modals.openConfirmModal({
+                                    title: useTranslatePrompt('delete_all.title'),
+                                    children: (
+                                        <Text size="sm">
+                                            {useTranslatePrompt('delete_all.message')}
+                                        </Text>
+                                    ),
+                                    labels: { confirm: useTranslatePrompt('delete_all.confirm'), cancel: useTranslatePrompt('delete.cancel') },
+                                    onConfirm: async () => await deleteAllAuctionsMutation.mutateAsync(),
+                                });
+                            }}
+                        />
+                    </Group>
+                }
+            />
+            <ScrollArea mt={"md"} h={"calc(100vh - 300px)"} >
+                {refreshAuctionsMutation.isPending || deleteAuctionsMutation.isPending || deleteAllAuctionsMutation.isPending ? <Loading /> : null}
+                <SimpleGrid
+                    cols={{ base: 1, sm: 2, lg: 2 }}
+                    spacing="lg"
+                >
+                    {rows.map((order, i) => (
+                        <AuctionListItem
+                            key={i}
+                            // compacted
+                            show_image
+                            auction={order}
+                            header={
+                                <Group gap={5}>
+                                    {(!rivens.find((r) => r.wfm_order_id == order.id) && order.is_direct_sell) ? <ActionWithTooltip
+                                        tooltip={useTranslateButtons('import.tooltip')}
+                                        icon={faFileImport}
+                                        color={"blue.7"}
+                                        actionProps={{ size: "sm" }}
+                                        iconProps={{ size: "xs" }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            OpenCreateStockRiven(order);
+                                        }}
+                                    /> : null}
+
+                                    <ActionWithTooltip
+                                        tooltip={useTranslateButtons('delete.tooltip')}
+                                        icon={faTrashCan}
+                                        color={"red.7"}
+                                        actionProps={{ size: "sm" }}
+                                        iconProps={{ size: "xs" }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            modals.openConfirmModal({
+                                                title: useTranslatePrompt('delete.title'),
+                                                children: (
+                                                    <Text size="sm">
+                                                        {useTranslatePrompt('delete.message')}
+                                                    </Text>
+                                                ),
+                                                labels: { confirm: useTranslatePrompt('delete.confirm'), cancel: useTranslatePrompt('delete.cancel') },
+                                                onConfirm: async () => await deleteAuctionsMutation.mutateAsync(order.id),
+                                            });
+                                        }}
+                                    />
+                                </Group>}
+                        />
+                    ))}
+                </SimpleGrid>
+            </ScrollArea>
+            <Divider mt={"md"} />
+            <Group grow mt={"md"}>
+                <Group>
+                </Group>
+                <Group justify="flex-end">
+                    <Pagination value={page} onChange={setPage} total={totalPages} />
+                </Group>
+            </Group>
+        </Box>
+    );
+};

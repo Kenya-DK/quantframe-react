@@ -1,5 +1,5 @@
-import { createStyles, useMantineTheme } from "@mantine/core";
-import { Wfm } from "../types";
+import { upperFirst } from "@mantine/hooks";
+import { SubType } from "../api/types";
 
 export interface GroupByDateSettings {
   labels?: string[]
@@ -60,104 +60,10 @@ export const paginate = <T>(items: Array<T>, page: number, take: number) => {
   const endIndex = page * take;
   return items.slice(startIndex, endIndex);
 }
+
 export const padTo2Digits = (num: number) => {
   return num.toString().padStart(2, '0');
 }
-
-/**
- * Returns the CSS class for the given order status, which can be used to style the order status in the UI.
- * @param status - The order status to get the CSS class for.
- * @returns The CSS class for the given order status.
- */
-const useStyles = createStyles(() => {
-  const boxShadow = `inset 4px 0 0 0`;
-
-  return {
-    default: {
-      ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${getOrderStatusColorCode("")};`,
-      },
-    },
-    tolowprofile: {
-      ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.ToLowProfile)};`,
-      },
-    },
-    pending: {
-      ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.Pending)};`,
-      },
-    },
-    live: {
-      ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.Live)};`,
-      },
-    },
-    inactive: {
-      ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.Inactive)};`,
-      },
-    },
-    no_offers: {
-      ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.NoOffers)};`,
-      },
-    },
-    no_buyers: {
-      ['td:first-of-type']: {
-        boxShadow: `${boxShadow} ${getOrderStatusColorCode(Wfm.OrderStatus.NoBuyers)};`,
-      },
-    }
-
-  }
-});
-export const getOrderStatusColorCode = (status: string) => {
-  const theme = useMantineTheme();
-  switch (status) {
-    case Wfm.OrderStatus.Inactive:
-      return theme.colors.red[7];
-    case Wfm.OrderStatus.Live:
-      return theme.colors.green[7];
-    case Wfm.OrderStatus.Pending:
-      return theme.colors.violet[7];
-    case Wfm.OrderStatus.ToLowProfile:
-      return theme.colors.orange[7];
-    case Wfm.OrderStatus.NoOffers:
-      return theme.colors.pink[7];
-    case Wfm.OrderStatus.NoBuyers:
-      return theme.colors.yellow[7];
-    default:
-      return theme.colors.gray[2];
-  }
-};
-export const getOrderStatusColorClass = (status: string) => {
-  const { classes } = useStyles();
-  switch (status) {
-    case Wfm.OrderStatus.Inactive:
-      return classes.inactive;
-    case Wfm.OrderStatus.Live:
-      return classes.live;
-    case Wfm.OrderStatus.Pending:
-      return classes.pending;
-    case Wfm.OrderStatus.ToLowProfile:
-      return classes.tolowprofile;
-    case Wfm.OrderStatus.NoOffers:
-      return classes.no_offers;
-    default:
-      return classes.default;
-  }
-};
-export const getUserStatusColor = (status: Wfm.UserStatus) => {
-  switch (status) {
-    case Wfm.UserStatus.Ingame:
-      return "mediumpurple";
-    case Wfm.UserStatus.Online:
-      return "green";
-    case Wfm.UserStatus.Invisible:
-    default:
-      return "red";
-  }
-};
 
 // format number 1k, 1m, 1b
 export const formatNumber = (num: number) => {
@@ -172,3 +78,32 @@ export const formatNumber = (num: number) => {
   }
   return num;
 }
+
+export const getCssVariable = (name: string) => {
+  return getComputedStyle(document.documentElement).getPropertyValue(name);
+}
+
+export const GetSubTypeDisplay = (subType: SubType | undefined) => {
+  if (!subType) return "";
+  const { rank, variant, amber_stars, cyan_stars } = subType;
+  let display = "";
+  if (rank != undefined) display += `(R${rank})`;
+  if (variant) display += ` [${upperFirst(variant)}]`;
+  if (amber_stars) display += ` ${amber_stars}A`;
+  if (cyan_stars) display += ` ${cyan_stars}C`;
+  return display;
+}
+
+export const CreateTradeMessage = (prefix: string, items: { price: number, name: string }[], suffix: string) => {
+  const groupByPrice = groupBy("price", items);
+  const prices = Object.keys(groupByPrice).map((key) => parseInt(key)).sort((a, b) => b - a);
+  let message = `${prefix} `;
+  for (const price of prices) {
+    const names = groupByPrice[price].map((item) => item.name);
+    message += `${names.join("")}${price}p `;
+  }
+  message = message.trim();
+  message += suffix;
+  return message;
+}
+

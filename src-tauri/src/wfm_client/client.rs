@@ -1,48 +1,57 @@
 use std::{
     collections::HashMap,
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex, RwLock},
     time::Duration,
 };
 
 use eyre::eyre;
-use polars::{
-    prelude::{DataFrame, NamedFrom},
-    series::Series,
-};
-use reqwest::{header::HeaderMap, Client, Method, StatusCode, Url};
+use reqwest::{Client, Method, Url};
 use serde::de::DeserializeOwned;
-use serde_json::{json, Value};
+use serde_json::Value;
+use tauri::AppHandle;
 
 use crate::{
-    auth::AuthState,
-    enums::LogLevel,
-    error::{ApiResult, AppError, ErrorApiResponse},
-    helper,
-    logger::{self},
-    rate_limiter::RateLimiter,
+    app::client::AppState, auth::AuthState, logger, qf_client::client::QFClient, utils::{
+        enums::log_level::LogLevel,
+        modules::{
+            error::{ApiResult, AppError, ErrorApiResponse},
+            rate_limiter::RateLimiter,
+        },
+    }
 };
 
 use super::modules::{
-    auction::AuctionModule, auth::AuthModule, chat::ChatModule, item::ItemModule,
-    order::OrderModule,
+    auction::AuctionModule, auth::AuthModule, chat::ChatModule, order::OrderModule,
 };
 
 #[derive(Clone, Debug)]
 pub struct WFMClient {
     endpoint: String,
-    component: String,
+    pub component: String,
     limiter: Arc<tokio::sync::Mutex<RateLimiter>>,
+    order_module: Arc<RwLock<Option<OrderModule>>>,
+    chat_module: Arc<RwLock<Option<ChatModule>>>,
+    auction_module: Arc<RwLock<Option<AuctionModule>>>,
+    auth_module: Arc<RwLock<Option<AuthModule>>>,
+    pub app_handle: AppHandle,
     pub log_file: String,
     pub auth: Arc<Mutex<AuthState>>,
     pub settings: Arc<Mutex<crate::settings::SettingsState>>,
+    pub app: Arc<Mutex<AppState>>,
+    pub qf: Arc<Mutex<QFClient>>,
 }
 
 impl WFMClient {
     pub fn new(
+        app_handle: AppHandle,
         auth: Arc<Mutex<AuthState>>,
         settings: Arc<Mutex<crate::settings::SettingsState>>,
+        app: Arc<Mutex<AppState>>,
+        qf: Arc<Mutex<QFClient>>,
     ) -> Self {
         WFMClient {
+            app,
+            app_handle,
             endpoint: "https://api.warframe.market/v1/".to_string(),
             component: "WarframeMarket".to_string(),
             limiter: Arc::new(tokio::sync::Mutex::new(RateLimiter::new(
@@ -52,6 +61,11 @@ impl WFMClient {
             log_file: "wfmAPICalls.log".to_string(),
             auth,
             settings,
+            qf,
+            order_module: Arc::new(RwLock::new(None)),
+            chat_module: Arc::new(RwLock::new(None)),
+            auction_module: Arc::new(RwLock::new(None)),
+            auth_module: Arc::new(RwLock::new(None)),
         }
     }
 
@@ -101,23 +115,21 @@ impl WFMClient {
         body: Option<Value>,
     ) -> Result<ApiResult<T>, AppError> {
         let auth = self.auth.lock()?.clone();
+        let app = self.app.lock()?.clone();
         let mut rate_limiter = self.limiter.lock().await;
 
         rate_limiter.wait_for_token().await;
 
-        let packageinfo = crate::PACKAGEINFO
-            .lock()
-            .unwrap()
-            .clone()
-            .expect("Could not get package info");
+        let packageinfo = app.get_app_info();
 
         let client = Client::new();
         let new_url = format!("{}{}", self.endpoint, url);
+
         let request = client
             .request(method.clone(), Url::parse(&new_url).unwrap())
             .header(
                 "Authorization",
-                format!("JWT {}", auth.access_token.unwrap_or("".to_string())),
+                format!("JWT {}", auth.wfm_access_token.unwrap_or("".to_string())),
             )
             .header(
                 "User-Agent",
@@ -145,8 +157,9 @@ impl WFMClient {
 
         if let Err(e) = response {
             error_def.messages.push(e.to_string());
+
             return Err(AppError::new_api(
-                "WarframeMarket",
+                self.component.as_str(),
                 error_def,
                 eyre!(format!("There was an error sending the request: {}", e)),
                 LogLevel::Critical,
@@ -164,11 +177,16 @@ impl WFMClient {
         let response: Value = serde_json::from_str(content.as_str()).map_err(|e| {
             error_def.messages.push(e.to_string());
             error_def.error = "RequestError".to_string();
+
+            let log_level = match error_def.status_code {
+                400 => LogLevel::Warning,
+                _ => LogLevel::Critical,
+            };
             AppError::new_api(
                 self.component.as_str(),
                 error_def.clone(),
                 eyre!(format!("Could not parse response: {}, {:?}", content, e)),
-                LogLevel::Critical,
+                log_level,
             )
         })?;
 
@@ -209,9 +227,13 @@ impl WFMClient {
         }
 
         // Get the payload from the response if it exists
-        let mut data = response["payload"].clone();
+        let mut data = response.clone();
+        if response.get("payload").is_some() {
+            data = response["payload"].clone();
+        }
+
         if let Some(payload_key) = payload_key {
-            data = response["payload"][payload_key].clone();
+            data = data[payload_key].clone();
         }
 
         // Convert the response to a T object
@@ -275,37 +297,57 @@ impl WFMClient {
             .await?;
         Ok(payload)
     }
-    // Add an "add" method to WFMWFMClient
+
     pub fn auth(&self) -> AuthModule {
-        AuthModule {
-            client: self,
-            debug_id: "wfm_client_auth".to_string(),
+        // Lazily initialize ItemModule if not already initialized
+        if self.auth_module.read().unwrap().is_none() {
+            *self.auth_module.write().unwrap() = Some(AuthModule::new(self.clone()).clone());
         }
+
+        // Unwrapping is safe here because we ensured the item_module is initialized
+        self.auth_module.read().unwrap().as_ref().unwrap().clone()
     }
 
     pub fn orders(&self) -> OrderModule {
-        OrderModule {
-            client: self,
-            debug_id: "wfm_client_order".to_string(),
+        // Lazily initialize ItemModule if not already initialized
+        if self.order_module.read().unwrap().is_none() {
+            *self.order_module.write().unwrap() = Some(OrderModule::new(self.clone()).clone());
         }
+
+        // Unwrapping is safe here because we ensured the order_module is initialized
+        self.order_module.read().unwrap().as_ref().unwrap().clone()
+    }
+    pub fn update_order_module(&self, module: OrderModule) {
+        // Update the stored ItemModule
+        *self.order_module.write().unwrap() = Some(module);
     }
 
-    pub fn items(&self) -> ItemModule {
-        ItemModule {
-            client: self,
-            debug_id: "wfm_client_item".to_string(),
-        }
-    }
     pub fn auction(&self) -> AuctionModule {
-        AuctionModule {
-            client: self,
-            debug_id: "wfm_client_auction".to_string(),
+        // Lazily initialize AuctionModule if not already initialized
+        if self.auction_module.read().unwrap().is_none() {
+            *self.auction_module.write().unwrap() = Some(AuctionModule::new(self.clone()).clone());
         }
+
+        // Unwrapping is safe here because we ensured the item_module is initialized
+        self.auction_module
+            .read()
+            .unwrap()
+            .as_ref()
+            .unwrap()
+            .clone()
     }
+    pub fn update_auction_module(&self, module: AuctionModule) {
+        // Update the stored AuctionModule
+        *self.auction_module.write().unwrap() = Some(module);
+    }
+
     pub fn chat(&self) -> ChatModule {
-        ChatModule {
-            client: self,
-            debug_id: "wfm_client_chat".to_string(),
+        // Lazily initialize ChatModule if not already initialized
+        if self.chat_module.read().unwrap().is_none() {
+            *self.chat_module.write().unwrap() = Some(ChatModule::new(self.clone()).clone());
         }
+
+        // Unwrapping is safe here because we ensured the chat_module is initialized
+        self.chat_module.read().unwrap().as_ref().unwrap().clone()
     }
 }

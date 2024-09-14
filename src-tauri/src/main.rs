@@ -1,56 +1,125 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
+#![allow(non_snake_case)]
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+use app::client::AppState;
 use auth::AuthState;
 use cache::client::CacheClient;
-use database::client::DBClient;
 use debug::DebugClient;
-use error::AppError;
-use handler::MonitorHandler;
 use live_scraper::client::LiveScraperClient;
-use once_cell::sync::Lazy;
-use price_scraper::PriceScraper;
+use log_parser::client::LogParser;
+use migration::{Migrator, MigratorTrait};
+use notification::client::NotifyClient;
+use service::sea_orm::Database;
 use settings::SettingsState;
-use std::path::{self, PathBuf};
-use std::sync::Arc;
-use std::{env, sync::Mutex};
-use std::{fs, panic};
-use tauri::api::notification::Notification;
-use tauri::async_runtime::block_on;
-use tauri::{App, Manager, PackageInfo, SystemTrayEvent};
-use wf_ee_log_parser::client::EELogParser;
-mod enums;
-mod handler;
-mod structs;
-use tauri::SystemTray;
+use tauri::utils::config::UpdaterEndpoint;
+use utils::modules::error::AppError;
+use utils::modules::logger;
 
+use std::panic;
+use std::sync::{Arc, OnceLock};
+use std::{env, sync::Mutex};
+
+use tauri::async_runtime::block_on;
+use tauri::SystemTray;
+use tauri::{App, Manager, SystemTrayEvent};
+
+mod app;
 mod auth;
 mod cache;
 mod commands;
-mod database;
 mod debug;
-mod error;
+mod enums;
 mod helper;
+mod http_client;
 mod live_scraper;
-mod logger;
-mod price_scraper;
-mod rate_limiter;
+mod log_parser;
+mod notification;
+mod qf_client;
 mod settings;
 mod system_tray;
-mod wf_ee_log_parser;
+mod utils;
 mod wfm_client;
 
-use helper::WINDOW as HE_WINDOW;
+pub static APP: OnceLock<tauri::AppHandle> = OnceLock::new();
 
-pub static PACKAGEINFO: Lazy<Mutex<Option<PackageInfo>>> = Lazy::new(|| Mutex::new(None));
+async fn setup_manages(app: &mut App) -> Result<(), AppError> {
+    // Get the update channel
+    let context = tauri::generate_context!();
+    let updater = context.config().tauri.updater.clone();
 
-async fn setup_async(app: &mut App) -> Result<(), AppError> {
-    // Get the main window
-    let window = app.get_window("main").unwrap().clone();
-    // create and manage PriceScraper state
-    let monitor_handler_arc: Arc<Mutex<MonitorHandler>> = Arc::new(Mutex::new(
-        MonitorHandler::new(window.clone(), app.handle().clone()),
-    ));
-    app.manage(monitor_handler_arc.clone());
+    let mut is_pre_release = false;
+    if updater.active && updater.endpoints.is_some() {
+        let endpoints = updater.endpoints.as_ref().unwrap();
+        for endpoint in endpoints {
+            if endpoint.to_string().contains("prerelease") {
+                is_pre_release = true;
+            }
+        }
+    }
+
+    // Check if the app is being run for the first time
+    let is_first_install = !helper::dose_app_exist();
+
+    // Create the database connection and store it
+    let storage_path = helper::get_app_storage_path();
+
+    let mut db_file_name = "quantframeV2.sqlite";
+    let db_debug_file_name = "quantframeV2_debug.sqlite";
+    let debug_db = false;
+
+    // Create the path to the database file
+    let db_file_path = format!("{}/{}", storage_path.to_str().unwrap(), db_file_name);
+
+    // Create a backup of the database file
+    let db_file_path_backup = format!("{}/{}_backup", storage_path.to_str().unwrap(), db_file_name);
+    logger::info_con("Setup:Database", "Creating a backup of the database file");
+    if std::path::Path::new(&db_file_path).exists() {
+        std::fs::copy(&db_file_path, &db_file_path_backup)
+            .expect("Failed to create a backup of the database file");
+    }
+
+    // Create the path to the debug database file
+    let db_debug_file_path_backup = db_file_path.replace(db_file_name, db_debug_file_name);
+    if debug_db {
+        db_file_name = db_debug_file_name;
+        logger::warning_con(
+            "Setup:Database",
+            "Debug mode is enabled, using the debug database file no data wil be saved",
+        );
+        if std::path::Path::new(&db_file_path).exists() {
+            std::fs::copy(&db_file_path, &db_debug_file_path_backup)
+                .expect("Failed to create a backup of the database file");
+        }
+    }
+
+    // Create the database connection URL
+    let db_url = format!(
+        "sqlite://{}/{}?mode=rwc",
+        storage_path.to_str().unwrap(),
+        db_file_name,
+    );
+
+    // Create the database connection and store it and run the migrations
+    let conn = Database::connect(db_url)
+        .await
+        .expect("Database connection failed");
+    Migrator::up(&conn, None).await.unwrap();
+
+    // Create and manage Notification state
+    let app_arc: Arc<Mutex<AppState>> = Arc::new(Mutex::new(AppState::new(
+        conn,
+        app.handle(),
+        is_first_install,
+        is_pre_release,
+    )));
+    app.manage(app_arc.clone());
+
+    // Create and manage Notification state
+    let notify_arc: Arc<Mutex<NotifyClient>> = Arc::new(Mutex::new(NotifyClient::new(
+        Arc::clone(&app_arc),
+        app.handle().clone(),
+    )));
+    app.manage(notify_arc.clone());
 
     // create and manage Settings state
     let settings_arc = Arc::new(Mutex::new(SettingsState::setup()?));
@@ -60,60 +129,63 @@ async fn setup_async(app: &mut App) -> Result<(), AppError> {
     let auth_arc = Arc::new(Mutex::new(AuthState::setup()?));
     app.manage(auth_arc.clone());
 
-    // create and manage Warframe Market API client state
-    let wfm_client = Arc::new(Mutex::new(wfm_client::client::WFMClient::new(
+    // create and manage Quantframe client state
+    let qf_client = Arc::new(Mutex::new(qf_client::client::QFClient::new(
         Arc::clone(&auth_arc),
         Arc::clone(&settings_arc),
+        Arc::clone(&app_arc),
+    )));
+    app.manage(qf_client.clone());
+
+    // create and manage Warframe Market API client state
+    let wfm_client = Arc::new(Mutex::new(wfm_client::client::WFMClient::new(
+        app.handle(),
+        Arc::clone(&auth_arc),
+        Arc::clone(&settings_arc),
+        Arc::clone(&app_arc),
+        Arc::clone(&qf_client),
     )));
     app.manage(wfm_client.clone());
 
     // create and manage Cache state
-    let cache_arc = Arc::new(Mutex::new(CacheClient::new(Arc::clone(&wfm_client))));
+    let cache_arc = Arc::new(Mutex::new(CacheClient::new(
+        Arc::clone(&qf_client),
+        Arc::clone(&settings_arc),
+    )));
     app.manage(cache_arc.clone());
 
-    // create and manage DatabaseClient state
-    let database_client = Arc::new(Mutex::new(
-        DBClient::new(cache_arc.clone(), wfm_client.clone())
-            .await
-            .unwrap(),
-    ));
-    app.manage(database_client.clone());
-
-    // create and manage PriceScraper state
-    let price_scraper: Arc<Mutex<PriceScraper>> = Arc::new(Mutex::new(PriceScraper::new(
-        Arc::clone(&wfm_client),
-        Arc::clone(&auth_arc),
-    )));
-    app.manage(price_scraper.clone());
+    // create and manage HTTP client state
+    let http_client_arc = Arc::new(Mutex::new(http_client::client::HttpClient::setup(
+        Arc::clone(&settings_arc),
+    )?));
+    app.manage(http_client_arc.clone());
 
     // create and manage LiveScraper state
     let live_scraper = LiveScraperClient::new(
+        Arc::clone(&app_arc),
         Arc::clone(&settings_arc),
-        Arc::clone(&price_scraper),
         Arc::clone(&wfm_client),
         Arc::clone(&auth_arc),
-        Arc::clone(&database_client),
-        Arc::clone(&monitor_handler_arc),
+        Arc::clone(&cache_arc),
+        Arc::clone(&notify_arc),
+        Arc::clone(&qf_client),
     );
     app.manage(Arc::new(Mutex::new(live_scraper)));
 
     // create and manage WhisperScraper state
-    let ee_log = EELogParser::new(
-        Arc::clone(&settings_arc),
-        Arc::clone(&monitor_handler_arc),
-        Arc::clone(&cache_arc),
-    );
-    app.manage(Arc::new(Mutex::new(ee_log)));
-    // create and manage WhisperScraper state
-    let debug_client = DebugClient::new(
-        Arc::clone(&cache_arc),
-        Arc::clone(&wfm_client),
-        Arc::clone(&auth_arc),
-        Arc::clone(&database_client),
-        Arc::clone(&settings_arc),
-    );
+    let debug_client = DebugClient::new(Arc::clone(&cache_arc), Arc::clone(&notify_arc));
     app.manage(Arc::new(Mutex::new(debug_client)));
 
+    let log_parser = LogParser::new(
+        Arc::clone(&app_arc),
+        Arc::clone(&settings_arc),
+        Arc::clone(&wfm_client),
+        Arc::clone(&auth_arc),
+        Arc::clone(&cache_arc),
+        Arc::clone(&notify_arc),
+        Arc::clone(&qf_client),
+    );
+    app.manage(Arc::new(Mutex::new(log_parser)));
     Ok(())
 }
 fn main() {
@@ -136,24 +208,16 @@ fn main() {
             _ => {}
         })
         .setup(move |app| {
-            // Get the main window
-            let window = app.get_window("main").unwrap().clone();
-
-            // Get the 'main' window and store it
-            *HE_WINDOW.lock().unwrap() = Some(window.clone());
-
-            // Get the package info and store it
-            *PACKAGEINFO.lock().unwrap() = Some(app.package_info().clone());
-
-            // create and manage DatabaseClient state
-            match block_on(setup_async(app)) {
+            _ = APP.get_or_init(|| app.app_handle());
+            // Setup Manages for the app
+            match block_on(setup_manages(app)) {
                 Ok(_) => {}
                 Err(e) => {
                     let component = e.component();
                     let cause = e.cause();
                     let backtrace = e.backtrace();
                     let log_level = e.log_level();
-                    crate::logger::dolog(
+                    logger::dolog(
                         log_level,
                         component.as_str(),
                         format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
@@ -161,50 +225,67 @@ fn main() {
                         Some("setup_error.log"),
                     );
                 }
-            }
+            };
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            commands::base::init,
-            commands::base::update_settings,
-            commands::base::open_logs_folder,
-            commands::base::export_logs,
-            commands::base::show_notification,
-            commands::base::on_new_wfm_message,
-            commands::auth::login,
-            commands::auth::logout,
-            commands::base::log,
-            commands::auth::update_user_status,
-            commands::transaction::create_transaction_entry,
-            commands::transaction::delete_transaction_entry,
-            commands::transaction::update_transaction_entry,
-            commands::live_scraper::toggle_live_scraper,
-            commands::price_scraper::generate_price_history,
-            commands::debug::import_warframe_algo_trader_data,
-            commands::debug::reset_data,
-            commands::auctions::refresh_auctions,
-            commands::orders::refresh_orders,
-            commands::orders::get_orders,
-            commands::orders::delete_order,
-            commands::orders::create_order,
-            commands::orders::update_order,
-            commands::orders::delete_all_orders,
-            commands::chat::get_chat,
-            commands::chat::delete_chat,
-            commands::chat::refresh_chats,
-            // Stock commands
-            commands::stock::create_item_stock,
-            commands::stock::delete_item_stock,
-            commands::stock::update_item_stock,
-            commands::stock::sell_item_stock,
-            commands::stock::sell_item_stock_by_url,
-            commands::stock::create_riven_stock,
-            commands::stock::import_auction,
-            commands::stock::delete_riven_stock,
-            commands::stock::update_riven_stock,
-            commands::stock::sell_riven_stock,
-            // Warframe Market Commands
-            wfm_client::modules::auction::auction_search,
+            // Base commands
+            commands::app::app_init,
+            commands::app::app_update_settings,
+            // Auth commands
+            commands::auth::auth_login,
+            commands::auth::auth_set_status,
+            commands::auth::auth_logout,
+            // Cache commands
+            commands::cache::cache_reload,
+            commands::cache::cache_get_tradable_items,
+            commands::cache::cache_get_riven_weapons,
+            commands::cache::cache_get_riven_attributes,
+            commands::cache::cache_get_tradable_item,
+            // Transaction commands
+            commands::transaction::transaction_reload,
+            commands::transaction::transaction_get_all,
+            commands::transaction::transaction_update,
+            commands::transaction::transaction_delete,
+            // Debug commands
+            commands::analytics::analytics_set_last_user_activity,
+            commands::analytics::analytics_send_metric,
+            // Debug commands
+            commands::debug::debug_db_reset,
+            commands::debug::debug_migrate_data_base,
+            commands::debug::debug_import_algo_trader,
+            // Log commands
+            commands::log::log_open_folder,
+            commands::log::log_export,
+            // Auctions commands
+            commands::auctions::auction_refresh,
+            commands::auctions::auction_delete,
+            commands::auctions::auction_delete_all,
+            commands::auctions::auction_import,
+            // Orders commands
+            commands::orders::order_delete,
+            commands::orders::order_delete_all,
+            commands::orders::order_refresh,
+            // Chat commands
+            commands::chat::chat_refresh,
+            // Live Trading commands
+            commands::live_scraper::live_scraper_set_running_state,
+            // Stock Item commands
+            commands::stock_item::stock_item_reload,
+            commands::stock_item::stock_item_create,
+            commands::stock_item::stock_item_update,
+            commands::stock_item::stock_item_update_bulk,
+            commands::stock_item::stock_item_sell,
+            commands::stock_item::stock_item_delete,
+            commands::stock_item::stock_item_delete_bulk,
+            // Stock Riven commands
+            commands::stock_riven::stock_riven_reload,
+            commands::stock_riven::stock_riven_update,
+            commands::stock_riven::stock_riven_update_bulk,
+            commands::stock_riven::stock_riven_sell,
+            commands::stock_riven::stock_riven_delete,
+            commands::stock_riven::stock_riven_delete_bulk,
+            commands::stock_riven::stock_riven_create,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
