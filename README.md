@@ -42,6 +42,15 @@ Open a terminal at the project root and run:
 
 <details>
 <summary>
+<i>How do I do this on linux? (RELATIVELY UNTESTED, MAY NOT WORK)</i>
+</summary>
+
+Run 'Comp-Linux.sh' in your terminal; if it succeeds, the binary should be under (The project folder)/src-tauri/build/debug
+
+</details>
+
+<details>
+<summary>
 <i>How do I do this on windows?</i>
 </summary>
 
@@ -54,6 +63,7 @@ Then type in `powershell` and hit enter
 ![ps](/docs/assets/open-terminal-2.png)
 
 </details>
+
 
 ```bash
 npm i # Install nodejs deps 
