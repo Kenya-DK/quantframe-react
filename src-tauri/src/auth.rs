@@ -132,7 +132,7 @@ impl AuthState {
         self.auctions_limit = 50;
         if user_profile.patreon_profile.is_some() {
             let us = user_profile.patreon_profile.clone().unwrap();
-            if us.subscription {
+            if us.subscription.is_some() && us.subscription.unwrap() {
                 self.order_limit = -1;
                 self.auctions_limit = -1;
             }
