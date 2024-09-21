@@ -1,10 +1,11 @@
 import { listen } from "@tauri-apps/api/event";
 import { ComposedListener } from "@utils/listener/Composed.listener";
+import { QfSocketEvent } from "../types";
 
 export class EventModule {
   private listener = new ComposedListener();
   // private debug_filter: string[] = ["*"];
-  private debug_filter: string[] = ["WFM:UpdateOrders", "Stock:UpdateStockItems"];
+  private debug_filter: string[] = [QfSocketEvent.UpdateStockRivens,QfSocketEvent.UpdateAuction];
   private _colors = [
     'color: #000',
     'color: #000',

@@ -1,5 +1,6 @@
 export enum QfSocketEvent {
   // App
+  All = "*",
   OnInitialize = "App:OnInitialize",
   UpdateSettings = "App:UpdateSettings",
   UpdateAppInfo = "App:UpdateAppInfo",
