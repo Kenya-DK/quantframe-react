@@ -90,7 +90,7 @@ impl RivenModule {
         let total = stocks.len() as i64;
         for mut stock_riven in stocks {
             // Check if client is running
-            if !self.client.is_running() || stock_riven.id != 162 {
+            if !self.client.is_running() {
                 continue;
             }
             current_index += 1;
