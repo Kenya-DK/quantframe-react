@@ -10,7 +10,10 @@ use crate::{
     },
     wfm_client::{
         client::WFMClient,
-        types::{auction::Auction, auction_item::AuctionItem, auction_owner::AuctionOwner},
+        types::{
+            auction::Auction, auction_collection::AuctionCollection, auction_item::AuctionItem,
+            auction_owner::AuctionOwner,
+        },
     },
 };
 #[derive(Clone, Debug)]
@@ -64,7 +67,7 @@ impl AuctionModule {
     pub async fn get_user_auctions(
         &mut self,
         ingame_name: &str,
-    ) -> Result<Vec<Auction<String>>, AppError> {
+    ) -> Result<AuctionCollection<String>, AppError> {
         let url = format!("profile/{}/auctions", ingame_name);
         self.client.auth().is_logged_in()?;
         match self
@@ -80,7 +83,7 @@ impl AuctionModule {
                     None,
                 );
                 self.set_auction_count(payload.len() as i64)?;
-                return Ok(payload);
+                return Ok(AuctionCollection::new(payload));
             }
             Ok(ApiResult::Error(error, _headers)) => {
                 return Err(self.client.create_api_error(
@@ -99,31 +102,11 @@ impl AuctionModule {
         };
     }
 
-    pub async fn get_my_auctions(&mut self) -> Result<Vec<Auction<String>>, AppError> {
+    pub async fn get_my_auctions(&mut self) -> Result<AuctionCollection<String>, AppError> {
         self.client.auth().is_logged_in()?;
         let auth = self.client.auth.lock()?.clone();
         let auctions = self.get_user_auctions(auth.ingame_name.as_str()).await?;
         Ok(auctions)
-    }
-
-    pub async fn get_auction_by_id(
-        &self,
-        auction_id: &str,
-    ) -> Result<Option<Auction<String>>, AppError> {
-        match self.client.auction().get_my_auctions().await {
-            Ok(auctions) => {
-                for auction in auctions {
-                    if auction.id == auction_id {
-                        return Ok(Some(auction));
-                    }
-                }
-                return Ok(None);
-            }
-            Err(e) => {
-                error::create_log_file("get_auction_by_id.log".to_string(), &e);
-                return Err(e);
-            }
-        }
     }
 
     pub async fn create(
@@ -203,10 +186,10 @@ impl AuctionModule {
     pub async fn update(
         &self,
         auction_id: &str,
-        buyout_price: i32,
-        minimal_reputation: i32,
+        buyout_price: i64,
+        minimal_reputation: i64,
         note: &str,
-        starting_price: i32,
+        starting_price: i64,
         visible: bool,
     ) -> Result<Auction<String>, AppError> {
         self.client.auth().is_logged_in()?;
@@ -260,8 +243,7 @@ impl AuctionModule {
         re_rolls_max: Option<i64>,
         buyout_policy: Option<&str>,
         sort_by: Option<&str>,
-        attributes: Option<Vec<RivenAttribute>>,
-    ) -> Result<Vec<Auction<AuctionOwner>>, AppError> {
+    ) -> Result<AuctionCollection<AuctionOwner>, AppError> {
         let base_url = format!("auctions/search?type={}", auction_type);
 
         let mut query_params = Vec::new();
@@ -317,22 +299,7 @@ impl AuctionModule {
                     .as_str(),
                     None,
                 );
-                if attributes.is_none() {
-                    return Ok(payload);
-                }
-                let mut new_payload = vec![];
-                for mut auction in payload.into_iter() {
-                    let (similarity, extra_attributes, missing_attributes) = self
-                        .calculate_shared_attribute_percentages(
-                            attributes.clone().unwrap(),
-                            &auction.item,
-                        );
-                    auction.item.similarity = Some(similarity);
-                    auction.item.extra_attributes = Some(extra_attributes);
-                    auction.item.missing_attributes = Some(missing_attributes);
-                    new_payload.push(auction);
-                }
-                return Ok(new_payload);
+                return Ok(AuctionCollection::new(payload));
             }
             Ok(ApiResult::Error(error, _headers)) => {
                 let log_level = match error.status_code {
@@ -351,56 +318,7 @@ impl AuctionModule {
             }
         };
     }
-    pub fn calculate_shared_attribute_percentages(
-        &self,
-        attributes: Vec<RivenAttribute>,
-        item2: &AuctionItem,
-    ) -> (f64, Vec<RivenAttribute>, Vec<RivenAttribute>) {
-        let mut shared_count = 0;
 
-        let right_attributes = item2.attributes.as_ref().unwrap();
-
-        let extra_attributes: Vec<_> = right_attributes
-            .iter()
-            .filter(|attr| {
-                !attributes
-                    .iter()
-                    .any(|attr2| attr2.url_name == attr.url_name && attr2.positive == attr.positive)
-            })
-            .cloned()
-            .collect();
-
-        let missing_attributes: Vec<_> = attributes
-            .iter()
-            .filter(|attr| {
-                !right_attributes
-                    .iter()
-                    .any(|attr2| attr2.url_name == attr.url_name && attr2.positive == attr.positive)
-            })
-            .cloned()
-            .collect();
-
-        let mut unique_attributes = std::collections::HashSet::new();
-        attributes.iter().for_each(|attr| {
-            unique_attributes.insert(format!("{}_{}", attr.url_name, attr.positive));
-        });
-
-        let total_unique_attributes_count = unique_attributes.len();
-
-        for attr2 in right_attributes {
-            let key = format!("{}_{}", attr2.url_name, attr2.positive);
-            if unique_attributes.contains(&key) {
-                shared_count += 1;
-                unique_attributes.remove(&key); // Ensure the attribute is only counted once
-            }
-        }
-
-        (
-            shared_count as f64 / total_unique_attributes_count as f64 * 100.0,
-            extra_attributes,
-            missing_attributes,
-        )
-    }
     pub async fn delete(&mut self, auction_id: &str) -> Result<Option<String>, AppError> {
         let url = format!("auctions/entry/{}/close", auction_id);
 

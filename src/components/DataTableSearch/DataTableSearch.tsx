@@ -1,14 +1,14 @@
 import { Box } from "@mantine/core";
 import { DataTable, DataTableProps, DataTableSortStatus } from "mantine-datatable";
-import { ISearchKeyParameter, SortingField } from "$types/index";
+import { SortingField } from "$types/index";
 import { useEffect, useState } from "react";
 import { sortArray } from "@utils/sorting.helper";
 import { paginate } from "@utils/helper";
 import { SearchField, SearchFieldProps } from "../SearchField";
-import { searchByProperties } from "@utils/search.helper";
+import { searchProperties,Query } from "@utils/search.helper";
 
 export type DataTableSearchProps<T> = {
-  filters?: ISearchKeyParameter;
+  filters?: Query;
   sorting?: SortingField;
   query?: string;
   onSearchChange?: (query: string) => void;
@@ -28,18 +28,18 @@ export const DataTableSearch = <T,>({ query, onSearchChange, records, rightSecti
       return;
 
     let filteredRecords = records;
-
+    console.log("DataTableSearch: Filter Status", filteredRecords.map((x) => (x as any).id));
 
     filteredRecords = sortArray([{
       field: sortStatus.columnAccessor as string,
       direction: sortStatus.direction
     }], filteredRecords);
     if (filters)
-      filteredRecords = searchByProperties(records, filters);
+      filteredRecords = searchProperties(records, filters, false);
     setTotalRecords(filteredRecords.length);
     filteredRecords = paginate(filteredRecords, page, pageSize);
     setRows(filteredRecords);
-  }, [records, filters, page, pageSize, sortStatus]);
+  }, [filters, page, pageSize, sortStatus]);
   return (
     <Box pos="relative" >
       {(onSearchChange && query != undefined) && <SearchField value={query} onChange={(t) => onSearchChange(t)} rightSection={rightSection} rightSectionWidth={rightSectionWidth} filter={filter} />}

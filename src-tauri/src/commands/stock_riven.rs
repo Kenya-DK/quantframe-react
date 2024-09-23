@@ -109,10 +109,10 @@ pub async fn stock_riven_update(
             .auction()
             .update(
                 stock.wfm_order_id.clone().unwrap().as_str(),
-                post_price as i32,
+                post_price,
                 0,
                 &stock.comment.clone(),
-                post_price as i32,
+                post_price,
                 true,
             )
             .await
@@ -198,10 +198,10 @@ pub async fn stock_riven_update_bulk(
             .auction()
             .update(
                 stock.wfm_order_id.clone().unwrap().as_str(),
-                post_price as i32,
+                post_price,
                 0,
                 &stock.comment.clone(),
-                post_price as i32,
+                post_price,
                 true,
             )
             .await

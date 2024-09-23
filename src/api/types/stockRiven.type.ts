@@ -24,7 +24,6 @@ export interface StockRiven extends StockEntryBase {
   info?: StockRivenDetails;
 }
 
-
 export interface StockRivenFilter {
   attributes?: StockRivenFilterAttribute[];
   enabled: boolean;
@@ -72,8 +71,11 @@ export interface SellStockRiven {
 }
 export interface StockRivenDetails {
   auctions: Wfm.Auction<Wfm.AuctionOwner>[];
+  changes: string;
   highest_price: number;
+  is_dirty: boolean;
   lowest_price: number;
   profit: number;
+  total_buyers: number;
   total_sellers: number;
 }

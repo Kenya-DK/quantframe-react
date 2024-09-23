@@ -39,8 +39,18 @@ impl StockRivenQuery {
     }
     pub async fn clear_all_order_id(db: &DbConn) -> Result<Vec<stock_riven::Model>, DbErr> {
         StockRiven::update_many()
-            .col_expr(stock_riven::Column::WfmOrderId, Expr::value(Option::<String>::None))
-            .col_expr(stock_riven::Column::Status, Expr::value(StockStatus::Pending))
+            .col_expr(
+                stock_riven::Column::WfmOrderId,
+                Expr::value(Option::<String>::None),
+            )
+            .col_expr(
+                stock_riven::Column::Status,
+                Expr::value(StockStatus::Pending),
+            )
+            .col_expr(
+                stock_riven::Column::ListPrice,
+                Expr::value(Option::<i64>::None),
+            )
             .exec(db)
             .await?;
         StockRivenQuery::get_all(db).await
@@ -60,7 +70,8 @@ impl StockRivenQuery {
             .filter(stock_riven::Column::WfmWeaponUrl.eq(weapon_url))
             .filter(stock_riven::Column::ModName.eq(mod_name))
             .filter(stock_riven::Column::SubType.eq(sub_type))
-            .one(db).await
+            .one(db)
+            .await
     }
 
     pub async fn update_bulk(

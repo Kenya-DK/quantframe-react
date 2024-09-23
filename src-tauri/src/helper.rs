@@ -701,13 +701,13 @@ pub async fn progress_stock_riven(
     if operation == OrderType::Sell && entity.wfm_order_id.is_some() {
         let id = entity.wfm_order_id.clone().unwrap();
         match wfm.auction().delete(&id).await {
-            Ok(updated) => {
+            Ok(_) => {
                 add_metric("WFM_RivenDeleted", from);
                 response.push("WFMRivenDeleted".to_string());
                 notify.gui().send_event_update(
                     UIEvent::UpdateAuction,
-                    UIOperationEvent::CreateOrUpdate,
-                    Some(json!(updated)),
+                    UIOperationEvent::Delete,
+                    Some(json!({ "id": id })),
                 );
             }
             Err(e) => {
@@ -765,7 +765,7 @@ pub fn read_json_file<T: DeserializeOwned>(path: &PathBuf) -> Result<T, AppError
         return Err(AppError::new(
             "ReadJsonFile",
             eyre!(format!("File does not exist: {:?}", path.to_str())),
-        ));        
+        ));
     }
 
     let file = File::open(path).map_err(|e| {
@@ -790,4 +790,38 @@ pub fn read_json_file<T: DeserializeOwned>(path: &PathBuf) -> Result<T, AppError
             ));
         }
     }
+}
+pub fn calculate_average_of_top_lowest_prices(
+    prices: Vec<i64>,          // The list of prices to consider
+    limit_to: i64,             // Limit the number of auctions to consider
+    threshold_percentage: f64, // The threshold percentage to filter prices
+) -> i64 {
+    if prices.is_empty() {
+        return -1;
+    }
+
+    // Returning an Option<i64> in case there are no valid prices
+    // Get the top `limit_to` lowest starting prices
+    let mut top_price: Vec<i64> = prices.iter().cloned().take(limit_to as usize).collect();
+
+    // Find the maximum price in the top lowest prices
+    let max_price = *top_price.iter().max().unwrap_or(&0);
+
+    // Find the minimum price in the top lowest prices
+    let min_price = *top_price.iter().min().unwrap_or(&0);
+
+    // Calculate `threshold_percentage` of the maximum price
+    let threshold = max_price as f64 * (1.0 - threshold_percentage);
+
+    // Remove the minimum price if it is less than the threshold
+    if min_price < threshold as i64 {
+        top_price.retain(|&price| price != min_price);
+    }
+
+    // Ensure we have valid prices before calculating the average
+    if top_price.is_empty() {
+        return -1;
+    }
+    // Calculate and return the average price
+    top_price.iter().sum::<i64>() / top_price.len() as i64
 }

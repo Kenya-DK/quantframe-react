@@ -248,7 +248,7 @@ pub async fn app_init(
                 notify.gui().send_event_update(
                     UIEvent::UpdateAuction,
                     UIOperationEvent::Set,
-                    Some(json!(&auctions)),
+                    Some(json!(&auctions.auctions)),
                 );
             }
             Err(e) => {

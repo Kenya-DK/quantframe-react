@@ -1,257 +1,115 @@
-import { IOperatorType, IPropertyType, ISearchFilter, ISearchOrParameter, ISearchParameter, ISearchKeyParameter } from "../types";
+export interface Query {
+  [key: string]: any;
+  $or?: Query[]; // Support for $or
+  $match?: Query; // Support for $match
+}
+// Helper function to get nested property values using dot notation
+const getNestedValue = (obj: any, path: string): any => {
+  return path
+    .split(".")
+    .reduce(
+      (value, key) =>
+        value && value[key] !== undefined ? value[key] : undefined,
+      obj
+    );
+};
 
-export const validateSearchParameter = (searchParams: ISearchKeyParameter): string | null => {
-  for (const key in searchParams) {
-    if (Object.prototype.hasOwnProperty.call(searchParams, key)) {
-      const searchParam: ISearchParameter = searchParams[key] as ISearchParameter;
-      // Validate type
-      const validTypes: IPropertyType[] = ["string", "number", "boolean", "date", "array", "object", "any"];
-      if (searchParam.type && !validTypes.includes(searchParam.type))
-        return `Type ${searchParam.type} is invalid for key ${key}`;
-
-      // Validate filters
-      if (!Array.isArray(searchParam.filters) || searchParam.filters.length === 0)
-        return `Filters must be an array with at least one filter for key ${key}`;
-      for (const filter of searchParam.filters) {
-        const errorMessage = validateSearchFilter(filter);
-        if (errorMessage)
-          return errorMessage;
+// Updated search function with combined property support
+export const searchProperties = <T>(
+  properties: T[],
+  query: Query,
+  isCaseSensitive: boolean = true
+): T[] => {
+  const compareValues = (
+    propertyValue: any,
+    comparisonValue: any,
+    operator: string
+  ): boolean => {
+    if (operator === "$eq") return propertyValue === comparisonValue;
+    if (operator === "$ne") return propertyValue !== comparisonValue;
+    if (operator === "$gt") return propertyValue > comparisonValue;
+    if (operator === "$lt") return propertyValue < comparisonValue;
+    if (operator === "$gte") return propertyValue >= comparisonValue;
+    if (operator === "$lte") return propertyValue <= comparisonValue;
+    if (operator === "$contains") {
+      if (
+        typeof propertyValue === "string" &&
+        typeof comparisonValue === "string"
+      ) {
+        // Handle case-sensitive or case-insensitive contains
+        if (!isCaseSensitive) {
+          propertyValue = propertyValue.toLowerCase();
+          comparisonValue = comparisonValue.toLowerCase();
+        }
+        return propertyValue.includes(comparisonValue);
       }
+      if (Array.isArray(propertyValue)) {
+        return propertyValue.includes(comparisonValue);
+      }
+    }
+    return false;
+  };
 
-      // Validate orFilters
-      if (searchParam.orFilters && !Array.isArray(searchParam.orFilters))
-        return `OrFilters must be an array for key ${key}`;
-      if (searchParam.orFilters) {
-        for (const orParam of searchParam.orFilters) {
-          const errorMessage = validateSearchOrParameter(orParam);
-          if (errorMessage)
-            return errorMessage;
+  const matchCriteria = (property: T, criteria: Query): boolean => {
+    // Handle $match condition (always check fields in $match)
+    if (criteria.$match) {
+      for (const key in criteria.$match) {
+        const requiredValue = criteria.$match[key];
+        const propertyValue = getNestedValue(property, key);
+
+        if (propertyValue !== requiredValue) {
+          return false; // If any $match field doesn't match, return false early
         }
       }
     }
-  }
-  return null;
-}
-export const validateSearchOrParameter = (searchParam: ISearchOrParameter): string | null => {
-  // Validate type
-  const validTypes: IPropertyType[] = ["string", "number", "boolean", "date", "array", "object", "any"];
-  if (searchParam.type && !validTypes.includes(searchParam.type))
-    return `Type ${searchParam.type} is invalid for key ${searchParam.code}`;
+    if (criteria.$or && criteria.$or.length > 0) {
+      // If $or is present, at least one of the sub-queries must match
+      return criteria.$or.some((subQuery: Query) =>
+        matchCriteria(property, subQuery)
+      );
+    }
 
-  // Validate filters
-  if (!Array.isArray(searchParam.filters) || searchParam.filters.length === 0)
-    return `Filters must be an array with at least one filter for key ${searchParam.code}`;
-  for (const filter of searchParam.filters) {
-    const errorMessage = validateSearchFilter(filter);
-    if (errorMessage)
-      return errorMessage;
-  }
-  return null;
-}
-export const validateSearchFilter = (searchFilter: ISearchFilter): string | null => {
-  // Validate operator
-  const validOperators: IOperatorType[] = ["eq", "neq", "gt", "gteq", "lt", "lteq", "in", "nin", "like", "nlike", "isnull", "isnotnull", "between", "nbetween", "empty", "nempty"];
-  if (!validOperators.includes(searchFilter.operator))
-    return `Operator ${searchFilter.operator} is invalid`;
-  else
-    return null;
-}
+    // Handle combined properties
+    if (criteria.$combined && criteria.value) {
+      const combinedValue = criteria.$combined
+        .map((field: any) => getNestedValue(property, field) || "") // Get the values of combined fields
+        .join(" "); // Combine values with a space
+      const comparisonValue = criteria.value;
 
-export const searchByProperty = <T>(data: T[], propertyName: string, query: ISearchParameter): T[] => {
-  return data.filter((item: T) => {
-    let found = false;
-    for (let filter of query.filters) {
-      let property = (item as any)[propertyName];
-      if (propertyName.includes(".")) {
-        const properties = propertyName.split(".");
-        property = (item as any)[properties[0]];
-        for (let i = 1; i < properties.length; i++) {
-          if (Array.isArray(property) || property.length === 0)
-            property = property.map((item: any) => item[properties[i]]);
-          else
-            property = property[properties[i]];
-          if (property === undefined) return false;
+      // Perform case-sensitive or case-insensitive comparison
+      return isCaseSensitive
+        ? combinedValue === comparisonValue
+        : combinedValue.toLowerCase() === comparisonValue.toLowerCase();
+    }
+
+    for (const key in criteria) {
+      if (
+        key === "$or" ||
+        key === "$combined" ||
+        key === "value" ||
+        key === "$match"
+      )
+        continue; // Skip special keys
+
+      const condition = criteria[key];
+      let propertyValue = getNestedValue(property, key); // Get nested value
+
+      if (typeof condition === "object" && condition !== null) {
+        // Handle operators like $gt, $lt, $contains, etc.
+        for (const operator in condition) {
+          const comparisonValue = condition[operator];
+
+          if (!compareValues(propertyValue, comparisonValue, operator)) {
+            return false;
+          }
         }
+      } else {
+        // Simple equality check
+        if (propertyValue !== condition) return false;
       }
-
-      found = compareValue(property, query.type, filter);
-      if (query.orFilters && query.orFilters.length > 0 && !found) {
-
-        return query.orFilters.some((orFilter) => {
-          const orFound = searchByProperty([item], orFilter.code, { type: orFilter.type, filters: orFilter.filters }).length > 0;
-          return orFound;
-        });
-      } else if (!found) break;
     }
-    return found;
-  });
-}
-export const searchByProperties = <T>(data: T[], queys: ISearchKeyParameter): T[] => {
-  // Filter out undefined values
-  const keys = Object.keys(queys).filter((key) => queys[key] !== undefined);
-  const queryValues = Object.values(queys).filter((value) => value !== undefined) as ISearchParameter[];
-  return data.filter((item: T) => {
-    let result = true;
-    for (let index = 0; index < queryValues.length; index++) {
-      const property = keys[index];
-      const propertyValue = queryValues[index];
-      if (searchByProperty([item], property, propertyValue).length <= 0) { result = false; break; }
-    }
-    return result;
-  });
-}
-export const compareValue = (property: any, propertyType: IPropertyType | undefined, filter: ISearchFilter): boolean => {
-  if (property === undefined) return false;
-  switch (propertyType) {
-    case "date":
-      property = new Date(property);
-      filter.value = new Date(filter.value);
-      // Validate date
-      if (property.toString() === "Invalid Date")
-        throw new Error(`Invalid date for property ${property}`);
+    return true;
+  };
 
-      // Validate date
-      if (filter.value.toString() === "Invalid Date")
-        throw new Error(`Invalid date for filter ${filter.value}`);
-      break;
-    case "number":
-      property = Number(property);
-      break;
-    case "boolean":
-      property = Boolean(property);
-      break;
-    case "array":
-      property = Array(property);
-      break;
-    case "object":
-      property = Object(property);
-      break;
-    case "string":
-      property = String(property);
-      if (!filter.isCaseSensitive) property = property.toLowerCase();
-      break;
-  }
-
-  if (!filter.isCaseSensitive) {
-    // Convert value to lower case
-    if (typeof filter.value === "string")
-      filter.value = filter.value.toLowerCase();
-    if (Array.isArray(filter.value))
-      filter.value = filter.value.map((item: any) => {
-        if (typeof item === "string")
-          return item.toLowerCase()
-        if (typeof item === "number")
-          return Number(item);
-        if (typeof item === "boolean")
-          return Boolean(item);
-        return item;
-      });
-    // Convert property to lower case
-    if (typeof property === "string")
-      property = property.toLowerCase();
-    if (Array.isArray(property))
-      property = property.map((item: any) => {
-        if (typeof item === "string")
-          return item.toLowerCase()
-        if (typeof item === "number")
-          return Number(item);
-        if (typeof item === "boolean")
-          return Boolean(item);
-        return item;
-      });
-
-  }
-
-  switch (filter.operator) {
-    // Equal to
-    case "eq":
-      // Equal
-      if (property === filter.value) return true;
-      break;
-    // Not equal to
-    case "neq":
-      if (property !== filter.value) return true;
-      break;
-    // Greater than
-    case "gt":
-      if (property > filter.value) return true;
-      break;
-    // Greater than or equal to
-    case "gteq":
-      if (property >= filter.value) return true;
-      break;
-    // Less than
-    case "lt":
-      if (property <= filter.value) return true;
-      break;
-    // Less than or equal to
-    case "lteq":
-      if (property < filter.value) return true;
-      break;
-    // In array
-    case "in":
-      if (property === null) return false;
-      if (Array.isArray(filter.value) && Array.isArray(property))
-        return property.some((item) => filter.value.includes(item));
-      else if (property.includes(filter.value)) return true;
-      break;
-    // Not in array
-    case "nin":
-      if (property === null) return false;
-      if (Array.isArray(filter.value) && Array.isArray(property))
-        return !property.some((item) => filter.value.includes(item));
-      else if (!property.includes(filter.value)) return true;
-      break;
-    // Contains
-    case "like":
-      if (property === null) return false;
-      if (Array.isArray(filter.value) && Array.isArray(property))
-        return property.some((item) => filter.value.some((fItem: any) => item.includes(fItem)));
-      else if (Array.isArray(filter.value) && !Array.isArray(property))
-        return filter.value.some((fItem: any) => property.includes(fItem));
-      else if (Array.isArray(property) && !Array.isArray(filter.value))
-        return property.some((fItem: any) => fItem.includes(filter.value));
-      else if (property.includes(filter.value)) return true;
-      break;
-    // Not contains
-    case "nlike":
-      if (property === null) return false;
-      if (Array.isArray(filter.value) && Array.isArray(property))
-        return !property.some((item) => filter.value.some((fItem: any) => item.includes(fItem)));
-      else if (Array.isArray(filter.value) && !Array.isArray(property))
-        return !filter.value.some((fItem: any) => property.includes(fItem));
-      else if (Array.isArray(property) && !Array.isArray(filter.value))
-        return !property.some((fItem: any) => fItem.includes(filter.value));
-      else if (!property.includes(filter.value)) return true;
-      break;
-    // Is null
-    case "isnull":
-      if (property === null) return true;
-      break;
-    // Not null
-    case "isnotnull":
-      if (property !== null) return true;
-      break;
-    // Between two values
-    case "between":
-      if (filter.value.length !== 2) return false;
-      if (property > filter.value[0] && property < filter.value[1]) return true;
-      break;
-    // Not between two values
-    case "nbetween":
-      if (filter.value.length !== 2) return false;
-      if (property < filter.value[0] || property > filter.value[1]) return true;
-      break;
-    // Empty array
-    case "empty":
-      if (property.length === 0) return true;
-      break;
-    // Non-empty array
-    case "nempty":
-      if (property.length > 0) return true;
-      break;
-    default:
-      break;
-  }
-  return false;
+  return properties.filter((property) => matchCriteria(property, query));
 };

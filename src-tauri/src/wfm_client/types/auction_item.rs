@@ -50,3 +50,47 @@ pub struct AuctionItem {
     #[serde(rename = "damage")]
     pub damage: Option<i64>,
 }
+
+impl Default for AuctionItem {
+    fn default() -> Self {
+        AuctionItem {
+            item_type: "".to_string(),
+            weapon_url_name: None,
+            re_rolls: None,
+            attributes: None,
+            name: None,
+            mod_rank: None,
+            polarity: None,
+            mastery_level: None,
+            similarity: None,
+            extra_attributes: None,
+            missing_attributes: None,
+            element: None,
+            quirk: None,
+            having_ephemera: None,
+            damage: None,
+        }
+    }
+}
+
+impl AuctionItem {
+    pub fn from_stock_riven(stock_riven: entity::stock::riven::stock_riven::Model) -> Self {
+        AuctionItem {
+            item_type: "riven".to_string(),
+            weapon_url_name: Some(stock_riven.wfm_weapon_url.clone()),
+            re_rolls: Some(stock_riven.re_rolls as i64),
+            attributes: Some(stock_riven.attributes.0.clone()),
+            name: Some(stock_riven.mod_name.clone()),
+            mod_rank: Some(stock_riven.sub_type.clone().unwrap().rank.unwrap_or(0)),
+            polarity: Some(stock_riven.polarity.clone()),
+            mastery_level: Some(stock_riven.mastery_rank as i64),
+            element: None,
+            quirk: None,
+            having_ephemera: None,
+            damage: None,
+            similarity: None,
+            extra_attributes: None,
+            missing_attributes: None,
+        }
+    }
+}

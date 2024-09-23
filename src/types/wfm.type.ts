@@ -216,12 +216,17 @@ export namespace Wfm {
     Visible = 'visible',
     Closed = 'closed',
   }
+  export enum AuctionItemType {
+    Riven = "riven",
+    Lich = "lich",
+    Sister = "sister"
+  }
   export interface AuctionItem {
     mastery_level: number;
     re_rolls: number;
-    type: string;
+    type: AuctionItemType;
     weapon_url_name: string;
-    attributes: RivenAttribute[];
+    attributes?: RivenAttribute[];
     name: string;
     mod_rank: number;
     polarity: string;

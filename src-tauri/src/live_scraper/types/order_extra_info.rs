@@ -97,13 +97,7 @@ impl OrderDetails {
         false
     }
     pub fn set_total_buyers(&mut self, total_buyers: i64) {
-        if Self::set_if_changed(
-            &mut self.total_buyers,
-            Some(total_buyers),
-            &mut self.is_dirty,
-        ) {
-            self.changes = Some("total_buyers".to_string());
-        }
+        self.total_buyers = Some(total_buyers);
     }
 
     pub fn set_lowest_price(&mut self, lowest_price: i64) {
@@ -131,9 +125,7 @@ impl OrderDetails {
     }
 
     pub fn set_moving_avg(&mut self, moving_avg: i64) {
-        if Self::set_if_changed(&mut self.moving_avg, Some(moving_avg), &mut self.is_dirty) {
-            self.changes = Some("moving_avg".to_string());
-        }
+        self.moving_avg = Some(moving_avg);
     }
 
     pub fn set_profit(&mut self, profit: i64) {
@@ -143,13 +135,7 @@ impl OrderDetails {
     }
 
     pub fn set_total_sellers(&mut self, total_sellers: i64) {
-        if Self::set_if_changed(
-            &mut self.total_sellers,
-            Some(total_sellers),
-            &mut self.is_dirty,
-        ) {
-            self.changes = Some("total_sellers".to_string());
-        }
+        self.total_sellers = Some(total_sellers);
     }
 
     pub fn add_price_history(&mut self, price_history: PriceHistory) {

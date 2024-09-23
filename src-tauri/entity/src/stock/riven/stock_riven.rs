@@ -50,6 +50,10 @@ pub struct Model {
     pub is_dirty: bool,
 
     #[sea_orm(ignore)]
+    #[serde(rename = "locked", default)]
+    pub locked: bool,
+
+    #[sea_orm(ignore)]
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "changes")]
     pub changes: Option<String>,
@@ -104,6 +108,7 @@ impl Model {
             updated_at: Default::default(),
             created_at: Default::default(),
             is_dirty: true,
+            locked: false,
             changes: None,
         }
     }
@@ -171,12 +176,27 @@ impl Model {
     }
 
     pub fn set_list_price(&mut self, list_price: Option<i64>) {
+        if self.locked {
+            return;
+        }
         if Self::set_if_changed(&mut self.list_price, list_price, &mut self.is_dirty) {
             self.changes = Some("list_price".to_string());
         }
     }
 
+    pub fn wfm_order_id(&mut self, id: Option<String>) {
+        if self.locked {
+            return;
+        }
+        if Self::set_if_changed(&mut self.wfm_order_id, id, &mut self.is_dirty) {
+            self.changes = Some("wfm_order_id".to_string());
+        }
+    }
+
     pub fn set_status(&mut self, status: StockStatus) {
+        if self.locked {
+            return;
+        }
         if Self::set_if_changed(&mut self.status, status, &mut self.is_dirty) {
             self.changes = Some("status".to_string());
         }
