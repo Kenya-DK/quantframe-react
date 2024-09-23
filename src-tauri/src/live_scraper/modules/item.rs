@@ -921,6 +921,7 @@ impl ItemModule {
         // If the order is visible and the item is hidden, delete the order.
         if stock_item.is_hidden {
             stock_item.set_status(StockStatus::InActive);
+            stock_item.set_list_price(None);
             if user_order.visible {
                 wfm.orders().delete(&user_order.id).await?;
                 my_orders.delete_order_by_id(OrderType::Sell, &user_order.id);
@@ -942,7 +943,7 @@ impl ItemModule {
         // Remove all orders where the sub type is not the same as the stock item sub type.
         let live_orders = live_orders.filter_by_sub_type(stock_item.sub_type.as_ref(), false);
 
-        // Get the average price of the item.
+        // Get the price the item was bought for.
         let bought_price = stock_item.bought as i64;
 
         // Get the quantity of owned item.

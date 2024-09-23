@@ -62,7 +62,7 @@ pub struct AnalyticsSettings {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StockRivenSettings {
     pub min_profit: i64,
-    pub threshold_percentage: i64,
+    pub threshold_percentage: f64,
     pub limit_to: i64,
 }
 
@@ -120,7 +120,7 @@ impl Default for SettingsState {
                 },
                 stock_riven: StockRivenSettings {
                     min_profit: 25,
-                    threshold_percentage: 15,
+                    threshold_percentage: 15.0,
                     limit_to: 5,
                 },
             },
