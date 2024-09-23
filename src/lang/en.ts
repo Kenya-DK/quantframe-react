@@ -1,4 +1,3 @@
-
 export const en = {
   months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
   notifications: {
@@ -35,7 +34,7 @@ export const en = {
         created_stock: {
           title: "Trade Warning",
           message: "⚠️ Trade was not processed.",
-        }
+        },
       },
       error: {
         item: {
@@ -56,7 +55,7 @@ export const en = {
       details: {
         purchase: "Purchase",
         sale: "Sale",
-      }
+      },
     },
     item_type: {
       riven: "Riven",
@@ -64,7 +63,7 @@ export const en = {
       details: {
         riven: "Riven",
         item: "Item",
-      }
+      },
     },
     user_status: {
       online: "Online",
@@ -77,7 +76,7 @@ export const en = {
       details: {
         buy: "Buy",
         sell: "Sell",
-      }
+      },
     },
     stock_mode: {
       all: "All",
@@ -111,7 +110,7 @@ export const en = {
         order_limit: "Order Limit TODO",
         overpriced: "Overpriced TODO",
         underpriced: "Underpriced TODO",
-      }
+      },
     },
   },
   components: {
@@ -306,8 +305,8 @@ export const en = {
                 label: "Save",
               },
             },
-          }
-        }
+          },
+        },
       },
       update_stock_riven: {
         fields: {
@@ -358,15 +357,15 @@ export const en = {
             label: "Bought",
             placeholder: "Bought",
             error: "Invalid bought",
-          }
+          },
         },
         buttons: {
           add: {
             tooltip: {
               description_with_report: "Add item to stock and report to Warframe Market",
               description_without_report: "Add item to stock",
-            }
-          }
+            },
+          },
         },
       },
       update_transaction: {
@@ -413,7 +412,7 @@ export const en = {
           save: {
             label: "Save",
           },
-        }
+        },
       },
       notification: {
         fields: {
@@ -438,7 +437,7 @@ export const en = {
             placeholder: "User IDs",
             description: "Discord user's (Numbers) separated by comma",
             error: "Invalid user IDs",
-          }
+          },
         },
         buttons: {
           system: {
@@ -450,7 +449,7 @@ export const en = {
           discord: {
             tooltip: "Discord Notification",
           },
-        }
+        },
       },
       log_in: {
         title: "Warframe Market - Login",
@@ -465,7 +464,7 @@ export const en = {
             label: "Password",
             placeholder: "Password",
             error: "Password should include at least 6 characters",
-          }
+          },
         },
         buttons: {
           submit: "Log In",
@@ -486,7 +485,7 @@ export const en = {
         buttons: {
           submit: {
             label: "Create",
-          }
+          },
         },
         fields: {
           mastery_rank: {
@@ -528,7 +527,7 @@ export const en = {
             error: "Invalid mod name",
           },
         },
-      }
+      },
     },
     auction_list_item: {
       weapon_name: "{{weapon}} {{mod_name}}",
@@ -568,7 +567,7 @@ export const en = {
       buttons: {
         wfm: "Warframe Market",
         wiki: "Wiki",
-      }
+      },
     },
     order_details: {
       tabs: {
@@ -594,7 +593,7 @@ export const en = {
       buttons: {
         wfm: "Warframe Market",
         wiki: "Wiki",
-      }
+      },
     },
     order_item: {
       fields: {
@@ -608,7 +607,7 @@ export const en = {
           title: "Copied",
           message: "{{message}} has been copied to clipboard.",
         },
-      }
+      },
     },
     stock_riven_info: {
       tabs: {
@@ -636,7 +635,7 @@ export const en = {
         no_listed: "No previous listed prices",
         mastery_rank: "Master Rank",
         rank: "Rank",
-      }
+      },
     },
     riven_attribute: {
       effect: "{{value}} {{name}}",
@@ -662,20 +661,20 @@ export const en = {
             tax_1m: "Tax 1M",
             tax_2m: "Tax 2M",
           },
-        }
+        },
       },
       datatable: {
         columns: {
           name: "Name",
           trade_tax: "Trade Tax",
           mr_requirement: "MR Requirement",
-        }
+        },
       },
       buttons: {
         add_all: {
           tooltip: "Add all items",
         },
-      }
+      },
     },
     searchfield: {
       label: "Search",
@@ -690,7 +689,7 @@ export const en = {
         create: {
           tooltip: "Create",
         },
-      }
+      },
     },
     select_tradable_item: {
       fields: {
@@ -714,7 +713,7 @@ export const en = {
           label: "Amber Stars",
           placeholder: "Select amber stars...",
         },
-      }
+      },
     },
     user_menu: {
       items: {
@@ -730,7 +729,7 @@ export const en = {
         update_settings: {
           title: "Update Settings Error",
           message: "An error occurred while trying to update settings.",
-        }
+        },
       },
       success: {
         logout: {
@@ -740,7 +739,7 @@ export const en = {
         update_settings: {
           title: "Update Settings Success",
           message: "Settings have been successfully updated.",
-        }
+        },
       },
     },
     clock: {
@@ -774,14 +773,16 @@ export const en = {
         order_limit_reached: "Order limit reached for <red>{{name}}</red>",
         knapsack_delete: "Delete Item <red>{{name}}</red>",
         underpriced_delete: "Delete Underpriced Item <red>{{name}}</red>",
-        created: "Created Buy Order for <blue>{{name}}</blue> at <blue>{{price}}</blue> platinum potential profit <blue>{{profit}}</blue> ",
+        created: "Created Buy Order for <blue>{{weapon_name}}</blue> at <blue>{{price}}</blue> platinum potential profit <blue>{{profit}}</blue> ",
         checking_item: "Checking Item <blue>{{name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
         no_data: "<dark_red>No data found for item {{name}} {{current}}/{{total}}</dark_red>",
       },
       riven: {
         stating: "Starting Riven Trading",
+        riven_hidden: "Riven <red>{{weapon_name}}</red> <red>{{mod_name}}</red> is hidden",
         searching_riven: "Searching Riven {{weapon_name}} {{mod_name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
-        riven_created: "Created Riven <blue>{{weapon_name}} {{mod_name}}</blue> at <blue>{{price}}</blue> platinum potential profit <blue>{{profit}}</blue>",
+        riven_created:
+          "Created Riven <blue>{{weapon_name}} {{mod_name}}</blue> at <blue>{{price}}</blue> platinum potential profit <blue>{{profit}}</blue>",
       },
     },
     riven_filter_attribute: {
@@ -790,7 +791,7 @@ export const en = {
           tooltip: "Is Required",
         },
       },
-    }
+    },
   },
   context: {
     app: {
@@ -799,7 +800,7 @@ export const en = {
         message: "A new update is available. Click the button below to install the update.",
         buttons: {
           install: "Install",
-          read_more: "Read more"
+          read_more: "Read more",
         },
       },
       loading_events: {
@@ -813,7 +814,7 @@ export const en = {
         user_chats: "Loading warframe market chats...",
         check_updates: "Checking for updates...",
         log_parser: "Starting log parser...",
-      }
+      },
     },
     live_scraper: {
       errors: {
@@ -821,7 +822,7 @@ export const en = {
           title: "Live Scraper Error",
           message: "An error occurred in component {{component}} at {{backtrace}} see logs for more information.",
         },
-      }
+      },
     },
   },
   pages: {
@@ -835,13 +836,14 @@ export const en = {
             trades: "Number of trades",
             sales: "Number of sales",
             purchases: "Number of purchases",
-          }
-        }
+          },
+        },
       },
       cards: {
         total: {
           title: "Total Profit",
-          footer: "Sales: <blue>{{sales}}</blue> | Purchases: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | Profit Margin: <blue>{{profit_margin}}</blue>%",
+          footer:
+            "Sales: <blue>{{sales}}</blue> | Purchases: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | Profit Margin: <blue>{{profit_margin}}</blue>%",
           bar_chart: {
             title: "Total Profit",
             datasets: {
@@ -852,11 +854,12 @@ export const en = {
               profit: "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
               trades: "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>",
             },
-          }
+          },
         },
         today: {
           title: "Today's Profit",
-          footer: "Sales: <blue>{{sales}}</blue> | Purchases: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | Profit Margin: <blue>{{profit_margin}}</blue>%",
+          footer:
+            "Sales: <blue>{{sales}}</blue> | Purchases: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | Profit Margin: <blue>{{profit_margin}}</blue>%",
           bar_chart: {
             title: "Today's Profit",
             datasets: {
@@ -866,7 +869,7 @@ export const en = {
               profit: "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
               trades: "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>",
             },
-          }
+          },
         },
         recent_days: {
           bar_chart: {
@@ -878,11 +881,12 @@ export const en = {
               profit: "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
               trades: "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>",
             },
-          }
+          },
         },
         best_seller: {
           title: "Best Seller Profit",
-          footer: "Name: <blue>{{name}}</blue> | S: <blue>{{sales}}</blue> | P: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | PM: <blue>{{profit_margin}}</blue>%",
+          footer:
+            "Name: <blue>{{name}}</blue> | S: <blue>{{sales}}</blue> | P: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | PM: <blue>{{profit_margin}}</blue>%",
           by_category: {
             datatable: {
               columns: {
@@ -891,8 +895,8 @@ export const en = {
                 expense: "Expense",
                 profit: "Profit",
                 profit_margin: "Profit Margin",
-              }
-            }
+              },
+            },
           },
         },
         last_transaction: {
@@ -900,9 +904,9 @@ export const en = {
           info_box: {
             purchase: "Purchase {{count}}",
             sale: "Sale {{count}}",
-          }
+          },
         },
-      }
+      },
     },
     about: {
       cards: {
@@ -922,7 +926,7 @@ export const en = {
       text: {
         version: "Version: <blue>{{version}}</blue>",
         disclaimer: "Quantframe is a third party app and is not affiliated with Digital Extremes.",
-      }
+      },
     },
     liveTrading: {
       pagination: "{{start}} - {{end}} / {{totalRecords}}",
@@ -942,9 +946,9 @@ export const en = {
             title: "Minimum Price",
             btn: {
               edit: {
-                tooltip: "Set minimum price"
-              }
-            }
+                tooltip: "Set minimum price",
+              },
+            },
           },
           list_price: "List Price",
           actions: {
@@ -966,9 +970,9 @@ export const en = {
               delete: {
                 tooltip: "Delete",
               },
-            }
+            },
           },
-        }
+        },
       },
       prompts: {
         minimum_price: {
@@ -976,8 +980,8 @@ export const en = {
           fields: {
             minimum_price: {
               label: "Minimum Price",
-              description: "Set 0 for auto price"
-            }
+              description: "Set 0 for auto price",
+            },
           },
         },
         sell: {
@@ -985,7 +989,7 @@ export const en = {
           fields: {
             sell: {
               label: "Price",
-            }
+            },
           },
         },
         delete: {
@@ -1008,12 +1012,12 @@ export const en = {
               item_name: "Name",
               quantity: "Quantity",
               owned: "Owned",
-            }
+            },
           },
           prompts: {
             update_bulk: {
               title: "Update Bulk",
-            }
+            },
           },
           buttons: {
             update_bulk: {
@@ -1077,7 +1081,7 @@ export const en = {
               title: "Delete Bulk Stock Success",
               message: "Stock rivens have been successfully deleted.",
             },
-          }
+          },
         },
         riven: {
           title: "Stock Rivens",
@@ -1091,9 +1095,9 @@ export const en = {
                   filter: {
                     tooltip: "Edit Filter",
                   },
-                }
-              }
-            }
+                },
+              },
+            },
           },
           prompts: {
             update_bulk: {
@@ -1147,7 +1151,7 @@ export const en = {
             delete_stock: {
               title: "Delete Stock Error",
               message: "An error occurred while trying to delete stock.",
-            }
+            },
           },
           success: {
             create_riven: {
@@ -1174,9 +1178,9 @@ export const en = {
               title: "Delete Bulk Stock Success",
               message: "Stock rivens have been successfully deleted.",
             },
-          }
-        }
-      }
+          },
+        },
+      },
     },
     debug: {
       tabs: {
@@ -1223,9 +1227,9 @@ export const en = {
                   delete: {
                     tooltip: "Delete",
                   },
-                }
-              }
-            }
+                },
+              },
+            },
           },
           success: {
             update_transaction: {
@@ -1256,19 +1260,19 @@ export const en = {
               buttons: {
                 rest: {
                   title: "Reset",
-                }
+                },
               },
               errors: {
                 rest: {
                   title: "Reset Error",
                   message: "An error occurred while trying to reset.",
-                }
+                },
               },
               success: {
                 rest: {
                   title: "Reset Success",
                   message: "Reset has been successfully completed.",
-                }
+                },
               },
             },
             migrate: {
@@ -1276,19 +1280,19 @@ export const en = {
               buttons: {
                 migrate: {
                   title: "Migrate",
-                }
+                },
               },
               errors: {
                 migrate: {
                   title: "Migrate Error",
                   message: "An error occurred while trying to migrate.",
-                }
+                },
               },
               success: {
                 migrate: {
                   title: "Migrate Success",
                   message: "Migrate has been successfully completed.",
-                }
+                },
               },
             },
             import_algo_trader: {
@@ -1297,7 +1301,7 @@ export const en = {
                 db_path: {
                   label: "File",
                   placeholder: "Select file...",
-                }
+                },
               },
               buttons: {
                 import: {
@@ -1305,23 +1309,23 @@ export const en = {
                 },
                 open_file: {
                   tooltip: "Open File",
-                }
+                },
               },
               errors: {
                 import: {
                   title: "Import Error",
                   message: "An error occurred while trying to import.",
-                }
+                },
               },
               success: {
                 import: {
                   title: "Import Success",
                   message: "Import has been successfully completed.",
-                }
+                },
               },
             },
-          }
-        }
+          },
+        },
       },
     },
     auth: {
@@ -1343,14 +1347,14 @@ export const en = {
           message: "An error occurred while trying to login.",
           banned: "You are banned",
           ban_reason: "<red>Reason: {{reason}}</red>",
-        }
+        },
       },
       success: {
         login: {
           title: "Login Success",
           message: "Welcome back! {{name}}",
-        }
-      }
+        },
+      },
     },
     error: {
       title: "Error in {{component}} component",
@@ -1390,16 +1394,16 @@ export const en = {
               },
             },
             delete: {
-              tooltip: "Delete"
+              tooltip: "Delete",
             },
             refresh: {
-              tooltip: "Refresh"
+              tooltip: "Refresh",
             },
             delete_all: {
-              tooltip: "Delete All"
+              tooltip: "Delete All",
             },
             info: {
-              tooltip: "Show Info"
+              tooltip: "Show Info",
             },
           },
           prompts: {
@@ -1477,16 +1481,16 @@ export const en = {
           title: "Auctions",
           buttons: {
             refresh: {
-              tooltip: "Refresh"
+              tooltip: "Refresh",
             },
             delete_all: {
-              tooltip: "Delete All"
+              tooltip: "Delete All",
             },
             delete: {
-              tooltip: "Delete"
+              tooltip: "Delete",
             },
             import: {
-              tooltip: "Import auction to stock"
+              tooltip: "Import auction to stock",
             },
           },
           prompts: {
@@ -1525,7 +1529,7 @@ export const en = {
             delete_all: {
               title: "Delete All Success",
               message: "All orders have been successfully deleted.",
-            }
+            },
           },
           errors: {
             refresh: {
@@ -1543,10 +1547,10 @@ export const en = {
             delete_all: {
               title: "Delete All Success",
               message: "An error occurred while trying to delete all auctions.",
-            }
+            },
           },
         },
-      }
+      },
     },
   },
-}
+};
