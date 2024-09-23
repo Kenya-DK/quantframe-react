@@ -21,7 +21,7 @@ import { CreateRiven } from "@components/Forms/CreateRiven";
 import { useLiveScraperContext } from "@contexts/liveScraper.context";
 import { useStockContextContext } from "@contexts/stock.context";
 import { DataTableSearch } from "@components/DataTableSearch";
-import { ISearchKeyParameter } from "$types/index";
+import { Query } from "@utils/search.helper";
 
 interface StockRivenPanelProps {
 }
@@ -34,7 +34,7 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
     const [selectedRecords, setSelectedRecords] = useState<StockRiven[]>([]);
 
     const [query, setQuery] = useState<string>("");
-    const [filters, setFilters] = useState<ISearchKeyParameter>({});
+    const [filters, setFilters] = useState<Query>({});
     const [filterStatus, setFilterStatus] = useState<StockStatus | undefined>(undefined);
     const [statusCount, setStatusCount] = useState<{ [key: string]: number }>({}); // Count of each status
 
@@ -56,7 +56,9 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
 
     // Update Database Rows
     useEffect(() => {
-        let filter: ISearchKeyParameter = {};
+        let filter: Query = {
+            $or:[]
+        };        
         if (!rivens)
             return;
 
@@ -65,31 +67,14 @@ export const StockRivenPanel = ({ }: StockRivenPanelProps) => {
             return acc;
         }, {} as { [key: string]: number }));
 
-        if (query)
-            filter = {
-                ...filter,
-                weapon_name: {
-                    filters: [
-                        {
-                            value: query,
-                            operator: "like",
-                            isCaseSensitive: false,
-                        }
-                    ]
-                }
-            };
         if (filterStatus)
-            filter = {
-                ...filter,
-                status: {
-                    filters: [
-                        {
-                            value: filterStatus,
-                            operator: "eq",
-                        }
-                    ]
-                }
-            };
+            filter = { $match:{ status: filterStatus} };
+        if (query)
+            filter = {...filter, $or:[
+            {$combined: ["weapon_name", "mod_name"], value: query},
+            {weapon_name: { $contains: query }} ,
+            {mod_name: { $contains: query } }]}        
+            console.log("Riven Tab: Filter Status", rivens.map((x) => (x as any).id));
         setFilters(filter);
     }, [rivens, query, filterStatus])
 

@@ -14,6 +14,7 @@ import { Loading } from "@components/Loading";
 import { SearchField } from "@components/SearchField";
 import { useStockContextContext } from "@contexts/stock.context";
 import { useWarframeMarketContextContext } from "@contexts/warframeMarket.context";
+import { searchProperties,Query } from "@utils/search.helper";
 
 interface AuctionPanelProps {
 }
@@ -27,22 +28,30 @@ export const AuctionPanel = ({ }: AuctionPanelProps) => {
     const [rows, setRows] = useState<Wfm.Auction<string>[]>([]);
     const { auctions } = useWarframeMarketContextContext();
     const { rivens } = useStockContextContext();
-    useStockContextContext();
+
+
 
     // Update Database Rows
     useEffect(() => {
-        let auctionsF = auctions;
+        let filteredRecords = auctions;
+        let filter: Query = {};
+        if (!rivens)
+            return;
 
-        // Filter by query
         if (query)
-            auctionsF = auctionsF.filter((order) => order.item.name.toLowerCase().includes(query.toLowerCase()))
-                || auctionsF.filter((order) => order.item.weapon_url_name.toLowerCase().includes(query.toLowerCase()));
+            filter = {
+                $or: [
+                    { $combined: ["item.weapon_url_name", "item.name"], value: query},
+                    {"item.name": { "$contains": query }},
+                    {"item.weapon_url_name": { "$contains": query }}
+                  ]
+            };
 
+        filteredRecords = searchProperties(filteredRecords, filter,false);
         // Update total pages
-        setTotalPages(Math.ceil(auctionsF.length / pageSize));
+        setTotalPages(Math.ceil(filteredRecords.length / pageSize));
 
-
-        setRows(paginate(auctionsF, page, pageSize));
+        setRows(paginate(filteredRecords, page, pageSize));
     }, [auctions, query, pageSize, page]);
 
     // Translate general
