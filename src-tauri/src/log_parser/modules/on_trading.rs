@@ -442,12 +442,6 @@ impl OnTradeEvent {
         notify_payload["i18n_key_message"] =
             format!("{}.{}.{}.message", gui_id, notify_type, notify_entity).into();
 
-        let content = notify_user
-            .content
-            .replace("<PLAYER_NAME>", trade.player_name.as_str())
-            .replace("<OF_COUNT>", &trade.offered_items.len().to_string())
-            .replace("<RE_COUNT>", &trade.received_items.len().to_string());
-
         logger::info_con(&self.get_component("TradeAccepted"), &trade.display());
 
         let client = self.clone();
@@ -595,20 +589,74 @@ impl OnTradeEvent {
             }
 
             notify_payload["values"] = notify_value;
+
+            let content: String = notify_user
+                .content
+                .replace("<PLAYER_NAME>", trade.player_name.as_str())
+                .replace("<OF_COUNT>", &trade.offered_items.len().to_string())
+                .replace("<RE_COUNT>", &trade.received_items.len().to_string())
+                .replace("<TOTAL_PLAT>", &trade.platinum.to_string());
+
+            let title: String = notify_user
+                .title
+                .replace("<TR_TYPE>", trade.trade_type.to_str());
+
             if notify_user.system_notify {
                 notify
                     .system()
-                    .send_notification(&notify_user.title, &content, None, None);
+                    .send_notification(&title, &content, None, None);
             }
 
             if notify_user.discord_notify
                 && notify_user.webhook.clone().unwrap_or("".to_string()) != ""
             {
-                notify.discord().send_notification(
+                let offered_items = trade
+                    .offered_items
+                    .iter()
+                    .map(|x| format!("{} X{}", x.name, x.quantity))
+                    .collect::<Vec<String>>()
+                    .join("\n");
+
+                let received_items = trade
+                    .received_items
+                    .iter()
+                    .map(|x| format!("{} X{}", x.name, x.quantity))
+                    .collect::<Vec<String>>()
+                    .join("\n");
+
+                notify.discord().send_embed_notification(
                     &notify_user.webhook.clone().unwrap_or("".to_string()),
-                    &notify_user.title,
-                    &content,
-                    notify_user.user_ids.clone(),
+                    vec![json!({
+                        "title": title,
+                        "color": 5814783,
+                        "fields": [
+                            {
+                                "name": "Player",
+                                "value": format!("```{}```", trade.player_name),
+                                "inline": true
+                            },
+                            {
+                                "name": "Trade Type",
+                                "value": format!("```{}```", trade.trade_type.to_str()),
+                                "inline": true
+                            },
+                            {
+                                "name": "Platinum",
+                                "value": format!("```{}```", trade.platinum),
+                                "inline": true
+                            },
+                            {
+                                "name": "Offered",
+                                "value": format!("```{}```", offered_items),
+                                "inline": true
+                            },
+                            {
+                                "name": "Received",
+                                "value": format!("```{}```", received_items),
+                                "inline": true
+                            }
+                        ],
+                    })],
                 );
             }
 
