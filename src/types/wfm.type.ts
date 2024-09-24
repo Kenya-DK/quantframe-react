@@ -1,28 +1,27 @@
 import { PriceHistory, RivenAttribute, UserStatus } from "@api/types";
 
 export namespace Wfm {
-
   export interface UserDto {
     // unread_messages: number
     // has_mail: number
     // check_code: string,
     // written_reviews: string,
     // verification: boolean,
-    ingame_name: string,
-    avatar: string,
+    ingame_name: string;
+    avatar: string;
     // anonymous: boolean,
-    platform: 'pc',
+    platform: "pc";
     // reputation: number,
     // linked_accounts: {}
-    id: string,
-    region: 'en' | (string & {}),
-    locale: 'en' | (string & {}),
-    access_token: 'string',
+    id: string;
+    region: "en" | (string & {});
+    locale: "en" | (string & {});
+    access_token: "string";
     // background: string|null,
-    role: 'user',
-    status: UserStatus,
+    role: "user";
+    status: UserStatus;
     // avatar: string,
-    banned: boolean
+    banned: boolean;
   }
 
   export interface LinkedAccountsDto {
@@ -38,18 +37,18 @@ export namespace Wfm {
   }
 
   export interface ItemDto {
-    id: string,
-    item_name: string,
-    url_name: string,
-    thumb: string,
-    wikia_url: string,
-    mr_requirement: number,
-    trade_tax: number,
+    id: string;
+    item_name: string;
+    url_name: string;
+    thumb: string;
+    wikia_url: string;
+    mr_requirement: number;
+    trade_tax: number;
     // Get from warframe items npm package
-    set_items: string[] | null,
-    tags: string[] | null,
-    mod_max_rank: number | null,
-    subtypes: string[] | null,
+    set_items: string[] | null;
+    tags: string[] | null;
+    mod_max_rank: number | null;
+    subtypes: string[] | null;
   }
   export interface ItemDetailsDto extends ItemDto {
     tags: string[];
@@ -65,8 +64,8 @@ export namespace Wfm {
   }
   // Order stuff below
   export enum OrderType {
-    Buy = 'buy',
-    Sell = 'sell',
+    Buy = "buy",
+    Sell = "sell",
   }
   export interface OrderDto {
     closed_avg: number;
@@ -94,11 +93,12 @@ export namespace Wfm {
   }
 
   export interface OrderInfo {
-    highest_price: number;
-    lowest_price: number;
-    orders: OrderDto[];
+    highest_price?: number;
+    lowest_price?: number;
+    orders?: OrderDto[];
     price_history: PriceHistory[];
-    total_buyers: number;
+    total_buyers?: number;
+    is_dirty?: boolean;
   }
 
   export interface OrderItemDto {
@@ -134,14 +134,14 @@ export namespace Wfm {
   }
 
   export type CreateOrderDto = {
-    item: string,
-    order_type: OrderType,
-    platinum: number,
-    quantity: number,
-    visible: boolean,
-    rank?: number,
-    subtype?: string,
-  }
+    item: string;
+    order_type: OrderType;
+    platinum: number;
+    quantity: number;
+    visible: boolean;
+    rank?: number;
+    subtype?: string;
+  };
   export interface RivenItemTypeDto {
     mastery_level: number;
     url_name: string;
@@ -159,7 +159,7 @@ export namespace Wfm {
     mod_name: string;
     mod_rank: number;
     mastery_rank: number;
-    attributes: RivenAttribute[],
+    attributes: RivenAttribute[];
     re_rolls: number;
     polarity: string;
   }
@@ -179,16 +179,16 @@ export namespace Wfm {
 
   export interface AuctionSearchQueryDto {
     auction_type: "riven" | "mod";
-    weapon_url_name: string,
-    positive_stats?: RivenAttribute[],
-    negative_stats?: RivenAttribute,
-    polarity?: string,
-    mastery_rank_min?: number,
-    mastery_rank_max?: number,
-    re_rolls_min?: number,
-    re_rolls_max?: number,
-    buyout_policy?: string,
-    sort_by?: string,
+    weapon_url_name: string;
+    positive_stats?: RivenAttribute[];
+    negative_stats?: RivenAttribute;
+    polarity?: string;
+    mastery_rank_min?: number;
+    mastery_rank_max?: number;
+    re_rolls_min?: number;
+    re_rolls_max?: number;
+    buyout_policy?: string;
+    sort_by?: string;
   }
   export interface Auction<T> {
     visible: boolean;
@@ -212,14 +212,14 @@ export namespace Wfm {
     private: boolean;
   }
   export enum AuctionStatus {
-    Private = 'private',
-    Visible = 'visible',
-    Closed = 'closed',
+    Private = "private",
+    Visible = "visible",
+    Closed = "closed",
   }
   export enum AuctionItemType {
     Riven = "riven",
     Lich = "lich",
-    Sister = "sister"
+    Sister = "sister",
   }
   export interface AuctionItem {
     mastery_level: number;
@@ -280,10 +280,9 @@ export namespace Wfm {
   }
 
   export enum SocketEvent {
-    OnError = 'ERROR',
-    OnUserCountChange = 'MESSAGE/ONLINE_COUNT',
-    OnUserStatusChange = 'USER/SET_STATUS',
-    UpdateUserStatus = '@WS/USER/SET_STATUS',
+    OnError = "ERROR",
+    OnUserCountChange = "MESSAGE/ONLINE_COUNT",
+    OnUserStatusChange = "USER/SET_STATUS",
+    UpdateUserStatus = "@WS/USER/SET_STATUS",
   }
-
 }

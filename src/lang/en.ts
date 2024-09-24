@@ -530,7 +530,7 @@ export const en = {
       },
     },
     auction_list_item: {
-      weapon_name: "{{weapon}} {{mod_name}}",
+      weapon_name: "<blue>{{weapon}} {{mod_name}}<blue>",
       selling_price: "Selling Price: <blue>{{price}}</blue> <plat/>",
       starting_price: "Starting Price: <blue>{{price}}</blue> <plat/>",
       buyout_price: "Buyout Price: <blue>{{price}}</blue> <plat/>",
