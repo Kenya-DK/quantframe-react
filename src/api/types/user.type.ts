@@ -1,7 +1,7 @@
 export interface User {
   anonymous: boolean;
   auctions_limit: number;
-  avatar: string;
+  avatar?: string;
   check_code: string;
   id: string;
   ingame_name: string;
@@ -11,6 +11,7 @@ export interface User {
   qf_access_token: string;
   qf_banned: boolean;
   qf_banned_reason?: string;
+  qf_banned_until?: string;
   region: string;
   role: Role;
   status: UserStatus;
@@ -18,6 +19,7 @@ export interface User {
   wfm_access_token: string;
   wfm_banned: boolean;
   wfm_banned_reason?: string;
+  wfm_banned_until?: string;
 }
 export interface Role {
   can_managed: boolean;
@@ -28,7 +30,7 @@ export interface Role {
   updated_at: Date;
 }
 export enum UserStatus {
-  Online = 'online',
-  Invisible = 'invisible',
-  Ingame = 'ingame',
+  Online = "online",
+  Invisible = "invisible",
+  Ingame = "ingame",
 }

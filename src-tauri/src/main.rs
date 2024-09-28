@@ -144,6 +144,7 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
         Arc::clone(&settings_arc),
         Arc::clone(&app_arc),
         Arc::clone(&qf_client),
+        Arc::clone(&notify_arc),
     )));
     app.manage(wfm_client.clone());
 

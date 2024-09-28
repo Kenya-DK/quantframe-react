@@ -79,6 +79,7 @@ impl ItemModule {
         let app = self.client.app.lock()?.clone();
         let auth = self.client.auth.lock()?.clone();
         let wfm = self.client.wfm.lock()?.clone();
+        let auth = self.client.auth.lock()?.clone();
         let cache = self.client.cache.lock()?.clone();
         let settings = self.client.settings.lock()?.clone().live_scraper;
 
@@ -225,6 +226,11 @@ impl ItemModule {
 
         // Loop through all interesting items
         for item_entry in interesting_items.clone() {
+            if auth.qf_banned || auth.wfm_banned || auth.anonymous {
+                self.client.stop_loop();
+                break;
+            }
+
             if self.client.is_running() == false {
                 current_index -= 1;
                 continue;

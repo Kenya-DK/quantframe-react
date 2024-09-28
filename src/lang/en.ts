@@ -1364,12 +1364,14 @@ export const en = {
     },
     banned: {
       wfm: {
-        title: "Account Suspended",
-        message: "Unable to connect to Warframe Market, please try again later.",
+        title: "Warframe Market Account Suspended due to:",
+        reason: "Reason: {{reason}}",
+        until: "Until:",
       },
       qf: {
-        title: "Account Suspended",
+        title: "Quantframe Account Suspended due to:",
         reason: "Reason: {{reason}}",
+        until: "Until:",
       },
     },
     warframe_market: {

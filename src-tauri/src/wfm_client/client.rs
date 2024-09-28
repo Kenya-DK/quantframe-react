@@ -4,20 +4,29 @@ use std::{
     time::Duration,
 };
 
+use actix_web::cookie::time::error;
 use eyre::eyre;
 use reqwest::{Client, Method, Url};
 use serde::de::DeserializeOwned;
-use serde_json::Value;
+use serde_json::{json, Value};
 use tauri::AppHandle;
 
 use crate::{
-    app::client::AppState, auth::AuthState, logger, qf_client::client::QFClient, utils::{
-        enums::log_level::LogLevel,
+    app::client::AppState,
+    auth::AuthState,
+    logger,
+    notification::client::NotifyClient,
+    qf_client::client::QFClient,
+    utils::{
+        enums::{
+            log_level::LogLevel,
+            ui_events::{UIEvent, UIOperationEvent},
+        },
         modules::{
             error::{ApiResult, AppError, ErrorApiResponse},
             rate_limiter::RateLimiter,
         },
-    }
+    },
 };
 
 use super::modules::{
@@ -39,6 +48,7 @@ pub struct WFMClient {
     pub settings: Arc<Mutex<crate::settings::SettingsState>>,
     pub app: Arc<Mutex<AppState>>,
     pub qf: Arc<Mutex<QFClient>>,
+    pub notify: Arc<Mutex<NotifyClient>>,
 }
 
 impl WFMClient {
@@ -48,6 +58,7 @@ impl WFMClient {
         settings: Arc<Mutex<crate::settings::SettingsState>>,
         app: Arc<Mutex<AppState>>,
         qf: Arc<Mutex<QFClient>>,
+        notify: Arc<Mutex<NotifyClient>>,
     ) -> Self {
         WFMClient {
             app,
@@ -62,6 +73,7 @@ impl WFMClient {
             auth,
             settings,
             qf,
+            notify,
             order_module: Arc::new(RwLock::new(None)),
             chat_module: Arc::new(RwLock::new(None)),
             auction_module: Arc::new(RwLock::new(None)),
@@ -107,6 +119,26 @@ impl WFMClient {
         );
     }
 
+    fn handle_error(&self, errors: Vec<String>) {
+        let mut auth = self.auth.lock().unwrap();
+        let notify = self.notify.lock().unwrap();
+        if errors.contains(&"app.errors.unauthorized".to_string()) {
+            auth.reset();
+            notify.gui().send_event_update(
+                UIEvent::UpdateUser,
+                UIOperationEvent::Set,
+                Some(json!(&auth.clone())),
+            );
+        } else if errors.contains(&"app.errors.banned".to_string()) {
+            auth.ban_user_wfm(&"Banned from Warframe Market");
+            notify.gui().send_event_update(
+                UIEvent::UpdateUser,
+                UIOperationEvent::Set,
+                Some(json!(&auth.clone())),
+            );
+        }
+    }
+
     async fn send_request<T: DeserializeOwned>(
         &self,
         method: Method,
@@ -116,6 +148,7 @@ impl WFMClient {
     ) -> Result<ApiResult<T>, AppError> {
         let auth = self.auth.lock()?.clone();
         let app = self.app.lock()?.clone();
+        let settings = self.settings.lock()?.clone();
         let mut rate_limiter = self.limiter.lock().await;
 
         rate_limiter.wait_for_token().await;
@@ -129,13 +162,16 @@ impl WFMClient {
             .request(method.clone(), Url::parse(&new_url).unwrap())
             .header(
                 "Authorization",
-                format!("JWT {}", auth.wfm_access_token.unwrap_or("".to_string())),
+                format!(
+                    "JWT {}",
+                    auth.wfm_access_token.clone().unwrap_or("".to_string())
+                ),
             )
             .header(
                 "User-Agent",
                 format!("Quantframe {}", packageinfo.version.to_string()),
             )
-            .header("Language", auth.region);
+            .header("Language", auth.region.clone());
 
         let request = match body.clone() {
             Some(content) => request.json(&content),
@@ -174,55 +210,69 @@ impl WFMClient {
         error_def.raw_response = Some(content.clone());
 
         // Convert the response to a Value object
-        let response: Value = serde_json::from_str(content.as_str()).map_err(|e| {
-            error_def.messages.push(e.to_string());
-            error_def.error = "RequestError".to_string();
+        let response: Value = match serde_json::from_str(content.as_str()) {
+            Ok(response) => response,
+            Err(e) => {
+                error_def.messages.push(e.to_string());
+                error_def.error = "RequestError".to_string();
 
-            let log_level = match error_def.status_code {
-                400 => LogLevel::Warning,
-                _ => LogLevel::Critical,
-            };
-            AppError::new_api(
-                self.component.as_str(),
-                error_def.clone(),
-                eyre!(format!("Could not parse response: {}, {:?}", content, e)),
-                log_level,
-            )
-        })?;
+                let log_level = match error_def.status_code {
+                    400 => LogLevel::Warning,
+                    _ => LogLevel::Critical,
+                };
+                return Err(AppError::new_api(
+                    self.component.as_str(),
+                    error_def,
+                    eyre!(format!("Could not parse response: {}, {:?}", content, e)),
+                    log_level,
+                ));
+            }
+        };
 
         // Check if the response is an error
         if response.get("error").is_some() {
             error_def.error = "ApiError".to_string();
-            // Loop through the error object and add each message to the error_def
-            let errors: HashMap<String, Value> = serde_json::from_value(response["error"].clone())
-                .map_err(|e| {
-                    error_def.messages.push(e.to_string());
-                    AppError::new_api(
-                        self.component.as_str(),
-                        error_def.clone(),
-                        eyre!(format!("Could not parse error messages: {}", e)),
-                        LogLevel::Critical,
-                    )
-                })?;
 
-            for (key, value) in errors {
-                if value.is_array() {
-                    let messages: Vec<String> =
-                        serde_json::from_value(value.clone()).map_err(|e| {
-                            AppError::new_api(
-                                self.component.as_str(),
-                                error_def.clone(),
-                                eyre!(format!("Could not parse error messages: {}", e)),
-                                LogLevel::Critical,
-                            )
-                        })?;
-                    error_def
-                        .messages
-                        .push(format!("{}: {}", key, messages.join(", ")));
-                } else {
-                    error_def.messages.push(format!("{}: {:?}", key, value));
+            let error: Value = response["error"].clone();
+            if error.is_string() {
+                error_def.messages.push(error.as_str().unwrap().to_string());
+            } else if error.is_object() {
+                match serde_json::from_value::<HashMap<String, Value>>(response["error"].clone()) {
+                    Ok(errors) => {
+                        for (key, value) in errors {
+                            if value.is_array() {
+                                let messages: Vec<String> = serde_json::from_value(value.clone())
+                                    .map_err(|e| {
+                                    AppError::new_api(
+                                        self.component.as_str(),
+                                        error_def.clone(),
+                                        eyre!(format!("Could not parse error messages: {}", e)),
+                                        LogLevel::Critical,
+                                    )
+                                })?;
+                                error_def.messages.push(format!(
+                                    "{}: {}",
+                                    key,
+                                    messages.join(", ")
+                                ));
+                            } else {
+                                error_def.messages.push(format!("{}: {:?}", key, value));
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        error_def.messages.push(e.to_string());
+                        error_def.error = "ParseError".to_string();
+                        return Err(AppError::new_api(
+                            self.component.as_str(),
+                            error_def,
+                            eyre!(format!("Could not parse error messages: {}", e)),
+                            LogLevel::Critical,
+                        ));
+                    }
                 }
             }
+            self.handle_error(error_def.messages.clone());
             return Ok(ApiResult::Error(error_def, headers));
         }
 

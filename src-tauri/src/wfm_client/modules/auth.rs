@@ -4,6 +4,7 @@ use serde_json::json;
 
 use crate::{
     auth::AuthState,
+    helper,
     utils::{
         enums::log_level::LogLevel,
         modules::{

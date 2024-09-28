@@ -39,5 +39,5 @@ export enum QfSocketEvent {
 export enum QfSocketEventOperation {
   CREATE_OR_UPDATE = "CREATE_OR_UPDATE",
   DELETE = "DELETE",
-  SET = "SET"
+  SET = "SET",
 }

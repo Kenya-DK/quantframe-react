@@ -158,7 +158,7 @@ pub async fn app_init(
         }
     };
 
-    if qf_user.is_none() && !wfm_user.anonymous && wfm_user.verification {
+    if qf_user.is_none() && !wfm_user.anonymous && wfm_user.verification && !wfm_user.banned {
         // Login to QuantFrame
         qf_user = match qf
             .auth()
@@ -195,7 +195,11 @@ pub async fn app_init(
     // Save AuthState to Tauri State
     save_auth_state(auth.clone(), auth_state.clone());
 
-    if !wfm_user.anonymous && wfm_user.verification && qf_user.is_some() && !qf_user.unwrap().banned
+    if !wfm_user.anonymous
+        && wfm_user.verification
+        && qf_user.is_some()
+        && !qf_user.unwrap().banned
+        && !wfm_user.banned
     {
         // Initialize QF Analytics
         match qf.analytics().init() {

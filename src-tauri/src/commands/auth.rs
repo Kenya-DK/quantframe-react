@@ -92,12 +92,7 @@ pub async fn auth_set_status(
 pub async fn auth_logout(auth: tauri::State<'_, Arc<Mutex<AuthState>>>) -> Result<(), AppError> {
     let arced_mutex = Arc::clone(&auth);
     let mut auth = arced_mutex.lock().expect("Could not lock auth");
-    auth.wfm_access_token = None;
-    auth.qf_access_token = None;
-    auth.check_code = "".to_string();
-    auth.avatar = None;
-    auth.ingame_name = "".to_string();
-    auth.id = "".to_string();
+    auth.reset();
     auth.save_to_file()?;
     Ok(())
 }

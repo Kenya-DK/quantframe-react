@@ -40,6 +40,10 @@ pub struct UserProfile {
     pub locale: String,
     #[serde(rename = "banned")]
     pub banned: bool,
+    #[serde(rename = "ban_reason")]
+    pub ban_reason: Option<String>,
+    #[serde(rename = "ban_until")]
+    pub ban_until: Option<String>,
     #[serde(rename = "reputation")]
     pub reputation: i32,
     

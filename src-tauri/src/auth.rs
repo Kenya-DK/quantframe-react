@@ -15,12 +15,21 @@ pub struct AuthState {
     pub anonymous: bool,
     pub verification: bool,
     pub wfm_banned: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub wfm_banned_until: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub wfm_banned_reason: Option<String>,
     pub qf_banned: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub qf_banned_until: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub qf_banned_reason: Option<String>,
     pub id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub wfm_access_token: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub qf_access_token: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub avatar: Option<String>,
     pub ingame_name: String,
     pub check_code: String,
@@ -43,8 +52,10 @@ impl Default for AuthState {
             anonymous: true,
             verification: false,
             wfm_banned: false,
+            wfm_banned_until: None,
             wfm_banned_reason: None,
             qf_banned: false,
+            qf_banned_until: None,
             qf_banned_reason: None,
             id: "".to_string(),
             wfm_access_token: None,
@@ -121,6 +132,8 @@ impl AuthState {
         self.anonymous = user_profile.anonymous;
         self.verification = user_profile.verification;
         self.wfm_banned = user_profile.banned;
+        self.wfm_banned_reason = user_profile.ban_reason.clone();
+        self.wfm_banned_until = user_profile.ban_until.clone();
         self.ingame_name = user_profile.ingame_name.clone().unwrap_or("".to_string());
         self.avatar = user_profile.avatar.clone();
         self.locale = user_profile.locale.clone();
@@ -136,15 +149,17 @@ impl AuthState {
                 self.order_limit = -1;
                 self.auctions_limit = -1;
             }
-        } 
+        }
     }
 
     pub fn reset(&mut self) {
         self.anonymous = true;
         self.verification = false;
         self.wfm_banned = false;
+        self.wfm_banned_until = None;
         self.wfm_banned_reason = None;
         self.qf_banned = false;
+        self.qf_banned_until = None;
         self.qf_banned_reason = None;
         self.id = "".to_string();
         self.wfm_access_token = None;
@@ -182,6 +197,17 @@ impl AuthState {
         Ok(())
     }
 
+    pub fn ban_user_wfm(&mut self, reason: &str) {
+        self.wfm_banned = true;
+        self.wfm_banned_reason = Some(reason.to_string());
+        self.save_to_file().unwrap();
+    }
+
+    pub fn ban_user_qf(&mut self, reason: String) {
+        self.qf_banned = true;
+        self.qf_banned_reason = Some(reason);
+        self.save_to_file().unwrap();
+    }
     pub fn read_from_file() -> Result<(Self, bool), AppError> {
         let mut file = File::open(Self::get_file_path())
             .map_err(|e| AppError::new("AuthState", eyre!(e.to_string())))?;
