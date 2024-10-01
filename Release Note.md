@@ -1,24 +1,32 @@
-# Quantframe v1.2.4 (Release Date)
+# Quantframe v1.2.5 (Release Date)
 
 ## Overview
+
 Total rewrite of the UI and the backend.
 Note: The database was upgrade to V2
 So all your data needs to be migrated, this be be done in the Debug Tab and under the migrate tab.
 
 ## Fix's
+
 - 🛠️ WTB/WTS Orders not getting updated
 - 🛠️ Fix som ui flicking in the stock riven screen.
 - 🛠️ Fix not able to add item's to blacklist/whitelist
+- 🛠️ Better handling if a user waws banned
 
+## Features
+
+- ✅ Add Better Discord Message for auto trade.
 
 # Quantframe v1.2.3 (Release Date)
 
 ## Overview
+
 Total rewrite of the UI and the backend.
 Note: The database was upgrade to V2
 So all your data needs to be migrated, this be be done in the Debug Tab and under the migrate tab.
 
 ## Fix's
+
 - 🛠️ Order limit not updating.
 - 🛠️ A bug in migrate dataBase.
 - 🛠️ Fix a bug in export logs.
@@ -26,6 +34,7 @@ So all your data needs to be migrated, this be be done in the Debug Tab and unde
 - 🛠️ Fix min profit.
 
 ## Features
+
 - ✅ Add Import Riven from wfm auctions
 - ✅ Add Create Riven
 - ✅ Add Better Update box
@@ -34,13 +43,14 @@ So all your data needs to be migrated, this be be done in the Debug Tab and unde
 # Quantframe v1.2.0 (Release Date)
 
 ## Overview
+
 Total rewrite of the UI and the backend.
 Note: The database was upgrade to V2
 So all your data needs to be migrated, this be be done in the Debug Tab and under the migrate tab.
 
-
 ## Features
-- Add Rest: Your can now reset all transaction. 
+
+- Add Rest: Your can now reset all transaction.
 - Add minium profit in settings.
 - Add minium sma.
 - Remove the price scraper (It is now server).
