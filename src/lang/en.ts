@@ -765,6 +765,14 @@ export const en = {
         start: "Start Live Trading",
         stop: "Stop Live Trading",
       },
+      prompts: {
+        start: {
+          title: "Warning",
+          message: "Are you sure you want to start live trading this action will delete all orders on wfm there are not blacklisted.",
+          confirm: "Start",
+          cancel: "Cancel",
+        },
+      },
       item: {
         stating: "Starting Item Trading",
         deleting_orders: "Deleting Orders {{current}}/{{total}}",
