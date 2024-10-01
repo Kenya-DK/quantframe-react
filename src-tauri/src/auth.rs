@@ -184,6 +184,7 @@ impl AuthState {
         self.qf_access_token = token;
         self.qf_banned = user_profile.banned;
         self.qf_banned_reason = user_profile.banned_reason.clone();
+        self.qf_banned_until = user_profile.banned_until.clone();
         self.role = user_profile.role.clone();
     }
 
@@ -203,9 +204,10 @@ impl AuthState {
         self.save_to_file().unwrap();
     }
 
-    pub fn ban_user_qf(&mut self, reason: String) {
+    pub fn ban_user_qf(&mut self, reason: &str, until: &str) {
         self.qf_banned = true;
-        self.qf_banned_reason = Some(reason);
+        self.qf_banned_reason = Some(reason.to_string());
+        self.qf_banned_until = Some(until.to_string());
         self.save_to_file().unwrap();
     }
     pub fn read_from_file() -> Result<(Self, bool), AppError> {

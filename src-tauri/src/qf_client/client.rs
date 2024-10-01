@@ -6,14 +6,18 @@ use std::{
 use eyre::eyre;
 use reqwest::{Client, Method, Url};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use serde_json::Value;
+use serde_json::{json, Value};
 
 use crate::{
     app::client::AppState,
     auth::AuthState,
     logger,
+    notification::client::NotifyClient,
     utils::{
-        enums::log_level::LogLevel,
+        enums::{
+            log_level::LogLevel,
+            ui_events::{UIEvent, UIOperationEvent},
+        },
         modules::{
             error::{ApiResult, AppError, ErrorApiResponse},
             rate_limiter::RateLimiter,
@@ -48,6 +52,7 @@ pub struct QFClient {
     pub auth: Arc<Mutex<AuthState>>,
     pub settings: Arc<Mutex<crate::settings::SettingsState>>,
     pub app: Arc<Mutex<AppState>>,
+    pub notify: Arc<Mutex<NotifyClient>>,
 }
 
 impl QFClient {
@@ -55,6 +60,7 @@ impl QFClient {
         auth: Arc<Mutex<AuthState>>,
         settings: Arc<Mutex<crate::settings::SettingsState>>,
         app: Arc<Mutex<AppState>>,
+        notify: Arc<Mutex<NotifyClient>>,
     ) -> Self {
         QFClient {
             endpoint: "https://api.quantframe.app/".to_string(),
@@ -74,6 +80,7 @@ impl QFClient {
             auth,
             settings,
             app,
+            notify,
         }
     }
     pub fn create_api_error(
@@ -112,6 +119,35 @@ impl QFClient {
             Some(&self.log_file),
         );
     }
+    fn handle_error(&self, errors: Vec<String>, data: Value) {
+        let mut auth = self.auth.lock().unwrap();
+        let notify = self.notify.lock().unwrap();
+        if errors.contains(&"Unauthorized".to_string()) {
+            auth.reset();
+            notify.gui().send_event_update(
+                UIEvent::UpdateUser,
+                UIOperationEvent::Set,
+                Some(json!(&auth.clone())),
+            );
+        } else if errors.contains(&"Banned".to_string()) {
+            let reason = data
+                .get("banned_reason")
+                .unwrap()
+                .as_str()
+                .unwrap_or_default();
+            let until = data
+                .get("banned_until")
+                .unwrap()
+                .as_str()
+                .unwrap_or_default();
+            auth.ban_user_qf(reason, until);
+            notify.gui().send_event_update(
+                UIEvent::UpdateUser,
+                UIOperationEvent::Set,
+                Some(json!(&auth.clone())),
+            );
+        }
+    }
     async fn send_request<T: DeserializeOwned>(
         &self,
         method: Method,
@@ -145,6 +181,7 @@ impl QFClient {
                 ),
             )
             .header("AppId", app.app_id.to_string())
+            .header("IsDevelopment", app.is_development.to_string())
             .header("App", packageinfo.name.to_string())
             .header("Device", auth.get_device_id())
             .header("Version", packageinfo.version.to_string())
@@ -196,31 +233,49 @@ impl QFClient {
         }
         error_def.raw_response = Some(content.clone());
 
-        let response: Value = serde_json::from_str(content.as_str()).map_err(|e| {
-            error_def.messages.push(e.to_string());
-            AppError::new_api(
-                self.component.as_str(),
-                error_def.clone(),
-                eyre!(format!("Could not parse response: {}, {:?}", content, e)),
-                LogLevel::Critical,
-            )
-        })?;
-        // If the status code is not between 200 and 204, it's an error
-        if error_def.status_code < 200 || error_def.status_code > 299 {
-            if response.get("message").is_some() && response.get("message").unwrap().is_string() {
-                let msg = response.get("message").unwrap().as_str();
-                error_def.messages.push(msg.unwrap_or_default().to_string());
+        // Parse the response into a Value object
+        let response: Value = match serde_json::from_str(content.as_str()) {
+            Ok(val) => val,
+            Err(e) => {
+                error_def.messages.push(e.to_string());
+                return Err(AppError::new_api(
+                    self.component.as_str(),
+                    error_def,
+                    eyre!(format!("Could not parse response: {}, {:?}", content, e)),
+                    LogLevel::Critical,
+                ));
             }
-            if response.get("message").is_some() && response.get("message").unwrap().is_array() {
-                let msg = response.get("message").unwrap().as_array();
-                for m in msg.unwrap() {
-                    error_def.messages.push(m.to_string());
+        };
+
+        // Check if response is an error
+        if auth.wfm_banned {
+            error_def.error = "WFMBanned".to_string();
+            error_def.messages.push("WFMBanned".to_string());
+            self.handle_error(error_def.messages.clone(), response);
+            return Ok(ApiResult::Error(error_def, headers));
+        }
+        if response.get("error").is_some() {
+            error_def.error = "ApiError".to_string();
+
+            let error = response.get("error").unwrap().as_str().unwrap_or_default();
+            let messages = response.get("message");
+            if error == "banned" {
+                error_def.messages.push("Banned".to_string());
+            } else if error == "Unauthorized" {
+                error_def.messages.push("Unauthorized".to_string());
+            }
+            if messages.is_some() {
+                let msg = messages.unwrap();
+                if msg.is_string() {
+                    error_def.messages.push(msg.as_str().unwrap().to_string());
+                } else if msg.is_array() {
+                    let msgs = msg.as_array().unwrap();
+                    for m in msgs {
+                        error_def.messages.push(m.to_string());
+                    }
                 }
             }
-            if response.get("error").is_some() && response.get("error").unwrap().is_string() {
-                let msg = response.get("error").unwrap().as_str();
-                error_def.error = msg.unwrap_or_default().to_string();
-            }
+            self.handle_error(error_def.messages.clone(), response);
             return Ok(ApiResult::Error(error_def, headers));
         }
 
@@ -241,7 +296,7 @@ impl QFClient {
 
     pub async fn get_bytes(&self, url: &str) -> Result<ApiResult<Vec<u8>>, AppError> {
         match self
-            .send_request::<ByteResponse>(Method::GET, url, None, true,false)
+            .send_request::<ByteResponse>(Method::GET, url, None, true, false)
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {
@@ -261,8 +316,14 @@ impl QFClient {
         };
     }
 
-    pub async fn get<T: DeserializeOwned>(&self, url: &str, is_string: bool,) -> Result<ApiResult<T>, AppError> {
-        Ok(self.send_request(Method::GET, url, None, false, is_string).await?)
+    pub async fn get<T: DeserializeOwned>(
+        &self,
+        url: &str,
+        is_string: bool,
+    ) -> Result<ApiResult<T>, AppError> {
+        Ok(self
+            .send_request(Method::GET, url, None, false, is_string)
+            .await?)
     }
 
     pub async fn post<T: DeserializeOwned>(
@@ -276,14 +337,18 @@ impl QFClient {
     }
 
     pub async fn delete<T: DeserializeOwned>(&self, url: &str) -> Result<ApiResult<T>, AppError> {
-        Ok(self.send_request(Method::DELETE, url, None, false, false).await?)
+        Ok(self
+            .send_request(Method::DELETE, url, None, false, false)
+            .await?)
     }
     pub async fn put<T: DeserializeOwned>(
         &self,
         url: &str,
         body: Option<Value>,
     ) -> Result<ApiResult<T>, AppError> {
-        Ok(self.send_request(Method::PUT, url, body, false, false).await?)
+        Ok(self
+            .send_request(Method::PUT, url, body, false, false)
+            .await?)
     }
     pub fn cache(&self) -> CacheModule {
         // Lazily initialize ItemModule if not already initialized

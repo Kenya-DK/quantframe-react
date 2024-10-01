@@ -210,7 +210,7 @@ impl WFMClient {
         error_def.raw_response = Some(content.clone());
 
         // Convert the response to a Value object
-        let response: Value = match serde_json::from_str(content.as_str()) {
+        let mut response: Value = match serde_json::from_str(content.as_str()) {
             Ok(response) => response,
             Err(e) => {
                 error_def.messages.push(e.to_string());

@@ -134,6 +134,7 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
         Arc::clone(&auth_arc),
         Arc::clone(&settings_arc),
         Arc::clone(&app_arc),
+        Arc::clone(&notify_arc),
     )));
     app.manage(qf_client.clone());
 

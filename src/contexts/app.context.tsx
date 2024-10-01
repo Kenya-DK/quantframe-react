@@ -76,7 +76,6 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
       if (!shouldUpdate || !manifest || !editor)
         return;
       editor.commands.setContent(manifest?.body);
-      console.log(manifest);
       modals.open({
         title: useTranslateNewUpdate("title", { version: manifest?.version }),
         size: 'lg',

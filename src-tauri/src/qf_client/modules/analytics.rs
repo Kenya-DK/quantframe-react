@@ -10,16 +10,13 @@ use tauri::{Manager, State};
 use tokio::time::Instant;
 
 use crate::{
-    app,
-    qf_client::client::QFClient,
-    utils::{
+    app, auth::AuthState, qf_client::client::QFClient, utils::{
         enums::log_level::LogLevel,
         modules::{
             error::{self, ApiResult, AppError},
             logger,
         },
-    },
-    APP,
+    }, APP
 };
 #[derive(Clone, Debug)]
 pub struct AnalyticsModule {
@@ -94,6 +91,7 @@ impl AnalyticsModule {
                 let qf_handle = APP.get().expect("failed to get app handle");
                 let qf_state: State<Arc<Mutex<QFClient>>> = qf_handle.state();
                 let qf = qf_state.lock().expect("failed to lock app state").clone();
+
                 // Create Timer for sending metrics
                 let mut last_analytics_time = Instant::now();
                 let mut last_metric_time = Instant::now();
@@ -115,6 +113,7 @@ impl AnalyticsModule {
                     };
                 }
                 loop {
+
                     if last_analytics_time.elapsed() > Duration::from_secs(36000) {
                         last_analytics_time = Instant::now();
                         match qf
@@ -154,7 +153,9 @@ impl AnalyticsModule {
                                 qf.analytics().clear_metrics();
                             }
                             Err(e) => {
-                                if e.cause().contains("Unauthorized") {
+                                if e.cause().contains("Unauthorized") 
+                                || e.cause().contains("Banned") 
+                                || e.cause().contains("WFMBanned") {
                                     error::create_log_file("analytics.log".to_string(), &e);
                                     break;
                                 }
