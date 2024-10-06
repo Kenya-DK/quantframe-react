@@ -19,7 +19,7 @@ use crate::{
     qf_client::client::QFClient,
     utils::{
         enums::{
-            log_level::LogLevel,
+            log_level::{self, LogLevel},
             ui_events::{UIEvent, UIOperationEvent},
         },
         modules::{
@@ -148,7 +148,6 @@ impl WFMClient {
     ) -> Result<ApiResult<T>, AppError> {
         let auth = self.auth.lock()?.clone();
         let app = self.app.lock()?.clone();
-        let settings = self.settings.lock()?.clone();
         let mut rate_limiter = self.limiter.lock().await;
 
         rate_limiter.wait_for_token().await;
@@ -210,7 +209,7 @@ impl WFMClient {
         error_def.raw_response = Some(content.clone());
 
         // Convert the response to a Value object
-        let mut response: Value = match serde_json::from_str(content.as_str()) {
+        let response: Value = match serde_json::from_str(content.as_str()) {
             Ok(response) => response,
             Err(e) => {
                 error_def.messages.push(e.to_string());
@@ -218,6 +217,7 @@ impl WFMClient {
 
                 let log_level = match error_def.status_code {
                     400 => LogLevel::Warning,
+                    200 => LogLevel::Warning,
                     _ => LogLevel::Critical,
                 };
                 return Err(AppError::new_api(
