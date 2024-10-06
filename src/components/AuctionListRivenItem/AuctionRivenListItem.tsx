@@ -1,4 +1,4 @@
-import { Image, Group, Paper, Stack, Divider, Text, Avatar, Skeleton, PaperProps, Grid, Box, Progress } from "@mantine/core";
+import { Image, Group, Paper, Stack, Divider, Text, Avatar, Skeleton, PaperProps, Grid, Box, Progress, NumberFormatter } from "@mantine/core";
 import classes from "./AuctionRivenListItem.module.css";
 import { useEffect, useState } from "react";
 import { Wfm } from "$types/index";
@@ -79,7 +79,7 @@ export function AuctionRivenListItem({
                   mod_name: auction.item?.name || "Unknown",
                 }}
               />
-              {auction.item.similarity != null && <Text>{auction.item.similarity} %</Text>}
+              {auction.item.similarity != null && <NumberFormatter decimalScale={0} suffix="%" value={auction.item.similarity || 0} />}
             </Group>
             {compacted && (
               <TextTranslate

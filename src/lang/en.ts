@@ -618,6 +618,10 @@ export const en = {
           title: "Auctions",
         },
       },
+      buttons: {
+        find_type: "Look for weapon",
+        find_similar: "Find Similar",
+      },
       fields: {
         created_at: "Created At",
         updated_at: "Updated At",
