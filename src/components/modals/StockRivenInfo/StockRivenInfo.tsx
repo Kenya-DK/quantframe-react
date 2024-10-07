@@ -21,6 +21,27 @@ export function StockRivenInfo({ value }: StockRivenInfoProps) {
   const useTranslateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateStockRivenInfo(`buttons.${key}`, { ...context }, i18Key);
 
+  const generateAuctionLink = (auction: StockRiven, withAttributes: boolean = false) => {
+    const baseUrl = "https://warframe.market/auctions/search?type=riven&polarity=any&sort_by=price_asc";
+    const params: string[] = [];
+
+    // Weapon
+    params.push(`weapon_url_name=${auction.wfm_weapon_url}`);
+
+    const positiveStats = auction.attributes
+      .filter((x) => x.positive)
+      .map((x) => x.url_name)
+      .join(",");
+    if (positiveStats != "" && withAttributes) params.push(`positive_stats=${positiveStats}`);
+    const negativeStats = auction.attributes
+      .filter((x) => !x.positive)
+      .map((x) => x.url_name)
+      .join(",");
+    if (negativeStats != "" && withAttributes) params.push(`negative_stats=${negativeStats}`);
+
+    window.open(baseUrl, "_blank");
+  };
+
   return (
     <Tabs defaultValue="general" h={"75vh"}>
       <Tabs.List>
@@ -59,37 +80,10 @@ export function StockRivenInfo({ value }: StockRivenInfoProps) {
               <TextInput label={useTranslateFields("lowest_price")} value={value.info?.lowest_price || "N/A"} readOnly />
             </Group>
             <Group mt={"md"} grow>
-              <Button
-                color="blue"
-                variant="outline"
-                onClick={() => {
-                  window.open(
-                    `https://warframe.market/auctions/search?type=riven&weapon_url_name=${value.wfm_weapon_url}&polarity=any&sort_by=price_asc`,
-                    "_blank"
-                  );
-                }}
-              >
+              <Button color="blue" variant="outline" onClick={() => generateAuctionLink(value, false)}>
                 {useTranslateButtons("find_type")}
               </Button>
-              <Button
-                color="blue"
-                variant="outline"
-                onClick={() => {
-                  // https://warframe.market/auctions/search?type=riven&weapon_url_name=cortege&positive_stats=cold_damage,critical_chance&negative_stats=critical_damage&polarity=any&sort_by=price_asc
-                  window.open(
-                    `https://warframe.market/auctions/search?type=riven&weapon_url_name=${
-                      value.wfm_weapon_url
-                    }&polarity=any&sort_by=price_asc&positive_stats=${value.attributes
-                      .filter((x) => x.positive)
-                      .map((x) => x.url_name)
-                      .join(",")}&negative_stats=${value.attributes
-                      .filter((x) => !x.positive)
-                      .map((x) => x.url_name)
-                      .join(",")}`,
-                    "_blank"
-                  );
-                }}
-              >
+              <Button color="blue" variant="outline" onClick={() => generateAuctionLink(value, true)}>
                 {useTranslateButtons("find_similar")}
               </Button>
             </Group>
