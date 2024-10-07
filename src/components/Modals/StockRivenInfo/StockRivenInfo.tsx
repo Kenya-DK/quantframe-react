@@ -39,7 +39,7 @@ export function StockRivenInfo({ value }: StockRivenInfoProps) {
       .join(",");
     if (negativeStats != "" && withAttributes) params.push(`negative_stats=${negativeStats}`);
 
-    window.open(baseUrl, "_blank");
+    window.open(`${baseUrl}&${params.join("&")}`, "_blank");
   };
 
   return (
