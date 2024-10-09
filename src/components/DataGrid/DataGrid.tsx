@@ -2,10 +2,8 @@ import { Box, Center, Checkbox, Divider, Group, Loader, Pagination, ScrollArea, 
 import classes from './DataGrid.module.css';
 import React, { useEffect, useState } from "react";
 import { upperFirst } from "@mantine/hooks";
-import { searchByProperties } from "@utils/search.helper";
+import { Query, searchProperties } from "@utils/search.helper";
 import { paginate } from "@utils/helper";
-import { ISearchKeyParameter } from "$types/index";
-
 
 
 export interface DataGridColumnProps<T> {
@@ -17,7 +15,7 @@ export interface DataGridColumnProps<T> {
 export type DataGridProps<T> = {
   columns: DataGridColumnProps<T>[];
   height?: number | string;
-  filters?: ISearchKeyParameter;
+  filters?: Query;
   records: T[];
   fetching?: boolean;
   customLoader?: React.ReactNode;
@@ -63,7 +61,7 @@ export const DataGrid = <T,>({ m, my, mx, mt, mb, ml, mr, customRowAttributes, r
   useEffect(() => {
     let filteredRecords = [...records];
     if (filters)
-      filteredRecords = searchByProperties(records, filters);
+      filteredRecords = searchProperties(records, filters);
     // Pagination Logic
     setTotalRecords(filteredRecords.length);
     setTotalPages(Math.ceil(filteredRecords.length / pageSize));
