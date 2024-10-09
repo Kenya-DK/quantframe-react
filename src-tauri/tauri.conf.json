@@ -64,6 +64,7 @@
     "updater": {
       "active": true,
       "endpoints": [
+        "http://localhost:6969/prerelease/{{target}}/{{arch}}/{{current_version}}",
         "https://api.quantframe.app/prerelease/{{target}}/{{arch}}/{{current_version}}"
       ],
       "dialog": false,
