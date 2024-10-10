@@ -23,7 +23,7 @@ use crate::{
 };
 
 #[post("/add_riven")]
-pub async fn add_riven(riven: web::Json<CreateStockRiven>) -> impl Responder {
+pub async fn add_riven(riven: web::Json<RivenPayload>) -> impl Responder {
     let component = "HTTPAddRiven";
     let app_handle = APP.get().expect("failed to get app handle");
     let app_state: State<Arc<Mutex<AppState>>> = app_handle.state();
@@ -50,8 +50,9 @@ pub async fn add_riven(riven: web::Json<CreateStockRiven>) -> impl Responder {
     let mut entry = riven.into_inner();
 
     match helper::progress_stock_riven(
-        &mut entry,
-        "--weapon_by name --weapon_lang en --attribute_by upgrades --upgrade_by short_string",
+        &mut entry.riven_data,
+        // "--weapon_by name --weapon_lang en --attribute_by upgrades --upgrade_by short_string",
+        entry.by.as_str(),
         "",
         OrderType::Buy,
         "http_server",
@@ -70,92 +71,10 @@ pub async fn add_riven(riven: web::Json<CreateStockRiven>) -> impl Responder {
         }
     }
 
-    // // Validate the riven
-    // match cache.riven().validate_create_riven(
-    //     &mut riven,
-    //     "--weapon_by name --weapon_lang en --attribute_by upgrades --upgrade_by short_string",
-    // ) {
-    //     Ok(_) => (),
-    //     Err(e) => {
-    //         error::create_log_file("http_client.log".to_string(), &e);
-    //         notify.gui().send_event(
-    //             UIEvent::OnNotificationError,
-    //             Some(json!({
-    //                 "i18n_key_title": "add_riven.error.title",
-    //                 "i18n_key_message": "add_riven.error.message",
-    //                 "values": json!(e)
-    //             })),
-    //         );
-
-    //         return HttpResponse::BadRequest().body(serde_json::to_string(&e).unwrap());
-    //     }
-    // }
-
-    // let stock = riven.to_stock();
-    // match StockRivenMutation::create(&app.conn, stock.clone()).await {
-    //     Ok(stock) => {
-    //         notify.gui().send_event_update(
-    //             UIEvent::UpdateStockRivens,
-    //             UIOperationEvent::CreateOrUpdate,
-    //             Some(json!(stock)),
-    //         );
-    //         notify.gui().send_event(
-    //             UIEvent::OnNotificationSuccess,
-    //             Some(json!({
-    //                 "i18n_key_title": "add_riven.success.title",
-    //                 "i18n_key_message": "add_riven.success.message",
-    //                 "values": {
-    //                     "name": format!("{} {}", riven.weapon_name, riven.mod_name),
-    //                 }
-    //             })),
-    //         );
-    //         notify.gui().send_event(
-    //             UIEvent::SendMetrics,
-    //             Some(json!({
-    //                 "key": "Stock_RivenCreate",
-    //                 "value": "http_server"
-    //             })),
-    //         );
-    //     }
-    //     Err(e) => {
-    //         return HttpResponse::BadRequest()
-    //             .body(serde_json::to_string(&AppError::new(component, eyre::eyre!(e))).unwrap());
-    //     }
-    // }
-    // if stock.bought == 0 {
-    //     return HttpResponse::Ok().body(serde_json::to_string(&stock).unwrap());
-    // }
-
-    // let transaction = stock.to_transaction(
-    //     "",
-    //     stock.bought,
-    //     entity::transaction::transaction::TransactionType::Purchase,
-    // );
-
-    // match TransactionMutation::create(&app.conn, transaction).await {
-    //     Ok(inserted) => {
-    //         notify.gui().send_event_update(
-    //             UIEvent::UpdateTransaction,
-    //             UIOperationEvent::CreateOrUpdate,
-    //             Some(json!(inserted)),
-    //         );
-    //         notify.gui().send_event(
-    //             UIEvent::SendMetrics,
-    //             Some(json!({
-    //                 "key": "Transaction_RivenCreate",
-    //                 "value": "http_server"
-    //             })),
-    //         );
-    //     }
-    //     Err(e) => {
-    //         return HttpResponse::BadRequest()
-    //             .body(serde_json::to_string(&AppError::new(component, eyre::eyre!(e))).unwrap());
-    //     }
-    // }
 }
 
 #[post("/add_item")]
-pub async fn add_item(_riven: web::Json<CreateStockItem>) -> impl Responder {
+pub async fn add_item(_item: web::Json<ItemPayload>) -> impl Responder {
     let _component = "HTTPAddItem";
     let app_handle = APP.get().expect("failed to get app handle");
     let app_state: State<Arc<Mutex<AppState>>> = app_handle.state();
