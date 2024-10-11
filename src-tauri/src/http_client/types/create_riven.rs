@@ -1,4 +1,4 @@
-use entity::stock::riven::attribute::RivenAttribute;
+use entity::stock::riven::create::CreateStockRiven;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
