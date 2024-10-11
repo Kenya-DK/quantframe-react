@@ -1,4 +1,4 @@
-use entity::stock::riven::attribute::RivenAttribute;
+use entity::stock::item::create::CreateStockItem;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -9,3 +9,4 @@ pub struct ItemPayload {
     #[serde(rename = "item_data")]
     pub item_data: CreateStockItem,
 }
+
