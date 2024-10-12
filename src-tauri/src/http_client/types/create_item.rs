@@ -9,3 +9,4 @@ pub struct ItemPayload {
     #[serde(rename = "item_data")]
     pub item_data: CreateStockItem,
 }
+
