@@ -114,18 +114,6 @@ impl AnalyticsModule {
                 }
                 loop {
 
-                    if last_analytics_time.elapsed() > Duration::from_secs(36000) {
-                        last_analytics_time = Instant::now();
-                        match qf
-                            .analytics()
-                            .try_send_analytics("periodic", 3, json!({}))
-                            .await
-                        {
-                            Ok(_) => {}
-                            Err(_) => {}
-                        };
-                    }
-
                     if last_metric_time.elapsed() > Duration::from_secs(15)
                         || qf.analytics().is_user_active()
                     {
