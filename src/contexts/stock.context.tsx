@@ -26,13 +26,6 @@ export function StockContextProvider({ children }: StockContextProviderProps) {
   const [items, setItems] = useState<StockItem[]>([]);
   const [rivens, setRivens] = useState<StockRiven[]>([]);
 
-  useEffect(() => {
-    console.log(
-      "StockContextProvider: CREATE_OR_UPDATE",
-      (rivens as any[]).map((x) => (x as any).id)
-    );
-  }, [rivens]);
-
   const handleUpdate = <T extends Entity>(operation: QfSocketEventOperation, data: T | T[], setData: SetDataFunction<T[]>) => {
     switch (operation) {
       case QfSocketEventOperation.CREATE_OR_UPDATE:
@@ -53,8 +46,6 @@ export function StockContextProvider({ children }: StockContextProviderProps) {
         setData(data as T[]);
         break;
     }
-    // Add this somewhere to check if setData is being called multiple times unintentionally
-    console.log("Data change detected:", data);
   };
 
   // Hook on tauri events from rust side
