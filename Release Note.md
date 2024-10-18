@@ -2,9 +2,12 @@
 
 ## Overview
 
-Total rewrite of the UI and the backend.
-Note: The database was upgrade to V2
-So all your data needs to be migrated, this be be done in the Debug Tab and under the migrate tab.
+Just a small update to fix some bugs and add a new feature.
+
+## ⚠️⚠️⚠️IMPORTANT NOTE⚠️⚠️⚠️
+
+- ⚠️ Yoc need to download the new version from the github [here](https://github.com/Kenya-DK/quantframe-react/releases/tag/v1.2.5)
+- ⚠️ If y are comming from a version below v1.2.0 you need to migrate your data, this can be done in the debug tab.
 
 ## Fix's
 

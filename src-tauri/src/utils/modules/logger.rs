@@ -1,3 +1,4 @@
+use chrono::Duration;
 use eyre::eyre;
 use serde_json::Value;
 use std::{
@@ -178,6 +179,32 @@ pub fn log_json(file_path: &str, data: &Value) -> Result<(), AppError> {
         .map_err(|e| AppError::new("log_json", eyre!(e.to_string())))?;
     Ok(())
 }
+pub fn clear_logs(days: i64) -> Result<(), AppError> {
+    // Get the logs folder there is older then the days
+    let app_path = helper::get_app_storage_path();
+    let log_path = app_path.join("logs");
+    for path in fs::read_dir(log_path).unwrap() {
+        let path = path.unwrap().path();
+        // Check if path is auth.json
+        if !path.is_dir() {
+            continue;
+        }
+        let folder_name = path.file_name().unwrap().to_str().unwrap();
+
+        match chrono::NaiveDate::parse_from_str(folder_name, "%Y-%m-%d") {
+            Ok(date) => {
+                if date >= chrono::Local::now().naive_utc().date() - chrono::Duration::days(days) {
+                    continue;
+                }
+                fs::remove_dir_all(path)
+                    .map_err(|e| AppError::new("clear_logs", eyre!(e.to_string())))?;
+            }
+            Err(_) => continue,
+        }
+    }
+    Ok(())
+}
+
 pub fn export_logs(info: PackageInfo) -> String {
     let date = chrono::Local::now()
         .naive_utc()
@@ -207,7 +234,12 @@ pub fn export_logs(info: PackageInfo) -> String {
         if path.ends_with("auth.json") || path.ends_with("settings.json") {
             let json = helper::open_json_and_replace(
                 &path.to_str().unwrap(),
-                vec!["check_code".to_string(), "qf_access_token".to_string(), "wfm_access_token".to_string(), "webhook".to_string()],
+                vec![
+                    "check_code".to_string(),
+                    "qf_access_token".to_string(),
+                    "wfm_access_token".to_string(),
+                    "webhook".to_string(),
+                ],
             )
             .expect("Could not open auth.json");
 

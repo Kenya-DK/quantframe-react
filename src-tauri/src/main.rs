@@ -43,6 +43,9 @@ mod wfm_client;
 pub static APP: OnceLock<tauri::AppHandle> = OnceLock::new();
 
 async fn setup_manages(app: &mut App) -> Result<(), AppError> {
+    // Clear the logs older then 7 days
+    logger::info_con("Setup:Logs", "Clearing logs older then 7 days");
+    logger::clear_logs(7)?;
     // Get the update channel
     let context = tauri::generate_context!();
     let updater = context.config().tauri.updater.clone();
