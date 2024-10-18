@@ -108,6 +108,28 @@ impl AuctionModule {
         Ok(auctions)
     }
 
+    pub async fn get_auction(
+        &self,
+        auction_id: &str,
+    ) -> Result<Option<Auction<AuctionOwner>>, AppError> {
+        let url = format!("auctions/entry/{}", auction_id);
+        match self
+            .client
+            .get::<Auction<AuctionOwner>>(&url, Some("auction"))
+            .await
+        {
+            Ok(ApiResult::Success(payload, _headers)) => {
+                return Ok(Some(payload));
+            }
+            Ok(ApiResult::Error(_, _headers)) => {
+                return Ok(None);
+            }
+            Err(err) => {
+                return Err(err);
+            }
+        };
+    }
+
     pub async fn create(
         &mut self,
         auction_type: &str,

@@ -1,6 +1,11 @@
-use ::entity::stock::riven::{stock_riven, stock_riven::Entity as StockRiven};
+use ::entity::{
+    enums,
+    stock::riven::stock_riven::{self, Entity as StockRiven},
+};
 use prelude::Expr;
 use sea_orm::*;
+
+use crate::StockRivenQuery;
 
 pub struct StockRivenMutation;
 
@@ -70,6 +75,22 @@ impl StockRivenMutation {
         .await
     }
 
+    pub async fn clear_order_id(
+        db: &DbConn,
+        order_id: &str,
+    ) -> Result<Option<stock_riven::Model>, DbErr> {
+        let entry = StockRivenQuery::get_by_order_id(db, order_id).await?;
+        if let Some(mut entry) = entry {
+            entry.wfm_order_id = None;
+            entry.status = enums::stock_status::StockStatus::Pending;
+            entry.list_price = None;
+            StockRivenMutation::update_by_id(db, entry.id, entry.clone()).await?;
+            Ok(Some(entry.clone()))
+        } else {
+            Ok(None)
+        }
+    }
+
     pub async fn update_by_id(
         db: &DbConn,
         id: i64,
@@ -121,6 +142,19 @@ impl StockRivenMutation {
             .map(Into::into)?;
 
         post.delete(db).await
+    }
+
+    pub async fn delete_by_order_id(
+        db: &DbConn,
+        order_id: &str,
+    ) -> Result<Option<stock_riven::Model>, DbErr> {
+        let entry = StockRivenQuery::get_by_order_id(db, order_id).await?;
+        if let Some(entry) = entry {
+            StockRivenMutation::delete(db, entry.id).await?;
+            Ok(Some(entry.clone()))
+        } else {
+            Ok(None)
+        }
     }
     pub async fn update_bulk(
         db: &DbConn,

@@ -1,5 +1,5 @@
 use serde_json::json;
-use service::StockRivenQuery;
+use service::{StockRivenMutation, StockRivenQuery};
 
 use crate::{
     app::client::AppState,
@@ -9,7 +9,10 @@ use crate::{
     qf_client::client::QFClient,
     utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
-        modules::error::{self, AppError},
+        modules::{
+            error::{self, AppError},
+            logger,
+        },
     },
     wfm_client::{client::WFMClient, enums::order_type::OrderType, types::auction::Auction},
 };
@@ -46,68 +49,66 @@ pub async fn auction_delete(
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<(), AppError> {
     let app = app.lock()?.clone();
     let wfm = wfm.lock()?.clone();
     let notify = notify.lock()?.clone();
-    let qf = qf.lock()?.clone();
-    panic!("Auction Delete not implemented");
     // Get the my auctions from the WFM
-    // let auction = match wfm.auction().get_auction_by_id(&id).await {
-    //     Ok(auction) => auction,
-    //     Err(e) => {
-    //         error::create_log_file("command_auctions.log".to_string(), &e);
-    //         return Err(e);
-    //     }
-    // };
+    let auction = match wfm.auction().get_auction(&id).await {
+        Ok(auction) => auction,
+        Err(e) => {
+            error::create_log_file("command_auctions.log".to_string(), &e);
+            return Err(e);
+        }
+    };
 
-    // // Delete the auction form the WFM if it exists
-    // if let Some(auction) = auction {
-    //     match wfm.auction().delete(&auction.id).await {
-    //         Ok(_) => {
-    //             notify.gui().send_event_update(
-    //                 UIEvent::UpdateAuction,
-    //                 UIOperationEvent::Delete,
-    //                 Some(json!({ "id": auction.id })),
-    //             );
-    //             helper::add_metric("Auction_Delete", "manual");
-    //         }
-    //         Err(e) => {
-    //             error::create_log_file("command_auctions.log".to_string(), &e);
-    //             return Err(e);
-    //         }
-    //     }
-    // }
+    if auction.is_none() {
+        logger::warning_con(
+            "Command:AuctionDelete",
+            format!("Auction not found: {}", id).as_str(),
+        );
+        return Err(AppError::new(
+            "Auction not found",
+            eyre::eyre!("Auction not found"),
+        ));
+    }
 
-    // //Get StockRiven by WfmOrderId
-    // let stock = match StockRivenQuery::get_by_order_id(&app.conn, &id).await {
-    //     Ok(stock) => stock,
-    //     Err(e) => {
-    //         let err = AppError::new_db("Command:AuctionDelete", e);
-    //         error::create_log_file("command_auctions.log".to_string(), &err);
-    //         return Err(err);
-    //     }
-    // };
-    // if let Some(mut stock) = stock {
-    //     stock.wfm_order_id = None;
-    //     match StockRivenMutation::update_by_id(&app.conn, stock.id, stock.clone()).await {
-    //         Ok(_) => {
-    //             qf.analytics()
-    //                 .add_metric("Stock_RivenUpdate", "manual_auction_delete");
-    //             notify.gui().send_event_update(
-    //                 UIEvent::UpdateStockRivens,
-    //                 UIOperationEvent::CreateOrUpdate,
-    //                 Some(json!(stock)),
-    //             );
-    //         }
-    //         Err(e) => {
-    //             let err = AppError::new_db("Command:AuctionDelete", e);
-    //             error::create_log_file("command_auctions.log".to_string(), &err);
-    //             return Err(err);
-    //         }
-    //     }
-    // }
+    let auction = auction.unwrap();
+
+    // Delete the auction form the WFM if it exists
+    match wfm.auction().delete(&auction.id).await {
+        Ok(_) => {
+            notify.gui().send_event_update(
+                UIEvent::UpdateAuction,
+                UIOperationEvent::Delete,
+                Some(json!({ "id": auction.id })),
+            );
+            helper::add_metric("Auction_Delete", "manual");
+        }
+        Err(e) => {
+            error::create_log_file("command_auctions.log".to_string(), &e);
+            return Err(e);
+        }
+    }
+
+    //Update the StockRiven
+    match StockRivenMutation::clear_order_id(&app.conn, &id).await {
+        Ok(res) => {
+            if res.is_some() {
+                notify.gui().send_event_update(
+                    UIEvent::UpdateStockRivens,
+                    UIOperationEvent::CreateOrUpdate,
+                    Some(json!(res)),
+                );
+            }
+        }
+        Err(e) => {
+            let err = AppError::new_db("Command:AuctionDelete", e);
+            error::create_log_file("command_auctions.log".to_string(), &err);
+            return Err(err);
+        }
+    };
+    Ok(())
 }
 #[tauri::command]
 pub async fn auction_delete_all(
