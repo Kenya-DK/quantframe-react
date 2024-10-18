@@ -4,15 +4,11 @@ use tauri::api::notification::Notification;
 #[derive(Clone, Debug)]
 pub struct SystemModule {
     client: NotifyClient,
-    pub debug_id: String,
 }
 
 impl SystemModule {
     pub fn new(client: NotifyClient) -> Self {
-        SystemModule {
-            client,
-            debug_id: "SystemModule".to_string(),
-        }
+        SystemModule { client }
     }
 
     pub fn send_notification(

@@ -3,13 +3,11 @@ use std::sync::{Arc, Mutex};
 use create::CreateStockItem;
 use entity::stock::item::*;
 use entity::sub_type::SubType;
-use entity::transaction::transaction::TransactionType;
 use eyre::eyre;
 use serde_json::json;
-use service::{StockItemMutation, StockItemQuery, TransactionMutation};
+use service::{StockItemMutation, StockItemQuery};
 
 use crate::helper;
-use crate::log_parser::enums::trade_classification::TradeClassification;
 use crate::qf_client::client::QFClient;
 use crate::utils::modules::error;
 use crate::{
@@ -27,11 +25,9 @@ use crate::{
 pub async fn stock_item_reload(
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<(), AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
-    let qf = qf.lock()?.clone();
 
     match StockItemQuery::get_all(&app.conn).await {
         Ok(rivens) => {
@@ -119,11 +115,9 @@ pub async fn stock_item_update(
     is_hidden: Option<bool>,
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<stock_item::Model, AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
-    let qf = qf.lock()?.clone();
 
     let stock = match StockItemQuery::find_by_id(&app.conn, id).await {
         Ok(stock) => stock,
@@ -189,11 +183,9 @@ pub async fn stock_item_update_bulk(
     is_hidden: Option<bool>,
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<i64, AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
-    let qf = qf.lock()?.clone();
 
     let total: i64 = ids.len() as i64;
 
@@ -222,9 +214,7 @@ pub async fn stock_item_delete_bulk(
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<i64, AppError> {
-    let qf = qf.lock()?.clone();
     let wfm = wfm.lock()?.clone();
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
@@ -349,12 +339,10 @@ pub async fn stock_item_delete(
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<(), AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
     let wfm = wfm.lock()?.clone();
-    let qf = qf.lock()?.clone();
     let stock_item = match StockItemQuery::find_by_id(&app.conn, id).await {
         Ok(stock) => stock,
         Err(e) => {

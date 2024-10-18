@@ -9,15 +9,6 @@ pub enum TradeClassification {
 }
 
 impl TradeClassification {
-    pub fn from_str(s: &str) -> Self {
-        match s {
-            "Sale" => TradeClassification::Sale,
-            "Purchase" => TradeClassification::Purchase,
-            "Trade" => TradeClassification::Trade,
-            _ => TradeClassification::Unknown,
-        }
-    }
-
     pub fn to_str(&self) -> &str {
         match self {
             TradeClassification::Sale => "Sale",
@@ -26,5 +17,4 @@ impl TradeClassification {
             TradeClassification::Unknown => "Unknown",
         }
     }
-    
 }

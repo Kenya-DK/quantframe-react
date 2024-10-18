@@ -12,7 +12,6 @@ use crate::{
 #[derive(Clone, Debug)]
 pub struct GUIModule {
     client: NotifyClient,
-    pub debug_id: String,
     component: String,
 }
 
@@ -20,7 +19,6 @@ impl GUIModule {
     pub fn new(client: NotifyClient) -> Self {
         GUIModule {
             client,
-            debug_id: "GUIModule".to_string(),
             component: "GUINotification".to_string(),
         }
     }

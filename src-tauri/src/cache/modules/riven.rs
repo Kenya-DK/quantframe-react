@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::path::PathBuf;
 
 use entity::stock::riven::create::CreateStockRiven;
 use eyre::eyre;
@@ -8,7 +8,8 @@ use crate::{
     cache::{
         client::CacheClient,
         types::cache_riven::{
-            CacheRiven, CacheRivenAttribute, CacheRivenUpgrade, CacheRivenWFMAttribute, CacheRivenWeapon
+            CacheRiven, CacheRivenAttribute, CacheRivenUpgrade, CacheRivenWFMAttribute,
+            CacheRivenWeapon,
         },
     },
     helper, logger,
@@ -61,10 +62,12 @@ impl RivenModule {
         Ok(attributes)
     }
 
-
-    pub fn get_weapon_upgrades(&self, internal_id: &str) -> Result<Option<Vec<CacheRivenUpgrade>>, AppError> {
+    pub fn get_weapon_upgrades(
+        &self,
+        internal_id: &str,
+    ) -> Result<Option<Vec<CacheRivenUpgrade>>, AppError> {
         // Get the weapon stat
-        let weapon_stat = self.find_rive_type_by(internal_id,"--weapon_by unique_name")?;
+        let weapon_stat = self.find_rive_type_by(internal_id, "--weapon_by unique_name")?;
         if weapon_stat.is_none() {
             logger::warning_con(
                 self.get_component("get_weapon_upgrades").as_str(),
@@ -73,7 +76,8 @@ impl RivenModule {
             return Ok(None);
         }
         let weapon_stat = weapon_stat.unwrap();
-        let raw_riven = self.find_raw_riven_attribute_by(&weapon_stat.upgrade_type,"--weapon_by unique_name")?;
+        let raw_riven =
+            self.find_raw_riven_attribute_by(&weapon_stat.upgrade_type, "--weapon_by unique_name")?;
         if raw_riven.is_none() {
             logger::warning_con(
                 self.get_component("get_weapon_upgrades").as_str(),
@@ -118,7 +122,7 @@ impl RivenModule {
                     eyre!("Failed to get weapon upgrades for: {}", unique),
                 ));
             }
-            
+
             let upgrades = upgrades.unwrap();
             let upgrade_by = args.get("--upgrade_by").unwrap();
             match upgrade_by.as_str() {
@@ -133,7 +137,10 @@ impl RivenModule {
                         ));
                     }
                     let upgrade = upgrade.unwrap();
-                    items.iter().find(|x| x.url_name == upgrade.wfm_url).cloned()
+                    items
+                        .iter()
+                        .find(|x| x.url_name == upgrade.wfm_url)
+                        .cloned()
                 }
                 // If not found return an error
                 _ => {
@@ -151,7 +158,7 @@ impl RivenModule {
         };
         Ok(riven_attribute)
     }
-    
+
     pub fn find_raw_riven_attribute_by(
         &self,
         input: &str,
@@ -188,11 +195,8 @@ impl RivenModule {
         let mode = args.get("--weapon_by").unwrap();
 
         let riven_type = if mode == "name" {
-            let lang: String = args.get("--weapon_lang").unwrap().clone();
-            items
-                .iter()
-                .find(|x| x.name == input)
-                .cloned()
+            // let lang: String = args.get("--weapon_lang").unwrap().clone();
+            items.iter().find(|x| x.name == input).cloned()
         } else if mode == "url_name" {
             items.iter().find(|x| x.wfm_url_name == input).cloned()
         } else if mode == "unique_name" {

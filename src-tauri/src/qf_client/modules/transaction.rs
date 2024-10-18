@@ -1,26 +1,12 @@
-use std::{
-    collections::HashMap,
-    sync::{Arc, Mutex, OnceLock},
-    time::Duration,
-};
-
-use entity::transaction;
 use eyre::eyre;
 use serde_json::{json, Value};
-use tauri::{Manager, State};
-use tokio::time::Instant;
 
 use crate::{
-    app,
     qf_client::client::QFClient,
     utils::{
         enums::log_level::LogLevel,
-        modules::{
-            error::{self, ApiResult, AppError},
-            logger,
-        },
+        modules::error::{ApiResult, AppError},
     },
-    APP,
 };
 #[derive(Clone, Debug)]
 pub struct TransactionModule {
@@ -37,9 +23,6 @@ impl TransactionModule {
     }
     fn get_component(&self, component: &str) -> String {
         format!("{}:{}:{}", self.client.component, self.component, component)
-    }
-    fn update_state(&self) {
-        self.client.update_transaction_module(self.clone());
     }
     pub async fn create_transaction(
         &self,

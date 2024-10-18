@@ -27,11 +27,9 @@ use crate::{
 pub async fn stock_riven_reload(
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<(), AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
-    let qf = qf.lock()?.clone();
 
     match StockRivenQuery::get_all(&app.conn).await {
         Ok(rivens) => {
@@ -61,12 +59,10 @@ pub async fn stock_riven_update(
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<stock_riven::Model, AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
     let wfm = wfm.lock()?.clone();
-    let qf = qf.lock()?.clone();
 
     let stock = match StockRivenMutation::find_by_id(&app.conn, id).await {
         Ok(stock) => stock,
@@ -155,12 +151,10 @@ pub async fn stock_riven_update_bulk(
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<i64, AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
     let wfm = wfm.lock()?.clone();
-    let qf = qf.lock()?.clone();
 
     let mut total: i64 = 0;
 
@@ -229,9 +223,7 @@ pub async fn stock_riven_delete_bulk(
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<i64, AppError> {
-    let qf = qf.lock()?.clone();
     let wfm = wfm.lock()?.clone();
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
@@ -422,12 +414,10 @@ pub async fn stock_riven_delete(
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<(), AppError> {
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
     let wfm = wfm.lock()?.clone();
-    let qf = qf.lock()?.clone();
 
     let stock_item = match StockRivenMutation::find_by_id(&app.conn, id).await {
         Ok(stock) => stock,

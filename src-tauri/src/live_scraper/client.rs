@@ -15,7 +15,6 @@ use crate::{
     enums::{order_mode::OrderMode, stock_mode::StockMode},
     logger,
     notification::client::NotifyClient,
-    qf_client::client::QFClient,
     settings::SettingsState,
     utils::{
         enums::{log_level::LogLevel, ui_events::UIEvent},
@@ -38,7 +37,6 @@ pub struct LiveScraperClient {
     pub auth: Arc<Mutex<AuthState>>,
     pub cache: Arc<Mutex<CacheClient>>,
     pub notify: Arc<Mutex<NotifyClient>>,
-    pub qf: Arc<Mutex<QFClient>>,
     pub app: Arc<Mutex<AppState>>,
 }
 
@@ -50,7 +48,6 @@ impl LiveScraperClient {
         auth: Arc<Mutex<AuthState>>,
         cache: Arc<Mutex<CacheClient>>,
         notify: Arc<Mutex<NotifyClient>>,
-        qf: Arc<Mutex<QFClient>>,
     ) -> Self {
         LiveScraperClient {
             log_file: "live_scraper.log".to_string(),
@@ -62,7 +59,6 @@ impl LiveScraperClient {
             auth,
             cache,
             notify,
-            qf,
             riven_module: Arc::new(RwLock::new(None)),
             item_module: Arc::new(RwLock::new(None)),
         }

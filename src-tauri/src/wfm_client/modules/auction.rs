@@ -1,4 +1,3 @@
-use entity::stock::riven::attribute::RivenAttribute;
 use eyre::eyre;
 use serde_json::json;
 
@@ -6,7 +5,7 @@ use crate::{
     logger,
     utils::{
         enums::log_level::LogLevel,
-        modules::error::{self, ApiResult, AppError},
+        modules::error::{ApiResult, AppError},
     },
     wfm_client::{
         client::WFMClient,

@@ -3,7 +3,6 @@ pub use sea_orm_migration::prelude::*;
 mod m20240406_104026_create_transaction_table;
 mod m20240406_135257_create_stock_item_table;
 mod m20240406_135307_create_stock_riven_table;
-mod m20240406_135323_create_trade_table;
 
 pub struct Migrator;
 

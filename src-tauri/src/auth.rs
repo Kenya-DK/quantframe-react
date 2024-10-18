@@ -4,7 +4,7 @@ use crate::{helper, logger};
 use eyre::{eyre, Result};
 use serde::{Deserialize, Serialize};
 
-use serde_json::{json, Value};
+use serde_json::Value;
 use sha256::digest;
 use std::fs::File;
 use std::io::{Read, Write};

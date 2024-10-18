@@ -1,4 +1,4 @@
-use std::{fmt::Formatter, hash::{Hash, Hasher}};
+use std::hash::{Hash, Hasher};
 
 use entity::{stock::item::stock_item, sub_type::SubType};
 use serde::{Deserialize, Serialize};
@@ -17,7 +17,7 @@ pub struct ItemEntry {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "sub_type")]
     pub sub_type: Option<SubType>,
-    
+
     #[serde(default)]
     #[serde(rename = "priority")]
     pub priority: i64,
@@ -35,7 +35,10 @@ impl ItemEntry {
             "Stock ID: {:?}, WFM URL: {}, Sub Type: {:?}, Priority: {}",
             self.stock_id,
             self.wfm_url,
-            self.sub_type.clone().unwrap_or(SubType::default()).shot_display(),
+            self.sub_type
+                .clone()
+                .unwrap_or(SubType::default())
+                .shot_display(),
             self.priority
         )
     }
@@ -46,19 +49,6 @@ impl ItemEntry {
             sub_type: stock_item.sub_type.clone(),
             priority: 1,
         }
-    }
-    pub fn from_string(wfm_url: String) -> ItemEntry {
-        ItemEntry {
-            stock_id: None,
-            wfm_url,
-            sub_type: None,
-            priority: 0,
-        }
-    }
-    pub fn from_string_list(urls: Vec<String>) -> Vec<ItemEntry> {
-        urls.iter()
-            .map(|url| ItemEntry::from_string(url.to_owned()))
-            .collect()
     }
     pub fn from_item_price(item_price: &ItemPriceInfo) -> ItemEntry {
         ItemEntry {

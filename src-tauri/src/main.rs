@@ -11,7 +11,6 @@ use migration::{Migrator, MigratorTrait};
 use notification::client::NotifyClient;
 use service::sea_orm::Database;
 use settings::SettingsState;
-use tauri::utils::config::UpdaterEndpoint;
 use utils::modules::error::AppError;
 use utils::modules::logger;
 
@@ -143,11 +142,9 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
 
     // create and manage Warframe Market API client state
     let wfm_client = Arc::new(Mutex::new(wfm_client::client::WFMClient::new(
-        app.handle(),
         Arc::clone(&auth_arc),
         Arc::clone(&settings_arc),
         Arc::clone(&app_arc),
-        Arc::clone(&qf_client),
         Arc::clone(&notify_arc),
     )));
     app.manage(wfm_client.clone());
@@ -173,7 +170,6 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
         Arc::clone(&auth_arc),
         Arc::clone(&cache_arc),
         Arc::clone(&notify_arc),
-        Arc::clone(&qf_client),
     );
     app.manage(Arc::new(Mutex::new(live_scraper)));
 
@@ -185,7 +181,6 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
         Arc::clone(&app_arc),
         Arc::clone(&settings_arc),
         Arc::clone(&wfm_client),
-        Arc::clone(&auth_arc),
         Arc::clone(&cache_arc),
         Arc::clone(&notify_arc),
         Arc::clone(&qf_client),

@@ -6,7 +6,6 @@ use crate::{
     },
 };
 use eyre::eyre;
-use serde_json::Value;
 
 #[derive(Clone, Debug)]
 pub struct CacheModule {

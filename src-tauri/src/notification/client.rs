@@ -8,7 +8,6 @@ use super::modules::{discord::DiscordModule, gui::GUIModule, system::SystemModul
 
 #[derive(Clone, Debug)]
 pub struct NotifyClient {
-    pub log_file: String,
     pub app_handler: AppHandle,
     pub component: String,
     pub app: Arc<Mutex<AppState>>,
@@ -23,7 +22,6 @@ impl NotifyClient {
         NotifyClient {
             app,
             app_handler,
-            log_file: "notify.log".to_string(),
             component: "NotifyClient".to_string(),
             system_module: Arc::new(RwLock::new(None)),
             gui_module: Arc::new(RwLock::new(None)),

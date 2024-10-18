@@ -6,15 +6,20 @@ use serde_json::json;
 use tauri::{Manager, State};
 
 use crate::{
-    app::client::AppState, cache::client::CacheClient, helper, http_client::types::{create_item::ItemPayload, create_riven::RivenPayload}, notification::client::NotifyClient, qf_client::client::QFClient, settings::SettingsState, utils::{
-        enums::ui_events::{UIEvent, UIOperationEvent},
-        modules::error::{self, AppError},
-    }, wfm_client::{client::WFMClient, enums::order_type::OrderType}, APP
+    app::client::AppState,
+    cache::client::CacheClient,
+    helper,
+    http_client::types::{create_item::ItemPayload, create_riven::RivenPayload},
+    notification::client::NotifyClient,
+    qf_client::client::QFClient,
+    settings::SettingsState,
+    utils::modules::error::{self},
+    wfm_client::{client::WFMClient, enums::order_type::OrderType},
+    APP,
 };
 
 #[post("/add_riven")]
 pub async fn add_riven(riven: web::Json<RivenPayload>) -> impl Responder {
-    let component = "HTTPAddRiven";
     let app_handle = APP.get().expect("failed to get app handle");
     let app_state: State<Arc<Mutex<AppState>>> = app_handle.state();
     let app = app_state.lock().expect("failed to lock app state").clone();

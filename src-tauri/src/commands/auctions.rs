@@ -1,9 +1,9 @@
 use serde_json::json;
-use service::{StockRivenMutation, StockRivenQuery, TransactionMutation};
+use service::StockRivenQuery;
 
 use crate::{
     app::client::AppState,
-    cache::{client::CacheClient, types::item_price_info::StockRiven},
+    cache::client::CacheClient,
     helper,
     notification::client::NotifyClient,
     qf_client::client::QFClient,
@@ -21,7 +21,6 @@ use std::sync::{Arc, Mutex};
 pub async fn auction_refresh(
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<(), AppError> {
     let wfm = wfm.lock()?.clone();
     let notify = notify.lock()?.clone();
@@ -109,20 +108,16 @@ pub async fn auction_delete(
     //         }
     //     }
     // }
-
-    Ok(())
 }
 #[tauri::command]
 pub async fn auction_delete_all(
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<i64, AppError> {
     let app = app.lock()?.clone();
     let wfm = wfm.lock()?.clone();
     let notify = notify.lock()?.clone();
-    let qf = qf.lock()?.clone();
 
     let current_auctions = match wfm.auction().get_my_auctions().await {
         Ok(auctions) => auctions,

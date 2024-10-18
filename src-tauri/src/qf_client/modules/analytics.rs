@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    sync::{Arc, Mutex, OnceLock},
+    sync::{Arc, Mutex},
     time::Duration,
 };
 
@@ -10,13 +10,15 @@ use tauri::{Manager, State};
 use tokio::time::Instant;
 
 use crate::{
-    app, auth::AuthState, qf_client::client::QFClient, utils::{
+    qf_client::client::QFClient,
+    utils::{
         enums::log_level::LogLevel,
         modules::{
             error::{self, ApiResult, AppError},
             logger,
         },
-    }, APP
+    },
+    APP,
 };
 #[derive(Clone, Debug)]
 pub struct AnalyticsModule {
@@ -93,7 +95,6 @@ impl AnalyticsModule {
                 let qf = qf_state.lock().expect("failed to lock app state").clone();
 
                 // Create Timer for sending metrics
-                let mut last_analytics_time = Instant::now();
                 let mut last_metric_time = Instant::now();
 
                 if is_first_install {
@@ -113,7 +114,6 @@ impl AnalyticsModule {
                     };
                 }
                 loop {
-
                     if last_metric_time.elapsed() > Duration::from_secs(15)
                         || qf.analytics().is_user_active()
                     {
@@ -141,9 +141,10 @@ impl AnalyticsModule {
                                 qf.analytics().clear_metrics();
                             }
                             Err(e) => {
-                                if e.cause().contains("Unauthorized") 
-                                || e.cause().contains("Banned") 
-                                || e.cause().contains("WFMBanned") {
+                                if e.cause().contains("Unauthorized")
+                                    || e.cause().contains("Banned")
+                                    || e.cause().contains("WFMBanned")
+                                {
                                     error::create_log_file("analytics.log".to_string(), &e);
                                     break;
                                 }

@@ -108,11 +108,9 @@ pub async fn debug_db_reset(
     target: String,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<bool, AppError> {
     let notify = notify.lock()?.clone();
     let app = app.lock()?.clone();
-    let qf = qf.lock()?.clone();
     match target.as_str() {
         "all" => {
             StockItemMutation::delete_all(&app.conn)

@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use crate::{
-    helper, qf_client::{client::QFClient, modules::analytics::AnalyticsModule}, utils::modules::error::AppError
+    helper, qf_client::client::QFClient, utils::modules::error::AppError
 };
 
 #[tauri::command]

@@ -9,7 +9,7 @@ use entity::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{cache::{client::CacheClient, types::cache_tradable_item}, utils::modules::error::AppError};
+use crate::{cache::client::CacheClient, utils::modules::error::AppError};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CreateStockEntity {

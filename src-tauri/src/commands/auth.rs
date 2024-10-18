@@ -1,5 +1,7 @@
 use std::sync::{Arc, Mutex};
 
+use serde_json::json;
+
 use crate::{
     auth::AuthState,
     qf_client::client::QFClient,
@@ -33,8 +35,7 @@ pub async fn auth_login(
         return Ok(auth_state);
     }
 
-    qf.analytics()
-        .add_metric("Auth_LoginWFM", "manual");
+    qf.analytics().add_metric("Auth_LoginWFM", "manual");
     auth_state.update_from_wfm_user_profile(&wfm_user, wfm_token.clone());
     // Login/Register to Quantframe
     let (qf_user, qf_token) = match qf
@@ -89,10 +90,24 @@ pub async fn auth_set_status(
 }
 
 #[tauri::command]
-pub async fn auth_logout(auth: tauri::State<'_, Arc<Mutex<AuthState>>>) -> Result<(), AppError> {
+pub async fn auth_logout(
+    auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
+) -> Result<(), AppError> {
+    let qf = qf.lock().expect("Could not lock qf").clone();
     let arced_mutex = Arc::clone(&auth);
-    let mut auth = arced_mutex.lock().expect("Could not lock auth");
-    auth.reset();
-    auth.save_to_file()?;
+    match qf
+        .analytics()
+        .try_send_analytics("metrics/periodic", 3, json!({"Auth_Logout": "manual"}))
+        .await
+    {
+        Ok(_) => {
+            qf.auth().logout().await?;
+            let mut auth = arced_mutex.lock().expect("Could not lock auth");
+            auth.reset();
+            auth.save_to_file()?;
+        }
+        Err(_) => {}
+    };
     Ok(())
 }

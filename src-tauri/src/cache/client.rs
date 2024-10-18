@@ -7,19 +7,19 @@ use std::{
 
 use eyre::eyre;
 
-
-
-use crate::{
-    helper, logger, settings::SettingsState, utils::modules::error::AppError
-};
+use crate::{helper, logger, settings::SettingsState, utils::modules::error::AppError};
 
 use super::modules::{
-    arcane::ArcaneModule, arch_gun::ArchGunModule, arch_melee::ArchMeleeModule, archwing::ArchwingModule, fish::FishModule, item_price::ItemPriceModule, melee::MeleeModule, misc::MiscModule, mods::ModModule, parts::PartModule, pet::PetModule, primary::PrimaryModule, relics::RelicsModule, resource::ResourceModule, riven::RivenModule, secondary::SecondaryModule, sentinel::SentinelModule, skin::SkinModule, tradable_items::TradableItemModule, warframe::WarframeModule
+    arcane::ArcaneModule, arch_gun::ArchGunModule, arch_melee::ArchMeleeModule,
+    archwing::ArchwingModule, fish::FishModule, item_price::ItemPriceModule, melee::MeleeModule,
+    misc::MiscModule, mods::ModModule, parts::PartModule, pet::PetModule, primary::PrimaryModule,
+    relics::RelicsModule, resource::ResourceModule, riven::RivenModule, secondary::SecondaryModule,
+    sentinel::SentinelModule, skin::SkinModule, tradable_items::TradableItemModule,
+    warframe::WarframeModule,
 };
 
 #[derive(Clone, Debug)]
 pub struct CacheClient {
-    pub log_file: PathBuf,
     pub qf: Arc<Mutex<crate::qf_client::client::QFClient>>,
     pub settings: Arc<Mutex<SettingsState>>,
     item_price_module: Arc<RwLock<Option<ItemPriceModule>>>,
@@ -53,7 +53,6 @@ impl CacheClient {
         settings: Arc<Mutex<SettingsState>>,
     ) -> Self {
         CacheClient {
-            log_file: PathBuf::from("cache"),
             qf,
             settings,
             component: "Cache".to_string(),
@@ -96,7 +95,6 @@ impl CacheClient {
     fn get_current_cache_id(&self) -> Result<String, AppError> {
         let cache_path = self.cache_path.join(self.md5_file.clone());
         if !cache_path.exists() {
-
             return Ok("N/A".to_string());
         }
         let mut file = File::open(cache_path)
@@ -182,8 +180,11 @@ impl CacheClient {
                 self.download_cache_data().await?;
                 self.update_current_cache_id(remote_cache_id)?;
             }
-        }else {
-            logger::warning_con(&self.component, "Dev Mode is enabled, skipping cache download using current cache data");
+        } else {
+            logger::warning_con(
+                &self.component,
+                "Dev Mode is enabled, skipping cache download using current cache data",
+            );
         }
 
         self.arcane().load()?;

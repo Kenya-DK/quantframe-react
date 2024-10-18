@@ -1,5 +1,5 @@
 use crate::{
-    helper, logger,
+    logger,
     utils::{
         enums::log_level::LogLevel,
         modules::error::{ApiResult, AppError},
@@ -162,7 +162,6 @@ impl OrderModule {
         sub_type: Option<SubType>,
     ) -> Result<(String, Option<Order>), AppError> {
         self.client.auth().is_logged_in()?;
-        let qf = self.client.qf.lock()?.clone();
         let auth = self.client.auth.lock()?.clone();
         let limit = auth.order_limit;
 

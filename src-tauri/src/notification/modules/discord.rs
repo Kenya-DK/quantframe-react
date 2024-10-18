@@ -1,13 +1,12 @@
 use serde_json::json;
 
-use crate::{notification::client::NotifyClient, qf_client::types::user, utils::modules::logger};
+use crate::{notification::client::NotifyClient, utils::modules::logger};
 
 #[derive(Clone, Debug)]
 pub struct DiscordModule {
     client: NotifyClient,
     user_name: String,
     profile_picture: String,
-    pub debug_id: String,
     component: String,
 }
 
@@ -17,7 +16,6 @@ impl DiscordModule {
             client,
             user_name: "Quantframe".to_string(),
             profile_picture: "https://i.imgur.com/bgR6vAd.png".to_string(),
-            debug_id: "DiscordModule".to_string(),
             component: "GUINotification".to_string(),
         }
     }
@@ -106,11 +104,7 @@ impl DiscordModule {
             }
         });
     }
-    pub fn send_embed_notification(
-        &self,
-        webhook: &str,
-        mut embeds: Vec<serde_json::Value>,
-    ) {
+    pub fn send_embed_notification(&self, webhook: &str, mut embeds: Vec<serde_json::Value>) {
         let component = self.get_component("SendNotification");
         let webhook = webhook.to_string();
         let user_name = self.user_name.clone();

@@ -1,15 +1,12 @@
 use std::collections::HashMap;
-use std::f64::consts::E;
 
 use entity::price_history::PriceHistoryVec;
-use entity::stock::riven::*;
 use entity::{enums::stock_status::StockStatus, price_history::PriceHistory};
 
 use serde_json::json;
 use service::{StockRivenMutation, StockRivenQuery};
 
 use crate::helper;
-use crate::utils::modules::error;
 use crate::wfm_client::types::auction::Auction;
 use crate::{
     live_scraper::{client::LiveScraperClient, types::riven_extra_info::AuctionDetails},
@@ -24,7 +21,6 @@ use crate::{
 #[derive(Clone)]
 pub struct RivenModule {
     pub client: LiveScraperClient,
-    pub debug_id: String,
     component: String,
     stock_info: HashMap<i64, AuctionDetails>,
 }
@@ -33,7 +29,6 @@ impl RivenModule {
     pub fn new(client: LiveScraperClient) -> Self {
         RivenModule {
             client,
-            debug_id: "wfm_client_item".to_string(),
             component: "Riven".to_string(),
             stock_info: HashMap::new(),
         }
@@ -47,10 +42,6 @@ impl RivenModule {
     pub fn send_msg(&self, i18n_key: &str, values: Option<serde_json::Value>) {
         self.client
             .send_gui_update(format!("riven.{}", i18n_key).as_str(), values);
-    }
-    pub fn reset(&mut self) {
-        self.stock_info = HashMap::new();
-        self.update_state();
     }
     pub fn send_stock_update(&self, operation: UIOperationEvent, value: serde_json::Value) {
         let notify = self.client.notify.lock().unwrap().clone();
@@ -72,7 +63,7 @@ impl RivenModule {
         let min_profit = settings.stock_riven.min_profit;
         let threshold_percentage = settings.stock_riven.threshold_percentage / 100.0;
         let limit_to = settings.stock_riven.limit_to;
-        logger::info_con("RivenModule", "Run Riven Stock Check");
+        logger::info_con(&self.get_component("CheckStock"), "Run Riven Stock Check");
 
         // Send GUI Update.
         self.send_msg("stating", None);
@@ -237,7 +228,7 @@ impl RivenModule {
                         auction_info.set_highest_price(highest_price);
                         auction_info.set_profit(profit);
                         auction_info.set_auctions(live_auctions.auctions.clone());
-                        auction_info.add_price_history(price_history.clone());                        
+                        auction_info.add_price_history(price_history.clone());
                     }
                     auction_info.clone()
                 }
@@ -249,7 +240,7 @@ impl RivenModule {
                         lowest_price,
                         highest_price,
                         live_auctions.auctions.clone(),
-                        stock_riven.price_history.clone().0
+                        stock_riven.price_history.clone().0,
                     );
                     if user_auction.operation.contains(&"Delete".to_string()) {
                         auction_info.is_dirty = false;

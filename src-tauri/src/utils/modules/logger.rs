@@ -1,4 +1,3 @@
-use chrono::Duration;
 use eyre::eyre;
 use serde_json::Value;
 use std::{
@@ -118,9 +117,9 @@ pub fn debug(component: &str, msg: &str, console: bool, file: Option<&str>) {
 pub fn debug_file(component: &str, msg: &str, file: Option<&str>) {
     debug(component, msg, false, file);
 }
-pub fn debug_con(component: &str, msg: &str) {
-    debug(component, msg, true, None);
-}
+// pub fn debug_con(component: &str, msg: &str) {
+//     debug(component, msg, true, None);
+// }
 
 pub fn error(component: &str, msg: &str, console: bool, file: Option<&str>) {
     dolog(LogLevel::Error, component, msg, console, file);
@@ -170,6 +169,7 @@ pub fn warning_con(component: &str, msg: &str) {
     warning(component, msg, true, None);
 }
 
+#[allow(dead_code)]
 pub fn log_json(file_path: &str, data: &Value) -> Result<(), AppError> {
     let path = get_log_folder().join(file_path);
     let file =

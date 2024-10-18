@@ -7,7 +7,6 @@ use entity::{
 };
 use eyre::eyre;
 use regex::Regex;
-use serde::de::DeserializeOwned;
 use serde_json::{json, Map, Value};
 use service::{StockItemMutation, StockRivenMutation, TransactionMutation};
 use std::{
@@ -17,19 +16,18 @@ use std::{
     path::{Path, PathBuf},
     sync::{Arc, Mutex},
 };
-use tauri::{api::dir, Manager, State};
+use tauri::{Manager, State};
 
 use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 
 use crate::{
     app::client::AppState,
     cache::client::CacheClient,
-    log_parser::enums::trade_classification::TradeClassification,
     notification::client::NotifyClient,
     qf_client::client::QFClient,
     utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
-        modules::{error::AppError, logger},
+        modules::error::AppError,
     },
     wfm_client::{client::WFMClient, enums::order_type::OrderType},
     APP,
@@ -759,38 +757,38 @@ pub async fn progress_stock_riven(
     return Ok((stock, response));
 }
 
-pub fn read_json_file<T: DeserializeOwned>(path: &PathBuf) -> Result<T, AppError> {
-    // Check if the file exists
-    if !path.exists() {
-        return Err(AppError::new(
-            "ReadJsonFile",
-            eyre!(format!("File does not exist: {:?}", path.to_str())),
-        ));
-    }
+// pub fn read_json_file<T: DeserializeOwned>(path: &PathBuf) -> Result<T, AppError> {
+//     // Check if the file exists
+//     if !path.exists() {
+//         return Err(AppError::new(
+//             "ReadJsonFile",
+//             eyre!(format!("File does not exist: {:?}", path.to_str())),
+//         ));
+//     }
 
-    let file = File::open(path).map_err(|e| {
-        AppError::new(
-            "ReadJsonFile",
-            eyre!(format!("Could not open file: {}", e.to_string())),
-        )
-    })?;
-    let reader = io::BufReader::new(file);
-    let data: Value = serde_json::from_reader(reader).map_err(|e| {
-        AppError::new(
-            "ReadJsonFile",
-            eyre!(format!("Could not read file: {}", e.to_string())),
-        )
-    })?;
-    match serde_json::from_value(data.clone()) {
-        Ok(payload) => Ok(payload),
-        Err(e) => {
-            return Err(AppError::new(
-                "Helper:ReadJsonFile",
-                eyre!(format!("Could not parse payload: {}", e)),
-            ));
-        }
-    }
-}
+//     let file = File::open(path).map_err(|e| {
+//         AppError::new(
+//             "ReadJsonFile",
+//             eyre!(format!("Could not open file: {}", e.to_string())),
+//         )
+//     })?;
+//     let reader = io::BufReader::new(file);
+//     let data: Value = serde_json::from_reader(reader).map_err(|e| {
+//         AppError::new(
+//             "ReadJsonFile",
+//             eyre!(format!("Could not read file: {}", e.to_string())),
+//         )
+//     })?;
+//     match serde_json::from_value(data.clone()) {
+//         Ok(payload) => Ok(payload),
+//         Err(e) => {
+//             return Err(AppError::new(
+//                 "Helper:ReadJsonFile",
+//                 eyre!(format!("Could not parse payload: {}", e)),
+//             ));
+//         }
+//     }
+// }
 pub fn calculate_average_of_top_lowest_prices(
     prices: Vec<i64>,          // The list of prices to consider
     limit_to: i64,             // Limit the number of auctions to consider

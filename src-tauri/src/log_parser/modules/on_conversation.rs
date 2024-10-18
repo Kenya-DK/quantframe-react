@@ -1,11 +1,9 @@
-use std::sync::{Arc, Mutex};
 
 use eyre::eyre;
 
 use crate::{
     helper,
     log_parser::client::LogParser,
-    qf_client::client::QFClient,
     utils::modules::{error::AppError, logger},
 };
 

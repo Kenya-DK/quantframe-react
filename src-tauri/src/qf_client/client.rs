@@ -415,9 +415,4 @@ impl QFClient {
             .unwrap()
             .clone()
     }
-
-    pub fn update_transaction_module(&self, module: TransactionModule) {
-        // Update the stored TransactionModule
-        *self.transaction_module.write().unwrap() = Some(module);
-    }
 }

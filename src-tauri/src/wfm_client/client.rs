@@ -4,22 +4,19 @@ use std::{
     time::Duration,
 };
 
-use actix_web::cookie::time::error;
 use eyre::eyre;
 use reqwest::{Client, Method, Url};
 use serde::de::DeserializeOwned;
 use serde_json::{json, Value};
-use tauri::AppHandle;
 
 use crate::{
     app::client::AppState,
     auth::AuthState,
     logger,
     notification::client::NotifyClient,
-    qf_client::client::QFClient,
     utils::{
         enums::{
-            log_level::{self, LogLevel},
+            log_level::LogLevel,
             ui_events::{UIEvent, UIOperationEvent},
         },
         modules::{
@@ -42,27 +39,22 @@ pub struct WFMClient {
     chat_module: Arc<RwLock<Option<ChatModule>>>,
     auction_module: Arc<RwLock<Option<AuctionModule>>>,
     auth_module: Arc<RwLock<Option<AuthModule>>>,
-    pub app_handle: AppHandle,
     pub log_file: String,
     pub auth: Arc<Mutex<AuthState>>,
     pub settings: Arc<Mutex<crate::settings::SettingsState>>,
     pub app: Arc<Mutex<AppState>>,
-    pub qf: Arc<Mutex<QFClient>>,
     pub notify: Arc<Mutex<NotifyClient>>,
 }
 
 impl WFMClient {
     pub fn new(
-        app_handle: AppHandle,
         auth: Arc<Mutex<AuthState>>,
         settings: Arc<Mutex<crate::settings::SettingsState>>,
         app: Arc<Mutex<AppState>>,
-        qf: Arc<Mutex<QFClient>>,
         notify: Arc<Mutex<NotifyClient>>,
     ) -> Self {
         WFMClient {
             app,
-            app_handle,
             endpoint: "https://api.warframe.market/v1/".to_string(),
             component: "WarframeMarket".to_string(),
             limiter: Arc::new(tokio::sync::Mutex::new(RateLimiter::new(
@@ -72,7 +64,6 @@ impl WFMClient {
             log_file: "wfmAPICalls.log".to_string(),
             auth,
             settings,
-            qf,
             notify,
             order_module: Arc::new(RwLock::new(None)),
             chat_module: Arc::new(RwLock::new(None)),

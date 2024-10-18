@@ -11,9 +11,8 @@ use crate::utils::modules::logger;
 use crate::wfm_client::enums::order_type::OrderType;
 use crate::wfm_client::types::order::Order;
 use crate::wfm_client::types::orders::Orders;
-use actix_web::web::Json;
 use entity::enums::stock_status::StockStatus;
-use entity::price_history::{self, PriceHistory, PriceHistoryVec};
+use entity::price_history::{PriceHistory, PriceHistoryVec};
 use entity::stock::item::stock_item;
 
 use serde_json::json;
@@ -24,7 +23,6 @@ use std::vec;
 #[derive(Clone)]
 pub struct ItemModule {
     pub client: LiveScraperClient,
-    pub debug_id: String,
     component: String,
     stock_info: HashMap<i64, OrderDetails>,
     order_info: HashMap<String, OrderDetails>,
@@ -36,7 +34,6 @@ impl ItemModule {
     pub fn new(client: LiveScraperClient) -> Self {
         ItemModule {
             client,
-            debug_id: "wfm_client_item".to_string(),
             component: "Item".to_string(),
             interesting_items_cache: Arc::new(Mutex::new(HashMap::new())),
             order_info: HashMap::new(),
@@ -77,7 +74,6 @@ impl ItemModule {
 
         // Load Managers.
         let app = self.client.app.lock()?.clone();
-        let auth = self.client.auth.lock()?.clone();
         let wfm = self.client.wfm.lock()?.clone();
         let auth = self.client.auth.lock()?.clone();
         let cache = self.client.cache.lock()?.clone();

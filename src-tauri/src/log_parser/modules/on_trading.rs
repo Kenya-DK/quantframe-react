@@ -1,13 +1,12 @@
 use std::collections::HashMap;
 
 use entity::{
-    enums::stock_type::StockType, sub_type::SubType, transaction::transaction::TransactionType,
+    enums::stock_type::StockType, sub_type::SubType,
 };
 use eyre::eyre;
 
-use migration::value;
 use serde_json::{json, Value};
-use service::{StockItemMutation, StockRivenMutation, StockRivenQuery, TransactionMutation};
+use service::StockRivenQuery;
 
 use crate::{
     cache::{client::CacheClient, types::cache_item_component::CacheItemComponent},
@@ -24,7 +23,7 @@ use crate::{
     utils::{
         enums::{
             log_level::LogLevel,
-            ui_events::{UIEvent, UIOperationEvent},
+            ui_events::UIEvent,
         },
         modules::{
             error::{self, AppError},
@@ -860,7 +859,7 @@ impl OnTradeEvent {
                 // Modify the data
                 let mut modified_data = data;
 
-                let mut json_data = json!(trade.clone());
+                let json_data = json!(trade.clone());
                 modified_data.push(json_data);
 
                 // Write the modified data back to the JSON file

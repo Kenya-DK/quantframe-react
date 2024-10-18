@@ -11,7 +11,6 @@ use std::{
 
 use crate::{
     app::client::AppState,
-    auth::AuthState,
     cache::client::CacheClient,
     helper,
     notification::client::NotifyClient,
@@ -37,7 +36,6 @@ pub struct LogParser {
     on_conversation_event: Arc<RwLock<Option<OnConversationEvent>>>,
     pub settings: Arc<Mutex<SettingsState>>,
     pub wfm: Arc<Mutex<WFMClient>>,
-    pub auth: Arc<Mutex<AuthState>>,
     pub cache: Arc<Mutex<CacheClient>>,
     pub notify: Arc<Mutex<NotifyClient>>,
     pub app: Arc<Mutex<AppState>>,
@@ -49,7 +47,6 @@ impl LogParser {
         app: Arc<Mutex<AppState>>,
         settings: Arc<Mutex<SettingsState>>,
         wfm: Arc<Mutex<WFMClient>>,
-        auth: Arc<Mutex<AuthState>>,
         cache: Arc<Mutex<CacheClient>>,
         notify: Arc<Mutex<NotifyClient>>,
         qf: Arc<Mutex<QFClient>>,
@@ -58,7 +55,6 @@ impl LogParser {
             app,
             settings,
             wfm,
-            auth,
             cache,
             notify,
             qf,

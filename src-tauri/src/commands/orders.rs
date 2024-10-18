@@ -48,7 +48,6 @@ pub async fn order_delete(
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
-    live_scraper: tauri::State<'_, Arc<Mutex<LiveScraperClient>>>,
 ) -> Result<(), AppError> {
     let wfm = wfm.lock()?.clone();
     let notify = notify.lock()?.clone();

@@ -3,8 +3,6 @@ use reqwest::header::HeaderMap;
 use serde_json::json;
 
 use crate::{
-    auth::AuthState,
-    helper,
     utils::{
         enums::log_level::LogLevel,
         modules::{
@@ -17,7 +15,6 @@ use crate::{
 #[derive(Clone, Debug)]
 pub struct AuthModule {
     pub client: WFMClient,
-    pub debug_id: String,
     component: String,
 }
 
@@ -25,7 +22,6 @@ impl AuthModule {
     pub fn new(client: WFMClient) -> Self {
         AuthModule {
             client,
-            debug_id: "wfm_client_auth".to_string(),
             component: "Auth".to_string(),
         }
     }
