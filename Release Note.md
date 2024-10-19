@@ -24,7 +24,7 @@ Just a small update to fix some bugs and add a new feature.
 
 ## Overview
 
-Total rewrite of the UI and the backend.
+Total rewrite of the UI and the backend
 Note: The database was upgrade to V2
 So all your data needs to be migrated, this be be done in the Debug Tab and under the migrate tab.
 
