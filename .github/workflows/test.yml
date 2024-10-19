@@ -27,10 +27,5 @@ jobs:
 
       - name: "Export S"
         run: |
-          touch .env
-          echo "# Prisma" >> .env
-          echo "# https://www.prisma.io/docs/reference/database-reference/connection-urls#env" >> .env
-          echo "DATABASE_URL=\"${{ secrets.TAURI_PRIVATE_KEY }}\"" >> .env
-          echo >> .env
-          echo "# Prisma Shadow Database Credentials" >> .env
-          echo "SHADOW_DATABASE_URL=\"${{ secrets.TAURI_KEY_PASSWORD }}\"" >> .env
+          echo "DATABASE_URL=\"${{ secrets.TAURI_PRIVATE_KEY }}\"" > .env
+          echo "SHADOW_DATABASE_URL=\"${{ secrets.TAURI_KEY_PASSWORD }}\"" > .env2
