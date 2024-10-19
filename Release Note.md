@@ -1,4 +1,4 @@
-# Quantframe v1.2.5 (Release Date)
+# Quantframe v1.2.5
 
 ## Overview
 
