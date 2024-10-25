@@ -2,13 +2,13 @@
 Inspired by [Akmayer's Warframe-Algo-Trader](https://github.com/akmayer/Warframe-Algo-Trader), this is a re-implementation using tauri. Tauri allows for easy distribution to windows & linux without technical knowledge.
 
 ## Prototype features
-- Distribute as windows
+- Distribute as Windows
   - Install size: 11MB
   - Idle resource consumption: 60MB, extremely small cpu footprint (on my rig, 0-0.1%)
   - Update distribution
-- Save data in sqllite db located at `C:\Users\*\AppData\Local\dev.kenya.quantframe\quantframe.sqlite`
-- Logs and setings wil be save at `C:\Users\*\AppData\Local\dev.kenya.quantframe`
-  - easily inspectible with db tools like https://beekeeperstudio.io
+- Save data in SQLite db located at `C:\Users\*\AppData\Local\dev.kenya.quantframe\quantframe.sqlite`
+- Logs and settings will be saved at `C:\Users\*\AppData\Local\dev.kenya.quantframe`
+  - easily inspectable with db tools like https://beekeeperstudio.io
 - Api client to communicate with wf.market
 - Easy debugging / developer experience via edge dev tools
 
@@ -24,7 +24,7 @@ Inspired by [Akmayer's Warframe-Algo-Trader](https://github.com/akmayer/Warframe
 You can download the latest release from [here](https://github.com/Kenya-DK/quantframe-react/releases)
 
 ### OR Build it from source
-If you prefer to build it locally for whatever reason, heres what you need:
+If you prefer to build it locally for whatever reason, here's what you need:
 #### Step 1. Install Pre-Requisites
 
 Follow the [Tauri Pre-requisites](https://tauri.app/v1/guides/getting-started/prerequisites) guide to get necessary dependencies.
@@ -34,7 +34,7 @@ Follow the [Tauri Pre-requisites](https://tauri.app/v1/guides/getting-started/pr
 You will also need to make sure you've got Nodejs installed.
 
 #### Step 2. Download code
-I would strongly recommend installing [git](https://git-scm.com/) or [Github Desktop](https://desktop.github.com/) and use those to download the project source code from github. The reason is this will allow you to download new versions of the code much easier than clicking "download zip" every time.
+I would strongly recommend installing [git](https://git-scm.com/) or [GitHub Desktop](https://desktop.github.com/) and use those to download the project source code from GitHub. The reason is this will allow you to download new versions of the code much easier than clicking "download zip" every time.
 
 #### Step 3. Build the project
 
