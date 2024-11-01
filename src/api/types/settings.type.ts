@@ -21,6 +21,7 @@ export interface SettingsStockItem {
   auto_trade: boolean;
   avg_price_cap: number;
   trading_tax_cap: number;
+  buy_quantity: number;
   blacklist: string[];
   max_total_price_cap: number;
   min_sma: number;

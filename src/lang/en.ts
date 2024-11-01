@@ -161,6 +161,12 @@ export const en = {
                 error: "Invalid max total price cap",
                 tooltip: "This parameter specifies the maximum platinum total price cap for the all buy orders.",
               },
+              buy_quantity: {
+                label: "Quantity of goods",
+                placeholder: "1",
+                error: "Invalid quantity of goods",
+                tooltip: "The quantity of goods to buy per order. (Will apply to all orders)",
+              },
               price_shift_threshold: {
                 label: "Price Shift Threshold",
                 placeholder: "Price Shift Threshold",

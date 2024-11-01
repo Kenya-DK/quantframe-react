@@ -50,6 +50,7 @@ pub struct StockItemSettings {
     pub min_sma: i64,
     pub min_profit: i64,
     pub auto_delete: bool,
+    pub buy_quantity: i64,
     // What to post sell, buy, or both
     pub order_mode: OrderMode,
 }
@@ -108,6 +109,7 @@ impl Default for SettingsState {
                     range_threshold: 10,
                     avg_price_cap: 600,
                     trading_tax_cap: -1,
+                    buy_quantity: 1,
                     max_total_price_cap: 100000,
                     price_shift_threshold: -1,
                     blacklist: vec![],

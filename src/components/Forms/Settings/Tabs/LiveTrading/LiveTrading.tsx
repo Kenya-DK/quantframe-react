@@ -190,6 +190,15 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
                         rightSection={<TooltipIcon label={useTranslateFormFields("max_total_price_cap.tooltip")} />}
                         radius="md"
                       />
+                      <NumberInput
+                        label={useTranslateFormFields("buy_quantity.label")}
+                        placeholder={useTranslateFormFields("buy_quantity.placeholder")}
+                        value={form.values.stock_item.buy_quantity}
+                        onChange={(event) => form.setFieldValue("stock_item.buy_quantity", Number(event))}
+                        error={form.errors.buy_quantity && useTranslateFormFields("buy_quantity.error")}
+                        rightSection={<TooltipIcon label={useTranslateFormFields("buy_quantity.tooltip")} />}
+                        radius="md"
+                      />
                     </Group>
                     <Group gap="md">
                       <NumberInput
