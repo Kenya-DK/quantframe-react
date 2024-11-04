@@ -24,20 +24,23 @@ pub struct CacheWarframe {
     pub components: Option<Vec<CacheItemComponent>>,
     #[serde(rename = "conclave")]
     pub conclave: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "description")]
-    pub description: String,
+    pub description: Option<String>,
     #[serde(rename = "health")]
     pub health: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "imageName")]
-    pub image_name: String,
+    pub image_name: Option<String>,
     #[serde(rename = "isPrime")]
     pub is_prime: bool,
     #[serde(rename = "marketCost")]
     pub market_cost: Option<i32>,
     #[serde(rename = "masterable")]
     pub masterable: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "masteryReq")]
-    pub mastery_req: i32,
+    pub mastery_req: Option<i32>,
     #[serde(rename = "name")]
     pub name: String,
     #[serde(rename = "passiveDescription")]
@@ -46,8 +49,9 @@ pub struct CacheWarframe {
     pub polarities: Option<Vec<String>>,
     #[serde(rename = "power")]
     pub power: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "productCategory")]
-    pub product_category: String,
+    pub product_category: Option<String>,
     #[serde(rename = "releaseDate")]
     pub release_date: Option<String>,
     #[serde(rename = "sex")]
@@ -56,8 +60,9 @@ pub struct CacheWarframe {
     pub shield: i32,
     #[serde(rename = "sprint")]
     pub sprint: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "sprintSpeed")]
-    pub sprint_speed: f64,
+    pub sprint_speed: Option<f64>,
     #[serde(rename = "stamina")]
     pub stamina: i32,
     #[serde(rename = "tradable")]
