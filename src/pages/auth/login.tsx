@@ -7,28 +7,32 @@ import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { TextTranslate } from "@components/TextTranslate";
 import { QfSocketEvent, QfSocketEventOperation, ResponseError } from "@api/types";
 import { useState } from "react";
-import { wfmSocket } from "@models/wfmSocket";
+import wfmSocket from "@models/wfmSocket";
 
 export default function LoginPage() {
   // States
   // const navigate = useNavigate();
   const [interval, setInterval] = useState(0);
-  const [progressText, setProgressText] = useState("")
+  const [progressText, setProgressText] = useState("");
   const [is_banned, setIsBanned] = useState(false);
-  const [banned_reason, setBannedReason] = useState<string | undefined>(undefined)
+  const [banned_reason, setBannedReason] = useState<string | undefined>(undefined);
 
   // Translate general
-  const useTranslatePage = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`auth.${key}`, { ...context }, i18Key)
-  const useTranslateErrors = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePage(`errors.${key}`, { ...context }, i18Key)
-  const useTranslateSuccess = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePage(`success.${key}`, { ...context }, i18Key)
-  const useTranslateProgress = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePage(`progress.${key}`, { ...context }, i18Key)
+  const useTranslatePage = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslatePages(`auth.${key}`, { ...context }, i18Key);
+  const useTranslateErrors = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslatePage(`errors.${key}`, { ...context }, i18Key);
+  const useTranslateSuccess = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslatePage(`success.${key}`, { ...context }, i18Key);
+  const useTranslateProgress = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslatePage(`progress.${key}`, { ...context }, i18Key);
 
   // Mutations
   const logInMutation = useMutation({
     mutationFn: (data: { email: string; password: string }) => {
       setInterval(0);
       setProgressText(useTranslateProgress("logging_in"));
-      return api.auth.login(data.email, data.password)
+      return api.auth.login(data.email, data.password);
     },
     onSuccess: async (u) => {
       if (!u) return;
@@ -37,7 +41,11 @@ export default function LoginPage() {
         return notifications.show({ title: useTranslateErrors("login.title"), message: useTranslateErrors("login.banned"), color: "red.7" });
 
       setBannedReason(u.qf_banned_reason);
-      notifications.show({ title: useTranslateSuccess("login.title"), message: useTranslateSuccess("login.message", { name: u.ingame_name }), color: "green.7" });
+      notifications.show({
+        title: useTranslateSuccess("login.title"),
+        message: useTranslateSuccess("login.message", { name: u.ingame_name }),
+        color: "green.7",
+      });
       setInterval(1);
       setProgressText(useTranslateProgress("refreshing_orders"));
       await api.order.refresh();
@@ -67,8 +75,7 @@ export default function LoginPage() {
       setProgressText(useTranslateProgress("login.progress_text_4"));
       setInterval(8);
       SendTauriDataEvent(QfSocketEvent.UpdateUser, QfSocketEventOperation.SET, u);
-      if (u.wfm_access_token)
-        wfmSocket.updateToken(u.wfm_access_token);
+      if (u.wfm_access_token) wfmSocket.updateToken(u.wfm_access_token);
     },
     onError: (err: ResponseError) => {
       console.error(err);
@@ -76,29 +83,34 @@ export default function LoginPage() {
       if (ApiError.messages.some((m) => m.includes("app.account.email_not_exist")))
         return notifications.show({ title: useTranslateErrors("login.title"), message: useTranslateErrors("login.email_not_exist"), color: "red.7" });
       if (ApiError.messages.some((m) => m.includes("app.account.password_invalid")))
-        return notifications.show({ title: useTranslateErrors("login.title"), message: useTranslateErrors("login.password_invalid"), color: "red.7" });
+        return notifications.show({
+          title: useTranslateErrors("login.title"),
+          message: useTranslateErrors("login.password_invalid"),
+          color: "red.7",
+        });
 
       return notifications.show({ title: useTranslateErrors("login.title"), message: useTranslateErrors("login.message"), color: "red.7" });
-    }
-  })
+    },
+  });
 
   return (
     <Center w={"100%"} h={"92vh"}>
-      <LogInForm hide_submit={is_banned} is_loading={logInMutation.isPending} onSubmit={(d: { email: string; password: string }) => logInMutation.mutate(d)} footerContent={
-        <>
-          {logInMutation.isPending && (
-            <Progress.Root size="xl">
-              <Progress.Section value={interval / 8 * 100} >
-                <Progress.Label>{progressText}</Progress.Label>
-              </Progress.Section>
-            </Progress.Root>
-          )}
-          {is_banned && (
-            <TextTranslate i18nKey={useTranslateErrors("login.ban_reason")}
-              values={{ reason: banned_reason || "" }}
-            />
-          )}
-        </>}
+      <LogInForm
+        hide_submit={is_banned}
+        is_loading={logInMutation.isPending}
+        onSubmit={(d: { email: string; password: string }) => logInMutation.mutate(d)}
+        footerContent={
+          <>
+            {logInMutation.isPending && (
+              <Progress.Root size="xl">
+                <Progress.Section value={(interval / 8) * 100}>
+                  <Progress.Label>{progressText}</Progress.Label>
+                </Progress.Section>
+              </Progress.Root>
+            )}
+            {is_banned && <TextTranslate i18nKey={useTranslateErrors("login.ban_reason")} values={{ reason: banned_reason || "" }} />}
+          </>
+        }
       />
     </Center>
   );

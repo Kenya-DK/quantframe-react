@@ -4,21 +4,10 @@
 
 Just a small update to fix some bugs and add a new feature.
 
-## ⚠️⚠️⚠️IMPORTANT NOTE⚠️⚠️⚠️
-
-- ⚠️ Yoc need to download the new version from the github [here](https://github.com/Kenya-DK/quantframe-react/releases/tag/v1.2.5)
-- ⚠️ If y are coming from a version below v1.2.0 you need to migrate your data, this can be done in the Debug Tab > Database > Migrate Section.
-
-## Fix's
-
-- 🛠️ WTB/WTS Orders not getting updated
-- 🛠️ Fix som ui flicking in the stock riven screen.
-- 🛠️ Fix not able to add item's to blacklist/whitelist
-- 🛠️ Better handling if a user waws banned
-
 ## Features
 
-- ✅ Add Better Discord Message for auto trade.
+- ✅ Add Buy quantity: You can now buy multiple of the same item.
+- ✅ Add Chat: You can now chat with other users.
 
 # Quantframe v1.2.3 (Release Date)
 

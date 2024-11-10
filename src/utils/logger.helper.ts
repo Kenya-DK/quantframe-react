@@ -1,6 +1,5 @@
 import { invoke } from "@tauri-apps/api";
 
-
 export interface LogSettings {
   console?: boolean;
   file?: string;
@@ -13,7 +12,6 @@ export enum LogLevel {
   Debug = "debug",
   Trace = "trace",
   Critical = "critical",
-
 }
 
 export const doLog = async (component: string, msg: string, level: LogLevel, settings: LogSettings = { console: true }) => {
@@ -22,36 +20,30 @@ export const doLog = async (component: string, msg: string, level: LogLevel, set
     msg: msg,
     level: level,
     console: settings.console,
-    file: settings.file
-  })
-}
+    file: settings.file,
+  });
+};
 
 export const info = async (component: string, msg: string, settings: LogSettings = { console: true }) => {
-  await doLog(component, msg, LogLevel.Info, settings)
-}
+  await doLog(component, msg, LogLevel.Info, settings);
+};
 
 export const warning = async (component: string, msg: string, settings: LogSettings = { console: true }) => {
-  await doLog(component, msg, LogLevel.Warning, settings)
-}
+  await doLog(component, msg, LogLevel.Warning, settings);
+};
 
 export const error = async (component: string, msg: string, settings: LogSettings = { console: true }) => {
-  await doLog(component, msg, LogLevel.Error, settings)
-}
+  await doLog(component, msg, LogLevel.Error, settings);
+};
 
 export const debug = async (component: string, msg: string, settings: LogSettings = { console: true }) => {
-  await doLog(component, msg, LogLevel.Debug, settings)
-}
+  await doLog(component, msg, LogLevel.Debug, settings);
+};
 
 export const trace = async (component: string, msg: string, settings: LogSettings = { console: true }) => {
-  await doLog(component, msg, LogLevel.Trace, settings)
-}
+  await doLog(component, msg, LogLevel.Trace, settings);
+};
 
 export const critical = async (component: string, msg: string, settings: LogSettings = { console: true }) => {
-  await doLog(component, msg, LogLevel.Critical, settings)
-}
-
-// component
-// msg
-// level
-// console
-// file
+  await doLog(component, msg, LogLevel.Critical, settings);
+};

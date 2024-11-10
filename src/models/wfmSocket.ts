@@ -7,9 +7,11 @@ export class WFMSocket extends SocketBase {
 
   // Override the OnEvent method
   protected OnEvent = (data: Record<string, any>) => {
-    const { type, payload } = data as { type: string, payload: any };
+    const { type, payload } = data as { type: string; payload: any };
     const event = type.replace("@WS/", "");
     this.FireEvent(event, payload);
-  }
+  };
 }
-export const wfmSocket = new WFMSocket("wss://warframe.market/socket?platform=pc");
+const wfmSocket = new WFMSocket("wss://warframe.market/socket?platform=pc");
+window.wfmSocket = wfmSocket;
+export default wfmSocket;

@@ -27,7 +27,7 @@ pub struct UserProfile {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub check_code: Option<String>,
     #[serde(rename = "unread_messages")]
-    pub unread_messages: i32,
+    pub unread_messages: i64,
     #[serde(rename = "has_mail")]
     pub has_mail: bool,
     #[serde(rename = "region")]
@@ -46,7 +46,6 @@ pub struct UserProfile {
     pub ban_until: Option<String>,
     #[serde(rename = "reputation")]
     pub reputation: i32,
-    
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -70,5 +69,5 @@ pub struct PatreonProfile {
     #[serde(rename = "subscription")]
     pub subscription: Option<bool>,
     #[serde(rename = "patreon_badge")]
-    pub patreon_badge: Option<String>
+    pub patreon_badge: Option<String>,
 }

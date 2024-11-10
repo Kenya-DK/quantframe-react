@@ -268,6 +268,11 @@ fn main() {
             commands::orders::order_refresh,
             // Chat commands
             commands::chat::chat_refresh,
+            commands::chat::chat_delete,
+            commands::chat::chat_on_message,
+            commands::chat::chat_get_messages,
+            commands::chat::chat_set_active,
+            commands::chat::chat_delete_all,
             // Live Trading commands
             commands::live_scraper::live_scraper_set_running_state,
             // Stock Item commands
@@ -286,6 +291,8 @@ fn main() {
             commands::stock_riven::stock_riven_delete,
             commands::stock_riven::stock_riven_delete_bulk,
             commands::stock_riven::stock_riven_create,
+            // Notification commands
+            commands::notification::send_system_notification,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -269,6 +269,10 @@ export namespace Wfm {
     id: string;
     region: string;
   }
+  export interface ChatMessageSent {
+    message: ChatMessage;
+    temp_id: string;
+  }
 
   export interface ChatMessage {
     message: string;

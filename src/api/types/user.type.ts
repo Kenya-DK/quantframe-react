@@ -15,6 +15,7 @@ export interface User {
   region: string;
   role: Role;
   status: UserStatus;
+  unread_messages: number;
   verification: boolean;
   wfm_access_token: string;
   wfm_banned: boolean;

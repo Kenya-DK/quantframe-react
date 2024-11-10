@@ -5,7 +5,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBug, faDesktop, faEnvelope, faGlobe, faHome, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
 import { useAppContext } from "@contexts/app.context";
-import { useChatContext } from "@contexts/chat.context";
 import { useEffect, useState } from "react";
 import { NavbarLinkProps, NavbarMinimalColored } from "@components/NavbarMinimalColored";
 import { SvgIcon, SvgType } from "@components/SvgIcon";
@@ -19,42 +18,95 @@ export function LogInLayout() {
   const { app_error } = useAppContext();
   const { user } = useAuthContext();
   // Translate general
-  const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateComponent(`layout.log_in.${key}`, { ...context }, i18Key)
-  const useTranslateNavBar = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`navbar.${key}`, { ...context }, i18Key)
-  const { unread_messages } = useChatContext();
+  const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateComponent(`layout.log_in.${key}`, { ...context }, i18Key);
+  const useTranslateNavBar = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslate(`navbar.${key}`, { ...context }, i18Key);
   // States
   const navigate = useNavigate();
   const links = [
-    { align: 'top', id: "home", link: "/", icon: <FontAwesomeIcon icon={faHome} />, label: useTranslateNavBar("home"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
-    { align: 'top', id: "live-trading", link: "live-trading", icon: <FontAwesomeIcon icon={faGlobe} />, label: useTranslateNavBar("live_trading"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
     {
-      align: 'top', id: "chats", hide: false, link: "chats", icon: <Indicator disabled={unread_messages == 0} label={unread_messages > 0 ? unread_messages : undefined} inline size={16} position="top-start"  >
-        <FontAwesomeIcon icon={faEnvelope} />
-      </Indicator>, label: useTranslateNavBar("chats")
+      align: "top",
+      id: "home",
+      link: "/",
+      icon: <FontAwesomeIcon icon={faHome} />,
+      label: useTranslateNavBar("home"),
+      onClick: (e: NavbarLinkProps) => handleNavigate(e),
+    },
+    {
+      align: "top",
+      id: "live-trading",
+      link: "live-trading",
+      icon: <FontAwesomeIcon icon={faGlobe} />,
+      label: useTranslateNavBar("live_trading"),
+      onClick: (e: NavbarLinkProps) => handleNavigate(e),
+    },
+    {
+      align: "top",
+      id: "chats",
+      link: "chats",
+      icon: (
+        <Indicator
+          disabled={(user?.unread_messages || 0) <= 0}
+          label={(user?.unread_messages || 0) > 0 ? user?.unread_messages : undefined}
+          inline
+          size={16}
+          position="top-start"
+        >
+          <FontAwesomeIcon icon={faEnvelope} />
+        </Indicator>
+      ),
+      onClick: (e: NavbarLinkProps) => handleNavigate(e),
+      label: useTranslateNavBar("chats"),
     },
     // { link: "statistics", icon: <FontAwesomeIcon icon={faChartSimple} />, label: useTranslate("statistics") },
-    { align: 'top', id: "warframe_market", link: "warframe-market", icon: <SvgIcon svgProp={{ width: 32, height: 32, fill: "#d5d7e0" }} iconType={SvgType.Default} iconName={"wfm_logo"} />, label: useTranslateNavBar("warframe_market"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
-    { align: 'top', id: "debug", link: "debug", icon: <FontAwesomeIcon icon={faDesktop} />, label: useTranslateNavBar("debug"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
-    { align: 'top', id: "test", link: "test", hide: !import.meta.env.DEV, icon: <FontAwesomeIcon icon={faBug} color="red" />, label: useTranslateNavBar("test"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
-    { align: 'bottom', id: "nav_about", link: "about", icon: <FontAwesomeIcon icon={faInfoCircle} />, label: useTranslateNavBar("about"), onClick: (e: NavbarLinkProps) => handleNavigate(e) },
+    {
+      align: "top",
+      id: "warframe_market",
+      link: "warframe-market",
+      icon: <SvgIcon svgProp={{ width: 32, height: 32, fill: "#d5d7e0" }} iconType={SvgType.Default} iconName={"wfm_logo"} />,
+      label: useTranslateNavBar("warframe_market"),
+      onClick: (e: NavbarLinkProps) => handleNavigate(e),
+    },
+    {
+      align: "top",
+      id: "debug",
+      link: "debug",
+      icon: <FontAwesomeIcon icon={faDesktop} />,
+      label: useTranslateNavBar("debug"),
+      onClick: (e: NavbarLinkProps) => handleNavigate(e),
+    },
+    {
+      align: "top",
+      id: "test",
+      link: "test",
+      hide: !import.meta.env.DEV,
+      icon: <FontAwesomeIcon icon={faBug} color="red" />,
+      label: useTranslateNavBar("test"),
+      onClick: (e: NavbarLinkProps) => handleNavigate(e),
+    },
+    {
+      align: "bottom",
+      id: "nav_about",
+      link: "about",
+      icon: <FontAwesomeIcon icon={faInfoCircle} />,
+      label: useTranslateNavBar("about"),
+      onClick: (e: NavbarLinkProps) => handleNavigate(e),
+    },
   ];
   // Effects
   useEffect(() => {
-    if (app_error)
-      navigate('/error')
-  }, [app_error])
+    if (app_error) navigate("/error");
+  }, [app_error]);
   useEffect(() => {
-    if (user?.qf_banned || user?.wfm_banned)
-      navigate('/error/banned')
-  }, [user])
+    if (user?.qf_banned || user?.wfm_banned) navigate("/error/banned");
+  }, [user]);
   const handleNavigate = (link: NavbarLinkProps) => {
-    if (link.web)
-      window.open(link.link, "_blank");
-    else
-      navigate(link.link);
+    console.log("Navigate to: ", link);
+    if (link.web) window.open(link.link, "_blank");
+    else navigate(link.link);
 
-    if (link.id == lastPage || !link.id)
-      return;
+    if (link.id == lastPage || !link.id) return;
     setLastPage(link.id || "");
     switch (link.id) {
       default:
@@ -68,9 +120,8 @@ export function LogInLayout() {
       header={{ height: 65 }}
       navbar={{
         width: 70,
-        breakpoint: 'sm',
+        breakpoint: "sm",
       }}
-
     >
       <AppShell.Header withBorder={false}>
         <Header />

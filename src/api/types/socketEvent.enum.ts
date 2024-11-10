@@ -13,7 +13,8 @@ export enum QfSocketEvent {
 
   // Chat
   UpdateChats = "WFM:UpdateChats",
-  UpdateChatMessages = "WFM:UpdateChatMessages",
+  ChatReceiveMessage = "Chat:ReceiveMessage",
+  ChatMessageSent = "Chat:MessageSent",
 
   // Stock
   UpdateStockItems = "Stock:UpdateStockItems",

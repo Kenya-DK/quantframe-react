@@ -535,6 +535,36 @@ export const en = {
         },
       },
     },
+    chat_rome: {
+      fields: {
+        message: {
+          placeholder: "Type a message...",
+          too_long: "Message is too long",
+        },
+      },
+      buttons: {
+        send: {
+          label: "Send",
+        },
+        back: {
+          label: "Back",
+        },
+        options: {
+          label: "More",
+        },
+      },
+    },
+    chat_item: {
+      un_read_messages: "<mail /> {{count}}",
+      delete: "Leave Chat",
+    },
+    timer_stamp: {
+      months: "{{months}} months ago",
+      days: "{{days}} days ago",
+      hours: "{{hours}} hours ago",
+      minutes: "{{minutes}} minutes ago",
+      seconds: "{{seconds}} seconds ago",
+    },
     auction_list_item: {
       weapon_name: "<blue>{{weapon}} {{mod_name}}<blue>",
       selling_price: "Selling Price: <blue>{{price}}</blue> <plat/>",
@@ -1569,6 +1599,61 @@ export const en = {
               message: "An error occurred while trying to delete all auctions.",
             },
           },
+        },
+      },
+    },
+    chats: {
+      buttons: {
+        delete: {
+          tooltip: "Delete",
+        },
+        refresh: {
+          tooltip: "Refresh",
+        },
+        delete_all: {
+          tooltip: "Delete All",
+        },
+      },
+      prompts: {
+        delete_all: {
+          title: "Delete All chats",
+          message: "Are you sure you want to delete all chats, this action cannot be undone.",
+          confirm: "Yes, delete",
+          cancel: "No, cancel",
+        },
+        delete: {
+          title: "Delete chat",
+          message: "Are you sure you want to {{name}} chat, this action cannot be undone.",
+          confirm: "Yes, delete",
+          cancel: "No, cancel",
+        },
+      },
+      success: {
+        refresh: {
+          title: "Refresh Success",
+          message: "Total {{count}} chats have been successfully refreshed.",
+        },
+        delete: {
+          title: "Delete Success",
+          message: "Chat has been successfully deleted.",
+        },
+        delete_all: {
+          title: "Delete All Success",
+          message: "All chats have been successfully deleted.",
+        },
+      },
+      errors: {
+        refresh: {
+          title: "Refresh Error",
+          message: "An error occurred while trying to refresh chats.",
+        },
+        delete: {
+          title: "Delete Error",
+          message: "An error occurred while trying to delete chat.",
+        },
+        delete_all: {
+          title: "Delete All Error",
+          message: "An error occurred while trying to delete all chats.",
         },
       },
     },

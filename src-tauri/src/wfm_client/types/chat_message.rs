@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ChatMessage {
     #[serde(rename = "message")]
     pub message: String,

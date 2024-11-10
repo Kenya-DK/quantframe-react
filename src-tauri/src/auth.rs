@@ -43,6 +43,7 @@ pub struct AuthState {
     pub order_limit: i64,
     #[serde(default = "AuthState::auctions_limit")]
     pub auctions_limit: i64,
+    pub unread_messages: i64,
     pub status: Option<String>,
 }
 // Allow us to run AuthState::default()
@@ -68,6 +69,7 @@ impl Default for AuthState {
             check_code: "".to_string(),
             role: None,
             order_limit: 100,
+            unread_messages: 0,
             auctions_limit: 50,
             status: Some("invisible".to_string()),
         }
@@ -132,6 +134,7 @@ impl AuthState {
         self.anonymous = user_profile.anonymous;
         self.verification = user_profile.verification;
         self.wfm_banned = user_profile.banned;
+        self.unread_messages = user_profile.unread_messages;
         self.wfm_banned_reason = user_profile.ban_reason.clone();
         self.wfm_banned_until = user_profile.ban_until.clone();
         self.ingame_name = user_profile.ingame_name.clone().unwrap_or("".to_string());

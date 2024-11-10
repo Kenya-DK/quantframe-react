@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use super::{chat_message::ChatMessage, chat_message_with::ChatMessageWith};
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ChatData {
     #[serde(rename = "id")]
     pub id: String,

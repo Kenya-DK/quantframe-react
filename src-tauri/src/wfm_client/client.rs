@@ -391,4 +391,8 @@ impl WFMClient {
         // Unwrapping is safe here because we ensured the chat_module is initialized
         self.chat_module.read().unwrap().as_ref().unwrap().clone()
     }
+    pub fn update_chat_module(&self, module: ChatModule) {
+        // Update the stored ChatModule
+        *self.chat_module.write().unwrap() = Some(module);
+    }
 }
