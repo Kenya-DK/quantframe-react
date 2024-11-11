@@ -27,6 +27,10 @@ pub struct OrderDetails {
     #[serde(rename = "highest_price")]
     pub highest_price: Option<i64>,
 
+    #[serde(default)]
+    #[serde(rename = "quantity")]
+    pub quantity: i64,
+
     #[serde(rename = "orders")]
     pub orders: Vec<Order>,
 
@@ -55,6 +59,7 @@ impl Default for OrderDetails {
             lowest_price: None,
             highest_price: None,
             profit: None,
+            quantity: 1,
             moving_avg: None,
             orders: Vec::new(),
             price_history: VecDeque::new(),
@@ -72,6 +77,7 @@ impl OrderDetails {
         highest_price: i64,
         moving_avg: i64,
         orders: Vec<Order>,
+        quantity: i64,
         price_history: Vec<PriceHistory>,
     ) -> OrderDetails {
         OrderDetails {
@@ -84,6 +90,7 @@ impl OrderDetails {
             orders,
             price_history: price_history.into_iter().collect(),
             is_dirty: true,
+            quantity,
             changes: None,
         }
     }
@@ -131,6 +138,12 @@ impl OrderDetails {
     pub fn set_profit(&mut self, profit: i64) {
         if Self::set_if_changed(&mut self.profit, Some(profit), &mut self.is_dirty) {
             self.changes = Some("profit".to_string());
+        }
+    }
+
+    pub fn set_quantity(&mut self, quantity: i64) {
+        if Self::set_if_changed(&mut self.quantity, quantity, &mut self.is_dirty) {
+            self.changes = Some("quantity".to_string());
         }
     }
 

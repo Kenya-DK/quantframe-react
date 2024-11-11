@@ -85,6 +85,7 @@ impl ItemModule {
         // Get Settings.
         let order_mode = settings.stock_item.order_mode.clone();
         let blacklist_items: Vec<String> = settings.stock_item.blacklist.clone();
+        let buy_quantity = settings.stock_item.buy_quantity;
 
         // Variables.
         let mut interesting_items: Vec<ItemEntry> = vec![];
@@ -158,7 +159,7 @@ impl ItemModule {
         if order_mode == OrderMode::Buy || order_mode == OrderMode::Both {
             let mut item_names = price_scraper_interesting_items_new
                 .iter()
-                .map(|item| ItemEntry::from_item_price(item))
+                .map(|item| ItemEntry::from_item_price(item, buy_quantity))
                 .collect::<Vec<ItemEntry>>();
             interesting_items.append(&mut item_names);
 
@@ -672,6 +673,7 @@ impl ItemModule {
             Some(order_info) => {
                 // Update the order info with the current price history
                 order_info.set_highest_price(highest_price);
+                order_info.set_quantity(item.quantity);
                 order_info.set_lowest_price(live_orders.lowest_price(OrderType::Buy));
                 order_info.set_total_buyers(live_orders.buy_orders.len() as i64);
                 order_info.set_orders(live_orders.buy_orders.clone());
@@ -689,6 +691,7 @@ impl ItemModule {
                     highest_price,
                     closed_avg as i64,
                     live_orders.sell_orders.clone(),
+                    item.quantity,
                     vec![price_history.clone()],
                 );
                 if user_order.id != "N/A" {
@@ -801,7 +804,7 @@ impl ItemModule {
             self.send_msg("created", Some(json!({ "name": item_info.name, "price": post_price, "profit": potential_profit})));
             match wfm
                 .orders()
-                .create(&item_info.wfm_id, "buy", post_price, 1, true, item.sub_type)
+                .create(&item_info.wfm_id, "buy", post_price, item.quantity, true, item.sub_type)
                 .await
             {
                 Ok((rep, None)) => {
@@ -838,11 +841,12 @@ impl ItemModule {
         {
             match wfm
                 .orders()
-                .update(&user_order.id, post_price, 1, user_order.visible)
+                .update(&user_order.id, post_price, item.quantity, user_order.visible)
                 .await
             {
                 Ok(_) => {
                     if user_order.platinum != post_price || user_order.info.is_dirty {
+                        user_order.quantity = item.quantity;
                         user_order.platinum = post_price;
                         user_order.profit = Some(potential_profit as f64);
                         my_orders.update_order(user_order.clone());
