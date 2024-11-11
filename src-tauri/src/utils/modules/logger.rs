@@ -183,6 +183,9 @@ pub fn clear_logs(days: i64) -> Result<(), AppError> {
     // Get the logs folder there is older then the days
     let app_path = helper::get_app_storage_path();
     let log_path = app_path.join("logs");
+    if !log_path.is_dir() {
+        continue;
+    }
     for path in fs::read_dir(log_path).unwrap() {
         let path = path.unwrap().path();
         // Check if path is auth.json
