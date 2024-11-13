@@ -11,6 +11,7 @@ export interface Settings {
 export interface SettingsLiveScraper {
   stock_item: SettingsStockItem;
   stock_mode: StockMode;
+  trade_mode: TradeMode;
   stock_riven: SettingsStockRiven;
   webhook: string;
 }
@@ -25,13 +26,10 @@ export interface SettingsStockItem {
   blacklist: string[];
   max_total_price_cap: number;
   min_sma: number;
-  order_mode: OrderMode;
   price_shift_threshold: number;
   range_threshold: number;
   report_to_wfm: boolean;
-  strict_whitelist: boolean;
   volume_threshold: number;
-  whitelist: string[];
 }
 
 export interface SettingsStockRiven {
@@ -64,8 +62,9 @@ export enum StockMode {
   Riven = "riven",
   Item = "item",
 }
-export enum OrderMode {
+export enum TradeMode {
+  All = "all",
   Buy = "buy",
   Sell = "sell",
-  Both = "both",
+  Wishlist = "wishlist",
 }

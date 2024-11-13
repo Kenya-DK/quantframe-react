@@ -1,6 +1,6 @@
 import { Button, Group, NumberInput, Select, Stack, Tooltip, Text, Divider, Tabs, Box, Checkbox, Accordion } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { OrderMode, SettingsLiveScraper, StockMode } from "@api/types";
+import { TradeMode, SettingsLiveScraper, StockMode } from "@api/types";
 import { useTranslateEnums, useTranslateForms } from "@hooks/useTranslate.hook";
 import { useState } from "react";
 import { TooltipIcon } from "@components/TooltipIcon";
@@ -14,7 +14,6 @@ export type LiveTradingPanelProps = {
 enum ViewMode {
   General = "general",
   Blacklist = "blacklist",
-  Whitelist = "whitelist",
 }
 
 export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => {
@@ -30,7 +29,7 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
   const useTranslateStockMode = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateEnums(`stock_mode.${key}`, { ...context }, i18Key);
   const useTranslateOrderMode = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateEnums(`order_mode.${key}`, { ...context }, i18Key);
+    useTranslateEnums(`trade_mode.${key}`, { ...context }, i18Key);
   const useTranslateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForm(`buttons.${key}`, { ...context }, i18Key);
 
@@ -80,16 +79,17 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
                         radius="md"
                       />
                       <Select
+                        disabled={form.values.stock_mode != StockMode.Item && form.values.stock_mode != StockMode.All}
                         allowDeselect={false}
-                        label={useTranslateFormFields("order_mode.label")}
-                        description={useTranslateFormFields(`order_mode.description.${form.values.stock_item.order_mode}`)}
-                        placeholder={useTranslateFormFields("order_mode.placeholder")}
-                        data={Object.values(OrderMode).map((status) => {
+                        label={useTranslateFormFields("trade_mode.label")}
+                        description={useTranslateFormFields(`trade_mode.description.${form.values.trade_mode}`)}
+                        placeholder={useTranslateFormFields("trade_mode.placeholder")}
+                        data={Object.values(TradeMode).map((status) => {
                           return { value: status, label: useTranslateOrderMode(status) };
                         })}
-                        value={form.values.stock_item.order_mode}
-                        onChange={(event) => form.setFieldValue("stock_item.order_mode", event as OrderMode)}
-                        error={form.errors.order_mode && useTranslateFormFields("order_mode.error")}
+                        value={form.values.trade_mode}
+                        onChange={(event) => form.setFieldValue("trade_mode", event as TradeMode)}
+                        error={form.errors.trade_mode && useTranslateFormFields("trade_mode.error")}
                         radius="md"
                       />
                     </Group>
@@ -118,14 +118,6 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
                           error={form.errors.auto_trade && useTranslateFormFields("auto_trade.error")}
                         />
                       </Tooltip>
-                      <Tooltip label={useTranslateFormFields("strict_whitelist.tooltip")}>
-                        <Checkbox
-                          label={useTranslateFormFields("strict_whitelist.label")}
-                          checked={form.values.stock_item.strict_whitelist}
-                          onChange={(event) => form.setFieldValue("stock_item.strict_whitelist", event.currentTarget.checked)}
-                          error={form.errors.strict_whitelist && useTranslateFormFields("strict_whitelist.error")}
-                        />
-                      </Tooltip>
                     </Group>
                     <Group gap={"md"} mt={25}>
                       <Button
@@ -136,15 +128,6 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
                         }}
                       >
                         {useTranslateButtons("blacklist.label")}
-                      </Button>
-                      <Button
-                        color="blue"
-                        variant="light"
-                        onClick={() => {
-                          setViewMode(ViewMode.Whitelist);
-                        }}
-                      >
-                        {useTranslateButtons("whitelist.label")}
                       </Button>
                     </Group>
                   </Accordion.Panel>
@@ -299,29 +282,6 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
                 form.setFieldValue("stock_item.blacklist", items);
               }}
               selectedItems={form.values.stock_item.blacklist || []}
-            />
-            <Button
-              color="blue"
-              variant="light"
-              onClick={() => {
-                setViewMode(ViewMode.General);
-              }}
-            >
-              {useTranslateButtons("go_back.label")}
-            </Button>
-          </Stack>
-        )}
-        {viewMode == ViewMode.Whitelist && (
-          <Stack gap={"md"} mt={25}>
-            <Text>{useTranslateFormFields("whitelist.description")}</Text>
-            <Divider />
-            <SelectMultipleTradableItems
-              leftTitle={useTranslateFormFields("whitelist.left_title")}
-              rightTitle={useTranslateFormFields("whitelist.right_title")}
-              onChange={(items) => {
-                form.setFieldValue("stock_item.whitelist", items);
-              }}
-              selectedItems={form.values.stock_item.whitelist || []}
             />
             <Button
               color="blue"

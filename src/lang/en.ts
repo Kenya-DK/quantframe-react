@@ -83,10 +83,11 @@ export const en = {
       riven: "Riven",
       item: "Item",
     },
-    order_mode: {
+    trade_mode: {
       buy: "Buy",
       sell: "Sell",
-      both: "Both",
+      all: "All",
+      wishlist: "Wishlist",
     },
     stock_status: {
       pending: "Pending",
@@ -200,15 +201,16 @@ export const en = {
                 placeholder: "Stock Mode",
                 error: "Invalid stock mode",
               },
-              order_mode: {
-                label: "Order Mode",
+              trade_mode: {
+                label: "Trade Mode",
                 description: {
+                  all: "Will buy and sell wishlist",
                   buy: "Will only buy",
                   sell: "Will only sell",
-                  both: "Will buy and sell",
+                  wishlist: "Will only buy your wishlist",
                 },
-                placeholder: "Order Mode",
-                error: "Invalid order mode",
+                placeholder: "Trade Mode",
+                error: "Invalid trade mode",
               },
               report_to_wfm: {
                 label: "Report to Warframe Market",
@@ -220,20 +222,10 @@ export const en = {
                 error: "Invalid auto trade",
                 tooltip: "Automatically add/sell stock if true",
               },
-              strict_whitelist: {
-                label: "Strict Whitelist",
-                error: "Invalid strict whitelist",
-                tooltip: "Only trade items in the whitelist",
-              },
               blacklist: {
                 description: "The blacklist is a list of items that will not be ignored by the bot. (Sell/Buy)",
                 left_title: "Available Items",
                 right_title: "Blacklisted Items",
-              },
-              whitelist: {
-                description: "The whitelist is a list of items that will buy no matter the profit",
-                left_title: "Available Items",
-                right_title: "Whitelisted Items",
               },
               riven_min_profit: {
                 label: "Min Profit",
@@ -267,9 +259,6 @@ export const en = {
               },
               blacklist: {
                 label: "Blacklist",
-              },
-              whitelist: {
-                label: "Whitelist",
               },
               go_back: {
                 label: "Go Back",

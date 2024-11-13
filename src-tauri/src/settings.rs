@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 
-use crate::enums::order_mode::OrderMode;
+use crate::enums::trade_mode::TradeMode;
 use crate::enums::stock_mode::StockMode;
 use crate::utils::modules::error::AppError;
 use crate::{helper, logger};
@@ -14,7 +14,6 @@ use eyre::eyre;
 pub struct SettingsState {
     // Debug Mode
     pub debug: Vec<String>,
-    pub dev_mode: bool,
     pub http: HttpConfig,
     pub live_scraper: LiveScraperSettings,
     pub notifications: Notifications,
@@ -25,6 +24,8 @@ pub struct SettingsState {
 pub struct LiveScraperSettings {
     // Stock Mode
     pub stock_mode: StockMode,
+    // Trade Mode
+    pub trade_mode: TradeMode,
     // Discord Webhook
     pub webhook: String,
     // Stock Item Settings
@@ -43,16 +44,12 @@ pub struct StockItemSettings {
     pub max_total_price_cap: i64,
     pub price_shift_threshold: i64,
     pub blacklist: Vec<String>,
-    pub whitelist: Vec<String>,
     pub report_to_wfm: bool,
     pub auto_trade: bool, // Will add order to you stock automatically or remove it if you have it
-    pub strict_whitelist: bool,
     pub min_sma: i64,
     pub min_profit: i64,
     pub auto_delete: bool,
     pub buy_quantity: i64,
-    // What to post sell, buy, or both
-    pub order_mode: OrderMode,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AnalyticsSettings {
@@ -94,13 +91,13 @@ impl Default for SettingsState {
     fn default() -> Self {
         Self {
             debug: vec!["*".to_string()],
-            dev_mode: false,
             http: HttpConfig {
                 host: "localhost".to_string(),
                 port: 8080,
             },
             live_scraper: LiveScraperSettings {
                 stock_mode: StockMode::All,
+                trade_mode: TradeMode::All,
                 webhook: "".to_string(),
                 stock_item: StockItemSettings {
                     min_sma: 3,
@@ -113,12 +110,9 @@ impl Default for SettingsState {
                     max_total_price_cap: 100000,
                     price_shift_threshold: -1,
                     blacklist: vec![],
-                    whitelist: vec![],
-                    strict_whitelist: false,
                     report_to_wfm: true,
                     auto_trade: true,
                     auto_delete: true,
-                    order_mode: OrderMode::Both,
                 },
                 stock_riven: StockRivenSettings {
                     min_profit: 25,
