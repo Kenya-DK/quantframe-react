@@ -6,9 +6,6 @@ pub struct Migration;
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        // Replace the sample below with your own migration scripts
-        todo!();
-
         manager
             .create_table(
                 Table::create()
@@ -42,7 +39,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(WishList::MaximumPrice).integer())
                     .col(ColumnDef::new(WishList::ListPrice).integer())
                     .col(
-                        ColumnDef::new(StockItem::PriceHistory)
+                        ColumnDef::new(WishList::PriceHistory)
                             .json()
                             .not_null()
                             .default("[]"),
@@ -54,15 +51,11 @@ impl MigrationTrait for Migration {
                             .default("pending"),
                     )
                     .to_owned(),
-                    
             )
             .await
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        // Replace the sample below with your own migration scripts
-        todo!();
-
         manager
             .drop_table(Table::drop().table(WishList::Table).to_owned())
             .await
