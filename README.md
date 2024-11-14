@@ -60,6 +60,14 @@ pnpm i # Install nodejs deps
 pnpm run tauri build
 ```
 > For developers, you can also use yarn or pnpm if you prefer. (pnpm is the fastest package manager)
+### Support
+
+<div align="center">
+
+[![Buy me a coffee](https://i.imgur.com/cL95gzE.png)](https://buymeacoffee.com/kenyadk)
+[![Support me on Patreon](https://i.imgur.com/Mdkb9jq.png)](https://www.patreon.com/kenya_dk)
+
+</div>
 
 ## About the project
 This project uses:
