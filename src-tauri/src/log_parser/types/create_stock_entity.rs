@@ -244,7 +244,7 @@ impl CreateStockEntity {
         match self.entity_type {
             StockType::Item => {
                 let item = self.to_stock_item();
-                let transaction = item.to_stock().to_transaction(
+                let transaction = item.to_model().to_transaction(
                     user_name,
                     self.tags.clone(),
                     self.quantity,
@@ -255,7 +255,7 @@ impl CreateStockEntity {
             }
             StockType::Riven => {
                 let riven = self.to_stock_riven();
-                let transaction = riven.to_stock().to_transaction(
+                let transaction = riven.to_model().to_transaction(
                     user_name,
                     self.bought.unwrap_or(0),
                     transaction_type,
@@ -277,23 +277,20 @@ impl CreateStockEntity {
         }
 
         match self.entity_type {
-            StockType::Item => {     
+            StockType::Item => {
                 let name = match self.sub_type.as_ref() {
                     Some(sub_type) => {
                         format!("{} ({})", self.name.clone(), sub_type.shot_display())
                     }
-                    None => self.name.clone(),                    
-                };           
+                    None => self.name.clone(),
+                };
                 Ok(name)
             }
-            StockType::Riven => {
-                Ok(self.name.clone() +" "+ &self.mod_name.clone())
-            }
+            StockType::Riven => Ok(self.name.clone() + " " + &self.mod_name.clone()),
             _ => Err(AppError::new(
                 "CreateTransaction",
                 eyre::eyre!("Invalid entity type: {}", self.entity_type.as_str()),
             )),
         }
     }
-
 }

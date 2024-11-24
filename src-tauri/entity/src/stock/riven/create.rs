@@ -129,7 +129,7 @@ impl CreateStockRiven {
             wfm_order_id: order_id,
         }
     }
-    pub fn to_stock(&self) -> super::stock_riven::Model {
+    pub fn to_model(&self) -> super::stock_riven::Model {
         super::stock_riven::Model::new(
             self.wfm_id.clone(),
             self.wfm_url.clone(),

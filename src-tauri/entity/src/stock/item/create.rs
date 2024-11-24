@@ -103,7 +103,7 @@ impl CreateStockItem {
         }
     }
 
-    pub fn to_stock(&self) -> super::stock_item::Model {
+    pub fn to_model(&self) -> super::stock_item::Model {
         super::stock_item::Model::new(
             self.wfm_id.clone(),
             self.wfm_url.clone(),

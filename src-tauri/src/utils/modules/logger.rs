@@ -184,7 +184,7 @@ pub fn clear_logs(days: i64) -> Result<(), AppError> {
     let app_path = helper::get_app_storage_path();
     let log_path = app_path.join("logs");
     if !log_path.is_dir() {
-        continue;
+        return Ok(());
     }
     for path in fs::read_dir(log_path).unwrap() {
         let path = path.unwrap().path();
