@@ -179,7 +179,7 @@ impl DebugClient {
                 }
             }
 
-            let stock_item = entity.to_stock_item().to_stock();
+            let stock_item = entity.to_stock_item().to_model();
 
             match StockItemMutation::create(&new_con, stock_item).await {
                 Ok(_) => {}
@@ -235,7 +235,7 @@ impl DebugClient {
                 }
             }
 
-            let stock_riven = entity.to_stock_riven().to_stock();
+            let stock_riven = entity.to_stock_riven().to_model();
             match StockRivenMutation::create(&new_con, stock_riven).await {
                 Ok(_) => {}
                 Err(e) => {
@@ -292,7 +292,7 @@ impl DebugClient {
                 let tradable_item = tradable_item.unwrap();
                 entity.sub_type = Some(SubType::new(tradable_item.max_rank, None, None, None));
             }
-            let stock_riven = entity.to_stock_item().to_stock();
+            let stock_riven = entity.to_stock_item().to_model();
             match StockItemMutation::create(&new_con, stock_riven).await {
                 Ok(stock) => {
                     logger::info_con("MigrateDataBase", &format!("Created: {}", stock.item_name));

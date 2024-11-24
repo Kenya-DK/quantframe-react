@@ -477,7 +477,7 @@ pub async fn progress_stock_item(
     };
 
     //Get stock item from the entity
-    let stock = entity.to_stock();
+    let stock = entity.to_model();
 
     // Progress the stock item based on the operation
     if operation == OrderType::Sell {
@@ -654,7 +654,7 @@ pub async fn progress_stock_riven(
     };
 
     //Get stock riven from the entity
-    let stock = entity.to_stock();
+    let stock = entity.to_model();
 
     // Progress the stock riven based on the operation
     if operation == OrderType::Sell && entity.stock_id.is_some() {
