@@ -98,10 +98,11 @@ pub async fn auth_logout(
     let arced_mutex = Arc::clone(&auth);
     match qf
         .analytics()
-        .try_send_analytics("metrics/periodic", 3, json!({"Auth_Logout": "manual"}))
+        .try_send_analytics("metrics/periodic", 3, json!([{"Auth_Logout": "manual"}]))
         .await
     {
         Ok(_) => {
+            qf.analytics().set_send_metrics(false);
             qf.auth().logout().await?;
             let mut auth = arced_mutex.lock().expect("Could not lock auth");
             auth.reset();

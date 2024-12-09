@@ -1,6 +1,6 @@
 use eyre::eyre;
 use reqwest::header::HeaderMap;
-use serde_json::json;
+use serde_json::{json, Value};
 
 use crate::{
     qf_client::{client::QFClient, types::user::User},
@@ -88,7 +88,7 @@ impl AuthModule {
         }
     }
     pub async fn logout(&self) -> Result<(), AppError> {
-        match self.client.post::<()>("auth/logout", json!({})).await {
+        match self.client.post::<Value>("auth/logout", json!({})).await {
             Ok(ApiResult::Success(_, _)) => {
                 return Ok(());
             }
@@ -112,6 +112,7 @@ impl AuthModule {
         // Try to login first
         match self.login(username, password, in_game_name).await {
             Ok(user) => {
+                self.client.analytics().set_send_metrics(true);
                 return Ok(user);
             }
             Err(e) => {

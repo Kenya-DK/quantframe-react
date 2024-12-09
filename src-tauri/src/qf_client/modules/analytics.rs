@@ -23,6 +23,7 @@ use crate::{
 #[derive(Clone, Debug)]
 pub struct AnalyticsModule {
     pub client: QFClient,
+    send_metrics: bool,
     is_init: bool,
     current_page: String,
     component: String,
@@ -37,6 +38,7 @@ impl AnalyticsModule {
             current_page: "home".to_string(),
             component: "Analytics".to_string(),
             is_init: false,
+            send_metrics: true,
             last_user_activity: Arc::new(Mutex::new(Instant::now())),
             metricAndLabelPairsScheduledToSend: vec![],
         }
@@ -114,6 +116,11 @@ impl AnalyticsModule {
                     };
                 }
                 loop {
+                    let send_metrics = qf.analytics().send_metrics;
+                    if !send_metrics {
+                        tokio::time::sleep(std::time::Duration::from_secs(60)).await;
+                        continue;
+                    }
                     if last_metric_time.elapsed() > Duration::from_secs(15)
                         || qf.analytics().is_user_active()
                     {
@@ -158,6 +165,10 @@ impl AnalyticsModule {
             }
         });
         Ok(())
+    }
+    pub fn set_send_metrics(&mut self, send_metrics: bool) {
+        self.send_metrics = send_metrics;
+        self.update_state();
     }
     pub async fn try_send_analytics(
         &self,
