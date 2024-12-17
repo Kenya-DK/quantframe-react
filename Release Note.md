@@ -1,13 +1,16 @@
-# Quantframe v1.2.5
+# Quantframe v1.2.6
 
 ## Overview
 
-Just a small update to fix some bugs and add a new feature.
+Remove the whitelist for a new wishlist system.
 
 ## Features
 
-- ✅ Add Buy quantity: You can now buy multiple of the same item.
-- ✅ Add Chat: You can now chat with other users.
+- ✅ Add Wishlist: You can now add items to your wishlist.
+
+## Fix's
+
+- 🛠️ Fix a issue where the bot wut ignore the price range of a item
 
 # Quantframe v1.2.3 (Release Date)
 
