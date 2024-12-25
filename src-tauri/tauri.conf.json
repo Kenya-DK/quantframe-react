@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "Quantframe",
-    "version": "1.2.5"
+    "version": "1.2.6"
   },
   "tauri": {
     "systemTray": {
@@ -35,9 +35,7 @@
       "protocol": {
         "all": true,
         "asset": true,
-        "assetScope": [
-          "**"
-        ]
+        "assetScope": ["**"]
       },
       "notification": {
         "all": true
@@ -51,10 +49,7 @@
         "readDir": true,
         "copyFile": true,
         "removeFile": true,
-        "scope": [
-          "$APPDATA/**",
-          "$DESKTOP/**"
-        ]
+        "scope": ["$APPDATA/**", "$DESKTOP/**"]
       },
       "http": {
         "all": true,
@@ -63,9 +58,7 @@
     },
     "updater": {
       "active": true,
-      "endpoints": [
-        "https://api.quantframe.app/prerelease/{{target}}/{{arch}}/{{current_version}}"
-      ],
+      "endpoints": ["https://api.quantframe.app/prerelease/{{target}}/{{arch}}/{{current_version}}"],
       "dialog": false,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQ3NEIwMTI1MzA3Q0E1OEYKUldTUHBYd3dKUUZMMTczQ2pIYTR0bklLQXlaMkxvK0V0a0RMQytNMTdqZzBCWitQRnNIWDhxYnAK"
     },
@@ -73,13 +66,7 @@
       "active": true,
       "targets": "all",
       "identifier": "dev.kenya.quantframe",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ]
+      "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"]
     },
     "security": {
       "csp": null
@@ -89,7 +76,7 @@
         "fullscreen": false,
         "userAgent": "Quantframe",
         "resizable": true,
-        "title": "Quantframe v1.2.5 - Pre-release By Kenya-DK",
+        "title": "Quantframe v1.2.6 - Pre-release By Kenya-DK",
         "width": 1455,
         "height": 912
       }
