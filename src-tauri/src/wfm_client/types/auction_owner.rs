@@ -8,7 +8,7 @@ pub struct AuctionOwner {
     pub last_seen: String,
 
     #[serde(rename = "reputation")]
-    pub reputation: i64,
+    pub reputation: f64,
 
     #[serde(rename = "locale")]
     pub locale: String,

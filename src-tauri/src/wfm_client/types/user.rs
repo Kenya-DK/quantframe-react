@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct User {
     #[serde(rename = "reputation")]
-    pub reputation: i64,
+    pub reputation: f64,
 
     // #[serde(rename = "locale")]
     // pub locale: String,
