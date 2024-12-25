@@ -336,11 +336,11 @@ pub async fn stock_riven_create(
         "",
         OrderType::Buy,
         "manual",
-        app,
-        cache,
-        notify,
-        wfm,
-        qf,
+        &app,
+        &cache,
+        &notify,
+        &wfm,
+        &qf,
     )
     .await
     {
@@ -390,11 +390,11 @@ pub async fn stock_riven_sell(
         "",
         OrderType::Sell,
         "manual",
-        app,
-        cache,
-        notify,
-        wfm,
-        qf,
+        &app,
+        &cache,
+        &notify,
+        &wfm,
+        &qf,
     )
     .await
     {

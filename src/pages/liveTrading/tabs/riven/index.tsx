@@ -367,11 +367,11 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
           </Group>
         </Grid.Col>
         <Grid.Col span={4}>
-          <StatsWithSegments segments={segments} />
+          <StatsWithSegments showPercent segments={segments} />
         </Grid.Col>
       </Grid>
       <DataTableSearch
-        height={`calc(100vh - ${!is_running ? "395px" : "420px"})`}
+        height={`calc(100vh - ${!is_running ? "400px" : "420px"})`}
         mt={"md"}
         query={query}
         onSearchChange={(text) => setQuery(text)}

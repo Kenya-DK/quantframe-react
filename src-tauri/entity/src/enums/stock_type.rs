@@ -8,8 +8,10 @@ pub enum StockType {
     Riven,
     #[sea_orm(string_value = "item")]
     Item,
+    #[sea_orm(string_value = "wish_list")]
+    WishList,
     #[sea_orm(string_value = "unknown")]
-    Unknown
+    Unknown,
 }
 impl StockType {
     // Create method to convert `OrderType` to a `&str`
@@ -17,21 +19,24 @@ impl StockType {
         match *self {
             StockType::Riven => "riven",
             StockType::Item => "item",
-            StockType::Unknown => "unknown"
+            StockType::WishList => "wish_list",
+            StockType::Unknown => "unknown",
         }
     }
     pub fn to_string(&self) -> String {
         match self {
             StockType::Riven => StockType::Riven.as_str().to_string(),
             StockType::Item => StockType::Item.as_str().to_string(),
-            StockType::Unknown => StockType::Unknown.as_str().to_string()
+            StockType::WishList => StockType::WishList.as_str().to_string(),
+            StockType::Unknown => StockType::Unknown.as_str().to_string(),
         }
     }
     pub fn from_string(s: &str) -> StockType {
         match s {
             "riven" => StockType::Riven,
             "item" => StockType::Item,
-            _ => StockType::Unknown
+            "wish_list" => StockType::WishList,
+            _ => StockType::Unknown,
         }
     }
 }
@@ -43,7 +48,8 @@ impl Serialize for StockType {
         let value = match self {
             StockType::Riven => StockType::Riven.as_str(),
             StockType::Item => StockType::Item.as_str(),
-            StockType::Unknown => StockType::Unknown.as_str()
+            StockType::WishList => StockType::WishList.as_str(),
+            StockType::Unknown => StockType::Unknown.as_str(),
         };
         serializer.serialize_str(value)
     }
@@ -58,7 +64,8 @@ impl<'de> Deserialize<'de> for StockType {
         Ok(match s.as_str() {
             "riven" => StockType::Riven,
             "item" => StockType::Item,
-            _ => StockType::Unknown
+            "wish_list" => StockType::WishList,
+            _ => StockType::Unknown,
         })
     }
 }

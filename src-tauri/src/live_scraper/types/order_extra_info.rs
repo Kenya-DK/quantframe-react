@@ -20,6 +20,10 @@ pub struct OrderDetails {
     pub profit: Option<i64>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "range")]
+    pub range: Option<i64>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "lowest_price")]
     pub lowest_price: Option<i64>,
 
@@ -57,6 +61,7 @@ impl Default for OrderDetails {
             total_buyers: None,
             total_sellers: None,
             lowest_price: None,
+            range: None,
             highest_price: None,
             profit: None,
             quantity: 1,
@@ -78,6 +83,7 @@ impl OrderDetails {
         moving_avg: i64,
         orders: Vec<Order>,
         quantity: i64,
+        range: i64,
         price_history: Vec<PriceHistory>,
     ) -> OrderDetails {
         OrderDetails {
@@ -87,6 +93,7 @@ impl OrderDetails {
             profit: Some(profit),
             highest_price: Some(highest_price),
             moving_avg: Some(moving_avg),
+            range: Some(range),
             orders,
             price_history: price_history.into_iter().collect(),
             is_dirty: true,
@@ -144,6 +151,12 @@ impl OrderDetails {
     pub fn set_quantity(&mut self, quantity: i64) {
         if Self::set_if_changed(&mut self.quantity, quantity, &mut self.is_dirty) {
             self.changes = Some("quantity".to_string());
+        }
+    }
+
+    pub fn set_range(&mut self, range: i64) {
+        if Self::set_if_changed(&mut self.range, Some(range), &mut self.is_dirty) {
+            self.changes = Some("range".to_string());
         }
     }
 

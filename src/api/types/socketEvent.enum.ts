@@ -20,6 +20,9 @@ export enum QfSocketEvent {
   UpdateStockItems = "Stock:UpdateStockItems",
   UpdateStockRivens = "Stock:UpdateStockRivens",
 
+  // Wish List
+  UpdateWishList = "WishList:Update",
+
   // User
   UpdateUser = "User:Update",
 

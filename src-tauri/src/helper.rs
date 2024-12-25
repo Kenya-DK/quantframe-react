@@ -3,12 +3,14 @@ use entity::{
         item::{create::CreateStockItem, stock_item},
         riven::{create::CreateStockRiven, stock_riven},
     },
+    sub_type::SubType,
     transaction::transaction::TransactionType,
+    wish_list::{create::CreateWishListItem, wish_list},
 };
 use eyre::eyre;
 use regex::Regex;
 use serde_json::{json, Map, Value};
-use service::{StockItemMutation, StockRivenMutation, TransactionMutation};
+use service::{StockItemMutation, StockRivenMutation, TransactionMutation, WishListMutation};
 use std::{
     collections::HashMap,
     fs::{self, File},
@@ -29,7 +31,7 @@ use crate::{
         enums::ui_events::{UIEvent, UIOperationEvent},
         modules::error::AppError,
     },
-    wfm_client::{client::WFMClient, enums::order_type::OrderType},
+    wfm_client::{client::WFMClient, enums::order_type::OrderType, types::order::Order},
     APP,
 };
 
@@ -451,6 +453,211 @@ pub fn open_json_and_replace(path: &str, properties: Vec<String>) -> Result<Valu
     }
 }
 
+pub async fn progress_wfm_order(
+    notify: &NotifyClient,
+    wfm: &WFMClient,
+    url: &str,
+    sub_type: Option<SubType>,
+    quantity: i64,
+    operation: OrderType,
+    need_update: bool,
+    from: &str,
+) -> Result<(String, Option<Order>), AppError> {
+    // Process the order on WFM
+    match wfm
+        .orders()
+        .progress_order(
+            &url,
+            sub_type.clone(),
+            quantity,
+            operation.clone(),
+            need_update,
+        )
+        .await
+    {
+        Ok((operation, order)) => {
+            if operation == "Deleted" && order.is_some() {
+                add_metric("WFM_OrderDeleted", from);
+                notify.gui().send_event_update(
+                    UIEvent::UpdateOrders,
+                    UIOperationEvent::Delete,
+                    Some(json!({ "id": order.clone().unwrap().id })),
+                );
+            } else if operation == "Updated" {
+                add_metric("WFM_OrderUpdated", from);
+                notify.gui().send_event_update(
+                    UIEvent::UpdateOrders,
+                    UIOperationEvent::CreateOrUpdate,
+                    Some(json!(order)),
+                );
+            }
+            return Ok((operation, order));
+        }
+        Err(e) => {
+            return Err(e);
+        }
+    }
+}
+
+pub async fn progress_transaction(
+    app: &AppState,
+    notify: &NotifyClient,
+    qf: &QFClient,
+    transaction: &mut entity::transaction::transaction::Model,
+    from: &str,
+) -> Result<entity::transaction::transaction::Model, AppError> {
+    match TransactionMutation::create(&app.conn, &transaction).await {
+        Ok(inserted) => {
+            add_metric("Transaction_Create", from);
+            notify.gui().send_event_update(
+                UIEvent::UpdateTransaction,
+                UIOperationEvent::CreateOrUpdate,
+                Some(json!(inserted)),
+            );
+            transaction.id = inserted.id;
+        }
+        Err(e) => {
+            return Err(AppError::new_db("TransactionCreate", e));
+        }
+    };
+
+    // Add the transaction to the QuantFrame analytics stars
+    match qf.transaction().create_transaction(&transaction).await {
+        Ok(_) => {}
+        Err(e) => {
+            return Err(e);
+        }
+    }
+    Ok(transaction.clone())
+}
+
+pub async fn progress_wish_item(
+    entity: &mut CreateWishListItem,
+    validate_by: &str,
+    user_name: &str,
+    operation: OrderType,
+    options: Vec<String>,
+    from: &str,
+    app: &AppState,
+    cache: &CacheClient,
+    notify: &NotifyClient,
+    wfm: &WFMClient,
+    qf: &QFClient,
+) -> Result<(wish_list::Model, Vec<String>), AppError> {
+    let mut response = vec![];
+
+    if operation == OrderType::Sell {
+        return Err(AppError::new(
+            "ProgressWishItem",
+            eyre!("Invalid operation"),
+        ));
+    }
+
+    // Validate the stock item
+    match cache
+        .tradable_items()
+        .validate_create_wish_item(entity, validate_by)
+    {
+        Ok(_) => {}
+        Err(e) => {
+            return Err(e);
+        }
+    };
+
+    //Get stock item from the entity
+    let wish_item = entity.to_model();
+
+    // Progress the stock item based on the operation
+
+    match WishListMutation::bought_by_url_and_sub_type(
+        &app.conn,
+        wish_item.wfm_url.as_str(),
+        wish_item.sub_type.clone(),
+        wish_item.quantity,
+    )
+    .await
+    {
+        Ok((operation, item)) => {
+            response.push(format!("WishItem_{}", operation));
+            if operation == "NotFound" {
+                if !options.contains(&"WishContinueOnError".to_string()) {
+                    return Err(AppError::new(
+                        "WishItemCreate",
+                        eyre!(format!(
+                            "Wish Item not found: {} {:?}",
+                            entity.wfm_url, entity.sub_type
+                        )),
+                    ));
+                }
+            } else if operation == "Deleted" {
+                notify.gui().send_event_update(
+                    UIEvent::UpdateWishList,
+                    UIOperationEvent::Delete,
+                    Some(json!({ "id": item.unwrap().id })),
+                );
+            } else if operation == "Updated" {
+                notify.gui().send_event_update(
+                    UIEvent::UpdateWishList,
+                    UIOperationEvent::CreateOrUpdate,
+                    Some(json!(item)),
+                );
+            }
+            add_metric("Wish_ItemBought", from);
+            response.push("WishItem_Bought".to_string());
+        }
+        Err(e) => {
+            response.push("WishItemDbError".to_string());
+            return Err(AppError::new("WishItemCreate", eyre!(e)));
+        }
+    }
+
+    // Process the order on WFM
+    match progress_wfm_order(
+        notify,
+        wfm,
+        entity.wfm_url.as_str(),
+        entity.sub_type.clone(),
+        entity.quantity,
+        OrderType::Buy,
+        true,
+        from,
+    )
+    .await
+    {
+        Ok((operation, _)) => {
+            response.push(format!("WFM_{}", operation));
+        }
+        Err(e) => {
+            response.push("WFMOrderError".to_string());
+            if !options.contains(&"WFMContinueOnError".to_string()) {
+                return Err(e);
+            }
+        }
+    }
+
+    if entity.bought.unwrap_or(0) <= 0 {
+        return Ok((wish_item, response));
+    }
+
+    // Add Transaction to the database
+    let mut transaction = wish_item.to_transaction(
+        user_name,
+        entity.tags.clone(),
+        entity.quantity,
+        entity.bought.unwrap_or(0),
+        TransactionType::Purchase,
+    );
+
+    match progress_transaction(app, notify, qf, &mut transaction, from).await {
+        Ok(_) => {}
+        Err(e) => {
+            response.push("TransactionDbError".to_string());
+            return Err(e);
+        }
+    };
+    return Ok((wish_item, response));
+}
+
 pub async fn progress_stock_item(
     entity: &mut CreateStockItem,
     validate_by: &str,
@@ -458,11 +665,11 @@ pub async fn progress_stock_item(
     operation: OrderType,
     options: Vec<String>,
     from: &str,
-    app: AppState,
-    cache: CacheClient,
-    notify: NotifyClient,
-    wfm: WFMClient,
-    qf: QFClient,
+    app: &AppState,
+    cache: &CacheClient,
+    notify: &NotifyClient,
+    wfm: &WFMClient,
+    qf: &QFClient,
 ) -> Result<(stock_item::Model, Vec<String>), AppError> {
     let mut response = vec![];
     // Validate the stock item
@@ -490,8 +697,8 @@ pub async fn progress_stock_item(
         .await
         {
             Ok((operation, item)) => {
-                if operation == "Item not found" {
-                    response.push("StockItemNotFound".to_string());
+                response.push(format!("StockItem_{}", operation));
+                if operation == "NotFound" {
                     if !options.contains(&"StockContinueOnError".to_string()) {
                         return Err(AppError::new(
                             "StockItemSell",
@@ -501,15 +708,13 @@ pub async fn progress_stock_item(
                             )),
                         ));
                     }
-                } else if operation == "Item deleted" {
-                    response.push("StockItemDeleted".to_string());
+                } else if operation == "Deleted" {
                     notify.gui().send_event_update(
                         UIEvent::UpdateStockItems,
                         UIOperationEvent::Delete,
                         Some(json!({ "id": item.unwrap().id })),
                     );
-                } else if operation == "Item updated" {
-                    response.push("StockItemUpdated".to_string());
+                } else if operation == "Updated" {
                     notify.gui().send_event_update(
                         UIEvent::UpdateStockItems,
                         UIOperationEvent::CreateOrUpdate,
@@ -517,7 +722,7 @@ pub async fn progress_stock_item(
                     );
                 }
                 add_metric("Stock_ItemSold", from);
-                response.push("Stock Item sold".to_string());
+                response.push("StockItem_Sold".to_string());
             }
             Err(e) => {
                 response.push("StockDbError".to_string());
@@ -527,7 +732,7 @@ pub async fn progress_stock_item(
     } else if operation == OrderType::Buy {
         match StockItemMutation::add_item(&app.conn, stock.clone()).await {
             Ok(inserted) => {
-                response.push("StockItemAdd".to_string());
+                response.push("StockItem_Add".to_string());
                 notify.gui().send_event_update(
                     UIEvent::UpdateStockItems,
                     UIOperationEvent::CreateOrUpdate,
@@ -536,7 +741,7 @@ pub async fn progress_stock_item(
                 add_metric("Stock_ItemCreate", from);
             }
             Err(e) => {
-                response.push("StockDbError".to_string());
+                response.push("StockItem_DbError".to_string());
                 return Err(AppError::new("StockItemCreate", eyre!(e)));
             }
         }
@@ -548,35 +753,20 @@ pub async fn progress_stock_item(
     }
 
     // Process the order on WFM
-    match wfm
-        .orders()
-        .progress_order(
-            &entity.wfm_url,
-            entity.sub_type.clone(),
-            entity.quantity,
-            operation.clone(),
-            operation == OrderType::Sell,
-        )
-        .await
+    match progress_wfm_order(
+        notify,
+        wfm,
+        entity.wfm_url.as_str(),
+        entity.sub_type.clone(),
+        entity.quantity,
+        operation.clone(),
+        operation == OrderType::Sell,
+        from,
+    )
+    .await
     {
-        Ok((operation, order)) => {
-            if operation == "order_deleted" && order.is_some() {
-                add_metric("WFM_OrderDeleted", from);
-                response.push("WFMOrderDeleted".to_string());
-                notify.gui().send_event_update(
-                    UIEvent::UpdateOrders,
-                    UIOperationEvent::Delete,
-                    Some(json!({ "id": order.unwrap().id })),
-                );
-            } else if operation == "order_updated" {
-                add_metric("WFM_OrderUpdated", from);
-                response.push("WFMOrderUpdated".to_string());
-                notify.gui().send_event_update(
-                    UIEvent::UpdateOrders,
-                    UIOperationEvent::CreateOrUpdate,
-                    Some(json!(order)),
-                );
-            }
+        Ok((operation, _)) => {
+            response.push(format!("WFM_{}", operation));
         }
         Err(e) => {
             response.push("WFMOrderError".to_string());
@@ -604,31 +794,13 @@ pub async fn progress_stock_item(
         transaction_type,
     );
 
-    match TransactionMutation::create(&app.conn, &transaction).await {
-        Ok(inserted) => {
-            add_metric("Transaction_ItemCreate", from);
-            response.push("TransactionCreated".to_string());
-            notify.gui().send_event_update(
-                UIEvent::UpdateTransaction,
-                UIOperationEvent::CreateOrUpdate,
-                Some(json!(inserted)),
-            );
-            transaction.id = inserted.id;
-        }
-        Err(e) => {
-            response.push("TransactionDbError".to_string());
-            return Err(AppError::new_db("StockItemCreate", e));
-        }
-    };
-
-    // Add the transaction to the QuantFrame analytics stars
-    match qf.transaction().create_transaction(&transaction).await {
+    match progress_transaction(app, notify, qf, &mut transaction, from).await {
         Ok(_) => {}
         Err(e) => {
-            response.push("TransactionAnalyticsError".to_string());
+            response.push("TransactionDbError".to_string());
             return Err(e);
         }
-    }
+    };
     return Ok((stock, response));
 }
 
@@ -638,11 +810,11 @@ pub async fn progress_stock_riven(
     user_name: &str,
     operation: OrderType,
     from: &str,
-    app: AppState,
-    cache: CacheClient,
-    notify: NotifyClient,
-    wfm: WFMClient,
-    qf: QFClient,
+    app: &AppState,
+    cache: &CacheClient,
+    notify: &NotifyClient,
+    wfm: &WFMClient,
+    qf: &QFClient,
 ) -> Result<(stock_riven::Model, Vec<String>), AppError> {
     let mut response = vec![];
     // Validate the stock item

@@ -146,47 +146,38 @@ impl CacheClient {
 
     pub async fn load(&self) -> Result<(), AppError> {
         let qf = self.qf.lock()?.clone();
-        let settings = self.settings.lock()?.clone();
-        if !settings.dev_mode {
-            let current_cache_id = self.get_current_cache_id()?;
-            logger::info_con(
-                &self.component,
-                format!("Current cache id: {}", current_cache_id).as_str(),
-            );
-            let remote_cache_id = match qf.cache().get_cache_id().await {
-                Ok(id) => id,
-                Err(e) => {
-                    logger::error_con(
-                        &self.component,
-                        format!(
-                            "There was an error downloading the cache from the server: {:?}",
-                            e
-                        )
-                        .as_str(),
-                    );
-                    logger::info_con(&self.component, "Using the current cache data");
-                    current_cache_id.clone()
-                }
-            };
-            logger::info_con(
-                &self.component,
-                format!("Remote cache id: {}", remote_cache_id).as_str(),
-            );
-            if current_cache_id != remote_cache_id {
-                logger::info_con(
+        let current_cache_id = self.get_current_cache_id()?;
+        logger::info_con(
+            &self.component,
+            format!("Current cache id: {}", current_cache_id).as_str(),
+        );
+        let remote_cache_id = match qf.cache().get_cache_id().await {
+            Ok(id) => id,
+            Err(e) => {
+                logger::error_con(
                     &self.component,
-                    "Cache id mismatch, downloading new cache data",
+                    format!(
+                        "There was an error downloading the cache from the server: {:?}",
+                        e
+                    )
+                    .as_str(),
                 );
-                self.download_cache_data().await?;
-                self.update_current_cache_id(remote_cache_id)?;
+                logger::info_con(&self.component, "Using the current cache data");
+                current_cache_id.clone()
             }
-        } else {
-            logger::warning_con(
+        };
+        logger::info_con(
+            &self.component,
+            format!("Remote cache id: {}", remote_cache_id).as_str(),
+        );
+        if current_cache_id != remote_cache_id {
+            logger::info_con(
                 &self.component,
-                "Dev Mode is enabled, skipping cache download using current cache data",
+                "Cache id mismatch, downloading new cache data",
             );
+            self.download_cache_data().await?;
+            self.update_current_cache_id(remote_cache_id)?;
         }
-
         self.arcane().load()?;
         logger::info_con(&self.component, "Arcane data loaded");
         self.warframe().load()?;
@@ -244,6 +235,10 @@ impl CacheClient {
             .as_ref()
             .unwrap()
             .clone()
+    }
+    pub fn update_item_price_module(&self, module: ItemPriceModule) {
+        // Update the stored ItemModule
+        *self.item_price_module.write().unwrap() = Some(module);
     }
 
     pub fn riven(&self) -> RivenModule {
@@ -565,14 +560,6 @@ impl CacheClient {
         *self.part_module.write().unwrap() = Some(module);
     }
 
-    pub fn get_path(&self, path: &str) -> PathBuf {
-        let path = self.cache_path.join(path);
-        if !path.exists() {
-            std::fs::create_dir_all(&path).expect("Failed to create cache directory");
-        }
-        path
-    }
-
     pub fn read_text_from_file(&self, path: &PathBuf) -> Result<String, AppError> {
         let mut file = File::open(self.cache_path.join(path)).map_err(|e| {
             AppError::new(
@@ -597,5 +584,32 @@ impl CacheClient {
         })?;
 
         Ok(content)
+    }
+
+    pub fn write_text_to_file(&self, path: &PathBuf, content: Vec<u8>) -> Result<(), AppError> {
+        let full_path = self.cache_path.join(path);
+        let mut file = File::create(full_path.clone()).map_err(|e| {
+            AppError::new(
+                &self.component,
+                eyre!(format!(
+                    "Failed to create file: {}, error: {}",
+                    full_path.to_str().unwrap(),
+                    e.to_string()
+                )),
+            )
+        })?;
+
+        file.write_all(&content).map_err(|e| {
+            AppError::new(
+                &self.component,
+                eyre!(format!(
+                    "Failed to write to file: {}, error: {}",
+                    path.to_str().unwrap(),
+                    e.to_string()
+                )),
+            )
+        })?;
+
+        Ok(())
     }
 }

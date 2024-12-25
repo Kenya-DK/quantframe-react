@@ -1,14 +1,15 @@
 use std::collections::HashMap;
 
 use entity::{
-    enums::stock_type::StockType, sub_type::SubType,
+    enums::stock_type::StockType, sub_type::SubType, transaction::transaction::TransactionType,
 };
 use eyre::eyre;
 
 use serde_json::{json, Value};
-use service::StockRivenQuery;
+use service::{StockRivenQuery, TransactionMutation, WishListMutation, WishListQuery};
 
 use crate::{
+    app::{self, client::AppState},
     cache::{client::CacheClient, types::cache_item_component::CacheItemComponent},
     helper,
     log_parser::{
@@ -20,17 +21,16 @@ use crate::{
             trade_detection::TradeDetection,
         },
     },
+    notification::client::NotifyClient,
+    qf_client::client::QFClient,
     utils::{
-        enums::{
-            log_level::LogLevel,
-            ui_events::UIEvent,
-        },
+        enums::{log_level::LogLevel, ui_events::UIEvent},
         modules::{
             error::{self, AppError},
             logger,
         },
     },
-    wfm_client::enums::order_type::OrderType,
+    wfm_client::{client::WFMClient, enums::order_type::OrderType, modules::order},
 };
 
 #[derive(Clone, Debug)]
@@ -411,7 +411,7 @@ impl OnTradeEvent {
         }
 
         // Validate the items
-        let created_stock = match self.get_stock_item(&cache, items, trade.platinum) {
+        let mut created_stock = match self.get_stock_item(&cache, items, trade.platinum) {
             Ok(item) => item,
             Err(err) => {
                 notify_payload["i18n_key_title"] =
@@ -438,6 +438,7 @@ impl OnTradeEvent {
 
         notify_payload["i18n_key_title"] =
             format!("{}.{}.{}.title", gui_id, notify_type, notify_entity).into();
+
         notify_payload["i18n_key_message"] =
             format!("{}.{}.{}.message", gui_id, notify_type, notify_entity).into();
 
@@ -446,145 +447,261 @@ impl OnTradeEvent {
         let client = self.clone();
         tokio::task::spawn(async move {
             if auto_trade {
-                // Handle Riven Mods Sale
-                if created_stock.entity_type == StockType::Riven
-                    && trade.trade_type == TradeClassification::Sale
-                {
-                    // Find Stock
-                    let stock = match StockRivenQuery::get_by_riven_name(
-                        &app.conn,
-                        &created_stock.wfm_url,
-                        &created_stock.mod_name,
-                        created_stock.sub_type.clone().unwrap(),
-                    )
-                    .await
-                    {
-                        Ok(stock_riven) => stock_riven,
-                        Err(e) => {
-                            notify.gui().send_event(
-                                UIEvent::OnNotificationWarning,
-                                Some(notify_payload.clone()),
-                            );
-                            error::create_log_file(
-                                "trade_accepted.log".to_string(),
-                                &AppError::new_db(&client.get_component("AutoTrade"), e),
-                            );
-                            None
+                // Check if the stock is a wish list item
+                if created_stock.entity_type == StockType::Item {
+                    match created_stock.is_wish_list_item(&app.conn).await {
+                        Ok(is) => {
+                            if is {
+                                created_stock.entity_type = StockType::WishList;
+                            }
                         }
-                    };
-                    if stock.is_none() {
-                        notify_value["stock"] = json!("⚠️");
-                        notify_payload["values"] = notify_value;
-                        notify
-                            .gui()
-                            .send_event(UIEvent::OnNotificationWarning, Some(json!(created_stock)));
-                        return;
+                        Err(_) => {}
                     }
-                    let stock = stock.unwrap();
+                }
 
-                    match helper::progress_stock_riven(
-                        &mut stock.to_create(trade.platinum),
-                        "--weapon_by url_name --weapon_lang en --attribute_by url_name",
-                        &trade.player_name,
-                        OrderType::Sell,
-                        "auto",
-                        app,
-                        cache,
-                        notify.clone(),
-                        wfm,
-                        qf,
+                if created_stock.entity_type == StockType::Riven {
+                    match process_stock_riven(
+                        &client,
+                        &cache,
+                        &app,
+                        &notify,
+                        &wfm,
+                        &qf,
+                        &created_stock,
+                        &trade,
+                        &mut notify_payload,
                     )
                     .await
                     {
-                        Ok((_, rep)) => {
-                            if rep.contains(&"StockRivenDeleted".to_string()) {
-                                notify_value["stock"] = json!("✅");
-                            } else {
-                                notify_type = "warning";
-                                notify_value["stock"] = json!("⚠️");
-                            }
-
-                            if rep.contains(&"WFMRivenDeleted".to_string()) {
-                                notify_value["auction"] = json!("✅");
-                            } else {
-                                notify_type = "warning";
-                                notify_value["auction"] = json!("⚠️");
-                            }
-                        }
+                        Ok(_) => {}
                         Err(e) => {
-                            notify_value["stock"] = json!("❌");
                             error::create_log_file("trade_accepted.log".to_string(), &e);
                         }
                     }
-                }
-                // Handle Riven Mods Purchase
-                else if created_stock.entity_type == StockType::Riven
-                    && trade.trade_type == TradeClassification::Purchase
-                {
-                    logger::info_con(&client.get_component("AutoTrade"), "Riven Mod Purchase");
-                }
-                // Handle Item Sale & Purchase
-                else if created_stock.entity_type == StockType::Item
-                    && (trade.trade_type == TradeClassification::Sale
-                        || trade.trade_type == TradeClassification::Purchase)
-                {
-                    // Create Stock Item
-                    let mut stock_item = created_stock.to_stock_item();
-
-                    let order_type = if trade.trade_type == TradeClassification::Sale {
-                        OrderType::Sell
-                    } else {
-                        OrderType::Buy
-                    };
-                    match helper::progress_stock_item(
-                        &mut stock_item,
-                        "--item_by url_name --item_lang en",
-                        &trade.player_name,
-                        order_type,
-                        vec![
-                            "StockContinueOnError".to_string(),
-                            "WFMContinueOnError".to_string(),
-                        ],
-                        "auto",
-                        app,
-                        cache,
-                        notify.clone(),
-                        wfm,
-                        qf,
+                } else if created_stock.entity_type == StockType::Item {
+                    match process_stock_item(
+                        &client,
+                        &cache,
+                        &app,
+                        &notify,
+                        &wfm,
+                        &qf,
+                        &created_stock,
+                        &trade,
+                        &mut notify_payload,
                     )
                     .await
                     {
-                        Ok((_, rep)) => {
-                            if !rep.contains(&"StockItemNotFound".to_string()) {
-                                notify_value["stock"] = json!("✅");
-                            } else {
-                                notify_value["stock"] = json!("⚠️");
-                            }
-
-                            if rep.contains(&"WFMOrderDeleted".to_string())
-                                || rep.contains(&"WFMOrderUpdated".to_string())
-                            {
-                                notify_value["order"] = json!("✅");
-                            } else {
-                                notify_value["order"] = json!("⚠️");
-                            }
-
-                            if rep.contains(&"TransactionCreated".to_string()) {
-                                notify_value["transaction"] = json!("✅");
-                            } else {
-                                notify_value["order"] = json!("⚠️");
-                            }
+                        Ok(_) => {}
+                        Err(e) => {
+                            error::create_log_file("trade_accepted.log".to_string(), &e);
                         }
-                        Err(_) => {
-                            notify_type = "warning";
-                            notify_value["stock"] = json!("⚠️");
-                            notify_value["transaction"] = json!("❌");
+                    }
+                } else if created_stock.entity_type == StockType::WishList
+                    && trade.trade_type == TradeClassification::Purchase
+                {
+                    match process_wish_list(
+                        &client,
+                        &cache,
+                        &app,
+                        &notify,
+                        &wfm,
+                        &qf,
+                        &created_stock,
+                        &trade,
+                        &mut notify_payload,
+                    )
+                    .await
+                    {
+                        Ok(_) => {}
+                        Err(e) => {
+                            error::create_log_file("trade_accepted.log".to_string(), &e);
                         }
                     }
                 } else {
-                    logger::warning_con("TradeAccepted", "Unknown entity type");
+                    logger::warning_con(
+                        "TradeAccepted",
+                        &format!(
+                            "Unknown entity type: {:?} or trade type: {:?}",
+                            created_stock.entity_type, trade.trade_type
+                        ),
+                    );
                     return;
                 }
+
+                // process_stock_riven(&cache, &app, &notify, &wfm, &qf,&created_stock, &trade).await;            ))
+
+                // // Handle Riven Mods Sale
+                // if created_stock.entity_type == StockType::Riven
+                //     && trade.trade_type == TradeClassification::Sale
+                // {
+                //     // Find Stock
+                //     let stock = match StockRivenQuery::get_by_riven_name(
+                //         &app.conn,
+                //         &created_stock.wfm_url,
+                //         &created_stock.mod_name,
+                //         created_stock.sub_type.clone().unwrap(),
+                //     )
+                //     .await
+                //     {
+                //         Ok(stock_riven) => stock_riven,
+                //         Err(e) => {
+                //             notify.gui().send_event(
+                //                 UIEvent::OnNotificationWarning,
+                //                 Some(notify_payload.clone()),
+                //             );
+                //             error::create_log_file(
+                //                 "trade_accepted.log".to_string(),
+                //                 &AppError::new_db(&client.get_component("AutoTrade"), e),
+                //             );
+                //             None
+                //         }
+                //     };
+                //     if stock.is_none() {
+                //         notify_value["stock"] = json!("⚠️");
+                //         notify_payload["values"] = notify_value;
+                //         notify
+                //             .gui()
+                //             .send_event(UIEvent::OnNotificationWarning, Some(json!(created_stock)));
+                //         return;
+                //     }
+                //     let stock = stock.unwrap();
+
+                //     match helper::progress_stock_riven(
+                //         &mut stock.to_create(trade.platinum),
+                //         "--weapon_by url_name --weapon_lang en --attribute_by url_name",
+                //         &trade.player_name,
+                //         OrderType::Sell,
+                //         "auto",
+                //         app,
+                //         cache,
+                //         notify.clone(),
+                //         wfm,
+                //         qf,
+                //     )
+                //     .await
+                //     {
+                //         Ok((_, rep)) => {
+                //             if rep.contains(&"StockRivenDeleted".to_string()) {
+                //                 notify_value["stock"] = json!("✅");
+                //             } else {
+                //                 notify_type = "warning";
+                //                 notify_value["stock"] = json!("⚠️");
+                //             }
+
+                //             if rep.contains(&"WFMRivenDeleted".to_string()) {
+                //                 notify_value["auction"] = json!("✅");
+                //             } else {
+                //                 notify_type = "warning";
+                //                 notify_value["auction"] = json!("⚠️");
+                //             }
+                //         }
+                //         Err(e) => {
+                //             notify_value["stock"] = json!("❌");
+                //             error::create_log_file("trade_accepted.log".to_string(), &e);
+                //         }
+                //     }
+                // }
+                // // Handle Riven Mods Purchase
+                // else if created_stock.entity_type == StockType::Riven
+                //     && trade.trade_type == TradeClassification::Purchase
+                // {
+                //     logger::info_con(&client.get_component("AutoTrade"), "Riven Mod Purchase");
+                // }
+                // // Handle Item Sale & Purchase
+                // else if created_stock.entity_type == StockType::Item
+                //     && (trade.trade_type == TradeClassification::Sale
+                //         || trade.trade_type == TradeClassification::Purchase)
+                // {
+                //     // Create Stock Item
+                //     let mut stock_item = created_stock.to_stock_item();
+
+                //     let wish_item = match WishListQuery::find_by_url_name_and_sub_type(
+                //         &app.conn,
+                //         &stock_item.wfm_url,
+                //         stock_item.sub_type.clone(),
+                //     )
+                //     .await
+                //     {
+                //         Ok(wish_list) => wish_list,
+                //         Err(_) => None,
+                //     };
+                //     if wish_item.is_some() {
+                //         match TransactionMutation::create(
+                //             &app.conn,
+                //             &created_stock
+                //                 .to_transaction(&trade.player_name, TransactionType::Purchase)
+                //                 .unwrap(),
+                //         )
+                //         .await
+                //         {
+                //             Ok(_) => {
+                //                 notify_value["transaction"] = json!("✅");
+                //             }
+                //             Err(e) => {
+                //                 error::create_log_file(
+                //                     "trade_accepted.log".to_string(),
+                //                     &AppError::new_db(&client.get_component("AutoTrade"), e),
+                //                 );
+                //             }
+                //         }
+                //         return;
+                //     }
+
+                //     let order_type = if trade.trade_type == TradeClassification::Sale {
+                //         OrderType::Sell
+                //     } else {
+                //         OrderType::Buy
+                //     };
+                //     match helper::progress_stock_item(
+                //         &mut stock_item,
+                //         "--item_by url_name --item_lang en",
+                //         &trade.player_name,
+                //         order_type,
+                //         vec![
+                //             "StockContinueOnError".to_string(),
+                //             "WFMContinueOnError".to_string(),
+                //         ],
+                //         "auto",
+                //         app,
+                //         cache,
+                //         notify.clone(),
+                //         wfm,
+                //         qf,
+                //     )
+                //     .await
+                //     {
+                //         Ok((_, rep)) => {
+                //             if !rep.contains(&"StockItemNotFound".to_string()) {
+                //                 notify_value["stock"] = json!("✅");
+                //             } else {
+                //                 notify_value["stock"] = json!("⚠️");
+                //             }
+
+                //             if rep.contains(&"WFMOrderDeleted".to_string())
+                //                 || rep.contains(&"WFMOrderUpdated".to_string())
+                //             {
+                //                 notify_value["order"] = json!("✅");
+                //             } else {
+                //                 notify_value["order"] = json!("⚠️");
+                //             }
+
+                //             if rep.contains(&"TransactionCreated".to_string()) {
+                //                 notify_value["transaction"] = json!("✅");
+                //             } else {
+                //                 notify_value["order"] = json!("⚠️");
+                //             }
+                //         }
+                //         Err(_) => {
+                //             notify_type = "warning";
+                //             notify_value["stock"] = json!("⚠️");
+                //             notify_value["transaction"] = json!("❌");
+                //         }
+                //     }
+                // } else {
+                //     logger::warning_con("TradeAccepted", "Unknown entity type");
+                //     return;
+                // }
             }
 
             notify_payload["values"] = notify_value;
@@ -718,6 +835,7 @@ impl OnTradeEvent {
         items: Vec<TradeItem>,
         plat: i64,
     ) -> Result<CreateStockEntity, AppError> {
+        let app = self.client.app.lock().unwrap().clone();
         let all_items_parts = cache.parts().get_parts("All");
         let mut stock_item = CreateStockEntity::new("", plat);
 
@@ -978,7 +1096,7 @@ pub fn parse_item(cache: &CacheClient, item: &mut TradeItem) -> Result<bool, App
                         return Ok(false);
                     }
                 } else {
-                    let last_space_index = name_part.find(" ").unwrap() as usize;
+                    let last_space_index = name_part.rfind(" ").unwrap() as usize;
                     let weapon = &name_part[..last_space_index];
                     let att = &name_part[last_space_index + 1..];
                     item.name = format!("{} {}", weapon, att);
@@ -1171,4 +1289,193 @@ pub fn parse_item(cache: &CacheClient, item: &mut TradeItem) -> Result<bool, App
     item.unique_name = format!("/QF_Special/Other/{}", item.name);
     item.item_type = "Unknown".to_string();
     Ok(false)
+}
+
+async fn process_stock_riven(
+    client: &OnTradeEvent,
+    cache: &CacheClient,
+    app: &AppState,
+    notify: &NotifyClient,
+    wfm: &WFMClient,
+    qf: &QFClient,
+    created_stock: &CreateStockEntity,
+    trade: &PlayerTrade,
+    notify_payload: &mut Value,
+) -> Result<(&'static str, Value), AppError> {
+    if trade.trade_type == TradeClassification::Purchase {
+        // Skip the purchase
+        logger::info_con(
+            &client.get_component("ProcessStockRiven"),
+            "Skipping Riven Mod Purchase",
+        );
+        return Ok(("skipped", json!({})));
+    }
+    // Find Stock
+    let stock = match StockRivenQuery::get_by_riven_name(
+        &app.conn,
+        &created_stock.wfm_url,
+        &created_stock.mod_name,
+        created_stock.sub_type.clone().unwrap(),
+    )
+    .await
+    {
+        Ok(stock_riven) => stock_riven,
+        Err(e) => {
+            notify
+                .gui()
+                .send_event(UIEvent::OnNotificationWarning, Some(notify_payload.clone()));
+            error::create_log_file(
+                "trade_accepted.log".to_string(),
+                &AppError::new_db(&client.get_component("AutoTrade"), e),
+            );
+            None
+        }
+    };
+    if stock.is_none() {
+        logger::info_con(
+            &client.get_component("ProcessStockRiven"),
+            "Stock Riven Not Found",
+        );
+        return Ok(("skipped", json!({})));
+    }
+    let stock = stock.unwrap();
+
+    match helper::progress_stock_riven(
+        &mut stock.to_create(trade.platinum),
+        "--weapon_by url_name --weapon_lang en --attribute_by url_name",
+        &trade.player_name,
+        OrderType::Sell,
+        "auto",
+        app,
+        cache,
+        notify,
+        wfm,
+        qf,
+    )
+    .await
+    {
+        Ok((_, rep)) => {}
+        Err(e) => {
+            error::create_log_file("trade_accepted.log".to_string(), &e);
+        }
+    }
+    return Ok(("success", json!({})));
+}
+
+async fn process_stock_item(
+    client: &OnTradeEvent,
+    cache: &CacheClient,
+    app: &AppState,
+    notify: &NotifyClient,
+    wfm: &WFMClient,
+    qf: &QFClient,
+    created_stock: &CreateStockEntity,
+    trade: &PlayerTrade,
+    notify_payload: &mut Value,
+) -> Result<Value, AppError> {
+    logger::info_con(&client.get_component("AutoTrade"), "Item Sale/Purchase");
+
+    match helper::progress_stock_item(
+        &mut created_stock.to_stock_item(),
+        "--item_by url_name --item_lang en",
+        &trade.player_name,
+        trade.trade_type.to_order_type(),
+        vec![
+            "StockContinueOnError".to_string(),
+            "WFMContinueOnError".to_string(),
+        ],
+        "auto",
+        &app,
+        &cache,
+        &notify,
+        &wfm,
+        &qf,
+    )
+    .await
+    {
+        Ok((e, rep)) => {
+            println!("E: {:?}", e);
+            println!("REP: {:?}", rep);
+        }
+        Err(_) => {}
+    }
+
+    // Find Item on Warframe Market
+
+    return Ok(json!({}));
+}
+
+async fn process_wish_list(
+    client: &OnTradeEvent,
+    cache: &CacheClient,
+    app: &AppState,
+    notify: &NotifyClient,
+    wfm: &WFMClient,
+    qf: &QFClient,
+    created_stock: &CreateStockEntity,
+    trade: &PlayerTrade,
+    notify_payload: &mut Value,
+) -> Result<Value, AppError> {
+    logger::info_con(&client.get_component("AutoTrade"), "Wish List Purchase");
+
+    match helper::progress_wish_item(
+        &mut created_stock.to_wish_item(),
+        "--item_by url_name --item_lang en",
+        &trade.player_name,
+        trade.trade_type.to_order_type(),
+        vec![
+            "StockContinueOnError".to_string(),
+            "WFMContinueOnError".to_string(),
+        ],
+        "auto",
+        &app,
+        &cache,
+        &notify,
+        &wfm,
+        &qf,
+    )
+    .await
+    {
+        Ok((e, rep)) => {
+            println!("E: {:?}", e);
+            println!("REP: {:?}", rep);
+        }
+        Err(_) => {}
+    }
+
+    // // Check if the stock is a wish list item
+    // let wish_item = match WishListQuery::find_by_url_name_and_sub_type(
+    //     &app.conn,
+    //     &created_stock.wfm_url,
+    //     created_stock.sub_type.clone(),
+    // )
+    // .await
+    // {
+    //     Ok(model) => model,
+    //     Err(e) => {
+    //         let app_error = AppError::new_db(&client.get_component("AutoTrade"), e);
+    //         error::create_log_file("trade_accepted.log".to_string(), &app_error);
+    //         return Err(app_error);
+    //     }
+    // };
+
+    // if wish_item.is_none() {
+    //     logger::info_con(
+    //         &client.get_component("AutoTrade"),
+    //         "Wish List Item Not Found",
+    //     );
+    //     return Ok(json!({}));
+    // }
+    // let wish_item = wish_item.unwrap();
+
+    // match WishListMutation::bought_item(&app.conn, wish_item.id, created_stock.quantity).await {
+    //     Ok(_) => {}
+    //     Err(e) => {
+    //         let app_error = AppError::new_db(&client.get_component("AutoTrade"), e);
+    //         error::create_log_file("trade_accepted.log".to_string(), &app_error);
+    //         return Err(app_error);
+    //     }
+    // }
+
+    return Ok(json!({}));
 }

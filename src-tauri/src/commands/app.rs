@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use serde_json::json;
-use service::{StockItemQuery, StockRivenQuery, TransactionQuery};
+use service::{StockItemQuery, StockRivenQuery, TransactionQuery, WishListQuery};
 
 use crate::{
     app::client::AppState,
@@ -131,6 +131,26 @@ pub async fn app_init(
         }
         Err(e) => {
             let error = AppError::new_db("TransactionQuery::get_all", e);
+            error::create_log_file("command.log".to_string(), &error);
+            return Err(error);
+        }
+    };
+
+    // Load Wish List
+    notify
+        .gui()
+        .send_event(UIEvent::OnInitialize, Some(json!("wish_list")));
+    match WishListQuery::get_all(&app.conn).await {
+        Ok(items) => {
+            // Send Transactions to UI
+            notify.gui().send_event_update(
+                UIEvent::UpdateWishList,
+                UIOperationEvent::Set,
+                Some(json!(&items)),
+            );
+        }
+        Err(e) => {
+            let error = AppError::new_db("WishListQuery::get_all", e);
             error::create_log_file("command.log".to_string(), &error);
             return Err(error);
         }

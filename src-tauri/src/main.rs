@@ -291,6 +291,11 @@ fn main() {
             commands::stock_riven::stock_riven_delete,
             commands::stock_riven::stock_riven_delete_bulk,
             commands::stock_riven::stock_riven_create,
+            // Wish List commands
+            commands::wish_list::wish_list_reload,
+            commands::wish_list::wish_list_create,
+            commands::wish_list::wish_list_update,
+            commands::wish_list::wish_list_delete,
             // Notification commands
             commands::notification::send_system_notification,
         ])

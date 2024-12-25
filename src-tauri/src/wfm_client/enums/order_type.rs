@@ -4,6 +4,7 @@ use crate::logger;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum OrderType {
+    All,
     Buy,
     Sell,
     Unknown(String),
@@ -15,6 +16,7 @@ impl Serialize for OrderType {
         S: serde::Serializer,
     {
         let value = match self {
+            OrderType::All => "all",
             OrderType::Buy => "buy",
             OrderType::Sell => "sell",
             OrderType::Unknown(i) => {
@@ -37,6 +39,7 @@ impl<'de> Deserialize<'de> for OrderType {
     {
         let s: String = String::deserialize(deserializer)?;
         Ok(match s.as_str() {
+            "all" => OrderType::All,
             "buy" => OrderType::Buy,
             "sell" => OrderType::Sell,
             s => OrderType::Unknown(s.parse().map_err(|_| {

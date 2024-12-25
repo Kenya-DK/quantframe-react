@@ -1,7 +1,10 @@
 use entity::sub_type::SubType;
 use serde::{Deserialize, Serialize};
 
-use crate::wfm_client::enums::order_type::OrderType;
+use crate::{
+    cache::client::CacheClient, utils::modules::error::AppError,
+    wfm_client::enums::order_type::OrderType,
+};
 
 use super::order::Order;
 
@@ -24,8 +27,7 @@ impl Orders {
         self.buy_orders.sort_by(|a, b| b.platinum.cmp(&a.platinum));
     }
 
-    pub fn filter_by_username(&mut self, username: &str, exclude: bool) -> Orders
-    {
+    pub fn filter_by_username(&mut self, username: &str, exclude: bool) -> Orders {
         let sell_orders = self
             .sell_orders
             .iter()
@@ -62,14 +64,12 @@ impl Orders {
         }
     }
 
-    pub fn filter_by_sub_type(self, sub_type: Option<&SubType>, exclude: bool) -> Orders
-    {
+    pub fn filter_by_sub_type(self, sub_type: Option<&SubType>, exclude: bool) -> Orders {
         let sell_orders = self
             .sell_orders
             .iter()
             .filter(|order| {
                 if exclude {
-                    // And User is ingame_name
                     order.get_subtype().as_ref() != sub_type
                 } else {
                     order.get_subtype().as_ref() == sub_type
@@ -82,7 +82,6 @@ impl Orders {
             .iter()
             .filter(|order| {
                 if exclude {
-                    // And User is ingame_name
                     order.get_subtype().as_ref() != sub_type
                 } else {
                     order.get_subtype().as_ref() == sub_type
@@ -160,16 +159,16 @@ impl Orders {
     }
 
     pub fn delete_order_by_id(&mut self, order_type: OrderType, id: &str) {
-        let orders = match order_type {
-            OrderType::Sell => &mut self.sell_orders,
-            OrderType::Buy => &mut self.buy_orders,
+        match order_type {
+            OrderType::Sell => &mut self.sell_orders.retain(|x| x.id != id),
+            OrderType::Buy => &mut self.buy_orders.retain(|x| x.id != id),
+            OrderType::All => {
+                self.sell_orders.retain(|x| x.id != id);
+                self.buy_orders.retain(|x| x.id != id);
+                return;
+            }
             _ => return,
         };
-        let index = orders.iter().position(|x| x.id == id);
-        if index.is_none() {
-            return;
-        }
-        orders.remove(index.unwrap());
     }
 
     pub fn update_order(&mut self, order: Order) {
@@ -193,12 +192,66 @@ impl Orders {
         };
         let filtered_orders = orders
             .iter()
-            .filter(|order| order.item.is_some() && order.item.as_ref().unwrap().url_name == wfm_url)
+            .filter(|order| {
+                order.item.is_some() && order.item.as_ref().unwrap().url_name == wfm_url
+            })
             .cloned()
             .collect::<Vec<Order>>();
         filtered_orders
     }
-   
+
+    pub fn get_orders_ids(&self, order_type: OrderType, exclude_items: Vec<String>) -> Vec<String> {
+        let mut ids = vec![];
+        let orders = match order_type {
+            OrderType::Sell => &self.sell_orders,
+            OrderType::Buy => &self.buy_orders,
+            _ => return ids,
+        };
+
+        for order in orders.iter() {
+            if !exclude_items.contains(&order.item.as_ref().unwrap().url_name) {
+                ids.push(order.id.clone());
+            }
+        }
+        ids
+    }
+
+    pub fn apply_trade_info(&mut self, cache: &CacheClient) -> Result<(), AppError> {
+        for order in self.buy_orders.iter_mut() {
+            match cache.item_price().get_item_price(
+                &order.item.as_ref().unwrap().url_name,
+                order.get_subtype(),
+                "closed",
+            ) {
+                Ok(info) => {
+                    order.closed_avg = Some(info.avg_price);
+                    order.profit = Some(info.avg_price - order.platinum as f64);
+                }
+                Err(_) => {
+                    order.closed_avg = Some(0.0);
+                    order.profit = Some(0.0);
+                }
+            }
+        }
+        for order in self.sell_orders.iter_mut() {
+            match cache.item_price().get_item_price(
+                &order.item.as_ref().unwrap().url_name,
+                order.get_subtype(),
+                "closed",
+            ) {
+                Ok(info) => {
+                    order.closed_avg = Some(info.avg_price);
+                    order.profit = Some(order.platinum as f64 - info.avg_price);
+                }
+                Err(_) => {
+                    order.closed_avg = Some(0.0);
+                    order.profit = Some(0.0);
+                }
+            }
+        }
+        Ok(())
+    }
+
     pub fn find_order_by_url_sub_type(
         &self,
         wfm_url: &str,

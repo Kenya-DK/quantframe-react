@@ -57,6 +57,11 @@ pub struct Order {
     #[serde(default)]
     pub operation: Vec<String>,
 
+    // Ignore this field
+    #[serde(skip_serializing)]
+    #[serde(default)]
+    pub tags: Vec<String>,
+
     // Subtype's
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "cyan_stars")]
@@ -91,6 +96,7 @@ impl Default for Order {
             creation_date: "".to_string(),
             quantity: 0,
             operation: vec!["New".to_string()],
+            tags: vec![],
             item: None,
             profit: None,
             closed_avg: None,

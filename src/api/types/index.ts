@@ -15,3 +15,4 @@ export * from "./transaction.type";
 export * from "./initializeResponds.type";
 export * from "./user.type";
 export * from "./cache/index";
+export * from "./wishList.type";

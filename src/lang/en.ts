@@ -145,9 +145,9 @@ export const en = {
                 tooltip: "The minimum range between the highest price and the lowest price.",
               },
               avg_price_cap: {
-                label: "Average Price Cap",
-                placeholder: "Average Price Cap",
-                error: "Invalid average price cap",
+                label: "Average Price",
+                placeholder: "Average Price",
+                error: "Invalid average price",
                 tooltip: "The maximum price cap per buy order.",
               },
               trading_tax_cap: {
@@ -234,7 +234,7 @@ export const en = {
                 tooltip: "The minimum profit",
               },
               limit_to: {
-                label: "Average Price Cap",
+                label: "Limit To",
                 placeholder: "5",
                 error: "Invalid limit to",
                 tooltip: "Will use use the first {{count}} rivens to calculate the average price",
@@ -810,14 +810,14 @@ export const en = {
         order_limit_reached: "Order limit reached for <red>{{name}}</red>",
         knapsack_delete: "Delete Item <red>{{name}}</red>",
         underpriced_delete: "Delete Underpriced Item <red>{{name}}</red>",
-        created: "Created Buy Order for <blue>{{weapon_name}}</blue> at <blue>{{price}}</blue> platinum potential profit <blue>{{profit}}</blue> ",
+        created: "Created Buy Order for <blue>{{name}}</blue> at <blue>{{price}}</blue> platinum potential profit <blue>{{profit}}</blue> ",
         checking_item: "Checking Item <blue>{{name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
         no_data: "<dark_red>No data found for item {{name}} {{current}}/{{total}}</dark_red>",
       },
       riven: {
         stating: "Starting Riven Trading",
         riven_hidden: "Riven <red>{{weapon_name}}</red> <red>{{mod_name}}</red> is hidden",
-        searching_riven: "Searching Riven {{weapon_name}} {{mod_name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        searching_riven: "Searching Riven <blue>{{weapon_name}} {{mod_name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
         riven_created:
           "Created Riven <blue>{{weapon_name}} {{mod_name}}</blue> at <blue>{{price}}</blue> platinum potential profit <blue>{{profit}}</blue>",
       },
@@ -851,6 +851,7 @@ export const en = {
         user_chats: "Loading warframe market chats...",
         check_updates: "Checking for updates...",
         log_parser: "Starting log parser...",
+        wish_list: "Loading wish list...",
       },
     },
     live_scraper: {
@@ -971,6 +972,8 @@ export const en = {
         bought: "Bought",
         listed: "Listed",
         profit: "Profit",
+        total_plat: "Total Plat",
+        trades: "Total Trades",
       },
       datatable: {
         columns: {
@@ -1017,6 +1020,15 @@ export const en = {
           fields: {
             minimum_price: {
               label: "Minimum Price",
+              description: "Set 0 for auto price",
+            },
+          },
+        },
+        maximum_price: {
+          title: "Maximum Price",
+          fields: {
+            maximum_price: {
+              label: "Maximum Price",
               description: "Set 0 for auto price",
             },
           },
@@ -1214,6 +1226,55 @@ export const en = {
             delete_bulk_stock: {
               title: "Delete Bulk Stock Success",
               message: "Stock rivens have been successfully deleted.",
+            },
+          },
+        },
+        wish_list: {
+          title: "Wish List",
+          datatable: {
+            columns: {
+              quantity: "Quantity",
+              maximum_price: {
+                title: "Maximum Price",
+                btn: {
+                  edit: {
+                    tooltip: "Set maximum price",
+                  },
+                },
+              },
+              actions: {
+                buttons: {
+                  filter: {},
+                },
+              },
+            },
+          },
+          errors: {
+            create_item: {
+              title: "Create Item Error",
+              message: "An error occurred while trying to create item.",
+            },
+            update_item: {
+              title: "Update Item Error",
+              message: "An error occurred while trying to update item.",
+            },
+            delete_item: {
+              title: "Delete Item Error",
+              message: "An error occurred while trying to delete item.",
+            },
+          },
+          success: {
+            create_item: {
+              title: "Create Item Success",
+              message: "Item {{name}} has been successfully created.",
+            },
+            update_item: {
+              title: "Update Item Success",
+              message: "Item {{name}} has been successfully updated.",
+            },
+            delete_item: {
+              title: "Delete Item Success",
+              message: "Item has been successfully deleted.",
             },
           },
         },

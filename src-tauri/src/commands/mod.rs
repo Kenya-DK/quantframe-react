@@ -11,6 +11,7 @@ pub mod orders;
 pub mod stock_item;
 pub mod stock_riven;
 pub mod transaction;
+pub mod wish_list;
 // pub mod transaction;
 // // Stock
 // pub mod stock_item;

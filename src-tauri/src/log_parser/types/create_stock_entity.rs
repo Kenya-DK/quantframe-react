@@ -6,8 +6,10 @@ use entity::{
     },
     sub_type::SubType,
     transaction,
+    wish_list::create::CreateWishListItem,
 };
 use serde::{Deserialize, Serialize};
+use service::{sea_orm::DbConn, WishListQuery};
 
 use crate::{cache::client::CacheClient, utils::modules::error::AppError};
 
@@ -46,6 +48,10 @@ pub struct CreateStockEntity {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "minimum_price")]
     pub minimum_price: Option<i64>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "maximum_price")]
+    pub maximum_price: Option<i64>,
 
     #[serde(rename = "quantity")]
     pub quantity: i64,
@@ -105,6 +111,7 @@ impl Default for CreateStockEntity {
             unique_name: "".to_string(),
             tags: vec![],
             minimum_price: None,
+            maximum_price: None,
             quantity: 1,
             is_hidden: false,
             sub_type: None,
@@ -149,6 +156,28 @@ impl CreateStockEntity {
                 self.minimum_price,
                 self.quantity,
                 self.is_hidden,
+            )
+        }
+    }
+    pub fn to_wish_item(&self) -> CreateWishListItem {
+        if !self.is_validated {
+            CreateWishListItem::new(
+                self.raw.clone(),
+                self.sub_type.clone(),
+                self.maximum_price,
+                self.quantity,
+            )
+        } else {
+            CreateWishListItem::new_valid(
+                self.wfm_id.clone(),
+                self.wfm_url.clone(),
+                self.name.clone(),
+                self.unique_name.clone(),
+                self.tags.clone(),
+                self.sub_type.clone(),
+                self.maximum_price,
+                self.quantity,
+                self.bought,
             )
         }
     }
@@ -253,6 +282,17 @@ impl CreateStockEntity {
                 );
                 Ok(transaction)
             }
+            StockType::WishList => {
+                let item = self.to_wish_item();
+                let transaction = item.to_model().to_transaction(
+                    user_name,
+                    self.tags.clone(),
+                    self.quantity,
+                    self.bought.unwrap_or(0),
+                    transaction_type,
+                );
+                Ok(transaction)
+            }
             StockType::Riven => {
                 let riven = self.to_stock_riven();
                 let transaction = riven.to_model().to_transaction(
@@ -286,11 +326,28 @@ impl CreateStockEntity {
                 };
                 Ok(name)
             }
+            StockType::WishList => {
+                let name = match self.sub_type.as_ref() {
+                    Some(sub_type) => {
+                        format!("{} ({})", self.name.clone(), sub_type.shot_display())
+                    }
+                    None => self.name.clone(),
+                };
+                Ok(name)
+            }
             StockType::Riven => Ok(self.name.clone() + " " + &self.mod_name.clone()),
             _ => Err(AppError::new(
                 "CreateTransaction",
                 eyre::eyre!("Invalid entity type: {}", self.entity_type.as_str()),
             )),
+        }
+    }
+    pub async fn is_wish_list_item(&self, db: &DbConn) -> Result<bool, AppError> {
+        match WishListQuery::find_by_url_name_and_sub_type(db, &self.wfm_url, self.sub_type.clone())
+            .await
+        {
+            Ok(item) => Ok(item.is_some()),
+            Err(_) => Ok(false),
         }
     }
 }

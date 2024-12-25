@@ -51,11 +51,11 @@ pub async fn add_riven(riven: web::Json<RivenPayload>) -> impl Responder {
         "",
         OrderType::Buy,
         "http_server",
-        app,
-        cache,
-        notify,
-        wfm,
-        qf,
+        &app,
+        &cache,
+        &notify,
+        &wfm,
+        &qf,
     )
     .await
     {

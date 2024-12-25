@@ -44,7 +44,7 @@ impl StockItemMutation {
         // Find the item by id
         let item = StockItem::find_by_id(id).one(db).await?;
         if item.is_none() {
-            return Ok(("Item not found".to_string(), None));
+            return Ok(("NotFound".to_string(), None));
         }
 
         // If quantity is 0, set it to 1
@@ -58,7 +58,7 @@ impl StockItemMutation {
         if item.owned <= 0 {
             match StockItemMutation::delete_by_id(db, id).await {
                 Ok(_) => {
-                    return Ok(("Item deleted".to_string(), Some(item)));
+                    return Ok(("Deleted".to_string(), Some(item)));
                 }
                 Err(e) => {
                     return Err(e);
@@ -67,7 +67,7 @@ impl StockItemMutation {
         } else {
             match StockItemMutation::update_by_id(db, id, item.clone()).await {
                 Ok(_) => {
-                    return Ok(("Item updated".to_string(), Some(item)));
+                    return Ok(("Updated".to_string(), Some(item)));
                 }
                 Err(e) => {
                     return Err(e);
@@ -88,7 +88,7 @@ impl StockItemMutation {
                 return StockItemMutation::sold_by_id(db, item.id, quantity).await;
             }
         }
-        Ok(("Item not found".to_string(), None))
+        Ok(("NotFound".to_string(), None))
     }
 
     pub async fn add_item(
@@ -193,7 +193,6 @@ impl StockItemMutation {
         query.exec(db).await?;
         StockItem::find().all(db).await
     }
-
 
     pub async fn update_all(
         db: &DbConn,

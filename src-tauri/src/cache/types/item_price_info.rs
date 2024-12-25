@@ -43,3 +43,23 @@ pub struct ItemPriceInfo {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sub_type: Option<SubType>,
 }
+// Add default values for ItemPriceInfo
+impl Default for ItemPriceInfo {
+    fn default() -> Self {
+        ItemPriceInfo {
+            url_name: "".to_string(),
+            item_id: "".to_string(),
+            order_type: "".to_string(),
+            volume: 0.0,
+            max_price: 0.0,
+            min_price: 0.0,
+            avg_price: 0.0,
+            moving_avg: None,
+            median: 0.0,
+            range: 0.0,
+            trading_tax: 0.0,
+            week_price_shift: 0.0,
+            sub_type: None,
+        }
+    }
+}

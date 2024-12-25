@@ -1,4 +1,3 @@
-
 import { StockEntryBase, SubType } from ".";
 import { Wfm } from "$types/index";
 
@@ -14,7 +13,6 @@ export interface StockItem extends StockEntryBase {
   wfm_url: string;
   info?: StockItemDetails;
 }
-
 
 export interface CreateStockItem {
   wfm_url: string;

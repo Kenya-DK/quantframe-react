@@ -223,7 +223,7 @@ impl RivenModule {
                 if weapon.is_none() {
                     return Err(AppError::new(
                         component,
-                        eyre!("Invalid riven type: {}", input.wfm_url),
+                        eyre!("Invalid riven type: {} by: {}", input.raw, by),
                     ));
                 }
                 let weapon = weapon.unwrap();

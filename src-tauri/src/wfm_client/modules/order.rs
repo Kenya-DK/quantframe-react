@@ -88,16 +88,16 @@ impl OrderModule {
                 }
                 // Return order_deleted if quantity is less than or equal to 0, else return order_updated
                 if order.quantity <= 0 {
-                    return Ok(("order_deleted".to_string(), Some(order)));
+                    return Ok(("Deleted".to_string(), Some(order)));
                 } else {
-                    return Ok(("order_updated".to_string(), Some(order)));
+                    return Ok(("Updated".to_string(), Some(order)));
                 }
             }
             // Return order_not_found if order does not exist
-            return Ok(("order_not_found".to_string(), None));
+            return Ok(("NotFound".to_string(), None));
         }
         // Return order_not_reported if the order is not a Buy order or a Sale order
-        return Ok(("order_not_reported".to_string(), None));
+        return Ok(("NotReported".to_string(), None));
     }
 
     pub fn subtract_order_count(&mut self, increment: i64) -> Result<(), AppError> {
@@ -150,6 +150,26 @@ impl OrderModule {
         let auth = self.client.auth.lock()?.clone();
         let orders = self.get_user_orders(auth.ingame_name.as_str()).await?;
         Ok(orders)
+    }
+
+    pub async fn find_order_by_url_sub_type(
+        &mut self,
+        url: &str,
+        sub_type: Option<&SubType>,
+        order_type: OrderType,
+    ) -> Result<Option<Order>, AppError> {
+        match self.get_my_orders().await {
+            Ok(orders) => {
+                let order = orders.find_order_by_url_sub_type(url, order_type, sub_type);
+                if order.is_some() {
+                    return Ok(order);
+                }
+            }
+            Err(e) => {
+                return Err(e);
+            }
+        }
+        Ok(None)
     }
 
     pub async fn create(
@@ -374,7 +394,12 @@ impl OrderModule {
     }
     // End Actions User Order
 
-    pub async fn get_orders_by_item(&self, item: &str) -> Result<Orders, AppError> {
+    pub async fn get_orders_by_item(
+        &self,
+        item: &str,
+        sub_type: Option<&SubType>,
+        exclude: bool,
+    ) -> Result<Orders, AppError> {
         let url = format!("items/{}/orders", item);
         let orders = match self.client.get::<Vec<Order>>(&url, Some("orders")).await {
             Ok(ApiResult::Success(payload, _headers)) => {
@@ -424,10 +449,12 @@ impl OrderModule {
             .collect();
         sell_orders.sort_by(|a, b| a.platinum.cmp(&b.platinum));
 
-        Ok(Orders {
+        let mut orders = Orders {
             buy_orders,
             sell_orders,
-        })
+        };
+        orders = orders.filter_by_sub_type(sub_type, exclude);
+        Ok(orders)
     }
     // End Helper
 }

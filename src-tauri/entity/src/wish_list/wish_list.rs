@@ -3,7 +3,10 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::{enums::stock_status::StockStatus, price_history::PriceHistoryVec, sub_type::SubType};
+use crate::{
+    enums::stock_status::StockStatus, price_history::PriceHistoryVec, sub_type::SubType,
+    transaction,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize)]
 #[sea_orm(table_name = "wish_list")]
@@ -78,7 +81,29 @@ impl Model {
             changes: None,
         }
     }
-
+    pub fn to_transaction(
+        &self,
+        user_name: &str,
+        tags: Vec<String>,
+        quantity: i64,
+        price: i64,
+        transaction_type: transaction::transaction::TransactionType,
+    ) -> transaction::transaction::Model {
+        transaction::transaction::Model::new(
+            self.wfm_id.clone(),
+            self.wfm_url.clone(),
+            self.item_name.clone(),
+            transaction::transaction::TransactionItemType::Item,
+            self.item_unique_name.clone(),
+            self.sub_type.clone(),
+            tags,
+            transaction_type,
+            quantity,
+            user_name.to_string(),
+            price,
+            None,
+        )
+    }
     fn set_if_changed<T: PartialEq>(current: &mut T, new_value: T, is_dirty: &mut bool) -> bool {
         if *current != new_value {
             *current = new_value;

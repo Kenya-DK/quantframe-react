@@ -320,7 +320,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
           </Group>
         </Grid.Col>
         <Grid.Col span={4}>
-          <StatsWithSegments segments={segments} />
+          <StatsWithSegments showPercent segments={segments} />
         </Grid.Col>
       </Grid>
       <DataTableSearch

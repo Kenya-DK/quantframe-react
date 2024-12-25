@@ -53,14 +53,15 @@ export class SocketBase {
             this._last_event_received = new Date();
             console.log(`%cEvent Successfully Parsed`, this._colors[0]);
             this.OnEvent(json);
+            console.groupEnd();
           } catch (e) {
             console.log(`%cError while parsing event`, this._colors[0]);
             this.socket = undefined;
             this.listener.fire("disconnect");
             this.listener.fire("error", e);
+            console.groupEnd();
             return;
           }
-          console.groupEnd();
         });
         this.socket = ws;
       })

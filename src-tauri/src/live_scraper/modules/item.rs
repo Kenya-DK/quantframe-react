@@ -1,5 +1,6 @@
 use crate::cache::types::cache_tradable_item::CacheTradableItem;
-use crate::enums::order_mode::OrderMode;
+use crate::cache::types::item_price_info::ItemPriceInfo;
+use crate::enums::trade_mode::TradeMode;
 use crate::live_scraper::client::LiveScraperClient;
 
 use crate::live_scraper::types::item_entry::ItemEntry;
@@ -13,11 +14,10 @@ use crate::wfm_client::types::order::Order;
 use crate::wfm_client::types::orders::Orders;
 use entity::enums::stock_status::StockStatus;
 use entity::price_history::{PriceHistory, PriceHistoryVec};
-use entity::stock::item::stock_item;
 
 use serde_json::json;
-use service::{StockItemMutation, StockItemQuery};
-use std::collections::{HashMap, HashSet};
+use service::{StockItemMutation, StockItemQuery, WishListMutation, WishListQuery};
+use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::vec;
 #[derive(Clone)]
@@ -25,9 +25,9 @@ pub struct ItemModule {
     pub client: LiveScraperClient,
     component: String,
     stock_info: HashMap<i64, OrderDetails>,
+    wish_list_info: HashMap<i64, OrderDetails>,
     order_info: HashMap<String, OrderDetails>,
-    interesting_items_cache:
-        Arc<Mutex<HashMap<String, Vec<crate::cache::types::item_price_info::ItemPriceInfo>>>>,
+    interesting_items_cache: Arc<Mutex<HashMap<String, Vec<ItemEntry>>>>,
 }
 
 impl ItemModule {
@@ -38,6 +38,7 @@ impl ItemModule {
             interesting_items_cache: Arc::new(Mutex::new(HashMap::new())),
             order_info: HashMap::new(),
             stock_info: HashMap::new(),
+            wish_list_info: HashMap::new(),
         }
     }
     fn get_component(&self, component: &str) -> String {
@@ -55,6 +56,12 @@ impl ItemModule {
         notify
             .gui()
             .send_event_update(UIEvent::UpdateStockItems, operation, Some(value));
+    }
+    pub fn send_wish_list_update(&self, operation: UIOperationEvent, value: serde_json::Value) {
+        let notify = self.client.notify.lock().unwrap().clone();
+        notify
+            .gui()
+            .send_event_update(UIEvent::UpdateWishList, operation, Some(value));
     }
     pub fn send_order_update(&self, operation: UIOperationEvent, value: serde_json::Value) {
         let notify = self.client.notify.lock().unwrap().clone();
@@ -83,142 +90,124 @@ impl ItemModule {
         self.send_msg("stating", None);
 
         // Get Settings.
-        let order_mode = settings.stock_item.order_mode.clone();
+        let trade_mode = settings.trade_mode.clone();
         let blacklist_items: Vec<String> = settings.stock_item.blacklist.clone();
-        let buy_quantity = settings.stock_item.buy_quantity;
 
         // Variables.
-        let mut interesting_items: Vec<ItemEntry> = vec![];
+        let mut interesting_items: HashMap<String, ItemEntry> = HashMap::new();
 
-        // Get interesting items from the price scraper if the order mode is buy or both.
-        let price_scraper_interesting_items_new = self
-            .get_interesting_items(settings.stock_item.whitelist.clone())
-            .await?;
-
-        // Get interesting items from stock items if the order mode is sell or both and remove blacklisted items else return None.
-        let stock_items_interesting_items: Option<Vec<stock_item::Model>> =
-            if order_mode == OrderMode::Sell || order_mode == OrderMode::Both {
-                Some(
-                    StockItemQuery::get_all_stock_items(&app.conn, 0)
-                        .await
-                        .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?,
-                )
-            } else {
-                None
-            };
-
-        match stock_items_interesting_items.clone() {
-            Some(items) => {
-                for item in items {
-                    interesting_items.push(ItemEntry::from_stock_item(&item));
-                }
+        // Get interesting items to buy from the price scraper if the order mode is buy or both.
+        if trade_mode == TradeMode::Buy || trade_mode == TradeMode::All {
+            let buy_list = self.get_interesting_items().await?;
+            for item in buy_list {
+                interesting_items.insert(item.wfm_url.clone(), item);
             }
-            None => {}
-        };
+        }
+
+        // Get interesting items to sell from the stock items if the order mode is sell or both.
+        if trade_mode == TradeMode::Sell || trade_mode == TradeMode::All {
+            let sell_list = StockItemQuery::get_all_stock_items(&app.conn, 0)
+                .await
+                .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
+            for item in sell_list {
+                // Use the entry API for modification or insertion
+                interesting_items
+                    .entry(item.wfm_url.clone())
+                    .and_modify(|entry| {
+                        entry.priority = 1;
+                        entry.sell_quantity = item.owned;
+                        entry.stock_id = Some(item.id);
+                        entry.operation.push("Sell".to_string());
+                    })
+                    .or_insert_with(|| {
+                        ItemEntry::new(
+                            Some(item.id),
+                            None,
+                            item.wfm_url.clone(),
+                            item.sub_type.clone(),
+                            1,
+                            0,
+                            item.owned,
+                            vec!["Sell".to_string()],
+                        )
+                    });
+            }
+        }
+
+        // Get Wishlist items to buy from the wishlist if the order mode is buy or both.
+        if trade_mode == TradeMode::WishList || trade_mode == TradeMode::All {
+            let wish_list = WishListQuery::get_all(&app.conn)
+                .await
+                .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
+            for item in wish_list {
+                interesting_items
+                    .entry(item.wfm_url.clone())
+                    .and_modify(|entry| {
+                        entry.priority = 2;
+                        entry.buy_quantity = item.quantity;
+                        entry.operation.push("WishList".to_string());
+                    })
+                    .or_insert_with(|| {
+                        ItemEntry::new(
+                            None,
+                            Some(item.id),
+                            item.wfm_url.clone(),
+                            item.sub_type.clone(),
+                            2,
+                            item.quantity,
+                            0,
+                            vec!["WishList".to_string()],
+                        )
+                    });
+            }
+        }
 
         // Get My Orders from Warframe Market.
         let mut my_orders = wfm.orders().get_my_orders().await?;
 
-        // Delete orders if the order mode is buy or sell.
-        if order_mode == OrderMode::Buy || order_mode == OrderMode::Sell {
-            let order_type = match order_mode {
-                OrderMode::Buy => "sell",
-                OrderMode::Sell => "buy",
-                OrderMode::Both => "",
-                OrderMode::Unknown(_) => "",
-            };
-
-            // Get order ids by order type and sort out blacklisted items.
-            let order_ids = match order_type {
-                "buy" => my_orders
-                    .buy_orders
-                    .iter()
-                    .filter(|order| {
-                        !blacklist_items.contains(&order.item.as_ref().unwrap().url_name)
-                    })
-                    .map(|order| order.id.clone())
-                    .collect::<Vec<String>>(),
-                "sell" => my_orders
-                    .sell_orders
-                    .iter()
-                    .filter(|order| {
-                        !blacklist_items.contains(&order.item.as_ref().unwrap().url_name)
-                    })
-                    .map(|order| order.id.clone())
-                    .collect::<Vec<String>>(),
-                _ => vec![],
-            };
-            for id in order_ids {
-                // Send GUI Update.
-                wfm.orders().delete(&id).await?;
-                self.send_order_update(UIOperationEvent::Delete, json!({"id": id}));
-            }
+        // Handle Delete Orders based on the trade mode.
+        let order_ids = if (trade_mode == TradeMode::Buy || trade_mode == TradeMode::WishList)
+            && trade_mode != TradeMode::All
+        {
+            my_orders.get_orders_ids(OrderType::Sell, blacklist_items.clone())
+        } else if trade_mode == TradeMode::Sell && trade_mode != TradeMode::All {
+            my_orders.get_orders_ids(OrderType::Buy, blacklist_items.clone())
+        } else {
+            vec![]
+        };
+        for id in &order_ids {
+            // Send GUI Update.
+            // wfm.orders().delete(&id).await?;
+            my_orders.delete_order_by_id(OrderType::All, &id);
+            self.send_order_update(UIOperationEvent::Delete, json!({"id": id}));
         }
 
-        // Get potential items to buy from the price scrape if the order mode is buy or both.
-        if order_mode == OrderMode::Buy || order_mode == OrderMode::Both {
-            let mut item_names = price_scraper_interesting_items_new
-                .iter()
-                .map(|item| ItemEntry::from_item_price(item, buy_quantity))
-                .collect::<Vec<ItemEntry>>();
-            interesting_items.append(&mut item_names);
+        // Apply Trade Info.
+        my_orders.apply_trade_info(&cache)?;
 
-            if my_orders.buy_orders.len() != 0 {
-                // Filter only interesting items from the buy orders.
-                let buy_orders_df = my_orders
-                    .buy_orders
-                    .into_iter()
-                    .map(|order| {
-                        let price = price_scraper_interesting_items_new
-                            .iter()
-                            .find(|item| item.url_name == order.item.as_ref().unwrap().url_name);
-                        let mut order = order.clone();
-                        order.closed_avg = Some(price.map(|item| item.avg_price).unwrap_or(0.0));
-                        order.profit =
-                            Some(order.closed_avg.unwrap_or(0.0) - order.platinum as f64);
-
-                        order
-                    })
-                    .collect::<Vec<Order>>();
-
-                // Update the buy orders with the filtered buy orders.
-                my_orders.buy_orders = buy_orders_df.clone();
-            }
-        }
-
-        let mut interesting_items: HashSet<ItemEntry> = HashSet::from_iter(interesting_items);
-        // Remove empty items from the interesting items.
-        interesting_items = interesting_items
-            .into_iter()
-            .filter(|item| item.wfm_url != "")
-            .collect();
+        logger::log_json(
+            "interesting_items.json",
+            &json!({
+                "order_ids": order_ids,
+                "orders": my_orders,
+                "settings": settings.stock_item,
+                "interesting_items": interesting_items.clone(),
+            }),
+        )?; // Debugging
+            // let mut interesting_items: HashSet<ItemEntry> = HashSet::from_iter(interesting_items);
 
         let mut current_index = interesting_items.len();
         logger::info_file(
             &self.get_component("CheckStock"),
-            format!(
-                "Interesting Items ({}): {:?}",
-                current_index,
-                interesting_items
-                    .clone()
-                    .iter()
-                    .map(|item| item.display())
-                    .collect::<Vec<String>>()
-            )
-            .as_str(),
+            format!("Total interesting items: {}", current_index).as_str(),
             Some(self.client.log_file.as_str()),
         );
 
         // Create a cache for the orders.
         let mut orders_cache: HashMap<String, Orders> = HashMap::new();
 
-        logger::info_con(
-            &self.get_component("CheckStock"),
-            format!("Checking {} items", interesting_items.len()).as_str(),
-        );
-
-        // Sort the interesting items by the priority.
-        let mut interesting_items: Vec<ItemEntry> = interesting_items.into_iter().collect();
+        // // Sort the interesting items by the priority.
+        let mut interesting_items: Vec<ItemEntry> = interesting_items.into_values().collect();
         interesting_items.sort_by(|a, b| b.priority.cmp(&a.priority));
 
         // Loop through all interesting items
@@ -268,25 +257,17 @@ impl ItemModule {
             let mut live_orders = if orders_cache.contains_key(&item_entry.wfm_url) {
                 orders_cache.get(&item_entry.wfm_url).unwrap().clone()
             } else {
-                let orders = wfm.orders().get_orders_by_item(&item_entry.wfm_url).await?;
+                let orders = wfm
+                    .orders()
+                    .get_orders_by_item(&item_entry.wfm_url, item_entry.sub_type.as_ref(), false)
+                    .await?;
                 orders_cache.insert(item_entry.wfm_url.clone(), orders.clone());
                 orders
             };
-            // Remove all orders where the sub type is not the same as the stock item sub type.
-            live_orders = live_orders.filter_by_sub_type(item_entry.sub_type.as_ref(), false);
-            let stock_item = match item_entry.stock_id {
-                Some(stock_id) => match StockItemQuery::get_by_id(&app.conn, stock_id).await {
-                    Ok(stock_item) => stock_item,
-                    Err(e) => {
-                        error::create_log_file(
-                            self.client.log_file.to_owned(),
-                            &AppError::new(&self.component, eyre::eyre!(e)),
-                        );
-                        None
-                    }
-                },
-                None => None,
-            };
+
+            // Filter the live orders by the username
+            live_orders = live_orders.filter_by_username(&auth.ingame_name, true);
+            live_orders.sort_by_platinum();
 
             // Check if item_orders_df is empty and skip if it is
             if live_orders.total_count() == 0 {
@@ -298,38 +279,28 @@ impl ItemModule {
                 self.send_msg("no_data", Some(json!({ "current": current_index, "total": interesting_items.len(), "name": item_info.name.clone()})));
                 continue;
             }
+
             // Get the item stats from the price scraper
-            let statistics = price_scraper_interesting_items_new.iter().find(|item| {
-                item.url_name == item_info.wfm_url_name && item.sub_type == item_entry.sub_type
-            });
-
-            // Get item moving average from statistics or item_info
-            let moving_avg: f64 = if statistics.is_some() {
-                statistics.unwrap().moving_avg.unwrap_or(0.0)
-            } else {
-                0.0
+            let price = match cache.item_price().get_item_price(
+                &item_entry.wfm_url,
+                item_entry.sub_type.clone(),
+                "closed",
+            ) {
+                Ok(p) => p,
+                Err(_) => ItemPriceInfo::default(),
             };
-
-            // Get Closed Avg from statistics or item_info
-            let closed_avg: f64 = if statistics.is_some() {
-                statistics.unwrap().avg_price
-            } else {
-                0.0
-            };
-
-            // Get all the live orders for the item from the Warframe Market API
-            live_orders = live_orders.filter_by_username(&auth.ingame_name, true);
-            live_orders.sort_by_platinum();
 
             // Only check if the order mode is buy or both and if the item is in stock items
-            if order_mode == OrderMode::Buy || order_mode == OrderMode::Both {
+            if item_entry.operation.contains(&"Buy".to_string())
+                && !item_entry.operation.contains(&"WishList".to_string())
+            {
                 match self
-                    .compare_live_orders_when_buying(
+                    .progress_buying(
                         &item_info,
-                        item_entry,
+                        &item_entry,
+                        &price,
                         &mut my_orders,
                         live_orders.clone(),
-                        closed_avg,
                     )
                     .await
                 {
@@ -343,18 +314,37 @@ impl ItemModule {
                     }
                 }
             }
-
-            // Only check if the order mode is sell or both and if the item is in stock items
-            if (order_mode == OrderMode::Sell || order_mode == OrderMode::Both)
-                && stock_item.is_some()
-            {
+            // Only check if the order mode is buy or both and if the item is in stock items
+            if item_entry.operation.contains(&"WishList".to_string()) {
                 match self
-                    .compare_live_orders_when_selling(
+                    .progress_wish_list(
                         &item_info,
-                        moving_avg,
+                        &item_entry,
+                        &price,
                         &mut my_orders,
                         live_orders.clone(),
-                        &mut stock_item.unwrap(),
+                    )
+                    .await
+                {
+                    Ok(_) => {}
+                    Err(e) => {
+                        if e.log_level() == LogLevel::Warning {
+                            self.client.report_error(&e);
+                        } else {
+                            return Err(e);
+                        }
+                    }
+                }
+            }
+            // Only check if the order mode is sell or both and if the item is in stock items
+            if item_entry.operation.contains(&"Sell".to_string()) && item_entry.stock_id.is_some() {
+                match self
+                    .progress_selling(
+                        &item_info,
+                        &item_entry,
+                        &price,
+                        &mut my_orders,
+                        live_orders.clone(),
                     )
                     .await
                 {
@@ -373,7 +363,7 @@ impl ItemModule {
         Ok(())
     }
 
-    pub async fn delete_all_orders(&mut self, mode: OrderMode) -> Result<(), AppError> {
+    pub async fn delete_all_orders(&mut self, mode: TradeMode) -> Result<(), AppError> {
         let wfm = self.client.wfm.lock()?.clone();
         let app = self.client.app.lock()?.clone();
         let _notify = self.client.notify.lock()?.clone();
@@ -395,10 +385,10 @@ impl ItemModule {
 
         let mut orders = vec![];
 
-        if mode == OrderMode::Buy || mode == OrderMode::Both {
+        if mode == TradeMode::Buy || mode == TradeMode::All {
             orders.append(&mut current_orders.buy_orders);
         }
-        if mode == OrderMode::Sell || mode == OrderMode::Both {
+        if mode == TradeMode::Sell || mode == TradeMode::All {
             orders.append(&mut current_orders.sell_orders);
         }
 
@@ -437,39 +427,26 @@ impl ItemModule {
         Ok(())
     }
 
-    pub async fn get_interesting_items(
-        &self,
-        include: Vec<String>,
-    ) -> Result<Vec<crate::cache::types::item_price_info::ItemPriceInfo>, AppError> {
+    pub async fn get_interesting_items(&self) -> Result<Vec<ItemEntry>, AppError> {
         let settings = self.client.settings.lock()?.clone().live_scraper;
         let cache = self.client.cache.lock()?.clone();
-        let app = self.client.app.lock()?.clone();
         let volume_threshold = settings.stock_item.volume_threshold;
         let range_threshold = settings.stock_item.range_threshold;
         let avg_price_cap = settings.stock_item.avg_price_cap;
         let trading_tax_cap = settings.stock_item.trading_tax_cap;
         let price_shift_threshold = settings.stock_item.price_shift_threshold;
-        let strict_whitelist = settings.stock_item.strict_whitelist;
-        let whitelist = settings.stock_item.whitelist.clone();
         let black_list = settings.stock_item.blacklist.clone();
-        let stock_item = StockItemQuery::get_all_stock_items(&app.conn, 0)
-            .await
-            .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?
-            .iter()
-            .map(|item| item.wfm_url.clone())
-            .collect::<Vec<String>>();
+        let buy_quantity = settings.stock_item.buy_quantity;
 
         // Create a query uuid.
         let query_id = format!(
-            "get_buy|vol:{:?}ran:{:?}avg_p{:?}tax_p{:?}price_shift:{:?}strict_whitelist:{:?}whitelist{:?}blacklist:{:?}:mode:{:?}", 
+            "get_buy|vol:{:?}ran:{:?}avg_p{:?}tax_p{:?}price_shift:{:?}blacklist:{:?}:mode:{:?}",
             volume_threshold.clone(),
             range_threshold.clone(),
             avg_price_cap.clone(),
             trading_tax_cap.clone(),
             price_shift_threshold.clone(),
-            strict_whitelist.clone(),
-            whitelist.clone().join(","),
-            stock_item.join(","),
+            black_list.clone(),
             settings.stock_mode.clone()
         );
 
@@ -490,36 +467,41 @@ impl ItemModule {
                 item.order_type == "closed"
                     && item.volume > volume_threshold as f64
                     && item.range > range_threshold as f64
+                    && item.avg_price <= avg_price_cap as f64
+                    && item.week_price_shift >= price_shift_threshold as f64
                     && ((trading_tax_cap >= -1 && item.trading_tax <= trading_tax_cap as f64)
                         || trading_tax_cap <= -1)
                     && !black_list.contains(&item.url_name)
-                    && ((strict_whitelist && whitelist.contains(&item.url_name))
-                        || ((!strict_whitelist
-                            || whitelist.contains(&item.url_name)
-                                && item.avg_price <= avg_price_cap as f64)
-                            && item.week_price_shift >= price_shift_threshold as f64))
-                    && item.week_price_shift >= price_shift_threshold as f64
-                    || ((stock_item.contains(&item.url_name) || include.contains(&item.url_name))
-                        && item.order_type == "closed")
             })
             .cloned()
             .collect::<Vec<_>>();
-        self.add_cache_queried(query_id, filtered_items.clone());
-        Ok(filtered_items)
+
+        // Convert to ItemEntry vector
+        let entries = filtered_items
+            .iter()
+            .map(|item| {
+                ItemEntry::new(
+                    None,
+                    None,
+                    item.url_name.clone(),
+                    item.sub_type.clone(),
+                    0,
+                    buy_quantity,
+                    0,
+                    vec!["Buy".to_string()],
+                )
+            })
+            .collect::<Vec<ItemEntry>>();
+
+        self.add_cache_queried(query_id, entries.clone());
+        Ok(entries)
     }
-    pub fn add_cache_queried(
-        &self,
-        key: String,
-        df: Vec<crate::cache::types::item_price_info::ItemPriceInfo>,
-    ) {
+    pub fn add_cache_queried(&self, key: String, df: Vec<ItemEntry>) {
         self.interesting_items_cache.lock().unwrap().insert(key, df);
         self.update_state();
     }
 
-    pub fn get_cache_queried(
-        &self,
-        key: &str,
-    ) -> Option<Vec<crate::cache::types::item_price_info::ItemPriceInfo>> {
+    pub fn get_cache_queried(&self, key: &str) -> Option<Vec<ItemEntry>> {
         self.interesting_items_cache
             .lock()
             .unwrap()
@@ -583,14 +565,256 @@ impl ItemModule {
 
         Ok((selected_items, unselected_items))
     }
-
-    pub async fn compare_live_orders_when_buying(
+    pub async fn progress_wish_list(
         &mut self,
         item_info: &CacheTradableItem,
-        item: ItemEntry,
+        entry: &ItemEntry,
+        price: &ItemPriceInfo,
         my_orders: &mut Orders,
         live_orders: Orders,
-        closed_avg: f64,
+    ) -> Result<Option<Vec<Order>>, AppError> {
+        // Load Managers.
+        let settings = self.client.settings.lock()?.clone().live_scraper;
+        let wfm = self.client.wfm.lock()?.clone();
+        let blacklist = settings.stock_item.blacklist.clone();
+        let app = self.client.app.lock()?.clone();
+
+        // Check if the item is in the blacklist and skip if it is
+        if blacklist.contains(&item_info.wfm_url_name) {
+            return Ok(None);
+        }
+
+        // Get the stock item from the stock item if it exists.
+        let wish_list_item = match entry.wish_list_id {
+            Some(stock_id) => match WishListQuery::get_by_id(&app.conn, stock_id).await {
+                Ok(stock_item) => stock_item,
+                Err(e) => {
+                    error::create_log_file(
+                        self.client.log_file.to_owned(),
+                        &AppError::new(&self.component, eyre::eyre!(e)),
+                    );
+                    None
+                }
+            },
+            None => None,
+        };
+        if wish_list_item.is_none() {
+            return Ok(None);
+        }
+        let mut wish_list_item = wish_list_item.unwrap();
+
+        // Get my order if it exists, otherwise empty values.
+        let mut user_order = match my_orders.find_order_by_url_sub_type(
+            &item_info.wfm_url_name,
+            OrderType::Buy,
+            wish_list_item.sub_type.as_ref(),
+        ) {
+            Some(mut order) => {
+                order.operation = vec![];
+                order
+            }
+            None => Order::default(),
+        };
+
+        // Get The highest buy order returns 0 if there are no buy orders.
+        let highest_price = live_orders.highest_price(OrderType::Buy);
+
+        // Set the post price to the highest price.
+        let mut post_price = highest_price;
+
+        // Get Maximum Price
+        let maximum_price = wish_list_item.maximum_price.unwrap_or(0);
+
+        // Return if no buy orders are found.
+        if live_orders.buy_orders.len() <= 0 {
+            post_price = price.avg_price as i64;
+        }
+
+        // Check if the price is higher than the max price
+        if post_price > maximum_price && maximum_price > 0 {
+            post_price = maximum_price;
+        }
+
+        // Get/Create Order Info
+        let price_history =
+            PriceHistory::new(chrono::Local::now().naive_local().to_string(), post_price);
+        user_order.info = match self.order_info.get_mut(&user_order.id) {
+            Some(order_info) => {
+                // Update the order info with the current price history
+                order_info.set_highest_price(highest_price);
+                order_info.set_quantity(entry.buy_quantity);
+                order_info.set_lowest_price(live_orders.lowest_price(OrderType::Buy));
+                order_info.set_total_buyers(live_orders.buy_orders.len() as i64);
+                order_info.set_orders(live_orders.buy_orders.clone());
+                order_info.add_price_history(price_history.clone());
+                user_order.operation.push("Updated".to_string());
+                order_info.clone()
+            }
+            None => {
+                let order_info = OrderDetails::new(
+                    live_orders.buy_orders.len() as i64,
+                    live_orders.sell_orders.len() as i64,
+                    0,
+                    live_orders.lowest_price(OrderType::Buy),
+                    highest_price,
+                    0,
+                    live_orders.sell_orders.clone(),
+                    entry.buy_quantity.clone(),
+                    0,
+                    vec![price_history.clone()],
+                );
+                if user_order.id != "N/A" {
+                    user_order.operation.push("Updated".to_string());
+                } else {
+                    user_order.operation.push("Created".to_string());
+                }
+                order_info
+            }
+        };
+
+        if user_order.operation.contains(&"Created".to_string()) {
+            // Send GUI Update.
+            self.send_msg(
+                "created",
+                Some(json!({ "name": item_info.name, "price": post_price, "profit": 0})),
+            );
+            match wfm
+                .orders()
+                .create(
+                    &item_info.wfm_id,
+                    "buy",
+                    post_price,
+                    entry.buy_quantity,
+                    true,
+                    entry.sub_type.clone(),
+                )
+                .await
+            {
+                Ok((rep, None)) => {
+                    if &rep == "order_limit_reached" {
+                        // Send GUI Update.
+                        self.send_msg(
+                            "order_limit_reached",
+                            Some(json!({ "name": item_info.name.clone()})),
+                        );
+                    }
+                }
+                Ok((_, Some(mut order))) => {
+                    order.info = user_order.info.clone();
+                    order.operation = user_order.operation.clone();
+                    order.tags = vec!["WishList".to_string()];
+                    my_orders.buy_orders.push(order.clone());
+                    order.info.is_dirty = false;
+                    wish_list_item.set_status(StockStatus::Live);
+                    wish_list_item.set_list_price(Some(post_price));
+                    self.send_order_update(UIOperationEvent::CreateOrUpdate, json!(order.clone()));
+                    self.order_info.insert(order.id.clone(), order.info.clone());
+                    self.update_state();
+                }
+                Err(e) => {
+                    self.client.stop_loop();
+                    return Err(e);
+                }
+            };
+            logger::info_con(
+                &self.get_component("CompareOrdersWhenBuying"),
+                format!("Item {} Created", item_info.name).as_str(),
+            );
+        } else if user_order.operation.contains(&"Updated".to_string()) {
+            match wfm
+                .orders()
+                .update(
+                    &user_order.id,
+                    post_price,
+                    entry.buy_quantity,
+                    user_order.visible,
+                )
+                .await
+            {
+                Ok(_) => {
+                    wish_list_item.set_status(StockStatus::Live);
+                    wish_list_item.set_list_price(Some(post_price));
+                    if user_order.platinum != post_price || user_order.info.is_dirty {
+                        user_order.platinum = post_price;
+                        user_order.tags = vec!["WishList".to_string()];
+                        my_orders.update_order(user_order.clone());
+                        user_order.info.is_dirty = false;
+                        user_order.info.changes = None;
+                        if self.order_info.contains_key(&user_order.id) {
+                            *self.order_info.get_mut(&user_order.id).unwrap() =
+                                user_order.info.clone();
+                        } else {
+                            self.order_info
+                                .insert(user_order.id.clone(), user_order.info.clone());
+                        }
+                        self.send_order_update(UIOperationEvent::CreateOrUpdate, json!(user_order));
+                        self.update_state();
+                    }
+                }
+                Err(e) => {
+                    return Err(e);
+                }
+            }
+        }
+
+        // Update/Create/Delete the stock item on the database and update the UI if needed.
+        let mut stock_info = match self.wish_list_info.get_mut(&wish_list_item.id) {
+            Some(info) => {
+                // Update the order info with the current price history
+                info.set_highest_price(highest_price);
+                info.set_lowest_price(live_orders.lowest_price(OrderType::Buy));
+                info.set_total_sellers(live_orders.sell_orders.len() as i64);
+                info.set_orders(live_orders.sell_orders.clone());
+                info.add_price_history(price_history.clone());
+                info.clone()
+            }
+            None => {
+                let mut info = OrderDetails::new(
+                    live_orders.buy_orders.len() as i64,
+                    live_orders.sell_orders.len() as i64,
+                    0,
+                    live_orders.lowest_price(OrderType::Buy),
+                    highest_price,
+                    0,
+                    live_orders.sell_orders.clone(),
+                    wish_list_item.quantity,
+                    0,
+                    wish_list_item.price_history.0.clone(),
+                );
+                info.add_price_history(price_history.clone());
+                info
+            }
+        };
+        wish_list_item.price_history =
+            PriceHistoryVec(stock_info.price_history.clone().into_iter().collect());
+
+        if stock_info.is_dirty || wish_list_item.is_dirty {
+            WishListMutation::update_by_id(&app.conn, wish_list_item.id, wish_list_item.clone())
+                .await
+                .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
+            let mut payload = json!(wish_list_item);
+            payload["info"] = json!(stock_info);
+            stock_info.is_dirty = false;
+            stock_info.changes = None;
+            if self.stock_info.contains_key(&wish_list_item.id) {
+                *self.stock_info.get_mut(&wish_list_item.id).unwrap() = stock_info.clone();
+            } else {
+                self.stock_info
+                    .insert(wish_list_item.id.clone(), stock_info.clone());
+            }
+            self.update_state();
+            self.send_wish_list_update(UIOperationEvent::CreateOrUpdate, json!(payload));
+        }
+        Ok(None)
+    }
+
+    pub async fn progress_buying(
+        &mut self,
+        item_info: &CacheTradableItem,
+        entry: &ItemEntry,
+        price: &ItemPriceInfo,
+        my_orders: &mut Orders,
+        live_orders: Orders,
     ) -> Result<Option<Vec<Order>>, AppError> {
         // Load Managers.
         let settings = self.client.settings.lock()?.clone().live_scraper;
@@ -605,12 +829,14 @@ impl ItemModule {
         // Get Settings.
         let avg_price_cap = settings.stock_item.avg_price_cap;
         let max_total_price_cap = settings.stock_item.max_total_price_cap;
+        let min_range_threshold = settings.stock_item.range_threshold;
+        let closed_avg = price.moving_avg.unwrap_or(0.0);
 
         // Get my order if it exists, otherwise empty values.
         let mut user_order = match my_orders.find_order_by_url_sub_type(
             &item_info.wfm_url_name,
             OrderType::Buy,
-            item.sub_type.as_ref(),
+            entry.sub_type.as_ref(),
         ) {
             Some(mut order) => {
                 order.operation = vec![];
@@ -673,8 +899,9 @@ impl ItemModule {
             Some(order_info) => {
                 // Update the order info with the current price history
                 order_info.set_highest_price(highest_price);
-                order_info.set_quantity(item.quantity);
+                // order_info.set_quantity(item.quantity);
                 order_info.set_lowest_price(live_orders.lowest_price(OrderType::Buy));
+                order_info.set_range(price_range);
                 order_info.set_total_buyers(live_orders.buy_orders.len() as i64);
                 order_info.set_orders(live_orders.buy_orders.clone());
                 order_info.set_moving_avg(closed_avg as i64);
@@ -691,7 +918,8 @@ impl ItemModule {
                     highest_price,
                     closed_avg as i64,
                     live_orders.sell_orders.clone(),
-                    item.quantity,
+                    entry.buy_quantity.clone(),
+                    price_range,
                     vec![price_history.clone()],
                 );
                 if user_order.id != "N/A" {
@@ -705,7 +933,7 @@ impl ItemModule {
 
         let mut buy_orders_list: Vec<(i64, f64, String, String)> = vec![];
 
-        if closed_avg_metric >= 0 && price_range >= 21 {
+        if closed_avg_metric >= 0 && price_range >= min_range_threshold {
             user_order
                 .operation
                 .push("ValidatedMaxPriceCap".to_string());
@@ -714,6 +942,7 @@ impl ItemModule {
                     buy_orders_list = my_orders
                         .buy_orders
                         .iter()
+                        .filter(|order| !order.tags.contains(&"WishList".to_string()))
                         .map(|order| {
                             let platinum = order.platinum;
                             let profit = order.profit.unwrap();
@@ -793,6 +1022,8 @@ impl ItemModule {
             }
         } else if user_order.operation.contains(&"Updated".to_string()) {
             user_order.operation.push("Deleted".to_string());
+        } else if price_range <= min_range_threshold {
+            user_order.operation = vec!["NotInRange".to_string()];
         } else {
             user_order.operation = vec!["NotProfitable".to_string()];
         }
@@ -804,7 +1035,14 @@ impl ItemModule {
             self.send_msg("created", Some(json!({ "name": item_info.name, "price": post_price, "profit": potential_profit})));
             match wfm
                 .orders()
-                .create(&item_info.wfm_id, "buy", post_price, item.quantity, true, item.sub_type)
+                .create(
+                    &item_info.wfm_id,
+                    "buy",
+                    post_price,
+                    entry.buy_quantity,
+                    true,
+                    entry.sub_type.clone(),
+                )
                 .await
             {
                 Ok((rep, None)) => {
@@ -841,12 +1079,11 @@ impl ItemModule {
         {
             match wfm
                 .orders()
-                .update(&user_order.id, post_price, item.quantity, user_order.visible)
+                .update(&user_order.id, post_price, 1, user_order.visible)
                 .await
             {
                 Ok(_) => {
                     if user_order.platinum != post_price || user_order.info.is_dirty {
-                        user_order.quantity = item.quantity;
                         user_order.platinum = post_price;
                         user_order.profit = Some(potential_profit as f64);
                         my_orders.update_order(user_order.clone());
@@ -887,13 +1124,13 @@ impl ItemModule {
         Ok(None)
     }
 
-    async fn compare_live_orders_when_selling(
+    async fn progress_selling(
         &mut self,
         item_info: &CacheTradableItem,
-        moving_avg: f64,
+        entry: &ItemEntry,
+        price: &ItemPriceInfo,
         my_orders: &mut Orders,
         live_orders: Orders,
-        stock_item: &mut stock_item::Model,
     ) -> Result<(), AppError> {
         // Load Managers.
         let settings = self.client.settings.lock()?.clone().live_scraper;
@@ -909,7 +1146,26 @@ impl ItemModule {
         // Get Settings.
         let min_sma = settings.stock_item.min_sma;
         let minimum_profit = settings.stock_item.min_profit;
-        let moving_avg = moving_avg as i64;
+        let moving_avg = price.moving_avg.unwrap_or(0.0) as i64;
+
+        // Get the stock item from the stock item if it exists.
+        let stock_item = match entry.stock_id {
+            Some(stock_id) => match StockItemQuery::get_by_id(&app.conn, stock_id).await {
+                Ok(stock_item) => stock_item,
+                Err(e) => {
+                    error::create_log_file(
+                        self.client.log_file.to_owned(),
+                        &AppError::new(&self.component, eyre::eyre!(e)),
+                    );
+                    None
+                }
+            },
+            None => None,
+        };
+        if stock_item.is_none() {
+            return Ok(());
+        }
+        let mut stock_item = stock_item.unwrap();
 
         // Get my order if it exists, otherwise empty values.
         let mut user_order = match my_orders.find_order_by_url_sub_type(
@@ -946,14 +1202,11 @@ impl ItemModule {
             return Ok(());
         }
 
-        // Remove all orders where the sub type is not the same as the stock item sub type.
-        let live_orders = live_orders.filter_by_sub_type(stock_item.sub_type.as_ref(), false);
-
         // Get the price the item was bought for.
         let bought_price = stock_item.bought as i64;
 
         // Get the quantity of owned item.
-        let quantity = stock_item.owned as i64;
+        let quantity = entry.sell_quantity;
 
         // Get the minimum price of the item.
         let minimum_price = stock_item.minimum_price;
@@ -975,18 +1228,18 @@ impl ItemModule {
         let mut post_price = lowest_price;
 
         // If the item is worth less than moving average the set the post price to be the moving average
-        if post_price < (moving_avg - min_sma) as i64 {
+        if post_price < (moving_avg - min_sma) {
             post_price = moving_avg;
             user_order.operation.push("SMALimit".to_string());
         }
 
         // If minimum price is set and the post price is less than the minimum price then set the post price to be the minimum price
-        if minimum_price.is_some() && post_price < minimum_price.unwrap() as i64 {
-            post_price = minimum_price.unwrap() as i64;
+        if minimum_price.is_some() && post_price < minimum_price.unwrap() {
+            post_price = minimum_price.unwrap();
         }
 
         // Calculate the profit from the post price
-        let profit = post_price - bought_price as i64;
+        let profit = post_price - bought_price;
 
         if profit < minimum_profit {
             user_order.operation.push("LowProfit".to_string());
@@ -1016,6 +1269,8 @@ impl ItemModule {
                     highest_price,
                     moving_avg,
                     live_orders.sell_orders.clone(),
+                    stock_item.owned,
+                    0,
                     vec![price_history.clone()],
                 );
                 if user_order.id != "N/A" {
@@ -1155,6 +1410,8 @@ impl ItemModule {
                     highest_price,
                     moving_avg,
                     live_orders.sell_orders.clone(),
+                    stock_item.owned,
+                    0,
                     stock_item.price_history.0.clone(),
                 );
                 info.add_price_history(price_history.clone());

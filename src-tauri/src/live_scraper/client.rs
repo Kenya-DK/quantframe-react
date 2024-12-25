@@ -12,7 +12,7 @@ use crate::{
     app::client::AppState,
     auth::AuthState,
     cache::client::CacheClient,
-    enums::{order_mode::OrderMode, stock_mode::StockMode},
+    enums::{stock_mode::StockMode, trade_mode::TradeMode},
     logger,
     notification::client::NotifyClient,
     settings::SettingsState,
@@ -127,7 +127,7 @@ impl LiveScraperClient {
                 if settings.live_scraper.stock_item.auto_delete {
                     scraper
                         .item()
-                        .delete_all_orders(OrderMode::Both)
+                        .delete_all_orders(TradeMode::All)
                         .await
                         .unwrap();
                 }

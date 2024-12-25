@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use entity::stock::item::create::CreateStockItem;
+use entity::{stock::item::create::CreateStockItem, wish_list::create::CreateWishListItem};
 use eyre::eyre;
 
 use crate::{
@@ -98,7 +98,35 @@ impl TradableItemModule {
         let component = "ValidateCreateItem";
 
         if input.is_validated {
-            return Ok(input.clone());            
+            return Ok(input.clone());
+        }
+
+        let item = self.get_by(&input.raw, by)?;
+        if item.is_none() {
+            return Err(AppError::new_with_level(
+                component,
+                eyre!("Item Not Found From: {} | By: {}", input.raw, by),
+                crate::utils::enums::log_level::LogLevel::Warning,
+            ));
+        }
+
+        let item = item.unwrap();
+        input.wfm_id = item.wfm_id.clone();
+        input.wfm_url = item.wfm_url_name.clone();
+        input.item_name = item.name.clone();
+        input.item_unique_name = item.unique_name.clone();
+        input.tags = item.tags.clone();
+        Ok(input.clone())
+    }
+    pub fn validate_create_wish_item(
+        &self,
+        input: &mut CreateWishListItem,
+        by: &str,
+    ) -> Result<CreateWishListItem, AppError> {
+        let component = "ValidateWishItem";
+
+        if input.is_validated {
+            return Ok(input.clone());
         }
 
         let item = self.get_by(&input.raw, by)?;
