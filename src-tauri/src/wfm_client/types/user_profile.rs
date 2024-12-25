@@ -45,7 +45,7 @@ pub struct UserProfile {
     #[serde(rename = "ban_until")]
     pub ban_until: Option<String>,
     #[serde(rename = "reputation")]
-    pub reputation: i32,
+    pub reputation: f64,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
