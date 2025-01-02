@@ -45,22 +45,15 @@ export class SocketBase {
         console.groupEnd();
         this._last_event_received = new Date();
         ws.addListener((cd) => {
-          console.group("%cSocket Event Received", this._colors[0]);
-          console.log(`%cPayload:`, this._colors[0], cd);
           try {
             if (!cd.data || typeof cd.data !== "string") return;
             const json = JSON.parse(cd.data as string);
             this._last_event_received = new Date();
-            console.log(`%cEvent Successfully Parsed`, this._colors[0]);
             this.OnEvent(json);
-            console.groupEnd();
           } catch (e) {
-            console.log(`%cError while parsing event`, this._colors[0]);
             this.socket = undefined;
             this.listener.fire("disconnect");
             this.listener.fire("error", e);
-            console.groupEnd();
-            return;
           }
         });
         this.socket = ws;
