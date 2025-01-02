@@ -721,8 +721,7 @@ pub async fn progress_stock_item(
                         Some(json!(item)),
                     );
                 }
-                add_metric("Stock_ItemSold", from);
-                response.push("StockItem_Sold".to_string());
+                add_metric(format!("StockItem_{}", operation).as_str(), from);
             }
             Err(e) => {
                 response.push("StockDbError".to_string());
@@ -732,7 +731,7 @@ pub async fn progress_stock_item(
     } else if operation == OrderType::Buy {
         match StockItemMutation::add_item(&app.conn, stock.clone()).await {
             Ok(inserted) => {
-                response.push("StockItem_Add".to_string());
+                response.push("StockItem_Created".to_string());
                 notify.gui().send_event_update(
                     UIEvent::UpdateStockItems,
                     UIOperationEvent::CreateOrUpdate,
