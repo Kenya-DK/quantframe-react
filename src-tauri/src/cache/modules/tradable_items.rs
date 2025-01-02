@@ -1,7 +1,9 @@
 use std::path::PathBuf;
 
+use actix_web::cookie::time::ext;
 use entity::{stock::item::create::CreateStockItem, wish_list::create::CreateWishListItem};
 use eyre::eyre;
+use serde_json::json;
 
 use crate::{
     cache::{client::CacheClient, types::cache_tradable_item::CacheTradableItem},
@@ -103,9 +105,23 @@ impl TradableItemModule {
 
         let item = self.get_by(&input.raw, by)?;
         if item.is_none() {
+            let mut extra: serde_json::Value = json!(input);
+            extra["notification"] = json!({
+                "i18n_key_title":"created_stock.warning.not_found.title",
+                "i18n_key_message":"created_stock.warning.not_found.message",
+                "values": {
+                    "item": input.raw,
+                    "by": by
+                }
+            });
             return Err(AppError::new_with_level(
                 component,
-                eyre!("Item Not Found From: {} | By: {}", input.raw, by),
+                eyre!(
+                    "Item not found: {} | By: {}[J]{}[J]",
+                    input.raw,
+                    by,
+                    extra.to_string()
+                ),
                 crate::utils::enums::log_level::LogLevel::Warning,
             ));
         }
@@ -131,9 +147,23 @@ impl TradableItemModule {
 
         let item = self.get_by(&input.raw, by)?;
         if item.is_none() {
+            let mut extra = json!(input);
+            extra["notification"] = json!({
+                "i18n_key_title":"create_wish_item.warning.not_found.title",
+                "i18n_key_message":"create_wish_item.warning.not_found.message",
+                "values": {
+                    "item": input.raw,
+                    "by": by
+                }
+            });
             return Err(AppError::new_with_level(
                 component,
-                eyre!("Item Not Found From: {} | By: {}", input.raw, by),
+                eyre!(
+                    "Item not found: {} | By: {}[J]{}[J]",
+                    input.raw,
+                    by,
+                    extra.to_string()
+                ),
                 crate::utils::enums::log_level::LogLevel::Warning,
             ));
         }

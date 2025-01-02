@@ -172,7 +172,7 @@ impl WFMClient {
 
         // Create default error response
         let mut error_def = ErrorApiResponse {
-            status_code: 500,
+            status_code: 999,
             error: "UnknownError".to_string(),
             messages: vec![],
             raw_response: None,
@@ -188,7 +188,7 @@ impl WFMClient {
                 self.component.as_str(),
                 error_def,
                 eyre!(format!("There was an error sending the request: {}", e)),
-                LogLevel::Critical,
+                LogLevel::Warning,
             ));
         }
 
