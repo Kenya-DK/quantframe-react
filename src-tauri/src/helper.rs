@@ -731,13 +731,14 @@ pub async fn progress_stock_item(
     } else if operation == OrderType::Buy {
         match StockItemMutation::add_item(&app.conn, stock.clone()).await {
             Ok(inserted) => {
-                response.push("StockItem_Created".to_string());
+                let rep = "StockItem_Created".to_string();
+                response.push(rep.clone());
                 notify.gui().send_event_update(
                     UIEvent::UpdateStockItems,
                     UIOperationEvent::CreateOrUpdate,
                     Some(json!(inserted)),
                 );
-                add_metric("Stock_ItemCreate", from);
+                add_metric(rep.as_str(), from);
             }
             Err(e) => {
                 response.push("StockItem_DbError".to_string());
@@ -768,7 +769,7 @@ pub async fn progress_stock_item(
             response.push(format!("WFM_{}", operation));
         }
         Err(e) => {
-            response.push("WFMOrderError".to_string());
+            response.push("WFM_Error".to_string());
             if !options.contains(&"WFMContinueOnError".to_string()) {
                 return Err(e);
             }
@@ -796,7 +797,7 @@ pub async fn progress_stock_item(
     match progress_transaction(app, notify, qf, &mut transaction, from).await {
         Ok(_) => {}
         Err(e) => {
-            response.push("TransactionDbError".to_string());
+            response.push("Transaction_DbError".to_string());
             return Err(e);
         }
     };
@@ -832,8 +833,8 @@ pub async fn progress_stock_riven(
         // Delete the stock from the database
         match StockRivenMutation::delete(&app.conn, entity.stock_id.unwrap()).await {
             Ok(_) => {
-                response.push("StockRivenDeleted".to_string());
-                add_metric("Stock_RivenDeleted", from);
+                response.push("StockRiven_Deleted".to_string());
+                add_metric("StockRiven_Deleted", from);
                 notify.gui().send_event_update(
                     UIEvent::UpdateStockRivens,
                     UIOperationEvent::Delete,
@@ -845,7 +846,7 @@ pub async fn progress_stock_riven(
     } else if operation == OrderType::Buy {
         match StockRivenMutation::create(&app.conn, stock.clone()).await {
             Ok(inserted) => {
-                add_metric("Stock_RivenCreate", from);
+                add_metric("StockRiven_Create", from);
                 response.push("StockRivenAdd".to_string());
                 notify.gui().send_event_update(
                     UIEvent::UpdateStockRivens,
@@ -872,7 +873,7 @@ pub async fn progress_stock_riven(
         match wfm.auction().delete(&id).await {
             Ok(_) => {
                 add_metric("WFM_RivenDeleted", from);
-                response.push("WFMRivenDeleted".to_string());
+                response.push("WFM_RivenDeleted".to_string());
                 notify.gui().send_event_update(
                     UIEvent::UpdateAuction,
                     UIOperationEvent::Delete,

@@ -387,7 +387,6 @@ impl OnTradeEvent {
         };
 
         // Set Notification's Data
-        let mut notify_type = "success";
         let mut notify_payload = json!({
             "i18n_key_title": "",
             "i18n_key_message": "",
@@ -396,8 +395,9 @@ impl OnTradeEvent {
             "player_name": trade.player_name,
             "trade_type": trade.trade_type,
             "platinum": trade.platinum,
+            "wfm_operation": "None",
+            "stock_operation": "None",
         });
-
         // Append the trade to the file
         match self.append_to_file(file_path, trade.clone()) {
             Ok(_) => {}
@@ -432,13 +432,10 @@ impl OnTradeEvent {
         // Set Item Name
         notify_value["item_name"] = json!(created_stock.get_name()?);
         notify_value["quantity"] = json!(created_stock.quantity);
-        let notify_entity = created_stock.entity_type.as_str().to_lowercase();
 
-        notify_payload["i18n_key_title"] =
-            format!("{}.{}.{}.title", gui_id, notify_type, notify_entity).into();
+        notify_payload["i18n_key_title"] = format!("{}.title", gui_id).into();
 
-        notify_payload["i18n_key_message"] =
-            format!("{}.{}.{}.message", gui_id, notify_type, notify_entity).into();
+        notify_payload["i18n_key_message"] = format!("{}.message", gui_id).into();
 
         logger::info_con(&self.get_component("TradeAccepted"), &trade.display());
 
@@ -477,7 +474,16 @@ impl OnTradeEvent {
                     .await
                     {
                         Ok(e) => {
-                            println!("{:?}", e);
+                            notify_value["operations"] = json!(e);
+                            if e.contains(&"StockRiven_NotFound".to_string()) {
+                                notify_value["stock_operation"] = json!("Not Found");
+                            }
+                            if e.contains(&"StockRiven_Deleted".to_string()) {
+                                notify_value["stock_operation"] = json!("Deleted");
+                            }
+                            if e.contains(&"WFM_RivenDeleted".to_string()) {
+                                notify_value["wfm_operation"] = json!("Deleted");
+                            }
                         }
                         Err(e) => {
                             error::create_log_file(log_file, &e);
@@ -497,7 +503,25 @@ impl OnTradeEvent {
                     .await
                     {
                         Ok(e) => {
-                            println!("{:?}", e);
+                            notify_value["operations"] = json!(e);
+                            if e.contains(&"StockItem_NotFound".to_string()) {
+                                notify_value["stock_operation"] = json!("Not Found");
+                            }
+                            if e.contains(&"StockItem_Deleted".to_string()) {
+                                notify_value["stock_operation"] = json!("Deleted");
+                            }
+                            if e.contains(&"StockItem_Updated".to_string()) {
+                                notify_value["stock_operation"] = json!("Updated");
+                            }
+                            if e.contains(&"WFM_Deleted".to_string()) {
+                                notify_value["wfm_operation"] = json!("Deleted");
+                            }
+                            if e.contains(&"WFM_Updated".to_string()) {
+                                notify_value["wfm_operation"] = json!("Updated");
+                            }
+                            if e.contains(&"WFM_NotFound".to_string()) {
+                                notify_value["wfm_operation"] = json!("Not Found");
+                            }
                         }
                         Err(e) => {
                             error::create_log_file(log_file, &e);
@@ -519,7 +543,25 @@ impl OnTradeEvent {
                     .await
                     {
                         Ok(e) => {
-                            println!("{:?}", e);
+                            notify_value["operations"] = json!(e);
+                            if e.contains(&"WishItem_NotFound".to_string()) {
+                                notify_value["stock_operation"] = json!("Not Found");
+                            }
+                            if e.contains(&"WishItem_Deleted".to_string()) {
+                                notify_value["stock_operation"] = json!("Deleted");
+                            }
+                            if e.contains(&"WishItem_Updated".to_string()) {
+                                notify_value["stock_operation"] = json!("Updated");
+                            }
+                            if e.contains(&"WFM_Deleted".to_string()) {
+                                notify_value["wfm_operation"] = json!("Deleted");
+                            }
+                            if e.contains(&"WFM_Updated".to_string()) {
+                                notify_value["wfm_operation"] = json!("Updated");
+                            }
+                            if e.contains(&"WFM_NotFound".to_string()) {
+                                notify_value["wfm_operation"] = json!("Not Found");
+                            }
                         }
                         Err(e) => {
                             error::create_log_file(log_file, &e);
@@ -537,7 +579,7 @@ impl OnTradeEvent {
                 }
             }
 
-            notify_payload["values"] = notify_value;
+            notify_payload["values"] = notify_value.clone();
 
             let content: String = notify_user
                 .content
@@ -603,25 +645,25 @@ impl OnTradeEvent {
                                 "name": "Received",
                                 "value": format!("```{}```", received_items),
                                 "inline": true
+                            },
+                            {
+                                "name": "Stock",
+                                "value": format!("```{}```", notify_value["stock_operation"].as_str().unwrap_or("None")),
+                                "inline": true
+                            },
+                            {
+                                "name": "Warframe Market",
+                                "value": format!("```{}```", notify_value["wfm_operation"].as_str().unwrap_or("None")),
+                                "inline": true
                             }
                         ],
                     })],
                 );
             }
 
-            if notify_type == "success" {
-                notify
-                    .gui()
-                    .send_event(UIEvent::OnNotificationSuccess, Some(notify_payload));
-            } else if notify_type == "warning" {
-                notify
-                    .gui()
-                    .send_event(UIEvent::OnNotificationWarning, Some(notify_payload));
-            } else if notify_type == "error" {
-                notify
-                    .gui()
-                    .send_event(UIEvent::OnNotificationError, Some(notify_payload));
-            }
+            notify
+                .gui()
+                .send_event(UIEvent::OnNotificationSuccess, Some(notify_payload));
         });
         return Ok(());
     }
@@ -1140,7 +1182,7 @@ async fn process_stock_riven(
             &client.get_component("ProcessStockRiven"),
             "Skipping Riven Mod Purchase",
         );
-        operations.push("skipped".to_string());
+        operations.push("StockRiven_Skipped".to_string());
         return Ok(operations);
     }
     // Find Stock
@@ -1162,7 +1204,7 @@ async fn process_stock_riven(
             &client.get_component("ProcessStockRiven"),
             "Stock Riven Not Found",
         );
-        operations.push("stock_not_found".to_string());
+        operations.push("StockRiven_NotFound".to_string());
         return Ok(operations);
     }
     let stock = stock.unwrap();

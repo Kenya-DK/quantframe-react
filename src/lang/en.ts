@@ -19,7 +19,11 @@ export const en = {
         },
       },
     },
-    on_trade_event: {},
+    on_trade_event: {
+      title: "Trade with {{player_name}} complete",
+      message:
+        "<blue>{{item_name}}</blue> X<blue>{{quantity}}</blue> {{trade_type}} For {{platinum}}p WFM: <blue>{{wfm_operation}}</blue> Stock: <blue>{{stock_operation}}</blue>",
+    },
   },
   enums: {
     transaction_type: {
