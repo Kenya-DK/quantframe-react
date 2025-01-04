@@ -218,7 +218,7 @@ impl ItemModule {
                 break;
             }
 
-            if self.client.is_running() == false || item_entry.wfm_url != "molt_augmented" {
+            if self.client.is_running() == false {
                 current_index -= 1;
                 continue;
             }
