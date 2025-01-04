@@ -145,6 +145,7 @@ impl ItemModule {
                     .and_modify(|entry| {
                         entry.priority = 2;
                         entry.buy_quantity = item.quantity;
+                        entry.wish_list_id = Some(item.id);
                         entry.operation.push("WishList".to_string());
                     })
                     .or_insert_with(|| {
