@@ -47,12 +47,7 @@ pub struct CreateWishListItem {
 }
 
 impl CreateWishListItem {
-    pub fn new(
-        raw: String,
-        sub_type: Option<SubType>,
-        maximum_price: Option<i64>,
-        quantity: i64,
-    ) -> Self {
+    pub fn new(raw: String, sub_type: Option<SubType>, bought: Option<i64>, quantity: i64) -> Self {
         CreateWishListItem {
             raw,
             wfm_id: "".to_string(),
@@ -60,8 +55,8 @@ impl CreateWishListItem {
             item_name: "".to_string(),
             item_unique_name: "".to_string(),
             tags: vec![],
-            maximum_price,
-            bought: None,
+            maximum_price: None,
+            bought: bought,
             quantity,
             sub_type,
             available_sub_types: None,

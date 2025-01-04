@@ -11,6 +11,7 @@ use service::{StockRivenMutation, StockRivenQuery, WishListMutation, WishListQue
 
 use crate::cache::client::CacheClient;
 use crate::helper::{self, add_metric};
+use crate::live_scraper::modules::item;
 use crate::qf_client::client::QFClient;
 use crate::utils::modules::error;
 use crate::wfm_client::enums::order_type::OrderType;
@@ -208,4 +209,71 @@ pub async fn wish_list_delete(
         Some(json!({ "id": order.clone().unwrap().id })),
     );
     Ok(())
+}
+
+#[tauri::command]
+pub async fn wish_list_bought(
+    id: i64,
+    price: i64,
+    app: tauri::State<'_, Arc<Mutex<AppState>>>,
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+    cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
+) -> Result<wish_list::Model, AppError> {
+    let app = app.lock()?.clone();
+    let notify = notify.lock()?.clone();
+    let wfm = wfm.lock()?.clone();
+    let cache = cache.lock()?.clone();
+    let qf = qf.lock()?.clone();
+
+    let item = match WishListQuery::get_by_id(&app.conn, id).await {
+        Ok(item) => item,
+        Err(e) => {
+            return Err(AppError::new("WishListQuery::get_by_id", eyre!(e)));
+        }
+    };
+
+    if item.is_none() {
+        return Err(AppError::new(
+            "WishItemBought",
+            eyre!(format!("Item with id {} not found", id)),
+        ));
+    }
+    let item = item.unwrap();
+
+    let mut created_stock = CreateWishListItem::new_valid(
+        item.wfm_id.clone(),
+        item.wfm_url.clone(),
+        item.item_name.clone(),
+        item.item_unique_name.clone(),
+        vec![],
+        item.sub_type.clone(),
+        item.maximum_price,
+        1,
+        Some(price),
+    );
+
+    match helper::progress_wish_item(
+        &mut created_stock,
+        "--item_by url_name --item_lang en",
+        "",
+        OrderType::Buy,
+        vec![],
+        "manual",
+        &app,
+        &cache,
+        &notify,
+        &wfm,
+        &qf,
+    )
+    .await
+    {
+        Ok((_, _)) => {
+            return Ok(item);
+        }
+        Err(e) => {
+            return Err(e);
+        }
+    }
 }

@@ -1,9 +1,9 @@
 import { useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { useEffect, useState } from "react";
-import { CreateWishListItem, WishListItem, StockStatus, UpdateWishListItem } from "@api/types";
+import { CreateWishListItem, WishListItem, StockStatus, UpdateWishListItem, BoughtWishListItem } from "@api/types";
 import { Box, Grid, Group, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { faEdit, faInfo, faShoppingBag, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faEdit, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { ColorInfo } from "@components/ColorInfo";
 import { ActionWithTooltip } from "@components/ActionWithTooltip";
 import { Loading } from "@components/Loading";
@@ -133,6 +133,20 @@ export const WishListPanel = ({}: WishListPanelProps) => {
       notifications.show({ title: useTranslateErrors("delete_item.title"), message: useTranslateErrors("delete_item.message"), color: "red.7" });
     },
   });
+  const boughtItemMutation = useMutation({
+    mutationFn: (data: BoughtWishListItem) => api.stock.wishList.bought(data),
+    onSuccess: async (u) => {
+      notifications.show({
+        title: useTranslateSuccess("sell_stock.title"),
+        message: useTranslateSuccess("sell_stock.message", { name: u.item_name }),
+        color: "green.7",
+      });
+    },
+    onError: (e) => {
+      console.error(e);
+      notifications.show({ title: useTranslateErrors("sell_stock.title"), message: useTranslateErrors("sell_stock.message"), color: "red.7" });
+    },
+  });
   // Modal's
   const OpenMinimumPriceModal = (id: number, maximum_price: number) => {
     modals.openContextModal({
@@ -165,6 +179,31 @@ export const WishListPanel = ({}: WishListPanelProps) => {
       size: "100%",
       title: item.item_name,
       children: <WishItemInfo value={item} />,
+    });
+  };
+  const OpenBoughtModal = (stock: WishListItem) => {
+    modals.openContextModal({
+      modal: "prompt",
+      title: useTranslateBasePrompt("bought.title"),
+      innerProps: {
+        fields: [
+          {
+            name: "bought",
+            label: useTranslateBasePrompt("bought.fields.bought.label"),
+            attributes: {
+              min: 0,
+            },
+            value: 0,
+            type: "number",
+          },
+        ],
+        onConfirm: async (data: { bought: number }) => {
+          if (!stock) return;
+          const { bought } = data;
+          await boughtItemMutation.mutateAsync({ id: stock.id, price: bought });
+        },
+        onCancel: (id: string) => modals.close(id),
+      },
     });
   };
   return (
@@ -297,18 +336,32 @@ export const WishListPanel = ({}: WishListPanelProps) => {
           {
             accessor: "actions",
             title: useTranslateDataGridBaseColumns("actions.title"),
-            width: 125,
+            width: 145,
             render: (row) => (
               <Group gap={"sm"} justify="flex-end">
                 <ActionWithTooltip
-                  tooltip={useTranslateDataGridBaseColumns("actions.buttons.info.tooltip")}
-                  icon={faShoppingBag}
-                  color="green.7"
+                  tooltip={useTranslateDataGridColumns("actions.buttons.bought_manual.tooltip")}
+                  icon={faPen}
+                  color={"green.7"}
                   actionProps={{ size: "sm" }}
                   iconProps={{ size: "xs" }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    // OpenInfoModal(row);
+                    OpenBoughtModal(row);
+                  }}
+                />
+                <ActionWithTooltip
+                  tooltip={useTranslateDataGridColumns("actions.buttons.bought_auto.tooltip")}
+                  icon={faHammer}
+                  actionProps={{ disabled: !row.list_price, size: "sm" }}
+                  iconProps={{ size: "xs" }}
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    if (!row.id || !row.list_price) return;
+                    await boughtItemMutation.mutateAsync({
+                      id: row.id,
+                      price: row.list_price,
+                    });
                   }}
                 />
                 <ActionWithTooltip

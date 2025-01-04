@@ -1,5 +1,5 @@
 import { TauriClient } from "../..";
-import { CreateWishListItem, WishListItem, UpdateWishListItem } from "@api/types";
+import { CreateWishListItem, BoughtWishListItem, WishListItem, UpdateWishListItem } from "@api/types";
 
 export class WishListModule {
   constructor(private readonly client: TauriClient) {}
@@ -36,5 +36,11 @@ export class WishListModule {
     const [err, res] = await this.client.sendInvoke<void>("wish_list_delete_bulk", { ids });
     if (err) throw err;
     return res;
+  }
+
+  async bought(entry: BoughtWishListItem): Promise<WishListItem> {
+    const [err, rep] = await this.client.sendInvoke<WishListItem>("wish_list_bought", { ...entry });
+    if (err) throw err;
+    return rep;
   }
 }

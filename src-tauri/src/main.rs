@@ -297,6 +297,7 @@ fn main() {
             commands::wish_list::wish_list_create,
             commands::wish_list::wish_list_update,
             commands::wish_list::wish_list_delete,
+            commands::wish_list::wish_list_bought,
             // Notification commands
             commands::notification::send_system_notification,
         ])

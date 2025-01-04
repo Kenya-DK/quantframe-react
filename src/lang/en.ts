@@ -1085,6 +1085,14 @@ export const en = {
             },
           },
         },
+        bought: {
+          title: "Bought Price",
+          fields: {
+            bought: {
+              label: "Price",
+            },
+          },
+        },
         delete: {
           title: "Delete Item's",
           message: "Are you sure you want to delete(s) {{count}}, this action cannot be undone.",
@@ -1288,7 +1296,12 @@ export const en = {
               },
               actions: {
                 buttons: {
-                  filter: {},
+                  bought_manual: {
+                    tooltip: "Bought manually",
+                  },
+                  bought_auto: {
+                    tooltip: "Bought at listed price",
+                  },
                 },
               },
             },

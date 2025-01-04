@@ -18,6 +18,11 @@ export interface UpdateWishListItem {
   sub_type?: SubType;
 }
 
+export interface BoughtWishListItem {
+  id: number;
+  price: number;
+}
+
 export interface WishListItemDetails {
   highest_price: number;
   lowest_price: number;
