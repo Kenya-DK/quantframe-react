@@ -14,6 +14,8 @@ use eyre::eyre;
 pub struct SettingsState {
     // Debug Mode
     pub debug: Vec<String>,
+    pub tos_accepted: bool,
+    pub notification_ids: Vec<String>,
     // Warframe Log Path
     pub wf_log_path: String,
     pub http: HttpConfig,
@@ -92,7 +94,9 @@ pub struct HttpConfig {
 impl Default for SettingsState {
     fn default() -> Self {
         Self {
+            tos_accepted: false,
             debug: vec!["*".to_string()],
+            notification_ids: vec!["".to_string()],
             wf_log_path: "".to_string(),
             http: HttpConfig {
                 host: "localhost".to_string(),

@@ -95,6 +95,45 @@ export const en = {
           cancel: "Cancel",
         },
       },
+      tos: {
+        title: "Terms and Conditions",
+        content:
+          "# Quantframe Data Protection Policy\n" +
+          "By using Quantframe, you agree to the collection and use of information in accordance with this policy.\n" +
+          "## Information Collection and Use\n" +
+          "We collect several different types of information for various purposes to provide and improve our Service \n" +
+          "to you.\n" +
+          "## Types of Data Collected\n" +
+          "### Personal Data\n" +
+          'While using our Service, we may ask you to provide us with certain personally identifiable information that can be used to contact or identify you ("Personal Data"). Personally identifiable information may include, but is not limited to:\n' +
+          "- Warframe Market Username\n" +
+          "- Warframe Market User ID\n" +
+          "- Device ID (collected in a fully anonymous way used for tracking/securing purposes)\n" +
+          "- Quantframe Version\n" +
+          "- Metrics\n" +
+          "- Transaction details relevant to the user's activity (e.g., adding/deleting/updating a transaction)\n" +
+          "- Stock item/riven details relevant to the user's activity (e.g., adding/deleting/updating a stock item/\n" +
+          "riven)\n" +
+          "### Transaction And Stock Data\n" +
+          "We may collect information on the transactions and stock items/rivens you add, delete, or update. This \n" +
+          "includes tracking the specific details of the transactions and stock items/rivens you interact with while \n" +
+          "using our Service.\n" +
+          "You can turn off the collection of this data by disabling the Analytics tag in the settings.\n" +
+          "### Metrics Data\n" +
+          "We may also collect information on how the Service is accessed and used. This includes tracking user \n" +
+          "interactions, such as the specific links or buttons you click on while using our Service.\n" +
+          "example:\n" +
+          "```\n" +
+          "{\n" +
+          '  "active_page": "warframe_market",\n' +
+          "}\n" +
+          "```\n" +
+          "This can't be turned off.",
+        buttons: {
+          accept: "Accept",
+          decline: "Decline",
+        },
+      },
     },
     forms: {
       settings: {

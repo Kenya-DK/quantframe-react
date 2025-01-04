@@ -317,6 +317,7 @@ pub async fn app_update_settings(
 
     // Set Logging Settings
     my_lock.debug = settings.debug;
+    my_lock.tos_accepted = settings.tos_accepted;
 
     // Set Live Scraper Settings
     my_lock.live_scraper = settings.live_scraper;
@@ -335,4 +336,9 @@ pub async fn app_update_settings(
         Some(json!(my_lock.clone())),
     );
     Ok(true)
+}
+
+#[tauri::command]
+pub async fn app_exit() {
+    std::process::exit(0);
 }

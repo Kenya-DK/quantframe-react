@@ -2,6 +2,7 @@
 
 export interface Settings {
   debug: string[];
+  tos_accepted: boolean;
   dev_mode: boolean;
   live_scraper: SettingsLiveScraper;
   notifications: SettingsNotifications;

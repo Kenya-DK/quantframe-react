@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api, { OnTauriDataEvent, OnTauriEvent } from "@api/index";
-import { useTranslateContexts, useTranslateNotifications } from "@hooks/useTranslate.hook";
+import { useTranslateContexts, useTranslateNotifications, useTranslateModals } from "@hooks/useTranslate.hook";
 import { notifications } from "@mantine/notifications";
 import { Box, Button, Group } from "@mantine/core";
 import { checkUpdate, installUpdate } from "@tauri-apps/api/updater";
@@ -15,6 +15,7 @@ import { RichTextEditor } from "@mantine/tiptap";
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Markdown } from "tiptap-markdown";
+import { TermsAndConditions } from "@components/Modals/TermsAndConditions";
 
 type NotificationPayload = {
   i18n_key_title: string;
@@ -120,6 +121,31 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     if (error == undefined) return;
     setAppError(error as ResponseError);
   }, [error]);
+
+  useEffect(() => {
+    if (settings == undefined) return;
+    if (!settings?.tos_accepted) {
+      modals.open({
+        title: useTranslateModals("tos.title"),
+        size: "100%",
+        closeOnEscape: false,
+        closeOnClickOutside: false,
+        withCloseButton: false,
+        children: (
+          <TermsAndConditions
+            onAccept={async () => {
+              await api.app.updateSettings({ ...settings, tos_accepted: true });
+              modals.closeAll();
+            }}
+            onDecline={async () => {
+              api.app.exit();
+            }}
+          />
+        ),
+      });
+    }
+  }, [settings]);
+
   // Handle update, create, delete
   const handleUpdateSettings = (operation: QfSocketEventOperation, data: Settings) => {
     switch (operation) {
@@ -131,6 +157,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
         break;
     }
   };
+
   const handleUpdateAppInfo = (operation: QfSocketEventOperation, data: AppInfo) => {
     switch (operation) {
       case QfSocketEventOperation.CREATE_OR_UPDATE:
@@ -141,6 +168,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
         break;
     }
   };
+
   const handleNotification = (payload: NotificationPayload, color: string, autoClose: boolean = true) => {
     notifications.show({
       title: useTranslateNotifications(payload.i18n_key_title, payload.values),
