@@ -1,52 +1,51 @@
 import { Group, TextInput, Grid, Title, Tabs, Center, ScrollArea, Button } from "@mantine/core";
-import { StockRiven } from "@api/types";
+import { CacheTradableItem, WishListItem } from "@api/types";
 import { useTranslateComponent, useTranslateEnums } from "@hooks/useTranslate.hook";
 import dayjs from "dayjs";
 import { PriceHistoryListItem } from "@components/PriceHistory";
-import { AuctionListItem } from "@components/AuctionListItem";
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import api from "@api/index";
+import { OrderItem } from "@components/OrderItem";
 
 export type WishItemInfoProps = {
-  value: StockRiven;
+  value: WishListItem;
 };
 export function WishItemInfo({ value }: WishItemInfoProps) {
+  //State
+  const [item, setItem] = useState<CacheTradableItem | undefined>(undefined);
+
+  // Fetch data from rust side
+  const { data } = useQuery({
+    queryKey: ["cache_items"],
+    queryFn: () => api.cache.getTradableItems(),
+  });
+
+  useEffect(() => {
+    if (!data) {
+      setItem(undefined);
+      return;
+    }
+    const item = data.find((x) => x.wfm_url_name === value.wfm_url);
+    setItem(item);
+  }, [data, value]);
+
   // Translate general
-  const useTranslateWishItemInfo = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateComponent(`stock_riven_info.${key}`, { ...context }, i18Key);
-  const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateWishItemInfo(`tabs.${key}`, { ...context }, i18Key);
+  const useTranslateStockItemInfo = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateComponent(`wish_item_info.${key}`, { ...context }, i18Key);
   const useTranslateFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateWishItemInfo(`fields.${key}`, { ...context }, i18Key);
+    useTranslateStockItemInfo(`fields.${key}`, { ...context }, i18Key);
+  const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateStockItemInfo(`tabs.${key}`, { ...context }, i18Key);
+  const useTranslateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateStockItemInfo(`buttons.${key}`, { ...context }, i18Key);
   const useTranslateStockStatus = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateEnums(`stock_status.${key}`, { ...context }, i18Key);
-  const useTranslateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateWishItemInfo(`buttons.${key}`, { ...context }, i18Key);
-
-  const generateAuctionLink = (auction: StockRiven, withAttributes: boolean = false) => {
-    const baseUrl = "https://warframe.market/auctions/search?type=riven&polarity=any&sort_by=price_asc";
-    const params: string[] = [];
-
-    // Weapon
-    params.push(`weapon_url_name=${auction.wfm_weapon_url}`);
-
-    const positiveStats = auction.attributes
-      .filter((x) => x.positive)
-      .map((x) => x.url_name)
-      .join(",");
-    if (positiveStats != "" && withAttributes) params.push(`positive_stats=${positiveStats}`);
-    const negativeStats = auction.attributes
-      .filter((x) => !x.positive)
-      .map((x) => x.url_name)
-      .join(",");
-    if (negativeStats != "" && withAttributes) params.push(`negative_stats=${negativeStats}`);
-
-    window.open(`${baseUrl}&${params.join("&")}`, "_blank");
-  };
-
   return (
     <Tabs defaultValue="general" h={"75vh"}>
       <Tabs.List>
         <Tabs.Tab value="general">{useTranslateTabs("general.title")}</Tabs.Tab>
-        <Tabs.Tab value="auctions">{useTranslateTabs("auctions.title")}</Tabs.Tab>
+        <Tabs.Tab value="orders">{useTranslateTabs("orders.title")}</Tabs.Tab>
       </Tabs.List>
 
       <Tabs.Panel value="general">
@@ -59,20 +58,16 @@ export function WishItemInfo({ value }: WishItemInfoProps) {
             <Group grow>
               <TextInput
                 label={useTranslateFields("status")}
-                data-color-mode="text"
                 data-stock-status={value.status}
+                data-color-mode="text"
                 value={useTranslateStockStatus(value.status)}
                 readOnly
               />
-              <TextInput label={useTranslateFields("minimum_price")} value={value.minimum_price || "N/A"} readOnly />
-              <TextInput label={useTranslateFields("re_rolls")} value={value.re_rolls || 0} readOnly />
-              <TextInput label={useTranslateFields("mastery_rank")} value={value.mastery_rank || 0} readOnly />
-              <TextInput label={useTranslateFields("rank")} value={value.sub_type?.rank || 0} readOnly />
+              <TextInput label={useTranslateFields("maximum_price")} value={value.maximum_price || "N/A"} readOnly />
+              <TextInput label={useTranslateFields("quantity")} value={value.quantity || "N/A"} readOnly />
             </Group>
             <Group grow>
-              <TextInput label={useTranslateFields("bought")} value={value.bought} readOnly />
               <TextInput label={useTranslateFields("list_price")} value={value.list_price || "N/A"} readOnly />
-              <TextInput label={useTranslateFields("profit")} value={value.info?.profit || "N/A"} readOnly />
             </Group>
             <Group grow>
               <TextInput label={useTranslateFields("total_sellers")} value={value.info?.total_sellers || "N/A"} readOnly />
@@ -80,12 +75,26 @@ export function WishItemInfo({ value }: WishItemInfoProps) {
               <TextInput label={useTranslateFields("lowest_price")} value={value.info?.lowest_price || "N/A"} readOnly />
             </Group>
             <Group mt={"md"} grow>
-              <Button color="blue" variant="outline" onClick={() => generateAuctionLink(value, false)}>
-                {useTranslateButtons("find_type")}
+              <Button
+                color="blue"
+                variant="outline"
+                onClick={() => {
+                  window.open(`https://warframe.market/items/${value.wfm_url}`, "_blank");
+                }}
+              >
+                {useTranslateButtons("wfm")}
               </Button>
-              <Button color="blue" variant="outline" onClick={() => generateAuctionLink(value, true)}>
-                {useTranslateButtons("find_similar")}
-              </Button>
+              {item && (
+                <Button
+                  color="blue"
+                  variant="outline"
+                  onClick={() => {
+                    window.open(item.wiki_url, "_blank");
+                  }}
+                >
+                  {useTranslateButtons("wiki")}
+                </Button>
+              )}
             </Group>
           </Grid.Col>
           <Grid.Col span={6}>
@@ -104,15 +113,41 @@ export function WishItemInfo({ value }: WishItemInfoProps) {
         </Grid>
       </Tabs.Panel>
 
-      <Tabs.Panel value="auctions">
+      <Tabs.Panel value="orders">
         <ScrollArea h={"70.5vh"}>
-          {!value.info?.auctions?.length && (
+          {!value.info?.orders?.length && (
             <Center h={"100%"}>
-              <Title order={3}>{useTranslateFields("no_auctions")}</Title>
+              <Title order={3}>{useTranslateFields("no_orders")}</Title>
             </Center>
           )}
-          {(value.info?.auctions?.length || 0) > 0 &&
-            value.info?.auctions?.slice(0, 5).map((auction, index) => <AuctionListItem show_border key={index} auction={auction} />)}
+          {(value.info?.orders?.length || 0) > 0 &&
+            value.info?.orders?.slice(0, 5).map((order, index) => (
+              <OrderItem
+                show_border
+                paperProps={{ mb: "sm" }}
+                key={index}
+                show_user
+                order={{
+                  ...order,
+                  item: {
+                    en: {
+                      item_name: item?.name || "",
+                    },
+                    id: item?.wfm_id || "",
+                    url_name: item?.wfm_url_name || "",
+                    icon: item?.image_url || "",
+                    icon_format: "png",
+                    thumb: item?.image_url || "",
+                    sub_icon: "",
+                    mod_max_rank: item?.sub_type?.max_rank || 0,
+                    subtypes: [],
+                    tags: [],
+                    ducats: 0,
+                    quantity_for_set: 0,
+                  },
+                }}
+              />
+            ))}
         </ScrollArea>
       </Tabs.Panel>
     </Tabs>

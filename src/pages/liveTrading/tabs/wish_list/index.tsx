@@ -19,6 +19,7 @@ import { getCssVariable, GetSubTypeDisplay } from "@utils/helper";
 import { ButtonInterval } from "@components/ButtonInterval";
 import { modals } from "@mantine/modals";
 import { StatsWithSegments } from "@components/StatsWithSegments";
+import { WishItemInfo } from "@components/Modals/WishItemInfo";
 interface WishListPanelProps {}
 export const WishListPanel = ({}: WishListPanelProps) => {
   // States Context
@@ -157,6 +158,13 @@ export const WishListPanel = ({}: WishListPanelProps) => {
         },
         onCancel: (id: string) => modals.close(id),
       },
+    });
+  };
+  const OpenInfoModal = (item: WishListItem) => {
+    modals.open({
+      size: "100%",
+      title: item.item_name,
+      children: <WishItemInfo value={item} />,
     });
   };
   return (
@@ -310,7 +318,7 @@ export const WishListPanel = ({}: WishListPanelProps) => {
                   iconProps={{ size: "xs" }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    // OpenInfoModal(row);
+                    OpenInfoModal(row);
                   }}
                 />
                 <ActionWithTooltip

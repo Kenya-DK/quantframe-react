@@ -610,6 +610,34 @@ export const en = {
         wiki: "Wiki",
       },
     },
+    wish_item_info: {
+      tabs: {
+        general: {
+          title: "General",
+        },
+        orders: {
+          title: "Orders",
+        },
+      },
+      fields: {
+        created_at: "Created At",
+        updated_at: "Updated At",
+        maximum_price: "Maximum Price",
+        list_price: "List Price",
+        total_sellers: "Total Sellers",
+        highest_price: "Highest Price",
+        lowest_price: "Lowest Price",
+        status: "Status",
+        quantity: "Quantity of goods",
+        listed: "Listed Prices History",
+        no_orders: "No orders was found for this item.",
+        no_listed: "No previous listed prices",
+      },
+      buttons: {
+        wfm: "Warframe Market",
+        wiki: "Wiki",
+      },
+    },
     order_details: {
       tabs: {
         general: {

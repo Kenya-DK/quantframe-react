@@ -218,7 +218,7 @@ impl ItemModule {
                 break;
             }
 
-            if self.client.is_running() == false {
+            if self.client.is_running() == false || item_entry.wfm_url != "molt_augmented" {
                 current_index -= 1;
                 continue;
             }
@@ -659,7 +659,7 @@ impl ItemModule {
                     live_orders.lowest_price(OrderType::Buy),
                     highest_price,
                     0,
-                    live_orders.sell_orders.clone(),
+                    live_orders.buy_orders.clone(),
                     entry.buy_quantity.clone(),
                     0,
                     vec![price_history.clone()],
@@ -765,7 +765,7 @@ impl ItemModule {
                 info.set_highest_price(highest_price);
                 info.set_lowest_price(live_orders.lowest_price(OrderType::Buy));
                 info.set_total_sellers(live_orders.sell_orders.len() as i64);
-                info.set_orders(live_orders.sell_orders.clone());
+                info.set_orders(live_orders.buy_orders.clone());
                 info.add_price_history(price_history.clone());
                 info.clone()
             }
@@ -777,7 +777,7 @@ impl ItemModule {
                     live_orders.lowest_price(OrderType::Buy),
                     highest_price,
                     0,
-                    live_orders.sell_orders.clone(),
+                    live_orders.buy_orders.clone(),
                     wish_list_item.quantity,
                     0,
                     wish_list_item.price_history.0.clone(),
