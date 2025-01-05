@@ -7,6 +7,10 @@ use crate::wfm_client::types::order::Order;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct OrderDetails {
+    #[serde(rename = "cache_id")]
+    #[serde(default)]
+    pub cache_id: String,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "total_buyers")]
     pub total_buyers: Option<i64>,
@@ -57,6 +61,7 @@ pub struct OrderDetails {
 impl Default for OrderDetails {
     fn default() -> Self {
         OrderDetails {
+            cache_id: "".to_string(),
             is_dirty: true,
             total_buyers: None,
             total_sellers: None,
@@ -75,6 +80,7 @@ impl Default for OrderDetails {
 
 impl OrderDetails {
     pub fn new(
+        cache_id: String,
         total_buyers: i64,
         total_sellers: i64,
         profit: i64,
@@ -87,6 +93,7 @@ impl OrderDetails {
         price_history: Vec<PriceHistory>,
     ) -> OrderDetails {
         OrderDetails {
+            cache_id,
             total_buyers: Some(total_buyers),
             total_sellers: Some(total_sellers),
             lowest_price: Some(lowest_price),

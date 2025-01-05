@@ -38,6 +38,10 @@ pub struct ItemEntry {
     #[serde(rename = "operation")]
     #[serde(default)]
     pub operation: Vec<String>,
+
+    #[serde(rename = "order_type")]
+    #[serde(default)]
+    pub order_type: String,
 }
 
 impl Hash for ItemEntry {
@@ -57,6 +61,7 @@ impl ItemEntry {
         buy_quantity: i64,
         sell_quantity: i64,
         operation: Vec<String>,
+        order_type: &str,
     ) -> ItemEntry {
         ItemEntry {
             stock_id,
@@ -67,6 +72,7 @@ impl ItemEntry {
             buy_quantity,
             sell_quantity,
             operation,
+            order_type: order_type.to_string(),
         }
     }
 }

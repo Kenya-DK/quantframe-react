@@ -10,6 +10,7 @@ use crate::utils::enums::ui_events::{UIEvent, UIOperationEvent};
 use crate::utils::modules::error::{self, AppError};
 use crate::utils::modules::logger;
 use crate::wfm_client::enums::order_type::OrderType;
+use crate::wfm_client::types::item;
 use crate::wfm_client::types::order::Order;
 use crate::wfm_client::types::orders::Orders;
 use entity::enums::stock_status::StockStatus;
@@ -24,9 +25,7 @@ use std::vec;
 pub struct ItemModule {
     pub client: LiveScraperClient,
     component: String,
-    stock_info: HashMap<i64, OrderDetails>,
-    wish_list_info: HashMap<i64, OrderDetails>,
-    order_info: HashMap<String, OrderDetails>,
+    info_caches: HashMap<String, OrderDetails>,
     interesting_items_cache: Arc<Mutex<HashMap<String, Vec<ItemEntry>>>>,
 }
 
@@ -36,9 +35,7 @@ impl ItemModule {
             client,
             component: "Item".to_string(),
             interesting_items_cache: Arc::new(Mutex::new(HashMap::new())),
-            order_info: HashMap::new(),
-            stock_info: HashMap::new(),
-            wish_list_info: HashMap::new(),
+            info_caches: HashMap::new(),
         }
     }
     fn get_component(&self, component: &str) -> String {
@@ -71,8 +68,7 @@ impl ItemModule {
     }
 
     pub fn reset(&mut self) {
-        self.stock_info = HashMap::new();
-        self.order_info = HashMap::new();
+        self.info_caches = HashMap::new();
         self.update_state();
     }
 
@@ -129,6 +125,7 @@ impl ItemModule {
                             0,
                             item.owned,
                             vec!["Sell".to_string()],
+                            "closed",
                         )
                     });
             }
@@ -158,6 +155,7 @@ impl ItemModule {
                             item.quantity,
                             0,
                             vec!["WishList".to_string()],
+                            "buy",
                         )
                     });
             }
@@ -285,7 +283,7 @@ impl ItemModule {
             let price = match cache.item_price().get_item_price(
                 &item_entry.wfm_url,
                 item_entry.sub_type.clone(),
-                "closed",
+                &item_entry.order_type,
             ) {
                 Ok(p) => p,
                 Err(_) => ItemPriceInfo::default(),
@@ -490,6 +488,7 @@ impl ItemModule {
                     buy_quantity,
                     0,
                     vec!["Buy".to_string()],
+                    "closed",
                 )
             })
             .collect::<Vec<ItemEntry>>();
@@ -636,10 +635,13 @@ impl ItemModule {
             post_price = maximum_price;
         }
 
+        // Create a cache id for the order info.
+        let cache_id = format!("WishList:{}", wish_list_item.id.clone());
         // Get/Create Order Info
         let price_history =
             PriceHistory::new(chrono::Local::now().naive_local().to_string(), post_price);
-        user_order.info = match self.order_info.get_mut(&user_order.id) {
+
+        let mut info = match self.info_caches.get_mut(&cache_id) {
             Some(order_info) => {
                 // Update the order info with the current price history
                 order_info.set_highest_price(highest_price);
@@ -653,6 +655,7 @@ impl ItemModule {
             }
             None => {
                 let order_info = OrderDetails::new(
+                    cache_id.clone(),
                     live_orders.buy_orders.len() as i64,
                     live_orders.sell_orders.len() as i64,
                     0,
@@ -709,7 +712,8 @@ impl ItemModule {
                     wish_list_item.set_status(StockStatus::Live);
                     wish_list_item.set_list_price(Some(post_price));
                     self.send_order_update(UIOperationEvent::CreateOrUpdate, json!(order.clone()));
-                    self.order_info.insert(order.id.clone(), order.info.clone());
+                    self.info_caches
+                        .insert(info.cache_id.clone(), order.info.clone());
                     self.update_state();
                 }
                 Err(e) => {
@@ -741,13 +745,6 @@ impl ItemModule {
                         my_orders.update_order(user_order.clone());
                         user_order.info.is_dirty = false;
                         user_order.info.changes = None;
-                        if self.order_info.contains_key(&user_order.id) {
-                            *self.order_info.get_mut(&user_order.id).unwrap() =
-                                user_order.info.clone();
-                        } else {
-                            self.order_info
-                                .insert(user_order.id.clone(), user_order.info.clone());
-                        }
                         self.send_order_update(UIOperationEvent::CreateOrUpdate, json!(user_order));
                         self.update_state();
                     }
@@ -758,50 +755,21 @@ impl ItemModule {
             }
         }
 
-        // Update/Create/Delete the stock item on the database and update the UI if needed.
-        let mut stock_info = match self.wish_list_info.get_mut(&wish_list_item.id) {
-            Some(info) => {
-                // Update the order info with the current price history
-                info.set_highest_price(highest_price);
-                info.set_lowest_price(live_orders.lowest_price(OrderType::Buy));
-                info.set_total_sellers(live_orders.sell_orders.len() as i64);
-                info.set_orders(live_orders.buy_orders.clone());
-                info.add_price_history(price_history.clone());
-                info.clone()
-            }
-            None => {
-                let mut info = OrderDetails::new(
-                    live_orders.buy_orders.len() as i64,
-                    live_orders.sell_orders.len() as i64,
-                    0,
-                    live_orders.lowest_price(OrderType::Buy),
-                    highest_price,
-                    0,
-                    live_orders.buy_orders.clone(),
-                    wish_list_item.quantity,
-                    0,
-                    wish_list_item.price_history.0.clone(),
-                );
-                info.add_price_history(price_history.clone());
-                info
-            }
-        };
         wish_list_item.price_history =
-            PriceHistoryVec(stock_info.price_history.clone().into_iter().collect());
+            PriceHistoryVec(info.price_history.clone().into_iter().collect());
 
-        if stock_info.is_dirty || wish_list_item.is_dirty {
+        if info.is_dirty || wish_list_item.is_dirty {
             WishListMutation::update_by_id(&app.conn, wish_list_item.id, wish_list_item.clone())
                 .await
                 .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
             let mut payload = json!(wish_list_item);
-            payload["info"] = json!(stock_info);
-            stock_info.is_dirty = false;
-            stock_info.changes = None;
-            if self.stock_info.contains_key(&wish_list_item.id) {
-                *self.stock_info.get_mut(&wish_list_item.id).unwrap() = stock_info.clone();
+            payload["info"] = json!(info);
+            info.is_dirty = false;
+            info.changes = None;
+            if self.info_caches.contains_key(&cache_id) {
+                *self.info_caches.get_mut(&cache_id).unwrap() = info.clone();
             } else {
-                self.stock_info
-                    .insert(wish_list_item.id.clone(), stock_info.clone());
+                self.info_caches.insert(cache_id.clone(), info.clone());
             }
             self.update_state();
             self.send_wish_list_update(UIOperationEvent::CreateOrUpdate, json!(payload));
@@ -893,10 +861,13 @@ impl ItemModule {
             return Ok(None);
         }
 
+        // Create a cache id for the order info.
+        let cache_id = format!("Buying:{}", user_order.id.clone());
+
         // Get/Create Order Info
         let price_history =
             PriceHistory::new(chrono::Local::now().naive_local().to_string(), post_price);
-        user_order.info = match self.order_info.get_mut(&user_order.id) {
+        let info = match self.info_caches.get_mut(&cache_id) {
             Some(order_info) => {
                 // Update the order info with the current price history
                 order_info.set_highest_price(highest_price);
@@ -912,6 +883,7 @@ impl ItemModule {
             }
             None => {
                 let order_info = OrderDetails::new(
+                    cache_id,
                     live_orders.buy_orders.len() as i64,
                     live_orders.sell_orders.len() as i64,
                     potential_profit,
@@ -1009,7 +981,6 @@ impl ItemModule {
                                     }
                                     my_orders
                                         .delete_order_by_id(OrderType::Buy, &unselected_item.3);
-                                    self.order_info.remove(&unselected_item.3);
                                 }
                                 Err(e) => {
                                     return Err(e);
@@ -1056,14 +1027,15 @@ impl ItemModule {
                     }
                 }
                 Ok((_, Some(mut order))) => {
-                    order.info = user_order.info.clone();
+                    order.info = info.clone();
                     order.operation = user_order.operation.clone();
                     order.profit = Some(potential_profit as f64);
                     order.closed_avg = Some(closed_avg);
                     my_orders.buy_orders.push(order.clone());
                     order.info.is_dirty = false;
                     self.send_order_update(UIOperationEvent::CreateOrUpdate, json!(order.clone()));
-                    self.order_info.insert(order.id.clone(), order.info.clone());
+                    self.info_caches
+                        .insert(info.cache_id.replace("N/A", &order.id), info.clone());
                     self.update_state();
                 }
                 Err(e) => {
@@ -1090,12 +1062,11 @@ impl ItemModule {
                         my_orders.update_order(user_order.clone());
                         user_order.info.is_dirty = false;
                         user_order.info.changes = None;
-                        if self.order_info.contains_key(&user_order.id) {
-                            *self.order_info.get_mut(&user_order.id).unwrap() =
-                                user_order.info.clone();
+                        if self.info_caches.contains_key(&info.cache_id) {
+                            *self.info_caches.get_mut(&info.cache_id).unwrap() = info.clone();
                         } else {
-                            self.order_info
-                                .insert(user_order.id.clone(), user_order.info.clone());
+                            self.info_caches
+                                .insert(info.cache_id.replace("N/A", &user_order.id), info.clone());
                         }
                         self.send_order_update(UIOperationEvent::CreateOrUpdate, json!(user_order));
                         self.update_state();
@@ -1110,7 +1081,7 @@ impl ItemModule {
         {
             match wfm.orders().delete(&user_order.id).await {
                 Ok(_) => {
-                    self.order_info.remove(&user_order.id);
+                    self.info_caches.remove(&info.cache_id);
                     my_orders.delete_order_by_id(OrderType::Buy, &user_order.id);
                     self.send_order_update(UIOperationEvent::Delete, json!({"id": user_order.id}));
                     self.update_state();
@@ -1188,7 +1159,6 @@ impl ItemModule {
             if user_order.visible {
                 wfm.orders().delete(&user_order.id).await?;
                 my_orders.delete_order_by_id(OrderType::Sell, &user_order.id);
-                self.order_info.remove(&user_order.id);
                 self.send_order_update(UIOperationEvent::Delete, json!({"id": user_order.id}));
             }
 
@@ -1246,10 +1216,13 @@ impl ItemModule {
             user_order.operation.push("LowProfit".to_string());
         }
 
+        // Create a cache id for the order info.
+        let cache_id = format!("Selling:{}", stock_item.id);
+
         // Get/Create Order Info
         let price_history =
             PriceHistory::new(chrono::Local::now().naive_local().to_string(), post_price);
-        user_order.info = match self.order_info.get_mut(&user_order.id) {
+        let mut info = match self.info_caches.get_mut(&cache_id) {
             Some(order_info) => {
                 // Update the order info with the current price history
                 order_info.set_highest_price(highest_price);
@@ -1263,6 +1236,7 @@ impl ItemModule {
             }
             None => {
                 let order_info = OrderDetails::new(
+                    cache_id.clone(),
                     live_orders.buy_orders.len() as i64,
                     live_orders.sell_orders.len() as i64,
                     profit,
@@ -1324,7 +1298,6 @@ impl ItemModule {
                             UIOperationEvent::CreateOrUpdate,
                             json!(order.clone()),
                         );
-                        self.order_info.insert(order.id.clone(), order.info.clone());
                         self.update_state();
                     }
                 }
@@ -1338,7 +1311,6 @@ impl ItemModule {
             if user_order.id != "N/A" {
                 match wfm.orders().delete(&user_order.id).await {
                     Ok(_) => {
-                        self.order_info.remove(&user_order.id);
                         stock_item.set_status(StockStatus::ToLowProfit);
                         stock_item.set_list_price(None);
                         my_orders.delete_order_by_id(OrderType::Sell, &user_order.id);
@@ -1372,13 +1344,6 @@ impl ItemModule {
                         user_order.profit = Some(profit as f64);
                         my_orders.update_order(user_order.clone());
                         user_order.info.is_dirty = false;
-                        if self.order_info.contains_key(&user_order.id) {
-                            *self.order_info.get_mut(&user_order.id).unwrap() =
-                                user_order.info.clone();
-                        } else {
-                            self.order_info
-                                .insert(user_order.id.clone(), user_order.info.clone());
-                        }
                         self.send_order_update(UIOperationEvent::CreateOrUpdate, json!(user_order));
                         self.update_state();
                     }
@@ -1390,51 +1355,22 @@ impl ItemModule {
         }
 
         // Update/Create/Delete the stock item on the database and update the UI if needed.
-        let mut stock_info = match self.stock_info.get_mut(&stock_item.id) {
-            Some(info) => {
-                // Update the order info with the current price history
-                info.set_highest_price(highest_price);
-                info.set_lowest_price(live_orders.lowest_price(OrderType::Buy));
-                info.set_total_sellers(live_orders.sell_orders.len() as i64);
-                info.set_orders(live_orders.sell_orders.clone());
-                info.set_profit(profit);
-                info.set_moving_avg(moving_avg);
-                info.add_price_history(price_history.clone());
-                info.clone()
-            }
-            None => {
-                let mut info = OrderDetails::new(
-                    live_orders.buy_orders.len() as i64,
-                    live_orders.sell_orders.len() as i64,
-                    profit,
-                    live_orders.lowest_price(OrderType::Buy),
-                    highest_price,
-                    moving_avg,
-                    live_orders.sell_orders.clone(),
-                    stock_item.owned,
-                    0,
-                    stock_item.price_history.0.clone(),
-                );
-                info.add_price_history(price_history.clone());
-                info
-            }
-        };
-        stock_item.price_history =
-            PriceHistoryVec(stock_info.price_history.clone().into_iter().collect());
 
-        if stock_info.is_dirty || stock_item.is_dirty {
+        stock_item.price_history =
+            PriceHistoryVec(info.price_history.clone().into_iter().collect());
+
+        if info.is_dirty || stock_item.is_dirty {
             StockItemMutation::update_by_id(&app.conn, stock_item.id, stock_item.clone())
                 .await
                 .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
             let mut payload = json!(stock_item);
-            payload["info"] = json!(stock_info);
-            stock_info.is_dirty = false;
-            stock_info.changes = None;
-            if self.stock_info.contains_key(&stock_item.id) {
-                *self.stock_info.get_mut(&stock_item.id).unwrap() = stock_info.clone();
+            payload["info"] = json!(info);
+            info.is_dirty = false;
+            info.changes = None;
+            if self.info_caches.contains_key(&cache_id) {
+                *self.info_caches.get_mut(&cache_id).unwrap() = info.clone();
             } else {
-                self.stock_info
-                    .insert(stock_item.id.clone(), stock_info.clone());
+                self.info_caches.insert(cache_id.clone(), info.clone());
             }
             self.update_state();
             self.send_stock_update(UIOperationEvent::CreateOrUpdate, json!(payload));
