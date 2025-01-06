@@ -439,14 +439,15 @@ impl ItemModule {
 
         // Create a query uuid.
         let query_id = format!(
-            "get_buy|vol:{:?}ran:{:?}avg_p{:?}tax_p{:?}price_shift:{:?}blacklist:{:?}:mode:{:?}",
+            "Volume:{:?}Range:{:?}AvgPrice{:?}Tax{:?}PriceShift:{:?}BlackList:{:?}:StockMode:{:?}:BuyQuantity:{:?}",
             volume_threshold.clone(),
             range_threshold.clone(),
             avg_price_cap.clone(),
             trading_tax_cap.clone(),
             price_shift_threshold.clone(),
             black_list.clone(),
-            settings.stock_mode.clone()
+            settings.stock_mode.clone(),
+            buy_quantity.clone()
         );
 
         match self.get_cache_queried(&query_id) {
@@ -460,6 +461,21 @@ impl ItemModule {
         }
 
         let items = cache.item_price().get_items()?;
+        
+        // Dynamic filter using closures
+        let order_type_filter = |item: &ItemPriceInfo| item.order_type == "closed";
+        let range_filter = |item: &ItemPriceInfo| item.range > range_threshold as f64;
+        let avg_price_filter = |item: &ItemPriceInfo| item.avg_price <= avg_price_cap as f64;
+        let week_price_shift_filter = |item: &ItemPriceInfo| item.week_price_shift >= price_shift_threshold as f64;
+        let trading_tax_cap_filter = |item: &ItemPriceInfo| tax <= 0 || item.trading_tax < tax;
+        let black_list_filter = |item: &ItemPriceInfo| !black_list.contains(&item.url_name);
+        
+        // Combine multiple filters dynamically
+        let combined_filter = |item: &Item| order_type_filter(item) && range_filter(item) && avg_price_filter(item) && week_price_shift_filter(item) && trading_tax_cap_filter(item) && black_list_filter(item);
+
+        let items2 = cache.item_price().get_by_filter(combined_filter)?;
+        println!("{:?}", items2.len());
+
         let filtered_items = items
             .iter()
             .filter(|item| {

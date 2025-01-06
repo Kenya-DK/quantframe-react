@@ -40,9 +40,17 @@ impl ItemPriceModule {
         self.client.update_item_price_module(self.clone());
     }
 
-    pub fn get_items(&self) -> Result<Vec<ItemPriceInfo>, AppError> {
+    pub fn get_all(&self) -> Result<Vec<ItemPriceInfo>, AppError> {
         Ok(self.items.clone())
     }
+
+    fn get_by_filter<F>(predicate: F) -> Vec<&ItemPriceInfo>
+        where
+            F: Fn(&ItemPriceInfo) -> bool,
+        {
+            let items = self.get_items()?;            
+            items.iter().filter(|&item| predicate(item)).collect()
+        }
 
     pub fn update_cache_id(&mut self, cache_id: String) -> Result<(), AppError> {
         match self.client.write_text_to_file(
