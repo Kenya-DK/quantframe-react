@@ -25,18 +25,22 @@ pub struct CacheWarframe {
     #[serde(rename = "conclave")]
     pub conclave: Option<bool>,
     #[serde(rename = "description")]
+    #[serde(default)]
     pub description: String,
     #[serde(rename = "health")]
     pub health: i32,
     #[serde(rename = "imageName")]
+    #[serde(default)]
     pub image_name: String,
     #[serde(rename = "isPrime")]
     pub is_prime: bool,
     #[serde(rename = "marketCost")]
     pub market_cost: Option<i32>,
     #[serde(rename = "masterable")]
+    #[serde(default)]
     pub masterable: bool,
     #[serde(rename = "masteryReq")]
+    #[serde(default)]
     pub mastery_req: i32,
     #[serde(rename = "name")]
     pub name: String,
@@ -47,6 +51,7 @@ pub struct CacheWarframe {
     #[serde(rename = "power")]
     pub power: i32,
     #[serde(rename = "productCategory")]
+    #[serde(default)]
     pub product_category: String,
     #[serde(rename = "releaseDate")]
     pub release_date: Option<String>,
@@ -57,6 +62,7 @@ pub struct CacheWarframe {
     #[serde(rename = "sprint")]
     pub sprint: Option<f64>,
     #[serde(rename = "sprintSpeed")]
+    #[serde(default)]
     pub sprint_speed: f64,
     #[serde(rename = "stamina")]
     pub stamina: i32,

@@ -3,8 +3,8 @@ use std::{
     io::{Read, Write},
 };
 
+use entity::sub_type::SubType;
 use eyre::eyre;
-
 
 use crate::{
     cache::{client::CacheClient, types::item_price_info::ItemPriceInfo},
@@ -31,6 +31,16 @@ impl ItemPriceModule {
         }
     }
 
+    pub fn get_by_filter<F>(&self, predicate: F) -> Vec<ItemPriceInfo>
+    where
+        F: Fn(&ItemPriceInfo) -> bool,
+    {
+        let items = self.get_items().expect("Failed to get items");
+        items
+            .into_iter()
+            .filter(|item| predicate(item))
+            .collect::<Vec<ItemPriceInfo>>()
+    }
     pub fn get_items(&self) -> Result<Vec<ItemPriceInfo>, AppError> {
         let path = self
             .client
@@ -146,5 +156,27 @@ impl ItemPriceModule {
             self.update_cache_id(remote_cache_id)?;
         }
         Ok(())
+    }
+    pub fn get_item_price(
+        &self,
+        url_name: &str,
+        sub_type: Option<SubType>,
+        order_type: &str,
+    ) -> Result<ItemPriceInfo, AppError> {
+        let items = self.get_items()?;
+        let item = items
+            .iter()
+            .find(|item| {
+                item.url_name == url_name
+                    && item.order_type == order_type
+                    && item.sub_type == sub_type
+            })
+            .ok_or_else(|| {
+                AppError::new(
+                    &self.component,
+                    eyre!(format!("Item not found: {}", url_name)),
+                )
+            })?;
+        Ok(item.clone())
     }
 }

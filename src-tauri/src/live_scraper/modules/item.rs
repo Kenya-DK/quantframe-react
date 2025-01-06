@@ -1,4 +1,5 @@
 use crate::cache::types::cache_tradable_item::CacheTradableItem;
+use crate::cache::types::item_price_info::ItemPriceInfo;
 use crate::enums::order_mode::OrderMode;
 use crate::live_scraper::client::LiveScraperClient;
 
@@ -85,14 +86,13 @@ impl ItemModule {
         // Get Settings.
         let order_mode = settings.stock_item.order_mode.clone();
         let blacklist_items: Vec<String> = settings.stock_item.blacklist.clone();
+        let whitelist_items: Vec<String> = settings.stock_item.whitelist.clone();
 
         // Variables.
         let mut interesting_items: Vec<ItemEntry> = vec![];
 
         // Get interesting items from the price scraper if the order mode is buy or both.
-        let price_scraper_interesting_items_new = self
-            .get_interesting_items(settings.stock_item.whitelist.clone())
-            .await?;
+        let price_scraper_interesting_items_new = self.get_interesting_items().await?;
 
         // Get interesting items from stock items if the order mode is sell or both and remove blacklisted items else return None.
         let stock_items_interesting_items: Option<Vec<stock_item::Model>> =
@@ -185,12 +185,39 @@ impl ItemModule {
             }
         }
 
+        if !whitelist_items.is_empty() && settings.stock_item.strict_whitelist {
+            interesting_items = whitelist_items
+                .iter()
+                .map(|item| ItemEntry {
+                    stock_id: None,
+                    wfm_url: item.clone(),
+                    sub_type: None,
+                    priority: 0,
+                })
+                .collect();
+        } else if !whitelist_items.is_empty() {
+            let mut items: Vec<ItemEntry> = whitelist_items
+                .iter()
+                .map(|item| ItemEntry {
+                    stock_id: None,
+                    wfm_url: item.clone(),
+                    sub_type: None,
+                    priority: 0,
+                })
+                .collect();
+            interesting_items.append(&mut items);
+        }
         let mut interesting_items: HashSet<ItemEntry> = HashSet::from_iter(interesting_items);
         // Remove empty items from the interesting items.
         interesting_items = interesting_items
             .into_iter()
             .filter(|item| item.wfm_url != "")
             .collect();
+
+        logger::log_json(
+            "interesting_items.json",
+            &json!(price_scraper_interesting_items_new),
+        )?;
 
         let mut current_index = interesting_items.len();
         logger::info_file(
@@ -298,22 +325,13 @@ impl ItemModule {
                 continue;
             }
             // Get the item stats from the price scraper
-            let statistics = price_scraper_interesting_items_new.iter().find(|item| {
-                item.url_name == item_info.wfm_url_name && item.sub_type == item_entry.sub_type
-            });
-
-            // Get item moving average from statistics or item_info
-            let moving_avg: f64 = if statistics.is_some() {
-                statistics.unwrap().moving_avg.unwrap_or(0.0)
-            } else {
-                0.0
-            };
-
-            // Get Closed Avg from statistics or item_info
-            let closed_avg: f64 = if statistics.is_some() {
-                statistics.unwrap().avg_price
-            } else {
-                0.0
+            let price = match cache.item_price().get_item_price(
+                &item_entry.wfm_url,
+                item_entry.sub_type.clone(),
+                "closed",
+            ) {
+                Ok(p) => p,
+                Err(_) => ItemPriceInfo::default(),
             };
 
             // Get all the live orders for the item from the Warframe Market API
@@ -328,7 +346,7 @@ impl ItemModule {
                         item_entry,
                         &mut my_orders,
                         live_orders.clone(),
-                        closed_avg,
+                        price.avg_price,
                     )
                     .await
                 {
@@ -350,7 +368,7 @@ impl ItemModule {
                 match self
                     .compare_live_orders_when_selling(
                         &item_info,
-                        moving_avg,
+                        price.moving_avg.unwrap_or(0.0),
                         &mut my_orders,
                         live_orders.clone(),
                         &mut stock_item.unwrap(),
@@ -438,37 +456,25 @@ impl ItemModule {
 
     pub async fn get_interesting_items(
         &self,
-        include: Vec<String>,
     ) -> Result<Vec<crate::cache::types::item_price_info::ItemPriceInfo>, AppError> {
         let settings = self.client.settings.lock()?.clone().live_scraper;
         let cache = self.client.cache.lock()?.clone();
-        let app = self.client.app.lock()?.clone();
         let volume_threshold = settings.stock_item.volume_threshold;
         let range_threshold = settings.stock_item.range_threshold;
         let avg_price_cap = settings.stock_item.avg_price_cap;
         let trading_tax_cap = settings.stock_item.trading_tax_cap;
         let price_shift_threshold = settings.stock_item.price_shift_threshold;
-        let strict_whitelist = settings.stock_item.strict_whitelist;
-        let whitelist = settings.stock_item.whitelist.clone();
         let black_list = settings.stock_item.blacklist.clone();
-        let stock_item = StockItemQuery::get_all_stock_items(&app.conn, 0)
-            .await
-            .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?
-            .iter()
-            .map(|item| item.wfm_url.clone())
-            .collect::<Vec<String>>();
 
         // Create a query uuid.
         let query_id = format!(
-            "get_buy|vol:{:?}ran:{:?}avg_p{:?}tax_p{:?}price_shift:{:?}strict_whitelist:{:?}whitelist{:?}blacklist:{:?}:mode:{:?}", 
+            "get_buy|vol:{:?}ran:{:?}avg_p{:?}tax_p{:?}price_shift:{:?}blacklist:{:?}:mode:{:?}",
             volume_threshold.clone(),
             range_threshold.clone(),
             avg_price_cap.clone(),
             trading_tax_cap.clone(),
             price_shift_threshold.clone(),
-            strict_whitelist.clone(),
-            whitelist.clone().join(","),
-            stock_item.join(","),
+            black_list.join(","),
             settings.stock_mode.clone()
         );
 
@@ -481,28 +487,28 @@ impl ItemModule {
                 self.remove_cache_queried(&query_id);
             }
         }
+        let order_type_filter = |item: &ItemPriceInfo| item.order_type == "closed";
+        let volume_filter = |item: &ItemPriceInfo| item.volume > volume_threshold as f64;
+        let range_filter = |item: &ItemPriceInfo| item.range > range_threshold as f64;
+        let avg_price_filter = |item: &ItemPriceInfo| item.avg_price <= avg_price_cap as f64;
+        let week_price_shift_filter =
+            |item: &ItemPriceInfo| item.week_price_shift >= price_shift_threshold as f64;
+        let trading_tax_cap_filter =
+            |item: &ItemPriceInfo| trading_tax_cap <= 0 || item.trading_tax < trading_tax_cap;
+        let black_list_filter = |item: &ItemPriceInfo| !black_list.contains(&item.url_name);
 
-        let items = cache.item_price().get_items()?;
-        let filtered_items = items
-            .iter()
-            .filter(|item| {
-                item.order_type == "closed"
-                    && item.volume > volume_threshold as f64
-                    && item.range > range_threshold as f64
-                    && ((trading_tax_cap >= -1 && item.trading_tax <= trading_tax_cap as f64)
-                        || trading_tax_cap <= -1)
-                    && !black_list.contains(&item.url_name)
-                    && ((strict_whitelist && whitelist.contains(&item.url_name))
-                        || ((!strict_whitelist
-                            || whitelist.contains(&item.url_name)
-                                && item.avg_price <= avg_price_cap as f64)
-                            && item.week_price_shift >= price_shift_threshold as f64))
-                    && item.week_price_shift >= price_shift_threshold as f64
-                    || ((stock_item.contains(&item.url_name) || include.contains(&item.url_name))
-                        && item.order_type == "closed")
-            })
-            .cloned()
-            .collect::<Vec<_>>();
+        // Combine multiple filters dynamically
+        let combined_filter = |item: &ItemPriceInfo| {
+            order_type_filter(item)
+                && volume_filter(item)
+                && range_filter(item)
+                && avg_price_filter(item)
+                && week_price_shift_filter(item)
+                && trading_tax_cap_filter(item)
+                && black_list_filter(item)
+        };
+        let filtered_items = cache.item_price().get_by_filter(combined_filter);
+
         self.add_cache_queried(query_id, filtered_items.clone());
         Ok(filtered_items)
     }
@@ -595,9 +601,10 @@ impl ItemModule {
         let settings = self.client.settings.lock()?.clone().live_scraper;
         let wfm = self.client.wfm.lock()?.clone();
         let blacklist = settings.stock_item.blacklist.clone();
-
+        let tax = settings.stock_item.trading_tax_cap;
         // Check if the item is in the blacklist and skip if it is
-        if blacklist.contains(&item_info.wfm_url_name) {
+        if blacklist.contains(&item_info.wfm_url_name) || (tax != -1 && tax <= item_info.trade_tax)
+        {
             return Ok(None);
         }
 

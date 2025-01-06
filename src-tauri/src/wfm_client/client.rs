@@ -188,7 +188,7 @@ impl WFMClient {
                 self.component.as_str(),
                 error_def,
                 eyre!(format!("There was an error sending the request: {}", e)),
-                LogLevel::Critical,
+                LogLevel::Warning,
             ));
         }
 
@@ -209,7 +209,7 @@ impl WFMClient {
                 let log_level = match error_def.status_code {
                     400 => LogLevel::Warning,
                     200 => LogLevel::Warning,
-                    _ => LogLevel::Critical,
+                    _ => LogLevel::Warning,
                 };
                 return Err(AppError::new_api(
                     self.component.as_str(),

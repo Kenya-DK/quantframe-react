@@ -34,7 +34,7 @@ pub struct ItemPriceInfo {
     pub range: f64,
 
     #[serde(rename = "trading_tax")]
-    pub trading_tax: f64,
+    pub trading_tax: i64,
 
     #[serde(rename = "week_price_shift")]
     pub week_price_shift: f64,
@@ -43,8 +43,25 @@ pub struct ItemPriceInfo {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sub_type: Option<SubType>,
 }
-
-
+impl Default for ItemPriceInfo {
+    fn default() -> Self {
+        ItemPriceInfo {
+            url_name: "".to_string(),
+            item_id: "".to_string(),
+            order_type: "".to_string(),
+            volume: 0.0,
+            max_price: 0.0,
+            min_price: 0.0,
+            avg_price: 0.0,
+            moving_avg: None,
+            median: 0.0,
+            range: 0.0,
+            trading_tax: 0,
+            week_price_shift: 0.0,
+            sub_type: None,
+        }
+    }
+}
 #[derive(Serialize, Deserialize)]
 pub struct Settings {
     #[serde(rename = "debug")]
