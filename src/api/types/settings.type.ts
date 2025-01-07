@@ -13,6 +13,7 @@ export interface SettingsLiveScraper {
   stock_item: SettingsStockItem;
   stock_mode: StockMode;
   trade_mode: TradeMode;
+  should_delete_other_types: boolean;
   stock_riven: SettingsStockRiven;
   webhook: string;
 }

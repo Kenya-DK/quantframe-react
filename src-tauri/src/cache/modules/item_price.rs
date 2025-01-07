@@ -44,13 +44,16 @@ impl ItemPriceModule {
         Ok(self.items.clone())
     }
 
-    fn get_by_filter<F>(predicate: F) -> Vec<&ItemPriceInfo>
-        where
-            F: Fn(&ItemPriceInfo) -> bool,
-        {
-            let items = self.get_items()?;            
-            items.iter().filter(|&item| predicate(item)).collect()
-        }
+    pub fn get_by_filter<F>(&self, predicate: F) -> Vec<ItemPriceInfo>
+    where
+        F: Fn(&ItemPriceInfo) -> bool,
+    {
+        let items = self.get_items().expect("Failed to get items");
+        items
+            .into_iter()
+            .filter(|item| predicate(item))
+            .collect::<Vec<ItemPriceInfo>>()
+    }
 
     pub fn update_cache_id(&mut self, cache_id: String) -> Result<(), AppError> {
         match self.client.write_text_to_file(

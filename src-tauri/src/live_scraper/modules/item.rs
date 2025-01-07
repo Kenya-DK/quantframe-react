@@ -464,32 +464,27 @@ impl ItemModule {
         
         // Dynamic filter using closures
         let order_type_filter = |item: &ItemPriceInfo| item.order_type == "closed";
+        let volume_filter = |item: &ItemPriceInfo| item.volume > volume_threshold as f64;
         let range_filter = |item: &ItemPriceInfo| item.range > range_threshold as f64;
         let avg_price_filter = |item: &ItemPriceInfo| item.avg_price <= avg_price_cap as f64;
-        let week_price_shift_filter = |item: &ItemPriceInfo| item.week_price_shift >= price_shift_threshold as f64;
-        let trading_tax_cap_filter = |item: &ItemPriceInfo| tax <= 0 || item.trading_tax < tax;
+        let week_price_shift_filter =
+            |item: &ItemPriceInfo| item.week_price_shift >= price_shift_threshold as f64;
+        let trading_tax_cap_filter =
+            |item: &ItemPriceInfo| trading_tax_cap <= 0 || item.trading_tax < trading_tax_cap;
         let black_list_filter = |item: &ItemPriceInfo| !black_list.contains(&item.url_name);
-        
+
         // Combine multiple filters dynamically
-        let combined_filter = |item: &Item| order_type_filter(item) && range_filter(item) && avg_price_filter(item) && week_price_shift_filter(item) && trading_tax_cap_filter(item) && black_list_filter(item);
-
-        let items2 = cache.item_price().get_by_filter(combined_filter)?;
-        println!("{:?}", items2.len());
-
-        let filtered_items = items
-            .iter()
-            .filter(|item| {
-                item.order_type == "closed"
-                    && item.volume > volume_threshold as f64
-                    && item.range > range_threshold as f64
-                    && item.avg_price <= avg_price_cap as f64
-                    && item.week_price_shift >= price_shift_threshold as f64
-                    && ((trading_tax_cap >= -1 && item.trading_tax <= trading_tax_cap as f64)
-                        || trading_tax_cap <= -1)
-                    && !black_list.contains(&item.url_name)
-            })
-            .cloned()
-            .collect::<Vec<_>>();
+        let combined_filter = |item: &ItemPriceInfo| {
+            order_type_filter(item)
+                && volume_filter(item)
+                && range_filter(item)
+                && avg_price_filter(item)
+                && week_price_shift_filter(item)
+                && trading_tax_cap_filter(item)
+                && black_list_filter(item)
+        };
+        
+        let filtered_items = cache.item_price().get_by_filter(combined_filter)?;
 
         // Convert to ItemEntry vector
         let entries = filtered_items
