@@ -208,6 +208,7 @@ impl WFMClient {
 
                 let log_level = match error_def.status_code {
                     400 => LogLevel::Warning,
+                    502 => LogLevel::Warning,
                     200 => LogLevel::Warning,
                     _ => LogLevel::Critical,
                 };

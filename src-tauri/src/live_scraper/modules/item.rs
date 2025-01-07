@@ -1153,6 +1153,9 @@ impl ItemModule {
         }
         let mut stock_item = stock_item.unwrap();
 
+        // Create a cache id for the order info.
+        let cache_id = format!("Selling:{}", stock_item.id);
+
         // Get my order if it exists, otherwise empty values.
         let mut user_order = match my_orders.find_order_by_url_sub_type(
             &item_info.wfm_url_name,
@@ -1230,9 +1233,6 @@ impl ItemModule {
             user_order.operation.push("LowProfit".to_string());
         }
 
-        // Create a cache id for the order info.
-        let cache_id = format!("Selling:{}", stock_item.id);
-
         // Get/Create Order Info
         let price_history =
             PriceHistory::new(chrono::Local::now().naive_local().to_string(), post_price);
@@ -1245,7 +1245,6 @@ impl ItemModule {
                 order_info.set_orders(live_orders.sell_orders.clone());
                 order_info.set_moving_avg(moving_avg);
                 order_info.add_price_history(price_history.clone());
-                user_order.operation.push("Updated".to_string());
                 order_info.clone()
             }
             None => {
@@ -1262,14 +1261,14 @@ impl ItemModule {
                     0,
                     vec![price_history.clone()],
                 );
-                if user_order.id != "N/A" {
-                    user_order.operation.push("Updated".to_string());
-                } else {
-                    user_order.operation.push("Created".to_string());
-                }
                 order_info
             }
         };
+        if user_order.id != "N/A" {
+            user_order.operation.push("Updated".to_string());
+        } else {
+            user_order.operation.push("Created".to_string());
+        }
 
         // Update/Create/Delete the order on Warframe Market API and update the UI if needed.
         if user_order.operation.contains(&"Created".to_string())
@@ -1295,7 +1294,7 @@ impl ItemModule {
                 Ok((_, order)) => {
                     if order.is_some() {
                         let mut order = order.unwrap();
-                        order.info = user_order.info.clone();
+                        order.info = info.clone();
                         order.operation = user_order.operation.clone();
                         order.closed_avg = Some(moving_avg as f64);
                         order.profit = Some(profit as f64);
@@ -1352,7 +1351,8 @@ impl ItemModule {
                         stock_item.set_status(StockStatus::Live);
                     }
                     stock_item.set_list_price(Some(post_price));
-                    if user_order.platinum != post_price || user_order.info.is_dirty {
+                    if user_order.platinum != post_price || info.is_dirty {
+                        user_order.info = info.clone();
                         user_order.platinum = post_price;
                         user_order.quantity = quantity;
                         user_order.profit = Some(profit as f64);
