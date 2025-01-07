@@ -167,10 +167,14 @@ impl ItemModule {
 
         // Handle Delete Orders based on the trade mode.
         let order_ids = if (trade_mode == TradeMode::Buy || trade_mode == TradeMode::WishList)
-            && trade_mode != TradeMode::All && delete_other_types
+            && trade_mode != TradeMode::All
+            && delete_other_types
         {
             my_orders.get_orders_ids(OrderType::Sell, blacklist_items.clone())
-        } else if trade_mode == TradeMode::Sell && trade_mode != TradeMode::All && delete_other_types {
+        } else if trade_mode == TradeMode::Sell
+            && trade_mode != TradeMode::All
+            && delete_other_types
+        {
             my_orders.get_orders_ids(OrderType::Buy, blacklist_items.clone())
         } else {
             vec![]
@@ -461,8 +465,6 @@ impl ItemModule {
             }
         }
 
-        let items = cache.item_price().get_items()?;
-        
         // Dynamic filter using closures
         let order_type_filter = |item: &ItemPriceInfo| item.order_type == "closed";
         let volume_filter = |item: &ItemPriceInfo| item.volume > volume_threshold as f64;
@@ -484,8 +486,8 @@ impl ItemModule {
                 && trading_tax_cap_filter(item)
                 && black_list_filter(item)
         };
-        
-        let filtered_items = cache.item_price().get_by_filter(combined_filter)?;
+
+        let filtered_items = cache.item_price().get_by_filter(combined_filter);
 
         // Convert to ItemEntry vector
         let entries = filtered_items

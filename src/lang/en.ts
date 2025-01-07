@@ -280,7 +280,7 @@ export const en = {
                 label: "Save",
               },
               blacklist: {
-                label: "Blacklist",
+                label: "Blacklist {{count}}",
               },
               go_back: {
                 label: "Go Back",

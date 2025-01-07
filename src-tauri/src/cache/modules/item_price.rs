@@ -48,7 +48,7 @@ impl ItemPriceModule {
     where
         F: Fn(&ItemPriceInfo) -> bool,
     {
-        let items = self.get_items().expect("Failed to get items");
+        let items = self.get_all().expect("Failed to get items");
         items
             .into_iter()
             .filter(|item| predicate(item))
@@ -139,7 +139,7 @@ impl ItemPriceModule {
         sub_type: Option<SubType>,
         order_type: &str,
     ) -> Result<ItemPriceInfo, AppError> {
-        let items = self.get_items()?;
+        let items = self.get_all()?;
         let item = items
             .iter()
             .find(|item| {

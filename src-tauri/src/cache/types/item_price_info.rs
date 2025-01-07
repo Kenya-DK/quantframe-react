@@ -34,7 +34,7 @@ pub struct ItemPriceInfo {
     pub range: f64,
 
     #[serde(rename = "trading_tax")]
-    pub trading_tax: f64,
+    pub trading_tax: i64,
 
     #[serde(rename = "week_price_shift")]
     pub week_price_shift: f64,
@@ -57,7 +57,7 @@ impl Default for ItemPriceInfo {
             moving_avg: None,
             median: 0.0,
             range: 0.0,
-            trading_tax: 0.0,
+            trading_tax: 0,
             week_price_shift: 0.0,
             sub_type: None,
         }
