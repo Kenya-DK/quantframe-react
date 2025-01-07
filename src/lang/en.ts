@@ -238,6 +238,12 @@ export const en = {
                 error: "Invalid auto trade",
                 tooltip: "Automatically add/sell stock if true",
               },
+              should_delete_other_types: {
+                label: "Should Delete Other Trade Types",
+                error: "Invalid should delete other trade types",
+                tooltip:
+                  "Will delete other trade types if true example: if buy is enabled will delete sell/wishlist items if they are not blacklisted",
+              },
               blacklist: {
                 description: "The blacklist is a list of items that will not be ignored by the bot. (Sell/Buy)",
                 left_title: "Available Items",

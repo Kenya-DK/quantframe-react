@@ -92,6 +92,14 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
                         error={form.errors.trade_mode && useTranslateFormFields("trade_mode.error")}
                         radius="md"
                       />
+                      <Tooltip label={useTranslateFormFields("should_delete_other_types.tooltip")}>
+                        <Checkbox
+                          label={useTranslateFormFields("should_delete_other_types.label")}
+                          checked={form.values.should_delete_other_types}
+                          onChange={(event) => form.setFieldValue("should_delete_other_types", event.currentTarget.checked)}
+                          error={form.errors.should_delete_other_types && useTranslateFormFields("should_delete_other_types.error")}
+                        />
+                      </Tooltip>
                     </Group>
                     <Group gap={"md"} mt={25}>
                       <Tooltip label={useTranslateFormFields("report_to_wfm.tooltip")}>

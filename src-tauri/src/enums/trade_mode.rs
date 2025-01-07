@@ -22,8 +22,8 @@ impl Serialize for TradeMode {
             TradeMode::WishList => "wishlist",
             TradeMode::Unknown(i) => {
                 logger::critical_file(
-                    "OrderMode",
-                    format!("Unknown OrderMode: {}", i).as_str(),
+                    "TradeMode",
+                    format!("Unknown TradeMode: {}", i).as_str(),
                     Some("enums.log"),
                 );
                 "unknown"

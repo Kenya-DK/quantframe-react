@@ -30,6 +30,8 @@ pub struct LiveScraperSettings {
     pub stock_mode: StockMode,
     // Trade Mode
     pub trade_mode: TradeMode,
+    // Should delete other trade types, Ex: If you are selling, should you delete buy orders or wishlists etc
+    pub should_delete_other_types: bool,
     // Discord Webhook
     pub webhook: String,
     // Stock Item Settings
@@ -104,7 +106,8 @@ impl Default for SettingsState {
             },
             live_scraper: LiveScraperSettings {
                 stock_mode: StockMode::All,
-                trade_mode: TradeMode::All,
+                trade_mode: TradeMode::All,  
+                should_delete_other_types: true,              
                 webhook: "".to_string(),
                 stock_item: StockItemSettings {
                     min_sma: 3,
