@@ -649,6 +649,8 @@ impl ItemModule {
             post_price = maximum_price;
         }
 
+        post_price = std::cmp::max(post_price, 1);
+
         // Create a cache id for the order info.
         let cache_id = format!("WishList:{}", wish_list_item.id.clone());
         // Get/Create Order Info
@@ -869,6 +871,8 @@ impl ItemModule {
             );
             user_order.operation.push("Deleted".to_string());
         }
+
+        post_price = std::cmp::max(post_price, 1);
 
         // Return if no buy orders are found.
         if live_orders.buy_orders.len() <= 0 {
@@ -1225,6 +1229,8 @@ impl ItemModule {
         if minimum_price.is_some() && post_price < minimum_price.unwrap() {
             post_price = minimum_price.unwrap();
         }
+
+        post_price = std::cmp::max(post_price, 1);
 
         // Calculate the profit from the post price
         let profit = post_price - bought_price;
