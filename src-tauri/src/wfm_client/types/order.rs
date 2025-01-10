@@ -32,7 +32,7 @@ pub struct Order {
     pub region: String,
 
     #[serde(rename = "platform")]
-    pub platform: String,
+    pub platform: Option<String>,
 
     #[serde(rename = "creation_date")]
     pub creation_date: String,
@@ -92,7 +92,7 @@ impl Default for Order {
             user: None,
             last_update: "".to_string(),
             region: "".to_string(),
-            platform: "".to_string(),
+            platform: None,
             creation_date: "".to_string(),
             quantity: 0,
             operation: vec!["New".to_string()],
