@@ -1,5 +1,6 @@
 use crate::cache::types::cache_tradable_item::CacheTradableItem;
 use crate::cache::types::item_price_info::ItemPriceInfo;
+use crate::commands::log;
 use crate::enums::trade_mode::TradeMode;
 use crate::live_scraper::client::LiveScraperClient;
 
@@ -692,6 +693,7 @@ impl ItemModule {
             }
         };
 
+        // Create/Update Order based on the operation.
         if user_order.operation.contains(&"Created".to_string()) {
             // Send GUI Update.
             self.send_msg(
@@ -885,7 +887,7 @@ impl ItemModule {
         // Get/Create Order Info
         let price_history =
             PriceHistory::new(chrono::Local::now().naive_local().to_string(), post_price);
-        let info = match self.info_caches.get_mut(&cache_id) {
+        let mut info = match self.info_caches.get_mut(&cache_id) {
             Some(order_info) => {
                 // Update the order info with the current price history
                 order_info.set_highest_price(highest_price);
@@ -1018,6 +1020,7 @@ impl ItemModule {
             user_order.operation = vec!["NotProfitable".to_string()];
         }
 
+        // Create/Update/Delete the order based on the operation.
         if user_order.operation.contains(&"Created".to_string())
             && !user_order.operation.contains(&"Deleted".to_string())
         {
@@ -1074,12 +1077,13 @@ impl ItemModule {
                 .await
             {
                 Ok(_) => {
-                    if user_order.platinum != post_price || user_order.info.is_dirty {
+                    if user_order.platinum != post_price || info.is_dirty {
+                        user_order.info = info.clone();
                         user_order.platinum = post_price;
                         user_order.profit = Some(potential_profit as f64);
+                        info.changes = None;
+                        info.is_dirty = false;
                         my_orders.update_order(user_order.clone());
-                        user_order.info.is_dirty = false;
-                        user_order.info.changes = None;
                         if self.info_caches.contains_key(&info.cache_id) {
                             *self.info_caches.get_mut(&info.cache_id).unwrap() = info.clone();
                         } else {
@@ -1103,14 +1107,36 @@ impl ItemModule {
                     my_orders.delete_order_by_id(OrderType::Buy, &user_order.id);
                     self.send_order_update(UIOperationEvent::Delete, json!({"id": user_order.id}));
                     self.update_state();
+                    logger::info_con(
+                        &self.get_component("CompareOrdersWhenBuying"),
+                        format!("Item {} Deleted", item_info.name).as_str(),
+                    );
                 }
                 Err(e) => {
                     self.client.stop_loop();
                     return Err(e);
                 }
             }
+        } else if user_order.operation.contains(&"NotInRange".to_string()) {
+            logger::info_con(
+                &self.get_component("ProgressBuying"),
+                format!(
+                    "Item {} is not in range. Skipping, Range: {}, Threshold: {}",
+                    item_info.name, price_range, min_range_threshold
+                )
+                .as_str(),
+            );
+        } else if user_order.operation.contains(&"NotOptimal".to_string()) {
+            logger::info_con(
+                &self.get_component("ProgressBuying"),
+                format!("Item {} is not optimal. Skipping.", item_info.name).as_str(),
+            );
+        } else {
+            logger::info_con(
+                &self.get_component("ProgressBuying"),
+                format!("Item {} is not profitable. Skipping.", item_info.name).as_str(),
+            );
         }
-
         Ok(None)
     }
 
@@ -1327,6 +1353,14 @@ impl ItemModule {
         } else if user_order.operation.contains(&"LowProfit".to_string()) {
             stock_item.set_status(StockStatus::ToLowProfit);
             stock_item.set_list_price(None);
+            logger::info_con(
+                &self.get_component("ProgressSelling"),
+                format!(
+                    "Item {} is not profitable. Skipping, Profit: {}, Minimum Profit: {}",
+                    item_info.name, profit, minimum_profit
+                )
+                .as_str(),
+            );
             if user_order.id != "N/A" {
                 match wfm.orders().delete(&user_order.id).await {
                     Ok(_) => {
@@ -1375,7 +1409,6 @@ impl ItemModule {
         }
 
         // Update/Create/Delete the stock item on the database and update the UI if needed.
-
         stock_item.price_history =
             PriceHistoryVec(info.price_history.clone().into_iter().collect());
 
