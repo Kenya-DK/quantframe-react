@@ -1,4 +1,4 @@
-# Quantframe v1.2.7
+# Quantframe v1.2.8
 
 ## Overview
 
@@ -11,9 +11,7 @@ Just a small update to fix some bugs.
 
 ## Fix's
 
-- 🛠️ Blacklist was ignore
-- 🛠️ Trade Tax was ignore
-- 🛠️ LiveTrader kept stopping
+- 🛠️ Fix missing type.
 
 # Quantframe v1.2.5 (Release Date)
 
