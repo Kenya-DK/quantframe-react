@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import api, { OnTauriDataEvent, OnTauriEvent } from "@api/index";
+import api, { OnTauriDataEvent } from "@api/index";
 import { QfSocketEvent, QfSocketEventOperation, User, UserStatus } from "@api/types";
 import wfmSocket from "@models/wfmSocket";
 import { Wfm } from "../types";
@@ -45,34 +45,10 @@ export function AuthContextProvider({ children }: TauriContextProviderProps) {
     });
   };
 
-  const handleAddUnreadMessages = (count: number) => {
-    setUser((user) => {
-      if (!user) return user;
-      return { ...user, unread_messages: user.unread_messages + count };
-    });
-  };
-
-  const handleSubtractUnreadMessages = (count: number) => {
-    setUser((user) => {
-      if (!user) return user;
-      return { ...user, unread_messages: user.unread_messages - count };
-    });
-  };
-
-  const handleSetUnreadMessages = (count: number) => {
-    setUser((user) => {
-      if (!user) return user;
-      return { ...user, unread_messages: count };
-    });
-  };
-
   // Hook on tauri events from rust side
   useEffect(() => {
     wfmSocket.on(Wfm.SocketEvent.OnUserStatusChange, OnUserStatusChange);
     OnTauriDataEvent<User>(QfSocketEvent.UpdateUser, ({ data, operation }) => handleUpdateUser(operation, data));
-    OnTauriEvent<number>(QfSocketEvent.AddUnreadMessages, (data) => handleAddUnreadMessages(data));
-    OnTauriEvent<number>(QfSocketEvent.SubtractUnreadMessages, (data) => handleSubtractUnreadMessages(data));
-    OnTauriEvent<number>(QfSocketEvent.SetUnreadMessages, (data) => handleSetUnreadMessages(data));
     return () => {
       wfmSocket.off(Wfm.SocketEvent.OnUserStatusChange, OnUserStatusChange);
     };

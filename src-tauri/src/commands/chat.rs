@@ -90,7 +90,6 @@ pub async fn chat_on_message(
     // Check if the chat exists
     let cache_chats = wfm.chat().chats.clone();
     let chat = cache_chats.iter().find(|c| c.id == msg.chat_id);
-    println!("{:?}", chat);
     if chat.is_none() {
         let chats = wfm.chat().get_chats().await?;
         notify.gui().send_event_update(
