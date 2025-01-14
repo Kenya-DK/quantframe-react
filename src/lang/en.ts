@@ -1437,7 +1437,7 @@ export const en = {
               },
             },
             migrate: {
-              title: "Migrate",
+              title: "Migrate From 1.0.4",
               buttons: {
                 migrate: {
                   title: "Migrate",
