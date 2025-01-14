@@ -11,6 +11,7 @@ pub enum UIEvent {
     UpdateStockRivens,
     UpdateWishList,
     UpdateUser,
+    UpdateAlerts,
     UpdateLiveTradingRunningState,
     OnLiveTradingError,
     OnLiveTradingMessage,
@@ -42,6 +43,7 @@ impl UIEvent {
             UIEvent::OnNotificationWarning => "Notification:OnWarning",
             UIEvent::OnNotificationSuccess => "Notification:OnSuccess",
             UIEvent::OnToggleControl => "Control:OnToggleControl",
+            UIEvent::UpdateAlerts => "Alert:Update",
             UIEvent::ReceiveMessage => "Chat:ReceiveMessage",
         }
     }

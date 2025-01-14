@@ -6,7 +6,7 @@ import { notifications } from "@mantine/notifications";
 import { Box, Button, Group } from "@mantine/core";
 import { checkUpdate, installUpdate } from "@tauri-apps/api/updater";
 import { relaunch } from "@tauri-apps/api/process";
-import { AppInfo, QfSocketEvent, QfSocketEventOperation, ResponseError, Settings } from "@api/types";
+import { Alert, AppInfo, QfSocketEvent, QfSocketEventOperation, ResponseError, Settings } from "@api/types";
 import { AuthContextProvider } from "./auth.context";
 import { SplashScreen } from "@components/SplashScreen";
 import { TextTranslate } from "@components/TextTranslate";
@@ -26,6 +26,7 @@ type NotificationPayload = {
 
 export type AppContextProps = {
   settings: Settings | undefined;
+  alerts: Alert[];
   app_info: AppInfo | undefined;
   app_error?: ResponseError;
 };
@@ -33,18 +34,22 @@ export type AppContextProps = {
 export type AppContextProviderProps = {
   children: React.ReactNode;
 };
-
+interface Entity {
+  id: string | number;
+}
 export const AppContext = createContext<AppContextProps>({
   settings: undefined,
   app_info: undefined,
   app_error: undefined,
+  alerts: [],
 });
-
+type SetDataFunction<T> = React.Dispatch<React.SetStateAction<T>>;
 export const useAppContext = () => useContext(AppContext);
 
 export function AppContextProvider({ children }: AppContextProviderProps) {
   const [settings, setSettings] = useState<Settings | undefined>(undefined);
   const [appInfo, setAppInfo] = useState<AppInfo | undefined>(undefined);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
   const [i18Key, setI18Key] = useState<string>("cache");
   const [isControl, setIsControl] = useState<boolean>(false);
   const [appError, setAppError] = useState<ResponseError | undefined>(undefined);
@@ -157,7 +162,27 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
         break;
     }
   };
+  const handleUpdate = <T extends Entity>(operation: QfSocketEventOperation, data: T | T[], setData: SetDataFunction<T[]>) => {
+    switch (operation) {
+      case QfSocketEventOperation.CREATE_OR_UPDATE:
+        // setData(myState.map(item => item.id === id ? {...item, item.description: "new desc"} : item))
+        setData((items) => {
+          // Check if the item already exists in the list
+          const itemExists = items.some((item) => item.id === (data as T).id);
 
+          // If the item exists, update it; otherwise, add the new item
+          if (itemExists) return items.reverse().map((item) => (item.id === (data as T).id ? (data as T) : item));
+          else return [data as T, ...items.reverse()];
+        });
+        break;
+      case QfSocketEventOperation.DELETE:
+        setData((items) => items.filter((item) => item.id !== (data as T).id));
+        break;
+      case QfSocketEventOperation.SET:
+        setData(data as T[]);
+        break;
+    }
+  };
   const handleUpdateAppInfo = (operation: QfSocketEventOperation, data: AppInfo) => {
     switch (operation) {
       case QfSocketEventOperation.CREATE_OR_UPDATE:
@@ -185,6 +210,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
   useEffect(() => {
     OnTauriDataEvent<Settings>(QfSocketEvent.UpdateSettings, ({ data, operation }) => handleUpdateSettings(operation, data));
     OnTauriDataEvent<AppInfo>(QfSocketEvent.UpdateAppInfo, ({ data, operation }) => handleUpdateAppInfo(operation, data));
+    OnTauriDataEvent<any>(QfSocketEvent.UpdateAlert, ({ data, operation }) => handleUpdate(operation, data, setAlerts));
     OnTauriEvent<ResponseError>(QfSocketEvent.UpdateAppError, (data) => setAppError(data));
     OnTauriEvent<NotificationPayload>(QfSocketEvent.OnNotificationError, (data) => handleNotification(data, "red.7", false));
     OnTauriEvent<NotificationPayload>(QfSocketEvent.OnNotificationWarning, (data) => handleNotification(data, "yellow.7", false));
@@ -193,7 +219,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
   }, []);
 
   return (
-    <AppContext.Provider value={{ settings, app_info: appInfo, app_error: appError }}>
+    <AppContext.Provider value={{ settings, app_info: appInfo, app_error: appError, alerts }}>
       {!isControl && <SplashScreen opened={isFetching} text={useTranslateEvents(i18Key)} />}
       <AuthContextProvider>{children}</AuthContextProvider>
     </AppContext.Provider>

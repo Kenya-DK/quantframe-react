@@ -1,0 +1,12 @@
+.orders {
+  height: calc(100vh - 310px);
+  &[data-has-alert="true"] {
+    height: calc(100vh - 342px);
+  }
+}
+.auctions {
+  height: calc(100vh - 270px);
+  &[data-has-alert="true"] {
+    height: calc(100vh - 302px);
+  }
+}

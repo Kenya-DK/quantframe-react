@@ -4,6 +4,8 @@ import { StockRivenPanel } from "./tabs/riven";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { LiveTradingControl } from "@components/LiveTradingControl";
 import { WishListPanel } from "./tabs/wish_list";
+import classes from "./LiveTrading.module.css";
+import { useHasAlert } from "@hooks/useHasAlert.hook";
 
 export default function LiveTradingPage() {
   // Translate general
@@ -18,7 +20,7 @@ export default function LiveTradingPage() {
   ];
   return (
     <Container size={"100%"}>
-      <Box mt={25}>
+      <Box data-has-alert={useHasAlert()} className={classes.liveTrading}>
         <LiveTradingControl />
       </Box>
       <Tabs defaultValue={tabs[0].id}>

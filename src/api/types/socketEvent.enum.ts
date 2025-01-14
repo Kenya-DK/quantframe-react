@@ -38,6 +38,9 @@ export enum QfSocketEvent {
 
   // Control
   OnToggleControl = "Control:OnToggleControl",
+
+  // Alert
+  UpdateAlert = "Alert:Update",
 }
 
 export enum QfSocketEventOperation {

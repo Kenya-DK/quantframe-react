@@ -1,0 +1,7 @@
+.transactions {
+  --offset: 250px;
+  height: calc(100vh - var(--offset)) !important;
+  &.alert {
+    --offset: 280px;
+  }
+}

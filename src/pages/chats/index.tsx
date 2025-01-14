@@ -11,7 +11,9 @@ import { useMutation } from "@tanstack/react-query";
 import { notifications } from "@mantine/notifications";
 import { faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { modals } from "@mantine/modals";
-import { ChatRome } from "../../components/ChatRome";
+import { ChatRome } from "@components/ChatRome";
+import { useHasAlert } from "@hooks/useHasAlert.hook";
+import classes from "./Chats.module.css";
 
 export default function ChatsPage() {
   const { chats } = useChatContext();
@@ -82,7 +84,7 @@ export default function ChatsPage() {
   });
 
   return (
-    <Container size={"100%"}>
+    <Container size={"100%"} mt={useHasAlert() ? 40 : 0}>
       <Grid>
         <Grid.Col span={activeChat ? 4 : 12}>
           <SearchField
@@ -123,7 +125,7 @@ export default function ChatsPage() {
               </Group>
             }
           />
-          <ScrollArea scrollbarSize={1} style={{ height: "calc(100vh - 156px)" }} mt={"md"}>
+          <ScrollArea scrollbarSize={1} mt={"md"} className={classes.list} data-has-alert={useHasAlert()}>
             {filteredChats
               ?.sort((a, b) => (new Date(a.last_update) > new Date(b.last_update) ? -1 : 1))
               .map((chat) => (

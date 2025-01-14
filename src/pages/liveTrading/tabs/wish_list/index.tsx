@@ -14,12 +14,14 @@ import { Query } from "@utils/search.helper";
 import { CreateStockItemForm } from "@components/Forms/CreateStockItem";
 import { useMutation } from "@tanstack/react-query";
 import api from "@api/index";
+import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { TextTranslate } from "@components/TextTranslate";
 import { getCssVariable, GetSubTypeDisplay } from "@utils/helper";
 import { ButtonInterval } from "@components/ButtonInterval";
 import { modals } from "@mantine/modals";
 import { StatsWithSegments } from "@components/StatsWithSegments";
 import { WishItemInfo } from "@components/Modals/WishItemInfo";
+import classes from "../../LiveTrading.module.css";
 interface WishListPanelProps {}
 export const WishListPanel = ({}: WishListPanelProps) => {
   // States Context
@@ -240,7 +242,7 @@ export const WishListPanel = ({}: WishListPanelProps) => {
         </Grid.Col>
       </Grid>
       <DataTableSearch
-        height={`calc(100vh - ${!is_running ? "366px" : "386px"})`}
+        className={`${classes.databaseStockWishlist} ${useHasAlert() ? classes.alert : ""} ${is_running ? classes.running : ""}`}
         mt={"md"}
         records={wish_lists || []}
         customRowAttributes={(record) => {

@@ -8,7 +8,7 @@ import api from "@api/index";
 import { notifications } from "@mantine/notifications";
 import { faComment, faEdit, faEye, faEyeSlash, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { modals } from "@mantine/modals";
-
+import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { StockItemInfo } from "@components/Modals/StockItemInfo";
 import { ColorInfo } from "@components/ColorInfo";
 import { StatsWithSegments } from "@components/StatsWithSegments";
@@ -22,7 +22,7 @@ import { useLiveScraperContext } from "@contexts/liveScraper.context";
 import { useStockContextContext } from "@contexts/stock.context";
 import { DataTableSearch } from "@components/DataTableSearch";
 import { Query } from "@utils/search.helper";
-
+import classes from "../../LiveTrading.module.css";
 interface StockItemPanelProps {}
 export const StockItemPanel = ({}: StockItemPanelProps) => {
   // States Context
@@ -324,7 +324,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
         </Grid.Col>
       </Grid>
       <DataTableSearch
-        height={`calc(100vh - ${!is_running ? "400px" : "420px"})`}
+        className={`${classes.databaseStockItems} ${useHasAlert() ? classes.alert : ""} ${is_running ? classes.running : ""}`}
         mt={"md"}
         records={items || []}
         customRowAttributes={(record) => {

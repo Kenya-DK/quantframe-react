@@ -156,6 +156,15 @@ pub async fn app_init(
         }
     };
 
+    // Initialize QF Analytics
+    match qf.alert().init() {
+        Ok(_) => {}
+        Err(e) => {
+            error::create_log_file("alerts.log".to_string(), &e);
+            return Err(e);
+        }
+    }
+
     // Validate WFM Auth
     notify
         .gui()

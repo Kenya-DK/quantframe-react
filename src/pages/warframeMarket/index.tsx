@@ -3,12 +3,11 @@ import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { OrderPanel } from "./tabs/orders";
 import { AuctionPanel } from "./tabs/auctions";
 
-
 export default function WarframeMarketPage() {
-
   // Translate general
-  const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`warframe_market.${key}`, { ...context }, i18Key)
-  const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`tabs.${key}`, { ...context }, i18Key)
+  const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslatePages(`warframe_market.${key}`, { ...context }, i18Key);
+  const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`tabs.${key}`, { ...context }, i18Key);
 
   const tabs = [
     { label: useTranslateTabs("orders.title"), component: <OrderPanel />, id: "or", icon: <div>Stocks</div> },
@@ -30,6 +29,6 @@ export default function WarframeMarketPage() {
           </Tabs.Panel>
         ))}
       </Tabs>
-    </Container >
+    </Container>
   );
 }

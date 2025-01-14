@@ -8,6 +8,7 @@ import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { useMutation } from "@tanstack/react-query";
 import api from "@api/index";
+import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { ActionWithTooltip } from "@components/ActionWithTooltip";
 import { ColorInfo } from "@components/ColorInfo";
 import { RivenFilter } from "@components/Forms/RivenFilter";
@@ -22,7 +23,7 @@ import { useLiveScraperContext } from "@contexts/liveScraper.context";
 import { useStockContextContext } from "@contexts/stock.context";
 import { DataTableSearch } from "@components/DataTableSearch";
 import { Query } from "@utils/search.helper";
-
+import classes from "../../LiveTrading.module.css";
 interface StockRivenPanelProps {}
 export const StockRivenPanel = ({}: StockRivenPanelProps) => {
   // States Context
@@ -371,7 +372,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
         </Grid.Col>
       </Grid>
       <DataTableSearch
-        height={`calc(100vh - ${!is_running ? "400px" : "420px"})`}
+        className={`${classes.databaseStockRivens} ${useHasAlert() ? classes.alert : ""} ${is_running ? classes.running : ""}`}
         mt={"md"}
         query={query}
         onSearchChange={(text) => setQuery(text)}

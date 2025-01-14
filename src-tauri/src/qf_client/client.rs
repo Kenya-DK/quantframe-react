@@ -26,7 +26,7 @@ use crate::{
 };
 
 use super::modules::{
-    analytics::AnalyticsModule, auth::AuthModule, cache::CacheModule,
+    alert::AlertModule, analytics::AnalyticsModule, auth::AuthModule, cache::CacheModule,
     price_scraper::PriceScraperModule, transaction::TransactionModule,
 };
 
@@ -46,6 +46,7 @@ pub struct QFClient {
     cache_module: Arc<RwLock<Option<CacheModule>>>,
     price_module: Arc<RwLock<Option<PriceScraperModule>>>,
     analytics_module: Arc<RwLock<Option<AnalyticsModule>>>,
+    alert_module: Arc<RwLock<Option<AlertModule>>>,
     transaction_module: Arc<RwLock<Option<TransactionModule>>>,
     pub component: String,
     pub log_file: String,
@@ -73,6 +74,7 @@ impl QFClient {
             auth_module: Arc::new(RwLock::new(None)),
             cache_module: Arc::new(RwLock::new(None)),
             price_module: Arc::new(RwLock::new(None)),
+            alert_module: Arc::new(RwLock::new(None)),
             analytics_module: Arc::new(RwLock::new(None)),
             transaction_module: Arc::new(RwLock::new(None)),
             log_file: "qfAPIaCalls.log".to_string(),
@@ -238,6 +240,7 @@ impl QFClient {
             Ok(val) => val,
             Err(e) => {
                 error_def.messages.push(e.to_string());
+
                 return Err(AppError::new_api(
                     self.component.as_str(),
                     error_def,
@@ -254,10 +257,17 @@ impl QFClient {
             self.handle_error(error_def.messages.clone(), response);
             return Ok(ApiResult::Error(error_def, headers));
         }
-        if response.get("error").is_some() {
+        if response.get("error").is_some() || error_def.status_code == 401 {
             error_def.error = "ApiError".to_string();
 
-            let error = response.get("error").unwrap().as_str().unwrap_or_default();
+            let error = if response.get("error").is_some() {
+                response.get("error").unwrap().as_str().unwrap_or_default()
+            } else if error_def.status_code == 401 {
+                "Unauthorized"
+            } else {
+                "UnknownError"
+            };
+
             let messages = response.get("message");
             if error == "banned" {
                 error_def.messages.push("Banned".to_string());
@@ -399,6 +409,19 @@ impl QFClient {
     pub fn update_analytics_module(&self, module: AnalyticsModule) {
         // Update the stored AnalyticsModule
         *self.analytics_module.write().unwrap() = Some(module);
+    }
+    pub fn alert(&self) -> AlertModule {
+        // Lazily initialize AlertModule if not already initialized
+        if self.alert_module.read().unwrap().is_none() {
+            *self.alert_module.write().unwrap() = Some(AlertModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the analytics_module is initialized
+        self.alert_module.read().unwrap().as_ref().unwrap().clone()
+    }
+    pub fn update_alert_module(&self, module: AlertModule) {
+        // Update the stored AnalyticsModule
+        *self.alert_module.write().unwrap() = Some(module);
     }
     pub fn transaction(&self) -> TransactionModule {
         // Lazily initialize TransactionModule if not already initialized

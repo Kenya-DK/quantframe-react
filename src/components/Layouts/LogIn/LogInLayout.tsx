@@ -1,4 +1,4 @@
-import { AppShell, Indicator } from "@mantine/core";
+import { AppShell, Box, Indicator } from "@mantine/core";
 import classes from "./LogInLayout.module.css";
 import { Outlet, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -11,11 +11,12 @@ import { SvgIcon, SvgType } from "@components/SvgIcon";
 import { Header } from "@components/Header";
 import api from "@api/index";
 import { useAuthContext } from "@contexts/auth.context";
+import { Ticker } from "../../Ticker";
 export function LogInLayout() {
   // States
   const [lastPage, setLastPage] = useState<string>("");
   // Contexts
-  const { app_error } = useAppContext();
+  const { app_error, alerts } = useAppContext();
   const { user } = useAuthContext();
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -125,6 +126,7 @@ export function LogInLayout() {
     >
       <AppShell.Header withBorder={false}>
         <Header />
+        {alerts.length > 0 && <Ticker data={alerts.map((alert) => ({ label: alert.context }))} />}
       </AppShell.Header>
 
       <AppShell.Navbar withBorder={false}>
@@ -132,7 +134,9 @@ export function LogInLayout() {
       </AppShell.Navbar>
 
       <AppShell.Main>
-        <Outlet />
+        <Box mt={alerts.length > 0 ? 30 : 0}>
+          <Outlet />
+        </Box>
       </AppShell.Main>
     </AppShell>
   );
