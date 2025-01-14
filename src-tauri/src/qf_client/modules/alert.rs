@@ -65,7 +65,8 @@ impl AlertModule {
                 let mut starting = true;
 
                 loop {
-                    if last_updated.elapsed() > Duration::from_secs(5) || starting {
+                    //10 minutes
+                    if last_updated.elapsed() > Duration::from_secs(600) || starting {
                         starting = false;
                         last_updated = Instant::now();
 
