@@ -67,6 +67,7 @@ export const DataTableSearch = <T,>({
         />
       )}
       <DataTable
+        data-runningss={true}
         mt={5}
         records={rows}
         totalRecords={totalRecords}
