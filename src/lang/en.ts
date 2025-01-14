@@ -194,13 +194,13 @@ export const en = {
                 label: "Min SMA",
                 placeholder: "Min SMA",
                 error: "Invalid min SMA",
-                tooltip: "How low the price can go below the SMA.",
+                tooltip: "How low the price can go below the SMA. -1 for disabled.",
               },
               item_min_profit: {
                 label: "Min Profit",
                 placeholder: "Min Profit",
                 error: "Invalid min profit",
-                tooltip: "The minimum profit",
+                tooltip: "The minimum profit, -1 for disabled.",
               },
               auto_delete: {
                 label: "Auto Delete",

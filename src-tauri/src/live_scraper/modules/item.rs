@@ -1246,7 +1246,7 @@ impl ItemModule {
         let mut post_price = lowest_price;
 
         // If the item is worth less than moving average the set the post price to be the moving average
-        if post_price < (moving_avg - min_sma) {
+        if post_price < (moving_avg - min_sma) && min_sma != -1 {
             post_price = moving_avg;
             user_order.operation.push("SMALimit".to_string());
         }
@@ -1261,7 +1261,7 @@ impl ItemModule {
         // Calculate the profit from the post price
         let profit = post_price - bought_price;
 
-        if profit < minimum_profit {
+        if profit < minimum_profit && minimum_profit != -1 {
             user_order.operation.push("LowProfit".to_string());
         }
 
