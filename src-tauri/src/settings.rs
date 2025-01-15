@@ -23,6 +23,19 @@ pub struct SettingsState {
     pub notifications: Notifications,
     // Analytics Settings
     pub analytics: AnalyticsSettings,
+    // Generate Trade Message Settings
+    pub generate_trade_msg: GenerateTradeMsgSettings,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct GenerateTradeMsgSettings {
+    pub wts_items: TradeMsgSettings,
+    pub wtb_items: TradeMsgSettings,
+    pub wts_riven: TradeMsgSettings,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct TradeMsgSettings {
+    pub prefix: String,
+    pub suffix: Option<String>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct LiveScraperSettings {
@@ -103,6 +116,20 @@ impl Default for SettingsState {
             http: HttpConfig {
                 host: "localhost".to_string(),
                 port: 8080,
+            },
+            generate_trade_msg: GenerateTradeMsgSettings {
+                wts_items: TradeMsgSettings {
+                    prefix: "WTS ".to_string(),
+                    suffix: None,
+                },
+                wtb_items: TradeMsgSettings {
+                    prefix: "WTB ".to_string(),
+                    suffix: None,
+                },
+                wts_riven: TradeMsgSettings {
+                    prefix: "WTS Rivens ".to_string(),
+                    suffix: None,
+                },
             },
             live_scraper: LiveScraperSettings {
                 stock_mode: StockMode::All,
