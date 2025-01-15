@@ -7,10 +7,13 @@ Remove the whitelist for a new wishlist system.
 ## Features
 
 - ✅ Add Wishlist: You can now add items to your wishlist.
+- ✅ Add Alert if soothing in wrong
+- ✅ Add Team of service (TOS) popup on start
 
 ## Fix's
 
 - 🛠️ Fix a issue where the bot wut ignore the price range of a item
+
 
 # Quantframe v1.2.3 (Release Date)
 
