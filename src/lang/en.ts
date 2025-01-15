@@ -847,20 +847,20 @@ export const en = {
       prompts: {
         start: {
           title: "Warning",
-          message: "Are you sure you want to start live trading this action will delete all orders on wfm there are not blacklisted.",
+          message: "Are you sure you want to start live trading? This action will delete all orders on WFM that are not blacklisted.",
           confirm: "Start",
           cancel: "Cancel",
         },
       },
       item: {
         stating: "Starting Item Trading",
-        deleting_orders: "Deleting Orders {{current}}/{{total}}",
+        deleting_orders: "Deleting Orders: {{current}}/{{total}}",
         is_hidden: "Item <red>{{name}}</red> is hidden",
         low_profit_delete: "Deleting Item <red>{{name}}</red> low profit",
         order_limit_reached: "Order limit reached for <red>{{name}}</red>",
         knapsack_delete: "Delete Item <red>{{name}}</red>",
         underpriced_delete: "Delete Underpriced Item <red>{{name}}</red>",
-        created: "Created Buy Order for <blue>{{name}}</blue> at <blue>{{price}}</blue> platinum potential profit <blue>{{profit}}</blue> ",
+        created: "Created a buy order for <blue>{{name}}</blue> at <blue>{{price}}</blue> platinum with a potential profit of <blue>{{profit}}</blue>",
         checking_item: "Checking Item <blue>{{name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
         no_data: "<dark_red>No data found for item {{name}} {{current}}/{{total}}</dark_red>",
       },
