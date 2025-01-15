@@ -3,17 +3,19 @@
 ## Overview
 
 Remove the whitelist for a new wishlist system.
+How To migrate:
+[Read More](https://quantframe.app/upgrading/1.2.X)
 
 ## Features
 
 - ✅ Add Wishlist: You can now add items to your wishlist.
 - ✅ Add Alert if soothing in wrong
+- ✅ Add Chats: You can now chat with other users.
 - ✅ Add Team of service (TOS) popup on start
 
 ## Fix's
 
 - 🛠️ Fix a issue where the bot wut ignore the price range of a item
-
 
 # Quantframe v1.2.3 (Release Date)
 
