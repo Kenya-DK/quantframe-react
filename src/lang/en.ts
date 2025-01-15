@@ -44,7 +44,7 @@ export const en = {
     },
     user_status: {
       online: "Online",
-      ingame: "Ingame",
+      ingame: "In game",
       invisible: "Offline",
     },
     order_type: {
@@ -69,7 +69,7 @@ export const en = {
     stock_status: {
       pending: "Pending",
       live: "Live",
-      to_low_profit: "To Low Profit",
+      to_low_profit: "Too Low Profit",
       no_sellers: "No Sellers",
       no_buyers: "No Buyers",
       inactive: "Inactive",
@@ -80,7 +80,7 @@ export const en = {
       details: {
         pending: "Waiting for to be processed",
         live: "Live on Warframe Market",
-        to_low_profit: "Was not processed due to low profit based on settings",
+        to_low_profit: "Was not processed due too low profit based on settings",
         no_sellers: "No sellers found for this item",
         no_buyers: "No buyers found for this item",
         inactive: "Is inactive and will not be processed",
@@ -176,7 +176,7 @@ export const en = {
                 label: "Max Total Price Cap",
                 placeholder: "Max Total Price Cap",
                 error: "Invalid max total price cap",
-                tooltip: "This parameter specifies the maximum platinum total price cap for the all buy orders.",
+                tooltip: "This parameter specifies the maximum platinum total price cap for all buy orders.",
               },
               buy_quantity: {
                 label: "Quantity of goods",
@@ -259,7 +259,7 @@ export const en = {
                 label: "Limit To",
                 placeholder: "5",
                 error: "Invalid limit to",
-                tooltip: "Will use use the first {{count}} rivens to calculate the average price",
+                tooltip: "Will use the first {{count}} rivens to calculate the average price",
               },
               threshold_percentage: {
                 label: "Minimum Price Shift",
@@ -583,7 +583,7 @@ export const en = {
       buyout_price: "Buyout Price: <blue>{{price}}</blue> <plat/>",
       top_bid: "Top Bid: <blue>{{bid}}</blue> <plat/>",
       no_bids: "No Bids",
-      footer: "Mr: <blue>{{mastery_level}}</blue> Ranks: <blue>{{mod_rank}}</blue> Re-rolls: <blue>{{re_rolls}}</blue> Polarity: <polarity/>",
+      footer: "MR: <blue>{{mastery_level}}</blue> Ranks: <blue>{{mod_rank}}</blue> Re-rolls: <blue>{{re_rolls}}</blue> Polarity: <polarity/>",
     },
     stock_item_info: {
       tabs: {
@@ -1013,7 +1013,7 @@ export const en = {
       },
       text: {
         version: "Version: <blue>{{version}}</blue>",
-        disclaimer: "Quantframe is a third party app and is not affiliated with Digital Extremes.",
+        disclaimer: "Quantframe is a third-party app and is not affiliated with Digital Extremes.",
       },
     },
     liveTrading: {
@@ -1503,7 +1503,7 @@ export const en = {
       errors: {
         login: {
           title: "Login Error",
-          email_not_exist: "Email not exist",
+          email_not_exist: "Email does not exist",
           password_invalid: "Password invalid",
           message: "An error occurred while trying to login.",
           banned: "You are banned",
