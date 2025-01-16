@@ -8,14 +8,14 @@ export const en = {
       },
       error: {
         title: "Riven Add Error",
-        message: "An error occurred in {{component}} at {{backtrace}}. See logs for more information.",
+        message: "An error occurred in {{component}} at {{backtrace}} see logs for more information.",
       },
     },
     created_stock: {
       warning: {
         not_found: {
           title: "Item Not Found",
-          message: "The item {{item}} was not found.",
+          message: "Item {{item}} was not found.",
         },
       },
     },
@@ -78,9 +78,9 @@ export const en = {
       overpriced: "Overpriced",
       underpriced: "Underpriced",
       details: {
-        pending: "Waiting to be processed",
+        pending: "Waiting for to be processed",
         live: "Live on Warframe Market",
-        to_low_profit: "Was not processed due to low profit based on settings",
+        to_low_profit: "Was not processed due too low profit based on settings",
         no_sellers: "No sellers found for this item",
         no_buyers: "No buyers found for this item",
         inactive: "Is inactive and will not be processed",
@@ -152,25 +152,25 @@ export const en = {
                 label: "Volume Threshold",
                 placeholder: "Volume Threshold",
                 error: "Invalid volume threshold",
-                tooltip: "The minimum volume required per trade.",
+                tooltip: "The minimum volume per trade.",
               },
               range_threshold: {
                 label: "Range Threshold",
                 placeholder: "Range Threshold",
                 error: "Invalid range threshold",
-                tooltip: "The minimum price range between the highest and lowest prices.",
+                tooltip: "The minimum range between the highest price and the lowest price.",
               },
               avg_price_cap: {
                 label: "Average Price",
                 placeholder: "Average Price",
                 error: "Invalid average price",
-                tooltip: "The maximum average price cap per buy order.",
+                tooltip: "The maximum price cap per buy order.",
               },
               trading_tax_cap: {
                 label: "Trading Tax Cap",
                 placeholder: "Trading Tax Cap",
                 error: "Invalid trading tax cap",
-                tooltip: "The maximum credit tax per buy order. Use -1 for unlimited.",
+                tooltip: "The maximum credit tax per buy order use -1 for unlimited.",
               },
               max_total_price_cap: {
                 label: "Max Total Price Cap",
@@ -188,7 +188,7 @@ export const en = {
                 label: "Price Shift Threshold",
                 placeholder: "Price Shift Threshold",
                 error: "Invalid price shift threshold",
-                tooltip: "The minimum price shift threshold over the last 7 days.",
+                tooltip: "The minimum price shift threshold for the last 7 days.",
               },
               min_sma: {
                 label: "Min SMA",
@@ -310,11 +310,11 @@ export const en = {
               },
               stock_item: {
                 label: "Stock Item",
-                tooltip: "If enabled will send stock item to QF Api",
+                tooltip: "if enabled will send stock item to QF Api",
               },
               stock_riven: {
                 label: "Stock Riven",
-                tooltip: "If enabled will send stock riven to QF Api",
+                tooltip: "if enabled will send stock riven to QF Api",
               },
             },
             buttons: {
@@ -330,7 +330,7 @@ export const en = {
           minimum_price: {
             label: "Minimum Price",
             placeholder: "Minimum Price",
-            description: "Set to 0 for automatic pricing",
+            description: "Set 0 for auto price",
             error: "Invalid minimum price",
           },
           use_hidden: {
@@ -349,7 +349,7 @@ export const en = {
           minimum_price: {
             label: "Minimum Price",
             placeholder: "Minimum Price",
-            description: "Set to 0 for automatic pricing",
+            description: "Set 0 for auto price",
             error: "Invalid minimum price",
           },
           use_hidden: {
@@ -452,7 +452,7 @@ export const en = {
           user_ids: {
             label: "User IDs",
             placeholder: "User IDs",
-            description: "Discord user IDs (numbers) separated by commas",
+            description: "Discord user's (Numbers) separated by comma",
             error: "Invalid user IDs",
           },
         },
@@ -480,7 +480,7 @@ export const en = {
           password: {
             label: "Password",
             placeholder: "Password",
-            error: "Password must include at least 6 characters",
+            error: "Password should include at least 6 characters",
           },
         },
         buttons: {
@@ -608,7 +608,7 @@ export const en = {
         bought: "Bought",
         owned: "Owned",
         listed: "Listed Prices History",
-        no_orders: "No orders were found for this item.",
+        no_orders: "No orders was found for this item.",
         no_listed: "No previous listed prices",
       },
       buttons: {
@@ -636,7 +636,7 @@ export const en = {
         status: "Status",
         quantity: "Quantity of goods",
         listed: "Listed Prices History",
-        no_orders: "No orders were found for this item.",
+        no_orders: "No orders was found for this item.",
         no_listed: "No previous listed prices",
       },
       buttons: {
@@ -710,7 +710,7 @@ export const en = {
         highest_price: "Highest Price",
         lowest_price: "Lowest Price",
         listed: "Listed Prices History",
-        no_auctions: "No auctions were found for this riven.",
+        no_auctions: "No auctions was found for this riven.",
         no_listed: "No previous listed prices",
         mastery_rank: "Master Rank",
         rank: "Rank",
@@ -803,7 +803,7 @@ export const en = {
       errors: {
         logout: {
           title: "Logout Error",
-          message: "An error occurred while trying to log out.",
+          message: "An error occurred while trying to logout.",
         },
         update_settings: {
           title: "Update Settings Error",
@@ -813,7 +813,7 @@ export const en = {
       success: {
         logout: {
           title: "Logout Success",
-          message: "You have successfully logged out.",
+          message: "You have been successfully logged out.",
         },
         update_settings: {
           title: "Update Settings Success",
@@ -823,7 +823,7 @@ export const en = {
     },
     clock: {
       gmt: "GMT: <blue>{{time}}</blue>",
-      time_until_midnight: "Time until midnight (GMT): <blue>{{time}}</blue>",
+      time_until_midnight: "Time until midnight GMT: <blue>{{time}}</blue>",
     },
     layout: {
       log_in: {
@@ -847,7 +847,7 @@ export const en = {
       prompts: {
         start: {
           title: "Warning",
-          message: "Are you sure you want to start live trading? This action will delete all non-blacklisted orders on WFM.",
+          message: "Are you sure you want to start live trading? This action will delete all orders on WFM that are not blacklisted.",
           confirm: "Start",
           cancel: "Cancel",
         },
@@ -861,7 +861,7 @@ export const en = {
         knapsack_delete: "Delete Item <red>{{name}}</red>",
         underpriced_delete: "Delete Underpriced Item <red>{{name}}</red>",
         created: "Created a buy order for <blue>{{name}}</blue> at <blue>{{price}}</blue> platinum with a potential profit of <blue>{{profit}}</blue>",
-        checking_item: "Checking Item: <blue>{{name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        checking_item: "Checking Item <blue>{{name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
         no_data: "<dark_red>No data found for item {{name}} {{current}}/{{total}}</dark_red>",
       },
       riven: {
@@ -908,7 +908,7 @@ export const en = {
       errors: {
         run: {
           title: "Live Scraper Error",
-          message: "An error occurred in component {{component}} at {{backtrace}}. See logs for more information.",
+          message: "An error occurred in component {{component}} at {{backtrace}} see logs for more information.",
         },
       },
     },
@@ -1048,7 +1048,7 @@ export const en = {
                 tooltip: "Sell manually",
               },
               sell_auto: {
-                tooltip: "Sell at listed price",
+                tooltip: "Sell as listed price",
               },
               hide: {
                 enabled_tooltip: "Hide",
@@ -1070,7 +1070,7 @@ export const en = {
           fields: {
             minimum_price: {
               label: "Minimum Price",
-              description: "Set to 0 for automatic pricing",
+              description: "Set 0 for auto price",
             },
           },
         },
@@ -1079,7 +1079,7 @@ export const en = {
           fields: {
             maximum_price: {
               label: "Maximum Price",
-              description: "Set to 0 for automatic pricing",
+              description: "Set 0 for auto price",
             },
           },
         },
@@ -1323,7 +1323,7 @@ export const en = {
             },
             delete_item: {
               title: "Delete Item Error",
-              message: "An error occurred while trying to delete the item.",
+              message: "An error occurred while trying to delete item.",
             },
           },
           success: {
@@ -1350,7 +1350,7 @@ export const en = {
           prompts: {
             delete: {
               title: "Delete Transaction",
-              message: "Are you sure you want to delete the transaction {{name}}? This action cannot be undone.",
+              message: "Are you sure you want to delete transaction {{name}}, this action cannot be undone.",
               confirm: "Yes, delete",
               cancel: "No, cancel",
             },
@@ -1452,7 +1452,7 @@ export const en = {
               success: {
                 migrate: {
                   title: "Migrate Success",
-                  message: "Migration has been successfully completed.",
+                  message: "Migrate has been successfully completed.",
                 },
               },
             },
@@ -1481,7 +1481,7 @@ export const en = {
               success: {
                 import: {
                   title: "Import Success",
-                  message: "The import has been successfully completed.",
+                  message: "Import has been successfully completed.",
                 },
               },
             },
@@ -1505,7 +1505,7 @@ export const en = {
           title: "Login Error",
           email_not_exist: "Email does not exist",
           password_invalid: "Password invalid",
-          message: "An error occurred while trying to log in.",
+          message: "An error occurred while trying to login.",
           banned: "You are banned",
           ban_reason: "<red>Reason: {{reason}}</red>",
         },
@@ -1521,7 +1521,7 @@ export const en = {
       title: "Error in {{component}} component",
       backtrace: "Location: {{backtrace}}",
       cause: "Cause: {{cause}}",
-      footer: "If you think this is a bug, please report it to the developer. Thank you!",
+      footer: "If you think this is a bug, please report it to the developer. Thank you.",
     },
     banned: {
       wfm: {
@@ -1572,13 +1572,13 @@ export const en = {
           prompts: {
             delete: {
               title: "Delete Order",
-              message: "Are you sure you want to delete the order {{name}}? This action cannot be undone.",
+              message: "Are you sure you want to delete order {{name}}, this action cannot be undone.",
               confirm: "Yes, delete",
               cancel: "No, cancel",
             },
             delete_all: {
               title: "Delete All Orders",
-              message: "Are you sure you want to delete all orders? This action cannot be undone.",
+              message: "Are you sure you want to delete all orders, this action cannot be undone.",
               confirm: "Yes, delete",
               cancel: "No, cancel",
             },
@@ -1665,13 +1665,13 @@ export const en = {
             },
             delete: {
               title: "Delete Auction",
-              message: "Are you sure you want to delete the auction? This action cannot be undone.",
+              message: "Are you sure you want to delete auction, this action cannot be undone.",
               confirm: "Yes, delete",
               cancel: "No, cancel",
             },
             delete_all: {
               title: "Delete All Auctions",
-              message: "Are you sure you want to delete all auctions? This action cannot be undone.",
+              message: "Are you sure you want to delete all auctions, this action cannot be undone.",
               confirm: "Yes, delete",
               cancel: "No, cancel",
             },
@@ -1708,7 +1708,7 @@ export const en = {
               message: "An error occurred while trying to delete auction.",
             },
             delete_all: {
-              title: "Delete All Error",
+              title: "Delete All Success",
               message: "An error occurred while trying to delete all auctions.",
             },
           },
@@ -1730,13 +1730,13 @@ export const en = {
       prompts: {
         delete_all: {
           title: "Delete All chats",
-          message: "Are you sure you want to delete all chats? This action cannot be undone.",
+          message: "Are you sure you want to delete all chats, this action cannot be undone.",
           confirm: "Yes, delete",
           cancel: "No, cancel",
         },
         delete: {
           title: "Delete chat",
-          message: "Are you sure you want to delete the chat {{name}}? This action cannot be undone.",
+          message: "Are you sure you want to {{name}} chat, this action cannot be undone.",
           confirm: "Yes, delete",
           cancel: "No, cancel",
         },
