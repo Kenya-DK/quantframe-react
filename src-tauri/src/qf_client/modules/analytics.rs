@@ -38,7 +38,7 @@ impl AnalyticsModule {
             current_page: "home".to_string(),
             component: "Analytics".to_string(),
             is_init: false,
-            send_metrics: true,
+            send_metrics: false,
             last_user_activity: Arc::new(Mutex::new(Instant::now())),
             metricAndLabelPairsScheduledToSend: vec![],
         }
@@ -131,10 +131,10 @@ impl AnalyticsModule {
                         }
 
                         last_metric_time = Instant::now();
-                        logger::info_con(
-                            &qf.analytics().get_component("TrySendAnalytics"),
-                            "Sending user activity",
-                        );
+                        // logger::info_con(
+                        //     &qf.analytics().get_component("TrySendAnalytics"),
+                        //     "Sending user activity",
+                        // );
                         match qf
                             .analytics()
                             .try_send_analytics(
@@ -176,12 +176,12 @@ impl AnalyticsModule {
         mut retry_count: i64,
         data: Value,
     ) -> Result<(), AppError> {
-        let mut parameters: Vec<String> = vec![];
-        if self.is_user_active() {
-            parameters.push(format!("Active_Page={}", self.current_page));
-        }
+        // let mut parameters: Vec<String> = vec![];
+        // if self.is_user_active() {
+        //     parameters.push(format!("Active_Page={}", self.current_page));
+        // }
 
-        while retry_count >= 0 {
+        /* while retry_count >= 0 {
             let err = match self
                 .client
                 .post::<Value>(
@@ -213,7 +213,7 @@ impl AnalyticsModule {
                 ),
             );
             tokio::time::sleep(std::time::Duration::from_secs(5)).await;
-        }
+        } */
         Ok(())
     }
 }
