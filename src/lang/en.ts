@@ -860,7 +860,7 @@ export const en = {
         order_limit_reached: "Order limit reached for <red>{{name}}</red>",
         knapsack_delete: "Delete Item <red>{{name}}</red>",
         underpriced_delete: "Delete Underpriced Item <red>{{name}}</red>",
-        created: "Created buy order: <blue>{{name}}</blue>, <blue>{{price}}</blue> platinum | Profit: <blue>{{profit}}</blue>",
+        created: "Created buy order: <blue>{{name}}</blue> for <blue>{{price}}</blue> platinum | Profit: <blue>{{profit}}</blue>",
         checking_item: "Checking Item: <blue>{{name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
         no_data: "<dark_red>No data found for item {{name}} {{current}}/{{total}}</dark_red>",
       },
