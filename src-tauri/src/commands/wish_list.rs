@@ -1,26 +1,25 @@
 use std::sync::{Arc, Mutex};
 
 use create::CreateWishListItem;
+use entity::sub_type::SubType;
 use entity::wish_list::*;
-use entity::{enums::stock_status::StockStatus, sub_type::SubType};
 
 use eyre::eyre;
-use migration::Iden;
 use serde_json::json;
-use service::{StockRivenMutation, StockRivenQuery, WishListMutation, WishListQuery};
+use service::{WishListMutation, WishListQuery};
 
 use crate::cache::client::CacheClient;
 use crate::helper::{self, add_metric};
-use crate::live_scraper::modules::item;
 use crate::qf_client::client::QFClient;
 use crate::utils::modules::error;
 use crate::wfm_client::enums::order_type::OrderType;
+use crate::DATABASE;
 use crate::{
     app::client::AppState,
     notification::client::NotifyClient,
     utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
-        modules::{error::AppError, logger},
+        modules::error::AppError,
     },
     wfm_client::client::WFMClient,
 };
@@ -28,12 +27,11 @@ use crate::{
 #[tauri::command]
 pub async fn wish_list_reload(
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
 ) -> Result<(), AppError> {
-    let app = app.lock()?.clone();
+    let conn = DATABASE.get().unwrap();
     let notify = notify.lock()?.clone();
 
-    match WishListQuery::get_all(&app.conn).await {
+    match WishListQuery::get_all(conn).await {
         Ok(items) => {
             add_metric("WishList_Reload", "manual");
             notify.gui().send_event_update(
@@ -57,11 +55,10 @@ pub async fn wish_list_create(
     maximum_price: Option<i64>,
     sub_type: Option<SubType>,
     quantity: i64,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
 ) -> Result<wish_list::Model, AppError> {
-    let app = app.lock()?.clone();
+    let conn = DATABASE.get().unwrap();
     let cache = cache.lock()?.clone();
     let notify = notify.lock()?.clone();
 
@@ -77,7 +74,7 @@ pub async fn wish_list_create(
         }
     };
 
-    match WishListMutation::add_item(&app.conn, created_item.to_model()).await {
+    match WishListMutation::add_item(conn, created_item.to_model()).await {
         Ok(inserted) => {
             notify.gui().send_event_update(
                 UIEvent::UpdateWishList,
@@ -102,10 +99,10 @@ pub async fn wish_list_update(
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
 ) -> Result<wish_list::Model, AppError> {
-    let app = app.lock()?.clone();
+    let conn = DATABASE.get().unwrap();
     let notify = notify.lock()?.clone();
 
-    let item = match WishListQuery::find_by_id(&app.conn, id).await {
+    let item = match WishListQuery::find_by_id(conn, id).await {
         Ok(foundItem) => foundItem,
         Err(e) => return Err(AppError::new("WishListItemUpdate", eyre!(e))),
     };
@@ -132,7 +129,7 @@ pub async fn wish_list_update(
     }
     new_item.updated_at = chrono::Utc::now();
 
-    match WishListMutation::update_by_id(&app.conn, new_item.id, new_item.clone()).await {
+    match WishListMutation::update_by_id(conn, new_item.id, new_item.clone()).await {
         Ok(updated) => {
             helper::add_metric("WishList_ItemUpdated", "manual");
             notify.gui().send_event_update(
@@ -154,15 +151,14 @@ pub async fn wish_list_update(
 #[tauri::command]
 pub async fn wish_list_delete(
     id: i64,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<(), AppError> {
-    let app = app.lock()?.clone();
+    let conn = DATABASE.get().unwrap();
     let notify = notify.lock()?.clone();
     let wfm = wfm.lock()?.clone();
 
-    let item = match WishListQuery::get_by_id(&app.conn, id).await {
+    let item = match WishListQuery::get_by_id(conn, id).await {
         Ok(item) => item,
         Err(e) => {
             return Err(AppError::new("WishListQuery::get_by_id", eyre!(e)));
@@ -177,7 +173,7 @@ pub async fn wish_list_delete(
     }
     let item = item.unwrap();
 
-    match WishListMutation::delete_by_id(&app.conn, id).await {
+    match WishListMutation::delete_by_id(conn, id).await {
         Ok(_) => {
             notify.gui().send_event_update(
                 UIEvent::UpdateWishList,
@@ -215,19 +211,18 @@ pub async fn wish_list_delete(
 pub async fn wish_list_bought(
     id: i64,
     price: i64,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
     qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<wish_list::Model, AppError> {
-    let app = app.lock()?.clone();
+    let conn = DATABASE.get().unwrap();
     let notify = notify.lock()?.clone();
     let wfm = wfm.lock()?.clone();
     let cache = cache.lock()?.clone();
     let qf = qf.lock()?.clone();
 
-    let item = match WishListQuery::get_by_id(&app.conn, id).await {
+    let item = match WishListQuery::get_by_id(conn, id).await {
         Ok(item) => item,
         Err(e) => {
             return Err(AppError::new("WishListQuery::get_by_id", eyre!(e)));
@@ -261,7 +256,6 @@ pub async fn wish_list_bought(
         OrderType::Buy,
         vec![],
         "manual",
-        &app,
         &cache,
         &notify,
         &wfm,

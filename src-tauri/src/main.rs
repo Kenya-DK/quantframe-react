@@ -9,7 +9,7 @@ use live_scraper::client::LiveScraperClient;
 use log_parser::client::LogParser;
 use migration::{Migrator, MigratorTrait};
 use notification::client::NotifyClient;
-use service::sea_orm::Database;
+use service::sea_orm::{Database, DatabaseConnection};
 use settings::SettingsState;
 use utils::modules::error::AppError;
 use utils::modules::logger;
@@ -40,6 +40,55 @@ mod utils;
 mod wfm_client;
 
 pub static APP: OnceLock<tauri::AppHandle> = OnceLock::new();
+pub static DATABASE: OnceLock<DatabaseConnection> = OnceLock::new();
+
+// If use_debug is true the debug database will be used and all data will be lost on restart
+async fn init_database(use_debug: bool) -> Result<(), AppError> {
+    // Create the database connection and store it
+    let storage_path = helper::get_app_storage_path();
+
+    let mut file_name = "quantframeV2.sqlite";
+    let debug_file_name = "quantframeV2_debug.sqlite";
+
+    // Create the path to the database file
+    let file_path = format!("{}/{}", storage_path.to_str().unwrap(), file_name);
+
+    // Create the path to the database file
+    let file_path_backup = format!("{}/{}_backup", storage_path.to_str().unwrap(), file_name);
+    logger::info_con("Setup:Database", "Creating a backup of the database file");
+    if std::path::Path::new(&file_path).exists() {
+        std::fs::copy(&file_path, &file_path_backup)
+            .expect("Failed to create a backup of the database file");
+    }
+
+    if use_debug {
+        let db_debug_file_path_backup = file_path.replace(file_name, debug_file_name);
+        file_name = debug_file_name;
+        logger::warning_con(
+            "Setup:Database",
+            "Debug mode is enabled, using the debug database file no data wil be saved",
+        );
+        if std::path::Path::new(&file_path).exists() {
+            std::fs::copy(&file_path, &db_debug_file_path_backup)
+                .expect("Failed to create a backup of the database file");
+        }
+    }
+
+    // Create the database connection URL
+    let db_url = format!(
+        "sqlite://{}/{}?mode=rwc",
+        storage_path.to_str().unwrap(),
+        file_name,
+    );
+
+    // Create the database connection and store it and run the migrations
+    let conn = Database::connect(db_url)
+        .await
+        .expect("Database connection failed");
+    Migrator::up(&conn, None).await.unwrap();
+    DATABASE.get_or_init(|| conn);
+    Ok(())
+}
 
 async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     // Clear the logs older then 7 days
@@ -62,54 +111,8 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     // Check if the app is being run for the first time
     let is_first_install = !helper::dose_app_exist();
 
-    // Create the database connection and store it
-    let storage_path = helper::get_app_storage_path();
-
-    let mut db_file_name = "quantframeV2.sqlite";
-    let db_debug_file_name = "quantframeV2_debug.sqlite";
-    let debug_db = false;
-
-    // Create the path to the database file
-    let db_file_path = format!("{}/{}", storage_path.to_str().unwrap(), db_file_name);
-
-    // Create a backup of the database file
-    let db_file_path_backup = format!("{}/{}_backup", storage_path.to_str().unwrap(), db_file_name);
-    logger::info_con("Setup:Database", "Creating a backup of the database file");
-    if std::path::Path::new(&db_file_path).exists() {
-        std::fs::copy(&db_file_path, &db_file_path_backup)
-            .expect("Failed to create a backup of the database file");
-    }
-
-    // Create the path to the debug database file
-    let db_debug_file_path_backup = db_file_path.replace(db_file_name, db_debug_file_name);
-    if debug_db {
-        db_file_name = db_debug_file_name;
-        logger::warning_con(
-            "Setup:Database",
-            "Debug mode is enabled, using the debug database file no data wil be saved",
-        );
-        if std::path::Path::new(&db_file_path).exists() {
-            std::fs::copy(&db_file_path, &db_debug_file_path_backup)
-                .expect("Failed to create a backup of the database file");
-        }
-    }
-
-    // Create the database connection URL
-    let db_url = format!(
-        "sqlite://{}/{}?mode=rwc",
-        storage_path.to_str().unwrap(),
-        db_file_name,
-    );
-
-    // Create the database connection and store it and run the migrations
-    let conn = Database::connect(db_url)
-        .await
-        .expect("Database connection failed");
-    Migrator::up(&conn, None).await.unwrap();
-
     // Create and manage Notification state
     let app_arc: Arc<Mutex<AppState>> = Arc::new(Mutex::new(AppState::new(
-        conn,
         app.handle(),
         is_first_install,
         is_pre_release,
@@ -209,6 +212,24 @@ fn main() {
         })
         .setup(move |app| {
             _ = APP.get_or_init(|| app.app_handle());
+
+            match block_on(init_database(true)) {
+                Ok(_) => {}
+                Err(e) => {
+                    let component = e.component();
+                    let cause = e.cause();
+                    let backtrace = e.backtrace();
+                    let log_level = e.log_level();
+                    logger::dolog(
+                        log_level,
+                        component.as_str(),
+                        format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
+                        true,
+                        Some("init_database_error.log"),
+                    );
+                }
+            };
+
             // Setup Manages for the app
             match block_on(setup_manages(app)) {
                 Ok(_) => {}

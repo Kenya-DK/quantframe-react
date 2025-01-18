@@ -21,8 +21,6 @@ use crate::{
 #[post("/add_riven")]
 pub async fn add_riven(riven: web::Json<RivenPayload>) -> impl Responder {
     let app_handle = APP.get().expect("failed to get app handle");
-    let app_state: State<Arc<Mutex<AppState>>> = app_handle.state();
-    let app = app_state.lock().expect("failed to lock app state").clone();
 
     let notify_state: State<Arc<Mutex<NotifyClient>>> = app_handle.state();
     let notify = notify_state
@@ -51,7 +49,6 @@ pub async fn add_riven(riven: web::Json<RivenPayload>) -> impl Responder {
         "",
         OrderType::Buy,
         "http_server",
-        &app,
         &cache,
         &notify,
         &wfm,

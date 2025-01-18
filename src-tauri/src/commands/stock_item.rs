@@ -7,7 +7,6 @@ use eyre::eyre;
 use serde_json::json;
 use service::{StockItemMutation, StockItemQuery};
 
-use crate::helper;
 use crate::qf_client::client::QFClient;
 use crate::utils::modules::error;
 use crate::{
@@ -20,16 +19,16 @@ use crate::{
     },
     wfm_client::{client::WFMClient, enums::order_type::OrderType},
 };
+use crate::{helper, DATABASE};
 
 #[tauri::command]
 pub async fn stock_item_reload(
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
 ) -> Result<(), AppError> {
-    let app = app.lock()?.clone();
+    let conn = DATABASE.get().unwrap();
     let notify = notify.lock()?.clone();
 
-    match StockItemQuery::get_all(&app.conn).await {
+    match StockItemQuery::get_all(conn).await {
         Ok(rivens) => {
             helper::add_metric("Stock_ItemReload", "manual");
             notify.gui().send_event_update(
@@ -60,7 +59,6 @@ pub async fn stock_item_create(
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
     qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<stock_item::Model, AppError> {
-    let app = app.lock()?.clone();
     let cache = cache.lock()?.clone();
     let notify = notify.lock()?.clone();
     let wfm = wfm.lock()?.clone();
@@ -87,7 +85,6 @@ pub async fn stock_item_create(
         OrderType::Buy,
         vec![],
         from,
-        &app,
         &cache,
         &notify,
         &wfm,
@@ -113,13 +110,12 @@ pub async fn stock_item_update(
     minimum_price: Option<i64>,
     sub_type: Option<SubType>,
     is_hidden: Option<bool>,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
 ) -> Result<stock_item::Model, AppError> {
-    let app = app.lock()?.clone();
+    let conn = DATABASE.get().unwrap();
     let notify = notify.lock()?.clone();
 
-    let stock = match StockItemQuery::find_by_id(&app.conn, id).await {
+    let stock = match StockItemQuery::find_by_id(conn, id).await {
         Ok(stock) => stock,
         Err(e) => return Err(AppError::new("StockItemUpdate", eyre!(e))),
     };
@@ -158,7 +154,7 @@ pub async fn stock_item_update(
     }
     new_item.updated_at = chrono::Utc::now();
 
-    match StockItemMutation::update_by_id(&app.conn, new_item.id, new_item.clone()).await {
+    match StockItemMutation::update_by_id(conn, new_item.id, new_item.clone()).await {
         Ok(updated) => {
             helper::add_metric("Stock_ItemUpdate", "manual");
             notify.gui().send_event_update(
@@ -181,15 +177,14 @@ pub async fn stock_item_update_bulk(
     ids: Vec<i64>,
     minimum_price: Option<i64>,
     is_hidden: Option<bool>,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
 ) -> Result<i64, AppError> {
-    let app = app.lock()?.clone();
+    let conn = DATABASE.get().unwrap();
     let notify = notify.lock()?.clone();
 
     let total: i64 = ids.len() as i64;
 
-    match StockItemMutation::update_bulk(&app.conn, ids, minimum_price, is_hidden).await {
+    match StockItemMutation::update_bulk(conn, ids, minimum_price, is_hidden).await {
         Ok(items) => {
             helper::add_metric("Stock_ItemUpdateBulk", "manual");
             notify.gui().send_event_update(
@@ -211,17 +206,16 @@ pub async fn stock_item_update_bulk(
 #[tauri::command]
 pub async fn stock_item_delete_bulk(
     ids: Vec<i64>,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<i64, AppError> {
     let wfm = wfm.lock()?.clone();
-    let app = app.lock()?.clone();
+    let conn = DATABASE.get().unwrap();
     let notify = notify.lock()?.clone();
     helper::add_metric("Stock_ItemDeleteBulk", "manual");
 
     let mut my_orders = wfm.orders().get_my_orders().await?;
-    let stocks = match StockItemQuery::find_by_ids(&app.conn, ids.clone()).await {
+    let stocks = match StockItemQuery::find_by_ids(conn, ids.clone()).await {
         Ok(stocks) => stocks,
         Err(e) => {
             let error: AppError = AppError::new_db("StockItemQuery::DeleteBulk", e);
@@ -233,7 +227,7 @@ pub async fn stock_item_delete_bulk(
     let total = stocks.clone().len() as i64;
 
     for stock in stocks {
-        match StockItemMutation::delete_by_id(&app.conn, stock.id).await {
+        match StockItemMutation::delete_by_id(conn, stock.id).await {
             Ok(_) => {}
             Err(e) => {
                 let error: AppError = AppError::new_db("StockItemMutation::DeleteById", e);
@@ -256,7 +250,7 @@ pub async fn stock_item_delete_bulk(
     }
 
     // Update the UI
-    match StockItemQuery::get_all(&app.conn).await {
+    match StockItemQuery::get_all(conn).await {
         Ok(rivens) => {
             notify.gui().send_event_update(
                 UIEvent::UpdateStockItems,
@@ -286,13 +280,11 @@ pub async fn stock_item_sell(
     quantity: i64,
     price: i64,
     is_from_order: bool,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
     qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<stock_item::Model, AppError> {
-    let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
     let cache = cache.lock()?.clone();
     let wfm = wfm.lock()?.clone();
@@ -315,7 +307,6 @@ pub async fn stock_item_sell(
             "WFMContinueOnError".to_string(),
         ],
         from,
-        &app,
         &cache,
         &notify,
         &wfm,
@@ -340,10 +331,10 @@ pub async fn stock_item_delete(
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<(), AppError> {
-    let app = app.lock()?.clone();
+    let conn = DATABASE.get().unwrap();
     let notify = notify.lock()?.clone();
     let wfm = wfm.lock()?.clone();
-    let stock_item = match StockItemQuery::find_by_id(&app.conn, id).await {
+    let stock_item = match StockItemQuery::find_by_id(conn, id).await {
         Ok(stock) => stock,
         Err(e) => {
             let error: AppError = AppError::new_db("StockItemMutation::UpdateById", e);
@@ -360,7 +351,7 @@ pub async fn stock_item_delete(
     }
     let stock_item = stock_item.unwrap();
 
-    match StockItemMutation::delete_by_id(&app.conn, id).await {
+    match StockItemMutation::delete_by_id(conn, id).await {
         Ok(deleted) => {
             if deleted.rows_affected > 0 {
                 helper::add_metric("Stock_ItemDelete", "manual");
