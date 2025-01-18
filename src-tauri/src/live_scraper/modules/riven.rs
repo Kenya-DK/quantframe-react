@@ -6,6 +6,7 @@ use entity::{enums::stock_status::StockStatus, price_history::PriceHistory};
 use serde_json::json;
 use service::{StockRivenMutation, StockRivenQuery};
 
+use crate::utils::modules::states;
 use crate::wfm_client::types::auction::Auction;
 use crate::{helper, DATABASE};
 use crate::{
@@ -44,23 +45,22 @@ impl RivenModule {
             .send_gui_update(format!("riven.{}", i18n_key).as_str(), values);
     }
     pub fn send_stock_update(&self, operation: UIOperationEvent, value: serde_json::Value) {
-        let notify = self.client.notify.lock().unwrap().clone();
+        let notify = states::notify_client().unwrap();
         notify
             .gui()
             .send_event_update(UIEvent::UpdateStockRivens, operation, Some(value));
     }
     pub fn send_auction_update(&self, operation: UIOperationEvent, value: serde_json::Value) {
-        let notify = self.client.notify.lock().unwrap().clone();
+        let notify = states::notify_client().unwrap();
         notify
             .gui()
             .send_event_update(UIEvent::UpdateAuction, operation, Some(value));
     }
     pub async fn check_stock(&mut self) -> Result<(), AppError> {
         let conn = DATABASE.get().unwrap();
-        let app = self.client.app.lock()?.clone();
-        let wfm = self.client.wfm.lock()?.clone();
-        let auth = self.client.auth.lock()?.clone();
-        let settings = self.client.settings.lock()?.clone().live_scraper;
+        let wfm = states::wfm_client()?;
+        let auth = states::auth()?;
+        let settings = states::settings()?.live_scraper;
         let min_profit = settings.stock_riven.min_profit;
         let threshold_percentage = settings.stock_riven.threshold_percentage / 100.0;
         let limit_to = settings.stock_riven.limit_to;

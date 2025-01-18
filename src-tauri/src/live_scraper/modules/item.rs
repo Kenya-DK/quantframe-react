@@ -9,7 +9,8 @@ use crate::live_scraper::types::order_extra_info::OrderDetails;
 use crate::utils::enums::log_level::LogLevel;
 use crate::utils::enums::ui_events::{UIEvent, UIOperationEvent};
 use crate::utils::modules::error::{self, AppError};
-use crate::utils::modules::logger;
+use crate::utils::modules::states::wfm_client;
+use crate::utils::modules::{logger, states};
 use crate::wfm_client::enums::order_type::OrderType;
 use crate::wfm_client::types::item;
 use crate::wfm_client::types::order::Order;
@@ -51,19 +52,19 @@ impl ItemModule {
             .send_gui_update(format!("item.{}", i18n_key).as_str(), values);
     }
     pub fn send_stock_update(&self, operation: UIOperationEvent, value: serde_json::Value) {
-        let notify = self.client.notify.lock().unwrap().clone();
+        let notify = states::notify_client().expect("Failed to get notify client");
         notify
             .gui()
             .send_event_update(UIEvent::UpdateStockItems, operation, Some(value));
     }
     pub fn send_wish_list_update(&self, operation: UIOperationEvent, value: serde_json::Value) {
-        let notify = self.client.notify.lock().unwrap().clone();
+        let notify = states::notify_client().expect("Failed to get notify client");
         notify
             .gui()
             .send_event_update(UIEvent::UpdateWishList, operation, Some(value));
     }
     pub fn send_order_update(&self, operation: UIOperationEvent, value: serde_json::Value) {
-        let notify = self.client.notify.lock().unwrap().clone();
+        let notify = states::notify_client().expect("Failed to get notify client");
         notify
             .gui()
             .send_event_update(UIEvent::UpdateOrders, operation, Some(value));
@@ -79,11 +80,10 @@ impl ItemModule {
 
         let conn = DATABASE.get().unwrap();
         // Load Managers.
-        let app = self.client.app.lock()?.clone();
-        let wfm = self.client.wfm.lock()?.clone();
-        let auth = self.client.auth.lock()?.clone();
-        let cache = self.client.cache.lock()?.clone();
-        let settings = self.client.settings.lock()?.clone().live_scraper;
+        let wfm = states::wfm_client()?;
+        let auth = states::auth()?;
+        let cache = states::cache()?;
+        let settings = states::settings()?.live_scraper;
 
         // Send GUI Update.
         self.send_msg("stating", None);
@@ -372,10 +372,9 @@ impl ItemModule {
 
     pub async fn delete_all_orders(&mut self, mode: TradeMode) -> Result<(), AppError> {
         let conn = DATABASE.get().unwrap();
-        let wfm = self.client.wfm.lock()?.clone();
-        let app = self.client.app.lock()?.clone();
-        let _notify = self.client.notify.lock()?.clone();
-        let settings = self.client.settings.lock()?.clone().live_scraper;
+        let wfm = states::wfm_client()?;
+        let _notify = states::notify_client()?;
+        let settings = states::settings()?.live_scraper;
         let blacklist = settings.stock_item.blacklist.clone();
         let mut current_orders = wfm.orders().get_my_orders().await?;
 
@@ -436,8 +435,8 @@ impl ItemModule {
     }
 
     pub async fn get_interesting_items(&self) -> Result<Vec<ItemEntry>, AppError> {
-        let settings = self.client.settings.lock()?.clone().live_scraper;
-        let cache = self.client.cache.lock()?.clone();
+        let settings = states::settings()?.live_scraper;
+        let cache = states::cache()?;
         let volume_threshold = settings.stock_item.volume_threshold;
         let range_threshold = settings.stock_item.range_threshold;
         let avg_price_cap = settings.stock_item.avg_price_cap;
@@ -593,10 +592,9 @@ impl ItemModule {
     ) -> Result<Option<Vec<Order>>, AppError> {
         // Load Managers.
         let conn = DATABASE.get().unwrap();
-        let settings = self.client.settings.lock()?.clone().live_scraper;
-        let wfm = self.client.wfm.lock()?.clone();
+        let settings = states::settings()?.live_scraper;
+        let wfm = states::wfm_client()?;
         let blacklist = settings.stock_item.blacklist.clone();
-        let app = self.client.app.lock()?.clone();
 
         // Check if the item is in the blacklist and skip if it is
         if blacklist.contains(&item_info.wfm_url_name) {
@@ -808,8 +806,8 @@ impl ItemModule {
         live_orders: Orders,
     ) -> Result<Option<Vec<Order>>, AppError> {
         // Load Managers.
-        let settings = self.client.settings.lock()?.clone().live_scraper;
-        let wfm = self.client.wfm.lock()?.clone();
+        let settings = states::settings()?.live_scraper;
+        let wfm = states::wfm_client()?;
         let blacklist = settings.stock_item.blacklist.clone();
 
         // Check if the item is in the blacklist and skip if it is
@@ -1154,9 +1152,8 @@ impl ItemModule {
     ) -> Result<(), AppError> {
         // Load Managers.
         let conn = DATABASE.get().unwrap();
-        let settings = self.client.settings.lock()?.clone().live_scraper;
-        let wfm = self.client.wfm.lock()?.clone();
-        let app = self.client.app.lock()?.clone();
+        let settings = states::settings()?.live_scraper;
+        let wfm = states::wfm_client()?;
         let blacklist = settings.stock_item.blacklist.clone();
 
         // Check if the item is in the blacklist and skip if it is

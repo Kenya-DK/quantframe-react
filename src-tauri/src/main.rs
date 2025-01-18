@@ -166,14 +166,7 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     app.manage(http_client_arc.clone());
 
     // create and manage LiveScraper state
-    let live_scraper = LiveScraperClient::new(
-        Arc::clone(&app_arc),
-        Arc::clone(&settings_arc),
-        Arc::clone(&wfm_client),
-        Arc::clone(&auth_arc),
-        Arc::clone(&cache_arc),
-        Arc::clone(&notify_arc),
-    );
+    let live_scraper = LiveScraperClient::new();
     app.manage(Arc::new(Mutex::new(live_scraper)));
 
     // create and manage WhisperScraper state
