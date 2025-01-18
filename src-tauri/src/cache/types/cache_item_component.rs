@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-
-
 use super::cache_item_base::CacheItemBase;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -14,18 +12,9 @@ pub struct CacheItemComponent {
     pub name: String,
     #[serde(rename = "itemCount")]
     pub item_count: i64,
-    #[serde(rename = "imageName")]
-    pub image_name: String,
     #[serde(rename = "tradable")]
+    #[serde(default)]
     pub tradable: bool,
-    #[serde(rename = "masterable")]
-    pub masterable: bool,
-    #[serde(rename = "description")]
-    pub description: Option<String>,
-    #[serde(rename = "primeSellingPrice")]
-    pub prime_selling_price: Option<i32>,
-    #[serde(rename = "ducats")]
-    pub ducats: Option<i32>,
     #[serde(rename = "componentType")]
     pub component_type: String,
 }

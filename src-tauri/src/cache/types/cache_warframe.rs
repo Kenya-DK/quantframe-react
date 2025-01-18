@@ -4,85 +4,23 @@ use super::{cache_item_base::CacheItemBase, cache_item_component::CacheItemCompo
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CacheWarframe {
-    #[serde(rename = "armor")]
-    pub armor: i32,
-    #[serde(rename = "aura")]
-    pub aura: Option<String>,
-    #[serde(rename = "bpCost")]
-    pub bp_cost: Option<i32>,
-    #[serde(rename = "buildPrice")]
-    pub build_price: Option<i32>,
-    #[serde(rename = "buildQuantity")]
-    pub build_quantity: Option<i32>,
-    #[serde(rename = "buildTime")]
-    pub build_time: Option<i32>,
     #[serde(rename = "category")]
     pub category: String,
-    #[serde(rename = "color")]
-    pub color: Option<i32>,
     #[serde(rename = "components")]
     pub components: Option<Vec<CacheItemComponent>>,
-    #[serde(rename = "conclave")]
-    pub conclave: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "description")]
-    pub description: Option<String>,
-    #[serde(rename = "health")]
-    pub health: i32,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "imageName")]
-    pub image_name: Option<String>,
-    #[serde(rename = "isPrime")]
-    pub is_prime: bool,
-    #[serde(rename = "marketCost")]
-    pub market_cost: Option<i32>,
-    #[serde(rename = "masterable")]
-    pub masterable: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "masteryReq")]
-    pub mastery_req: Option<i32>,
     #[serde(rename = "name")]
     pub name: String,
-    #[serde(rename = "passiveDescription")]
-    pub passive_description: Option<String>,
-    #[serde(rename = "polarities")]
-    pub polarities: Option<Vec<String>>,
-    #[serde(rename = "power")]
-    pub power: i32,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "productCategory")]
-    pub product_category: Option<String>,
-    #[serde(rename = "releaseDate")]
-    pub release_date: Option<String>,
-    #[serde(rename = "sex")]
-    pub sex: Option<String>,
-    #[serde(rename = "shield")]
-    pub shield: i32,
-    #[serde(rename = "sprint")]
-    pub sprint: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "sprintSpeed")]
-    pub sprint_speed: Option<f64>,
-    #[serde(rename = "stamina")]
-    pub stamina: i32,
     #[serde(rename = "tradable")]
+    #[serde(default)]
     pub tradable: bool,
-    #[serde(rename = "type")]
-    pub warframe_type: String,
+    // #[serde(rename = "type")]
+    // pub warframe_type: String,
     #[serde(rename = "uniqueName")]
     pub unique_name: String,
     #[serde(rename = "wikiaThumbnail")]
     pub wikia_thumbnail: Option<String>,
     #[serde(rename = "wikiaUrl")]
     pub wikia_url: Option<String>,
-    #[serde(rename = "estimatedVaultDate")]
-    pub estimated_vault_date: Option<String>,
-    #[serde(rename = "vaultDate")]
-    pub vault_date: Option<String>,
-    #[serde(rename = "vaulted")]
-    pub vaulted: Option<bool>,
-    #[serde(rename = "exalted")]
-    pub exalted: Option<Vec<String>>,
 }
 impl CacheWarframe {
     pub fn get_item_components(&self) -> Vec<CacheItemComponent> {

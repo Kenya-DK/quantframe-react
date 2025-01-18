@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
@@ -5,18 +6,18 @@ use serde::{Deserialize, Serialize};
 pub struct CacheRiven {
     #[serde(rename = "weapons")]
     pub weapons: Vec<CacheRivenWeapon>,
-    #[serde(rename = "rivens_attributes")]
-    pub rivens_attributes: Vec<CacheRivenAttribute>,
-    #[serde(rename = "available_attributes")]
-    pub available_attributes: Vec<CacheRivenWFMAttribute>,
+    #[serde(rename = "upgrade_types_dict")]
+    pub upgrade_types: HashMap<String, Vec<CacheRivenUpgrade>>,
+    #[serde(rename = "attributes")]
+    pub attributes: Vec<CacheRivenWFMAttribute>,
 }
 
 impl CacheRiven {
     pub fn new() -> Self {
         CacheRiven {
             weapons: Vec::new(),
-            rivens_attributes: Vec::new(),
-            available_attributes: Vec::new(),
+            upgrade_types: HashMap::new(),
+            attributes: Vec::new(),
         }
     }
 }
@@ -52,8 +53,10 @@ pub struct CacheRivenWeapon {
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CacheRivenGoodRoll {
     #[serde(rename = "required")]
+    #[serde(default)]
     pub required: Vec<String>,
     #[serde(rename = "optional")]
+    #[serde(default)]
     pub optional: Vec<String>,
 }
 
@@ -65,13 +68,6 @@ pub struct CacheRivenRolls {
     pub good_rolls: Vec<CacheRivenGoodRoll>,
     #[serde(rename = "negative_attributes")]
     pub negative_attributes: Vec<String>,
-}
-#[derive(Deserialize, Serialize, Clone, Debug)]
-pub struct CacheRivenAttribute {
-    #[serde(rename = "unique_name")]
-    pub unique_name: String,
-    #[serde(rename = "upgrades")]
-    pub upgrades: Vec<CacheRivenUpgrade>,
 }
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CacheRivenUpgrade {
@@ -98,10 +94,12 @@ pub struct CacheRivenWFMAttribute {
     #[serde(rename = "units")]
     pub units: Option<String>,
 
-    #[serde(rename = "negative_only")]
+    #[serde(rename = "negativeOnly")]
+    #[serde(default)]
     pub negative_only: bool,
 
-    #[serde(rename = "positive_only")]
+    #[serde(rename = "positiveOnly")]
+    #[serde(default)]
     pub positive_only: bool,
 
     #[serde(rename = "suffix")]
@@ -118,17 +116,15 @@ pub struct CacheRivenWFMAttribute {
     #[serde(rename = "effect")]
     pub effect: String,
 
-    #[serde(rename = "exclusive_to")]
+    #[serde(rename = "exclusiveTo")]
     pub exclusive_to: Option<Vec<String>>,
 
     #[serde(rename = "group")]
     pub group: String,
 
-    #[serde(rename = "positive_is_negative")]
+    #[serde(rename = "positiveIsNegative")]
+    #[serde(default)]
     pub positive_is_negative: bool,
-
-    #[serde(rename = "search_only")]
-    pub search_only: bool,
 
     #[serde(rename = "id")]
     pub id: String,
