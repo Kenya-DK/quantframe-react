@@ -245,7 +245,7 @@ export const en = {
                   "Will delete other trade types if true example: if buy is enabled will delete sell/wishlist items if they are not blacklisted",
               },
               blacklist: {
-                description: "The blacklist is a list of items there will be ignored by the bot. (Buy/Sell)",
+                description: "The blacklist is a list of items that will be ignored by the bot. (Buy/Sell)",
                 left_title: "Available Items",
                 right_title: "Blacklisted Items",
               },
