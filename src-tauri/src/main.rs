@@ -140,10 +140,7 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     app.manage(wfm_client.clone());
 
     // create and manage Cache state
-    let cache_arc = Arc::new(Mutex::new(CacheClient::new(
-        Arc::clone(&qf_client),
-        Arc::clone(&settings_arc),
-    )));
+    let cache_arc = Arc::new(Mutex::new(CacheClient::new()));
     app.manage(cache_arc.clone());
 
     // create and manage HTTP client state

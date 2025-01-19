@@ -10,7 +10,7 @@ use eyre::eyre;
 
 use crate::{
     cache::{client::CacheClient, types::item_price_info::ItemPriceInfo},
-    utils::modules::{error::AppError, logger},
+    utils::modules::{error::AppError, logger, states},
 };
 
 #[derive(Clone, Debug)]
@@ -77,7 +77,7 @@ impl ItemPriceModule {
         }
     }
     pub async fn download_cache_data(&mut self) -> Result<(), AppError> {
-        let qf = self.client.qf.lock()?.clone();
+        let qf = states::qf_client()?;
         let price_data = qf.price().get_json_file().await?;
         match self.client.write_text_to_file(&self.path, price_data) {
             Ok(_) => {
@@ -88,7 +88,7 @@ impl ItemPriceModule {
         Ok(())
     }
     pub async fn load(&mut self) -> Result<(), AppError> {
-        let qf = self.client.qf.lock()?.clone();
+        let qf = states::qf_client()?;
         let current_cache_id = self.get_cache_id()?;
         logger::info_con(
             &self.component,
