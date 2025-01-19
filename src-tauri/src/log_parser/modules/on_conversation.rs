@@ -1,10 +1,9 @@
-
 use eyre::eyre;
 
 use crate::{
     helper,
     log_parser::client::LogParser,
-    utils::modules::{error::AppError, logger},
+    utils::modules::{error::AppError, logger, states},
 };
 
 #[derive(Clone, Debug)]
@@ -27,8 +26,8 @@ impl OnConversationEvent {
     }
     pub fn process_line(&self, line: &str, _pos: u64) -> Result<bool, AppError> {
         let component = self.get_component("ProcessLine");
-        let settings = self.client.settings.lock().unwrap();
-        let notify = self.client.notify.lock().unwrap();
+        let settings = states::settings()?;
+        let notify = states::notify_client()?;
 
         if !line.contains("ChatRedux::AddTab: Adding tab with channel name") {
             return Ok(false);

@@ -173,14 +173,7 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     let debug_client = DebugClient::new(Arc::clone(&cache_arc), Arc::clone(&notify_arc));
     app.manage(Arc::new(Mutex::new(debug_client)));
 
-    let log_parser = LogParser::new(
-        Arc::clone(&app_arc),
-        Arc::clone(&settings_arc),
-        Arc::clone(&wfm_client),
-        Arc::clone(&cache_arc),
-        Arc::clone(&notify_arc),
-        Arc::clone(&qf_client),
-    );
+    let log_parser = LogParser::new();
     app.manage(Arc::new(Mutex::new(log_parser)));
     Ok(())
 }
