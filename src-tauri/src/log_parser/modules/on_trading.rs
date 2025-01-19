@@ -1,15 +1,12 @@
-use std::{collections::HashMap, f32::consts::E};
+use std::collections::HashMap;
 
-use entity::{
-    enums::stock_type::StockType, sub_type::SubType, transaction::transaction::TransactionType,
-};
+use entity::{enums::stock_type::StockType, sub_type::SubType};
 use eyre::eyre;
 
 use serde_json::{json, Value};
-use service::{StockRivenQuery, TransactionMutation, WishListMutation, WishListQuery};
+use service::StockRivenQuery;
 
 use crate::{
-    app::{self, client::AppState},
     cache::{client::CacheClient, types::cache_item_component::CacheItemComponent},
     helper,
     log_parser::{
@@ -27,10 +24,11 @@ use crate::{
         enums::{log_level::LogLevel, ui_events::UIEvent},
         modules::{
             error::{self, AppError},
-            logger,
+            logger, states,
         },
     },
-    wfm_client::{client::WFMClient, enums::order_type::OrderType, modules::order},
+    wfm_client::{client::WFMClient, enums::order_type::OrderType},
+    DATABASE,
 };
 
 #[derive(Clone, Debug)]
@@ -157,7 +155,7 @@ impl OnTradeEvent {
     }
     pub fn trade_finished(&mut self) {
         let detection = self.trade_detections.get("en").unwrap();
-        let cache = self.client.cache.lock().unwrap();
+        let cache = states::cache().expect("Failed to get cache");
         self.current_trade.file_logs = self
             .client
             .get_logs_between(self.start_pos, self.end_pos)
@@ -363,15 +361,15 @@ impl OnTradeEvent {
     pub fn trade_accepted(&self) -> Result<(), AppError> {
         let file_path = "tradings.json";
         let gui_id = "on_trade_event";
-        let settings = self.client.settings.lock().unwrap().clone();
+        let conn = DATABASE.get().unwrap();
+        let settings = states::settings()?;
         let notify_user = settings.notifications.on_new_trade;
         let auto_trade = settings.live_scraper.stock_item.auto_trade;
-        let notify = self.client.notify.lock().unwrap().clone();
+        let notify = states::notify_client()?;
         let trade = self.current_trade.clone();
-        let cache = self.client.cache.lock()?.clone();
-        let wfm = self.client.wfm.lock()?.clone();
-        let app = self.client.app.lock()?.clone();
-        let qf = self.client.qf.lock()?.clone();
+        let cache = states::cache()?;
+        let wfm = states::wfm_client()?;
+        let qf = states::qf_client()?;
 
         // If the trade is not a sale or purchase, return
         if trade.trade_type == TradeClassification::Trade {
@@ -450,7 +448,7 @@ impl OnTradeEvent {
 
                 // Check if the stock is a wish list item
                 if created_stock.entity_type == StockType::Item {
-                    match created_stock.is_wish_list_item(&app.conn).await {
+                    match created_stock.is_wish_list_item(conn).await {
                         Ok(is) => {
                             if is {
                                 created_stock.entity_type = StockType::WishList;
@@ -464,7 +462,6 @@ impl OnTradeEvent {
                     match process_stock_riven(
                         &client,
                         &cache,
-                        &app,
                         &notify,
                         &wfm,
                         &qf,
@@ -493,7 +490,6 @@ impl OnTradeEvent {
                     match process_stock_item(
                         &client,
                         &cache,
-                        &app,
                         &notify,
                         &wfm,
                         &qf,
@@ -533,7 +529,6 @@ impl OnTradeEvent {
                     match process_wish_list(
                         &client,
                         &cache,
-                        &app,
                         &notify,
                         &wfm,
                         &qf,
@@ -1168,13 +1163,13 @@ pub fn parse_item(cache: &CacheClient, item: &mut TradeItem) -> Result<bool, App
 async fn process_stock_riven(
     client: &OnTradeEvent,
     cache: &CacheClient,
-    app: &AppState,
     notify: &NotifyClient,
     wfm: &WFMClient,
     qf: &QFClient,
     created_stock: &CreateStockEntity,
     trade: &PlayerTrade,
 ) -> Result<Vec<String>, AppError> {
+    let conn = DATABASE.get().unwrap();
     let mut operations: Vec<String> = vec![];
     if trade.trade_type == TradeClassification::Purchase {
         // Skip the purchase
@@ -1187,7 +1182,7 @@ async fn process_stock_riven(
     }
     // Find Stock
     let stock = match StockRivenQuery::get_by_riven_name(
-        &app.conn,
+        conn,
         &created_stock.wfm_url,
         &created_stock.mod_name,
         created_stock.sub_type.clone().unwrap(),
@@ -1215,7 +1210,6 @@ async fn process_stock_riven(
         &trade.player_name,
         OrderType::Sell,
         "auto",
-        app,
         cache,
         notify,
         wfm,
@@ -1236,7 +1230,6 @@ async fn process_stock_riven(
 async fn process_stock_item(
     client: &OnTradeEvent,
     cache: &CacheClient,
-    app: &AppState,
     notify: &NotifyClient,
     wfm: &WFMClient,
     qf: &QFClient,
@@ -1256,7 +1249,6 @@ async fn process_stock_item(
             "WFMContinueOnError".to_string(),
         ],
         "auto",
-        &app,
         &cache,
         &notify,
         &wfm,
@@ -1276,7 +1268,6 @@ async fn process_stock_item(
 async fn process_wish_list(
     client: &OnTradeEvent,
     cache: &CacheClient,
-    app: &AppState,
     notify: &NotifyClient,
     wfm: &WFMClient,
     qf: &QFClient,
@@ -1296,7 +1287,6 @@ async fn process_wish_list(
             "WFMContinueOnError".to_string(),
         ],
         "auto",
-        &app,
         &cache,
         &notify,
         &wfm,

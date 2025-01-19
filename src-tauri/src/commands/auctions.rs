@@ -15,6 +15,7 @@ use crate::{
         },
     },
     wfm_client::{client::WFMClient, enums::order_type::OrderType, types::auction::Auction},
+    DATABASE,
 };
 use std::sync::{Arc, Mutex};
 
@@ -46,11 +47,10 @@ pub async fn auction_refresh(
 #[tauri::command]
 pub async fn auction_delete(
     id: String,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
 ) -> Result<(), AppError> {
-    let app = app.lock()?.clone();
+    let conn = DATABASE.get().unwrap();
     let wfm = wfm.lock()?.clone();
     let notify = notify.lock()?.clone();
     // Get the my auctions from the WFM
@@ -92,7 +92,7 @@ pub async fn auction_delete(
     }
 
     //Update the StockRiven
-    match StockRivenMutation::clear_order_id(&app.conn, &id).await {
+    match StockRivenMutation::clear_order_id(conn, &id).await {
         Ok(res) => {
             if res.is_some() {
                 notify.gui().send_event_update(
@@ -112,11 +112,10 @@ pub async fn auction_delete(
 }
 #[tauri::command]
 pub async fn auction_delete_all(
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
 ) -> Result<i64, AppError> {
-    let app = app.lock()?.clone();
+    let conn = DATABASE.get().unwrap();
     let wfm = wfm.lock()?.clone();
     let notify = notify.lock()?.clone();
 
@@ -146,7 +145,7 @@ pub async fn auction_delete_all(
     );
 
     // Clear all WfmOrderId in StockRiven
-    match StockRivenQuery::clear_all_order_id(&app.conn).await {
+    match StockRivenQuery::clear_all_order_id(conn).await {
         Ok(stock) => {
             notify.gui().send_event_update(
                 UIEvent::UpdateStockRivens,
@@ -167,13 +166,11 @@ pub async fn auction_delete_all(
 pub async fn auction_import(
     auction: Auction<String>,
     bought: i64,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
     qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<entity::stock::riven::stock_riven::Model, AppError> {
-    let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
     let cache = cache.lock()?.clone();
     let qf = qf.lock()?.clone();
@@ -193,7 +190,6 @@ pub async fn auction_import(
         "",
         OrderType::Buy,
         "manual_auction_import",
-        &app,
         &cache,
         &notify,
         &wfm,

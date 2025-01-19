@@ -9,11 +9,13 @@ use crate::live_scraper::types::order_extra_info::OrderDetails;
 use crate::utils::enums::log_level::LogLevel;
 use crate::utils::enums::ui_events::{UIEvent, UIOperationEvent};
 use crate::utils::modules::error::{self, AppError};
-use crate::utils::modules::logger;
+use crate::utils::modules::states::wfm_client;
+use crate::utils::modules::{logger, states};
 use crate::wfm_client::enums::order_type::OrderType;
 use crate::wfm_client::types::item;
 use crate::wfm_client::types::order::Order;
 use crate::wfm_client::types::orders::Orders;
+use crate::DATABASE;
 use entity::enums::stock_status::StockStatus;
 use entity::price_history::{PriceHistory, PriceHistoryVec};
 
@@ -50,19 +52,19 @@ impl ItemModule {
             .send_gui_update(format!("item.{}", i18n_key).as_str(), values);
     }
     pub fn send_stock_update(&self, operation: UIOperationEvent, value: serde_json::Value) {
-        let notify = self.client.notify.lock().unwrap().clone();
+        let notify = states::notify_client().expect("Failed to get notify client");
         notify
             .gui()
             .send_event_update(UIEvent::UpdateStockItems, operation, Some(value));
     }
     pub fn send_wish_list_update(&self, operation: UIOperationEvent, value: serde_json::Value) {
-        let notify = self.client.notify.lock().unwrap().clone();
+        let notify = states::notify_client().expect("Failed to get notify client");
         notify
             .gui()
             .send_event_update(UIEvent::UpdateWishList, operation, Some(value));
     }
     pub fn send_order_update(&self, operation: UIOperationEvent, value: serde_json::Value) {
-        let notify = self.client.notify.lock().unwrap().clone();
+        let notify = states::notify_client().expect("Failed to get notify client");
         notify
             .gui()
             .send_event_update(UIEvent::UpdateOrders, operation, Some(value));
@@ -76,12 +78,12 @@ impl ItemModule {
     pub async fn check_stock(&mut self) -> Result<(), AppError> {
         logger::info_con(&self.component, "Running Item Stock Check");
 
+        let conn = DATABASE.get().unwrap();
         // Load Managers.
-        let app = self.client.app.lock()?.clone();
-        let wfm = self.client.wfm.lock()?.clone();
-        let auth = self.client.auth.lock()?.clone();
-        let cache = self.client.cache.lock()?.clone();
-        let settings = self.client.settings.lock()?.clone().live_scraper;
+        let wfm = states::wfm_client()?;
+        let auth = states::auth()?;
+        let cache = states::cache()?;
+        let settings = states::settings()?.live_scraper;
 
         // Send GUI Update.
         self.send_msg("stating", None);
@@ -104,7 +106,7 @@ impl ItemModule {
 
         // Get interesting items to sell from the stock items if the order mode is sell or both.
         if trade_mode == TradeMode::Sell || trade_mode == TradeMode::All {
-            let sell_list = StockItemQuery::get_all_stock_items(&app.conn, 0)
+            let sell_list = StockItemQuery::get_all_stock_items(conn, 0)
                 .await
                 .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
             for item in sell_list {
@@ -135,7 +137,7 @@ impl ItemModule {
 
         // Get Wishlist items to buy from the wishlist if the order mode is buy or both.
         if trade_mode == TradeMode::WishList || trade_mode == TradeMode::All {
-            let wish_list = WishListQuery::get_all(&app.conn)
+            let wish_list = WishListQuery::get_all(conn)
                 .await
                 .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
             for item in wish_list {
@@ -369,14 +371,14 @@ impl ItemModule {
     }
 
     pub async fn delete_all_orders(&mut self, mode: TradeMode) -> Result<(), AppError> {
-        let wfm = self.client.wfm.lock()?.clone();
-        let app = self.client.app.lock()?.clone();
-        let _notify = self.client.notify.lock()?.clone();
-        let settings = self.client.settings.lock()?.clone().live_scraper;
+        let conn = DATABASE.get().unwrap();
+        let wfm = states::wfm_client()?;
+        let _notify = states::notify_client()?;
+        let settings = states::settings()?.live_scraper;
         let blacklist = settings.stock_item.blacklist.clone();
         let mut current_orders = wfm.orders().get_my_orders().await?;
 
-        match StockItemMutation::update_all(&app.conn, StockStatus::Pending, None).await {
+        match StockItemMutation::update_all(conn, StockStatus::Pending, None).await {
             Ok(orders) => {
                 self.send_stock_update(UIOperationEvent::Set, json!(orders));
             }
@@ -433,8 +435,8 @@ impl ItemModule {
     }
 
     pub async fn get_interesting_items(&self) -> Result<Vec<ItemEntry>, AppError> {
-        let settings = self.client.settings.lock()?.clone().live_scraper;
-        let cache = self.client.cache.lock()?.clone();
+        let settings = states::settings()?.live_scraper;
+        let cache = states::cache()?;
         let volume_threshold = settings.stock_item.volume_threshold;
         let range_threshold = settings.stock_item.range_threshold;
         let avg_price_cap = settings.stock_item.avg_price_cap;
@@ -589,10 +591,10 @@ impl ItemModule {
         live_orders: Orders,
     ) -> Result<Option<Vec<Order>>, AppError> {
         // Load Managers.
-        let settings = self.client.settings.lock()?.clone().live_scraper;
-        let wfm = self.client.wfm.lock()?.clone();
+        let conn = DATABASE.get().unwrap();
+        let settings = states::settings()?.live_scraper;
+        let wfm = states::wfm_client()?;
         let blacklist = settings.stock_item.blacklist.clone();
-        let app = self.client.app.lock()?.clone();
 
         // Check if the item is in the blacklist and skip if it is
         if blacklist.contains(&item_info.wfm_url_name) {
@@ -601,7 +603,7 @@ impl ItemModule {
 
         // Get the stock item from the stock item if it exists.
         let wish_list_item = match entry.wish_list_id {
-            Some(stock_id) => match WishListQuery::get_by_id(&app.conn, stock_id).await {
+            Some(stock_id) => match WishListQuery::get_by_id(conn, stock_id).await {
                 Ok(stock_item) => stock_item,
                 Err(e) => {
                     error::create_log_file(
@@ -777,7 +779,7 @@ impl ItemModule {
             PriceHistoryVec(info.price_history.clone().into_iter().collect());
 
         if info.is_dirty || wish_list_item.is_dirty {
-            WishListMutation::update_by_id(&app.conn, wish_list_item.id, wish_list_item.clone())
+            WishListMutation::update_by_id(conn, wish_list_item.id, wish_list_item.clone())
                 .await
                 .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
             let mut payload = json!(wish_list_item);
@@ -804,8 +806,8 @@ impl ItemModule {
         live_orders: Orders,
     ) -> Result<Option<Vec<Order>>, AppError> {
         // Load Managers.
-        let settings = self.client.settings.lock()?.clone().live_scraper;
-        let wfm = self.client.wfm.lock()?.clone();
+        let settings = states::settings()?.live_scraper;
+        let wfm = states::wfm_client()?;
         let blacklist = settings.stock_item.blacklist.clone();
 
         // Check if the item is in the blacklist and skip if it is
@@ -1149,9 +1151,9 @@ impl ItemModule {
         live_orders: Orders,
     ) -> Result<(), AppError> {
         // Load Managers.
-        let settings = self.client.settings.lock()?.clone().live_scraper;
-        let wfm = self.client.wfm.lock()?.clone();
-        let app = self.client.app.lock()?.clone();
+        let conn = DATABASE.get().unwrap();
+        let settings = states::settings()?.live_scraper;
+        let wfm = states::wfm_client()?;
         let blacklist = settings.stock_item.blacklist.clone();
 
         // Check if the item is in the blacklist and skip if it is
@@ -1166,7 +1168,7 @@ impl ItemModule {
 
         // Get the stock item from the stock item if it exists.
         let stock_item = match entry.stock_id {
-            Some(stock_id) => match StockItemQuery::get_by_id(&app.conn, stock_id).await {
+            Some(stock_id) => match StockItemQuery::get_by_id(conn, stock_id).await {
                 Ok(stock_item) => stock_item,
                 Err(e) => {
                     error::create_log_file(
@@ -1212,7 +1214,7 @@ impl ItemModule {
             // Send GUI Update.
             self.send_msg("is_hidden", Some(json!({ "name": item_info.name.clone()})));
             if stock_item.is_dirty {
-                StockItemMutation::update_by_id(&app.conn, stock_item.id, stock_item.clone())
+                StockItemMutation::update_by_id(conn, stock_item.id, stock_item.clone())
                     .await
                     .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
                 self.send_stock_update(UIOperationEvent::CreateOrUpdate, json!(stock_item));
@@ -1413,7 +1415,7 @@ impl ItemModule {
             PriceHistoryVec(info.price_history.clone().into_iter().collect());
 
         if info.is_dirty || stock_item.is_dirty {
-            StockItemMutation::update_by_id(&app.conn, stock_item.id, stock_item.clone())
+            StockItemMutation::update_by_id(conn, stock_item.id, stock_item.clone())
                 .await
                 .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
             let mut payload = json!(stock_item);

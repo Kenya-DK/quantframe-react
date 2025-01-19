@@ -6,6 +6,7 @@ use crate::{
         enums::ui_events::{UIEvent, UIOperationEvent},
         modules::error::{self, AppError},
     },
+    DATABASE,
 };
 use entity::transaction::transaction;
 use eyre::eyre;
@@ -16,14 +17,13 @@ use std::sync::{Arc, Mutex};
 #[tauri::command]
 pub async fn transaction_reload(
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
     qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<(), AppError> {
-    let app = app.lock()?.clone();
+    let conn = DATABASE.get().unwrap();
     let notify = notify.lock()?.clone();
     let qf = qf.lock()?.clone();
 
-    match TransactionQuery::get_all(&app.conn).await {
+    match TransactionQuery::get_all(conn).await {
         Ok(transactions) => {
             qf.analytics().add_metric("Transaction_Reload", "manual");
             notify.gui().send_event_update(
@@ -41,11 +41,9 @@ pub async fn transaction_reload(
     Ok(())
 }
 #[tauri::command]
-pub async fn transaction_get_all(
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
-) -> Result<Vec<transaction::Model>, AppError> {
-    let app = app.lock()?.clone();
-    match TransactionQuery::get_all(&app.conn).await {
+pub async fn transaction_get_all() -> Result<Vec<transaction::Model>, AppError> {
+    let conn = DATABASE.get().unwrap();
+    match TransactionQuery::get_all(conn).await {
         Ok(transactions) => {
             return Ok(transactions);
         }
@@ -62,16 +60,15 @@ pub async fn transaction_update(
     id: i64,
     price: Option<i64>,
     quantity: Option<i64>,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<transaction::Model, AppError> {
-    let app = app.lock()?.clone();
+    let conn = DATABASE.get().unwrap();
     let notify = notify.lock()?.clone();
     let qf = qf.lock()?.clone();
 
     // Find the transaction by id
-    let transaction = match TransactionQuery::find_by_id(&app.conn, id).await {
+    let transaction = match TransactionQuery::find_by_id(conn, id).await {
         Ok(transaction) => transaction,
         Err(e) => {
             let error: AppError = AppError::new_db("TransactionQuery::get_by_id", e);
@@ -97,7 +94,7 @@ pub async fn transaction_update(
         new_item.quantity = quantity;
     }
 
-    match TransactionMutation::update_by_id(&app.conn, id, new_item.clone()).await {
+    match TransactionMutation::update_by_id(conn, id, new_item.clone()).await {
         Ok(updated) => {
             qf.analytics().add_metric("Transaction_Update", "manual");
             notify.gui().send_event_update(
@@ -125,14 +122,13 @@ pub async fn transaction_update(
 #[tauri::command]
 pub async fn transaction_delete(
     id: i64,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<(), AppError> {
-    let app = app.lock()?.clone();
+    let conn = DATABASE.get().unwrap();
     let notify = notify.lock()?.clone();
     let qf: QFClient = qf.lock()?.clone();
-    match TransactionMutation::delete_by_id(&app.conn, id).await {
+    match TransactionMutation::delete_by_id(conn, id).await {
         Ok(deleted) => {
             if deleted.rows_affected > 0 {
                 qf.analytics().add_metric("Transaction_Delete", "manual");

@@ -16,6 +16,7 @@ use crate::{
         modules::error::{self, AppError},
     },
     wfm_client::client::WFMClient,
+    DATABASE,
 };
 
 pub fn save_auth_state(auth: tauri::State<'_, Arc<Mutex<AuthState>>>, auth_state: AuthState) {
@@ -35,6 +36,7 @@ pub async fn app_init(
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     log_parser: tauri::State<'_, Arc<Mutex<log_parser::client::LogParser>>>,
 ) -> Result<bool, AppError> {
+    let conn = DATABASE.get().unwrap();
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
     let settings = settings.lock()?.clone();
@@ -81,7 +83,7 @@ pub async fn app_init(
     notify
         .gui()
         .send_event(UIEvent::OnInitialize, Some(json!("stock_items")));
-    match StockItemQuery::get_all(&app.conn).await {
+    match StockItemQuery::get_all(conn).await {
         Ok(items) => {
             // Send Stock Items to UI
             notify.gui().send_event_update(
@@ -100,7 +102,7 @@ pub async fn app_init(
     notify
         .gui()
         .send_event(UIEvent::OnInitialize, Some(json!("stock_rivens")));
-    match StockRivenQuery::get_all(&app.conn).await {
+    match StockRivenQuery::get_all(conn).await {
         Ok(items) => {
             // Send Stock Rivens to UI
             notify.gui().send_event_update(
@@ -120,7 +122,7 @@ pub async fn app_init(
     notify
         .gui()
         .send_event(UIEvent::OnInitialize, Some(json!("transactions")));
-    match TransactionQuery::get_all(&app.conn).await {
+    match TransactionQuery::get_all(conn).await {
         Ok(transactions) => {
             // Send Transactions to UI
             notify.gui().send_event_update(
@@ -140,7 +142,7 @@ pub async fn app_init(
     notify
         .gui()
         .send_event(UIEvent::OnInitialize, Some(json!("wish_list")));
-    match WishListQuery::get_all(&app.conn).await {
+    match WishListQuery::get_all(conn).await {
         Ok(items) => {
             // Send Transactions to UI
             notify.gui().send_event_update(

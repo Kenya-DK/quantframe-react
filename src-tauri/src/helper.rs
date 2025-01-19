@@ -32,7 +32,7 @@ use crate::{
         modules::error::AppError,
     },
     wfm_client::{client::WFMClient, enums::order_type::OrderType, types::order::Order},
-    APP,
+    APP, DATABASE,
 };
 
 pub static APP_PATH: &str = "dev.kenya.quantframe";
@@ -500,13 +500,13 @@ pub async fn progress_wfm_order(
 }
 
 pub async fn progress_transaction(
-    app: &AppState,
     notify: &NotifyClient,
     qf: &QFClient,
     transaction: &mut entity::transaction::transaction::Model,
     from: &str,
 ) -> Result<entity::transaction::transaction::Model, AppError> {
-    match TransactionMutation::create(&app.conn, &transaction).await {
+    let conn = DATABASE.get().unwrap();
+    match TransactionMutation::create(conn, &transaction).await {
         Ok(inserted) => {
             add_metric("Transaction_Create", from);
             notify.gui().send_event_update(
@@ -538,12 +538,12 @@ pub async fn progress_wish_item(
     operation: OrderType,
     options: Vec<String>,
     from: &str,
-    app: &AppState,
     cache: &CacheClient,
     notify: &NotifyClient,
     wfm: &WFMClient,
     qf: &QFClient,
 ) -> Result<(wish_list::Model, Vec<String>), AppError> {
+    let conn = DATABASE.get().unwrap();
     let mut response = vec![];
 
     if operation == OrderType::Sell {
@@ -570,7 +570,7 @@ pub async fn progress_wish_item(
     // Progress the stock item based on the operation
 
     match WishListMutation::bought_by_url_and_sub_type(
-        &app.conn,
+        conn,
         wish_item.wfm_url.as_str(),
         wish_item.sub_type.clone(),
         wish_item.quantity,
@@ -648,7 +648,7 @@ pub async fn progress_wish_item(
         TransactionType::Purchase,
     );
 
-    match progress_transaction(app, notify, qf, &mut transaction, from).await {
+    match progress_transaction(notify, qf, &mut transaction, from).await {
         Ok(_) => {}
         Err(e) => {
             response.push("TransactionDbError".to_string());
@@ -665,12 +665,12 @@ pub async fn progress_stock_item(
     operation: OrderType,
     options: Vec<String>,
     from: &str,
-    app: &AppState,
     cache: &CacheClient,
     notify: &NotifyClient,
     wfm: &WFMClient,
     qf: &QFClient,
 ) -> Result<(stock_item::Model, Vec<String>), AppError> {
+    let conn = DATABASE.get().unwrap();
     let mut response = vec![];
     // Validate the stock item
     match cache
@@ -689,7 +689,7 @@ pub async fn progress_stock_item(
     // Progress the stock item based on the operation
     if operation == OrderType::Sell {
         match StockItemMutation::sold_by_url_and_sub_type(
-            &app.conn,
+            conn,
             &entity.wfm_url,
             entity.sub_type.clone(),
             entity.quantity,
@@ -729,7 +729,7 @@ pub async fn progress_stock_item(
             }
         }
     } else if operation == OrderType::Buy {
-        match StockItemMutation::add_item(&app.conn, stock.clone()).await {
+        match StockItemMutation::add_item(conn, stock.clone()).await {
             Ok(inserted) => {
                 let rep = "StockItem_Created".to_string();
                 response.push(rep.clone());
@@ -794,7 +794,7 @@ pub async fn progress_stock_item(
         transaction_type,
     );
 
-    match progress_transaction(app, notify, qf, &mut transaction, from).await {
+    match progress_transaction(notify, qf, &mut transaction, from).await {
         Ok(_) => {}
         Err(e) => {
             response.push("Transaction_DbError".to_string());
@@ -810,12 +810,12 @@ pub async fn progress_stock_riven(
     user_name: &str,
     operation: OrderType,
     from: &str,
-    app: &AppState,
     cache: &CacheClient,
     notify: &NotifyClient,
     wfm: &WFMClient,
     qf: &QFClient,
 ) -> Result<(stock_riven::Model, Vec<String>), AppError> {
+    let conn = DATABASE.get().unwrap();
     let mut response = vec![];
     // Validate the stock item
     match cache.riven().validate_create_riven(entity, validate_by) {
@@ -831,7 +831,7 @@ pub async fn progress_stock_riven(
     // Progress the stock riven based on the operation
     if operation == OrderType::Sell && entity.stock_id.is_some() {
         // Delete the stock from the database
-        match StockRivenMutation::delete(&app.conn, entity.stock_id.unwrap()).await {
+        match StockRivenMutation::delete(conn, entity.stock_id.unwrap()).await {
             Ok(_) => {
                 response.push("StockRiven_Deleted".to_string());
                 add_metric("StockRiven_Deleted", from);
@@ -844,7 +844,7 @@ pub async fn progress_stock_riven(
             Err(e) => return Err(AppError::new("StockItemSell", eyre!(e))),
         }
     } else if operation == OrderType::Buy {
-        match StockRivenMutation::create(&app.conn, stock.clone()).await {
+        match StockRivenMutation::create(conn, stock.clone()).await {
             Ok(inserted) => {
                 add_metric("StockRiven_Create", from);
                 response.push("StockRivenAdd".to_string());
@@ -902,7 +902,7 @@ pub async fn progress_stock_riven(
     let mut transaction =
         stock.to_transaction(user_name, entity.bought.unwrap_or(0), transaction_type);
 
-    match TransactionMutation::create(&app.conn, &transaction).await {
+    match TransactionMutation::create(conn, &transaction).await {
         Ok(inserted) => {
             add_metric("Transaction_RivenCreate", from);
             response.push("TransactionCreated".to_string());

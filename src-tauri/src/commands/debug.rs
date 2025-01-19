@@ -13,6 +13,7 @@ use crate::{
     notification::client::NotifyClient,
     qf_client::client::QFClient,
     utils::{enums::ui_events::UIOperationEvent, modules::error::AppError},
+    DATABASE,
 };
 
 #[tauri::command]
@@ -22,6 +23,7 @@ pub async fn debug_import_algo_trader(
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<bool, AppError> {
+    let conn = DATABASE.get().unwrap();
     let debug = debug.lock()?.clone();
     let app = app.lock()?.clone();
     let qf = qf.lock()?.clone();
@@ -40,7 +42,7 @@ pub async fn debug_import_algo_trader(
         .await
         .expect("Database connection failed");
 
-    match debug.import_algo_trader(&old_con, &app.conn).await {
+    match debug.import_algo_trader(&old_con, conn).await {
         Ok(_) => {
             qf.analytics()
                 .add_metric("Debug_ImportAlgoTrader", "manual");
@@ -58,6 +60,7 @@ pub async fn debug_migrate_data_base(
     app: tauri::State<'_, Arc<Mutex<AppState>>>,
     qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<bool, AppError> {
+    let conn = DATABASE.get().unwrap();
     let debug = debug.lock()?.clone();
     let app = app.lock()?.clone();
     let qf = qf.lock()?.clone();
@@ -78,21 +81,21 @@ pub async fn debug_migrate_data_base(
 
     match target.as_str() {
         "all" => {
-            debug.migrate_data_all(&old_con, &app.conn).await?;
+            debug.migrate_data_all(&old_con, conn).await?;
             helper::add_metric("Debug_MigrateDataBase", "all");
         }
         "stock_item" => {
-            debug.migrate_data_stock_item(&old_con, &app.conn).await?;
+            debug.migrate_data_stock_item(&old_con, conn).await?;
             qf.analytics()
                 .add_metric("Debug_MigrateDataBase", "stock_item");
         }
         "stock_riven" => {
-            debug.migrate_data_stock_riven(&old_con, &app.conn).await?;
+            debug.migrate_data_stock_riven(&old_con, conn).await?;
             qf.analytics()
                 .add_metric("Debug_MigrateDataBase", "stock_riven");
         }
         "transaction" => {
-            debug.migrate_data_transactions(&old_con, &app.conn).await?;
+            debug.migrate_data_transactions(&old_con, conn).await?;
             qf.analytics()
                 .add_metric("Debug_MigrateDataBase", "transaction");
         }
@@ -107,19 +110,18 @@ pub async fn debug_migrate_data_base(
 pub async fn debug_db_reset(
     target: String,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
 ) -> Result<bool, AppError> {
+    let conn = DATABASE.get().unwrap();
     let notify = notify.lock()?.clone();
-    let app = app.lock()?.clone();
     match target.as_str() {
         "all" => {
-            StockItemMutation::delete_all(&app.conn)
+            StockItemMutation::delete_all(conn)
                 .await
                 .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
-            StockRivenMutation::delete_all(&app.conn)
+            StockRivenMutation::delete_all(conn)
                 .await
                 .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
-            TransactionMutation::delete_all(&app.conn)
+            TransactionMutation::delete_all(conn)
                 .await
                 .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
             helper::add_metric("Debug_DbReset", "all");
@@ -140,7 +142,7 @@ pub async fn debug_db_reset(
             );
         }
         "stock_item" => {
-            StockItemMutation::delete_all(&app.conn)
+            StockItemMutation::delete_all(conn)
                 .await
                 .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
             helper::add_metric("Debug_DbReset", "stock_item");
@@ -151,7 +153,7 @@ pub async fn debug_db_reset(
             );
         }
         "stock_riven" => {
-            StockRivenMutation::delete_all(&app.conn)
+            StockRivenMutation::delete_all(conn)
                 .await
                 .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
             helper::add_metric("Debug_DbReset", "stock_riven");
@@ -162,7 +164,7 @@ pub async fn debug_db_reset(
             );
         }
         "transaction" => {
-            TransactionMutation::delete_all(&app.conn)
+            TransactionMutation::delete_all(conn)
                 .await
                 .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
             helper::add_metric("Debug_DbReset", "transaction");

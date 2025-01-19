@@ -6,8 +6,9 @@ use entity::{enums::stock_status::StockStatus, price_history::PriceHistory};
 use serde_json::json;
 use service::{StockRivenMutation, StockRivenQuery};
 
-use crate::helper;
+use crate::utils::modules::states;
 use crate::wfm_client::types::auction::Auction;
+use crate::{helper, DATABASE};
 use crate::{
     live_scraper::{client::LiveScraperClient, types::riven_extra_info::AuctionDetails},
     logger,
@@ -44,22 +45,22 @@ impl RivenModule {
             .send_gui_update(format!("riven.{}", i18n_key).as_str(), values);
     }
     pub fn send_stock_update(&self, operation: UIOperationEvent, value: serde_json::Value) {
-        let notify = self.client.notify.lock().unwrap().clone();
+        let notify = states::notify_client().unwrap();
         notify
             .gui()
             .send_event_update(UIEvent::UpdateStockRivens, operation, Some(value));
     }
     pub fn send_auction_update(&self, operation: UIOperationEvent, value: serde_json::Value) {
-        let notify = self.client.notify.lock().unwrap().clone();
+        let notify = states::notify_client().unwrap();
         notify
             .gui()
             .send_event_update(UIEvent::UpdateAuction, operation, Some(value));
     }
     pub async fn check_stock(&mut self) -> Result<(), AppError> {
-        let app = self.client.app.lock()?.clone();
-        let wfm = self.client.wfm.lock()?.clone();
-        let auth = self.client.auth.lock()?.clone();
-        let settings = self.client.settings.lock()?.clone().live_scraper;
+        let conn = DATABASE.get().unwrap();
+        let wfm = states::wfm_client()?;
+        let auth = states::auth()?;
+        let settings = states::settings()?.live_scraper;
         let min_profit = settings.stock_riven.min_profit;
         let threshold_percentage = settings.stock_riven.threshold_percentage / 100.0;
         let limit_to = settings.stock_riven.limit_to;
@@ -68,7 +69,7 @@ impl RivenModule {
         // Send GUI Update.
         self.send_msg("stating", None);
 
-        let stocks = StockRivenQuery::get_all(&app.conn)
+        let stocks = StockRivenQuery::get_all(conn)
             .await
             .map_err(|e| AppError::new("RivenModule", eyre::eyre!(e)))?;
 
@@ -120,13 +121,9 @@ impl RivenModule {
                 }
                 self.send_msg("riven_hidden", Some(json!({ "weapon_name": stock_riven.weapon_name.clone(), "mod_name": stock_riven.mod_name.clone()})));
                 if stock_riven.is_dirty {
-                    StockRivenMutation::update_by_id(
-                        &app.conn,
-                        stock_riven.id,
-                        stock_riven.clone(),
-                    )
-                    .await
-                    .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
+                    StockRivenMutation::update_by_id(conn, stock_riven.id, stock_riven.clone())
+                        .await
+                        .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
                     self.send_stock_update(UIOperationEvent::CreateOrUpdate, json!(stock_riven));
                 }
                 continue;
@@ -332,7 +329,7 @@ impl RivenModule {
                         .into_iter()
                         .collect(),
                 );
-                StockRivenMutation::update_by_id(&app.conn, stock_riven.id, stock_riven.clone())
+                StockRivenMutation::update_by_id(conn, stock_riven.id, stock_riven.clone())
                     .await
                     .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
                 let mut payload = json!(stock_riven);
