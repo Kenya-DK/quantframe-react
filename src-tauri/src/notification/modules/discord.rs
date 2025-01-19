@@ -1,6 +1,9 @@
 use serde_json::json;
 
-use crate::{notification::client::NotifyClient, utils::modules::logger};
+use crate::{
+    notification::client::NotifyClient,
+    utils::modules::{logger, states},
+};
 
 #[derive(Clone, Debug)]
 pub struct DiscordModule {
@@ -38,7 +41,7 @@ impl DiscordModule {
     }
 
     fn get_embed_footer(&self) -> serde_json::Value {
-        let app = self.client.app.lock().unwrap().clone();
+        let app = states::app_state().unwrap();
         let packageinfo = app.get_app_info();
 
         // Create a new Discord notification JSON object

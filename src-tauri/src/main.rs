@@ -120,10 +120,7 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     app.manage(app_arc.clone());
 
     // Create and manage Notification state
-    let notify_arc: Arc<Mutex<NotifyClient>> = Arc::new(Mutex::new(NotifyClient::new(
-        Arc::clone(&app_arc),
-        app.handle().clone(),
-    )));
+    let notify_arc: Arc<Mutex<NotifyClient>> = Arc::new(Mutex::new(NotifyClient::new()));
     app.manage(notify_arc.clone());
 
     // create and manage Settings state

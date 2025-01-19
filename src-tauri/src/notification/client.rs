@@ -1,16 +1,10 @@
-use std::sync::{Arc, Mutex, RwLock};
-
-use tauri::AppHandle;
-
-use crate::app::client::AppState;
+use std::sync::{Arc, RwLock};
 
 use super::modules::{discord::DiscordModule, gui::GUIModule, system::SystemModule};
 
 #[derive(Clone, Debug)]
 pub struct NotifyClient {
-    pub app_handler: AppHandle,
     pub component: String,
-    pub app: Arc<Mutex<AppState>>,
     // Modules will be added here
     pub system_module: Arc<RwLock<Option<SystemModule>>>,
     pub gui_module: Arc<RwLock<Option<GUIModule>>>,
@@ -18,10 +12,8 @@ pub struct NotifyClient {
 }
 
 impl NotifyClient {
-    pub fn new(app: Arc<Mutex<AppState>>, app_handler: AppHandle) -> Self {
+    pub fn new() -> Self {
         NotifyClient {
-            app,
-            app_handler,
             component: "NotifyClient".to_string(),
             system_module: Arc::new(RwLock::new(None)),
             gui_module: Arc::new(RwLock::new(None)),
@@ -32,7 +24,7 @@ impl NotifyClient {
     pub fn system(&self) -> SystemModule {
         // Lazily initialize SystemModule if not already initialized
         if self.system_module.read().unwrap().is_none() {
-            *self.system_module.write().unwrap() = Some(SystemModule::new(self.clone()).clone());
+            *self.system_module.write().unwrap() = Some(SystemModule::new().clone());
         }
 
         // Unwrapping is safe here because we ensured the item_module is initialized

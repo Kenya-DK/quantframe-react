@@ -7,6 +7,7 @@ use crate::{
         enums::ui_events::{UIEvent, UIOperationEvent},
         modules::logger,
     },
+    APP,
 };
 
 #[derive(Clone, Debug)]
@@ -27,7 +28,12 @@ impl GUIModule {
     }
 
     pub fn send_event(&self, event: UIEvent, data: Option<Value>) {
-        let window = self.client.app_handler.get_window("main").unwrap().clone();
+        let window = APP
+            .get()
+            .expect("App not initialized")
+            .get_window("main")
+            .unwrap()
+            .clone();
         match window.emit("message", json!({ "event": event.as_str(), "data":  data })) {
             Ok(_) => {
                 logger::info_con(
@@ -49,7 +55,12 @@ impl GUIModule {
         operation: UIOperationEvent,
         data: Option<Value>,
     ) {
-        let window = self.client.app_handler.get_window("main").unwrap().clone();
+        let window = APP
+            .get()
+            .expect("App not initialized")
+            .get_window("main")
+            .unwrap()
+            .clone();
         match window.emit(
             "message_update",
             json!({ "event": event.as_str(), "operation":operation.as_str(), "data":  data }),
