@@ -18,7 +18,10 @@ use crate::{
             log_level::LogLevel,
             ui_events::{UIEvent, UIOperationEvent},
         },
-        modules::error::{self, ApiResult, AppError},
+        modules::{
+            error::{self, ApiResult, AppError},
+            states,
+        },
     },
     APP,
 };
@@ -44,7 +47,7 @@ impl AlertModule {
         self.client.update_alert_module(self.clone());
     }
     pub fn init(&mut self) -> Result<(), AppError> {
-        let notify = self.client.notify.lock().unwrap().clone();
+        let notify = states::notify_client()?;
         if self.is_init {
             return Ok(());
         }

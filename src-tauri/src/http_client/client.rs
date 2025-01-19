@@ -5,18 +5,16 @@ use actix_web::{web, App, HttpServer};
 
 use crate::{
     settings::SettingsState,
-    utils::modules::{error::AppError, logger},
+    utils::modules::{error::AppError, logger, states},
 };
 
-use super::modules::{
-    stock::{add_item, add_riven},
-};
+use super::modules::stock::{add_item, add_riven};
 #[derive(Clone, Debug)]
 pub struct HttpClient {}
 
 impl HttpClient {
-    pub fn setup(settings: Arc<Mutex<SettingsState>>) -> Result<Self, AppError> {
-        let settings = settings.lock().unwrap();
+    pub fn setup() -> Result<Self, AppError> {
+        let settings = states::settings()?;
         tauri::async_runtime::spawn(
             HttpServer::new(|| {
                 App::new()

@@ -7,7 +7,10 @@ use crate::{
             log_level::LogLevel,
             ui_events::{UIEvent, UIOperationEvent},
         },
-        modules::error::{ApiResult, AppError},
+        modules::{
+            error::{ApiResult, AppError},
+            states,
+        },
     },
     wfm_client::{
         client::WFMClient,
@@ -131,8 +134,8 @@ impl ChatModule {
         };
     }
     pub async fn receive_message(&mut self, msg: ChatMessage) -> Result<(), AppError> {
-        let mut auth = self.client.auth.lock()?;
-        let notify = self.client.notify.lock()?;
+        let mut auth = states::auth()?;
+        let notify = states::notify_client()?;
 
         let mut chat_payload = json!({
             "id": msg.chat_id,
@@ -166,9 +169,9 @@ impl ChatModule {
         id: Option<String>,
         unread: i64,
     ) -> Result<(), AppError> {
-        let mut auth = self.client.auth.lock()?;
+        let mut auth = states::auth()?;
 
-        let notify = self.client.notify.lock()?;
+        let notify = states::notify_client()?;
         self.active_chat = id.clone().unwrap_or("".to_string());
         self.update_state();
         if let Some(id) = id {

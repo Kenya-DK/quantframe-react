@@ -7,7 +7,11 @@ use std::{
 
 use eyre::eyre;
 
-use crate::{helper, logger, settings::SettingsState, utils::modules::error::AppError};
+use crate::{
+    helper, logger,
+    settings::SettingsState,
+    utils::modules::{error::AppError, states},
+};
 
 use super::modules::{
     arcane::ArcaneModule, arch_gun::ArchGunModule, arch_melee::ArchMeleeModule,
@@ -20,8 +24,6 @@ use super::modules::{
 
 #[derive(Clone, Debug)]
 pub struct CacheClient {
-    pub qf: Arc<Mutex<crate::qf_client::client::QFClient>>,
-    pub settings: Arc<Mutex<SettingsState>>,
     item_price_module: Arc<RwLock<Option<ItemPriceModule>>>,
     relics_module: Arc<RwLock<Option<RelicsModule>>>,
     riven_module: Arc<RwLock<Option<RivenModule>>>,
@@ -48,13 +50,8 @@ pub struct CacheClient {
 }
 
 impl CacheClient {
-    pub fn new(
-        qf: Arc<Mutex<crate::qf_client::client::QFClient>>,
-        settings: Arc<Mutex<SettingsState>>,
-    ) -> Self {
+    pub fn new() -> Self {
         CacheClient {
-            qf,
-            settings,
             component: "Cache".to_string(),
             md5_file: "cache_id.txt".to_string(),
             item_price_module: Arc::new(RwLock::new(None)),
@@ -107,7 +104,7 @@ impl CacheClient {
     }
 
     pub async fn download_cache_data(&self) -> Result<(), AppError> {
-        let qf = self.qf.lock()?.clone();
+        let qf = states::qf_client()?;
         let zip_data = qf.cache().get_zip().await?;
 
         let reader = std::io::Cursor::new(zip_data);
@@ -145,7 +142,7 @@ impl CacheClient {
     }
 
     pub async fn load(&self) -> Result<(), AppError> {
-        let qf = self.qf.lock()?.clone();
+        let qf = states::qf_client()?;
         let current_cache_id = self.get_current_cache_id()?;
         logger::info_con(
             &self.component,

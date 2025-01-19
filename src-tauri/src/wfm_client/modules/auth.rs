@@ -7,7 +7,7 @@ use crate::{
         enums::log_level::LogLevel,
         modules::{
             error::{self, ApiResult, AppError},
-            logger,
+            logger, states,
         },
     },
     wfm_client::{client::WFMClient, types::user_profile::UserProfile},
@@ -30,7 +30,7 @@ impl AuthModule {
     }
 
     pub fn is_logged_in(&self) -> Result<(), AppError> {
-        let auth = self.client.auth.lock()?;
+        let auth = states::auth()?;
         if !auth.is_logged_in() {
             return Err(AppError::new_with_level(
                 &self.get_component("IsLoggedIn"),

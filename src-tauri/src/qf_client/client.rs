@@ -21,6 +21,7 @@ use crate::{
         modules::{
             error::{ApiResult, AppError, ErrorApiResponse},
             rate_limiter::RateLimiter,
+            states,
         },
     },
 };
@@ -50,19 +51,10 @@ pub struct QFClient {
     transaction_module: Arc<RwLock<Option<TransactionModule>>>,
     pub component: String,
     pub log_file: String,
-    pub auth: Arc<Mutex<AuthState>>,
-    pub settings: Arc<Mutex<crate::settings::SettingsState>>,
-    pub app: Arc<Mutex<AppState>>,
-    pub notify: Arc<Mutex<NotifyClient>>,
 }
 
 impl QFClient {
-    pub fn new(
-        auth: Arc<Mutex<AuthState>>,
-        settings: Arc<Mutex<crate::settings::SettingsState>>,
-        app: Arc<Mutex<AppState>>,
-        notify: Arc<Mutex<NotifyClient>>,
-    ) -> Self {
+    pub fn new() -> Self {
         QFClient {
             endpoint: "https://api.quantframe.app/".to_string(),
             endpoint_dev: "http://localhost:6969/".to_string(),
@@ -79,10 +71,6 @@ impl QFClient {
             transaction_module: Arc::new(RwLock::new(None)),
             log_file: "qfAPIaCalls.log".to_string(),
             component: "QuantframeApi".to_string(),
-            auth,
-            settings,
-            app,
-            notify,
         }
     }
     pub fn create_api_error(
@@ -100,7 +88,7 @@ impl QFClient {
         );
     }
     pub fn debug(&self, id: &str, component: &str, msg: &str, file: Option<bool>) {
-        let settings = self.settings.lock().unwrap().clone();
+        let settings = states::settings().expect("Settings not initialized");
         if !settings.debug.contains(&"*".to_owned()) && !settings.debug.contains(&id.to_owned()) {
             return;
         }
@@ -122,8 +110,8 @@ impl QFClient {
         );
     }
     fn handle_error(&self, errors: Vec<String>, data: Value) {
-        let mut auth = self.auth.lock().unwrap();
-        let notify = self.notify.lock().unwrap();
+        let mut auth = states::auth().expect("Auth not initialized");
+        let notify = states::notify_client().expect("NotifyClient not initialized");
         if errors.contains(&"Unauthorized".to_string()) {
             auth.reset();
             notify.gui().send_event_update(
@@ -158,8 +146,8 @@ impl QFClient {
         is_bytes: bool,
         is_string: bool,
     ) -> Result<ApiResult<T>, AppError> {
-        let app = self.app.lock()?.clone();
-        let auth = self.auth.lock()?.clone();
+        let app = states::app_state()?;
+        let auth = states::auth()?;
 
         let mut rate_limiter = self.limiter.lock().await;
         rate_limiter.wait_for_token().await;

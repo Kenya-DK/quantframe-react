@@ -2,7 +2,10 @@ use crate::{
     logger,
     utils::{
         enums::log_level::LogLevel,
-        modules::error::{ApiResult, AppError},
+        modules::{
+            error::{ApiResult, AppError},
+            states,
+        },
     },
     wfm_client::{
         client::WFMClient,
@@ -54,7 +57,7 @@ impl OrderModule {
         need_update: bool,
     ) -> Result<(String, Option<Order>), AppError> {
         let wfm = self.client.clone();
-        let settings = self.client.settings.lock()?.clone();
+        let settings = states::settings()?;
 
         // Set quantity to 1 if it's less than 1
         if quantity <= 0 {
@@ -147,7 +150,7 @@ impl OrderModule {
     }
 
     pub async fn get_my_orders(&mut self) -> Result<Orders, AppError> {
-        let auth = self.client.auth.lock()?.clone();
+        let auth = states::auth()?;
         let orders = self.get_user_orders(auth.ingame_name.as_str()).await?;
         Ok(orders)
     }
@@ -182,7 +185,7 @@ impl OrderModule {
         sub_type: Option<SubType>,
     ) -> Result<(String, Option<Order>), AppError> {
         self.client.auth().is_logged_in()?;
-        let auth = self.client.auth.lock()?.clone();
+        let auth = states::auth()?;
         let limit = auth.order_limit;
 
         if limit != -1 && self.total_orders >= limit {

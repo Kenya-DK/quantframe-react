@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    sync::{Arc, Mutex, RwLock},
+    sync::{Arc, RwLock},
     time::Duration,
 };
 
@@ -10,10 +10,7 @@ use serde::de::DeserializeOwned;
 use serde_json::{json, Value};
 
 use crate::{
-    app::client::AppState,
-    auth::AuthState,
     logger,
-    notification::client::NotifyClient,
     utils::{
         enums::{
             log_level::LogLevel,
@@ -22,6 +19,7 @@ use crate::{
         modules::{
             error::{ApiResult, AppError, ErrorApiResponse},
             rate_limiter::RateLimiter,
+            states,
         },
     },
 };
@@ -40,21 +38,11 @@ pub struct WFMClient {
     auction_module: Arc<RwLock<Option<AuctionModule>>>,
     auth_module: Arc<RwLock<Option<AuthModule>>>,
     pub log_file: String,
-    pub auth: Arc<Mutex<AuthState>>,
-    pub settings: Arc<Mutex<crate::settings::SettingsState>>,
-    pub app: Arc<Mutex<AppState>>,
-    pub notify: Arc<Mutex<NotifyClient>>,
 }
 
 impl WFMClient {
-    pub fn new(
-        auth: Arc<Mutex<AuthState>>,
-        settings: Arc<Mutex<crate::settings::SettingsState>>,
-        app: Arc<Mutex<AppState>>,
-        notify: Arc<Mutex<NotifyClient>>,
-    ) -> Self {
+    pub fn new() -> Self {
         WFMClient {
-            app,
             endpoint: "https://api.warframe.market/v1/".to_string(),
             component: "WarframeMarket".to_string(),
             limiter: Arc::new(tokio::sync::Mutex::new(RateLimiter::new(
@@ -62,9 +50,6 @@ impl WFMClient {
                 Duration::new(1, 0),
             ))),
             log_file: "wfmAPICalls.log".to_string(),
-            auth,
-            settings,
-            notify,
             order_module: Arc::new(RwLock::new(None)),
             chat_module: Arc::new(RwLock::new(None)),
             auction_module: Arc::new(RwLock::new(None)),
@@ -73,7 +58,7 @@ impl WFMClient {
     }
 
     pub fn debug(&self, id: &str, component: &str, msg: &str, file: Option<bool>) {
-        let settings = self.settings.lock().unwrap().clone();
+        let settings = states::settings().expect("Could not get settings");
         if !settings.debug.contains(&"*".to_owned()) && !settings.debug.contains(&id.to_owned()) {
             return;
         }
@@ -111,8 +96,8 @@ impl WFMClient {
     }
 
     fn handle_error(&self, errors: Vec<String>) {
-        let mut auth = self.auth.lock().unwrap();
-        let notify = self.notify.lock().unwrap();
+        let mut auth = states::auth().expect("Could not get auth state");
+        let notify = states::notify_client().expect("Could not get notify client");
         if errors.contains(&"app.errors.unauthorized".to_string()) {
             auth.reset();
             notify.gui().send_event_update(
@@ -137,8 +122,8 @@ impl WFMClient {
         payload_key: Option<&str>,
         body: Option<Value>,
     ) -> Result<ApiResult<T>, AppError> {
-        let auth = self.auth.lock()?.clone();
-        let app = self.app.lock()?.clone();
+        let auth = states::auth()?;
+        let app = states::app_state()?;
         let mut rate_limiter = self.limiter.lock().await;
 
         rate_limiter.wait_for_token().await;

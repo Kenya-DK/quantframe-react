@@ -4,7 +4,7 @@ use crate::{
     notification::client::NotifyClient,
     utils::modules::{
         error::{self, AppError},
-        logger,
+        logger, states,
     },
 };
 
@@ -20,14 +20,11 @@ use service::{
 use std::sync::{Arc, Mutex};
 
 #[derive(Clone, Debug)]
-pub struct DebugClient {
-    cache: Arc<Mutex<CacheClient>>,
-    notify: Arc<Mutex<NotifyClient>>,
-}
+pub struct DebugClient {}
 
 impl DebugClient {
-    pub fn new(cache: Arc<Mutex<CacheClient>>, notify: Arc<Mutex<NotifyClient>>) -> Self {
-        DebugClient { cache, notify }
+    pub fn new() -> Self {
+        DebugClient {}
     }
 
     pub async fn migrate_data_transactions(
@@ -35,8 +32,8 @@ impl DebugClient {
         old_con: &DatabaseConnection,
         new_con: &DatabaseConnection,
     ) -> Result<(), AppError> {
-        let cache = self.cache.lock()?.clone();
-        let notify = self.notify.lock()?.clone();
+        let cache = states::cache()?;
+        let notify = states::notify_client()?;
         // Migrate the database transactions
         let old_items = TransactionQuery::get_old_transactions(old_con)
             .await
@@ -153,8 +150,8 @@ impl DebugClient {
         old_con: &DatabaseConnection,
         new_con: &DatabaseConnection,
     ) -> Result<(), AppError> {
-        let cache = self.cache.lock()?.clone();
-        let notify = self.notify.lock()?.clone();
+        let cache = states::cache()?;
+        let notify = states::notify_client()?;
         let old_items = StockItemQuery::get_old_stock_items(old_con)
             .await
             .map_err(|e| AppError::new_db("MigrateDataBase", e))?;
@@ -204,8 +201,8 @@ impl DebugClient {
         old_con: &DatabaseConnection,
         new_con: &DatabaseConnection,
     ) -> Result<(), AppError> {
-        let cache = self.cache.lock()?.clone();
-        let notify = self.notify.lock()?.clone();
+        let cache = states::cache()?;
+        let notify = states::notify_client()?;
         let old_items = StockRivenQuery::get_old_stock_riven(old_con)
             .await
             .map_err(|e| AppError::new_db("MigrateDataBase", e))?;
@@ -269,8 +266,8 @@ impl DebugClient {
         old_con: &DatabaseConnection,
         new_con: &DatabaseConnection,
     ) -> Result<(), AppError> {
-        let cache = self.cache.lock()?.clone();
-        let notify = self.notify.lock()?.clone();
+        let cache = states::cache()?;
+        let notify = states::notify_client()?;
         let old_items = StockItemQuery::get_wat_stock_items(old_con)
             .await
             .map_err(|e| AppError::new_db("MigrateDataBase", e))?;

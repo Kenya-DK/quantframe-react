@@ -120,10 +120,7 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     app.manage(app_arc.clone());
 
     // Create and manage Notification state
-    let notify_arc: Arc<Mutex<NotifyClient>> = Arc::new(Mutex::new(NotifyClient::new(
-        Arc::clone(&app_arc),
-        app.handle().clone(),
-    )));
+    let notify_arc: Arc<Mutex<NotifyClient>> = Arc::new(Mutex::new(NotifyClient::new()));
     app.manage(notify_arc.clone());
 
     // create and manage Settings state
@@ -135,34 +132,19 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     app.manage(auth_arc.clone());
 
     // create and manage Quantframe client state
-    let qf_client = Arc::new(Mutex::new(qf_client::client::QFClient::new(
-        Arc::clone(&auth_arc),
-        Arc::clone(&settings_arc),
-        Arc::clone(&app_arc),
-        Arc::clone(&notify_arc),
-    )));
+    let qf_client = Arc::new(Mutex::new(qf_client::client::QFClient::new()));
     app.manage(qf_client.clone());
 
     // create and manage Warframe Market API client state
-    let wfm_client = Arc::new(Mutex::new(wfm_client::client::WFMClient::new(
-        Arc::clone(&auth_arc),
-        Arc::clone(&settings_arc),
-        Arc::clone(&app_arc),
-        Arc::clone(&notify_arc),
-    )));
+    let wfm_client = Arc::new(Mutex::new(wfm_client::client::WFMClient::new()));
     app.manage(wfm_client.clone());
 
     // create and manage Cache state
-    let cache_arc = Arc::new(Mutex::new(CacheClient::new(
-        Arc::clone(&qf_client),
-        Arc::clone(&settings_arc),
-    )));
+    let cache_arc = Arc::new(Mutex::new(CacheClient::new()));
     app.manage(cache_arc.clone());
 
     // create and manage HTTP client state
-    let http_client_arc = Arc::new(Mutex::new(http_client::client::HttpClient::setup(
-        Arc::clone(&settings_arc),
-    )?));
+    let http_client_arc = Arc::new(Mutex::new(http_client::client::HttpClient::setup()?));
     app.manage(http_client_arc.clone());
 
     // create and manage LiveScraper state
@@ -170,7 +152,7 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     app.manage(Arc::new(Mutex::new(live_scraper)));
 
     // create and manage WhisperScraper state
-    let debug_client = DebugClient::new(Arc::clone(&cache_arc), Arc::clone(&notify_arc));
+    let debug_client = DebugClient::new();
     app.manage(Arc::new(Mutex::new(debug_client)));
 
     let log_parser = LogParser::new();
