@@ -8,7 +8,7 @@ use crate::{
         enums::log_level::LogLevel,
         modules::{
             error::{self, ApiResult, AppError},
-            logger,
+            logger, states,
         },
     },
 };
@@ -30,7 +30,7 @@ impl AuthModule {
         format!("{}:{}:{}", self.client.component, self.component, component)
     }
     pub async fn me(&self) -> Result<User, AppError> {
-        let app = self.client.app.lock()?.clone();
+        let app = states::app_state()?;
 
         match self
             .client
@@ -65,7 +65,7 @@ impl AuthModule {
         password: &str,
         in_game_name: &str,
     ) -> Result<User, AppError> {
-        let app = self.client.app.lock()?.clone();
+        let app = states::app_state()?;
         let body = json!({
             "username": username,
             "password": password,
@@ -141,7 +141,7 @@ impl AuthModule {
         password: &str,
         in_game_name: &str,
     ) -> Result<User, AppError> {
-        let app = self.client.app.lock()?.clone();
+        let app = states::app_state()?;
         let body = json!({
             "username": username,
             "password": password,
@@ -169,7 +169,7 @@ impl AuthModule {
         return Ok(user);
     }
     pub async fn validate(&self) -> Result<Option<User>, AppError> {
-        let mut auth = self.client.auth.lock()?.clone();
+        let mut auth = states::auth()?;
         // Validate Auth
         let user = match self.me().await {
             Ok(user) => Some(user),

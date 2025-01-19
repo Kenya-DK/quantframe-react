@@ -5,7 +5,10 @@ use crate::{
     qf_client::client::QFClient,
     utils::{
         enums::log_level::LogLevel,
-        modules::error::{ApiResult, AppError},
+        modules::{
+            error::{ApiResult, AppError},
+            states,
+        },
     },
 };
 #[derive(Clone, Debug)]
@@ -28,7 +31,7 @@ impl TransactionModule {
         &self,
         transaction: &entity::transaction::transaction::Model,
     ) -> Result<(), AppError> {
-        let settings = self.client.settings.lock()?.clone();
+        let settings = states::settings()?;
         let analytics = settings.analytics;
 
         if !analytics.transaction {
@@ -55,7 +58,7 @@ impl TransactionModule {
         }
     }
     pub async fn delete_transaction(&self, transaction_id: i64) -> Result<(), AppError> {
-        let settings = self.client.settings.lock()?.clone();
+        let settings = states::settings()?;
         let analytics = settings.analytics;
 
         if !analytics.transaction {
@@ -85,7 +88,7 @@ impl TransactionModule {
         &self,
         transaction: &entity::transaction::transaction::Model,
     ) -> Result<(), AppError> {
-        let settings = self.client.settings.lock()?.clone();
+        let settings = states::settings()?;
         let analytics = settings.analytics;
 
         if !analytics.transaction {

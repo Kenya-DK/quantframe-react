@@ -15,7 +15,7 @@ use crate::{
         enums::log_level::LogLevel,
         modules::{
             error::{self, ApiResult, AppError},
-            logger,
+            logger, states,
         },
     },
     APP,
@@ -67,7 +67,7 @@ impl AnalyticsModule {
         self.update_state();
     }
     pub fn add_metric(&mut self, key: &str, value: &str) {
-        let settings = self.client.settings.lock().unwrap().clone();
+        let settings = states::settings().expect("Failed to get settings");
         if !settings.analytics.transaction && key.starts_with("Transaction_") {
             return;
         }
@@ -81,7 +81,7 @@ impl AnalyticsModule {
         self.update_state();
     }
     pub fn init(&mut self) -> Result<(), AppError> {
-        let app = self.client.app.lock().unwrap();
+        let app = states::app_state()?;
         if self.is_init {
             return Ok(());
         }

@@ -132,12 +132,7 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     app.manage(auth_arc.clone());
 
     // create and manage Quantframe client state
-    let qf_client = Arc::new(Mutex::new(qf_client::client::QFClient::new(
-        Arc::clone(&auth_arc),
-        Arc::clone(&settings_arc),
-        Arc::clone(&app_arc),
-        Arc::clone(&notify_arc),
-    )));
+    let qf_client = Arc::new(Mutex::new(qf_client::client::QFClient::new()));
     app.manage(qf_client.clone());
 
     // create and manage Warframe Market API client state
