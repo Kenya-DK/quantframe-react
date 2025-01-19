@@ -152,7 +152,7 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     app.manage(Arc::new(Mutex::new(live_scraper)));
 
     // create and manage WhisperScraper state
-    let debug_client = DebugClient::new(Arc::clone(&cache_arc), Arc::clone(&notify_arc));
+    let debug_client = DebugClient::new();
     app.manage(Arc::new(Mutex::new(debug_client)));
 
     let log_parser = LogParser::new();
