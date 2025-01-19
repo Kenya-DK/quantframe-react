@@ -5,7 +5,10 @@ use crate::{
     logger,
     utils::{
         enums::log_level::LogLevel,
-        modules::error::{ApiResult, AppError},
+        modules::{
+            error::{ApiResult, AppError},
+            states,
+        },
     },
     wfm_client::{
         client::WFMClient,
@@ -103,7 +106,7 @@ impl AuctionModule {
 
     pub async fn get_my_auctions(&mut self) -> Result<AuctionCollection<String>, AppError> {
         self.client.auth().is_logged_in()?;
-        let auth = self.client.auth.lock()?.clone();
+        let auth = states::auth()?;
         let auctions = self.get_user_auctions(auth.ingame_name.as_str()).await?;
         Ok(auctions)
     }
