@@ -144,9 +144,7 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     app.manage(cache_arc.clone());
 
     // create and manage HTTP client state
-    let http_client_arc = Arc::new(Mutex::new(http_client::client::HttpClient::setup(
-        Arc::clone(&settings_arc),
-    )?));
+    let http_client_arc = Arc::new(Mutex::new(http_client::client::HttpClient::setup()?));
     app.manage(http_client_arc.clone());
 
     // create and manage LiveScraper state
