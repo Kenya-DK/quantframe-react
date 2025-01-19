@@ -26,7 +26,7 @@ https://github.com/Kenya-DK/quantframe-react
 
 ### Download installer
 
-You can download the latest release from [here]([https://github.com/Kenya-DK/quantframe-react](https://github.com/Kenya-DK/quantframe-react))
+You can download the latest release from [here](https://github.com/Kenya-DK/quantframe-react/releases)
 
 ### OR Build it from source
 
