@@ -27,5 +27,4 @@ impl Default for UserRole {
             permissions: "".to_string(),
         }
     }
-    
 }

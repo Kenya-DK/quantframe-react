@@ -2,15 +2,10 @@ use std::{collections::HashMap, path::PathBuf};
 
 use eyre::eyre;
 
-
-
 use crate::{
     cache::{
         client::CacheClient,
-        types::{
-            cache_item_component::CacheItemComponent,
-            cache_relics::CacheRelics,
-        },
+        types::{cache_item_component::CacheItemComponent, cache_relics::CacheRelics},
     },
     helper,
     utils::modules::error::AppError,
@@ -117,9 +112,15 @@ impl RelicsModule {
         let remove_string = args.get("--remove_string");
 
         let item = if mode == "name" {
-            items.iter().find(|x| helper::is_match(&x.name,input, case_insensitive, remove_string)).cloned()
+            items
+                .iter()
+                .find(|x| helper::is_match(&x.name, input, case_insensitive, remove_string))
+                .cloned()
         } else if mode == "unique_name" {
-            items.iter().find(|x| helper::is_match(&x.unique_name,input, case_insensitive, remove_string)).cloned()
+            items
+                .iter()
+                .find(|x| helper::is_match(&x.unique_name, input, case_insensitive, remove_string))
+                .cloned()
         } else {
             return Err(AppError::new(
                 &self.get_component("GetBy"),

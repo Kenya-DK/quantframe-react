@@ -85,7 +85,6 @@ impl TransactionMutation {
         .await
     }
 
-    
     pub async fn delete_by_id(db: &DbConn, id: i64) -> Result<DeleteResult, DbErr> {
         let post: transaction::ActiveModel = Transaction::find_by_id(id)
             .one(db)

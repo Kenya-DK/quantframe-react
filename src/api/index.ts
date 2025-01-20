@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api/core";
 import { AppModule } from "./app";
 import { AuctionModule } from "./auction";
 import { AuthModule } from "./auth";

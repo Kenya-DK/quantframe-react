@@ -9,7 +9,7 @@ pub struct OrderItem {
 
     #[serde(rename = "url_name")]
     pub url_name: String,
-    
+
     #[serde(rename = "icon")]
     pub icon: String,
 

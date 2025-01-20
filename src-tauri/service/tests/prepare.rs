@@ -1,6 +1,3 @@
-
-
-
 #[cfg(feature = "mock")]
 pub fn prepare_mock_db() -> DatabaseConnection {
     MockDatabase::new(DatabaseBackend::Postgres)

@@ -1,7 +1,7 @@
 pub mod auction;
+pub mod auction_collection;
 pub mod auction_item;
 pub mod auction_owner;
-pub mod auction_collection;
 pub mod chat_data;
 pub mod chat_message;
 pub mod chat_message_with;

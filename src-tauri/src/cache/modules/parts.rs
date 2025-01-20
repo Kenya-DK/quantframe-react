@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-
-
 use crate::{
     cache::{client::CacheClient, types::cache_item_component::CacheItemComponent},
     utils::modules::error::AppError,
@@ -47,11 +45,14 @@ impl PartModule {
             "Weapon",
             cache
                 .skin()
-                .get_by("/Lotus/Upgrades/Skins/Kubrows/Collars/PrimeKubrowCollarA", "--item_by unique_name")?
+                .get_by(
+                    "/Lotus/Upgrades/Skins/Kubrows/Collars/PrimeKubrowCollarA",
+                    "--item_by unique_name",
+                )?
                 .unwrap()
                 .get_item_components(),
         );
-        
+
         self.update_state();
         Ok(())
     }
@@ -104,7 +105,7 @@ impl PartModule {
                 all_items.extend(self.weapon_parts.values().cloned());
                 all_items.extend(self.skin_parts.values().cloned());
                 all_items
-            },
+            }
             "Warframe" => self.warframe_parts.values().cloned().collect(),
             "Weapon" => self.weapon_parts.values().cloned().collect(),
             "Skin" => self.skin_parts.values().cloned().collect(),

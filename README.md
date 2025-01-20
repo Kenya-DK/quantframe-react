@@ -19,14 +19,14 @@ Inspired by [Akmayer's Warframe-Algo-Trader](https://github.com/akmayer/Warframe
 ![Login Screen](./docs/assets/login.png)
 
 ![Main Screen](./docs/assets/main-screen.png)
-
+https://github.com/Kenya-DK/quantframe-react
 ![Listing an item](./docs/assets/listing.png)
 
 ## Installation
 
 ### Download installer
 
-You can download the latest release from [here](https://github.com/Kenya-DK/quantframe-react)
+You can download the latest release from [here](https://github.com/Kenya-DK/quantframe-react/releases)
 
 ### OR Build it from source
 

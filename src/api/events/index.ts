@@ -11,6 +11,7 @@ export class EventModule {
     this.Initializer();
   }
   private async Initializer() {
+    console.log("Event Module Initialized");
     listen("message", (eventIn: { payload: { event: string; data: any } }) => {
       const { event, data } = eventIn.payload;
       if (event) this.listener.fire(event, data);

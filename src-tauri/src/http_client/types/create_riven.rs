@@ -9,4 +9,3 @@ pub struct RivenPayload {
     #[serde(rename = "riven_data")]
     pub riven_data: CreateStockRiven,
 }
-

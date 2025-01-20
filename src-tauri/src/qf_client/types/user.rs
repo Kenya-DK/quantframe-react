@@ -6,7 +6,7 @@ use super::user_role::UserRole;
 pub struct User {
     #[serde(rename = "id")]
     pub id: String,
-    
+
     #[serde(rename = "created_at")]
     pub created_at: String,
 
@@ -16,7 +16,7 @@ pub struct User {
     #[serde(rename = "username")]
     pub username: String,
 
-    #[serde(rename = "banned")]    
+    #[serde(rename = "banned")]
     pub banned: bool,
 
     #[serde(rename = "current_version")]

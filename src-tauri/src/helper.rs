@@ -59,10 +59,11 @@ pub fn add_metric(key: &str, value: &str) {
     });
 }
 pub fn get_device_id() -> String {
-    let home_dir = match tauri::api::path::home_dir() {
-        Some(val) => val,
-        None => {
-            panic!("Could not find app path");
+    let app = APP.get().unwrap();
+    let home_dir = match app.path().home_dir() {
+        Ok(val) => val,
+        Err(_) => {
+            panic!("Could not find home directory");
         }
     };
     let device_name = home_dir.file_name().unwrap().to_str().unwrap();
@@ -70,10 +71,11 @@ pub fn get_device_id() -> String {
 }
 
 pub fn dose_app_exist() -> bool {
-    let local_path = match tauri::api::path::local_data_dir() {
-        Some(val) => val,
-        None => {
-            panic!("Could not find app path");
+    let app = APP.get().unwrap();
+    let local_path = match app.path().local_data_dir() {
+        Ok(val) => val,
+        Err(_) => {
+            return false;
         }
     };
     let app_path = local_path.join(APP_PATH);
@@ -81,9 +83,10 @@ pub fn dose_app_exist() -> bool {
 }
 
 pub fn get_app_storage_path() -> PathBuf {
-    let local_path = match tauri::api::path::local_data_dir() {
-        Some(val) => val,
-        None => {
+    let app = APP.get().unwrap();
+    let local_path = match app.path().local_data_dir() {
+        Ok(val) => val,
+        Err(_) => {
             panic!("Could not find app path");
         }
     };
@@ -106,19 +109,21 @@ pub fn remove_special_characters(input: &str) -> String {
 }
 
 pub fn get_local_data_path() -> PathBuf {
-    let local_path = match tauri::api::path::local_data_dir() {
-        Some(val) => val,
-        None => {
-            panic!("Could not find app path");
+    let app = APP.get().unwrap();
+    let local_path = match app.path().local_data_dir() {
+        Ok(val) => val,
+        Err(_) => {
+            panic!("Could not find local data path");
         }
     };
     local_path
 }
 
 pub fn get_desktop_path() -> PathBuf {
-    let desktop_path = match tauri::api::path::desktop_dir() {
-        Some(val) => val,
-        None => {
+    let app = APP.get().unwrap();
+    let desktop_path = match app.path().desktop_dir() {
+        Ok(val) => val,
+        Err(_) => {
             panic!("Could not find desktop path");
         }
     };
