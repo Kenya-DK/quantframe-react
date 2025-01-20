@@ -6,7 +6,9 @@ use crate::{
     cache::{
         client::CacheClient,
         types::{cache_item_component::CacheItemComponent, cache_primary::CachePrimary},
-    }, helper, utils::modules::error::AppError
+    },
+    helper,
+    utils::modules::error::AppError,
 };
 
 #[derive(Clone, Debug)]
@@ -50,7 +52,7 @@ impl PrimaryModule {
         for item in items {
             let components = item.get_item_components();
             for mut part in components {
-                part.part_of =Some(item.convert_to_base_item());
+                part.part_of = Some(item.convert_to_base_item());
                 self.add_part(part);
             }
         }
@@ -71,19 +73,28 @@ impl PrimaryModule {
         let items = self.items.clone();
         let args = match helper::validate_args(by, vec!["--item_by"]) {
             Ok(args) => args,
-            Err(e) => return Err(e),            
+            Err(e) => return Err(e),
         };
         let mode = args.get("--item_by").unwrap();
         let case_insensitive = args.get("--ignore_case").is_some();
         // let lang = args.get("--item_lang").unwrap_or(&"en".to_string());
         let remove_string = args.get("--remove_string");
 
-        let item = if mode == "name" {            
-            items.iter().find(|x| helper::is_match(&x.name,input, case_insensitive, remove_string)).cloned()
+        let item = if mode == "name" {
+            items
+                .iter()
+                .find(|x| helper::is_match(&x.name, input, case_insensitive, remove_string))
+                .cloned()
         } else if mode == "unique_name" {
-            items.iter().find(|x| helper::is_match(&x.unique_name,input, case_insensitive, remove_string)).cloned()
+            items
+                .iter()
+                .find(|x| helper::is_match(&x.unique_name, input, case_insensitive, remove_string))
+                .cloned()
         } else {
-            return Err(AppError::new(&self.get_component("GetBy"), eyre!("Invalid by value: {}", by)));
+            return Err(AppError::new(
+                &self.get_component("GetBy"),
+                eyre!("Invalid by value: {}", by),
+            ));
         };
         Ok(item)
     }

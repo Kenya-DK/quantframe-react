@@ -4,8 +4,8 @@ import api, { OnTauriDataEvent, OnTauriEvent } from "@api/index";
 import { useTranslateContexts, useTranslateNotifications, useTranslateModals } from "@hooks/useTranslate.hook";
 import { notifications } from "@mantine/notifications";
 import { Box, Button, Group } from "@mantine/core";
-import { checkUpdate, installUpdate } from "@tauri-apps/api/updater";
-import { relaunch } from "@tauri-apps/api/process";
+import { check } from "@tauri-apps/plugin-updater";
+import { relaunch } from "@tauri-apps/plugin-process";
 import { Alert, AppInfo, QfSocketEvent, QfSocketEventOperation, ResponseError, Settings } from "@api/types";
 import { AuthContextProvider } from "./auth.context";
 import { SplashScreen } from "@components/SplashScreen";
@@ -51,8 +51,10 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
   const [appInfo, setAppInfo] = useState<AppInfo | undefined>(undefined);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [i18Key, setI18Key] = useState<string>("cache");
+  const [checkingUpdate, setCheckingUpdate] = useState(true);
   const [isControl, setIsControl] = useState<boolean>(false);
   const [appError, setAppError] = useState<ResponseError | undefined>(undefined);
+
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateContexts(`app.${key}`, { ...context }, i18Key);
@@ -68,7 +70,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     queryKey: ["app_init"],
     queryFn: () => api.app.init(),
     retry: 0,
-    enabled: !window.location.href.includes("controls"),
+    enabled: !window.location.href.includes("controls") || !checkingUpdate,
   });
 
   const editor = useEditor({
@@ -80,48 +82,107 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
 
     OnTauriEvent(QfSocketEvent.OnInitialize, (i18Key: string) => setI18Key(i18Key));
 
-    checkUpdate()
-      .then(({ shouldUpdate, manifest }) => {
-        if (!shouldUpdate || !manifest || !editor) return;
-        editor.commands.setContent(manifest?.body);
-        modals.open({
-          title: useTranslateNewUpdate("title", { version: manifest?.version }),
-          size: "lg",
-          children: (
-            <>
-              <RichTextEditor editor={editor}>
-                <RichTextEditor.Content />
-              </RichTextEditor>
-              <Group grow justify="space-between" mt={"md"}>
-                <Button
-                  onClick={async () => {
-                    // Install the update. This will also restart the app on Windows!
-                    await installUpdate();
+    const checkForUpdates = async () => {
+      const update = await check();
+      console.log(update);
+      setCheckingUpdate(false);
+      if (!update || !editor) return;
 
-                    // On macOS and Linux you will need to restart the app manually.
-                    // You could use this step to display another confirmation dialog.
-                    await relaunch();
-                  }}
-                >
-                  {useTranslateNewUpdateButtons("install")}
-                </Button>
-                <Button
-                  onClick={async () => {
-                    window.open(`https://github.com/Kenya-DK/quantframe-react/releases/tag/v${manifest.version}`, "_blank");
-                  }}
-                >
-                  {useTranslateNewUpdateButtons("read_more")}
-                </Button>
-              </Group>
-            </>
-          ),
-        });
-      })
-      .catch((e) => {
-        console.error(e);
+      editor.commands.setContent(update?.body || "");
+      modals.open({
+        title: useTranslateNewUpdate("title", { version: update?.version }),
+        size: "lg",
+        children: (
+          <>
+            <RichTextEditor editor={editor}>
+              <RichTextEditor.Content />
+            </RichTextEditor>
+            <Group grow justify="space-between" mt={"md"}>
+              <Button
+                onClick={async () => {
+                  let downloaded = 0;
+                  let contentLength: number | undefined = 0;
+                  await update.downloadAndInstall((event) => {
+                    switch (event.event) {
+                      case "Started":
+                        contentLength = event.data.contentLength;
+                        console.log(`started downloading ${event.data.contentLength} bytes`);
+                        break;
+                      case "Progress":
+                        downloaded += event.data.chunkLength;
+                        console.log(`downloaded ${downloaded} from ${contentLength}`);
+                        break;
+                      case "Finished":
+                        console.log("download finished");
+                        break;
+                    }
+                  });
+                  await relaunch();
+                }}
+              >
+                {useTranslateNewUpdateButtons("install")}
+              </Button>
+              <Button
+                onClick={async () => {
+                  window.open(`https://github.com/Kenya-DK/quantframe-react/releases/tag/v${update.version}`, "_blank");
+                }}
+              >
+                {useTranslateNewUpdateButtons("read_more")}
+              </Button>
+            </Group>
+          </>
+        ),
       });
+    };
+    checkForUpdates().catch((e) => {
+      console.error(e);
+    });
+
+    // checkUpdate()
+    //   .then(({ shouldUpdate, manifest }) => {
+    //     if (!shouldUpdate || !manifest || !editor) return;
+    //     editor.commands.setContent(manifest?.body);
+    //     modals.open({
+    //       title: useTranslateNewUpdate("title", { version: manifest?.version }),
+    //       size: "lg",
+    //       children: (
+    //         <>
+    //           <RichTextEditor editor={editor}>
+    //             <RichTextEditor.Content />
+    //           </RichTextEditor>
+    //           <Group grow justify="space-between" mt={"md"}>
+    //             <Button
+    //               onClick={async () => {
+    //                 // Install the update. This will also restart the app on Windows!
+    //                 await installUpdate();
+
+    //                 // On macOS and Linux you will need to restart the app manually.
+    //                 // You could use this step to display another confirmation dialog.
+    //                 await relaunch();
+    //               }}
+    //             >
+    //               {useTranslateNewUpdateButtons("install")}
+    //             </Button>
+    //             <Button
+    //               onClick={async () => {
+    //                 window.open(`https://github.com/Kenya-DK/quantframe-react/releases/tag/v${manifest.version}`, "_blank");
+    //               }}
+    //             >
+    //               {useTranslateNewUpdateButtons("read_more")}
+    //             </Button>
+    //           </Group>
+    //         </>
+    //       ),
+    //     });
+    //   })
+    //   .catch((e) => {
+    //     console.error(e);
+    //   });
   }, []);
 
+  useEffect(() => {
+    console.log("App Info Updated", appInfo);
+  }, [appInfo]);
   useEffect(() => {
     if (error == undefined) return;
     setAppError(error as ResponseError);

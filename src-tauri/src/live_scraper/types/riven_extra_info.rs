@@ -79,8 +79,8 @@ impl AuctionDetails {
         }
     }
 
-     // Helper to set dirty flag when values are changed
-     fn set_if_changed<T: PartialEq>(current: &mut T, new_value: T, is_dirty: &mut bool) -> bool {
+    // Helper to set dirty flag when values are changed
+    fn set_if_changed<T: PartialEq>(current: &mut T, new_value: T, is_dirty: &mut bool) -> bool {
         if *current != new_value {
             *current = new_value;
             *is_dirty = true;

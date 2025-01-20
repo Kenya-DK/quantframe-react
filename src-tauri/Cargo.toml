@@ -1,6 +1,6 @@
 [package]
 name = "Quantframe"
-version = "1.2.0"
+version = "1.3.0"
 description = "Quantframe"
 authors = ["Kenya-DK"]
 license = ""
@@ -10,28 +10,40 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "1.5", features = [] }
+tauri-build = { version = "2", features = [] }
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "qf_app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
 
 [dependencies]
-tauri = { version = "1.5.2", features = [ "dialog-open", "window-create", "system-tray", "fs-copy-file", "path-all", "fs-write-file", "fs-read-dir", "fs-exists", "notification-all", "http-all", "fs-remove-file", "protocol-all", "updater", "shell-open"] }
+tauri = { version = "2", features = [ "protocol-asset", "tray-icon"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+tauri-plugin-fs = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-http = "2"
+tauri-plugin-process = "2"
+tauri-plugin-shell = "2"
+tauri-plugin-notification = "2"
+tauri-plugin-websocket = "2"
 
 tokio = { version = "1.29.0", features = ["full"] }
-tauri-plugin-websocket = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
-
 regex = "1.9.1"
 chrono = "0.4"
-reqwest = "0.11"
+reqwest = { version = "0.11", features = ["json"] }
 eyre = "0.6.8"
 zip = "0.6"
 actix-web = "4"
 actix-cors = "0.7.0"
+sha256 = "1.5.0"
 
 migration = { path = "./migration" }
 service = { path = "./service" }
 entity = { path = "./entity" }
-sha256 = "1.5.0"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
@@ -40,3 +52,6 @@ custom-protocol = ["tauri/custom-protocol"]
 
 [workspace]
 members = [".", "service", "entity", "migration"]
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-updater = "2"

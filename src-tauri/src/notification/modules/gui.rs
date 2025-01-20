@@ -1,5 +1,5 @@
 use serde_json::{json, Value};
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 
 use crate::{
     notification::client::NotifyClient,
@@ -28,13 +28,8 @@ impl GUIModule {
     }
 
     pub fn send_event(&self, event: UIEvent, data: Option<Value>) {
-        let window = APP
-            .get()
-            .expect("App not initialized")
-            .get_window("main")
-            .unwrap()
-            .clone();
-        match window.emit("message", json!({ "event": event.as_str(), "data":  data })) {
+        let app = APP.get().expect("App not initialized");
+        match app.emit("message", json!({ "event": event.as_str(), "data":  data })) {
             Ok(_) => {
                 logger::info_con(
                     &self.get_component("SendEvent"),
@@ -55,13 +50,8 @@ impl GUIModule {
         operation: UIOperationEvent,
         data: Option<Value>,
     ) {
-        let window = APP
-            .get()
-            .expect("App not initialized")
-            .get_window("main")
-            .unwrap()
-            .clone();
-        match window.emit(
+        let app = APP.get().expect("App not initialized");
+        match app.emit(
             "message_update",
             json!({ "event": event.as_str(), "operation":operation.as_str(), "data":  data }),
         ) {

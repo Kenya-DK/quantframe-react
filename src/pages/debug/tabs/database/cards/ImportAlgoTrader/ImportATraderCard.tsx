@@ -4,7 +4,7 @@ import api from '@api/index';
 import { notifications } from '@mantine/notifications';
 import { useTranslatePages } from '@hooks/useTranslate.hook';
 import { useState } from 'react';
-import { open } from '@tauri-apps/api/dialog';
+import { open } from '@tauri-apps/plugin-dialog';
 import { faFile } from '@fortawesome/free-solid-svg-icons';
 import { ActionWithTooltip } from '@components/ActionWithTooltip';
 

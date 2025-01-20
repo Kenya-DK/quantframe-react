@@ -4,8 +4,8 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 
-use crate::enums::trade_mode::TradeMode;
 use crate::enums::stock_mode::StockMode;
+use crate::enums::trade_mode::TradeMode;
 use crate::utils::modules::error::AppError;
 use crate::{helper, logger};
 use eyre::eyre;

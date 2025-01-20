@@ -1,5 +1,6 @@
 use crate::{notification::client::NotifyClient, APP};
-use tauri::api::notification::Notification;
+use tauri::Url;
+use tauri_plugin_notification::{Attachment, NotificationExt};
 
 #[derive(Clone, Debug)]
 pub struct SystemModule {}
@@ -21,11 +22,17 @@ impl SystemModule {
             Some(s) => s,
             None => "Default",
         };
-        let notification = Notification::new(&app.config().tauri.bundle.identifier)
+        app.notification()
+            .builder()
             .title(title)
             .body(body)
             .icon(icon.unwrap_or("assets/icons/icon.png"))
-            .sound(sound);
-        notification.show().unwrap();
+            .sound(sound)
+            .attachment(Attachment::new(
+                "AS".to_string(),
+                Url::parse("icon://assets/icons/icon.png").unwrap(),
+            ))
+            .show()
+            .expect("Failed to show notification");
     }
 }

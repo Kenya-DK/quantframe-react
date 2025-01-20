@@ -1,4 +1,4 @@
-import WebSocket from "tauri-plugin-websocket-api";
+import WebSocket from "@tauri-apps/plugin-websocket";
 import { ComposedListener } from "@utils/listener/Composed.listener";
 
 export class SocketBase {

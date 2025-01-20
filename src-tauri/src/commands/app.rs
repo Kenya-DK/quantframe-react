@@ -46,27 +46,6 @@ pub async fn app_init(
     let log_parser = log_parser.lock()?.clone();
     let mut auth_state = auth.lock()?.clone();
 
-    // Send App Info to UI
-    let app_info = app.get_app_info();
-    notify.gui().send_event_update(
-        UIEvent::UpdateAppInfo,
-        UIOperationEvent::Set,
-        Some(json!({
-            "version": app_info.version,
-            "name": app_info.name,
-            "description": app_info.description,
-            "authors": app_info.authors,
-            "is_pre_release": app.is_pre_release,
-        })),
-    );
-
-    // Send Settings to UI
-    notify.gui().send_event_update(
-        UIEvent::UpdateSettings,
-        UIOperationEvent::Set,
-        Some(json!(&settings)),
-    );
-
     // Start Log Parser
     notify
         .gui()
@@ -78,45 +57,6 @@ pub async fn app_init(
             return Err(e);
         }
     }
-
-    // Load Stock Items
-    notify
-        .gui()
-        .send_event(UIEvent::OnInitialize, Some(json!("stock_items")));
-    match StockItemQuery::get_all(conn).await {
-        Ok(items) => {
-            // Send Stock Items to UI
-            notify.gui().send_event_update(
-                UIEvent::UpdateStockItems,
-                UIOperationEvent::Set,
-                Some(json!(&items)),
-            );
-        }
-        Err(e) => {
-            let error = AppError::new_db("StockItemQuery::get_all", e);
-            error::create_log_file("command.log".to_string(), &error);
-            return Err(error);
-        }
-    };
-    // Load Stock Rivens
-    notify
-        .gui()
-        .send_event(UIEvent::OnInitialize, Some(json!("stock_rivens")));
-    match StockRivenQuery::get_all(conn).await {
-        Ok(items) => {
-            // Send Stock Rivens to UI
-            notify.gui().send_event_update(
-                UIEvent::UpdateStockRivens,
-                UIOperationEvent::Set,
-                Some(json!(&items)),
-            );
-        }
-        Err(e) => {
-            let error = AppError::new_db("StockRivenQuery::get_all", e);
-            error::create_log_file("command.log".to_string(), &error);
-            return Err(error);
-        }
-    };
 
     // Load Transactions
     notify
@@ -138,6 +78,64 @@ pub async fn app_init(
         }
     };
 
+    // Send App Info to UI
+    let app_info = app.get_app_info();
+    notify.gui().send_event_update(
+        UIEvent::UpdateAppInfo,
+        UIOperationEvent::Set,
+        Some(json!({
+            "version": app_info.version,
+            "name": app_info.name,
+            "description": app_info.description,
+            "authors": app_info.authors,
+            "is_pre_release": app.is_pre_release,
+        })),
+    );
+
+    // Send Settings to UI
+    notify.gui().send_event_update(
+        UIEvent::UpdateSettings,
+        UIOperationEvent::Set,
+        Some(json!(&settings)),
+    );
+    // Load Stock Rivens
+    notify
+        .gui()
+        .send_event(UIEvent::OnInitialize, Some(json!("stock_rivens")));
+    match StockRivenQuery::get_all(conn).await {
+        Ok(items) => {
+            // Send Stock Rivens to UI
+            notify.gui().send_event_update(
+                UIEvent::UpdateStockRivens,
+                UIOperationEvent::Set,
+                Some(json!(&items)),
+            );
+        }
+        Err(e) => {
+            let error = AppError::new_db("StockRivenQuery::get_all", e);
+            error::create_log_file("command.log".to_string(), &error);
+            return Err(error);
+        }
+    };
+    // Load Stock Items
+    notify
+        .gui()
+        .send_event(UIEvent::OnInitialize, Some(json!("stock_items")));
+    match StockItemQuery::get_all(conn).await {
+        Ok(items) => {
+            // Send Stock Items to UI
+            notify.gui().send_event_update(
+                UIEvent::UpdateStockItems,
+                UIOperationEvent::Set,
+                Some(json!(&items)),
+            );
+        }
+        Err(e) => {
+            let error = AppError::new_db("StockItemQuery::get_all", e);
+            error::create_log_file("command.log".to_string(), &error);
+            return Err(error);
+        }
+    };
     // Load Wish List
     notify
         .gui()

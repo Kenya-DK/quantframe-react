@@ -1,7 +1,9 @@
 use entity::stock::riven::{attribute::RivenAttribute, create::CreateStockRiven};
 use serde::{Deserialize, Serialize};
 
-use crate::{live_scraper::types::riven_extra_info::AuctionDetails, utils::modules::error::AppError};
+use crate::{
+    live_scraper::types::riven_extra_info::AuctionDetails, utils::modules::error::AppError,
+};
 
 use super::auction_item::AuctionItem;
 
@@ -41,7 +43,7 @@ pub struct Auction<T> {
     #[serde(rename = "operation")]
     #[serde(default)]
     pub operation: Vec<String>,
-    
+
     #[serde(rename = "info", default = "Default::default")]
     pub info: AuctionDetails,
 }
@@ -68,7 +70,10 @@ impl<T> Auction<T> {
     pub fn convert_to_create_stock(&self, buyout_price: i64) -> Result<CreateStockRiven, AppError> {
         let item = self.item.clone();
         if item.item_type != "riven" {
-            return Err(AppError::new("Auction",eyre::eyre!("Item type is not riven")));
+            return Err(AppError::new(
+                "Auction",
+                eyre::eyre!("Item type is not riven"),
+            ));
         }
         let stock_item = CreateStockRiven::new(
             item.weapon_url_name.unwrap_or("".to_string()),
@@ -80,10 +85,10 @@ impl<T> Auction<T> {
             item.mod_rank.unwrap_or(0),
             Some(buyout_price),
             Some(self.id.clone()),
-            None
+            None,
         );
         Ok(stock_item)
-    }  
+    }
     pub fn set_similarity_riven(&mut self, attributes: Vec<RivenAttribute>) {
         let mut shared_count = 0;
 

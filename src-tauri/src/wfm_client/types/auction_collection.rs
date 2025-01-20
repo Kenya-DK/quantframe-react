@@ -139,7 +139,7 @@ impl AuctionCollection<AuctionOwner> {
     pub fn calculate__riven_similarity(
         &self,
         attributes: Vec<RivenAttribute>,
-    ) -> AuctionCollection<AuctionOwner>  {
+    ) -> AuctionCollection<AuctionOwner> {
         let mut auctions = self.auctions.clone();
         for auction in auctions.iter_mut() {
             auction.set_similarity_riven(attributes.clone());
