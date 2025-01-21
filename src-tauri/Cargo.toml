@@ -12,6 +12,9 @@ edition = "2021"
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-updater = "2"
+
 [lib]
 # The `_lib` suffix may seem redundant but it is necessary
 # to make the lib name unique and wouldn't conflict with the bin name.
@@ -20,6 +23,8 @@ name = "qf_app_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [dependencies]
+
+# Tauri dependencies
 tauri = { version = "2", features = [ "protocol-asset", "tray-icon"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -31,6 +36,7 @@ tauri-plugin-shell = "2"
 tauri-plugin-notification = "2"
 tauri-plugin-websocket = "2"
 
+# Other dependencies
 tokio = { version = "1.29.0", features = ["full"] }
 regex = "1.9.1"
 chrono = "0.4"
@@ -41,17 +47,10 @@ actix-web = "4"
 actix-cors = "0.7.0"
 sha256 = "1.5.0"
 
+# Database dependencies
 migration = { path = "./migration" }
 service = { path = "./service" }
 entity = { path = "./entity" }
 
-[features]
-# this feature is used for production builds or when `devPath` points to the filesystem
-# DO NOT REMOVE!!
-custom-protocol = ["tauri/custom-protocol"]
-
 [workspace]
 members = [".", "service", "entity", "migration"]
-
-[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
-tauri-plugin-updater = "2"
