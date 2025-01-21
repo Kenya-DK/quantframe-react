@@ -114,7 +114,6 @@ export function UserMenu() {
         <Menu.Item
           leftSection={<FontAwesomeIcon icon={faGear} />}
           onClick={() => {
-            debugger;
             if (!settings) return;
             modals.open({
               size: "100%",
