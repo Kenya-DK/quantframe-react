@@ -24,3 +24,8 @@ dist-ssr
 *.sw?
 
 __trace/
+
+
+# Added by cargo
+
+/target
