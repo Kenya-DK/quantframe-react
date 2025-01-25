@@ -92,9 +92,7 @@ impl AnalyticsModule {
         tauri::async_runtime::spawn({
             async move {
                 // Create a new instance of the QFClient and store it in the app state
-                let qf_handle = APP.get().expect("failed to get app handle");
-                let qf_state: State<Arc<Mutex<QFClient>>> = qf_handle.state();
-                let qf = qf_state.lock().expect("failed to lock app state").clone();
+                let qf = states::qf_client().expect("Failed to get qf client");
 
                 // Create Timer for sending metrics
                 let mut last_metric_time = Instant::now();

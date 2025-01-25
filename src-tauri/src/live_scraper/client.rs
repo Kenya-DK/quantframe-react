@@ -87,7 +87,6 @@ impl LiveScraperClient {
     pub fn start_loop(&mut self) -> Result<(), AppError> {
         self.is_running.store(true, Ordering::SeqCst);
         let is_running = Arc::clone(&self.is_running);
-        let forced_stop = Arc::clone(&self.is_running);
         let scraper = self.clone();
         // Reset riven stocks on start
         tauri::async_runtime::spawn(async move {
@@ -118,7 +117,7 @@ impl LiveScraperClient {
             let riven_interval = 1; // 5 min
             let mut last_riven_update = Instant::now() - Duration::from_secs(riven_interval + 20);
 
-            while is_running.load(Ordering::SeqCst) && forced_stop.load(Ordering::SeqCst) {
+            while is_running.load(Ordering::SeqCst) {
                 settings = states::settings().unwrap().clone();
 
                 if (settings.live_scraper.stock_mode == StockMode::Riven

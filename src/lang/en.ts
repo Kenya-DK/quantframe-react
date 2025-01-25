@@ -144,6 +144,19 @@ export const en = {
         tabs: {
           general: {
             title: "General",
+            fields: {
+              wf_log_path: {
+                label: "Warframe Log Path",
+                placeholder: "Default Warframe log path",
+                error: "Invalid Warframe log path",
+                tooltip: "The path to the Warframe log file. leave empty for default path.",
+              },
+            },
+            buttons: {
+              save: {
+                label: "Save",
+              },
+            },
           },
           live_trading: {
             title: "Live Trading",
@@ -808,6 +821,7 @@ export const en = {
         update_settings: {
           title: "Update Settings Error",
           message: "An error occurred while trying to update settings.",
+          wf_log_path_not_exist: "Warframe log path does not exist",
         },
       },
       success: {

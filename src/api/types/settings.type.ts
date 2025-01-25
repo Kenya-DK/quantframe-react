@@ -4,6 +4,7 @@ export interface Settings {
   debug: string[];
   tos_accepted: boolean;
   dev_mode: boolean;
+  wf_log_path: string;
   live_scraper: SettingsLiveScraper;
   notifications: SettingsNotifications;
   analytics: SettingsAnalytics;

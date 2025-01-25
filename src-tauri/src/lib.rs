@@ -180,7 +180,7 @@ pub fn run() {
         .setup(move |app| {
             APP.get_or_init(|| app.handle().clone());
 
-            match block_on(init_database(true)) {
+            match block_on(init_database(false)) {
                 Ok(_) => {}
                 Err(e) => {
                     let component = e.component();
