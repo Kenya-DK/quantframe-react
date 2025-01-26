@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde_json::{json, Value};
 use std::fs::File;
 use std::io::{Read, Write};
 use std::path::PathBuf;
@@ -213,6 +213,19 @@ impl SettingsState {
             default_settings.save_to_file()?;
             Ok(default_settings)
         }
+    }
+
+    pub  fn is_wf_log_valid(&self) -> Result<bool, AppError> {
+        if !self.wf_log_path.is_empty() && !PathBuf::from(&self.wf_log_path).exists() {
+            return Err(AppError::new("Settings", eyre::eyre!(format!(
+                "Warframe EE.log path does not exist [J]{}[J]",
+                json!({
+                    "i18n_key": "wf_log_path_not_exist",
+                    "path": self.wf_log_path
+                })
+            ))));
+        }
+        Ok(true)       
     }
 
     pub fn save_to_file(&self) -> Result<(), AppError> {

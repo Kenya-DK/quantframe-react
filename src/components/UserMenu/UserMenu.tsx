@@ -1,6 +1,6 @@
 import { Text, Group, Menu, Avatar, Button, Indicator } from "@mantine/core";
 import api, { SendTauriDataEvent, WFMThumbnail } from "@api/index";
-import { QfSocketEvent, QfSocketEventOperation, Settings, UserStatus } from "@api/types";
+import { QfSocketEvent, QfSocketEventOperation, ResponseError, Settings, UserStatus } from "@api/types";
 import classes from "./UserMenu.module.css";
 import { useTranslateComponent, useTranslateEnums } from "@hooks/useTranslate.hook";
 import { faGear, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
@@ -49,12 +49,15 @@ export function UserMenu() {
         color: "green.7",
       });
     },
-    onError: () =>
+    onError: (e: ResponseError) => {
+      let i18n_key = e.extra_data.i18n_key || "message";
+      console.error(i18n_key);
       notifications.show({
         title: useTranslateErrors("update_settings.title"),
-        message: useTranslateErrors("update_settings.message"),
-        color: "green.7",
-      }),
+        message: useTranslateErrors(`update_settings.${i18n_key}`),
+        color: "red.7",
+      });
+    },
   });
 
   return (

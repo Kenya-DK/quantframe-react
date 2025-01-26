@@ -10,7 +10,7 @@ use crate::{
     log_parser,
     notification::client::NotifyClient,
     qf_client::client::QFClient,
-    settings::SettingsState,
+    settings::{self, SettingsState},
     utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
         modules::error::{self, AppError},
@@ -24,7 +24,20 @@ pub fn save_auth_state(auth: tauri::State<'_, Arc<Mutex<AuthState>>>, auth_state
     let mut my_lock = arced_mutex.lock().expect("Could not lock auth");
     *my_lock = auth_state.clone();
 }
-
+// if !settings.wf_log_path.is_empty() && settings.wf_log_path != "" {
+//     let path = std::path::Path::new(&settings.wf_log_path);
+//     if !path.exists() {
+//         return Err(AppError::new(
+//             "Settings",
+//             eyre::eyre!(format!(
+//                 "Warframe EE.log path does not exist [J]{}[J]",
+//                 json!({
+//                     "i18n_key": "wf_log_path_not_exist",
+//                 })
+//             )),
+//         ));
+//     }
+// }
 #[tauri::command]
 pub async fn app_init(
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
@@ -43,14 +56,14 @@ pub async fn app_init(
     let wfm = wfm.lock()?.clone();
     let cache = cache.lock()?.clone();
     let qf = qf.lock()?.clone();
-    let log_parser = log_parser.lock()?.clone();
+    let mut log_parser = log_parser.lock()?.clone();
     let mut auth_state = auth.lock()?.clone();
 
     // Start Log Parser
     notify
         .gui()
         .send_event(UIEvent::OnInitialize, Some(json!("log_parser")));
-    match log_parser.start_loop() {
+    match log_parser.init() {
         Ok(_) => {}
         Err(e) => {
             error::create_log_file("log_parser.log".to_string(), &e);
@@ -322,7 +335,17 @@ pub async fn app_update_settings(
 ) -> Result<bool, AppError> {
     let notify = notify.lock()?.clone();
     let arced_mutex = Arc::clone(&settings_state);
-    let mut my_lock = arced_mutex.lock()?;
+    let mut my_lock: std::sync::MutexGuard<'_, SettingsState> = arced_mutex.lock()?;
+
+    // Check if Warframe EE.log path exists
+    match settings.is_wf_log_valid() {
+        Ok(_) => {
+            my_lock.wf_log_path = settings.wf_log_path;
+        }
+        Err(e) => {
+            return Err(e);
+        }
+    }
 
     // Set Logging Settings
     my_lock.debug = settings.debug;

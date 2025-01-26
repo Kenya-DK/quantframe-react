@@ -10,10 +10,11 @@ use std::{
 };
 
 use crate::{
+    commands::log,
     helper,
     utils::modules::{
         error::{self, AppError},
-        logger,
+        logger, states,
     },
 };
 
@@ -22,10 +23,9 @@ use super::modules::{on_conversation::OnConversationEvent, on_trading::OnTradeEv
 #[derive(Clone, Debug)]
 pub struct LogParser {
     log_file: PathBuf,
-    is_running: Arc<AtomicBool>,
+    previous_log_file: PathBuf,
     pub component: String,
     last_file_size: Arc<Mutex<u64>>,
-    cold_start: Arc<AtomicBool>,
     on_trade_event: Arc<RwLock<Option<OnTradeEvent>>>,
     on_conversation_event: Arc<RwLock<Option<OnConversationEvent>>>,
 }
@@ -36,37 +36,19 @@ impl LogParser {
             log_file: helper::get_local_data_path()
                 .join("Warframe")
                 .join("EE.log"),
-            is_running: Arc::new(AtomicBool::new(false)),
+            previous_log_file: PathBuf::new(),
             component: "LogParser".to_string(),
             last_file_size: Arc::new(Mutex::new(0)),
-            cold_start: Arc::new(AtomicBool::new(true)),
             on_trade_event: Arc::new(RwLock::new(None)),
             on_conversation_event: Arc::new(RwLock::new(None)),
         }
     }
-    // pub fn stop_loop(&self) {
-    //     self.is_running.store(false, Ordering::SeqCst);
-    // }
-
-    // pub fn is_running(&self) -> bool {
-    //     self.is_running.load(Ordering::SeqCst)
-    // }
-    pub fn start_loop(self) -> Result<(), AppError> {
-        // Return if it's already running
-        if self.is_running.load(Ordering::SeqCst) {
-            logger::info_con(&self.component, "Log parser is already running");
-            return Ok(());
-        }
-
-        self.is_running.store(true, Ordering::SeqCst);
-        let is_running = Arc::clone(&self.is_running);
-
-        let forced_stop = Arc::clone(&self.is_running);
-        let scraper = self.clone();
+    pub fn init(&self) -> Result<(), AppError> {
+        let mut scraper = self.clone();
         logger::info_con(&scraper.component, "Starting the log parser");
         tauri::async_runtime::spawn(async move {
-            while is_running.load(Ordering::SeqCst) && forced_stop.load(Ordering::SeqCst) {
-                match scraper.check_for_new_logs(self.cold_start.load(Ordering::SeqCst)) {
+            loop {
+                match scraper.check_for_new_logs() {
                     Ok(_) => (),
                     Err(e) => {
                         if e.cause().to_string().contains("Log file does not exist") {
@@ -85,22 +67,32 @@ impl LogParser {
                         }
                     }
                 }
-                scraper.cold_start.store(false, Ordering::SeqCst);
                 tokio::time::sleep(Duration::from_millis(1)).await;
             }
-            logger::info_con(&scraper.component, "Log parser stopped");
         });
         Ok(())
     }
-    pub fn check_for_new_logs(&self, is_starting: bool) -> Result<(), AppError> {
-        if !self.log_file.exists() {
+    pub fn check_for_new_logs(&mut self) -> Result<(), AppError> {
+        let settings = states::settings().unwrap().clone();
+        let mut reset = false;
+
+        let log_file =
+            if !settings.wf_log_path.is_empty() && PathBuf::from(&settings.wf_log_path).exists() {
+                PathBuf::from(&settings.wf_log_path)
+            } else {
+                self.log_file.clone()
+            };
+
+        //Validate log file
+        if !log_file.exists() {
             return Err(AppError::new(
                 &self.component,
-                eyre::eyre!("Log file does not exist: {:?}", self.log_file),
+                eyre::eyre!("Log file does not exist: {:?}", log_file),
             ));
         }
 
-        let mut file = File::open(&self.log_file).map_err(|e| {
+        // Read the log file and process the lines
+        let mut file = File::open(&log_file).map_err(|e| {
             AppError::new(
                 &self.component,
                 eyre::eyre!("Error opening log file: {}", e),
@@ -115,9 +107,10 @@ impl LogParser {
         })?;
         let current_file_size = metadata.len();
 
-        if is_starting {
+        if log_file != self.previous_log_file {
+            logger::info_con(&self.component, "Log file changed");
             *self.last_file_size.lock().unwrap() = current_file_size;
-            return Ok(());
+            self.previous_log_file = log_file.clone();
         }
 
         let mut last_file_size = self.last_file_size.lock().unwrap();
@@ -138,6 +131,7 @@ impl LogParser {
 
         for (_, line) in reader.lines().enumerate() {
             if let Ok(line) = line {
+                println!("{}", line);
                 if self.trade_event().process_line(&line, *last_file_size)? {
                     continue;
                 }
