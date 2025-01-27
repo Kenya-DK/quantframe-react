@@ -1,10 +1,9 @@
-
 export interface CacheRivenAttribute {
   group: string;
   search_only: boolean;
   prefix: string;
   effect: string;
-  positive_is_negative: boolean;
+  positiveIsNegative: boolean;
   url_name: string;
   positive_only: boolean;
   units: string;
