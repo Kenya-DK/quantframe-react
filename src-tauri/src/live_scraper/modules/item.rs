@@ -633,6 +633,27 @@ impl ItemModule {
             None => Order::default(),
         };
 
+        // If the order is visible and the item is hidden, delete the order.
+        if wish_list_item.is_hidden {
+            wish_list_item.set_status(StockStatus::InActive);
+            wish_list_item.set_list_price(None);
+            if user_order.visible {
+                wfm.orders().delete(&user_order.id).await?;
+                my_orders.delete_order_by_id(OrderType::Sell, &user_order.id);
+                self.send_order_update(UIOperationEvent::Delete, json!({"id": user_order.id}));
+            }
+
+            // Send GUI Update.
+            self.send_msg("is_hidden", Some(json!({ "name": item_info.name.clone()})));
+            if wish_list_item.is_dirty {
+                WishListMutation::update_by_id(conn, wish_list_item.id, wish_list_item.clone())
+                    .await
+                    .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
+                self.send_wish_list_update(UIOperationEvent::CreateOrUpdate, json!(wish_list_item));
+            }
+            return Ok(None);
+        }
+
         // Get The highest buy order returns 0 if there are no buy orders.
         let highest_price = live_orders.highest_price(OrderType::Buy);
 
@@ -669,7 +690,6 @@ impl ItemModule {
                 order_info.set_total_buyers(live_orders.buy_orders.len() as i64);
                 order_info.set_orders(live_orders.buy_orders.clone());
                 order_info.add_price_history(price_history.clone());
-                user_order.operation.push("Updated".to_string());
                 order_info.clone()
             }
             None => {
@@ -686,14 +706,14 @@ impl ItemModule {
                     0,
                     vec![price_history.clone()],
                 );
-                if user_order.id != "N/A" {
-                    user_order.operation.push("Updated".to_string());
-                } else {
-                    user_order.operation.push("Created".to_string());
-                }
                 order_info
             }
         };
+        if user_order.id != "N/A" {
+            user_order.operation.push("Updated".to_string());
+        } else {
+            user_order.operation.push("Created".to_string());
+        }
 
         // Create/Update Order based on the operation.
         if user_order.operation.contains(&"Created".to_string()) {

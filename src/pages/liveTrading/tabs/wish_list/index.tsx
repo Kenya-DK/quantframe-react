@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { CreateWishListItem, WishListItem, StockStatus, UpdateWishListItem, BoughtWishListItem } from "@api/types";
 import { Box, Grid, Group, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { faEdit, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faEdit, faEye, faEyeSlash, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { ColorInfo } from "@components/ColorInfo";
 import { ActionWithTooltip } from "@components/ActionWithTooltip";
 import { Loading } from "@components/Loading";
@@ -220,7 +220,7 @@ export const WishListPanel = ({}: WishListPanelProps) => {
             }}
           />
           <Group gap={"md"} mt={"md"}>
-            {[StockStatus.Pending, StockStatus.Live, StockStatus.NoSellers].map((status) => (
+            {[StockStatus.Pending, StockStatus.Live, StockStatus.NoSellers, StockStatus.InActive].map((status) => (
               <ColorInfo
                 active={status == filterStatus}
                 key={status}
@@ -338,7 +338,7 @@ export const WishListPanel = ({}: WishListPanelProps) => {
           {
             accessor: "actions",
             title: useTranslateDataGridBaseColumns("actions.title"),
-            width: 145,
+            width: 185,
             render: (row) => (
               <Group gap={"sm"} justify="flex-end">
                 <ActionWithTooltip
@@ -374,6 +374,17 @@ export const WishListPanel = ({}: WishListPanelProps) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     OpenInfoModal(row);
+                  }}
+                />
+                <ActionWithTooltip
+                  tooltip={useTranslateDataGridBaseColumns(`actions.buttons.hide.${row.is_hidden ? "disabled_tooltip" : "enabled_tooltip"}`)}
+                  icon={row.is_hidden ? faEyeSlash : faEye}
+                  color={`${row.is_hidden ? "red.7" : "green.7"}`}
+                  actionProps={{ size: "sm" }}
+                  iconProps={{ size: "xs" }}
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    await updateItemMutation.mutateAsync({ id: row.id, is_hidden: !row.is_hidden });
                   }}
                 />
                 <ActionWithTooltip

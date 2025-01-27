@@ -96,7 +96,7 @@ pub async fn wish_list_update(
     maximum_price: Option<i64>,
     sub_type: Option<SubType>,
     quantity: Option<i64>,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
+    is_hidden: Option<bool>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
 ) -> Result<wish_list::Model, AppError> {
     let conn = DATABASE.get().unwrap();
@@ -123,7 +123,9 @@ pub async fn wish_list_update(
     if let Some(sub_type) = sub_type {
         new_item.sub_type = Some(sub_type);
     }
-
+    if let Some(is_hidden) = is_hidden {
+        new_item.is_hidden = is_hidden;
+    }
     if let Some(quantity) = quantity {
         new_item.quantity = quantity;
     }
