@@ -1,5 +1,8 @@
 use crate::{
-    qf_client::client::QFClient,
+    qf_client::{
+        client::QFClient,
+        types::{paginated::Paginated, syndicates_price::SyndicatesPrice},
+    },
     utils::{
         enums::log_level::LogLevel,
         modules::error::{ApiResult, AppError},
@@ -79,7 +82,7 @@ impl ItemModule {
         limit: i64,
         filter: Option<Value>,
         sort: Option<Value>,
-    ) -> Result<Value, AppError> {
+    ) -> Result<Paginated<SyndicatesPrice>, AppError> {
         let mut params = vec![];
         if let Some(filter) = filter {
             params.push(("filter", filter.to_string()));
@@ -95,7 +98,11 @@ impl ItemModule {
             .collect::<Vec<String>>()
             .join("&");
         let url = format!("items/syndicates_prices?{}", params);
-        match self.client.get::<Value>(&url, true).await {
+        match self
+            .client
+            .get::<Paginated<SyndicatesPrice>>(&url, false)
+            .await
+        {
             Ok(ApiResult::Success(payload, _headers)) => {
                 return Ok(payload);
             }

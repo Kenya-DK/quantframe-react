@@ -1,6 +1,6 @@
 import { Text, Box, Divider, Group, Pagination, ScrollArea, SimpleGrid } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { Operator, Wfm } from "$types/index";
+import { Wfm } from "$types/index";
 import { faFileImport, faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { paginate } from "@utils/helper";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
@@ -14,8 +14,7 @@ import { Loading } from "@components/Loading";
 import { SearchField } from "@components/SearchField";
 import { useStockContextContext } from "@contexts/stock.context";
 import { useWarframeMarketContextContext } from "@contexts/warframeMarket.context";
-import { ComplexFilter } from "$types/index";
-import { ApplyFilter } from "@utils/filter.helper";
+import { ApplyFilter, ComplexFilter, Operator } from "@utils/filter.helper";
 import classes from "../../WarframeMarket.module.css";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 interface AuctionPanelProps {}

@@ -26,7 +26,7 @@ export const DataTableSearch = <T,>({
 }: DataTableSearchProps<T>) => {
   // States For DataGrid
   const [page, setPage] = useState(1);
-  const pageSizes = [5, 10, 15, 20, 25, 30, 50, 100];
+  const pageSizes = [1, 5, 10, 15, 20, 25, 30, 50, 100];
   const [pageSize, setPageSize] = useState(pageSizes[4]);
   const [rows, setRows] = useState<T[]>([]);
   const [totalRecords, setTotalRecords] = useState<number>(0);
@@ -47,6 +47,7 @@ export const DataTableSearch = <T,>({
     if (filters) filteredRecords = ApplyFilter(records, filters);
     setTotalRecords(filteredRecords.length);
     filteredRecords = paginate(filteredRecords, page, pageSize);
+    console.log(filteredRecords.length);
     setRows(filteredRecords);
   }, [filters, page, pageSize, sortStatus]);
   return (

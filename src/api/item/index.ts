@@ -1,5 +1,6 @@
 import { TauriClient } from "..";
-import { ComplexFilter, Sort } from "../../types";
+import { Sort } from "@utils/sorting.helper";
+import { ComplexFilter } from "@utils/filter.helper";
 import { Paginated, SyndicatesPrice } from "../types";
 
 export class ItemModule {
