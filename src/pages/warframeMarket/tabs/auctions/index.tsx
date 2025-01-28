@@ -14,7 +14,7 @@ import { Loading } from "@components/Loading";
 import { SearchField } from "@components/SearchField";
 import { useStockContextContext } from "@contexts/stock.context";
 import { useWarframeMarketContextContext } from "@contexts/warframeMarket.context";
-import { searchProperties, Query } from "@utils/search.helper";
+import { ApplyFilter, ComplexFilter, Operator } from "@utils/filter.helper";
 import classes from "../../WarframeMarket.module.css";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 interface AuctionPanelProps {}
@@ -32,19 +32,26 @@ export const AuctionPanel = ({}: AuctionPanelProps) => {
   // Update Database Rows
   useEffect(() => {
     let filteredRecords = auctions;
-    let filter: Query = {};
+    let filter: ComplexFilter = {};
     if (!rivens) return;
 
     if (query)
       filter = {
-        $or: [
-          { $combined: ["item.weapon_url_name", "item.name"], value: query },
-          { "item.name": { $contains: query } },
-          { "item.weapon_url_name": { $contains: query } },
+        OR: [
+          {
+            "item.name": {
+              [Operator.CONTAINS_VALUE]: query,
+            },
+          },
+          {
+            "item.weapon_url_name": {
+              [Operator.CONTAINS_VALUE]: query,
+            },
+          },
         ],
       };
 
-    filteredRecords = searchProperties(filteredRecords, filter, false);
+    filteredRecords = ApplyFilter(filteredRecords, filter);
     // Update total pages
     setTotalPages(Math.ceil(filteredRecords.length / pageSize));
 

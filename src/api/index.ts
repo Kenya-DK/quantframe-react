@@ -16,6 +16,7 @@ import { LogModule } from "./log";
 import { AnalyticsModule } from "./analytics";
 import { WFMSocket } from "../models/wfmSocket";
 import { NotificationModule } from "./notification";
+import { ItemModule } from "./item";
 
 export class TauriClient {
   constructor() {
@@ -33,6 +34,7 @@ export class TauriClient {
     this.notification = new NotificationModule(this);
     this.statistic = new StatisticModule(this);
     this.cache = new CacheModule(this);
+    this.items = new ItemModule(this);
     this.log = new LogModule(this);
     this.analytics = new AnalyticsModule(this);
   }
@@ -92,6 +94,7 @@ export class TauriClient {
   cache: CacheModule;
   analytics: AnalyticsModule;
   log: LogModule;
+  items: ItemModule;
 }
 
 declare global {

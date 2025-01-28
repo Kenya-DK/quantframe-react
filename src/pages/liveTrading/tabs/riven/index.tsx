@@ -22,7 +22,7 @@ import { CreateRiven } from "@components/Forms/CreateRiven";
 import { useLiveScraperContext } from "@contexts/liveScraper.context";
 import { useStockContextContext } from "@contexts/stock.context";
 import { DataTableSearch } from "@components/DataTableSearch";
-import { Query } from "@utils/search.helper";
+import { ComplexFilter, Operator } from "@utils/filter.helper";
 import classes from "../../LiveTrading.module.css";
 interface StockRivenPanelProps {}
 export const StockRivenPanel = ({}: StockRivenPanelProps) => {
@@ -34,7 +34,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
   const [selectedRecords, setSelectedRecords] = useState<StockRiven[]>([]);
 
   const [query, setQuery] = useState<string>("");
-  const [filters, setFilters] = useState<Query>({});
+  const [filters, setFilters] = useState<ComplexFilter>({});
   const [filterStatus, setFilterStatus] = useState<StockStatus | undefined>(undefined);
   const [statusCount, setStatusCount] = useState<{ [key: string]: number }>({}); // Count of each status
 
@@ -68,8 +68,8 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
 
   // Update Database Rows
   useEffect(() => {
-    let filter: Query = {
-      $or: [],
+    let filter: ComplexFilter = {
+      OR: [],
     };
     if (!rivens) return;
 
@@ -80,12 +80,19 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
       }, {} as { [key: string]: number })
     );
 
-    if (filterStatus) filter = { $match: { status: filterStatus } };
+    if (filterStatus)
+      filter.OR?.push({
+        status: {
+          [Operator.EQUALS]: filterStatus,
+        },
+      });
     if (query)
-      filter = {
-        ...filter,
-        $or: [{ $combined: ["weapon_name", "mod_name"], value: query }, { weapon_name: { $contains: query } }, { mod_name: { $contains: query } }],
-      };
+      filter.OR?.push({
+        weapon_name: {
+          [Operator.CONTAINS_VALUE]: filterStatus,
+          isCaseSensitive: false,
+        },
+      });
     setFilters(filter);
   }, [rivens, query, filterStatus]);
 

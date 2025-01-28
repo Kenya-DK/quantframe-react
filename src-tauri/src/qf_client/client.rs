@@ -67,6 +67,7 @@ impl QFClient {
             auth_module: Arc::new(RwLock::new(None)),
             cache_module: Arc::new(RwLock::new(None)),
             item_module: Arc::new(RwLock::new(None)),
+            riven_module: Arc::new(RwLock::new(None)),
             alert_module: Arc::new(RwLock::new(None)),
             analytics_module: Arc::new(RwLock::new(None)),
             transaction_module: Arc::new(RwLock::new(None)),
@@ -362,8 +363,7 @@ impl QFClient {
     pub fn item(&self) -> ItemModule {
         // Lazily initialize ItemModule if not already initialized
         if self.item_module.read().unwrap().is_none() {
-            *self.item_module.write().unwrap() =
-                Some(ItemModule::new(self.clone()).clone());
+            *self.item_module.write().unwrap() = Some(ItemModule::new(self.clone()).clone());
         }
 
         // Unwrapping is safe here because we ensured the item_module is initialized
@@ -372,8 +372,7 @@ impl QFClient {
     pub fn riven(&self) -> RivenModule {
         // Lazily initialize RivenModule if not already initialized
         if self.riven_module.read().unwrap().is_none() {
-            *self.item_module.write().unwrap() =
-                Some(ItemModule::new(self.clone()).clone());
+            *self.item_module.write().unwrap() = Some(ItemModule::new(self.clone()).clone());
         }
 
         // Unwrapping is safe here because we ensured the item_module is initialized

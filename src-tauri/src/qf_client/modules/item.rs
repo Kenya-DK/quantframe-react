@@ -1,11 +1,15 @@
 use crate::{
-    qf_client::client::QFClient,
+    qf_client::{
+        client::QFClient,
+        types::{paginated::Paginated, syndicates_price::SyndicatesPrice},
+    },
     utils::{
         enums::log_level::LogLevel,
         modules::error::{ApiResult, AppError},
     },
 };
 use eyre::eyre;
+use serde_json::Value;
 
 #[derive(Clone, Debug)]
 pub struct ItemModule {
@@ -72,7 +76,13 @@ impl ItemModule {
         };
     }
 
-    pub async fn get_syndicates_prices(&self,page: i64, limit: i64, filter: Option<Value>, sort: Option<Value>) -> Result<String, AppError> {
+    pub async fn get_syndicates_prices(
+        &self,
+        page: i64,
+        limit: i64,
+        filter: Option<Value>,
+        sort: Option<Value>,
+    ) -> Result<Paginated<SyndicatesPrice>, AppError> {
         let mut params = vec![];
         if let Some(filter) = filter {
             params.push(("filter", filter.to_string()));
@@ -82,9 +92,17 @@ impl ItemModule {
         }
         params.push(("page", page.to_string()));
         params.push(("limit", limit.to_string()));
-        let params = params.iter().map(|(k, v)| format!("{}={}", k, v)).collect::<Vec<String>>().join("&");
+        let params = params
+            .iter()
+            .map(|(k, v)| format!("{}={}", k, v))
+            .collect::<Vec<String>>()
+            .join("&");
         let url = format!("items/syndicates_prices?{}", params);
-        match self.client.get::<String>(url, true).await {
+        match self
+            .client
+            .get::<Paginated<SyndicatesPrice>>(&url, false)
+            .await
+        {
             Ok(ApiResult::Success(payload, _headers)) => {
                 return Ok(payload);
             }

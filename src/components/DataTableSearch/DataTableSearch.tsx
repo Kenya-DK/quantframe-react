@@ -1,15 +1,14 @@
 import { Box } from "@mantine/core";
 import { DataTable, DataTableProps, DataTableSortStatus } from "mantine-datatable";
-import { SortingField } from "$types/index";
 import { useEffect, useState } from "react";
-import { sortArray } from "@utils/sorting.helper";
+import { SortItems, Sort, SortDirection } from "@utils/sorting.helper";
 import { paginate } from "@utils/helper";
 import { SearchField, SearchFieldProps } from "../SearchField";
-import { searchProperties, Query } from "@utils/search.helper";
+import { ApplyFilter, ComplexFilter } from "@utils/filter.helper";
 
 export type DataTableSearchProps<T> = {
-  filters?: Query;
-  sorting?: SortingField;
+  filters?: ComplexFilter;
+  sorting?: Sort;
   query?: string;
   onSearchChange?: (query: string) => void;
 } & DataTableProps<T> &
@@ -27,7 +26,7 @@ export const DataTableSearch = <T,>({
 }: DataTableSearchProps<T>) => {
   // States For DataGrid
   const [page, setPage] = useState(1);
-  const pageSizes = [5, 10, 15, 20, 25, 30, 50, 100];
+  const pageSizes = [1, 5, 10, 15, 20, 25, 30, 50, 100];
   const [pageSize, setPageSize] = useState(pageSizes[4]);
   const [rows, setRows] = useState<T[]>([]);
   const [totalRecords, setTotalRecords] = useState<number>(0);
@@ -41,18 +40,14 @@ export const DataTableSearch = <T,>({
 
     let filteredRecords = records;
 
-    filteredRecords = sortArray(
-      [
-        {
-          field: sortStatus.columnAccessor as string,
-          direction: sortStatus.direction,
-        },
-      ],
-      filteredRecords
-    );
-    if (filters) filteredRecords = searchProperties(records, filters, false);
+    filteredRecords = SortItems(filteredRecords, {
+      field: sortStatus.columnAccessor as string,
+      direction: sortStatus.direction as SortDirection,
+    });
+    if (filters) filteredRecords = ApplyFilter(records, filters);
     setTotalRecords(filteredRecords.length);
     filteredRecords = paginate(filteredRecords, page, pageSize);
+    console.log(filteredRecords.length);
     setRows(filteredRecords);
   }, [filters, page, pageSize, sortStatus]);
   return (

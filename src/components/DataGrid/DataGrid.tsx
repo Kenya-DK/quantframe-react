@@ -1,10 +1,10 @@
 import { Box, Center, Checkbox, Divider, Group, Loader, Pagination, ScrollArea, Select, Table, TableProps, Text } from "@mantine/core";
-import classes from './DataGrid.module.css';
+import classes from "./DataGrid.module.css";
 import React, { useEffect, useState } from "react";
 import { upperFirst } from "@mantine/hooks";
-import { Query, searchProperties } from "@utils/search.helper";
+import { ComplexFilter } from "$types/filter.type";
+import { ApplyFilter } from "@utils/filter.helper";
 import { paginate } from "@utils/helper";
-
 
 export interface DataGridColumnProps<T> {
   title?: string;
@@ -15,7 +15,7 @@ export interface DataGridColumnProps<T> {
 export type DataGridProps<T> = {
   columns: DataGridColumnProps<T>[];
   height?: number | string;
-  filters?: Query;
+  filters?: ComplexFilter;
   records: T[];
   fetching?: boolean;
   customLoader?: React.ReactNode;
@@ -25,29 +25,46 @@ export type DataGridProps<T> = {
   customRowAttributes?: (record: T, index: number) => Record<string, unknown>;
 } & Omit<
   TableProps,
-  | 'onScroll'
-  | 'className'
-  | 'classNames'
-  | 'style'
-  | 'styles'
-  | 'p'
-  | 'px'
-  | 'py'
-  | 'pt'
-  | 'pb'
-  | 'layout'
-  | 'captionSide'
-  | 'c'
-  | 'color'
-  | 'borderColor'
-  | 'stripedColor'
-  | 'highlightOnHoverColor'
-  | 'stickyHeader'
-  | 'stickyHeaderOffset'
-  | 'onDragEnd'
->
-export const DataGrid = <T,>({ m, my, mx, mt, mb, ml, mr, customRowAttributes, records, height, selectedRecords, onSelectionChange, fetching, filters, columns, customLoader, ...otherProps }: DataGridProps<T>) => {
-
+  | "onScroll"
+  | "className"
+  | "classNames"
+  | "style"
+  | "styles"
+  | "p"
+  | "px"
+  | "py"
+  | "pt"
+  | "pb"
+  | "layout"
+  | "captionSide"
+  | "c"
+  | "color"
+  | "borderColor"
+  | "stripedColor"
+  | "highlightOnHoverColor"
+  | "stickyHeader"
+  | "stickyHeaderOffset"
+  | "onDragEnd"
+>;
+export const DataGrid = <T,>({
+  m,
+  my,
+  mx,
+  mt,
+  mb,
+  ml,
+  mr,
+  customRowAttributes,
+  records,
+  height,
+  selectedRecords,
+  onSelectionChange,
+  fetching,
+  filters,
+  columns,
+  customLoader,
+  ...otherProps
+}: DataGridProps<T>) => {
   // States For DataGrid
   const [page, setPage] = useState(1);
   const pageSizes = [5, 10, 15, 20, 25, 30, 50, 100];
@@ -60,8 +77,7 @@ export const DataGrid = <T,>({ m, my, mx, mt, mb, ml, mr, customRowAttributes, r
 
   useEffect(() => {
     let filteredRecords = [...records];
-    if (filters)
-      filteredRecords = searchProperties(records, filters);
+    if (filters) filteredRecords = ApplyFilter(records, filters);
     // Pagination Logic
     setTotalRecords(filteredRecords.length);
     setTotalPages(Math.ceil(filteredRecords.length / pageSize));
@@ -71,19 +87,17 @@ export const DataGrid = <T,>({ m, my, mx, mt, mb, ml, mr, customRowAttributes, r
     setRows(filteredRecords);
   }, [records, filters, page, pageSize]);
 
-
   const GetCellValues = (record: T, col: DataGridColumnProps<T>): React.ReactNode => {
-    if (col.render)
-      return col.render(record);
+    if (col.render) return col.render(record);
     return record[col.accessor as keyof T] as unknown as React.ReactNode;
-  }
+  };
   const marginProperties = { m, my, mx, mt, mb, ml, mr };
   return (
     <Box pos="relative" {...marginProperties}>
       <Center className={classes.loader} data-fetching={fetching}>
         {customLoader || <Loader />}
       </Center>
-      <ScrollArea.Autosize type="auto" h={height} >
+      <ScrollArea.Autosize type="auto" h={height}>
         <Table verticalSpacing="5px" classNames={classes} {...otherProps}>
           <Table.Thead className={classes.thead}>
             <Table.Tr>
@@ -92,33 +106,25 @@ export const DataGrid = <T,>({ m, my, mx, mt, mb, ml, mr, customRowAttributes, r
                   <Checkbox
                     aria-label="Select all rows"
                     checked={selectedRecords.length === rows.length}
-                    onChange={(event) =>
-                      onSelectionChange?.(
-                        event.currentTarget.checked ? rows : []
-                      )
-                    }
+                    onChange={(event) => onSelectionChange?.(event.currentTarget.checked ? rows : [])}
                   />
                 </Table.Th>
               )}
               {columns.map((col, index) => (
-                <Table.Th key={index}>
-                  {col.title || upperFirst(col.accessor.toString())}
-                </Table.Th>
+                <Table.Th key={index}>{col.title || upperFirst(col.accessor.toString())}</Table.Th>
               ))}
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
             {rows.map((_record, index) => (
-              <Table.Tr {...(customRowAttributes?.(_record, index) ?? {})} key={index} >
+              <Table.Tr {...(customRowAttributes?.(_record, index) ?? {})} key={index}>
                 {selectedRecords && (
                   <Table.Td w={30}>
                     <Checkbox
                       checked={selectedRecords.includes(_record)}
                       onChange={(event) =>
                         onSelectionChange?.(
-                          event.currentTarget.checked
-                            ? [...selectedRecords, _record]
-                            : selectedRecords.filter((x) => x !== _record)
+                          event.currentTarget.checked ? [...selectedRecords, _record] : selectedRecords.filter((x) => x !== _record)
                         )
                       }
                     />
@@ -136,7 +142,9 @@ export const DataGrid = <T,>({ m, my, mx, mt, mb, ml, mr, customRowAttributes, r
       </ScrollArea.Autosize>
       <Divider />
       <Group h={"35px"} justify="space-between" mt={"sm"}>
-        <Text size="sm">{start} - {end} / {totalRecords}</Text>
+        <Text size="sm">
+          {start} - {end} / {totalRecords}
+        </Text>
         <Group>
           <Text size="sm">Rows: </Text>
           <Select
@@ -150,7 +158,6 @@ export const DataGrid = <T,>({ m, my, mx, mt, mb, ml, mr, customRowAttributes, r
           <Pagination size={"sm"} value={page} onChange={setPage} total={totalPages} />
         </Group>
       </Group>
-
     </Box>
-  )
-}
+  );
+};

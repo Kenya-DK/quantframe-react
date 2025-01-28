@@ -288,6 +288,8 @@ pub fn run() {
             commands::wish_list::wish_list_bought,
             // Notification commands
             commands::notification::send_system_notification,
+            // Item commands
+            commands::item::item_get_syndicates_prices,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
