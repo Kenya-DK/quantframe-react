@@ -18,8 +18,9 @@ import { Loading } from "@components/Loading";
 import { TextTranslate } from "@components/TextTranslate";
 import { ActionWithTooltip } from "@components/ActionWithTooltip";
 import { SearchField } from "@components/SearchField";
-import { sortArray } from "@utils/sorting.helper";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
+import { SortItems } from "@utils/sorting.helper";
+import { SortDirection } from "$types/index";
 
 interface TransactionPanelProps {}
 export const TransactionPanel = ({}: TransactionPanelProps) => {
@@ -80,15 +81,10 @@ export const TransactionPanel = ({}: TransactionPanelProps) => {
     if (filterItemType) items = items.filter((item) => item.item_type === filterItemType);
 
     setTotalRecords(items.length);
-    items = sortArray(
-      [
-        {
-          field: sortStatus.columnAccessor,
-          direction: sortStatus.direction,
-        },
-      ],
-      items
-    );
+    items = SortItems(items, {
+      field: sortStatus.columnAccessor,
+      direction: sortStatus.direction as SortDirection,
+    });
 
     items = paginate(items, page, pageSize);
     setRows(items);

@@ -1,8 +1,15 @@
 import { Container, ScrollArea, Text, SimpleGrid, Box } from "@mantine/core";
 import { useStockContextContext } from "../../contexts/stock.context";
+import { useEffect } from "react";
+import api from "../../api";
 
 export default function TestPage() {
   const { rivens } = useStockContextContext();
+  useEffect(() => {
+    api.items.getSyndicatesPrices(1, 25).then((res) => {
+      console.log(res);
+    });
+  }, []);
   return (
     <Container size={"100%"}>
       <ScrollArea mt={"md"} h={"calc(100vh - 300px)"}>

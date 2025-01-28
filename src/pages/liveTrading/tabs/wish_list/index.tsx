@@ -10,7 +10,7 @@ import { Loading } from "@components/Loading";
 import { useLiveScraperContext } from "@contexts/liveScraper.context";
 import { useStockContextContext } from "@contexts/stock.context";
 import { DataTableSearch } from "@components/DataTableSearch";
-import { Query } from "@utils/search.helper";
+import { ComplexFilter, Operator } from "@utils/filter.helper";
 import { CreateStockItemForm } from "@components/Forms/CreateStockItem";
 import { useMutation } from "@tanstack/react-query";
 import api from "@api/index";
@@ -30,7 +30,7 @@ export const WishListPanel = ({}: WishListPanelProps) => {
 
   // States For DataGrid
   const [query, setQuery] = useState<string>("");
-  const [filters, setFilters] = useState<Query>({});
+  const [filters, setFilters] = useState<ComplexFilter>({});
   const [selectedRecords, setSelectedRecords] = useState<WishListItem[]>([]);
 
   const [filterStatus, setFilterStatus] = useState<StockStatus | undefined>(undefined);
@@ -62,8 +62,8 @@ export const WishListPanel = ({}: WishListPanelProps) => {
 
   // Update Database Rows
   useEffect(() => {
-    let filter: Query = {
-      $or: [],
+    let filter: ComplexFilter = {
+      OR: [],
     };
     if (!wish_lists) return;
 
@@ -74,8 +74,19 @@ export const WishListPanel = ({}: WishListPanelProps) => {
       }, {} as { [key: string]: number })
     );
 
-    if (filterStatus) filter = { $match: { status: filterStatus } };
-    if (query) filter = { ...filter, $or: [{ item_name: { $contains: query } }] };
+    if (filterStatus)
+      filter.OR?.push({
+        status: {
+          [Operator.EQUALS]: filterStatus,
+        },
+      });
+    if (query)
+      filter.OR?.push({
+        item_name: {
+          [Operator.CONTAINS_VALUE]: query,
+          isCaseSensitive: false,
+        },
+      });
 
     setFilters(filter);
     setSelectedRecords([]);
