@@ -32,7 +32,7 @@ pub struct Model {
     pub updated_at: DateTimeUtc,
     #[sea_orm(created_at)]
     pub created_at: DateTimeUtc,
-
+    pub is_hidden: bool,
     #[sea_orm(ignore)]
     #[serde(rename = "is_dirty", default)]
     pub is_dirty: bool,
@@ -78,6 +78,7 @@ impl Model {
             created_at: Default::default(),
             is_dirty: true,
             locked: false,
+            is_hidden: false,
             changes: None,
         }
     }

@@ -6,6 +6,7 @@ export interface WishListItem extends Omit<StockEntryBase, "minimum_price"> {
   wfm_url: string;
   quantity: number;
   maximum_price?: number;
+  is_hidden: boolean;
   info?: WishListItemDetails;
 }
 export interface CreateWishListItem extends Omit<CreateStockItem, "bought" | "minimum_price"> {
@@ -15,6 +16,7 @@ export interface CreateWishListItem extends Omit<CreateStockItem, "bought" | "mi
 export interface UpdateWishListItem {
   id: number;
   maximum_price?: number;
+  is_hidden?: boolean;
   sub_type?: SubType;
 }
 

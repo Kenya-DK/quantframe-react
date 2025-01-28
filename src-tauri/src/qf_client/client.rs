@@ -28,7 +28,7 @@ use crate::{
 
 use super::modules::{
     alert::AlertModule, analytics::AnalyticsModule, auth::AuthModule, cache::CacheModule,
-    price_scraper::PriceScraperModule, transaction::TransactionModule,
+    item::ItemModule, riven::RivenModule, transaction::TransactionModule,
 };
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -45,7 +45,8 @@ pub struct QFClient {
     limiter: Arc<tokio::sync::Mutex<RateLimiter>>,
     auth_module: Arc<RwLock<Option<AuthModule>>>,
     cache_module: Arc<RwLock<Option<CacheModule>>>,
-    price_module: Arc<RwLock<Option<PriceScraperModule>>>,
+    item_module: Arc<RwLock<Option<ItemModule>>>,
+    riven_module: Arc<RwLock<Option<RivenModule>>>,
     analytics_module: Arc<RwLock<Option<AnalyticsModule>>>,
     alert_module: Arc<RwLock<Option<AlertModule>>>,
     transaction_module: Arc<RwLock<Option<TransactionModule>>>,
@@ -65,7 +66,7 @@ impl QFClient {
             ))),
             auth_module: Arc::new(RwLock::new(None)),
             cache_module: Arc::new(RwLock::new(None)),
-            price_module: Arc::new(RwLock::new(None)),
+            item_module: Arc::new(RwLock::new(None)),
             alert_module: Arc::new(RwLock::new(None)),
             analytics_module: Arc::new(RwLock::new(None)),
             transaction_module: Arc::new(RwLock::new(None)),
@@ -358,23 +359,33 @@ impl QFClient {
         self.cache_module.read().unwrap().as_ref().unwrap().clone()
     }
 
-    pub fn price(&self) -> PriceScraperModule {
-        // Lazily initialize PriceScraperModule if not already initialized
-        if self.price_module.read().unwrap().is_none() {
-            *self.price_module.write().unwrap() =
-                Some(PriceScraperModule::new(self.clone()).clone());
+    pub fn item(&self) -> ItemModule {
+        // Lazily initialize ItemModule if not already initialized
+        if self.item_module.read().unwrap().is_none() {
+            *self.item_module.write().unwrap() =
+                Some(ItemModule::new(self.clone()).clone());
         }
 
-        // Unwrapping is safe here because we ensured the price_module is initialized
-        self.price_module.read().unwrap().as_ref().unwrap().clone()
+        // Unwrapping is safe here because we ensured the item_module is initialized
+        self.item_module.read().unwrap().as_ref().unwrap().clone()
+    }
+    pub fn riven(&self) -> RivenModule {
+        // Lazily initialize RivenModule if not already initialized
+        if self.riven_module.read().unwrap().is_none() {
+            *self.item_module.write().unwrap() =
+                Some(ItemModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the item_module is initialized
+        self.riven_module.read().unwrap().as_ref().unwrap().clone()
     }
     pub fn auth(&self) -> AuthModule {
-        // Lazily initialize PriceScraperModule if not already initialized
+        // Lazily initialize AuthModule if not already initialized
         if self.auth_module.read().unwrap().is_none() {
             *self.auth_module.write().unwrap() = Some(AuthModule::new(self.clone()).clone());
         }
 
-        // Unwrapping is safe here because we ensured the price_module is initialized
+        // Unwrapping is safe here because we ensured the item_module is initialized
         self.auth_module.read().unwrap().as_ref().unwrap().clone()
     }
 

@@ -53,7 +53,6 @@ pub async fn stock_item_create(
     sub_type: Option<SubType>,
     quantity: i64,
     is_from_order: bool,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,

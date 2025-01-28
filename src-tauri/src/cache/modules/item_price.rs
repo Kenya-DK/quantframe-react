@@ -78,7 +78,7 @@ impl ItemPriceModule {
     }
     pub async fn download_cache_data(&mut self) -> Result<(), AppError> {
         let qf = states::qf_client()?;
-        let price_data = qf.price().get_json_file().await?;
+        let price_data = qf.item().get_item_price_json_file().await?;
         match self.client.write_text_to_file(&self.path, price_data) {
             Ok(_) => {
                 logger::info_con(&self.component, "Item prices have been updated.");
@@ -94,7 +94,7 @@ impl ItemPriceModule {
             &self.component,
             format!("Current price cache id: {}", current_cache_id).as_str(),
         );
-        let remote_cache_id = match qf.price().get_cache_id().await {
+        let remote_cache_id = match qf.item().get_item_price_cache_id().await {
             Ok(id) => id,
             Err(e) => {
                 logger::error_con(
