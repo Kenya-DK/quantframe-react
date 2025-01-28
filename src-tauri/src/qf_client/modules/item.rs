@@ -28,7 +28,7 @@ impl ItemModule {
     // fn update_state(&self) {
     //     self.client.update_cache_module(self.clone());
     // }
-    pub async fn get_item_price_json_file(&self) -> Result<Vec<u8>, AppError> {
+    pub async fn get_price_json_file(&self) -> Result<Vec<u8>, AppError> {
         match self.client.get_bytes("items/price_download").await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
@@ -53,7 +53,7 @@ impl ItemModule {
         };
     }
 
-    pub async fn get_item_price_cache_id(&self) -> Result<String, AppError> {
+    pub async fn get_price_cache_id(&self) -> Result<String, AppError> {
         match self.client.get::<String>("items/price_md5", true).await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 return Ok(payload);
