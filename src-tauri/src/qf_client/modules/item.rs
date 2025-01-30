@@ -80,13 +80,9 @@ impl ItemModule {
         &self,
         page: i64,
         limit: i64,
-        filter: Option<Value>,
         sort: Option<Value>,
     ) -> Result<Paginated<SyndicatesPrice>, AppError> {
         let mut params = vec![];
-        if let Some(filter) = filter {
-            params.push(("filter", filter.to_string()));
-        }
         if let Some(sort) = sort {
             params.push(("sort", sort.to_string()));
         }
