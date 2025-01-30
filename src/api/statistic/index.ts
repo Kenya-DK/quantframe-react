@@ -154,8 +154,8 @@ export class StatisticModule {
   }
 
   private GetToDayProfit(transactions: TransactionDto[]): StatisticProfitTransactionToday {
-    let today = dayjs().startOf("day").toDate();
-    let endToday = dayjs().endOf('day').toDate();
+    let today = dayjs().utc().startOf("day").toDate();
+    let endToday = dayjs().utc().endOf('day').toDate();
     const labels = [];
     for (let i = 0; i < 24; i++) labels.push(`${i}:00`);
 
