@@ -622,9 +622,9 @@ impl ItemModule {
 
         // Get my order if it exists, otherwise empty values.
         let mut user_order = match my_orders.find_order_by_url_sub_type(
-            &item_info.wfm_url_name,
+            &entry.wfm_url,
             OrderType::Buy,
-            wish_list_item.sub_type.as_ref(),
+            entry.sub_type.as_ref(),
         ) {
             Some(mut order) => {
                 order.operation = vec![];
