@@ -26,7 +26,7 @@ impl TradableItemModule {
             client,
             // debug_id: "ch_client_auction".to_string(),
             component: "TradeableItem".to_string(),
-            path: PathBuf::from("items/TradableItemItems.json"),
+            path: PathBuf::from("items/TradableItems.json"),
             items: Vec::new(),
         }
     }

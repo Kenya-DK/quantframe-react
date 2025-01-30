@@ -14,16 +14,11 @@ use crate::{
 pub async fn item_get_syndicates_prices(
     page: i64,
     limit: i64,
-    filter: Option<Value>,
     sort: Option<Value>,
     qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<Paginated<SyndicatesPrice>, AppError> {
     let qf = qf.lock().expect("Could not lock qf").clone();
-    match qf
-        .item()
-        .get_syndicates_prices(page, limit, filter, sort)
-        .await
-    {
+    match qf.item().get_syndicates_prices(page, limit, sort).await {
         Ok(list) => Ok(list),
         Err(e) => Err(e),
     }
