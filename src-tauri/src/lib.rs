@@ -290,6 +290,7 @@ pub fn run() {
             commands::notification::send_system_notification,
             // Item commands
             commands::item::item_get_syndicates_prices,
+            commands::item::item_get_prices,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

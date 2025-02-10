@@ -792,18 +792,22 @@ export const en = {
         variant: {
           label: "Variant",
           placeholder: "Select variant...",
+          description: "Please select a variant",
         },
         rank: {
           label: "Rank",
           placeholder: "Select rank...",
+          description: "Please select a rank",
         },
         cyan_stars: {
           label: "Cyan Stars",
           placeholder: "Select cyan stars...",
+          description: "How many cyan stars",
         },
         amber_stars: {
           label: "Amber Stars",
           placeholder: "Select amber stars...",
+          description: "How many amber stars",
         },
       },
     },
@@ -848,6 +852,7 @@ export const en = {
           statistics: "Statistics",
           warframe_market: "Warframe Market",
           debug: "Debug",
+          prices: "Prices",
           about: "About",
           test: "Test",
         },
@@ -1528,6 +1533,81 @@ export const en = {
         login: {
           title: "Login Success",
           message: "Welcome back! {{name}}",
+        },
+      },
+    },
+    prices: {
+      tabs: {
+        item: {
+          title: "Items",
+          datatable: {
+            columns: {
+              name: {
+                title: "Name",
+                value: "<white>{{name}}</white> <blue>{{sub_type}}</blue>",
+              },
+              volume: "Volume",
+              min_price: "Min Price",
+              max_price: "Max Price",
+              avg_price: "Avg Price",
+              moving_avg: "Moving Avg",
+            },
+          },
+          charts: {
+            title: "Price Chart",
+            datasets: {
+              volume: "Volume",
+              min_price: "Min Price",
+              max_price: "Max Price",
+              avg_price: "Avg Price",
+              median_price: "Median Price",
+              moving_avg: "Moving Avg",
+            },
+          },
+          fields: {
+            date_range: {
+              label: "Price Date Range",
+              description: "Select date range",
+              placeholder: "Jan 1, 2021 - Jan 31, 2021",
+            },
+            item: {
+              description: "Select a item to view prices",
+            },
+            view: {
+              label: "View Mode",
+              description: "Select view mode",
+              options: {
+                chart: "Chart",
+                table: "Table",
+              },
+            },
+          },
+          errors: {
+            invalid_date: "Invalid date range",
+            invalid_date_range: "Start date must be before end date",
+            date_range_max_days: "Date range must be less than {{days}} days",
+          },
+        },
+        syndicate: {
+          title: "Syndicates",
+          datatable: {
+            columns: {
+              syndicate: "Syndicate",
+              name: {
+                title: "Name",
+                value: "<white>{{name}}</white> <blue>{{sub_type}}</blue>",
+              },
+              min_price: "Min Price",
+              volume: "Volume",
+              max_price: "Max Price",
+              avg_price: "Avg Price",
+              standing: "Cost",
+              datetime: "Last Update",
+            },
+          },
+        },
+        riven: {
+          title: "Rivens",
         },
       },
     },

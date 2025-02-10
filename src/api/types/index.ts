@@ -19,3 +19,4 @@ export * from "./wishList.type";
 export * from "./alert.type";
 export * from "./paginated.type";
 export * from "./item.type";
+export * from "./paginatedWithInclude.type";
