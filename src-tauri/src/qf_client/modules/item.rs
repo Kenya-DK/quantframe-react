@@ -1,15 +1,19 @@
 use crate::{
     qf_client::{
         client::QFClient,
-        types::{paginated::Paginated, syndicates_price::SyndicatesPrice},
+        types::{
+            item_price::ItemPrice, item_price_chat::ItemPriceChat, paginated::Paginated,
+            paginated_with_include::PaginatedWithInclude, syndicates_price::SyndicatesPrice,
+        },
     },
     utils::{
         enums::log_level::LogLevel,
         modules::error::{ApiResult, AppError},
     },
 };
+use entity::sub_type::SubType;
 use eyre::eyre;
-use serde_json::Value;
+use serde_json::{json, Value};
 
 #[derive(Clone, Debug)]
 pub struct ItemModule {
@@ -33,7 +37,7 @@ impl ItemModule {
     //     self.client.update_cache_module(self.clone());
     // }
     pub async fn get_price_json_file(&self) -> Result<Vec<u8>, AppError> {
-        match self.client.get_bytes("items/price_download").await {
+        match self.client.get_bytes("items/price/download").await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
                     &self.debug_id,
@@ -58,7 +62,7 @@ impl ItemModule {
     }
 
     pub async fn get_price_cache_id(&self) -> Result<String, AppError> {
-        match self.client.get::<String>("items/price_md5", true).await {
+        match self.client.get::<String>("items/price/md5", true).await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 return Ok(payload);
             }
@@ -97,6 +101,70 @@ impl ItemModule {
         match self
             .client
             .get::<Paginated<SyndicatesPrice>>(&url, false)
+            .await
+        {
+            Ok(ApiResult::Success(payload, _headers)) => {
+                return Ok(payload);
+            }
+            Ok(ApiResult::Error(error, _headers)) => {
+                return Err(self.client.create_api_error(
+                    &self.get_component("GetSyndicatesPrices"),
+                    error,
+                    eyre!("There was an error fetching the syndicates prices"),
+                    LogLevel::Error,
+                ));
+            }
+            Err(err) => {
+                return Err(err);
+            }
+        };
+    }
+    pub async fn get_prices(
+        &self,
+        page: i64,
+        limit: i64,
+        from_date: String,
+        to_date: String,
+        order_type: Option<String>,
+        wfm_url: Option<String>,
+        sub_type: Option<SubType>,
+        include: Option<String>,
+        group_by: Option<String>,
+        sort: Option<Value>,
+    ) -> Result<PaginatedWithInclude<ItemPrice, ItemPriceChat>, AppError> {
+        let mut params = vec![];
+        params.push(("page", page.to_string()));
+        params.push(("limit", limit.to_string()));
+        params.push(("from_date", from_date));
+        params.push(("to_date", to_date));
+        if let Some(order_type) = order_type {
+            params.push(("order_type", order_type));
+        }
+        if let Some(wfm_url) = wfm_url {
+            params.push(("wfm_url", wfm_url));
+        }
+        if let Some(include) = include {
+            params.push(("include", include));
+        }
+        if let Some(group_by) = group_by {
+            params.push(("group_by", group_by));
+        }
+        if let Some(sort) = sort {
+            params.push(("sort", sort.to_string()));
+        }
+        if let Some(sub_type) = sub_type {
+            params.push(("sub_type", json!(sub_type).to_string()));
+        }
+
+        let params = params
+            .iter()
+            .map(|(k, v)| format!("{}={}", k, v))
+            .collect::<Vec<String>>()
+            .join("&");
+        let url = format!("items/prices?{}", params);
+        match self
+            .client
+            .get::<PaginatedWithInclude<ItemPrice, ItemPriceChat>>(&url, false)
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {

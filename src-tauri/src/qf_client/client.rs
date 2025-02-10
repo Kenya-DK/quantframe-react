@@ -177,7 +177,7 @@ impl QFClient {
             .header("App", packageinfo.name.to_string())
             .header("Device", auth.get_device_id())
             .header("Version", packageinfo.version.to_string())
-            .header("UserName", auth.ingame_name)
+            .header("IngameName", auth.ingame_name)
             .header("UserId", auth.id);
 
         let request = match body.clone() {
