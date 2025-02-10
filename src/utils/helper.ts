@@ -126,7 +126,6 @@ export const getCssVariable = (name: string) => {
 
 export const GetSubTypeDisplay = (subType: SubType | undefined) => {
   if (!subType || Object.keys(subType).length == 0) return "";
-  debugger;
   const { rank, variant, amber_stars, cyan_stars } = subType;
   let display = "";
   if (rank != undefined) display += `(R${rank})`;
