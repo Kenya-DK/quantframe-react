@@ -56,7 +56,7 @@ pub async fn app_init(
     let wfm = wfm.lock()?.clone();
     let cache = cache.lock()?.clone();
     let qf = qf.lock()?.clone();
-    let mut log_parser = log_parser.lock()?.clone();
+    let log_parser = log_parser.lock()?.clone();
     let mut auth_state = auth.lock()?.clone();
 
     // Start Log Parser
@@ -102,6 +102,7 @@ pub async fn app_init(
             "description": app_info.description,
             "authors": app_info.authors,
             "is_pre_release": app.is_pre_release,
+            "is_development": app.is_development,
         })),
     );
 
@@ -204,11 +205,7 @@ pub async fn app_init(
         // Login to QuantFrame
         qf_user = match qf
             .auth()
-            .login_or_register(
-                &auth_state.get_username(),
-                &auth_state.get_password(),
-                &auth_state.ingame_name.clone(),
-            )
+            .login_or_register(&auth_state.get_username(), &auth_state.get_password())
             .await
         {
             Ok(user) => {
@@ -228,10 +225,12 @@ pub async fn app_init(
     }
 
     // Send User to UI
+    let mut user_payload = json!(&auth_state);
+    user_payload["user_hash"] = json!(&auth_state.get_user_hash());
     notify.gui().send_event_update(
         UIEvent::UpdateUser,
         UIOperationEvent::Set,
-        Some(json!(&auth_state.clone())),
+        Some(json!(&user_payload)),
     );
 
     // Save AuthState to Tauri State

@@ -143,7 +143,7 @@ impl ItemPriceModule {
         let item = items
             .iter()
             .find(|item| {
-                item.url_name == url_name
+                item.wfm_url == url_name
                     && item.order_type == order_type
                     && item.sub_type == sub_type
             })
