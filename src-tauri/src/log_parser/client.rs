@@ -131,7 +131,6 @@ impl LogParser {
 
         for (_, line) in reader.lines().enumerate() {
             if let Ok(line) = line {
-                println!("{}", line);
                 if self.trade_event().process_line(&line, *last_file_size)? {
                     continue;
                 }
