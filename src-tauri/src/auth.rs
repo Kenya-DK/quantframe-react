@@ -36,9 +36,6 @@ pub struct AuthState {
     pub locale: String,
     pub platform: String,
     pub region: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "role")]
-    pub role: Option<crate::qf_client::types::user_role::UserRole>,
     #[serde(default = "AuthState::order_limit")]
     pub order_limit: i64,
     #[serde(default = "AuthState::auctions_limit")]
@@ -67,7 +64,6 @@ impl Default for AuthState {
             platform: "".to_string(),
             region: "".to_string(),
             check_code: "".to_string(),
-            role: None,
             order_limit: 100,
             unread_messages: 0,
             auctions_limit: 50,
@@ -118,6 +114,10 @@ impl AuthState {
         // TODO: Enable This
         self.check_code.clone()
         // digest(format!("hashStart-{}-hashEnd", self.check_code).as_bytes())
+    }
+
+    pub fn get_user_hash(&self) -> String {
+        digest(format!("hashStart-{}-{}-hashEnd", self.id, self.check_code).as_bytes())
     }
 
     pub fn get_device_id(&self) -> String {
@@ -173,7 +173,6 @@ impl AuthState {
         self.platform = "".to_string();
         self.region = "".to_string();
         self.check_code = "".to_string();
-        self.role = None;
         self.order_limit = 100;
         self.auctions_limit = 50;
         self.status = Some("invisible".to_string());
@@ -188,7 +187,6 @@ impl AuthState {
         self.qf_banned = user_profile.banned;
         self.qf_banned_reason = user_profile.banned_reason.clone();
         self.qf_banned_until = user_profile.banned_until.clone();
-        self.role = user_profile.role.clone();
     }
 
     pub fn save_to_file(&self) -> Result<(), AppError> {

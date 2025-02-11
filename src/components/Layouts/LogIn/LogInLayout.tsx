@@ -2,7 +2,7 @@ import { AppShell, Box, Indicator } from "@mantine/core";
 import classes from "./LogInLayout.module.css";
 import { Outlet, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBug, faDesktop, faEnvelope, faGlobe, faHome, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import { faBug, faChartSimple, faDesktop, faEnvelope, faGlobe, faHome, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
 import { useAppContext } from "@contexts/app.context";
 import { useEffect, useState } from "react";
@@ -67,6 +67,14 @@ export function LogInLayout() {
       link: "warframe-market",
       icon: <SvgIcon svgProp={{ width: 32, height: 32, fill: "#d5d7e0" }} iconType={SvgType.Default} iconName={"wfm_logo"} />,
       label: useTranslateNavBar("warframe_market"),
+      onClick: (e: NavbarLinkProps) => handleNavigate(e),
+    },
+    {
+      align: "top",
+      id: "prices",
+      link: "prices",
+      icon: <FontAwesomeIcon icon={faChartSimple} />,
+      label: useTranslateNavBar("prices"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
     },
     {

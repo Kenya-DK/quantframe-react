@@ -34,10 +34,7 @@ impl AuthModule {
 
         match self
             .client
-            .get::<User>(
-                &format!("auth/profile?v={}", app.get_app_info().version),
-                false,
-            )
+            .get::<User>(&format!("auth/me?v={}", app.get_app_info().version), false)
             .await
         {
             Ok(ApiResult::Success(user, _)) => {
@@ -59,18 +56,11 @@ impl AuthModule {
             Err(e) => return Err(e),
         };
     }
-    pub async fn login(
-        &self,
-        username: &str,
-        password: &str,
-        in_game_name: &str,
-    ) -> Result<User, AppError> {
+    pub async fn login(&self, username: &str, password: &str) -> Result<User, AppError> {
         let app = states::app_state()?;
         let body = json!({
             "username": username,
             "password": password,
-            "ingame_name": in_game_name,
-            "current_version": app.get_app_info().version.to_string(),
         });
         match self.client.post::<User>("auth/login", body).await {
             Ok(ApiResult::Success(user, _)) => {
@@ -107,10 +97,9 @@ impl AuthModule {
         &self,
         username: &str,
         password: &str,
-        in_game_name: &str,
     ) -> Result<User, AppError> {
         // Try to login first
-        match self.login(username, password, in_game_name).await {
+        match self.login(username, password).await {
             Ok(user) => {
                 self.client.analytics().set_send_metrics(true);
                 return Ok(user);
@@ -123,7 +112,7 @@ impl AuthModule {
             }
         };
         // Try to register if login fails
-        match self.register(username, password, in_game_name).await {
+        match self.register(username, password).await {
             Ok(user) => {
                 return Ok(user);
             }
@@ -135,26 +124,13 @@ impl AuthModule {
             }
         };
     }
-    pub async fn register(
-        &self,
-        username: &str,
-        password: &str,
-        in_game_name: &str,
-    ) -> Result<User, AppError> {
-        let app = states::app_state()?;
+    pub async fn register(&self, username: &str, password: &str) -> Result<User, AppError> {
         let body = json!({
             "username": username,
             "password": password,
-            "password_confirmation": password,
-            "ingame_name": in_game_name,
-            "current_version": app.get_app_info().version.to_string(),
         });
 
-        let (user, _): (User, HeaderMap) = match self
-            .client
-            .put::<User>("auth/registration", Some(body))
-            .await
-        {
+        let (user, _): (User, HeaderMap) = match self.client.post::<User>("users", body).await {
             Ok(ApiResult::Success(user, headers)) => (user, headers),
             Ok(ApiResult::Error(e, _headers)) => {
                 return Err(self.client.create_api_error(

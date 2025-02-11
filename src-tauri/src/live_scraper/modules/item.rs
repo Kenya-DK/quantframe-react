@@ -471,13 +471,13 @@ impl ItemModule {
         // Dynamic filter using closures
         let order_type_filter = |item: &ItemPriceInfo| item.order_type == "closed";
         let volume_filter = |item: &ItemPriceInfo| item.volume > volume_threshold as f64;
-        let range_filter = |item: &ItemPriceInfo| item.range > range_threshold as f64;
+        let range_filter = |item: &ItemPriceInfo| item.profit > range_threshold as f64;
         let avg_price_filter = |item: &ItemPriceInfo| item.avg_price <= avg_price_cap as f64;
         let week_price_shift_filter =
             |item: &ItemPriceInfo| item.week_price_shift >= price_shift_threshold as f64;
         let trading_tax_cap_filter =
             |item: &ItemPriceInfo| trading_tax_cap <= 0 || item.trading_tax < trading_tax_cap;
-        let black_list_filter = |item: &ItemPriceInfo| !black_list.contains(&item.url_name);
+        let black_list_filter = |item: &ItemPriceInfo| !black_list.contains(&item.wfm_url);
 
         // Combine multiple filters dynamically
         let combined_filter = |item: &ItemPriceInfo| {
@@ -499,7 +499,7 @@ impl ItemModule {
                 ItemEntry::new(
                     None,
                     None,
-                    item.url_name.clone(),
+                    item.wfm_url.clone(),
                     item.sub_type.clone(),
                     0,
                     buy_quantity,

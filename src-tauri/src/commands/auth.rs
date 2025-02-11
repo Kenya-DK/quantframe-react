@@ -40,11 +40,7 @@ pub async fn auth_login(
     // Login/Register to Quantframe
     let (qf_user, qf_token) = match qf
         .auth()
-        .login_or_register(
-            &auth_state.get_username(),
-            &auth_state.get_password(),
-            wfm_user.ingame_name.clone().unwrap().as_str(),
-        )
+        .login_or_register(&auth_state.get_username(), &auth_state.get_password())
         .await
     {
         Ok(user) => (Some(user.clone()), user.token),
