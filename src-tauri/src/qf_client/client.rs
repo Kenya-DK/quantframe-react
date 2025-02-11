@@ -177,8 +177,9 @@ impl QFClient {
             .header("App", packageinfo.name.to_string())
             .header("Device", auth.get_device_id())
             .header("Version", packageinfo.version.to_string())
-            .header("IngameName", auth.ingame_name)
-            .header("UserId", auth.id);
+            .header("wfm_user_name", auth.ingame_name)
+            .header("Platform", "PC".to_string())
+            .header("wfm_id", auth.id);
 
         let request = match body.clone() {
             Some(content) => request.json(&content),
