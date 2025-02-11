@@ -10,10 +10,12 @@ export class SocketBase {
   private _last_event_received: Date | undefined;
   private _reconnect_interval = 3 * 60 * 1000; // 3 minutes
   private _cookiePrefix = "JWT";
-  public constructor(host: string, token?: string, cookieKey?: string) {
+  private _user_agent = "QuantframeWS";
+  public constructor(host: string, token?: string, cookieKey?: string, user_agent?: string) {
     this._host = host;
     if (token) this._token = token;
     if (cookieKey) this._cookiePrefix = cookieKey;
+    if (user_agent) this._user_agent = user_agent;
     console.group("%cInitializing New Socket", this._colors[0]);
     console.log(`%cHost: %c${host}`, this._colors[0], this._colors[1]);
     console.log(`%cToken: %c${token}`, this._colors[0], this._colors[1]);
@@ -24,16 +26,13 @@ export class SocketBase {
   }
 
   private reconnect = async (): Promise<boolean> => {
+    if (this.socket) await this.disconnect();
     if (!this._token) return false;
-    if (this.socket) {
-      this.listener.fire("disconnect");
-      await this.socket.disconnect();
-      this.socket = undefined;
-    }
 
     WebSocket.connect(this._host, {
       headers: {
         Cookie: `${this._cookiePrefix}=${this._token}`,
+        "User-Agent": this._user_agent,
       },
     })
       .then((ws) => {
@@ -63,9 +62,8 @@ export class SocketBase {
         console.log(`%cHost: %c${this._host}`, this._colors[0], this._colors[1]);
         console.log(`%cError`, "color: red", e);
         console.groupEnd();
-        this.socket = undefined;
-        this.listener.fire("disconnect");
         this.listener.fire("error", e);
+        this.disconnect();
         return false;
       });
     return true;
@@ -88,9 +86,18 @@ export class SocketBase {
           }
         }
       } catch (e) {
-        this.socket = undefined;
+        this.listener.fire("error", e);
+        await this.disconnect();
       }
     }, 1000);
+  };
+
+  private disconnect = async () => {
+    this.listener.fire("disconnect");
+    if (this.socket) {
+      await this.socket.disconnect();
+      this.socket = undefined;
+    }
   };
 
   public shouldReconnect = () => {
