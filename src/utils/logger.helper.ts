@@ -15,7 +15,7 @@ export enum LogLevel {
 }
 
 export const doLog = async (component: string, msg: string, level: LogLevel, settings: LogSettings = { console: true }) => {
-  await invoke("log", {
+  await invoke("log_send", {
     component,
     msg: msg,
     level: level,
