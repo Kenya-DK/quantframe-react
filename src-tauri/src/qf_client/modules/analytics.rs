@@ -129,10 +129,10 @@ impl AnalyticsModule {
                         }
 
                         last_metric_time = Instant::now();
-                        logger::info_con(
-                            &qf.analytics().get_component("TrySendAnalytics"),
-                            "Sending user activity",
-                        );
+                        // logger::info_con(
+                        //     &qf.analytics().get_component("TrySendAnalytics"),
+                        //     "Sending user activity",
+                        // );
                         match qf
                             .analytics()
                             .try_send_analytics(
