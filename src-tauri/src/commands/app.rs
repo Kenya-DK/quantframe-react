@@ -24,20 +24,7 @@ pub fn save_auth_state(auth: tauri::State<'_, Arc<Mutex<AuthState>>>, auth_state
     let mut my_lock = arced_mutex.lock().expect("Could not lock auth");
     *my_lock = auth_state.clone();
 }
-// if !settings.wf_log_path.is_empty() && settings.wf_log_path != "" {
-//     let path = std::path::Path::new(&settings.wf_log_path);
-//     if !path.exists() {
-//         return Err(AppError::new(
-//             "Settings",
-//             eyre::eyre!(format!(
-//                 "Warframe EE.log path does not exist [J]{}[J]",
-//                 json!({
-//                     "i18n_key": "wf_log_path_not_exist",
-//                 })
-//             )),
-//         ));
-//     }
-// }
+
 #[tauri::command]
 pub async fn app_init(
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
@@ -191,6 +178,7 @@ pub async fn app_init(
         }
     };
     auth_state.update_from_wfm_user_profile(&wfm_user, auth_state.wfm_access_token.clone());
+    save_auth_state(auth.clone(), auth_state.clone());
 
     // Validate QF Auth
     let mut qf_user = match qf.auth().validate().await {
