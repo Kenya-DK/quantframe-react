@@ -1,5 +1,6 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![allow(non_snake_case)]
+#![allow(deprecated)]
 // #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use app::client::AppState;
 use auth::AuthState;
@@ -246,6 +247,7 @@ pub fn run() {
             // Log commands
             commands::log::log_open_folder,
             commands::log::log_export,
+            commands::log::log_send,
             // Auctions commands
             commands::auctions::auction_refresh,
             commands::auctions::auction_delete,
@@ -291,6 +293,8 @@ pub fn run() {
             // Item commands
             commands::item::item_get_syndicates_prices,
             commands::item::item_get_prices,
+            // Page Home commands
+            commands::pages::home::get_statistic,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

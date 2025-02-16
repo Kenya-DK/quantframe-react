@@ -2,6 +2,7 @@ import { SocketBase } from "./socketBase";
 
 export class WFMSocket extends SocketBase {
   public constructor(host: string) {
+    console.log("Initializing WFM Socket");
     super(host);
   }
 
@@ -13,5 +14,6 @@ export class WFMSocket extends SocketBase {
   };
 }
 const wfmSocket = new WFMSocket("wss://warframe.market/socket?platform=pc");
+// const wfmSocket = new WFMSocket("ws://127.0.0.1:7369");
 window.wfmSocket = wfmSocket;
 export default wfmSocket;

@@ -90,10 +90,6 @@ impl ItemPriceModule {
     pub async fn load(&mut self) -> Result<(), AppError> {
         let qf = states::qf_client()?;
         let current_cache_id = self.get_cache_id()?;
-        logger::info_con(
-            &self.component,
-            format!("Current price cache id: {}", current_cache_id).as_str(),
-        );
         let remote_cache_id = match qf.item().get_price_cache_id().await {
             Ok(id) => id,
             Err(e) => {
@@ -109,10 +105,6 @@ impl ItemPriceModule {
                 current_cache_id.clone()
             }
         };
-        logger::info_con(
-            &self.component,
-            format!("Remote price cache id: {}", remote_cache_id).as_str(),
-        );
         if current_cache_id != remote_cache_id {
             logger::info_con(
                 &self.component,

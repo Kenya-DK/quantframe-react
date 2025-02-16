@@ -144,10 +144,6 @@ impl CacheClient {
     pub async fn load(&self) -> Result<(), AppError> {
         let qf = states::qf_client()?;
         let current_cache_id = self.get_current_cache_id()?;
-        logger::info_con(
-            &self.component,
-            format!("Current cache id: {}", current_cache_id).as_str(),
-        );
         let remote_cache_id = match qf.cache().get_cache_id().await {
             Ok(id) => id,
             Err(e) => {
@@ -163,10 +159,6 @@ impl CacheClient {
                 current_cache_id.clone()
             }
         };
-        logger::info_con(
-            &self.component,
-            format!("Remote cache id: {}", remote_cache_id).as_str(),
-        );
         if current_cache_id != remote_cache_id {
             logger::info_con(
                 &self.component,
@@ -176,45 +168,25 @@ impl CacheClient {
             self.update_current_cache_id(remote_cache_id)?;
         }
         self.arcane().load()?;
-        logger::info_con(&self.component, "Arcane data loaded");
         self.warframe().load()?;
-        logger::info_con(&self.component, "Warframe data loaded");
         self.arch_gun().load()?;
-        logger::info_con(&self.component, "ArchGun data loaded");
         self.arch_melee().load()?;
-        logger::info_con(&self.component, "ArchMelee data loaded");
         self.archwing().load()?;
-        logger::info_con(&self.component, "Archwing data loaded");
         self.melee().load()?;
-        logger::info_con(&self.component, "Melee data loaded");
         self.mods().load()?;
-        logger::info_con(&self.component, "Mods data loaded");
         self.primary().load()?;
-        logger::info_con(&self.component, "Primary data loaded");
         self.secondary().load()?;
-        logger::info_con(&self.component, "Secondary data loaded");
         self.sentinel().load()?;
-        logger::info_con(&self.component, "Sentinel data loaded");
         self.tradable_items().load()?;
-        logger::info_con(&self.component, "Tradable items data loaded");
         self.skin().load()?;
-        logger::info_con(&self.component, "Skin data loaded");
         self.misc().load()?;
-        logger::info_con(&self.component, "Misc data loaded");
         self.pet().load()?;
-        logger::info_con(&self.component, "Pet data loaded");
         self.fish().load()?;
-        logger::info_con(&self.component, "Fish data loaded");
         self.resource().load()?;
-        logger::info_con(&self.component, "Resource data loaded");
         self.riven().load()?;
-        logger::info_con(&self.component, "Riven data loaded");
         self.parts().load()?;
-        logger::info_con(&self.component, "Parts data loaded");
         self.item_price().load().await?;
-        logger::info_con(&self.component, "Item price data loaded");
         self.relics().load()?;
-        logger::info_con(&self.component, "Relics data loaded");
         return Ok(());
     }
 
