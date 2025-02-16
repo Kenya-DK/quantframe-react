@@ -894,14 +894,14 @@ pub fn parse_item(cache: &CacheClient, item: &mut TradeItem) -> Result<bool, App
 
     if item.name == "plat" {
         item.name = "Platinum".to_string();
-        item.unique_name = "/QF_Special/Platinum".to_string();
+        item.unique_name = "/WF_Special/Other/Platinum".to_string();
         item.item_type = "Plat".to_string();
         return Ok(true);
     }
 
     if item.name.starts_with("Imprint of") {
         item.unique_name = format!(
-            "/QF_Special/Imprint/{}",
+            "/WF_Special/Other/Imprint/{}",
             item.name.replace("Imprint of ", "")
         );
         item.item_type = "Imprint".to_string();
@@ -909,13 +909,15 @@ pub fn parse_item(cache: &CacheClient, item: &mut TradeItem) -> Result<bool, App
     }
 
     if item.name.starts_with("Legendary Core") {
-        item.unique_name = "/QF_Special/Legendary Fusion Core".to_string();
+        item.name = "Legendary Fusion Core".to_string();
+        item.unique_name = "/WF_Special/Other/Legendary Fusion Core".to_string();
         item.item_type = "Fusion Core".to_string();
         return Ok(true);
     }
 
     if item.name.starts_with("Ancient Core") {
-        item.unique_name = "/QF_Special/Legendary Ancient Core".to_string();
+        item.name = "Ancient Fusion Core".to_string();
+        item.unique_name = "/WF_Special/Other/Legendary Ancient Core".to_string();
         item.item_type = "Fusion Core".to_string();
         return Ok(true);
     }
@@ -969,7 +971,7 @@ pub fn parse_item(cache: &CacheClient, item: &mut TradeItem) -> Result<bool, App
                     let weapon = &name_part[..last_space_index];
                     let att = &name_part[last_space_index + 1..];
                     item.name = format!("{} {}", weapon, att);
-                    item.unique_name = format!("/QF_Special/Riven/{}/{}", weapon, att);
+                    item.unique_name = format!("/WF_Special/Other/Riven/{}/{}", weapon, att);
                     item.item_type = "Riven Mod".to_string();
                     item.properties = Some(json!({ "mod_name": att, "weapon": weapon}));
                     return Ok(true);
@@ -1015,7 +1017,7 @@ pub fn parse_item(cache: &CacheClient, item: &mut TradeItem) -> Result<bool, App
         }
     }
     if item.name == "Enter Nihil's Oubliette".to_string() {
-        item.unique_name = "/QF_Special/Other/Nihil's Oubliette (Key)".to_string();
+        item.unique_name = "/WF_Special/Other/Nihil's Oubliette (Key)".to_string();
         item.item_type = "Key".to_string();
         return Ok(true);
     }
@@ -1155,7 +1157,7 @@ pub fn parse_item(cache: &CacheClient, item: &mut TradeItem) -> Result<bool, App
         item.item_type = resource.category;
         return Ok(true);
     }
-    item.unique_name = format!("/QF_Special/Other/{}", item.name);
+    item.unique_name = format!("/WF_Special/Other/{}", item.name);
     item.item_type = "Unknown".to_string();
     Ok(false)
 }
