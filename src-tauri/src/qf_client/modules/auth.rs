@@ -30,13 +30,7 @@ impl AuthModule {
         format!("{}:{}:{}", self.client.component, self.component, component)
     }
     pub async fn me(&self) -> Result<User, AppError> {
-        let app = states::app_state()?;
-
-        match self
-            .client
-            .get::<User>(&format!("auth/me?v={}", app.get_app_info().version), false)
-            .await
-        {
+        match self.client.get::<User>("auth/me", false).await {
             Ok(ApiResult::Success(user, _)) => {
                 return Ok(user);
             }
@@ -57,10 +51,9 @@ impl AuthModule {
         };
     }
     pub async fn login(&self, username: &str, password: &str) -> Result<User, AppError> {
-        let app = states::app_state()?;
         let body = json!({
             "username": username,
-            "password": password,
+            "password": password
         });
         match self.client.post::<User>("auth/login", body).await {
             Ok(ApiResult::Success(user, _)) => {
