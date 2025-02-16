@@ -3,8 +3,12 @@ use std::{
     sync::{Arc, Mutex},
 };
 
+use serde_json::Value;
+
 use crate::{
-    notification::client::NotifyClient, qf_client::client::QFClient, utils::modules::logger,
+    notification::client::NotifyClient,
+    qf_client::client::QFClient,
+    utils::{enums::log_level::LogLevel, modules::logger},
 };
 
 #[tauri::command]
@@ -33,4 +37,21 @@ pub fn log_export(
         None,
     );
     qf.analytics().add_metric("Log_Export", "manual");
+}
+
+#[tauri::command]
+pub fn log_send(
+    component: String,
+    msg: String,
+    level: LogLevel,
+    console: bool,
+    file: Option<String>,
+) {
+    logger::dolog(
+        level,
+        format!("GUI:{}", component).as_str(),
+        msg.as_str(),
+        console,
+        file.as_deref(),
+    );
 }
