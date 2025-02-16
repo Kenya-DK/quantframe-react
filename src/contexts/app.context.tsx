@@ -16,7 +16,6 @@ import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Markdown } from "tiptap-markdown";
 import { TermsAndConditions } from "@components/Modals/TermsAndConditions";
-
 type NotificationPayload = {
   i18n_key_title: string;
   i18n_key_message: string;
@@ -137,47 +136,6 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     checkForUpdates().catch((e) => {
       console.error(e);
     });
-
-    // checkUpdate()
-    //   .then(({ shouldUpdate, manifest }) => {
-    //     if (!shouldUpdate || !manifest || !editor) return;
-    //     editor.commands.setContent(manifest?.body);
-    //     modals.open({
-    //       title: useTranslateNewUpdate("title", { version: manifest?.version }),
-    //       size: "lg",
-    //       children: (
-    //         <>
-    //           <RichTextEditor editor={editor}>
-    //             <RichTextEditor.Content />
-    //           </RichTextEditor>
-    //           <Group grow justify="space-between" mt={"md"}>
-    //             <Button
-    //               onClick={async () => {
-    //                 // Install the update. This will also restart the app on Windows!
-    //                 await installUpdate();
-
-    //                 // On macOS and Linux you will need to restart the app manually.
-    //                 // You could use this step to display another confirmation dialog.
-    //                 await relaunch();
-    //               }}
-    //             >
-    //               {useTranslateNewUpdateButtons("install")}
-    //             </Button>
-    //             <Button
-    //               onClick={async () => {
-    //                 window.open(`https://github.com/Kenya-DK/quantframe-react/releases/tag/v${manifest.version}`, "_blank");
-    //               }}
-    //             >
-    //               {useTranslateNewUpdateButtons("read_more")}
-    //             </Button>
-    //           </Group>
-    //         </>
-    //       ),
-    //     });
-    //   })
-    //   .catch((e) => {
-    //     console.error(e);
-    //   });
   }, []);
 
   useEffect(() => {
