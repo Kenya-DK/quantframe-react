@@ -12,15 +12,7 @@ export class EventModule {
   }
   private async Initializer() {
     console.log("Event Module Initialized");
-    listen("message", (eventIn: { payload: { event: string; data: any } }) => {
-      const { event, data } = eventIn.payload;
-      if (event) this.listener.fire(event, data);
-      if (!this.debug_filter.includes(event) && !this.debug_filter.includes("*")) return;
-      console.group("%cTauri Event", this._colors[0]);
-      console.log(`%cEvent: %c${event}`, this._colors[0], "color: #000");
-      console.log(`%cPayload:`, this._colors[0], data);
-      console.groupEnd();
-    });
+
     listen("message_update", (eventIn: { payload: { event: string; operation: string; data: any } }) => {
       const { event, operation, data } = eventIn.payload;
       if (event && operation) this.listener.fire(event, { operation, data });
@@ -29,6 +21,15 @@ export class EventModule {
       console.log(`%cEvent: %c${event}`, this._colors[1], "color: #000");
       console.log(`%cOperation: %c${operation}`, this._colors[1], "color: #000");
       console.log(`%cPayload:`, this._colors[1], data);
+      console.groupEnd();
+    });
+    listen("message", (eventIn: { payload: { event: string; data: any } }) => {
+      const { event, data } = eventIn.payload;
+      if (event) this.listener.fire(event, data);
+      if (!this.debug_filter.includes(event) && !this.debug_filter.includes("*")) return;
+      console.group("%cTauri Event", this._colors[0]);
+      console.log(`%cEvent: %c${event}`, this._colors[0], "color: #000");
+      console.log(`%cPayload:`, this._colors[0], data);
       console.groupEnd();
     });
   }
