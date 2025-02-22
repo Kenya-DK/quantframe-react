@@ -111,7 +111,7 @@ impl Default for SettingsState {
     fn default() -> Self {
         Self {
             tos_accepted: false,
-            cross_play: true,
+            cross_play: false,
             debug: vec!["*".to_string()],
             notification_ids: vec!["".to_string()],
             wf_log_path: "".to_string(),
