@@ -3,6 +3,7 @@
 export interface Settings {
   debug: string[];
   tos_accepted: boolean;
+  cross_play: boolean;
   dev_mode: boolean;
   wf_log_path: string;
   live_scraper: SettingsLiveScraper;
