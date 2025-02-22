@@ -148,7 +148,7 @@ impl WFMClient {
                 format!("Quantframe {}", packageinfo.version.to_string()),
             )
             .header("Language", auth.region.clone())
-            .header("Crossplay", settings.cross_play);
+            .header("Crossplay", settings.cross_play.clone());
 
         let request = match body.clone() {
             Some(content) => request.json(&content),
