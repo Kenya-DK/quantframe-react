@@ -123,6 +123,7 @@ impl WFMClient {
         body: Option<Value>,
     ) -> Result<ApiResult<T>, AppError> {
         let auth = states::auth()?;
+        let settings = states::settings()?;
         let app = states::app_state()?;
         let mut rate_limiter = self.limiter.lock().await;
 
@@ -146,7 +147,8 @@ impl WFMClient {
                 "User-Agent",
                 format!("Quantframe {}", packageinfo.version.to_string()),
             )
-            .header("Language", auth.region.clone());
+            .header("Language", auth.region.clone())
+            .header("Crossplay", settings.cross_play);
 
         let request = match body.clone() {
             Some(content) => request.json(&content),
