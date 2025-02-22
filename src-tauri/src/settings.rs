@@ -16,6 +16,7 @@ pub struct SettingsState {
     pub debug: Vec<String>,
     pub tos_accepted: bool,
     pub notification_ids: Vec<String>,
+    pub cross_play: bool,
     // Warframe Log Path
     pub wf_log_path: String,
     pub http: HttpConfig,
@@ -110,6 +111,7 @@ impl Default for SettingsState {
     fn default() -> Self {
         Self {
             tos_accepted: false,
+            cross_play: true,
             debug: vec!["*".to_string()],
             notification_ids: vec!["".to_string()],
             wf_log_path: "".to_string(),

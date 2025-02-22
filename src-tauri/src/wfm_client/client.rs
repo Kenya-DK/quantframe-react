@@ -139,6 +139,7 @@ impl WFMClient {
     ) -> Result<ApiResult<T>, AppError> {
         let auth = self.auth.lock()?.clone();
         let app = self.app.lock()?.clone();
+        let settings = self.settings.lock()?.clone();
         let mut rate_limiter = self.limiter.lock().await;
 
         rate_limiter.wait_for_token().await;
@@ -161,7 +162,8 @@ impl WFMClient {
                 "User-Agent",
                 format!("Quantframe {}", packageinfo.version.to_string()),
             )
-            .header("Language", auth.region.clone());
+            .header("Language", auth.region.clone())
+            .header("Crossplay", settings.cross_play.to_string().clone());
 
         let request = match body.clone() {
             Some(content) => request.json(&content),
