@@ -8,7 +8,10 @@ use serde_json::Value;
 use crate::{
     notification::client::NotifyClient,
     qf_client::client::QFClient,
-    utils::{enums::log_level::LogLevel, modules::logger},
+    utils::{
+        enums::log_level::LogLevel,
+        modules::logger::{self, LoggerOptions},
+    },
 };
 
 #[tauri::command]
@@ -40,18 +43,13 @@ pub fn log_export(
 }
 
 #[tauri::command]
-pub fn log_send(
-    component: String,
-    msg: String,
-    level: LogLevel,
-    console: bool,
-    file: Option<String>,
-) {
+pub fn log_send(component: String, msg: String, level: LogLevel, console: bool, file: String) {
     logger::dolog(
         level,
         format!("GUI:{}", component).as_str(),
         msg.as_str(),
-        console,
-        file.as_deref(),
+        LoggerOptions::default()
+            .set_console(console)
+            .set_file(&file),
     );
 }

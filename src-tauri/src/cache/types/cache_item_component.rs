@@ -19,6 +19,12 @@ pub struct CacheItemComponent {
     pub component_type: String,
 }
 impl CacheItemComponent {
+    pub fn display(&self) -> String {
+        format!(
+            "Name: {}, Component Type: {}",
+            self.name, self.component_type
+        )
+    }
     pub fn get_real_external_name(&self) -> String {
         let mut real_external_name = self.name.clone();
         let part_of = self.part_of.clone();

@@ -93,7 +93,7 @@ impl AlertModule {
                                 }
                             }
                             Err(e) => {
-                                error::create_log_file("alerts.log".to_string(), &e);
+                                error::create_log_file("alerts.log", &e);
                             }
                         };
                     }

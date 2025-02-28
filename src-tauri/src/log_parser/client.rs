@@ -9,12 +9,15 @@ use std::{
     time::Duration,
 };
 
+use regex::Regex;
+
 use crate::{
     commands::log,
     helper,
     utils::modules::{
         error::{self, AppError},
-        logger, states,
+        logger::{self, LoggerOptions},
+        states,
     },
 };
 
@@ -45,25 +48,31 @@ impl LogParser {
     }
     pub fn init(&self) -> Result<(), AppError> {
         let mut scraper = self.clone();
-        logger::info_con(&scraper.component, "Starting the log parser");
+        logger::info(
+            &scraper.component,
+            "Starting the log parser",
+            LoggerOptions::default(),
+        );
         tauri::async_runtime::spawn(async move {
             loop {
                 match scraper.check_for_new_logs() {
                     Ok(_) => (),
                     Err(e) => {
                         if e.cause().to_string().contains("Log file does not exist") {
-                            logger::warning_con(
+                            logger::info(
                                 &scraper.component,
                                 &format!("{} wil try again in 10 seconds", e.cause()),
+                                LoggerOptions::default(),
                             );
                             // Wait 10 seconds before trying again
                             tokio::time::sleep(Duration::from_secs(10)).await;
-                            logger::info_con(
+                            logger::info(
                                 &scraper.component,
                                 "Trying to start the log parser again",
+                                LoggerOptions::default(),
                             );
                         } else {
-                            error::create_log_file("log_parser.logs".to_string(), &e);
+                            error::create_log_file("log_parser.logs", &e);
                         }
                     }
                 }
@@ -74,7 +83,6 @@ impl LogParser {
     }
     pub fn check_for_new_logs(&mut self) -> Result<(), AppError> {
         let settings = states::settings().unwrap().clone();
-        let mut reset = false;
 
         let log_file =
             if !settings.wf_log_path.is_empty() && PathBuf::from(&settings.wf_log_path).exists() {
@@ -108,7 +116,11 @@ impl LogParser {
         let current_file_size = metadata.len();
 
         if log_file != self.previous_log_file {
-            logger::info_con(&self.component, "Log file changed");
+            logger::info(
+                &self.component,
+                "Log file changed",
+                LoggerOptions::default(),
+            );
             *self.last_file_size.lock().unwrap() = current_file_size;
             self.previous_log_file = log_file.clone();
         }
@@ -129,24 +141,53 @@ impl LogParser {
 
         let reader = BufReader::new(file);
 
-        for (_, line) in reader.lines().enumerate() {
+        let mut last_line = String::new();
+        let mut ignore_combined = false;
+        for line in reader.lines() {
             if let Ok(line) = line {
-                if self.trade_event().process_line(&line, *last_file_size)? {
-                    continue;
+                match self
+                    .trade_event()
+                    .process_line(&line, &last_line, ignore_combined)
+                {
+                    Ok(msg) => {
+                        last_line = line.clone();
+                        ignore_combined = msg.clone();
+                        if ignore_combined {
+                            continue;
+                        }
+                    }
+                    Err(_) => {}
                 }
+
+                // if self
+                //     .trade_event()
+                //     .process_line(&last_line, &line, *last_file_size)?
+                // {
+                //     last_line = line.clone();
+                //     continue;
+                // }
                 if self
                     .conversation_event()
                     .process_line(&line, *last_file_size)?
                 {
+                    last_line = line.clone();
                     continue;
                 }
+                last_line = line.clone();
             }
         }
 
         *last_file_size = current_file_size;
         Ok(())
     }
-
+    pub fn is_start_of_log(&self, log: &str) -> bool {
+        let re = Regex::new(r"\b(\d+\.\d+)\b").unwrap();
+        if let Some(_) = re.captures(log) {
+            return true;
+        } else {
+            return false;
+        }
+    }
     pub fn get_logs_between(&self, start: u64, _end: u64) -> Result<Vec<String>, AppError> {
         let mut file = File::open(&self.log_file).map_err(|e| {
             AppError::new(

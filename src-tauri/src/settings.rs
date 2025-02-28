@@ -7,6 +7,7 @@ use std::path::PathBuf;
 use crate::enums::stock_mode::StockMode;
 use crate::enums::trade_mode::TradeMode;
 use crate::utils::modules::error::AppError;
+use crate::utils::modules::logger::LoggerOptions;
 use crate::{helper, logger};
 use eyre::eyre;
 
@@ -265,7 +266,7 @@ impl SettingsState {
         // Check for missing properties
         if !missing_properties.is_empty() {
             for property in missing_properties.clone() {
-                logger::warning_con("Settings", &format!("Missing property: {}", property));
+                logger::warning("Settings", &format!("Missing property: {}", property),LoggerOptions::default());
             }
         }
 

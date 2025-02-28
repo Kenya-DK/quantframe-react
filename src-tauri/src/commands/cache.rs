@@ -25,7 +25,7 @@ pub async fn cache_reload(
             qf.analytics().add_metric("Cache_Reload", "manual");
         }
         Err(e) => {
-            error::create_log_file("cache.log".to_string(), &e);
+            error::create_log_file("cache.log", &e);
             return Err(e);
         }
     }
@@ -42,7 +42,7 @@ pub async fn cache_get_tradable_items(
             return Ok(items);
         }
         Err(e) => {
-            error::create_log_file("cache_get_tradable_items.log".to_string(), &e);
+            error::create_log_file("cache_get_tradable_items.log", &e);
             return Err(e);
         }
     }
@@ -58,7 +58,7 @@ pub async fn cache_get_riven_weapons(
             return Ok(items);
         }
         Err(e) => {
-            error::create_log_file("cache_get_riven_weapons.log".to_string(), &e);
+            error::create_log_file("cache_get_riven_weapons.log", &e);
             return Err(e);
         }
     }
@@ -74,7 +74,7 @@ pub async fn cache_get_riven_attributes(
             return Ok(items);
         }
         Err(e) => {
-            error::create_log_file("cache_get_riven_attributes.log".to_string(), &e);
+            error::create_log_file("cache_get_riven_attributes.log", &e);
             return Err(e);
         }
     }

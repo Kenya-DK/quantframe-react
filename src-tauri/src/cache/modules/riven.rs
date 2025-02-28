@@ -12,7 +12,7 @@ use crate::{
         },
     },
     helper, logger,
-    utils::modules::error::AppError,
+    utils::modules::{error::AppError, logger::LoggerOptions},
 };
 #[derive(Clone, Debug)]
 pub struct RivenModule {
@@ -68,9 +68,10 @@ impl RivenModule {
         // Get the weapon stat
         let weapon_stat = self.find_rive_type_by(internal_id, "--weapon_by unique_name")?;
         if weapon_stat.is_none() {
-            logger::warning_con(
+            logger::warning(
                 self.get_component("get_weapon_upgrades").as_str(),
                 format!("Failed to get weapon stat for internal_id: {}", internal_id).as_str(),
+                LoggerOptions::default(),
             );
             return Ok(None);
         }
@@ -78,9 +79,10 @@ impl RivenModule {
         let upgrades =
             self.find_raw_riven_attribute_by(&weapon_stat.upgrade_type, "--weapon_by unique_name")?;
         if upgrades.is_none() {
-            logger::warning_con(
+            logger::warning(
                 self.get_component("get_weapon_upgrades").as_str(),
                 format!("Failed to get raw riven for internal_id: {}", internal_id).as_str(),
+                LoggerOptions::default(),
             );
             return Ok(None);
         }

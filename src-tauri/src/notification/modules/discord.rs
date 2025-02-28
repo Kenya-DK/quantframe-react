@@ -2,7 +2,10 @@ use serde_json::json;
 
 use crate::{
     notification::client::NotifyClient,
-    utils::modules::{logger, states},
+    utils::modules::{
+        logger::{self, LoggerOptions},
+        states,
+    },
 };
 
 #[derive(Clone, Debug)]
@@ -99,10 +102,18 @@ impl DiscordModule {
             let res = client.post(webhook).json(&body).send().await;
             match res {
                 Ok(_) => {
-                    logger::info_con("Helper", "Message sent to discord");
+                    logger::info(
+                        "Helper",
+                        "Message sent to discord",
+                        LoggerOptions::default(),
+                    );
                 }
                 Err(e) => {
-                    logger::error_con(&component, &format!("Error: {:?}", e));
+                    logger::error(
+                        &component,
+                        &format!("Error: {:?}", e),
+                        LoggerOptions::default(),
+                    );
                 }
             }
         });
@@ -134,10 +145,18 @@ impl DiscordModule {
             let res = client.post(webhook).json(&body).send().await;
             match res {
                 Ok(_) => {
-                    logger::info_con("Helper", "Message sent to discord");
+                    logger::info(
+                        "Helper",
+                        "Message sent to discord",
+                        LoggerOptions::default(),
+                    );
                 }
                 Err(e) => {
-                    logger::error_con(&component, &format!("Error: {:?}", e));
+                    logger::info(
+                        &component,
+                        &format!("Error: {:?}", e),
+                        LoggerOptions::default(),
+                    );
                 }
             }
         });

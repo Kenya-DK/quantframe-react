@@ -15,7 +15,7 @@ use crate::{
         enums::log_level::LogLevel,
         modules::{
             error::{self, ApiResult, AppError},
-            logger, states,
+            logger::{self, LoggerOptions}, states,
         },
     },
     APP,
@@ -98,9 +98,10 @@ impl AnalyticsModule {
                 let mut last_metric_time = Instant::now();
 
                 if is_first_install {
-                    logger::info_con(
+                    logger::info(
                         &&qf.analytics().get_component("init"),
                         "Detected first install",
+                        LoggerOptions::default(),
                     );
                     match qf
                         .analytics()
@@ -109,7 +110,7 @@ impl AnalyticsModule {
                     {
                         Ok(_) => {}
                         Err(e) => {
-                            error::create_log_file("analytics.log".to_string(), &e);
+                            error::create_log_file("analytics.log", &e);
                         }
                     };
                 }
@@ -150,10 +151,10 @@ impl AnalyticsModule {
                                     || e.cause().contains("Banned")
                                     || e.cause().contains("WFMBanned")
                                 {
-                                    error::create_log_file("analytics.log".to_string(), &e);
+                                    error::create_log_file("analytics.log", &e);
                                     break;
                                 }
-                                error::create_log_file("analytics.log".to_string(), &e);
+                                error::create_log_file("analytics.log", &e);
                             }
                         };
                     }
@@ -203,12 +204,13 @@ impl AnalyticsModule {
                 return Err(err);
             }
             retry_count -= 1;
-            logger::warning_con(
+            logger::warning(
                 &self.get_component("TrySendAnalytics"),
                 &format!(
                     "Failed to send analytics, retrying in 5 seconds, retries left: {}",
                     retry_count
                 ),
+                LoggerOptions::default(),
             );
             tokio::time::sleep(std::time::Duration::from_secs(5)).await;
         }

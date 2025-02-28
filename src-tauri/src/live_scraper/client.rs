@@ -18,7 +18,7 @@ use crate::{
     settings::SettingsState,
     utils::{
         enums::{log_level::LogLevel, ui_events::UIEvent},
-        modules::{error::AppError, states},
+        modules::{error::AppError, logger::LoggerOptions, states},
     },
     wfm_client::client::WFMClient,
 };
@@ -27,7 +27,7 @@ use super::modules::{item::ItemModule, riven::RivenModule};
 
 #[derive(Clone)]
 pub struct LiveScraperClient {
-    pub log_file: String,
+    pub log_file: &'static str,
     pub component: String,
     riven_module: Arc<RwLock<Option<RivenModule>>>,
     item_module: Arc<RwLock<Option<ItemModule>>>,
@@ -37,7 +37,7 @@ pub struct LiveScraperClient {
 impl LiveScraperClient {
     pub fn new() -> Self {
         LiveScraperClient {
-            log_file: "live_scraper.log".to_string(),
+            log_file: "live_scraper.log",
             component: "LiveScraper".to_string(),
             is_running: Arc::new(AtomicBool::new(false)),
             riven_module: Arc::new(RwLock::new(None)),
@@ -58,8 +58,9 @@ impl LiveScraperClient {
             log_level.clone(),
             format!("{}:{}", self.component, component).as_str(),
             format!("{}, {}, {}", backtrace, cause, extra.to_string()).as_str(),
-            true,
-            Some(self.log_file.as_str()),
+            LoggerOptions::default()
+                .set_console(true)
+                .set_file(self.log_file),
         );
         notify.gui().send_event(
             crate::utils::enums::ui_events::UIEvent::OnLiveTradingError,
@@ -90,7 +91,11 @@ impl LiveScraperClient {
         let scraper = self.clone();
         // Reset riven stocks on start
         tauri::async_runtime::spawn(async move {
-            logger::info_con(&scraper.component, "Loop live scraper is started");
+            logger::info(
+                &scraper.component,
+                "Loop live scraper is started",
+                LoggerOptions::default(),
+            );
 
             let mut settings = states::settings().unwrap().clone();
 
@@ -141,7 +146,11 @@ impl LiveScraperClient {
                 }
                 tokio::time::sleep(Duration::from_secs(1)).await;
             }
-            logger::info_con(&scraper.component, "Loop live scraper is stopped");
+            logger::info(
+                &scraper.component,
+                "Loop live scraper is stopped",
+                LoggerOptions::default(),
+            );
             states::notify_client().unwrap().gui().send_event(
                 crate::utils::enums::ui_events::UIEvent::UpdateLiveTradingRunningState,
                 Some(json!(false)),

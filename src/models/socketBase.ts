@@ -60,7 +60,7 @@ export class SocketBase {
     try {
       if (this.socket) await this.socket.disconnect();
     } catch (e: any) {
-      error("Socket:Disconnect", `Error while disconnecting: ${e.message}`);
+      error("Socket:Disconnect", `Error while disconnecting: ${e.message | e}`);
     }
     this.socket = undefined;
   }

@@ -10,7 +10,7 @@ use eyre::eyre;
 use crate::{
     helper, logger,
     settings::SettingsState,
-    utils::modules::{error::AppError, states},
+    utils::modules::{error::AppError, logger::LoggerOptions, states},
 };
 
 use super::modules::{
@@ -137,7 +137,11 @@ impl CacheClient {
                     .map_err(|e| AppError::new(&self.component, eyre!(e.to_string())))?;
             }
         }
-        logger::info_con(&self.component, "Cache data downloaded and extracted");
+        logger::info(
+            &self.component,
+            "Cache data downloaded and extracted",
+            LoggerOptions::default(),
+        );
         Ok(())
     }
 
@@ -147,22 +151,28 @@ impl CacheClient {
         let remote_cache_id = match qf.cache().get_cache_id().await {
             Ok(id) => id,
             Err(e) => {
-                logger::error_con(
+                logger::info(
                     &self.component,
                     format!(
                         "There was an error downloading the cache from the server: {:?}",
                         e
                     )
                     .as_str(),
+                    LoggerOptions::default(),
                 );
-                logger::info_con(&self.component, "Using the current cache data");
+                logger::info(
+                    &self.component,
+                    "Using the current cache data",
+                    LoggerOptions::default(),
+                );
                 current_cache_id.clone()
             }
         };
         if current_cache_id != remote_cache_id {
-            logger::info_con(
+            logger::info(
                 &self.component,
                 "Cache id mismatch, downloading new cache data",
+                LoggerOptions::default(),
             );
             self.download_cache_data().await?;
             self.update_current_cache_id(remote_cache_id)?;

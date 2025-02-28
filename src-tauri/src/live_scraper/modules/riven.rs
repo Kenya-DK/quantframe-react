@@ -6,6 +6,7 @@ use entity::{enums::stock_status::StockStatus, price_history::PriceHistory};
 use serde_json::json;
 use service::{StockRivenMutation, StockRivenQuery};
 
+use crate::utils::modules::logger::LoggerOptions;
 use crate::utils::modules::states;
 use crate::wfm_client::types::auction::Auction;
 use crate::{helper, DATABASE};
@@ -64,7 +65,11 @@ impl RivenModule {
         let min_profit = settings.stock_riven.min_profit;
         let threshold_percentage = settings.stock_riven.threshold_percentage / 100.0;
         let limit_to = settings.stock_riven.limit_to;
-        logger::info_con(&self.get_component("CheckStock"), "Run Riven Stock Check");
+        logger::info(
+            &self.get_component("CheckStock"),
+            "Run Riven Stock Check",
+            LoggerOptions::default(),
+        );
 
         // Send GUI Update.
         self.send_msg("stating", None);

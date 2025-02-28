@@ -3,7 +3,11 @@ use eyre::eyre;
 use crate::{
     helper,
     log_parser::client::LogParser,
-    utils::modules::{error::AppError, logger, states},
+    utils::modules::{
+        error::AppError,
+        logger::{self, LoggerOptions},
+        states,
+    },
 };
 
 #[derive(Clone, Debug)]
@@ -43,9 +47,10 @@ impl OnConversationEvent {
                 .content
                 .replace("<PLAYER_NAME>", username.as_str());
 
-            logger::info_con(
+            logger::info(
                 &self.get_component(&component),
                 &format!("New conversation with {}", username),
+                LoggerOptions::default(),
             );
             helper::add_metric("EE_NewConversation", "");
             // Send a notification to the system

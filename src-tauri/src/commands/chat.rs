@@ -31,7 +31,7 @@ pub async fn chat_refresh(
             return Ok(chats);
         }
         Err(e) => {
-            error::create_log_file("command_chat_refresh.log".to_string(), &e);
+            error::create_log_file("command_chat_refresh.log", &e);
             return Err(e);
         }
     };
@@ -54,7 +54,7 @@ pub async fn chat_delete(
             );
         }
         Err(e) => {
-            error::create_log_file("command_chat_delete.log".to_string(), &e);
+            error::create_log_file("command_chat_delete.log", &e);
             return Err(e);
         }
     };
@@ -72,7 +72,7 @@ pub async fn chat_get_messages(
             return Ok(messages);
         }
         Err(e) => {
-            error::create_log_file("command_chat_get_messages.log".to_string(), &e);
+            error::create_log_file("command_chat_get_messages.log", &e);
             return Err(e);
         }
     };
@@ -136,7 +136,7 @@ pub async fn chat_delete_all(
                 );
             }
             Err(e) => {
-                error::create_log_file("command_chat_delete_all.log".to_string(), &e);
+                error::create_log_file("command_chat_delete_all.log", &e);
                 return Err(e);
             }
         }

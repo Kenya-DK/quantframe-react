@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 
+use serde_json::json;
+
 use crate::{
     cache::{client::CacheClient, types::cache_item_component::CacheItemComponent},
-    utils::modules::error::AppError,
+    utils::modules::{error::AppError, logger},
 };
 
 #[derive(Clone, Debug)]
@@ -82,6 +84,7 @@ impl PartModule {
         use_external: bool,
     ) -> Option<CacheItemComponent> {
         let items = self.get_parts(category);
+
         let mut result: Option<CacheItemComponent> = None;
         for item in items {
             if use_external {

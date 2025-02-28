@@ -4,7 +4,8 @@ use crate::{
     notification::client::NotifyClient,
     utils::modules::{
         error::{self, AppError},
-        logger, states,
+        logger::{self, LoggerOptions},
+        states,
     },
 };
 
@@ -121,7 +122,7 @@ impl DebugClient {
                                 .unwrap();
                         transaction.created_at = naive_datetime.and_utc();
                     } else {
-                        error::create_log_file("migrate_data_transactions.log".to_string(), &err);
+                        error::create_log_file("migrate_data_transactions.log", &err);
                         continue;
                     }
                 }
@@ -292,7 +293,11 @@ impl DebugClient {
             let stock_riven = entity.to_stock_item().to_model();
             match StockItemMutation::create(&new_con, stock_riven).await {
                 Ok(stock) => {
-                    logger::info_con("MigrateDataBase", &format!("Created: {}", stock.item_name));
+                    logger::info(
+                        "MigrateDataBase",
+                        &format!("Created: {}", stock.item_name),
+                        LoggerOptions::default(),
+                    );
                 }
                 Err(e) => {
                     return Err(AppError::new_db("MigrateDataBase", e));
@@ -361,7 +366,11 @@ impl DebugClient {
             }
             match TransactionMutation::create_from_old(&new_con, transaction).await {
                 Ok(stock) => {
-                    logger::info_con("MigrateDataBase", &format!("Created: {}", stock.item_name));
+                    logger::info(
+                        "MigrateDataBase",
+                        &format!("Created: {}", stock.item_name),
+                        LoggerOptions::default(),
+                    );
                 }
                 Err(e) => {
                     return Err(AppError::new_db("MigrateDataBase", e));

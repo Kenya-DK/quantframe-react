@@ -8,7 +8,8 @@ use crate::{
         enums::log_level::LogLevel,
         modules::{
             error::{self, ApiResult, AppError},
-            logger, states,
+            logger::{self, LoggerOptions},
+            states,
         },
     },
 };
@@ -99,7 +100,7 @@ impl AuthModule {
             }
             Err(e) => {
                 if e.log_level() == LogLevel::Critical {
-                    error::create_log_file("auth_login.log".to_string(), &e);
+                    error::create_log_file("auth_login.log", &e);
                     return Err(e);
                 }
             }
@@ -111,7 +112,7 @@ impl AuthModule {
             }
             Err(e) => {
                 if e.log_level() == LogLevel::Critical {
-                    error::create_log_file("auth_register.log".to_string(), &e);
+                    error::create_log_file("auth_register.log", &e);
                 }
                 return Err(e);
             }
@@ -144,16 +145,24 @@ impl AuthModule {
             Ok(user) => Some(user),
             Err(e) => {
                 if e.log_level() == LogLevel::Critical {
-                    error::create_log_file("qf_validate.log".to_string(), &e);
+                    error::create_log_file("qf_validate.log", &e);
                     return Err(e);
                 }
                 None
             }
         };
         if user.is_some() {
-            logger::info_con(&self.get_component("Validate"), "User is logged in");
+            logger::info(
+                &self.get_component("Validate"),
+                "User is logged in",
+                LoggerOptions::default(),
+            );
         } else {
-            logger::warning_con(&self.get_component("Validate"), "User is not logged in");
+            logger::warning(
+                &self.get_component("Validate"),
+                "User is not logged in",
+                LoggerOptions::default(),
+            );
             auth.reset();
         }
         return Ok(user);

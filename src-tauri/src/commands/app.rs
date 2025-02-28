@@ -53,7 +53,7 @@ pub async fn app_init(
     match log_parser.init() {
         Ok(_) => {}
         Err(e) => {
-            error::create_log_file("log_parser.log".to_string(), &e);
+            error::create_log_file("log_parser.log", &e);
             return Err(e);
         }
     }
@@ -73,7 +73,7 @@ pub async fn app_init(
         }
         Err(e) => {
             let error = AppError::new_db("TransactionQuery::get_all", e);
-            error::create_log_file("command.log".to_string(), &error);
+            error::create_log_file("command.log", &error);
             return Err(error);
         }
     };
@@ -114,7 +114,7 @@ pub async fn app_init(
         }
         Err(e) => {
             let error = AppError::new_db("StockRivenQuery::get_all", e);
-            error::create_log_file("command.log".to_string(), &error);
+            error::create_log_file("command.log", &error);
             return Err(error);
         }
     };
@@ -133,7 +133,7 @@ pub async fn app_init(
         }
         Err(e) => {
             let error = AppError::new_db("StockItemQuery::get_all", e);
-            error::create_log_file("command.log".to_string(), &error);
+            error::create_log_file("command.log", &error);
             return Err(error);
         }
     };
@@ -152,7 +152,7 @@ pub async fn app_init(
         }
         Err(e) => {
             let error = AppError::new_db("WishListQuery::get_all", e);
-            error::create_log_file("command.log".to_string(), &error);
+            error::create_log_file("command.log", &error);
             return Err(error);
         }
     };
@@ -161,7 +161,7 @@ pub async fn app_init(
     match qf.alert().init() {
         Ok(_) => {}
         Err(e) => {
-            error::create_log_file("alerts.log".to_string(), &e);
+            error::create_log_file("alerts.log", &e);
             return Err(e);
         }
     }
@@ -173,7 +173,7 @@ pub async fn app_init(
     let wfm_user = match wfm.auth().validate().await {
         Ok(user) => user,
         Err(e) => {
-            error::create_log_file("wfm_validation.log".to_string(), &e);
+            error::create_log_file("wfm_validation.log", &e);
             return Err(e);
         }
     };
@@ -184,7 +184,7 @@ pub async fn app_init(
     let mut qf_user = match qf.auth().validate().await {
         Ok(user) => user,
         Err(e) => {
-            error::create_log_file("qf_validate.log".to_string(), &e);
+            error::create_log_file("qf_validate.log", &e);
             return Err(e);
         }
     };
@@ -201,7 +201,7 @@ pub async fn app_init(
                 Some(user.clone())
             }
             Err(e) => {
-                error::create_log_file("auth_login.log".to_string(), &e);
+                error::create_log_file("auth_login.log", &e);
                 return Err(e);
             }
         }
@@ -234,7 +234,7 @@ pub async fn app_init(
         match qf.analytics().init() {
             Ok(_) => {}
             Err(e) => {
-                error::create_log_file("analytics.log".to_string(), &e);
+                error::create_log_file("analytics.log", &e);
                 return Err(e);
             }
         }
@@ -246,7 +246,7 @@ pub async fn app_init(
         match cache.load().await {
             Ok(_) => {}
             Err(e) => {
-                error::create_log_file("cache.log".to_string(), &e);
+                error::create_log_file("cache.log", &e);
                 return Err(e);
             }
         }
@@ -258,7 +258,7 @@ pub async fn app_init(
         let mut orders_vec = match wfm.orders().get_my_orders().await {
             Ok(orders_vec) => orders_vec,
             Err(e) => {
-                error::create_log_file("command.log".to_string(), &e);
+                error::create_log_file("command.log", &e);
                 return Err(e);
             }
         };
@@ -285,7 +285,7 @@ pub async fn app_init(
                 );
             }
             Err(e) => {
-                error::create_log_file("command.log".to_string(), &e);
+                error::create_log_file("command.log", &e);
                 return Err(e);
             }
         };
@@ -304,7 +304,7 @@ pub async fn app_init(
                 );
             }
             Err(e) => {
-                error::create_log_file("command.log".to_string(), &e);
+                error::create_log_file("command.log", &e);
                 return Err(e);
             }
         };

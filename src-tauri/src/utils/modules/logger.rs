@@ -10,6 +10,107 @@ use tauri::PackageInfo;
 use crate::{helper, utils::enums::log_level::LogLevel};
 
 use super::error::AppError;
+use std::sync::OnceLock;
+use std::time::Instant;
+
+pub static START_TIME: OnceLock<Instant> = OnceLock::new();
+
+#[derive(Clone)]
+pub struct LoggerOptions {
+    pub console: bool,
+    pub file: Option<String>,
+    pub show_time: bool,
+    pub show_component: bool,
+    pub show_elapsed_time: bool,
+    pub show_level: bool,
+}
+
+impl Default for LoggerOptions {
+    fn default() -> Self {
+        LoggerOptions {
+            console: true,
+            file: None,
+            show_time: true,
+            show_component: true,
+            show_elapsed_time: true,
+            show_level: true,
+        }
+    }
+}
+impl LoggerOptions {
+    pub fn new_console(
+        show_time: bool,
+        show_component: bool,
+        show_elapsed_time: bool,
+        show_level: bool,
+    ) -> Self {
+        LoggerOptions::new(
+            true,
+            None,
+            show_time,
+            show_component,
+            show_elapsed_time,
+            show_level,
+        )
+    }
+    pub fn new_file(
+        file: Option<String>,
+        show_time: bool,
+        show_component: bool,
+        show_elapsed_time: bool,
+        show_level: bool,
+    ) -> Self {
+        LoggerOptions::new(
+            false,
+            file,
+            show_time,
+            show_component,
+            show_elapsed_time,
+            show_level,
+        )
+    }
+    pub fn new(
+        console: bool,
+        file: Option<String>,
+        show_time: bool,
+        show_component: bool,
+        show_elapsed_time: bool,
+        show_level: bool,
+    ) -> Self {
+        LoggerOptions {
+            console,
+            file,
+            show_time,
+            show_component,
+            show_elapsed_time,
+            show_level,
+        }
+    }
+    pub fn set_console(&mut self, value: bool) -> Self {
+        self.console = value;
+        self.clone()
+    }
+    pub fn set_file(&mut self, value: &str) -> Self {
+        self.file = Some(value.to_string());
+        self.clone()
+    }
+    pub fn set_show_time(&mut self, value: bool) -> Self {
+        self.show_time = value;
+        self.clone()
+    }
+    pub fn set_show_component(&mut self, value: bool) -> Self {
+        self.show_component = value;
+        self.clone()
+    }
+    pub fn set_show_elapsed_time(&mut self, value: bool) -> Self {
+        self.show_elapsed_time = value;
+        self.clone()
+    }
+    pub fn set_show_level(&mut self, value: bool) -> Self {
+        self.show_level = value;
+        self.clone()
+    }
+}
 
 pub fn format_text(text: &str, color: &str, bold: bool) -> String {
     let color_code = match color {
@@ -43,7 +144,7 @@ fn format_square_bracket(msg: &str) -> String {
     )
 }
 
-pub fn dolog(level: LogLevel, component: &str, msg: &str, console: bool, file: Option<&str>) {
+pub fn dolog(level: LogLevel, component: &str, msg: &str, options: LoggerOptions) {
     let time = format_square_bracket(
         chrono::Local::now()
             .naive_utc()
@@ -51,6 +152,12 @@ pub fn dolog(level: LogLevel, component: &str, msg: &str, console: bool, file: O
             .to_string()
             .as_str(),
     );
+
+    let elapsed_time = START_TIME
+        .get()
+        .map_or(0.0, |start| start.elapsed().as_secs_f64());
+    let elapsed_str = format!("[{:.4}]", elapsed_time); // Formats to 4 decimal places
+
     let component = format_square_bracket(format_text(component, "magenta", true).as_str());
     let msg = format_text(msg, "white", false);
     let log_prefix = match level {
@@ -62,11 +169,30 @@ pub fn dolog(level: LogLevel, component: &str, msg: &str, console: bool, file: O
         LogLevel::Critical => format_square_bracket(format_text("CRITICAL", "red", true).as_str()),
         _ => format_square_bracket(format_text("UNKNOWN", "white", true).as_str()),
     };
-    if console {
-        println!("{} {} {} {}", time, log_prefix, component, msg);
+
+    let mut prefix = String::new();
+    if options.show_time {
+        prefix = format!("{} {}", prefix, time);
+    }
+    if options.show_elapsed_time {
+        prefix = format!("{} {}", prefix, elapsed_str);
     }
 
-    if let Some(file) = file {
+    if options.show_level {
+        prefix = format!("{} {}", prefix, log_prefix);
+    }
+
+    if options.show_component {
+        prefix = format!("{} {}", prefix, component);
+    }
+
+    let message = format!("{} {}", prefix, msg);
+
+    if options.console {
+        println!("{}", message);
+    }
+
+    if let Some(file) = options.file {
         let mut log_path = get_log_folder();
         log_path.push(file);
         if !log_path.exists() {
@@ -78,14 +204,7 @@ pub fn dolog(level: LogLevel, component: &str, msg: &str, console: bool, file: O
             .open(log_path)
             .unwrap();
 
-        if let Err(e) = writeln!(
-            file,
-            "{} {} {} {}",
-            remove_ansi_codes(time.as_str()),
-            remove_ansi_codes(log_prefix.as_str()),
-            remove_ansi_codes(component.as_str()),
-            remove_ansi_codes(msg.as_str())
-        ) {
+        if let Err(e) = writeln!(file, "{}", remove_ansi_codes(&message)) {
             eprintln!("Couldn't write to file: {}", e);
         }
     }
@@ -111,62 +230,36 @@ pub fn get_log_folder() -> PathBuf {
     log_path
 }
 
-pub fn debug(component: &str, msg: &str, console: bool, file: Option<&str>) {
-    dolog(LogLevel::Debug, component, msg, console, file);
-}
-pub fn debug_file(component: &str, msg: &str, file: Option<&str>) {
-    debug(component, msg, false, file);
-}
-// pub fn debug_con(component: &str, msg: &str) {
-//     debug(component, msg, true, None);
-// }
-
-pub fn error(component: &str, msg: &str, console: bool, file: Option<&str>) {
-    dolog(LogLevel::Error, component, msg, console, file);
+pub fn debug(component: &str, msg: &str, options: LoggerOptions) {
+    dolog(LogLevel::Debug, component, msg, options);
 }
 
-pub fn error_con(component: &str, msg: &str) {
-    error(component, msg, true, None);
+pub fn error(component: &str, msg: &str, options: LoggerOptions) {
+    dolog(LogLevel::Error, component, msg, options);
 }
 
-pub fn info(component: &str, msg: &str, console: bool, file: Option<&str>) {
-    dolog(LogLevel::Info, component, msg, console, file);
-}
-pub fn info_file(component: &str, msg: &str, file: Option<&str>) {
-    info(component, msg, false, file);
-}
-pub fn info_con(component: &str, msg: &str) {
-    info(component, msg, true, None);
+pub fn info(component: &str, msg: &str, options: LoggerOptions) {
+    dolog(LogLevel::Info, component, msg, options);
 }
 
-// pub fn trace(component: &str, msg: &str, console: bool, file: Option<&str>) {
-//     dolog(LogLevel::Trace, component, msg, console, file);
-// }
-// pub fn trace_file(component: &str, msg: &str, file: Option<&str>) {
-//     trace(component, msg, false, file);
-// }
-// pub fn trace_con(component: &str, msg: &str) {
-//     trace(component, msg, true, None);
-// }
+pub fn trace(component: &str, msg: &str, options: LoggerOptions) {
+    dolog(LogLevel::Trace, component, msg, options);
+}
+pub fn critical(component: &str, msg: &str, options: LoggerOptions) {
+    dolog(LogLevel::Critical, component, msg, options);
+}
 
-pub fn critical(component: &str, msg: &str, console: bool, file: Option<&str>) {
-    dolog(LogLevel::Critical, component, msg, console, file);
+pub fn warning(component: &str, msg: &str, options: LoggerOptions) {
+    dolog(LogLevel::Warning, component, msg, options);
 }
-pub fn critical_file(component: &str, msg: &str, file: Option<&str>) {
-    critical(component, msg, false, file);
-}
-// pub fn critical_con(component: &str, msg: &str) {
-//     critical(component, msg, true, None);
-// }
 
-pub fn warning(component: &str, msg: &str, console: bool, file: Option<&str>) {
-    dolog(LogLevel::Warning, component, msg, console, file);
-}
-pub fn warning_file(component: &str, msg: &str, file: Option<&str>) {
-    warning(component, msg, true, file);
-}
-pub fn warning_con(component: &str, msg: &str) {
-    warning(component, msg, true, None);
+#[allow(dead_code)]
+pub fn clear_log_file(file_path: &str) -> Result<(), AppError> {
+    let path = get_log_folder().join(file_path);
+    if path.exists() {
+        fs::write(&path, "").map_err(|e| AppError::new("clear_log_file", eyre!(e.to_string())))?;
+    }
+    Ok(())
 }
 
 #[allow(dead_code)]

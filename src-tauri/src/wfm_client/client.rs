@@ -18,6 +18,7 @@ use crate::{
         },
         modules::{
             error::{ApiResult, AppError, ErrorApiResponse},
+            logger::LoggerOptions,
             rate_limiter::RateLimiter,
             states,
         },
@@ -37,7 +38,7 @@ pub struct WFMClient {
     chat_module: Arc<RwLock<Option<ChatModule>>>,
     auction_module: Arc<RwLock<Option<AuctionModule>>>,
     auth_module: Arc<RwLock<Option<AuthModule>>>,
-    pub log_file: String,
+    pub log_file: &'static str,
 }
 
 impl WFMClient {
@@ -49,7 +50,7 @@ impl WFMClient {
                 1.0,
                 Duration::new(1, 0),
             ))),
-            log_file: "wfmAPICalls.log".to_string(),
+            log_file: "wfmAPICalls.log",
             order_module: Arc::new(RwLock::new(None)),
             chat_module: Arc::new(RwLock::new(None)),
             auction_module: Arc::new(RwLock::new(None)),
@@ -67,16 +68,14 @@ impl WFMClient {
             logger::debug(
                 format!("{}:{}", self.component, component).as_str(),
                 msg,
-                true,
-                None,
+                LoggerOptions::default(),
             );
             return;
         }
         logger::debug(
             format!("{}:{}", self.component, component).as_str(),
             msg,
-            true,
-            Some(&self.log_file),
+            LoggerOptions::default().set_file(self.log_file),
         );
     }
 
@@ -148,7 +147,7 @@ impl WFMClient {
                 format!("Quantframe {}", packageinfo.version.to_string()),
             )
             .header("Language", auth.region.clone())
-            .header("Crossplay", settings.cross_play.clone());
+            .header("Crossplay", settings.cross_play.to_string().clone());
 
         let request = match body.clone() {
             Some(content) => request.json(&content),

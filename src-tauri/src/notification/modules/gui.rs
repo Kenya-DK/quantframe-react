@@ -5,7 +5,7 @@ use crate::{
     notification::client::NotifyClient,
     utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
-        modules::logger,
+        modules::logger::{self, LoggerOptions},
     },
     APP,
 };
@@ -31,15 +31,17 @@ impl GUIModule {
         let app = APP.get().expect("App not initialized");
         match app.emit("message", json!({ "event": event.as_str(), "data":  data })) {
             Ok(_) => {
-                logger::info_con(
+                logger::info(
                     &self.get_component("SendEvent"),
                     format!("Event: {}", event.as_str()).as_str(),
+                    LoggerOptions::default(),
                 );
             }
             Err(e) => {
-                logger::error_con(
+                logger::error(
                     &self.get_component("SendEvent"),
                     format!("Event: {}", e).as_str(),
+                    LoggerOptions::default(),
                 );
             }
         }
@@ -56,15 +58,17 @@ impl GUIModule {
             json!({ "event": event.as_str(), "operation":operation.as_str(), "data":  data }),
         ) {
             Ok(_) => {
-                logger::info_con(
+                logger::info(
                     &self.get_component("SendEventUpdate"),
                     format!("Event: {}", event.as_str()).as_str(),
+                    LoggerOptions::default(),
                 );
             }
             Err(e) => {
-                logger::error_con(
+                logger::error(
                     &self.get_component("SendEventUpdate"),
                     format!("Event: {}", e).as_str(),
+                    LoggerOptions::default(),
                 );
             }
         }

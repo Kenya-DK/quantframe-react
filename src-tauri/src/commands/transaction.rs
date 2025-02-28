@@ -34,7 +34,7 @@ pub async fn transaction_reload(
         }
         Err(e) => {
             let error: AppError = AppError::new_db("TransactionQuery::reload", e);
-            error::create_log_file("transaction_reload.log".to_string(), &error);
+            error::create_log_file("transaction_reload.log", &error);
             return Err(error);
         }
     };
@@ -49,7 +49,7 @@ pub async fn transaction_get_all() -> Result<Vec<transaction::Model>, AppError> 
         }
         Err(e) => {
             let error: AppError = AppError::new_db("TransactionQuery::get_all", e);
-            error::create_log_file("transaction_get_all.log".to_string(), &error);
+            error::create_log_file("transaction_get_all.log", &error);
             return Err(error);
         }
     };
@@ -72,7 +72,7 @@ pub async fn transaction_update(
         Ok(transaction) => transaction,
         Err(e) => {
             let error: AppError = AppError::new_db("TransactionQuery::get_by_id", e);
-            error::create_log_file("command.log".to_string(), &error);
+            error::create_log_file("command.log", &error);
             return Err(error);
         }
     };
@@ -105,14 +105,14 @@ pub async fn transaction_update(
         }
         Err(e) => {
             let error: AppError = AppError::new_db("TransactionQuery::get_all", e);
-            error::create_log_file("transaction_update.log".to_string(), &error);
+            error::create_log_file("transaction_update.log", &error);
             return Err(error);
         }
     };
     match qf.transaction().update_transaction(&new_item).await {
         Ok(_) => (),
         Err(e) => {
-            error::create_log_file("transaction_update.log".to_string(), &e);
+            error::create_log_file("transaction_update.log", &e);
             return Err(e);
         }
     }
@@ -141,7 +141,7 @@ pub async fn transaction_delete(
         }
         Err(e) => {
             let error: AppError = AppError::new_db("TransactionMutation::delete", e);
-            error::create_log_file("transaction_delete.log".to_string(), &error);
+            error::create_log_file("transaction_delete.log", &error);
             return Err(error);
         }
     };
@@ -149,7 +149,7 @@ pub async fn transaction_delete(
     match qf.transaction().delete_transaction(id).await {
         Ok(_) => (),
         Err(e) => {
-            error::create_log_file("transaction_delete.log".to_string(), &e);
+            error::create_log_file("transaction_delete.log", &e);
             return Err(e);
         }
     }

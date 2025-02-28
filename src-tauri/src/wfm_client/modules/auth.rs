@@ -7,7 +7,8 @@ use crate::{
         enums::log_level::LogLevel,
         modules::{
             error::{self, ApiResult, AppError},
-            logger, states,
+            logger::{self, LoggerOptions},
+            states,
         },
     },
     wfm_client::{client::WFMClient, types::user_profile::UserProfile},
@@ -77,12 +78,13 @@ impl AuthModule {
             .await
         {
             Ok(ApiResult::Success(user, headers)) => {
-                logger::info_con(
+                logger::info(
                     &self.get_component("Login"),
                     &format!(
                         "User logged in: {}",
                         user.ingame_name.clone().unwrap_or("".to_string())
                     ),
+                    LoggerOptions::default(),
                 );
                 (user, headers)
             }
@@ -119,19 +121,21 @@ impl AuthModule {
         let user = match self.me().await {
             Ok(user) => user,
             Err(e) => {
-                error::create_log_file("command.log".to_string(), &e);
+                error::create_log_file("command.log", &e);
                 return Err(e);
             }
         };
         if user.anonymous || !user.verification {
-            logger::warning_con(
+            logger::warning(
                 &self.get_component("Validate"),
                 "Validation failed for user, user is anonymous or not verified",
+                LoggerOptions::default(),
             );
         } else {
-            logger::info_con(
+            logger::info(
                 &self.get_component("Validate"),
                 "User validated successfully",
+                LoggerOptions::default(),
             );
         }
         return Ok(user);
