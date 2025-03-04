@@ -2,7 +2,11 @@ use entity::sub_type::SubType;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::log_parser::enums::trade_classification::TradeClassification;
+use crate::log_parser::enums::{
+    trade_classification::TradeClassification, trade_item_type::TradeItemType,
+};
+
+use super::trade_item::TradeItem;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct PlayerTrade {
@@ -45,16 +49,33 @@ impl PlayerTrade {
     pub fn get_received_plat(&self) -> i64 {
         self.received_items
             .iter()
-            .filter(|p| p.name == "Platinum")
+            .filter(|p| p.item_type == TradeItemType::Platinum)
             .map(|p| p.quantity)
             .sum::<i64>()
     }
     pub fn get_offered_plat(&self) -> i64 {
         self.offered_items
             .iter()
-            .filter(|p| p.name == "Platinum")
+            .filter(|p| p.item_type == TradeItemType::Platinum)
             .map(|p| p.quantity)
             .sum::<i64>()
+    }
+    pub fn calculate(&mut self) {
+        let offer_plat = self.get_offered_plat();
+        let receive_plat = self.get_received_plat();
+        if offer_plat > 0 {
+            self.platinum = offer_plat;
+        }
+        if receive_plat > 0 {
+            self.platinum = receive_plat;
+        }
+        if offer_plat > 1 && self.offered_items.len() == 1 {
+            self.trade_type = TradeClassification::Purchase;
+        } else if receive_plat > 1 && self.received_items.len() == 1 {
+            self.trade_type = TradeClassification::Sale;
+        } else {
+            self.trade_type = TradeClassification::Trade;
+        }
     }
     pub fn display(&self) -> String {
         format!(
@@ -66,65 +87,5 @@ impl PlayerTrade {
             self.offered_items.len(),
             self.received_items.len()
         )
-    }
-}
-
-#[derive(Deserialize, Serialize, Clone, Debug)]
-pub struct TradeItem {
-    #[serde(rename = "name")]
-    pub name: String,
-    #[serde(rename = "quantity")]
-    pub quantity: i64,
-
-    #[serde(rename = "unique_name")]
-    #[serde(default)]
-    pub unique_name: String,
-
-    #[serde(rename = "item_type")]
-    #[serde(default)]
-    pub item_type: String,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "sub_type")]
-    pub sub_type: Option<SubType>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "wfm_id")]
-    pub wfm_id: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "wfm_url")]
-    pub wfm_url: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "error")]
-    pub error: Option<(String, Value)>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "properties")]
-    pub properties: Option<Value>,
-}
-impl TradeItem {
-    pub fn new(
-        name: String,
-        quantity: i64,
-        unique_name: String,
-        sub_type: Option<SubType>,
-        wfm_id: Option<String>,
-        wfm_url: Option<String>,
-        source: String,
-        properties: Option<Value>,
-    ) -> Self {
-        TradeItem {
-            name,
-            quantity,
-            unique_name,
-            sub_type,
-            wfm_id,
-            wfm_url,
-            error: None,
-            item_type: source,
-            properties,
-        }
     }
 }

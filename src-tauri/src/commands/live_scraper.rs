@@ -29,7 +29,7 @@ pub fn live_scraper_set_running_state(
             Ok(_) => {}
             Err(e) => {
                 qf.analytics().add_metric("LiveScraper_Stopped", "error");
-                error::create_log_file("command.log".to_string(), &e);
+                error::create_log_file("command.log", &e);
             }
         }
     } else {

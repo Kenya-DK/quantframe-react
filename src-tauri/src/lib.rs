@@ -13,10 +13,11 @@ use notification::client::NotifyClient;
 use service::sea_orm::{Database, DatabaseConnection};
 use settings::SettingsState;
 use utils::modules::error::AppError;
-use utils::modules::logger;
+use utils::modules::logger::{self, LoggerOptions, START_TIME};
 
 use std::panic;
 use std::sync::{Arc, OnceLock};
+use std::time::Instant;
 use std::{env, sync::Mutex};
 
 use tauri::async_runtime::block_on;
@@ -54,7 +55,11 @@ async fn init_database(use_debug: bool) -> Result<(), AppError> {
 
     // Create the path to the database file
     let file_path_backup = format!("{}/{}_backup", storage_path.to_str().unwrap(), file_name);
-    logger::info_con("Setup:Database", "Creating a backup of the database file");
+    logger::info(
+        "Setup:Database",
+        "Creating a backup of the database file",
+        LoggerOptions::default(),
+    );
     if std::path::Path::new(&file_path).exists() {
         std::fs::copy(&file_path, &file_path_backup)
             .expect("Failed to create a backup of the database file");
@@ -63,9 +68,10 @@ async fn init_database(use_debug: bool) -> Result<(), AppError> {
     if use_debug {
         let db_debug_file_path_backup = file_path.replace(file_name, debug_file_name);
         file_name = debug_file_name;
-        logger::warning_con(
+        logger::warning(
             "Setup:Database",
             "Debug mode is enabled, using the debug database file no data wil be saved",
+            LoggerOptions::default(),
         );
         if std::path::Path::new(&file_path).exists() {
             std::fs::copy(&file_path, &db_debug_file_path_backup)
@@ -91,7 +97,11 @@ async fn init_database(use_debug: bool) -> Result<(), AppError> {
 
 async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     // Clear the logs older then 7 days
-    logger::info_con("Setup:Logs", "Clearing logs older then 7 days");
+    logger::info(
+        "Setup:Logs",
+        "Clearing logs older then 7 days",
+        LoggerOptions::default(),
+    );
     logger::clear_logs(7)?;
     // Get the update channel
     // let context = tauri::generate_context!();
@@ -164,8 +174,7 @@ pub fn run() {
         logger::critical(
             "Panic",
             format!("Panic: {:?}", panic_info).as_str(),
-            true,
-            Some("panic.log"),
+            LoggerOptions::default().set_file("panic.log"),
         );
     }));
 
@@ -179,6 +188,8 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_websocket::init())
         .setup(move |app| {
+            log_parser::types::trade_detection::init_detections();
+            START_TIME.set(Instant::now()).unwrap();
             APP.get_or_init(|| app.handle().clone());
 
             match block_on(init_database(false)) {
@@ -192,8 +203,7 @@ pub fn run() {
                         log_level,
                         component.as_str(),
                         format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
-                        true,
-                        Some("init_database_error.log"),
+                        LoggerOptions::default().set_file("init_database_error.log"),
                     );
                 }
             };
@@ -210,8 +220,7 @@ pub fn run() {
                         log_level,
                         component.as_str(),
                         format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
-                        true,
-                        Some("setup_error.log"),
+                        LoggerOptions::default().set_file("setup_error.log"),
                     );
                 }
             };
@@ -243,6 +252,7 @@ pub fn run() {
             // Debug commands
             commands::debug::debug_db_reset,
             commands::debug::debug_migrate_data_base,
+            commands::debug::debug_method,
             commands::debug::debug_import_algo_trader,
             // Log commands
             commands::log::log_open_folder,

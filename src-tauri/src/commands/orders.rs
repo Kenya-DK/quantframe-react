@@ -30,7 +30,7 @@ pub async fn order_refresh(
             orders
         }
         Err(e) => {
-            error::create_log_file("command_order_refresh.log".to_string(), &e);
+            error::create_log_file("command_order_refresh.log", &e);
             return Err(e);
         }
     };
@@ -63,7 +63,7 @@ pub async fn order_delete(
             );
         }
         Err(e) => {
-            error::create_log_file("command_order_delete.log".to_string(), &e);
+            error::create_log_file("command_order_delete.log", &e);
             return Err(e);
         }
     }
@@ -96,7 +96,7 @@ pub async fn order_delete_all(
             orders
         }
         Err(e) => {
-            error::create_log_file("command_order_delete_all.log".to_string(), &e);
+            error::create_log_file("command_order_delete_all.log", &e);
             live_scraper.set_can_run(true);
             return Err(e);
         }
@@ -113,7 +113,7 @@ pub async fn order_delete_all(
         }
         if let Err(e) = wfm.orders().delete(&order.id).await {
             live_scraper.set_can_run(true);
-            error::create_log_file("command_order_delete_all.log".to_string(), &e);
+            error::create_log_file("command_order_delete_all.log", &e);
             return Err(e);
         }
         total += 1;

@@ -20,6 +20,7 @@ use crate::{
         },
         modules::{
             error::{ApiResult, AppError, ErrorApiResponse},
+            logger::LoggerOptions,
             rate_limiter::RateLimiter,
             states,
         },
@@ -51,7 +52,7 @@ pub struct QFClient {
     alert_module: Arc<RwLock<Option<AlertModule>>>,
     transaction_module: Arc<RwLock<Option<TransactionModule>>>,
     pub component: String,
-    pub log_file: String,
+    pub log_file: &'static str,
 }
 
 impl QFClient {
@@ -71,7 +72,7 @@ impl QFClient {
             alert_module: Arc::new(RwLock::new(None)),
             analytics_module: Arc::new(RwLock::new(None)),
             transaction_module: Arc::new(RwLock::new(None)),
-            log_file: "qfAPIaCalls.log".to_string(),
+            log_file: "qfAPIaCalls.log",
             component: "QuantframeApi".to_string(),
         }
     }
@@ -99,16 +100,14 @@ impl QFClient {
             logger::debug(
                 format!("{}:{}", self.component, component).as_str(),
                 msg,
-                true,
-                None,
+                LoggerOptions::default(),
             );
             return;
         }
         logger::debug(
             format!("{}:{}", self.component, component).as_str(),
             msg,
-            true,
-            Some(&self.log_file),
+            LoggerOptions::default().set_file(self.log_file),
         );
     }
     fn handle_error(&self, errors: Vec<String>, data: Value) {

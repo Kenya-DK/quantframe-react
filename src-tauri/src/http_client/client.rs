@@ -5,7 +5,11 @@ use actix_web::{web, App, HttpServer};
 
 use crate::{
     settings::SettingsState,
-    utils::modules::{error::AppError, logger, states},
+    utils::modules::{
+        error::AppError,
+        logger::{self, LoggerOptions},
+        states,
+    },
 };
 
 use super::modules::stock::{add_item, add_riven};
@@ -31,13 +35,14 @@ impl HttpClient {
             .map_err(|e| AppError::new("HttpServer", eyre::eyre!(e)))?
             .run(),
         );
-        logger::info_con(
+        logger::info(
             "HttpServer",
             format!(
                 "HTTP Server started on {}:{}",
                 settings.http.host, settings.http.port
             )
             .as_str(),
+            LoggerOptions::default(),
         );
         return Ok(HttpClient {});
     }

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::logger;
+use crate::{logger, utils::modules::logger::LoggerOptions};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum OrderType {
@@ -20,10 +20,10 @@ impl Serialize for OrderType {
             OrderType::Buy => "buy",
             OrderType::Sell => "sell",
             OrderType::Unknown(i) => {
-                logger::critical_file(
+                logger::critical(
                     "OrderType",
                     format!("Unknown OrderMode: {}", i).as_str(),
-                    Some("enums.log"),
+                    LoggerOptions::default().set_file("enums.log"),
                 );
                 "unknown"
             }

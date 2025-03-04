@@ -58,7 +58,7 @@ pub async fn add_riven(riven: web::Json<RivenPayload>) -> impl Responder {
     {
         Ok((stock, _)) => HttpResponse::Ok().body(serde_json::to_string(&stock).unwrap()),
         Err(e) => {
-            error::create_log_file("command_stock_riven_sell.log".to_string(), &e);
+            error::create_log_file("command_stock_riven_sell.log", &e);
             HttpResponse::BadRequest().body(json!(e).to_string())
         }
     }

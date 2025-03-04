@@ -11,6 +11,7 @@ use service::{StockRivenMutation, StockRivenQuery};
 use crate::cache::client::CacheClient;
 use crate::qf_client::client::QFClient;
 use crate::utils::modules::error;
+use crate::utils::modules::logger::LoggerOptions;
 use crate::wfm_client::enums::order_type::OrderType;
 use crate::{helper, DATABASE};
 use crate::{
@@ -40,7 +41,7 @@ pub async fn stock_riven_reload(
         }
         Err(e) => {
             let error: AppError = AppError::new_db("StockRivenQuery::reload", e);
-            error::create_log_file("command.log".to_string(), &error);
+            error::create_log_file("command.log", &error);
             return Err(error);
         }
     };
@@ -119,7 +120,7 @@ pub async fn stock_riven_update(
                 );
             }
             Err(e) => {
-                error::create_log_file("command_stock_riven_update.log".to_string(), &e);
+                error::create_log_file("command_stock_riven_update.log", &e);
                 return Err(e);
             }
         }
@@ -203,7 +204,7 @@ pub async fn stock_riven_update_bulk(
                 );
             }
             Err(e) => {
-                error::create_log_file("command_stock_riven_update_bulk.log".to_string(), &e);
+                error::create_log_file("command_stock_riven_update_bulk.log", &e);
                 return Err(e);
             }
         }
@@ -226,7 +227,7 @@ pub async fn stock_riven_delete_bulk(
         Ok(stocks) => stocks,
         Err(e) => {
             let error: AppError = AppError::new_db("StockRivenDeleteBulk", e);
-            error::create_log_file("command_stock_riven_delete_bulk.log".to_string(), &error);
+            error::create_log_file("command_stock_riven_delete_bulk.log", &error);
             return Err(error);
         }
     };
@@ -246,7 +247,7 @@ pub async fn stock_riven_delete_bulk(
             }
             Err(e) => {
                 let error: AppError = AppError::new_db("StockRivenDeleteBulk", e);
-                error::create_log_file("command_stock_riven_delete_bulk.log".to_string(), &error);
+                error::create_log_file("command_stock_riven_delete_bulk.log", &error);
                 return Err(error);
             }
         }
@@ -260,15 +261,13 @@ pub async fn stock_riven_delete_bulk(
                 Ok(_) => {}
                 Err(e) => {
                     if e.cause().contains("app.form.not_exist") {
-                        logger::warning_con(
+                        logger::warning(
                             "StockRivenSell",
                             format!("Error deleting auction: {}", e.cause()).as_str(),
+                            LoggerOptions::default(),
                         );
                     } else {
-                        error::create_log_file(
-                            "command_stock_riven_delete_bulk.log".to_string(),
-                            &e,
-                        );
+                        error::create_log_file("command_stock_riven_delete_bulk.log", &e);
                         return Err(e);
                     }
                 }
@@ -286,7 +285,7 @@ pub async fn stock_riven_delete_bulk(
         }
         Err(e) => {
             let error: AppError = AppError::new_db("StockRivenQuery::reload", e);
-            error::create_log_file("command_stock_riven_delete_bulk.log".to_string(), &error);
+            error::create_log_file("command_stock_riven_delete_bulk.log", &error);
             return Err(error);
         }
     }
@@ -300,7 +299,7 @@ pub async fn stock_riven_delete_bulk(
             );
         }
         Err(e) => {
-            error::create_log_file("command_stock_riven_delete_bulk.log".to_string(), &e);
+            error::create_log_file("command_stock_riven_delete_bulk.log", &e);
             return Err(e);
         }
     }
@@ -338,7 +337,7 @@ pub async fn stock_riven_create(
             return Ok(stock);
         }
         Err(e) => {
-            error::create_log_file("command_stock_riven_create.log".to_string(), &e);
+            error::create_log_file("command_stock_riven_create.log", &e);
             return Err(e);
         }
     }
@@ -390,7 +389,7 @@ pub async fn stock_riven_sell(
             return Ok(stock);
         }
         Err(e) => {
-            error::create_log_file("command_stock_riven_sell.log".to_string(), &e);
+            error::create_log_file("command_stock_riven_sell.log", &e);
             return Err(e);
         }
     }
@@ -438,12 +437,13 @@ pub async fn stock_riven_delete(
             }
             Err(e) => {
                 if e.cause().contains("app.form.not_exist") {
-                    logger::info_con(
+                    logger::info(
                         "StockRivenSell",
                         format!("Error deleting auction: {}", e.cause()).as_str(),
+                        LoggerOptions::default(),
                     );
                 } else {
-                    error::create_log_file("command_stock_riven_delete.log".to_string(), &e);
+                    error::create_log_file("command_stock_riven_delete.log", &e);
                     return Err(e);
                 }
             }

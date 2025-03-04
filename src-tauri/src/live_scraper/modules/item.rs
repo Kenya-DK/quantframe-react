@@ -9,6 +9,7 @@ use crate::live_scraper::types::order_extra_info::OrderDetails;
 use crate::utils::enums::log_level::LogLevel;
 use crate::utils::enums::ui_events::{UIEvent, UIOperationEvent};
 use crate::utils::modules::error::{self, AppError};
+use crate::utils::modules::logger::LoggerOptions;
 use crate::utils::modules::states::wfm_client;
 use crate::utils::modules::{logger, states};
 use crate::wfm_client::enums::order_type::OrderType;
@@ -76,7 +77,11 @@ impl ItemModule {
     }
 
     pub async fn check_stock(&mut self) -> Result<(), AppError> {
-        logger::info_con(&self.component, "Running Item Stock Check");
+        logger::info(
+            &self.component,
+            "Running Item Stock Check",
+            LoggerOptions::default(),
+        );
 
         let conn = DATABASE.get().unwrap();
         // Load Managers.
@@ -204,10 +209,10 @@ impl ItemModule {
             // let mut interesting_items: HashSet<ItemEntry> = HashSet::from_iter(interesting_items);
 
         let mut current_index = interesting_items.len();
-        logger::info_file(
+        logger::info(
             &self.get_component("CheckStock"),
             format!("Total interesting items: {}", current_index).as_str(),
-            Some(self.client.log_file.as_str()),
+            LoggerOptions::default().set_file(self.client.log_file),
         );
 
         // Create a cache for the orders.
@@ -238,8 +243,9 @@ impl ItemModule {
                     logger::warning(
                         &self.get_component("CheckStock"),
                         format!("Item: {} not found in cache", item_entry.wfm_url).as_str(),
-                        true,
-                        Some(self.client.log_file.as_str()),
+                        LoggerOptions::default()
+                            .set_console(true)
+                            .set_file(self.client.log_file),
                     );
                     continue;
                 }
@@ -249,7 +255,7 @@ impl ItemModule {
             self.send_msg("checking_item", Some(json!({ "current": current_index,"total": interesting_items.len(), "name": item_info.name.clone()})));
 
             // Log the current item
-            logger::info_con(
+            logger::info(
                 &self.get_component("CheckStock"),
                 format!(
                     "Checking item: {}, ({}/{})",
@@ -258,6 +264,7 @@ impl ItemModule {
                     interesting_items.len()
                 )
                 .as_str(),
+                LoggerOptions::default(),
             );
 
             // Get the item orders from Warframe Market or the cache.
@@ -278,9 +285,10 @@ impl ItemModule {
 
             // Check if item_orders_df is empty and skip if it is
             if live_orders.total_count() == 0 {
-                logger::warning_con(
+                logger::warning(
                     &self.get_component("CheckStock"),
                     format!("Item {} has no orders. Skipping.", item_info.name).as_str(),
+                    LoggerOptions::default(),
                 );
                 // Send GUI Update.
                 self.send_msg("no_data", Some(json!({ "current": current_index, "total": interesting_items.len(), "name": item_info.name.clone()})));
@@ -384,7 +392,7 @@ impl ItemModule {
             }
             Err(e) => {
                 error::create_log_file(
-                    self.client.log_file.to_owned(),
+                    self.client.log_file,
                     &AppError::new(&self.component, eyre::eyre!(e)),
                 );
             }
@@ -422,10 +430,11 @@ impl ItemModule {
                     self.send_order_update(UIOperationEvent::Delete, json!({"id": order.id}));
                 }
                 Err(e) => {
-                    error::create_log_file(self.client.log_file.to_owned(), &e);
-                    logger::warning_con(
+                    error::create_log_file(self.client.log_file, &e);
+                    logger::warning(
                         &self.get_component("DeleteAllOrders"),
                         format!("Error trying to delete order: {:?}", e).as_str(),
+                        LoggerOptions::default(),
                     );
                 }
             };
@@ -607,7 +616,7 @@ impl ItemModule {
                 Ok(stock_item) => stock_item,
                 Err(e) => {
                     error::create_log_file(
-                        self.client.log_file.to_owned(),
+                        self.client.log_file,
                         &AppError::new(&self.component, eyre::eyre!(e)),
                     );
                     None
@@ -761,9 +770,10 @@ impl ItemModule {
                     return Err(e);
                 }
             };
-            logger::info_con(
+            logger::info(
                 &self.get_component("CompareOrdersWhenBuying"),
                 format!("Item {} Created", item_info.name).as_str(),
+                LoggerOptions::default(),
             );
         } else if user_order.operation.contains(&"Updated".to_string()) {
             match wfm
@@ -856,9 +866,10 @@ impl ItemModule {
 
         // Probably don't want to be looking at this item right now if there's literally nobody interested in selling it.
         if live_orders.sell_orders.len() <= 0 {
-            logger::info_con(
+            logger::info(
                 &self.get_component("CompareOrdersWhenBuying"),
                 format!("Item {} has no sellers. Skipping.", item_info.name).as_str(),
+                LoggerOptions::default(),
             );
             return Ok(None);
         }
@@ -889,9 +900,10 @@ impl ItemModule {
 
         // Check if the post price is greater than the average price cap and set the status to overpriced if it is.
         if post_price > avg_price_cap as i64 {
-            logger::info_con(
+            logger::info(
                 &self.get_component("CompareOrdersWhenBuying"),
                 format!("Item {} is overpriced, base of your average price cap of {} and the current price is {}", item_info.name, avg_price_cap, post_price).as_str(),
+                LoggerOptions::default()
             );
             user_order.operation.push("Deleted".to_string());
         }
@@ -998,7 +1010,7 @@ impl ItemModule {
                             // The `delete` method is expected to delete an order with a specific name
                             // The name of the order is the fourth element (index 3) of `unselected_item`
                             // If the `delete` method call fails (returns an error), propagate the error with `?`
-                            logger::warning_con(
+                            logger::warning(
                                 &self.get_component("CompareOrdersWhenBuying"),
                                 format!(
                                     "Item {} order id {} is unselected. Deleted order.",
@@ -1006,6 +1018,7 @@ impl ItemModule {
                                     unselected_item.3.as_str()
                                 )
                                 .as_str(),
+                                LoggerOptions::default(),
                             );
                             match wfm.orders().delete(&unselected_item.3).await {
                                 Ok(_) => {
@@ -1086,9 +1099,10 @@ impl ItemModule {
                     return Err(e);
                 }
             };
-            logger::info_con(
+            logger::info(
                 &self.get_component("CompareOrdersWhenBuying"),
                 format!("Item {} Created", item_info.name).as_str(),
+                LoggerOptions::default(),
             );
         } else if user_order.operation.contains(&"Updated".to_string())
             && !user_order.operation.contains(&"Deleted".to_string())
@@ -1129,9 +1143,10 @@ impl ItemModule {
                     my_orders.delete_order_by_id(OrderType::Buy, &user_order.id);
                     self.send_order_update(UIOperationEvent::Delete, json!({"id": user_order.id}));
                     self.update_state();
-                    logger::info_con(
+                    logger::info(
                         &self.get_component("CompareOrdersWhenBuying"),
                         format!("Item {} Deleted", item_info.name).as_str(),
+                        LoggerOptions::default(),
                     );
                 }
                 Err(e) => {
@@ -1140,23 +1155,26 @@ impl ItemModule {
                 }
             }
         } else if user_order.operation.contains(&"NotInRange".to_string()) {
-            logger::info_con(
+            logger::info(
                 &self.get_component("ProgressBuying"),
                 format!(
                     "Item {} is not in range. Skipping, Range: {}, Threshold: {}",
                     item_info.name, price_range, min_range_threshold
                 )
                 .as_str(),
+                LoggerOptions::default(),
             );
         } else if user_order.operation.contains(&"NotOptimal".to_string()) {
-            logger::info_con(
+            logger::info(
                 &self.get_component("ProgressBuying"),
                 format!("Item {} is not optimal. Skipping.", item_info.name).as_str(),
+                LoggerOptions::default(),
             );
         } else {
-            logger::info_con(
+            logger::info(
                 &self.get_component("ProgressBuying"),
                 format!("Item {} is not profitable. Skipping.", item_info.name).as_str(),
+                LoggerOptions::default(),
             );
         }
         Ok(None)
@@ -1192,7 +1210,7 @@ impl ItemModule {
                 Ok(stock_item) => stock_item,
                 Err(e) => {
                     error::create_log_file(
-                        self.client.log_file.to_owned(),
+                        self.client.log_file,
                         &AppError::new(&self.component, eyre::eyre!(e)),
                     );
                     None
@@ -1375,13 +1393,14 @@ impl ItemModule {
         } else if user_order.operation.contains(&"LowProfit".to_string()) {
             stock_item.set_status(StockStatus::ToLowProfit);
             stock_item.set_list_price(None);
-            logger::info_con(
+            logger::info(
                 &self.get_component("ProgressSelling"),
                 format!(
                     "Item {} is not profitable. Skipping, Profit: {}, Minimum Profit: {}",
                     item_info.name, profit, minimum_profit
                 )
                 .as_str(),
+                LoggerOptions::default(),
             );
             if user_order.id != "N/A" {
                 match wfm.orders().delete(&user_order.id).await {

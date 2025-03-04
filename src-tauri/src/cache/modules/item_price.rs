@@ -10,7 +10,11 @@ use eyre::eyre;
 
 use crate::{
     cache::{client::CacheClient, types::item_price_info::ItemPriceInfo},
-    utils::modules::{error::AppError, logger, states},
+    utils::modules::{
+        error::AppError,
+        logger::{self, LoggerOptions},
+        states,
+    },
 };
 
 #[derive(Clone, Debug)]
@@ -81,7 +85,11 @@ impl ItemPriceModule {
         let price_data = qf.item().get_price_json_file().await?;
         match self.client.write_text_to_file(&self.path, price_data) {
             Ok(_) => {
-                logger::info_con(&self.component, "Item prices have been updated.");
+                logger::info(
+                    &self.component,
+                    "Item prices have been updated.",
+                    LoggerOptions::default(),
+                );
             }
             Err(e) => return Err(e),
         }
@@ -93,22 +101,28 @@ impl ItemPriceModule {
         let remote_cache_id = match qf.item().get_price_cache_id().await {
             Ok(id) => id,
             Err(e) => {
-                logger::error_con(
+                logger::error(
                     &self.component,
                     format!(
                         "There was an error fetching the price cache id: {}",
                         e.get_info().0
                     )
                     .as_str(),
+                    LoggerOptions::default(),
                 );
-                logger::info_con(&self.component, "Using the current price cache id");
+                logger::info(
+                    &self.component,
+                    "Using the current price cache id",
+                    LoggerOptions::default(),
+                );
                 current_cache_id.clone()
             }
         };
         if current_cache_id != remote_cache_id {
-            logger::info_con(
+            logger::info(
                 &self.component,
                 "Price cache id mismatch, downloading new price cache data",
+                LoggerOptions::default(),
             );
             self.download_cache_data().await?;
             self.update_cache_id(remote_cache_id)?;

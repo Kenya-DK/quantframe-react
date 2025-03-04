@@ -6,7 +6,7 @@ use serde_json::{json, Value};
 
 use crate::utils::enums::log_level::LogLevel;
 
-use super::logger;
+use super::logger::{self, LoggerOptions};
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct ErrorApiResponse {
@@ -160,13 +160,14 @@ impl AppError {
                 json,
             );
         } else {
-            logger::warning_con(
+            logger::warning(
                 "AppError",
                 format!(
                     "The regex pattern {} did not match the error string {}",
                     pattern, e
                 )
                 .as_str(),
+                LoggerOptions::default(),
             );
             return ("".to_string(), "".to_string(), json);
         }
@@ -221,7 +222,7 @@ impl<T> From<std::sync::PoisonError<T>> for AppError {
     }
 }
 
-pub fn create_log_file(file: String, e: &AppError) {
+pub fn create_log_file(file: &str, e: &AppError) {
     let component = e.component();
     let cause = e.cause();
     let backtrace = e.backtrace();
@@ -238,7 +239,6 @@ pub fn create_log_file(file: String, e: &AppError) {
             extra.to_string()
         )
         .as_str(),
-        true,
-        Some(file.as_str()),
+        LoggerOptions::default().set_file(file),
     );
 }

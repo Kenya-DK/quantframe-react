@@ -42,7 +42,7 @@ pub async fn wish_list_reload(
         }
         Err(e) => {
             let error: AppError = AppError::new_db("WishListQuery::reload", e);
-            error::create_log_file("command.log".to_string(), &error);
+            error::create_log_file("command.log", &error);
             return Err(error);
         }
     };
@@ -142,7 +142,7 @@ pub async fn wish_list_update(
         }
         Err(e) => {
             let error: AppError = AppError::new_db("WishListMutation::UpdateById", e);
-            error::create_log_file("wish_list_update.log".to_string(), &error);
+            error::create_log_file("wish_list_update.log", &error);
             return Err(error);
         }
     }
@@ -186,7 +186,7 @@ pub async fn wish_list_delete(
         }
         Err(e) => {
             let error: AppError = AppError::new_db("WishListMutation::DeleteById", e);
-            error::create_log_file("wish_list_delete.log".to_string(), &error);
+            error::create_log_file("wish_list_delete.log", &error);
             return Err(error);
         }
     }

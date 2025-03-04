@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::utils::modules::logger;
+use crate::utils::modules::logger::{self, LoggerOptions};
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum LogLevel {
@@ -39,10 +39,10 @@ impl Serialize for LogLevel {
             LogLevel::Trace => "trace",
             LogLevel::Critical => "critical",
             LogLevel::Unknown(i) => {
-                logger::critical_file(
+                logger::critical(
                     "OrderMode",
                     format!("Unknown OrderMode: {}", i).as_str(),
-                    Some("enums.log"),
+                    LoggerOptions::default().set_file("enums.log"),
                 );
                 "unknown"
             }

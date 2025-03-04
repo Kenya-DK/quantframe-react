@@ -7,6 +7,7 @@ use crate::{
         enums::log_level::LogLevel,
         modules::{
             error::{ApiResult, AppError},
+            logger::LoggerOptions,
             states,
         },
     },
@@ -168,9 +169,10 @@ impl AuctionModule {
             });
             body["item"] = item_riven;
         } else if auction_type == "item" {
-            logger::warning_con(
+            logger::warning(
                 "WarframeMarket:Auction:Create",
                 "Item auctions are not yet supported",
+                LoggerOptions::default(),
             );
         }
         match self

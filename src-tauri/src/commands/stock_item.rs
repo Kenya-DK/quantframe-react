@@ -39,7 +39,7 @@ pub async fn stock_item_reload(
         }
         Err(e) => {
             let error: AppError = AppError::new_db("StockItemQuery::reload", e);
-            error::create_log_file("command_stock_item_reload.log".to_string(), &error);
+            error::create_log_file("command_stock_item_reload.log", &error);
             return Err(error);
         }
     };
@@ -95,7 +95,7 @@ pub async fn stock_item_create(
             return Ok(stock);
         }
         Err(e) => {
-            error::create_log_file("command_stock_item_create.log".to_string(), &e);
+            error::create_log_file("command_stock_item_create.log", &e);
             return Err(e);
         }
     }
@@ -164,7 +164,7 @@ pub async fn stock_item_update(
         }
         Err(e) => {
             let error: AppError = AppError::new_db("StockItemMutation::UpdateById", e);
-            error::create_log_file("command_stock_item_update.log".to_string(), &error);
+            error::create_log_file("command_stock_item_update.log", &error);
             return Err(error);
         }
     }
@@ -194,7 +194,7 @@ pub async fn stock_item_update_bulk(
         }
         Err(e) => {
             let error: AppError = AppError::new_db("StockItemMutation::UpdateBulk", e);
-            error::create_log_file("command_stock_item_update_bulk.log".to_string(), &error);
+            error::create_log_file("command_stock_item_update_bulk.log", &error);
             return Err(error);
         }
     }
@@ -218,7 +218,7 @@ pub async fn stock_item_delete_bulk(
         Ok(stocks) => stocks,
         Err(e) => {
             let error: AppError = AppError::new_db("StockItemQuery::DeleteBulk", e);
-            error::create_log_file("command_stock_item_delete_bulk.log".to_string(), &error);
+            error::create_log_file("command_stock_item_delete_bulk.log", &error);
             return Err(error);
         }
     };
@@ -230,7 +230,7 @@ pub async fn stock_item_delete_bulk(
             Ok(_) => {}
             Err(e) => {
                 let error: AppError = AppError::new_db("StockItemMutation::DeleteById", e);
-                error::create_log_file("command_stock_item_delete_bulk.log".to_string(), &error);
+                error::create_log_file("command_stock_item_delete_bulk.log", &error);
                 return Err(error);
             }
         }
@@ -259,7 +259,7 @@ pub async fn stock_item_delete_bulk(
         }
         Err(e) => {
             let error: AppError = AppError::new_db("StockItemQuery::DeleteBulk", e);
-            error::create_log_file("command_stock_item_delete_bulk.log".to_string(), &error);
+            error::create_log_file("command_stock_item_delete_bulk.log", &error);
             return Err(error);
         }
     }
@@ -317,7 +317,7 @@ pub async fn stock_item_sell(
             return Ok(stock);
         }
         Err(e) => {
-            error::create_log_file("command_stock_item_sell.log".to_string(), &e);
+            error::create_log_file("command_stock_item_sell.log", &e);
             return Err(e);
         }
     }
@@ -337,7 +337,7 @@ pub async fn stock_item_delete(
         Ok(stock) => stock,
         Err(e) => {
             let error: AppError = AppError::new_db("StockItemMutation::UpdateById", e);
-            error::create_log_file("command_stock_item_delete.log".to_string(), &error);
+            error::create_log_file("command_stock_item_delete.log", &error);
             return Err(error);
         }
     };
@@ -363,7 +363,7 @@ pub async fn stock_item_delete(
         }
         Err(e) => {
             let error: AppError = AppError::new_db("StockItemMutation::DeleteById", e);
-            error::create_log_file("command_stock_item_delete.log".to_string(), &error);
+            error::create_log_file("command_stock_item_delete.log", &error);
             return Err(error);
         }
     }

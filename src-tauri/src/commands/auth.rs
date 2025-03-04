@@ -26,7 +26,7 @@ pub async fn auth_login(
     let (wfm_user, wfm_token) = match wfm.auth().login(&email, &password).await {
         Ok((user, token)) => (user, token),
         Err(e) => {
-            error::create_log_file("auth_login.log".to_string(), &e);
+            error::create_log_file("auth_login.log", &e);
             return Err(e);
         }
     };
@@ -49,7 +49,7 @@ pub async fn auth_login(
             let ex: ErrorApiResponse = serde_json::from_value(json).unwrap();
             let msg = ex.messages.get(0);
             if msg.is_none() {
-                error::create_log_file("auth_login.log".to_string(), &e);
+                error::create_log_file("auth_login.log", &e);
                 return Err(e);
             }
             let msg = msg.unwrap().to_owned();
@@ -60,7 +60,7 @@ pub async fn auth_login(
     match qf.analytics().init() {
         Ok(_) => {}
         Err(e) => {
-            error::create_log_file("analytics.log".to_string(), &e);
+            error::create_log_file("analytics.log", &e);
             return Err(e);
         }
     }

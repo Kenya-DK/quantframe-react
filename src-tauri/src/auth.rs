@@ -1,4 +1,5 @@
 use crate::utils::modules::error::{self, AppError};
+use crate::utils::modules::logger::LoggerOptions;
 use crate::wfm_client::types::user_profile::UserProfile;
 use crate::{helper, logger};
 use eyre::{eyre, Result};
@@ -222,7 +223,7 @@ impl AuthState {
                 return Ok((auth, valid));
             }
             Err(e) => {
-                error::create_log_file("auth_state.log".to_string(), &e);
+                error::create_log_file("auth_state.log", &e);
                 Self::save_to_file(&AuthState::default())?;
             }
         }
@@ -262,7 +263,11 @@ impl AuthState {
         // Check for missing properties
         if !missing_properties.is_empty() {
             for property in missing_properties.clone() {
-                logger::warning_con("AuthState", &format!("Missing property: {}", property));
+                logger::warning(
+                    "AuthState",
+                    &format!("Missing property: {}", property),
+                    LoggerOptions::default(),
+                );
             }
         }
 

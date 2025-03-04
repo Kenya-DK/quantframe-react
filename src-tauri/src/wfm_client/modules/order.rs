@@ -4,6 +4,7 @@ use crate::{
         enums::log_level::LogLevel,
         modules::{
             error::{ApiResult, AppError},
+            logger::LoggerOptions,
             states,
         },
     },
@@ -189,9 +190,10 @@ impl OrderModule {
         let limit = auth.order_limit;
 
         if limit != -1 && self.total_orders >= limit {
-            logger::warning_con(
+            logger::warning(
                 &self.get_component("Create"),
                 "You have reached the maximum number of orders",
+                LoggerOptions::default(),
             );
             return Ok(("order_limit_reached".to_string(), None));
         }

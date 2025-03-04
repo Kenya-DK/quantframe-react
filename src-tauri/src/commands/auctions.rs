@@ -11,7 +11,7 @@ use crate::{
         enums::ui_events::{UIEvent, UIOperationEvent},
         modules::{
             error::{self, AppError},
-            logger,
+            logger::{self, LoggerOptions},
         },
     },
     wfm_client::{client::WFMClient, enums::order_type::OrderType, types::auction::Auction},
@@ -31,7 +31,7 @@ pub async fn auction_refresh(
     let current_auctions = match wfm.auction().get_my_auctions().await {
         Ok(auctions) => auctions,
         Err(e) => {
-            error::create_log_file("command_auctions.log".to_string(), &e);
+            error::create_log_file("command_auctions.log", &e);
             return Err(e);
         }
     };
@@ -57,15 +57,16 @@ pub async fn auction_delete(
     let auction = match wfm.auction().get_auction(&id).await {
         Ok(auction) => auction,
         Err(e) => {
-            error::create_log_file("command_auctions.log".to_string(), &e);
+            error::create_log_file("command_auctions.log", &e);
             return Err(e);
         }
     };
 
     if auction.is_none() {
-        logger::warning_con(
+        logger::warning(
             "Command:AuctionDelete",
             format!("Auction not found: {}", id).as_str(),
+            LoggerOptions::default(),
         );
         return Err(AppError::new(
             "Auction not found",
@@ -86,7 +87,7 @@ pub async fn auction_delete(
             helper::add_metric("Auction_Delete", "manual");
         }
         Err(e) => {
-            error::create_log_file("command_auctions.log".to_string(), &e);
+            error::create_log_file("command_auctions.log", &e);
             return Err(e);
         }
     }
@@ -104,7 +105,7 @@ pub async fn auction_delete(
         }
         Err(e) => {
             let err = AppError::new_db("Command:AuctionDelete", e);
-            error::create_log_file("command_auctions.log".to_string(), &err);
+            error::create_log_file("command_auctions.log", &err);
             return Err(err);
         }
     };
@@ -122,7 +123,7 @@ pub async fn auction_delete_all(
     let current_auctions = match wfm.auction().get_my_auctions().await {
         Ok(auctions) => auctions,
         Err(e) => {
-            error::create_log_file("command_auctions.log".to_string(), &e);
+            error::create_log_file("command_auctions.log", &e);
             return Err(e);
         }
     };
@@ -133,7 +134,7 @@ pub async fn auction_delete_all(
         match wfm.auction().delete(&auction.id).await {
             Ok(_) => {}
             Err(e) => {
-                error::create_log_file("command_auctions.log".to_string(), &e);
+                error::create_log_file("command_auctions.log", &e);
                 return Err(e);
             }
         }
@@ -155,7 +156,7 @@ pub async fn auction_delete_all(
         }
         Err(e) => {
             let err = AppError::new_db("Command:AuctionDeleteAll", e);
-            error::create_log_file("command_auctions.log".to_string(), &err);
+            error::create_log_file("command_auctions.log", &err);
             return Err(err);
         }
     }
@@ -179,7 +180,7 @@ pub async fn auction_import(
     let mut riven_entry = match auction.convert_to_create_stock(bought) {
         Ok(stock) => stock,
         Err(e) => {
-            error::create_log_file("command_auctions.log".to_string(), &e);
+            error::create_log_file("command_auctions.log", &e);
             return Err(e);
         }
     };
@@ -201,7 +202,7 @@ pub async fn auction_import(
             return Ok(stock);
         }
         Err(e) => {
-            error::create_log_file("command_stock_riven_create.log".to_string(), &e);
+            error::create_log_file("command_stock_riven_create.log", &e);
             return Err(e);
         }
     }

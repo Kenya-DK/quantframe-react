@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::logger;
+use crate::{logger, utils::modules::logger::LoggerOptions};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum StockMode {
@@ -30,10 +30,10 @@ impl Serialize for StockMode {
             StockMode::Item => "item",
             StockMode::Riven => "riven",
             StockMode::Unknown(i) => {
-                logger::critical_file(
+                logger::critical(
                     "OrderMode",
                     format!("Unknown OrderMode: {}", i).as_str(),
-                    Some("enums.log"),
+                    LoggerOptions::default().set_file("enums.log"),
                 );
                 "unknown"
             }
