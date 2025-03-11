@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 
 use actix_web::cookie::time::ext;
 use entity::{stock::item::create::CreateStockItem, wish_list::create::CreateWishListItem};
@@ -6,7 +6,7 @@ use eyre::eyre;
 use serde_json::json;
 
 use crate::{
-    cache::{client::CacheClient, types::cache_tradable_item::CacheTradableItem},
+    cache::{client::CacheClient, types::{cache_item_base::CacheItemBase, cache_tradable_item::CacheTradableItem}},
     helper,
     utils::modules::error::AppError,
 };
@@ -36,7 +36,6 @@ impl TradableItemModule {
     fn update_state(&self) {
         self.client.update_tradable_items_module(self.clone());
     }
-
     pub fn load(&mut self) -> Result<(), AppError> {
         let content = self.client.read_text_from_file(&self.path)?;
         let items: Vec<CacheTradableItem> = serde_json::from_str(&content).map_err(|e| {
@@ -55,6 +54,38 @@ impl TradableItemModule {
     // Method to get the list of tradable items
     pub fn get_items(&self) -> Result<Vec<CacheTradableItem>, AppError> {
         Ok(self.items.clone())
+    }
+
+    pub fn get_item_dict(&self, by: &str) -> Result<HashMap<String, CacheTradableItem>, AppError> {
+        let items = self.items.clone();
+        let args = match helper::validate_args(by, vec!["--item_by"]) {
+            Ok(args) => args,
+            Err(e) => return Err(e),
+        };
+        let mode = args.get("--item_by").unwrap();
+
+        let item_dict = if mode == "name" {
+            items
+                .iter()
+                .map(|x| (x.name.clone(), x.clone()))
+                .collect::<HashMap<String, CacheTradableItem>>()
+        } else if mode == "url_name" {
+            items
+                .iter()
+                .map(|x| (x.wfm_url_name.clone(), x.clone()))
+                .collect::<HashMap<String, CacheTradableItem>>()
+        } else if mode == "unique_name" {
+            items
+                .iter()
+                .map(|x| (x.unique_name.clone(), x.clone()))
+                .collect::<HashMap<String, CacheTradableItem>>()
+        } else {
+            return Err(AppError::new(
+                &self.get_component("GetBy"),
+                eyre!("Invalid by value: {}", by),
+            ));
+        };
+        Ok(item_dict)
     }
 
     pub fn get_by(&self, input: &str, by: &str) -> Result<Option<CacheTradableItem>, AppError> {

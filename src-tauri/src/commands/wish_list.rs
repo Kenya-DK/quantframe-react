@@ -219,10 +219,6 @@ pub async fn wish_list_bought(
     qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<wish_list::Model, AppError> {
     let conn = DATABASE.get().unwrap();
-    let notify = notify.lock()?.clone();
-    let wfm = wfm.lock()?.clone();
-    let cache = cache.lock()?.clone();
-    let qf = qf.lock()?.clone();
 
     let item = match WishListQuery::get_by_id(conn, id).await {
         Ok(item) => item,
@@ -258,10 +254,6 @@ pub async fn wish_list_bought(
         OrderType::Buy,
         vec![],
         "manual",
-        &cache,
-        &notify,
-        &wfm,
-        &qf,
     )
     .await
     {

@@ -84,10 +84,6 @@ pub async fn stock_item_create(
         OrderType::Buy,
         vec![],
         from,
-        &cache,
-        &notify,
-        &wfm,
-        &qf,
     )
     .await
     {
@@ -306,10 +302,6 @@ pub async fn stock_item_sell(
             "WFMContinueOnError".to_string(),
         ],
         from,
-        &cache,
-        &notify,
-        &wfm,
-        &qf,
     )
     .await
     {

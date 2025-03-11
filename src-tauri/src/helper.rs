@@ -29,7 +29,7 @@ use crate::{
     qf_client::client::QFClient,
     utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
-        modules::error::AppError,
+        modules::{error::AppError, states},
     },
     wfm_client::{client::WFMClient, enums::order_type::OrderType, types::order::Order},
     APP, DATABASE,
@@ -459,8 +459,6 @@ pub fn open_json_and_replace(path: &str, properties: Vec<String>) -> Result<Valu
 }
 
 pub async fn progress_wfm_order(
-    notify: &NotifyClient,
-    wfm: &WFMClient,
     url: &str,
     sub_type: Option<SubType>,
     quantity: i64,
@@ -468,6 +466,8 @@ pub async fn progress_wfm_order(
     need_update: bool,
     from: &str,
 ) -> Result<(String, Option<Order>), AppError> {
+    let wfm = states::wfm_client()?;
+    let notify = states::notify_client()?;
     // Process the order on WFM
     match wfm
         .orders()
@@ -505,12 +505,12 @@ pub async fn progress_wfm_order(
 }
 
 pub async fn progress_transaction(
-    notify: &NotifyClient,
-    qf: &QFClient,
     transaction: &mut entity::transaction::transaction::Model,
     from: &str,
 ) -> Result<entity::transaction::transaction::Model, AppError> {
     let conn = DATABASE.get().unwrap();
+    let notify = states::notify_client()?;
+    let qf = states::qf_client()?;
     match TransactionMutation::create(conn, &transaction).await {
         Ok(inserted) => {
             add_metric("Transaction_Create", from);
@@ -543,14 +543,11 @@ pub async fn progress_wish_item(
     operation: OrderType,
     options: Vec<String>,
     from: &str,
-    cache: &CacheClient,
-    notify: &NotifyClient,
-    wfm: &WFMClient,
-    qf: &QFClient,
 ) -> Result<(wish_list::Model, Vec<String>), AppError> {
     let conn = DATABASE.get().unwrap();
     let mut response = vec![];
-
+    let cache = states::cache()?;
+    let notify = states::notify_client()?;
     if operation == OrderType::Sell {
         return Err(AppError::new(
             "ProgressWishItem",
@@ -618,8 +615,6 @@ pub async fn progress_wish_item(
 
     // Process the order on WFM
     match progress_wfm_order(
-        notify,
-        wfm,
         entity.wfm_url.as_str(),
         entity.sub_type.clone(),
         entity.quantity,
@@ -653,7 +648,7 @@ pub async fn progress_wish_item(
         TransactionType::Purchase,
     );
 
-    match progress_transaction(notify, qf, &mut transaction, from).await {
+    match progress_transaction(&mut transaction, from).await {
         Ok(_) => {}
         Err(e) => {
             response.push("TransactionDbError".to_string());
@@ -670,13 +665,11 @@ pub async fn progress_stock_item(
     operation: OrderType,
     options: Vec<String>,
     from: &str,
-    cache: &CacheClient,
-    notify: &NotifyClient,
-    wfm: &WFMClient,
-    qf: &QFClient,
 ) -> Result<(stock_item::Model, Vec<String>), AppError> {
     let conn = DATABASE.get().unwrap();
     let mut response = vec![];
+    let cache = states::cache()?;
+    let notify = states::notify_client()?;
     // Validate the stock item
     match cache
         .tradable_items()
@@ -799,7 +792,7 @@ pub async fn progress_stock_item(
         transaction_type,
     );
 
-    match progress_transaction(notify, qf, &mut transaction, from).await {
+    match progress_transaction(&mut transaction, from).await {
         Ok(_) => {}
         Err(e) => {
             response.push("Transaction_DbError".to_string());
@@ -815,13 +808,13 @@ pub async fn progress_stock_riven(
     user_name: &str,
     operation: OrderType,
     from: &str,
-    cache: &CacheClient,
-    notify: &NotifyClient,
-    wfm: &WFMClient,
-    qf: &QFClient,
 ) -> Result<(stock_riven::Model, Vec<String>), AppError> {
     let conn = DATABASE.get().unwrap();
     let mut response = vec![];
+    let cache = states::cache()?;
+    let qf = states::qf_client()?;
+    let notify = states::notify_client()?;
+    let wfm = states::wfm_client()?;
     // Validate the stock item
     match cache.riven().validate_create_riven(entity, validate_by) {
         Ok(_) => {}

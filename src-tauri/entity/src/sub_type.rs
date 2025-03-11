@@ -54,6 +54,14 @@ impl SubType {
             cyan_stars: None,
         }
     }
+    pub fn variant(variant: &str) -> Self {
+        Self {
+            rank: None,
+            variant: Some(variant.to_string()),
+            amber_stars: None,
+            cyan_stars: None,
+        }
+    }
     pub fn new_empty() -> Self {
         Self {
             rank: None,

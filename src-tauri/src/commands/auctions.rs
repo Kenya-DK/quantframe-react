@@ -191,10 +191,6 @@ pub async fn auction_import(
         "",
         OrderType::Buy,
         "manual_auction_import",
-        &cache,
-        &notify,
-        &wfm,
-        &qf,
     )
     .await
     {

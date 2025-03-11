@@ -13,7 +13,10 @@ use crate::{
     log_parser::types::trade_detection::{TradeDetection, DETECTIONS},
     notification::client::NotifyClient,
     qf_client::client::QFClient,
-    utils::{enums::ui_events::UIOperationEvent, modules::error::AppError},
+    utils::{
+        enums::ui_events::UIOperationEvent,
+        modules::{error::AppError, trading_helper::combine_and_detect_match},
+    },
     DATABASE,
 };
 
@@ -186,32 +189,23 @@ pub async fn debug_db_reset(
 #[tauri::command]
 pub async fn debug_method(name: String, payload: Value) -> Result<Value, AppError> {
     match name.as_str() {
-        "is_irrelevant_trade_line" => {
-            let detections = DETECTIONS.get().unwrap();
-            let detection = detections.get("en").unwrap();
+        "combine_and_detect_match" => {
             let line = payload["line"].as_str().unwrap();
             let next_line = payload["next_line"].as_str().unwrap();
-            let (is_irrelevant, msg, status) = detection.is_irrelevant_trade_line(line, next_line);
+            let mach = payload["match"].as_str().unwrap();
+            let use_previous_line = payload["use_previous_line"].as_str().unwrap();
+            let is_exact_match = payload["is_exact_match"].as_str().unwrap();
+            let (combine, status) = combine_and_detect_match(
+                line,
+                next_line,
+                mach,
+                use_previous_line == "true",
+                is_exact_match == "true",
+            );
             return Ok(json!({
-                "is_irrelevant": is_irrelevant,
-                "msg": msg,
+                "combine": combine,
                 "status": format!("{:?}", status),
             }));
-        }
-        "is_beginning_of_trade" => {
-            let detections = DETECTIONS.get().unwrap();
-            let detection = detections.get("en").unwrap();
-            let line = payload["line"].as_str().unwrap();
-            let next_line = payload["next_line"].as_str().unwrap();
-            let is_previous = payload["is_previous"].as_str().unwrap();
-            let ignore_combined = payload["ignore_combined"].as_str().unwrap();
-            return Ok(json!({
-                "status": format!("{:?}", detection.is_beginning_of_trade(line,next_line, is_previous== "true", ignore_combined== "true")),
-            }));
-        }
-        "stock_riven" => {}
-        "transaction" => {
-            // do something
         }
         _ => {
             return Err(AppError::new("DebugDbReset", eyre::eyre!("Invalid target")));
