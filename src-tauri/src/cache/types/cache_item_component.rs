@@ -4,8 +4,9 @@ use super::cache_item_base::CacheItemBase;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CacheItemComponent {
-    #[serde(rename = "part_of")]
-    pub part_of: Option<CacheItemBase>,
+    #[serde(rename = "part_of_set")]
+    #[serde(default)]
+    pub part_of_set: String,
     #[serde(rename = "uniqueName")]
     pub unique_name: String,
     #[serde(rename = "name")]
@@ -15,71 +16,24 @@ pub struct CacheItemComponent {
     #[serde(rename = "tradable")]
     #[serde(default)]
     pub tradable: bool,
-    #[serde(rename = "componentType")]
-    pub component_type: String,
+    #[serde(rename = "wfm_item_url")]
+    pub wfm_item_url: Option<String>,
 }
 impl CacheItemComponent {
+    pub fn convert_to_base_item(&self) -> CacheItemBase {
+        CacheItemBase {
+            unique_name: self.unique_name.clone(),
+            name: self.name.clone(),
+            wfm_item_url: self.wfm_item_url.clone(),
+            category: "Component".to_string(),
+            part_of_set: Some(self.part_of_set.clone()),
+            components: None,
+        }
+    }
     pub fn display(&self) -> String {
         format!(
-            "Name: {}, Component Type: {}",
-            self.name, self.component_type
+            "Name: {}, Unique Name: {}, Item Count: {}",
+            self.name, self.unique_name, self.item_count
         )
-    }
-    pub fn get_real_external_name(&self) -> String {
-        let mut real_external_name = self.name.clone();
-        let part_of = self.part_of.clone();
-        if real_external_name == "Forma" {
-            real_external_name = "Forma Blueprint".to_string();
-        } else {
-            if real_external_name.contains("Kavasa Prime")
-                || real_external_name.contains("Orokin Cell")
-                || self.unique_name.contains("/Resources/")
-                || self.unique_name.contains("/Types/Items/")
-            {
-                return self.name.clone();
-            }
-            if part_of.clone().is_some() {
-                real_external_name =
-                    format!("{} {}", part_of.clone().unwrap().name, &real_external_name);
-                return real_external_name;
-            }
-        }
-        if real_external_name.contains("Voidrig") {
-            real_external_name = real_external_name.replace("Voidrig Voidrig", "Voidrig");
-        }
-        if real_external_name.contains("Bonewidow") {
-            real_external_name = real_external_name.replace("Bonewidow Bonewidow", "Bonewidow");
-        }
-        if real_external_name.contains("War war") {
-            real_external_name = real_external_name.replace("War War", "War");
-        }
-        if real_external_name.contains("War War") {
-            real_external_name = real_external_name.replace("War War", "War");
-        }
-        if real_external_name.contains("Decurion decurion") {
-            real_external_name = real_external_name.replace("Decurion Decurion", "Decurion");
-        }
-        if real_external_name.contains("Decurion Decurion") {
-            real_external_name = real_external_name.replace("Decurion Decurion", "Decurion");
-        }
-        if real_external_name == "Broken War Blade" {
-            real_external_name = "War Blade".to_string();
-        }
-        if real_external_name == "Broken War Hilt" {
-            real_external_name = "War Hilt".to_string();
-        }
-        if real_external_name.contains("Dual Decurion") && !real_external_name.contains("Blueprint")
-        {
-            real_external_name = real_external_name.replace("Dual Decurion", "Decurion");
-        }
-        if part_of.clone().is_some() && !part_of.clone().unwrap().name.contains("Ambassador") {
-            let is_warframe = part_of.clone().unwrap().category == "Warframes";
-            if !is_warframe {}
-
-            if is_warframe && !real_external_name.ends_with("Blueprint") {
-                real_external_name = format!("{} Blueprint", real_external_name);
-            }
-        }
-        real_external_name
     }
 }

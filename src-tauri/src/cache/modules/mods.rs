@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use eyre::eyre;
 
 use crate::{
-    cache::{client::CacheClient, types::cache_mod::CacheMod},
+    cache::{client::CacheClient, types::{cache_item_base::CacheItemBase, cache_mod::CacheMod}},
     helper,
     utils::modules::error::AppError,
 };
@@ -33,7 +33,17 @@ impl ModModule {
     fn update_state(&self) {
         self.client.update_mods_module(self.clone());
     }
-
+    pub fn get_all(&self) -> Vec<CacheItemBase> {
+        let mut items: Vec<CacheItemBase> = Vec::new();
+        items.append(
+            &mut self
+                .items
+                .iter()
+                .map(|item| item.convert_to_base_item())
+                .collect(),
+        );
+        items
+    }
     pub fn load(&mut self) -> Result<(), AppError> {
         let content = self.client.read_text_from_file(&self.path)?;
         let items: Vec<CacheMod> = serde_json::from_str(&content).map_err(|e| {

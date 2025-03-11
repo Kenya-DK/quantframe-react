@@ -6,6 +6,8 @@ Remove the whitelist for a new wishlist system.
 How To migrate:
 [Read More](https://quantframe.app/upgrading/1.2.X)
 
+//TODO: Add a message if the user is not verified.
+
 ## Features
 
 - ✅ Add Wishlist: You can now add items to your wishlist.

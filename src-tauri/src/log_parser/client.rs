@@ -156,16 +156,10 @@ impl LogParser {
                             continue;
                         }
                     }
-                    Err(_) => {}
+                    Err(e) => {
+                        error::create_log_file("log_parser_trade_event.logs", &e);
+                    }
                 }
-
-                // if self
-                //     .trade_event()
-                //     .process_line(&last_line, &line, *last_file_size)?
-                // {
-                //     last_line = line.clone();
-                //     continue;
-                // }
                 if self
                     .conversation_event()
                     .process_line(&line, *last_file_size)?

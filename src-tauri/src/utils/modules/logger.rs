@@ -156,7 +156,7 @@ pub fn dolog(level: LogLevel, component: &str, msg: &str, options: LoggerOptions
     let elapsed_time = START_TIME
         .get()
         .map_or(0.0, |start| start.elapsed().as_secs_f64());
-    let elapsed_str = format!("[{:.4}]", elapsed_time); // Formats to 4 decimal places
+    let elapsed_str = format_square_bracket(format!("{:.4}", elapsed_time).as_str()); // Formats to 4 decimal places
 
     let component = format_square_bracket(format_text(component, "magenta", true).as_str());
     let msg = format_text(msg, "white", false);
@@ -189,7 +189,7 @@ pub fn dolog(level: LogLevel, component: &str, msg: &str, options: LoggerOptions
     let message = format!("{} {}", prefix, msg);
 
     if options.console {
-        println!("{}", message);
+        println!("{}", message.trim());
     }
 
     if let Some(file) = options.file {

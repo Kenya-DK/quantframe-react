@@ -5,80 +5,67 @@ use eyre::eyre;
 use crate::{
     cache::{
         client::CacheClient,
-        types::{
-            cache_arcane::CacheArcane, cache_item_base::CacheItemBase,
-            cache_item_component::CacheItemComponent,
-        },
+        types::{cache_arcane::CacheArcane, cache_item_base::CacheItemBase},
     },
     helper,
     utils::modules::error::AppError,
 };
 
 #[derive(Clone, Debug)]
-pub struct ArcaneModule {
+pub struct AllItemsModule {
     pub client: CacheClient,
     // debug_id: String,
     component: String,
-    path: PathBuf,
-    pub items: Vec<CacheArcane>,
-    pub components: Vec<CacheItemComponent>,
+    pub items: Vec<CacheItemBase>,
 }
 
-impl ArcaneModule {
+impl AllItemsModule {
     pub fn new(client: CacheClient) -> Self {
-        ArcaneModule {
+        AllItemsModule {
             client,
             // debug_id: "ch_client_auction".to_string(),
-            component: "Arcane".to_string(),
-            path: PathBuf::from("items/Arcanes.json"),
+            component: "AllItems".to_string(),
             items: Vec::new(),
-            components: Vec::new(),
         }
+    }
+    fn update_state(&self) {
+        self.client.update_all_items(self.clone());
     }
     fn get_component(&self, component: &str) -> String {
         format!("{}:{}", self.component, component)
     }
-    fn update_state(&self) {
-        self.client.update_arcane_module(self.clone());
+
+    fn add_items(&mut self, items: Vec<CacheItemBase>) {
+        for item in items {
+            // Check if item already exists
+            if self.items.iter().any(|i| i.unique_name == item.unique_name) {
+                continue;
+            }
+        }
     }
 
     pub fn load(&mut self) -> Result<(), AppError> {
-        let content = self.client.read_text_from_file(&self.path)?;
-        let items: Vec<CacheArcane> = serde_json::from_str(&content).map_err(|e| {
-            AppError::new(
-                self.get_component("Load").as_str(),
-                eyre!(format!("Failed to parse ArcaneModule from file: {}", e)),
-            )
-        })?;
-        self.items = items.clone();
-        for item in items {
-            if item.components.is_none() {
-                continue;
-            }
-            self.components.append(&mut item.components.unwrap());
-        }
+        self.items.append(&mut self.client.arcane().get_all());
+        self.items.append(&mut self.client.arch_gun().get_all());
+        self.items.append(&mut self.client.arch_melee().get_all());
+        self.items.append(&mut self.client.archwing().get_all());
+        self.items.append(&mut self.client.fish().get_all());
+        self.items.append(&mut self.client.melee().get_all());
+        self.items.append(&mut self.client.misc().get_all());
+        self.items.append(&mut self.client.mods().get_all());
+        self.items.append(&mut self.client.pet().get_all());
+        self.items.append(&mut self.client.primary().get_all());
+        self.items.append(&mut self.client.relics().get_all());
+        self.items.append(&mut self.client.resource().get_all());
+        self.items.append(&mut self.client.secondary().get_all());
+        self.items.append(&mut self.client.sentinel().get_all());
+        self.items.append(&mut self.client.skin().get_all());
+        self.items.append(&mut self.client.warframe().get_all());
+
         self.update_state();
         Ok(())
     }
-    pub fn get_all(&self) -> Vec<CacheItemBase> {
-        let mut items: Vec<CacheItemBase> = Vec::new();
-        items.append(
-            &mut self
-                .items
-                .iter()
-                .map(|item| item.convert_to_base_item())
-                .collect(),
-        );
-        items.append(
-            &mut self
-                .components
-                .iter()
-                .map(|item| item.convert_to_base_item())
-                .collect(),
-        );
-        items
-    }
-    pub fn get_by(&self, input: &str, by: &str) -> Result<Option<CacheArcane>, AppError> {
+    pub fn get_by(&self, input: &str, by: &str) -> Result<Option<CacheItemBase>, AppError> {
         let items = self.items.clone();
         let args = match helper::validate_args(by, vec!["--item_by"]) {
             Ok(args) => args,

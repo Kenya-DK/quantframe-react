@@ -1,3 +1,4 @@
+pub mod all_items;
 pub mod arcane;
 pub mod arch_gun;
 pub mod arch_melee;
@@ -7,7 +8,6 @@ pub mod item_price;
 pub mod melee;
 pub mod misc;
 pub mod mods;
-pub mod parts;
 pub mod pet;
 pub mod primary;
 // pub mod relics;

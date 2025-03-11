@@ -11,7 +11,7 @@ use crate::{
     helper,
     log_parser::{
         client::LogParser,
-        enums::trade_classification::TradeClassification,
+        enums::{trade_classification::TradeClassification, trade_item_type::TradeItemType},
         types::{
             create_stock_entity::CreateStockEntity,
             trade::PlayerTrade,
@@ -47,6 +47,7 @@ pub struct OnTradeEvent {
 impl OnTradeEvent {
     pub fn new(client: LogParser) -> Self {
         let detections = DETECTIONS.get().unwrap();
+        logger::clear_log_file("trade_trace.log").unwrap();
         OnTradeEvent {
             client,
             component: "OnTradeEvent".to_string(),
@@ -62,6 +63,28 @@ impl OnTradeEvent {
     }
     fn update_state(&self) {
         self.client.update_trade_event(self.clone());
+    }
+    fn trace_centered_message(&self, message: &str) {
+        let total_width = 180;
+        let message_len = message.len();
+
+        if message_len >= total_width {
+            self.trace(message);
+            return;
+        }
+
+        let padding = total_width - message_len;
+        let left_padding = padding / 2;
+        let right_padding = padding - left_padding;
+
+        let line = format!(
+            "{}{}{}",
+            "-".repeat(left_padding),
+            message,
+            "-".repeat(right_padding)
+        );
+
+        self.trace(&line);
     }
     pub fn trace(&self, msg: &str) {
         logger::trace(
@@ -108,7 +131,14 @@ impl OnTradeEvent {
             .is_beginning_of_trade(line, prev_line, true, ignore_combined)
             .is_found()
         {
-            self.trace("--------------------------------Starting New Trade--------------------------------");
+            self.trace_centered_message("New Trade");
+            self.trace(
+                format!(
+                    "By: {} | Previous Line: {} | Ignore Combined: {}",
+                    line, prev_line, ignore_combined
+                )
+                .as_str(),
+            );
             self.trade_started(line, prev_line);
             self.getting_trade_message_multiline = true;
             self.update_state();
@@ -118,7 +148,7 @@ impl OnTradeEvent {
         else if self.waiting_confirmation
             && self
                 .detection
-                .is_dialog_line(line, prev_line, true)
+                .is_trade_finished(line, prev_line, true)
                 .is_found()
         {
             self.trace("Waiting For Confirmation/Trade Failed/Trade Cancelled");
@@ -127,7 +157,7 @@ impl OnTradeEvent {
                 .was_trade_successful(line, prev_line, true, ignore_combined)
                 .is_found()
             {
-                self.trace("Trade Successful");
+                self.trace_centered_message("Starting Processing Trade Items");
                 match self.trade_accepted() {
                     Ok(_) => {}
                     Err(e) => {
@@ -167,16 +197,13 @@ impl OnTradeEvent {
         self.add_trade_message(line);
     }
     pub fn trade_finished(&mut self) {
-        logger::clear_log_file("trade_trace.log").unwrap();
         self.current_trade.logs = self.logs.clone();
 
         let mut is_offering = true;
         let lines = self.logs.clone();
         // Loop through the trade logs by index
         let mut i = 0;
-        self.trace(
-            "--------------------------------Processing Lines--------------------------------",
-        );
+        self.trace_centered_message("Processing Lines");
         while i < lines.len() {
             // Get the current line and next line.
             let line = lines[i].to_owned();
@@ -189,30 +216,24 @@ impl OnTradeEvent {
             let (is_irrelevant, msg, status) =
                 self.detection.is_irrelevant_trade_line(&line, &next_line);
 
-            self.trace(
-                format!(
-                    "Line: {} Status: {:?} Is Irrelevant {} Msg: {}",
-                    line, status, is_irrelevant, msg
-                )
-                .as_str(),
-            );
             if !is_irrelevant {
+                self.trace(format!("Skipping: Line: {}, Next Line: {}", line, next_line).as_str());
                 i += if status.is_combined() { 2 } else { 1 };
                 continue;
             }
 
             let (full_line, is_offer_line) = self.detection.is_offer_line(&line, &next_line);
 
-            self.trace(
-                format!(
-                    "Line: {} Is Offer Line: {:?}, Full Line: {}",
-                    line, is_offer_line, full_line
-                )
-                .as_str(),
-            );
-
             if is_offer_line.is_found() {
                 i += if is_offer_line.is_combined() { 2 } else { 1 };
+                self.trace(
+                    format!(
+                        "From Player: {} | Is Offering: {}",
+                        full_line,
+                        is_offer_line.is_found()
+                    )
+                    .as_str(),
+                );
                 let player_name = full_line
                     .replace(&self.detection.receive_line_first_part, "")
                     .replace(&self.detection.receive_line_second_part, "")
@@ -223,28 +244,33 @@ impl OnTradeEvent {
                 is_offering = false;
                 continue;
             } else {
-                // Add trade item to the trade
-                let (combined, status) =
-                    self.detection.is_platinum(&line, &next_line, false, false);
-                
+                let (status, item) = TradeItem::from_string(&line, &next_line, &self.detection);
+
                 if status.is_combined() {
                     i += 1;
                 }
-                let item = TradeItem::from_string(&combined, status.is_found());
-                self.trace(
-                    format!(
-                        "Item: {:?}, Status: {:?}, Combined: {}",
-                        item.display(),
-                        status,
-                        combined
-                    )
-                    .as_str(),
-                );
 
                 if !item.is_valid() {
+                    self.trace(
+                        format!(
+                            "Item Not Valid: Line: {}, Next Line: {}, Status: {:?}",
+                            line, next_line, status
+                        )
+                        .as_str(),
+                    );
                     i += 1;
                     continue;
                 }
+                self.trace(
+                    format!(
+                        "Item Valid: {}, Status: {:?}, Line: {}, Next Line: {}",
+                        item.display(),
+                        status,
+                        line,
+                        next_line
+                    )
+                    .as_str(),
+                );
 
                 let mut items = if is_offering {
                     self.current_trade.offered_items.iter_mut()
@@ -252,7 +278,11 @@ impl OnTradeEvent {
                     self.current_trade.received_items.iter_mut()
                 };
 
-                if let Some(trade) = items.find(|p| p.raw == line) {
+                if let Some(trade) = items.find(|p| {
+                    p.unique_name == item.unique_name
+                        && !item.unique_name.is_empty()
+                        && p.sub_type == item.sub_type
+                }) {
                     trade.quantity += 1;
                 } else if is_offering {
                     self.current_trade.offered_items.push(item);
@@ -262,20 +292,9 @@ impl OnTradeEvent {
             }
             i += 1;
         }
-        self.trace(
-            "--------------------------------End Processing Lines------------------------------",
-        );
+        self.trace_centered_message("End Processing Lines");
         self.current_trade.trade_time = chrono::Local::now().to_string();
         self.current_trade.calculate();
-        match logger::log_json("trade.json", &json!(self.current_trade)) {
-            Ok(_) => {}
-            Err(_) => {}
-        }
-        logger::info(
-            &self.get_component("TradeAccepted"),
-            &self.current_trade.display(),
-            LoggerOptions::default(),
-        );
         self.update_state();
     }
     pub fn trade_cancelled(&self) {
@@ -293,20 +312,16 @@ impl OnTradeEvent {
         );
     }
     pub fn trade_accepted(&self) -> Result<(), AppError> {
-        let file_path = "tradings.json";
-        let gui_id = "on_trade_event";
-        let conn = DATABASE.get().unwrap();
-        let settings = states::settings()?;
-        let notify_user = settings.notifications.on_new_trade;
-        let auto_trade = settings.live_scraper.stock_item.auto_trade;
-        let notify = states::notify_client()?;
-        let trade = self.current_trade.clone();
-        let cache = states::cache()?;
-        let wfm = states::wfm_client()?;
-        let qf = states::qf_client()?;
+        let mut trade = self.current_trade.clone();
 
+        let trade_type = match trade.trade_type {
+            TradeClassification::Sale => TradeClassification::Purchase,
+            TradeClassification::Purchase => TradeClassification::Sale,
+            _ => TradeClassification::Trade,
+        };
         // If the trade is not a sale or purchase, return
-        if trade.trade_type == TradeClassification::Trade {
+        if trade_type == TradeClassification::Trade {
+            self.trace("Shipping Trade Type: Trade");
             logger::info(
                 &self.get_component("TradeAccepted"),
                 &trade.display(),
@@ -315,18 +330,32 @@ impl OnTradeEvent {
             return Ok(());
         }
 
-        // Get Trade Items
-        let items = match trade.trade_type {
-            TradeClassification::Sale => trade.offered_items.clone(),
-            TradeClassification::Purchase => trade.received_items.clone(),
-            _ => vec![],
-        };
-
-        let mut i = 0;
-        while i < items.len() {
-            let item = items[i].clone();
+        // Check if the trade is a set
+        let (is_set, set_name) = trade.calculate_set()?;
+        if is_set {
+            self.trace(format!("Set Found: {}", set_name).as_str());
+        } else {
+            self.trace(format!("Set Not Found: {}", set_name).as_str());
         }
 
+        let items = trade.get_valid_items(&trade_type);
+        if items.len() > 1 {
+            self.trace("Shipping Multiple Items");
+        }
+        let total_platinum = trade.platinum;
+        for item in items {
+            println!("Item: {}", item.display());
+        }
+
+        match logger::log_json("trade.json", &json!(self.current_trade)) {
+            Ok(_) => {}
+            Err(_) => {}
+        }
+        logger::info(
+            &self.get_component("TradeAccepted"),
+            &self.current_trade.display(),
+            LoggerOptions::default(),
+        );
         return Ok(());
     }
     pub fn add_trade_message(&mut self, line: &str) {

@@ -20,28 +20,7 @@ use crate::{
 
 #[post("/add_riven")]
 pub async fn add_riven(riven: web::Json<RivenPayload>) -> impl Responder {
-    let app_handle = APP.get().expect("failed to get app handle");
-
-    let notify_state: State<Arc<Mutex<NotifyClient>>> = app_handle.state();
-    let notify = notify_state
-        .lock()
-        .expect("failed to lock notify state")
-        .clone();
-
-    let cache_state: State<Arc<Mutex<CacheClient>>> = app_handle.state();
-    let cache = cache_state
-        .lock()
-        .expect("failed to lock notify state")
-        .clone();
-
-    let wfm_state: State<Arc<Mutex<WFMClient>>> = app_handle.state();
-    let wfm = wfm_state.lock().expect("failed to lock wfm state").clone();
-
-    let qf_state: State<Arc<Mutex<QFClient>>> = app_handle.state();
-    let qf = qf_state.lock().expect("failed to lock qf state").clone();
-
     let mut entry = riven.into_inner();
-
     match helper::progress_stock_riven(
         &mut entry.riven_data,
         // "--weapon_by name --weapon_lang en --attribute_by upgrades --upgrade_by short_string",
@@ -49,10 +28,6 @@ pub async fn add_riven(riven: web::Json<RivenPayload>) -> impl Responder {
         "",
         OrderType::Buy,
         "http_server",
-        &cache,
-        &notify,
-        &wfm,
-        &qf,
     )
     .await
     {

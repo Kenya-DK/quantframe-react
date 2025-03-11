@@ -171,6 +171,7 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     panic::set_hook(Box::new(|panic_info| {
+        eprintln!("Panic: {:?}", panic_info);
         logger::critical(
             "Panic",
             format!("Panic: {:?}", panic_info).as_str(),
