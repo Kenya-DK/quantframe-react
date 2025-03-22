@@ -19,8 +19,7 @@ import { TextTranslate } from "@components/TextTranslate";
 import { ActionWithTooltip } from "@components/ActionWithTooltip";
 import { SearchField } from "@components/SearchField";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
-import { SortItems } from "@utils/sorting.helper";
-import { SortDirection } from "$types/index";
+import { SortDirection, SortItems } from "@utils/sorting.helper";
 
 interface TransactionPanelProps {}
 export const TransactionPanel = ({}: TransactionPanelProps) => {

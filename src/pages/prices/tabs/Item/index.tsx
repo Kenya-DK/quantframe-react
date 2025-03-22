@@ -61,13 +61,11 @@ export const ItemPanel = ({}: ItemPanelProps) => {
   // Update Database Rows
   useEffect(() => {
     if (!data) return;
-    debugger;
     setTotalRecords(data.total);
     setRows(data.results);
   }, [data]);
 
   const IsLessThanMaxDays = (maxDays: number) => {
-    debugger;
     if (!value[0] || !value[1]) return undefined;
     const startDate = dayjs(value[0]);
     const endDate = dayjs(value[1]);

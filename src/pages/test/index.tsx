@@ -3,6 +3,7 @@ import { Button, Container } from "@mantine/core";
 import { useGetUser } from "@hooks/useGetUser.hook";
 import { useAppContext } from "@contexts/app.context";
 import { open } from "@tauri-apps/plugin-shell";
+
 export default function TestPage() {
   const user = useGetUser();
   const { app_info } = useAppContext();
