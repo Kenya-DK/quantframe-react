@@ -23,6 +23,9 @@ export const en = {
       title: "Trade with {{player_name}} complete",
       message:
         "<blue>{{item_name}}</blue> X<blue>{{quantity}}</blue> {{trade_type}} For {{platinum}}p WFM: <blue>{{wfm_operation}}</blue> Stock: <blue>{{stock_operation}}</blue>",
+      multiple_items_found: "Multiple items found Skipping...",
+      no_valid_items_found: "No valid items found Skipping...",
+      set_not_valid: "Set not valid Skipping...",
     },
   },
   enums: {
@@ -1505,6 +1508,9 @@ export const en = {
               },
             },
           },
+        },
+        log_parser: {
+          title: "Log Parser",
         },
       },
     },
