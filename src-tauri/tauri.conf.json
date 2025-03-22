@@ -14,7 +14,7 @@
   },
   "productName": "Quantframe",
   "mainBinaryName": "Quantframe",
-  "version": "1.3.3",
+  "version": "1.3.5",
   "identifier": "dev.kenya.quantframe",
   "plugins": {
     "updater": {
@@ -28,7 +28,7 @@
         "fullscreen": false,
         "userAgent": "Quantframe",
         "resizable": true,
-        "title": "Quantframe v1.3.3 - Pre-release By Kenya-DK",
+        "title": "Quantframe v1.3. - By Kenya-DK",
         "width": 1455,
         "height": 912,
         "useHttpsScheme": true

@@ -1,20 +1,23 @@
 {
-	"folders": [
-		{
-			"path": ".\\"
-		},
-		{
-			"path": "../../../../../AppData/Local/dev.kenya.quantframe"
-		}
-	],
-	"settings": {
-		"cssVariables.lookupFiles": [
-			"**/*.css",
-			"**/*.scss",
-			"**/*.sass",
-			"**/*.less",
-			"node_modules/@mantine/core/styles.css"
-		],
-		"liveServer.settings.multiRootWorkspaceName": "quantframe-react"
-	}
+  "folders": [
+    {
+      "path": ".\\"
+    },
+    {
+      "path": "../../../../../AppData/Local/dev.kenya.quantframe"
+    }
+  ],
+  "settings": {
+    "cssVariables.lookupFiles": ["**/*.css", "**/*.scss", "**/*.sass", "**/*.less", "node_modules/@mantine/core/styles.css"],
+    "liveServer.settings.multiRootWorkspaceName": "quantframe-react",
+    "Lua.runtime.version": "Lua 5.4",
+    "Lua.runtime.plugin": "c:\\Users\\Kenya\\.vscode\\extensions\\overextended.cfxlua-vscode-1.7.37\\plugin\\plugin.lua",
+    "Lua.runtime.nonstandardSymbol": ["/**/", "`", "+=", "-=", "*=", "/=", "<<=", ">>=", "&=", "|=", "^="],
+    "Lua.workspace.ignoreDir": [".vscode", ".git", ".github", "node_modules"],
+    "Lua.workspace.library": [
+      "c:\\Users\\Kenya\\.vscode\\extensions\\overextended.cfxlua-vscode-1.7.37\\plugin\\library\\runtime",
+      "c:\\Users\\Kenya\\.vscode\\extensions\\overextended.cfxlua-vscode-1.7.37\\plugin\\library\\natives\\CFX-NATIVE",
+      "c:\\Users\\Kenya\\.vscode\\extensions\\overextended.cfxlua-vscode-1.7.37\\plugin\\library\\natives\\GTAV"
+    ]
+  }
 }
