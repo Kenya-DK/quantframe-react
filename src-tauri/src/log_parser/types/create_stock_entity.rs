@@ -11,7 +11,10 @@ use entity::{
 use serde::{Deserialize, Serialize};
 use service::{sea_orm::DbConn, WishListQuery};
 
-use crate::{cache::client::CacheClient, utils::modules::error::AppError};
+use crate::{
+    cache::client::CacheClient,
+    utils::modules::{error::AppError, states},
+};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CreateStockEntity {
@@ -223,7 +226,8 @@ impl CreateStockEntity {
             )
         }
     }
-    pub fn validate_entity(&mut self, cache: &CacheClient, by: &str) -> Result<(), AppError> {
+    pub fn validate_entity(&mut self, by: &str) -> Result<(), AppError> {
+        let cache = states::cache()?;
         if self.entity_type == StockType::Unknown {
             return Err(AppError::new(
                 "ValidateStockEntity",
@@ -348,6 +352,18 @@ impl CreateStockEntity {
         {
             Ok(item) => Ok(item.is_some()),
             Err(_) => Ok(false),
+        }
+    }
+    pub fn display(&self) -> String {
+        match self.get_name() {
+            Ok(name) => {
+                let mut display = name.clone();
+                if self.is_hidden {
+                    display += " (Hidden)";
+                }
+                display
+            }
+            Err(_) => self.raw.clone(),
         }
     }
 }

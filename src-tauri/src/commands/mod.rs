@@ -8,6 +8,7 @@ pub mod debug;
 pub mod item;
 pub mod live_scraper;
 pub mod log;
+pub mod log_parser;
 pub mod notification;
 pub mod orders;
 pub mod pages;

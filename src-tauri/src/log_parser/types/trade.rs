@@ -1,15 +1,23 @@
-use entity::sub_type::SubType;
+use entity::{
+    enums::stock_type::{StockType, StockTypeEnum},
+    sub_type::SubType,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::{
+    commands::item,
     log_parser::enums::{
         trade_classification::TradeClassification, trade_item_type::TradeItemType,
     },
-    utils::modules::{error::AppError, states},
+    utils::{
+        enums::log_level::LogLevel,
+        modules::{error::AppError, states, trading_helper::trace},
+    },
+    DATABASE,
 };
 
-use super::trade_item::TradeItem;
+use super::{create_stock_entity::CreateStockEntity, trade_item::TradeItem};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct PlayerTrade {
@@ -118,67 +126,170 @@ impl PlayerTrade {
         items.iter().find(|p| &p.item_type == item_type).cloned()
     }
 
-    pub fn calculate_set(&mut self) -> Result<(bool, String), AppError> {
+    pub fn is_set(&self) -> Result<(bool, String), AppError> {
         let trade_type = match self.trade_type {
             TradeClassification::Sale => TradeClassification::Purchase,
             TradeClassification::Purchase => TradeClassification::Sale,
             _ => {
-                return Ok((false, "Not a trade".to_string()));
+                return Ok((false, "".to_string()));
             }
         };
 
         let main_part = self.get_item_by_type(&trade_type, &TradeItemType::MainBlueprint);
         if main_part.is_none() || self.get_valid_items(&self.trade_type).len() < 1 {
-            return Ok((false, "Not a set".to_string()));
+            return Ok((false, "".to_string()));
         }
-
         let main_part = main_part.unwrap();
         let cache = states::cache()?;
         // Get the set for the main part
-        let main_part = match cache
-            .all_items()
-            .get_by(&main_part.unique_name, "--item_by unique_name")?
-        {
+        let main_part = match cache.all_items().get_by(
+            &main_part.unique_name,
+            "--item_by unique_name --category Component",
+        )? {
             Some(set_part) => set_part,
             None => {
-                return Ok((
-                    false,
-                    format!("Main part not found for by: {}", main_part.unique_name),
-                ))
+                trace(&format!(
+                    "Main part not found for by: {}",
+                    main_part.unique_name
+                ));
+                return Ok((false, "".to_string()));
             }
         };
+        trace(&format!("Found main part {} for set", main_part.display()));
 
-        // Get the set for the main part
-        let part_of_set = match main_part.part_of_set {
-            Some(set) => cache.all_items().get_by(&set, "--item_by unique_name")?,
+        // Get the set unique name if it exists
+        let set_unique_name = match main_part.part_of_set {
+            Some(set) => set,
             None => {
-                return Ok((
-                    false,
-                    format!("Set not found for by: {}", main_part.unique_name),
-                ))
+                trace(&format!(
+                    "Part of set not found for by: {:?}",
+                    main_part.part_of_set
+                ));
+                return Ok((false, "".to_string()));
             }
         };
-        let part_of_set = part_of_set.unwrap();
+        trace(&format!("Set unique name: {}", set_unique_name));
+        // Get the set for the main part
+        let set = match cache
+            .all_items()
+            .get_by(&set_unique_name, "--item_by unique_name")?
+        {
+            Some(set) => set,
+            None => {
+                trace(&format!("Set not found for by: {}", set_unique_name));
+                return Ok((false, "".to_string()));
+            }
+        };
+        trace(&format!("Found set {} for main part", set.display()));
 
         // Get the components for the set
-        let components = part_of_set.get_tradable_components();
+        let components = set.get_tradable_components();
         if components.is_empty() {
-            return Ok((
-                false,
-                format!("Components is empty for: {}", main_part.unique_name),
-            ));
+            trace(&format!("Components not found for set: {}", set.display()));
+            return Ok((false, "".to_string()));
         }
 
         for component in components {
-            if !self.is_item_in_trade(&trade_type, &component.unique_name, component.item_count) {
-                return Ok((
-                    false,
-                    format!("Component not found for: {}", component.display()),
-                ));
+            let found =
+                self.is_item_in_trade(&trade_type, &component.unique_name, component.item_count);
+            trace(&format!(
+                "Component: {} | Found: {}",
+                component.display(),
+                found
+            ));
+            if !found {
+                return Ok((false, "".to_string()));
             }
         }
-        println!("Set: {:?}", part_of_set.wfm_item_url);
-        Ok((true, part_of_set.wfm_item_url.unwrap()))
+        trace(&format!("Full set found: {}", set.display()));
+        return Ok((true, set.unique_name));
+    }
+
+    pub async fn to_stock(&self) -> Result<CreateStockEntity, AppError> {
+        let db = DATABASE.get().unwrap();
+        let trade_type = match self.trade_type {
+            TradeClassification::Sale => TradeClassification::Purchase,
+            TradeClassification::Purchase => TradeClassification::Sale,
+            _ => {
+                return Err(AppError::new_with_level(
+                    "PlayerTrade:ToStock",
+                    eyre::eyre!("Wrong Trade Type: {:?}", self.trade_type),
+                    LogLevel::Warning,
+                ))
+            }
+        };
+        let mut stock = CreateStockEntity::new("", self.platinum);
+        let items = self.get_valid_items(&trade_type);
+        // Check if the trade is a set
+        let (is_set, set_name) = self.is_set()?;
+        if is_set {
+            stock.raw = set_name.to_string();
+            stock.entity_type = StockType::Item;
+        } else if items.len() == 1 {
+            let item = items.first().unwrap();
+            stock.raw = item.unique_name.clone();
+            stock.quantity = item.quantity;
+            stock.sub_type = item.sub_type.clone();
+            // Set Stock Type
+            stock.entity_type = match item.item_type {
+                TradeItemType::RivenUnVeiled => StockType::Riven,
+                _ => StockType::Item,
+            };
+
+            // Get Riven Info
+            if stock.entity_type == StockType::Riven {
+                // Split by '/' and collect into a Vec
+                let parts: Vec<&str> = item.unique_name.trim_matches('/').split('/').collect();
+                // Get the last two elements
+                match parts.get(parts.len() - 2) {
+                    Some(riven_type) => {
+                        stock.raw = riven_type.to_string();
+                    }
+                    None => {
+                        return Err(AppError::new_with_level(
+                            "PlayerTrade:ToStock",
+                            eyre::eyre!("Riven type not found: {}", item.unique_name),
+                            LogLevel::Warning,
+                        ));
+                    }
+                }
+                match parts.get(parts.len() - 1) {
+                    Some(mod_name) => {
+                        stock.mod_name = mod_name.to_string();
+                    }
+                    None => {
+                        return Err(AppError::new_with_level(
+                            "PlayerTrade:ToStock",
+                            eyre::eyre!("Riven mod name not found: {}", item.unique_name),
+                            LogLevel::Warning,
+                        ));
+                    }
+                }
+            }
+        } else {
+            let msg;
+            if items.len() == 0 {
+                msg = "No valid items found".to_string();
+            } else if !set_name.is_empty() {
+                msg = format!("Set Not valid: {}", set_name);
+            } else {
+                msg = format!("Multiple items found: {}, Skipping", items.len());
+            }
+            trace(&msg);
+            return Err(AppError::new_with_level(
+                "PlayerTrade:ToStock",
+                eyre::eyre!("{} | Trade Type: {:?}", msg, trade_type),
+                LogLevel::Warning,
+            ));
+        }
+        stock.validate_entity(
+            "--item_by unique_name --weapon_by name --weapon_lang en --ignore_attributes",
+        )?;
+        // Check if the stock is a wishlist item
+        if stock.is_wish_list_item(db).await? {
+            stock.entity_type = StockType::WishList;
+        }
+        return Ok(stock);
     }
 
     pub fn display(&self) -> String {
