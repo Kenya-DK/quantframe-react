@@ -306,6 +306,11 @@ pub fn run() {
             commands::item::item_get_prices,
             // Page Home commands
             commands::pages::home::get_statistic,
+            // Log Parser commands
+            commands::log_parser::get_cache_lines,
+            commands::log_parser::get_last_read_date,
+            commands::log_parser::clear_cache_lines,
+            commands::log_parser::dump_cache_lines,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
