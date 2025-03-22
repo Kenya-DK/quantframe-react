@@ -87,7 +87,7 @@ impl DebugClient {
                 entity.entity_type = StockType::Item;
             }
 
-            match entity.validate_entity(&cache, "--weapon_by url_name --weapon_lang en --item_by url_name --item_lang en --attribute_by url_name") {
+            match entity.validate_entity( "--weapon_by url_name --weapon_lang en --item_by url_name --item_lang en --attribute_by url_name") {
                 Ok(_) => {}
                 Err(e) => {
                     println!("Error: {:?}", e);
@@ -170,7 +170,7 @@ impl DebugClient {
                 None
             };
 
-            match entity.validate_entity(&cache, "--item_by url_name --item_lang en") {
+            match entity.validate_entity("--item_by url_name --item_lang en") {
                 Ok(_) => {}
                 Err(e) => {
                     return Err(e);
@@ -222,10 +222,9 @@ impl DebugClient {
                 amber_stars: None,
             });
 
-            match entity.validate_entity(
-                &cache,
-                "--weapon_by url_name --weapon_lang en --attribute_by url_name",
-            ) {
+            match entity
+                .validate_entity("--weapon_by url_name --weapon_lang en --attribute_by url_name")
+            {
                 Ok(_) => {}
                 Err(e) => {
                     println!("Error: {:?}", e);
@@ -276,7 +275,7 @@ impl DebugClient {
             let mut entity = CreateStockEntity::new(&item.name, item.bought as i64);
             entity.entity_type = StockType::Item;
 
-            match entity.validate_entity(&cache, "--item_by url_name --item_lang en") {
+            match entity.validate_entity("--item_by url_name --item_lang en") {
                 Ok(_) => {}
                 Err(e) => {
                     println!("Error: {:?}", e);
@@ -324,7 +323,7 @@ impl DebugClient {
             let mut entity = CreateStockEntity::new(&item.name, item.price as i64);
             entity.entity_type = StockType::Item;
 
-            match entity.validate_entity(&cache, "--item_by url_name --item_lang en") {
+            match entity.validate_entity("--item_by url_name --item_lang en") {
                 Ok(_) => {}
                 Err(e) => {
                     println!("Error: {:?}", e);

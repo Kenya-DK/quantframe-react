@@ -45,7 +45,11 @@ pub async fn auth_login(
     {
         Ok(user) => (Some(user.clone()), user.token),
         Err(e) => {
-            let json = e.extra_data()["ApiError"].clone();
+            let json = e.extra_data();
+            if json.is_none() {
+                return Err(e);
+            }
+            let json = json.unwrap()["ApiError"].clone();
             let ex: ErrorApiResponse = serde_json::from_value(json).unwrap();
             let msg = ex.messages.get(0);
             if msg.is_none() {
