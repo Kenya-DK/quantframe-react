@@ -14,7 +14,7 @@ export interface Settings {
 export interface SettingsLiveScraper {
   stock_item: SettingsStockItem;
   stock_mode: StockMode;
-  trade_mode: TradeMode;
+  trade_modes: TradeMode[];
   should_delete_other_types: boolean;
   stock_riven: SettingsStockRiven;
   webhook: string;
@@ -67,7 +67,6 @@ export enum StockMode {
   Item = "item",
 }
 export enum TradeMode {
-  All = "all",
   Buy = "buy",
   Sell = "sell",
   Wishlist = "wishlist",

@@ -113,7 +113,7 @@ impl LiveScraperClient {
                 if settings.live_scraper.stock_item.auto_delete {
                     scraper
                         .item()
-                        .delete_all_orders(TradeMode::All)
+                        .delete_all_orders(vec![TradeMode::Buy, TradeMode::Sell])
                         .await
                         .unwrap();
                 }

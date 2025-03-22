@@ -43,8 +43,8 @@ pub struct TradeMsgSettings {
 pub struct LiveScraperSettings {
     // Stock Mode
     pub stock_mode: StockMode,
-    // Trade Mode
-    pub trade_mode: TradeMode,
+    // Trade Mode's
+    pub trade_modes: Vec<TradeMode>,
     // Should delete other trade types, Ex: If you are selling, should you delete buy orders or wishlists etc
     pub should_delete_other_types: bool,
     // Discord Webhook
@@ -136,7 +136,7 @@ impl Default for SettingsState {
             },
             live_scraper: LiveScraperSettings {
                 stock_mode: StockMode::All,
-                trade_mode: TradeMode::All,  
+                trade_modes: vec![TradeMode::Buy,TradeMode::Sell,TradeMode::WishList],
                 should_delete_other_types: true,              
                 webhook: "".to_string(),
                 stock_item: StockItemSettings {
@@ -275,5 +275,9 @@ impl SettingsState {
             .map_err(|e| AppError::new("Settings", eyre!(e.to_string())))?;
 
         Ok((deserialized, missing_properties.is_empty()))
+    }
+
+    pub fn has_trade_mode(&self, mode: TradeMode) -> bool {
+        self.live_scraper.trade_modes.contains(&mode)
     }
 }

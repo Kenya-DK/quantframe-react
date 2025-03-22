@@ -66,7 +66,6 @@ export const en = {
     trade_mode: {
       buy: "Buy",
       sell: "Sell",
-      all: "All",
       wishlist: "Wishlist",
     },
     stock_status: {
@@ -233,15 +232,9 @@ export const en = {
                 placeholder: "Stock Mode",
                 error: "Invalid stock mode",
               },
-              trade_mode: {
+              trade_modes: {
                 label: "Trade Mode",
-                description: {
-                  all: "Will buy and sell wishlist",
-                  buy: "Will only buy",
-                  sell: "Will only sell",
-                  wishlist: "Will only buy your wishlist",
-                },
-                placeholder: "Trade Mode",
+                description: "How the bot will trade",
                 error: "Invalid trade mode",
               },
               report_to_wfm: {

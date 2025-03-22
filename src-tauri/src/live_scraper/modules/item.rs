@@ -20,6 +20,7 @@ use crate::DATABASE;
 use entity::enums::stock_status::StockStatus;
 use entity::price_history::{PriceHistory, PriceHistoryVec};
 
+use serde::de;
 use serde_json::json;
 use service::{StockItemMutation, StockItemQuery, WishListMutation, WishListQuery};
 use std::collections::HashMap;
@@ -88,13 +89,13 @@ impl ItemModule {
         let wfm = states::wfm_client()?;
         let auth = states::auth()?;
         let cache = states::cache()?;
-        let settings = states::settings()?.live_scraper;
+        let settings_state = states::settings()?;
+        let settings = settings_state.clone().live_scraper;
 
         // Send GUI Update.
         self.send_msg("stating", None);
 
         // Get Settings.
-        let trade_mode = settings.trade_mode.clone();
         let blacklist_items: Vec<String> = settings.stock_item.blacklist.clone();
         let delete_other_types = settings.should_delete_other_types.clone();
 
@@ -102,7 +103,7 @@ impl ItemModule {
         let mut interesting_items: HashMap<String, ItemEntry> = HashMap::new();
 
         // Get interesting items to buy from the price scraper if the order mode is buy or both.
-        if trade_mode == TradeMode::Buy || trade_mode == TradeMode::All {
+        if settings_state.has_trade_mode(TradeMode::Buy) {
             let buy_list = self.get_interesting_items().await?;
             for item in buy_list {
                 interesting_items.insert(item.wfm_url.clone(), item);
@@ -110,7 +111,7 @@ impl ItemModule {
         }
 
         // Get interesting items to sell from the stock items if the order mode is sell or both.
-        if trade_mode == TradeMode::Sell || trade_mode == TradeMode::All {
+        if settings_state.has_trade_mode(TradeMode::Sell) {
             let sell_list = StockItemQuery::get_all_stock_items(conn, 0)
                 .await
                 .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
@@ -141,7 +142,7 @@ impl ItemModule {
         }
 
         // Get Wishlist items to buy from the wishlist if the order mode is buy or both.
-        if trade_mode == TradeMode::WishList || trade_mode == TradeMode::All {
+        if settings_state.has_trade_mode(TradeMode::WishList) {
             let wish_list = WishListQuery::get_all(conn)
                 .await
                 .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
@@ -174,22 +175,26 @@ impl ItemModule {
         let mut my_orders = wfm.orders().get_my_orders().await?;
 
         // Handle Delete Orders based on the trade mode.
-        let order_ids = if (trade_mode == TradeMode::Buy || trade_mode == TradeMode::WishList)
-            && trade_mode != TradeMode::All
-            && delete_other_types
-        {
-            my_orders.get_orders_ids(OrderType::Sell, blacklist_items.clone())
-        } else if trade_mode == TradeMode::Sell
-            && trade_mode != TradeMode::All
-            && delete_other_types
-        {
-            my_orders.get_orders_ids(OrderType::Buy, blacklist_items.clone())
+        let order_ids = if delete_other_types {
+            let buy = settings_state.has_trade_mode(TradeMode::Buy);
+            let sell = settings_state.has_trade_mode(TradeMode::Sell);
+            let wish = settings_state.has_trade_mode(TradeMode::WishList);
+            // Delete orders that are not in the interesting items list.
+            match (buy, sell, wish) {
+                (true, false, true) => {
+                    my_orders.get_orders_ids(OrderType::Sell, blacklist_items.clone())
+                }
+                (false, true, false) => {
+                    my_orders.get_orders_ids(OrderType::Buy, blacklist_items.clone())
+                }
+                _ => vec![],
+            }
         } else {
             vec![]
         };
         for id in &order_ids {
             // Send GUI Update.
-            // wfm.orders().delete(&id).await?;
+            wfm.orders().delete(&id).await?;
             my_orders.delete_order_by_id(OrderType::All, &id);
             self.send_order_update(UIOperationEvent::Delete, json!({"id": id}));
         }
@@ -200,13 +205,13 @@ impl ItemModule {
         logger::log_json(
             "interesting_items.json",
             &json!({
-                "order_ids": order_ids,
+                "ToDelete": order_ids,
                 "orders": my_orders,
+                "info_caches": self.info_caches,
                 "settings": settings.stock_item,
                 "interesting_items": interesting_items.clone(),
             }),
-        )?; // Debugging
-            // let mut interesting_items: HashSet<ItemEntry> = HashSet::from_iter(interesting_items);
+        )?;
 
         let mut current_index = interesting_items.len();
         logger::info(
@@ -378,7 +383,7 @@ impl ItemModule {
         Ok(())
     }
 
-    pub async fn delete_all_orders(&mut self, mode: TradeMode) -> Result<(), AppError> {
+    pub async fn delete_all_orders(&mut self, modes: Vec<TradeMode>) -> Result<(), AppError> {
         let conn = DATABASE.get().unwrap();
         let wfm = states::wfm_client()?;
         let _notify = states::notify_client()?;
@@ -400,10 +405,10 @@ impl ItemModule {
 
         let mut orders = vec![];
 
-        if mode == TradeMode::Buy || mode == TradeMode::All {
+        if modes.contains(&TradeMode::Buy) {
             orders.append(&mut current_orders.buy_orders);
         }
-        if mode == TradeMode::Sell || mode == TradeMode::All {
+        if modes.contains(&TradeMode::Sell) {
             orders.append(&mut current_orders.sell_orders);
         }
 
