@@ -39,7 +39,8 @@ export default function LoginPage() {
       setIsBanned(u.qf_banned);
       if (u.qf_banned)
         return notifications.show({ title: useTranslateErrors("login.title"), message: useTranslateErrors("login.banned"), color: "red.7" });
-
+      if (!u.verification)
+        return notifications.show({ title: useTranslateErrors("login.title"), message: useTranslateErrors("login.verification"), color: "red.7" });
       setBannedReason(u.qf_banned_reason);
       notifications.show({
         title: useTranslateSuccess("login.title"),

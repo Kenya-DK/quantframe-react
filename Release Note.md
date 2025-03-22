@@ -6,7 +6,6 @@ Remove the whitelist for a new wishlist system.
 How To migrate:
 [Read More](https://quantframe.app/upgrading/1.2.X)
 
-//TODO: Add a message if the user is not verified.
 //TODO: Quantity of goods WTB Wil not update if a order i all ready placed.
 //TODO: Add better search for auction.
 //TODO: Fix wfm order not beding deletede but auto trade when it is wishlist
@@ -14,10 +13,8 @@ How To migrate:
 
 ## Features
 
-- ✅ Add Wishlist: You can now add items to your wishlist.
-- ✅ Add Alert if soothing in wrong
-- ✅ Add Chats: You can now chat with other users.
-- ✅ Add Team of service (TOS) popup on start
+- ✅ Add a message if the user is not verified.
+- ✅ Better handling of auto trade.
 
 ## Fix's
 

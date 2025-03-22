@@ -181,9 +181,11 @@ impl ItemModule {
             let wish = settings_state.has_trade_mode(TradeMode::WishList);
             // Delete orders that are not in the interesting items list.
             match (buy, sell, wish) {
+                // Buy and Sell
                 (true, false, true) => {
                     my_orders.get_orders_ids(OrderType::Sell, blacklist_items.clone())
                 }
+                // Sell
                 (false, true, false) => {
                     my_orders.get_orders_ids(OrderType::Buy, blacklist_items.clone())
                 }

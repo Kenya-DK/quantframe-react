@@ -1526,6 +1526,7 @@ export const en = {
           message: "An error occurred while trying to log in.",
           banned: "You are banned",
           ban_reason: "<red>Reason: {{reason}}</red>",
+          verification: "You need to verify your account Do this on Warframe Market website",
         },
       },
       success: {
