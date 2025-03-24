@@ -1,4 +1,5 @@
 use std::{
+    f64::consts::E,
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc, Mutex, RwLock,
@@ -57,7 +58,7 @@ impl LiveScraperClient {
         crate::logger::dolog(
             log_level.clone(),
             format!("{}:{}", self.component, component).as_str(),
-            format!("{}, {}, {}", backtrace, cause, extra.to_string()).as_str(),
+            &error.to_string(),
             LoggerOptions::default()
                 .set_console(true)
                 .set_file(self.log_file),
@@ -112,7 +113,7 @@ impl LiveScraperClient {
                 if settings.live_scraper.stock_item.auto_delete {
                     scraper
                         .item()
-                        .delete_all_orders(TradeMode::All)
+                        .delete_all_orders(vec![TradeMode::Buy, TradeMode::Sell])
                         .await
                         .unwrap();
                 }

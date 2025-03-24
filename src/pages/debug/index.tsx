@@ -3,16 +3,17 @@ import { useTranslatePages } from "@hooks/useTranslate.hook";
 // import { StatisticProfitBase, TransactionType } from "@api/types";
 import { TransactionPanel } from "./tabs/transactions";
 import { DataBasePanel } from "./tabs/database";
-
+import { LogParserPanel } from "./tabs/logPaser";
 
 export default function DebugPage() {
   // Translate general
-  const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`debug.${key}`, { ...context }, i18Key)
-  const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`tabs.${key}`, { ...context }, i18Key)
+  const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`debug.${key}`, { ...context }, i18Key);
+  const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`tabs.${key}`, { ...context }, i18Key);
 
   const tabs = [
     { label: useTranslateTabs("transaction.title"), component: <TransactionPanel />, id: "tr", icon: <div>Stocks</div> },
     { label: useTranslateTabs("database.title"), component: <DataBasePanel />, id: "db" },
+    { label: useTranslateTabs("log_parser.title"), component: <LogParserPanel />, id: "log_parser" },
   ];
   return (
     <Container p={20} size={"100%"}>
@@ -30,6 +31,6 @@ export default function DebugPage() {
           </Tabs.Panel>
         ))}
       </Tabs>
-    </Container >
+    </Container>
   );
 }

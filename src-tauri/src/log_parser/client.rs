@@ -1,5 +1,5 @@
 use std::{
-    fs::File,
+    fs::{self, File},
     io::{BufRead, BufReader, Seek, SeekFrom},
     path::PathBuf,
     sync::{
@@ -31,6 +31,9 @@ pub struct LogParser {
     last_file_size: Arc<Mutex<u64>>,
     on_trade_event: Arc<RwLock<Option<OnTradeEvent>>>,
     on_conversation_event: Arc<RwLock<Option<OnConversationEvent>>>,
+    cache_line: Arc<Mutex<Vec<String>>>,
+    last_read_date: Arc<Mutex<String>>,
+    last_line: Arc<Mutex<String>>,
 }
 
 impl LogParser {
@@ -44,6 +47,9 @@ impl LogParser {
             last_file_size: Arc::new(Mutex::new(0)),
             on_trade_event: Arc::new(RwLock::new(None)),
             on_conversation_event: Arc::new(RwLock::new(None)),
+            cache_line: Arc::new(Mutex::new(Vec::new())),
+            last_read_date: Arc::new(Mutex::new("".to_string())),
+            last_line: Arc::new(Mutex::new("".to_string())),
         }
     }
     pub fn init(&self) -> Result<(), AppError> {
@@ -141,18 +147,21 @@ impl LogParser {
 
         let reader = BufReader::new(file);
 
-        let mut last_line = String::new();
         let mut ignore_combined = false;
         for line in reader.lines() {
+            *self.last_read_date.lock().unwrap() =
+                chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
             if let Ok(line) = line {
+                let mut last_line = self.last_line.lock().unwrap();
+                self.cache_line.lock().unwrap().push(line.clone());
                 match self
                     .trade_event()
-                    .process_line(&line, &last_line, ignore_combined)
+                    .process_line(&line, &last_line.clone(), ignore_combined)
                 {
                     Ok(msg) => {
-                        last_line = line.clone();
                         ignore_combined = msg.clone();
                         if ignore_combined {
+                            *last_line = line.clone();
                             continue;
                         }
                     }
@@ -164,10 +173,10 @@ impl LogParser {
                     .conversation_event()
                     .process_line(&line, *last_file_size)?
                 {
-                    last_line = line.clone();
+                    *last_line = line.clone();
                     continue;
                 }
-                last_line = line.clone();
+                *last_line = line.clone();
             }
         }
 
@@ -242,5 +251,22 @@ impl LogParser {
             .as_ref()
             .unwrap()
             .clone()
+    }
+    pub fn get_cache_lines(&self) -> Vec<String> {
+        let cache = self.cache_line.lock().unwrap().clone();
+        cache
+    }
+    pub fn clear_cache(&self) {
+        *self.cache_line.lock().unwrap() = Vec::new();
+    }
+    pub fn get_last_read_date(&self) -> String {
+        self.last_read_date.lock().unwrap().clone()
+    }
+    pub fn dump_cache(&self) -> String {
+        let cache = self.cache_line.lock().unwrap().clone();
+        let mut path = helper::get_desktop_path();
+        path.push("ee.log");
+        fs::write(path.clone(), cache.join("\n")).unwrap();
+        path.to_str().unwrap().to_string()
     }
 }

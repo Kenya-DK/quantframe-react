@@ -17,6 +17,7 @@ import { AnalyticsModule } from "./analytics";
 import { WFMSocket } from "../models/wfmSocket";
 import { NotificationModule } from "./notification";
 import { ItemModule } from "./item";
+import { LogParserModule } from "./log_parser";
 
 export class TauriClient {
   constructor() {
@@ -37,6 +38,7 @@ export class TauriClient {
     this.items = new ItemModule(this);
     this.log = new LogModule(this);
     this.analytics = new AnalyticsModule(this);
+    this.log_parser = new LogParserModule(this);
   }
 
   async sendInvoke<T>(command: string, data?: any): Promise<ErrOrResult<T>> {
@@ -95,6 +97,7 @@ export class TauriClient {
   analytics: AnalyticsModule;
   log: LogModule;
   items: ItemModule;
+  log_parser: LogParserModule;
 }
 
 declare global {

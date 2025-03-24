@@ -751,28 +751,26 @@ pub async fn progress_stock_item(
     }
 
     // Process the order on WFM
-    // match progress_wfm_order(
-    //     notify,
-    //     wfm,
-    //     entity.wfm_url.as_str(),
-    //     entity.sub_type.clone(),
-    //     entity.quantity,
-    //     operation.clone(),
-    //     operation == OrderType::Sell,
-    //     from,
-    // )
-    // .await
-    // {
-    //     Ok((operation, _)) => {
-    //         response.push(format!("WFM_{}", operation));
-    //     }
-    //     Err(e) => {
-    //         response.push("WFM_Error".to_string());
-    //         if !options.contains(&"WFMContinueOnError".to_string()) {
-    //             return Err(e);
-    //         }
-    //     }
-    // }
+    match progress_wfm_order(
+        entity.wfm_url.as_str(),
+        entity.sub_type.clone(),
+        entity.quantity,
+        operation.clone(),
+        operation == OrderType::Sell,
+        from,
+    )
+    .await
+    {
+        Ok((operation, _)) => {
+            response.push(format!("WFM_{}", operation));
+        }
+        Err(e) => {
+            response.push("WFM_Error".to_string());
+            if !options.contains(&"WFMContinueOnError".to_string()) {
+                return Err(e);
+            }
+        }
+    }
 
     if entity.bought.unwrap_or(0) <= 0 {
         return Ok((stock, response));
@@ -992,14 +990,4 @@ pub fn calculate_average_of_top_lowest_prices(
     }
     // Calculate and return the average price
     top_price.iter().sum::<i64>() / top_price.len() as i64
-}
-
-pub fn pad_end(s: &str, len: usize, pad_char: char) -> String {
-    let padding_needed = len.saturating_sub(s.len());
-    format!("{}{}", s, pad_char.to_string().repeat(padding_needed))
-}
-
-pub fn pad_start(s: &str, len: usize, pad_char: char) -> String {
-    let padding_needed = len.saturating_sub(s.len());
-    format!("{}{}", pad_char.to_string().repeat(padding_needed), s)
 }

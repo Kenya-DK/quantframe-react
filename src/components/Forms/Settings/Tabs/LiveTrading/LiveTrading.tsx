@@ -1,4 +1,4 @@
-import { Button, Group, NumberInput, Select, Stack, Tooltip, Text, Divider, Tabs, Box, Checkbox, Accordion } from "@mantine/core";
+import { Button, Group, NumberInput, Select, Stack, Tooltip, Text, Divider, Tabs, Box, Checkbox, Accordion, MultiSelect } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { TradeMode, SettingsLiveScraper, StockMode } from "@api/types";
 import { useTranslateEnums, useTranslateForms } from "@hooks/useTranslate.hook";
@@ -78,18 +78,17 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
                         error={form.errors.stock_mode && useTranslateFormFields("stock_mode.error")}
                         radius="md"
                       />
-                      <Select
+                      <MultiSelect
                         disabled={form.values.stock_mode != StockMode.Item && form.values.stock_mode != StockMode.All}
-                        allowDeselect={false}
-                        label={useTranslateFormFields("trade_mode.label")}
-                        description={useTranslateFormFields(`trade_mode.description.${form.values.trade_mode}`)}
-                        placeholder={useTranslateFormFields("trade_mode.placeholder")}
+                        label={useTranslateFormFields("trade_modes.label")}
+                        w={250}
+                        description={useTranslateFormFields(`trade_modes.description`)}
                         data={Object.values(TradeMode).map((status) => {
                           return { value: status, label: useTranslateOrderMode(status) };
                         })}
-                        value={form.values.trade_mode}
-                        onChange={(event) => form.setFieldValue("trade_mode", event as TradeMode)}
-                        error={form.errors.trade_mode && useTranslateFormFields("trade_mode.error")}
+                        value={form.values.trade_modes}
+                        onChange={(event) => form.setFieldValue("trade_modes", event as TradeMode[])}
+                        error={form.errors.trade_modes && useTranslateFormFields("trade_mode.error")}
                         radius="md"
                       />
                     </Group>

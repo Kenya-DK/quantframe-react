@@ -5,11 +5,13 @@ pub enum TradeItemType {
     Platinum,
     RivenVeiled,
     RivenUnVeiled,
+    Weapon,
     Relic,
     MainBlueprint,
     Component,
     Lens,
     Arcane,
     Mod,
+    Fish,
     Unknown,
 }

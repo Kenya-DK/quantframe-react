@@ -71,7 +71,10 @@ impl AppError {
         let mut cause = new_err.cause();
         let backtrace = new_err.backtrace();
         let mut extra = new_err.extra_data();
-
+        if extra.is_none() {
+            extra = Some(json!({}));
+        }
+        let mut extra = extra.unwrap();
         let payload = match err.body {
             Some(mut content) => {
                 if content["password"].is_string() {
@@ -119,7 +122,7 @@ impl AppError {
             log_level,
         }
     }
-    pub fn get_info(&self) -> (String, String, Value) {
+    pub fn get_info(&self) -> (String, String, Option<Value>) {
         let e = self.eyre_report.clone();
         // Define the regular expression pattern
         let pattern = r"(.*?)(?:\n\nLocation:\n)(.*)";
@@ -127,25 +130,27 @@ impl AppError {
 
         // Define a regular expression to match the text between [J] markers
         let json_re = Regex::new(r"\[J\](.*?)\[J\]").unwrap();
-        let mut json = json!({});
+        let mut json = None;
 
         for captured in json_re.captures_iter(&e) {
             let json_str = &captured[1];
+            let mut json_error = json!({});
             match serde_json::from_str::<Value>(json_str) {
                 Ok(parsed_json) => {
                     // Merge parsed_json into json
                     for (key, value) in parsed_json.as_object().unwrap() {
-                        json[key] = value.clone();
+                        json_error[key] = value.clone();
                     }
                 }
                 Err(err) => {
-                    json["ParsingError"] = json!({
+                    json_error["ParsingError"] = json!({
                         "message": "Failed to parse the JSON in the error",
                         "error": err.to_string(),
                         "raw": json_str,
                     });
                 }
             }
+            json = Some(json_error);
         }
         // Remove the JSONs from the text
         let e = json_re.replace_all(&e, "").to_string();
@@ -191,7 +196,7 @@ impl AppError {
         self.log_level.clone()
     }
     // Getter for extra_data
-    pub fn extra_data(&self) -> Value {
+    pub fn extra_data(&self) -> Option<Value> {
         let (_before_location, _after_location, json) = self.get_info();
         json
     }
@@ -205,6 +210,19 @@ impl AppError {
             "log_level": self.log_level(),
             "extra_data": self.extra_data(),
         })
+    }
+
+    pub fn to_string(&self) -> String {
+        let cause = self.cause();
+        let backtrace = self.backtrace();
+        let extra = self.extra_data();
+        let mut msg = format!("Location: {}, {}", backtrace, cause);
+
+        // Check extra data is not empty
+        if extra.is_some() {
+            msg = format!("{}, Extra: <{}>", msg, extra.unwrap().to_string());
+        }
+        msg
     }
 }
 impl serde::Serialize for AppError {
@@ -223,22 +241,10 @@ impl<T> From<std::sync::PoisonError<T>> for AppError {
 }
 
 pub fn create_log_file(file: &str, e: &AppError) {
-    let component = e.component();
-    let cause = e.cause();
-    let backtrace = e.backtrace();
-    let log_level = e.log_level();
-    let extra = e.extra_data();
-
     crate::logger::dolog(
-        log_level,
-        component.as_str(),
-        format!(
-            "Location: {:?}, {:?}, Extra: <{}>",
-            backtrace,
-            cause,
-            extra.to_string()
-        )
-        .as_str(),
+        e.log_level(),
+        &e.component,
+        &e.to_string(),
         LoggerOptions::default().set_file(file),
     );
 }

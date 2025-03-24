@@ -43,13 +43,21 @@ pub fn log_export(
 }
 
 #[tauri::command]
-pub fn log_send(component: String, msg: String, level: LogLevel, console: bool, file: String) {
+pub fn log_send(
+    component: String,
+    msg: String,
+    level: LogLevel,
+    console: bool,
+    file: Option<String>,
+) {
+    let mut options = LoggerOptions::default().set_console(console);
+    if let Some(file) = file {
+        options.set_file(&file);
+    }
     logger::dolog(
         level,
         format!("GUI:{}", component).as_str(),
         msg.as_str(),
-        LoggerOptions::default()
-            .set_console(console)
-            .set_file(&file),
+        options,
     );
 }

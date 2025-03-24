@@ -23,6 +23,9 @@ export const en = {
       title: "Trade with {{player_name}} complete",
       message:
         "<blue>{{item_name}}</blue> X<blue>{{quantity}}</blue> {{trade_type}} For {{platinum}}p WFM: <blue>{{wfm_operation}}</blue> Stock: <blue>{{stock_operation}}</blue>",
+      multiple_items_found: "Multiple items found Skipping...",
+      no_valid_items_found: "No valid items found Skipping...",
+      set_not_valid: "Set not valid Skipping...",
     },
   },
   enums: {
@@ -63,7 +66,6 @@ export const en = {
     trade_mode: {
       buy: "Buy",
       sell: "Sell",
-      all: "All",
       wishlist: "Wishlist",
     },
     stock_status: {
@@ -230,15 +232,9 @@ export const en = {
                 placeholder: "Stock Mode",
                 error: "Invalid stock mode",
               },
-              trade_mode: {
+              trade_modes: {
                 label: "Trade Mode",
-                description: {
-                  all: "Will buy and sell wishlist",
-                  buy: "Will only buy",
-                  sell: "Will only sell",
-                  wishlist: "Will only buy your wishlist",
-                },
-                placeholder: "Trade Mode",
+                description: "How the bot will trade",
                 error: "Invalid trade mode",
               },
               report_to_wfm: {
@@ -1506,6 +1502,9 @@ export const en = {
             },
           },
         },
+        log_parser: {
+          title: "Log Parser",
+        },
       },
     },
     auth: {
@@ -1527,6 +1526,7 @@ export const en = {
           message: "An error occurred while trying to log in.",
           banned: "You are banned",
           ban_reason: "<red>Reason: {{reason}}</red>",
+          verification: "You need to verify your account Do this on Warframe Market website",
         },
       },
       success: {

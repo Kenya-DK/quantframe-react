@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use eyre::eyre;
+use serde_json::json;
 
 use crate::{
     cache::{
@@ -8,7 +9,7 @@ use crate::{
         types::{cache_arcane::CacheArcane, cache_item_base::CacheItemBase},
     },
     helper,
-    utils::modules::error::AppError,
+    utils::modules::{error::AppError, logger},
 };
 
 #[derive(Clone, Debug)]
@@ -61,20 +62,28 @@ impl AllItemsModule {
         self.items.append(&mut self.client.sentinel().get_all());
         self.items.append(&mut self.client.skin().get_all());
         self.items.append(&mut self.client.warframe().get_all());
-
         self.update_state();
         Ok(())
     }
     pub fn get_by(&self, input: &str, by: &str) -> Result<Option<CacheItemBase>, AppError> {
-        let items = self.items.clone();
+        let mut items = self.items.clone();
         let args = match helper::validate_args(by, vec!["--item_by"]) {
             Ok(args) => args,
             Err(e) => return Err(e),
         };
         let mode = args.get("--item_by").unwrap();
+        let category = args.get("--category");
         let case_insensitive = args.get("--ignore_case").is_some();
         // let lang = args.get("--item_lang").unwrap_or(&"en".to_string());
         let remove_string = args.get("--remove_string");
+
+        if let Some(category) = category {
+            items = items
+                .iter()
+                .filter(|x| x.category.as_str() == category)
+                .cloned()
+                .collect();
+        }
 
         let item = if mode == "name" {
             items

@@ -7,8 +7,7 @@ pub enum DetectionStatus {
     None,
     Line,
     NextLine,
-    CombinedWithSpace,
-    CombinedWithOutSpace,
+    Combined,
 }
 
 impl DetectionStatus {
@@ -20,7 +19,7 @@ impl DetectionStatus {
     }
     pub fn is_combined(&self) -> bool {
         match self {
-            DetectionStatus::CombinedWithOutSpace | DetectionStatus::CombinedWithSpace => true,
+            DetectionStatus::Combined => true,
             _ => false,
         }
     }
@@ -188,7 +187,7 @@ impl TradeDetection {
         if line.contains(&self.platinum_name) && next_line.trim().starts_with("x") {
             return (
                 format!("{} {}", self.platinum_name, next_line.trim()),
-                DetectionStatus::CombinedWithOutSpace,
+                DetectionStatus::Combined,
             );
         }
 
@@ -214,7 +213,7 @@ impl TradeDetection {
                 );
             }
             let status = if first_status.is_combined() || second_status.is_combined() {
-                DetectionStatus::CombinedWithSpace
+                DetectionStatus::Combined
             } else {
                 DetectionStatus::Line
             };
@@ -249,29 +248,25 @@ impl TradeDetection {
         }
         DetectionStatus::None
     }
-    pub fn is_irrelevant_trade_line(
-        &self,
-        line: &str,
-        next_line: &str,
-    ) -> (bool, String, DetectionStatus) {
+    pub fn is_irrelevant_trade_line(&self, line: &str, next_line: &str) -> (bool, DetectionStatus) {
         if line == "\n" || line == "" {
-            return (false, "NotIrrelevant".to_string(), DetectionStatus::None);
+            return (false, DetectionStatus::None);
         }
         let is_beginning = self.is_beginning_of_trade(line, next_line, false, false);
         if is_beginning.is_found() {
-            return (false, "BeginningOfTrade".to_string(), is_beginning);
+            return (false, is_beginning);
         }
 
         let was_successful = self.was_trade_successful(line, next_line, false, false);
         if was_successful.is_found() {
-            return (false, "TradeSuccessful".to_string(), was_successful);
+            return (false, was_successful);
         }
 
         let was_failed = self.was_trade_failed(line, next_line, false, false);
         if was_failed.is_found() {
-            return (false, "TradeFailed".to_string(), was_failed);
+            return (false, was_failed);
         }
-        (true, "Irrelevant".to_string(), DetectionStatus::None)
+        (true, DetectionStatus::None)
     }
 
     pub fn is_dialog_line(

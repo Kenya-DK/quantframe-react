@@ -10,7 +10,8 @@ use crate::{
         error::AppError,
         states,
         trading_helper::{
-            combine_and_detect_match, combine_and_detect_multiple_matches, contains_unicode,
+            combine_and_detect_match, combine_and_detect_multiple_matches, contains_at_least,
+            contains_unicode, parse_quantity, tags_to_type,
         },
     },
 };
@@ -56,6 +57,7 @@ impl TradeItem {
         // Check if the item is platinum
         let (is_platinum_combined, is_platinum_status) =
             detection.is_platinum(&line, &next_line, false, false);
+
         if is_platinum_status.is_combined() {
             line = is_platinum_combined.clone();
             raw = line.clone();
@@ -78,7 +80,7 @@ impl TradeItem {
         }
 
         let status = if last_item_status.is_combined() || is_platinum_status.is_combined() {
-            DetectionStatus::CombinedWithSpace
+            DetectionStatus::Combined
         } else if last_item_status.is_found() || is_platinum_status.is_found() {
             DetectionStatus::Line
         } else {
@@ -86,14 +88,7 @@ impl TradeItem {
         };
 
         // Get the quantity of the item
-        let mut quantity = 1;
-        if raw.contains(" x ") {
-            let cloned = raw.clone();
-            let parts: Vec<&str> = cloned.split(" x ").collect();
-            raw = parts[0].to_string();
-            quantity = parts[1].parse().unwrap_or(1);
-        }
-        raw = raw.trim().to_string();
+        let (raw, quantity) = parse_quantity(&raw);
 
         let mut item = TradeItem {
             raw,
@@ -115,52 +110,19 @@ impl TradeItem {
         if !status.is_found() {
             item.error = Some(("Item not found".to_string(), Value::Null));
         }
-
+        if item.item_type == TradeItemType::Mod && item.sub_type.is_none() {
+            item.error = Some(("Mod Rank not found".to_string(), Value::Null));
+            item.unique_name = "".to_string();
+            item.item_type = TradeItemType::Unknown;
+        }
         (status, item)
     }
 
-    fn tags_to_type(&self, tags: Vec<&str>) -> TradeItemType {
-        if tags.contains(&"relic") {
-            return TradeItemType::Relic;
-        }
-        if !tags.contains(&"component") && tags.contains(&"blueprint") {
-            return TradeItemType::MainBlueprint;
-        }
-        if tags.contains(&"component") {
-            return TradeItemType::Component;
-        }
-        if tags.contains(&"lens") {
-            return TradeItemType::Lens;
-        }
-        if tags.contains(&"arcane_enhancement") {
-            return TradeItemType::Arcane;
-        }
-        if tags.contains(&"mod") {
-            return TradeItemType::Mod;
-        }
-        TradeItemType::Unknown
-    }
-
-    fn contains_at_least(
-        &self,
-        haystack: &str,
-        needles: &str,
-        count: usize,
-        is_exact_match: bool,
-    ) -> bool {
-        let found = haystack.chars().filter(|&c| needles.contains(c)).count();
-
-        if is_exact_match {
-            found == count // Requires exact match
-        } else {
-            found >= count // Allows "at least" match
-        }
-    }
     // Helper function to extract logic used by both matching paths
     fn apply_item_info(&mut self, found: &CacheTradableItem) {
         let tags: Vec<&str> = found.tags.iter().map(|s| s.as_str()).collect();
         self.unique_name = found.unique_name.clone();
-        self.item_type = self.tags_to_type(tags.clone());
+        self.item_type = tags_to_type(tags.clone());
 
         if tags.contains(&"relic") {
             self.sub_type = Some(SubType::variant("intact"));
@@ -171,7 +133,109 @@ impl TradeItem {
             }
         }
     }
-    // Find the item in the cache
+    fn detect_variant_or_rank(
+        &mut self,
+        line: &str,
+        next_line: &str,
+        open: &str,
+        close: &str,
+    ) -> Option<(String, DetectionStatus)> {
+        let start = contains_at_least(&line, open, 1, true);
+        let end = contains_at_least(&line, close, 1, true);
+        if start && end {
+            return Some((line.to_string(), DetectionStatus::Line));
+        }
+        let (combined, status) =
+            combine_and_detect_multiple_matches(line, next_line, &[open, close], false, false);
+
+        if status.is_found()
+            && contains_at_least(&combined, open, 1, true)
+            && contains_at_least(&combined, close, 1, true)
+        {
+            Some((combined, status))
+        } else {
+            None
+        }
+    }
+    fn split_name_and_enclosed(line: &str, open: char, close: char) -> (String, String) {
+        let index = line.find(open).unwrap_or(0);
+        let rank_str = line[index..].replace(&[open, close][..], "");
+        let name_part = line[..index].trim_end();
+        (name_part.to_string(), rank_str)
+    }
+    pub fn is_variant_item(
+        &mut self,
+        line: &str,
+        next_line: &str,
+    ) -> Result<DetectionStatus, AppError> {
+        // Check if the item is a mod eg. "Serration (RIVEN RANK 0)"
+        if let Some((combine, status)) = self.detect_variant_or_rank(line, next_line, "(", ")") {
+            let (name_part, rank_str) = Self::split_name_and_enclosed(&combine, '(', ')');
+            // Handle the rank or size of the fish.
+            match rank_str.as_str() {
+                "S" => {
+                    self.sub_type = Some(SubType::variant("small"));
+                }
+                "M" => {
+                    self.sub_type = Some(SubType::variant("medium"));
+                }
+                "L" => {
+                    self.sub_type = Some(SubType::variant("large"));
+                }
+                _ => {
+                    for s in rank_str.split(' ') {
+                        if let Ok(result) = s.parse::<i64>() {
+                            self.sub_type = Some(SubType::rank(result));
+                            break;
+                        }
+                    }
+                }
+            }
+            if combine.contains("(RIVEN RANK ") {
+                if combine.contains(" Riven Mod")
+                    && self
+                        .is_trade_item(&format!("{name_part} (Veiled)"), next_line)?
+                        .is_found()
+                {
+                    self.item_type = TradeItemType::RivenVeiled;
+                } else if let Some(pos) = name_part.rfind(' ') {
+                    let (weapon, att) = name_part.split_at(pos);
+                    self.item_type = TradeItemType::RivenUnVeiled;
+                    self.unique_name =
+                        format!("/WF_Special/Other/Riven/{}/{}", weapon.trim(), att.trim());
+                }
+            } else {
+                self.is_trade_item(&name_part, next_line)?;
+            }
+
+            return Ok(status);
+        }
+
+        if let Some((combine, status)) = self.detect_variant_or_rank(line, next_line, "[", "]") {
+            let (name_part, type_str) = Self::split_name_and_enclosed(&combine, '[', ']');
+            if self.is_trade_item(&name_part, next_line)?.is_found() {
+                self.sub_type = Some(SubType::variant(&type_str));
+                return Ok(status);
+            }
+        }
+
+        Ok(DetectionStatus::None)
+    }
+
+    pub fn is_arcane(&mut self, line: &str, next_line: &str) -> Result<DetectionStatus, AppError> {
+        let (combine, status) = contains_unicode(&line, next_line, false);
+
+        if !status.is_found() {
+            return Ok(DetectionStatus::None);
+        }
+        let index = combine.rfind(' ').unwrap_or(0);
+        let name_part = &combine[..index];
+        if self.is_trade_item(name_part, next_line)?.is_found() {
+            return Ok(status);
+        }
+        return Ok(DetectionStatus::None);
+    }
+
     pub fn is_trade_item(
         &mut self,
         line: &str,
@@ -197,181 +261,31 @@ impl TradeItem {
         Ok(DetectionStatus::None)
     }
 
-    pub fn has_rank(
-        &mut self,
-        line: &str,
-        next_line: &str,
-    ) -> Result<(String, DetectionStatus), AppError> {
-        let start = self.contains_at_least(&line, "(", 1, true);
-        let end = self.contains_at_least(&line, ")", 1, true);
-        if start && end {
-            return Ok((line.to_string(), DetectionStatus::Line));
-        }
-        let (mut combine, status) =
-            combine_and_detect_multiple_matches(&line, next_line, &["(", ")"], false, false);
-
-        if status.is_found() {
-            if !combine.contains(" RANK") {
-                combine = combine.replace("RANK", " RANK")
-            }
-            let start = self.contains_at_least(&combine, "(", 1, true);
-            let end = self.contains_at_least(&combine, ")", 1, true);
-            if start && end {
-                return Ok((combine, status));
-            }
-        }
-        Ok((line.to_string(), DetectionStatus::None))
-    }
-    pub fn has_type(
-        &mut self,
-        line: &str,
-        next_line: &str,
-    ) -> Result<(String, DetectionStatus), AppError> {
-        let start = self.contains_at_least(&line, "[", 1, true);
-        let end = self.contains_at_least(&line, "]", 1, true);
-        if start && end {
-            return Ok((line.to_string(), DetectionStatus::Line));
-        }
-        let (combine, status) =
-            combine_and_detect_multiple_matches(&line, next_line, &["[", "]"], false, false);
-
-        if status.is_found() {
-            let start = self.contains_at_least(&combine, "[", 1, true);
-            let end = self.contains_at_least(&combine, "]", 1, true);
-            if start && end {
-                return Ok((combine, status));
-            }
-        }
-        Ok((line.to_string(), DetectionStatus::None))
-    }
-
-    pub fn is_variant_item(&mut self, next_line: &str) -> Result<DetectionStatus, AppError> {
-        let line = self.raw.clone();
-        // Check if the item is a variant item Rank
-        let (combine, status) = self.has_rank(&line, next_line)?;
-        if status.is_found() {
-            let index = combine.find("(").unwrap() as usize;
-            let rank_part = &combine[index..];
-            let name_part = &combine[..index - 1];
-            // Check if the item is a mod/fish true if mod else it is a fish
-            if rank_part.len() > 3 {
-                // Set the item rank.
-                let rank_part = rank_part.replace("(", "").replace(")", "");
-                // Get The Rank of the mod
-                for s in rank_part.split(' ') {
-                    if let Ok(result) = s.parse::<i64>() {
-                        self.sub_type = Some(SubType::rank(result));
-                        break;
-                    }
-                }
-                if combine.contains("(RIVEN RANK ") {
-                    // Check if the item is a veiled riven
-                    if combine.contains(" Riven Mod") {
-                        if self
-                            .is_trade_item(&format!("{} (Veiled)", name_part), next_line)?
-                            .is_found()
-                        {
-                            self.item_type = TradeItemType::RivenVeiled;
-                            return Ok(status);
-                        }
-                    } else {
-                        let last_space_index = name_part.rfind(" ").unwrap() as usize;
-                        let weapon = &name_part[..last_space_index];
-                        let att = &name_part[last_space_index + 1..];
-                        self.item_type = TradeItemType::RivenUnVeiled;
-                        self.unique_name = format!("/WF_Special/Other/Riven/{}/{}", weapon, att);
-                    }
-                } else {
-                    if self.is_trade_item(name_part, next_line)?.is_found() {
-                        return Ok(status);
-                    }
-                }
-            } else {
-                let size = rank_part.replace("(", "").replace(")", "");
-                if size.len() == 1 {
-                    if let Some(c) = size.chars().next() {
-                        self.sub_type = Some(SubType::rank(c as i64));
-                    }
-                }
-                if self.is_trade_item(name_part, next_line)?.is_found() {
-                    return Ok(status);
-                }
-            }
-            return Ok(status);
-        }
-        // Check if the item is a variant item Relic
-        let (combine, status) = self.has_type(&line, next_line)?;
-        if status.is_found() {
-            let index = combine.find("[").unwrap() as usize;
-            let type_part = &combine[index..];
-            let name_part = &combine[..index - 1];
-            println!("Type Part: {}", type_part);
-            if self.is_trade_item(name_part, next_line)?.is_found() {
-                let type_part = type_part.replace("[", "").replace("]", "").to_lowercase();
-                self.sub_type = Some(SubType::variant(&type_part));
+    pub fn validate(&mut self, next_line: &str) -> Result<DetectionStatus, AppError> {
+        for check in [Self::is_trade_item, Self::is_variant_item, Self::is_arcane] {
+            let status = check(self, &self.raw.clone(), next_line)?;
+            if status.is_found() {
                 return Ok(status);
             }
-            return Ok(status);
         }
         Ok(DetectionStatus::None)
     }
-
-    fn has_arcane(
-        &mut self,
-        line: &str,
-        next_line: &str,
-    ) -> Result<(String, DetectionStatus), AppError> {
-        if line.len() != line.chars().count() {
-            return Ok((line.to_string(), DetectionStatus::Line));
-        }
-        let (combine, status) = contains_unicode(&line, next_line, false);
-        return Ok((combine, status));
-    }
-
-    pub fn is_arcane(&mut self, next_line: &str) -> Result<DetectionStatus, AppError> {
-        let line = self.raw.clone();
-        // Check if the item is a variant item
-        let (combine, status) = self.has_arcane(&line, next_line)?;
-        if !status.is_found() {
-            return Ok(DetectionStatus::None);
-        }
-        let index = combine.rfind(' ').unwrap_or(0);
-        let name_part = &combine[..index];
-        if self.is_trade_item(name_part, next_line)?.is_found() {
-            return Ok(status);
-        }
-        return Ok(DetectionStatus::None);
-    }
-
-    pub fn validate(&mut self, next_line: &str) -> Result<DetectionStatus, AppError> {
-        // Is Trade Item
-        let status = self.is_trade_item(self.raw.clone().as_str(), next_line)?;
-        if status.is_found() {
-            return Ok(status);
-        }
-
-        // Is Variant Item
-        let status = self.is_variant_item(next_line)?;
-        if status.is_found() {
-            return Ok(status);
-        }
-        // Is Arcane
-        let status = self.is_arcane(next_line)?;
-        if status.is_found() {
-            return Ok(status);
-        }
-        return Ok(DetectionStatus::None);
-    }
-
     pub fn is_valid(&self) -> bool {
-        self.raw.len() > 0
+        !self.raw.is_empty()
     }
 
     pub fn display(&self) -> String {
-        format!(
-            "Name: {} | Quantity: {}, Unique Name: {}",
-            self.raw, self.quantity, self.unique_name
-        )
+        let mut name = format!("Raw: {} | Quantity: {}", self.raw, self.quantity);
+        if !self.unique_name.is_empty() {
+            name.push_str(&format!(" | Unique Name: {}", self.unique_name));
+        }
+        if let Some(sub_type) = &self.sub_type {
+            name.push_str(&format!(" | Sub Type: {}", sub_type.display()));
+        }
+        if let Some((error, _)) = &self.error {
+            name.push_str(&format!(" | Error: {}", error));
+        }
+        name
     }
 }
 
