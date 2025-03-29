@@ -932,7 +932,7 @@ impl ItemModule {
             Some(order_info) => {
                 // Update the order info with the current price history
                 order_info.set_highest_price(highest_price);
-                // order_info.set_quantity(item.quantity);
+                order_info.set_quantity(entry.buy_quantity);
                 order_info.set_lowest_price(live_orders.lowest_price(OrderType::Buy));
                 order_info.set_range(price_range);
                 order_info.set_total_buyers(live_orders.buy_orders.len() as i64);
@@ -1116,13 +1116,19 @@ impl ItemModule {
         {
             match wfm
                 .orders()
-                .update(&user_order.id, post_price, 1, user_order.visible)
+                .update(
+                    &user_order.id,
+                    post_price,
+                    entry.buy_quantity,
+                    user_order.visible,
+                )
                 .await
             {
                 Ok(_) => {
                     if user_order.platinum != post_price || info.is_dirty {
                         user_order.info = info.clone();
                         user_order.platinum = post_price;
+                        user_order.quantity = entry.buy_quantity;
                         user_order.profit = Some(potential_profit as f64);
                         info.changes = None;
                         info.is_dirty = false;
