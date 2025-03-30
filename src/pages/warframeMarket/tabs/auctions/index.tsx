@@ -39,13 +39,11 @@ export const AuctionPanel = ({}: AuctionPanelProps) => {
       filter = {
         OR: [
           {
-            "item.name": {
+            weapon_name_mod: {
+              combineFields: ["item.name", "item.weapon_url_name"],
+              combineWith: " ",
               [Operator.CONTAINS_VALUE]: query,
-            },
-          },
-          {
-            "item.weapon_url_name": {
-              [Operator.CONTAINS_VALUE]: query,
+              isCaseSensitive: false,
             },
           },
         ],

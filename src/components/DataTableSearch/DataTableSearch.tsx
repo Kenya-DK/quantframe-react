@@ -47,7 +47,6 @@ export const DataTableSearch = <T,>({
     if (filters) filteredRecords = ApplyFilter(records, filters);
     setTotalRecords(filteredRecords.length);
     filteredRecords = paginate(filteredRecords, page, pageSize);
-    console.log(filteredRecords.length);
     setRows(filteredRecords);
   }, [filters, page, pageSize, sortStatus]);
   return (

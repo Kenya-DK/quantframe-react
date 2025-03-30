@@ -79,20 +79,22 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
         return acc;
       }, {} as { [key: string]: number })
     );
-
     if (filterStatus)
       filter.OR?.push({
         status: {
           [Operator.EQUALS]: filterStatus,
         },
       });
-    if (query)
+    if (query) {
       filter.OR?.push({
-        weapon_name: {
-          [Operator.CONTAINS_VALUE]: filterStatus,
+        weapon_name_mod: {
+          combineFields: ["weapon_name", "mod_name"],
+          combineWith: " ",
+          [Operator.CONTAINS_VALUE]: query,
           isCaseSensitive: false,
         },
       });
+    }
     setFilters(filter);
   }, [rivens, query, filterStatus]);
 
