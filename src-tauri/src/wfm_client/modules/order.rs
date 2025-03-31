@@ -64,44 +64,37 @@ impl OrderModule {
         if quantity <= 0 {
             quantity = 1;
         }
-        // Check if the order is a Buy order and report_to_wfm is true, or if the order is a Sale order
-        if order_type == OrderType::Buy && settings.live_scraper.stock_item.report_to_wfm
-            || order_type == OrderType::Sell
-        {
-            // Get WFM Order
-            let orders = wfm.orders().get_my_orders().await?;
-            let order = orders.find_order_by_url_sub_type(&url, order_type, sub_type.as_ref());
+        // Get WFM Order
+        let orders = wfm.orders().get_my_orders().await?;
+        let order = orders.find_order_by_url_sub_type(&url, order_type, sub_type.as_ref());
 
-            // Check if order exists
-            if order.is_some() {
-                let mut order = order.unwrap();
-                // Subtract quantity from order
-                order.quantity -= quantity;
+        // Check if order exists
+        if order.is_some() {
+            let mut order = order.unwrap();
+            // Subtract quantity from order
+            order.quantity -= quantity;
 
-                // If report_to_wfm is true, close the order
-                if settings.live_scraper.stock_item.report_to_wfm {
-                    self.close(&order.id).await?;
-                } else {
-                    // Delete order if quantity is less than or equal to 0 and update if not
-                    if order.quantity <= 0 {
-                        self.delete(&order.id).await?;
-                    } else if need_update {
-                        self.update(&order.id, order.platinum, order.quantity, order.visible)
-                            .await?;
-                    }
-                }
-                // Return order_deleted if quantity is less than or equal to 0, else return order_updated
+            // If report_to_wfm is true, close the order
+            if settings.live_scraper.stock_item.report_to_wfm {
+                self.close(&order.id).await?;
+            } else {
+                // Delete order if quantity is less than or equal to 0 and update if not
                 if order.quantity <= 0 {
-                    return Ok(("Deleted".to_string(), Some(order)));
-                } else {
-                    return Ok(("Updated".to_string(), Some(order)));
+                    self.delete(&order.id).await?;
+                } else if need_update {
+                    self.update(&order.id, order.platinum, order.quantity, order.visible)
+                        .await?;
                 }
             }
+            // Return order_deleted if quantity is less than or equal to 0, else return order_updated
+            if order.quantity <= 0 {
+                return Ok(("Deleted".to_string(), Some(order)));
+            } else {
+                return Ok(("Updated".to_string(), Some(order)));
+            }
             // Return order_not_found if order does not exist
-            return Ok(("NotFound".to_string(), None));
         }
-        // Return order_not_reported if the order is not a Buy order or a Sale order
-        return Ok(("NotReported".to_string(), None));
+        return Ok(("NotFound".to_string(), None));
     }
 
     pub fn subtract_order_count(&mut self, increment: i64) -> Result<(), AppError> {
