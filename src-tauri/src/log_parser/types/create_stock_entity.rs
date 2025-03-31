@@ -355,7 +355,7 @@ impl CreateStockEntity {
         }
     }
     pub fn display(&self) -> String {
-        match self.get_name() {
+        let mut name = match self.get_name() {
             Ok(name) => {
                 let mut display = name.clone();
                 if self.is_hidden {
@@ -364,6 +364,15 @@ impl CreateStockEntity {
                 display
             }
             Err(_) => self.raw.clone(),
+        };
+        name.push_str(&format!(" | Quantity: {}", self.quantity));
+        if !self.unique_name.is_empty() {
+            name.push_str(&format!(" | Unique Name: {}", self.unique_name));
         }
+        if let Some(sub_type) = &self.sub_type {
+            name.push_str(&format!(" | Sub Type: {}", sub_type.display()));
+        }
+        name += format!(" | Stock Type: {}", self.entity_type.as_str()).as_str();
+        name
     }
 }
