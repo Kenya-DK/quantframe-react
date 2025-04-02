@@ -91,41 +91,44 @@ pub struct CacheRivenUpgrade {
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CacheRivenWFMAttribute {
-    #[serde(rename = "units")]
-    pub units: Option<String>,
+    #[serde(rename = "id")]
+    pub id: String,
 
-    #[serde(rename = "negativeOnly")]
-    #[serde(default)]
-    pub negative_only: bool,
-
-    #[serde(rename = "positiveOnly")]
-    #[serde(default)]
-    pub positive_only: bool,
-
-    #[serde(rename = "suffix")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub suffix: Option<String>,
-
-    #[serde(rename = "url_name")]
-    pub url_name: String,
-
-    #[serde(rename = "prefix")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub prefix: Option<String>,
-
-    #[serde(rename = "effect")]
-    pub effect: String,
-
-    #[serde(rename = "exclusiveTo")]
-    pub exclusive_to: Option<Vec<String>>,
+    #[serde(rename = "gameRef")]
+    pub game_ref: String,
 
     #[serde(rename = "group")]
     pub group: String,
 
-    #[serde(rename = "positiveIsNegative")]
-    #[serde(default)]
-    pub positive_is_negative: bool,
+    #[serde(rename = "prefix")]
+    pub prefix: String,
 
-    #[serde(rename = "id")]
-    pub id: String,
+    #[serde(rename = "suffix")]
+    pub suffix: String,
+
+    #[serde(rename = "effect")]
+    pub effect: String,
+
+    #[serde(rename = "url_name")]
+    pub url_name: String,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "unit")]
+    pub unit: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "exclusiveTo")]
+    pub exclusive_to: Option<Vec<String>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "positiveIsNegative")]
+    pub positive_is_negative: Option<bool>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "positiveOnly")]
+    pub positive_only: Option<bool>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "negativeOnly")]
+    pub negative_only: Option<bool>,
 }

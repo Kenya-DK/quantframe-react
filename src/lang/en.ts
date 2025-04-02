@@ -506,6 +506,19 @@ export const en = {
             title: "Negative Attributes",
           },
         },
+        buttons: {
+          add: "+ Add",
+        },
+      },
+      create_riven_attribute: {
+        fields: {
+          value: {
+            error: "Invalid value",
+          },
+        },
+        buttons: {
+          remove: "Remove",
+        },
       },
       create_riven: {
         buttons: {

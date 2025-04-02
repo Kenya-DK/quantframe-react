@@ -302,7 +302,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
   const OpenCreateRiven = () => {
     modals.open({
       title: useTranslatePrompt("create_riven.title"),
-      size: "100%",
+      size: "950px",
       children: (
         <CreateRiven
           onSubmit={async (_data) => {
