@@ -1,112 +1,42 @@
-import { Title, Box, Group, NumberInput, Select } from "@mantine/core";
+import { Title, Button, Stack, Group } from "@mantine/core";
+import { RivenAttribute, CacheRivenAttribute } from "@api/types";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { useForm } from "@mantine/form";
-import { RivenAttribute, CacheRivenAttribute } from "@api/types";
-import { useEffect, useState } from "react";
-
-export type CreateRivenAttributeProps = {
-  availableAttributes: CacheRivenAttribute[];
-  value: RivenAttribute;
-  onChange?: (values: RivenAttribute) => void;
-};
-export function CreateRivenAttribute({ availableAttributes, onChange, value }: CreateRivenAttributeProps) {
-  const [currentValue, setCurrentValue] = useState<CacheRivenAttribute | undefined>(undefined);
-
-  // Translate general
-  const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateForms(`create_riven_attribute.${key}`, { ...context }, i18Key);
-  const useTranslateFormFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateForm(`fields.${key}`, { ...context }, i18Key);
-
-  // User form
-  const form = useForm({
-    initialValues: {
-      ...value,
-    },
-    validate: {},
-    onValuesChange: (values) => {
-      onChange && onChange(values);
-    },
-  });
-
-  useEffect(() => {
-    if (value.url_name) {
-      const attr = availableAttributes.find((item) => item.url_name == value.url_name);
-      setCurrentValue(attr);
-    }
-  }, [value.url_name]);
-
-  // Helper functions
-  const getAvailableAttributes = () => {
-    return availableAttributes.map((item) => ({ label: item.effect, value: item.url_name }));
-  };
-
-  return (
-    <Box w={"100%"} mt={"md"}>
-      <Group gap={"xs"}>
-        <Select
-          searchable
-          clearable
-          limit={5}
-          w={"80%"}
-          value={form.values.url_name || ""}
-          onChange={(event) => form.setFieldValue("url_name", event || "")}
-          data={getAvailableAttributes()}
-        />
-        <NumberInput
-          w={"15%"}
-          disabled={form.values.url_name == "N/A" || form.values.url_name == ""}
-          value={form.values.value || 0}
-          onChange={(event) => form.setFieldValue("value", Number(event))}
-          onBlur={() => {
-            if (currentValue?.positiveIsNegative) form.setFieldValue("value", -form.values.value);
-          }}
-          error={form.errors.value && useTranslateFormFields("value.error")}
-          radius="md"
-        />
-      </Group>
-    </Box>
-  );
-}
+import { useState } from "react";
+import { CreateRivenAttribute } from "../CreateRivenAttribute";
 
 export type CreateRivenAttributesProps = {
   attributes: CacheRivenAttribute[];
+  maxPositive: number;
+  maxNegative: number;
   value: RivenAttribute[];
   onSubmit: (values: RivenAttribute[]) => void;
 };
-export function CreateRivenAttributes({ attributes, onSubmit }: CreateRivenAttributesProps) {
+export function CreateRivenAttributes({ maxPositive, maxNegative, attributes, onSubmit }: CreateRivenAttributesProps) {
   // State
-  const [, setTotalPositive] = useState(0);
   const defaultAttribute = { positive: true, url_name: "N/A", value: 0 };
-
+  const [showPositiveCount, setShowPositiveCount] = useState(2);
   // Translate general
   const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForms(`create_riven_attributes.${key}`, { ...context }, i18Key);
   const useTranslateFormFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForm(`fields.${key}`, { ...context }, i18Key);
+  const useTranslateFormButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateForm(`buttons.${key}`, { ...context }, i18Key);
   const [currentAttributes, setCurrentAttribute] = useState<RivenAttribute[]>([]);
 
-  // User form
+  // Form
   const form = useForm({
     initialValues: {
-      att1: defaultAttribute as RivenAttribute,
-      att2: defaultAttribute as RivenAttribute,
-      att3: defaultAttribute as RivenAttribute,
-      att4: { ...defaultAttribute, positive: false } as RivenAttribute,
+      positive_attributes: Array.from({ length: maxPositive }, () => defaultAttribute as RivenAttribute),
+      negative_attributes: Array.from({ length: maxNegative }, () => ({ ...defaultAttribute, positive: false } as RivenAttribute)),
     },
-    validate: {},
     onValuesChange: (values) => {
-      const items = [values.att1, values.att2, values.att3, values.att4];
+      const items = [...values.positive_attributes, ...values.negative_attributes];
       setCurrentAttribute(items);
       onSubmit && onSubmit(items.filter((item) => item.url_name != "N/A" && item.url_name != ""));
     },
   });
-
-  // Effects
-  useEffect(() => {
-    const positive = currentAttributes.filter((item) => item.positive && item.url_name != "N/A" && item.url_name != "");
-    setTotalPositive(positive.length);
-  }, [form.values]);
 
   const GetAvailableAttributes = (currentAttribute: RivenAttribute | undefined) => {
     if (!attributes) return [];
@@ -122,56 +52,58 @@ export function CreateRivenAttributes({ attributes, onSubmit }: CreateRivenAttri
     return avAttributes;
   };
 
-  const SetAttribute = (index: number, value: RivenAttribute, _remove?: boolean) => {
-    switch (index) {
-      case 0:
-        form.setFieldValue("att1", value);
-        break;
-      case 1:
-        form.setFieldValue("att2", value);
-        break;
-      case 2:
-        form.setFieldValue("att3", value);
-        break;
-      case 3:
-        form.setFieldValue("att4", value);
-        break;
-      default:
-        break;
-    }
-  };
-
   return (
-    <Box w={"100%"}>
+    <Stack w={"100%"} gap={"sm"}>
       <Title order={5} c={"green.7"}>
         {useTranslateFormFields("positive.title")}
       </Title>
-      <CreateRivenAttribute
-        availableAttributes={GetAvailableAttributes(form.values.att1)}
-        value={form.values.att1}
-        onChange={(v) => SetAttribute(0, v)}
-      />
-      <CreateRivenAttribute
-        availableAttributes={GetAvailableAttributes(form.values.att2)}
-        value={form.values.att2}
-        onChange={(v) => SetAttribute(1, v)}
-      />
-      <CreateRivenAttribute
-        availableAttributes={GetAvailableAttributes(form.values.att3)}
-        value={form.values.att3}
-        onChange={(v) => SetAttribute(2, v)}
-      />
-      <Group></Group>
+      {form.values.positive_attributes.slice(0, showPositiveCount).map((item, index) => {
+        return (
+          <CreateRivenAttribute
+            key={index}
+            availableAttributes={GetAvailableAttributes(item)}
+            positiveNumberOnly
+            value={item}
+            onChange={(v) => {
+              form.setFieldValue(`positive_attributes.${index}`, v);
+            }}
+            canRemove={index >= 2}
+            onRemove={() => {
+              form.setFieldValue(`positive_attributes.${index}`, defaultAttribute);
+              setShowPositiveCount(showPositiveCount - 1);
+            }}
+          />
+        );
+      })}
+      {showPositiveCount < maxPositive && (
+        <Group>
+          <Button
+            onClick={() => {
+              if (showPositiveCount < maxPositive) {
+                setShowPositiveCount(showPositiveCount + 1);
+              }
+            }}
+          >
+            {useTranslateFormButtons("add")}
+          </Button>
+        </Group>
+      )}
       <Title order={5} c={"red.7"}>
         {useTranslateFormFields("negative.title")}
       </Title>
-      <Group>
-        <CreateRivenAttribute
-          availableAttributes={GetAvailableAttributes(form.values.att4)}
-          value={form.values.att4}
-          onChange={(v) => SetAttribute(3, v)}
-        />
-      </Group>
-    </Box>
+      {form.values.negative_attributes.map((item, index) => {
+        return (
+          <CreateRivenAttribute
+            key={index}
+            availableAttributes={GetAvailableAttributes(item)}
+            negativeNumberOnly
+            value={item}
+            onChange={(v) => {
+              form.setFieldValue(`negative_attributes.${index}`, v);
+            }}
+          />
+        );
+      })}
+    </Stack>
   );
 }

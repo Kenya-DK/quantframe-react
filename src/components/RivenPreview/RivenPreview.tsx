@@ -40,6 +40,13 @@ export function RivenPreview({ paperProps, riven }: RivenPreviewProps) {
     queryKey: ["cache_riven_attributes"],
     queryFn: () => api.cache.getRivenAttributes(),
   });
+  const GetUnitSymbol = (unit: string | undefined) => {
+    if (!unit) return "";
+    if (unit == "multiply") return "+";
+    if (unit == "percent") return "%";
+    if (unit == "seconds") return "sec";
+    return "";
+  };
   useEffect(() => {
     if (!weapons || !allAttributes) return;
     let weapon_url_name = "";
@@ -53,13 +60,11 @@ export function RivenPreview({ paperProps, riven }: RivenPreviewProps) {
       setAttributes(
         auction.item.attributes?.map((item) => {
           const attribute = allAttributes?.find((attribute) => attribute.url_name == item.url_name);
-          let symbol = "";
-          if (attribute?.units == "multiply") symbol = "+";
-          if (attribute?.units == "percent") symbol = "%";
+          let symbol = GetUnitSymbol(attribute?.unit);
           return {
             ...item,
             effect: attribute?.effect || "",
-            units: attribute?.units || "",
+            units: attribute?.unit || "",
             symbol,
           };
         })
@@ -77,13 +82,11 @@ export function RivenPreview({ paperProps, riven }: RivenPreviewProps) {
         setAttributes(
           stockRiven.attributes.map((item) => {
             const attribute = allAttributes?.find((attribute) => attribute.url_name == item.url_name);
-            let symbol = "";
-            if (attribute?.units == "multiply") symbol = "+";
-            if (attribute?.units == "percent") symbol = "%";
+            let symbol = GetUnitSymbol(attribute?.unit);
             return {
               ...item,
               effect: attribute?.effect || "",
-              units: attribute?.units || "",
+              units: attribute?.unit || "",
               symbol,
             };
           })
@@ -120,8 +123,10 @@ export function RivenPreview({ paperProps, riven }: RivenPreviewProps) {
             {attributes.map((item, index) => {
               return (
                 <Text maw={"215"} truncate="end" key={index} className={classes.attribute_text}>
+                  {item.units == "multiply" && `${item.symbol}`}
                   {item.value}
-                  {item.symbol} {item.effect}
+                  {item.units != "multiply" && `${item.symbol}`}
+                  {" " + item.effect}
                 </Text>
               );
             })}

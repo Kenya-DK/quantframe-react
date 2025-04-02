@@ -1,14 +1,14 @@
 export interface CacheRivenAttribute {
-  group: string;
-  search_only: boolean;
-  prefix: string;
-  effect: string;
-  positiveIsNegative: boolean;
-  url_name: string;
-  positive_only: boolean;
-  units: string;
-  suffix: string;
   id: string;
-  negative_only: boolean;
-  exclusive_to: string[];
+  gameRef: string;
+  group: string;
+  prefix: string;
+  suffix: string;
+  effect: string;
+  url_name: string;
+  unit?: string;
+  exclusiveTo?: string[];
+  positiveIsNegative?: boolean;
+  positiveOnly?: boolean;
+  negativeOnly?: boolean;
 }
