@@ -318,23 +318,28 @@ impl OnTradeEvent {
             };
             trace(&format!("Stock Item: {:?}", stock_item.display()));
             if settings.live_scraper.stock_item.auto_trade {
+                trace_centered_message("Starting Processing Auto Trade");
                 if stock_item.entity_type == StockType::Riven {
                     match process_stock_riven(&stock_item, &trade).await {
                         Ok(e) => {
+                            trace(format!("Processed Riven: {:?}", &e).as_str());
                             notify(&trade, e, Some(&stock_item));
                         }
                         Err(e) => {
                             error::create_log_file("trade_accepted.log", &e);
+                            trace(format!("Error Processing Riven: {:?}", e.to_string()).as_str());
                             notify(&trade, vec![e.cause().clone()], Some(&stock_item));
                         }
                     }
                 } else if stock_item.entity_type == StockType::Item {
                     match process_stock_item(&stock_item, &trade).await {
                         Ok(e) => {
+                            trace(format!("Processed Item: {:?}", &e).as_str());
                             notify(&trade, e, Some(&stock_item));
                         }
                         Err(e) => {
                             error::create_log_file("trade_accepted.log", &e);
+                            trace(format!("Error Processing Item: {:?}", e.to_string()).as_str());
                             notify(&trade, vec![e.cause().clone()], Some(&stock_item));
                         }
                     }
@@ -343,14 +348,19 @@ impl OnTradeEvent {
                 {
                     match process_wish_list(&stock_item, &trade).await {
                         Ok(e) => {
+                            trace(format!("Processed Wish List: {:?}", &e).as_str());
                             notify(&trade, e, Some(&stock_item));
                         }
                         Err(e) => {
                             error::create_log_file("trade_accepted.log", &e);
+                            trace(
+                                format!("Error Processing Wish List: {:?}", e.to_string()).as_str(),
+                            );
                             notify(&trade, vec![e.cause().clone()], Some(&stock_item));
                         }
                     }
                 } else {
+                    trace(format!("Unknown entity type: {:?}", stock_item.entity_type).as_str());
                     logger::warning(
                         "TradeAccepted",
                         &format!(
