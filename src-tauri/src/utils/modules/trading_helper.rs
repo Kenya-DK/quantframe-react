@@ -305,6 +305,7 @@ pub fn notify(
     stock_item: Option<&CreateStockEntity>,
 ) {
     let notify = states::notify_client().expect("Notify Client not initialized");
+    let settings = states::settings().expect("Settings Client not initialized");
     let gui_id = "on_trade_event";
     // Set Notification's Data
     let mut notify_payload = json!({
@@ -377,7 +378,7 @@ pub fn notify(
         notify_value["wfm_operation"] = json!("Deleted");
     }
     if contains_warning(&operations, &["WFM_NotFound"]) {
-        notify_value["wfm_operation"] = json!("Deleted");
+        notify_value["wfm_operation"] = json!("Not Found");
     }
     notify_payload["values"] = notify_value.clone();
 
@@ -394,5 +395,88 @@ pub fn notify(
         UIEvent::OnNotificationSuccess
     };
 
+    // Send to GUI
     notify.gui().send_event(event, Some(notify_payload));
+
+    let title: String = settings
+        .notifications
+        .on_new_trade
+        .title
+        .replace("<TR_TYPE>", trade.trade_type.to_str());
+    let content: String = settings
+        .notifications
+        .on_new_trade
+        .content
+        .replace("<PLAYER_NAME>", trade.player_name.as_str())
+        .replace("<OF_COUNT>", &trade.offered_items.len().to_string())
+        .replace("<RE_COUNT>", &trade.received_items.len().to_string())
+        .replace("<TOTAL_PLAT>", &trade.platinum.to_string());
+    // Notification to system
+    if settings.notifications.on_new_trade.system_notify {
+        notify
+            .system()
+            .send_notification(&title, &content, None, None);
+    }
+    // Discord Webhook
+    if settings.notifications.on_new_trade.discord_notify
+        && settings.notifications.on_new_trade.webhook.is_some()
+    {
+        let offered_items = trade
+            .get_valid_items(&TradeClassification::Purchase)
+            .iter()
+            .map(|x| format!("{} X{}", x.item_name(), x.quantity))
+            .collect::<Vec<String>>()
+            .join("\n");
+
+        let received_items = trade
+            .get_valid_items(&TradeClassification::Sale)
+            .iter()
+            .map(|x| format!("{} X{}", x.item_name(), x.quantity))
+            .collect::<Vec<String>>()
+            .join("\n");
+        notify.discord().send_embed_notification(
+            &settings.notifications.on_new_trade.webhook.clone().unwrap_or("".to_string()),
+            vec![json!({
+                "title": title,
+                "color": 5814783,
+                "fields": [
+                    {
+                        "name": "Player",
+                        "value": format!("```{}```", trade.player_name),
+                        "inline": true
+                    },
+                    {
+                        "name": "Trade Type",
+                        "value": format!("```{}```", trade.trade_type.to_str()),
+                        "inline": true
+                    },
+                    {
+                        "name": "Platinum",
+                        "value": format!("```{}```", trade.platinum),
+                        "inline": true
+                    },
+                    {
+                        "name": "Offered",
+                        "value": format!("```{}```", offered_items),
+                        "inline": true
+                    },
+                    {
+                        "name": "Received",
+                        "value": format!("```{}```", received_items),
+                        "inline": true
+                    },
+                    {
+                        "name": "Stock",
+                        "value": format!("```{}```", notify_value["stock_operation"].as_str().unwrap_or("None")),
+                        "inline": true
+                    },
+                    {
+                        "name": "Warframe Market",
+                        "value": format!("```{}```", notify_value["wfm_operation"].as_str().unwrap_or("None")),
+                        "inline": true
+                    }
+                ],
+            })],
+        );
+    }
 }
