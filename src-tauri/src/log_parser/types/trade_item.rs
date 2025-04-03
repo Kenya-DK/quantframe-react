@@ -287,6 +287,24 @@ impl TradeItem {
         }
         name
     }
+
+    pub fn item_name(&self) -> String {
+        let ch = states::cache().expect("Cache not found");
+        let name = match ch
+            .tradable_items()
+            .get_by(&self.unique_name, "--item_by unique_name")
+        {
+            Ok(mach) => {
+                if mach.is_some() {
+                    mach.unwrap().name.clone()
+                } else {
+                    self.raw.clone()
+                }
+            }
+            Err(_) => self.raw.clone(),
+        };
+        name
+    }
 }
 
 impl Default for TradeItem {
