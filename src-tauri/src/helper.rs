@@ -526,13 +526,6 @@ pub async fn progress_transaction(
         }
     };
 
-    // Add the transaction to the QuantFrame analytics stars
-    match qf.transaction().create_transaction(&transaction).await {
-        Ok(_) => {}
-        Err(e) => {
-            return Err(e);
-        }
-    }
     Ok(transaction.clone())
 }
 
@@ -914,14 +907,6 @@ pub async fn progress_stock_riven(
             return Err(AppError::new_db("StockItemCreate", e));
         }
     };
-    // Add the transaction to the QuantFrame analytics stars
-    match qf.transaction().create_transaction(&transaction).await {
-        Ok(_) => {}
-        Err(e) => {
-            response.push("TransactionAnalyticsError".to_string());
-            return Err(e);
-        }
-    }
     return Ok((stock, response));
 }
 

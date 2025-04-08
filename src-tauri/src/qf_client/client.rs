@@ -29,7 +29,7 @@ use crate::{
 
 use super::modules::{
     alert::AlertModule, analytics::AnalyticsModule, auth::AuthModule, cache::CacheModule,
-    item::ItemModule, riven::RivenModule, transaction::TransactionModule,
+    item::ItemModule, riven::RivenModule,
 };
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -50,7 +50,6 @@ pub struct QFClient {
     riven_module: Arc<RwLock<Option<RivenModule>>>,
     analytics_module: Arc<RwLock<Option<AnalyticsModule>>>,
     alert_module: Arc<RwLock<Option<AlertModule>>>,
-    transaction_module: Arc<RwLock<Option<TransactionModule>>>,
     pub component: String,
     pub log_file: &'static str,
 }
@@ -71,7 +70,6 @@ impl QFClient {
             riven_module: Arc::new(RwLock::new(None)),
             alert_module: Arc::new(RwLock::new(None)),
             analytics_module: Arc::new(RwLock::new(None)),
-            transaction_module: Arc::new(RwLock::new(None)),
             log_file: "qfAPIaCalls.log",
             component: "QuantframeApi".to_string(),
         }
@@ -420,20 +418,5 @@ impl QFClient {
     pub fn update_alert_module(&self, module: AlertModule) {
         // Update the stored AnalyticsModule
         *self.alert_module.write().unwrap() = Some(module);
-    }
-    pub fn transaction(&self) -> TransactionModule {
-        // Lazily initialize TransactionModule if not already initialized
-        if self.transaction_module.read().unwrap().is_none() {
-            *self.transaction_module.write().unwrap() =
-                Some(TransactionModule::new(self.clone()).clone());
-        }
-
-        // Unwrapping is safe here because we ensured the transaction_module is initialized
-        self.transaction_module
-            .read()
-            .unwrap()
-            .as_ref()
-            .unwrap()
-            .clone()
     }
 }
