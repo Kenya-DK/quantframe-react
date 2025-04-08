@@ -8,8 +8,6 @@ use eyre::eyre;
 use serde_json::json;
 use service::{StockRivenMutation, StockRivenQuery};
 
-use crate::cache::client::CacheClient;
-use crate::qf_client::client::QFClient;
 use crate::utils::modules::error;
 use crate::utils::modules::logger::LoggerOptions;
 use crate::wfm_client::enums::order_type::OrderType;
@@ -310,15 +308,7 @@ pub async fn stock_riven_delete_bulk(
 #[tauri::command]
 pub async fn stock_riven_create(
     mut riven_entry: CreateStockRiven,
-    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-    cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
-    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<entity::stock::riven::stock_riven::Model, AppError> {
-    let notify = notify.lock()?.clone();
-    let cache = cache.lock()?.clone();
-    let qf = qf.lock()?.clone();
-    let wfm = wfm.lock()?.clone();
 
     match helper::progress_stock_riven(
         &mut riven_entry,
@@ -343,16 +333,8 @@ pub async fn stock_riven_create(
 pub async fn stock_riven_sell(
     id: i64,
     price: i64,
-    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
-    cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
 ) -> Result<stock_riven::Model, AppError> {
     let conn = DATABASE.get().unwrap();
-    let notify = notify.lock()?.clone();
-    let wfm = wfm.lock()?.clone();
-    let qf = qf.lock()?.clone();
-    let cache = cache.lock()?.clone();
     let stock = match StockRivenMutation::find_by_id(conn, id).await {
         Ok(stock) => stock,
         Err(e) => return Err(AppError::new("StockRivenSell", eyre!(e))),

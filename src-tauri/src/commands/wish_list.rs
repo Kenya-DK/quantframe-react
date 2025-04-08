@@ -10,12 +10,10 @@ use service::{WishListMutation, WishListQuery};
 
 use crate::cache::client::CacheClient;
 use crate::helper::{self, add_metric};
-use crate::qf_client::client::QFClient;
 use crate::utils::modules::error;
 use crate::wfm_client::enums::order_type::OrderType;
 use crate::DATABASE;
 use crate::{
-    app::client::AppState,
     notification::client::NotifyClient,
     utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
@@ -210,14 +208,7 @@ pub async fn wish_list_delete(
 }
 
 #[tauri::command]
-pub async fn wish_list_bought(
-    id: i64,
-    price: i64,
-    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-    cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
-) -> Result<wish_list::Model, AppError> {
+pub async fn wish_list_bought(id: i64, price: i64) -> Result<wish_list::Model, AppError> {
     let conn = DATABASE.get().unwrap();
 
     let item = match WishListQuery::get_by_id(conn, id).await {

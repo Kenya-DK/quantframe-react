@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::path::PathBuf;
 
 use eyre::eyre;
 
@@ -6,7 +6,7 @@ use crate::{
     cache::{
         client::CacheClient,
         types::{
-            cache_item_base::CacheItemBase, cache_item_component::CacheItemComponent,
+            cache_item_base::CacheItemBase,
             cache_relics::CacheRelics,
         },
     },

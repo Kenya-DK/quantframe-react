@@ -23,15 +23,12 @@ use tauri::{Manager, State};
 use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 
 use crate::{
-    app::client::AppState,
-    cache::client::CacheClient,
-    notification::client::NotifyClient,
     qf_client::client::QFClient,
     utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
         modules::{error::AppError, states},
     },
-    wfm_client::{client::WFMClient, enums::order_type::OrderType, types::order::Order},
+    wfm_client::{enums::order_type::OrderType, types::order::Order},
     APP, DATABASE,
 };
 
@@ -510,7 +507,6 @@ pub async fn progress_transaction(
 ) -> Result<entity::transaction::transaction::Model, AppError> {
     let conn = DATABASE.get().unwrap();
     let notify = states::notify_client()?;
-    let qf = states::qf_client()?;
     match TransactionMutation::create(conn, &transaction).await {
         Ok(inserted) => {
             add_metric("Transaction_Create", from);
@@ -803,7 +799,6 @@ pub async fn progress_stock_riven(
     let conn = DATABASE.get().unwrap();
     let mut response = vec![];
     let cache = states::cache()?;
-    let qf = states::qf_client()?;
     let notify = states::notify_client()?;
     let wfm = states::wfm_client()?;
     // Validate the stock item

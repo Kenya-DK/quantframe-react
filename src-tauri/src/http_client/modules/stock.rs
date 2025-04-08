@@ -11,10 +11,9 @@ use crate::{
     helper,
     http_client::types::{create_item::ItemPayload, create_riven::RivenPayload},
     notification::client::NotifyClient,
-    qf_client::client::QFClient,
     settings::SettingsState,
     utils::modules::error::{self},
-    wfm_client::{client::WFMClient, enums::order_type::OrderType},
+    wfm_client::enums::order_type::OrderType,
     APP,
 };
 

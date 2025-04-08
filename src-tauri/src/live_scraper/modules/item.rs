@@ -1,6 +1,5 @@
 use crate::cache::types::cache_tradable_item::CacheTradableItem;
 use crate::cache::types::item_price_info::ItemPriceInfo;
-use crate::commands::log;
 use crate::enums::trade_mode::TradeMode;
 use crate::live_scraper::client::LiveScraperClient;
 
@@ -10,17 +9,14 @@ use crate::utils::enums::log_level::LogLevel;
 use crate::utils::enums::ui_events::{UIEvent, UIOperationEvent};
 use crate::utils::modules::error::{self, AppError};
 use crate::utils::modules::logger::LoggerOptions;
-use crate::utils::modules::states::wfm_client;
 use crate::utils::modules::{logger, states};
 use crate::wfm_client::enums::order_type::OrderType;
-use crate::wfm_client::types::item;
 use crate::wfm_client::types::order::Order;
 use crate::wfm_client::types::orders::Orders;
 use crate::DATABASE;
 use entity::enums::stock_status::StockStatus;
 use entity::price_history::{PriceHistory, PriceHistoryVec};
 
-use serde::de;
 use serde_json::json;
 use service::{StockItemMutation, StockItemQuery, WishListMutation, WishListQuery};
 use std::collections::HashMap;

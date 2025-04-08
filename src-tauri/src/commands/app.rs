@@ -10,7 +10,7 @@ use crate::{
     log_parser,
     notification::client::NotifyClient,
     qf_client::client::QFClient,
-    settings::{self, SettingsState},
+    settings::{SettingsState},
     utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
         modules::error::{self, AppError},

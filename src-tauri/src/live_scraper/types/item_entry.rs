@@ -1,9 +1,8 @@
 use std::hash::{Hash, Hasher};
 
-use entity::{stock::item::stock_item, sub_type::SubType};
+use entity::sub_type::SubType;
 use serde::{Deserialize, Serialize};
 
-use crate::cache::types::item_price_info::ItemPriceInfo;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ItemEntry {

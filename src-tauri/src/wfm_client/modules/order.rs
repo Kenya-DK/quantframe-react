@@ -149,26 +149,6 @@ impl OrderModule {
         Ok(orders)
     }
 
-    pub async fn find_order_by_url_sub_type(
-        &mut self,
-        url: &str,
-        sub_type: Option<&SubType>,
-        order_type: OrderType,
-    ) -> Result<Option<Order>, AppError> {
-        match self.get_my_orders().await {
-            Ok(orders) => {
-                let order = orders.find_order_by_url_sub_type(url, order_type, sub_type);
-                if order.is_some() {
-                    return Ok(order);
-                }
-            }
-            Err(e) => {
-                return Err(e);
-            }
-        }
-        Ok(None)
-    }
-
     pub async fn create(
         &mut self,
         item_id: &str,

@@ -1,4 +1,3 @@
-use entity::sub_type::SubType;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

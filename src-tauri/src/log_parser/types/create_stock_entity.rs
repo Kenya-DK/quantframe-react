@@ -11,10 +11,7 @@ use entity::{
 use serde::{Deserialize, Serialize};
 use service::{sea_orm::DbConn, WishListQuery};
 
-use crate::{
-    cache::client::CacheClient,
-    utils::modules::{error::AppError, states},
-};
+use crate::utils::modules::{error::AppError, states};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CreateStockEntity {

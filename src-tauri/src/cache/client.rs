@@ -2,14 +2,13 @@ use std::{
     fs::File,
     io::{Read, Write},
     path::PathBuf,
-    sync::{Arc, Mutex, RwLock},
+    sync::{Arc, RwLock},
 };
 
 use eyre::eyre;
 
 use crate::{
     helper, logger,
-    settings::SettingsState,
     utils::modules::{error::AppError, logger::LoggerOptions, states},
 };
 

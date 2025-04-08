@@ -4,8 +4,8 @@ use tauri::Manager;
 
 use crate::{
     app::client::AppState, auth::AuthState, cache::client::CacheClient,
-    log_parser::client::LogParser, notification::client::NotifyClient, qf_client::client::QFClient,
-    settings::SettingsState, wfm_client::client::WFMClient, APP,
+    notification::client::NotifyClient, qf_client::client::QFClient, settings::SettingsState,
+    wfm_client::client::WFMClient, APP,
 };
 
 use super::error::AppError;
@@ -56,16 +56,6 @@ pub fn wfm_client() -> Result<WFMClient, AppError> {
     let state_lock = state
         .lock()
         .map_err(|_| AppError::new("States:WFMClient", eyre::eyre!("Failed to lock state")))?;
-    let state = state_lock.clone();
-    Ok(state)
-}
-
-pub fn log_parser() -> Result<LogParser, AppError> {
-    let app = APP.get().expect("App not initialized");
-    let state = app.state::<Arc<Mutex<LogParser>>>();
-    let state_lock = state
-        .lock()
-        .map_err(|_| AppError::new("States:LogParser", eyre::eyre!("Failed to lock state")))?;
     let state = state_lock.clone();
     Ok(state)
 }

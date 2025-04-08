@@ -16,7 +16,6 @@ pub enum UIEvent {
     OnLiveTradingError,
     OnLiveTradingMessage,
     // Notification
-    OnNotificationError,
     OnNotificationWarning,
     OnNotificationSuccess,
     OnToggleControl,
@@ -39,7 +38,6 @@ impl UIEvent {
             UIEvent::UpdateLiveTradingRunningState => "LiveTrading:UpdateRunningState",
             UIEvent::OnLiveTradingError => "LiveTrading:OnError",
             UIEvent::OnLiveTradingMessage => "LiveTrading:OnMessage",
-            UIEvent::OnNotificationError => "Notification:OnError",
             UIEvent::OnNotificationWarning => "Notification:OnWarning",
             UIEvent::OnNotificationSuccess => "Notification:OnSuccess",
             UIEvent::OnToggleControl => "Control:OnToggleControl",

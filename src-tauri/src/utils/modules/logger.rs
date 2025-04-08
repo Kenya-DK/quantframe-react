@@ -38,54 +38,6 @@ impl Default for LoggerOptions {
     }
 }
 impl LoggerOptions {
-    pub fn new_console(
-        show_time: bool,
-        show_component: bool,
-        show_elapsed_time: bool,
-        show_level: bool,
-    ) -> Self {
-        LoggerOptions::new(
-            true,
-            None,
-            show_time,
-            show_component,
-            show_elapsed_time,
-            show_level,
-        )
-    }
-    pub fn new_file(
-        file: Option<String>,
-        show_time: bool,
-        show_component: bool,
-        show_elapsed_time: bool,
-        show_level: bool,
-    ) -> Self {
-        LoggerOptions::new(
-            false,
-            file,
-            show_time,
-            show_component,
-            show_elapsed_time,
-            show_level,
-        )
-    }
-    pub fn new(
-        console: bool,
-        file: Option<String>,
-        show_time: bool,
-        show_component: bool,
-        show_elapsed_time: bool,
-        show_level: bool,
-    ) -> Self {
-        LoggerOptions {
-            console,
-            file,
-            show_time,
-            show_component,
-            show_elapsed_time,
-            show_level,
-        }
-    }
     pub fn set_console(&mut self, value: bool) -> Self {
         self.console = value;
         self.clone()
@@ -102,10 +54,7 @@ impl LoggerOptions {
         self.show_component = value;
         self.clone()
     }
-    pub fn set_show_elapsed_time(&mut self, value: bool) -> Self {
-        self.show_elapsed_time = value;
-        self.clone()
-    }
+
     pub fn set_show_level(&mut self, value: bool) -> Self {
         self.show_level = value;
         self.clone()

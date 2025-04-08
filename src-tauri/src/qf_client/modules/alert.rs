@@ -1,10 +1,9 @@
 use std::{
-    collections::HashMap,
     sync::{Arc, Mutex},
     time::Duration,
 };
 
-use serde_json::{json, Value};
+use serde_json::json;
 use tauri::{Manager, State};
 use tokio::time::Instant;
 
