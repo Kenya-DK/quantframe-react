@@ -1,5 +1,5 @@
 use serde_json::{json, Value};
-use tauri::{Emitter, Manager};
+use tauri::Emitter;
 
 use crate::{
     notification::client::NotifyClient,

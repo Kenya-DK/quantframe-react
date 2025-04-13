@@ -1,16 +1,12 @@
-use std::sync::{Arc, Mutex};
 
 use actix_cors::Cors;
 use actix_web::{web, App, HttpServer};
 
-use crate::{
-    settings::SettingsState,
-    utils::modules::{
+use crate::utils::modules::{
         error::AppError,
         logger::{self, LoggerOptions},
         states,
-    },
-};
+    };
 
 use super::modules::stock::{add_item, add_riven};
 #[derive(Clone, Debug)]

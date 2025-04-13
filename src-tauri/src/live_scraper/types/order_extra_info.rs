@@ -149,12 +149,6 @@ impl OrderDetails {
         self.moving_avg = Some(moving_avg);
     }
 
-    pub fn set_profit(&mut self, profit: i64) {
-        if Self::set_if_changed(&mut self.profit, Some(profit), &mut self.is_dirty) {
-            self.changes = Some("profit".to_string());
-        }
-    }
-
     pub fn set_quantity(&mut self, quantity: i64) {
         if Self::set_if_changed(&mut self.quantity, quantity, &mut self.is_dirty) {
             self.changes = Some("quantity".to_string());

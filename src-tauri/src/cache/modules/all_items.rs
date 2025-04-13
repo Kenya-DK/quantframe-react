@@ -1,15 +1,9 @@
-use std::path::PathBuf;
-
 use eyre::eyre;
-use serde_json::json;
 
 use crate::{
-    cache::{
-        client::CacheClient,
-        types::{cache_arcane::CacheArcane, cache_item_base::CacheItemBase},
-    },
+    cache::{client::CacheClient, types::cache_item_base::CacheItemBase},
     helper,
-    utils::modules::{error::AppError, logger},
+    utils::modules::error::AppError,
 };
 
 #[derive(Clone, Debug)]
@@ -34,15 +28,6 @@ impl AllItemsModule {
     }
     fn get_component(&self, component: &str) -> String {
         format!("{}:{}", self.component, component)
-    }
-
-    fn add_items(&mut self, items: Vec<CacheItemBase>) {
-        for item in items {
-            // Check if item already exists
-            if self.items.iter().any(|i| i.unique_name == item.unique_name) {
-                continue;
-            }
-        }
     }
 
     pub fn load(&mut self) -> Result<(), AppError> {

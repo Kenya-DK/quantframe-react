@@ -7,10 +7,8 @@ use serde_json::{json, Value};
 use service::{sea_orm::Database, StockItemMutation, StockRivenMutation, TransactionMutation};
 
 use crate::{
-    app::client::AppState,
     debug::DebugClient,
     helper,
-    log_parser::types::trade_detection::{TradeDetection, DETECTIONS},
     notification::client::NotifyClient,
     qf_client::client::QFClient,
     utils::{
@@ -24,12 +22,10 @@ use crate::{
 pub async fn debug_import_algo_trader(
     db_path: String,
     debug: tauri::State<'_, Arc<Mutex<DebugClient>>>,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
     qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<bool, AppError> {
     let conn = DATABASE.get().unwrap();
     let debug = debug.lock()?.clone();
-    let app = app.lock()?.clone();
     let qf = qf.lock()?.clone();
 
     // Check if the old database exists
@@ -61,12 +57,10 @@ pub async fn debug_import_algo_trader(
 pub async fn debug_migrate_data_base(
     target: String,
     debug: tauri::State<'_, Arc<Mutex<DebugClient>>>,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
     qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<bool, AppError> {
     let conn = DATABASE.get().unwrap();
     let debug = debug.lock()?.clone();
-    let app = app.lock()?.clone();
     let qf = qf.lock()?.clone();
 
     // Check if the old database exists
@@ -211,6 +205,4 @@ pub async fn debug_method(name: String, payload: Value) -> Result<Value, AppErro
             return Err(AppError::new("DebugDbReset", eyre::eyre!("Invalid target")));
         }
     }
-
-    Ok(json!({}))
 }

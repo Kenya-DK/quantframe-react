@@ -1,29 +1,20 @@
-use std::collections::HashMap;
 
-use entity::{enums::stock_type::StockType, sub_type::SubType};
-use eyre::eyre;
+use entity::enums::stock_type::StockType;
 
-use serde_json::{json, Value};
-use service::StockRivenQuery;
+use serde_json::json;
 
 use crate::{
-    cache::{client::CacheClient, types::cache_item_component::CacheItemComponent},
     helper,
     log_parser::{
         client::LogParser,
-        enums::{trade_classification::TradeClassification, trade_item_type::TradeItemType},
+        enums::trade_classification::TradeClassification,
         types::{
-            create_stock_entity::CreateStockEntity,
             trade::PlayerTrade,
-            trade_detection::{DetectionStatus, TradeDetection, DETECTIONS},
+            trade_detection::{TradeDetection, DETECTIONS},
             trade_item::TradeItem,
         },
     },
-    notification::client::NotifyClient,
-    qf_client::client::QFClient,
-    utils::{
-        enums::{log_level::LogLevel, ui_events::UIEvent},
-        modules::{
+    utils::modules::{
             error::{self, AppError},
             logger::{self, LoggerOptions},
             states,
@@ -32,9 +23,6 @@ use crate::{
                 trace_centered_message,
             },
         },
-    },
-    wfm_client::{client::WFMClient, enums::order_type::OrderType},
-    DATABASE,
 };
 
 #[derive(Clone, Debug)]

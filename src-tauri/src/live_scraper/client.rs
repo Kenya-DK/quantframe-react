@@ -1,8 +1,7 @@
 use std::{
-    f64::consts::E,
     sync::{
         atomic::{AtomicBool, Ordering},
-        Arc, Mutex, RwLock,
+        Arc, RwLock,
     },
     time::{Duration, Instant},
 };
@@ -10,18 +9,12 @@ use std::{
 use serde_json::json;
 
 use crate::{
-    app::client::AppState,
-    auth::AuthState,
-    cache::client::CacheClient,
     enums::{stock_mode::StockMode, trade_mode::TradeMode},
     logger,
-    notification::client::NotifyClient,
-    settings::SettingsState,
     utils::{
         enums::{log_level::LogLevel, ui_events::UIEvent},
         modules::{error::AppError, logger::LoggerOptions, states},
     },
-    wfm_client::client::WFMClient,
 };
 
 use super::modules::{item::ItemModule, riven::RivenModule};
@@ -48,10 +41,7 @@ impl LiveScraperClient {
     pub fn report_error(&self, error: &AppError) {
         let notify = states::notify_client().unwrap();
         let component = error.component();
-        let cause = error.cause();
-        let backtrace = error.backtrace();
         let log_level = error.log_level();
-        let extra = error.extra_data();
         if log_level == LogLevel::Critical || log_level == LogLevel::Error {
             self.is_running.store(false, Ordering::SeqCst);
         }

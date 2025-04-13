@@ -3,7 +3,6 @@ use std::{
     io::{BufRead, BufReader, Seek, SeekFrom},
     path::PathBuf,
     sync::{
-        atomic::{AtomicBool, Ordering},
         Arc, Mutex, RwLock,
     },
     time::Duration,
@@ -12,7 +11,6 @@ use std::{
 use regex::Regex;
 
 use crate::{
-    commands::log,
     helper,
     utils::modules::{
         error::{self, AppError},
@@ -190,33 +188,6 @@ impl LogParser {
         } else {
             return false;
         }
-    }
-    pub fn get_logs_between(&self, start: u64, _end: u64) -> Result<Vec<String>, AppError> {
-        let mut file = File::open(&self.log_file).map_err(|e| {
-            AppError::new(
-                &self.component,
-                eyre::eyre!("Error opening log file: {}", e),
-            )
-        })?;
-
-        let mut logs = Vec::new();
-
-        file.seek(SeekFrom::Start(start)).map_err(|e| {
-            AppError::new(
-                &self.component,
-                eyre::eyre!("Error seeking log file: {}", e),
-            )
-        })?;
-
-        let reader = BufReader::new(file);
-
-        for (_, line) in reader.lines().enumerate() {
-            if let Ok(line) = line {
-                logs.push(line);
-            }
-        }
-
-        Ok(logs)
     }
 
     pub fn trade_event(&self) -> OnTradeEvent {

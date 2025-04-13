@@ -1,5 +1,5 @@
 use std::{
-    sync::{Arc, Mutex, RwLock},
+    sync::{Arc, RwLock},
     time::Duration,
 };
 
@@ -9,10 +9,7 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::{json, Value};
 
 use crate::{
-    app::client::AppState,
-    auth::AuthState,
     logger,
-    notification::client::NotifyClient,
     utils::{
         enums::{
             log_level::LogLevel,
@@ -29,7 +26,7 @@ use crate::{
 
 use super::modules::{
     alert::AlertModule, analytics::AnalyticsModule, auth::AuthModule, cache::CacheModule,
-    item::ItemModule, riven::RivenModule, transaction::TransactionModule,
+    item::ItemModule,
 };
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -47,10 +44,8 @@ pub struct QFClient {
     auth_module: Arc<RwLock<Option<AuthModule>>>,
     cache_module: Arc<RwLock<Option<CacheModule>>>,
     item_module: Arc<RwLock<Option<ItemModule>>>,
-    riven_module: Arc<RwLock<Option<RivenModule>>>,
     analytics_module: Arc<RwLock<Option<AnalyticsModule>>>,
     alert_module: Arc<RwLock<Option<AlertModule>>>,
-    transaction_module: Arc<RwLock<Option<TransactionModule>>>,
     pub component: String,
     pub log_file: &'static str,
 }
@@ -68,10 +63,8 @@ impl QFClient {
             auth_module: Arc::new(RwLock::new(None)),
             cache_module: Arc::new(RwLock::new(None)),
             item_module: Arc::new(RwLock::new(None)),
-            riven_module: Arc::new(RwLock::new(None)),
             alert_module: Arc::new(RwLock::new(None)),
             analytics_module: Arc::new(RwLock::new(None)),
-            transaction_module: Arc::new(RwLock::new(None)),
             log_file: "qfAPIaCalls.log",
             component: "QuantframeApi".to_string(),
         }
@@ -336,20 +329,6 @@ impl QFClient {
             .await?)
     }
 
-    pub async fn delete<T: DeserializeOwned>(&self, url: &str) -> Result<ApiResult<T>, AppError> {
-        Ok(self
-            .send_request(Method::DELETE, url, None, false, false)
-            .await?)
-    }
-    pub async fn put<T: DeserializeOwned>(
-        &self,
-        url: &str,
-        body: Option<Value>,
-    ) -> Result<ApiResult<T>, AppError> {
-        Ok(self
-            .send_request(Method::PUT, url, body, false, false)
-            .await?)
-    }
     pub fn cache(&self) -> CacheModule {
         // Lazily initialize ItemModule if not already initialized
         if self.cache_module.read().unwrap().is_none() {
@@ -368,15 +347,6 @@ impl QFClient {
 
         // Unwrapping is safe here because we ensured the item_module is initialized
         self.item_module.read().unwrap().as_ref().unwrap().clone()
-    }
-    pub fn riven(&self) -> RivenModule {
-        // Lazily initialize RivenModule if not already initialized
-        if self.riven_module.read().unwrap().is_none() {
-            *self.item_module.write().unwrap() = Some(ItemModule::new(self.clone()).clone());
-        }
-
-        // Unwrapping is safe here because we ensured the item_module is initialized
-        self.riven_module.read().unwrap().as_ref().unwrap().clone()
     }
     pub fn auth(&self) -> AuthModule {
         // Lazily initialize AuthModule if not already initialized
@@ -420,20 +390,5 @@ impl QFClient {
     pub fn update_alert_module(&self, module: AlertModule) {
         // Update the stored AnalyticsModule
         *self.alert_module.write().unwrap() = Some(module);
-    }
-    pub fn transaction(&self) -> TransactionModule {
-        // Lazily initialize TransactionModule if not already initialized
-        if self.transaction_module.read().unwrap().is_none() {
-            *self.transaction_module.write().unwrap() =
-                Some(TransactionModule::new(self.clone()).clone());
-        }
-
-        // Unwrapping is safe here because we ensured the transaction_module is initialized
-        self.transaction_module
-            .read()
-            .unwrap()
-            .as_ref()
-            .unwrap()
-            .clone()
     }
 }

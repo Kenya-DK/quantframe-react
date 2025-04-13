@@ -1,5 +1,4 @@
 use crate::{
-    app::client::AppState,
     notification::client::NotifyClient,
     qf_client::client::QFClient,
     utils::{
@@ -109,13 +108,6 @@ pub async fn transaction_update(
             return Err(error);
         }
     };
-    match qf.transaction().update_transaction(&new_item).await {
-        Ok(_) => (),
-        Err(e) => {
-            error::create_log_file("transaction_update.log", &e);
-            return Err(e);
-        }
-    }
     Ok(new_item)
 }
 
@@ -146,12 +138,5 @@ pub async fn transaction_delete(
         }
     };
 
-    match qf.transaction().delete_transaction(id).await {
-        Ok(_) => (),
-        Err(e) => {
-            error::create_log_file("transaction_delete.log", &e);
-            return Err(e);
-        }
-    }
     Ok(())
 }

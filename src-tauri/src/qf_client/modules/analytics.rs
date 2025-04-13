@@ -6,7 +6,6 @@ use std::{
 
 use eyre::eyre;
 use serde_json::{json, Value};
-use tauri::{Manager, State};
 use tokio::time::Instant;
 
 use crate::{
@@ -18,7 +17,6 @@ use crate::{
             logger::{self, LoggerOptions}, states,
         },
     },
-    APP,
 };
 #[derive(Clone, Debug)]
 pub struct AnalyticsModule {

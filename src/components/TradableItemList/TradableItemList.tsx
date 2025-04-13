@@ -9,8 +9,7 @@ import { SearchField } from "@components/SearchField";
 import { ActionWithTooltip } from "@components/ActionWithTooltip";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import classes from "./TradableItemList.module.css";
-import { SortItems } from "@utils/sorting.helper";
-import { SortDirection } from "$types/index";
+import { SortItems, SortDirection } from "@utils/sorting.helper";
 
 export type TradableItemListProps = {
   availableItems: CacheTradableItem[];

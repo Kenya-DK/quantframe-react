@@ -1,4 +1,4 @@
-use crate::{notification::client::NotifyClient, APP};
+use crate::APP;
 use tauri::Url;
 use tauri_plugin_notification::{Attachment, NotificationExt};
 

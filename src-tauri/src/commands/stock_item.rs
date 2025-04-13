@@ -7,11 +7,9 @@ use eyre::eyre;
 use serde_json::json;
 use service::{StockItemMutation, StockItemQuery};
 
-use crate::qf_client::client::QFClient;
 use crate::utils::modules::error;
+use crate::{helper, DATABASE};
 use crate::{
-    app::client::AppState,
-    cache::client::CacheClient,
     notification::client::NotifyClient,
     utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
@@ -19,7 +17,6 @@ use crate::{
     },
     wfm_client::{client::WFMClient, enums::order_type::OrderType},
 };
-use crate::{helper, DATABASE};
 
 #[tauri::command]
 pub async fn stock_item_reload(
@@ -53,16 +50,7 @@ pub async fn stock_item_create(
     sub_type: Option<SubType>,
     quantity: i64,
     is_from_order: bool,
-    cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
-    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<stock_item::Model, AppError> {
-    let cache = cache.lock()?.clone();
-    let notify = notify.lock()?.clone();
-    let wfm = wfm.lock()?.clone();
-    let qf = qf.lock()?.clone();
-
     let from = if is_from_order {
         "manual_wfm"
     } else {
@@ -275,16 +263,7 @@ pub async fn stock_item_sell(
     quantity: i64,
     price: i64,
     is_from_order: bool,
-    cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
-    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<stock_item::Model, AppError> {
-    let notify = notify.lock()?.clone();
-    let cache = cache.lock()?.clone();
-    let wfm = wfm.lock()?.clone();
-    let qf = qf.lock()?.clone();
-
     let from = if is_from_order {
         "manual_wfm"
     } else {
@@ -318,7 +297,6 @@ pub async fn stock_item_sell(
 #[tauri::command]
 pub async fn stock_item_delete(
     id: i64,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<(), AppError> {

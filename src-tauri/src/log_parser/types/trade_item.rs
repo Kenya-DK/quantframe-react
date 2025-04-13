@@ -1,10 +1,9 @@
 use entity::sub_type::SubType;
-use serde::{de, Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::{
-    cache::types::{cache_item_base::CacheItemBase, cache_tradable_item::CacheTradableItem},
-    commands::item,
+    cache::types::cache_tradable_item::CacheTradableItem,
     log_parser::enums::trade_item_type::TradeItemType,
     utils::modules::{
         error::AppError,
@@ -16,10 +15,7 @@ use crate::{
     },
 };
 
-use super::{
-    create_stock_entity::CreateStockEntity,
-    trade_detection::{DetectionStatus, TradeDetection},
-};
+use super::trade_detection::{DetectionStatus, TradeDetection};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct TradeItem {

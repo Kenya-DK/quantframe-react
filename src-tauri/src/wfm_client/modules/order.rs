@@ -56,6 +56,7 @@ impl OrderModule {
         mut quantity: i64,
         order_type: OrderType,
         need_update: bool,
+        delete: bool,
     ) -> Result<(String, Option<Order>), AppError> {
         let wfm = self.client.clone();
         let settings = states::settings()?;
@@ -73,26 +74,21 @@ impl OrderModule {
             let mut order = order.unwrap();
             // Subtract quantity from order
             order.quantity -= quantity;
-
+            // If delete is false, set quantity to 0
             // If report_to_wfm is true, close the order
             if settings.live_scraper.stock_item.report_to_wfm {
                 self.close(&order.id).await?;
             } else {
                 // Delete order if quantity is less than or equal to 0 and update if not
-                if order.quantity <= 0 {
+                if order.quantity <= 0 && delete {
                     self.delete(&order.id).await?;
+                    return Ok(("Deleted".to_string(), Some(order)));
                 } else if need_update {
                     self.update(&order.id, order.platinum, order.quantity, order.visible)
                         .await?;
+                    return Ok(("Updated".to_string(), Some(order)));
                 }
             }
-            // Return order_deleted if quantity is less than or equal to 0, else return order_updated
-            if order.quantity <= 0 {
-                return Ok(("Deleted".to_string(), Some(order)));
-            } else {
-                return Ok(("Updated".to_string(), Some(order)));
-            }
-            // Return order_not_found if order does not exist
         }
         return Ok(("NotFound".to_string(), None));
     }
@@ -147,26 +143,6 @@ impl OrderModule {
         let auth = states::auth()?;
         let orders = self.get_user_orders(auth.ingame_name.as_str()).await?;
         Ok(orders)
-    }
-
-    pub async fn find_order_by_url_sub_type(
-        &mut self,
-        url: &str,
-        sub_type: Option<&SubType>,
-        order_type: OrderType,
-    ) -> Result<Option<Order>, AppError> {
-        match self.get_my_orders().await {
-            Ok(orders) => {
-                let order = orders.find_order_by_url_sub_type(url, order_type, sub_type);
-                if order.is_some() {
-                    return Ok(order);
-                }
-            }
-            Err(e) => {
-                return Err(e);
-            }
-        }
-        Ok(None)
     }
 
     pub async fn create(

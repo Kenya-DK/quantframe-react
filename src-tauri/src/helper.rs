@@ -23,15 +23,12 @@ use tauri::{Manager, State};
 use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 
 use crate::{
-    app::client::AppState,
-    cache::client::CacheClient,
-    notification::client::NotifyClient,
     qf_client::client::QFClient,
     utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
         modules::{error::AppError, states},
     },
-    wfm_client::{client::WFMClient, enums::order_type::OrderType, types::order::Order},
+    wfm_client::{enums::order_type::OrderType, types::order::Order},
     APP, DATABASE,
 };
 
@@ -464,6 +461,7 @@ pub async fn progress_wfm_order(
     quantity: i64,
     operation: OrderType,
     need_update: bool,
+    delete: bool,
     from: &str,
 ) -> Result<(String, Option<Order>), AppError> {
     let wfm = states::wfm_client()?;
@@ -477,6 +475,7 @@ pub async fn progress_wfm_order(
             quantity,
             operation.clone(),
             need_update,
+            delete,
         )
         .await
     {
@@ -510,7 +509,6 @@ pub async fn progress_transaction(
 ) -> Result<entity::transaction::transaction::Model, AppError> {
     let conn = DATABASE.get().unwrap();
     let notify = states::notify_client()?;
-    let qf = states::qf_client()?;
     match TransactionMutation::create(conn, &transaction).await {
         Ok(inserted) => {
             add_metric("Transaction_Create", from);
@@ -526,13 +524,6 @@ pub async fn progress_transaction(
         }
     };
 
-    // Add the transaction to the QuantFrame analytics stars
-    match qf.transaction().create_transaction(&transaction).await {
-        Ok(_) => {}
-        Err(e) => {
-            return Err(e);
-        }
-    }
     Ok(transaction.clone())
 }
 
@@ -619,6 +610,7 @@ pub async fn progress_wish_item(
         entity.sub_type.clone(),
         entity.quantity,
         OrderType::Buy,
+        true,
         true,
         from,
     )
@@ -757,6 +749,7 @@ pub async fn progress_stock_item(
         entity.quantity,
         operation.clone(),
         operation == OrderType::Sell,
+        operation == OrderType::Sell,
         from,
     )
     .await
@@ -810,7 +803,6 @@ pub async fn progress_stock_riven(
     let conn = DATABASE.get().unwrap();
     let mut response = vec![];
     let cache = states::cache()?;
-    let qf = states::qf_client()?;
     let notify = states::notify_client()?;
     let wfm = states::wfm_client()?;
     // Validate the stock item
@@ -914,14 +906,6 @@ pub async fn progress_stock_riven(
             return Err(AppError::new_db("StockItemCreate", e));
         }
     };
-    // Add the transaction to the QuantFrame analytics stars
-    match qf.transaction().create_transaction(&transaction).await {
-        Ok(_) => {}
-        Err(e) => {
-            response.push("TransactionAnalyticsError".to_string());
-            return Err(e);
-        }
-    }
     return Ok((stock, response));
 }
 

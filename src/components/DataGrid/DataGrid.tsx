@@ -2,7 +2,7 @@ import { Box, Center, Checkbox, Divider, Group, Loader, Pagination, ScrollArea, 
 import classes from "./DataGrid.module.css";
 import React, { useEffect, useState } from "react";
 import { upperFirst } from "@mantine/hooks";
-import { ComplexFilter } from "$types/filter.type";
+import { ComplexFilter } from "@utils/filter.helper";
 import { ApplyFilter } from "@utils/filter.helper";
 import { paginate } from "@utils/helper";
 

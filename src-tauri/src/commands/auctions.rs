@@ -2,11 +2,8 @@ use serde_json::json;
 use service::{StockRivenMutation, StockRivenQuery};
 
 use crate::{
-    app::client::AppState,
-    cache::client::CacheClient,
     helper,
     notification::client::NotifyClient,
-    qf_client::client::QFClient,
     utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
         modules::{
@@ -167,16 +164,7 @@ pub async fn auction_delete_all(
 pub async fn auction_import(
     auction: Auction<String>,
     bought: i64,
-    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-    cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
-    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<entity::stock::riven::stock_riven::Model, AppError> {
-    let notify = notify.lock()?.clone();
-    let cache = cache.lock()?.clone();
-    let qf = qf.lock()?.clone();
-    let wfm = wfm.lock()?.clone();
-
     let mut riven_entry = match auction.convert_to_create_stock(bought) {
         Ok(stock) => stock,
         Err(e) => {
