@@ -54,7 +54,8 @@ impl QFClient {
     pub fn new() -> Self {
         QFClient {
             endpoint: "https://api.quantframe.app/".to_string(),
-            endpoint_dev: "http://localhost:6969/".to_string(),
+            endpoint_dev: "https://api.quantframe.app/".to_string(),
+            // endpoint_dev: "http://localhost:6969/".to_string(),
             is_dev: if cfg!(debug_assertions) { true } else { false },
             limiter: Arc::new(tokio::sync::Mutex::new(RateLimiter::new(
                 3.0,
@@ -165,13 +166,13 @@ impl QFClient {
                 ),
             )
             .header("AppId", app.app_id.to_string())
+            .header("Platform", "PC".to_string())
+            .header("Device", auth.get_device_id())
             .header("IsDevelopment", app.is_development.to_string())
             .header("App", packageinfo.name.to_string())
-            .header("Device", auth.get_device_id())
             .header("Version", packageinfo.version.to_string())
-            .header("wfm_user_name", auth.ingame_name)
-            .header("Platform", "PC".to_string())
-            .header("wfm_id", auth.id);
+            .header("WFMUsername", auth.ingame_name)
+            .header("WFMId", auth.id);
 
         let request = match body.clone() {
             Some(content) => request.json(&content),

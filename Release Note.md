@@ -2,7 +2,7 @@
 
 ## Overview
 
-TODO: Fix on autotrade it keeps sadyding WFM (Teest med denne 92ee6e83eb3b27396f20698acb2bea96-27) SEE hvad delle er e12dd3b68951fb4141735a30aff53b9f-30
+Note: All previous versions are not supported anymore.
 How To migrate:
 [Read More](https://quantframe.app/upgrading/1.2.X)
 
