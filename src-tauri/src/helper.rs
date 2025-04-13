@@ -461,6 +461,7 @@ pub async fn progress_wfm_order(
     quantity: i64,
     operation: OrderType,
     need_update: bool,
+    delete: bool,
     from: &str,
 ) -> Result<(String, Option<Order>), AppError> {
     let wfm = states::wfm_client()?;
@@ -474,6 +475,7 @@ pub async fn progress_wfm_order(
             quantity,
             operation.clone(),
             need_update,
+            delete,
         )
         .await
     {
@@ -608,6 +610,7 @@ pub async fn progress_wish_item(
         entity.sub_type.clone(),
         entity.quantity,
         OrderType::Buy,
+        true,
         true,
         from,
     )
@@ -745,6 +748,7 @@ pub async fn progress_stock_item(
         entity.sub_type.clone(),
         entity.quantity,
         operation.clone(),
+        operation == OrderType::Sell,
         operation == OrderType::Sell,
         from,
     )
