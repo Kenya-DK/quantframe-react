@@ -7,7 +7,7 @@ import { useAppContext } from "@contexts/app.context";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { TextTranslate } from "../../components/TextTranslate";
 import api from "@api/index";
-
+import { open } from "@tauri-apps/plugin-shell";
 interface InfoCardProps {
   icon: any;
   title: string;
@@ -22,7 +22,7 @@ const InfoCard = ({ icon, title, cardProps, iconProps, link, ga_id }: InfoCardPr
       {...cardProps}
       className={classes.card}
       onClick={() => {
-        window.open(link, "_blank");
+        open(link);
         api.analytics.sendMetric(ga_id, "");
       }}
     >

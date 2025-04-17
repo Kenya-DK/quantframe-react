@@ -16,6 +16,7 @@ import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Markdown } from "tiptap-markdown";
 import { TermsAndConditions } from "@components/Modals/TermsAndConditions";
+import { open } from "@tauri-apps/plugin-shell";
 type NotificationPayload = {
   i18n_key_title: string;
   i18n_key_message: string;
@@ -123,7 +124,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
               </Button>
               <Button
                 onClick={async () => {
-                  window.open(`https://github.com/Kenya-DK/quantframe-react/releases/tag/v${update.version}`, "_blank");
+                  open(`https://github.com/Kenya-DK/quantframe-react/releases/tag/v${update.version}`);
                 }}
               >
                 {useTranslateNewUpdateButtons("read_more")}

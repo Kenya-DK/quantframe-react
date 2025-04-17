@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
 import { OrderItem } from "@components/OrderItem";
-
+import { open } from "@tauri-apps/plugin-shell";
 export type WishItemInfoProps = {
   value: WishListItem;
 };
@@ -79,7 +79,7 @@ export function WishItemInfo({ value }: WishItemInfoProps) {
                 color="blue"
                 variant="outline"
                 onClick={() => {
-                  window.open(`https://warframe.market/items/${value.wfm_url}`, "_blank");
+                  open(`https://warframe.market/items/${value.wfm_url}`);
                 }}
               >
                 {useTranslateButtons("wfm")}
@@ -89,7 +89,7 @@ export function WishItemInfo({ value }: WishItemInfoProps) {
                   color="blue"
                   variant="outline"
                   onClick={() => {
-                    window.open(item.wiki_url, "_blank");
+                    open(item.wiki_url);
                   }}
                 >
                   {useTranslateButtons("wiki")}
