@@ -1,8 +1,16 @@
 import { Box, Group, Paper, Text } from "@mantine/core";
 import classes from "./Ticker.module.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMousePointer } from "@fortawesome/free-solid-svg-icons";
+
+export interface TickerItemProps {
+  label: string;
+  props?: { [key: string]: any };
+  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
+}
 
 export type TickerProps = {
-  data: { label: string }[];
+  data: TickerItemProps[];
   component?: any;
   keyName?: string;
   speed?: number;
@@ -30,8 +38,18 @@ export function Ticker({ loop, speed, itemStyle, direction, delay, tickerClassNa
       >
         {data.map((item, index) => {
           return (
-            <Group key={index} className={classes.tickerItem} style={itemStyle}>
-              <Text className={classes.tickerText}>{item.label}</Text>
+            <Group
+              data-clickable={!!item.onClick}
+              onClick={item.onClick}
+              key={index}
+              className={classes.tickerItem}
+              style={itemStyle}
+              {...item.props}
+            >
+              <Text fw={700} fs={"14"} className={classes.tickerText}>
+                {item.onClick && <FontAwesomeIcon icon={faMousePointer} />}
+                {item.label}
+              </Text>
             </Group>
           );
         })}
