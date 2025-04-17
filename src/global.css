@@ -17,339 +17,149 @@
     #a200ff
   );
 
+  /* Status Colors */
   --user-status-online: var(--mantine-color-green-7);
   --user-status-invisible: var(--mantine-color-red-7);
   --user-status-offline: var(--mantine-color-red-7);
   --user-status-ingame: var(--mantine-color-violet-7);
 
+  /* Trade Types */
   --trade-type-purchase: var(--mantine-color-red-7);
   --trade-type-sale: var(--mantine-color-green-7);
   --trade-type-trade: var(--mantine-color-violet-7);
 
+  /* Profit Status */
   --negative-value: var(--mantine-color-red-7);
   --positive-value: var(--mantine-color-green-7);
   --profit-value: var(--mantine-color-violet-7);
-
   --profit-bar-color: var(--mantine-color-indigo-3);
 
+  /* Stock Status */
   --stock-status-pending: var(--mantine-color-violet-7);
   --stock-status-live: var(--mantine-color-green-7);
-  --stock-status-to-low_profit: var(--mantine-color-yellow-5);
-  --stock-status-no-sellers: var(--mantine-color-orange-9);
-  --stock-status-no-buyers: var(--mantine-color-grape-5);
+  --stock-status-to_low_profit: var(--mantine-color-yellow-5);
+  --stock-status-no_sellers: var(--mantine-color-orange-9);
+  --stock-status-no_buyers: var(--mantine-color-grape-5);
   --stock-status-inactive: var(--mantine-color-red-7);
-  --stock-status-sma-limit: var(--mantine-color-indigo-9);
-  --stock-status-order-limit: var(--mantine-color-cyan-8);
+  --stock-status-sma_limit: var(--mantine-color-indigo-9);
+  --stock-status-order_limit: var(--mantine-color-cyan-8);
   --stock-status-overpriced: var(--mantine-color-pink-9);
   --stock-status-underpriced: var(--mantine-color-orange-6);
 
+  /* Item Types */
   --item-type-riven: var(--mantine-color-violet-7);
   --item-type-item: var(--mantine-color-blue-7);
 
+  /* Orders */
   --order-type-buy: var(--mantine-color-red-6);
   --order-type-sell: var(--mantine-color-violet-7);
+
+  /* Alerts */
+  --alert-type-error: var(--mantine-color-red-7);
+  --alert-type-warning: var(--mantine-color-yellow-7);
+  --alert-type-info: var(--mantine-color-blue-7);
+  --alert-type-success: var(--mantine-color-green-7);
 }
 
+/* Generic Color Binding by Mode */
+[data-color-mode="bg"] {
+  background-color: var(--color);
+}
+
+[data-color-mode="text"] {
+  color: var(--color);
+}
+
+[data-color-mode="box-shadow"] {
+  box-shadow: inset 4px 0 0 0 var(--color);
+}
+[data-color-mode="text-shadow"] {
+  text-shadow: 0 0 10px var(--color);
+}
+
+/* Use individual selectors to set --color based on attribute */
+[data-alert-type="error"] {
+  --color: var(--alert-type-error);
+}
+[data-alert-type="warning"] {
+  --color: var(--alert-type-warning);
+}
+[data-alert-type="info"] {
+  --color: var(--alert-type-info);
+}
+[data-alert-type="success"] {
+  --color: var(--alert-type-success);
+}
 [data-order-type="buy"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--order-type-buy);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--order-type-buy);
-  }
-  &[data-color-mode="box-shadow"] {
-    box-shadow: inset 4px 0 0 0 var(--order-type-buy);
-  }
+  --color: var(--order-type-buy);
 }
-
 [data-order-type="sell"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--order-type-sell);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--order-type-sell);
-  }
-  &[data-color-mode="box-shadow"] {
-    box-shadow: inset 4px 0 0 0 var(--order-type-sell);
-  }
-}
-
-[data-user-status="ingame"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--user-status-ingame);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--user-status-ingame);
-  }
-  &[data-color-mode="box-shadow"] {
-    box-shadow: inset 4px 0 0 0 var(--user-status-ingame);
-  }
+  --color: var(--order-type-sell);
 }
 
 [data-user-status="online"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--user-status-online);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--user-status-online);
-  }
-  &[data-color-mode="box-shadow"] {
-    box-shadow: inset 4px 0 0 0 var(--user-status-online);
-  }
+  --color: var(--user-status-online);
 }
-
-[data-user-status="invisible"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--user-status-invisible);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--user-status-invisible);
-  }
-  &[data-color-mode="box-shadow"] {
-    box-shadow: inset 4px 0 0 0 var(--user-status-invisible);
-  }
-}
-
-[data-user-status="offline"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--user-status-offline);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--user-status-offline);
-  }
-  &[data-color-mode="box-shadow"] {
-    box-shadow: inset 4px 0 0 0 var(--user-status-offline);
-  }
-}
-
-[data-item-type="riven"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--item-type-riven);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--item-type-riven);
-  }
-}
-
-[data-item-type="item"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--item-type-item);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--item-type-item);
-  }
-}
-
 [data-user-status="ingame"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--user-status-ingame);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--user-status-ingame);
-  }
+  --color: var(--user-status-ingame);
 }
-
-[data-profit="negative"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--negative-value);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--negative-value);
-  }
-
-  &[data-color-mode="box-shadow"] {
-    box-shadow: inset 4px 0 0 0 var(--negative-value);
-  }
-}
-
-[data-profit="positive"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--positive-value);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--positive-value);
-  }
-
-  &[data-color-mode="box-shadow"] {
-    box-shadow: inset 4px 0 0 0 var(--positive-value);
-  }
+[data-user-status="invisible"],
+[data-user-status="offline"] {
+  --color: var(--user-status-invisible);
 }
 
 [data-trade-type="purchase"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--trade-type-purchase);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--trade-type-purchase);
-  }
-
-  &[data-color-mode="box-shadow"] {
-    box-shadow: inset 4px 0 0 0 var(--trade-type-purchase);
-  }
+  --color: var(--trade-type-purchase);
 }
-
 [data-trade-type="sale"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--trade-type-sale);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--trade-type-sale);
-  }
-
-  &[data-color-mode="box-shadow"] {
-    box-shadow: inset 4px 0 0 0 var(--trade-type-sale);
-  }
+  --color: var(--trade-type-sale);
+}
+[data-trade-type="trade"] {
+  --color: var(--trade-type-trade);
 }
 
+[data-profit="positive"] {
+  --color: var(--positive-value);
+}
+[data-profit="negative"] {
+  --color: var(--negative-value);
+}
+
+[data-item-type="riven"] {
+  --color: var(--item-type-riven);
+}
+[data-item-type="item"] {
+  --color: var(--item-type-item);
+}
+
+/* Stock status mapping */
 [data-stock-status="pending"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--stock-status-pending);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--stock-status-pending);
-  }
-
-  &[data-color-mode="box-shadow"] {
-    box-shadow: inset 4px 0 0 0 var(--stock-status-pending);
-  }
+  --color: var(--stock-status-pending);
 }
-
 [data-stock-status="live"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--stock-status-live);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--stock-status-live);
-  }
-
-  &[data-color-mode="box-shadow"] {
-    box-shadow: inset 4px 0 0 0 var(--stock-status-live);
-  }
+  --color: var(--stock-status-live);
 }
-
 [data-stock-status="to_low_profit"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--stock-status-to-low_profit);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--stock-status-to-low_profit);
-  }
-
-  &[data-color-mode="box-shadow"] {
-    box-shadow: inset 4px 0 0 0 var(--stock-status-to-low_profit);
-  }
+  --color: var(--stock-status-to_low_profit);
 }
-
 [data-stock-status="no_sellers"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--stock-status-no-sellers);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--stock-status-no-sellers);
-  }
-
-  &[data-color-mode="box-shadow"] {
-    box-shadow: inset 4px 0 0 0 var(--stock-status-no-sellers);
-  }
+  --color: var(--stock-status-no_sellers);
 }
-
 [data-stock-status="no_buyers"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--stock-status-no-buyers);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--stock-status-no-buyers);
-  }
-
-  &[data-color-mode="box-shadow"] {
-    box-shadow: inset 4px 0 0 0 var(--stock-status-no-buyers);
-  }
+  --color: var(--stock-status-no_buyers);
 }
-
 [data-stock-status="inactive"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--stock-status-inactive);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--stock-status-inactive);
-  }
-
-  &[data-color-mode="box-shadow"] {
-    box-shadow: inset 4px 0 0 0 var(--stock-status-inactive);
-  }
+  --color: var(--stock-status-inactive);
 }
-
 [data-stock-status="sma_limit"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--stock-status-sma-limit);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--stock-status-sma-limit);
-  }
-
-  &[data-color-mode="box-shadow"] {
-    box-shadow: inset 4px 0 0 0 var(--stock-status-sma-limit);
-  }
+  --color: var(--stock-status-sma_limit);
 }
-
 [data-stock-status="order_limit"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--stock-status-order-limit);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--stock-status-order-limit);
-  }
-
-  &[data-color-mode="box-shadow"] {
-    box-shadow: inset 4px 0 0 0 var(--stock-status-order-limit);
-  }
+  --color: var(--stock-status-order_limit);
 }
-
 [data-stock-status="overpriced"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--stock-status-overpriced);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--stock-status-overpriced);
-  }
-
-  &[data-color-mode="box-shadow"] {
-    box-shadow: inset 4px 0 0 0 var(--stock-status-overpriced);
-  }
+  --color: var(--stock-status-overpriced);
 }
-
 [data-stock-status="underpriced"] {
-  &[data-color-mode="bg"] {
-    background-color: var(--stock-status-underpriced);
-  }
-
-  &[data-color-mode="text"] {
-    color: var(--stock-status-underpriced);
-  }
-
-  &[data-color-mode="box-shadow"] {
-    box-shadow: inset 4px 0 0 0 var(--stock-status-underpriced);
-  }
+  --color: var(--stock-status-underpriced);
 }
