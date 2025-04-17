@@ -1626,6 +1626,7 @@ export const en = {
     },
     error: {
       title: "Error in {{component}} component",
+      version: "Version: {{version}}",
       backtrace: "Location: {{backtrace}}",
       cause: "Cause: {{cause}}",
       footer: "If you think this is a bug, please report it to the developer. Thank you!",
