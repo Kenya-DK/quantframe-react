@@ -36,6 +36,7 @@ import { BarCardChart } from "@components/BarCardChart";
 import { ColorInfo } from "@components/ColorInfo";
 import classes from "./Home.module.css";
 import { TransactionListItem } from "@components/TransactionListItem";
+import faMoneyBillTrendDown from "@icons/faMoneyBillTrendDown";
 
 const BarChartFooter = ({ i18nKey, statistics }: { i18nKey: string; statistics: StatisticProfitBase }) => {
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`home.${key}`, { ...context }, i18Key);
@@ -45,9 +46,7 @@ const BarChartFooter = ({ i18nKey, statistics }: { i18nKey: string; statistics: 
   const ExtraComponents = {
     expenseIco: (
       <Tooltip label={useTranslateTooltips("expense")}>
-        <span>
-          <i className="fac fa-customIcon"></i>
-        </span>
+        <FontAwesomeIcon icon={faMoneyBillTrendDown} />
       </Tooltip>
     ),
     revenueIco: (
