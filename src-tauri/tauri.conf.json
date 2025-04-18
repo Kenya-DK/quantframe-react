@@ -10,7 +10,11 @@
     "active": true,
     "targets": "all",
     "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
-    "createUpdaterArtifacts": "v1Compatible"
+    "createUpdaterArtifacts": "v1Compatible",
+    "resources": {
+      "resources/*": "resources/",
+      "lang/*": "lang/"
+    }
   },
   "productName": "Quantframe",
   "mainBinaryName": "Quantframe",

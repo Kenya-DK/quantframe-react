@@ -17,6 +17,9 @@ import StarterKit from "@tiptap/starter-kit";
 import { Markdown } from "tiptap-markdown";
 import { TermsAndConditions } from "@components/Modals/TermsAndConditions";
 import { open } from "@tauri-apps/plugin-shell";
+import { resolveResource } from "@tauri-apps/api/path";
+import { readTextFile } from "@tauri-apps/plugin-fs";
+
 type NotificationPayload = {
   i18n_key_title: string;
   i18n_key_message: string;
@@ -148,8 +151,16 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
   }, [error]);
 
   useEffect(() => {
-    if (settings == undefined) return;
-    if (!settings?.tos_accepted) {
+    const OpenTos = async () => {
+      const resourcePath = await resolveResource("resources/tos.md");
+      const context = await readTextFile(resourcePath);
+      // Get Text Between <ID</ID>
+      const start = context.indexOf("<ID>") + 4;
+      const end = context.indexOf("</ID>");
+      const id = context.substring(start, end);
+
+      console.log("OpenTos", settings?.tos_uuid, id);
+      if (id == settings?.tos_uuid) return;
       modals.open({
         title: useTranslateModals("tos.title"),
         size: "100%",
@@ -158,9 +169,11 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
         withCloseButton: false,
         children: (
           <TermsAndConditions
+            content={context}
             onAccept={async () => {
-              await api.app.updateSettings({ ...settings, tos_accepted: true });
               modals.closeAll();
+              if (!settings) return;
+              await api.app.updateSettings({ ...settings, tos_uuid: id });
             }}
             onDecline={async () => {
               api.app.exit();
@@ -168,7 +181,9 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
           />
         ),
       });
-    }
+    };
+    if (!settings) return;
+    OpenTos();
   }, [settings]);
 
   // Handle update, create, delete

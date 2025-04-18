@@ -15,7 +15,7 @@ use eyre::eyre;
 pub struct SettingsState {
     // Debug Mode
     pub debug: Vec<String>,
-    pub tos_accepted: bool,
+    pub tos_uuid: String,
     pub cross_play: bool,
     pub notification_ids: Vec<String>,
     // Warframe Log Path
@@ -111,7 +111,7 @@ pub struct HttpConfig {
 impl Default for SettingsState {
     fn default() -> Self {
         Self {
-            tos_accepted: false,
+            tos_uuid: "".to_string(),
             cross_play: false,
             debug: vec!["*".to_string()],
             notification_ids: vec!["".to_string()],

@@ -2,7 +2,7 @@
 
 export interface Settings {
   debug: string[];
-  tos_accepted: boolean;
+  tos_uuid: string;
   cross_play: boolean;
   dev_mode: boolean;
   wf_log_path: string;

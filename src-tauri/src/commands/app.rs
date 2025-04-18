@@ -336,7 +336,7 @@ pub async fn app_update_settings(
 
     // Set Logging Settings
     my_lock.debug = settings.debug;
-    my_lock.tos_accepted = settings.tos_accepted;
+    my_lock.tos_uuid = settings.tos_uuid;
 
     // Set Live Scraper Settings
     my_lock.live_scraper = settings.live_scraper;
