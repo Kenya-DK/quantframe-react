@@ -309,7 +309,6 @@ pub async fn stock_riven_delete_bulk(
 pub async fn stock_riven_create(
     mut riven_entry: CreateStockRiven,
 ) -> Result<entity::stock::riven::stock_riven::Model, AppError> {
-
     match helper::progress_stock_riven(
         &mut riven_entry,
         "--weapon_by url_name --weapon_lang en --attribute_by url_name",
@@ -330,10 +329,7 @@ pub async fn stock_riven_create(
 }
 
 #[tauri::command]
-pub async fn stock_riven_sell(
-    id: i64,
-    price: i64,
-) -> Result<stock_riven::Model, AppError> {
+pub async fn stock_riven_sell(id: i64, price: i64) -> Result<stock_riven::Model, AppError> {
     let conn = DATABASE.get().unwrap();
     let stock = match StockRivenMutation::find_by_id(conn, id).await {
         Ok(stock) => stock,

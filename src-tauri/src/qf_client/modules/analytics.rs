@@ -14,7 +14,8 @@ use crate::{
         enums::log_level::LogLevel,
         modules::{
             error::{self, ApiResult, AppError},
-            logger::{self, LoggerOptions}, states,
+            logger::{self, LoggerOptions},
+            states,
         },
     },
 };
