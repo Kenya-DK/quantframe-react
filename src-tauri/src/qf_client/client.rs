@@ -155,6 +155,7 @@ impl QFClient {
             self.endpoint.clone()
         };
         let new_url = format!("{}{}", base_url, url);
+        let platform = tauri_plugin_os::platform();
         let request = client
             .request(method.clone(), Url::parse(&new_url).unwrap())
             .header(
@@ -165,11 +166,12 @@ impl QFClient {
                 ),
             )
             .header("AppId", app.app_id.to_string())
-            .header("Platform", "PC".to_string())
+            .header("Platform", platform)
             .header("Device", auth.get_device_id())
             .header("IsDevelopment", app.is_development.to_string())
             .header("App", packageinfo.name.to_string())
             .header("Version", packageinfo.version.to_string())
+            .header("WFMPlatform", auth.platform)
             .header("WFMUsername", auth.ingame_name)
             .header("WFMId", auth.id);
 

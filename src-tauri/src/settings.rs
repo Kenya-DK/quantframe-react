@@ -218,17 +218,20 @@ impl SettingsState {
         }
     }
 
-    pub  fn is_wf_log_valid(&self) -> Result<bool, AppError> {
+    pub fn is_wf_log_valid(&self) -> Result<bool, AppError> {
         if !self.wf_log_path.is_empty() && !PathBuf::from(&self.wf_log_path).exists() {
-            return Err(AppError::new("Settings", eyre::eyre!(format!(
-                "Warframe EE.log path does not exist [J]{}[J]",
-                json!({
-                    "i18n_key": "wf_log_path_not_exist",
-                    "path": self.wf_log_path
-                })
-            ))));
+            return Err(AppError::new(
+                "Settings",
+                eyre::eyre!(format!(
+                    "Warframe EE.log path does not exist [J]{}[J]",
+                    json!({
+                        "i18n_key": "wf_log_path_not_exist",
+                        "path": self.wf_log_path
+                    })
+                )),
+            ));
         }
-        Ok(true)       
+        Ok(true)
     }
 
     pub fn save_to_file(&self) -> Result<(), AppError> {
@@ -266,7 +269,11 @@ impl SettingsState {
         // Check for missing properties
         if !missing_properties.is_empty() {
             for property in missing_properties.clone() {
-                logger::warning("Settings", &format!("Missing property: {}", property),LoggerOptions::default());
+                logger::warning(
+                    "Settings",
+                    &format!("Missing property: {}", property),
+                    LoggerOptions::default(),
+                );
             }
         }
 
