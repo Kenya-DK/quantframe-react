@@ -193,7 +193,16 @@ impl CacheClient {
         self.fish().load()?;
         self.resource().load()?;
         self.riven().load()?;
-        self.item_price().load().await?;
+        match self.item_price().load().await {
+            Ok(_) => {}
+            Err(e) => {
+                logger::warning(
+                    &self.component,
+                    format!("{}", e.to_string()).as_str(),
+                    LoggerOptions::default(),
+                );
+            }
+        }
         self.relics().load()?;
         self.all_items().load()?;
         return Ok(());
