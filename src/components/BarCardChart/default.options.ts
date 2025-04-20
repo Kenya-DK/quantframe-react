@@ -1,21 +1,29 @@
-const GetDefaultOptions = (frontColor: string, showDatasetLabels?: boolean, tooltipShowColor?: boolean, boxWidth?: number, boxHeight?: number, tooltipCallback?: any) => {
-
+const GetDefaultOptions = (
+  frontColor: string,
+  showDatasetLabels?: boolean,
+  tooltipShowColor?: boolean,
+  boxWidth?: number,
+  boxHeight?: number,
+  tooltipCallback?: any,
+  horizontal?: boolean
+) => {
   return {
+    indexAxis: horizontal ? "y" : "x",
     responsive: true,
     maintainAspectRatio: false,
     devicePixelRatio: 4,
     scale: {
       ticks: {
-        precision: 0
-      }
+        precision: 0,
+      },
     },
     plugins: {
       legend: {
         position: "right",
         labels: {
-          color: frontColor
+          color: frontColor,
         },
-        display: (showDatasetLabels == undefined) ? false : showDatasetLabels,
+        display: showDatasetLabels == undefined ? false : showDatasetLabels,
       },
       tooltip: {
         displayColors: tooltipShowColor == undefined ? false : tooltipShowColor,
@@ -24,8 +32,8 @@ const GetDefaultOptions = (frontColor: string, showDatasetLabels?: boolean, tool
 
         callbacks: {
           ...tooltipCallback,
-        }
-      }
+        },
+      },
     },
     scales: {
       x: {
@@ -40,7 +48,7 @@ const GetDefaultOptions = (frontColor: string, showDatasetLabels?: boolean, tool
         ticks: {
           display: true,
           color: frontColor,
-          padding: 10
+          padding: 10,
         },
       },
       y: {
@@ -59,8 +67,8 @@ const GetDefaultOptions = (frontColor: string, showDatasetLabels?: boolean, tool
           padding: 10,
           color: frontColor,
         },
-      }
-    }
-  }
+      },
+    },
+  };
 };
 export default GetDefaultOptions;
