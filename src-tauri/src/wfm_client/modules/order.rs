@@ -78,6 +78,12 @@ impl OrderModule {
             // If report_to_wfm is true, close the order
             if settings.live_scraper.stock_item.report_to_wfm {
                 self.close(&order.id).await?;
+                // Delete order if quantity is less than or equal to 0 and update if not
+                if order.quantity <= 0 && delete {
+                    return Ok(("Deleted".to_string(), Some(order)));
+                } else {
+                    return Ok(("Updated".to_string(), Some(order)));
+                }
             } else {
                 // Delete order if quantity is less than or equal to 0 and update if not
                 if order.quantity <= 0 && delete {
