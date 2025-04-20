@@ -18,6 +18,7 @@ import { WFMSocket } from "../models/wfmSocket";
 import { NotificationModule } from "./notification";
 import { ItemModule } from "./item";
 import { LogParserModule } from "./log_parser";
+import { QFRestClient } from "./qf_client";
 
 export class TauriClient {
   constructor() {
@@ -39,6 +40,7 @@ export class TauriClient {
     this.log = new LogModule(this);
     this.analytics = new AnalyticsModule(this);
     this.log_parser = new LogParserModule(this);
+    this.qf_rest_client = new QFRestClient(this);
   }
 
   async sendInvoke<T>(command: string, data?: any): Promise<ErrOrResult<T>> {
@@ -98,6 +100,7 @@ export class TauriClient {
   log: LogModule;
   items: ItemModule;
   log_parser: LogParserModule;
+  qf_rest_client: QFRestClient;
 }
 
 declare global {
