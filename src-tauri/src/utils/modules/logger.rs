@@ -257,6 +257,7 @@ pub fn export_logs(info: PackageInfo) -> String {
         .to_string();
 
     let version = info.version.to_string();
+    let app_path = helper::get_app_storage_path();
 
     let zip_path =
         helper::get_desktop_path().join(format!("{} v{} {} Logs.zip", info.name, version, date));
@@ -272,7 +273,17 @@ pub fn export_logs(info: PackageInfo) -> String {
         include_dir: true,
     });
 
-    let app_path = helper::get_app_storage_path();
+    // Cache path
+    let cache_path = app_path.join("cache");
+    if cache_path.exists() {
+        files_to_compress.push(helper::ZipEntry {
+            file_path: cache_path,
+            sub_path: Some("cache".to_string()),
+            content: None,
+            include_dir: true,
+        });
+    }
+
     for path in fs::read_dir(app_path).unwrap() {
         let path = path.unwrap().path();
         // Check if path is auth.json
