@@ -200,17 +200,6 @@ impl ItemModule {
         // Apply Trade Info.
         my_orders.apply_trade_info(&cache)?;
 
-        logger::log_json(
-            "interesting_items.json",
-            &json!({
-                "ToDelete": order_ids,
-                "orders": my_orders,
-                "info_caches": self.info_caches,
-                "settings": settings.stock_item,
-                "interesting_items": interesting_items.clone(),
-            }),
-        )?;
-
         let mut current_index = interesting_items.len();
         logger::info(
             &self.get_component("CheckStock"),
@@ -225,6 +214,16 @@ impl ItemModule {
         let mut interesting_items: Vec<ItemEntry> = interesting_items.into_values().collect();
         interesting_items.sort_by(|a, b| b.priority.cmp(&a.priority));
 
+        logger::log_json(
+            "interesting_items.json",
+            &json!({
+                "ToDelete": order_ids,
+                "orders": my_orders,
+                "info_caches": self.info_caches,
+                "settings": settings.stock_item,
+                "interesting_items": interesting_items.clone(),
+            }),
+        )?;
         // Loop through all interesting items
         for item_entry in interesting_items.clone() {
             if auth.qf_banned || auth.wfm_banned || auth.anonymous {

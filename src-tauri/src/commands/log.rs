@@ -3,7 +3,6 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-
 use crate::{
     notification::client::NotifyClient,
     qf_client::client::QFClient,

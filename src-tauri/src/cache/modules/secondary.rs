@@ -5,7 +5,10 @@ use eyre::eyre;
 use crate::{
     cache::{
         client::CacheClient,
-        types::{cache_item_base::CacheItemBase, cache_item_component::CacheItemComponent, cache_secondary::CacheSecondary},
+        types::{
+            cache_item_base::CacheItemBase, cache_item_component::CacheItemComponent,
+            cache_secondary::CacheSecondary,
+        },
     },
     utils::modules::error::AppError,
 };

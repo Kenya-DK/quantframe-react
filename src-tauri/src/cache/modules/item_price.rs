@@ -113,7 +113,8 @@ impl ItemPriceModule {
                 current_cache_id.clone()
             }
         };
-        if current_cache_id != remote_cache_id {
+        let content = self.client.read_text_from_file(&self.path)?;
+        if current_cache_id != remote_cache_id || content == "" {
             logger::info(
                 &self.component,
                 "Price cache id mismatch, downloading new price cache data",
@@ -122,7 +123,6 @@ impl ItemPriceModule {
             self.download_cache_data().await?;
             self.update_cache_id(remote_cache_id)?;
         }
-        let content = self.client.read_text_from_file(&self.path)?;
         let items: Vec<ItemPriceInfo> = serde_json::from_str(&content).map_err(|e| {
             AppError::new(
                 self.get_component("Load").as_str(),

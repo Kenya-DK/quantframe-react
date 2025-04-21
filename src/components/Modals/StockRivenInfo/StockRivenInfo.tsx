@@ -4,6 +4,7 @@ import { useTranslateComponent, useTranslateEnums } from "@hooks/useTranslate.ho
 import dayjs from "dayjs";
 import { PriceHistoryListItem } from "@components/PriceHistory";
 import { AuctionListItem } from "@components/AuctionListItem";
+import { open } from "@tauri-apps/plugin-shell";
 
 export type StockRivenInfoProps = {
   value: StockRiven;
@@ -39,7 +40,7 @@ export function StockRivenInfo({ value }: StockRivenInfoProps) {
       .join(",");
     if (negativeStats != "" && withAttributes) params.push(`negative_stats=${negativeStats}`);
 
-    window.open(`${baseUrl}&${params.join("&")}`, "_blank");
+    open(`${baseUrl}&${params.join("&")}`);
   };
 
   return (

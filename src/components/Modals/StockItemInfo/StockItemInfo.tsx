@@ -7,7 +7,7 @@ import api from "@api/index";
 import { useEffect, useState } from "react";
 import { PriceHistoryListItem } from "@components/PriceHistory";
 import { OrderItem } from "@components/OrderItem";
-
+import { open } from "@tauri-apps/plugin-shell";
 export type StockItemInfoProps = {
   value: StockItem;
 };
@@ -82,7 +82,7 @@ export function StockItemInfo({ value }: StockItemInfoProps) {
                 color="blue"
                 variant="outline"
                 onClick={() => {
-                  window.open(`https://warframe.market/items/${value.wfm_url}`, "_blank");
+                  open(`https://warframe.market/items/${value.wfm_url}`);
                 }}
               >
                 {useTranslateButtons("wfm")}
@@ -92,7 +92,7 @@ export function StockItemInfo({ value }: StockItemInfoProps) {
                   color="blue"
                   variant="outline"
                   onClick={() => {
-                    window.open(item.wiki_url, "_blank");
+                    open(item.wiki_url);
                   }}
                 >
                   {useTranslateButtons("wiki")}

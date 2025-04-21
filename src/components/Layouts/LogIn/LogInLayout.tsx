@@ -11,7 +11,10 @@ import { SvgIcon, SvgType } from "@components/SvgIcon";
 import { Header } from "@components/Header";
 import api from "@api/index";
 import { useAuthContext } from "@contexts/auth.context";
-import { Ticker } from "../../Ticker";
+import { Ticker } from "@components/Ticker";
+import { Alert } from "@api/types";
+import { open } from "@tauri-apps/plugin-shell";
+
 export function LogInLayout() {
   // States
   const [lastPage, setLastPage] = useState<string>("");
@@ -112,7 +115,7 @@ export function LogInLayout() {
   }, [user]);
   const handleNavigate = (link: NavbarLinkProps) => {
     console.log("Navigate to: ", link);
-    if (link.web) window.open(link.link, "_blank");
+    if (link.web) open(link.link, "_blank");
     else navigate(link.link);
 
     if (link.id == lastPage || !link.id) return;
@@ -122,6 +125,20 @@ export function LogInLayout() {
         api.analytics.sendMetric("Active_Page", link.id);
         break;
     }
+  };
+  const handleAlertClick = (alert: Alert) => {
+    console.log("Alert clicked: ", alert);
+    if (!alert.properties) return;
+    const { event, payload } = alert.properties as { event: string; payload: any };
+    if (!event) return;
+    switch (event) {
+      case "open_url":
+        if (payload) open(payload);
+        break;
+      default:
+        break;
+    }
+    console.log("Alert clicked: ", alert);
   };
   return (
     <AppShell
@@ -134,7 +151,18 @@ export function LogInLayout() {
     >
       <AppShell.Header withBorder={false}>
         <Header />
-        {alerts.length > 0 && <Ticker data={alerts.map((alert) => ({ label: alert.context }))} />}
+        {alerts.length > 0 && (
+          <Ticker
+            data={alerts.map((alert) => ({
+              label: alert.context,
+              props: {
+                "data-alert-type": alert.type,
+                "data-color-mode": "text",
+              },
+              onClick: alert.properties ? () => handleAlertClick(alert) : undefined,
+            }))}
+          />
+        )}
       </AppShell.Header>
 
       <AppShell.Navbar withBorder={false}>

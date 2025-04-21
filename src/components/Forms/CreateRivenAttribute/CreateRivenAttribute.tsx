@@ -115,7 +115,7 @@ export function CreateRivenAttribute({
         w={150}
         disabled={form.values.url_name == "N/A" || form.values.url_name == ""}
         step={currentValue?.unit == "multiply" ? 0.1 : 1}
-        decimalScale={1}
+        decimalScale={currentValue?.unit == "multiply" ? 2 : 1}
         max={GetMaxValue()}
         min={GetMinValue()}
         onBlur={() => ValidateValue()}

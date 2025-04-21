@@ -1,5 +1,5 @@
 use crate::{
-    logger,
+    helper, logger,
     utils::{
         enums::log_level::LogLevel,
         modules::{
@@ -55,11 +55,14 @@ impl OrderModule {
         sub_type: Option<SubType>,
         mut quantity: i64,
         order_type: OrderType,
-        need_update: bool,
-        delete: bool,
     ) -> Result<(String, Option<Order>), AppError> {
+        println!(
+            "Progress Order: {} - {:?} - {} - {:?}",
+            url, sub_type, quantity, order_type
+        );
         let wfm = self.client.clone();
         let settings = states::settings()?;
+        let mut operation = "NotFound";
 
         // Set quantity to 1 if it's less than 1
         if quantity <= 0 {
@@ -67,30 +70,38 @@ impl OrderModule {
         }
         // Get WFM Order
         let orders = wfm.orders().get_my_orders().await?;
-        let order = orders.find_order_by_url_sub_type(&url, order_type, sub_type.as_ref());
+        let mut order = orders.find_order_by_url_sub_type(&url, order_type, sub_type.as_ref());
 
         // Check if order exists
         if order.is_some() {
-            let mut order = order.unwrap();
+            let mut foundOrder = order.unwrap();
             // Subtract quantity from order
-            order.quantity -= quantity;
-            // If delete is false, set quantity to 0
-            // If report_to_wfm is true, close the order
-            if settings.live_scraper.stock_item.report_to_wfm {
-                self.close(&order.id).await?;
+            foundOrder.quantity -= quantity;
+
+            // Set Operation
+            if foundOrder.quantity <= 0 {
+                operation = "Deleted";
             } else {
-                // Delete order if quantity is less than or equal to 0 and update if not
-                if order.quantity <= 0 && delete {
-                    self.delete(&order.id).await?;
-                    return Ok(("Deleted".to_string(), Some(order)));
-                } else if need_update {
-                    self.update(&order.id, order.platinum, order.quantity, order.visible)
-                        .await?;
-                    return Ok(("Updated".to_string(), Some(order)));
-                }
+                operation = "Updated";
             }
+
+            if settings.live_scraper.stock_item.report_to_wfm {
+                self.close(&foundOrder.id).await?;
+            } else if foundOrder.quantity <= 0 {
+                self.delete(&foundOrder.id).await?;
+            } else {
+                self.update(
+                    &foundOrder.id,
+                    foundOrder.platinum,
+                    foundOrder.quantity,
+                    foundOrder.visible,
+                )
+                .await?;
+            }
+            // Update order in orders
+            order = Some(foundOrder);
         }
-        return Ok(("NotFound".to_string(), None));
+        return Ok((operation.to_string(), order));
     }
 
     pub fn subtract_order_count(&mut self, increment: i64) -> Result<(), AppError> {
@@ -375,29 +386,34 @@ impl OrderModule {
         exclude: bool,
     ) -> Result<Orders, AppError> {
         let url = format!("items/{}/orders", item);
-        let orders = match self.client.get::<Vec<Order>>(&url, Some("orders")).await {
-            Ok(ApiResult::Success(payload, _headers)) => {
-                self.client.debug(
-                    &self.debug_id,
-                    &self.get_component("GetOrdersByItem"),
-                    format!("Orders for {} were fetched. found: {}", item, payload.len()).as_str(),
-                    None,
-                );
-                payload
-            }
-            Ok(ApiResult::Error(error, _headers)) => {
-                return Err(self.client.create_api_error(
-                    &self.get_component("GetOrdersByItem"),
-                    error,
-                    eyre!("There was an error fetching orders for {}", item),
-                    LogLevel::Error,
-                ));
-            }
-            Err(err) => {
-                return Err(err);
-            }
-        };
 
+        let orders: Vec<Order> = helper::read_json_file(
+            &logger::get_log_folder().join(format!("{}_orders.json", item)),
+        )?;
+        // return Ok(orders);
+        // let orders = match self.client.get::<Vec<Order>>(&url, Some("orders")).await {
+        //     Ok(ApiResult::Success(payload, _headers)) => {
+        //         self.client.debug(
+        //             &self.debug_id,
+        //             &self.get_component("GetOrdersByItem"),
+        //             format!("Orders for {} were fetched. found: {}", item, payload.len()).as_str(),
+        //             None,
+        //         );
+        //         payload
+        //     }
+        //     Ok(ApiResult::Error(error, _headers)) => {
+        //         return Err(self.client.create_api_error(
+        //             &self.get_component("GetOrdersByItem"),
+        //             error,
+        //             eyre!("There was an error fetching orders for {}", item),
+        //             LogLevel::Error,
+        //         ));
+        //     }
+        //     Err(err) => {
+        //         return Err(err);
+        //     }
+        // };
+        logger::log_json(format!("{}_orders", item).as_str(), &json!(orders))?;
         let orders: Vec<Order> = orders
             .into_iter()
             .filter(|order| {

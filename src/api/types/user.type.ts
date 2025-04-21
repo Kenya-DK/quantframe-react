@@ -13,7 +13,6 @@ export interface User {
   qf_banned_reason?: string;
   qf_banned_until?: string;
   region: string;
-  role: Role;
   status: UserStatus;
   unread_messages: number;
   verification: boolean;
@@ -21,14 +20,8 @@ export interface User {
   wfm_banned: boolean;
   wfm_banned_reason?: string;
   wfm_banned_until?: string;
-}
-export interface Role {
-  can_managed: boolean;
-  created_at: Date;
-  id: string;
-  name: string;
-  permissions: string;
-  updated_at: Date;
+  patreon_tier?: string;
+  permissions?: string;
 }
 export enum UserStatus {
   Online = "online",

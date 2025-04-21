@@ -10,11 +10,15 @@
     "active": true,
     "targets": "all",
     "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
-    "createUpdaterArtifacts": "v1Compatible"
+    "createUpdaterArtifacts": "v1Compatible",
+    "resources": {
+      "resources/*": "resources/",
+      "lang/*": "lang/"
+    }
   },
   "productName": "Quantframe",
   "mainBinaryName": "Quantframe",
-  "version": "1.4.1",
+  "version": "1.4.3",
   "identifier": "dev.kenya.quantframe",
   "plugins": {
     "updater": {
@@ -28,7 +32,7 @@
         "fullscreen": false,
         "userAgent": "Quantframe",
         "resizable": true,
-        "title": "Quantframe v1.4.1 - By Kenya-DK",
+        "title": "Quantframe v1.4.3 - By Kenya-DK",
         "width": 1455,
         "height": 912,
         "useHttpsScheme": true

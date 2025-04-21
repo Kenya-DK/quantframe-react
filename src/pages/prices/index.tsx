@@ -1,5 +1,6 @@
 import { Container, Tabs } from "@mantine/core";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
+import { OverviewPanel } from "./tabs/overview";
 import { ItemPanel } from "./tabs/Item";
 import { SyndicatesPanel } from "./tabs/syndicates";
 import { RivenPanel } from "./tabs/riven";
@@ -12,6 +13,7 @@ export default function PricesPage() {
   const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`tabs.${key}`, { ...context }, i18Key);
 
   const tabs = [
+    { label: useTranslateTabs("overview.title"), component: <OverviewPanel />, id: "overview", icon: <div>Stocks</div> },
     { label: useTranslateTabs("item.title"), component: <ItemPanel />, id: "item", icon: <div>Stocks</div> },
     { label: useTranslateTabs("syndicate.title"), component: <SyndicatesPanel />, id: "riven" },
     { label: useTranslateTabs("riven.title"), component: <RivenPanel />, id: "wish_list" },

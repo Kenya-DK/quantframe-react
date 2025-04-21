@@ -105,7 +105,7 @@ impl AlertModule {
     pub async fn get_alerts(&self) -> Result<Paginated<Alert>, AppError> {
         match self
             .client
-            .get::<Paginated<Alert>>("alert?page=0&limit=25&enabled=true", false)
+            .get::<Paginated<Alert>>("alert?page=1&limit=25&enabled=true", false)
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {

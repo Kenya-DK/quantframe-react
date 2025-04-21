@@ -3,17 +3,18 @@ import { SettingsAnalytics } from "@api/types";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { useForm } from "@mantine/form";
 
-
 export type AnalyticPanelProps = {
   value: SettingsAnalytics;
   onSubmit?: (value: SettingsAnalytics) => void;
-}
+};
 export const AnalyticPanel = ({ value, onSubmit }: AnalyticPanelProps) => {
-
   // Translate general
-  const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateForms(`settings.tabs.analytics.${key}`, { ...context }, i18Key)
-  const useTranslateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateForm(`buttons.${key}`, { ...context }, i18Key)
-  const useTranslateFormFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateForm(`fields.${key}`, { ...context }, i18Key)
+  const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateForms(`settings.tabs.analytics.${key}`, { ...context }, i18Key);
+  const useTranslateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateForm(`buttons.${key}`, { ...context }, i18Key);
+  const useTranslateFormFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateForm(`fields.${key}`, { ...context }, i18Key);
 
   // User form
   const form = useForm({
@@ -22,45 +23,40 @@ export const AnalyticPanel = ({ value, onSubmit }: AnalyticPanelProps) => {
   });
   return (
     <Box p={"md"}>
-      <form onSubmit={(e) => {
-        e.preventDefault();
-        if (onSubmit)
-          onSubmit(form.values);
-      }}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (onSubmit) onSubmit(form.values);
+        }}
+      >
         <Group gap={"md"} mt={25}>
-          <Tooltip label={useTranslateFormFields('transaction.tooltip')}>
+          <Tooltip label={useTranslateFormFields("stock_item.tooltip")}>
             <Checkbox
-              label={useTranslateFormFields('transaction.label')}
-              checked={form.values.transaction}
-              onChange={(event) => form.setFieldValue('transaction', event.currentTarget.checked)}
-              error={form.errors.transaction && useTranslateFormFields('transaction.error')}
-            />
-          </Tooltip>
-          <Tooltip label={useTranslateFormFields('stock_item.tooltip')}>
-            <Checkbox
-              label={useTranslateFormFields('stock_item.label')}
+              label={useTranslateFormFields("stock_item.label")}
               checked={form.values.stock_item}
-              onChange={(event) => form.setFieldValue('stock_item', event.currentTarget.checked)}
-              error={form.errors.stock_item && useTranslateFormFields('stock_item.error')}
+              onChange={(event) => form.setFieldValue("stock_item", event.currentTarget.checked)}
+              error={form.errors.stock_item && useTranslateFormFields("stock_item.error")}
             />
           </Tooltip>
-          <Tooltip label={useTranslateFormFields('stock_riven.tooltip')}>
+          <Tooltip label={useTranslateFormFields("stock_riven.tooltip")}>
             <Checkbox
-              label={useTranslateFormFields('stock_riven.label')}
+              label={useTranslateFormFields("stock_riven.label")}
               checked={form.values.stock_riven}
-              onChange={(event) => form.setFieldValue('stock_riven', event.currentTarget.checked)}
-              error={form.errors.stock_riven && useTranslateFormFields('stock_riven.error')}
+              onChange={(event) => form.setFieldValue("stock_riven", event.currentTarget.checked)}
+              error={form.errors.stock_riven && useTranslateFormFields("stock_riven.error")}
             />
           </Tooltip>
-
         </Group>
-        <Group justify="flex-end" style={{
-          position: "absolute",
-          bottom: 25,
-          right: 25,
-        }}>
+        <Group
+          justify="flex-end"
+          style={{
+            position: "absolute",
+            bottom: 25,
+            right: 25,
+          }}
+        >
           <Button type="submit" variant="light" color="blue">
-            {useTranslateButtons('save.label')}
+            {useTranslateButtons("save.label")}
           </Button>
         </Group>
       </form>

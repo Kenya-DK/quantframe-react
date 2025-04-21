@@ -231,7 +231,11 @@ impl PlayerTrade {
                 _ => StockType::Item,
             };
 
-            // Get Riven Info
+            if stock.entity_type == StockType::Item
+                && self.trade_type == TradeClassification::Purchase
+            {
+                stock.bought = Some(self.platinum / item.quantity);
+            }
             if stock.entity_type == StockType::Riven {
                 // Split by '/' and collect into a Vec
                 let parts: Vec<&str> = item.unique_name.trim_matches('/').split('/').collect();

@@ -14,12 +14,14 @@
     "fs:allow-exists",
     {
       "identifier": "fs:scope",
-      "allow": ["$APPDATA/**", "$DESKTOP/**"]
+      "allow": ["$APPDATA/**", "$DESKTOP/**", "$RESOURCE/**"]
     },
     "core:window:allow-create",
     "shell:allow-open",
     "dialog:allow-open",
     "http:default",
-    "notification:default"
+    "notification:default",
+    "fs:allow-read-text-file",
+    "fs:allow-resource-read-recursive"
   ]
 }

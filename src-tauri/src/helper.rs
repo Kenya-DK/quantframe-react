@@ -460,8 +460,6 @@ pub async fn progress_wfm_order(
     sub_type: Option<SubType>,
     quantity: i64,
     operation: OrderType,
-    need_update: bool,
-    delete: bool,
     from: &str,
 ) -> Result<(String, Option<Order>), AppError> {
     let wfm = states::wfm_client()?;
@@ -469,14 +467,7 @@ pub async fn progress_wfm_order(
     // Process the order on WFM
     match wfm
         .orders()
-        .progress_order(
-            &url,
-            sub_type.clone(),
-            quantity,
-            operation.clone(),
-            need_update,
-            delete,
-        )
+        .progress_order(&url, sub_type.clone(), quantity, operation.clone())
         .await
     {
         Ok((operation, order)) => {
@@ -610,8 +601,6 @@ pub async fn progress_wish_item(
         entity.sub_type.clone(),
         entity.quantity,
         OrderType::Buy,
-        true,
-        true,
         from,
     )
     .await
@@ -656,6 +645,7 @@ pub async fn progress_stock_item(
     user_name: &str,
     operation: OrderType,
     options: Vec<String>,
+    progress_wfm: bool,
     from: &str,
 ) -> Result<(stock_item::Model, Vec<String>), AppError> {
     let conn = DATABASE.get().unwrap();
@@ -743,24 +733,24 @@ pub async fn progress_stock_item(
     }
 
     // Process the order on WFM
-    match progress_wfm_order(
-        entity.wfm_url.as_str(),
-        entity.sub_type.clone(),
-        entity.quantity,
-        operation.clone(),
-        operation == OrderType::Sell,
-        operation == OrderType::Sell,
-        from,
-    )
-    .await
-    {
-        Ok((operation, _)) => {
-            response.push(format!("WFM_{}", operation));
-        }
-        Err(e) => {
-            response.push("WFM_Error".to_string());
-            if !options.contains(&"WFMContinueOnError".to_string()) {
-                return Err(e);
+    if progress_wfm {
+        match progress_wfm_order(
+            entity.wfm_url.as_str(),
+            entity.sub_type.clone(),
+            entity.quantity,
+            operation.clone(),
+            from,
+        )
+        .await
+        {
+            Ok((operation, _)) => {
+                response.push(format!("WFM_{}", operation));
+            }
+            Err(e) => {
+                response.push("WFM_Error".to_string());
+                if !options.contains(&"WFMContinueOnError".to_string()) {
+                    return Err(e);
+                }
             }
         }
     }
@@ -909,38 +899,38 @@ pub async fn progress_stock_riven(
     return Ok((stock, response));
 }
 
-// pub fn read_json_file<T: DeserializeOwned>(path: &PathBuf) -> Result<T, AppError> {
-//     // Check if the file exists
-//     if !path.exists() {
-//         return Err(AppError::new(
-//             "ReadJsonFile",
-//             eyre!(format!("File does not exist: {:?}", path.to_str())),
-//         ));
-//     }
+pub fn read_json_file<T: serde::de::DeserializeOwned>(path: &PathBuf) -> Result<T, AppError> {
+    // Check if the file exists
+    if !path.exists() {
+        return Err(AppError::new(
+            "ReadJsonFile",
+            eyre!(format!("File does not exist: {:?}", path.to_str())),
+        ));
+    }
 
-//     let file = File::open(path).map_err(|e| {
-//         AppError::new(
-//             "ReadJsonFile",
-//             eyre!(format!("Could not open file: {}", e.to_string())),
-//         )
-//     })?;
-//     let reader = io::BufReader::new(file);
-//     let data: Value = serde_json::from_reader(reader).map_err(|e| {
-//         AppError::new(
-//             "ReadJsonFile",
-//             eyre!(format!("Could not read file: {}", e.to_string())),
-//         )
-//     })?;
-//     match serde_json::from_value(data.clone()) {
-//         Ok(payload) => Ok(payload),
-//         Err(e) => {
-//             return Err(AppError::new(
-//                 "Helper:ReadJsonFile",
-//                 eyre!(format!("Could not parse payload: {}", e)),
-//             ));
-//         }
-//     }
-// }
+    let file = File::open(path).map_err(|e| {
+        AppError::new(
+            "ReadJsonFile",
+            eyre!(format!("Could not open file: {}", e.to_string())),
+        )
+    })?;
+    let reader = io::BufReader::new(file);
+    let data: Value = serde_json::from_reader(reader).map_err(|e| {
+        AppError::new(
+            "ReadJsonFile",
+            eyre!(format!("Could not read file: {}", e.to_string())),
+        )
+    })?;
+    match serde_json::from_value(data.clone()) {
+        Ok(payload) => Ok(payload),
+        Err(e) => {
+            return Err(AppError::new(
+                "Helper:ReadJsonFile",
+                eyre!(format!("Could not parse payload: {}", e)),
+            ));
+        }
+    }
+}
 pub fn calculate_average_of_top_lowest_prices(
     prices: Vec<i64>,          // The list of prices to consider
     limit_to: i64,             // Limit the number of auctions to consider

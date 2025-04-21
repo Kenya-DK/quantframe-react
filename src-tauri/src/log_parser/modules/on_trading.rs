@@ -1,4 +1,3 @@
-
 use entity::enums::stock_type::StockType;
 
 use serde_json::json;
@@ -15,14 +14,14 @@ use crate::{
         },
     },
     utils::modules::{
-            error::{self, AppError},
-            logger::{self, LoggerOptions},
-            states,
-            trading_helper::{
-                notify, process_stock_item, process_stock_riven, process_wish_list, trace,
-                trace_centered_message,
-            },
+        error::{self, AppError},
+        logger::{self, LoggerOptions},
+        states,
+        trading_helper::{
+            notify, process_stock_item, process_stock_riven, process_wish_list, trace,
+            trace_centered_message,
         },
+    },
 };
 
 #[derive(Clone, Debug)]

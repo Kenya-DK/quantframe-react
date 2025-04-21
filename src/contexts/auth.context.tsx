@@ -3,8 +3,10 @@ import api, { OnTauriDataEvent } from "@api/index";
 import { QfSocketEvent, QfSocketEventOperation, User, UserStatus } from "@api/types";
 import wfmSocket from "@models/wfmSocket";
 import { Wfm } from "../types";
+import { useAppContext } from "./app.context";
 export type AuthContextProps = {
   user: User | undefined;
+  patreon_link?: string;
 };
 export type TauriContextProviderProps = {
   children: React.ReactNode;
@@ -12,13 +14,27 @@ export type TauriContextProviderProps = {
 
 export const AuthContext = createContext<AuthContextProps>({
   user: undefined,
+  patreon_link: undefined,
 });
 
 export const useAuthContext = () => useContext(AuthContext);
 
 export function AuthContextProvider({ children }: TauriContextProviderProps) {
+  // Context
+  const { app_info } = useAppContext();
+
   // States
   const [user, setUser] = useState<User | undefined>(undefined);
+  const [patreon_link, setPatreonLink] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (!app_info) return;
+    setPatreonLink(
+      `https://www.patreon.com/oauth2/authorize?response_type=code&client_id=6uDrK7uhMBAidiAvzQd7ukmHFz4NUXO1wocruae24C4_04rXrUMSvCzC9RKbQpmN&scope=identity%20identity%5Bemail%5D&redirect_uri=${
+        app_info?.is_development ? "http://localhost:6969/patreon/link" : "https://api.quantframe/patreon/link"
+      }&state=${user?.id}|${user?.check_code}`
+    );
+  }, [app_info, user]);
 
   // Handle update, create, delete transaction
   const handleUpdateUser = (operation: string, data: User) => {
@@ -54,5 +70,5 @@ export function AuthContextProvider({ children }: TauriContextProviderProps) {
     };
   }, []);
 
-  return <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, patreon_link }}>{children}</AuthContext.Provider>;
 }

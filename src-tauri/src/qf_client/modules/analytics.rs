@@ -14,7 +14,8 @@ use crate::{
         enums::log_level::LogLevel,
         modules::{
             error::{self, ApiResult, AppError},
-            logger::{self, LoggerOptions}, states,
+            logger::{self, LoggerOptions},
+            states,
         },
     },
 };
@@ -65,10 +66,6 @@ impl AnalyticsModule {
         self.update_state();
     }
     pub fn add_metric(&mut self, key: &str, value: &str) {
-        let settings = states::settings().expect("Failed to get settings");
-        if !settings.analytics.transaction && key.starts_with("Transaction_") {
-            return;
-        }
         let mut map = HashMap::new();
         map.insert(key.to_string(), value.to_string());
         if key == "Active_Page" {
