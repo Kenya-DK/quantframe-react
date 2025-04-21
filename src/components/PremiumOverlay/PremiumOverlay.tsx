@@ -1,14 +1,14 @@
 import { Button, Center, Group, LoadingOverlay, Stack, Title } from "@mantine/core";
 import classes from "./PremiumOverlay.module.css";
-import { useTranslateComponent } from "../../hooks/useTranslate.hook";
+import { useTranslateComponent, useTranslateModals } from "@hooks/useTranslate.hook";
 import { TextTranslate } from "../TextTranslate";
-import { useAuthContext } from "../../contexts/auth.context";
 import { open } from "@tauri-apps/plugin-shell";
+import { modals } from "@mantine/modals";
+import { PremiumModal } from "../Modals/Premium";
 export type PremiumOverlayProps = {
   tier: string;
 };
 export function PremiumOverlay({ tier }: PremiumOverlayProps) {
-  const { patreon_link } = useAuthContext();
   // Translate general
   const useTranslateSearchField = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateComponent(`premium_overlay.${key}`, { ...context }, i18Key);
@@ -43,8 +43,12 @@ export function PremiumOverlay({ tier }: PremiumOverlayProps) {
                 </Button>
                 <Button
                   onClick={() => {
-                    if (!patreon_link) return;
-                    open(patreon_link);
+                    modals.open({
+                      title: useTranslateModals("base.titles.premium"),
+                      children: <PremiumModal />,
+                      size: "50vw",
+                      centered: true,
+                    });
                   }}
                 >
                   {useTranslateSearchFieldButtons("subscribe")}

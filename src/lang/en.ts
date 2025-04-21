@@ -96,9 +96,21 @@ export const en = {
   components: {
     modals: {
       base: {
+        titles: {
+          premium: "Support me on Patreon!",
+        },
         buttons: {
           confirm: "Confirm",
           cancel: "Cancel",
+        },
+      },
+      premium_modal: {
+        title: "Unlock More Features and Support the Development!",
+        text: "1. Join the AlecaFrame Patreon",
+        text2: "2. Link your Patreon account",
+        buttons: {
+          info: "Patreon",
+          link: "Link your account",
         },
       },
       tos: {
@@ -999,6 +1011,9 @@ export const en = {
       cards: {
         coffee: {
           title: "Buy me a coffee",
+        },
+        patreon: {
+          title: "Support me on Patreon",
         },
         discord: {
           title: "Discord",

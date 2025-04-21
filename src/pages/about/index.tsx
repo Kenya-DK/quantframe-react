@@ -4,29 +4,34 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBookOpen, faCoffee, faQuestion } from "@fortawesome/free-solid-svg-icons";
 import { faDiscord } from "@fortawesome/free-brands-svg-icons";
 import { useAppContext } from "@contexts/app.context";
-import { useTranslatePages } from "@hooks/useTranslate.hook";
-import { TextTranslate } from "../../components/TextTranslate";
+import { useTranslateModals, useTranslatePages } from "@hooks/useTranslate.hook";
+import { TextTranslate } from "@components/TextTranslate";
+import { PremiumModal } from "@components/Modals/Premium";
 import api from "@api/index";
 import { open } from "@tauri-apps/plugin-shell";
+import React from "react";
+import { modals } from "@mantine/modals";
+import { useAuthContext } from "../../contexts/auth.context";
 interface InfoCardProps {
-  icon: any;
+  icon: React.ReactNode;
   title: string;
-  link: string;
-  ga_id: string;
+  link?: string;
+  onClick?: () => void;
   cardProps?: CardProps;
-  iconProps?: any;
 }
-const InfoCard = ({ icon, title, cardProps, iconProps, link, ga_id }: InfoCardProps) => {
+const InfoCard = ({ icon, title, cardProps, link, onClick }: InfoCardProps) => {
   return (
     <Card
       {...cardProps}
       className={classes.card}
       onClick={() => {
+        if (onClick) onClick();
+        if (!link) return;
         open(link);
-        api.analytics.sendMetric(ga_id, "");
+        api.analytics.sendMetric("open_web", link);
       }}
     >
-      <FontAwesomeIcon size="5x" {...iconProps} icon={icon} className={classes.icon} />
+      {icon}
       <Group justify="space-between">
         <Text size="xl">{title}</Text>
       </Group>
@@ -36,6 +41,7 @@ const InfoCard = ({ icon, title, cardProps, iconProps, link, ga_id }: InfoCardPr
 
 export default function AboutPage() {
   // Contexts
+  const { patreon_link } = useAuthContext();
   const { app_info } = useAppContext();
   // Translate general
   const useTranslatePage = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -50,22 +56,42 @@ export default function AboutPage() {
       <Center w={"100%"} h={"80vh"}>
         <Stack gap={"lg"} align={"center"}>
           <Group grow gap={"5vw"}>
-            <InfoCard ga_id="Website_WikiOpened" link="https://quantframe.app" icon={faBookOpen} title={useTranslateCards("guide.title")} />
-            <InfoCard ga_id="Website_QuestionOpened" link="https://quantframe.app/faq" icon={faQuestion} title={useTranslateCards("faq.title")} />
+            <InfoCard link="https://quantframe.app" icon={<FontAwesomeIcon size="5x" icon={faBookOpen} />} title={useTranslateCards("guide.title")} />
             <InfoCard
-              ga_id="Website_DiscordOpened"
+              link="https://quantframe.app/faq"
+              icon={<FontAwesomeIcon size="5x" icon={faQuestion} />}
+              title={useTranslateCards("faq.title")}
+            />
+            <InfoCard
               link="https://discord.gg/dPSFPG5Qt6"
-              icon={faDiscord}
+              icon={<FontAwesomeIcon size="5x" icon={faDiscord} />}
               title={useTranslateCards("discord.title")}
             />
           </Group>
-          <InfoCard
-            ga_id="BuyMeACoffee_WebOpened"
-            link="https://www.buymeacoffee.com/kenyadk"
-            icon={faCoffee}
-            iconProps={{ size: "3x", color: "#ffa000" }}
-            title={useTranslateCards("coffee.title")}
-          />
+          <Group gap={"5vw"}>
+            <InfoCard
+              link="https://www.buymeacoffee.com/kenyadk"
+              icon={<FontAwesomeIcon size="3x" icon={faCoffee} style={{ color: "#ffa000" }} />}
+              title={useTranslateCards("coffee.title")}
+            />
+            <InfoCard
+              // cardProps={{ style: { width: "1000px" } }}
+              onClick={() => {
+                modals.open({
+                  title: useTranslateModals("base.titles.premium"),
+                  children: <PremiumModal link={patreon_link} />,
+                  size: "50vw",
+                  centered: true,
+                });
+              }}
+              icon={
+                <Text fw={700} fz={"3rem"} style={{ color: "#e07550" }}>
+                  Patreon
+                </Text>
+              }
+              title={useTranslateCards("patreon.title")}
+            />
+          </Group>
         </Stack>
       </Center>
       <Box>
