@@ -253,6 +253,7 @@ pub async fn process_stock_item(
             "StockContinueOnError".to_string(),
             "WFMContinueOnError".to_string(),
         ],
+        trade.trade_type == TradeClassification::Sale,
         "auto",
     )
     .await
@@ -375,7 +376,7 @@ pub fn notify(
         notify_value["wfm_operation"] = json!("Deleted");
     }
     if contains_warning(&operations, &["WFM_Updated"]) {
-        notify_value["wfm_operation"] = json!("Deleted");
+        notify_value["wfm_operation"] = json!("Updated");
     }
     if contains_warning(&operations, &["WFM_NotFound"]) {
         notify_value["wfm_operation"] = json!("Not Found");
