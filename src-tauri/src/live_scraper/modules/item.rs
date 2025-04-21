@@ -214,11 +214,6 @@ impl ItemModule {
         let mut interesting_items: Vec<ItemEntry> = interesting_items.into_values().collect();
         interesting_items.sort_by(|a, b| b.priority.cmp(&a.priority));
 
-        let filtered_items: Vec<_> = interesting_items
-            .iter()
-            .filter(|item| item.wfm_url == "melee_afflictions".to_string())
-            .collect();
-
         logger::log_json(
             "interesting_items.json",
             &json!({
@@ -226,20 +221,17 @@ impl ItemModule {
                 "orders": my_orders,
                 "info_caches": self.info_caches,
                 "settings": settings.stock_item,
-                "filtered_items": filtered_items,
                 "interesting_items": interesting_items.clone(),
             }),
         )?;
         // Loop through all interesting items
-        for item_entry in filtered_items.clone() {
+        for item_entry in interesting_items.clone() {
             if auth.qf_banned || auth.wfm_banned || auth.anonymous {
                 self.client.stop_loop();
                 break;
             }
 
-            if self.client.is_running() == false
-                || item_entry.wfm_url != "melee_afflictions".to_string()
-            {
+            if self.client.is_running() == false {
                 current_index -= 1;
                 continue;
             }
