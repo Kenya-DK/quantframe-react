@@ -1537,6 +1537,9 @@ export const en = {
     },
     prices: {
       tabs: {
+        overview: {
+          title: "Overview",
+        },
         item: {
           title: "Items",
           datatable: {
