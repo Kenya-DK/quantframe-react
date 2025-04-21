@@ -387,33 +387,28 @@ impl OrderModule {
     ) -> Result<Orders, AppError> {
         let url = format!("items/{}/orders", item);
 
-        let orders: Vec<Order> = helper::read_json_file(
-            &logger::get_log_folder().join(format!("{}_orders.json", item)),
-        )?;
-        // return Ok(orders);
-        // let orders = match self.client.get::<Vec<Order>>(&url, Some("orders")).await {
-        //     Ok(ApiResult::Success(payload, _headers)) => {
-        //         self.client.debug(
-        //             &self.debug_id,
-        //             &self.get_component("GetOrdersByItem"),
-        //             format!("Orders for {} were fetched. found: {}", item, payload.len()).as_str(),
-        //             None,
-        //         );
-        //         payload
-        //     }
-        //     Ok(ApiResult::Error(error, _headers)) => {
-        //         return Err(self.client.create_api_error(
-        //             &self.get_component("GetOrdersByItem"),
-        //             error,
-        //             eyre!("There was an error fetching orders for {}", item),
-        //             LogLevel::Error,
-        //         ));
-        //     }
-        //     Err(err) => {
-        //         return Err(err);
-        //     }
-        // };
-        logger::log_json(format!("{}_orders", item).as_str(), &json!(orders))?;
+        let orders = match self.client.get::<Vec<Order>>(&url, Some("orders")).await {
+            Ok(ApiResult::Success(payload, _headers)) => {
+                self.client.debug(
+                    &self.debug_id,
+                    &self.get_component("GetOrdersByItem"),
+                    format!("Orders for {} were fetched. found: {}", item, payload.len()).as_str(),
+                    None,
+                );
+                payload
+            }
+            Ok(ApiResult::Error(error, _headers)) => {
+                return Err(self.client.create_api_error(
+                    &self.get_component("GetOrdersByItem"),
+                    error,
+                    eyre!("There was an error fetching orders for {}", item),
+                    LogLevel::Error,
+                ));
+            }
+            Err(err) => {
+                return Err(err);
+            }
+        };
         let orders: Vec<Order> = orders
             .into_iter()
             .filter(|order| {
