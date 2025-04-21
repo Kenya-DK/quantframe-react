@@ -1,9 +1,19 @@
-import { Center, LoadingOverlay } from "@mantine/core";
+import { Button, Center, Group, LoadingOverlay, Stack, Title } from "@mantine/core";
 import classes from "./PremiumOverlay.module.css";
+import { useTranslateComponent } from "../../hooks/useTranslate.hook";
+import { TextTranslate } from "../TextTranslate";
+import { useAuthContext } from "../../contexts/auth.context";
+import { open } from "@tauri-apps/plugin-shell";
 export type PremiumOverlayProps = {
-  text?: string;
+  tier: string;
 };
-export function PremiumOverlay({}: PremiumOverlayProps) {
+export function PremiumOverlay({ tier }: PremiumOverlayProps) {
+  const { patreon_link } = useAuthContext();
+  // Translate general
+  const useTranslateSearchField = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateComponent(`premium_overlay.${key}`, { ...context }, i18Key);
+  const useTranslateSearchFieldButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateSearchField(`buttons.${key}`, { ...context }, i18Key);
   return (
     <LoadingOverlay
       visible
@@ -11,10 +21,36 @@ export function PremiumOverlay({}: PremiumOverlayProps) {
       loaderProps={{
         children: (
           <Center classNames={classes}>
-            <div className={classes.loader}>
-              <div className={classes.spin}></div>
-              <div className={classes.bounce}></div>
-            </div>
+            <Stack align="center" mb={10}>
+              <Title order={3} c={"white"} mb={10}>
+                <TextTranslate
+                  color="white"
+                  textProps={{
+                    fw: 700,
+                    fz: "h2",
+                  }}
+                  i18nKey={useTranslateSearchField("title", undefined, true)}
+                  values={{ tier }}
+                />
+              </Title>
+              <Group mb={10}>
+                <Button
+                  onClick={() => {
+                    open("https://www.patreon.com/Quantframe");
+                  }}
+                >
+                  {useTranslateSearchFieldButtons("info")}
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (!patreon_link) return;
+                    open(patreon_link);
+                  }}
+                >
+                  {useTranslateSearchFieldButtons("subscribe")}
+                </Button>
+              </Group>
+            </Stack>
           </Center>
         ),
       }}

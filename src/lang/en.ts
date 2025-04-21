@@ -871,6 +871,13 @@ export const en = {
         },
       },
     },
+    premium_overlay: {
+      title: "This feature is only available for premium users <blue>{{tier}}</blue> supports.",
+      buttons: {
+        info: "Info",
+        subscribe: "Subscribe",
+      },
+    },
   },
   context: {
     app: {
