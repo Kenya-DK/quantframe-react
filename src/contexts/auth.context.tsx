@@ -31,7 +31,7 @@ export function AuthContextProvider({ children }: TauriContextProviderProps) {
     if (!app_info) return;
     setPatreonLink(
       `https://www.patreon.com/oauth2/authorize?response_type=code&client_id=6uDrK7uhMBAidiAvzQd7ukmHFz4NUXO1wocruae24C4_04rXrUMSvCzC9RKbQpmN&scope=identity%20identity%5Bemail%5D&redirect_uri=${
-        app_info?.is_development ? "http://localhost:6969/patreon/link" : "https://api.quantframe/patreon/link"
+        app_info?.is_development ? "http://localhost:6969/auth/patreon/link" : "https://api.quantframe/auth/patreon/link"
       }&state=${user?.id}|${user?.check_code}`
     );
   }, [app_info, user]);
