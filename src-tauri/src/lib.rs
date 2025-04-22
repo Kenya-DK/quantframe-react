@@ -194,7 +194,7 @@ pub fn run() {
             START_TIME.set(Instant::now()).unwrap();
             APP.get_or_init(|| app.handle().clone());
 
-            match block_on(init_database(false)) {
+            match block_on(init_database(true)) {
                 Ok(_) => {}
                 Err(e) => {
                     let component = e.component();
@@ -302,9 +302,6 @@ pub fn run() {
             commands::wish_list::wish_list_bought,
             // Notification commands
             commands::notification::send_system_notification,
-            // Item commands
-            commands::item::item_get_syndicates_prices,
-            commands::item::item_get_prices,
             // Page Home commands
             commands::pages::home::get_statistic,
             // Log Parser commands
@@ -312,6 +309,9 @@ pub fn run() {
             commands::log_parser::get_last_read_date,
             commands::log_parser::clear_cache_lines,
             commands::log_parser::dump_cache_lines,
+            // Quantframe API commands
+            commands::qf_client::qf_get,
+            commands::qf_client::qf_post,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

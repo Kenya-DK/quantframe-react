@@ -1539,6 +1539,33 @@ export const en = {
       tabs: {
         overview: {
           title: "Overview",
+          fields: {
+            chart: {
+              label: "Chart Type",
+              placeholder: "Select chart type",
+              most_traded: "Most Traded",
+              profit_margin: "Profit Margin",
+              return_on_investment: "Return on Investment",
+            },
+          },
+          charts: {
+            supply_and_demand: {
+              title: "Supply and Demand Last 15 Days",
+              datasets: {
+                supply: "Supply",
+                demand: "Demand",
+              },
+            },
+            most_traded: {
+              title: "Most Traded Items Last 15 Days",
+            },
+            profit_margin: {
+              title: "Profit Margin Last 15 Days",
+            },
+            return_on_investment: {
+              title: "Return on Investment Last 15 Days",
+            },
+          },
         },
         item: {
           title: "Items",
@@ -1588,24 +1615,6 @@ export const en = {
             invalid_date: "Invalid date range",
             invalid_date_range: "Start date must be before end date",
             date_range_max_days: "Date range must be less than {{days}} days",
-          },
-        },
-        syndicate: {
-          title: "Syndicates",
-          datatable: {
-            columns: {
-              syndicate: "Syndicate",
-              name: {
-                title: "Name",
-                value: "<white>{{name}}</white> <blue>{{sub_type}}</blue>",
-              },
-              min_price: "Min Price",
-              volume: "Volume",
-              max_price: "Max Price",
-              avg_price: "Avg Price",
-              standing: "Cost",
-              datetime: "Last Update",
-            },
           },
         },
         riven: {
