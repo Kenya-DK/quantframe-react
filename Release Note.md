@@ -5,6 +5,7 @@
 Note: All previous versions are not supported anymore.
 How To migrate:
 [Read More](https://quantframe.app/upgrading/1.2.X)
+// TODO: Add better indication in the debug-tab for buying and selling.
 
 ## Fix's
 
