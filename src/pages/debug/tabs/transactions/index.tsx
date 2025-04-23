@@ -193,7 +193,6 @@ export const TransactionPanel = ({}: TransactionPanelProps) => {
           return {
             "data-color-mode": "box-shadow",
             "data-trade-type": record.transaction_type,
-            "data-item-type": record.item_type,
           };
         }}
         withTableBorder
