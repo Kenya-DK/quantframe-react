@@ -93,21 +93,12 @@ impl AnalyticsModule {
                 let mut last_metric_time = Instant::now();
 
                 if is_first_install {
-                    logger::info(
-                        &&qf.analytics().get_component("init"),
-                        "Detected first install",
-                        LoggerOptions::default(),
-                    );
-                    match qf
-                        .analytics()
-                        .try_send_analytics("install", 3, json!({}))
-                        .await
-                    {
-                        Ok(_) => {}
-                        Err(e) => {
-                            error::create_log_file("analytics.log", &e);
-                        }
-                    };
+                    qf.analytics()
+                        .metricAndLabelPairsScheduledToSend
+                        .push(HashMap::from([(
+                            "First_Install".to_string(),
+                            "true".to_string(),
+                        )]));
                 }
                 loop {
                     let send_metrics = qf.analytics().send_metrics;
@@ -115,45 +106,57 @@ impl AnalyticsModule {
                         tokio::time::sleep(std::time::Duration::from_secs(60)).await;
                         continue;
                     }
-                    if last_metric_time.elapsed() > Duration::from_secs(15)
-                        || qf.analytics().is_user_active()
-                    {
-                        if last_metric_time.elapsed() > Duration::from_secs(60)
-                            && qf.analytics().is_user_active()
-                        {
-                            continue;
-                        }
 
-                        last_metric_time = Instant::now();
-                        // logger::info_con(
-                        //     &qf.analytics().get_component("TrySendAnalytics"),
-                        //     "Sending user activity",
-                        // );
-                        match qf
-                            .analytics()
-                            .try_send_analytics(
-                                "metrics/periodic",
-                                3,
-                                json!(qf.analytics().metricAndLabelPairsScheduledToSend),
-                            )
-                            .await
-                        {
-                            Ok(_) => {
-                                qf.analytics().clear_metrics();
-                            }
-                            Err(e) => {
-                                if e.cause().contains("Unauthorized")
-                                    || e.cause().contains("Banned")
-                                    || e.cause().contains("WFMBanned")
-                                {
-                                    error::create_log_file("analytics.log", &e);
-                                    break;
-                                }
-                                error::create_log_file("analytics.log", &e);
-                            }
-                        };
+                    if last_metric_time.elapsed() < Duration::from_secs(15)
+                        || !qf.analytics().is_user_active()
+                    {
+                        tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+                        continue;
                     }
-                    tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+
+                    if last_metric_time.elapsed() < Duration::from_secs(60)
+                        && !qf.analytics().is_user_active()
+                    {
+                        tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+                        continue;
+                    }
+
+                    last_metric_time = Instant::now();
+                    // logger::info_con(
+                    //     &qf.analytics().get_component("TrySendAnalytics"),
+                    //     "Sending user activity",
+                    // );
+                    match qf
+                        .analytics()
+                        .try_send_analytics(
+                            "users/metrics/periodic",
+                            3,
+                            json!(qf.analytics().metricAndLabelPairsScheduledToSend),
+                        )
+                        .await
+                    {
+                        Ok(_) => {
+                            qf.analytics().clear_metrics();
+                        }
+                        Err(e) => {
+                            if e.cause().contains("Unauthorized")
+                                || e.cause().contains("Banned")
+                                || e.cause().contains("WFMBanned")
+                            {
+                                error::create_log_file("analytics.log", &e);
+                                break;
+                            } else if e.cause().contains("429") {
+                                logger::info(
+                                    &qf.analytics().get_component("TrySendAnalytics"),
+                                    "Rate limit reached, waiting for 60 seconds",
+                                    LoggerOptions::default(),
+                                );
+                                tokio::time::sleep(std::time::Duration::from_secs(60)).await;
+                                continue;
+                            }
+                            error::create_log_file("analytics.log", &e);
+                        }
+                    };
                 }
                 qf.analytics().is_init = false;
             }
@@ -179,7 +182,7 @@ impl AnalyticsModule {
             let err = match self
                 .client
                 .post::<Value>(
-                    format!("analytics/{}?{}", url, parameters.join("&")).as_str(),
+                    format!("{}?{}", url, parameters.join("&")).as_str(),
                     data.clone(),
                 )
                 .await
