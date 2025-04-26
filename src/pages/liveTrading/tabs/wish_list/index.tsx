@@ -1,6 +1,5 @@
 import { useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { useEffect, useState } from "react";
-import { CreateWishListItem, WishListItem, StockStatus, UpdateWishListItem, BoughtWishListItem } from "@api/types";
 import { Box, Grid, Group, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { faEdit, faEye, faEyeSlash, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
@@ -14,6 +13,7 @@ import { ComplexFilter, Operator } from "@utils/filter.helper";
 import { CreateStockItemForm } from "@components/Forms/CreateStockItem";
 import { useMutation } from "@tanstack/react-query";
 import api from "@api/index";
+import { TauriTypes } from "$types";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { TextTranslate } from "@components/TextTranslate";
 import { getCssVariable, GetSubTypeDisplay } from "@utils/helper";
@@ -31,9 +31,9 @@ export const WishListPanel = ({}: WishListPanelProps) => {
   // States For DataGrid
   const [query, setQuery] = useState<string>("");
   const [filters, setFilters] = useState<ComplexFilter>({});
-  const [selectedRecords, setSelectedRecords] = useState<WishListItem[]>([]);
+  const [selectedRecords, setSelectedRecords] = useState<TauriTypes.WishListItem[]>([]);
 
-  const [filterStatus, setFilterStatus] = useState<StockStatus | undefined>(undefined);
+  const [filterStatus, setFilterStatus] = useState<TauriTypes.StockStatus | undefined>(undefined);
   const [statusCount, setStatusCount] = useState<{ [key: string]: number }>({}); // Count of each status
 
   const [segments, setSegments] = useState<{ label: string; count: number; part: number; color: string }[]>([]);
@@ -68,7 +68,7 @@ export const WishListPanel = ({}: WishListPanelProps) => {
     if (!wish_lists) return;
 
     setStatusCount(
-      Object.values(StockStatus).reduce((acc, status) => {
+      Object.values(TauriTypes.StockStatus).reduce((acc, status) => {
         acc[status] = wish_lists.filter((item) => item.status === status).length;
         return acc;
       }, {} as { [key: string]: number })
@@ -95,7 +95,7 @@ export const WishListPanel = ({}: WishListPanelProps) => {
   useEffect(() => {
     if (!wish_lists) return;
     const totalListedPrice = wish_lists.reduce((a, b) => a + (b.list_price || 0) * b.quantity, 0);
-    const totalTrades = wish_lists.filter((item) => item.status === StockStatus.Live).reduce((a, b) => a + b.quantity, 0) / 6;
+    const totalTrades = wish_lists.filter((item) => item.status === TauriTypes.StockStatus.Live).reduce((a, b) => a + b.quantity, 0) / 6;
     // Round up to the nearest whole number
     let totalTradesRounded = Math.ceil(totalTrades);
     setSegments([
@@ -105,7 +105,7 @@ export const WishListPanel = ({}: WishListPanelProps) => {
   }, [wish_lists]);
   // Mutations
   const createItemMutation = useMutation({
-    mutationFn: (data: CreateWishListItem) => api.stock.wishList.create(data),
+    mutationFn: (data: TauriTypes.CreateWishListItem) => api.stock.wishList.create(data),
     onSuccess: async (u) => {
       notifications.show({
         title: useTranslateSuccess("create_item.title"),
@@ -119,7 +119,7 @@ export const WishListPanel = ({}: WishListPanelProps) => {
     },
   });
   const updateItemMutation = useMutation({
-    mutationFn: (data: UpdateWishListItem) => api.stock.wishList.update(data),
+    mutationFn: (data: TauriTypes.UpdateWishListItem) => api.stock.wishList.update(data),
     onSuccess: async (u) => {
       notifications.show({
         title: useTranslateSuccess("update_item.title"),
@@ -147,7 +147,7 @@ export const WishListPanel = ({}: WishListPanelProps) => {
     },
   });
   const boughtItemMutation = useMutation({
-    mutationFn: (data: BoughtWishListItem) => api.stock.wishList.bought(data),
+    mutationFn: (data: TauriTypes.BoughtWishListItem) => api.stock.wishList.bought(data),
     onSuccess: async (u) => {
       notifications.show({
         title: useTranslateSuccess("sell_stock.title"),
@@ -187,14 +187,14 @@ export const WishListPanel = ({}: WishListPanelProps) => {
       },
     });
   };
-  const OpenInfoModal = (item: WishListItem) => {
+  const OpenInfoModal = (item: TauriTypes.WishListItem) => {
     modals.open({
       size: "100%",
       title: item.item_name,
       children: <WishItemInfo value={item} />,
     });
   };
-  const OpenBoughtModal = (stock: WishListItem) => {
+  const OpenBoughtModal = (stock: TauriTypes.WishListItem) => {
     modals.openContextModal({
       modal: "prompt",
       title: useTranslateBasePrompt("bought.title"),
@@ -231,21 +231,23 @@ export const WishListPanel = ({}: WishListPanelProps) => {
             }}
           />
           <Group gap={"md"} mt={"md"}>
-            {[StockStatus.Pending, StockStatus.Live, StockStatus.NoSellers, StockStatus.InActive].map((status) => (
-              <ColorInfo
-                active={status == filterStatus}
-                key={status}
-                onClick={() => {
-                  setFilterStatus((s) => (s === status ? undefined : status));
-                }}
-                infoProps={{
-                  "data-color-mode": "bg",
-                  "data-stock-status": status,
-                }}
-                text={useTranslateStockStatus(`${status}`) + `${statusCount[status] == 0 ? "" : ` (${statusCount[status]})`}`}
-                tooltip={useTranslateStockStatus(`details.${status}`)}
-              />
-            ))}
+            {[TauriTypes.StockStatus.Pending, TauriTypes.StockStatus.Live, TauriTypes.StockStatus.NoSellers, TauriTypes.StockStatus.InActive].map(
+              (status) => (
+                <ColorInfo
+                  active={status == filterStatus}
+                  key={status}
+                  onClick={() => {
+                    setFilterStatus((s) => (s === status ? undefined : status));
+                  }}
+                  infoProps={{
+                    "data-color-mode": "bg",
+                    "data-stock-status": status,
+                  }}
+                  text={useTranslateStockStatus(`${status}`) + `${statusCount[status] == 0 ? "" : ` (${statusCount[status]})`}`}
+                  tooltip={useTranslateStockStatus(`details.${status}`)}
+                />
+              )
+            )}
           </Group>
         </Grid.Col>
         <Grid.Col span={4}>

@@ -1,7 +1,7 @@
 import { Group, NumberInput, Select } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
-import { CacheTradableItem, CacheTradableItemSubType, SubType } from "@api/types";
+import { TauriTypes } from "$types";
 import { useEffect, useState } from "react";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
 import { upperFirst } from "@mantine/hooks";
@@ -12,11 +12,11 @@ export type SelectTradableItemProps = {
   onChange(item: SelectCacheTradableItem): void;
 };
 
-export interface SelectCacheTradableItem extends Omit<CacheTradableItem, "sub_type"> {
+export interface SelectCacheTradableItem extends Omit<TauriTypes.CacheTradableItem, "sub_type"> {
   label: string;
   value: string;
-  available_sub_types?: CacheTradableItemSubType;
-  sub_type?: SubType;
+  available_sub_types?: TauriTypes.CacheTradableItemSubType;
+  sub_type?: TauriTypes.SubType;
 }
 export function SelectTradableItem({ value, onChange, decoration }: SelectTradableItemProps) {
   // State
@@ -62,7 +62,7 @@ export function SelectTradableItem({ value, onChange, decoration }: SelectTradab
     setSelectedItem(new_item);
   };
 
-  const handleSubTypeUpdate = (sub_type: SubType) => {
+  const handleSubTypeUpdate = (sub_type: TauriTypes.SubType) => {
     if (!selectedItem) return;
     setSelectedItem({ ...selectedItem, sub_type });
     onChange({ ...selectedItem, sub_type });

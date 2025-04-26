@@ -1,5 +1,5 @@
 import { Group, TextInput, Grid, Title, Tabs, Center, ScrollArea, Button } from "@mantine/core";
-import { CacheTradableItem, WishListItem } from "@api/types";
+import { TauriTypes } from "$types";
 import { useTranslateComponent, useTranslateEnums } from "@hooks/useTranslate.hook";
 import dayjs from "dayjs";
 import { PriceHistoryListItem } from "@components/PriceHistory";
@@ -9,11 +9,11 @@ import api from "@api/index";
 import { OrderItem } from "@components/OrderItem";
 import { open } from "@tauri-apps/plugin-shell";
 export type WishItemInfoProps = {
-  value: WishListItem;
+  value: TauriTypes.WishListItem;
 };
 export function WishItemInfo({ value }: WishItemInfoProps) {
   //State
-  const [item, setItem] = useState<CacheTradableItem | undefined>(undefined);
+  const [item, setItem] = useState<TauriTypes.CacheTradableItem | undefined>(undefined);
 
   // Fetch data from rust side
   const { data } = useQuery({

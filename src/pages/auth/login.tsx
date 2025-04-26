@@ -5,7 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { notifications } from "@mantine/notifications";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { TextTranslate } from "@components/TextTranslate";
-import { QfSocketEvent, QfSocketEventOperation, ResponseError } from "@api/types";
+import { ResponseError, TauriTypes } from "$types";
 import { useState } from "react";
 import wfmSocket from "@models/wfmSocket";
 
@@ -75,7 +75,7 @@ export default function LoginPage() {
 
       setProgressText(useTranslateProgress("login.progress_text_4"));
       setInterval(8);
-      SendTauriDataEvent(QfSocketEvent.UpdateUser, QfSocketEventOperation.SET, u);
+      SendTauriDataEvent(TauriTypes.Events.UpdateUser, TauriTypes.EventOperations.SET, u);
       if (u.wfm_access_token) wfmSocket.updateToken(u.wfm_access_token);
     },
     onError: (err: ResponseError) => {

@@ -1,7 +1,7 @@
 import { Box, Button, Grid, Group, NumberInput, Select, Text, SelectProps, Flex } from "@mantine/core";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { useForm } from "@mantine/form";
-import { CacheRivenAttribute, StockRiven } from "@api/types";
+import { TauriTypes } from "$types";
 import api from "@api/index";
 import { useQuery } from "@tanstack/react-query";
 import { SvgIcon, SvgType } from "@components/SvgIcon";
@@ -12,8 +12,8 @@ import { CreateRivenAttributes } from "../CreateRivenAttributes";
 import { useEffect, useState } from "react";
 
 export type CreateRivenProps = {
-  value?: StockRiven;
-  onSubmit: (values: StockRiven) => void;
+  value?: TauriTypes.StockRiven;
+  onSubmit: (values: TauriTypes.StockRiven) => void;
 };
 
 const icons: Record<string, React.ReactNode> = {
@@ -30,7 +30,7 @@ const renderSelectOption: SelectProps["renderOption"] = ({ option, checked }) =>
 );
 export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
   // State
-  const [availableAttributes, setAvailableAttributes] = useState<CacheRivenAttribute[]>([]);
+  const [availableAttributes, setAvailableAttributes] = useState<TauriTypes.CacheRivenAttribute[]>([]);
   const [modNames, setModNames] = useState<string[]>([]);
 
   // Translate general
@@ -94,7 +94,7 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
     setAvailableAttributes(avAttributes);
   }, [form.values, attributes]);
   useEffect(() => {
-    const rivenIds: { [key: string]: CacheRivenAttribute } = {};
+    const rivenIds: { [key: string]: TauriTypes.CacheRivenAttribute } = {};
     const filteredArray = form.values.attributes?.filter((entry) => entry !== null && entry.positive);
     if (!filteredArray || filteredArray.length === 0) return;
     availableAttributes.forEach((item) => {
@@ -143,12 +143,12 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
     <Box w={"100%"}>
       <form
         onSubmit={form.onSubmit((data) => {
-          onSubmit(data as StockRiven);
+          onSubmit(data as TauriTypes.StockRiven);
         })}
       >
         <Grid mb={75}>
           <Grid.Col span={4} p={0}>
-            <RivenPreview riven={form.values as StockRiven} />
+            <RivenPreview riven={form.values as TauriTypes.StockRiven} />
           </Grid.Col>
           <Grid.Col span={8}>
             <Group gap="md" grow>

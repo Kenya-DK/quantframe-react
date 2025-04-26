@@ -1,14 +1,14 @@
 import { Button, Group, NumberInput, Select, Stack, Tooltip, Text, Divider, Tabs, Box, Checkbox, Accordion, MultiSelect } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { TradeMode, SettingsLiveScraper, StockMode } from "@api/types";
+import { TauriTypes } from "$types";
 import { useTranslateEnums, useTranslateForms } from "@hooks/useTranslate.hook";
 import { useState } from "react";
 import { TooltipIcon } from "@components/TooltipIcon";
 import { SelectMultipleTradableItems } from "@components/SelectMultipleTradableItems";
 
 export type LiveTradingPanelProps = {
-  value: SettingsLiveScraper;
-  onSubmit: (value: SettingsLiveScraper) => void;
+  value: TauriTypes.SettingsLiveScraper;
+  onSubmit: (value: TauriTypes.SettingsLiveScraper) => void;
 };
 
 enum ViewMode {
@@ -70,24 +70,24 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
                         label={useTranslateFormFields("stock_mode.label")}
                         description={useTranslateFormFields(`stock_mode.description.${form.values.stock_mode}`)}
                         placeholder={useTranslateFormFields("stock_mode.placeholder")}
-                        data={Object.values(StockMode).map((status) => {
+                        data={Object.values(TauriTypes.StockMode).map((status) => {
                           return { value: status, label: useTranslateStockMode(status) };
                         })}
                         value={form.values.stock_mode}
-                        onChange={(event) => form.setFieldValue("stock_mode", event as StockMode)}
+                        onChange={(event) => form.setFieldValue("stock_mode", event as TauriTypes.StockMode)}
                         error={form.errors.stock_mode && useTranslateFormFields("stock_mode.error")}
                         radius="md"
                       />
                       <MultiSelect
-                        disabled={form.values.stock_mode != StockMode.Item && form.values.stock_mode != StockMode.All}
+                        disabled={form.values.stock_mode != TauriTypes.StockMode.Item && form.values.stock_mode != TauriTypes.StockMode.All}
                         label={useTranslateFormFields("trade_modes.label")}
                         w={250}
                         description={useTranslateFormFields(`trade_modes.description`)}
-                        data={Object.values(TradeMode).map((status) => {
+                        data={Object.values(TauriTypes.TradeMode).map((status) => {
                           return { value: status, label: useTranslateOrderMode(status) };
                         })}
                         value={form.values.trade_modes}
-                        onChange={(event) => form.setFieldValue("trade_modes", event as TradeMode[])}
+                        onChange={(event) => form.setFieldValue("trade_modes", event as TauriTypes.TradeMode[])}
                         error={form.errors.trade_modes && useTranslateFormFields("trade_mode.error")}
                         radius="md"
                       />

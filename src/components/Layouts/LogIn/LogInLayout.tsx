@@ -12,7 +12,7 @@ import { Header } from "@components/Header";
 import api from "@api/index";
 import { useAuthContext } from "@contexts/auth.context";
 import { Ticker } from "@components/Ticker";
-import { Alert } from "@api/types";
+import { QuantframeApiTypes } from "$types";
 import { open } from "@tauri-apps/plugin-shell";
 
 export function LogInLayout() {
@@ -126,7 +126,7 @@ export function LogInLayout() {
         break;
     }
   };
-  const handleAlertClick = (alert: Alert) => {
+  const handleAlertClick = (alert: QuantframeApiTypes.Alert) => {
     console.log("Alert clicked: ", alert);
     if (!alert.properties) return;
     const { event, payload } = alert.properties as { event: string; payload: any };

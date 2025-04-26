@@ -1,5 +1,5 @@
 use crate::{
-    helper, logger,
+    logger,
     utils::{
         enums::log_level::LogLevel,
         modules::{

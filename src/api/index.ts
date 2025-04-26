@@ -54,6 +54,12 @@ export class TauriClient {
         });
     });
   }
+  async get<T>(path: string, parameters?: string[]): Promise<T> {
+    const url = `${path}${parameters && parameters.length > 0 ? `?${parameters.join("&")}` : ""}`;
+    const [err, result] = await this.sendInvoke<T>("qf_get", { url });
+    if (err) throw err;
+    return result;
+  }
 
   convertToCamelCase(payload: Record<string, any>): Record<string, any> {
     const newPayload: any = {};

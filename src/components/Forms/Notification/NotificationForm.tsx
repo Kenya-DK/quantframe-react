@@ -1,5 +1,5 @@
 import { PaperProps, Card, Group, Text, Divider, TextInput, Collapse, Textarea } from "@mantine/core";
-import { SettingsNotification } from "@api/types";
+import { TauriTypes } from "$types";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { faBell } from "@fortawesome/free-solid-svg-icons";
 import { faDiscord } from "@fortawesome/free-brands-svg-icons";
@@ -8,8 +8,8 @@ import { TooltipIcon } from "@components/TooltipIcon";
 
 export type NotificationFormProps = {
   title: string;
-  value: SettingsNotification;
-  onChanges: (values: SettingsNotification) => void;
+  value: TauriTypes.SettingsNotification;
+  onChanges: (values: TauriTypes.SettingsNotification) => void;
   paperProps?: PaperProps;
 };
 

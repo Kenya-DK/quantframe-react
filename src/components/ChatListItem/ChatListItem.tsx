@@ -1,5 +1,5 @@
 import { Paper, Divider, Group, Avatar, Tooltip, Text, Grid, Indicator, Stack } from "@mantine/core";
-import { Wfm } from "$types/index";
+import { WFMarketTypes } from "$types/index";
 import classes from "./ChatListItem.module.css";
 import { useEffect, useState } from "react";
 import { TimerStamp } from "@components/TimerStamp";
@@ -9,17 +9,17 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateComponent } from "../../hooks/useTranslate.hook";
 
 export type ChatListItemProps = {
-  chat: Wfm.ChatData;
+  chat: WFMarketTypes.ChatData;
   exclude_user_names?: string[];
   selected?: boolean;
-  onClick?: (chat: Wfm.ChatData) => void;
+  onClick?: (chat: WFMarketTypes.ChatData) => void;
   onDelete?: (id: string) => void;
   compact?: boolean;
 };
 
 export const ChatListItem = ({ onClick, compact, onDelete, selected, exclude_user_names, chat }: ChatListItemProps) => {
-  const [lastMessage, setLastMessage] = useState<Wfm.ChatMessage | undefined>(undefined);
-  const [wfmUsers, setWfmUsers] = useState<Wfm.ChatWith[]>([]);
+  const [lastMessage, setLastMessage] = useState<WFMarketTypes.ChatMessage | undefined>(undefined);
+  const [wfmUsers, setWfmUsers] = useState<WFMarketTypes.ChatWith[]>([]);
   const useTranslateChatItem = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateComponent(`chat_item.${key}`, { ...context }, i18Key);
 

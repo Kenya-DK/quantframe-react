@@ -1,11 +1,11 @@
 import { Box, Button, Checkbox, Group, Tooltip } from "@mantine/core";
-import { SettingsAnalytics } from "@api/types";
+import { TauriTypes } from "$types";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { useForm } from "@mantine/form";
 
 export type AnalyticPanelProps = {
-  value: SettingsAnalytics;
-  onSubmit?: (value: SettingsAnalytics) => void;
+  value: TauriTypes.SettingsAnalytics;
+  onSubmit?: (value: TauriTypes.SettingsAnalytics) => void;
 };
 export const AnalyticPanel = ({ value, onSubmit }: AnalyticPanelProps) => {
   // Translate general

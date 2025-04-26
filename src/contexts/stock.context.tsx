@@ -1,12 +1,12 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { QfSocketEvent, QfSocketEventOperation, StockItem, StockRiven, WishListItem } from "@api/types";
+import { TauriTypes } from "$types";
 import { OnTauriDataEvent } from "@api/index";
 import api from "@api/index";
 
 export type StockContextProps = {
-  items: StockItem[];
-  rivens: StockRiven[];
-  wish_lists: WishListItem[];
+  items: TauriTypes.StockItem[];
+  rivens: TauriTypes.StockRiven[];
+  wish_lists: TauriTypes.WishListItem[];
 };
 export type StockContextProviderProps = {
   children: React.ReactNode;
@@ -25,13 +25,13 @@ export const StockContextContext = createContext<StockContextProps>({
 export const useStockContextContext = () => useContext(StockContextContext);
 
 export function StockContextProvider({ children }: StockContextProviderProps) {
-  const [items, setItems] = useState<StockItem[]>([]);
-  const [rivens, setRivens] = useState<StockRiven[]>([]);
-  const [wish_list, setWishList] = useState<WishListItem[]>([]);
+  const [items, setItems] = useState<TauriTypes.StockItem[]>([]);
+  const [rivens, setRivens] = useState<TauriTypes.StockRiven[]>([]);
+  const [wish_list, setWishList] = useState<TauriTypes.WishListItem[]>([]);
 
-  const handleUpdate = <T extends Entity>(operation: QfSocketEventOperation, data: T | T[], setData: SetDataFunction<T[]>) => {
+  const handleUpdate = <T extends Entity>(operation: TauriTypes.EventOperations, data: T | T[], setData: SetDataFunction<T[]>) => {
     switch (operation) {
-      case QfSocketEventOperation.CREATE_OR_UPDATE:
+      case TauriTypes.EventOperations.CREATE_OR_UPDATE:
         // setData(myState.map(item => item.id === id ? {...item, item.description: "new desc"} : item))
         setData((items) => {
           // Check if the item already exists in the list
@@ -42,10 +42,10 @@ export function StockContextProvider({ children }: StockContextProviderProps) {
           else return [data as T, ...items.reverse()];
         });
         break;
-      case QfSocketEventOperation.DELETE:
+      case TauriTypes.EventOperations.DELETE:
         setData((items) => items.filter((item) => item.id !== (data as T).id));
         break;
-      case QfSocketEventOperation.SET:
+      case TauriTypes.EventOperations.SET:
         setData(data as T[]);
         break;
     }
@@ -53,12 +53,12 @@ export function StockContextProvider({ children }: StockContextProviderProps) {
 
   // Hook on tauri events from rust side
   useEffect(() => {
-    OnTauriDataEvent<any>(QfSocketEvent.UpdateStockItems, ({ data, operation }) => handleUpdate(operation, data, setItems));
-    OnTauriDataEvent<any>(QfSocketEvent.UpdateStockRivens, ({ data, operation }) => handleUpdate(operation, data, setRivens));
-    OnTauriDataEvent<any>(QfSocketEvent.UpdateWishList, ({ data, operation }) => handleUpdate(operation, data, setWishList));
+    OnTauriDataEvent<any>(TauriTypes.Events.UpdateStockItems, ({ data, operation }) => handleUpdate(operation, data, setItems));
+    OnTauriDataEvent<any>(TauriTypes.Events.UpdateStockRivens, ({ data, operation }) => handleUpdate(operation, data, setRivens));
+    OnTauriDataEvent<any>(TauriTypes.Events.UpdateWishList, ({ data, operation }) => handleUpdate(operation, data, setWishList));
     return () => {
-      api.events.CleanEvent(QfSocketEvent.UpdateStockItems);
-      api.events.CleanEvent(QfSocketEvent.UpdateStockRivens);
+      api.events.CleanEvent(TauriTypes.Events.UpdateStockItems);
+      api.events.CleanEvent(TauriTypes.Events.UpdateStockRivens);
     };
   }, []);
 

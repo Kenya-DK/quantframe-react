@@ -1,12 +1,12 @@
 import { Box, Button, Group, TextInput } from "@mantine/core";
-import { Settings } from "@api/types";
+import { TauriTypes } from "$types";
 import { useForm } from "@mantine/form";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { TooltipIcon } from "@components/TooltipIcon";
 
 export type GeneralPanelProps = {
-  value: Settings;
-  onSubmit?: (value: Settings) => void;
+  value: TauriTypes.Settings;
+  onSubmit?: (value: TauriTypes.Settings) => void;
 };
 export const GeneralPanel = ({ value, onSubmit }: GeneralPanelProps) => {
   // Translate general

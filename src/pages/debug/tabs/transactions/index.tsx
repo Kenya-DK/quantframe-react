@@ -1,7 +1,7 @@
 import { Box, Group, Text } from "@mantine/core";
 import { useWarframeMarketContextContext } from "@contexts/warframeMarket.context";
 import { useEffect, useState } from "react";
-import { TransactionDto, TransactionItemType, TransactionType, UpdateTransactionDto } from "@api/types";
+import { TauriTypes } from "$types";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { paginate, GetSubTypeDisplay } from "@utils/helper";
@@ -30,15 +30,15 @@ export const TransactionPanel = ({}: TransactionPanelProps) => {
   const [page, setPage] = useState(1);
   const pageSizes = [5, 10, 15, 20, 25, 30, 50, 100];
   const [pageSize, setPageSize] = useState(pageSizes[4]);
-  const [rows, setRows] = useState<TransactionDto[]>([]);
+  const [rows, setRows] = useState<TauriTypes.TransactionDto[]>([]);
   const [totalRecords, setTotalRecords] = useState<number>(0);
-  const [sortStatus, setSortStatus] = useState<DataTableSortStatus<TransactionDto>>({ columnAccessor: "id", direction: "desc" });
-  const [selectedRecords, setSelectedRecords] = useState<TransactionDto[]>([]);
+  const [sortStatus, setSortStatus] = useState<DataTableSortStatus<TauriTypes.TransactionDto>>({ columnAccessor: "id", direction: "desc" });
+  const [selectedRecords, setSelectedRecords] = useState<TauriTypes.TransactionDto[]>([]);
 
   const [query, setQuery] = useState<string>("");
   const [statusCount, setStatusCount] = useState<{ [key: string]: number }>({}); // Count of each status
-  const [filterTransactionType, setFilterTransactionType] = useState<TransactionType | undefined>(undefined);
-  const [filterItemType, setFilterItemType] = useState<TransactionItemType | undefined>(undefined);
+  const [filterTransactionType, setFilterTransactionType] = useState<TauriTypes.TransactionType | undefined>(undefined);
+  const [filterItemType, setFilterItemType] = useState<TauriTypes.TransactionItemType | undefined>(undefined);
 
   // Translate general
   const useTranslateTabTransactions = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -62,12 +62,12 @@ export const TransactionPanel = ({}: TransactionPanelProps) => {
     setStatusCount(() => {
       let items: { [key: string]: number } = {};
       // Create a transaction type count
-      Object.values(TransactionType).forEach((status) => {
+      Object.values(TauriTypes.TransactionType).forEach((status) => {
         items[status] = transactions.filter((item) => item.transaction_type === status).length;
       });
 
       // Create a transaction item type count
-      Object.values(TransactionItemType).forEach((type) => {
+      Object.values(TauriTypes.TransactionItemType).forEach((type) => {
         items[type] = transactions.filter((item) => item.item_type === type).length;
       });
       return items;
@@ -95,7 +95,7 @@ export const TransactionPanel = ({}: TransactionPanelProps) => {
 
   // Mutations
   const updateTransactionMutation = useMutation({
-    mutationFn: (data: UpdateTransactionDto) => api.transaction.update(data),
+    mutationFn: (data: TauriTypes.UpdateTransactionDto) => api.transaction.update(data),
     onSuccess: async (u) => {
       notifications.show({
         title: useTranslateSuccess("update_transaction.title"),
@@ -131,7 +131,7 @@ export const TransactionPanel = ({}: TransactionPanelProps) => {
     },
   });
   // Modal's
-  const OpenUpdateModal = (transaction: UpdateTransactionDto) => {
+  const OpenUpdateModal = (transaction: TauriTypes.UpdateTransactionDto) => {
     modals.open({
       title: useTranslatePrompt("update.title"),
       children: (
@@ -150,7 +150,7 @@ export const TransactionPanel = ({}: TransactionPanelProps) => {
       <SearchField value={query} onChange={(text) => setQuery(text)} rightSectionWidth={115} rightSection={<Group gap={5}></Group>} />
       <Group gap={"md"} mt={"md"} grow>
         <Group>
-          {Object.values([TransactionType.Purchase, TransactionType.Sale]).map((status) => (
+          {Object.values([TauriTypes.TransactionType.Purchase, TauriTypes.TransactionType.Sale]).map((status) => (
             <ColorInfo
               active={status == filterTransactionType}
               key={status}
@@ -167,7 +167,7 @@ export const TransactionPanel = ({}: TransactionPanelProps) => {
           ))}
         </Group>
         <Group justify="flex-end">
-          {Object.values(TransactionItemType).map((type) => (
+          {Object.values(TauriTypes.TransactionItemType).map((type) => (
             <ColorInfo
               active={type == filterItemType}
               key={type}
@@ -193,7 +193,6 @@ export const TransactionPanel = ({}: TransactionPanelProps) => {
           return {
             "data-color-mode": "box-shadow",
             "data-trade-type": record.transaction_type,
-            "data-item-type": record.item_type,
           };
         }}
         withTableBorder

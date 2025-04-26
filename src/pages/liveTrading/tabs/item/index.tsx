@@ -1,7 +1,7 @@
 import { useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { getCssVariable, GetSubTypeDisplay, CreateTradeMessage } from "@utils/helper";
 import { useEffect, useState } from "react";
-import { CreateStockItem, StockItem, StockStatus, UpdateStockItem, SellStockItem } from "@api/types";
+import { TauriTypes } from "$types";
 import { Box, Grid, Group, NumberFormatter, Text } from "@mantine/core";
 import { useMutation } from "@tanstack/react-query";
 import api from "@api/index";
@@ -32,9 +32,9 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
   // States For DataGrid
   const [query, setQuery] = useState<string>("");
   const [filters, setFilters] = useState<ComplexFilter>({});
-  const [selectedRecords, setSelectedRecords] = useState<StockItem[]>([]);
+  const [selectedRecords, setSelectedRecords] = useState<TauriTypes.StockItem[]>([]);
 
-  const [filterStatus, setFilterStatus] = useState<StockStatus | undefined>(undefined);
+  const [filterStatus, setFilterStatus] = useState<TauriTypes.StockStatus | undefined>(undefined);
   const [statusCount, setStatusCount] = useState<{ [key: string]: number }>({}); // Count of each status
 
   const [segments, setSegments] = useState<{ label: string; count: number; part: number; color: string }[]>([]);
@@ -73,7 +73,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
     if (!items) return;
 
     setStatusCount(
-      Object.values(StockStatus).reduce((acc, status) => {
+      Object.values(TauriTypes.StockStatus).reduce((acc, status) => {
         acc[status] = items.filter((item) => item.status === status).length;
         return acc;
       }, {} as { [key: string]: number })
@@ -118,7 +118,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
     ]);
   }, [items]);
   // Functions
-  const CreateWTSMessages = async (items: StockItem[]) => {
+  const CreateWTSMessages = async (items: TauriTypes.StockItem[]) => {
     items = items
       .filter((x) => !!x.list_price)
       .sort((a, b) => {
@@ -135,7 +135,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
   };
   // Mutations
   const createStockMutation = useMutation({
-    mutationFn: (data: CreateStockItem) => api.stock.item.create(data),
+    mutationFn: (data: TauriTypes.CreateStockItem) => api.stock.item.create(data),
     onSuccess: async (u) => {
       notifications.show({
         title: useTranslateSuccess("create_stock.title"),
@@ -149,7 +149,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
     },
   });
   const updateStockMutation = useMutation({
-    mutationFn: (data: UpdateStockItem) => api.stock.item.update(data),
+    mutationFn: (data: TauriTypes.UpdateStockItem) => api.stock.item.update(data),
     onSuccess: async (u) => {
       notifications.show({
         title: useTranslateSuccess("update_stock.title"),
@@ -163,7 +163,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
     },
   });
   const updateBulkStockMutation = useMutation({
-    mutationFn: (data: { ids: number[]; entry: UpdateStockItem }) => api.stock.item.updateBulk(data.ids, data.entry),
+    mutationFn: (data: { ids: number[]; entry: TauriTypes.UpdateStockItem }) => api.stock.item.updateBulk(data.ids, data.entry),
     onSuccess: async (u) => {
       notifications.show({
         title: useTranslateSuccess("update_bulk_stock.title"),
@@ -181,7 +181,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
     },
   });
   const sellStockMutation = useMutation({
-    mutationFn: (data: SellStockItem) => api.stock.item.sell(data),
+    mutationFn: (data: TauriTypes.SellStockItem) => api.stock.item.sell(data),
     onSuccess: async (u) => {
       notifications.show({
         title: useTranslateSuccess("sell_stock.title"),
@@ -255,7 +255,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
     });
   };
 
-  const OpenSellModal = (stock: StockItem) => {
+  const OpenSellModal = (stock: TauriTypes.StockItem) => {
     modals.openContextModal({
       modal: "prompt",
       title: useTranslateBasePrompt("sell.title"),
@@ -281,7 +281,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
     });
   };
 
-  const OpenInfoModal = (item: StockItem) => {
+  const OpenInfoModal = (item: TauriTypes.StockItem) => {
     modals.open({
       size: "100%",
       title: item.item_name,
@@ -289,7 +289,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
     });
   };
 
-  const OpenUpdateModal = (items: UpdateStockItem[]) => {
+  const OpenUpdateModal = (items: TauriTypes.UpdateStockItem[]) => {
     modals.open({
       title: useTranslatePrompt("update_bulk.title"),
       children: (
@@ -313,7 +313,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
             }}
           />
           <Group gap={"md"} mt={"md"}>
-            {Object.values(StockStatus).map((status) => (
+            {Object.values(TauriTypes.StockStatus).map((status) => (
               <ColorInfo
                 active={status == filterStatus}
                 key={status}

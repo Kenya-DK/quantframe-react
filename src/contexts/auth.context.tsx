@@ -1,11 +1,11 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import api, { OnTauriDataEvent } from "@api/index";
-import { QfSocketEvent, QfSocketEventOperation, User, UserStatus } from "@api/types";
+import { TauriTypes, UserStatus } from "$types";
 import wfmSocket from "@models/wfmSocket";
-import { Wfm } from "../types";
+import { WFMarketTypes } from "../types";
 import { useAppContext } from "./app.context";
 export type AuthContextProps = {
-  user: User | undefined;
+  user: TauriTypes.User | undefined;
   patreon_link?: string;
 };
 export type TauriContextProviderProps = {
@@ -24,29 +24,29 @@ export function AuthContextProvider({ children }: TauriContextProviderProps) {
   const { app_info } = useAppContext();
 
   // States
-  const [user, setUser] = useState<User | undefined>(undefined);
+  const [user, setUser] = useState<TauriTypes.User | undefined>(undefined);
   const [patreon_link, setPatreonLink] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (!app_info) return;
     setPatreonLink(
       `https://www.patreon.com/oauth2/authorize?response_type=code&client_id=6uDrK7uhMBAidiAvzQd7ukmHFz4NUXO1wocruae24C4_04rXrUMSvCzC9RKbQpmN&scope=identity%20identity%5Bemail%5D&redirect_uri=${
-        app_info?.is_development ? "http://localhost:6969/patreon/link" : "https://api.quantframe/patreon/link"
+        app_info?.is_development ? "http://localhost:6969/auth/patreon/link" : "https://api.quantframe/auth/patreon/link"
       }&state=${user?.id}|${user?.check_code}`
     );
   }, [app_info, user]);
 
   // Handle update, create, delete transaction
-  const handleUpdateUser = (operation: string, data: User) => {
+  const handleUpdateUser = (operation: string, data: TauriTypes.User) => {
     window.data = data;
     switch (operation) {
-      case QfSocketEventOperation.CREATE_OR_UPDATE:
+      case TauriTypes.EventOperations.CREATE_OR_UPDATE:
         setUser((user) => ({ ...user, ...data }));
         break;
-      case QfSocketEventOperation.DELETE:
+      case TauriTypes.EventOperations.DELETE:
         setUser(undefined);
         break;
-      case QfSocketEventOperation.SET:
+      case TauriTypes.EventOperations.SET:
         setUser(data);
         break;
     }
@@ -63,10 +63,10 @@ export function AuthContextProvider({ children }: TauriContextProviderProps) {
 
   // Hook on tauri events from rust side
   useEffect(() => {
-    wfmSocket.on(Wfm.SocketEvent.OnUserStatusChange, OnUserStatusChange);
-    OnTauriDataEvent<User>(QfSocketEvent.UpdateUser, ({ data, operation }) => handleUpdateUser(operation, data));
+    wfmSocket.on(WFMarketTypes.SocketEvent.OnUserStatusChange, OnUserStatusChange);
+    OnTauriDataEvent<TauriTypes.User>(TauriTypes.Events.UpdateUser, ({ data, operation }) => handleUpdateUser(operation, data));
     return () => {
-      wfmSocket.off(Wfm.SocketEvent.OnUserStatusChange, OnUserStatusChange);
+      wfmSocket.off(WFMarketTypes.SocketEvent.OnUserStatusChange, OnUserStatusChange);
     };
   }, []);
 

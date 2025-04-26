@@ -1,7 +1,7 @@
 import React, { createContext, useEffect, useState } from "react";
 import wfmSocket from "@models/wfmSocket";
 import { useAuthContext } from "./auth.context";
-import { Wfm } from "../types";
+import { WFMarketTypes } from "../types";
 import api from "../api/index";
 export type WFMSocketContextProps = {
   // Socket State's
@@ -63,14 +63,14 @@ export function WFMSocketContextProvider({ children }: WFMSocketContextProviderP
 
     wfmSocket.on("connect", OnConnect);
     wfmSocket.on("disconnect", OnDisconnect);
-    wfmSocket.on(Wfm.SocketEvent.OnError, OnError);
-    wfmSocket.on(Wfm.SocketEvent.OnUserCountChange, OnOnlineCount);
+    wfmSocket.on(WFMarketTypes.SocketEvent.OnError, OnError);
+    wfmSocket.on(WFMarketTypes.SocketEvent.OnUserCountChange, OnOnlineCount);
 
     return () => {
       wfmSocket.off("connect", OnConnect);
       wfmSocket.off("disconnect", OnDisconnect);
-      wfmSocket.off(Wfm.SocketEvent.OnError, OnError);
-      wfmSocket.off(Wfm.SocketEvent.OnUserCountChange, OnOnlineCount);
+      wfmSocket.off(WFMarketTypes.SocketEvent.OnError, OnError);
+      wfmSocket.off(WFMarketTypes.SocketEvent.OnUserCountChange, OnOnlineCount);
     };
   }, []);
 

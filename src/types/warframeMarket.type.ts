@@ -1,6 +1,6 @@
-import { PriceHistory, RivenAttribute, UserStatus } from "@api/types";
+import { PriceHistory, RivenAttribute, UserStatus } from ".";
 
-export namespace Wfm {
+export namespace WFMarketTypes {
   export interface UserDto {
     // unread_messages: number
     // has_mail: number

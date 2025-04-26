@@ -1,14 +1,14 @@
 import { Group, NumberInput, BoxProps, Box } from "@mantine/core";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { useForm } from "@mantine/form";
-import { CreateStockItem, SubType } from "@api/types";
+import { TauriTypes } from "$types";
 import { SelectTradableItem } from "@components/SelectTradableItem";
 import { useAppContext } from "@contexts/app.context";
 import { faShoppingCart } from "@fortawesome/free-solid-svg-icons";
 import { ActionWithTooltip } from "@components/ActionWithTooltip";
 
 export type CreateStockItemFormProps = {
-  onSubmit: (values: CreateStockItem) => void;
+  onSubmit: (values: TauriTypes.CreateStockItem) => void;
   boxProps?: BoxProps;
   disabled?: boolean;
   hide_bought?: boolean;
@@ -33,7 +33,7 @@ export function CreateStockItemForm({ hide_bought, disabled, boxProps, onSubmit 
       bought: 0,
       quantity: 1,
       minimum_price: 0,
-      sub_type: undefined as SubType | undefined,
+      sub_type: undefined as TauriTypes.SubType | undefined,
     },
     validate: {},
   });

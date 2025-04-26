@@ -1,5 +1,5 @@
 import { Alert, Avatar, Collapse, Group, Stack, Text, Tooltip } from "@mantine/core";
-import { Wfm } from "$types/index";
+import { WFMarketTypes } from "$types/index";
 import { WFMThumbnail } from "@api/index";
 import { useAuthContext } from "@contexts/auth.context";
 import classes from "./ChatMessage.module.css";
@@ -9,8 +9,8 @@ import calendar from "dayjs/plugin/calendar";
 dayjs.extend(calendar);
 
 export type ChatMessageProps = {
-  sender: Wfm.ChatWith | undefined;
-  msg: Wfm.ChatMessage;
+  sender: WFMarketTypes.ChatWith | undefined;
+  msg: WFMarketTypes.ChatMessage;
 };
 
 export const ChatMessage = ({ msg, sender }: ChatMessageProps) => {

@@ -1,45 +1,43 @@
-import { PaperProps, Image } from '@mantine/core';
-import { useEffect, useState } from 'react';
-import { Wfm } from '$types/index';
-import { AuctionRivenListItem } from '../AuctionListRivenItem';
-
+import { PaperProps, Image } from "@mantine/core";
+import { useEffect, useState } from "react";
+import { WFMarketTypes } from "$types/index";
+import { AuctionRivenListItem } from "../AuctionListRivenItem";
 
 export type AuctionListItemItemProps = {
-	compacted?: boolean;
-	showOwner?: boolean;
-	auction: Wfm.Auction<any>;
-	show_border?: boolean;
-	show_image?: boolean;
-	header?: React.ReactNode;
-	paperProps?: PaperProps;
-	overrideMode?: Wfm.AuctionStatus;
-}
+  compacted?: boolean;
+  showOwner?: boolean;
+  auction: WFMarketTypes.Auction<any>;
+  show_border?: boolean;
+  show_image?: boolean;
+  header?: React.ReactNode;
+  paperProps?: PaperProps;
+  overrideMode?: WFMarketTypes.AuctionStatus;
+};
 export function AuctionListItem(props: AuctionListItemItemProps) {
-	// Props
-	const { auction } = props;
-	// State
-	const [itemType, setItemType] = useState<Wfm.AuctionItemType | undefined>(undefined);
+  // Props
+  const { auction } = props;
+  // State
+  const [itemType, setItemType] = useState<WFMarketTypes.AuctionItemType | undefined>(undefined);
 
-	useEffect(() => {
+  useEffect(() => {
+    switch (auction.item.type) {
+      case WFMarketTypes.AuctionItemType.Riven:
+        setItemType(WFMarketTypes.AuctionItemType.Riven);
+        break;
+      case WFMarketTypes.AuctionItemType.Lich:
+        setItemType(WFMarketTypes.AuctionItemType.Lich);
+        break;
+      case WFMarketTypes.AuctionItemType.Sister:
+        setItemType(WFMarketTypes.AuctionItemType.Sister);
+        break;
+    }
+  }, [auction]);
 
-switch (auction.item.type) {
-			case Wfm.AuctionItemType.Riven:
-				setItemType(Wfm.AuctionItemType.Riven);
-				break;
-			case Wfm.AuctionItemType.Lich:
-				setItemType(Wfm.AuctionItemType.Lich);
-				break;
-			case Wfm.AuctionItemType.Sister:
-				setItemType(Wfm.AuctionItemType.Sister);
-				break;
-		}
-	}, [auction]);
-
-	return (
-		<>
-			{itemType === Wfm.AuctionItemType.Riven && (<AuctionRivenListItem {...props} />)}
-			{itemType === Wfm.AuctionItemType.Sister && (<Image fit="contain" w="auto" h={150} radius="md" src={"https://cataas.com/cat"} />)}
-			{itemType === Wfm.AuctionItemType.Lich && (<Image fit="contain" w="auto" h={150} radius="md" src={"https://cataas.com/cat"} />)}
-		</>
-	);
+  return (
+    <>
+      {itemType === WFMarketTypes.AuctionItemType.Riven && <AuctionRivenListItem {...props} />}
+      {itemType === WFMarketTypes.AuctionItemType.Sister && <Image fit="contain" w="auto" h={150} radius="md" src={"https://cataas.com/cat"} />}
+      {itemType === WFMarketTypes.AuctionItemType.Lich && <Image fit="contain" w="auto" h={150} radius="md" src={"https://cataas.com/cat"} />}
+    </>
+  );
 }
