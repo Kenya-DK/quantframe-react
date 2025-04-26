@@ -1,6 +1,6 @@
 import { Text, Group, Menu, Avatar, Button, Indicator } from "@mantine/core";
 import api, { SendTauriDataEvent, WFMThumbnail } from "@api/index";
-import { QfSocketEvent, QfSocketEventOperation, ResponseError, Settings, UserStatus } from "@api/types";
+import { ResponseError, TauriTypes, UserStatus } from "$types";
 import classes from "./UserMenu.module.css";
 import { useTranslateComponent, useTranslateEnums } from "@hooks/useTranslate.hook";
 import { faGear, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
@@ -35,13 +35,13 @@ export function UserMenu() {
     mutationFn: () => api.auth.logout(),
     onSuccess: () => {
       notifications.show({ title: useTranslateSuccess("logout.title"), message: useTranslateSuccess("logout.message"), color: "green.7" });
-      SendTauriDataEvent(QfSocketEvent.UpdateUser, QfSocketEventOperation.SET, undefined);
+      SendTauriDataEvent(TauriTypes.Events.UpdateUser, TauriTypes.EventOperations.SET, undefined);
       navigate("/");
     },
     onError: () => notifications.show({ title: useTranslateErrors("logout.title"), message: useTranslateErrors("logout.message"), color: "green.7" }),
   });
   const updateSettingsMutation = useMutation({
-    mutationFn: (s: Settings) => api.app.updateSettings(s),
+    mutationFn: (s: TauriTypes.Settings) => api.app.updateSettings(s),
     onSuccess: () => {
       notifications.show({
         title: useTranslateSuccess("update_settings.title"),

@@ -29,7 +29,7 @@ import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { getCssVariable } from "@utils/helper";
 import { DataTable } from "mantine-datatable";
 import { useEffect, useState } from "react";
-import { StatisticProfitBase, TransactionType } from "@api/types";
+import { TauriTypes } from "$types";
 import { TextTranslate } from "@components/TextTranslate";
 import { StatsWithIcon } from "@components/StatsWithIcon";
 import { BarCardChart } from "@components/BarCardChart";
@@ -38,7 +38,7 @@ import classes from "./Home.module.css";
 import { TransactionListItem } from "@components/TransactionListItem";
 import faMoneyBillTrendDown from "@icons/faMoneyBillTrendDown";
 
-const BarChartFooter = ({ i18nKey, statistics }: { i18nKey: string; statistics: StatisticProfitBase }) => {
+const BarChartFooter = ({ i18nKey, statistics }: { i18nKey: string; statistics: TauriTypes.StatisticProfitBase }) => {
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`home.${key}`, { ...context }, i18Key);
   const useTranslateTooltips = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslate(`tooltips.bar_chart.footer.${key}`, { ...context }, i18Key);
@@ -110,9 +110,12 @@ export default function HomePage() {
   useEffect(() => {
     if (!statistics) return;
     setPurchaseCount(
-      statistics?.recent_transactions.transactions.filter((transaction) => transaction.transaction_type === TransactionType.Purchase).length
+      statistics?.recent_transactions.transactions.filter((transaction) => transaction.transaction_type === TauriTypes.TransactionType.Purchase)
+        .length
     );
-    setSaleCount(statistics?.recent_transactions.transactions.filter((transaction) => transaction.transaction_type === TransactionType.Sale).length);
+    setSaleCount(
+      statistics?.recent_transactions.transactions.filter((transaction) => transaction.transaction_type === TauriTypes.TransactionType.Sale).length
+    );
   }, [statistics]);
   return (
     <Container size={"100%"}>
@@ -197,7 +200,7 @@ export default function HomePage() {
             context={
               <BarChartFooter
                 i18nKey={useTranslateCards("total.bar_chart.footers", undefined, true)}
-                statistics={statistics?.total as StatisticProfitBase}
+                statistics={statistics?.total as TauriTypes.StatisticProfitBase}
               />
             }
           />
@@ -217,7 +220,7 @@ export default function HomePage() {
             context={
               <BarChartFooter
                 i18nKey={useTranslateCards("today.bar_chart.footers", undefined, true)}
-                statistics={statistics?.today as StatisticProfitBase}
+                statistics={statistics?.today as TauriTypes.StatisticProfitBase}
               />
             }
           />
@@ -237,7 +240,7 @@ export default function HomePage() {
             context={
               <BarChartFooter
                 i18nKey={useTranslateCards("recent_days.bar_chart.footers", undefined, true)}
-                statistics={statistics?.recent_days as StatisticProfitBase}
+                statistics={statistics?.recent_days as TauriTypes.StatisticProfitBase}
               />
             }
           />

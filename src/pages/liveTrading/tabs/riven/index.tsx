@@ -2,7 +2,7 @@ import { Text, Box, Grid, Group, NumberFormatter } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { getCssVariable, GetSubTypeDisplay, CreateTradeMessage } from "@utils/helper";
 import { useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
-import { CreateStockRiven, SellStockRiven, StockRiven, StockStatus, UpdateStockRiven } from "@api/types";
+import { TauriTypes } from "$types";
 import { faAdd, faComment, faEdit, faEye, faEyeSlash, faFilter, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
@@ -31,11 +31,11 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
   const { is_running } = useLiveScraperContext();
 
   // States For Database
-  const [selectedRecords, setSelectedRecords] = useState<StockRiven[]>([]);
+  const [selectedRecords, setSelectedRecords] = useState<TauriTypes.StockRiven[]>([]);
 
   const [query, setQuery] = useState<string>("");
   const [filters, setFilters] = useState<ComplexFilter>({});
-  const [filterStatus, setFilterStatus] = useState<StockStatus | undefined>(undefined);
+  const [filterStatus, setFilterStatus] = useState<TauriTypes.StockStatus | undefined>(undefined);
   const [statusCount, setStatusCount] = useState<{ [key: string]: number }>({}); // Count of each status
 
   const [segments, setSegments] = useState<{ label: string; count: number; part: number; color: string }[]>([]);
@@ -74,7 +74,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
     if (!rivens) return;
 
     setStatusCount(
-      Object.values(StockStatus).reduce((acc, status) => {
+      Object.values(TauriTypes.StockStatus).reduce((acc, status) => {
         acc[status] = rivens.reverse().filter((item) => item.status === status).length;
         return acc;
       }, {} as { [key: string]: number })
@@ -119,7 +119,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
     ]);
   }, [rivens]);
   // Functions
-  const CreateWTSMessages = async (items: StockRiven[]) => {
+  const CreateWTSMessages = async (items: TauriTypes.StockRiven[]) => {
     items = items
       .filter((x) => !!x.list_price)
       .sort((a, b) => {
@@ -136,14 +136,14 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
     notifications.show({ title: useTranslateNotifications("copied.title"), message: msg.trim(), color: "green.7" });
     navigator.clipboard.writeText(msg.trim());
   };
-  const CreateRivenSelection = async (items: StockRiven[]) => {
+  const CreateRivenSelection = async (items: TauriTypes.StockRiven[]) => {
     let message = items.map((x, i) => `${i + 1}: [${x.weapon_name} ${x.mod_name}]`).join(" ");
     notifications.show({ title: useTranslateNotifications("copied.title"), message: message, color: "green.7" });
     navigator.clipboard.writeText(message);
   };
   // Mutations
   const updateStockMutation = useMutation({
-    mutationFn: (data: UpdateStockRiven) => api.stock.riven.update(data),
+    mutationFn: (data: TauriTypes.UpdateStockRiven) => api.stock.riven.update(data),
     onSuccess: async (u) => {
       notifications.show({
         title: useTranslateSuccess("update_stock.title"),
@@ -158,7 +158,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
   });
 
   const updateBulkStockMutation = useMutation({
-    mutationFn: (data: { ids: number[]; entry: UpdateStockRiven }) => api.stock.riven.updateBulk(data.ids, data.entry),
+    mutationFn: (data: { ids: number[]; entry: TauriTypes.UpdateStockRiven }) => api.stock.riven.updateBulk(data.ids, data.entry),
     onSuccess: async (u) => {
       notifications.show({
         title: useTranslateSuccess("update_bulk_stock.title"),
@@ -177,7 +177,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
   });
 
   const sellStockMutation = useMutation({
-    mutationFn: (data: SellStockRiven) => api.stock.riven.sell(data),
+    mutationFn: (data: TauriTypes.SellStockRiven) => api.stock.riven.sell(data),
     onSuccess: async (u) => {
       notifications.show({
         title: useTranslateSuccess("sell_stock.title"),
@@ -226,7 +226,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
   });
 
   const createStockMutation = useMutation({
-    mutationFn: (riven: CreateStockRiven) => api.stock.riven.create(riven),
+    mutationFn: (riven: TauriTypes.CreateStockRiven) => api.stock.riven.create(riven),
     onSuccess: async (r) => {
       notifications.show({
         title: useTranslateSuccess("create_riven.title"),
@@ -292,7 +292,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
       },
     });
   };
-  const OpenInfoModal = (item: StockRiven) => {
+  const OpenInfoModal = (item: TauriTypes.StockRiven) => {
     modals.open({
       size: "100%",
       title: item.weapon_name + " " + item.mod_name,
@@ -323,7 +323,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
       ),
     });
   };
-  const OpenUpdateModal = (items: UpdateStockRiven[]) => {
+  const OpenUpdateModal = (items: TauriTypes.UpdateStockRiven[]) => {
     modals.open({
       title: useTranslatePrompt("update_bulk.title"),
       children: (
@@ -336,7 +336,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
       ),
     });
   };
-  const OpenRivenFilterModal = (item: StockRiven) => {
+  const OpenRivenFilterModal = (item: TauriTypes.StockRiven) => {
     const filter = item.filter || { enabled: false, attributes: [] };
     if (!filter.attributes) filter.attributes = item.attributes.map((x) => ({ positive: x.positive, url_name: x.url_name, is_required: false }));
 
@@ -359,7 +359,13 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
       <Grid>
         <Grid.Col span={8}>
           <Group gap={"md"} mt={"md"}>
-            {[StockStatus.Pending, StockStatus.Live, StockStatus.InActive, StockStatus.ToLowProfit, StockStatus.NoSellers].map((status) => (
+            {[
+              TauriTypes.StockStatus.Pending,
+              TauriTypes.StockStatus.Live,
+              TauriTypes.StockStatus.InActive,
+              TauriTypes.StockStatus.ToLowProfit,
+              TauriTypes.StockStatus.NoSellers,
+            ].map((status) => (
               <ColorInfo
                 active={status == filterStatus}
                 key={status}

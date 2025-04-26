@@ -1,21 +1,21 @@
 import { Grid, Title, Tabs, Center, ScrollArea, Group, TextInput, Button } from "@mantine/core";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
 import { PriceHistoryListItem } from "@components/PriceHistory";
-import { Wfm } from "$types/index";
+import { WFMarketTypes } from "$types/index";
 import { OrderListItem } from "@components/OrderListItem";
 import dayjs from "dayjs";
 import api from "@api/index";
-import { CacheTradableItem } from "@api/types";
 import { useEffect, useState } from "react";
+import { TauriTypes } from "$types";
 import { useQuery } from "@tanstack/react-query";
 import { open } from "@tauri-apps/plugin-shell";
 
 export type OrderDetailsProps = {
-  value: Wfm.OrderDto;
+  value: WFMarketTypes.OrderDto;
 };
 export function OrderDetails({ value }: OrderDetailsProps) {
   //State
-  const [item, setItem] = useState<CacheTradableItem | undefined>(undefined);
+  const [item, setItem] = useState<TauriTypes.CacheTradableItem | undefined>(undefined);
 
   // Fetch data from rust side
   const { data } = useQuery({

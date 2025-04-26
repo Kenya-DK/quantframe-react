@@ -58,9 +58,7 @@ export function LiveTradingControl() {
         <Group justify="center">
           <Button disabled={!can_run} onClick={() => ToggleLiveTrading(!is_running)}>
             {useTranslateButtons(is_running ? "stop" : "start")}
-            {}
           </Button>
-          {/* <Button disabled={!can_run} onClick={() => is_running ? api.live_scraper.stop() : StartTradingMutation.mutate()}>{useTranslateButtons(is_running ? "stop" : "start")}{ }</Button> */}
         </Group>
         {showMessage && <TextTranslate i18nKey={useTranslateLiveTrading(message?.i18nKey || "", undefined, true)} values={message?.values || {}} />}
       </Stack>

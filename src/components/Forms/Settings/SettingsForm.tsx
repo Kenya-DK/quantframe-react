@@ -1,6 +1,6 @@
 import { PaperProps, Container, Tabs } from "@mantine/core";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
-import { Settings } from "@api/types";
+import { TauriTypes } from "$types";
 import { GeneralPanel } from "./Tabs/General";
 import { LogPanel } from "./Tabs/Log";
 import { LiveTradingPanel } from "./Tabs/LiveTrading";
@@ -8,8 +8,8 @@ import { NotificationPanel } from "./Tabs/Notification";
 import { AnalyticPanel } from "./Tabs/Analytic";
 
 export type SettingsFormProps = {
-  value: Settings;
-  onSubmit: (value: Settings) => void;
+  value: TauriTypes.Settings;
+  onSubmit: (value: TauriTypes.Settings) => void;
   paperProps?: PaperProps;
 };
 

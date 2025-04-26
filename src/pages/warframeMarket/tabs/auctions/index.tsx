@@ -1,6 +1,6 @@
 import { Text, Box, Divider, Group, Pagination, ScrollArea, SimpleGrid } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { Wfm } from "$types/index";
+import { WFMarketTypes } from "$types/index";
 import { faFileImport, faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { paginate } from "@utils/helper";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
@@ -25,7 +25,7 @@ export const AuctionPanel = ({}: AuctionPanelProps) => {
   const pageSizes = [1, 5, 10, 15, 20, 25, 30, 50, 100];
   const [pageSize, _setPageSize] = useState(pageSizes[4]);
   const [totalPages, setTotalPages] = useState(0);
-  const [rows, setRows] = useState<Wfm.Auction<string>[]>([]);
+  const [rows, setRows] = useState<WFMarketTypes.Auction<string>[]>([]);
   const { auctions } = useWarframeMarketContextContext();
   const { rivens } = useStockContextContext();
 
@@ -108,7 +108,7 @@ export const AuctionPanel = ({}: AuctionPanelProps) => {
     },
   });
   const createRivenFromAuctionsMutation = useMutation({
-    mutationFn: (a: Wfm.Auction<string> & { price: number }) => api.auction.import_auction(a, a.price),
+    mutationFn: (a: WFMarketTypes.Auction<string> & { price: number }) => api.auction.import_auction(a, a.price),
     onSuccess: async (u) => {
       notifications.show({
         title: useTranslateSuccess("import_riven.title"),
@@ -121,7 +121,7 @@ export const AuctionPanel = ({}: AuctionPanelProps) => {
       notifications.show({ title: useTranslateErrors("import_riven.title"), message: useTranslateErrors("import_riven.message"), color: "red.7" });
     },
   });
-  const OpenCreateStockRiven = (auction: Wfm.Auction<string>) => {
+  const OpenCreateStockRiven = (auction: WFMarketTypes.Auction<string>) => {
     modals.openContextModal({
       modal: "prompt",
       title: useTranslatePrompt(`import_riven.title`),

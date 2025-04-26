@@ -1,5 +1,5 @@
 import { upperFirst } from "@mantine/hooks";
-import { SubType } from "../api/types";
+import { TauriTypes } from "$types";
 
 export interface GroupByDateSettings {
   labels?: string[];
@@ -124,7 +124,7 @@ export const getCssVariable = (name: string) => {
   return getComputedStyle(document.documentElement).getPropertyValue(name);
 };
 
-export const GetSubTypeDisplay = (subType: SubType | undefined) => {
+export const GetSubTypeDisplay = (subType: TauriTypes.SubType | undefined) => {
   if (!subType || Object.keys(subType).length == 0) return "";
   const { rank, variant, amber_stars, cyan_stars } = subType;
   let display = "";

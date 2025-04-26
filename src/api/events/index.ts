@@ -1,11 +1,11 @@
 import { listen } from "@tauri-apps/api/event";
 import { ComposedListener } from "@utils/listener/Composed.listener";
-import { QfSocketEvent } from "../types";
+import { TauriTypes } from "$types";
 
 export class EventModule {
   private listener = new ComposedListener();
   // private debug_filter: string[] = ["*"];
-  private debug_filter: string[] = [QfSocketEvent.All];
+  private debug_filter: string[] = [TauriTypes.Events.All];
   private _colors = ["color: #000", "color: #000"];
   constructor() {
     this.Initializer();

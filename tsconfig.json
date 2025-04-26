@@ -21,7 +21,7 @@
       "@hooks/*": ["src/hooks/*"],
       "@utils/*": ["src/utils/*"],
       "@api/*": ["src/api/*"],
-      "$types/*": ["src/types/*"],
+      "$types*": ["src/types/index.ts"],
       "@icons/*": ["src/icons/*"]
     },
     /* Linting */

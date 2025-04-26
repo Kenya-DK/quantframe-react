@@ -1,12 +1,12 @@
 import { Title, Button, Stack, Group } from "@mantine/core";
-import { RivenAttribute, CacheRivenAttribute } from "@api/types";
+import { RivenAttribute, TauriTypes } from "$types";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { useForm } from "@mantine/form";
 import { useState } from "react";
 import { CreateRivenAttribute } from "../CreateRivenAttribute";
 
 export type CreateRivenAttributesProps = {
-  attributes: CacheRivenAttribute[];
+  attributes: TauriTypes.CacheRivenAttribute[];
   maxPositive: number;
   maxNegative: number;
   value: RivenAttribute[];

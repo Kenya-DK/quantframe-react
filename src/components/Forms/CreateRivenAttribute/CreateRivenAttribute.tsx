@@ -1,13 +1,13 @@
 import { Flex, NumberInput, Select } from "@mantine/core";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { useForm } from "@mantine/form";
-import { RivenAttribute, CacheRivenAttribute } from "@api/types";
+import { RivenAttribute, TauriTypes } from "$types";
 import { useEffect, useState } from "react";
 import { ActionWithTooltip } from "../../ActionWithTooltip";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 
 export type CreateRivenAttributeProps = {
-  availableAttributes: CacheRivenAttribute[];
+  availableAttributes: TauriTypes.CacheRivenAttribute[];
   value: RivenAttribute;
   positiveNumberOnly?: boolean;
   negativeNumberOnly?: boolean;
@@ -24,7 +24,7 @@ export function CreateRivenAttribute({
   onRemove,
   value,
 }: CreateRivenAttributeProps) {
-  const [currentValue, setCurrentValue] = useState<CacheRivenAttribute | undefined>(undefined);
+  const [currentValue, setCurrentValue] = useState<TauriTypes.CacheRivenAttribute | undefined>(undefined);
 
   // Translate general
   const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>

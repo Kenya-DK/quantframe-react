@@ -1,5 +1,5 @@
 import { Box, Grid, Group, MultiSelect, Paper, RangeSlider, Text } from "@mantine/core";
-import { CacheTradableItem } from "@api/types";
+import { TauriTypes } from "$types";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { useEffect, useState } from "react";
@@ -12,9 +12,9 @@ import classes from "./TradableItemList.module.css";
 import { SortItems, SortDirection } from "@utils/sorting.helper";
 
 export type TradableItemListProps = {
-  availableItems: CacheTradableItem[];
-  onAddAll?: (items: CacheTradableItem[]) => void;
-  onAddItem?: (item: CacheTradableItem) => void;
+  availableItems: TauriTypes.CacheTradableItem[];
+  onAddAll?: (items: TauriTypes.CacheTradableItem[]) => void;
+  onAddItem?: (item: TauriTypes.CacheTradableItem) => void;
 };
 
 export function TradableItemList({ onAddItem, onAddAll, availableItems }: TradableItemListProps) {
@@ -22,9 +22,9 @@ export function TradableItemList({ onAddItem, onAddAll, availableItems }: Tradab
   const [page, setPage] = useState(1);
   const pageSizes = [5, 10, 15, 20, 25, 30, 50, 100];
   const [pageSize, setPageSize] = useState(pageSizes[4]);
-  const [rows, setRows] = useState<CacheTradableItem[]>([]);
+  const [rows, setRows] = useState<TauriTypes.CacheTradableItem[]>([]);
   const [totalRecords, setTotalRecords] = useState<number>(0);
-  const [sortStatus, setSortStatus] = useState<DataTableSortStatus<CacheTradableItem>>({ columnAccessor: "name", direction: "desc" });
+  const [sortStatus, setSortStatus] = useState<DataTableSortStatus<TauriTypes.CacheTradableItem>>({ columnAccessor: "name", direction: "desc" });
   const [is_filter_open, setFilterOpen] = useState(false);
 
   // Translate general

@@ -1,16 +1,16 @@
 import { TauriClient } from "..";
-import { InitializeResponds, Settings } from "@api/types";
+import { TauriTypes } from "$types";
 
 export class AppModule {
   constructor(private readonly client: TauriClient) {}
 
-  async init(): Promise<InitializeResponds> {
-    const [err, res] = await this.client.sendInvoke<InitializeResponds>("app_init");
+  async init(): Promise<TauriTypes.InitializeResponds> {
+    const [err, res] = await this.client.sendInvoke<TauriTypes.InitializeResponds>("app_init");
     if (err) throw err;
     return res;
   }
 
-  async updateSettings(settings: Settings) {
+  async updateSettings(settings: TauriTypes.Settings) {
     const [err] = await this.client.sendInvoke("app_update_settings", { settings });
     if (err) throw err;
   }

@@ -1,10 +1,10 @@
 import { Image, Group, Paper, Stack, Divider, Text, Avatar, Skeleton, PaperProps, Grid, Box, Progress, NumberFormatter } from "@mantine/core";
 import classes from "./AuctionRivenListItem.module.css";
 import { useEffect, useState } from "react";
-import { Wfm } from "$types/index";
+import { RivenAttribute, WFMarketTypes } from "$types/index";
 import api, { WFMThumbnail } from "@api/index";
 import { useQuery } from "@tanstack/react-query";
-import { CacheRivenWeapon, RivenAttribute } from "@api/types";
+import { TauriTypes } from "$types";
 import { getCssVariable } from "@utils/helper";
 import { TextTranslate } from "@components/TextTranslate";
 import { SvgIcon, SvgType } from "@components/SvgIcon";
@@ -14,12 +14,12 @@ import { useTranslateComponent, useTranslateEnums } from "@hooks/useTranslate.ho
 export type AuctionRivenListItemProps = {
   compacted?: boolean;
   showOwner?: boolean;
-  auction: Wfm.Auction<any>;
+  auction: WFMarketTypes.Auction<any>;
   show_border?: boolean;
   show_image?: boolean;
   header?: React.ReactNode;
   paperProps?: PaperProps;
-  overrideMode?: Wfm.AuctionStatus;
+  overrideMode?: WFMarketTypes.AuctionStatus;
 };
 export function AuctionRivenListItem({
   overrideMode,
@@ -32,8 +32,8 @@ export function AuctionRivenListItem({
   auction,
 }: AuctionRivenListItemProps) {
   // State
-  const [status, setStatus] = useState<Wfm.AuctionStatus>(Wfm.AuctionStatus.Private);
-  const [weapon, setWeapon] = useState<CacheRivenWeapon | undefined>(undefined);
+  const [status, setStatus] = useState<WFMarketTypes.AuctionStatus>(WFMarketTypes.AuctionStatus.Private);
+  const [weapon, setWeapon] = useState<TauriTypes.CacheRivenWeapon | undefined>(undefined);
   const [positive, setPositive] = useState<RivenAttribute[]>([]);
   const [negative, setNegative] = useState<RivenAttribute | undefined>(undefined);
 
@@ -52,9 +52,9 @@ export function AuctionRivenListItem({
   useEffect(() => {
     // Set status
     if (overrideMode) setStatus(overrideMode);
-    else if (auction.private) setStatus(Wfm.AuctionStatus.Private);
-    else if (auction.closed) setStatus(Wfm.AuctionStatus.Closed);
-    else if (auction.visible) setStatus(Wfm.AuctionStatus.Visible);
+    else if (auction.private) setStatus(WFMarketTypes.AuctionStatus.Private);
+    else if (auction.closed) setStatus(WFMarketTypes.AuctionStatus.Closed);
+    else if (auction.visible) setStatus(WFMarketTypes.AuctionStatus.Visible);
 
     if (data) setWeapon(data.find((item) => item.wfm_url_name == auction.item.weapon_url_name));
     if (auction.item.attributes) {
