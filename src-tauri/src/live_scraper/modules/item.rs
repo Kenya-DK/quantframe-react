@@ -20,6 +20,7 @@ use entity::price_history::{PriceHistory, PriceHistoryVec};
 use serde_json::json;
 use service::{StockItemMutation, StockItemQuery, WishListMutation, WishListQuery};
 use std::collections::HashMap;
+use std::hash::Hash;
 use std::sync::{Arc, Mutex};
 use std::vec;
 #[derive(Clone)]
@@ -102,7 +103,7 @@ impl ItemModule {
         if settings_state.has_trade_mode(TradeMode::Buy) {
             let buy_list = self.get_interesting_items().await?;
             for item in buy_list {
-                interesting_items.insert(item.wfm_url.clone(), item);
+                interesting_items.insert(item.uuid().clone(), item);
             }
         }
 
@@ -114,7 +115,7 @@ impl ItemModule {
             for item in sell_list {
                 // Use the entry API for modification or insertion
                 interesting_items
-                    .entry(item.wfm_url.clone())
+                    .entry(item.uuid())
                     .and_modify(|entry| {
                         entry.priority = 1;
                         entry.sell_quantity = item.owned;
@@ -144,7 +145,7 @@ impl ItemModule {
                 .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
             for item in wish_list {
                 interesting_items
-                    .entry(item.wfm_url.clone())
+                    .entry(item.uuid())
                     .and_modify(|entry| {
                         entry.priority = 2;
                         entry.buy_quantity = item.quantity;
@@ -271,7 +272,7 @@ impl ItemModule {
 
             // Get the item orders from Warframe Market or the cache.
             let mut live_orders = if orders_cache.contains_key(&item_entry.wfm_url) {
-                orders_cache.get(&item_entry.wfm_url).unwrap().clone()
+                orders_cache.get(&item_entry.uuid()).unwrap().clone()
             } else {
                 let orders = wfm
                     .orders()
