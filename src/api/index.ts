@@ -11,7 +11,7 @@ import { TransactionModule } from "./transaction";
 import { EventModule } from "./events";
 import { StatisticModule } from "./statistic";
 import { CacheModule } from "./cache";
-import { ErrOrResult, QfSocketEventOperation } from "./types";
+import { ErrOrResult, TauriTypes } from "$types";
 import { LogModule } from "./log";
 import { AnalyticsModule } from "./analytics";
 import { WFMSocket } from "../models/wfmSocket";
@@ -117,15 +117,15 @@ declare global {
 window.api = new TauriClient();
 // (window as any).api = api as
 const OnTauriEvent = <T>(event: string, callback: (data: T) => void) => window.api.events.OnEvent(event, callback);
-const OnTauriDataEvent = <T>(event: string, callback: (data: { operation: QfSocketEventOperation; data: T }) => void) =>
+const OnTauriDataEvent = <T>(event: string, callback: (data: { operation: TauriTypes.EventOperations; data: T }) => void) =>
   window.api.events.OnEvent(event, callback);
 
 const OffTauriEvent = <T>(event: string, callback: (data: T) => void) => window.api.events.OffEvent(event, callback);
-const OffTauriDataEvent = <T>(event: string, callback: (data: { operation: QfSocketEventOperation; data: T }) => void) =>
+const OffTauriDataEvent = <T>(event: string, callback: (data: { operation: TauriTypes.EventOperations; data: T }) => void) =>
   window.api.events.OffEvent(event, callback);
 
 const SendTauriEvent = async (event: string, data?: any) => window.api.events.FireEvent(event, data);
-const SendTauriDataEvent = async (event: string, operation: QfSocketEventOperation, data: any) =>
+const SendTauriDataEvent = async (event: string, operation: TauriTypes.EventOperations, data: any) =>
   window.api.events.FireEvent(event, { operation, data });
 
 const WFMThumbnail = (thumb: string) => `https://warframe.market/static/assets/${thumb}`;

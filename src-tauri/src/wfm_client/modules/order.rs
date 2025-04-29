@@ -214,7 +214,7 @@ impl OrderModule {
                     &self.debug_id,
                     &self.get_component("Create"),
                     format!(
-                        "Creating order Type: {} Item: {}, Platinum: {}, Quantity: {}, Rank: {}, Total Orders: {}, Limit: {}",
+                        "Creating order Type: {} Item: {}, Platinum: {}, Quantity: {}, {}, Total Orders: {}, Limit: {}",
                         order_type,
                         item_id,
                         platinum,

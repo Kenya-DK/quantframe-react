@@ -73,4 +73,11 @@ impl ItemEntry {
             order_type: order_type.to_string(),
         }
     }
+    pub fn uuid(&self) -> String {
+        let mut uuid = self.wfm_url.clone();
+        if let Some(sub_type) = self.sub_type.clone() {
+            uuid.push_str(&format!("-{}", sub_type.shot_display()));
+        }
+        uuid
+    }
 }

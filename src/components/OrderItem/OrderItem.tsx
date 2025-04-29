@@ -121,7 +121,6 @@ export function OrderItem({ show_border, paperProps, order, footer, show_user }:
             <Group>
               <Text> {order.user.ingame_name}</Text>
               <Text data-color-mode="text" data-user-status={order.user.status}>
-                {" "}
                 {useTranslateUserStatus(order.user.status)}
               </Text>
             </Group>
