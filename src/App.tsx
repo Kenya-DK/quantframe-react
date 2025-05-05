@@ -62,7 +62,7 @@ function App() {
           onClose() {},
         }}
       >
-        <DatesProvider settings={{ locale: "ru" }}>
+        <DatesProvider settings={{ locale: "en" }}>
           {/* Your app  */}
           <AppContextProvider>
             <WarframeMarketContextProvider>
