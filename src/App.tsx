@@ -16,7 +16,9 @@ import { WarframeMarketContextProvider } from "@contexts/warframeMarket.context"
 import { useEffect } from "react";
 import api from "./api";
 import faMoneyBillTrendDown from "@icons/faMoneyBillTrendDown";
+import faTradingAnalytics from "@icons/faTradingAnalytics";
 library.add(faMoneyBillTrendDown);
+library.add(faTradingAnalytics);
 dom.watch();
 const modals = {
   prompt: PromptModal,

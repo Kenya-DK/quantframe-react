@@ -53,6 +53,7 @@ export const en = {
     order_type: {
       buy: "Buy Order",
       sell: "Sell Order",
+      closed: "Closed Orders",
       details: {
         buy: "Buy",
         sell: "Sell",
@@ -837,7 +838,7 @@ export const en = {
           statistics: "Statistics",
           warframe_market: "Warframe Market",
           debug: "Debug",
-          prices: "Prices",
+          trading_analytics: "Trading Analytics",
           about: "About",
           test: "Test",
         },
@@ -1535,7 +1536,7 @@ export const en = {
         },
       },
     },
-    prices: {
+    trading_analytics: {
       tabs: {
         overview: {
           title: "Overview",
@@ -1568,53 +1569,31 @@ export const en = {
           },
         },
         item: {
-          title: "Items",
+          title: "Item",
+          fields: {
+            order_type: {
+              label: "Order Type",
+              description: "Select order type",
+            },
+            tags: {
+              label: "Item Tags",
+              description: "Select tags",
+            },
+            date_range: {
+              label: "Date Range",
+              description: "Select date range",
+            },
+          },
           datatable: {
             columns: {
-              name: {
-                title: "Name",
-                value: "<white>{{name}}</white> <blue>{{sub_type}}</blue>",
-              },
+              name: "Name",
+              order_type: "Order Type",
               volume: "Volume",
               min_price: "Min Price",
               max_price: "Max Price",
               avg_price: "Avg Price",
               moving_avg: "Moving Avg",
             },
-          },
-          charts: {
-            title: "Price Chart",
-            datasets: {
-              volume: "Volume",
-              min_price: "Min Price",
-              max_price: "Max Price",
-              avg_price: "Avg Price",
-              median_price: "Median Price",
-              moving_avg: "Moving Avg",
-            },
-          },
-          fields: {
-            date_range: {
-              label: "Price Date Range",
-              description: "Select date range",
-              placeholder: "Jan 1, 2021 - Jan 31, 2021",
-            },
-            item: {
-              description: "Select a item to view prices",
-            },
-            view: {
-              label: "View Mode",
-              description: "Select view mode",
-              options: {
-                chart: "Chart",
-                table: "Table",
-              },
-            },
-          },
-          errors: {
-            invalid_date: "Invalid date range",
-            invalid_date_range: "Start date must be before end date",
-            date_range_max_days: "Date range must be less than {{days}} days",
           },
         },
         riven: {

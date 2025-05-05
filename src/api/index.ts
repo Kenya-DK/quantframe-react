@@ -84,7 +84,22 @@ export class TauriClient {
 
     return camelCaseText;
   }
+  objectToParameters(obj: any): Array<string> {
+    const searchParams: string[] = [];
+    const entries = Object.entries(obj);
+    for (let index = 0; index < entries.length; index++) {
+      const element = entries[index];
+      // Skip undefined and empty arrays
+      if (element[1] === undefined || element[1] === "") continue;
+      if (Array.isArray(element[1])) {
+        const array = element[1] as any[];
+        if (array.length <= 0) continue;
 
+        searchParams.push(array.map((item) => `${element[0]}=${item}`).join("&"));
+      } else searchParams.push(`${element[0]}=${element[1]}`);
+    }
+    return searchParams;
+  }
   // Modules
   app: AppModule;
   auction: AuctionModule;

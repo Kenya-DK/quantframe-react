@@ -37,8 +37,8 @@ import PChats from "@pages/chats";
 // Banned Routes
 import PTest from "@pages/test";
 
-// Prices Routes
-import PPrices from "@pages/prices";
+// Trading Analytics Routes
+import PTradingAnalytics from "@pages/tradingAnalytics";
 
 // Control Routes
 import { LiveTradingControl } from "../LiveTradingControl";
@@ -70,8 +70,8 @@ export function AppRoutes() {
             <Route path="about">
               <Route index element={<PAbout />} />
             </Route>
-            <Route path="prices">
-              <Route index element={<PPrices />} />
+            <Route path="trading_analytics">
+              <Route index element={<PTradingAnalytics />} />
             </Route>
             <Route path="test">
               <Route index element={<PTest />} />

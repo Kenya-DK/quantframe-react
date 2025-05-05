@@ -2,7 +2,7 @@ import { AppShell, Box, Indicator } from "@mantine/core";
 import classes from "./LogInLayout.module.css";
 import { Outlet, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBug, faChartSimple, faDesktop, faEnvelope, faGlobe, faHome, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import { faBug, faDesktop, faEnvelope, faGlobe, faHome, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
 import { useAppContext } from "@contexts/app.context";
 import { useEffect, useState } from "react";
@@ -14,6 +14,8 @@ import { useAuthContext } from "@contexts/auth.context";
 import { Ticker } from "@components/Ticker";
 import { QuantframeApiTypes } from "$types";
 import { open } from "@tauri-apps/plugin-shell";
+import facTradingAnalytics from "@icons/faTradingAnalytics";
+import faWarframeMarket from "@icons/facWarframeMarket";
 
 export function LogInLayout() {
   // States
@@ -33,7 +35,7 @@ export function LogInLayout() {
       align: "top",
       id: "home",
       link: "/",
-      icon: <FontAwesomeIcon icon={faHome} />,
+      icon: <FontAwesomeIcon size={"lg"} icon={faHome} />,
       label: useTranslateNavBar("home"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
     },
@@ -41,7 +43,7 @@ export function LogInLayout() {
       align: "top",
       id: "live-trading",
       link: "live-trading",
-      icon: <FontAwesomeIcon icon={faGlobe} />,
+      icon: <FontAwesomeIcon size={"lg"} icon={faGlobe} />,
       label: useTranslateNavBar("live_trading"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
     },
@@ -57,34 +59,33 @@ export function LogInLayout() {
           size={16}
           position="top-start"
         >
-          <FontAwesomeIcon icon={faEnvelope} />
+          <FontAwesomeIcon size={"lg"} icon={faEnvelope} />
         </Indicator>
       ),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
       label: useTranslateNavBar("chats"),
     },
-    // { link: "statistics", icon: <FontAwesomeIcon icon={faChartSimple} />, label: useTranslate("statistics") },
     {
       align: "top",
       id: "warframe_market",
       link: "warframe-market",
-      icon: <SvgIcon svgProp={{ width: 32, height: 32, fill: "#d5d7e0" }} iconType={SvgType.Default} iconName={"wfm_logo"} />,
+      icon: <FontAwesomeIcon size={"lg"} icon={faWarframeMarket} />,
       label: useTranslateNavBar("warframe_market"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
     },
     {
       align: "top",
-      id: "prices",
-      link: "prices",
-      icon: <FontAwesomeIcon icon={faChartSimple} />,
-      label: useTranslateNavBar("prices"),
+      id: "trading_analytics",
+      link: "trading_analytics",
+      icon: <FontAwesomeIcon size={"lg"} icon={facTradingAnalytics} />,
+      label: useTranslateNavBar("trading_analytics"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
     },
     {
       align: "top",
       id: "debug",
       link: "debug",
-      icon: <FontAwesomeIcon icon={faDesktop} />,
+      icon: <FontAwesomeIcon size={"lg"} icon={faDesktop} />,
       label: useTranslateNavBar("debug"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
     },
@@ -93,7 +94,7 @@ export function LogInLayout() {
       id: "test",
       link: "test",
       hide: !import.meta.env.DEV,
-      icon: <FontAwesomeIcon icon={faBug} color="red" />,
+      icon: <FontAwesomeIcon size={"lg"} icon={faBug} color="red" />,
       label: useTranslateNavBar("test"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
     },
@@ -101,7 +102,7 @@ export function LogInLayout() {
       align: "bottom",
       id: "nav_about",
       link: "about",
-      icon: <FontAwesomeIcon icon={faInfoCircle} />,
+      icon: <FontAwesomeIcon size={"lg"} icon={faInfoCircle} />,
       label: useTranslateNavBar("about"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
     },
@@ -126,7 +127,7 @@ export function LogInLayout() {
         break;
     }
   };
-  const handleAlertClick = (alert: QuantframeApiTypes.Alert) => {
+  const handleAlertClick = (alert: QuantframeApiTypes.AlertDto) => {
     console.log("Alert clicked: ", alert);
     if (!alert.properties) return;
     const { event, payload } = alert.properties as { event: string; payload: any };

@@ -4,11 +4,11 @@ import { OverviewPanel } from "./tabs/overview";
 import { ItemPanel } from "./tabs/Item";
 import { RivenPanel } from "./tabs/riven";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
-import classes from "./Prices.module.css";
-export default function PricesPage() {
+import classes from "./TradingAnalytics.module.css";
+export default function TradingAnalyticsPage() {
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslatePages(`prices.${key}`, { ...context }, i18Key);
+    useTranslatePages(`trading_analytics.${key}`, { ...context }, i18Key);
   const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`tabs.${key}`, { ...context }, i18Key);
 
   const tabs = [
