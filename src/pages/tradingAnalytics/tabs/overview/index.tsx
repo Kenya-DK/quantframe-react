@@ -23,7 +23,7 @@ export const OverviewPanel = ({}: OverviewPanelProps) => {
 
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslatePages(`prices.${key}`, { ...context }, i18Key);
+    useTranslatePages(`trading_analytics.${key}`, { ...context }, i18Key);
   const useTranslateTabOverview = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslate(`tabs.overview.${key}`, { ...context }, i18Key);
   const useTranslateFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -34,7 +34,7 @@ export const OverviewPanel = ({}: OverviewPanelProps) => {
   // Set Chart Data
   useEffect(() => {
     if (!data) return;
-    const chartData = data[selectedChart as keyof typeof data];
+    const chartData = data[selectedChart as keyof typeof data] as any;
     setChartData({
       labels: chartData.labels,
       datasets: [

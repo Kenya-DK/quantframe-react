@@ -7,6 +7,7 @@ import { modals } from "@mantine/modals";
 import { PremiumModal } from "../Modals/Premium";
 export type PremiumOverlayProps = {
   tier: string;
+  permission?: string;
 };
 export function PremiumOverlay({ tier }: PremiumOverlayProps) {
   // Translate general
@@ -17,6 +18,7 @@ export function PremiumOverlay({ tier }: PremiumOverlayProps) {
   return (
     <LoadingOverlay
       visible
+      zIndex={10}
       overlayProps={{ radius: "sm", blur: 2 }}
       loaderProps={{
         children: (

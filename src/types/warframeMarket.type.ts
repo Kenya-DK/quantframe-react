@@ -66,6 +66,7 @@ export namespace WFMarketTypes {
   export enum OrderType {
     Buy = "buy",
     Sell = "sell",
+    Closed = "closed",
   }
   export interface OrderDto {
     closed_avg: number;
