@@ -86,7 +86,7 @@ impl OrderModule {
             }
 
             if settings.live_scraper.stock_item.report_to_wfm {
-                for i in 0..quantity {
+                for _ in 0..quantity {
                     self.close(&foundOrder.id).await?;
                 }
             } else if foundOrder.quantity <= 0 {

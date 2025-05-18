@@ -5,26 +5,41 @@ import { TextTranslate } from "../TextTranslate";
 import { open } from "@tauri-apps/plugin-shell";
 import { modals } from "@mantine/modals";
 import { PremiumModal } from "../Modals/Premium";
+import { HasPermission, PermissionsFlags } from "@utils/permissions";
+import { useGetUser } from "@hooks/useGetUser.hook";
+import { useEffect } from "react";
+import { useAuthContext } from "../../contexts/auth.context";
+
 export type PremiumOverlayProps = {
   tier: string;
-  permission?: string;
+  link?: string;
+  permission?: PermissionsFlags;
 };
-export function PremiumOverlay({ tier }: PremiumOverlayProps) {
-  // Translate general
-  const useTranslateSearchField = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateComponent(`premium_overlay.${key}`, { ...context }, i18Key);
-  const useTranslateSearchFieldButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateSearchField(`buttons.${key}`, { ...context }, i18Key);
+
+export function PremiumOverlay({ permission, link, tier }: PremiumOverlayProps) {
+  const user = useGetUser();
+  const { patreon_link } = useAuthContext();
+
+  const useTranslateSearchField = (key: string, ctx?: Record<string, any>, raw?: boolean) =>
+    useTranslateComponent(`premium_overlay.${key}`, ctx, raw);
+  const tButton = (key: string, ctx?: Record<string, any>, raw?: boolean) => useTranslateSearchField(`buttons.${key}`, ctx, raw);
+
+  const shouldShowOverlay = permission ? !HasPermission(user?.permissions, permission) : true;
+
+  useEffect(() => {
+    if (!user) return;
+  }, [user]);
+
   return (
     <LoadingOverlay
-      visible
+      visible={shouldShowOverlay}
       zIndex={10}
       overlayProps={{ radius: "sm", blur: 2 }}
       loaderProps={{
         children: (
-          <Center classNames={classes}>
-            <Stack align="center" mb={10}>
-              <Title order={3} c={"white"} mb={10}>
+          <Center className={classes.root}>
+            <Stack align="center" mb="md">
+              <Title order={3} className={classes.titleGlow} mb="sm">
                 <TextTranslate
                   color="white"
                   textProps={{
@@ -35,31 +50,26 @@ export function PremiumOverlay({ tier }: PremiumOverlayProps) {
                   values={{ tier }}
                 />
               </Title>
-              <Group mb={10}>
+
+              <Group mb="sm">
+                {link && <Button onClick={() => open(link)}>{tButton("info")}</Button>}
                 <Button
-                  onClick={() => {
-                    open("https://www.patreon.com/Quantframe");
-                  }}
-                >
-                  {useTranslateSearchFieldButtons("info")}
-                </Button>
-                <Button
-                  onClick={() => {
+                  onClick={() =>
                     modals.open({
                       title: useTranslateModals("base.titles.premium"),
-                      children: <PremiumModal />,
+                      children: <PremiumModal link={patreon_link} />,
                       size: "50vw",
                       centered: true,
-                    });
-                  }}
+                    })
+                  }
                 >
-                  {useTranslateSearchFieldButtons("subscribe")}
+                  {tButton("subscribe")}
                 </Button>
               </Group>
             </Stack>
           </Center>
         ),
       }}
-    ></LoadingOverlay>
+    />
   );
 }

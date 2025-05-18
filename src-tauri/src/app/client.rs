@@ -1,6 +1,9 @@
 use tauri::AppHandle;
 use tauri::PackageInfo;
 
+use crate::utils::modules::logger;
+use crate::utils::modules::logger::LoggerOptions;
+
 #[derive(Clone, Debug)]
 pub struct AppState {
     pub app_id: String,
@@ -27,5 +30,13 @@ impl AppState {
 
     pub fn get_app_info(&self) -> PackageInfo {
         self.tauri_app.package_info().clone()
+    }
+
+    pub fn initialize(&self) {
+        logger::info(
+            "Initializing AppState...",
+            "client",
+            LoggerOptions::default(),
+        );
     }
 }

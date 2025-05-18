@@ -38,6 +38,9 @@ export function PremiumModal({ link }: PremiumModalProps) {
               rightSection={<FontAwesomeIcon icon={faArrowUpRightFromSquare} />}
             >
               {useTranslateButtons("link")}
+              <pre>
+                <code>{link}</code>
+              </pre>
             </Button>
           </Group>
         </Paper>

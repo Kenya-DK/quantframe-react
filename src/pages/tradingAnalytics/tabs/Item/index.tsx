@@ -1,4 +1,4 @@
-import { Box, Group, MultiSelect, Select } from "@mantine/core";
+import { Box, Center, Group, MultiSelect, NumberFormatter, Select } from "@mantine/core";
 import { useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
@@ -11,7 +11,8 @@ import dayjs from "dayjs";
 import { DatePickerInput } from "@mantine/dates";
 import { useEffect, useState } from "react";
 import { upperFirst } from "@mantine/hooks";
-import { PremiumOverlay } from "../../../../components/PremiumOverlay";
+import { Loading } from "@components/Loading";
+import { AlertError } from "@components/AlertError";
 
 interface ItemPanelProps {}
 
@@ -22,15 +23,12 @@ export const ItemPanel = ({}: ItemPanelProps) => {
     validate: {
       to_date: (value) => {
         const fromDate = dataGridState.values.from_date;
-        if (!fromDate) return null;
+        if (!fromDate) return true;
         const to_date = dayjs(value).format("YYYY-MM-DD");
-        if (dayjs(to_date).diff(dayjs(fromDate), "day") > 90) return "Date range cannot be more than 90 days";
-        if (!dayjs(to_date).isBefore(dayjs().subtract(1, "day"))) return "Date cannot be in the future";
-        return null;
+        if (dayjs(to_date).diff(dayjs(fromDate), "day") > 90) return true;
+        if (!dayjs(to_date).isBefore(dayjs().subtract(1, "day"))) return true;
+        return false;
       },
-    },
-    onValuesChange: () => {
-      dataGridState.validate();
     },
   });
   const [tags, setTags] = useState<{ label: string; value: string }[]>([]);
@@ -66,7 +64,7 @@ export const ItemPanel = ({}: ItemPanelProps) => {
     useTranslateEnums(`order_type.${key}`, { ...context }, i18Key);
 
   // Queys
-  const { data, isFetching, refetch } = useQuery({
+  const { data, isFetching, refetch, error } = useQuery({
     queryKey: ["item_prices", dataGridState.values.sort_by, dataGridState.values.sort_direction],
     queryFn: () => api.items.getAll(dataGridState.values),
     refetchOnWindowFocus: false,
@@ -76,12 +74,30 @@ export const ItemPanel = ({}: ItemPanelProps) => {
 
   return (
     <Box p={"md"} style={{ position: "relative" }}>
-      <PremiumOverlay tier="free" />
       <SearchField
         value={dataGridState.values.query || ""}
-        onSearch={() => refetch()}
+        onSearch={() => {
+          dataGridState.validate();
+          if (dataGridState.isValid()) refetch();
+        }}
+        searchDisabled={isFetching}
         onChange={(text) => dataGridState.setFieldValue("query", text)}
         onFilterToggle={(op) => setFilterOpened(op)}
+        rightSectionWidth={275}
+        rightSection={
+          <DatePickerInput
+            required
+            placeholder={useTranslateFields("date_range.placeholder")}
+            minDate={dayjs(dataGridState.values.to_date).subtract(90, "day").format("YYYY-MM-DD")}
+            maxDate={dayjs().subtract(1, "day").format("YYYY-MM-DD")}
+            w={200}
+            type="range"
+            valueFormat="YYYY MMM DD"
+            value={dates}
+            onChange={setDates}
+            error={dataGridState.errors.from_date || dataGridState.errors.to_date}
+          />
+        }
         filter={
           <Box mb={"md"}>
             <Group>
@@ -105,19 +121,6 @@ export const ItemPanel = ({}: ItemPanelProps) => {
                 onChange={(value: string[]) => dataGridState.setFieldValue("tags", value)}
                 clearable
               />
-              <DatePickerInput
-                required
-                minDate={dayjs().subtract(90, "day").format("YYYY-MM-DD")}
-                maxDate={dayjs().subtract(1, "day").format("YYYY-MM-DD")}
-                w={200}
-                type="range"
-                valueFormat="YYYY MMM DD"
-                label={useTranslateFields("date_range.label")}
-                description={useTranslateFields("date_range.description")}
-                value={dates}
-                onChange={setDates}
-                error={dataGridState.errors.from_date || dataGridState.errors.to_date}
-              />
             </Group>
           </Box>
         }
@@ -125,12 +128,23 @@ export const ItemPanel = ({}: ItemPanelProps) => {
       <DataTable
         mt={"md"}
         height={`calc(100vh - ${filterOpened ? 306 : 225}px)`}
-        fetching={isFetching}
+        fetching={isFetching || !!error}
         records={data?.results || []}
         page={dataGridState.values.page}
         onPageChange={(page) => dataGridState.setFieldValue("page", page)}
         totalRecords={data?.total}
         recordsPerPage={dataGridState.values.limit}
+        customLoader={
+          <Box style={{ width: "100%", height: "100%" }} p={"md"}>
+            {isFetching ? (
+              <Loading />
+            ) : (
+              <Center style={{ width: "100%", height: "100%" }}>
+                <AlertError error={error as any} />
+              </Center>
+            )}
+          </Box>
+        }
         recordsPerPageOptions={[5, 10, 15, 20, 25, 50, 100]}
         onRecordsPerPageChange={(limit) => dataGridState.setFieldValue("limit", limit)}
         sortStatus={{
@@ -147,37 +161,40 @@ export const ItemPanel = ({}: ItemPanelProps) => {
           {
             accessor: "name",
             title: useTranslateDataTable("columns.name"),
-            sortable: true,
           },
           {
             accessor: "order_type",
             title: useTranslateDataTable("columns.order_type"),
-            sortable: true,
           },
           {
             accessor: "volume",
             title: useTranslateDataTable("columns.volume"),
             sortable: true,
+            render: (item) => <NumberFormatter thousandSeparator decimalScale={2} value={item.volume} />,
           },
           {
             accessor: "min_price",
             title: useTranslateDataTable("columns.min_price"),
             sortable: true,
+            render: (item) => <NumberFormatter thousandSeparator decimalScale={2} value={item.min_price} />,
           },
           {
             accessor: "max_price",
             title: useTranslateDataTable("columns.max_price"),
             sortable: true,
+            render: (item) => <NumberFormatter thousandSeparator decimalScale={2} value={item.max_price} />,
           },
           {
             accessor: "avg_price",
             title: useTranslateDataTable("columns.avg_price"),
             sortable: true,
+            render: (item) => <NumberFormatter thousandSeparator decimalScale={2} value={item.avg_price} />,
           },
           {
             accessor: "moving_avg",
             title: useTranslateDataTable("columns.moving_avg"),
             sortable: true,
+            render: (item) => <NumberFormatter thousandSeparator decimalScale={2} value={item.moving_avg} />,
           },
         ]}
       />
