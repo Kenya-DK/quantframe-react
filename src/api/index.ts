@@ -18,6 +18,8 @@ import { WFMSocket } from "../models/wfmSocket";
 import { NotificationModule } from "./notification";
 import { ItemModule } from "./item";
 import { LogParserModule } from "./log_parser";
+import { RivenModule } from "./riven";
+import { UserModule } from "./user";
 
 export class TauriClient {
   constructor() {
@@ -36,6 +38,8 @@ export class TauriClient {
     this.statistic = new StatisticModule(this);
     this.cache = new CacheModule(this);
     this.items = new ItemModule(this);
+    this.rivens = new RivenModule(this);
+    this.user = new UserModule(this);
     this.log = new LogModule(this);
     this.analytics = new AnalyticsModule(this);
     this.log_parser = new LogParserModule(this);
@@ -57,6 +61,7 @@ export class TauriClient {
   async get<T>(path: string, parameters?: string[]): Promise<T> {
     const url = `${path}${parameters && parameters.length > 0 ? `?${parameters.join("&")}` : ""}`;
     const [err, result] = await this.sendInvoke<T>("qf_get", { url });
+    console.log(`GET ${url}`, result);
     if (err) throw err;
     return result;
   }
@@ -118,6 +123,8 @@ export class TauriClient {
   analytics: AnalyticsModule;
   log: LogModule;
   items: ItemModule;
+  rivens: RivenModule;
+  user: UserModule;
   log_parser: LogParserModule;
 }
 

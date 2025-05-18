@@ -29,6 +29,7 @@ export type BarCardChartProps = {
   tooltipShowColor?: boolean;
   boxWidth?: number;
   boxHeight?: number;
+  overlay?: React.ReactNode;
   tooltipCallback?: Partial<TooltipCallbacks<"bar">>;
   datasets: {
     label?: string;
@@ -49,6 +50,7 @@ export function BarCardChart({
   showDatasetLabels,
   datasets,
   horizontal,
+  overlay,
 }: BarCardChartProps) {
   const theme = useMantineTheme();
   const cData = {
@@ -61,6 +63,7 @@ export function BarCardChart({
   return (
     <Paper className={classes.root}>
       <Box className={classes.chartContainer}>
+        {overlay && <Box className={classes.overlay}>{overlay}</Box>}
         {useMemo(
           () => (
             <Bar

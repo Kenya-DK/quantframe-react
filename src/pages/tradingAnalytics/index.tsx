@@ -5,6 +5,7 @@ import { ItemPanel } from "./tabs/Item";
 import { RivenPanel } from "./tabs/riven";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import classes from "./TradingAnalytics.module.css";
+import { UserPanel } from "./tabs/user";
 export default function TradingAnalyticsPage() {
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -14,7 +15,8 @@ export default function TradingAnalyticsPage() {
   const tabs = [
     { label: useTranslateTabs("overview.title"), component: <OverviewPanel />, id: "overview", icon: <div>Stocks</div> },
     { label: useTranslateTabs("item.title"), component: <ItemPanel />, id: "item", icon: <div>Stocks</div> },
-    { label: useTranslateTabs("riven.title"), component: <RivenPanel />, id: "wish_list" },
+    { label: useTranslateTabs("riven.title"), component: <RivenPanel />, id: "riven" },
+    { label: useTranslateTabs("user.title"), component: <UserPanel />, id: "user" },
   ];
   return (
     <Container size={"100%"} data-has-alert={useHasAlert()} className={classes.context}>

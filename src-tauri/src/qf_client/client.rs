@@ -221,7 +221,7 @@ impl QFClient {
         error_def.raw_response = Some(content.clone());
 
         // Parse the response into a Value object
-        let response: Value = match serde_json::from_str(content.as_str()) {
+        let mut response: Value = match serde_json::from_str(content.as_str()) {
             Ok(val) => val,
             Err(e) => {
                 error_def.messages.push(e.to_string());
@@ -242,7 +242,22 @@ impl QFClient {
             self.handle_error(error_def.messages.clone(), response);
             return Ok(ApiResult::Error(error_def, headers));
         }
-        if response.get("error").is_some() || error_def.status_code == 401 {
+
+        match error_def.status_code {
+            429 => {
+                error_def.error = "RateLimit".to_string();
+                error_def.messages.push("RateLimit".to_string());
+                error_def
+                    .messages
+                    .push("You have hit the rate limit.".to_string());
+            }
+            _ => {}
+        }
+
+        if response.get("error").is_some()
+            || error_def.status_code == 401
+            || error_def.status_code == 429
+        {
             error_def.error = "ApiError".to_string();
 
             let error = if response.get("error").is_some() {

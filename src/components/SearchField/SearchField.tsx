@@ -9,6 +9,7 @@ export type SearchFieldProps = {
   value: string;
   onChange: (text: string) => void;
   onSearch?: (text: string) => void;
+  searchDisabled?: boolean;
   description?: string;
   onCreate?: () => void;
   rightSection?: React.ReactNode;
@@ -21,6 +22,7 @@ export function SearchField({
   filter,
   description,
   onSearch,
+  searchDisabled,
   onCreate,
   onChange,
   rightSection,
@@ -82,7 +84,7 @@ export function SearchField({
                 tooltip={useTranslateSearchFieldButtons("search.tooltip")}
                 icon={faSearch}
                 color={"blue.7"}
-                actionProps={{ size: "sm" }}
+                actionProps={{ size: "sm", disabled: searchDisabled ?? false }}
                 iconProps={{ size: "xs" }}
                 onClick={async () => {
                   if (onSearch) onSearch(value);

@@ -103,19 +103,6 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
         LoggerOptions::default(),
     );
     logger::clear_logs(7)?;
-    // Get the update channel
-    // let context = tauri::generate_context!();
-    // let updater = context.config().tauri.updater.clone();
-
-    // let mut is_pre_release = false;
-    // if updater.active && updater.endpoints.is_some() {
-    //     let endpoints = updater.endpoints.as_ref().unwrap();
-    //     for endpoint in endpoints {
-    //         if endpoint.to_string().contains("prerelease") {
-    //             is_pre_release = true;
-    //         }
-    //     }
-    // }
 
     // Check if the app is being run for the first time
     let is_first_install = !helper::dose_app_exist();
@@ -126,46 +113,105 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
         is_first_install,
         false,
     )));
+    logger::info(
+        "Setup:AppState",
+        "Creating AppState",
+        LoggerOptions::default(),
+    );
     app.manage(app_arc.clone());
 
     // Create and manage Notification state
     let notify_arc: Arc<Mutex<NotifyClient>> = Arc::new(Mutex::new(NotifyClient::new()));
+    logger::info(
+        "Setup:NotifyClient",
+        "Creating NotifyClient",
+        LoggerOptions::default(),
+    );
     app.manage(notify_arc.clone());
 
     // create and manage Settings state
     let settings_arc = Arc::new(Mutex::new(SettingsState::setup()?));
+    logger::info(
+        "Setup:SettingsState",
+        "Creating SettingsState",
+        LoggerOptions::default(),
+    );
     app.manage(settings_arc.clone());
 
     // create and manage Auth state
     let auth_arc = Arc::new(Mutex::new(AuthState::setup()?));
+    logger::info(
+        "Setup:AuthState",
+        "Creating AuthState",
+        LoggerOptions::default(),
+    );
     app.manage(auth_arc.clone());
 
     // create and manage Quantframe client state
     let qf_client = Arc::new(Mutex::new(qf_client::client::QFClient::new()));
+    logger::info(
+        "Setup:QFClient",
+        "Creating QFClient",
+        LoggerOptions::default(),
+    );
     app.manage(qf_client.clone());
 
     // create and manage Warframe Market API client state
     let wfm_client = Arc::new(Mutex::new(wfm_client::client::WFMClient::new()));
+    logger::info(
+        "Setup:WFMClient",
+        "Creating WFMClient",
+        LoggerOptions::default(),
+    );
     app.manage(wfm_client.clone());
 
     // create and manage Cache state
     let cache_arc = Arc::new(Mutex::new(CacheClient::new()));
+    logger::info(
+        "Setup:CacheClient",
+        "Creating CacheClient",
+        LoggerOptions::default(),
+    );
     app.manage(cache_arc.clone());
 
     // create and manage HTTP client state
     let http_client_arc = Arc::new(Mutex::new(http_client::client::HttpClient::setup()?));
+    logger::info(
+        "Setup:HttpClient",
+        "Creating HttpClient",
+        LoggerOptions::default(),
+    );
     app.manage(http_client_arc.clone());
 
     // create and manage LiveScraper state
     let live_scraper = LiveScraperClient::new();
+    logger::info(
+        "Setup:LiveScraperClient",
+        "Creating LiveScraperClient",
+        LoggerOptions::default(),
+    );
     app.manage(Arc::new(Mutex::new(live_scraper)));
 
     // create and manage WhisperScraper state
     let debug_client = DebugClient::new();
+    logger::info(
+        "Setup:DebugClient",
+        "Creating DebugClient",
+        LoggerOptions::default(),
+    );
     app.manage(Arc::new(Mutex::new(debug_client)));
 
     let log_parser = LogParser::new();
+    logger::info(
+        "Setup:LogParser",
+        "Creating LogParser",
+        LoggerOptions::default(),
+    );
     app.manage(Arc::new(Mutex::new(log_parser)));
+
+    // Return AppState to be used in the app
+    let app_state = app_arc.lock().unwrap();
+    app_state.initialize();
     Ok(())
 }
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

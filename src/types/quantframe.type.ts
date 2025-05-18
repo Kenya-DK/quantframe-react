@@ -110,6 +110,15 @@ export namespace QuantframeApiTypes {
     until?: string;
   }
 
+  export interface ActiveUsersChartDto {
+    /** An array of labels for the chart chart. */
+    labels: string[];
+    /** An array of numbers representing the quantity of active users. */
+    registered_users_chart: number[];
+    /** An array of numbers representing the total users. */
+    total_users_chart: number[];
+  }
+
   export interface LogDto {
     /** The ID of the log entry. */
     id: string;
@@ -151,13 +160,13 @@ export namespace QuantframeApiTypes {
     /**
      * Delete logs from this date.
      * @format date-time
-     * @example "2025-05-03"
+     * @example "2025-05-18"
      */
     from_date?: string;
     /**
      * Delete logs until this date.
      * @format date-time
-     * @example "2025-05-03"
+     * @example "2025-05-18"
      */
     to_date?: string;
     /**
@@ -265,19 +274,19 @@ export namespace QuantframeApiTypes {
      * @default 25
      */
     limit: number;
-    sort_by?: "volume" | "min_price" | "max_price" | "open_price";
+    sort_by?: "volume" | "min_price" | "max_price" | "avg_price" | "open_price";
     /** Sort direction used when sorting by a specific field. */
     sort_direction?: "asc" | "desc";
     /**
      * Select the start date.
      * @format date-time
-     * @example "2025-05-03"
+     * @example "2025-05-18"
      */
     from_date: string;
     /**
      * Select the end date.
      * @format date-time
-     * @example "2025-05-03"
+     * @example "2025-05-18"
      */
     to_date: string;
     /** Search for orders that contain this query. */
@@ -346,6 +355,34 @@ export namespace QuantframeApiTypes {
     can_managed: boolean;
     /** The permissions assigned to the role. */
     permissions: string;
+  }
+
+  export interface RivenPriceDto {
+    /** The WFM ID of the item. */
+    wfm_id: string;
+    /** The URL of the item on Warframe Market. */
+    wfm_url: string;
+    /** The name of the riven. */
+    name?: string;
+    /** Total volume of trades */
+    volume: number;
+    /** Minimum price recorded */
+    min_price: number;
+    /** Maximum price recorded */
+    max_price: number;
+    /** Average price calculated */
+    avg_price: number;
+    /** Average number of re-rolls */
+    avg_re_rolls: number;
+    /** Median price recorded */
+    median_price: number;
+    /** Indicates if the item has been rolled */
+    rolled: boolean;
+    /**
+     * Timestamp of the data
+     * @format date-time
+     */
+    datetime: string;
   }
 
   export interface CreateAlertDto {
@@ -457,20 +494,20 @@ export namespace QuantframeApiTypes {
     /**
      * The item name.
      * @format date-time
-     * @example "2025-05-03"
+     * @example "2025-05-18"
      */
     from_date: string;
     /**
      * To date.
      * @format date-time
-     * @example "2025-05-03"
+     * @example "2025-05-18"
      */
     to_date: string;
     /** The weapon type. */
     group_by: "day" | "hour";
   }
 
-  export type WfmControllerGetUserActiveHistoryData = any;
+  export type WfmControllerGetUserActiveHistoryData = ActiveUsersChartDto;
 
   export interface LogControllerGetListParams {
     /**
@@ -524,19 +561,19 @@ export namespace QuantframeApiTypes {
      * @default 25
      */
     limit: number;
-    sort_by?: "volume" | "min_price" | "max_price" | "open_price";
+    sort_by?: "volume" | "min_price" | "max_price" | "avg_price" | "open_price";
     /** Sort direction used when sorting by a specific field. */
     sort_direction?: "asc" | "desc";
     /**
      * Select the start date.
      * @format date-time
-     * @example "2025-05-03"
+     * @example "2025-05-18"
      */
     from_date: string;
     /**
      * Select the end date.
      * @format date-time
-     * @example "2025-05-03"
+     * @example "2025-05-18"
      */
     to_date: string;
     /** Search for orders that contain this query. */
@@ -603,33 +640,30 @@ export namespace QuantframeApiTypes {
      * @default 25
      */
     limit: number;
+    sort_by?: "volume" | "min_price" | "max_price" | "avg_price" | "avg_re_rolls" | "median_price";
+    /** Sort direction used when sorting by a specific field. */
+    sort_direction?: "asc" | "desc";
     /**
-     * Start date for filtering data.
+     * Select the start date.
      * @format date-time
-     * @example "2025-05-03"
+     * @example "2025-05-18"
      */
     from_date: string;
     /**
-     * End date for filtering data.
+     * Select the end date.
      * @format date-time
-     * @example "2025-05-03"
+     * @example "2025-05-18"
      */
     to_date: string;
-    /**
-     * The weapon url.
-     * @example "torid"
-     */
-    weapon_url?: string;
-    /**
-     * If the riven is rolled or not.
-     * @example true
-     */
+    /** Search for riven prices that contain this. */
+    query?: string;
+    /** Search for riven there was rolled. */
     rolled?: boolean;
   }
 
   /** PaginatedResponseOfRivenPriceDto */
   export type RivenControllerGetRivenListData = PaginatedDto & {
-    results?: any[];
+    results?: RivenPriceDto[];
   };
 
   export interface AlertControllerGetListParams {

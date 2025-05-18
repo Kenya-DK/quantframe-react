@@ -545,6 +545,13 @@ export const en = {
         },
       },
     },
+    alert_error: {
+      title: "Error in {{component}} component",
+      version: "Version: {{version}}",
+      backtrace: "Location: {{backtrace}}",
+      cause: "Cause: {{cause}}",
+      footer: "If you think this is a bug, please report it to the developer. Thank you!",
+    },
     chat_rome: {
       fields: {
         message: {
@@ -1580,8 +1587,7 @@ export const en = {
               description: "Select tags",
             },
             date_range: {
-              label: "Date Range",
-              description: "Select date range",
+              placeholder: "Please select date range",
             },
           },
           datatable: {
@@ -1596,17 +1602,67 @@ export const en = {
             },
           },
         },
+        user: {
+          title: "User",
+          chart: {
+            title: "User Activity On Warframe Market",
+            datasets: {
+              registered_users: "Registered Users",
+              active_users: "Active Users",
+            },
+          },
+          fields: {
+            group_by: {
+              label: "Group By",
+              placeholder: "Select group by",
+              options: {
+                day: "Day",
+                hour: "Hour",
+              },
+            },
+            date_range: {
+              label: "Date Range",
+              placeholder: "Please select date range",
+            },
+          },
+        },
         riven: {
-          title: "Rivens",
+          title: "Riven",
+          fields: {
+            rolled: {
+              label: "Rolled",
+              description: "If the riven is rolled or not",
+              options: {
+                any: "Any",
+                yes: "Yes",
+                no: "No",
+              },
+            },
+            tags: {
+              label: "Item Tags",
+              description: "Select tags",
+            },
+            date_range: {
+              placeholder: "Please select date range",
+            },
+          },
+          datatable: {
+            columns: {
+              name: "Name",
+              volume: "Volume",
+              rolled: {
+                label: "Rolled",
+                yes: "Yes",
+                no: "No",
+              },
+              min_price: "Min Price",
+              max_price: "Max Price",
+              avg_price: "Avg Price",
+              avg_re_rolls: "Avg Re Rolls",
+            },
+          },
         },
       },
-    },
-    error: {
-      title: "Error in {{component}} component",
-      version: "Version: {{version}}",
-      backtrace: "Location: {{backtrace}}",
-      cause: "Cause: {{cause}}",
-      footer: "If you think this is a bug, please report it to the developer. Thank you!",
     },
     banned: {
       wfm: {
