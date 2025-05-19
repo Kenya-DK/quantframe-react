@@ -93,7 +93,7 @@ export function CreateRivenAttribute({
 
   const ValidateValue = () => {
     console.log("ValidateValue", form.values.value);
-    if ((positiveNumberOnly && form.values.value < 0) || (negativeNumberOnly && form.values.value > 0))
+    if ((positiveNumberOnly && form.values.value < 0) || ((negativeNumberOnly && form.values.value > 0) != currentValue?.unit) == "multiply")
       form.setFieldValue("value", -form.values.value);
   };
 
