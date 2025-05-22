@@ -8,6 +8,7 @@ How To migrate:
 
 - 🆕 Add a overview of most trade items
 - 🆕 Add a new tab for item prices
+- 🆕 Pagesize wil now save.
 - 🆕 Add a new tab for riven prices (Premium)
 - 🆕 Add a new tab for user activate on wfm (Premium)
 

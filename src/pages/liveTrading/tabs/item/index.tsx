@@ -335,6 +335,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
         </Grid.Col>
       </Grid>
       <DataTableSearch
+        id={"stock_items"}
         className={`${classes.databaseStockItems} ${useHasAlert() ? classes.alert : ""} ${is_running ? classes.running : ""}`}
         mt={"md"}
         records={items || []}

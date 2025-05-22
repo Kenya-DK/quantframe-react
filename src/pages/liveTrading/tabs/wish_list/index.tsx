@@ -255,6 +255,7 @@ export const WishListPanel = ({}: WishListPanelProps) => {
         </Grid.Col>
       </Grid>
       <DataTableSearch
+        id={"wish_list"}
         className={`${classes.databaseStockWishlist} ${useHasAlert() ? classes.alert : ""} ${is_running ? classes.running : ""}`}
         mt={"md"}
         records={wish_lists || []}
