@@ -387,6 +387,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
         </Grid.Col>
       </Grid>
       <DataTableSearch
+        id={"stock_riven"}
         className={`${classes.databaseStockRivens} ${useHasAlert() ? classes.alert : ""} ${is_running ? classes.running : ""}`}
         mt={"md"}
         query={query}

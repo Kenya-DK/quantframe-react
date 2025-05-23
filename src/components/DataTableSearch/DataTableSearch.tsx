@@ -5,8 +5,10 @@ import { SortItems, Sort, SortDirection } from "@utils/sorting.helper";
 import { paginate } from "@utils/helper";
 import { SearchField, SearchFieldProps } from "../SearchField";
 import { ApplyFilter, ComplexFilter } from "@utils/filter.helper";
+import { useLocalStorage } from "@mantine/hooks";
 
 export type DataTableSearchProps<T> = {
+  id: string;
   filters?: ComplexFilter;
   sorting?: Sort;
   query?: string;
@@ -14,6 +16,7 @@ export type DataTableSearchProps<T> = {
 } & DataTableProps<T> &
   Omit<SearchFieldProps, "value" | "onChange">;
 export const DataTableSearch = <T,>({
+  id,
   query,
   onSearchChange,
   records,
@@ -27,7 +30,7 @@ export const DataTableSearch = <T,>({
   // States For DataGrid
   const [page, setPage] = useState(1);
   const pageSizes = [1, 5, 10, 15, 20, 25, 30, 50, 100];
-  const [pageSize, setPageSize] = useState(pageSizes[4]);
+  const [pageSize, setPageSize] = useLocalStorage({ key: `${id}-pageSize`, defaultValue: pageSizes[4] });
   const [rows, setRows] = useState<T[]>([]);
   const [totalRecords, setTotalRecords] = useState<number>(0);
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus<T>>({
