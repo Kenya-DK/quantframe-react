@@ -1,4 +1,4 @@
-use serde_json::json;
+use serde_json::{json, Value};
 use service::StockRivenQuery;
 
 use crate::{
@@ -16,7 +16,7 @@ use crate::{
 };
 
 use super::{
-    error::AppError,
+    error::{self, AppError},
     logger::{self, LoggerOptions},
     states,
 };
@@ -480,4 +480,54 @@ pub fn notify(
             })],
         );
     }
+}
+
+static TRADE_FILE: &str = "tradings.json";
+
+pub fn append_to_file(trade: PlayerTrade) -> Result<(), AppError> {
+    match read_trade_log() {
+        Ok(data) => {
+            // Modify the data
+            let mut modified_data = data;
+
+            let json_data = json!(trade.clone());
+            modified_data.push(json_data);
+
+            // Write the modified data back to the JSON file
+            if let Err(err) = write_trade_log(&modified_data) {
+                error::create_log_file("read_json_file.log", &err);
+            }
+            return Ok(());
+        }
+        Err(err) => {
+            error::create_log_file("read_json_file.log", &err);
+            return Err(err);
+        }
+    }
+}
+pub fn read_trade_log() -> Result<Vec<Value>, AppError> {
+    let path = logger::get_log_folder().join(TRADE_FILE);
+    match std::fs::File::open(path) {
+        Ok(file) => {
+            let reader = std::io::BufReader::new(file);
+            let data: Vec<Value> = serde_json::from_reader(reader)
+                .map_err(|e| AppError::new("read_json_file", eyre::eyre!(e.to_string())))?;
+            Ok(data)
+        }
+        Err(_) => {
+            // Create a new file if it doesn't exist
+            let new_data: Vec<Value> = vec![];
+            write_trade_log(&new_data)?;
+            Ok(new_data)
+        }
+    }
+}
+pub fn write_trade_log(data: &Vec<Value>) -> Result<(), AppError> {
+    let path = logger::get_log_folder().join(TRADE_FILE);
+    let file = std::fs::File::create(path)
+        .map_err(|e| AppError::new("read_json_file", eyre::eyre!(e.to_string())))?;
+    let writer = std::io::BufWriter::new(file);
+    serde_json::to_writer_pretty(writer, data)
+        .map_err(|e| AppError::new("read_json_file", eyre::eyre!(e.to_string())))?;
+    Ok(())
 }
