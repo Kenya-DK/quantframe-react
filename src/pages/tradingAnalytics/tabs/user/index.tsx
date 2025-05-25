@@ -56,7 +56,7 @@ export const UserPanel = ({}: UserPanelProps) => {
   });
 
   return (
-    <Box p={"md"} style={{ position: "relative" }}>
+    <Box p={"md"} style={{ position: "relative" }} h={600}>
       <PremiumOverlay tier="T3+" permission={PermissionsFlags.WFM_USER_ACTIVE_HISTORY} />
       <BarCardChart
         title={useTranslateTabOverview("chart.title")}
