@@ -17,6 +17,9 @@ export const LogParserPanel = ({}: LogParserPanelProps) => {
   const [pageSize, _setPageSize] = useState(50);
   const [totalPages, setTotalPages] = useState(0);
   const [rows, setRows] = useState<string[]>([]);
+  const [searchIndexes, setSearchIndexes] = useState<number[]>([]);
+  const [currentMatch, setCurrentMatch] = useState(0);
+  // Query's
   const { data: lines, refetch: refetchLines } = useQuery({
     queryKey: ["log_parser_lines"],
     queryFn: () => api.log_parser.getLogEELines(),
@@ -25,7 +28,16 @@ export const LogParserPanel = ({}: LogParserPanelProps) => {
     queryKey: ["last_read_date"],
     queryFn: () => api.log_parser.getLastReadDate(),
   });
-  // Update Database Rows
+
+  // Method's
+  const UpdateIndexes = (text: string) => {
+    let indexes: number[] = [];
+    indexes = lines?.map((line, idx) => (line.toLowerCase().includes(text.toLowerCase()) ? idx : -1)).filter((idx) => idx !== -1) || [];
+    setSearchIndexes(indexes);
+    setCurrentMatch(0);
+  };
+
+  // Update Rows and Total Pages when lines or pageSize changes
   useEffect(() => {
     let filteredRecords = lines || [];
     if (!lines) return;
@@ -34,11 +46,13 @@ export const LogParserPanel = ({}: LogParserPanelProps) => {
     setTotalPages(Math.ceil(filteredRecords.length / pageSize));
 
     setRows(paginate(filteredRecords, page, pageSize));
-  }, [lines, query, pageSize, page]);
+  }, [lines, pageSize, page]);
+
   return (
     <Box>
       <SearchField
         value={query}
+        onSearch={(text) => UpdateIndexes(text)}
         onChange={(text) => setQuery(text)}
         rightSectionWidth={115}
         rightSection={
@@ -124,24 +138,103 @@ export const LogParserPanel = ({}: LogParserPanelProps) => {
         </Group>
       </Group>
       <Divider mt={"md"} />
-      {/* <ScrollArea className={`${classes.log_parser} ${useHasAlert() ? classes.alert : ""}`}>
-        {rows.map((line) => (
-          <Box p={5} key={line}>
-            <Text>{line}</Text>
-            <Divider />
-          </Box>
-        ))}
-      </ScrollArea> */}
       <Code block className={`${classes.log_parser} ${useHasAlert() ? classes.alert : ""}`}>
-        {rows.length > 0 ? rows.join("\n") : "Nothing"}
+        {rows.length > 0
+          ? rows.map((line, idx) => {
+              const globalIdx = (page - 1) * pageSize + idx;
+              let isCurrentMatch = false;
+              if (searchIndexes.length > 0 && searchIndexes[currentMatch] === globalIdx) {
+                isCurrentMatch = true;
+              }
+              if (query && line.toLowerCase().includes(query.toLowerCase())) {
+                // Highlight all matches in the line, and extra highlight for the selected index
+                const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
+                let lastIndex = 0;
+                const parts = [];
+                let match;
+                let matchIdx = 0;
+                while ((match = regex.exec(line)) !== null) {
+                  if (match.index > lastIndex) {
+                    parts.push(<span key={lastIndex}>{line.slice(lastIndex, match.index)}</span>);
+                  }
+                  // If this is the selected match on the selected line, use a stronger highlight
+                  const highlightStyle =
+                    isCurrentMatch && matchIdx === 0
+                      ? { background: "#ffd43b", color: "#000", padding: 0, border: "1px solid #ffb700" }
+                      : { background: "#ffe066", color: "#000", padding: 0 };
+                  parts.push(
+                    <mark key={match.index} style={highlightStyle}>
+                      {match[0]}
+                    </mark>
+                  );
+                  lastIndex = match.index + match[0].length;
+                  matchIdx++;
+                }
+                if (lastIndex < line.length) {
+                  parts.push(<span key={lastIndex}>{line.slice(lastIndex)}</span>);
+                }
+                return (
+                  <span key={idx} style={{ display: "block", outline: isCurrentMatch ? "2px solid #ffd43b" : undefined, borderRadius: 4 }}>
+                    {parts}
+                  </span>
+                );
+              } else {
+                return (
+                  <span key={idx} style={{ display: "block" }}>
+                    {line}
+                  </span>
+                );
+              }
+            })
+          : "Nothing"}
       </Code>
       <Divider mt={"md"} />
       <Group grow mt={"md"}>
         <Group>
-          {rows.length || "0"}/{lines?.length || "0"} records
+          {(pageSize * page > (lines?.length || 0) ? lines?.length || "0" : pageSize * page) || "0"}/{lines?.length || "0"} records
         </Group>
         <Group justify="flex-end">
           <Pagination value={page} onChange={setPage} total={totalPages} />
+        </Group>
+        <Group justify="flex-end">
+          <Text size="sm" c="dimmed">
+            {searchIndexes.length > 0 ? `Match ${currentMatch + 1} of ${searchIndexes.length}` : "No matches found"}
+          </Text>
+          <Button
+            size="xs"
+            disabled={searchIndexes.length === 0}
+            onClick={() => {
+              if (currentMatch + 1 < searchIndexes.length) {
+                setCurrentMatch(currentMatch + 1);
+                setPage(Math.ceil((searchIndexes[currentMatch + 1] + 1) / pageSize));
+              }
+            }}
+          >
+            Next Match
+          </Button>
+          <Button
+            size="xs"
+            disabled={searchIndexes.length === 0}
+            onClick={() => {
+              if (currentMatch - 1 >= 0) {
+                setCurrentMatch(currentMatch - 1);
+                setPage(Math.ceil((searchIndexes[currentMatch - 1] + 1) / pageSize));
+              }
+            }}
+          >
+            Previous Match
+          </Button>
+          <Button
+            size="xs"
+            disabled={searchIndexes.length === 0}
+            onClick={() => {
+              if (searchIndexes.length > 0) {
+                setPage(Math.ceil((searchIndexes[currentMatch] + 1) / pageSize));
+              }
+            }}
+          >
+            Go to Match {page}
+          </Button>
         </Group>
       </Group>
     </Box>
