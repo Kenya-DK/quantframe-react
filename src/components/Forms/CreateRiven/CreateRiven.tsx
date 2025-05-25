@@ -78,10 +78,7 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
       },
       polarity: value?.polarity || "madurai",
     },
-    validate: {
-      mod_name: (value) => (!value ? useTranslateFormFields("mod_name.error") : null),
-      attributes: (value) => (!value || value.length === 0 ? useTranslateFormFields("attributes.error") : null),
-    },
+    validate: {},
   });
 
   // Effects

@@ -40,8 +40,7 @@ export function CreateRivenAttribute({
       ...value,
     },
     validate: {
-      value: (value) => {
-        console.log("Value", value);
+      value: (value: number) => {
         if (positiveNumberOnly && value < 0) return useTranslateFormFields("value.error.positive");
         if (negativeNumberOnly && value > 0) return useTranslateFormFields("value.error.negative");
         if (currentValue?.positiveOnly && value < 0) return useTranslateFormFields("value.error.positive");
@@ -92,9 +91,11 @@ export function CreateRivenAttribute({
   };
 
   const ValidateValue = () => {
-    console.log("ValidateValue", form.values.value);
-    if ((positiveNumberOnly && form.values.value < 0) || ((negativeNumberOnly && form.values.value > 0) != currentValue?.unit) == "multiply")
-      form.setFieldValue("value", -form.values.value);
+    // TODO: Validate value based on positiveNumberOnly and negativeNumberOnly
+    // console.log("ValidateValue", form.values.value);
+    // const isNegative = negativeNumberOnly == undefined ? false : negativeNumberOnly;
+    // if ((positiveNumberOnly && form.values.value < 0) || ((isNegative && form.values.value > 0) != currentValue?.unit) == "multiply")
+    //   form.setFieldValue("value", -form.values.value);
   };
 
   return (

@@ -20,7 +20,7 @@ export const UserPanel = ({}: UserPanelProps) => {
   const dataGridState = useForm({
     initialValues: { group_by: "day" } as QuantframeApiTypes.WfmControllerGetUserActiveHistoryParams,
     validate: {
-      to_date: (value) => {
+      to_date: (value: string) => {
         const fromDate = dataGridState.values.from_date;
         if (!fromDate) return true;
         const to_date = dayjs(value).format("YYYY-MM-DD");

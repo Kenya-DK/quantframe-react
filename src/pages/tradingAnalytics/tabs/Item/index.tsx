@@ -21,7 +21,7 @@ export const ItemPanel = ({}: ItemPanelProps) => {
   const dataGridState = useForm({
     initialValues: { page: 1, limit: 10, query: "" } as QuantframeApiTypes.ItemControllerGetListParams,
     validate: {
-      to_date: (value) => {
+      to_date: (value: string) => {
         const fromDate = dataGridState.values.from_date;
         if (!fromDate) return true;
         const to_date = dayjs(value).format("YYYY-MM-DD");
