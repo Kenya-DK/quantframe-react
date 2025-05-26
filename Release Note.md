@@ -6,4 +6,4 @@ How To migrate:
 
 ## Fix's
 
-- 🛠️ Fix a bug where the livetrader wut die
+- 🛠️ Fix a typo
