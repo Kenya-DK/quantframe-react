@@ -271,7 +271,7 @@ impl ItemModule {
             );
 
             // Get the item orders from Warframe Market or the cache.
-            let mut live_orders = if orders_cache.contains_key(&item_entry.wfm_url) {
+            let mut live_orders = if orders_cache.contains_key(&item_entry.uuid()) {
                 orders_cache.get(&item_entry.uuid()).unwrap().clone()
             } else {
                 let orders = wfm
