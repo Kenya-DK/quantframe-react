@@ -29,7 +29,7 @@ type NotificationPayload = {
 
 export type AppContextProps = {
   settings: TauriTypes.Settings | undefined;
-  alerts: QuantframeApiTypes.Alert[];
+  alerts: QuantframeApiTypes.AlertDto[];
   app_info: TauriTypes.AppInfo | undefined;
   app_error?: ResponseError;
 };
@@ -52,7 +52,7 @@ export const useAppContext = () => useContext(AppContext);
 export function AppContextProvider({ children }: AppContextProviderProps) {
   const [settings, setSettings] = useState<TauriTypes.Settings | undefined>(undefined);
   const [appInfo, setAppInfo] = useState<TauriTypes.AppInfo | undefined>(undefined);
-  const [alerts, setAlerts] = useState<QuantframeApiTypes.Alert[]>([]);
+  const [alerts, setAlerts] = useState<QuantframeApiTypes.AlertDto[]>([]);
   const [i18Key, setI18Key] = useState<string>("cache");
   const [checkingUpdate, setCheckingUpdate] = useState(true);
   const [isControl, setIsControl] = useState<boolean>(false);

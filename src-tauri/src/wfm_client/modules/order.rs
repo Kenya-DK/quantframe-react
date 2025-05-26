@@ -56,10 +56,6 @@ impl OrderModule {
         mut quantity: i64,
         order_type: OrderType,
     ) -> Result<(String, Option<Order>), AppError> {
-        println!(
-            "Progress Order: {} - {:?} - {} - {:?}",
-            url, sub_type, quantity, order_type
-        );
         let wfm = self.client.clone();
         let settings = states::settings()?;
         let mut operation = "NotFound";

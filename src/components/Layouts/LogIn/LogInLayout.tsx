@@ -7,7 +7,6 @@ import { useTranslateComponent } from "@hooks/useTranslate.hook";
 import { useAppContext } from "@contexts/app.context";
 import { useEffect, useState } from "react";
 import { NavbarLinkProps, NavbarMinimalColored } from "@components/NavbarMinimalColored";
-import { SvgIcon, SvgType } from "@components/SvgIcon";
 import { Header } from "@components/Header";
 import api from "@api/index";
 import { useAuthContext } from "@contexts/auth.context";

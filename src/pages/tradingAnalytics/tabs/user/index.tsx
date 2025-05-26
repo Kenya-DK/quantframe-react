@@ -20,7 +20,7 @@ export const UserPanel = ({}: UserPanelProps) => {
   const dataGridState = useForm({
     initialValues: { group_by: "day" } as QuantframeApiTypes.WfmControllerGetUserActiveHistoryParams,
     validate: {
-      to_date: (value) => {
+      to_date: (value: string) => {
         const fromDate = dataGridState.values.from_date;
         if (!fromDate) return true;
         const to_date = dayjs(value).format("YYYY-MM-DD");
@@ -56,7 +56,7 @@ export const UserPanel = ({}: UserPanelProps) => {
   });
 
   return (
-    <Box p={"md"} style={{ position: "relative" }}>
+    <Box p={"md"} style={{ position: "relative" }} h={600}>
       <PremiumOverlay tier="T3+" permission={PermissionsFlags.WFM_USER_ACTIVE_HISTORY} />
       <BarCardChart
         title={useTranslateTabOverview("chart.title")}

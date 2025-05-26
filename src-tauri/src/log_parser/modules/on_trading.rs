@@ -18,8 +18,8 @@ use crate::{
         logger::{self, LoggerOptions},
         states,
         trading_helper::{
-            notify, process_stock_item, process_stock_riven, process_wish_list, trace,
-            trace_centered_message,
+            append_to_file, notify, process_stock_item, process_stock_riven, process_wish_list,
+            trace, trace_centered_message,
         },
     },
 };
@@ -38,7 +38,6 @@ pub struct OnTradeEvent {
 impl OnTradeEvent {
     pub fn new(client: LogParser) -> Self {
         let detections = DETECTIONS.get().unwrap();
-        logger::clear_log_file("trade_trace.log").unwrap();
         OnTradeEvent {
             client,
             component: "OnTradeEvent".to_string(),
@@ -256,6 +255,12 @@ impl OnTradeEvent {
             "Trade cancelled",
             LoggerOptions::default(),
         );
+        match append_to_file(self.current_trade.clone()) {
+            Ok(_) => {}
+            Err(err) => {
+                error::create_log_file("append_to_file.log", &err);
+            }
+        }
     }
     pub fn trade_failed(&self) {
         trace("Trade Failed");
@@ -264,6 +269,12 @@ impl OnTradeEvent {
             "Trade failed",
             LoggerOptions::default(),
         );
+        match append_to_file(self.current_trade.clone()) {
+            Ok(_) => {}
+            Err(err) => {
+                error::create_log_file("append_to_file.log", &err);
+            }
+        }
     }
     pub fn trade_accepted(&self) -> Result<(), AppError> {
         trace("Trade Was Successful");
@@ -291,6 +302,12 @@ impl OnTradeEvent {
                 LoggerOptions::default(),
             );
             notify(&trade, vec![String::from("Trade_Type: Trade")], None);
+            match append_to_file(self.current_trade.clone()) {
+                Ok(_) => {}
+                Err(err) => {
+                    error::create_log_file("append_to_file.log", &err);
+                }
+            }
             return Ok(());
         }
         let component = self.get_component("TradeAccepted");
@@ -365,6 +382,12 @@ impl OnTradeEvent {
             }
             logger::info(&component, &trade.display(), LoggerOptions::default());
         });
+        match append_to_file(self.current_trade.clone()) {
+            Ok(_) => {}
+            Err(err) => {
+                error::create_log_file("append_to_file.log", &err);
+            }
+        }
         return Ok(());
     }
     pub fn add_trade_message(&mut self, line: &str) {

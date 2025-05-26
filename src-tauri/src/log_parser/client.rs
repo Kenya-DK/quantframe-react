@@ -17,7 +17,9 @@ use crate::{
     },
 };
 
-use super::modules::{on_conversation::OnConversationEvent, on_trading::OnTradeEvent};
+use super::modules::{
+    on_conversation::OnConversationEvent, on_mission::OnMissionEvent, on_trading::OnTradeEvent,
+};
 
 #[derive(Clone, Debug)]
 pub struct LogParser {
@@ -27,6 +29,7 @@ pub struct LogParser {
     last_file_size: Arc<Mutex<u64>>,
     on_trade_event: Arc<RwLock<Option<OnTradeEvent>>>,
     on_conversation_event: Arc<RwLock<Option<OnConversationEvent>>>,
+    on_mission_event: Arc<RwLock<Option<OnMissionEvent>>>,
     cache_line: Arc<Mutex<Vec<String>>>,
     last_read_date: Arc<Mutex<String>>,
     last_line: Arc<Mutex<String>>,
@@ -43,6 +46,7 @@ impl LogParser {
             last_file_size: Arc::new(Mutex::new(0)),
             on_trade_event: Arc::new(RwLock::new(None)),
             on_conversation_event: Arc::new(RwLock::new(None)),
+            on_mission_event: Arc::new(RwLock::new(None)),
             cache_line: Arc::new(Mutex::new(Vec::new())),
             last_read_date: Arc::new(Mutex::new("".to_string())),
             last_line: Arc::new(Mutex::new("".to_string())),
@@ -172,6 +176,10 @@ impl LogParser {
                     *last_line = line.clone();
                     continue;
                 }
+                if self.mission_event().process_line(&line, *last_file_size)? {
+                    *last_line = line.clone();
+                    continue;
+                }
                 *last_line = line.clone();
             }
         }
@@ -215,6 +223,25 @@ impl LogParser {
 
         // Unwrapping is safe here because we ensured the on_conversation_event is initialized
         self.on_conversation_event
+            .read()
+            .unwrap()
+            .as_ref()
+            .unwrap()
+            .clone()
+    }
+    pub fn update_mission_event(&self, module: OnMissionEvent) {
+        // Update the stored ItemModule
+        *self.on_mission_event.write().unwrap() = Some(module);
+    }
+    pub fn mission_event(&self) -> OnMissionEvent {
+        // Lazily initialize ItemModule if not already initialized
+        if self.on_mission_event.read().unwrap().is_none() {
+            *self.on_mission_event.write().unwrap() =
+                Some(OnMissionEvent::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the on_conversation_event is initialized
+        self.on_mission_event
             .read()
             .unwrap()
             .as_ref()
