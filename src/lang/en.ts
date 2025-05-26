@@ -107,7 +107,7 @@ export const en = {
       },
       premium_modal: {
         title: "Unlock More Features and Support the Development!",
-        text: "1. Join the AlecaFrame Patreon",
+        text: "1. Join the Quantframe Patreon",
         text2: "2. Link your Patreon account",
         buttons: {
           info: "Patreon",
