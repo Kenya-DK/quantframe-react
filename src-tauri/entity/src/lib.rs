@@ -1,3 +1,4 @@
+pub mod dto;
 pub mod enums;
 pub mod price_history;
 pub mod stock;

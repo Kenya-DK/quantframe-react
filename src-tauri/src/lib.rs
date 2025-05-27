@@ -358,6 +358,8 @@ pub fn run() {
             // Quantframe API commands
             commands::qf_client::qf_get,
             commands::qf_client::qf_post,
+            // Test commands
+            commands::stock_item::get_stock_items,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

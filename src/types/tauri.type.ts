@@ -547,4 +547,66 @@ export namespace TauriTypes {
     profit: number;
     total_sellers: number;
   }
+
+  export interface StockEntryBaseDto {
+    id: number;
+    bought: number;
+    minimum_price?: number;
+    list_price?: number;
+    sub_type?: SubType;
+    status: StockStatus;
+    created_at: string;
+    updated_at: string;
+    price_history: PriceHistory[];
+  }
+
+  export interface StockItemDto extends StockEntryBaseDto {
+    created_at: string;
+    id: number;
+    is_hidden: boolean;
+    item_name: string;
+    item_unique_name: string;
+    owned: number;
+    updated_at: string;
+    wfm_id: string;
+    wfm_url: string;
+    info?: StockItemDetails;
+  }
+
+  export interface StockItemControllerGetListParams {
+    /**
+     * For pagination. Defines which page the results are fetched from.
+     * @min 1
+     * @default 1
+     */
+    page: number;
+    /**
+     * For pagination. Defines how many entries are returned per page.
+     * @min 0
+     * @max 100
+     * @default 25
+     */
+    limit: number;
+    sort_by?: string;
+    /** Sort direction used when sorting by a specific field. */
+    sort_direction?: "asc" | "desc";
+    /** A search query to filter the users by name or email. */
+    query?: string;
+    /** Filter by stock status */
+    status?: TauriTypes.StockStatus;
+  }
+
+  export interface PaginatedDto {
+    /** The total number of items in the database */
+    total: number;
+    /** The number of items returned in this request */
+    limit: number;
+    /** The current page */
+    page: number;
+  }
+
+  /** PaginatedResponseOfAlertDto */
+  export type StockItemControllerGetListData = PaginatedDto & {
+    results?: StockItemDto[];
+  };
 }

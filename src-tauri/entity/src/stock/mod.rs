@@ -1,5 +1,10 @@
 pub mod item {
     pub mod create;
+    pub mod dto {
+        pub mod pagination_stock_item;
+        pub use pagination_stock_item::*;
+    }
+
     pub mod stock_item;
     pub mod stock_item_old;
     pub mod stock_item_wat;

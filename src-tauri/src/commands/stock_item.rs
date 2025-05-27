@@ -19,6 +19,25 @@ use crate::{
 };
 
 #[tauri::command]
+pub async fn get_stock_items(
+    query: entity::stock::item::dto::StockItemPaginationQueryDto,
+) -> Result<entity::dto::pagination::PaginatedDto<stock_item::Model>, AppError> {
+    println!("get_stock_items called with query: {:?}", query);
+    let conn = DATABASE.get().unwrap();
+    match StockItemQuery::get_all_v2(conn, query).await {
+        Ok(items) => {
+            helper::add_metric("Stock_ItemGetAll", "manual");
+            return Ok(items);
+        }
+        Err(e) => {
+            let error: AppError = AppError::new_db("StockItemQuery::reload", e);
+            error::create_log_file("command_stock_item_reload.log", &error);
+            return Err(error);
+        }
+    };
+}
+
+#[tauri::command]
 pub async fn stock_item_reload(
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
 ) -> Result<(), AppError> {
