@@ -4,7 +4,7 @@ import { TauriTypes } from "$types";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import api from "@api/index";
-import { SearchField } from "../../../../components/SearchField";
+import { SearchField } from "@components/SearchField";
 import { DataTable } from "mantine-datatable";
 
 interface StockItemPanelProps {}
