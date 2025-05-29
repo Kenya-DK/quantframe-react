@@ -30,7 +30,7 @@ export namespace TauriTypes {
     ChatMessageSent = "Chat:MessageSent",
 
     // Stock
-    UpdateStockItems = "Stock:UpdateStockItems",
+    RefreshStockItems = "Stock:RefreshStockItems",
     UpdateStockRivens = "Stock:UpdateStockRivens",
 
     // Wish List
@@ -356,7 +356,6 @@ export namespace TauriTypes {
     quantity: number;
     minimum_price?: number;
     sub_type?: SubType;
-    is_from_order?: boolean;
   }
 
   export interface UpdateStockItem {
@@ -369,11 +368,11 @@ export namespace TauriTypes {
   }
 
   export interface SellStockItem {
-    url: string;
+    id: number;
+    wfm_url: string;
     sub_type?: SubType;
     quantity: number;
     price: number;
-    is_from_order: boolean;
   }
 
   export interface StockItemDetails {

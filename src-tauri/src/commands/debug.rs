@@ -124,11 +124,6 @@ pub async fn debug_db_reset(
                 .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
             helper::add_metric("Debug_DbReset", "all");
             notify.gui().send_event_update(
-                crate::utils::enums::ui_events::UIEvent::UpdateStockItems,
-                UIOperationEvent::Set,
-                Some(json!([])),
-            );
-            notify.gui().send_event_update(
                 crate::utils::enums::ui_events::UIEvent::UpdateStockRivens,
                 UIOperationEvent::Set,
                 Some(json!([])),
@@ -144,11 +139,6 @@ pub async fn debug_db_reset(
                 .await
                 .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
             helper::add_metric("Debug_DbReset", "stock_item");
-            notify.gui().send_event_update(
-                crate::utils::enums::ui_events::UIEvent::UpdateStockItems,
-                UIOperationEvent::Set,
-                Some(json!([])),
-            );
         }
         "stock_riven" => {
             StockRivenMutation::delete_all(conn)

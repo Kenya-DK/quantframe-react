@@ -912,7 +912,6 @@ export const en = {
       loading_events: {
         cache: "Loading cache...",
         validation: "Validating cache...",
-        stock_items: "Loading stock items...",
         stock_rivens: "Loading stock rivens...",
         transactions: "Loading transactions...",
         user_orders: "Loading warframe market orders...",
@@ -1522,7 +1521,6 @@ export const en = {
         refreshing_chat: "Refreshing Chat",
         refreshing_cache: "Refreshing Cache",
         refreshing_transaction: "Refreshing Transaction",
-        refreshing_stock_items: "Refreshing Stock Items",
         refreshing_stock_riven: "Refreshing Stock Rivens",
       },
       errors: {

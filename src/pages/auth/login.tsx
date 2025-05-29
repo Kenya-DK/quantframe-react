@@ -66,15 +66,13 @@ export default function LoginPage() {
       setProgressText(useTranslateProgress("refreshing_transaction"));
       setInterval(5);
       await api.transaction.reload();
-      setProgressText(useTranslateProgress("refreshing_stock_items"));
-      setInterval(6);
-      await api.stock.item.reload();
+
       setProgressText(useTranslateProgress("refreshing_stock_riven"));
-      setInterval(7);
+      setInterval(6);
       await api.stock.riven.reload();
 
       setProgressText(useTranslateProgress("login.progress_text_4"));
-      setInterval(8);
+      setInterval(7);
       SendTauriDataEvent(TauriTypes.Events.UpdateUser, TauriTypes.EventOperations.SET, u);
       if (u.wfm_access_token) wfmSocket.updateToken(u.wfm_access_token);
     },
@@ -104,7 +102,7 @@ export default function LoginPage() {
           <>
             {logInMutation.isPending && (
               <Progress.Root size="xl">
-                <Progress.Section value={(interval / 8) * 100}>
+                <Progress.Section value={(interval / 7) * 100}>
                   <Progress.Label>{progressText}</Progress.Label>
                 </Progress.Section>
               </Progress.Root>

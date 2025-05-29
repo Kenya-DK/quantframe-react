@@ -39,7 +39,7 @@ i18n.use(initReactI18next).init({
 });
 
 // Create a Backend Client
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,

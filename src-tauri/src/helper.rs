@@ -676,7 +676,7 @@ pub async fn progress_stock_item(
         )
         .await
         {
-            Ok((operation, item)) => {
+            Ok((operation, _)) => {
                 response.push(format!("StockItem_{}", operation));
                 if operation == "NotFound" {
                     if !options.contains(&"StockContinueOnError".to_string()) {
@@ -688,18 +688,6 @@ pub async fn progress_stock_item(
                             )),
                         ));
                     }
-                } else if operation == "Deleted" {
-                    notify.gui().send_event_update(
-                        UIEvent::UpdateStockItems,
-                        UIOperationEvent::Delete,
-                        Some(json!({ "id": item.unwrap().id })),
-                    );
-                } else if operation == "Updated" {
-                    notify.gui().send_event_update(
-                        UIEvent::UpdateStockItems,
-                        UIOperationEvent::CreateOrUpdate,
-                        Some(json!(item)),
-                    );
                 }
                 add_metric(format!("StockItem_{}", operation).as_str(), from);
             }
@@ -710,14 +698,9 @@ pub async fn progress_stock_item(
         }
     } else if operation == OrderType::Buy {
         match StockItemMutation::add_item(conn, stock.clone()).await {
-            Ok(inserted) => {
+            Ok(_) => {
                 let rep = "StockItem_Created".to_string();
                 response.push(rep.clone());
-                notify.gui().send_event_update(
-                    UIEvent::UpdateStockItems,
-                    UIOperationEvent::CreateOrUpdate,
-                    Some(json!(inserted)),
-                );
                 add_metric(rep.as_str(), from);
             }
             Err(e) => {
@@ -731,6 +714,8 @@ pub async fn progress_stock_item(
             eyre!("Invalid operation"),
         ));
     }
+    // Send Refresh Event to GUI
+    notify.gui().send_event(UIEvent::RefreshStockItems, None);
 
     // Process the order on WFM
     if progress_wfm {

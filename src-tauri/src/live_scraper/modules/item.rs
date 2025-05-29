@@ -20,7 +20,6 @@ use entity::price_history::{PriceHistory, PriceHistoryVec};
 use serde_json::json;
 use service::{StockItemMutation, StockItemQuery, WishListMutation, WishListQuery};
 use std::collections::HashMap;
-use std::hash::Hash;
 use std::sync::{Arc, Mutex};
 use std::vec;
 #[derive(Clone)]
@@ -50,11 +49,9 @@ impl ItemModule {
         self.client
             .send_gui_update(format!("item.{}", i18n_key).as_str(), values);
     }
-    pub fn send_stock_update(&self, operation: UIOperationEvent, value: serde_json::Value) {
+    pub fn send_stock_update(&self) {
         let notify = states::notify_client().expect("Failed to get notify client");
-        notify
-            .gui()
-            .send_event_update(UIEvent::UpdateStockItems, operation, Some(value));
+        notify.gui().send_event(UIEvent::RefreshStockItems, None);
     }
     pub fn send_wish_list_update(&self, operation: UIOperationEvent, value: serde_json::Value) {
         let notify = states::notify_client().expect("Failed to get notify client");
@@ -390,9 +387,7 @@ impl ItemModule {
         let mut current_orders = wfm.orders().get_my_orders().await?;
 
         match StockItemMutation::update_all(conn, StockStatus::Pending, None).await {
-            Ok(orders) => {
-                self.send_stock_update(UIOperationEvent::Set, json!(orders));
-            }
+            Ok(_) => self.send_stock_update(),
             Err(e) => {
                 error::create_log_file(
                     self.client.log_file,
@@ -1264,7 +1259,7 @@ impl ItemModule {
                 StockItemMutation::update_by_id(conn, stock_item.id, stock_item.clone())
                     .await
                     .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
-                self.send_stock_update(UIOperationEvent::CreateOrUpdate, json!(stock_item));
+                self.send_stock_update();
             }
             return Ok(());
         }
@@ -1476,7 +1471,8 @@ impl ItemModule {
                 self.info_caches.insert(cache_id.clone(), info.clone());
             }
             self.update_state();
-            self.send_stock_update(UIOperationEvent::CreateOrUpdate, json!(payload));
+            println!("Stock Item Updated: {:?}", stock_item);
+            self.send_stock_update();
         }
 
         return Ok(());

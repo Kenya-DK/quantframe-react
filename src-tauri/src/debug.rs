@@ -147,7 +147,6 @@ impl DebugClient {
         old_con: &DatabaseConnection,
         new_con: &DatabaseConnection,
     ) -> Result<(), AppError> {
-        let notify = states::notify_client()?;
         let old_items = StockItemQuery::get_old_stock_items(old_con)
             .await
             .map_err(|e| AppError::new_db("MigrateDataBase", e))?;
@@ -181,14 +180,6 @@ impl DebugClient {
                 }
             }
         }
-        let new_items = StockItemQuery::get_all(new_con)
-            .await
-            .map_err(|e| AppError::new_db("MigrateDataBase", e))?;
-        notify.gui().send_event_update(
-            crate::utils::enums::ui_events::UIEvent::UpdateStockItems,
-            crate::utils::enums::ui_events::UIOperationEvent::Set,
-            Some(json!(new_items)),
-        );
         Ok(())
     }
 
@@ -298,13 +289,7 @@ impl DebugClient {
             }
         }
         match StockItemQuery::get_all(new_con).await {
-            Ok(new_items) => {
-                notify.gui().send_event_update(
-                    crate::utils::enums::ui_events::UIEvent::UpdateStockItems,
-                    crate::utils::enums::ui_events::UIOperationEvent::Set,
-                    Some(json!(new_items)),
-                );
-            }
+            Ok(_) => {}
             Err(e) => {
                 return Err(AppError::new_db("MigrateDataBase", e));
             }

@@ -240,7 +240,7 @@ pub fn run() {
             START_TIME.set(Instant::now()).unwrap();
             APP.get_or_init(|| app.handle().clone());
 
-            match block_on(init_database(false)) {
+            match block_on(init_database(true)) {
                 Ok(_) => {}
                 Err(e) => {
                     let component = e.component();
@@ -325,7 +325,6 @@ pub fn run() {
             // Live Trading commands
             commands::live_scraper::live_scraper_set_running_state,
             // Stock Item commands
-            commands::stock_item::stock_item_reload,
             commands::stock_item::stock_item_create,
             commands::stock_item::stock_item_update,
             commands::stock_item::stock_item_update_bulk,
