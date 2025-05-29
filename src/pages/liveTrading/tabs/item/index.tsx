@@ -182,6 +182,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
     onMutate: (row) => setLoadingRows((prev) => [...prev, `${row}`]),
     onSettled: (_data, _error, variables) => setLoadingRows((prev) => prev.filter((id) => id !== `${variables}`)),
     onSuccess: async () => {
+      refetch();
       notifications.show({
         title: useTranslateSuccess("delete_stock.title"),
         message: useTranslateSuccess("delete_stock.message"),
