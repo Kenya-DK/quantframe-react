@@ -1,6 +1,8 @@
 use std::sync::{Arc, Mutex};
 
 use create::CreateStockItem;
+use entity::dto::pagination::PaginationQueryDto;
+use entity::stock::item::dto::StockItemPaginationQueryDto;
 use entity::stock::item::*;
 use entity::sub_type::SubType;
 use eyre::eyre;
@@ -296,7 +298,12 @@ pub async fn stock_item_delete_bulk(
     }
 
     // Update the UI
-    match StockItemQuery::get_all(conn).await {
+    match StockItemQuery::get_all_v2(
+        conn,
+        StockItemPaginationQueryDto::new(PaginationQueryDto::new(1, -1), None, None, None, None),
+    )
+    .await
+    {
         Ok(_) => {}
         Err(e) => {
             let error: AppError = AppError::new_db("StockItemQuery::DeleteBulk", e);
