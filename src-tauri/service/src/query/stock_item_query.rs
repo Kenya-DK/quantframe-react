@@ -72,7 +72,11 @@ impl StockItemQuery {
         let limit = query.pagination.limit.max(1);
         let paginator = stmt.paginate(db, limit as u64);
         let total = paginator.num_items().await? as i64;
-        let results = paginator.fetch_page((page - 1) as u64).await?;
+        let results = if query.pagination.limit == -1 {
+            StockItem::find().all(db).await?
+        } else {
+            paginator.fetch_page((page - 1) as u64).await?
+        };
         Ok(::entity::dto::pagination::PaginatedDto::new(
             total, limit, page, results,
         ))
