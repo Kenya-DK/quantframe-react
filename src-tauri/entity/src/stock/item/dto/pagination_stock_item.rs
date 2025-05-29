@@ -12,3 +12,20 @@ pub struct StockItemPaginationQueryDto {
     pub status: Option<String>,
     // You can add more fields as needed for filtering
 }
+impl StockItemPaginationQueryDto {
+    pub fn new(
+        pagination: PaginationQueryDto,
+        query: Option<String>,
+        sort_by: Option<String>,
+        sort_direction: Option<SortDirection>,
+        status: Option<String>,
+    ) -> Self {
+        Self {
+            pagination,
+            query,
+            sort_by,
+            sort_direction,
+            status,
+        }
+    }
+}
