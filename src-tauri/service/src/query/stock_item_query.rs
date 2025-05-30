@@ -57,6 +57,8 @@ impl StockItemQuery {
                 "bought" => stmt = stmt.order_by(stock_item::Column::Bought, order),
                 "status" => stmt = stmt.order_by(stock_item::Column::Status, order),
                 "minimum_price" => stmt = stmt.order_by(stock_item::Column::MinimumPrice, order),
+                "list_price" => stmt = stmt.order_by(stock_item::Column::ListPrice, order),
+                "owned" => stmt = stmt.order_by(stock_item::Column::Owned, order),
                 _ => {}
             }
         }

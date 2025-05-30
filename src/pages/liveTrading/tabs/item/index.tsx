@@ -417,6 +417,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
           {
             accessor: "minimum_price",
             width: 310,
+            sortable: true,
             title: useTranslateDataGridBaseColumns("minimum_price.title"),
             render: ({ id, minimum_price }) => (
               <Group gap={"sm"} justify="space-between">
@@ -448,10 +449,12 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
           },
           {
             accessor: "list_price",
+            sortable: true,
             title: useTranslateDataGridBaseColumns("list_price"),
           },
           {
             accessor: "owned",
+            sortable: true,
             title: useTranslateDataGridColumns("owned"),
           },
           {
