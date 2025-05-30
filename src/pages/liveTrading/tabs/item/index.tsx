@@ -69,7 +69,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
 
   // Queys
   let { data, isFetching, refetch } = useQuery({
-    queryKey: [queryData.page, queryData.limit, queryData.sort_by, queryData.sort_direction, queryData.status],
+    queryKey: ["stock_item", queryData.page, queryData.limit, queryData.sort_by, queryData.sort_direction, queryData.status],
     queryFn: () => api.stock.item.getAll(queryData),
     refetchOnWindowFocus: true,
   });

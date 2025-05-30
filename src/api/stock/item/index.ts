@@ -1,18 +1,12 @@
 import { TauriClient } from "../..";
 import { TauriTypes } from "$types";
 
-const ConvertToTauriQuery = (query: TauriTypes.StockItemControllerGetListParams): any => {
-  let queryParams: any = { ...query };
-  queryParams.pagination = { page: query.page, limit: query.limit };
-  return queryParams;
-};
-
 export class StockItemModule {
   constructor(private readonly client: TauriClient) {}
 
   async getAll(query: TauriTypes.StockItemControllerGetListParams): Promise<TauriTypes.StockItemControllerGetListData> {
     const [err, stockItems] = await this.client.sendInvoke<TauriTypes.StockItemControllerGetListData>("get_stock_items", {
-      query: ConvertToTauriQuery(query),
+      query: this.client.convertToTauriQuery(query),
     });
     if (err) throw err;
     return stockItems;
