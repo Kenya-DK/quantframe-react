@@ -1,9 +1,5 @@
 use ::entity::stock::item::dto::*;
-use ::entity::stock::item::stock_item_wat;
 use ::entity::stock::item::{stock_item, stock_item::Entity as StockItem};
-use ::entity::stock::item::{
-    stock_item_old, stock_item_old::Entity as StockItemOld, stock_item_wat::Entity as StockItemWat,
-};
 
 use ::entity::sub_type::SubType;
 use sea_orm::sea_query::Func;
@@ -62,12 +58,6 @@ impl StockItemQuery {
                 _ => {}
             }
         }
-
-        // Print the generated SQL for debugging
-        println!(
-            "Generating SQL for StockItemQuery::get_all_v2: {:?}",
-            stmt.clone().build(db.get_database_backend()).to_string()
-        );
 
         // Pagination
         let page = query.pagination.page.max(1);
@@ -131,11 +121,5 @@ impl StockItemQuery {
             }
         }
         Ok(None)
-    }
-    pub async fn get_old_stock_items(db: &DbConn) -> Result<Vec<stock_item_old::Model>, DbErr> {
-        StockItemOld::find().all(db).await
-    }
-    pub async fn get_wat_stock_items(db: &DbConn) -> Result<Vec<stock_item_wat::Model>, DbErr> {
-        StockItemWat::find().all(db).await
     }
 }
