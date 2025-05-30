@@ -912,7 +912,6 @@ export const en = {
       loading_events: {
         cache: "Loading cache...",
         validation: "Validating cache...",
-        stock_rivens: "Loading stock rivens...",
         transactions: "Loading transactions...",
         user_orders: "Loading warframe market orders...",
         user_auctions: "Loading warframe market auctions...",
@@ -1245,12 +1244,6 @@ export const en = {
             delete_bulk: {
               tooltip: "Delete Bulk",
             },
-            wts: {
-              tooltip: "Create WTS Message",
-            },
-            selection: {
-              tooltip: "Create Selection Message",
-            },
             create_riven: {
               tooltip: "Create Riven",
             },
@@ -1454,55 +1447,6 @@ export const en = {
                 rest: {
                   title: "Reset Success",
                   message: "Reset has been successfully completed.",
-                },
-              },
-            },
-            migrate: {
-              title: "Migrate From 1.0.4",
-              buttons: {
-                migrate: {
-                  title: "Migrate",
-                },
-              },
-              errors: {
-                migrate: {
-                  title: "Migrate Error",
-                  message: "An error occurred while trying to migrate.",
-                },
-              },
-              success: {
-                migrate: {
-                  title: "Migrate Success",
-                  message: "Migration has been successfully completed.",
-                },
-              },
-            },
-            import_algo_trader: {
-              title: "Import Algo Trader",
-              fields: {
-                db_path: {
-                  label: "File",
-                  placeholder: "Select file...",
-                },
-              },
-              buttons: {
-                import: {
-                  title: "Import",
-                },
-                open_file: {
-                  tooltip: "Open File",
-                },
-              },
-              errors: {
-                import: {
-                  title: "Import Error",
-                  message: "An error occurred while trying to import.",
-                },
-              },
-              success: {
-                import: {
-                  title: "Import Success",
-                  message: "The import has been successfully completed.",
                 },
               },
             },

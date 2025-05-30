@@ -4,18 +4,16 @@ import { TauriTypes } from "$types";
 export class StockRivenModule {
   constructor(private readonly client: TauriClient) {}
 
-  async reload(): Promise<void> {
-    await this.client.sendInvoke<void>("stock_riven_reload");
-  }
-
-  async getAll(): Promise<TauriTypes.StockRiven[]> {
-    const [err, stockItems] = await this.client.sendInvoke<TauriTypes.StockRiven[]>("stock_riven_get_all");
+  async getAll(query: TauriTypes.StockRivenControllerGetListParams): Promise<TauriTypes.StockRivenControllerGetListData> {
+    const [err, stockItems] = await this.client.sendInvoke<TauriTypes.StockRivenControllerGetListData>("get_stock_rivens", {
+      query: this.client.convertToTauriQuery(query),
+    });
     if (err) throw err;
     return stockItems;
   }
 
-  async create(riven_entry: TauriTypes.CreateStockRiven): Promise<TauriTypes.StockRiven> {
-    const [err, stockItem] = await this.client.sendInvoke<TauriTypes.StockRiven>("stock_riven_create", { rivenEntry: riven_entry });
+  async create(input: TauriTypes.CreateStockRiven): Promise<TauriTypes.StockRiven> {
+    const [err, stockItem] = await this.client.sendInvoke<TauriTypes.StockRiven>("stock_riven_create", input);
     if (err) throw err;
     return stockItem;
   }

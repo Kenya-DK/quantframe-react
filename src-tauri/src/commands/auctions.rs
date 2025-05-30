@@ -91,15 +91,7 @@ pub async fn auction_delete(
 
     //Update the StockRiven
     match StockRivenMutation::clear_order_id(conn, &id).await {
-        Ok(res) => {
-            if res.is_some() {
-                notify.gui().send_event_update(
-                    UIEvent::UpdateStockRivens,
-                    UIOperationEvent::CreateOrUpdate,
-                    Some(json!(res)),
-                );
-            }
-        }
+        Ok(_) => {}
         Err(e) => {
             let err = AppError::new_db("Command:AuctionDelete", e);
             error::create_log_file("command_auctions.log", &err);
@@ -144,13 +136,7 @@ pub async fn auction_delete_all(
 
     // Clear all WfmOrderId in StockRiven
     match StockRivenQuery::clear_all_order_id(conn).await {
-        Ok(stock) => {
-            notify.gui().send_event_update(
-                UIEvent::UpdateStockRivens,
-                UIOperationEvent::Set,
-                Some(json!(stock)),
-            );
-        }
+        Ok(_) => {}
         Err(e) => {
             let err = AppError::new_db("Command:AuctionDeleteAll", e);
             error::create_log_file("command_auctions.log", &err);

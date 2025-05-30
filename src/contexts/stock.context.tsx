@@ -1,10 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { TauriTypes } from "$types";
 import { OnTauriDataEvent } from "@api/index";
-import api from "@api/index";
 
 export type StockContextProps = {
-  rivens: TauriTypes.StockRiven[];
   wish_lists: TauriTypes.WishListItem[];
 };
 export type StockContextProviderProps = {
@@ -16,14 +14,12 @@ interface Entity {
 
 type SetDataFunction<T> = React.Dispatch<React.SetStateAction<T>>;
 export const StockContextContext = createContext<StockContextProps>({
-  rivens: [],
   wish_lists: [],
 });
 
 export const useStockContextContext = () => useContext(StockContextContext);
 
 export function StockContextProvider({ children }: StockContextProviderProps) {
-  const [rivens, setRivens] = useState<TauriTypes.StockRiven[]>([]);
   const [wish_list, setWishList] = useState<TauriTypes.WishListItem[]>([]);
 
   const handleUpdate = <T extends Entity>(operation: TauriTypes.EventOperations, data: T | T[], setData: SetDataFunction<T[]>) => {
@@ -50,12 +46,9 @@ export function StockContextProvider({ children }: StockContextProviderProps) {
 
   // Hook on tauri events from rust side
   useEffect(() => {
-    OnTauriDataEvent<any>(TauriTypes.Events.UpdateStockRivens, ({ data, operation }) => handleUpdate(operation, data, setRivens));
     OnTauriDataEvent<any>(TauriTypes.Events.UpdateWishList, ({ data, operation }) => handleUpdate(operation, data, setWishList));
-    return () => {
-      api.events.CleanEvent(TauriTypes.Events.UpdateStockRivens);
-    };
+    return () => {};
   }, []);
 
-  return <StockContextContext.Provider value={{ rivens, wish_lists: wish_list }}>{children}</StockContextContext.Provider>;
+  return <StockContextContext.Provider value={{ wish_lists: wish_list }}>{children}</StockContextContext.Provider>;
 }

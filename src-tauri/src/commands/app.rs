@@ -99,25 +99,6 @@ pub async fn app_init(
         UIOperationEvent::Set,
         Some(json!(&settings)),
     );
-    // Load Stock Rivens
-    notify
-        .gui()
-        .send_event(UIEvent::OnInitialize, Some(json!("stock_rivens")));
-    match StockRivenQuery::get_all(conn).await {
-        Ok(items) => {
-            // Send Stock Rivens to UI
-            notify.gui().send_event_update(
-                UIEvent::UpdateStockRivens,
-                UIOperationEvent::Set,
-                Some(json!(&items)),
-            );
-        }
-        Err(e) => {
-            let error = AppError::new_db("StockRivenQuery::get_all", e);
-            error::create_log_file("command.log", &error);
-            return Err(error);
-        }
-    };
     // Load Wish List
     notify
         .gui()

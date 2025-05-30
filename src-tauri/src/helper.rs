@@ -798,24 +798,14 @@ pub async fn progress_stock_riven(
             Ok(_) => {
                 response.push("StockRiven_Deleted".to_string());
                 add_metric("StockRiven_Deleted", from);
-                notify.gui().send_event_update(
-                    UIEvent::UpdateStockRivens,
-                    UIOperationEvent::Delete,
-                    Some(json!({ "id": entity.stock_id })),
-                );
             }
             Err(e) => return Err(AppError::new("StockItemSell", eyre!(e))),
         }
     } else if operation == OrderType::Buy {
         match StockRivenMutation::create(conn, stock.clone()).await {
-            Ok(inserted) => {
+            Ok(_) => {
                 add_metric("StockRiven_Create", from);
                 response.push("StockRivenAdd".to_string());
-                notify.gui().send_event_update(
-                    UIEvent::UpdateStockRivens,
-                    UIOperationEvent::CreateOrUpdate,
-                    Some(json!(inserted)),
-                );
             }
             Err(e) => {
                 response.push("StockDbError".to_string());
@@ -829,7 +819,7 @@ pub async fn progress_stock_riven(
             eyre!("Invalid operation"),
         ));
     }
-
+    notify.gui().send_event(UIEvent::RefreshStockRivens, None);
     // Process the action on WFM
     if operation == OrderType::Sell && entity.wfm_order_id.is_some() {
         let id = entity.wfm_order_id.clone().unwrap();

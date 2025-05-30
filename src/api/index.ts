@@ -105,6 +105,11 @@ export class TauriClient {
     }
     return searchParams;
   }
+  convertToTauriQuery(query: TauriTypes.StockItemControllerGetListParams) {
+    let queryParams: any = { ...query };
+    queryParams.pagination = { page: query.page, limit: query.limit };
+    return queryParams;
+  }
   // Modules
   app: AppModule;
   auction: AuctionModule;

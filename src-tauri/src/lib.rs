@@ -299,9 +299,6 @@ pub fn run() {
             commands::analytics::analytics_send_metric,
             // Debug commands
             commands::debug::debug_db_reset,
-            commands::debug::debug_migrate_data_base,
-            commands::debug::debug_method,
-            commands::debug::debug_import_algo_trader,
             // Log commands
             commands::log::log_open_folder,
             commands::log::log_export,
@@ -325,6 +322,7 @@ pub fn run() {
             // Live Trading commands
             commands::live_scraper::live_scraper_set_running_state,
             // Stock Item commands
+            commands::stock_item::get_stock_items,
             commands::stock_item::stock_item_create,
             commands::stock_item::stock_item_update,
             commands::stock_item::stock_item_update_bulk,
@@ -332,7 +330,7 @@ pub fn run() {
             commands::stock_item::stock_item_delete,
             commands::stock_item::stock_item_delete_bulk,
             // Stock Riven commands
-            commands::stock_riven::stock_riven_reload,
+            commands::stock_riven::get_stock_rivens,
             commands::stock_riven::stock_riven_update,
             commands::stock_riven::stock_riven_update_bulk,
             commands::stock_riven::stock_riven_sell,
@@ -358,7 +356,6 @@ pub fn run() {
             commands::qf_client::qf_get,
             commands::qf_client::qf_post,
             // Test commands
-            commands::stock_item::get_stock_items,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

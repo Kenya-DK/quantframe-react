@@ -1,43 +1,45 @@
-import { Text, Box, Grid, Group, NumberFormatter } from "@mantine/core";
+import { Box, Grid, Group, NumberFormatter, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { getCssVariable, GetSubTypeDisplay, CreateTradeMessage } from "@utils/helper";
+import { getCssVariable, GetSubTypeDisplay } from "@utils/helper";
 import { useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { TauriTypes } from "$types";
-import { faAdd, faComment, faEdit, faEye, faEyeSlash, faFilter, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
-import { modals } from "@mantine/modals";
-import { notifications } from "@mantine/notifications";
-import { useMutation } from "@tanstack/react-query";
-import api from "@api/index";
+import { faEdit, faEye, faEyeSlash, faFilter, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import api, { OnTauriEvent } from "@api/index";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { ActionWithTooltip } from "@components/ActionWithTooltip";
 import { ColorInfo } from "@components/ColorInfo";
-import { RivenFilter } from "@components/Forms/RivenFilter";
-import { UpdateRivenBulk } from "@components/Forms/UpdateRivenBulk";
-import { Loading } from "@components/Loading";
-import { StockRivenInfo } from "@components/Modals/StockRivenInfo";
-import { RivenAttributeCom } from "@components/RivenAttribute";
 import { StatsWithSegments } from "@components/StatsWithSegments";
-import { TextTranslate } from "@components/TextTranslate";
-import { CreateRiven } from "@components/Forms/CreateRiven";
 import { useLiveScraperContext } from "@contexts/liveScraper.context";
-import { useStockContextContext } from "@contexts/stock.context";
-import { DataTableSearch } from "@components/DataTableSearch";
-import { ComplexFilter, Operator } from "@utils/filter.helper";
 import classes from "../../LiveTrading.module.css";
+import { useLocalStorage } from "@mantine/hooks";
+import { SearchField } from "../../../../components/SearchField";
+import { DataTable } from "mantine-datatable";
+import { TextTranslate } from "../../../../components/TextTranslate";
+import { ButtonIntervals } from "../../../../components/ButtonIntervals";
+import { RivenAttributeCom } from "../../../../components/RivenAttribute";
+import { notifications } from "@mantine/notifications";
+import { modals } from "@mantine/modals";
+import { StockRivenInfo } from "../../../../components/Modals/StockRivenInfo";
+import { CreateRiven } from "../../../../components/Forms/CreateRiven";
+import { UpdateRivenBulk } from "../../../../components/Forms/UpdateRivenBulk";
+import { RivenFilter } from "../../../../components/Forms/RivenFilter";
 interface StockRivenPanelProps {}
 export const StockRivenPanel = ({}: StockRivenPanelProps) => {
   // States Context
-  const { rivens } = useStockContextContext();
   const { is_running } = useLiveScraperContext();
 
-  // States For Database
+  // States For DataGrid
+  const [queryData, setQueryData] = useLocalStorage<TauriTypes.StockRivenControllerGetListParams>({
+    key: "stock_riven_query_key",
+    getInitialValueInEffect: false,
+    defaultValue: { page: 1, limit: 10 },
+  });
+  // const [loadingRows, setLoadingRows] = useState<string[]>([]);
+
+  // States
   const [selectedRecords, setSelectedRecords] = useState<TauriTypes.StockRiven[]>([]);
-
-  const [query, setQuery] = useState<string>("");
-  const [filters, setFilters] = useState<ComplexFilter>({});
-  const [filterStatus, setFilterStatus] = useState<TauriTypes.StockStatus | undefined>(undefined);
-  const [statusCount, setStatusCount] = useState<{ [key: string]: number }>({}); // Count of each status
-
+  const [statusCount, setStatusCount] = useState<{ [key: string]: number }>({});
   const [segments, setSegments] = useState<{ label: string; count: number; part: number; color: string }[]>([]);
 
   // Translate general
@@ -61,46 +63,19 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
     useTranslate(`prompts.${key}`, { ...context }, i18Key);
   const useTranslatePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTabItem(`prompts.${key}`, { ...context }, i18Key);
-  const useTranslateNotifications = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslate(`notifications.${key}`, { ...context }, i18Key);
   const useTranslateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTabItem(`buttons.${key}`, { ...context }, i18Key);
 
-  // Update Database Rows
+  // Queys
+  let { data, isFetching, refetch } = useQuery({
+    queryKey: ["stock_riven", queryData.page, queryData.limit, queryData.sort_by, queryData.sort_direction, queryData.status],
+    queryFn: () => api.stock.riven.getAll(queryData),
+    refetchOnWindowFocus: true,
+  });
+  // Member
   useEffect(() => {
-    let filter: ComplexFilter = {
-      OR: [],
-    };
-    if (!rivens) return;
-
-    setStatusCount(
-      Object.values(TauriTypes.StockStatus).reduce((acc, status) => {
-        acc[status] = rivens.reverse().filter((item) => item.status === status).length;
-        return acc;
-      }, {} as { [key: string]: number })
-    );
-    if (filterStatus)
-      filter.OR?.push({
-        status: {
-          [Operator.EQUALS]: filterStatus,
-        },
-      });
-    if (query) {
-      filter.OR?.push({
-        weapon_name_mod: {
-          combineFields: ["weapon_name", "mod_name"],
-          combineWith: " ",
-          [Operator.CONTAINS_VALUE]: query,
-          isCaseSensitive: false,
-        },
-      });
-    }
-    setFilters(filter);
-  }, [rivens, query, filterStatus]);
-
-  // Calculate Stats
-  useEffect(() => {
-    if (!rivens) return;
+    if (!data) return;
+    const rivens = data.results || [];
     const totalPurchasePrice = rivens.reduce((a, b) => a + (b.bought || 0), 0);
     const totalListedPrice = rivens.reduce((a, b) => a + (b.list_price || 0), 0);
     const totalProfit = totalListedPrice > 0 ? totalListedPrice - totalPurchasePrice : 0;
@@ -117,34 +92,19 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
       { label: useTranslateSegments("listed"), count: totalListedPrice, part: listedPercentage, color: getCssVariable("--positive-value") },
       { label: useTranslateSegments("profit"), count: totalProfit, part: profitPercentage, color: getCssVariable("--profit-value") },
     ]);
-  }, [rivens]);
-  // Functions
-  const CreateWTSMessages = async (items: TauriTypes.StockRiven[]) => {
-    items = items
-      .filter((x) => !!x.list_price)
-      .sort((a, b) => {
-        if (a.list_price && b.list_price) {
-          return b.list_price - a.list_price;
-        }
-        return 0;
-      });
-    let msg = CreateTradeMessage(
-      "WTS Rivens",
-      items.map((x) => ({ price: x.list_price || 0, name: `[${x.weapon_name} ${x.mod_name}]` })),
-      ""
+    setStatusCount(
+      Object.values(TauriTypes.StockStatus).reduce((acc, status) => {
+        acc[status] = rivens.filter((item) => item.status === status).length;
+        return acc;
+      }, {} as { [key: string]: number })
     );
-    notifications.show({ title: useTranslateNotifications("copied.title"), message: msg.trim(), color: "green.7" });
-    navigator.clipboard.writeText(msg.trim());
-  };
-  const CreateRivenSelection = async (items: TauriTypes.StockRiven[]) => {
-    let message = items.map((x, i) => `${i + 1}: [${x.weapon_name} ${x.mod_name}]`).join(" ");
-    notifications.show({ title: useTranslateNotifications("copied.title"), message: message, color: "green.7" });
-    navigator.clipboard.writeText(message);
-  };
+  }, [data]);
   // Mutations
+
   const updateStockMutation = useMutation({
     mutationFn: (data: TauriTypes.UpdateStockRiven) => api.stock.riven.update(data),
     onSuccess: async (u) => {
+      refetch();
       notifications.show({
         title: useTranslateSuccess("update_stock.title"),
         message: useTranslateSuccess("update_stock.message", { name: u.weapon_name + " " + u.mod_name }),
@@ -160,6 +120,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
   const updateBulkStockMutation = useMutation({
     mutationFn: (data: { ids: number[]; entry: TauriTypes.UpdateStockRiven }) => api.stock.riven.updateBulk(data.ids, data.entry),
     onSuccess: async (u) => {
+      refetch();
       notifications.show({
         title: useTranslateSuccess("update_bulk_stock.title"),
         message: useTranslateSuccess("update_bulk_stock.message", { count: u }),
@@ -179,6 +140,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
   const sellStockMutation = useMutation({
     mutationFn: (data: TauriTypes.SellStockRiven) => api.stock.riven.sell(data),
     onSuccess: async (u) => {
+      refetch();
       notifications.show({
         title: useTranslateSuccess("sell_stock.title"),
         message: useTranslateSuccess("sell_stock.message", { name: u.weapon_name + " " + u.mod_name }),
@@ -194,6 +156,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
   const deleteStockMutation = useMutation({
     mutationFn: (id: number) => api.stock.riven.delete(id),
     onSuccess: async () => {
+      refetch();
       notifications.show({
         title: useTranslateSuccess("delete_stock.title"),
         message: useTranslateSuccess("delete_stock.message"),
@@ -209,6 +172,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
   const deleteBulkStockMutation = useMutation({
     mutationFn: (ids: number[]) => api.stock.riven.deleteBulk(ids),
     onSuccess: async () => {
+      refetch();
       notifications.show({
         title: useTranslateSuccess("delete_bulk_stock.title"),
         message: useTranslateSuccess("delete_bulk_stock.message"),
@@ -228,6 +192,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
   const createStockMutation = useMutation({
     mutationFn: (riven: TauriTypes.CreateStockRiven) => api.stock.riven.create(riven),
     onSuccess: async (r) => {
+      refetch();
       notifications.show({
         title: useTranslateSuccess("create_riven.title"),
         message: useTranslateSuccess("create_riven.message", { name: `${r.weapon_name} ${r.mod_name}` }),
@@ -239,34 +204,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
       notifications.show({ title: useTranslateErrors("create_riven.title"), message: useTranslateErrors("create_riven.message"), color: "red.7" });
     },
   });
-
   // Modal's
-  const OpenMinimumPriceModal = (id: number, minimum_price: number) => {
-    modals.openContextModal({
-      modal: "prompt",
-      title: useTranslateBasePrompt("minimum_price.title"),
-      innerProps: {
-        fields: [
-          {
-            name: "minimum_price",
-            label: useTranslateBasePrompt("minimum_price.fields.minimum_price.label"),
-            attributes: {
-              min: 0,
-              description: useTranslateBasePrompt("minimum_price.fields.minimum_price.description"),
-            },
-            value: minimum_price,
-            type: "number",
-          },
-        ],
-        onConfirm: async (data: any) => {
-          if (!id) return;
-          const { minimum_price } = data;
-          await updateStockMutation.mutateAsync({ id, minimum_price });
-        },
-        onCancel: (id: string) => modals.close(id),
-      },
-    });
-  };
   const OpenSellModal = (id: number) => {
     modals.openContextModal({
       modal: "prompt",
@@ -307,15 +245,14 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
         <CreateRiven
           onSubmit={async (_data) => {
             await createStockMutation.mutateAsync({
-              raw: _data.wfm_weapon_url,
+              wfm_url: _data.wfm_weapon_url,
+              mod_name: _data.mod_name,
               mastery_rank: _data.mastery_rank,
               re_rolls: _data.re_rolls,
-              mod_name: _data.mod_name,
-              wfm_url: _data.wfm_weapon_url,
               polarity: _data.polarity,
+              attributes: _data.attributes,
               bought: _data.bought || 0,
               rank: _data.sub_type?.rank || 0,
-              attributes: _data.attributes,
             });
             modals.closeAll();
           }}
@@ -354,24 +291,20 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
       ),
     });
   };
+  useEffect(() => {
+    OnTauriEvent<any>(TauriTypes.Events.RefreshStockRivens, () => refetch());
+    return () => api.events.CleanEvent(TauriTypes.Events.RefreshStockRivens);
+  }, []);
   return (
     <Box>
       <Grid>
         <Grid.Col span={8}>
           <Group gap={"md"} mt={"md"}>
-            {[
-              TauriTypes.StockStatus.Pending,
-              TauriTypes.StockStatus.Live,
-              TauriTypes.StockStatus.InActive,
-              TauriTypes.StockStatus.ToLowProfit,
-              TauriTypes.StockStatus.NoSellers,
-            ].map((status) => (
+            {Object.values(TauriTypes.StockStatus).map((status) => (
               <ColorInfo
-                active={status == filterStatus}
+                active={status == queryData.status}
                 key={status}
-                onClick={() => {
-                  setFilterStatus((s) => (s === status ? undefined : status));
-                }}
+                onClick={() => setQueryData((prev) => ({ ...prev, status: status == prev.status ? undefined : status }))}
                 infoProps={{
                   "data-color-mode": "bg",
                   "data-stock-status": status,
@@ -386,14 +319,12 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
           <StatsWithSegments showPercent segments={segments} />
         </Grid.Col>
       </Grid>
-      <DataTableSearch
-        id={"stock_riven"}
-        className={`${classes.databaseStockRivens} ${useHasAlert() ? classes.alert : ""} ${is_running ? classes.running : ""}`}
-        mt={"md"}
-        query={query}
-        onSearchChange={(text) => setQuery(text)}
-        filters={filters}
-        rightSectionWidth={145}
+      <SearchField
+        value={queryData.query || ""}
+        onSearch={() => refetch()}
+        onChange={(text) => setQueryData((prev) => ({ ...prev, query: text }))}
+        rightSectionWidth={115}
+        onCreate={() => OpenCreateRiven()}
         rightSection={
           <Group gap={5}>
             <ActionWithTooltip
@@ -423,64 +354,36 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
                 });
               }}
             />
-            <ActionWithTooltip
-              tooltip={useTranslateButtons("wts.tooltip")}
-              icon={faComment}
-              color={"green.7"}
-              actionProps={{ size: "sm", disabled: selectedRecords.length < 1 }}
-              iconProps={{ size: "xs" }}
-              onClick={(e) => {
-                e.stopPropagation();
-                CreateWTSMessages(selectedRecords);
-              }}
-            />
-            <ActionWithTooltip
-              tooltip={useTranslateButtons("selection.tooltip")}
-              icon={faComment}
-              color={"green.7"}
-              actionProps={{ size: "sm", disabled: selectedRecords.length < 1 }}
-              iconProps={{ size: "xs" }}
-              onClick={(e) => {
-                e.stopPropagation();
-                CreateRivenSelection(selectedRecords);
-              }}
-            />
-            <ActionWithTooltip
-              tooltip={useTranslateButtons("create_riven.tooltip")}
-              icon={faAdd}
-              actionProps={{ size: "sm" }}
-              iconProps={{ size: "xs" }}
-              color={"green.7"}
-              onClick={(e) => {
-                e.stopPropagation();
-                OpenCreateRiven();
-              }}
-            />
           </Group>
         }
-        records={rivens || []}
+      />
+      <DataTable
+        className={`${classes.databaseStockRivens} ${useHasAlert() ? classes.alert : ""} ${is_running ? classes.running : ""}`}
         customRowAttributes={(record) => {
           return {
             "data-color-mode": "box-shadow",
             "data-stock-status": record.status,
           };
         }}
-        customLoader={<Loading />}
-        fetching={updateStockMutation.isPending || sellStockMutation.isPending || deleteStockMutation.isPending || deleteBulkStockMutation.isPending}
-        idAccessor={"id"}
+        mt={"md"}
+        striped
+        fetching={isFetching}
+        records={data?.results || []}
+        page={queryData.page || 1}
+        onPageChange={(page) => setQueryData((prev) => ({ ...prev, page }))}
+        totalRecords={data?.total}
+        recordsPerPage={queryData.limit || 10}
+        recordsPerPageOptions={[5, 10, 15, 20, 25, 50, 100]}
+        onRecordsPerPageChange={(limit) => setQueryData((prev) => ({ ...prev, limit }))}
         selectedRecords={selectedRecords}
         onSelectedRecordsChange={setSelectedRecords}
-        onCellClick={({ record, column }) => {
-          switch (column.accessor) {
-            case "weapon_name":
-              navigator.clipboard.writeText(record.weapon_name + " " + record.mod_name);
-              notifications.show({
-                title: useTranslateNotifications("copied.title"),
-                message: record.weapon_name + " " + record.mod_name,
-                color: "green.7",
-              });
-              break;
-          }
+        sortStatus={{
+          columnAccessor: queryData.sort_by || "name",
+          direction: queryData.sort_direction || "desc",
+        }}
+        onSortStatusChange={(sort) => {
+          if (!sort || !sort.columnAccessor) return;
+          setQueryData((prev) => ({ ...prev, sort_by: sort.columnAccessor as string, sort_direction: sort.direction }));
         }}
         // define columns
         columns={[
@@ -501,6 +404,17 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
             ),
           },
           {
+            accessor: "attributes",
+            title: useTranslateDataGridColumns("attributes"),
+            render: ({ attributes }) => (
+              <Group gap={"sm"} justify="flex-start">
+                {attributes?.map((attribute, index) => (
+                  <RivenAttributeCom key={index} value={{ ...attribute }} />
+                ))}
+              </Group>
+            ),
+          },
+          {
             accessor: "bought",
             title: useTranslateDataGridBaseColumns("bought"),
             sortable: true,
@@ -508,22 +422,32 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
           },
           {
             accessor: "minimum_price",
-            title: useTranslateDataGridBaseColumns("minimum_price.title"),
+            width: 310,
             sortable: true,
+            title: useTranslateDataGridBaseColumns("minimum_price.title"),
             render: ({ id, minimum_price }) => (
               <Group gap={"sm"} justify="space-between">
                 <Text>{minimum_price || "N/A"}</Text>
                 <Group gap={"xs"}>
+                  <ButtonIntervals
+                    intervals={[5, 10]}
+                    minimum_price={minimum_price || 0}
+                    OnClick={async (val) => {
+                      if (!id) return;
+                      console.log("Update minimum price to:", val);
+                      // await updateStockMutation.mutateAsync({ id, minimum_price: val });
+                    }}
+                  />
                   <ActionWithTooltip
                     tooltip={useTranslateDataGridBaseColumns("minimum_price.btn.edit.tooltip")}
                     icon={faEdit}
-                    actionProps={{ size: "sm" }}
-                    iconProps={{ size: "xs" }}
                     onClick={(e) => {
                       e.stopPropagation();
                       if (!id) return;
-                      OpenMinimumPriceModal(id, minimum_price || 0);
+                      // OpenMinimumPriceModal(id, minimum_price || 0);
                     }}
+                    actionProps={{ size: "sm" }}
+                    iconProps={{ size: "xs" }}
                   />
                 </Group>
               </Group>
@@ -531,18 +455,8 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
           },
           {
             accessor: "list_price",
+            sortable: true,
             title: useTranslateDataGridBaseColumns("list_price"),
-          },
-          {
-            accessor: "attributes",
-            title: useTranslateDataGridColumns("attributes"),
-            render: ({ attributes }) => (
-              <Group gap={"sm"} justify="flex-start">
-                {attributes.map((attribute, index) => (
-                  <RivenAttributeCom key={index} value={{ ...attribute }} />
-                ))}
-              </Group>
-            ),
           },
           {
             accessor: "actions",
