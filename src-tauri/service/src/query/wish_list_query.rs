@@ -59,11 +59,13 @@ impl WishListQuery {
         // Pagination
         let page = query.pagination.page.max(1);
         let limit = query.pagination.limit.max(1);
-        let paginator = stmt.paginate(db, limit as u64);
-        let total = paginator.num_items().await? as i64;
+        let total;
         let results = if query.pagination.limit == -1 {
-            WishList::find().all(db).await?
+            total = stmt.clone().count(db).await? as i64;
+            stmt.all(db).await?
         } else {
+            let paginator = stmt.paginate(db, limit as u64);
+            total = paginator.num_items().await? as i64;
             paginator.fetch_page((page - 1) as u64).await?
         };
         Ok(::entity::dto::pagination::PaginatedDto::new(

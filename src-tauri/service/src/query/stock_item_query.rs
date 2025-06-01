@@ -62,19 +62,45 @@ impl StockItemQuery {
         // Pagination
         let page = query.pagination.page.max(1);
         let limit = query.pagination.limit.max(1);
-        let paginator = stmt.paginate(db, limit as u64);
-        let total = paginator.num_items().await? as i64;
+        let total;
         let results = if query.pagination.limit == -1 {
-            StockItem::find().all(db).await?
+            total = stmt.clone().count(db).await? as i64;
+            stmt.all(db).await?
         } else {
+            let paginator = stmt.paginate(db, limit as u64);
+            total = paginator.num_items().await? as i64;
             paginator.fetch_page((page - 1) as u64).await?
         };
         Ok(::entity::dto::pagination::PaginatedDto::new(
             total, limit, page, results,
         ))
     }
-    pub async fn get_all(db: &DbConn) -> Result<Vec<stock_item::Model>, DbErr> {
-        StockItem::find().all(db).await
+    pub async fn get_all(
+        db: &DbConn,
+        query: Option<StockItemPaginationQueryDto>,
+    ) -> Result<Vec<stock_item::Model>, DbErr> {
+        let mut stmt = StockItem::find();
+        if let Some(query) = query {
+            // Filtering by query (search)
+            if let Some(ref q) = query.query {
+                stmt = stmt.filter(
+                    Condition::any()
+                        .add(
+                            Expr::expr(Func::lower(Expr::col(stock_item::Column::WfmUrl)))
+                                .like(&format!("%{}%", q.to_lowercase())),
+                        )
+                        .add(
+                            Expr::expr(Func::lower(Expr::col(stock_item::Column::ItemName)))
+                                .like(&format!("%{}%", q.to_lowercase())),
+                        ),
+                );
+            }
+            // Filtering by status
+            if let Some(ref status) = query.status {
+                stmt = stmt.filter(stock_item::Column::Status.eq(status));
+            }
+        }
+        stmt.all(db).await
     }
 
     pub async fn get_all_stock_items(
