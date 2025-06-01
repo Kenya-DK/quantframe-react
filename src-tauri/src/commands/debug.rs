@@ -1,20 +1,12 @@
-use std::{
-    path::PathBuf,
-    sync::{Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 
-use serde_json::{json, Value};
-use service::{sea_orm::Database, StockItemMutation, StockRivenMutation, TransactionMutation};
+use serde_json::json;
+use service::{StockItemMutation, StockRivenMutation, TransactionMutation};
 
 use crate::{
-    debug::DebugClient,
     helper,
     notification::client::NotifyClient,
-    qf_client::client::QFClient,
-    utils::{
-        enums::ui_events::UIOperationEvent,
-        modules::{error::AppError, trading_helper::combine_and_detect_match},
-    },
+    utils::{enums::ui_events::UIOperationEvent, modules::error::AppError},
     DATABASE,
 };
 

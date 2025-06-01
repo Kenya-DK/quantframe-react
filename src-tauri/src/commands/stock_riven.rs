@@ -133,7 +133,7 @@ pub async fn stock_riven_update(
     }
 
     match StockRivenMutation::update_by_id(conn, stock.id, stock.clone()).await {
-        Ok(updated) => helper::add_metric("Stock_RivenUpdate", "manual"),
+        Ok(_) => helper::add_metric("Stock_RivenUpdate", "manual"),
         Err(e) => return Err(AppError::new_db("StockItemUpdate", e)),
     }
 
@@ -145,11 +145,9 @@ pub async fn stock_riven_update_bulk(
     ids: Vec<i64>,
     minimum_price: Option<i64>,
     is_hidden: Option<bool>,
-    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<i64, AppError> {
     let conn = DATABASE.get().unwrap();
-    let notify = notify.lock()?.clone();
     let wfm = wfm.lock()?.clone();
 
     let mut total: i64 = 0;
@@ -189,7 +187,7 @@ pub async fn stock_riven_update_bulk(
             )
             .await
         {
-            Ok(updated) => helper::add_metric("WFM_RivenUpdate", "stock_riven"),
+            Ok(_) => helper::add_metric("WFM_RivenUpdate", "stock_riven"),
             Err(e) => {
                 error::create_log_file("command_stock_riven_update_bulk.log", &e);
                 return Err(e);

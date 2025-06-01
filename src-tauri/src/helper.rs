@@ -561,7 +561,7 @@ pub async fn progress_wish_item(
     )
     .await
     {
-        Ok((operation, item)) => {
+        Ok((operation, _)) => {
             response.push(format!("WishItem_{}", operation));
             if operation == "NotFound" {
                 if !options.contains(&"WishContinueOnError".to_string()) {
