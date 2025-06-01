@@ -32,9 +32,7 @@ export namespace TauriTypes {
     // Stock
     RefreshStockItems = "Stock:RefreshStockItems",
     RefreshStockRivens = "Stock:RefreshStockRivens",
-
-    // Wish List
-    UpdateWishList = "WishList:Update",
+    RefreshWishListItems = "Stock:RefreshWishListItems",
 
     // User
     UpdateUser = "User:Update",
@@ -512,6 +510,7 @@ export namespace TauriTypes {
   }
 
   export interface WishListItem extends Omit<StockEntryBase, "minimum_price"> {
+    id: number;
     item_name: string;
     wfm_url: string;
     quantity: number;
@@ -641,5 +640,41 @@ export namespace TauriTypes {
   /** PaginatedResponseOfAlertDto */
   export type StockRivenControllerGetListData = PaginatedDto & {
     results?: StockRiven[];
+  };
+  export interface WishListControllerGetListParams {
+    /**
+     * For pagination. Defines which page the results are fetched from.
+     * @min 1
+     * @default 1
+     */
+    page: number;
+    /**
+     * For pagination. Defines how many entries are returned per page.
+     * @min 0
+     * @max 100
+     * @default 25
+     */
+    limit: number;
+    sort_by?: string;
+    /** Sort direction used when sorting by a specific field. */
+    sort_direction?: "asc" | "desc";
+    /** A search query to filter the users by name or email. */
+    query?: string;
+    /** Filter by stock status */
+    status?: TauriTypes.StockStatus;
+  }
+
+  export interface PaginatedDto {
+    /** The total number of items in the database */
+    total: number;
+    /** The number of items returned in this request */
+    limit: number;
+    /** The current page */
+    page: number;
+  }
+
+  /** PaginatedResponseOfAlertDto */
+  export type WishListControllerGetListData = PaginatedDto & {
+    results?: WishListItem[];
   };
 }

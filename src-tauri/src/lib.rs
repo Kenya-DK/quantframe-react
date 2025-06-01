@@ -338,7 +338,7 @@ pub fn run() {
             commands::stock_riven::stock_riven_delete_bulk,
             commands::stock_riven::stock_riven_create,
             // Wish List commands
-            commands::wish_list::wish_list_reload,
+            commands::wish_list::get_wish_lists,
             commands::wish_list::wish_list_create,
             commands::wish_list::wish_list_update,
             commands::wish_list::wish_list_delete,

@@ -573,18 +573,6 @@ pub async fn progress_wish_item(
                         )),
                     ));
                 }
-            } else if operation == "Deleted" {
-                notify.gui().send_event_update(
-                    UIEvent::UpdateWishList,
-                    UIOperationEvent::Delete,
-                    Some(json!({ "id": item.unwrap().id })),
-                );
-            } else if operation == "Updated" {
-                notify.gui().send_event_update(
-                    UIEvent::UpdateWishList,
-                    UIOperationEvent::CreateOrUpdate,
-                    Some(json!(item)),
-                );
             }
             add_metric("Wish_ItemBought", from);
             response.push("WishItem_Bought".to_string());
@@ -594,7 +582,8 @@ pub async fn progress_wish_item(
             return Err(AppError::new("WishItemCreate", eyre!(e)));
         }
     }
-
+    // Send Refresh Event to GUI
+    notify.gui().send_event(UIEvent::RefreshWishListItems, None);
     // Process the order on WFM
     match progress_wfm_order(
         entity.wfm_url.as_str(),

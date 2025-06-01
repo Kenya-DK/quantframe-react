@@ -4,10 +4,13 @@ import { TauriTypes } from "$types";
 export class WishListModule {
   constructor(private readonly client: TauriClient) {}
 
-  async reload(): Promise<void> {
-    const [] = await this.client.sendInvoke<void>("wish_list_reload");
+  async getAll(query: TauriTypes.WishListControllerGetListParams): Promise<TauriTypes.WishListControllerGetListData> {
+    const [err, stockItems] = await this.client.sendInvoke<TauriTypes.WishListControllerGetListData>("get_wish_lists", {
+      query: this.client.convertToTauriQuery(query),
+    });
+    if (err) throw err;
+    return stockItems;
   }
-
   async create(entry: TauriTypes.CreateWishListItem): Promise<TauriTypes.WishListItem> {
     const [err, stockItem] = await this.client.sendInvoke<TauriTypes.WishListItem>("wish_list_create", entry);
     if (err) throw err;
@@ -26,8 +29,8 @@ export class WishListModule {
     return stockItem;
   }
 
-  async delete(id: number): Promise<void> {
-    const [err, res] = await this.client.sendInvoke<void>("wish_list_delete", { id });
+  async delete(id: number): Promise<TauriTypes.WishListItem> {
+    const [err, res] = await this.client.sendInvoke<TauriTypes.WishListItem>("wish_list_delete", { id });
     if (err) throw err;
     return res;
   }

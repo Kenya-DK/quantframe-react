@@ -53,11 +53,9 @@ impl ItemModule {
         let notify = states::notify_client().expect("Failed to get notify client");
         notify.gui().send_event(UIEvent::RefreshStockItems, None);
     }
-    pub fn send_wish_list_update(&self, operation: UIOperationEvent, value: serde_json::Value) {
+    pub fn send_wish_list_update(&self) {
         let notify = states::notify_client().expect("Failed to get notify client");
-        notify
-            .gui()
-            .send_event_update(UIEvent::UpdateWishList, operation, Some(value));
+        notify.gui().send_event(UIEvent::RefreshWishListItems, None);
     }
     pub fn send_order_update(&self, operation: UIOperationEvent, value: serde_json::Value) {
         let notify = states::notify_client().expect("Failed to get notify client");
@@ -656,7 +654,7 @@ impl ItemModule {
                 WishListMutation::update_by_id(conn, wish_list_item.id, wish_list_item.clone())
                     .await
                     .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
-                self.send_wish_list_update(UIOperationEvent::CreateOrUpdate, json!(wish_list_item));
+                self.send_wish_list_update();
             }
             return Ok(None);
         }
@@ -820,7 +818,7 @@ impl ItemModule {
                 self.info_caches.insert(cache_id.clone(), info.clone());
             }
             self.update_state();
-            self.send_wish_list_update(UIOperationEvent::CreateOrUpdate, json!(payload));
+            self.send_wish_list_update();
         }
         Ok(None)
     }

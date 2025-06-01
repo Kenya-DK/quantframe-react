@@ -104,14 +104,7 @@ pub async fn app_init(
         .gui()
         .send_event(UIEvent::OnInitialize, Some(json!("wish_list")));
     match WishListQuery::get_all(conn).await {
-        Ok(items) => {
-            // Send Transactions to UI
-            notify.gui().send_event_update(
-                UIEvent::UpdateWishList,
-                UIOperationEvent::Set,
-                Some(json!(&items)),
-            );
-        }
+        Ok(_) => {}
         Err(e) => {
             let error = AppError::new_db("WishListQuery::get_all", e);
             error::create_log_file("command.log", &error);
