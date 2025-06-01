@@ -11,7 +11,6 @@ import { AppRoutes } from "@components/Layouts/Routes";
 import { PromptModal } from "@components/Modals/Prompt";
 import { AppContextProvider } from "@contexts/app.context";
 import { LiveScraperContextProvider } from "@contexts/liveScraper.context";
-import { StockContextProvider } from "@contexts/stock.context";
 import { WarframeMarketContextProvider } from "@contexts/warframeMarket.context";
 import { useEffect } from "react";
 import api from "./api";
@@ -65,14 +64,11 @@ function App() {
         }}
       >
         <DatesProvider settings={{ locale: "en" }}>
-          {/* Your app  */}
           <AppContextProvider>
             <WarframeMarketContextProvider>
-              <StockContextProvider>
-                <LiveScraperContextProvider>
-                  <AppRoutes />
-                </LiveScraperContextProvider>
-              </StockContextProvider>
+              <LiveScraperContextProvider>
+                <AppRoutes />
+              </LiveScraperContextProvider>
             </WarframeMarketContextProvider>
           </AppContextProvider>
         </DatesProvider>
