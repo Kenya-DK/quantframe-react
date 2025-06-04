@@ -1,9 +1,29 @@
-import { Box, Grid, Group, NumberFormatter, Text } from "@mantine/core";
+import {
+  Box,
+  Grid,
+  Group,
+  NumberFormatter,
+  Text,
+  Tooltip,
+  ActionIcon,
+  Paper,
+} from "@mantine/core";
 import { useEffect, useState } from "react";
+import { useMediaQuery } from "@mantine/hooks";
 import { getCssVariable, GetSubTypeDisplay } from "@utils/helper";
 import { useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { TauriTypes } from "$types";
-import { faEdit, faEye, faEyeSlash, faFilter, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import {
+  faEdit,
+  faEye,
+  faEyeSlash,
+  faFilter,
+  faHammer,
+  faInfo,
+  faPen,
+  faTrashCan,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import api, { OnTauriEvent } from "@api/index";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
@@ -26,7 +46,9 @@ import { UpdateRivenBulk } from "../../../../components/Forms/UpdateRivenBulk";
 import { RivenFilter } from "../../../../components/Forms/RivenFilter";
 interface StockRivenPanelProps {}
 export const StockRivenPanel = ({}: StockRivenPanelProps) => {
-  // States Context
+  // Treat as “wide” only when landscape AND ≥800px wide
+  const isWide = useMediaQuery("(min-width: 800px) and (orientation: landscape)");
+
   const { is_running } = useLiveScraperContext();
 
   // States For DataGrid
@@ -204,7 +226,38 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
       notifications.show({ title: useTranslateErrors("create_riven.title"), message: useTranslateErrors("create_riven.message"), color: "red.7" });
     },
   });
-  // Modal's
+
+  function renderAttributesTooltip(
+    attributes: TauriTypes.StockRiven["attributes"]
+  ) {
+    // Override Mantine Tooltip wrapper so only our Paper’s thin border shows
+    return (
+      <Tooltip
+        withArrow
+        openDelay={100}
+        closeDelay={100}
+        styles={{
+          tooltip: { backgroundColor: "transparent", padding: 0, boxShadow: "none" },
+          arrow: { backgroundColor: "transparent", borderWidth: 0 },
+        }}
+        label={
+          <Paper withBorder p="xs">
+            <Box style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {attributes.map((attr, idx) => (
+                <RivenAttributeCom key={idx} value={attr} />
+              ))}
+            </Box>
+          </Paper>
+        }
+      >
+        <ActionIcon size="sm" variant="outline">
+          <FontAwesomeIcon icon={faInfo} />
+        </ActionIcon>
+      </Tooltip>
+    );
+  }
+
+  // Modal helpers
   const OpenSellModal = (id: number) => {
     modals.openContextModal({
       modal: "prompt",
@@ -385,13 +438,11 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
           if (!sort || !sort.columnAccessor) return;
           setQueryData((prev) => ({ ...prev, sort_by: sort.columnAccessor as string, sort_direction: sort.direction }));
         }}
-        // define columns
         columns={[
           {
             accessor: "weapon_name",
             title: useTranslateDataGridBaseColumns("name.title"),
             sortable: true,
-            width: 300,
             render: ({ weapon_name, mod_name, sub_type }) => (
               <TextTranslate
                 color="gray.4"
@@ -406,13 +457,16 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
           {
             accessor: "attributes",
             title: useTranslateDataGridColumns("attributes"),
-            render: ({ attributes }) => (
-              <Group gap={"sm"} justify="flex-start">
-                {attributes?.map((attribute, index) => (
-                  <RivenAttributeCom key={index} value={{ ...attribute }} />
-                ))}
-              </Group>
-            ),
+            render: ({ attributes }) =>
+              isWide ? (
+                <Group gap="sm" justify="flex-start">
+                  {attributes?.map((attr, idx) => (
+                    <RivenAttributeCom key={idx} value={attr} />
+                  ))}
+                </Group>
+              ) : (
+                renderAttributesTooltip(attributes || [])
+              ),
           },
           {
             accessor: "bought",
@@ -422,7 +476,6 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
           },
           {
             accessor: "minimum_price",
-            width: 310,
             sortable: true,
             title: useTranslateDataGridBaseColumns("minimum_price.title"),
             render: ({ id, minimum_price }) => (
@@ -441,13 +494,12 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
                   <ActionWithTooltip
                     tooltip={useTranslateDataGridBaseColumns("minimum_price.btn.edit.tooltip")}
                     icon={faEdit}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (!id) return;
-                      // OpenMinimumPriceModal(id, minimum_price || 0);
-                    }}
                     actionProps={{ size: "sm" }}
                     iconProps={{ size: "xs" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // optional modal to edit manually
+                    }}
                   />
                 </Group>
               </Group>
@@ -455,15 +507,23 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
           },
           {
             accessor: "list_price",
-            sortable: true,
             title: useTranslateDataGridBaseColumns("list_price"),
+            sortable: true,
           },
           {
             accessor: "actions",
             title: useTranslateDataGridBaseColumns("actions.title"),
-            width: 220,
             render: (row) => (
-              <Group gap={"sm"} justify="flex-end">
+              <Box
+                style={{
+                  display: "grid",
+                  gap: "8px",
+                  justifyItems: "end",
+                  gridTemplateColumns: isWide
+                    ? "repeat(6, max-content)"
+                    : "repeat(3, max-content)",
+                }}
+              >
                 <ActionWithTooltip
                   tooltip={useTranslateDataGridBaseColumns("actions.buttons.sell_manual.tooltip")}
                   icon={faPen}
@@ -534,7 +594,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
                     });
                   }}
                 />
-              </Group>
+              </Box>
             ),
           },
         ]}
