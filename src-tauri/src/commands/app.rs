@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use serde_json::json;
-use service::{TransactionQuery, WishListQuery};
+use service::WishListQuery;
 
 use crate::{
     app::client::AppState,

@@ -7,36 +7,13 @@ use crate::{
     utils::modules::error::{self, AppError},
     DATABASE,
 };
-use chrono::{DateTime, Datelike, NaiveDateTime, Utc};
+use chrono::{DateTime, Datelike, Utc};
 use entity::{
     dto::sort::SortDirection,
     transaction::transaction::{self},
 };
 use serde_json::{json, Value};
 use service::TransactionQuery;
-
-// Helper: Fetch transactions safely with error logging
-pub async fn fetch_transactions(
-    from: NaiveDateTime,
-    to: NaiveDateTime,
-    log_file: &str,
-) -> Result<Vec<transaction::Model>, AppError> {
-    let conn = DATABASE.get().unwrap();
-
-    let query = entity::transaction::dto::TransactionPaginationQueryDto::new(1, -1)
-        .set_from_date(Some(DateTime::from_utc(from, Utc)))
-        .set_to_date(Some(DateTime::from_utc(to, Utc)));
-
-    let data = match TransactionQuery::get_all(conn, query).await {
-        Ok(transactions) => transactions,
-        Err(e) => {
-            let error: AppError = AppError::new_db("TransactionQuery::reload", e);
-            error::create_log_file(log_file, &error);
-            return Err(error);
-        }
-    };
-    Ok(data.results)
-}
 
 // Helper: Generate labels and values based on groupings
 fn generate_label_value_summary(

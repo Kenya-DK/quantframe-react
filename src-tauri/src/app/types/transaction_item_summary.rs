@@ -1,7 +1,7 @@
 use crate::app::types::transaction_summary::TransactionSummary;
 use entity::{
     sub_type::SubType,
-    transaction::transaction::{self, TransactionType},
+    transaction::transaction::{self},
 };
 use serde::Serialize;
 

@@ -1,30 +1,16 @@
 use crate::{
-    helper::{group_by_date, GroupBy},
     notification::client::NotifyClient,
     qf_client::client::QFClient,
     utils::{
-        enums::ui_events::{UIEvent, UIOperationEvent},
-        modules::{
-            error::{self, AppError},
-            logger,
-        },
+        enums::ui_events::UIEvent,
+        modules::error::{self, AppError},
     },
     DATABASE,
 };
-use chrono::{DateTime, Datelike, NaiveDate, NaiveDateTime, NaiveTime, Timelike, Utc};
-use entity::{
-    sub_type::SubType,
-    transaction::transaction::{self, TransactionType},
-};
+use entity::transaction::transaction::{self};
 use eyre::eyre;
-use serde::Serialize;
-use serde_json::{json, Value};
 use service::{TransactionMutation, TransactionQuery};
-use std::{
-    collections::HashMap,
-    default,
-    sync::{Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 
 #[tauri::command]
 pub async fn transaction_get_all(
@@ -84,7 +70,7 @@ pub async fn transaction_update(
     }
 
     match TransactionMutation::update_by_id(conn, id, new_item.clone()).await {
-        Ok(updated) => qf.analytics().add_metric("Transaction_Update", "manual"),
+        Ok(_) => qf.analytics().add_metric("Transaction_Update", "manual"),
         Err(e) => {
             let error: AppError = AppError::new_db("TransactionQuery::get_all", e);
             error::create_log_file("transaction_update.log", &error);

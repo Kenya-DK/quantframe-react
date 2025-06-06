@@ -1,15 +1,11 @@
 use std::sync::{Arc, Mutex};
 
-use serde_json::json;
 use service::{StockItemMutation, StockRivenMutation, TransactionMutation};
 
 use crate::{
     helper,
     notification::client::NotifyClient,
-    utils::{
-        enums::ui_events::{UIEvent, UIOperationEvent},
-        modules::error::AppError,
-    },
+    utils::{enums::ui_events::UIEvent, modules::error::AppError},
     DATABASE,
 };
 
