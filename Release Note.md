@@ -8,6 +8,7 @@ How To migrate:
 
 - 🎉 The LiveTraders tabs wil now remember the last search y dit
 - 🎉 It is now possible to sort by Minium price and listed price
+- 🎉 Better view in the stock rivens Thx to (JacobPlaysGames)
 
 ## Note's
 
