@@ -282,6 +282,9 @@ pub async fn app_update_settings(
     // Set Analytics Settings
     my_lock.analytics = settings.analytics;
 
+    // Set Summary Settings
+    my_lock.summary_settings = settings.summary_settings;
+
     my_lock.save_to_file().expect("Could not save settings");
 
     notify.gui().send_event_update(

@@ -11,6 +11,7 @@ export namespace TauriTypes {
     Sell = "sell",
     Wishlist = "wishlist",
   }
+
   export enum Events {
     // App
     All = "*",
@@ -20,8 +21,8 @@ export namespace TauriTypes {
     UpdateAppError = "App:UpdateAppError",
 
     // Warframe Market
+    RefreshTransactions = "WFM:RefreshTransactions",
     UpdateOrders = "WFM:UpdateOrders",
-    UpdateTransaction = "WFM:UpdateTransaction",
     UpdateAuction = "WFM:UpdateAuction",
 
     // Chat
@@ -72,6 +73,7 @@ export namespace TauriTypes {
     Overpriced = "overpriced",
     Underpriced = "underpriced",
   }
+
   export enum TransactionType {
     Purchase = "purchase",
     Sale = "sale",
@@ -82,6 +84,7 @@ export namespace TauriTypes {
     Item = "item",
     Riven = "riven",
   }
+
   export interface AppInfo {
     authors: string;
     description: string;
@@ -181,6 +184,19 @@ export namespace TauriTypes {
     live_scraper: SettingsLiveScraper;
     notifications: SettingsNotifications;
     analytics: SettingsAnalytics;
+    summary_settings: SettingsSummary;
+  }
+  export interface SettingsSummary {
+    categories: SettingsCategorySummary[];
+    resent_days: number;
+    resent_transactions: number;
+  }
+
+  export interface SettingsCategorySummary {
+    icon: string;
+    name: string;
+    tags: string[];
+    types: string[];
   }
 
   export interface SettingsLiveScraper {
@@ -249,80 +265,65 @@ export namespace TauriTypes {
 
   export interface ChartMultipleDto extends ChartWithMultipleValuesDto, ChartWithLabelsDto {}
 
-  export interface StatisticTransactionPreviousPresent extends ChartWithLabelsDto {
-    previous: StatisticProfitTransaction;
-    present: StatisticProfitTransaction;
+  export interface TradingSummaryDto {
+    best_selling_items: TransactionItemSummaryDto[];
+    category_summary: TransactionCategorySummaryDto[];
+    recent_days: TransactionSummaryWithChartDto;
+    resent_transactions: TransactionDto[];
+    today: TransactionSummaryWithChartDto;
+    total: TransactionSummaryWithYearDto;
   }
-  export interface StatisticProfitBase {
+
+  export interface TransactionSummaryDto {
+    average_expense: number;
+    average_profit: number;
+    average_revenue: number;
+    expenses: number;
     profit: number;
     profit_margin: number;
-    average_revenue: number;
     purchases: number;
+    revenue: number;
     sales: number;
-    expense: number;
+    total_transactions: number;
+  }
+  export interface TransactionSummaryWithChartDto extends TransactionSummaryDto {
+    chart: TransactionSummaryChart;
+  }
+  export interface TransactionSummaryWithYearDto extends TransactionSummaryDto {
+    last_year: TransactionSummaryWithChartDto;
+    present_year: TransactionSummaryWithChartDto;
+  }
+  export interface TransactionSummaryChart {
+    labels: string[];
+    values: number[];
+  }
+
+  export interface TransactionItemSummaryDto {
+    average_price: number;
+    expenses: number;
+    item_name: string;
+    item_type: string;
+    profit: number;
+    profit_margin: number;
+    purchases: number;
+    quantity: number;
+    revenue: number;
+    sales: number;
+    sub_type?: SubType;
+    tags: string;
+    total_transactions: number;
+    wfm_id: string;
+  }
+
+  export interface TransactionCategorySummaryDto {
+    expenses: number;
+    icon: string;
+    name: string;
+    profit: number;
+    profit_margin: number;
     revenue: number;
   }
 
-  export interface StatisticProfitTransaction extends StatisticProfitBase {
-    number_of_trades: number;
-    popular_items: StatisticProfitItem[];
-  }
-
-  export interface StatisticChartTransactionAndItem extends StatisticProfitTransaction {
-    chart_profit: ChartMultipleDto;
-    chart_items: ChartMultipleDto;
-  }
-
-  export interface StatisticProfitTransactionPreviousPresent extends ChartWithLabelsDto {
-    previous: StatisticProfitTransaction & ChartWithMultipleValuesDto;
-    present: StatisticProfitTransaction & ChartWithMultipleValuesDto;
-  }
-
-  export interface StatisticProfitItem extends StatisticProfitBase {
-    wfm_id: string;
-    url: string;
-    item_type: string;
-    name: string;
-    tags: string[];
-    quantity: number;
-  }
-  export interface StatisticItemCategoryProfit extends StatisticProfitBase {
-    name: string;
-    icon: string;
-    quantity: number;
-  }
-
-  // Statistic Type
-  export interface StatisticItemBestSeller {
-    items: StatisticProfitItem[];
-    items_chart: ChartMultipleDto;
-    category: StatisticItemCategoryProfit[];
-    category_chart: ChartMultipleDto;
-  }
-  export interface StatisticProfitTransactionTotal extends StatisticProfitTransactionPreviousPresent, StatisticProfitBase {}
-
-  export interface StatisticProfitTransactionToday extends StatisticChartTransactionAndItem {}
-
-  // export interface StatisticItemCategoryProfit extends StatisticProfitBase {
-  export interface StatisticRecentTransactions extends StatisticProfitBase {
-    transactions: TransactionDto[];
-  }
-  export interface StatisticProfitTransactionRecentDays extends StatisticChartTransactionAndItem {
-    days: number;
-  }
-  export interface CategoryItemProfitLink {
-    name: string;
-    icon: string;
-    tags: string[];
-    types: string[];
-  }
-  export interface StatisticDto {
-    best_seller: StatisticItemBestSeller;
-    total: StatisticProfitTransactionTotal;
-    today: StatisticProfitTransactionToday;
-    recent_days: StatisticProfitTransactionRecentDays;
-    recent_transactions: StatisticRecentTransactions;
-  }
   export interface StockEntryBase {
     id: number;
     bought: number;
@@ -628,15 +629,6 @@ export namespace TauriTypes {
     status?: TauriTypes.StockStatus;
   }
 
-  export interface PaginatedDto {
-    /** The total number of items in the database */
-    total: number;
-    /** The number of items returned in this request */
-    limit: number;
-    /** The current page */
-    page: number;
-  }
-
   /** PaginatedResponseOfAlertDto */
   export type StockRivenControllerGetListData = PaginatedDto & {
     results?: StockRiven[];
@@ -664,17 +656,35 @@ export namespace TauriTypes {
     status?: TauriTypes.StockStatus;
   }
 
-  export interface PaginatedDto {
-    /** The total number of items in the database */
-    total: number;
-    /** The number of items returned in this request */
-    limit: number;
-    /** The current page */
-    page: number;
-  }
-
   /** PaginatedResponseOfAlertDto */
   export type WishListControllerGetListData = PaginatedDto & {
     results?: WishListItem[];
+  };
+  export interface TransactionControllerGetListParams {
+    /**
+     * For pagination. Defines which page the results are fetched from.
+     * @min 1
+     * @default 1
+     */
+    page: number;
+    /**
+     * For pagination. Defines how many entries are returned per page.
+     * @min 0
+     * @max 100
+     * @default 25
+     */
+    limit: number;
+    sort_by?: string;
+    /** Sort direction used when sorting by a specific field. */
+    sort_direction?: "asc" | "desc";
+    /** A search query to filter the users by name or email. */
+    query?: string;
+    /** Filter by stock status */
+    status?: TauriTypes.StockStatus;
+  }
+
+  /** PaginatedResponseOfAlertDto */
+  export type TransactionControllerGetListData = PaginatedDto & {
+    results?: TransactionDto[];
   };
 }

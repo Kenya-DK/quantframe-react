@@ -290,7 +290,6 @@ pub fn run() {
             commands::cache::cache_get_riven_attributes,
             commands::cache::cache_get_tradable_item,
             // Transaction commands
-            commands::transaction::transaction_reload,
             commands::transaction::transaction_get_all,
             commands::transaction::transaction_update,
             commands::transaction::transaction_delete,
@@ -355,7 +354,8 @@ pub fn run() {
             // Quantframe API commands
             commands::qf_client::qf_get,
             commands::qf_client::qf_post,
-            // Test commands
+            // Summary commands
+            commands::summary::summary_overview,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

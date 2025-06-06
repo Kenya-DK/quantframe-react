@@ -27,7 +27,33 @@ pub struct SettingsState {
     pub analytics: AnalyticsSettings,
     // Generate Trade Message Settings
     pub generate_trade_msg: GenerateTradeMsgSettings,
+    pub summary_settings: SummarySettings,
 }
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct SummarySettings {
+    pub resent_days: i64, // How many days to keep the summary
+    pub resent_transactions: i64, // How many transactions to keep in the summary
+    pub categories: Vec<SummaryCategorySetting>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct SummaryCategorySetting {
+    pub icon: String,
+    pub name: String,
+    pub types: Vec<String>,
+    pub tags: Vec<String>,
+}
+impl SummaryCategorySetting {
+    pub fn new(icon: &str, name: &str, types: Vec<&str>, tags: Vec<&str>) -> Self {
+        Self {
+            icon: icon.to_string(),
+            name: name.to_string(),
+            types: types.iter().map(|s| s.to_string()).collect(),
+            tags: tags.iter().map(|s| s.to_string()).collect(),
+        }
+    }
+    
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GenerateTradeMsgSettings {
     pub wts_items: TradeMsgSettings,
@@ -189,6 +215,18 @@ impl Default for SettingsState {
             analytics: AnalyticsSettings { 
                 stock_item: true,
                 stock_riven: true,
+            },
+            summary_settings: SummarySettings {
+                resent_days: 7,
+                resent_transactions: 10,
+                categories: vec![
+                    SummaryCategorySetting::new("imgs/categories/mods.png","Mod",vec![],vec!["mod"]),
+                    SummaryCategorySetting::new("imgs/categories/arcane.png","Arcane",vec![],vec!["arcane_enhancement"]),
+                    SummaryCategorySetting::new("imgs/categories/set.png","Set",vec![],vec!["set"]),
+                    SummaryCategorySetting::new("imgs/categories/prime.png","Prime",vec![],vec!["prime"]),
+                    SummaryCategorySetting::new("imgs/categories/axi-intact.png","Relic",vec![],vec!["relic"]),
+                    SummaryCategorySetting::new("imgs/categories/rivenIcon2.png","Riven",vec!["riven"], vec![]),
+                ],
             },
         }
     }

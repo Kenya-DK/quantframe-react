@@ -309,6 +309,69 @@ export const en = {
               },
             },
           },
+          summary: {
+            title: "Summary",
+            fields: {
+              resent_days: {
+                label: "Resent Days",
+                tooltip: "How many days of data to show",
+              },
+              resent_transactions: {
+                label: "Resent Transactions",
+                tooltip: "How many transactions to show",
+              },
+            },
+            datatable: {
+              columns: {
+                name: "Name",
+                tags: "Tags",
+                types: "Types",
+                actions: {
+                  title: "Actions",
+                  buttons: {
+                    edit: {
+                      tooltip: "Edit Item",
+                    },
+                    delete: {
+                      tooltip: "Delete Item",
+                    },
+                  },
+                },
+              },
+            },
+            buttons: {
+              save: {
+                label: "Save",
+              },
+            },
+          },
+        },
+      },
+      create_category_summary: {
+        fields: {
+          icon: {
+            label: "Icon",
+            placeholder: "Icon",
+            description: "The icon of the category",
+            tooltip: "The icon of the category",
+            error: "Invalid icon",
+          },
+          name: {
+            label: "Name",
+            placeholder: "Name",
+            description: "The name of the category",
+            tooltip: "The name of the category",
+            error: "Invalid name",
+          },
+          types: {
+            label: "Types",
+            description: "Types for the category",
+          },
+        },
+        buttons: {
+          submit: {
+            label: "Create/Save Category",
+          },
         },
       },
       update_stock_riven: {
@@ -581,6 +644,12 @@ export const en = {
       hours: "{{hours}} hours ago",
       minutes: "{{minutes}} minutes ago",
       seconds: "{{seconds}} seconds ago",
+    },
+    select_item_tags: {
+      tags: {
+        label: "Tags",
+        description: "Select tags to filter items",
+      },
     },
     auction_list_item: {
       weapon_name: "<blue>{{weapon}} {{mod_name}}<blue>",
