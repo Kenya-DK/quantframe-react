@@ -1,28 +1,10 @@
-import {
-  Box,
-  Grid,
-  Group,
-  NumberFormatter,
-  Text,
-  Tooltip,
-  ActionIcon,
-  Paper,
-} from "@mantine/core";
+import { Box, Grid, Group, NumberFormatter, Text, Tooltip, ActionIcon, Paper } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { useMediaQuery } from "@mantine/hooks";
 import { getCssVariable, GetSubTypeDisplay } from "@utils/helper";
 import { useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { TauriTypes } from "$types";
-import {
-  faEdit,
-  faEye,
-  faEyeSlash,
-  faFilter,
-  faHammer,
-  faInfo,
-  faPen,
-  faTrashCan,
-} from "@fortawesome/free-solid-svg-icons";
+import { faEdit, faEye, faEyeSlash, faFilter, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import api, { OnTauriEvent } from "@api/index";
@@ -33,17 +15,45 @@ import { StatsWithSegments } from "@components/StatsWithSegments";
 import { useLiveScraperContext } from "@contexts/liveScraper.context";
 import classes from "../../LiveTrading.module.css";
 import { useLocalStorage } from "@mantine/hooks";
-import { SearchField } from "../../../../components/SearchField";
+import { SearchField } from "@components/SearchField";
 import { DataTable } from "mantine-datatable";
-import { TextTranslate } from "../../../../components/TextTranslate";
-import { ButtonIntervals } from "../../../../components/ButtonIntervals";
-import { RivenAttributeCom } from "../../../../components/RivenAttribute";
+import { TextTranslate } from "@components/TextTranslate";
+import { ButtonIntervals } from "@components/ButtonIntervals";
+import { RivenAttributeCom } from "@components/RivenAttribute";
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
-import { StockRivenInfo } from "../../../../components/Modals/StockRivenInfo";
-import { CreateRiven } from "../../../../components/Forms/CreateRiven";
-import { UpdateRivenBulk } from "../../../../components/Forms/UpdateRivenBulk";
-import { RivenFilter } from "../../../../components/Forms/RivenFilter";
+import { StockRivenInfo } from "@components/Modals/StockRivenInfo";
+import { CreateRiven } from "@components/Forms/CreateRiven";
+import { UpdateRivenBulk } from "@components/Forms/UpdateRivenBulk";
+import { RivenFilter } from "@components/Forms/RivenFilter";
+
+const AttributesTooltip = ({ attributes }: { attributes: TauriTypes.StockRiven["attributes"] }) => {
+  return (
+    <Tooltip
+      withArrow
+      openDelay={100}
+      closeDelay={100}
+      styles={{
+        tooltip: { backgroundColor: "transparent", padding: 0, boxShadow: "none" },
+        arrow: { backgroundColor: "transparent", borderWidth: 0 },
+      }}
+      label={
+        <Paper withBorder p="xs">
+          <Box style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {attributes.map((attr, idx) => (
+              <RivenAttributeCom key={idx} value={attr} />
+            ))}
+          </Box>
+        </Paper>
+      }
+    >
+      <ActionIcon size="sm" variant="outline">
+        <FontAwesomeIcon icon={faInfo} />
+      </ActionIcon>
+    </Tooltip>
+  );
+};
+
 interface StockRivenPanelProps {}
 export const StockRivenPanel = ({}: StockRivenPanelProps) => {
   // Treat as “wide” only when landscape AND ≥800px wide
@@ -226,36 +236,6 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
       notifications.show({ title: useTranslateErrors("create_riven.title"), message: useTranslateErrors("create_riven.message"), color: "red.7" });
     },
   });
-
-  function renderAttributesTooltip(
-    attributes: TauriTypes.StockRiven["attributes"]
-  ) {
-    // Override Mantine Tooltip wrapper so only our Paper’s thin border shows
-    return (
-      <Tooltip
-        withArrow
-        openDelay={100}
-        closeDelay={100}
-        styles={{
-          tooltip: { backgroundColor: "transparent", padding: 0, boxShadow: "none" },
-          arrow: { backgroundColor: "transparent", borderWidth: 0 },
-        }}
-        label={
-          <Paper withBorder p="xs">
-            <Box style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              {attributes.map((attr, idx) => (
-                <RivenAttributeCom key={idx} value={attr} />
-              ))}
-            </Box>
-          </Paper>
-        }
-      >
-        <ActionIcon size="sm" variant="outline">
-          <FontAwesomeIcon icon={faInfo} />
-        </ActionIcon>
-      </Tooltip>
-    );
-  }
 
   // Modal helpers
   const OpenSellModal = (id: number) => {
@@ -465,7 +445,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
                   ))}
                 </Group>
               ) : (
-                renderAttributesTooltip(attributes || [])
+                <AttributesTooltip attributes={attributes} />
               ),
           },
           {
@@ -519,9 +499,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
                   display: "grid",
                   gap: "8px",
                   justifyItems: "end",
-                  gridTemplateColumns: isWide
-                    ? "repeat(6, max-content)"
-                    : "repeat(3, max-content)",
+                  gridTemplateColumns: isWide ? "repeat(6, max-content)" : "repeat(3, max-content)",
                 }}
               >
                 <ActionWithTooltip
