@@ -31,7 +31,7 @@ impl PaginationQueryDto {
     pub fn new(page: i64, limit: i64) -> Self {
         Self {
             page: if page < 1 { default_page() } else { page },
-            limit: if limit < 1 { default_limit() } else { limit },
+            limit: if limit < -1 { default_limit() } else { limit },
         }
     }
 }
