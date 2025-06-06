@@ -6,7 +6,10 @@ use service::{StockItemMutation, StockRivenMutation, TransactionMutation};
 use crate::{
     helper,
     notification::client::NotifyClient,
-    utils::{enums::ui_events::UIOperationEvent, modules::error::AppError},
+    utils::{
+        enums::ui_events::{UIEvent, UIOperationEvent},
+        modules::error::AppError,
+    },
     DATABASE,
 };
 
@@ -29,11 +32,7 @@ pub async fn debug_db_reset(
                 .await
                 .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
             helper::add_metric("Debug_DbReset", "all");
-            notify.gui().send_event_update(
-                crate::utils::enums::ui_events::UIEvent::UpdateTransaction,
-                UIOperationEvent::Set,
-                Some(json!([])),
-            );
+            notify.gui().send_event(UIEvent::RefreshTransactions, None);
         }
         "stock_item" => {
             StockItemMutation::delete_all(conn)
@@ -52,11 +51,7 @@ pub async fn debug_db_reset(
                 .await
                 .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
             helper::add_metric("Debug_DbReset", "transaction");
-            notify.gui().send_event_update(
-                crate::utils::enums::ui_events::UIEvent::UpdateTransaction,
-                UIOperationEvent::Set,
-                Some(json!([])),
-            );
+            notify.gui().send_event(UIEvent::RefreshTransactions, None);
         }
         _ => {
             return Err(AppError::new("DebugDbReset", eyre::eyre!("Invalid target")));

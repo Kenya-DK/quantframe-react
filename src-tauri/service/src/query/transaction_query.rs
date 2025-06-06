@@ -1,5 +1,6 @@
 use ::entity::transaction::dto::TransactionPaginationQueryDto;
 use ::entity::transaction::{transaction, transaction::Entity as Transaction};
+use chrono::TimeZone;
 
 use sea_orm::sea_query::Func;
 use sea_orm::*;
@@ -8,7 +9,7 @@ use sea_query::Expr;
 pub struct TransactionQuery;
 
 impl TransactionQuery {
-    pub async fn get_all_v2(
+    pub async fn get_all(
         db: &DbConn,
         query: TransactionPaginationQueryDto,
     ) -> Result<::entity::dto::pagination::PaginatedDto<transaction::Model>, DbErr> {
@@ -43,18 +44,19 @@ impl TransactionQuery {
             stmt = stmt.filter(transaction::Column::ItemType.eq(item_type.to_string()));
         }
         // Filtering by date range
-        if let Some(ref from_date) = query.from_date {
-            stmt = stmt.filter(
-                transaction::Column::CreatedAt
-                    .gte(from_date.parse::<chrono::NaiveDateTime>().unwrap()),
-            );
+        if let Some(from_date) = query.from_date {
+            stmt = stmt.filter(transaction::Column::CreatedAt.gte(from_date));
         }
-        if let Some(ref to_date) = query.to_date {
-            stmt = stmt.filter(
-                transaction::Column::CreatedAt
-                    .lte(to_date.parse::<chrono::NaiveDateTime>().unwrap()),
-            );
+        if let Some(to_date) = query.to_date {
+            stmt = stmt.filter(transaction::Column::CreatedAt.lte(to_date));
         }
+
+        // Print the generated SQL for debugging
+        println!(
+            "Generating SQL for StockItemQuery::get_all_v2: {}",
+            stmt.clone().build(db.get_database_backend()).to_string()
+        );
+
         // Sorting
         if let Some(ref sort_by) = query.sort_by {
             let dir = query
@@ -73,6 +75,7 @@ impl TransactionQuery {
                     stmt = stmt.order_by(transaction::Column::TransactionType, order)
                 }
                 "item_type" => stmt = stmt.order_by(transaction::Column::ItemType, order),
+                "created_at" => stmt = stmt.order_by(transaction::Column::CreatedAt, order),
                 _ => {}
             }
         }
@@ -92,9 +95,6 @@ impl TransactionQuery {
         Ok(::entity::dto::pagination::PaginatedDto::new(
             total, limit, page, results,
         ))
-    }
-    pub async fn get_all(db: &DbConn) -> Result<Vec<transaction::Model>, DbErr> {
-        Transaction::find().all(db).await
     }
 
     pub async fn find_by_id(db: &DbConn, id: i64) -> Result<Option<transaction::Model>, DbErr> {

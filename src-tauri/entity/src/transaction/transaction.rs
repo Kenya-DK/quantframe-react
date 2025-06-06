@@ -49,7 +49,13 @@ impl TransactionItemType {
             _ => panic!("Invalid transaction type"),
         }
     }
-    pub fn to_string(&self) -> &str {
+    pub fn to_string(&self) -> String {
+        match self {
+            Self::Item => "item".to_string(),
+            Self::Riven => "riven".to_string(),
+        }
+    }
+    pub fn as_str(&self) -> &str {
         match self {
             Self::Item => "item",
             Self::Riven => "riven",

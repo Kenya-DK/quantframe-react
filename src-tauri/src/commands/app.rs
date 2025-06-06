@@ -58,26 +58,6 @@ pub async fn app_init(
         }
     }
 
-    // Load Transactions
-    notify
-        .gui()
-        .send_event(UIEvent::OnInitialize, Some(json!("transactions")));
-    match TransactionQuery::get_all(conn).await {
-        Ok(transactions) => {
-            // Send Transactions to UI
-            notify.gui().send_event_update(
-                UIEvent::UpdateTransaction,
-                UIOperationEvent::Set,
-                Some(json!(&transactions)),
-            );
-        }
-        Err(e) => {
-            let error = AppError::new_db("TransactionQuery::get_all", e);
-            error::create_log_file("command.log", &error);
-            return Err(error);
-        }
-    };
-
     // Send App Info to UI
     let app_info = app.get_app_info();
     notify.gui().send_event_update(

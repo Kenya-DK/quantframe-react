@@ -1,3 +1,4 @@
+use sea_orm::prelude::DateTimeUtc;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -14,30 +15,21 @@ pub struct TransactionPaginationQueryDto {
     pub sort_direction: Option<SortDirection>,
     pub transaction_type: Option<TransactionType>, // e.g., "sale" or "purchase"
     pub item_type: Option<TransactionItemType>,    // e.g., "item" or "riven"
-    pub from_date: Option<String>,                 // Optional field for filtering by date range
-    pub to_date: Option<String>,                   // Optional field for filtering by date range
+    pub from_date: Option<DateTimeUtc>,            // Optional field for filtering by date range
+    pub to_date: Option<DateTimeUtc>,              // Optional field for filtering by date range
                                                    // You can add more fields as needed for filtering
 }
 impl TransactionPaginationQueryDto {
-    pub fn new(
-        pagination: PaginationQueryDto,
-        query: Option<String>,
-        sort_by: Option<String>,
-        sort_direction: Option<SortDirection>,
-        transaction_type: Option<TransactionType>,
-        item_type: Option<TransactionItemType>,
-        from_date: Option<String>,
-        to_date: Option<String>,
-    ) -> Self {
+    pub fn new(page: i64, limit: i64) -> Self {
         Self {
-            pagination,
-            query,
-            sort_by,
-            sort_direction,
-            transaction_type,
-            item_type,
-            from_date,
-            to_date,
+            pagination: PaginationQueryDto::new(page, limit),
+            query: None,
+            sort_by: None,
+            sort_direction: Some(SortDirection::Asc),
+            transaction_type: None,
+            item_type: None,
+            from_date: None,
+            to_date: None,
         }
     }
     pub fn default() -> Self {
@@ -78,11 +70,11 @@ impl TransactionPaginationQueryDto {
         self.item_type = item_type;
         self.clone()
     }
-    pub fn set_from_date(&mut self, from_date: Option<String>) -> Self {
+    pub fn set_from_date(&mut self, from_date: Option<DateTimeUtc>) -> Self {
         self.from_date = from_date;
         self.clone()
     }
-    pub fn set_to_date(&mut self, to_date: Option<String>) -> Self {
+    pub fn set_to_date(&mut self, to_date: Option<DateTimeUtc>) -> Self {
         self.to_date = to_date;
         self.clone()
     }
