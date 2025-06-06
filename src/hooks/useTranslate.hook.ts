@@ -1,5 +1,8 @@
 import i18next from "i18next";
 
+export const useTranslateBase = (key: string, context?: { [key: string]: any }, i18Key?: boolean): string =>
+  i18Key ? `${key}` : (i18next.t(`${key}`, { ...context }) as string);
+
 export const useTranslateCommon = (key: string, context?: { [key: string]: any }, i18Key?: boolean): string =>
   i18Key ? `common.${key}` : (i18next.t(`common.${key}`, { ...context }) as string);
 
