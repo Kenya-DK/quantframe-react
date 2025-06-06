@@ -238,6 +238,32 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
   });
 
   // Modal helpers
+  const OpenMinimumPriceModal = (id: number, minimum_price: number) => {
+    modals.openContextModal({
+      modal: "prompt",
+      title: useTranslateBasePrompt("minimum_price.title"),
+      innerProps: {
+        fields: [
+          {
+            name: "minimum_price",
+            label: useTranslateBasePrompt("minimum_price.fields.minimum_price.label"),
+            attributes: {
+              min: 0,
+              description: useTranslateBasePrompt("minimum_price.fields.minimum_price.description"),
+            },
+            value: minimum_price,
+            type: "number",
+          },
+        ],
+        onConfirm: async (data: { minimum_price: number }) => {
+          if (!id) return;
+          const { minimum_price } = data;
+          await updateStockMutation.mutateAsync({ id, minimum_price });
+        },
+        onCancel: (id: string) => modals.close(id),
+      },
+    });
+  };
   const OpenSellModal = (id: number) => {
     modals.openContextModal({
       modal: "prompt",
@@ -467,8 +493,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
                     minimum_price={minimum_price || 0}
                     OnClick={async (val) => {
                       if (!id) return;
-                      console.log("Update minimum price to:", val);
-                      // await updateStockMutation.mutateAsync({ id, minimum_price: val });
+                      await updateStockMutation.mutateAsync({ id, minimum_price: val });
                     }}
                   />
                   <ActionWithTooltip
@@ -478,7 +503,8 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
                     iconProps={{ size: "xs" }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      // optional modal to edit manually
+                      if (!id) return;
+                      OpenMinimumPriceModal(id, minimum_price || 0);
                     }}
                   />
                 </Group>
