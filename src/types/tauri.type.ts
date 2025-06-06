@@ -680,7 +680,9 @@ export namespace TauriTypes {
     /** A search query to filter the users by name or email. */
     query?: string;
     /** Filter by stock status */
-    status?: TauriTypes.StockStatus;
+    item_type?: TauriTypes.TransactionItemType;
+    /** Filter by transaction type */
+    transaction_type?: TauriTypes.TransactionType;
   }
 
   /** PaginatedResponseOfAlertDto */
