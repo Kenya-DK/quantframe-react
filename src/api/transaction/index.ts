@@ -4,17 +4,13 @@ import { TauriTypes } from "$types";
 export class TransactionModule {
   constructor(private readonly client: TauriClient) {}
 
-  async reload(): Promise<void> {
-    const [err] = await this.client.sendInvoke<void>("transaction_reload");
+  async getAll(query: TauriTypes.TransactionControllerGetListParams): Promise<TauriTypes.TransactionControllerGetListData> {
+    const [err, stockItems] = await this.client.sendInvoke<TauriTypes.TransactionControllerGetListData>("transaction_get_all", {
+      query: this.client.convertToTauriQuery(query),
+    });
     if (err) throw err;
+    return stockItems;
   }
-
-  async getAll(): Promise<TauriTypes.TransactionDto[]> {
-    const [err, res] = await this.client.sendInvoke<TauriTypes.TransactionDto[]>("transaction_get_all");
-    if (err) throw err;
-    return res;
-  }
-
   async update(entry: TauriTypes.UpdateTransactionDto): Promise<TauriTypes.TransactionDto> {
     const [err, stockItem] = await this.client.sendInvoke<TauriTypes.TransactionDto>("transaction_update", entry);
     if (err) throw err;

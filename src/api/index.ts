@@ -9,7 +9,7 @@ import { OrderModule } from "./order";
 import { StockModule } from "./stock";
 import { TransactionModule } from "./transaction";
 import { EventModule } from "./events";
-import { StatisticModule } from "./statistic";
+import { SummaryModule } from "./summary";
 import { CacheModule } from "./cache";
 import { ErrOrResult, TauriTypes } from "$types";
 import { LogModule } from "./log";
@@ -35,7 +35,7 @@ export class TauriClient {
     this.transaction = new TransactionModule(this);
     this.events = new EventModule();
     this.notification = new NotificationModule(this);
-    this.statistic = new StatisticModule(this);
+    this.summary = new SummaryModule(this);
     this.cache = new CacheModule(this);
     this.items = new ItemModule(this);
     this.rivens = new RivenModule(this);
@@ -123,7 +123,7 @@ export class TauriClient {
   transaction: TransactionModule;
   events: EventModule;
   notification: NotificationModule;
-  statistic: StatisticModule;
+  summary: SummaryModule;
   cache: CacheModule;
   analytics: AnalyticsModule;
   log: LogModule;
