@@ -50,12 +50,6 @@ impl TransactionQuery {
             stmt = stmt.filter(transaction::Column::CreatedAt.lte(to_date));
         }
 
-        // Print the generated SQL for debugging
-        println!(
-            "Generating SQL for StockItemQuery::get_all_v2: {}",
-            stmt.clone().build(db.get_database_backend()).to_string()
-        );
-
         // Sorting
         if let Some(ref sort_by) = query.sort_by {
             let dir = query

@@ -26,7 +26,6 @@ use crate::{
 pub async fn get_wish_lists(
     query: entity::wish_list::dto::pagination_wish_list::WishListPaginationQueryDto,
 ) -> Result<entity::dto::pagination::PaginatedDto<wish_list::Model>, AppError> {
-    println!("get_wish_list called with query: {:?}", query);
     let conn = DATABASE.get().unwrap();
     match WishListQuery::get_all_v2(conn, query).await {
         Ok(items) => {

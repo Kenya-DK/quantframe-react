@@ -1469,7 +1469,6 @@ impl ItemModule {
                 self.info_caches.insert(cache_id.clone(), info.clone());
             }
             self.update_state();
-            println!("Stock Item Updated: {:?}", stock_item);
             self.send_stock_update();
         }
 

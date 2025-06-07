@@ -24,7 +24,6 @@ use crate::{
 pub async fn get_stock_items(
     query: entity::stock::item::dto::StockItemPaginationQueryDto,
 ) -> Result<entity::dto::pagination::PaginatedDto<stock_item::Model>, AppError> {
-    println!("get_stock_items called with query: {:?}", query);
     let conn = DATABASE.get().unwrap();
     match StockItemQuery::get_all_v2(conn, query).await {
         Ok(items) => {

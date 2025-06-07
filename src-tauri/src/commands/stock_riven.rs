@@ -28,7 +28,6 @@ pub async fn get_stock_rivens(
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
 ) -> Result<entity::dto::pagination::PaginatedDto<stock_riven::Model>, AppError> {
     let cache = cache.lock()?.clone();
-    println!("get_stock_rivens called with query: {:?}", query);
     let conn = DATABASE.get().unwrap();
     match StockRivenQuery::get_all_v2(conn, query).await {
         Ok(mut items) => {
