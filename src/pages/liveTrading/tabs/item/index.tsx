@@ -391,6 +391,14 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
           if (!sort || !sort.columnAccessor) return;
           setQueryData((prev) => ({ ...prev, sort_by: sort.columnAccessor as string, sort_direction: sort.direction }));
         }}
+        onCellClick={({ record, column }) => {
+          switch (column.accessor) {
+            case "item_name":
+              navigator.clipboard.writeText(record.item_name);
+              notifications.show({ title: useTranslate("notifications.copied.title"), message: record.item_name, color: "green.7" });
+              break;
+          }
+        }}
         // define columns
         columns={[
           {

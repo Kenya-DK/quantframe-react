@@ -444,6 +444,18 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
           if (!sort || !sort.columnAccessor) return;
           setQueryData((prev) => ({ ...prev, sort_by: sort.columnAccessor as string, sort_direction: sort.direction }));
         }}
+        onCellClick={({ record, column }) => {
+          switch (column.accessor) {
+            case "weapon_name":
+              navigator.clipboard.writeText(record.weapon_name + " " + record.mod_name);
+              notifications.show({
+                title: useTranslate("notifications.copied.title"),
+                message: record.weapon_name + " " + record.mod_name,
+                color: "green.7",
+              });
+              break;
+          }
+        }}
         columns={[
           {
             accessor: "weapon_name",
