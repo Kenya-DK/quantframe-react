@@ -134,9 +134,9 @@ impl WishListMutation {
             is_hidden: Set(form_data.is_hidden.to_owned()),
             quantity: Set(form_data.quantity.to_owned()),
             maximum_price: Set(form_data.maximum_price.to_owned()),
-            price_history: post.price_history.clone(),
-            status: post.status.clone(),
-            list_price: post.list_price.clone(),
+            price_history: Set(form_data.price_history.to_owned()),
+            status: Set(form_data.status.to_owned()),
+            list_price: Set(form_data.list_price.to_owned()),
             created_at: post.created_at.clone(),
             updated_at: Set(chrono::Utc::now()),
         }

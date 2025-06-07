@@ -33,7 +33,7 @@ impl UIEvent {
             UIEvent::UpdateChats => "WFM:UpdateChats",
             UIEvent::RefreshStockItems => "Stock:RefreshStockItems",
             UIEvent::RefreshStockRivens => "Stock:RefreshStockRivens",
-            UIEvent::RefreshWishListItems => "WishList:RefreshWishListItems",
+            UIEvent::RefreshWishListItems => "Stock:RefreshWishListItems",
             UIEvent::UpdateUser => "User:Update",
             UIEvent::UpdateLiveTradingRunningState => "LiveTrading:UpdateRunningState",
             UIEvent::OnLiveTradingError => "LiveTrading:OnError",
