@@ -9,6 +9,14 @@ import { SvgIcon, SvgType } from "@components/SvgIcon";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import { useHover } from "@mantine/hooks";
+import faPolarityZenuri from "@icons/faPolarityZenuri";
+import faPolarityUnairu from "@icons/faPolarityUnairu";
+import faPolarityUmbra from "@icons/faPolarityUmbra";
+import faPolarityPenjaga from "@icons/faPolarityPenjaga";
+import faPolarityNaramon from "@icons/faPolarityNaramon";
+import faPolarityMadurai from "@icons/faPolarityMadurai";
+import faPolarityAura from "@icons/faPolarityAura";
+import faPolarityVazarin from "@icons/faPolarityVazarin";
 
 export type RivenPreviewProps = {
   riven: WFMarketTypes.Auction<WFMarketTypes.AuctionOwner> | WFMarketTypes.Auction<string> | TauriTypes.StockRiven;
@@ -97,10 +105,22 @@ export function RivenPreview({ paperProps, riven }: RivenPreviewProps) {
     }
     if (weapons && weapon_url_name != "") setWeapon(weapons.find((item) => item.wfm_url_name == weapon_url_name));
   }, [riven, weapons]);
+  const polarizes: Record<string, any> = {
+    zenuri: faPolarityZenuri,
+    unairu: faPolarityUnairu,
+    umbra: faPolarityUmbra,
+    penjaga: faPolarityPenjaga,
+    naramon: faPolarityNaramon,
+    madurai: faPolarityMadurai,
+    aura: faPolarityAura,
+    vazarin: faPolarityVazarin,
+  };
   return (
     <Box {...paperProps} className={classes.root} ref={ref}>
       {polarity != "" && (
         <>
+          {/* <FontAwesomeIcon className={classes.polarity} icon={faEnvelope} />, */}
+          <FontAwesomeIcon className={classes.polarity} icon={polarizes[polarity]} />
           <SvgIcon
             className={classes.polarity}
             svgProp={{

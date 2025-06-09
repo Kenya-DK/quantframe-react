@@ -4,12 +4,15 @@ import { useForm } from "@mantine/form";
 import { TauriTypes } from "$types";
 import api from "@api/index";
 import { useQuery } from "@tanstack/react-query";
-import { SvgIcon, SvgType } from "@components/SvgIcon";
 import { groupBy } from "@utils/helper";
 import { upperFirst } from "@mantine/hooks";
 import { RivenPreview } from "@components/RivenPreview";
 import { CreateRivenAttributes } from "../CreateRivenAttributes";
 import { useEffect, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import faPolarityMadurai from "@icons/faPolarityMadurai";
+import faPolarityNaramon from "@icons/faPolarityNaramon";
+import faPolarityVazarin from "@icons/faPolarityVazarin";
 
 export type CreateRivenProps = {
   value?: TauriTypes.StockRiven;
@@ -17,9 +20,9 @@ export type CreateRivenProps = {
 };
 
 const icons: Record<string, React.ReactNode> = {
-  madurai: <SvgIcon svgProp={{ width: 16, height: 16 }} iconType={SvgType.Polarity} iconName={"madurai"} />,
-  naramon: <SvgIcon svgProp={{ width: 16, height: 16 }} iconType={SvgType.Polarity} iconName={"naramon"} />,
-  vazarin: <SvgIcon svgProp={{ width: 16, height: 16 }} iconType={SvgType.Polarity} iconName={"vazarin"} />,
+  madurai: <FontAwesomeIcon icon={faPolarityMadurai} />,
+  naramon: <FontAwesomeIcon icon={faPolarityNaramon} />,
+  vazarin: <FontAwesomeIcon icon={faPolarityVazarin} />,
 };
 
 const renderSelectOption: SelectProps["renderOption"] = ({ option, checked }) => (
@@ -239,7 +242,7 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
                 label={useTranslateFormFields("polarity.label")}
                 value={form.values.polarity}
                 onChange={(event) => form.setFieldValue("polarity", event || "")}
-                leftSection={<SvgIcon svgProp={{ width: 16, height: 16 }} iconType={SvgType.Polarity} iconName={form.values.polarity} />}
+                leftSection={icons[form.values.polarity]}
                 data={[
                   { value: "madurai", label: "Madurai" },
                   { value: "naramon", label: "Naramon" },

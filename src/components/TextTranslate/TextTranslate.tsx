@@ -1,8 +1,8 @@
 import { Text, MantineSize, MantineStyleProp, TextProps } from "@mantine/core";
 import { faCubes, faEnvelope, faHandshake } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { FontAwesomeIcon, FontAwesomeIconProps } from "@fortawesome/react-fontawesome";
 import { Trans } from "react-i18next";
-import { SvgIcon, SvgType } from "@components/SvgIcon";
+import faPlat from "@icons/faPlat";
 
 export type TextTranslateProps = {
   i18nKey: string;
@@ -13,8 +13,9 @@ export type TextTranslateProps = {
   components?: { [key: string]: React.ReactNode };
   content?: React.ReactNode;
   textProps?: TextProps;
+  iconProps?: FontAwesomeIconProps;
 };
-export function TextTranslate({ textProps, style, size, color, i18nKey, values, components, content }: TextTranslateProps) {
+export function TextTranslate({ iconProps, textProps, style, size, color, i18nKey, values, components, content }: TextTranslateProps) {
   return (
     <Text {...textProps} style={{ ...style }} size={size ? size : "sm"} c={color ? color : "gray.6"}>
       <Trans
@@ -38,10 +39,10 @@ export function TextTranslate({ textProps, style, size, color, i18nKey, values, 
           teal: <Text {...textProps} component="span" size={size ? size : "sm"} c="teal.3" />,
           dark: <Text {...textProps} component="span" size={size ? size : "sm"} c="dark.3" />,
           dark_red: <Text {...textProps} component="span" size={size ? size : "sm"} c="red.9" />,
-          qty: <FontAwesomeIcon icon={faCubes} />,
-          mail: <FontAwesomeIcon icon={faEnvelope} />,
-          plat: <SvgIcon svgProp={{ width: 16, height: 16 }} iconType={SvgType.Default} iconName={"plat"} />,
-          trade: <FontAwesomeIcon icon={faHandshake} />,
+          qty: <FontAwesomeIcon {...iconProps} icon={faCubes} />,
+          mail: <FontAwesomeIcon {...iconProps} icon={faEnvelope} />,
+          plat: <FontAwesomeIcon {...iconProps} icon={faPlat} />,
+          trade: <FontAwesomeIcon {...iconProps} icon={faHandshake} />,
           // credits: <Image src={"/imgs/credits.png"} width={16} height={16} />,
         }}
       />

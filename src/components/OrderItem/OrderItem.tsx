@@ -4,9 +4,11 @@ import { WFMarketTypes } from "$types/index";
 import { useTranslateComponent, useTranslateEnums } from "@hooks/useTranslate.hook";
 import { TextTranslate } from "@components/TextTranslate";
 import { WFMThumbnail } from "@api/index";
-import { SvgIcon, SvgType } from "@components/SvgIcon";
 import { upperFirst } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import faAmberStar from "@icons/faAmberStar";
+import faCyanStar from "@icons/faCyanStar";
 
 export type OrderItemProps = {
   order: WFMarketTypes.OrderDto;
@@ -71,9 +73,7 @@ export function OrderItem({ show_border, paperProps, order, footer, show_user }:
               )}
               {order.amber_stars != undefined && (
                 <Rating
-                  fullSymbol={
-                    <SvgIcon svgProp={{ width: 16, height: 16, fill: theme.colors.blue[5] }} iconType={SvgType.Default} iconName={"amber_star"} />
-                  }
+                  fullSymbol={<FontAwesomeIcon icon={faCyanStar} color={theme.colors.blue[5]} />}
                   value={order.amber_stars}
                   count={order.amber_stars}
                   readOnly
@@ -81,9 +81,7 @@ export function OrderItem({ show_border, paperProps, order, footer, show_user }:
               )}
               {order.cyan_stars != undefined && (
                 <Rating
-                  fullSymbol={
-                    <SvgIcon svgProp={{ width: 16, height: 16, fill: theme.colors.yellow[7] }} iconType={SvgType.Default} iconName={"cyan_star"} />
-                  }
+                  fullSymbol={<FontAwesomeIcon icon={faAmberStar} color={theme.colors.yellow[7]} />}
                   value={order.cyan_stars}
                   count={order.cyan_stars}
                   readOnly
