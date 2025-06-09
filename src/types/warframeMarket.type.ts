@@ -69,17 +69,14 @@ export namespace WFMarketTypes {
     Closed = "closed",
   }
   export interface OrderDto {
-    closed_avg: number;
     creation_date: Date;
     id: string;
-    info?: OrderInfo;
     last_update: Date;
     user?: UserDto;
     operation: string;
     order_type: string;
     platform: string;
     platinum: number;
-    profit: number;
     quantity: number;
     region: string;
     visible: boolean;
@@ -91,15 +88,20 @@ export namespace WFMarketTypes {
     // Subtype
     subtype?: string;
     item?: OrderItemDto;
+    info: OrderInfo;
   }
 
   export interface OrderInfo {
+    closed_avg?: number;
+    moving_avg?: number;
     highest_price?: number;
     lowest_price?: number;
     orders?: OrderDto[];
     price_history: PriceHistory[];
     total_buyers?: number;
-    is_dirty?: boolean;
+    total_sellers?: number;
+    profit?: number;
+    range?: number;
   }
 
   export interface OrderItemDto {

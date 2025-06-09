@@ -156,8 +156,7 @@ pub async fn wish_list_delete(
             return Err(error);
         }
     }
-    let my_orders = wfm.orders().get_my_orders().await?;
-    let order = my_orders.find_order_by_url_sub_type(
+    let order = wfm.orders().cache_orders.find_order_by_url_sub_type(
         &item.wfm_url,
         OrderType::Sell,
         item.sub_type.as_ref(),

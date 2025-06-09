@@ -2,7 +2,9 @@ use entity::sub_type::SubType;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    cache::client::CacheClient, utils::modules::error::AppError,
+    cache::client::CacheClient,
+    live_scraper::types::order_extra_info::OrderDetails,
+    utils::modules::{error::AppError, states},
     wfm_client::enums::order_type::OrderType,
 };
 
@@ -16,7 +18,7 @@ pub struct Orders {
     pub buy_orders: Vec<Order>,
 }
 impl Orders {
-    pub fn get_all_orders(&mut self) -> Vec<Order> {
+    pub fn get_all_orders(&self) -> Vec<Order> {
         let mut orders = self.sell_orders.clone();
         orders.append(&mut self.buy_orders.clone());
         orders
@@ -171,17 +173,40 @@ impl Orders {
         };
     }
 
-    pub fn update_order(&mut self, order: Order) {
-        let orders = match order.order_type {
+    pub fn update_order(
+        &mut self,
+        order_type: OrderType,
+        id: &str,
+        platinum: Option<i64>,
+        quantity: Option<i64>,
+        visible: Option<bool>,
+        info: Option<OrderDetails>,
+    ) {
+        let orders = match order_type {
             OrderType::Sell => &mut self.sell_orders,
-            OrderType::Buy => &mut self.buy_orders,
+            OrderType::Buy => &mut self.buy_orders,            
             _ => return,
         };
-        let index = orders.iter().position(|x| x.id == order.id);
+        let index = orders.iter().position(|x| x.id == id);
         if index.is_none() {
             return;
         }
-        orders[index.unwrap()] = order;
+        let index = index.unwrap();
+        if platinum.is_none() && quantity.is_none() && visible.is_none() {
+            return;
+        }
+        if let Some(platinum) = platinum {
+            orders[index].platinum = platinum;
+        }
+        if let Some(quantity) = quantity {
+            orders[index].quantity = quantity;
+        }
+        if let Some(visible) = visible {
+            orders[index].visible = visible;
+        }
+        if let Some(info) = info {
+            orders[index].info = info;
+        }
     }
 
     pub fn get_orders_by_url(&self, wfm_url: &str, order_type: OrderType) -> Vec<Order> {
@@ -216,36 +241,28 @@ impl Orders {
         ids
     }
 
-    pub fn apply_trade_info(&mut self, cache: &CacheClient) -> Result<(), AppError> {
-        for order in self.buy_orders.iter_mut() {
-            match cache.item_price().get_item_price(
-                &order.item.as_ref().unwrap().url_name,
-                order.get_subtype(),
-                "closed",
-            ) {
-                Ok(info) => {
-                    order.closed_avg = Some(info.avg_price);
-                    order.profit = Some(info.avg_price - order.platinum as f64);
+    pub fn apply_trade_info(&mut self) -> Result<(), AppError> {
+        let cache = states::cache().expect("Cache should always be available");
+        for order in self
+            .buy_orders
+            .iter_mut()
+            .chain(self.sell_orders.iter_mut())
+        {
+            let info_result = order.item.as_ref().map(|item| {
+                cache
+                    .item_price()
+                    .get_item_price(&item.url_name, order.get_subtype(), "closed")
+            });
+            match info_result {
+                Some(Ok(info)) => {
+                    order.info.set_closed_avg(info.avg_price);
+                    order
+                        .info
+                        .set_profit(order.platinum as f64 - info.avg_price);
                 }
-                Err(_) => {
-                    order.closed_avg = Some(0.0);
-                    order.profit = Some(0.0);
-                }
-            }
-        }
-        for order in self.sell_orders.iter_mut() {
-            match cache.item_price().get_item_price(
-                &order.item.as_ref().unwrap().url_name,
-                order.get_subtype(),
-                "closed",
-            ) {
-                Ok(info) => {
-                    order.closed_avg = Some(info.avg_price);
-                    order.profit = Some(order.platinum as f64 - info.avg_price);
-                }
-                Err(_) => {
-                    order.closed_avg = Some(0.0);
-                    order.profit = Some(0.0);
+                _ => {
+                    order.info.set_closed_avg(0.0);
+                    order.info.set_profit(0.0);
                 }
             }
         }

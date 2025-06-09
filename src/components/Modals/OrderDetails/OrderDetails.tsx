@@ -57,7 +57,7 @@ export function OrderDetails({ value }: OrderDetailsProps) {
             </Group>
             <Group grow>
               <TextInput label={useTranslateFields("list_price")} value={value.platinum || "N/A"} readOnly />
-              <TextInput label={useTranslateFields("profit")} value={value.profit || "N/A"} readOnly />
+              <TextInput label={useTranslateFields("profit")} value={value.info.profit || "N/A"} readOnly />
             </Group>
             <Group grow>
               <TextInput label={useTranslateFields("total_buyers")} value={value.info?.total_buyers || "N/A"} readOnly />

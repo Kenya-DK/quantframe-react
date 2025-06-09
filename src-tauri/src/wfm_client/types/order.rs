@@ -2,7 +2,8 @@ use entity::sub_type::SubType;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    live_scraper::types::order_extra_info::OrderDetails, wfm_client::enums::order_type::OrderType,
+    live_scraper::types::order_extra_info::OrderDetails, utils::modules::states,
+    wfm_client::enums::order_type::OrderType,
 };
 
 use super::{order_item::OrderItem, user::User};
@@ -44,23 +45,10 @@ pub struct Order {
     #[serde(rename = "item")]
     pub item: Option<OrderItem>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "profit")]
-    pub profit: Option<f64>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "closed_avg")]
-    pub closed_avg: Option<f64>,
-
     // Default implementation for string
     #[serde(rename = "operation")]
     #[serde(default)]
     pub operation: Vec<String>,
-
-    // Ignore this field
-    #[serde(skip_serializing)]
-    #[serde(default)]
-    pub tags: Vec<String>,
 
     // Subtype's
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -96,10 +84,7 @@ impl Default for Order {
             creation_date: "".to_string(),
             quantity: 0,
             operation: vec!["New".to_string()],
-            tags: vec![],
             item: None,
-            profit: None,
-            closed_avg: None,
             cyan_stars: None,
             amber_stars: None,
             subtype: None,

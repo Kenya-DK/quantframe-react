@@ -23,12 +23,23 @@ use crate::{
 #[tauri::command]
 pub async fn get_stock_items(
     query: entity::stock::item::dto::StockItemPaginationQueryDto,
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<entity::dto::pagination::PaginatedDto<stock_item::Model>, AppError> {
     let conn = DATABASE.get().unwrap();
+    let wfm = wfm.lock()?.clone();
     match StockItemQuery::get_all_v2(conn, query).await {
-        Ok(items) => {
+        Ok(mut data) => {
             helper::add_metric("Stock_ItemGetAll", "manual");
-            return Ok(items);
+            for item in data.results.iter_mut() {
+                if let Some(order) = wfm.orders().cache_orders.find_order_by_url_sub_type(
+                    &item.wfm_url,
+                    OrderType::All,
+                    item.sub_type.as_ref(),
+                ) {
+                    item.info = Some(json!(order.info.clone()));
+                }
+            }
+            return Ok(data);
         }
         Err(e) => {
             let error: AppError = AppError::new_db("StockItemQuery::reload", e);
@@ -113,8 +124,7 @@ pub async fn stock_item_delete(
         }
     }
 
-    let my_orders = wfm.orders().get_my_orders().await?;
-    let order = my_orders.find_order_by_url_sub_type(
+    let order = wfm.orders().cache_orders.find_order_by_url_sub_type(
         &stock_item.wfm_url,
         OrderType::Sell,
         stock_item.sub_type.as_ref(),
@@ -253,15 +263,12 @@ pub async fn stock_item_update_bulk(
 #[tauri::command]
 pub async fn stock_item_delete_bulk(
     ids: Vec<i64>,
-    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<i64, AppError> {
     let wfm = wfm.lock()?.clone();
     let conn = DATABASE.get().unwrap();
-    let notify = notify.lock()?.clone();
     helper::add_metric("Stock_ItemDeleteBulk", "manual");
 
-    let mut my_orders = wfm.orders().get_my_orders().await?;
     let stocks = match StockItemQuery::find_by_ids(conn, ids.clone()).await {
         Ok(stocks) => stocks,
         Err(e) => {
@@ -283,14 +290,13 @@ pub async fn stock_item_delete_bulk(
             }
         }
         // Delete the order on WFM
-        match my_orders.find_order_by_url_sub_type(
+        match wfm.orders().cache_orders.find_order_by_url_sub_type(
             &stock.wfm_url,
             OrderType::Sell,
             stock.sub_type.as_ref(),
         ) {
             Some(order) => {
                 wfm.orders().delete(&order.id).await?;
-                my_orders.delete_order_by_id(OrderType::Sell, &order.id);
             }
             None => {}
         }
@@ -310,11 +316,5 @@ pub async fn stock_item_delete_bulk(
             return Err(error);
         }
     }
-
-    notify.gui().send_event_update(
-        UIEvent::UpdateOrders,
-        UIOperationEvent::Set,
-        Some(json!(my_orders.get_all_orders())),
-    );
     Ok(total)
 }

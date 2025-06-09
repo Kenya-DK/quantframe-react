@@ -8,6 +8,7 @@ pub mod chat_message_with;
 pub mod item;
 pub mod order;
 pub mod order_by_item;
+pub mod order_close;
 pub mod order_item;
 pub mod order_item_translation;
 pub mod orders;

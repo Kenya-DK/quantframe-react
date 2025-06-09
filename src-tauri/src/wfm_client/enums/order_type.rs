@@ -9,7 +9,16 @@ pub enum OrderType {
     Sell,
     Unknown(String),
 }
-
+impl OrderType {
+    pub fn from_str(s: &str) -> OrderType {
+        match s {
+            "all" => OrderType::All,
+            "buy" => OrderType::Buy,
+            "sell" => OrderType::Sell,
+            _ => OrderType::Unknown(s.to_string()),
+        }
+    }
+}
 impl Serialize for OrderType {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
