@@ -1,6 +1,6 @@
 import { Group, Box, TextInput, Collapse, Divider } from "@mantine/core";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
-import { faFilter, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faAdd, faFilter, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { useToggle } from "@mantine/hooks";
 import { useEffect, useState } from "react";
 import { ActionWithTooltip } from "@components/ActionWithTooltip";
@@ -94,8 +94,10 @@ export function SearchField({
             {onCreate && (
               <ActionWithTooltip
                 tooltip={useTranslateSearchFieldButtons("create.tooltip")}
-                icon={faFilter}
+                icon={faAdd}
                 color={"green"}
+                actionProps={{ size: "sm" }}
+                iconProps={{ size: "xs" }}
                 onClick={async () => onCreate()}
               />
             )}

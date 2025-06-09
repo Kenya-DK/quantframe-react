@@ -5,7 +5,6 @@ use entity::{
         riven::{attribute::RivenAttribute, create::CreateStockRiven},
     },
     sub_type::SubType,
-    transaction,
     wish_list::create::CreateWishListItem,
 };
 use serde::{Deserialize, Serialize};
@@ -258,56 +257,6 @@ impl CreateStockEntity {
             ));
         }
         Ok(())
-    }
-    pub fn to_transaction(
-        &self,
-        user_name: &str,
-        transaction_type: transaction::transaction::TransactionType,
-    ) -> Result<transaction::transaction::Model, AppError> {
-        if !self.is_validated {
-            return Err(AppError::new(
-                "CreateTransaction",
-                eyre::eyre!("Entity is not validated"),
-            ));
-        }
-
-        match self.entity_type {
-            StockType::Item => {
-                let item = self.to_stock_item();
-                let transaction = item.to_model().to_transaction(
-                    user_name,
-                    self.tags.clone(),
-                    self.quantity,
-                    self.bought.unwrap_or(0),
-                    transaction_type,
-                );
-                Ok(transaction)
-            }
-            StockType::WishList => {
-                let item = self.to_wish_item();
-                let transaction = item.to_model().to_transaction(
-                    user_name,
-                    self.tags.clone(),
-                    self.quantity,
-                    self.bought.unwrap_or(0),
-                    transaction_type,
-                );
-                Ok(transaction)
-            }
-            StockType::Riven => {
-                let riven = self.to_stock_riven();
-                let transaction = riven.to_model().to_transaction(
-                    user_name,
-                    self.bought.unwrap_or(0),
-                    transaction_type,
-                );
-                Ok(transaction)
-            }
-            _ => Err(AppError::new(
-                "CreateTransaction",
-                eyre::eyre!("Invalid entity type: {}", self.entity_type.as_str()),
-            )),
-        }
     }
     pub fn get_name(&self) -> Result<String, AppError> {
         if !self.is_validated {

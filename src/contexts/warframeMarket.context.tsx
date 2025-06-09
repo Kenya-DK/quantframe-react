@@ -3,22 +3,18 @@ import { WFMarketTypes } from "$types/index";
 import { WFMSocketContextProvider } from "./wfmSocket.context";
 import { ChatContextProvider } from "./chat.context";
 import { TauriTypes } from "$types";
-import api, { OnTauriDataEvent } from "@api/index";
+import { OnTauriDataEvent } from "../api";
 export type WarframeMarketContextProps = {
-  transactions: TauriTypes.TransactionDto[];
   orders: WFMarketTypes.OrderDto[];
   auctions: WFMarketTypes.Auction<string>[];
-  statistics: TauriTypes.StatisticDto | undefined;
 };
 export type WarframeMarketContextProviderProps = {
   children: React.ReactNode;
 };
 
 export const WarframeMarketContextContext = createContext<WarframeMarketContextProps>({
-  transactions: [],
   orders: [],
   auctions: [],
-  statistics: undefined,
 });
 
 export const useWarframeMarketContextContext = () => useContext(WarframeMarketContextContext);
@@ -30,8 +26,6 @@ interface Entity {
 type SetDataFunction<T> = React.Dispatch<React.SetStateAction<T>>;
 
 export function WarframeMarketContextProvider({ children }: WarframeMarketContextProviderProps) {
-  const [transactions, setTransactions] = useState<TauriTypes.TransactionDto[]>([]);
-  const [statistics, setStatistics] = useState<TauriTypes.StatisticDto | undefined>(undefined);
   const [orders, setOrders] = useState<WFMarketTypes.OrderDto[]>([]);
   const [auctions, setAuctions] = useState<WFMarketTypes.Auction<string>[]>([]);
 
@@ -60,34 +54,20 @@ export function WarframeMarketContextProvider({ children }: WarframeMarketContex
     handleUpdate(operation, data, setOrders);
   };
 
-  // Handle transactions
-  const handleUpdateTransaction = (operation: TauriTypes.EventOperations, data: TauriTypes.TransactionDto | TauriTypes.TransactionDto[]) => {
-    handleUpdate(operation, data, setTransactions);
-  };
-
   // Handle auctions
   const handleUpdateAuction = (operation: TauriTypes.EventOperations, data: WFMarketTypes.Auction<string> | WFMarketTypes.Auction<string>[]) => {
     handleUpdate(operation, data, setAuctions);
   };
 
-  // Handle update of statistics when transactions change
-  useEffect(() => {
-    if (!transactions) return;
-    let statistics = api.statistic.convertFromTransaction(transactions);
-
-    setStatistics(statistics);
-  }, [transactions]);
-
   // Hook on tauri events from rust side
   useEffect(() => {
-    OnTauriDataEvent<any>(TauriTypes.Events.UpdateTransaction, ({ data, operation }) => handleUpdateTransaction(operation, data));
     OnTauriDataEvent<any>(TauriTypes.Events.UpdateOrders, ({ data, operation }) => handleUpdateOrders(operation, data));
     OnTauriDataEvent<any>(TauriTypes.Events.UpdateAuction, ({ data, operation }) => handleUpdateAuction(operation, data));
     return () => {};
   }, []);
 
   return (
-    <WarframeMarketContextContext.Provider value={{ transactions, statistics, orders, auctions }}>
+    <WarframeMarketContextContext.Provider value={{ orders, auctions }}>
       <ChatContextProvider>
         <WFMSocketContextProvider>{children}</WFMSocketContextProvider>
       </ChatContextProvider>

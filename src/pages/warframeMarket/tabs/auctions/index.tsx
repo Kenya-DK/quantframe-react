@@ -1,7 +1,7 @@
 import { Text, Box, Divider, Group, Pagination, ScrollArea, SimpleGrid } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { WFMarketTypes } from "$types/index";
-import { faFileImport, faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { paginate } from "@utils/helper";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import api from "@api/index";
@@ -12,7 +12,6 @@ import { ActionWithTooltip } from "@components/ActionWithTooltip";
 import { AuctionListItem } from "@components/AuctionListItem";
 import { Loading } from "@components/Loading";
 import { SearchField } from "@components/SearchField";
-import { useStockContextContext } from "@contexts/stock.context";
 import { useWarframeMarketContextContext } from "@contexts/warframeMarket.context";
 import { ApplyFilter, ComplexFilter, Operator } from "@utils/filter.helper";
 import classes from "../../WarframeMarket.module.css";
@@ -27,13 +26,11 @@ export const AuctionPanel = ({}: AuctionPanelProps) => {
   const [totalPages, setTotalPages] = useState(0);
   const [rows, setRows] = useState<WFMarketTypes.Auction<string>[]>([]);
   const { auctions } = useWarframeMarketContextContext();
-  const { rivens } = useStockContextContext();
 
   // Update Database Rows
   useEffect(() => {
     let filteredRecords = auctions;
     let filter: ComplexFilter = {};
-    if (!rivens) return;
 
     if (query)
       filter = {
@@ -196,7 +193,7 @@ export const AuctionPanel = ({}: AuctionPanelProps) => {
               auction={order}
               header={
                 <Group gap={5}>
-                  {!rivens.find((r) => r.wfm_order_id == order.id) && order.is_direct_sell ? (
+                  {/* {!rivens.find((r: any) => r.wfm_order_id == order.id) && order.is_direct_sell ? (
                     <ActionWithTooltip
                       tooltip={useTranslateButtons("import.tooltip")}
                       icon={faFileImport}
@@ -208,7 +205,7 @@ export const AuctionPanel = ({}: AuctionPanelProps) => {
                         OpenCreateStockRiven(order);
                       }}
                     />
-                  ) : null}
+                  ) : null} */}
 
                   <ActionWithTooltip
                     tooltip={useTranslateButtons("delete.tooltip")}

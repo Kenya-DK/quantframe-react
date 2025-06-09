@@ -1,4 +1,4 @@
-import { Box, Center, Group, MultiSelect, NumberFormatter, Select } from "@mantine/core";
+import { Box, Center, Group, NumberFormatter, Select } from "@mantine/core";
 import { useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { upperFirst } from "@mantine/hooks";
 import { Loading } from "@components/Loading";
 import { AlertError } from "@components/AlertError";
+import { SelectItemTags } from "@components/SelectItemTags";
 
 interface ItemPanelProps {}
 
@@ -111,16 +112,7 @@ export const ItemPanel = ({}: ItemPanelProps) => {
                 value={dataGridState.values.order_type as WFMarketTypes.OrderType}
                 onChange={(value) => dataGridState.setFieldValue("order_type", value as WFMarketTypes.OrderType)}
               />
-              <MultiSelect
-                searchable
-                limit={5}
-                label={useTranslateFields("tags.label")}
-                description={useTranslateFields("tags.description")}
-                data={tags}
-                value={dataGridState.values.tags}
-                onChange={(value: string[]) => dataGridState.setFieldValue("tags", value)}
-                clearable
-              />
+              <SelectItemTags value={dataGridState.values.tags || []} onChange={(value: string[]) => dataGridState.setFieldValue("tags", value)} />
             </Group>
           </Box>
         }

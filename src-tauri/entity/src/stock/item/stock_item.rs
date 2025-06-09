@@ -4,7 +4,9 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    enums::stock_status::StockStatus, price_history::PriceHistoryVec, sub_type::SubType,
+    enums::stock_status::StockStatus,
+    price_history::{PriceHistory, PriceHistoryVec},
+    sub_type::SubType,
     transaction,
 };
 
@@ -47,6 +49,11 @@ pub struct Model {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "changes")]
     pub changes: Option<String>,
+
+    #[sea_orm(ignore)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "info")]
+    pub info: Option<serde_json::Value>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -85,6 +92,7 @@ impl Model {
             is_dirty: true,
             locked: false,
             changes: None,
+            info: None,
         }
     }
     pub fn to_transaction(
@@ -134,6 +142,23 @@ impl Model {
         }
         if Self::set_if_changed(&mut self.status, status, &mut self.is_dirty) {
             self.changes = Some("status".to_string());
+        }
+    }
+    pub fn add_price_history(&mut self, price_history: PriceHistory) {
+        let mut items = self.price_history.0.clone();
+
+        if items
+            .last()
+            .map_or(true, |last| last.price != price_history.price)
+        {
+            // Limit to 5 elements
+            if items.len() >= 5 {
+                items.remove(0);
+            }
+            items.push(price_history);
+            self.is_dirty = true;
+            self.changes = Some("price_history".to_string());
+            self.price_history = PriceHistoryVec(items);
         }
     }
     pub fn uuid(&self) -> String {

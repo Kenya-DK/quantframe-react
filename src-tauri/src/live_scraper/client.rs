@@ -135,6 +135,7 @@ impl LiveScraperClient {
                         Err(e) => scraper.report_error(&e),
                     }
                 }
+                // scraper.stop_loop();
                 tokio::time::sleep(Duration::from_secs(1)).await;
             }
             logger::info(

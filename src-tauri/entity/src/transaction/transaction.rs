@@ -49,6 +49,18 @@ impl TransactionItemType {
             _ => panic!("Invalid transaction type"),
         }
     }
+    pub fn to_string(&self) -> String {
+        match self {
+            Self::Item => "item".to_string(),
+            Self::Riven => "riven".to_string(),
+        }
+    }
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Item => "item",
+            Self::Riven => "riven",
+        }
+    }
 }
 impl Serialize for TransactionItemType {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -92,6 +104,12 @@ impl TransactionType {
             "sale" => Self::Sale,
             "purchase" => Self::Purchase,
             _ => panic!("Invalid transaction type"),
+        }
+    }
+    pub fn to_string(&self) -> String {
+        match self {
+            TransactionType::Sale => "sale".to_string(),
+            TransactionType::Purchase => "purchase".to_string(),
         }
     }
 }

@@ -221,7 +221,7 @@ impl QFClient {
         error_def.raw_response = Some(content.clone());
 
         // Parse the response into a Value object
-        let mut response: Value = match serde_json::from_str(content.as_str()) {
+        let response: Value = match serde_json::from_str(content.as_str()) {
             Ok(val) => val,
             Err(e) => {
                 error_def.messages.push(e.to_string());

@@ -11,6 +11,8 @@ import {
   Divider,
   ScrollArea,
   Text,
+  Image,
+  Box,
 } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -23,12 +25,11 @@ import {
   faMoneyBillTrendUp,
   faSackDollar,
 } from "@fortawesome/free-solid-svg-icons";
-import { useWarframeMarketContextContext } from "@contexts/warframeMarket.context";
+import i18next from "i18next";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { getCssVariable } from "@utils/helper";
 import { DataTable } from "mantine-datatable";
-import { useEffect, useState } from "react";
 import { TauriTypes } from "$types";
 import { TextTranslate } from "@components/TextTranslate";
 import { StatsWithIcon } from "@components/StatsWithIcon";
@@ -37,8 +38,10 @@ import { ColorInfo } from "@components/ColorInfo";
 import classes from "./Home.module.css";
 import { TransactionListItem } from "@components/TransactionListItem";
 import faMoneyBillTrendDown from "@icons/faMoneyBillTrendDown";
+import { useQuery } from "@tanstack/react-query";
+import api from "@api/index";
 
-const BarChartFooter = ({ i18nKey, statistics }: { i18nKey: string; statistics: TauriTypes.StatisticProfitBase }) => {
+const BarChartFooter = ({ i18nKey, statistics }: { i18nKey: string; statistics: TauriTypes.TransactionSummaryDto }) => {
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`home.${key}`, { ...context }, i18Key);
   const useTranslateTooltips = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslate(`tooltips.bar_chart.footer.${key}`, { ...context }, i18Key);
@@ -81,7 +84,7 @@ const BarChartFooter = ({ i18nKey, statistics }: { i18nKey: string; statistics: 
       <TextTranslate
         style={{ display: "flex", gap: "4px", alignItems: "center" }}
         i18nKey={`${i18nKey}.profit`}
-        values={{ expense: statistics?.expense || 0, revenue: statistics?.revenue || 0, profit: statistics?.profit || 0 }}
+        values={{ expense: statistics?.expenses || 0, revenue: statistics?.revenue || 0, profit: statistics?.profit || 0 }}
         components={ExtraComponents}
       />
       <TextTranslate
@@ -99,30 +102,23 @@ const BarChartFooter = ({ i18nKey, statistics }: { i18nKey: string; statistics: 
 export default function HomePage() {
   const theme = useMantineTheme();
   // State's
-  const [purchaseCount, setPurchaseCount] = useState(0);
-  const [saleCount, setSaleCount] = useState(0);
 
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`home.${key}`, { ...context }, i18Key);
   const useTranslateCards = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`cards.${key}`, { ...context }, i18Key);
-  const { statistics } = useWarframeMarketContextContext();
 
-  useEffect(() => {
-    if (!statistics) return;
-    setPurchaseCount(
-      statistics?.recent_transactions.transactions.filter((transaction) => transaction.transaction_type === TauriTypes.TransactionType.Purchase)
-        .length
-    );
-    setSaleCount(
-      statistics?.recent_transactions.transactions.filter((transaction) => transaction.transaction_type === TauriTypes.TransactionType.Sale).length
-    );
-  }, [statistics]);
+  // Queys
+  let { data } = useQuery({
+    queryKey: ["matrix_overview"],
+    queryFn: () => api.summary.overview(),
+    refetchOnWindowFocus: true,
+  });
   return (
     <Container size={"100%"}>
       <Grid>
         <Grid.Col span={4}>
           <StatsWithIcon
-            count={statistics?.total.profit || 0}
+            count={data?.total.profit || 0}
             color={getGradient({ deg: 180, from: "green.7", to: "green.9" }, theme)}
             title={useTranslateCards("total.title")}
             icon={<FontAwesomeIcon size="2x" icon={faMoneyBill} />}
@@ -130,10 +126,10 @@ export default function HomePage() {
               <TextTranslate
                 i18nKey={useTranslateCards("total.footer")}
                 values={{
-                  sales: statistics?.total.sales || 0,
-                  purchases: statistics?.total.purchases || 0,
-                  quantity: (statistics?.total.sales || 0) + (statistics?.total?.purchases || 0),
-                  profit_margin: ((statistics?.total.profit_margin || 0) * 100).toFixed(2),
+                  sales: data?.total.sales || 0,
+                  purchases: data?.total.purchases || 0,
+                  quantity: data?.total.total_transactions || 0,
+                  profit_margin: (data?.total.profit_margin || 0).toFixed(2),
                 }}
               />
             }
@@ -141,7 +137,7 @@ export default function HomePage() {
         </Grid.Col>
         <Grid.Col span={4}>
           <StatsWithIcon
-            count={statistics?.today.profit || 0}
+            count={data?.today.profit || 0}
             color={getGradient({ deg: 180, from: "grape.7", to: "grape.9" }, theme)}
             title={useTranslateCards("today.title")}
             icon={<FontAwesomeIcon size="2x" icon={faCalendarAlt} />}
@@ -149,10 +145,10 @@ export default function HomePage() {
               <TextTranslate
                 i18nKey={useTranslateCards("today.footer")}
                 values={{
-                  sales: statistics?.today.sales || 0,
-                  purchases: statistics?.today.purchases || 0,
-                  quantity: (statistics?.today.sales || 0) + (statistics?.today.purchases || 0),
-                  profit_margin: ((statistics?.today.profit_margin || 0) * 100).toFixed(2),
+                  sales: data?.today.sales || 0,
+                  purchases: data?.today.purchases || 0,
+                  quantity: data?.today.total_transactions || 0,
+                  profit_margin: (data?.today.profit_margin || 0).toFixed(2),
                 }}
               />
             }
@@ -160,7 +156,7 @@ export default function HomePage() {
         </Grid.Col>
         <Grid.Col span={4}>
           <StatsWithIcon
-            count={statistics?.best_seller?.items[0]?.profit || 0}
+            count={data?.best_selling_items[0]?.profit || 0}
             color={getGradient({ deg: 180, from: "blue.7", to: "blue.9" }, theme)}
             title={useTranslateCards("best_seller.title")}
             icon={<FontAwesomeIcon size="2x" icon={faBoxOpen} />}
@@ -168,11 +164,11 @@ export default function HomePage() {
               <TextTranslate
                 i18nKey={useTranslateCards("best_seller.footer")}
                 values={{
-                  name: statistics?.best_seller.items[0]?.name || "",
-                  sales: statistics?.best_seller.items[0]?.sales || 0,
-                  purchases: statistics?.best_seller.items[0]?.purchases || 0,
-                  quantity: statistics?.best_seller.items[0]?.quantity || 0,
-                  profit_margin: ((statistics?.best_seller.items[0]?.profit_margin || 0) * 100).toFixed(2),
+                  name: data?.best_selling_items[0]?.item_name || "",
+                  sales: data?.best_selling_items[0]?.sales || 0,
+                  purchases: data?.best_selling_items[0]?.purchases || 0,
+                  quantity: data?.best_selling_items[0]?.quantity || 0,
+                  profit_margin: ((data?.best_selling_items[0]?.profit_margin || 0) * 100).toFixed(2),
                 }}
               />
             }
@@ -183,24 +179,25 @@ export default function HomePage() {
         <Grid.Col span={4}>
           <BarCardChart
             title={useTranslateCards("total.bar_chart.title")}
-            labels={statistics?.total.labels || []}
+            labels={i18next.t("months", { returnObjects: true }) as string[]}
+            // labels={data?.total.present_year.chart.labels || []}
             chartStyle={{ background: getGradient({ deg: 180, from: "green.8", to: "green.9" }, theme), height: "200px" }}
             datasets={[
               {
                 label: useTranslateCards("total.bar_chart.datasets.this_year"),
-                data: statistics?.total.present.profit_values || [],
+                data: data?.total.present_year.chart.values || [],
                 backgroundColor: getCssVariable("--mantine-color-blue-3"),
               },
               {
                 label: useTranslateCards("total.bar_chart.datasets.last_year"),
-                data: statistics?.total.previous.profit_values || [],
+                data: data?.total.last_year.chart.values || [],
                 backgroundColor: getCssVariable("--mantine-color-blue-7"),
               },
             ]}
             context={
               <BarChartFooter
                 i18nKey={useTranslateCards("total.bar_chart.footers", undefined, true)}
-                statistics={statistics?.total as TauriTypes.StatisticProfitBase}
+                statistics={data?.total as TauriTypes.TransactionSummaryDto}
               />
             }
           />
@@ -208,39 +205,39 @@ export default function HomePage() {
         <Grid.Col span={4}>
           <BarCardChart
             title={useTranslateCards("today.bar_chart.title")}
-            labels={statistics?.today.chart_profit.labels || []}
+            labels={data?.today.chart.labels || []}
             chartStyle={{ background: getGradient({ deg: 180, from: "grape.8", to: "grape.9" }, theme), height: "200px" }}
             datasets={[
               {
                 label: useTranslateCards("today.bar_chart.datasets.profit"),
-                data: statistics?.today.chart_profit.profit_values || [],
+                data: data?.today.chart.values || [],
                 backgroundColor: getCssVariable("--profit-bar-color"),
               },
             ]}
             context={
               <BarChartFooter
                 i18nKey={useTranslateCards("today.bar_chart.footers", undefined, true)}
-                statistics={statistics?.today as TauriTypes.StatisticProfitBase}
+                statistics={data?.today as TauriTypes.TransactionSummaryDto}
               />
             }
           />
         </Grid.Col>
         <Grid.Col span={4}>
           <BarCardChart
-            title={useTranslateCards("recent_days.bar_chart.title", { days: statistics?.recent_days.days })}
-            labels={statistics?.recent_days.chart_profit.labels || []}
+            title={useTranslateCards("recent_days.bar_chart.title", { days: data?.recent_days.chart.labels.length || 0 })}
+            labels={data?.recent_days.chart.labels || []}
             chartStyle={{ background: getGradient({ deg: 180, from: "blue.8", to: "blue.9" }, theme), height: "200px" }}
             datasets={[
               {
                 label: useTranslateCards("recent_days.bar_chart.datasets.profit"),
-                data: statistics?.recent_days.chart_profit.profit_values || [],
+                data: data?.recent_days.chart.values || [],
                 backgroundColor: getCssVariable("--profit-bar-color"),
               },
             ]}
             context={
               <BarChartFooter
                 i18nKey={useTranslateCards("recent_days.bar_chart.footers", undefined, true)}
-                statistics={statistics?.recent_days as TauriTypes.StatisticProfitBase}
+                statistics={data?.recent_days as TauriTypes.TransactionSummaryDto}
               />
             }
           />
@@ -257,20 +254,20 @@ export default function HomePage() {
                     "data-color-mode": "bg",
                     "data-trade-type": "purchase",
                   }}
-                  text={useTranslateCards("last_transaction.info_box.purchase", { count: purchaseCount })}
+                  text={useTranslateCards("last_transaction.info_box.purchase", { count: data?.total.purchases || 0 })}
                 />
                 <ColorInfo
                   infoProps={{
                     "data-color-mode": "bg",
                     "data-trade-type": "sale",
                   }}
-                  text={useTranslateCards("last_transaction.info_box.sale", { count: saleCount })}
+                  text={useTranslateCards("last_transaction.info_box.sale", { count: data?.total.sales || 0 })}
                 />
               </Group>
             </Group>
             <Divider />
             <ScrollArea className={classes.transactions} p={10} data-has-alert={useHasAlert()}>
-              {statistics?.recent_transactions.transactions.map((transaction, index) => (
+              {data?.resent_transactions.map((transaction, index) => (
                 <TransactionListItem key={index} transaction={transaction} />
               ))}
             </ScrollArea>
@@ -278,13 +275,20 @@ export default function HomePage() {
         </Grid.Col>
         <Grid.Col span={6}>
           <DataTable
-            records={statistics?.best_seller.category || []}
+            records={data?.category_summary || []}
             idAccessor={"name"}
             // define columns
             columns={[
               {
                 accessor: "name",
                 title: useTranslateCards("best_seller.by_category.datatable.columns.name"),
+                width: "150px",
+                render: ({ name, icon }) => (
+                  <Box style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <Image src={icon} fallbackSrc="/question.png" radius="md" h={32} w={28} fit="contain" />
+                    <Text>{name}</Text>
+                  </Box>
+                ),
               },
               {
                 accessor: "revenue",
@@ -294,7 +298,7 @@ export default function HomePage() {
               {
                 accessor: "expense",
                 title: useTranslateCards("best_seller.by_category.datatable.columns.expense"),
-                render: ({ expense }) => <NumberFormatter thousandSeparator="." decimalSeparator="," value={expense} />,
+                render: ({ expenses }) => <NumberFormatter thousandSeparator="." decimalSeparator="," value={expenses} />,
               },
               {
                 accessor: "profit",
@@ -304,12 +308,11 @@ export default function HomePage() {
                   "data-profit": profit > 0 ? "positive" : "negative",
                 }),
                 render: ({ profit }) => <NumberFormatter thousandSeparator="." decimalSeparator="," value={profit} />,
-                // render: ({ profit }) => <Text color={profit > 0 ? getTradeClassificationColorCode(Wfm.TradeClassification.Sell) : getTradeClassificationColorCode(Wfm.TradeClassification.Buy)}>{profit}</Text>,
               },
               {
                 accessor: "profit_margin",
                 title: useTranslateCards("best_seller.by_category.datatable.columns.profit_margin"),
-                render: ({ profit_margin }) => <NumberFormatter decimalScale={2} suffix=" %" value={profit_margin * 100} />,
+                render: ({ profit_margin }) => <NumberFormatter decimalScale={2} suffix=" %" value={profit_margin} />,
               },
             ]}
           />

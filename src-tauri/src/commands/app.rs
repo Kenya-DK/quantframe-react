@@ -1,7 +1,9 @@
-use std::sync::{Arc, Mutex};
+use std::{
+    sync::{Arc, Mutex},
+};
 
 use serde_json::json;
-use service::{StockItemQuery, StockRivenQuery, TransactionQuery, WishListQuery};
+use service::WishListQuery;
 
 use crate::{
     app::client::AppState,
@@ -13,9 +15,11 @@ use crate::{
     settings::SettingsState,
     utils::{
         enums::ui_events::{UIEvent, UIOperationEvent},
-        modules::error::{self, AppError},
+        modules::{
+            error::{self, AppError},
+            states,
+        },
     },
-    wfm_client::client::WFMClient,
     DATABASE,
 };
 
@@ -29,7 +33,6 @@ pub fn save_auth_state(auth: tauri::State<'_, Arc<Mutex<AuthState>>>, auth_state
 pub async fn app_init(
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
     settings: tauri::State<'_, Arc<Mutex<SettingsState>>>,
-    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
     qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
@@ -40,7 +43,7 @@ pub async fn app_init(
     let app = app.lock()?.clone();
     let notify = notify.lock()?.clone();
     let settings = settings.lock()?.clone();
-    let wfm = wfm.lock()?.clone();
+    let wfm = states::wfm_client().expect("Failed to get WFM client");
     let cache = cache.lock()?.clone();
     let qf = qf.lock()?.clone();
     let log_parser = log_parser.lock()?.clone();
@@ -57,26 +60,6 @@ pub async fn app_init(
             return Err(e);
         }
     }
-
-    // Load Transactions
-    notify
-        .gui()
-        .send_event(UIEvent::OnInitialize, Some(json!("transactions")));
-    match TransactionQuery::get_all(conn).await {
-        Ok(transactions) => {
-            // Send Transactions to UI
-            notify.gui().send_event_update(
-                UIEvent::UpdateTransaction,
-                UIOperationEvent::Set,
-                Some(json!(&transactions)),
-            );
-        }
-        Err(e) => {
-            let error = AppError::new_db("TransactionQuery::get_all", e);
-            error::create_log_file("command.log", &error);
-            return Err(error);
-        }
-    };
 
     // Send App Info to UI
     let app_info = app.get_app_info();
@@ -99,57 +82,12 @@ pub async fn app_init(
         UIOperationEvent::Set,
         Some(json!(&settings)),
     );
-    // Load Stock Rivens
-    notify
-        .gui()
-        .send_event(UIEvent::OnInitialize, Some(json!("stock_rivens")));
-    match StockRivenQuery::get_all(conn).await {
-        Ok(items) => {
-            // Send Stock Rivens to UI
-            notify.gui().send_event_update(
-                UIEvent::UpdateStockRivens,
-                UIOperationEvent::Set,
-                Some(json!(&items)),
-            );
-        }
-        Err(e) => {
-            let error = AppError::new_db("StockRivenQuery::get_all", e);
-            error::create_log_file("command.log", &error);
-            return Err(error);
-        }
-    };
-    // Load Stock Items
-    notify
-        .gui()
-        .send_event(UIEvent::OnInitialize, Some(json!("stock_items")));
-    match StockItemQuery::get_all(conn).await {
-        Ok(items) => {
-            // Send Stock Items to UI
-            notify.gui().send_event_update(
-                UIEvent::UpdateStockItems,
-                UIOperationEvent::Set,
-                Some(json!(&items)),
-            );
-        }
-        Err(e) => {
-            let error = AppError::new_db("StockItemQuery::get_all", e);
-            error::create_log_file("command.log", &error);
-            return Err(error);
-        }
-    };
     // Load Wish List
     notify
         .gui()
         .send_event(UIEvent::OnInitialize, Some(json!("wish_list")));
     match WishListQuery::get_all(conn).await {
-        Ok(items) => {
-            // Send Transactions to UI
-            notify.gui().send_event_update(
-                UIEvent::UpdateWishList,
-                UIOperationEvent::Set,
-                Some(json!(&items)),
-            );
-        }
+        Ok(_) => {}
         Err(e) => {
             let error = AppError::new_db("WishListQuery::get_all", e);
             error::create_log_file("command.log", &error);
@@ -251,26 +189,6 @@ pub async fn app_init(
             }
         }
 
-        // Load User Orders
-        notify
-            .gui()
-            .send_event(UIEvent::OnInitialize, Some(json!("user_orders")));
-        let mut orders_vec = match wfm.orders().get_my_orders().await {
-            Ok(orders_vec) => orders_vec,
-            Err(e) => {
-                error::create_log_file("command.log", &e);
-                return Err(e);
-            }
-        };
-        let mut orders = orders_vec.buy_orders;
-        orders.append(&mut orders_vec.sell_orders);
-        // Send Orders to UI
-        notify.gui().send_event_update(
-            UIEvent::UpdateOrders,
-            UIOperationEvent::Set,
-            Some(json!(&orders)),
-        );
-
         // Load User Auctions
         notify
             .gui()
@@ -308,6 +226,26 @@ pub async fn app_init(
                 return Err(e);
             }
         };
+
+        // Load User Orders
+        notify
+            .gui()
+            .send_event(UIEvent::OnInitialize, Some(json!("user_orders")));
+        let mut orders_vec = match wfm.orders().refresh_my_orders().await {
+            Ok(orders_vec) => orders_vec,
+            Err(e) => {
+                error::create_log_file("command.log", &e);
+                return Err(e);
+            }
+        };
+        let mut orders = orders_vec.buy_orders;
+        orders.append(&mut orders_vec.sell_orders);
+        // Send Orders to UI
+        notify.gui().send_event_update(
+            UIEvent::UpdateOrders,
+            UIOperationEvent::Set,
+            Some(json!(&orders)),
+        );
     }
     // Save AuthState
     auth_state.save_to_file()?;
@@ -347,6 +285,9 @@ pub async fn app_update_settings(
     // Set Analytics Settings
     my_lock.analytics = settings.analytics;
 
+    // Set Summary Settings
+    my_lock.summary_settings = settings.summary_settings;
+
     my_lock.save_to_file().expect("Could not save settings");
 
     notify.gui().send_event_update(
@@ -354,6 +295,7 @@ pub async fn app_update_settings(
         UIOperationEvent::Set,
         Some(json!(my_lock.clone())),
     );
+
     Ok(true)
 }
 
