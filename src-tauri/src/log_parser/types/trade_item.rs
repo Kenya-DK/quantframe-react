@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use entity::sub_type::SubType;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -187,7 +189,12 @@ impl TradeItem {
                     }
                 }
             }
-            if combine.contains("(RIVEN RANK ") {
+            if combine.starts_with("Legendary Core") {
+                self.is_trade_item("Legendary Fusion Core", next_line)?;
+                println!("Detected Legendary Fusion Core: {}", combine);
+                self.item_type = TradeItemType::FusionCore;
+                self.sub_type = None; // Legendary Fusion Core is a special case
+            } else if combine.contains("(RIVEN RANK ") {
                 if combine.contains(" Riven Mod")
                     && self
                         .is_trade_item(&format!("{name_part} (Veiled)"), next_line)?
