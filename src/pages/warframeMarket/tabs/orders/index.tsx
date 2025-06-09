@@ -271,7 +271,7 @@ export const OrderPanel = ({}: OrderPanelProps) => {
         }
       />
       <Group gap={"sm"} mt={"md"}>
-        {Object.values(WFMarketTypes.OrderType).map((type) => (
+        {Object.values([WFMarketTypes.OrderType.Buy, WFMarketTypes.OrderType.Sell]).map((type) => (
           <ColorInfo
             active={type == filterOrderType}
             key={type}
