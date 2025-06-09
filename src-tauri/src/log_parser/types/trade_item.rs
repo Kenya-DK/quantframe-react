@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use entity::sub_type::SubType;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

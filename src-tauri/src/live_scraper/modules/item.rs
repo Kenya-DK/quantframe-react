@@ -4,19 +4,17 @@ use crate::enums::trade_mode::TradeMode;
 use crate::live_scraper::client::LiveScraperClient;
 
 use crate::live_scraper::types::item_entry::ItemEntry;
-use crate::live_scraper::types::order_extra_info::OrderDetails;
 use crate::utils::enums::log_level::LogLevel;
 use crate::utils::enums::ui_events::{UIEvent, UIOperationEvent};
 use crate::utils::modules::error::{self, AppError};
 use crate::utils::modules::logger::LoggerOptions;
 use crate::utils::modules::{logger, states};
 use crate::wfm_client::enums::order_type::OrderType;
-use crate::wfm_client::modules::order;
 use crate::wfm_client::types::order::Order;
 use crate::wfm_client::types::orders::Orders;
 use crate::DATABASE;
 use entity::enums::stock_status::StockStatus;
-use entity::price_history::{PriceHistory, PriceHistoryVec};
+use entity::price_history::PriceHistory;
 
 use serde_json::json;
 use service::{StockItemMutation, StockItemQuery, WishListMutation, WishListQuery};

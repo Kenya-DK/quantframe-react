@@ -2,8 +2,7 @@ use entity::sub_type::SubType;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    live_scraper::types::order_extra_info::OrderDetails, utils::modules::states,
-    wfm_client::enums::order_type::OrderType,
+    live_scraper::types::order_extra_info::OrderDetails, wfm_client::enums::order_type::OrderType,
 };
 
 use super::{order_item::OrderItem, user::User};

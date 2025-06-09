@@ -2,7 +2,6 @@ use entity::sub_type::SubType;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    cache::client::CacheClient,
     live_scraper::types::order_extra_info::OrderDetails,
     utils::modules::{error::AppError, states},
     wfm_client::enums::order_type::OrderType,
@@ -184,7 +183,7 @@ impl Orders {
     ) {
         let orders = match order_type {
             OrderType::Sell => &mut self.sell_orders,
-            OrderType::Buy => &mut self.buy_orders,            
+            OrderType::Buy => &mut self.buy_orders,
             _ => return,
         };
         let index = orders.iter().position(|x| x.id == id);

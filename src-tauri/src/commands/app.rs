@@ -1,6 +1,5 @@
 use std::{
     sync::{Arc, Mutex},
-    time::{Duration, Instant},
 };
 
 use serde_json::json;
@@ -18,11 +17,9 @@ use crate::{
         enums::ui_events::{UIEvent, UIOperationEvent},
         modules::{
             error::{self, AppError},
-            logger::{self, LoggerOptions},
             states,
         },
     },
-    wfm_client::client::WFMClient,
     DATABASE,
 };
 
