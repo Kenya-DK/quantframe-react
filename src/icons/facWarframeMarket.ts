@@ -2,7 +2,7 @@ import { IconDefinition, IconName, IconPrefix } from "@fortawesome/fontawesome-s
 
 const faWarframeMarket: IconDefinition = {
   prefix: "fac" as IconPrefix,
-  iconName: "facWarframeMarket" as IconName,
+  iconName: "warframe-market" as IconName,
   icon: [
     448.35,
     295.63,

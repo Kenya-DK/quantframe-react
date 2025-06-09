@@ -2,7 +2,7 @@ import { IconDefinition, IconName, IconPrefix } from "@fortawesome/fontawesome-s
 
 const facMoneyBillTrendDown: IconDefinition = {
   prefix: "fac" as IconPrefix,
-  iconName: "MoneyBillTrendDown" as IconName,
+  iconName: "money-bill-trend-down" as IconName,
   icon: [
     512,
     512,
