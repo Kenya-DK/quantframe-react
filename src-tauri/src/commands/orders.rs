@@ -22,7 +22,7 @@ pub async fn order_refresh(
     let wfm = wfm.lock()?.clone();
     let notify = notify.lock()?.clone();
     let qf = qf.lock()?.clone();
-    let current_orders = match wfm.orders().get_my_orders().await {
+    let current_orders = match wfm.orders().refresh_my_orders().await {
         Ok(mut auctions) => {
             qf.analytics().add_metric("Order_Refresh", "manual");
             let mut orders = auctions.buy_orders;
@@ -76,33 +76,20 @@ pub async fn order_delete_all(
     notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     settings: tauri::State<'_, Arc<Mutex<SettingsState>>>,
     live_scraper: tauri::State<'_, Arc<Mutex<LiveScraperClient>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
 ) -> Result<i32, AppError> {
     let wfm = wfm.lock()?.clone();
     let notify = notify.lock()?.clone();
     let settings = settings.lock()?.clone();
     let live_scraper = live_scraper.lock()?.clone();
-    let qf = qf.lock()?.clone();
 
     live_scraper.stop_loop();
     live_scraper.set_can_run(false);
 
-    let current_orders = match wfm.orders().get_my_orders().await {
-        Ok(mut auctions) => {
-            qf.analytics().add_metric("Order_DeleteAll", "manual");
-            live_scraper.item().reset();
-            let mut orders = auctions.buy_orders;
-            orders.append(&mut auctions.sell_orders);
-            orders
-        }
-        Err(e) => {
-            error::create_log_file("command_order_delete_all.log", &e);
-            live_scraper.set_can_run(true);
-            return Err(e);
-        }
-    };
+    let order_list = wfm.orders().refresh_my_orders().await?;
+    let orders = order_list.get_all_orders();
+
     let mut total = 0;
-    for order in current_orders.iter() {
+    for order in orders.iter() {
         if settings
             .live_scraper
             .stock_item

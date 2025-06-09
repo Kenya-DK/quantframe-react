@@ -12,6 +12,7 @@ pub enum TradeItemType {
     Lens,
     Arcane,
     Mod,
+    FusionCore,
     Fish,
     Unknown,
 }

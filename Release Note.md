@@ -4,6 +4,20 @@ Note: All previous versions are not supported anymore.
 How To migrate:
 [Read More](https://quantframe.app/upgrading/1.2.X)
 
+## Features
+
+- 🎉 The LiveTraders tabs wil now remember the last search y dit
+- 🎉 It is now possible to sort by Minium price and listed price
+- 🎉 Better view in the stock rivens Thx to (JacobPlaysGames)
+- 🎉 Fix the close order's in the wfm tab
+- 🎉 You can now customize your home screen.
+
+## Note's
+
+- 📝 Rewrote the whole getting data to the client.
+- 📝 Remove all olds imports methods.
+- 📝 Optimizes the live trader.
+
 ## Fix's
 
-- 🛠️ Fix a typo
+- 🛠️ Fix Legendary Core was not regencies.

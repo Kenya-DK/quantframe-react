@@ -290,7 +290,6 @@ pub fn run() {
             commands::cache::cache_get_riven_attributes,
             commands::cache::cache_get_tradable_item,
             // Transaction commands
-            commands::transaction::transaction_reload,
             commands::transaction::transaction_get_all,
             commands::transaction::transaction_update,
             commands::transaction::transaction_delete,
@@ -299,9 +298,6 @@ pub fn run() {
             commands::analytics::analytics_send_metric,
             // Debug commands
             commands::debug::debug_db_reset,
-            commands::debug::debug_migrate_data_base,
-            commands::debug::debug_method,
-            commands::debug::debug_import_algo_trader,
             // Log commands
             commands::log::log_open_folder,
             commands::log::log_export,
@@ -325,7 +321,7 @@ pub fn run() {
             // Live Trading commands
             commands::live_scraper::live_scraper_set_running_state,
             // Stock Item commands
-            commands::stock_item::stock_item_reload,
+            commands::stock_item::get_stock_items,
             commands::stock_item::stock_item_create,
             commands::stock_item::stock_item_update,
             commands::stock_item::stock_item_update_bulk,
@@ -333,7 +329,7 @@ pub fn run() {
             commands::stock_item::stock_item_delete,
             commands::stock_item::stock_item_delete_bulk,
             // Stock Riven commands
-            commands::stock_riven::stock_riven_reload,
+            commands::stock_riven::get_stock_rivens,
             commands::stock_riven::stock_riven_update,
             commands::stock_riven::stock_riven_update_bulk,
             commands::stock_riven::stock_riven_sell,
@@ -341,7 +337,7 @@ pub fn run() {
             commands::stock_riven::stock_riven_delete_bulk,
             commands::stock_riven::stock_riven_create,
             // Wish List commands
-            commands::wish_list::wish_list_reload,
+            commands::wish_list::get_wish_lists,
             commands::wish_list::wish_list_create,
             commands::wish_list::wish_list_update,
             commands::wish_list::wish_list_delete,
@@ -358,6 +354,8 @@ pub fn run() {
             // Quantframe API commands
             commands::qf_client::qf_get,
             commands::qf_client::qf_post,
+            // Summary commands
+            commands::summary::summary_overview,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

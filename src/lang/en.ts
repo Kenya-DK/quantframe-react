@@ -309,6 +309,69 @@ export const en = {
               },
             },
           },
+          summary: {
+            title: "Summary",
+            fields: {
+              resent_days: {
+                label: "Resent Days",
+                tooltip: "How many days of data to show",
+              },
+              resent_transactions: {
+                label: "Resent Transactions",
+                tooltip: "How many transactions to show",
+              },
+            },
+            datatable: {
+              columns: {
+                name: "Name",
+                tags: "Tags",
+                types: "Types",
+                actions: {
+                  title: "Actions",
+                  buttons: {
+                    edit: {
+                      tooltip: "Edit Item",
+                    },
+                    delete: {
+                      tooltip: "Delete Item",
+                    },
+                  },
+                },
+              },
+            },
+            buttons: {
+              save: {
+                label: "Save",
+              },
+            },
+          },
+        },
+      },
+      create_category_summary: {
+        fields: {
+          icon: {
+            label: "Icon",
+            placeholder: "Icon",
+            description: "The icon of the category",
+            tooltip: "The icon of the category",
+            error: "Invalid icon",
+          },
+          name: {
+            label: "Name",
+            placeholder: "Name",
+            description: "The name of the category",
+            tooltip: "The name of the category",
+            error: "Invalid name",
+          },
+          types: {
+            label: "Types",
+            description: "Types for the category",
+          },
+        },
+        buttons: {
+          submit: {
+            label: "Create/Save Category",
+          },
         },
       },
       update_stock_riven: {
@@ -581,6 +644,12 @@ export const en = {
       hours: "{{hours}} hours ago",
       minutes: "{{minutes}} minutes ago",
       seconds: "{{seconds}} seconds ago",
+    },
+    select_item_tags: {
+      tags: {
+        label: "Tags",
+        description: "Select tags to filter items",
+      },
     },
     auction_list_item: {
       weapon_name: "<blue>{{weapon}} {{mod_name}}<blue>",
@@ -912,8 +981,6 @@ export const en = {
       loading_events: {
         cache: "Loading cache...",
         validation: "Validating cache...",
-        stock_items: "Loading stock items...",
-        stock_rivens: "Loading stock rivens...",
         transactions: "Loading transactions...",
         user_orders: "Loading warframe market orders...",
         user_auctions: "Loading warframe market auctions...",
@@ -1246,12 +1313,6 @@ export const en = {
             delete_bulk: {
               tooltip: "Delete Bulk",
             },
-            wts: {
-              tooltip: "Create WTS Message",
-            },
-            selection: {
-              tooltip: "Create Selection Message",
-            },
             create_riven: {
               tooltip: "Create Riven",
             },
@@ -1458,55 +1519,6 @@ export const en = {
                 },
               },
             },
-            migrate: {
-              title: "Migrate From 1.0.4",
-              buttons: {
-                migrate: {
-                  title: "Migrate",
-                },
-              },
-              errors: {
-                migrate: {
-                  title: "Migrate Error",
-                  message: "An error occurred while trying to migrate.",
-                },
-              },
-              success: {
-                migrate: {
-                  title: "Migrate Success",
-                  message: "Migration has been successfully completed.",
-                },
-              },
-            },
-            import_algo_trader: {
-              title: "Import Algo Trader",
-              fields: {
-                db_path: {
-                  label: "File",
-                  placeholder: "Select file...",
-                },
-              },
-              buttons: {
-                import: {
-                  title: "Import",
-                },
-                open_file: {
-                  tooltip: "Open File",
-                },
-              },
-              errors: {
-                import: {
-                  title: "Import Error",
-                  message: "An error occurred while trying to import.",
-                },
-              },
-              success: {
-                import: {
-                  title: "Import Success",
-                  message: "The import has been successfully completed.",
-                },
-              },
-            },
           },
         },
         log_parser: {
@@ -1522,7 +1534,6 @@ export const en = {
         refreshing_chat: "Refreshing Chat",
         refreshing_cache: "Refreshing Cache",
         refreshing_transaction: "Refreshing Transaction",
-        refreshing_stock_items: "Refreshing Stock Items",
         refreshing_stock_riven: "Refreshing Stock Rivens",
       },
       errors: {

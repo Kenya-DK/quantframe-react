@@ -6,6 +6,8 @@ import { LogPanel } from "./Tabs/Log";
 import { LiveTradingPanel } from "./Tabs/LiveTrading";
 import { NotificationPanel } from "./Tabs/Notification";
 import { AnalyticPanel } from "./Tabs/Analytic";
+import { SummaryPanel } from "./Tabs/Summary/Summary";
+import { useLocalStorage } from "@mantine/hooks";
 
 export type SettingsFormProps = {
   value: TauriTypes.Settings;
@@ -70,14 +72,32 @@ export function SettingsForm({ onSubmit, value }: SettingsFormProps) {
       id: "analytics",
     },
     {
+      label: useTranslateTabs("summary.title"),
+      component: (
+        <SummaryPanel
+          value={value.summary_settings}
+          onSubmit={(v) => {
+            onSubmit({ ...value, summary_settings: v });
+          }}
+        />
+      ),
+      id: "summary",
+    },
+    {
       label: useTranslateTabs("log.title"),
       component: <LogPanel />,
       id: "log",
     },
   ];
+
+  const [activeTab, setActiveTab] = useLocalStorage<string>({
+    key: "settings.activeTab",
+    defaultValue: tabs[1].id,
+  });
+
   return (
     <Container size={"100%"} h={"85vh"} p={0}>
-      <Tabs defaultValue={tabs[1].id}>
+      <Tabs value={activeTab} onChange={(value) => setActiveTab(value || tabs[0].id)}>
         <Tabs.List>
           {tabs.map((tab) => (
             <Tabs.Tab value={tab.id} key={tab.id}>

@@ -1,14 +1,81 @@
 use ::entity::enums::stock_status::StockStatus;
+use ::entity::stock::riven::dto::StockRivenPaginationQueryDto;
 use ::entity::stock::riven::{stock_riven, stock_riven::Entity as StockRiven};
-use ::entity::stock::riven::{stock_riven_old, stock_riven_old::Entity as StockRivenOld};
 
 use ::entity::sub_type::SubType;
+use sea_orm::sea_query::Func;
 use sea_orm::*;
 use sea_query::Expr;
 
 pub struct StockRivenQuery;
 
 impl StockRivenQuery {
+    pub async fn get_all_v2(
+        db: &DbConn,
+        query: StockRivenPaginationQueryDto,
+    ) -> Result<::entity::dto::pagination::PaginatedDto<stock_riven::Model>, DbErr> {
+        let mut stmt = StockRiven::find();
+
+        // Filtering by query (search)
+        if let Some(ref q) = query.query {
+            // Case-sensitive search in WfmUrl and ItemName columns
+            stmt = stmt.filter(
+                Condition::any()
+                    .add(
+                        Expr::expr(Func::lower(Expr::col(stock_riven::Column::WeaponName)))
+                            .like(&format!("%{}%", q.to_lowercase())),
+                    )
+                    .add(
+                        Expr::expr(Func::lower(Expr::col(stock_riven::Column::WfmWeaponUrl)))
+                            .like(&format!("%{}%", q.to_lowercase())),
+                    )
+                    .add(
+                        Expr::expr(Func::lower(Expr::col(stock_riven::Column::ModName)))
+                            .like(&format!("%{}%", q.to_lowercase())),
+                    ),
+            );
+        }
+        // Filtering by status
+        if let Some(ref status) = query.status {
+            stmt = stmt.filter(stock_riven::Column::Status.eq(status));
+        }
+        // Sorting
+        if let Some(ref sort_by) = query.sort_by {
+            let dir = query
+                .sort_direction
+                .as_ref()
+                .unwrap_or(&::entity::dto::sort::SortDirection::Asc);
+            let order = match dir {
+                ::entity::dto::sort::SortDirection::Asc => Order::Asc,
+                ::entity::dto::sort::SortDirection::Desc => Order::Desc,
+            };
+            // Only allow sorting by known columns for safety
+            match sort_by.as_str() {
+                "item_name" => stmt = stmt.order_by(stock_riven::Column::WeaponName, order),
+                "bought" => stmt = stmt.order_by(stock_riven::Column::Bought, order),
+                "status" => stmt = stmt.order_by(stock_riven::Column::Status, order),
+                "minimum_price" => stmt = stmt.order_by(stock_riven::Column::MinimumPrice, order),
+                "list_price" => stmt = stmt.order_by(stock_riven::Column::ListPrice, order),
+                _ => {}
+            }
+        }
+
+        // Pagination
+        let page = query.pagination.page.max(1);
+        let limit = query.pagination.limit.max(1);
+        let total;
+        let results = if query.pagination.limit == -1 {
+            total = stmt.clone().count(db).await? as i64;
+            stmt.all(db).await?
+        } else {
+            let paginator = stmt.paginate(db, limit as u64);
+            total = paginator.num_items().await? as i64;
+            paginator.fetch_page((page - 1) as u64).await?
+        };
+        Ok(::entity::dto::pagination::PaginatedDto::new(
+            total, limit, page, results,
+        ))
+    }
     pub async fn get_all(db: &DbConn) -> Result<Vec<stock_riven::Model>, DbErr> {
         StockRiven::find().all(db).await
     }
@@ -54,10 +121,6 @@ impl StockRivenQuery {
             .exec(db)
             .await?;
         StockRivenQuery::get_all(db).await
-    }
-
-    pub async fn get_old_stock_riven(db: &DbConn) -> Result<Vec<stock_riven_old::Model>, DbErr> {
-        StockRivenOld::find().all(db).await
     }
 
     pub async fn get_by_riven_name(

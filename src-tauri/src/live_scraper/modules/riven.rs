@@ -45,11 +45,9 @@ impl RivenModule {
         self.client
             .send_gui_update(format!("riven.{}", i18n_key).as_str(), values);
     }
-    pub fn send_stock_update(&self, operation: UIOperationEvent, value: serde_json::Value) {
+    pub fn send_stock_update(&self) {
         let notify = states::notify_client().unwrap();
-        notify
-            .gui()
-            .send_event_update(UIEvent::UpdateStockRivens, operation, Some(value));
+        notify.gui().send_event(UIEvent::RefreshStockRivens, None);
     }
     pub fn send_auction_update(&self, operation: UIOperationEvent, value: serde_json::Value) {
         let notify = states::notify_client().unwrap();
@@ -129,7 +127,7 @@ impl RivenModule {
                     StockRivenMutation::update_by_id(conn, stock_riven.id, stock_riven.clone())
                         .await
                         .map_err(|e| AppError::new(&self.component, eyre::eyre!(e)))?;
-                    self.send_stock_update(UIOperationEvent::CreateOrUpdate, json!(stock_riven));
+                    self.send_stock_update();
                 }
                 continue;
             }
@@ -348,7 +346,7 @@ impl RivenModule {
                         .insert(stock_riven.id.clone(), user_auction.info.clone());
                 }
                 self.update_state();
-                self.send_stock_update(UIOperationEvent::CreateOrUpdate, json!(payload));
+                self.send_stock_update();
             }
         }
         Ok(())

@@ -1,14 +1,13 @@
 import { Box, Group, Text } from "@mantine/core";
-import { useWarframeMarketContextContext } from "@contexts/warframeMarket.context";
 import { useEffect, useState } from "react";
 import { TauriTypes } from "$types";
-import { DataTable, DataTableSortStatus } from "mantine-datatable";
+import { DataTable } from "mantine-datatable";
 import { useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
-import { paginate, GetSubTypeDisplay } from "@utils/helper";
+import { GetSubTypeDisplay } from "@utils/helper";
 import classes from "../../Debug.module.css";
 import dayjs from "dayjs";
 import { faEdit, faTrashCan } from "@fortawesome/free-solid-svg-icons";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "@api/index";
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
@@ -19,26 +18,25 @@ import { TextTranslate } from "@components/TextTranslate";
 import { ActionWithTooltip } from "@components/ActionWithTooltip";
 import { SearchField } from "@components/SearchField";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
-import { SortDirection, SortItems } from "@utils/sorting.helper";
+import { useLiveScraperContext } from "@contexts/liveScraper.context";
+import { useLocalStorage } from "@mantine/hooks";
 
 interface TransactionPanelProps {}
 export const TransactionPanel = ({}: TransactionPanelProps) => {
   // States Context
-  const { transactions } = useWarframeMarketContextContext();
+  useLiveScraperContext();
 
   // States For DataGrid
-  const [page, setPage] = useState(1);
-  const pageSizes = [5, 10, 15, 20, 25, 30, 50, 100];
-  const [pageSize, setPageSize] = useState(pageSizes[4]);
-  const [rows, setRows] = useState<TauriTypes.TransactionDto[]>([]);
-  const [totalRecords, setTotalRecords] = useState<number>(0);
-  const [sortStatus, setSortStatus] = useState<DataTableSortStatus<TauriTypes.TransactionDto>>({ columnAccessor: "id", direction: "desc" });
-  const [selectedRecords, setSelectedRecords] = useState<TauriTypes.TransactionDto[]>([]);
+  const [queryData, setQueryData] = useLocalStorage<TauriTypes.TransactionControllerGetListParams>({
+    key: "transaction_query_key",
+    getInitialValueInEffect: false,
+    defaultValue: { page: 1, limit: 10 },
+  });
+  const [loadingRows, setLoadingRows] = useState<string[]>([]);
+  const [statusCount, setStatusCount] = useState<{ [key: string]: number }>({});
 
-  const [query, setQuery] = useState<string>("");
-  const [statusCount, setStatusCount] = useState<{ [key: string]: number }>({}); // Count of each status
-  const [filterTransactionType, setFilterTransactionType] = useState<TauriTypes.TransactionType | undefined>(undefined);
-  const [filterItemType, setFilterItemType] = useState<TauriTypes.TransactionItemType | undefined>(undefined);
+  // States
+  const [selectedRecords, setSelectedRecords] = useState<TauriTypes.TransactionDto[]>([]);
 
   // Translate general
   const useTranslateTabTransactions = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -55,10 +53,25 @@ export const TransactionPanel = ({}: TransactionPanelProps) => {
     useTranslateTabTransactions(`success.${key}`, { ...context }, i18Key);
   const useTranslatePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTabTransactions(`prompts.${key}`, { ...context }, i18Key);
-  // Update Database Rows
+
+  // Queys
+  let { data, isFetching, refetch } = useQuery({
+    queryKey: [
+      "transactions",
+      queryData.page,
+      queryData.limit,
+      queryData.sort_by,
+      queryData.sort_direction,
+      queryData.transaction_type,
+      queryData.item_type,
+    ],
+    queryFn: () => api.transaction.getAll(queryData),
+    refetchOnWindowFocus: true,
+  });
+  // Member
   useEffect(() => {
-    if (!transactions) return;
-    let items = transactions;
+    const transactions = data?.results || [];
+
     setStatusCount(() => {
       let items: { [key: string]: number } = {};
       // Create a transaction type count
@@ -72,31 +85,14 @@ export const TransactionPanel = ({}: TransactionPanelProps) => {
       });
       return items;
     });
-
-    if (query !== "") items = items.filter((item) => item.item_name.toLowerCase().includes(query.toLowerCase()));
-
-    if (filterTransactionType) items = items.filter((item) => item.transaction_type === filterTransactionType);
-
-    if (filterItemType) items = items.filter((item) => item.item_type === filterItemType);
-
-    setTotalRecords(items.length);
-    items = SortItems(items, {
-      field: sortStatus.columnAccessor,
-      direction: sortStatus.direction as SortDirection,
-    });
-
-    items = paginate(items, page, pageSize);
-    setRows(items);
-    setSelectedRecords([]);
-  }, [transactions, query, pageSize, page, sortStatus, filterTransactionType, filterItemType]);
-  useEffect(() => {
-    setSelectedRecords([]);
-  }, [query, pageSize, page, sortStatus, filterTransactionType, filterItemType]);
-
+  }, [data]);
   // Mutations
   const updateTransactionMutation = useMutation({
     mutationFn: (data: TauriTypes.UpdateTransactionDto) => api.transaction.update(data),
+    onMutate: (row) => setLoadingRows((prev) => [...prev, `${row}`]),
+    onSettled: (_data, _error, variables) => setLoadingRows((prev) => prev.filter((id) => id !== `${variables}`)),
     onSuccess: async (u) => {
+      refetch();
       notifications.show({
         title: useTranslateSuccess("update_transaction.title"),
         message: useTranslateSuccess("update_transaction.message", { name: u.item_name }),
@@ -114,7 +110,10 @@ export const TransactionPanel = ({}: TransactionPanelProps) => {
   });
   const deleteTransactionMutation = useMutation({
     mutationFn: (id: number) => api.transaction.delete(id),
+    onMutate: (row) => setLoadingRows((prev) => [...prev, `${row}`]),
+    onSettled: (_data, _error, variables) => setLoadingRows((prev) => prev.filter((id) => id !== `${variables}`)),
     onSuccess: async () => {
+      refetch();
       notifications.show({
         title: useTranslateSuccess("delete_transaction.title"),
         message: useTranslateSuccess("delete_transaction.message"),
@@ -147,16 +146,14 @@ export const TransactionPanel = ({}: TransactionPanelProps) => {
   };
   return (
     <Box>
-      <SearchField value={query} onChange={(text) => setQuery(text)} rightSectionWidth={115} rightSection={<Group gap={5}></Group>} />
+      <SearchField value={queryData.query || ""} onSearch={() => refetch()} onChange={(text) => setQueryData((prev) => ({ ...prev, query: text }))} />
       <Group gap={"md"} mt={"md"} grow>
         <Group>
           {Object.values([TauriTypes.TransactionType.Purchase, TauriTypes.TransactionType.Sale]).map((status) => (
             <ColorInfo
-              active={status == filterTransactionType}
+              active={status == queryData.transaction_type}
               key={status}
-              onClick={() => {
-                setFilterTransactionType((s) => (s === status ? undefined : status));
-              }}
+              onClick={() => setQueryData((prev) => ({ ...prev, transaction_type: status == prev.transaction_type ? undefined : status }))}
               infoProps={{
                 "data-color-mode": "bg",
                 "data-trade-type": status,
@@ -169,11 +166,9 @@ export const TransactionPanel = ({}: TransactionPanelProps) => {
         <Group justify="flex-end">
           {Object.values(TauriTypes.TransactionItemType).map((type) => (
             <ColorInfo
-              active={type == filterItemType}
+              active={type == queryData.item_type}
               key={type}
-              onClick={() => {
-                setFilterItemType((s) => (s === type ? undefined : type));
-              }}
+              onClick={() => setQueryData((prev) => ({ ...prev, item_type: type == prev.item_type ? undefined : type }))}
               infoProps={{
                 "data-color-mode": "bg",
                 "data-item-type": type,
@@ -187,8 +182,6 @@ export const TransactionPanel = ({}: TransactionPanelProps) => {
       <DataTable
         className={`${classes.transactions} ${useHasAlert() ? classes.alert : ""}`}
         mt={"md"}
-        records={rows}
-        totalRecords={totalRecords}
         customRowAttributes={(record) => {
           return {
             "data-color-mode": "box-shadow",
@@ -197,18 +190,25 @@ export const TransactionPanel = ({}: TransactionPanelProps) => {
         }}
         withTableBorder
         customLoader={<Loading />}
-        // fetching={createStockMutation.isPending || updateStockMutation.isPending || sellStockMutation.isPending || deleteStockMutation.isPending || updateBulkStockMutation.isPending || deleteBulkStockMutation.isPending}
-        withColumnBorders
-        page={page}
-        recordsPerPage={pageSize}
-        idAccessor={"id"}
-        onPageChange={(p) => setPage(p)}
-        recordsPerPageOptions={pageSizes}
-        onRecordsPerPageChange={setPageSize}
-        sortStatus={sortStatus}
-        onSortStatusChange={setSortStatus}
+        striped
+        fetching={isFetching}
+        records={data?.results || []}
+        page={queryData.page || 1}
+        onPageChange={(page) => setQueryData((prev) => ({ ...prev, page }))}
+        totalRecords={data?.total}
+        recordsPerPage={queryData.limit || 10}
+        recordsPerPageOptions={[5, 10, 15, 20, 25, 50, 100]}
+        onRecordsPerPageChange={(limit) => setQueryData((prev) => ({ ...prev, limit }))}
         selectedRecords={selectedRecords}
         onSelectedRecordsChange={setSelectedRecords}
+        sortStatus={{
+          columnAccessor: queryData.sort_by || "name",
+          direction: queryData.sort_direction || "desc",
+        }}
+        onSortStatusChange={(sort) => {
+          if (!sort || !sort.columnAccessor) return;
+          setQueryData((prev) => ({ ...prev, sort_by: sort.columnAccessor as string, sort_direction: sort.direction }));
+        }}
         // define columns
         columns={[
           {
@@ -269,6 +269,7 @@ export const TransactionPanel = ({}: TransactionPanelProps) => {
                 <ActionWithTooltip
                   tooltip={useTranslateDataGridColumns("actions.buttons.update.tooltip")}
                   icon={faEdit}
+                  loading={loadingRows.includes(`${row.id}`)}
                   color={"blue.7"}
                   actionProps={{ size: "sm" }}
                   iconProps={{ size: "xs" }}
@@ -280,6 +281,7 @@ export const TransactionPanel = ({}: TransactionPanelProps) => {
                 <ActionWithTooltip
                   tooltip={useTranslateDataGridColumns("actions.buttons.delete.tooltip")}
                   icon={faTrashCan}
+                  loading={loadingRows.includes(`${row.id}`)}
                   color={"red.7"}
                   actionProps={{ size: "sm" }}
                   iconProps={{ size: "xs" }}

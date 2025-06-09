@@ -23,28 +23,21 @@ use crate::{
 };
 
 #[tauri::command]
-pub async fn wish_list_reload(
-    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-) -> Result<(), AppError> {
+pub async fn get_wish_lists(
+    query: entity::wish_list::dto::pagination_wish_list::WishListPaginationQueryDto,
+) -> Result<entity::dto::pagination::PaginatedDto<wish_list::Model>, AppError> {
     let conn = DATABASE.get().unwrap();
-    let notify = notify.lock()?.clone();
-
-    match WishListQuery::get_all(conn).await {
+    match WishListQuery::get_all_v2(conn, query).await {
         Ok(items) => {
-            add_metric("WishList_Reload", "manual");
-            notify.gui().send_event_update(
-                UIEvent::UpdateWishList,
-                UIOperationEvent::Set,
-                Some(json!(items)),
-            );
+            helper::add_metric("WishList_ItemGetAll", "manual");
+            return Ok(items);
         }
         Err(e) => {
             let error: AppError = AppError::new_db("WishListQuery::reload", e);
-            error::create_log_file("command.log", &error);
+            error::create_log_file("command_stock_item_reload.log", &error);
             return Err(error);
         }
     };
-    Ok(())
 }
 
 #[tauri::command]
@@ -54,11 +47,9 @@ pub async fn wish_list_create(
     sub_type: Option<SubType>,
     quantity: i64,
     cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
-    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
 ) -> Result<wish_list::Model, AppError> {
     let conn = DATABASE.get().unwrap();
     let cache = cache.lock()?.clone();
-    let notify = notify.lock()?.clone();
 
     let mut created_item =
         CreateWishListItem::new(wfm_url, sub_type.clone(), maximum_price, quantity);
@@ -73,14 +64,7 @@ pub async fn wish_list_create(
     };
 
     match WishListMutation::add_item(conn, created_item.to_model()).await {
-        Ok(inserted) => {
-            notify.gui().send_event_update(
-                UIEvent::UpdateWishList,
-                UIOperationEvent::CreateOrUpdate,
-                Some(json!(inserted)),
-            );
-            add_metric("WishList_ItemCreated", "manual");
-        }
+        Ok(_) => add_metric("WishList_ItemCreated", "manual"),
         Err(e) => {
             return Err(AppError::new("StockItemCreate", eyre!(e)));
         }
@@ -95,10 +79,8 @@ pub async fn wish_list_update(
     sub_type: Option<SubType>,
     quantity: Option<i64>,
     is_hidden: Option<bool>,
-    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
 ) -> Result<wish_list::Model, AppError> {
     let conn = DATABASE.get().unwrap();
-    let notify = notify.lock()?.clone();
 
     let item = match WishListQuery::find_by_id(conn, id).await {
         Ok(foundItem) => foundItem,
@@ -130,14 +112,7 @@ pub async fn wish_list_update(
     new_item.updated_at = chrono::Utc::now();
 
     match WishListMutation::update_by_id(conn, new_item.id, new_item.clone()).await {
-        Ok(updated) => {
-            helper::add_metric("WishList_ItemUpdated", "manual");
-            notify.gui().send_event_update(
-                UIEvent::UpdateWishList,
-                UIOperationEvent::CreateOrUpdate,
-                Some(json!(updated)),
-            );
-        }
+        Ok(_) => add_metric("WishList_ItemUpdated", "manual"),
         Err(e) => {
             let error: AppError = AppError::new_db("WishListMutation::UpdateById", e);
             error::create_log_file("wish_list_update.log", &error);
@@ -174,22 +149,14 @@ pub async fn wish_list_delete(
     let item = item.unwrap();
 
     match WishListMutation::delete_by_id(conn, id).await {
-        Ok(_) => {
-            notify.gui().send_event_update(
-                UIEvent::UpdateWishList,
-                UIOperationEvent::Delete,
-                Some(json!({ "id": id })),
-            );
-            add_metric("WishList_ItemDeleted", "manual");
-        }
+        Ok(_) => add_metric("WishList_ItemDeleted", "manual"),
         Err(e) => {
             let error: AppError = AppError::new_db("WishListMutation::DeleteById", e);
             error::create_log_file("wish_list_delete.log", &error);
             return Err(error);
         }
     }
-    let my_orders = wfm.orders().get_my_orders().await?;
-    let order = my_orders.find_order_by_url_sub_type(
+    let order = wfm.orders().cache_orders.find_order_by_url_sub_type(
         &item.wfm_url,
         OrderType::Sell,
         item.sub_type.as_ref(),

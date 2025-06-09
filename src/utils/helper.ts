@@ -64,7 +64,7 @@ export const getTimeLeftString = (timeLeft: TimeSpan): string => {
  * @returns {Array} - An array where the first element is an object with keys being the formatted date and values being the items falling under that date,
  * and the second element is an array of labels for each group.
  */
-export const getGroupByDate = <T>(key: string, items: Array<T>, settings: GroupByDateSettings): [{ [key: string]: T[] }, string[]] => {
+export const GroupByDate = <T>(key: string, items: Array<T>, settings: GroupByDateSettings): [{ [key: string]: T[] }, string[]] => {
   const labels: string[] = [];
   const formatKey = (date: Date): string => {
     let key = "";

@@ -8,6 +8,7 @@ use eyre::eyre;
 use serde_json::json;
 use service::{StockRivenMutation, StockRivenQuery};
 
+use crate::cache::client::CacheClient;
 use crate::utils::modules::error;
 use crate::utils::modules::logger::LoggerOptions;
 use crate::wfm_client::enums::order_type::OrderType;
@@ -22,28 +23,34 @@ use crate::{
 };
 
 #[tauri::command]
-pub async fn stock_riven_reload(
-    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-) -> Result<(), AppError> {
+pub async fn get_stock_rivens(
+    query: entity::stock::riven::dto::StockRivenPaginationQueryDto,
+    cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
+) -> Result<entity::dto::pagination::PaginatedDto<stock_riven::Model>, AppError> {
+    let cache = cache.lock()?.clone();
     let conn = DATABASE.get().unwrap();
-    let notify = notify.lock()?.clone();
-
-    match StockRivenQuery::get_all(conn).await {
-        Ok(rivens) => {
-            helper::add_metric("Stock_RivenReload", "manual");
-            notify.gui().send_event_update(
-                UIEvent::UpdateStockRivens,
-                UIOperationEvent::Set,
-                Some(json!(rivens)),
-            );
+    match StockRivenQuery::get_all_v2(conn, query).await {
+        Ok(mut items) => {
+            // Apply additional information from the cache
+            for item in items.results.iter_mut() {
+                for attr in item.attributes.0.iter_mut() {
+                    let matched = cache.riven().find_wfm_riven_attribute_by(
+                        &attr.url_name,
+                        "--attribute_by url_name --attribute_lang en",
+                    )?;
+                    if let Some(c_attr) = matched {
+                        attr.effect = Some(c_attr.effect.clone());
+                    }
+                }
+            }
+            return Ok(items);
         }
         Err(e) => {
-            let error: AppError = AppError::new_db("StockRivenQuery::reload", e);
-            error::create_log_file("command.log", &error);
+            let error: AppError = AppError::new_db("StockItemQuery::reload", e);
+            error::create_log_file("command_stock_item_reload.log", &error);
             return Err(error);
         }
     };
-    Ok(())
 }
 
 #[tauri::command]
@@ -125,14 +132,7 @@ pub async fn stock_riven_update(
     }
 
     match StockRivenMutation::update_by_id(conn, stock.id, stock.clone()).await {
-        Ok(updated) => {
-            helper::add_metric("Stock_RivenUpdate", "manual");
-            notify.gui().send_event_update(
-                UIEvent::UpdateStockRivens,
-                UIOperationEvent::CreateOrUpdate,
-                Some(json!(updated)),
-            );
-        }
+        Ok(_) => helper::add_metric("Stock_RivenUpdate", "manual"),
         Err(e) => return Err(AppError::new_db("StockItemUpdate", e)),
     }
 
@@ -144,11 +144,9 @@ pub async fn stock_riven_update_bulk(
     ids: Vec<i64>,
     minimum_price: Option<i64>,
     is_hidden: Option<bool>,
-    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<i64, AppError> {
     let conn = DATABASE.get().unwrap();
-    let notify = notify.lock()?.clone();
     let wfm = wfm.lock()?.clone();
 
     let mut total: i64 = 0;
@@ -157,11 +155,6 @@ pub async fn stock_riven_update_bulk(
         match StockRivenMutation::update_bulk(conn, ids.clone(), minimum_price, is_hidden).await {
             Ok(updated) => {
                 helper::add_metric("Stock_RivenUpdateBulk", "manual");
-                notify.gui().send_event_update(
-                    UIEvent::UpdateStockRivens,
-                    UIOperationEvent::Set,
-                    Some(json!(updated)),
-                );
                 updated
                     .into_iter()
                     .filter(|x| {
@@ -193,14 +186,7 @@ pub async fn stock_riven_update_bulk(
             )
             .await
         {
-            Ok(updated) => {
-                helper::add_metric("WFM_RivenUpdate", "stock_riven");
-                notify.gui().send_event_update(
-                    UIEvent::UpdateAuction,
-                    UIOperationEvent::CreateOrUpdate,
-                    Some(json!(updated)),
-                );
-            }
+            Ok(_) => helper::add_metric("WFM_RivenUpdate", "stock_riven"),
             Err(e) => {
                 error::create_log_file("command_stock_riven_update_bulk.log", &e);
                 return Err(e);
@@ -234,15 +220,7 @@ pub async fn stock_riven_delete_bulk(
 
     for stock in stocks {
         match StockRivenMutation::delete(conn, stock.id).await {
-            Ok(deleted) => {
-                if deleted.rows_affected > 0 {
-                    notify.gui().send_event_update(
-                        UIEvent::UpdateStockRivens,
-                        UIOperationEvent::Delete,
-                        Some(json!({ "id": stock.id })),
-                    );
-                }
-            }
+            Ok(_) => {}
             Err(e) => {
                 let error: AppError = AppError::new_db("StockRivenDeleteBulk", e);
                 error::create_log_file("command_stock_riven_delete_bulk.log", &error);
@@ -272,22 +250,6 @@ pub async fn stock_riven_delete_bulk(
             }
         }
     }
-
-    match StockRivenQuery::get_all(conn).await {
-        Ok(rivens) => {
-            notify.gui().send_event_update(
-                UIEvent::UpdateStockRivens,
-                UIOperationEvent::Set,
-                Some(json!(rivens)),
-            );
-        }
-        Err(e) => {
-            let error: AppError = AppError::new_db("StockRivenQuery::reload", e);
-            error::create_log_file("command_stock_riven_delete_bulk.log", &error);
-            return Err(error);
-        }
-    }
-
     match wfm.auction().get_my_auctions().await {
         Ok(auctions) => {
             notify.gui().send_event_update(
@@ -307,8 +269,28 @@ pub async fn stock_riven_delete_bulk(
 
 #[tauri::command]
 pub async fn stock_riven_create(
-    mut riven_entry: CreateStockRiven,
+    wfm_url: String,
+    mod_name: String,
+    mastery_rank: i64,
+    rank: i64,
+    re_rolls: i64,
+    polarity: String,
+    attributes: Vec<entity::stock::riven::attribute::RivenAttribute>,
+    bought: i64,
 ) -> Result<entity::stock::riven::stock_riven::Model, AppError> {
+    let mut riven_entry = CreateStockRiven::new(
+        wfm_url,
+        mod_name,
+        mastery_rank,
+        re_rolls,
+        polarity,
+        attributes,
+        rank,
+        Some(bought),
+        None, // rank
+        None, // stock_id
+    );
+
     match helper::progress_stock_riven(
         &mut riven_entry,
         "--weapon_by url_name --weapon_lang en --attribute_by url_name",
@@ -420,16 +402,7 @@ pub async fn stock_riven_delete(
         }
     }
     match StockRivenMutation::delete(conn, stock_item.id).await {
-        Ok(deleted) => {
-            if deleted.rows_affected > 0 {
-                helper::add_metric("Stock_RivenDelete", "manual");
-                notify.gui().send_event_update(
-                    UIEvent::UpdateStockRivens,
-                    UIOperationEvent::Delete,
-                    Some(json!({ "id": id })),
-                );
-            }
-        }
+        Ok(_) => helper::add_metric("Stock_RivenDelete", "manual"),
         Err(e) => return Err(AppError::new("StockRivenDelete", eyre!(e))),
     }
     Ok(())

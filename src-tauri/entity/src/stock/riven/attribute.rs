@@ -5,14 +5,16 @@ use serde::{Deserialize, Serialize};
 pub struct RivenAttribute {
     pub positive: bool,
     pub value: f64,
+    pub effect: Option<String>,
     pub url_name: String,
 }
 impl RivenAttribute {
     pub fn new(positive: bool, value: f64, url_name: String) -> Self {
         Self {
+            effect: None,
+            url_name,
             positive,
             value,
-            url_name,
         }
     }
 }

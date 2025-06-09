@@ -171,16 +171,15 @@ export const OrderPanel = ({}: OrderPanelProps) => {
           quantity: order.quantity,
           minimum_price: 0,
           sub_type: sub_type,
-          is_from_order: true,
         });
         break;
       case WFMarketTypes.OrderType.Sell:
         await sellStockMutation.mutateAsync({
-          url: order.item?.url_name || "",
+          id: 0,
+          wfm_url: order.item?.url_name || "",
           sub_type: sub_type,
           quantity: 1,
           price: price,
-          is_from_order: true,
         });
         break;
     }
@@ -272,7 +271,7 @@ export const OrderPanel = ({}: OrderPanelProps) => {
         }
       />
       <Group gap={"sm"} mt={"md"}>
-        {Object.values(WFMarketTypes.OrderType).map((type) => (
+        {Object.values([WFMarketTypes.OrderType.Buy, WFMarketTypes.OrderType.Sell]).map((type) => (
           <ColorInfo
             active={type == filterOrderType}
             key={type}

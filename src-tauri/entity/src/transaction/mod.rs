@@ -1,3 +1,5 @@
 pub mod transaction;
-pub mod transaction_old;
-pub mod transaction_wat;
+pub mod dto {
+    pub mod pagination_transaction;
+    pub use pagination_transaction::*;
+}
