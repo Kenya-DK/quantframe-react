@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
 import classes from "./RivenAttribute.module.css";
 import { useMemo } from "react";
-import { useTranslateComponent } from "@hooks/useTranslate.hook"; 
+import { useTranslateComponent } from "@hooks/useTranslate.hook";
 import { TextTranslate } from "@components/TextTranslate";
 
 export type RivenAttributeComProps = {
@@ -38,7 +38,7 @@ export function RivenAttributeCom({ value }: RivenAttributeComProps) {
       });
     }
     return { nameMap: map, displayUnit: foundUnit };
-  }, [cacheAttributes, value.url_name]); 
+  }, [cacheAttributes, value.url_name]);
 
   // Formats the attribute's numerical value with its sign (+/-) and unit suffix (%, x).
   const absoluteValue = Math.abs(value.value);
@@ -60,16 +60,14 @@ export function RivenAttributeCom({ value }: RivenAttributeComProps) {
     <Box data-positive={value.positive} className={classes.root}>
       <TextTranslate
         i18nKey={useTranslateRivenAttributeEffect("effect", undefined, true)} // Uses "riven_attribute.effect" as the key
-        color="white" // Sets overall text color to white
+        color="gray" // Sets overall text color to white
         values={{
           value: numericalString, // Injects the formatted number string
           name: attributeDisplayName, // Injects the attribute name string
         }}
         // Provides a custom component for the numerical part's color.
         components={{
-          num_color_tag: (
-            <Text component="span" color={value.positive ? "green.9" : "red.7"} />
-          ),
+          num_color_tag: <Text component="span" c={value.positive ? "green.9" : "red.7"} />,
         }}
       />
     </Box>
