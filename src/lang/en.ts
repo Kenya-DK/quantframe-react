@@ -255,7 +255,7 @@ export const en = {
                 label: "Minimum Price Shift",
                 placeholder: "0",
                 error: "Invalid threshold percentage",
-                tooltip: "Ignore rivens that have less than {{value}}% price shift from the most expensive riven",
+                tooltip: "Ignore rivens that have more than {{value}}% price shift from the least expensive riven",
               },
             },
             tabs: {
@@ -792,7 +792,7 @@ export const en = {
       },
     },
     riven_attribute: {
-      effect: "{{value}} {{name}}",
+      effect: "<num_color_tag>{{value}}</num_color_tag> {{name}}",
     },
     tradableItem_list: {
       pagination: "{{start}} - {{end}} / {{totalRecords}}",
