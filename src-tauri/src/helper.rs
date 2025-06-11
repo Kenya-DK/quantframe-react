@@ -894,37 +894,45 @@ pub async fn progress_stock_riven(
 //     }
 // }
 pub fn calculate_average_of_top_lowest_prices(
-    prices: Vec<i64>,          // The list of prices to consider
-    limit_to: i64,             // Limit the number of auctions to consider
-    threshold_percentage: f64, // The threshold percentage to filter prices
+    prices: Vec<i64>,           // The list of prices to consider (assumed to be sorted by buyout_price ascending)
+    limit_to: i64,               // Limit the number of auctions to consider
+    threshold_percentage: f64,   // The threshold percentage to filter prices
 ) -> i64 {
     if prices.is_empty() {
         return -1;
     }
 
-    // Returning an Option<i64> in case there are no valid prices
-    // Get the top `limit_to` lowest starting prices
-    let mut top_price: Vec<i64> = prices.iter().cloned().take(limit_to as usize).collect();
+    // Get the top `limit_to` lowest starting prices directly, as prices is sorted
+    let mut top_price: Vec<i64> = prices.into_iter()
+                                       .take(limit_to as usize)
+                                       .collect();
 
-    // Find the maximum price in the top lowest prices
-    let max_price = *top_price.iter().max().unwrap_or(&0);
-
-    // Find the minimum price in the top lowest prices
-    let min_price = *top_price.iter().min().unwrap_or(&0);
-
-    // Calculate `threshold_percentage` of the maximum price
-    let threshold = max_price as f64 * (1.0 - threshold_percentage);
-
-    // Remove the minimum price if it is less than the threshold
-    if min_price < threshold as i64 {
-        top_price.retain(|&price| price != min_price);
-    }
-
-    // Ensure we have valid prices before calculating the average
+    // Ensure we have some prices after taking the limit
     if top_price.is_empty() {
         return -1;
     }
-    // Calculate and return the average price
+
+    // Find the minimum price in the top lowest prices.
+    // Since top_price is created from a sorted list and takes the lowest,
+    // the first element will be the minimum.
+    let min_price = *top_price.first().unwrap_or(&0);
+
+    // Calculate the threshold based on the minimum price.
+    // Prices should not deviate by more than threshold_percentage from the min_price.
+    // For example, if min_price is 100 and threshold_percentage is 0.10 (10%),
+    // the threshold will be 100 * (1.0 + 0.10) = 110.
+    // Any price above 110 will be filtered out.
+    let threshold = min_price as f64 * (1.0 + threshold_percentage);
+
+    // Retain prices that are less than or equal to the calculated threshold.
+    top_price.retain(|&price| price <= threshold as i64);
+
+    // Ensure we have valid prices after filtering.
+    if top_price.is_empty() {
+        return -1;
+    }
+
+    // Calculate and return the average price.
     top_price.iter().sum::<i64>() / top_price.len() as i64
 }
 

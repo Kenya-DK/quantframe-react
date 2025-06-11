@@ -144,7 +144,11 @@ impl RivenModule {
                 min_mastery_rank,
                 max_mastery_rank,
                 polarity,
-            ) = match_data.get_auction_search_query();
+            ) = if stock_riven.filter.enabled.unwrap_or(false) {
+                match_data.get_auction_search_query()
+            } else {
+                (None, None, None, None, None, None, None)
+            };
 
             let mut live_auctions = wfm
                 .auction()
@@ -166,9 +170,40 @@ impl RivenModule {
             // Filter the auctions.
             live_auctions = live_auctions.remove_offline_auctions();
             live_auctions = live_auctions.filter_by_username(auth.ingame_name.as_str(), true);
-            live_auctions =
-                live_auctions.calculate__riven_similarity(stock_riven.attributes.0.clone());
             live_auctions.sort_by_platinum();
+
+            let sim_threshold = stock_riven.filter.similarity.unwrap_or(0.0);
+            if stock_riven.filter.enabled.unwrap_or(false) {
+                live_auctions =
+                    live_auctions.calculate__riven_similarity(stock_riven.attributes.0.clone());
+                // Filter auctions by similarity threshold
+                let total_before = live_auctions.auctions.len();
+                let mut filtered_auctions: Vec<_> = live_auctions
+                    .auctions
+                    .iter()
+                    .filter(|a| a.item.similarity.unwrap_or(0.0) >= sim_threshold)
+                    .cloned()
+                    .collect();
+                logger::info(
+                    &self.get_component("SimilarityFilter"),
+                    &format!(
+                        "Filtered {} of {} auctions",
+                        total_before - filtered_auctions.len(),
+                        total_before
+                    ),
+                    LoggerOptions::default(),
+                );
+
+                // Sort by price ascending after filtering
+                filtered_auctions.sort_by(|a, b| {
+                    a.buyout_price
+                        .unwrap_or(i64::MAX)
+                        .cmp(&b.buyout_price.unwrap_or(i64::MAX))
+                });
+
+                // Reassign to live_auctions with only the filtered list
+                live_auctions.auctions = filtered_auctions;
+            };
 
             // Get the price the item was bought for.
             let bought_price = stock_riven.bought;

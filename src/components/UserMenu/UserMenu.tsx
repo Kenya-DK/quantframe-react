@@ -13,6 +13,7 @@ import { modals } from "@mantine/modals";
 import { useAppContext } from "@contexts/app.context";
 import { useAuthContext } from "@contexts/auth.context";
 import { useWFMSocketContext } from "@contexts/wfmSocket.context";
+
 export function UserMenu() {
   // States
   const navigate = useNavigate();
@@ -61,7 +62,13 @@ export function UserMenu() {
   });
 
   return (
-    <Menu shadow="md" width={200} transitionProps={{ transition: "fade-down", duration: 150 }}>
+    <Menu
+      shadow="md"
+      width={200}
+      transitionProps={{ transition: "fade-down", duration: 150 }}
+      position="bottom-end"
+      offset={5}
+    >
       <Menu.Target>
         <Group>
           {isConnected && !inErrorState && !user?.qf_banned && !user?.wfm_banned ? (
