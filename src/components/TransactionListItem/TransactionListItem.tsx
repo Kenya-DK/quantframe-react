@@ -26,7 +26,7 @@ export function TransactionListItem({ transaction }: TransactionListItemProps) {
           <Text c="blue.5">{GetSubTypeDisplay(transaction.sub_type)} </Text>
         </Group>
         <Group w={100}>
-          <Text c="blue.5">{transaction.price} </Text>
+          <Text c="blue.5">{transaction.price * transaction.quantity} </Text>
         </Group>
         <Group justify="right">
           <Text c="gray.4">{dayjs(transaction.created_at).format("DD/MM/YYYY HH:mm:ss")}</Text>
