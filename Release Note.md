@@ -10,11 +10,11 @@ How To migrate:
 - 🎉 It is now possible to sort by Minium price and listed price
 - 🎉 Better view in the stock rivens Thx to (JacobPlaysGames)
 - 🎉 You can now customize your home screen.
+- 🎉 Increase the Max Average Price
 
 ## TODO's
 
 - ⏳ Add Min Profit & Min SMA per item in the live trader stock items
-- ⏳ Increase the Max Average Price
 - ⏳ Check if the auto trade is working fx: I just bought 3 R10 Adaptation for 57 each or 171 total and Quantframe registered each being 171
 - ⏳ Add percentage option for the profit margin for the
 - ⏳ Fix the home screen See https://discord.com/channels/1129235967769845871/1386565369120030730

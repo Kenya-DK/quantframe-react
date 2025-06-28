@@ -170,7 +170,6 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
                         label={useTranslateFormFields("avg_price_cap.label")}
                         placeholder={useTranslateFormFields("avg_price_cap.placeholder")}
                         min={1}
-                        max={999}
                         value={form.values.stock_item.avg_price_cap}
                         onChange={(event) => form.setFieldValue("stock_item.avg_price_cap", Number(event))}
                         error={form.errors.avg_price_cap && useTranslateFormFields("avg_price_cap.error")}
