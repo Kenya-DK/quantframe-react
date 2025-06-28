@@ -148,19 +148,19 @@ export const en = {
                 label: "Volume Threshold",
                 placeholder: "Volume Threshold",
                 error: "Invalid volume threshold",
-                tooltip: "The minimum volume required per trade.",
+                tooltip: "The minimum volume required per trade. Use -1 for unlimited.",
               },
               range_threshold: {
-                label: "Range Threshold",
-                placeholder: "Range Threshold",
-                error: "Invalid range threshold",
-                tooltip: "The minimum price range between the highest and lowest prices.",
+                label: "Profit Range Threshold",
+                placeholder: "Profit Range Threshold",
+                error: "Invalid profit range threshold",
+                tooltip: "The minimum profit range threshold for buy orders. Use -1 for unlimited.",
               },
               avg_price_cap: {
                 label: "Average Price",
                 placeholder: "Average Price",
                 error: "Invalid average price",
-                tooltip: "The maximum average price cap per buy order.",
+                tooltip: "The maximum average price cap per buy order. Use -1 for unlimited.",
               },
               trading_tax_cap: {
                 label: "Trading Tax Cap",
@@ -173,6 +173,12 @@ export const en = {
                 placeholder: "Max Total Price Cap",
                 error: "Invalid max total price cap",
                 tooltip: "This parameter specifies the maximum platinum total price cap for all buy orders.",
+              },
+              min_wtb_profit_margin: {
+                label: "Minimum Profit Margin",
+                placeholder: "Minimum Profit Margin",
+                error: "Invalid minimum WTB profit margin",
+                tooltip: "The minimum profit margin for WTB orders. Use -1 for unlimited.",
               },
               buy_quantity: {
                 label: "Quantity of goods",

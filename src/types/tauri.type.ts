@@ -222,6 +222,7 @@ export namespace TauriTypes {
     range_threshold: number;
     report_to_wfm: boolean;
     volume_threshold: number;
+    min_wtb_profit_margin: number;
   }
 
   export interface SettingsStockRiven {

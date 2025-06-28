@@ -33,6 +33,9 @@ pub struct ItemPriceInfo {
     #[serde(rename = "profit")]
     pub profit: f64,
 
+    #[serde(rename = "profit_margin", default)]
+    pub profit_margin: f64,
+
     #[serde(rename = "trading_tax")]
     pub trading_tax: i64,
 
@@ -57,6 +60,7 @@ impl Default for ItemPriceInfo {
             moving_avg: None,
             median: 0.0,
             profit: 0.0,
+            profit_margin: 0.0,
             trading_tax: 0,
             week_price_shift: 0.0,
             sub_type: None,

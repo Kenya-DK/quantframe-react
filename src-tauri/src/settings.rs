@@ -95,6 +95,7 @@ pub struct StockItemSettings {
     pub auto_trade: bool, // Will add order to you stock automatically or remove it if you have it
     pub min_sma: i64,
     pub min_profit: i64,
+    pub min_wtb_profit_margin: i64,
     pub auto_delete: bool,
     pub buy_quantity: i64,
 }
@@ -176,6 +177,7 @@ impl Default for SettingsState {
                     price_shift_threshold: -1,
                     blacklist: vec![],
                     report_to_wfm: true,
+                    min_wtb_profit_margin: -1,
                     auto_trade: true,
                     auto_delete: true,
                 },

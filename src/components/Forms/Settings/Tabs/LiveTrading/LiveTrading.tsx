@@ -146,7 +146,7 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
                     <Group gap="md">
                       <NumberInput
                         label={useTranslateFormFields("volume_threshold.label")}
-                        min={1}
+                        min={-1}
                         max={999}
                         placeholder={useTranslateFormFields("volume_threshold.placeholder")}
                         value={form.values.stock_item.volume_threshold}
@@ -158,7 +158,7 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
                       <NumberInput
                         label={useTranslateFormFields("range_threshold.label")}
                         placeholder={useTranslateFormFields("range_threshold.placeholder")}
-                        min={1}
+                        min={-1}
                         max={999}
                         value={form.values.stock_item.range_threshold}
                         onChange={(event) => form.setFieldValue("stock_item.range_threshold", Number(event))}
@@ -169,11 +169,21 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
                       <NumberInput
                         label={useTranslateFormFields("avg_price_cap.label")}
                         placeholder={useTranslateFormFields("avg_price_cap.placeholder")}
-                        min={1}
+                        min={-1}
                         value={form.values.stock_item.avg_price_cap}
                         onChange={(event) => form.setFieldValue("stock_item.avg_price_cap", Number(event))}
                         error={form.errors.avg_price_cap && useTranslateFormFields("avg_price_cap.error")}
                         rightSection={<TooltipIcon label={useTranslateFormFields("avg_price_cap.tooltip")} />}
+                        radius="md"
+                      />
+                      <NumberInput
+                        label={useTranslateFormFields("min_wtb_profit_margin.label")}
+                        placeholder={useTranslateFormFields("min_wtb_profit_margin.placeholder")}
+                        min={-1}
+                        value={form.values.stock_item.min_wtb_profit_margin}
+                        onChange={(event) => form.setFieldValue("stock_item.min_wtb_profit_margin", Number(event))}
+                        error={form.errors.min_wtb_profit_margin && useTranslateFormFields("min_wtb_profit_margin.error")}
+                        rightSection={<TooltipIcon label={useTranslateFormFields("min_wtb_profit_margin.tooltip")} />}
                         radius="md"
                       />
                       <NumberInput
