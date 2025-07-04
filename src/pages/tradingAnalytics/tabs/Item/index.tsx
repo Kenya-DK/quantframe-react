@@ -10,7 +10,6 @@ import { QuantframeApiTypes, WFMarketTypes } from "$types";
 import dayjs from "dayjs";
 import { DatePickerInput } from "@mantine/dates";
 import { useEffect, useState } from "react";
-import { upperFirst } from "@mantine/hooks";
 import { Loading } from "@components/Loading";
 import { AlertError } from "@components/AlertError";
 import { SelectItemTags } from "@components/SelectItemTags";
@@ -32,19 +31,8 @@ export const ItemPanel = ({}: ItemPanelProps) => {
       },
     },
   });
-  const [tags, setTags] = useState<{ label: string; value: string }[]>([]);
   const [dates, setDates] = useState<[string | null, string | null]>([null, null]);
   const [filterOpened, setFilterOpened] = useState(false);
-
-  useEffect(() => {
-    const go = async () => {
-      const items = await api.cache.getTradableItems();
-      const a = items.map((item) => item.tags).flat();
-      const uniqueTags = Array.from(new Set(a)).map((tag) => ({ label: upperFirst(tag.replace("_", " ")), value: tag }));
-      setTags(uniqueTags);
-    };
-    go();
-  }, []);
 
   useEffect(() => {
     if (dates[0] && dates[1] && dates[0] > dates[1]) return;

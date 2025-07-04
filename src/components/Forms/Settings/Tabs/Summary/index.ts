@@ -1,2 +1,2 @@
-export { AnalyticPanel } from './Analytic';
-export type { AnalyticPanelProps } from './Analytic';
+export { SummaryPanel } from "./Summary";
+export type { SummaryPanelProps } from "./Summary";

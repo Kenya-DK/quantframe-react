@@ -63,10 +63,6 @@ export default function LoginPage() {
       setInterval(4);
       await api.cache.reload();
 
-      setProgressText(useTranslateProgress("refreshing_transaction"));
-      setInterval(5);
-      await api.transaction.reload();
-
       setProgressText(useTranslateProgress("login.progress_text_4"));
       setInterval(6);
       SendTauriDataEvent(TauriTypes.Events.UpdateUser, TauriTypes.EventOperations.SET, u);
