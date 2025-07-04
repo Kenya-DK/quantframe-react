@@ -219,6 +219,12 @@ export const en = {
                 placeholder: "Stock Mode",
                 error: "Invalid stock mode",
               },
+              update_interval: {
+                label: "Update Interval (seconds)",
+                placeholder: "Update Interval (seconds)",
+                error: "Invalid update interval",
+                tooltip: "The interval in seconds to update the stock. Default is 120 seconds.",
+              },
               trade_modes: {
                 label: "Trade Mode",
                 description: "How the bot will trade",
@@ -953,6 +959,7 @@ export const en = {
       },
       riven: {
         stating: "Starting Riven Trading",
+        cooldown: "Riven Update Cooldown: <blue>{{seconds}}</blue> seconds",
         riven_hidden: "Riven <red>{{weapon_name}}</red> <red>{{mod_name}}</red> is hidden",
         searching_riven: "Searching Riven <blue>{{weapon_name}} {{mod_name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
         riven_created:

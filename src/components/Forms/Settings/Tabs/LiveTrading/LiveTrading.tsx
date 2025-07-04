@@ -277,6 +277,15 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
                   radius="md"
                 />
                 <NumberInput
+                  label={useTranslateFormFields("update_interval.label")}
+                  placeholder={useTranslateFormFields("update_interval.placeholder")}
+                  min={1}
+                  value={form.values.stock_riven.update_interval}
+                  onChange={(event) => form.setFieldValue("stock_riven.update_interval", Number(event))}
+                  error={form.errors.update_interval && useTranslateFormFields("update_interval.error")}
+                  radius="md"
+                />
+                <NumberInput
                   label={useTranslateFormFields("limit_to.label")}
                   placeholder={useTranslateFormFields("limit_to.placeholder")}
                   min={1}

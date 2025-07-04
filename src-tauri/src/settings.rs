@@ -109,6 +109,7 @@ pub struct StockRivenSettings {
     pub min_profit: i64,
     pub threshold_percentage: f64,
     pub limit_to: i64,
+    pub update_interval: i64, // in seconds
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -185,6 +186,7 @@ impl Default for SettingsState {
                     min_profit: 25,
                     threshold_percentage: 15.0,
                     limit_to: 5,
+                    update_interval: 120, // in seconds
                 },
             },
             notifications: Notifications {

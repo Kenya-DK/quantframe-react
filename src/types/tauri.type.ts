@@ -229,6 +229,7 @@ export namespace TauriTypes {
     min_profit: number;
     threshold_percentage: number;
     limit_to: number;
+    update_interval: number;
   }
   export interface SettingsAnalytics {
     transaction: boolean;

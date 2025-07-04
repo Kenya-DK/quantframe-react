@@ -110,8 +110,8 @@ impl LiveScraperClient {
             }
 
             // Start Riven last update timer
-            let riven_interval = 1; // 5 min
-            let mut last_riven_update = Instant::now() - Duration::from_secs(riven_interval + 20);
+            let riven_interval = settings.live_scraper.stock_riven.update_interval as u64;
+            let mut last_riven_update = Instant::now() - Duration::from_secs(riven_interval * 2);
 
             while is_running.load(Ordering::SeqCst) {
                 settings = states::settings().unwrap().clone();
@@ -125,6 +125,11 @@ impl LiveScraperClient {
                         Ok(_) => {}
                         Err(e) => scraper.report_error(&e),
                     }
+                } else if settings.live_scraper.stock_mode == StockMode::Riven {
+                    scraper.send_gui_update(
+                        "riven.cooldown",
+                        Some(json!({"seconds": riven_interval - last_riven_update.elapsed().as_secs()})),
+                    );
                 }
 
                 if settings.live_scraper.stock_mode == StockMode::Item
