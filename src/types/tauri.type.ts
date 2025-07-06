@@ -259,6 +259,15 @@ export namespace TauriTypes {
     profit_values: Array<number>;
   }
 
+  export interface StockEntryOverview {
+    id: string;
+    key: string;
+    count: number;
+    revenue: number;
+    expenses: number;
+    profit: number;
+  }
+
   export interface ChartWithLabelsDto {
     labels: Array<string>;
   }

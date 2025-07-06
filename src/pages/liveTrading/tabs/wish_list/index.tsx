@@ -36,7 +36,7 @@ export const WishListPanel = ({}: WishListPanelProps) => {
 
   // States
   const [selectedRecords, setSelectedRecords] = useState<TauriTypes.WishListItem[]>([]);
-  const [statusCount, setStatusCount] = useState<{ [key: string]: number }>({});
+  const [, setStatusCount] = useState<{ [key: string]: number }>({});
   const [segments, setSegments] = useState<{ label: string; count: number; part: number; color: string }[]>([]);
 
   // Translate general
@@ -67,7 +67,11 @@ export const WishListPanel = ({}: WishListPanelProps) => {
     queryFn: () => api.stock.wishList.getAll(queryData),
     refetchOnWindowFocus: true,
   });
-
+  let { data: overviewData } = useQuery({
+    queryKey: ["wish_list_overview"],
+    queryFn: () => api.stock.wishList.getOverview(),
+    refetchOnWindowFocus: true,
+  });
   // Member
   useEffect(() => {
     const wish_lists = data?.results || [];
@@ -232,21 +236,24 @@ export const WishListPanel = ({}: WishListPanelProps) => {
             }}
           />
           <Group gap={"md"} mt={"md"}>
-            {[TauriTypes.StockStatus.Pending, TauriTypes.StockStatus.Live, TauriTypes.StockStatus.NoSellers, TauriTypes.StockStatus.InActive].map(
-              (status) => (
-                <ColorInfo
-                  active={status == queryData.status}
-                  key={status}
-                  onClick={() => setQueryData((prev) => ({ ...prev, status: status == prev.status ? undefined : status }))}
-                  infoProps={{
-                    "data-color-mode": "bg",
-                    "data-stock-status": status,
-                  }}
-                  text={useTranslateStockStatus(`${status}`) + `${statusCount[status] == 0 ? "" : ` (${statusCount[status]})`}`}
-                  tooltip={useTranslateStockStatus(`details.${status}`)}
-                />
-              )
-            )}
+            {overviewData?.map((entry) => (
+              <ColorInfo
+                active={entry.key == queryData.status}
+                key={entry.key}
+                onClick={() =>
+                  setQueryData((prev) => ({
+                    ...prev,
+                    status: (entry.key as TauriTypes.StockStatus) == prev.status ? undefined : (entry.key as TauriTypes.StockStatus),
+                  }))
+                }
+                infoProps={{
+                  "data-color-mode": "bg",
+                  "data-stock-status": entry.key,
+                }}
+                text={useTranslateStockStatus(`${entry.key}`) + ` (${entry.count})`}
+                tooltip={useTranslateStockStatus(`details.${entry.key}`)}
+              />
+            ))}
           </Group>
         </Grid.Col>
         <Grid.Col span={4}>

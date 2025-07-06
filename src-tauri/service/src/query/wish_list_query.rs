@@ -1,3 +1,4 @@
+use ::entity::dto::StockEntryOverview;
 use ::entity::wish_list::dto::WishListPaginationQueryDto;
 use ::entity::wish_list::{wish_list, wish_list::Entity as WishList};
 
@@ -10,6 +11,27 @@ pub struct WishListQuery;
 impl WishListQuery {
     pub async fn find_all_transactions(db: &DbConn) -> Result<Vec<wish_list::Model>, DbErr> {
         WishList::find().all(db).await
+    }
+    pub async fn get_overview(db: &DbConn) -> Result<Vec<StockEntryOverview>, DbErr> {
+        // Overview - Group by status with aggregations
+        Ok(WishList::find()
+            .select_only()
+            .column_as(Expr::val("status"), "id")
+            .column_as(Expr::val(0), "revenue")
+            .column_as(Expr::val(0), "profit")
+            .column_as(wish_list::Column::Status, "key")
+            .column_as(Expr::col(wish_list::Column::Id).count(), "count")
+            .column_as(
+                Expr::expr(Func::coalesce([
+                    Expr::col(wish_list::Column::ListPrice).sum().into(),
+                    Expr::val(0).into(),
+                ])),
+                "expenses",
+            )
+            .group_by(wish_list::Column::Status)
+            .into_model::<StockEntryOverview>()
+            .all(db)
+            .await?)
     }
     pub async fn get_all_v2(
         db: &DbConn,

@@ -38,7 +38,6 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
 
   // States
   const [selectedRecords, setSelectedRecords] = useState<TauriTypes.StockItem[]>([]);
-  const [statusCount, setStatusCount] = useState<{ [key: string]: number }>({});
   const [segments, setSegments] = useState<{ label: string; count: number; part: number; color: string }[]>([]);
 
   // Translate general
@@ -73,6 +72,11 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
     queryFn: () => api.stock.item.getAll(queryData),
     refetchOnWindowFocus: true,
   });
+  let { data: overviewData } = useQuery({
+    queryKey: ["stock_item_overview"],
+    queryFn: () => api.stock.item.getOverview(),
+    refetchOnWindowFocus: true,
+  });
   // Member
   useEffect(() => {
     const items = data?.results || [];
@@ -92,13 +96,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
       { label: useTranslateSegments("listed"), count: totalListedPrice, part: listedPercentage, color: getCssVariable("--positive-value") },
       { label: useTranslateSegments("profit"), count: totalProfit, part: profitPercentage, color: getCssVariable("--profit-value") },
     ]);
-    setStatusCount(
-      Object.values(TauriTypes.StockStatus).reduce((acc, status) => {
-        acc[status] = items.filter((item) => item.status === status).length;
-        return acc;
-      }, {} as { [key: string]: number })
-    );
-  }, [data]);
+  }, [data, overviewData]);
 
   // Mutations
   const createStockMutation = useMutation({
@@ -301,17 +299,22 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
         <Grid.Col span={8}>
           <CreateStockItemForm onSubmit={async (item) => createStockMutation.mutate(item)} />
           <Group gap={"md"} mt={"md"}>
-            {Object.values(TauriTypes.StockStatus).map((status) => (
+            {overviewData?.map((entry) => (
               <ColorInfo
-                active={status == queryData.status}
-                key={status}
-                onClick={() => setQueryData((prev) => ({ ...prev, status: status == prev.status ? undefined : status }))}
+                active={entry.key == queryData.status}
+                key={entry.key}
+                onClick={() =>
+                  setQueryData((prev) => ({
+                    ...prev,
+                    status: (entry.key as TauriTypes.StockStatus) == prev.status ? undefined : (entry.key as TauriTypes.StockStatus),
+                  }))
+                }
                 infoProps={{
                   "data-color-mode": "bg",
-                  "data-stock-status": status,
+                  "data-stock-status": entry.key,
                 }}
-                text={useTranslateStockStatus(`${status}`) + `${statusCount[status] == 0 ? "" : ` (${statusCount[status]})`}`}
-                tooltip={useTranslateStockStatus(`details.${status}`)}
+                text={useTranslateStockStatus(`${entry.key}`) + ` (${entry.count})`}
+                tooltip={useTranslateStockStatus(`details.${entry.key}`)}
               />
             ))}
           </Group>

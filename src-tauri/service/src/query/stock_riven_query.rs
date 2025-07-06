@@ -1,3 +1,4 @@
+use ::entity::dto::StockEntryOverview;
 use ::entity::enums::stock_status::StockStatus;
 use ::entity::stock::riven::dto::StockRivenPaginationQueryDto;
 use ::entity::stock::riven::{stock_riven, stock_riven::Entity as StockRiven};
@@ -10,6 +11,43 @@ use sea_query::Expr;
 pub struct StockRivenQuery;
 
 impl StockRivenQuery {
+    pub async fn get_overview(db: &DbConn) -> Result<Vec<StockEntryOverview>, DbErr> {
+        // Overview - Group by status with aggregations
+        Ok(StockRiven::find()
+            .select_only()
+            .column_as(Expr::val("status"), "id")
+            .column_as(stock_riven::Column::Status, "key")
+            .column_as(Expr::col(stock_riven::Column::Id).count(), "count")
+            .column_as(
+                Expr::expr(Func::coalesce([
+                    Expr::col(stock_riven::Column::ListPrice).sum().into(),
+                    Expr::val(0).into(),
+                ])),
+                "revenue",
+            )
+            .column_as(
+                Expr::expr(Func::coalesce([
+                    Expr::col(stock_riven::Column::Bought).sum().into(),
+                    Expr::val(0).into(),
+                ])),
+                "expenses",
+            )
+            .column_as(
+                Expr::expr(Func::coalesce([
+                    Expr::col(stock_riven::Column::ListPrice)
+                        .sum()
+                        .sub(Expr::col(stock_riven::Column::Bought).sum())
+                        .into(),
+                    Expr::val(0).into(),
+                ])),
+                "profit",
+            )
+            .group_by(stock_riven::Column::Status)
+            .into_model::<StockEntryOverview>()
+            .all(db)
+            .await?)
+    }
+
     pub async fn get_all_v2(
         db: &DbConn,
         query: StockRivenPaginationQueryDto,

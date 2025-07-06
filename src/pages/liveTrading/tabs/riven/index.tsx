@@ -71,7 +71,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
 
   // States
   const [selectedRecords, setSelectedRecords] = useState<TauriTypes.StockRiven[]>([]);
-  const [statusCount, setStatusCount] = useState<{ [key: string]: number }>({});
+  const [, setStatusCount] = useState<{ [key: string]: number }>({});
   const [segments, setSegments] = useState<{ label: string; count: number; part: number; color: string }[]>([]);
 
   // Translate general
@@ -102,6 +102,11 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
   let { data, isFetching, refetch } = useQuery({
     queryKey: ["stock_riven", queryData.page, queryData.limit, queryData.sort_by, queryData.sort_direction, queryData.status],
     queryFn: () => api.stock.riven.getAll(queryData),
+    refetchOnWindowFocus: true,
+  });
+  let { data: overviewData } = useQuery({
+    queryKey: ["stock_riven_overview"],
+    queryFn: () => api.stock.riven.getOverview(),
     refetchOnWindowFocus: true,
   });
   // Member
@@ -359,17 +364,22 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
       <Grid>
         <Grid.Col span={8}>
           <Group gap={"md"} mt={"md"}>
-            {Object.values(TauriTypes.StockStatus).map((status) => (
+            {overviewData?.map((entry) => (
               <ColorInfo
-                active={status == queryData.status}
-                key={status}
-                onClick={() => setQueryData((prev) => ({ ...prev, status: status == prev.status ? undefined : status }))}
+                active={entry.key == queryData.status}
+                key={entry.key}
+                onClick={() =>
+                  setQueryData((prev) => ({
+                    ...prev,
+                    status: (entry.key as TauriTypes.StockStatus) == prev.status ? undefined : (entry.key as TauriTypes.StockStatus),
+                  }))
+                }
                 infoProps={{
                   "data-color-mode": "bg",
-                  "data-stock-status": status,
+                  "data-stock-status": entry.key,
                 }}
-                text={useTranslateStockStatus(`${status}`) + `${statusCount[status] == 0 ? "" : ` (${statusCount[status]})`}`}
-                tooltip={useTranslateStockStatus(`details.${status}`)}
+                text={useTranslateStockStatus(`${entry.key}`) + ` (${entry.count})`}
+                tooltip={useTranslateStockStatus(`details.${entry.key}`)}
               />
             ))}
           </Group>

@@ -240,7 +240,7 @@ pub fn run() {
             START_TIME.set(Instant::now()).unwrap();
             APP.get_or_init(|| app.handle().clone());
 
-            match block_on(init_database(false)) {
+            match block_on(init_database(true)) {
                 Ok(_) => {}
                 Err(e) => {
                     let component = e.component();
@@ -322,6 +322,7 @@ pub fn run() {
             commands::live_scraper::live_scraper_set_running_state,
             // Stock Item commands
             commands::stock_item::get_stock_items,
+            commands::stock_item::get_stock_item_overview,
             commands::stock_item::stock_item_create,
             commands::stock_item::stock_item_update,
             commands::stock_item::stock_item_update_bulk,
@@ -330,6 +331,7 @@ pub fn run() {
             commands::stock_item::stock_item_delete_bulk,
             // Stock Riven commands
             commands::stock_riven::get_stock_rivens,
+            commands::stock_riven::get_stock_riven_overview,
             commands::stock_riven::stock_riven_update,
             commands::stock_riven::stock_riven_update_bulk,
             commands::stock_riven::stock_riven_sell,
@@ -338,6 +340,7 @@ pub fn run() {
             commands::stock_riven::stock_riven_create,
             // Wish List commands
             commands::wish_list::get_wish_lists,
+            commands::wish_list::get_wish_list_overview,
             commands::wish_list::wish_list_create,
             commands::wish_list::wish_list_update,
             commands::wish_list::wish_list_delete,

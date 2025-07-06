@@ -1,3 +1,4 @@
+use ::entity::dto::*;
 use ::entity::stock::item::dto::*;
 use ::entity::stock::item::{stock_item, stock_item::Entity as StockItem};
 
@@ -10,6 +11,43 @@ pub struct StockItemQuery;
 impl StockItemQuery {
     pub async fn find_all_transactions(db: &DbConn) -> Result<Vec<stock_item::Model>, DbErr> {
         StockItem::find().all(db).await
+    }
+
+    pub async fn get_overview(db: &DbConn) -> Result<Vec<StockEntryOverview>, DbErr> {
+        // Overview - Group by status with aggregations
+        Ok(StockItem::find()
+            .select_only()
+            .column_as(Expr::val("status"), "id")
+            .column_as(stock_item::Column::Status, "key")
+            .column_as(Expr::col(stock_item::Column::Id).count(), "count")
+            .column_as(
+                Expr::expr(Func::coalesce([
+                    Expr::col(stock_item::Column::ListPrice).sum().into(),
+                    Expr::val(0).into(),
+                ])),
+                "revenue",
+            )
+            .column_as(
+                Expr::expr(Func::coalesce([
+                    Expr::col(stock_item::Column::Bought).sum().into(),
+                    Expr::val(0).into(),
+                ])),
+                "expenses",
+            )
+            .column_as(
+                Expr::expr(Func::coalesce([
+                    Expr::col(stock_item::Column::ListPrice)
+                        .sum()
+                        .sub(Expr::col(stock_item::Column::Bought).sum())
+                        .into(),
+                    Expr::val(0).into(),
+                ])),
+                "profit",
+            )
+            .group_by(stock_item::Column::Status)
+            .into_model::<StockEntryOverview>()
+            .all(db)
+            .await?)
     }
 
     pub async fn get_all_v2(
@@ -58,7 +96,6 @@ impl StockItemQuery {
                 _ => {}
             }
         }
-
         // Pagination
         let page = query.pagination.page.max(1);
         let limit = query.pagination.limit.max(1);
@@ -71,6 +108,7 @@ impl StockItemQuery {
             total = paginator.num_items().await? as i64;
             paginator.fetch_page((page - 1) as u64).await?
         };
+
         Ok(::entity::dto::pagination::PaginatedDto::new(
             total, limit, page, results,
         ))

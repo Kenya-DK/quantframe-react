@@ -1,6 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use create::CreateStockRiven;
+use entity::dto::StockEntryOverview;
 use entity::stock::riven::*;
 use entity::{enums::stock_status::StockStatus, sub_type::SubType};
 
@@ -21,7 +22,18 @@ use crate::{
     },
     wfm_client::client::WFMClient,
 };
-
+#[tauri::command]
+pub async fn get_stock_riven_overview() -> Result<Vec<StockEntryOverview>, AppError> {
+    let conn = DATABASE.get().unwrap();
+    match StockRivenQuery::get_overview(conn).await {
+        Ok(data) => return Ok(data),
+        Err(e) => {
+            let error: AppError = AppError::new_db("StockRivenQuery::get_overview", e);
+            error::create_log_file("command_stock_riven_overview.log", &error);
+            return Err(error);
+        }
+    };
+}
 #[tauri::command]
 pub async fn get_stock_rivens(
     query: entity::stock::riven::dto::StockRivenPaginationQueryDto,

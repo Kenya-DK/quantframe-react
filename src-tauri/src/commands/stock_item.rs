@@ -2,6 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use create::CreateStockItem;
 use entity::dto::pagination::PaginationQueryDto;
+use entity::dto::StockEntryOverview;
 use entity::stock::item::dto::StockItemPaginationQueryDto;
 use entity::stock::item::*;
 use entity::sub_type::SubType;
@@ -21,12 +22,26 @@ use crate::{
 };
 
 #[tauri::command]
+pub async fn get_stock_item_overview() -> Result<Vec<StockEntryOverview>, AppError> {
+    let conn = DATABASE.get().unwrap();
+    match StockItemQuery::get_overview(conn).await {
+        Ok(data) => return Ok(data),
+        Err(e) => {
+            let error: AppError = AppError::new_db("StockItemQuery::get_overview", e);
+            error::create_log_file("command_stock_item_overview.log", &error);
+            return Err(error);
+        }
+    };
+}
+
+#[tauri::command]
 pub async fn get_stock_items(
     query: entity::stock::item::dto::StockItemPaginationQueryDto,
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<entity::dto::pagination::PaginatedDto<stock_item::Model>, AppError> {
     let conn = DATABASE.get().unwrap();
     let wfm = wfm.lock()?.clone();
+
     match StockItemQuery::get_all_v2(conn, query).await {
         Ok(mut data) => {
             helper::add_metric("Stock_ItemGetAll", "manual");

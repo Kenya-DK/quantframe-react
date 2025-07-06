@@ -3,7 +3,11 @@ import { TauriTypes } from "$types";
 
 export class StockRivenModule {
   constructor(private readonly client: TauriClient) {}
-
+  async getOverview(): Promise<TauriTypes.StockEntryOverview[]> {
+    const [err, stockItems] = await this.client.sendInvoke<TauriTypes.StockEntryOverview[]>("get_stock_riven_overview");
+    if (err) throw err;
+    return stockItems;
+  }
   async getAll(query: TauriTypes.StockRivenControllerGetListParams): Promise<TauriTypes.StockRivenControllerGetListData> {
     const [err, stockItems] = await this.client.sendInvoke<TauriTypes.StockRivenControllerGetListData>("get_stock_rivens", {
       query: this.client.convertToTauriQuery(query),

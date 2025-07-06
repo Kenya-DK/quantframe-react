@@ -3,7 +3,11 @@ import { TauriTypes } from "$types";
 
 export class WishListModule {
   constructor(private readonly client: TauriClient) {}
-
+  async getOverview(): Promise<TauriTypes.StockEntryOverview[]> {
+    const [err, stockItems] = await this.client.sendInvoke<TauriTypes.StockEntryOverview[]>("get_wish_list_overview");
+    if (err) throw err;
+    return stockItems;
+  }
   async getAll(query: TauriTypes.WishListControllerGetListParams): Promise<TauriTypes.WishListControllerGetListData> {
     const [err, stockItems] = await this.client.sendInvoke<TauriTypes.WishListControllerGetListData>("get_wish_lists", {
       query: this.client.convertToTauriQuery(query),
