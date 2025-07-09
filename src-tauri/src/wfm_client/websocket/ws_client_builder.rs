@@ -43,11 +43,6 @@ impl WsClientBuilder {
         Ok(self)
     }
 
-    /// Get list of paths reserved by the client for internal usage
-    pub fn get_reserved_paths() -> Vec<&'static str> {
-        Router::get_reserved_paths()
-    }
-
     /// Build and start the WebSocket client
     pub async fn build(self) -> Result<WsClient, WsError> {
         let router = Arc::new(self.router);

@@ -51,10 +51,6 @@ impl WsMessage {
         self.id = Some(id.to_string());
         self
     }
-    pub fn with_ref_id(mut self, ref_id: &str) -> Self {
-        self.ref_id = Some(ref_id.to_string());
-        self
-    }
 }
 impl Serialize for WsMessage {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>

@@ -45,30 +45,6 @@ impl WsClient {
         router.route_message(&message.set_version(version), sender)
     }
 
-    // Public methods for sending messages (only available after build)
-    pub fn send_message(&self, message: WsMessage) -> Result<(), WsError> {
-        let sender_guard = self.sender.lock().unwrap();
-        if let Some(sender) = sender_guard.as_ref() {
-            sender.send_message(message)
-        } else {
-            Err(WsError::ConnectionError)
-        }
-    }
-
-    pub fn send_response(
-        &self,
-        route: &str,
-        payload: serde_json::Value,
-        ref_id: &str,
-    ) -> Result<(), WsError> {
-        let sender_guard = self.sender.lock().unwrap();
-        if let Some(sender) = sender_guard.as_ref() {
-            sender.send_response(route, payload, ref_id)
-        } else {
-            Err(WsError::NotConnected)
-        }
-    }
-
     pub fn send_request(&self, route: &str, payload: serde_json::Value) -> Result<String, WsError> {
         let route_parsed =
             Route::parse(route).map_err(|_| WsError::InvalidPath(route.to_string()))?;
@@ -85,9 +61,6 @@ impl WsClient {
         }
     }
 
-    pub fn get_sender(&self) -> Option<MessageSender> {
-        self.sender.lock().unwrap().clone()
-    }
     pub fn disconnect(&self) -> Result<(), WsError> {
         if let Some(abort_handle) = self.abort_handle.lock().unwrap().take() {
             abort_handle.abort();

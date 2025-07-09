@@ -41,13 +41,6 @@ impl Route {
         }
     }
 
-    pub fn to_string(&self) -> String {
-        match &self.parameter {
-            Some(param) => format!("{}|{}:{}", self.protocol, self.path, param),
-            None => format!("{}|{}", self.protocol, self.path),
-        }
-    }
-
     // Get the base path without parameter for routing
     pub fn base_path(&self) -> &str {
         &self.path
