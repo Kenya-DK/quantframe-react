@@ -4,8 +4,6 @@ pub enum WsError {
     InvalidPath(String),
     AlreadyRegistered(String),
     InvalidMessageReceived(String),
-    ConnectionError,
-    InvalidMessage,
     SendError(String),
     NotConnected,
 }

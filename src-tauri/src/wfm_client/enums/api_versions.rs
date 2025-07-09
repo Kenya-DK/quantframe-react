@@ -7,12 +7,6 @@ pub enum ApiVersion {
 }
 
 impl ApiVersion {
-    pub fn api_url(&self) -> &'static str {
-        match self {
-            ApiVersion::V1 => "https://api.warframe.market/v1",
-            ApiVersion::V2 => "https://api.warframe.market/v2",
-        }
-    }
     pub fn websocket_url(&self) -> &'static str {
         match self {
             ApiVersion::V1 => "wss://warframe.market/socket?platform=pc",

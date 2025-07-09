@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use eyre::eyre;
 use reqwest::header::HeaderMap;
 use serde_json::json;
