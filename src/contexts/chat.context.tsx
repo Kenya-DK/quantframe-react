@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { WFMarketTypes } from "$types/index";
-import wfmSocket from "../models/wfmSocket";
-import api, { OnTauriDataEvent, SendTauriEvent } from "../api";
+import { OnTauriDataEvent } from "../api";
 import { TauriTypes } from "$types";
 
 export type ChatContextProps = {
@@ -54,8 +53,7 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
   // Hook on tauri events from rust side
   useEffect(() => {
     OnTauriDataEvent<any>(TauriTypes.Events.UpdateChats, ({ data, operation }) => handleUpdate(operation, data, setChats));
-    wfmSocket.on("chats/NEW_MESSAGE", async (data: WFMarketTypes.ChatMessage) => api.chat.on_message(data));
-    wfmSocket.on("chats/MESSAGE_SENT", async (data: WFMarketTypes.ChatMessageSent) => SendTauriEvent(TauriTypes.Events.ChatMessageSent, data));
+    OnTauriDataEvent<any>(TauriTypes.Events.ChatReceiveMessage, ({ data, operation }) => handleUpdate(operation, data, setChats));
     return () => {};
   }, []);
 

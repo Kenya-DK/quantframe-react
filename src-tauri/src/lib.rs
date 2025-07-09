@@ -234,7 +234,6 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
-        .plugin(tauri_plugin_websocket::init())
         .setup(move |app| {
             log_parser::types::trade_detection::init_detections();
             START_TIME.set(Instant::now()).unwrap();
@@ -314,6 +313,7 @@ pub fn run() {
             // Chat commands
             commands::chat::chat_refresh,
             commands::chat::chat_delete,
+            commands::chat::chat_send_message,
             commands::chat::chat_on_message,
             commands::chat::chat_get_messages,
             commands::chat::chat_set_active,

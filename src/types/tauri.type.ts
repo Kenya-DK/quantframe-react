@@ -37,6 +37,7 @@ export namespace TauriTypes {
 
     // User
     UpdateUser = "User:Update",
+    UpdateUserStatus = "User:UpdateStatus",
 
     // Live Trading
     UpdateLiveTradingRunningState = "LiveTrading:UpdateRunningState",

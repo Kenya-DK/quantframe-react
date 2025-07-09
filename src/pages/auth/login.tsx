@@ -7,7 +7,6 @@ import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { TextTranslate } from "@components/TextTranslate";
 import { ResponseError, TauriTypes } from "$types";
 import { useState } from "react";
-import wfmSocket from "@models/wfmSocket";
 
 export default function LoginPage() {
   // States
@@ -66,7 +65,6 @@ export default function LoginPage() {
       setProgressText(useTranslateProgress("login.progress_text_4"));
       setInterval(6);
       SendTauriDataEvent(TauriTypes.Events.UpdateUser, TauriTypes.EventOperations.SET, u);
-      if (u.wfm_access_token) wfmSocket.updateToken(u.wfm_access_token);
     },
     onError: (err: ResponseError) => {
       console.error(err);

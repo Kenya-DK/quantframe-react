@@ -143,3 +143,31 @@ pub async fn chat_delete_all(
     }
     Ok(())
 }
+
+#[tauri::command]
+pub async fn chat_send_message(
+    id: String,
+    msg: String,
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+) -> Result<(), AppError> {
+    let wfm = wfm.lock()?.clone();
+    let websocket = wfm.auth().ws_client.clone();
+    if websocket.is_none() {
+        return Err(AppError::new(
+            "WebSocket client is not initialized",
+            eyre::eyre!("WebSocket client is not initialized, cannot send message"),
+        ));
+    }
+    let websocket = websocket.unwrap();
+    match websocket.send_request(
+        "@WS/chats/SEND_MESSAGE",
+        json!({
+            "chat_id": id,
+            "message": msg
+        }),
+    ) {
+        Ok(_) => {}
+        Err(e) => panic!("{:?}", e),
+    }
+    Ok(())
+}

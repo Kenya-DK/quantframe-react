@@ -12,14 +12,12 @@ import { SettingsForm } from "@components/Forms/Settings";
 import { modals } from "@mantine/modals";
 import { useAppContext } from "@contexts/app.context";
 import { useAuthContext } from "@contexts/auth.context";
-import { useWFMSocketContext } from "@contexts/wfmSocket.context";
 
 export function UserMenu() {
   // States
   const navigate = useNavigate();
   const { user } = useAuthContext();
   const { settings } = useAppContext();
-  const { isConnected, inErrorState } = useWFMSocketContext();
 
   // Translate general
   const useTranslateUserMenu = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -62,16 +60,10 @@ export function UserMenu() {
   });
 
   return (
-    <Menu
-      shadow="md"
-      width={200}
-      transitionProps={{ transition: "fade-down", duration: 150 }}
-      position="bottom-end"
-      offset={5}
-    >
+    <Menu shadow="md" width={200} transitionProps={{ transition: "fade-down", duration: 150 }} position="bottom-end" offset={5}>
       <Menu.Target>
         <Group>
-          {isConnected && !inErrorState && !user?.qf_banned && !user?.wfm_banned ? (
+          {!user?.qf_banned && !user?.wfm_banned ? (
             <Indicator
               inline
               size={16}
@@ -79,7 +71,7 @@ export function UserMenu() {
               position="bottom-start"
               withBorder
               classNames={classes}
-              disabled={!user || user?.anonymous || !isConnected}
+              disabled={!user || user?.anonymous}
               data-user-status={user?.status || UserStatus.Invisible}
             >
               <Avatar variant="subtle" src={WFMThumbnail(user?.avatar || "")} alt={user?.ingame_name} radius="xl" size="48px" />
@@ -93,7 +85,7 @@ export function UserMenu() {
       </Menu.Target>
 
       <Menu.Dropdown>
-        {isConnected && !inErrorState && user && !user.anonymous && !user?.qf_banned && !user?.wfm_banned && (
+        {user && !user.anonymous && !user?.qf_banned && !user?.wfm_banned && (
           <>
             <Menu.Item
               leftSection={<Avatar variant="subtle" src={WFMThumbnail(user?.avatar || "")} alt={user?.ingame_name} radius="xl" size={"md"} />}
@@ -109,7 +101,7 @@ export function UserMenu() {
                   fullWidth
                   variant="subtle"
                   data-active={status == user?.status}
-                  onClick={() => api.auth.update_status(status)}
+                  onClick={() => api.auth.set_status(status)}
                 >
                   <Text tt="uppercase" data-color-mode="text" data-user-status={status} fw={500}>
                     {useTranslateUserStatus(status)}

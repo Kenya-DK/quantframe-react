@@ -34,7 +34,6 @@
     "@tauri-apps/plugin-process": "~2",
     "@tauri-apps/plugin-shell": "~2",
     "@tauri-apps/plugin-updater": "~2",
-    "@tauri-apps/plugin-websocket": "~2",
     "@tiptap/pm": "^2.11.2",
     "@tiptap/react": "^2.6.6",
     "@tiptap/starter-kit": "^2.6.6",

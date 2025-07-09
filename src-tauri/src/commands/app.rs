@@ -1,6 +1,4 @@
-use std::{
-    sync::{Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 
 use serde_json::json;
 use service::WishListQuery;
@@ -168,6 +166,18 @@ pub async fn app_init(
         && !qf_user.unwrap().banned
         && !wfm_user.banned
     {
+        // Setup WebSocket Client
+        match wfm
+            .auth()
+            .setup_websocket(&auth_state.wfm_access_token.clone().unwrap())
+            .await
+        {
+            Ok(_) => {}
+            Err(e) => {
+                error::create_log_file("ws_setup.log", &e);
+                return Err(e);
+            }
+        }
         // Initialize QF Analytics
         match qf.analytics().init() {
             Ok(_) => {}

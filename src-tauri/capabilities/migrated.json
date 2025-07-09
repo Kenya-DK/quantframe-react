@@ -5,8 +5,6 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
-    "websocket:default",
-    "websocket:allow-connect",
     "fs:allow-write-file",
     "fs:allow-read-dir",
     "fs:allow-copy-file",

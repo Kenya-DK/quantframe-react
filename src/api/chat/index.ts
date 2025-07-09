@@ -1,6 +1,5 @@
 import { TauriClient } from "..";
 import { WFMarketTypes } from "$types/index";
-import wfmSocket from "../../models/wfmSocket";
 
 export class ChatModule {
   constructor(private readonly client: TauriClient) {}
@@ -42,12 +41,8 @@ export class ChatModule {
   }
 
   async send_message(id: string, msg: string): Promise<void> {
-    wfmSocket.emit({
-      type: "@WS/chats/SEND_MESSAGE",
-      payload: {
-        chat_id: id,
-        message: msg,
-      },
-    });
+    const [err, res] = await this.client.sendInvoke<void>("chat_send_message", { id, msg });
+    if (err) throw err;
+    return res;
   }
 }

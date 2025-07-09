@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { WFMarketTypes } from "$types/index";
-import { WFMSocketContextProvider } from "./wfmSocket.context";
 import { ChatContextProvider } from "./chat.context";
 import { TauriTypes } from "$types";
 import { OnTauriDataEvent } from "../api";
@@ -68,9 +67,7 @@ export function WarframeMarketContextProvider({ children }: WarframeMarketContex
 
   return (
     <WarframeMarketContextContext.Provider value={{ orders, auctions }}>
-      <ChatContextProvider>
-        <WFMSocketContextProvider>{children}</WFMSocketContextProvider>
-      </ChatContextProvider>
+      <ChatContextProvider>{children}</ChatContextProvider>
     </WarframeMarketContextContext.Provider>
   );
 }

@@ -14,7 +14,6 @@ import { CacheModule } from "./cache";
 import { ErrOrResult, TauriTypes } from "$types";
 import { LogModule } from "./log";
 import { AnalyticsModule } from "./analytics";
-import { WFMSocket } from "../models/wfmSocket";
 import { NotificationModule } from "./notification";
 import { ItemModule } from "./item";
 import { LogParserModule } from "./log_parser";
@@ -136,7 +135,6 @@ export class TauriClient {
 declare global {
   interface Window {
     api: TauriClient;
-    wfmSocket: WFMSocket;
     data: any;
   }
 }

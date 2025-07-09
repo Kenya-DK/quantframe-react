@@ -1,7 +1,5 @@
 import { TauriClient } from "..";
 import { UserStatus, TauriTypes } from "$types";
-import wfmSocket from "@models/wfmSocket";
-import { WFMarketTypes } from "../../types";
 export class AuthModule {
   constructor(private readonly client: TauriClient) {}
 
@@ -9,10 +7,6 @@ export class AuthModule {
     const [err, rep] = await this.client.sendInvoke<TauriTypes.User>("auth_login", { email, password });
     if (err) throw err;
     return rep;
-  }
-
-  async update_status(status: UserStatus) {
-    wfmSocket.emit({ type: WFMarketTypes.SocketEvent.UpdateUserStatus, payload: status });
   }
 
   async set_status(status: UserStatus) {

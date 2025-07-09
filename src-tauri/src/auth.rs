@@ -42,7 +42,6 @@ pub struct AuthState {
     #[serde(default = "AuthState::auctions_limit")]
     pub auctions_limit: i64,
     pub unread_messages: i64,
-    pub status: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub permissions: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -72,7 +71,6 @@ impl Default for AuthState {
             order_limit: 100,
             unread_messages: 0,
             auctions_limit: 50,
-            status: Some("invisible".to_string()),
             patreon_tier: None,
             permissions: None,
         }
@@ -184,7 +182,6 @@ impl AuthState {
         self.auctions_limit = 50;
         self.permissions = None;
         self.patreon_tier = None;
-        self.status = Some("invisible".to_string());
     }
 
     pub fn update_from_qf_user_profile(

@@ -1,27 +1,38 @@
+use std::sync::Arc;
+
 use eyre::eyre;
 use reqwest::header::HeaderMap;
 use serde_json::json;
 
 use crate::{
     utils::{
-        enums::log_level::LogLevel,
+        enums::{log_level::LogLevel, ui_events::UIEvent},
         modules::{
             error::{self, ApiResult, AppError},
             logger::{self, LoggerOptions},
             states,
         },
     },
-    wfm_client::{client::WFMClient, types::user_profile::UserProfile},
+    wfm_client::{
+        client::WFMClient,
+        enums::ApiVersion,
+        types::user_profile::UserProfile,
+        websocket::{WsClient, WsClientBuilder},
+    },
 };
 #[derive(Clone, Debug)]
 pub struct AuthModule {
     pub client: WFMClient,
+    is_init: bool,
+    pub ws_client: Option<WsClient>,
     component: String,
 }
 
 impl AuthModule {
     pub fn new(client: WFMClient) -> Self {
         AuthModule {
+            is_init: false,
+            ws_client: None,
             client,
             component: "Auth".to_string(),
         }
@@ -61,6 +72,78 @@ impl AuthModule {
             }
             Err(e) => return Err(e),
         };
+    }
+    pub fn stop_websocket(&mut self) {
+        if let Some(ws_client) = &self.ws_client {
+            ws_client.disconnect().unwrap_or_else(|e| {
+                logger::error(
+                    &self.get_component("StopWebsocket"),
+                    &format!("Failed to disconnect WebSocket: {:?}", e),
+                    LoggerOptions::default(),
+                );
+            });
+            self.ws_client = None;
+            self.is_init = false;
+        } else {
+            logger::warning(
+                &self.get_component("StopWebsocket"),
+                "WebSocket client is not initialized, cannot stop WebSocket",
+                LoggerOptions::default(),
+            );
+        }
+    }
+    pub async fn setup_websocket(&mut self, token: &str) -> Result<(), AppError> {
+        if self.is_init {
+            return Ok(());
+        }
+        self.is_init = true;
+        let build = WsClientBuilder::new(ApiVersion::V1, token.to_string(), "QF".to_string());
+        let client = build
+            .register_callback("USER/SET_STATUS", move |msg, _, _| {
+                let notify = states::notify_client().unwrap();
+                notify
+                    .gui()
+                    .send_event(UIEvent::UpdateUserStatus, msg.payload.clone());
+                Ok(())
+            })
+            .unwrap()
+            .register_callback("chats/NEW_MESSAGE", move |msg, _, _| {
+                let notify = states::notify_client().unwrap();
+                notify
+                    .gui()
+                    .send_event(UIEvent::ReceiveMessage, msg.payload.clone());
+                Ok(())
+            })
+            .unwrap()
+            .register_callback("chats/MESSAGE_SENT", move |msg, _, _| {
+                let notify = states::notify_client().unwrap();
+                notify
+                    .gui()
+                    .send_event(UIEvent::ChatMessageSent, msg.payload.clone());
+                Ok(())
+            })
+            .unwrap()
+            .register_callback("MESSAGE/ONLINE_COUNT", move |_, _, _| Ok(()))
+            .unwrap()
+            .register_callback("internal/disconnected", move |_, _, _| Ok(()))
+            .unwrap()
+            .build()
+            .await
+            .unwrap();
+        self.ws_client = Some(client);
+        self.client.update_auth_module(self.clone());
+        Ok(())
+    }
+    pub fn set_user_status(&self, status: String) -> Result<(), AppError> {
+        if let Some(ws_client) = &self.ws_client {
+            match ws_client.send_request("@WS/USER/SET_STATUS", json!(status)) {
+                Ok(_) => {}
+                Err(e) => panic!("{:?}", e),
+            }
+        } else {
+            println!("WS client is not initialized, cannot set user status");
+        }
+        Ok(())
     }
     pub async fn login(
         &self,

@@ -1,8 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import api, { OnTauriDataEvent } from "@api/index";
+import { OnTauriDataEvent, OnTauriEvent } from "@api/index";
 import { TauriTypes, UserStatus } from "$types";
-import wfmSocket from "@models/wfmSocket";
-import { WFMarketTypes } from "../types";
 import { useAppContext } from "./app.context";
 export type AuthContextProps = {
   user: TauriTypes.User | undefined;
@@ -49,10 +47,7 @@ export function AuthContextProvider({ children }: TauriContextProviderProps) {
         break;
     }
   };
-
-  const OnUserStatusChange = async (status: UserStatus) => {
-    // Update user status in backend
-    await api.auth.set_status(status);
+  const handleUpdateUserStatus = (status: UserStatus) => {
     setUser((user) => {
       if (!user) return user;
       return { ...user, status };
@@ -61,11 +56,9 @@ export function AuthContextProvider({ children }: TauriContextProviderProps) {
 
   // Hook on tauri events from rust side
   useEffect(() => {
-    wfmSocket.on(WFMarketTypes.SocketEvent.OnUserStatusChange, OnUserStatusChange);
     OnTauriDataEvent<TauriTypes.User>(TauriTypes.Events.UpdateUser, ({ data, operation }) => handleUpdateUser(operation, data));
-    return () => {
-      wfmSocket.off(WFMarketTypes.SocketEvent.OnUserStatusChange, OnUserStatusChange);
-    };
+    OnTauriEvent<UserStatus>(TauriTypes.Events.UpdateUserStatus, (status) => handleUpdateUserStatus(status));
+    return () => {};
   }, []);
 
   return <AuthContext.Provider value={{ user, patreon_link }}>{children}</AuthContext.Provider>;

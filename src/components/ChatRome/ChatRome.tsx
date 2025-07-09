@@ -10,7 +10,6 @@ import { ChatMessage } from "../ChatMessage";
 import { useEffect, useRef, useState } from "react";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
 import { TauriTypes } from "$types";
-import { useWFMSocketContext } from "@contexts/wfmSocket.context";
 
 export type ChatRomeProps = {
   chat: WFMarketTypes.ChatData;
@@ -20,9 +19,6 @@ export type ChatRomeProps = {
 export const ChatRome = ({ chat, goBack }: ChatRomeProps) => {
   const defaultMsgLength = 30;
   const maxMsgLength = 400;
-
-  // Contexts
-  const { isConnected } = useWFMSocketContext();
 
   // State's
   const [messages, setMessages] = useState<WFMarketTypes.ChatMessage[]>([]);
@@ -137,7 +133,6 @@ export const ChatRome = ({ chat, goBack }: ChatRomeProps) => {
         </ScrollArea>
         <Paper radius={0} display={"flex"} p={10} h={75}>
           <Textarea
-            disabled={!isConnected}
             w={"90%"}
             value={msg}
             onChange={(e) => setMsg(e.currentTarget.value)}

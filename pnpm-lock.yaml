@@ -74,9 +74,6 @@ importers:
       '@tauri-apps/plugin-updater':
         specifier: ~2
         version: 2.3.1
-      '@tauri-apps/plugin-websocket':
-        specifier: ~2
-        version: 2.2.1
       '@tiptap/pm':
         specifier: ^2.11.2
         version: 2.11.2
@@ -851,9 +848,6 @@ packages:
 
   '@tauri-apps/plugin-updater@2.3.1':
     resolution: {integrity: sha512-D1MOWDO1Pqy33gloq0iifny+vwHxMyTshzF0q0bJRwibjL5SXd1xSQwBX24TRug7K0QIu8yOnveQHzI3GcdmfA==}
-
-  '@tauri-apps/plugin-websocket@2.2.1':
-    resolution: {integrity: sha512-RKGTcMUm7nHLE4hZ/NI7TvSNTkhKIr5+/tNpc766hSBQFGR/Qgr6ZJX/kN+3KVTq6gWCzrXcsuzamTRL+Fr+XA==}
 
   '@tiptap/core@2.6.6':
     resolution: {integrity: sha512-VO5qTsjt6rwworkuo0s5AqYMfDA0ZwiTiH6FHKFSu2G/6sS7HKcc/LjPq+5Legzps4QYdBDl3W28wGsGuS1GdQ==}
@@ -2847,10 +2841,6 @@ snapshots:
       '@tauri-apps/api': 2.0.0
 
   '@tauri-apps/plugin-updater@2.3.1':
-    dependencies:
-      '@tauri-apps/api': 2.0.0
-
-  '@tauri-apps/plugin-websocket@2.2.1':
     dependencies:
       '@tauri-apps/api': 2.0.0
 

@@ -335,7 +335,10 @@ impl WFMClient {
         // Unwrapping is safe here because we ensured the item_module is initialized
         self.auth_module.read().unwrap().as_ref().unwrap().clone()
     }
-
+    pub fn update_auth_module(&self, module: AuthModule) {
+        // Update the stored AuthModule
+        *self.auth_module.write().unwrap() = Some(module);
+    }
     pub fn orders(&self) -> OrderModule {
         // Lazily initialize ItemModule if not already initialized
         if self.order_module.read().unwrap().is_none() {
