@@ -67,7 +67,7 @@ export const WishListPanel = ({}: WishListPanelProps) => {
     queryFn: () => api.stock.wishList.getAll(queryData),
     refetchOnWindowFocus: true,
   });
-  let { data: overviewData } = useQuery({
+  let { data: overviewData, refetch: refetchOverview } = useQuery({
     queryKey: ["wish_list_overview"],
     queryFn: () => api.stock.wishList.getOverview(),
     refetchOnWindowFocus: true,
@@ -116,6 +116,7 @@ export const WishListPanel = ({}: WishListPanelProps) => {
     onSettled: (_data, _error, variables) => setLoadingRows((prev) => prev.filter((id) => id !== `${variables.id}`)),
     onSuccess: async (u) => {
       refetch();
+      refetchOverview();
       notifications.show({
         title: useTranslateSuccess("update_item.title"),
         message: useTranslateSuccess("update_item.message", { name: u.item_name }),
@@ -133,6 +134,7 @@ export const WishListPanel = ({}: WishListPanelProps) => {
     onSettled: (_data, _error, row) => setLoadingRows((prev) => prev.filter((id) => id !== `${row}`)),
     onSuccess: async () => {
       refetch();
+      refetchOverview();
       notifications.show({
         title: useTranslateSuccess("delete_item.title"),
         message: useTranslateSuccess("delete_item.message"),
@@ -150,6 +152,7 @@ export const WishListPanel = ({}: WishListPanelProps) => {
     onSettled: (_data, _error, variables) => setLoadingRows((prev) => prev.filter((id) => id !== `${variables.id}`)),
     onSuccess: async (u) => {
       refetch();
+      refetchOverview();
       notifications.show({
         title: useTranslateSuccess("sell_stock.title"),
         message: useTranslateSuccess("sell_stock.message", { name: u.item_name }),
@@ -221,7 +224,10 @@ export const WishListPanel = ({}: WishListPanelProps) => {
     });
   };
   useEffect(() => {
-    OnTauriEvent<any>(TauriTypes.Events.RefreshWishListItems, () => refetch());
+    OnTauriEvent<any>(TauriTypes.Events.RefreshWishListItems, () => {
+      refetch();
+      refetchOverview();
+    });
     return () => api.events.CleanEvent(TauriTypes.Events.RefreshWishListItems);
   }, []);
   return (

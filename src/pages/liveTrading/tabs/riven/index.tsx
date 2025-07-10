@@ -104,7 +104,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
     queryFn: () => api.stock.riven.getAll(queryData),
     refetchOnWindowFocus: true,
   });
-  let { data: overviewData } = useQuery({
+  let { data: overviewData, refetch: refetchOverview } = useQuery({
     queryKey: ["stock_riven_overview"],
     queryFn: () => api.stock.riven.getOverview(),
     refetchOnWindowFocus: true,
@@ -194,6 +194,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
     mutationFn: (id: number) => api.stock.riven.delete(id),
     onSuccess: async () => {
       refetch();
+      refetchOverview();
       notifications.show({
         title: useTranslateSuccess("delete_stock.title"),
         message: useTranslateSuccess("delete_stock.message"),
@@ -210,6 +211,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
     mutationFn: (ids: number[]) => api.stock.riven.deleteBulk(ids),
     onSuccess: async () => {
       refetch();
+      refetchOverview();
       notifications.show({
         title: useTranslateSuccess("delete_bulk_stock.title"),
         message: useTranslateSuccess("delete_bulk_stock.message"),
@@ -230,6 +232,7 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
     mutationFn: (riven: TauriTypes.CreateStockRiven) => api.stock.riven.create(riven),
     onSuccess: async (r) => {
       refetch();
+      refetchOverview();
       notifications.show({
         title: useTranslateSuccess("create_riven.title"),
         message: useTranslateSuccess("create_riven.message", { name: `${r.weapon_name} ${r.mod_name}` }),
@@ -356,7 +359,10 @@ export const StockRivenPanel = ({}: StockRivenPanelProps) => {
     });
   };
   useEffect(() => {
-    OnTauriEvent<any>(TauriTypes.Events.RefreshStockRivens, () => refetch());
+    OnTauriEvent<any>(TauriTypes.Events.RefreshStockRivens, () => {
+      refetch();
+      refetchOverview();
+    });
     return () => api.events.CleanEvent(TauriTypes.Events.RefreshStockRivens);
   }, []);
   return (

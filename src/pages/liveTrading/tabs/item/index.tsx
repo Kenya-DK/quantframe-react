@@ -72,7 +72,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
     queryFn: () => api.stock.item.getAll(queryData),
     refetchOnWindowFocus: true,
   });
-  let { data: overviewData } = useQuery({
+  let { data: overviewData, refetch: refetchOverview } = useQuery({
     queryKey: ["stock_item_overview"],
     queryFn: () => api.stock.item.getOverview(),
     refetchOnWindowFocus: true,
@@ -108,6 +108,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
         color: "green.7",
       });
       refetch();
+      refetchOverview();
     },
     onError: (e) => {
       console.error(e);
@@ -120,6 +121,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
     onSettled: (_data, _error, variables) => setLoadingRows((prev) => prev.filter((id) => id !== `${variables.id}`)),
     onSuccess: async (u) => {
       refetch();
+      refetchOverview();
       notifications.show({
         title: useTranslateSuccess("update_stock.title"),
         message: useTranslateSuccess("update_stock.message", { name: u.item_name }),
@@ -142,6 +144,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
         color: "green.7",
       });
       refetch();
+      refetchOverview();
     },
     onError: (e) => {
       console.error(e);
@@ -159,6 +162,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
     onSuccess: async (u) => {
       console.log("Sell Stock Mutation Success:", u);
       refetch();
+      refetchOverview();
       // queryClient.setQueryData(queryKey, (oldData: TauriTypes.StockItemControllerGetListData) => {
       //   if (!oldData || !oldData.results) return oldData;
       //   const updatedResults = oldData.results.map((item) => (item.id === u.id ? u : item));
@@ -181,6 +185,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
     onSettled: (_data, _error, variables) => setLoadingRows((prev) => prev.filter((id) => id !== `${variables}`)),
     onSuccess: async () => {
       refetch();
+      refetchOverview();
       notifications.show({
         title: useTranslateSuccess("delete_stock.title"),
         message: useTranslateSuccess("delete_stock.message"),
@@ -198,6 +203,7 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
     onSettled: (_data, _error, variables) => setLoadingRows((prev) => prev.filter((id) => !variables.includes(Number(id)))),
     onSuccess: async () => {
       refetch();
+      refetchOverview();
       notifications.show({
         title: useTranslateSuccess("delete_bulk_stock.title"),
         message: useTranslateSuccess("delete_bulk_stock.message"),
@@ -290,7 +296,10 @@ export const StockItemPanel = ({}: StockItemPanelProps) => {
   };
 
   useEffect(() => {
-    OnTauriEvent<any>(TauriTypes.Events.RefreshStockItems, () => refetch());
+    OnTauriEvent<any>(TauriTypes.Events.RefreshStockItems, () => {
+      refetch();
+      refetchOverview();
+    });
     return () => api.events.CleanEvent(TauriTypes.Events.RefreshStockItems);
   }, []);
   return (

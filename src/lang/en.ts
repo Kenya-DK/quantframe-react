@@ -148,25 +148,25 @@ export const en = {
                 label: "Volume Threshold",
                 placeholder: "Volume Threshold",
                 error: "Invalid volume threshold",
-                tooltip: "The minimum volume required per trade. Use -1 for unlimited.",
+                tooltip: "The minimum volume required per trade. Use -1 to disable this feature.",
               },
               range_threshold: {
                 label: "Profit Range Threshold",
                 placeholder: "Profit Range Threshold",
                 error: "Invalid profit range threshold",
-                tooltip: "The minimum profit range threshold for buy orders. Use -1 for unlimited.",
+                tooltip: "The minimum profit range threshold for buy orders. Use -1 to disable this feature.",
               },
               avg_price_cap: {
                 label: "Average Price",
                 placeholder: "Average Price",
                 error: "Invalid average price",
-                tooltip: "The maximum average price cap per buy order. Use -1 for unlimited.",
+                tooltip: "The maximum average price cap per buy order. Use -1 to disable.",
               },
               trading_tax_cap: {
                 label: "Trading Tax Cap",
                 placeholder: "Trading Tax Cap",
                 error: "Invalid trading tax cap",
-                tooltip: "The maximum credit tax per buy order. Use -1 for unlimited.",
+                tooltip: "The maximum credit tax per buy order. Use -1 to disable.",
               },
               max_total_price_cap: {
                 label: "Max Total Price Cap",
@@ -178,7 +178,7 @@ export const en = {
                 label: "Minimum Profit Margin",
                 placeholder: "Minimum Profit Margin",
                 error: "Invalid minimum WTB profit margin",
-                tooltip: "The minimum profit margin for WTB orders. Use -1 for unlimited.",
+                tooltip: "The minimum profit margin for WTB orders. Use -1 to disable.",
               },
               buy_quantity: {
                 label: "Quantity of goods",
