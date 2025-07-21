@@ -43,16 +43,17 @@ uuid = {version = "1.17.0", features = ["v4"] }
 regex = "1.9.1"
 chrono = "0.4"
 reqwest = { version = "0.11", features = ["json"] }
-eyre = "0.6.8"
 zip = "0.6"
 actix-web = "4"
 actix-cors = "0.7.0"
 sha256 = "1.5.0"
+wf-market = { path = "C:/Users/Kenya/Desktop/Andet/Coding/Warframe/wf-market" }
 
 # Database dependencies
 migration = { path = "./migration" }
 service = { path = "./service" }
 entity = { path = "./entity" }
+qf_api = { path = "./qf_api" }
 
 [workspace]
-members = [".", "service", "entity", "migration"]
+members = [".", "qf_api", "service", "entity", "migration"]

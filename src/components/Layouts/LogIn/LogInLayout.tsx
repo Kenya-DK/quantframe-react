@@ -1,27 +1,25 @@
-import { AppShell, Box, Indicator } from "@mantine/core";
+import { AppShell, Box } from "@mantine/core";
 import classes from "./LogInLayout.module.css";
 import { Outlet, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBug, faDesktop, faEnvelope, faGlobe, faHome, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import { faBug, faHome } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
-import { useAppContext } from "@contexts/app.context";
 import { useEffect, useState } from "react";
 import { NavbarLinkProps, NavbarMinimalColored } from "@components/NavbarMinimalColored";
 import { Header } from "@components/Header";
-import api from "@api/index";
 import { useAuthContext } from "@contexts/auth.context";
+import { open } from "@tauri-apps/plugin-shell";
+import { AddMetric } from "@api/index";
 import { Ticker } from "@components/Ticker";
 import { QuantframeApiTypes } from "$types";
-import { open } from "@tauri-apps/plugin-shell";
-import facTradingAnalytics from "@icons/faTradingAnalytics";
-import faWarframeMarket from "@icons/facWarframeMarket";
+import { useAppContext } from "@contexts/app.context";
 
 export function LogInLayout() {
   // States
   const [lastPage, setLastPage] = useState<string>("");
   // Contexts
-  const { app_error, alerts } = useAppContext();
   const { user } = useAuthContext();
+  const { alerts } = useAppContext();
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateComponent(`layout.log_in.${key}`, { ...context }, i18Key);
@@ -40,94 +38,27 @@ export function LogInLayout() {
     },
     {
       align: "top",
-      id: "live-trading",
-      link: "live-trading",
-      icon: <FontAwesomeIcon size={"lg"} icon={faGlobe} />,
-      label: useTranslateNavBar("live_trading"),
-      onClick: (e: NavbarLinkProps) => handleNavigate(e),
-    },
-    {
-      align: "top",
-      id: "chats",
-      link: "chats",
-      icon: (
-        <Indicator
-          disabled={(user?.unread_messages || 0) <= 0}
-          label={(user?.unread_messages || 0) > 0 ? user?.unread_messages : undefined}
-          inline
-          size={16}
-          position="top-start"
-        >
-          <FontAwesomeIcon size={"lg"} icon={faEnvelope} />
-        </Indicator>
-      ),
-      onClick: (e: NavbarLinkProps) => handleNavigate(e),
-      label: useTranslateNavBar("chats"),
-    },
-    {
-      align: "top",
-      id: "warframe_market",
-      link: "warframe-market",
-      icon: <FontAwesomeIcon size={"lg"} icon={faWarframeMarket} />,
-      label: useTranslateNavBar("warframe_market"),
-      onClick: (e: NavbarLinkProps) => handleNavigate(e),
-    },
-    {
-      align: "top",
-      id: "trading_analytics",
-      link: "trading_analytics",
-      icon: <FontAwesomeIcon size={"lg"} icon={facTradingAnalytics} />,
-      label: useTranslateNavBar("trading_analytics"),
-      onClick: (e: NavbarLinkProps) => handleNavigate(e),
-    },
-    {
-      align: "top",
       id: "debug",
       link: "debug",
-      icon: <FontAwesomeIcon size={"lg"} icon={faDesktop} />,
-      label: useTranslateNavBar("debug"),
-      onClick: (e: NavbarLinkProps) => handleNavigate(e),
-    },
-    {
-      align: "top",
-      id: "test",
-      link: "test",
       hide: !import.meta.env.DEV,
       icon: <FontAwesomeIcon size={"lg"} icon={faBug} color="red" />,
-      label: useTranslateNavBar("test"),
-      onClick: (e: NavbarLinkProps) => handleNavigate(e),
-    },
-    {
-      align: "bottom",
-      id: "nav_about",
-      link: "about",
-      icon: <FontAwesomeIcon size={"lg"} icon={faInfoCircle} />,
-      label: useTranslateNavBar("about"),
+      label: useTranslateNavBar("debug"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
     },
   ];
   // Effects
   useEffect(() => {
-    if (app_error) navigate("/error");
-  }, [app_error]);
-  useEffect(() => {
     if (user?.qf_banned || user?.wfm_banned) navigate("/error/banned");
   }, [user]);
   const handleNavigate = (link: NavbarLinkProps) => {
-    console.log("Navigate to: ", link);
     if (link.web) open(link.link, "_blank");
     else navigate(link.link);
 
     if (link.id == lastPage || !link.id) return;
     setLastPage(link.id || "");
-    switch (link.id) {
-      default:
-        api.analytics.sendMetric("Active_Page", link.id);
-        break;
-    }
+    AddMetric("active_page", link.id);
   };
   const handleAlertClick = (alert: QuantframeApiTypes.AlertDto) => {
-    console.log("Alert clicked: ", alert);
     if (!alert.properties) return;
     const { event, payload } = alert.properties as { event: string; payload: any };
     if (!event) return;
@@ -138,7 +69,6 @@ export function LogInLayout() {
       default:
         break;
     }
-    console.log("Alert clicked: ", alert);
   };
   return (
     <AppShell
@@ -151,18 +81,16 @@ export function LogInLayout() {
     >
       <AppShell.Header withBorder={false}>
         <Header />
-        {alerts.length > 0 && (
-          <Ticker
-            data={alerts.map((alert) => ({
-              label: alert.context,
-              props: {
-                "data-alert-type": alert.type,
-                "data-color-mode": "text",
-              },
-              onClick: alert.properties ? () => handleAlertClick(alert) : undefined,
-            }))}
-          />
-        )}
+        <Ticker
+          data={alerts.map((alert) => ({
+            label: alert.context,
+            props: {
+              "data-alert-type": alert.type,
+              "data-color-mode": "text",
+            },
+            onClick: alert.properties ? () => handleAlertClick(alert) : undefined,
+          }))}
+        />
       </AppShell.Header>
 
       <AppShell.Navbar withBorder={false}>
@@ -170,7 +98,7 @@ export function LogInLayout() {
       </AppShell.Navbar>
 
       <AppShell.Main>
-        <Box mt={alerts.length > 0 ? 30 : 0}>
+        <Box>
           <Outlet />
         </Box>
       </AppShell.Main>

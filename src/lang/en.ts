@@ -1,64 +1,14 @@
 export const en = {
   months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-  notifications: {
-    add_riven: {
-      success: {
-        title: "Riven Added",
-        message: "Riven {{name}} has been added to the stock.",
+  notifications: {},
+  common: {
+    buttons: {
+      save: {
+        label: "Save",
       },
-      error: {
-        title: "Riven Add Error",
-        message: "An error occurred in {{component}} at {{backtrace}}. See logs for more information.",
-      },
-    },
-    created_stock: {
-      warning: {
-        not_found: {
-          title: "Item Not Found",
-          message: "The item {{item}} was not found.",
-        },
-      },
-    },
-    on_trade_event: {
-      title: "Trade with {{player_name}} complete",
-      message:
-        "<blue>{{item_name}}</blue> X<blue>{{quantity}}</blue> {{trade_type}} For {{platinum}}p WFM: <blue>{{wfm_operation}}</blue> Stock: <blue>{{stock_operation}}</blue>",
-      multiple_items_found: "Multiple items found Skipping...",
-      no_valid_items_found: "No valid items found Skipping...",
-      set_not_valid: "Set not valid Skipping...",
     },
   },
   enums: {
-    transaction_type: {
-      purchase: "Purchase",
-      sale: "Sale",
-      details: {
-        purchase: "Purchase",
-        sale: "Sale",
-      },
-    },
-    item_type: {
-      riven: "Riven",
-      item: "Item",
-      details: {
-        riven: "Riven",
-        item: "Item",
-      },
-    },
-    user_status: {
-      online: "Online",
-      ingame: "In game",
-      invisible: "Offline",
-    },
-    order_type: {
-      buy: "Buy Order",
-      sell: "Sell Order",
-      closed: "Closed Orders",
-      details: {
-        buy: "Buy",
-        sell: "Sell",
-      },
-    },
     stock_mode: {
       all: "All",
       riven: "Riven",
@@ -69,779 +19,13 @@ export const en = {
       sell: "Sell",
       wishlist: "Wishlist",
     },
-    stock_status: {
-      pending: "Pending",
-      live: "Live",
-      to_low_profit: "Low Profit",
-      no_sellers: "No Sellers",
-      no_buyers: "No Buyers",
-      inactive: "Inactive",
-      sma_limit: "SMA Limit",
-      order_limit: "Order Limit",
-      overpriced: "Overpriced",
-      underpriced: "Underpriced",
-      details: {
-        pending: "Waiting to be processed",
-        live: "Live on Warframe Market",
-        to_low_profit: "Was not processed due to low profit based on settings",
-        no_sellers: "No sellers found for this item",
-        no_buyers: "No buyers found for this item",
-        inactive: "Is inactive and will not be processed",
-        sma_limit: "Is limited by the SMA",
-        order_limit: "Is limited by the order limit",
-        overpriced: "Is overpriced",
-        underpriced: "Is underpriced",
-      },
+    user_status: {
+      online: "Online",
+      ingame: "In game",
+      invisible: "Offline",
     },
   },
   components: {
-    modals: {
-      base: {
-        titles: {
-          premium: "Support me on Patreon!",
-        },
-        buttons: {
-          confirm: "Confirm",
-          cancel: "Cancel",
-        },
-      },
-      premium_modal: {
-        title: "Unlock More Features and Support the Development!",
-        text: "1. Join the Quantframe Patreon",
-        text2: "2. Link your Patreon account",
-        buttons: {
-          info: "Patreon",
-          link: "Link your account",
-        },
-      },
-      tos: {
-        title: "Terms and Conditions",
-        buttons: {
-          accept: "Accept",
-          decline: "Decline",
-        },
-      },
-    },
-    forms: {
-      settings: {
-        tabs: {
-          general: {
-            title: "General",
-            fields: {
-              wf_log_path: {
-                label: "Warframe Log Path",
-                placeholder: "Default Warframe log path",
-                error: "Invalid Warframe log path",
-                tooltip: "The path to the Warframe log file. leave empty for default path.",
-              },
-            },
-            buttons: {
-              save: {
-                label: "Save",
-              },
-            },
-          },
-          live_trading: {
-            title: "Live Trading",
-            fields: {
-              volume_threshold: {
-                label: "Volume Threshold",
-                placeholder: "Volume Threshold",
-                error: "Invalid volume threshold",
-                tooltip: "The minimum volume required per trade. Use -1 to disable this feature.",
-              },
-              range_threshold: {
-                label: "Profit Range Threshold",
-                placeholder: "Profit Range Threshold",
-                error: "Invalid profit range threshold",
-                tooltip: "The minimum profit range threshold for buy orders. Use -1 to disable this feature.",
-              },
-              avg_price_cap: {
-                label: "Average Price",
-                placeholder: "Average Price",
-                error: "Invalid average price",
-                tooltip: "The maximum average price cap per buy order. Use -1 to disable.",
-              },
-              trading_tax_cap: {
-                label: "Trading Tax Cap",
-                placeholder: "Trading Tax Cap",
-                error: "Invalid trading tax cap",
-                tooltip: "The maximum credit tax per buy order. Use -1 to disable.",
-              },
-              max_total_price_cap: {
-                label: "Max Total Price Cap",
-                placeholder: "Max Total Price Cap",
-                error: "Invalid max total price cap",
-                tooltip: "This parameter specifies the maximum platinum total price cap for all buy orders.",
-              },
-              min_wtb_profit_margin: {
-                label: "Minimum Profit Margin",
-                placeholder: "Minimum Profit Margin",
-                error: "Invalid minimum WTB profit margin",
-                tooltip: "The minimum profit margin for WTB orders. Use -1 to disable.",
-              },
-              buy_quantity: {
-                label: "Quantity of goods",
-                placeholder: "1",
-                error: "Invalid quantity of goods",
-                tooltip: "The quantity of goods to buy per order. (Will apply to all orders)",
-              },
-              price_shift_threshold: {
-                label: "Price Shift Threshold",
-                placeholder: "Price Shift Threshold",
-                error: "Invalid price shift threshold",
-                tooltip: "The minimum price shift threshold over the last 7 days.",
-              },
-              min_sma: {
-                label: "Min SMA",
-                placeholder: "Min SMA",
-                error: "Invalid min SMA",
-                tooltip: "How low the price can go below the SMA. -1 for disabled.",
-              },
-              item_min_profit: {
-                label: "Min Profit",
-                placeholder: "Min Profit",
-                error: "Invalid min profit",
-                tooltip: "The minimum profit, -1 for disabled.",
-              },
-              auto_delete: {
-                label: "Auto Delete",
-                error: "Invalid auto delete",
-                tooltip: "Automatically delete stock items",
-              },
-              stock_mode: {
-                label: "Stock Mode",
-                description: {
-                  all: "Will go through all",
-                  riven: "Will go through only rivens",
-                  item: "Will go through only items",
-                },
-                placeholder: "Stock Mode",
-                error: "Invalid stock mode",
-              },
-              update_interval: {
-                label: "Update Interval (seconds)",
-                placeholder: "Update Interval (seconds)",
-                error: "Invalid update interval",
-                tooltip: "The interval in seconds to update the stock. Default is 120 seconds.",
-              },
-              trade_modes: {
-                label: "Trade Mode",
-                description: "How the bot will trade",
-                error: "Invalid trade mode",
-              },
-              report_to_wfm: {
-                label: "Report to Warframe Market",
-                error: "Invalid report to Warframe Market",
-                tooltip: "Will add a transaction to Warframe Market",
-              },
-              auto_trade: {
-                label: "Auto Trade (WIP)",
-                error: "Invalid auto trade",
-                tooltip: "Automatically add/sell stock if true",
-              },
-              should_delete_other_types: {
-                label: "Should Delete Other Trade Types",
-                error: "Invalid should delete other trade types",
-                tooltip:
-                  "Will delete other trade types if true example: if buy is enabled will delete sell/wishlist items if they are not blacklisted",
-              },
-              blacklist: {
-                description: "The blacklist is a list of items that will be ignored by the bot. (Buy/Sell)",
-                left_title: "Available Items",
-                right_title: "Blacklisted Items",
-              },
-              riven_min_profit: {
-                label: "Min Profit",
-                placeholder: "Min Profit",
-                error: "Invalid min profit",
-                tooltip: "The minimum profit",
-              },
-              limit_to: {
-                label: "Limit To",
-                placeholder: "5",
-                error: "Invalid limit to",
-                tooltip: "Will use the first {{count}} rivens to calculate the average price",
-              },
-              threshold_percentage: {
-                label: "Minimum Price Shift",
-                placeholder: "0",
-                error: "Invalid threshold percentage",
-                tooltip: "Ignore rivens that have more than {{value}}% price shift from the least expensive riven",
-              },
-            },
-            tabs: {
-              item: "Item Settings",
-              riven: "Riven Settings",
-              general: "General Settings",
-              wtb: "WTB Settings",
-              wts: "WTS Settings",
-            },
-            buttons: {
-              save: {
-                label: "Save",
-              },
-              blacklist: {
-                label: "Blacklist {{count}}",
-              },
-              go_back: {
-                label: "Go Back",
-              },
-            },
-          },
-          notification: {
-            title: "Notification",
-          },
-          log: {
-            title: "Log",
-            buttons: {
-              open: {
-                label: "Open Log Folder",
-              },
-              export: {
-                label: "Export Logs",
-              },
-            },
-          },
-          analytics: {
-            title: "Analytics",
-            fields: {
-              stock_item: {
-                label: "Stock Item",
-                tooltip: "If enabled will send stock item to QF Api",
-              },
-              stock_riven: {
-                label: "Stock Riven",
-                tooltip: "If enabled will send stock riven to QF Api",
-              },
-            },
-            buttons: {
-              save: {
-                label: "Save",
-              },
-            },
-          },
-          summary: {
-            title: "Summary",
-            fields: {
-              resent_days: {
-                label: "Resent Days",
-                tooltip: "How many days of data to show",
-              },
-              resent_transactions: {
-                label: "Resent Transactions",
-                tooltip: "How many transactions to show",
-              },
-            },
-            datatable: {
-              columns: {
-                name: "Name",
-                tags: "Tags",
-                types: "Types",
-                actions: {
-                  title: "Actions",
-                  buttons: {
-                    edit: {
-                      tooltip: "Edit Item",
-                    },
-                    delete: {
-                      tooltip: "Delete Item",
-                    },
-                  },
-                },
-              },
-            },
-            buttons: {
-              save: {
-                label: "Save",
-              },
-            },
-          },
-        },
-      },
-      create_category_summary: {
-        fields: {
-          icon: {
-            label: "Icon",
-            placeholder: "Icon",
-            description: "The icon of the category",
-            tooltip: "The icon of the category",
-            error: "Invalid icon",
-          },
-          name: {
-            label: "Name",
-            placeholder: "Name",
-            description: "The name of the category",
-            tooltip: "The name of the category",
-            error: "Invalid name",
-          },
-          types: {
-            label: "Types",
-            description: "Types for the category",
-          },
-        },
-        buttons: {
-          submit: {
-            label: "Create/Save Category",
-          },
-        },
-      },
-      update_stock_riven: {
-        fields: {
-          minimum_price: {
-            label: "Minimum Price",
-            placeholder: "Minimum Price",
-            description: "Set to 0 for automatic pricing",
-            error: "Invalid minimum price",
-          },
-          use_hidden: {
-            label: "Use Hidden",
-          },
-          is_hidden: {
-            label: "Is Hidden",
-          },
-        },
-        buttons: {
-          submit: "Update",
-        },
-      },
-      update_stock_item: {
-        fields: {
-          minimum_price: {
-            label: "Minimum Price",
-            placeholder: "Minimum Price",
-            description: "Set to 0 for automatic pricing",
-            error: "Invalid minimum price",
-          },
-          use_hidden: {
-            label: "Use Hidden",
-          },
-          is_hidden: {
-            label: "Is Hidden",
-          },
-        },
-        buttons: {
-          submit: "Update",
-        },
-      },
-      create_stock_item: {
-        fields: {
-          quantity: {
-            label: "Quantity",
-            placeholder: "Quantity",
-            error: "Invalid quantity",
-          },
-          bought: {
-            label: "Bought",
-            placeholder: "Bought",
-            error: "Invalid bought",
-          },
-        },
-        buttons: {
-          add: {
-            tooltip: {
-              description_with_report: "Add item to stock and report to Warframe Market",
-              description_without_report: "Add item to stock",
-            },
-          },
-        },
-      },
-      update_transaction: {
-        fields: {
-          price: {
-            label: "Price",
-            placeholder: "Price",
-            description: "The price of the transaction",
-            error: "Invalid price",
-          },
-          quantity: {
-            label: "Quantity",
-            placeholder: "Quantity",
-            description: "The quantity of the transaction",
-            error: "Invalid quantity",
-          },
-        },
-        buttons: {
-          submit: "Update",
-        },
-      },
-      riven_filter: {
-        fields: {
-          enabled: {
-            label: "Enabled",
-          },
-          similarity: {
-            label: "Similarity",
-          },
-          rank: {
-            label: "Rank",
-          },
-          mastery_rank: {
-            label: "Mastery Rank",
-          },
-          required_negative: {
-            label: "Required Negative",
-          },
-          re_rolls: {
-            label: "Re-Rolls",
-          },
-        },
-        buttons: {
-          save: {
-            label: "Save",
-          },
-        },
-      },
-      notification: {
-        fields: {
-          title: {
-            label: "Title",
-            placeholder: "Title",
-            error: "Invalid title",
-          },
-          content: {
-            label: "Content",
-            placeholder: "Content",
-            error: "Invalid content",
-          },
-          webhook: {
-            label: "Webhook",
-            placeholder: "Webhook",
-            description: "Discord webhook URL",
-            error: "Invalid webhook",
-          },
-          user_ids: {
-            label: "User IDs",
-            placeholder: "User IDs",
-            description: "Discord user IDs (numbers) separated by commas",
-            error: "Invalid user IDs",
-          },
-        },
-        buttons: {
-          system: {
-            tooltip: "System Notification",
-          },
-          save: {
-            label: "Save",
-          },
-          discord: {
-            tooltip: "Discord Notification",
-          },
-        },
-      },
-      log_in: {
-        title: "Warframe Market - Login",
-        register: "Don't have an account? Register",
-        fields: {
-          email: {
-            label: "Email",
-            placeholder: "Email",
-            error: "Invalid email",
-          },
-          password: {
-            label: "Password",
-            placeholder: "Password",
-            error: "Password must include at least 6 characters",
-          },
-        },
-        buttons: {
-          submit: "Log In",
-        },
-      },
-      create_riven_attributes: {
-        fields: {
-          positive: {
-            title: "Positive Attributes",
-            add: "Add",
-          },
-          negative: {
-            title: "Negative Attributes",
-          },
-        },
-        buttons: {
-          add: "+ Add",
-        },
-      },
-      create_riven_attribute: {
-        fields: {
-          value: {
-            error: "Invalid value",
-          },
-        },
-        buttons: {
-          remove: "Remove",
-        },
-      },
-      create_riven: {
-        buttons: {
-          submit: {
-            label: "Create",
-          },
-        },
-        fields: {
-          mastery_rank: {
-            label: "Mastery Rank",
-            placeholder: "8",
-            error: "Invalid mastery rank",
-          },
-          re_rolls: {
-            label: "Re-Rolls",
-            placeholder: "0",
-            error: "Invalid re-rolls",
-          },
-          rank: {
-            label: "Rank",
-            placeholder: "0",
-            error: "Invalid rank",
-          },
-          polarity: {
-            label: "Polarity",
-            error: "Invalid polarity",
-          },
-          weapon: {
-            label: "Weapon Name",
-            placeholder: "Weapon",
-            error: "Invalid weapon",
-          },
-          bought: {
-            label: "Bought",
-            placeholder: "Bought",
-            error: "Invalid bought",
-          },
-          attributes: {
-            label: "Attributes",
-            error: "Riven must have at least 2 positive attributes",
-          },
-          mod_name: {
-            label: "Mod Name",
-            placeholder: "Mod Name",
-            error: "Invalid mod name",
-          },
-        },
-      },
-    },
-    alert_error: {
-      title: "Error in {{component}} component",
-      version: "Version: {{version}}",
-      backtrace: "Location: {{backtrace}}",
-      cause: "Cause: {{cause}}",
-      footer: "If you think this is a bug, please report it to the developer. Thank you!",
-    },
-    chat_rome: {
-      fields: {
-        message: {
-          placeholder: "Type a message...",
-          too_long: "Message is too long",
-        },
-      },
-      buttons: {
-        send: {
-          label: "Send",
-        },
-        back: {
-          label: "Back",
-        },
-        options: {
-          label: "More",
-        },
-      },
-    },
-    chat_item: {
-      un_read_messages: "<mail /> {{count}}",
-      delete: "Leave Chat",
-    },
-    timer_stamp: {
-      months: "{{months}} months ago",
-      days: "{{days}} days ago",
-      hours: "{{hours}} hours ago",
-      minutes: "{{minutes}} minutes ago",
-      seconds: "{{seconds}} seconds ago",
-    },
-    select_item_tags: {
-      tags: {
-        label: "Tags",
-        description: "Select tags to filter items",
-      },
-    },
-    auction_list_item: {
-      weapon_name: "<blue>{{weapon}} {{mod_name}}<blue>",
-      selling_price: "Selling Price: <blue>{{price}}</blue> <plat/>",
-      starting_price: "Starting Price: <blue>{{price}}</blue> <plat/>",
-      buyout_price: "Buyout Price: <blue>{{price}}</blue> <plat/>",
-      top_bid: "Top Bid: <blue>{{bid}}</blue> <plat/>",
-      no_bids: "No Bids",
-      footer: "MR: <blue>{{mastery_level}}</blue> Ranks: <blue>{{mod_rank}}</blue> Re-rolls: <blue>{{re_rolls}}</blue> Polarity: <polarity/>",
-    },
-    stock_item_info: {
-      tabs: {
-        general: {
-          title: "General",
-        },
-        orders: {
-          title: "Orders",
-        },
-      },
-      fields: {
-        created_at: "Created At",
-        updated_at: "Updated At",
-        minimum_price: "Minimum Price",
-        moving_avg: "Moving Avg",
-        list_price: "List Price",
-        profit: "Profit",
-        total_sellers: "Total Sellers",
-        highest_price: "Highest Price",
-        lowest_price: "Lowest Price",
-        status: "Status",
-        bought: "Bought",
-        owned: "Owned",
-        listed: "Listed Prices History",
-        no_orders: "No orders were found for this item.",
-        no_listed: "No previous listed prices",
-      },
-      buttons: {
-        wfm: "Warframe Market",
-        wiki: "Wiki",
-      },
-    },
-    wish_item_info: {
-      tabs: {
-        general: {
-          title: "General",
-        },
-        orders: {
-          title: "Orders",
-        },
-      },
-      fields: {
-        created_at: "Created At",
-        updated_at: "Updated At",
-        maximum_price: "Maximum Price",
-        list_price: "List Price",
-        total_sellers: "Total Sellers",
-        highest_price: "Highest Price",
-        lowest_price: "Lowest Price",
-        status: "Status",
-        quantity: "Quantity of goods",
-        listed: "Listed Prices History",
-        no_orders: "No orders were found for this item.",
-        no_listed: "No previous listed prices",
-      },
-      buttons: {
-        wfm: "Warframe Market",
-        wiki: "Wiki",
-      },
-    },
-    order_details: {
-      tabs: {
-        general: {
-          title: "General",
-        },
-        orders: {
-          title: "Orders",
-        },
-      },
-      fields: {
-        created_at: "Created At",
-        updated_at: "Updated At",
-        list_price: "List Price",
-        profit: "Profit",
-        total_buyers: "Total Buyers",
-        highest_price: "Highest Price",
-        lowest_price: "Lowest Price",
-        listed: "Listed Prices History",
-        no_listed: "No previous listed prices",
-        no_orders: "No orders was found for this item.",
-      },
-      buttons: {
-        wfm: "Warframe Market",
-        wiki: "Wiki",
-      },
-    },
-    order_item: {
-      fields: {
-        quantity: "<qty/> <blue>{{quantity}}</blue>",
-        platinum: "<blue>{{platinum}}</blue> <plat/>",
-        mod_rank: "Rank: <blue>{{mod_rank}}</blue>/<blue>{{mod_max_rank}}</blue>",
-        subtype: "<blue>{{sub_type}}</blue>",
-      },
-      notifications: {
-        copied: {
-          title: "Copied",
-          message: "{{message}} has been copied to clipboard.",
-        },
-      },
-    },
-    stock_riven_info: {
-      tabs: {
-        general: {
-          title: "General",
-        },
-        auctions: {
-          title: "Auctions",
-        },
-      },
-      buttons: {
-        find_type: "Look for weapon",
-        find_similar: "Find Similar",
-      },
-      fields: {
-        created_at: "Created At",
-        updated_at: "Updated At",
-        status: "Status",
-        bought: "Bought",
-        minimum_price: "Minimum Price",
-        re_rolls: "Re-Rolls",
-        list_price: "List Price",
-        profit: "Profit",
-        total_sellers: "Total Sellers",
-        highest_price: "Highest Price",
-        lowest_price: "Lowest Price",
-        listed: "Listed Prices History",
-        no_auctions: "No auctions were found for this riven.",
-        no_listed: "No previous listed prices",
-        mastery_rank: "Master Rank",
-        rank: "Rank",
-      },
-    },
-    riven_attribute: {
-      effect: "<num_color_tag>{{value}}</num_color_tag> {{name}}",
-    },
-    tradableItem_list: {
-      pagination: "{{start}} - {{end}} / {{totalRecords}}",
-      fields: {
-        trade_tax: {
-          label: "Trade Tax Range {{min}} - {{max}}",
-          placeholder: "Trade Tax",
-        },
-        mr_requirement: {
-          label: "MR Requirement Range {{min}} - {{max}}",
-          placeholder: "MR Requirement",
-        },
-        tags: {
-          label: "Tags",
-          placeholder: "Select tags...",
-          options: {
-            prime: "Prime Parts",
-            set: "Set",
-            arcane_enhancement: "Arcane",
-            tax_1m: "Tax 1M",
-            tax_2m: "Tax 2M",
-          },
-        },
-      },
-      datatable: {
-        columns: {
-          name: "Name",
-          trade_tax: "Trade Tax",
-          mr_requirement: "MR Requirement",
-        },
-      },
-      buttons: {
-        add_all: {
-          tooltip: "Add all items",
-        },
-      },
-    },
     searchfield: {
       label: "Search",
       placeholder: "Search...",
@@ -854,34 +38,6 @@ export const en = {
         },
         create: {
           tooltip: "Create",
-        },
-      },
-    },
-    select_tradable_item: {
-      fields: {
-        item: {
-          label: "Item",
-          placeholder: "Select item...",
-        },
-        variant: {
-          label: "Variant",
-          placeholder: "Select variant...",
-          description: "Please select a variant",
-        },
-        rank: {
-          label: "Rank",
-          placeholder: "Select rank...",
-          description: "Please select a rank",
-        },
-        cyan_stars: {
-          label: "Cyan Stars",
-          placeholder: "Select cyan stars...",
-          description: "How many cyan stars",
-        },
-        amber_stars: {
-          label: "Amber Stars",
-          placeholder: "Select amber stars...",
-          description: "How many amber stars",
         },
       },
     },
@@ -921,640 +77,258 @@ export const en = {
       log_in: {
         navbar: {
           home: "Home",
-          live_trading: "Live Trading",
-          chats: "Chats",
-          statistics: "Statistics",
-          warframe_market: "Warframe Market",
           debug: "Debug",
-          trading_analytics: "Trading Analytics",
-          about: "About",
-          test: "Test",
         },
       },
     },
-    live_trading_control: {
-      buttons: {
-        start: "Start Live Trading",
-        stop: "Stop Live Trading",
+    forms: {
+      log_in: {
+        title: "Warframe Market - Login",
+        register: "Don't have an account? Register",
+        fields: {
+          email: {
+            label: "Email",
+            placeholder: "Email",
+            error: "Invalid email",
+          },
+          password: {
+            label: "Password",
+            placeholder: "Password",
+            error: "Password must include at least 6 characters",
+          },
+        },
+        buttons: {
+          submit: "Log In",
+        },
       },
-      prompts: {
-        start: {
-          title: "Warning",
-          message: "Are you sure you want to start live trading? This action will delete all non-blacklisted orders on WFM.",
-          confirm: "Start",
+      settings: {
+        tabs: {
+          live_trading: {
+            title: "Live Trading",
+            general: {
+              title: "General",
+              fields: {
+                auto_trade: {
+                  label: "Auto Trade (WIP)",
+                  error: "Invalid auto trade",
+                  tooltip: "Automatically add/sell stock if true",
+                },
+                auto_delete: {
+                  label: "Auto Delete",
+                  error: "Invalid auto delete",
+                  tooltip: "Automatically delete stock items",
+                },
+                should_delete_other_types: {
+                  label: "Should Delete Other Trade Types",
+                  error: "Invalid should delete other trade types",
+                  tooltip:
+                    "Will delete other trade types if true example: if buy is enabled will delete sell/wishlist items if they are not blacklisted",
+                },
+                report_to_wfm: {
+                  label: "Report to Warframe Market",
+                  error: "Invalid report to Warframe Market",
+                  tooltip: "Will add a transaction to Warframe Market",
+                },
+                trade_modes: {
+                  label: "Trade Mode",
+                  description: "How the bot will trade",
+                  error: "Invalid trade mode",
+                },
+                stock_mode: {
+                  label: "Stock Mode",
+                  description: {
+                    all: "Will go through all",
+                    riven: "Will go through only rivens",
+                    item: "Will go through only items",
+                  },
+                  placeholder: "Stock Mode",
+                  error: "Invalid stock mode",
+                },
+              },
+            },
+            item: {
+              title: "Stock Item",
+              wtb: {
+                title: "WTB",
+                fields: {
+                  volume_threshold: {
+                    label: "Volume Threshold",
+                    placeholder: "Volume Threshold",
+                    error: "Invalid volume threshold",
+                    tooltip: "Minimum volume to consider for trading",
+                    link: "https://quantframe.app/features/live-trading/settings/item/wtb#volume-threshold",
+                  },
+                  profit_threshold: {
+                    label: "Profit Threshold",
+                    placeholder: "Profit Threshold",
+                    error: "Invalid profit threshold",
+                    tooltip: "Minimum profit to consider for trading",
+                    link: "https://quantframe.app/features/live-trading/settings/item/wtb#profit-threshold",
+                  },
+                  avg_price_cap: {
+                    label: "Average Price Cap",
+                    placeholder: "Average Price Cap",
+                    error: "Invalid average price cap",
+                    tooltip: "Maximum average price to consider for trading",
+                    link: "https://quantframe.app/features/live-trading/settings/item/wtb#average-price-cap",
+                  },
+                  trading_tax_cap: {
+                    label: "Trading Tax Cap",
+                    placeholder: "Trading Tax Cap",
+                    error: "Invalid trading tax cap",
+                    tooltip: "Maximum tax to consider for trading",
+                    link: "https://example.com/trading-tax-cap",
+                  },
+                  max_total_price_cap: {
+                    label: "Max Total Price Cap",
+                    placeholder: "Max Total Price Cap",
+                    error: "Invalid max total price cap",
+                    tooltip: "Maximum total price to consider for trading",
+                    link: "https://quantframe.app/features/live-trading/settings/item/wtb#max-total-price-cap",
+                  },
+                  price_shift_threshold: {
+                    label: "Price Shift Threshold",
+                    placeholder: "Price Shift Threshold",
+                    error: "Invalid price shift threshold",
+                    tooltip: "Minimum price shift to consider for trading",
+                    link: "https://quantframe.app/features/live-trading/settings/item/wtb#price-shift-threshold",
+                  },
+                  buy_quantity: {
+                    label: "Quantity of goods",
+                    placeholder: "Quantity of goods",
+                    error: "Invalid quantity of goods",
+                    tooltip: "The quantity of goods to buy",
+                    link: "https://quantframe.app/features/live-trading/settings/item/wtb#quantity-of-goods",
+                  },
+                  min_wtb_profit_margin: {
+                    label: "Profit Margin Threshold",
+                    placeholder: "Profit Margin Threshold",
+                    error: "Invalid profit margin threshold",
+                    tooltip: "Minimum profit margin for WTB trades",
+                    link: "https://quantframe.app/features/live-trading/settings/item/wtb#profit-margin-threshold",
+                  },
+                  wts: {
+                    title: "WTS",
+                    fields: {},
+                  },
+                },
+              },
+              wts: {
+                title: "WTS",
+                fields: {
+                  min_sma: {
+                    label: "Minimum SMA",
+                    placeholder: "Minimum SMA",
+                    error: "Invalid minimum SMA",
+                    tooltip: "Minimum Simple Moving Average to consider for trading",
+                    link: "https://quantframe.app/features/live-trading/settings/item/wts#min-sma",
+                  },
+                  min_profit: {
+                    label: "Minimum Profit",
+                    placeholder: "Minimum Profit",
+                    error: "Invalid minimum profit",
+                    tooltip: "Minimum profit to consider for trading",
+                    link: "https://quantframe.app/features/live-trading/settings/item/wts#min-profit",
+                  },
+                },
+              },
+            },
+            riven: {
+              title: "Stock Riven",
+              fields: {
+                min_profit: {
+                  label: "Minimum Profit",
+                  placeholder: "Minimum Profit",
+                  error: "Invalid minimum profit",
+                  tooltip: "Minimum profit to consider for trading",
+                  link: "https://quantframe.app/features/live-trading/settings/riven/wts#min-profit",
+                },
+                threshold_percentage: {
+                  label: "Threshold Percentage",
+                  placeholder: "Threshold Percentage",
+                  error: "Invalid threshold percentage",
+                  tooltip: "Percentage threshold for trading",
+                  link: "https://quantframe.app/features/live-trading/settings/riven/wts#minimum-price-shift",
+                },
+                limit_to: {
+                  label: "Limit To",
+                  placeholder: "Limit To",
+                  error: "Invalid limit to",
+                  tooltip: "Limit the number of trades",
+                  link: "https://quantframe.app/features/live-trading/settings/riven/wts#limit-to",
+                },
+                update_interval: {
+                  label: "Update Interval (seconds)",
+                  placeholder: "Update Interval",
+                  error: "Invalid update interval",
+                  tooltip: "Interval for updating riven trades",
+                  link: "https://quantframe.app/features/live-trading/settings/riven/wts#update-interval",
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    modals: {
+      base: {
+        buttons: {
+          confirm: "Confirm",
           cancel: "Cancel",
         },
       },
-      item: {
-        stating: "Starting Item Trading",
-        deleting_orders: "Deleting Orders: {{current}}/{{total}}",
-        is_hidden: "Item <red>{{name}}</red> is hidden",
-        low_profit_delete: "Deleting Item <red>{{name}}</red> low profit",
-        order_limit_reached: "Order limit reached for <red>{{name}}</red>",
-        knapsack_delete: "Delete Item <red>{{name}}</red>",
-        underpriced_delete: "Delete Underpriced Item <red>{{name}}</red>",
-        created: "Created buy order: <blue>{{name}}</blue> for <blue>{{price}}</blue> platinum | Profit: <blue>{{profit}}</blue>",
-        checking_item: "Checking Item: <blue>{{name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
-        no_data: "<dark_red>No data found for item {{name}} {{current}}/{{total}}</dark_red>",
-      },
-      riven: {
-        stating: "Starting Riven Trading",
-        cooldown: "Riven Update Cooldown: <blue>{{seconds}}</blue> seconds",
-        riven_hidden: "Riven <red>{{weapon_name}}</red> <red>{{mod_name}}</red> is hidden",
-        searching_riven: "Searching Riven <blue>{{weapon_name}} {{mod_name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
-        riven_created:
-          "Created Riven: <blue>{{weapon_name}} {{mod_name}}</blue> at <blue>{{price}}</blue> platinum | Potential profit: <blue>{{profit}}</blue>",
-      },
-    },
-    riven_filter_attribute: {
-      fields: {
-        is_required: {
-          tooltip: "Is Required",
-        },
-      },
-    },
-    premium_overlay: {
-      title: "This feature is only available for premium users <blue>{{tier}}</blue> supports.",
-      buttons: {
-        info: "Info",
-        subscribe: "Subscribe",
-      },
     },
   },
-  context: {
-    app: {
-      new_update: {
-        title: "New Update Available {{version}}",
-        message: "A new update is available. Click the button below to install the update.",
-        buttons: {
-          install: "Install",
-          read_more: "Read more",
-        },
-      },
-      loading_events: {
-        cache: "Loading cache...",
-        validation: "Validating cache...",
-        transactions: "Loading transactions...",
-        user_orders: "Loading warframe market orders...",
-        user_auctions: "Loading warframe market auctions...",
-        user_chats: "Loading warframe market chats...",
-        check_updates: "Checking for updates...",
-        log_parser: "Starting log parser...",
-        wish_list: "Loading wish list...",
-      },
-    },
-    live_scraper: {
-      errors: {
-        run: {
-          title: "Live Scraper Error",
-          message: "An error occurred in component {{component}} at {{backtrace}}. See logs for more information.",
-        },
-      },
-    },
-  },
+  context: {},
   pages: {
-    home: {
-      tooltips: {
-        bar_chart: {
-          footer: {
-            expense: "Total expenses",
-            revenue: "Total revenue",
-            profit: "Total profit",
-            trades: "Number of trades",
-            sales: "Number of sales",
-            purchases: "Number of purchases",
-          },
-        },
-      },
-      cards: {
-        total: {
-          title: "Total Profit",
-          footer:
-            "Sales: <blue>{{sales}}</blue> | Purchases: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | Profit Margin: <blue>{{profit_margin}}</blue>%",
-          bar_chart: {
-            title: "Total Profit",
-            datasets: {
-              this_year: "This Year",
-              last_year: "Last Year",
-            },
-            footers: {
-              profit: "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
-              trades: "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>",
-            },
-          },
-        },
-        today: {
-          title: "Today's Profit",
-          footer:
-            "Sales: <blue>{{sales}}</blue> | Purchases: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | Profit Margin: <blue>{{profit_margin}}</blue>%",
-          bar_chart: {
-            title: "Today's Profit",
-            datasets: {
-              profit: "Profit",
-            },
-            footers: {
-              profit: "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
-              trades: "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>",
-            },
-          },
-        },
-        recent_days: {
-          bar_chart: {
-            title: "Last {{days}} days",
-            datasets: {
-              profit: "Profit",
-            },
-            footers: {
-              profit: "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
-              trades: "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>",
-            },
-          },
-        },
-        best_seller: {
-          title: "Best Seller Profit",
-          footer:
-            "Name: <blue>{{name}}</blue> | S: <blue>{{sales}}</blue> | P: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | PM: <blue>{{profit_margin}}</blue>%",
-          by_category: {
-            datatable: {
-              columns: {
-                name: "Name",
-                revenue: "Revenue",
-                expense: "Expense",
-                profit: "Profit",
-                profit_margin: "Profit Margin",
-              },
-            },
-          },
-        },
-        last_transaction: {
-          title: "Last Transaction",
-          info_box: {
-            purchase: "Purchase {{count}}",
-            sale: "Sale {{count}}",
-          },
-        },
-      },
-    },
-    about: {
-      cards: {
-        coffee: {
-          title: "Buy me a coffee",
-        },
-        patreon: {
-          title: "Support me on Patreon",
-        },
-        discord: {
-          title: "Discord",
-        },
-        faq: {
-          title: "FAQ",
-        },
-        guide: {
-          title: "Wiki/Guide",
-        },
-      },
-      text: {
-        version: "Version: <blue>{{version}}</blue>",
-        disclaimer: "Quantframe is a third-party app and is not affiliated with Digital Extremes.",
-      },
-    },
-    liveTrading: {
-      pagination: "{{start}} - {{end}} / {{totalRecords}}",
-      segments: {
-        bought: "Bought",
-        listed: "Listed",
-        profit: "Profit",
-        total_plat: "Total Plat",
-        trades: "Total Trades",
-      },
-      datatable: {
-        columns: {
-          name: {
-            title: "Name",
-            value: "{{name}} <blue>{{sub_type}}</blue>",
-          },
-          bought: "Bought",
-          minimum_price: {
-            title: "Minimum Price",
-            btn: {
-              edit: {
-                tooltip: "Set minimum price",
-              },
-            },
-          },
-          list_price: "List Price",
-          actions: {
-            title: "Actions",
-            buttons: {
-              sell_manual: {
-                tooltip: "Sell manually",
-              },
-              sell_auto: {
-                tooltip: "Sell at listed price",
-              },
-              hide: {
-                enabled_tooltip: "Hide",
-                disabled_tooltip: "Unhide",
-              },
-              info: {
-                tooltip: "Show Info",
-              },
-              delete: {
-                tooltip: "Delete",
-              },
-            },
-          },
-        },
-      },
-      prompts: {
-        minimum_price: {
-          title: "Minimum Price",
-          fields: {
-            minimum_price: {
-              label: "Minimum Price",
-              description: "Set to 0 for automatic pricing",
-            },
-          },
-        },
-        maximum_price: {
-          title: "Maximum Price",
-          fields: {
-            maximum_price: {
-              label: "Maximum Price",
-              description: "Set to 0 for automatic pricing",
-            },
-          },
-        },
-        sell: {
-          title: "Sold Price",
-          fields: {
-            sell: {
-              label: "Price",
-            },
-          },
-        },
-        bought: {
-          title: "Bought Price",
-          fields: {
-            bought: {
-              label: "Price",
-            },
-          },
-        },
-        delete: {
-          title: "Delete Item's",
-          message: "Are you sure you want to delete(s) {{count}}, this action cannot be undone.",
-          confirm: "Yes, delete",
-          cancel: "No, cancel",
-        },
-      },
-      notifications: {
-        copied: {
-          title: "Copied",
-        },
-      },
-      tabs: {
-        item: {
-          title: "Stock Items",
-          datatable: {
-            columns: {
-              item_name: "Name",
-              quantity: "Quantity",
-              owned: "Owned",
-            },
-          },
-          prompts: {
-            update_bulk: {
-              title: "Update Bulk",
-            },
-          },
-          buttons: {
-            update_bulk: {
-              tooltip: "Update Bulk",
-            },
-            delete_bulk: {
-              tooltip: "Delete Bulk",
-            },
-            wts: {
-              tooltip: "Create WTS Message",
-            },
-          },
-          errors: {
-            create_stock: {
-              title: "Create Stock Error",
-              message: "An error occurred while trying to create stock.",
-            },
-            update_stock: {
-              title: "Update Stock Error",
-              message: "An error occurred while trying to update stock.",
-            },
-            update_bulk_stock: {
-              title: "Update Bulk Stock Error",
-              message: "An error occurred while trying to update bulk stock.",
-            },
-            sell_stock: {
-              title: "Sell Stock Error",
-              message: "An error occurred while trying to sell stock.",
-            },
-            delete_stock: {
-              title: "Delete Stock Error",
-              message: "An error occurred while trying to delete stock.",
-            },
-            delete_bulk_stock: {
-              title: "Delete Bulk Stock Error",
-              message: "An error occurred while trying to delete bulk stock.",
-            },
-          },
-          success: {
-            create_stock: {
-              title: "Create Stock Success",
-              message: "Stock item {{name}} has been successfully created.",
-            },
-            update_stock: {
-              title: "Update Stock Success",
-              message: "Stock item {{name}} has been successfully updated.",
-            },
-            update_bulk_stock: {
-              title: "Update Bulk Stock Success",
-              message: "Stock rivens have been successfully updated.",
-            },
-            sell_stock: {
-              title: "Sell Stock Success",
-              message: "Stock item {{name}} has been successfully sold.",
-            },
-            delete_stock: {
-              title: "Delete Stock Success",
-              message: "Stock item has been successfully deleted.",
-            },
-            delete_bulk_stock: {
-              title: "Delete Bulk Stock Success",
-              message: "Stock rivens have been successfully deleted.",
-            },
-          },
-        },
-        riven: {
-          title: "Stock Rivens",
-          datatable: {
-            columns: {
-              mastery_rank: "MR",
-              attributes: "Attributes",
-              re_rolls: "Re-Rolls",
-              actions: {
-                buttons: {
-                  filter: {
-                    tooltip: "Edit Filter",
-                  },
-                },
-              },
-            },
-          },
-          prompts: {
-            update_bulk: {
-              title: "Update Bulk",
-            },
-            update_filter: {
-              title: "Update Filter",
-            },
-            create_riven: {
-              title: "Create Riven",
-            },
-          },
-          buttons: {
-            update_bulk: {
-              tooltip: "Update Bulk",
-            },
-            delete_bulk: {
-              tooltip: "Delete Bulk",
-            },
-            create_riven: {
-              tooltip: "Create Riven",
-            },
-          },
-          errors: {
-            create_riven: {
-              title: "Create Riven Error",
-              message: "An error occurred while trying to create riven.",
-            },
-            update_stock: {
-              title: "Update Stock Error",
-              message: "An error occurred while trying to update stock.",
-            },
-            update_bulk_stock: {
-              title: "Update Bulk Stock Error",
-              message: "An error occurred while trying to update bulk stock.",
-            },
-            delete_bulk_stock: {
-              title: "Delete Bulk Stock Error",
-              message: "An error occurred while trying to delete bulk stock.",
-            },
-            sell_stock: {
-              title: "Sell Stock Error",
-              message: "An error occurred while trying to sell stock.",
-            },
-            delete_stock: {
-              title: "Delete Stock Error",
-              message: "An error occurred while trying to delete stock.",
-            },
-          },
-          success: {
-            create_riven: {
-              title: "Create Riven Success",
-              message: "Riven {{name}} has been successfully created.",
-            },
-            update_stock: {
-              title: "Update Stock Success",
-              message: "Stock riven {{name}} has been successfully updated.",
-            },
-            update_bulk_stock: {
-              title: "Update Bulk Stock Success",
-              message: "Stock rivens have been successfully updated.",
-            },
-            sell_stock: {
-              title: "Sell Stock Success",
-              message: "Stock riven {{name}} has been successfully sold.",
-            },
-            delete_stock: {
-              title: "Delete Stock Success",
-              message: "Stock riven has been successfully deleted.",
-            },
-            delete_bulk_stock: {
-              title: "Delete Bulk Stock Success",
-              message: "Stock rivens have been successfully deleted.",
-            },
-          },
-        },
-        wish_list: {
-          title: "Wish List",
-          datatable: {
-            columns: {
-              quantity: "Quantity",
-              maximum_price: {
-                title: "Maximum Price",
-                btn: {
-                  edit: {
-                    tooltip: "Set maximum price",
-                  },
-                },
-              },
-              actions: {
-                buttons: {
-                  bought_manual: {
-                    tooltip: "Bought manually",
-                  },
-                  bought_auto: {
-                    tooltip: "Bought at listed price",
-                  },
-                },
-              },
-            },
-          },
-          errors: {
-            create_item: {
-              title: "Create Item Error",
-              message: "An error occurred while trying to create item.",
-            },
-            update_item: {
-              title: "Update Item Error",
-              message: "An error occurred while trying to update item.",
-            },
-            delete_item: {
-              title: "Delete Item Error",
-              message: "An error occurred while trying to delete the item.",
-            },
-          },
-          success: {
-            create_item: {
-              title: "Create Item Success",
-              message: "Item {{name}} has been successfully created.",
-            },
-            update_item: {
-              title: "Update Item Success",
-              message: "Item {{name}} has been successfully updated.",
-            },
-            delete_item: {
-              title: "Delete Item Success",
-              message: "Item has been successfully deleted.",
-            },
-          },
-        },
-      },
-    },
     debug: {
       tabs: {
-        transaction: {
-          title: "Transactions",
-          prompts: {
-            delete: {
-              title: "Delete Transaction",
-              message: "Are you sure you want to delete the transaction {{name}}? This action cannot be undone.",
-              confirm: "Yes, delete",
-              cancel: "No, cancel",
-            },
-            update: {
-              title: "Update Transaction",
-            },
-          },
+        logging: {
+          title: "Logging",
           datatable: {
             columns: {
-              id: {
-                title: "ID",
-              },
-              name: {
-                title: "Name",
-                value: "{{name}} {{mod_name}} <blue>{{sub_type}}</blue>",
-              },
-              item_type: {
-                title: "Item Type",
-              },
-              quantity: {
-                title: "Quantity",
-              },
-              price: {
-                title: "Price",
-              },
-              created_at: {
-                title: "Created At",
-              },
+              command: "Command",
+              count: "Count",
               actions: {
                 title: "Actions",
                 buttons: {
-                  update: {
-                    tooltip: "Update",
-                  },
-                  delete: {
-                    tooltip: "Delete",
-                  },
+                  remove_tooltip: "Remove Log on command",
                 },
               },
             },
           },
-          success: {
-            update_transaction: {
-              title: "Update Transaction Success",
-              message: "Transaction {{name}} has been successfully updated.",
-            },
-            delete_transaction: {
-              title: "Delete Transaction Success",
-              message: "Transaction has been successfully deleted.",
-            },
+          buttons: {
+            add_log: "Add Log",
           },
-          errors: {
-            update_transaction: {
-              title: "Update Transaction Error",
-              message: "An error occurred while trying to update transaction.",
-            },
-            delete_transaction: {
-              title: "Delete Transaction Error",
-              message: "An error occurred while trying to delete transaction.",
-            },
-          },
-        },
-        database: {
-          title: "Database",
-          cards: {
-            reset: {
-              title: "Reset Database Table",
-              buttons: {
-                rest: {
-                  title: "Reset",
-                },
-              },
-              errors: {
-                rest: {
-                  title: "Reset Error",
-                  message: "An error occurred while trying to reset.",
-                },
-              },
-              success: {
-                rest: {
-                  title: "Reset Success",
-                  message: "Reset has been successfully completed.",
+          prompt: {
+            name: {
+              title: "Add Log",
+              fields: {
+                name: {
+                  label: "Log Name",
                 },
               },
             },
           },
         },
-        log_parser: {
-          title: "Log Parser",
+        states: {
+          title: "States",
+          accordions: {
+            app_info: "App Info",
+            app_error: "App Error",
+            settings: "Settings",
+            alerts: "Alerts",
+            user: "User",
+          },
         },
       },
     },
     auth: {
-      progress: {
-        logging_in: "Logging In",
-        refreshing_orders: "Refreshing Orders",
-        refreshing_auctions: "Refreshing Auctions",
-        refreshing_chat: "Refreshing Chat",
-        refreshing_cache: "Refreshing Cache",
-        refreshing_transaction: "Refreshing Transaction",
-        refreshing_stock_riven: "Refreshing Stock Rivens",
-      },
       errors: {
         login: {
           title: "Login Error",
-          email_not_exist: "Email does not exist",
-          password_invalid: "Password invalid",
-          message: "An error occurred while trying to log in.",
+          TooManyRequests: "Too many requests, please try again later",
+          InvalidCredentials: "Password invalid",
           banned: "You are banned",
           ban_reason: "<red>Reason: {{reason}}</red>",
           verification: "You need to verify your account Do this on Warframe Market website",
@@ -1564,374 +338,6 @@ export const en = {
         login: {
           title: "Login Success",
           message: "Welcome back! {{name}}",
-        },
-      },
-    },
-    trading_analytics: {
-      tabs: {
-        overview: {
-          title: "Overview",
-          fields: {
-            chart: {
-              label: "Chart Type",
-              placeholder: "Select chart type",
-              most_traded: "Most Traded",
-              profit_margin: "Profit Margin",
-              return_on_investment: "Return on Investment",
-            },
-          },
-          charts: {
-            supply_and_demand: {
-              title: "Supply and Demand Last 15 Days",
-              datasets: {
-                supply: "Supply",
-                demand: "Demand",
-              },
-            },
-            most_traded: {
-              title: "Most Traded Items Last 15 Days",
-            },
-            profit_margin: {
-              title: "Profit Margin Last 15 Days",
-            },
-            return_on_investment: {
-              title: "Return on Investment Last 15 Days",
-            },
-          },
-        },
-        item: {
-          title: "Item",
-          fields: {
-            order_type: {
-              label: "Order Type",
-              description: "Select order type",
-            },
-            tags: {
-              label: "Item Tags",
-              description: "Select tags",
-            },
-            date_range: {
-              placeholder: "Please select date range",
-            },
-          },
-          datatable: {
-            columns: {
-              name: "Name",
-              order_type: "Order Type",
-              volume: "Volume",
-              min_price: "Min Price",
-              max_price: "Max Price",
-              avg_price: "Avg Price",
-              moving_avg: "Moving Avg",
-            },
-          },
-        },
-        user: {
-          title: "User",
-          chart: {
-            title: "User Activity On Warframe Market",
-            datasets: {
-              registered_users: "Registered Users",
-              active_users: "Active Users",
-            },
-          },
-          fields: {
-            group_by: {
-              label: "Group By",
-              placeholder: "Select group by",
-              options: {
-                day: "Day",
-                hour: "Hour",
-              },
-            },
-            date_range: {
-              label: "Date Range",
-              placeholder: "Please select date range",
-            },
-          },
-        },
-        riven: {
-          title: "Riven",
-          fields: {
-            rolled: {
-              label: "Rolled",
-              description: "If the riven is rolled or not",
-              options: {
-                any: "Any",
-                yes: "Yes",
-                no: "No",
-              },
-            },
-            tags: {
-              label: "Item Tags",
-              description: "Select tags",
-            },
-            date_range: {
-              placeholder: "Please select date range",
-            },
-          },
-          datatable: {
-            columns: {
-              name: "Name",
-              volume: "Volume",
-              rolled: {
-                label: "Rolled",
-                yes: "Yes",
-                no: "No",
-              },
-              min_price: "Min Price",
-              max_price: "Max Price",
-              avg_price: "Avg Price",
-              avg_re_rolls: "Avg Re Rolls",
-            },
-          },
-        },
-      },
-    },
-    banned: {
-      wfm: {
-        title: "Warframe Market Account Suspended due to:",
-        reason: "Reason: {{reason}}",
-        until: "Until:",
-      },
-      qf: {
-        title: "Quantframe Account Suspended due to:",
-        reason: "Reason: {{reason}}",
-        until: "Until:",
-      },
-    },
-    warframe_market: {
-      tabs: {
-        orders: {
-          title: "Orders",
-          buttons: {
-            sell_manual: {
-              buy: {
-                tooltip: "Bought manually",
-              },
-              sell: {
-                tooltip: "Sold manually",
-              },
-            },
-            sell_auto: {
-              buy: {
-                tooltip: "Bought for listed price",
-              },
-              sell: {
-                tooltip: "Sold for listed price",
-              },
-            },
-            delete: {
-              tooltip: "Delete",
-            },
-            refresh: {
-              tooltip: "Refresh",
-            },
-            delete_all: {
-              tooltip: "Delete All",
-            },
-            info: {
-              tooltip: "Show Info",
-            },
-          },
-          prompts: {
-            delete: {
-              title: "Delete Order",
-              message: "Are you sure you want to delete the order {{name}}? This action cannot be undone.",
-              confirm: "Yes, delete",
-              cancel: "No, cancel",
-            },
-            delete_all: {
-              title: "Delete All Orders",
-              message: "Are you sure you want to delete all orders? This action cannot be undone.",
-              confirm: "Yes, delete",
-              cancel: "No, cancel",
-            },
-            sell: {
-              title: "Manual Sell",
-              field: {
-                label: "Sold For",
-              },
-            },
-            buy: {
-              title: "Manual Buy",
-              field: {
-                label: "Bought For",
-              },
-            },
-          },
-          success: {
-            create_stock: {
-              title: "Create Stock Success",
-              message: "Stock item {{name}} has been successfully created.",
-            },
-            sell_stock: {
-              title: "Sell Stock Success",
-              message: "Stock item {{name}} has been successfully sold.",
-            },
-            refresh: {
-              title: "Refresh Success",
-              message: "Total {{count}} orders have been successfully refreshed.",
-            },
-            delete: {
-              title: "Delete Success",
-              message: "Order has been successfully deleted.",
-            },
-            delete_all: {
-              title: "Delete All Success",
-              message: "All orders have been successfully deleted.",
-            },
-          },
-          errors: {
-            create_stock: {
-              title: "Create Stock Error",
-              message: "An error occurred while trying to create stock.",
-            },
-            sell_stock: {
-              title: "Sell Stock Error",
-              message: "An error occurred while trying to sell stock.",
-            },
-            refresh: {
-              title: "Refresh Error",
-              message: "An error occurred while trying to refresh orders.",
-            },
-            delete: {
-              title: "Delete Error",
-              message: "An error occurred while trying to delete order.",
-            },
-            delete_all: {
-              title: "Delete All Error",
-              message: "An error occurred while trying to delete all orders.",
-            },
-          },
-        },
-        auctions: {
-          title: "Auctions",
-          buttons: {
-            refresh: {
-              tooltip: "Refresh",
-            },
-            delete_all: {
-              tooltip: "Delete All",
-            },
-            delete: {
-              tooltip: "Delete",
-            },
-            import: {
-              tooltip: "Import auction to stock",
-            },
-          },
-          prompts: {
-            import_riven: {
-              title: "Import riven to stock",
-              bought: {
-                label: "Bought For",
-              },
-            },
-            delete: {
-              title: "Delete Auction",
-              message: "Are you sure you want to delete the auction? This action cannot be undone.",
-              confirm: "Yes, delete",
-              cancel: "No, cancel",
-            },
-            delete_all: {
-              title: "Delete All Auctions",
-              message: "Are you sure you want to delete all auctions? This action cannot be undone.",
-              confirm: "Yes, delete",
-              cancel: "No, cancel",
-            },
-          },
-          success: {
-            import_riven: {
-              title: "Import Success",
-              message: "Riven has been successfully imported to stock.",
-            },
-            refresh: {
-              title: "Refresh Success",
-              message: "Total {{count}} auctions have been successfully refreshed.",
-            },
-            delete: {
-              title: "Delete Success",
-              message: "Auction has been successfully deleted.",
-            },
-            delete_all: {
-              title: "Delete All Success",
-              message: "All orders have been successfully deleted.",
-            },
-          },
-          errors: {
-            refresh: {
-              title: "Refresh Error",
-              message: "An error occurred while trying to refresh auctions.",
-            },
-            import_riven: {
-              title: "Import Error",
-              message: "An error occurred while trying to import riven.",
-            },
-            delete: {
-              title: "Delete Error",
-              message: "An error occurred while trying to delete auction.",
-            },
-            delete_all: {
-              title: "Delete All Error",
-              message: "An error occurred while trying to delete all auctions.",
-            },
-          },
-        },
-      },
-    },
-    chats: {
-      buttons: {
-        delete: {
-          tooltip: "Delete",
-        },
-        refresh: {
-          tooltip: "Refresh",
-        },
-        delete_all: {
-          tooltip: "Delete All",
-        },
-      },
-      prompts: {
-        delete_all: {
-          title: "Delete All chats",
-          message: "Are you sure you want to delete all chats? This action cannot be undone.",
-          confirm: "Yes, delete",
-          cancel: "No, cancel",
-        },
-        delete: {
-          title: "Delete chat",
-          message: "Are you sure you want to delete the chat {{name}}? This action cannot be undone.",
-          confirm: "Yes, delete",
-          cancel: "No, cancel",
-        },
-      },
-      success: {
-        refresh: {
-          title: "Refresh Success",
-          message: "Total {{count}} chats have been successfully refreshed.",
-        },
-        delete: {
-          title: "Delete Success",
-          message: "Chat has been successfully deleted.",
-        },
-        delete_all: {
-          title: "Delete All Success",
-          message: "All chats have been successfully deleted.",
-        },
-      },
-      errors: {
-        refresh: {
-          title: "Refresh Error",
-          message: "An error occurred while trying to refresh chats.",
-        },
-        delete: {
-          title: "Delete Error",
-          message: "An error occurred while trying to delete chat.",
-        },
-        delete_all: {
-          title: "Delete All Error",
-          message: "An error occurred while trying to delete all chats.",
         },
       },
     },

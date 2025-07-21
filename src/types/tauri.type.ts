@@ -14,46 +14,13 @@ export namespace TauriTypes {
 
   export enum Events {
     // App
-    All = "*",
-    OnInitialize = "App:OnInitialize",
-    UpdateSettings = "App:UpdateSettings",
-    UpdateAppInfo = "App:UpdateAppInfo",
-    UpdateAppError = "App:UpdateAppError",
-
-    // Warframe Market
-    RefreshTransactions = "WFM:RefreshTransactions",
-    UpdateOrders = "WFM:UpdateOrders",
-    UpdateAuction = "WFM:UpdateAuction",
-
-    // Chat
-    UpdateChats = "WFM:UpdateChats",
-    ChatReceiveMessage = "Chat:ReceiveMessage",
-    ChatMessageSent = "Chat:MessageSent",
-
-    // Stock
-    RefreshStockItems = "Stock:RefreshStockItems",
-    RefreshStockRivens = "Stock:RefreshStockRivens",
-    RefreshWishListItems = "Stock:RefreshWishListItems",
+    OnError = "App:Error",
 
     // User
     UpdateUser = "User:Update",
-    UpdateUserStatus = "User:UpdateStatus",
 
-    // Live Trading
-    UpdateLiveTradingRunningState = "LiveTrading:UpdateRunningState",
-    OnLiveTradingError = "LiveTrading:OnError",
-    OnLiveTradingMessage = "LiveTrading:OnMessage",
-
-    // Notification
-    OnNotificationError = "Notification:OnError",
-    OnNotificationWarning = "Notification:OnWarning",
-    OnNotificationSuccess = "Notification:OnSuccess",
-
-    // Control
-    OnToggleControl = "Control:OnToggleControl",
-
-    // Alert
-    UpdateAlert = "Alert:Update",
+    // Settings
+    RefreshSettings = "Settings:Refresh",
   }
 
   export enum EventOperations {
@@ -86,6 +53,59 @@ export namespace TauriTypes {
     Riven = "riven",
   }
 
+  export interface AppInfo {
+    authors: string;
+    description: string;
+    name: string;
+    version: string;
+    is_dev: boolean;
+  }
+
+  export interface Settings {
+    debug: string[];
+    tos_uuid: string;
+    cross_play: boolean;
+    dev_mode: boolean;
+    wf_log_path: string;
+    live_scraper: SettingsLiveScraper;
+  }
+  export interface SettingsLiveScraper {
+    stock_mode: StockMode;
+    trade_modes: TradeMode[];
+    report_to_wfm: boolean;
+    auto_delete: boolean;
+    auto_trade: boolean;
+    should_delete_other_types: boolean;
+    stock_item: SettingsStockItem;
+    stock_riven: SettingsStockRiven;
+  }
+  export interface User {
+    anonymous: boolean;
+    auctions_limit: number;
+    wfm_avatar?: string;
+    check_code: string;
+    id: string;
+    wfm_username: string;
+    locale: string;
+    order_limit: number;
+    platform: string;
+    qf_access_token: string;
+    qf_banned: boolean;
+    qf_banned_reason?: string;
+    qf_banned_until?: string;
+    region: string;
+    wfm_status: UserStatus;
+    unread_messages: number;
+    verification: boolean;
+    wfm_access_token: string;
+    wfm_banned: boolean;
+    wfm_banned_reason?: string;
+    wfm_banned_until?: string;
+    patreon_tier?: string;
+    permissions?: string;
+  }
+
+  // Old code for TauriClient
   export interface AppInfo {
     authors: string;
     description: string;
@@ -166,14 +186,6 @@ export namespace TauriTypes {
   export interface InitializeResponds {
     app_info: AppInfo;
     settings: Settings;
-    stock_items: StockItem[];
-    stock_rivens: StockRiven[];
-    transactions: TransactionDto[];
-    user: User;
-    valid: boolean;
-    orders?: WFMarketTypes.OrderDto[];
-    auctions?: WFMarketTypes.Auction<string>[];
-    chats?: WFMarketTypes.ChatData[];
   }
 
   export interface Settings {
@@ -200,15 +212,6 @@ export namespace TauriTypes {
     types: string[];
   }
 
-  export interface SettingsLiveScraper {
-    stock_item: SettingsStockItem;
-    stock_mode: StockMode;
-    trade_modes: TradeMode[];
-    should_delete_other_types: boolean;
-    stock_riven: SettingsStockRiven;
-    webhook: string;
-  }
-
   export interface SettingsStockItem {
     min_profit: number;
     auto_delete: boolean;
@@ -220,7 +223,7 @@ export namespace TauriTypes {
     max_total_price_cap: number;
     min_sma: number;
     price_shift_threshold: number;
-    range_threshold: number;
+    profit_threshold: number;
     report_to_wfm: boolean;
     volume_threshold: number;
     min_wtb_profit_margin: number;
@@ -495,31 +498,6 @@ export namespace TauriTypes {
     id: number;
     price: number;
     quantity: number;
-  }
-  export interface User {
-    anonymous: boolean;
-    auctions_limit: number;
-    avatar?: string;
-    check_code: string;
-    id: string;
-    ingame_name: string;
-    locale: string;
-    order_limit: number;
-    platform: string;
-    qf_access_token: string;
-    qf_banned: boolean;
-    qf_banned_reason?: string;
-    qf_banned_until?: string;
-    region: string;
-    status: UserStatus;
-    unread_messages: number;
-    verification: boolean;
-    wfm_access_token: string;
-    wfm_banned: boolean;
-    wfm_banned_reason?: string;
-    wfm_banned_until?: string;
-    patreon_tier?: string;
-    permissions?: string;
   }
 
   export interface WishListItem extends Omit<StockEntryBase, "minimum_price"> {

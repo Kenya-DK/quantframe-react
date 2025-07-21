@@ -1,23 +1,21 @@
 import { Text, Group, Menu, Avatar, Button, Indicator } from "@mantine/core";
-import api, { SendTauriDataEvent, WFMThumbnail } from "@api/index";
-import { ResponseError, TauriTypes, UserStatus } from "$types";
+import api, { SendTauriDataEvent, SendTauriEvent, WFMThumbnail } from "@api/index";
+import { TauriTypes, UserStatus } from "$types";
 import classes from "./UserMenu.module.css";
 import { useTranslateComponent, useTranslateEnums } from "@hooks/useTranslate.hook";
 import { faGear, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMutation } from "@tanstack/react-query";
 import { notifications } from "@mantine/notifications";
-import { useNavigate } from "react-router-dom";
-import { SettingsForm } from "@components/Forms/Settings";
 import { modals } from "@mantine/modals";
 import { useAppContext } from "@contexts/app.context";
 import { useAuthContext } from "@contexts/auth.context";
+import { SettingsForm } from "../Forms/Settings";
 
 export function UserMenu() {
   // States
-  const navigate = useNavigate();
   const { user } = useAuthContext();
-  const { settings } = useAppContext();
+  const { settings, app_error } = useAppContext();
 
   // Translate general
   const useTranslateUserMenu = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -32,10 +30,9 @@ export function UserMenu() {
   // Mutations
   const logOutMutation = useMutation({
     mutationFn: () => api.auth.logout(),
-    onSuccess: () => {
+    onSuccess: (u) => {
       notifications.show({ title: useTranslateSuccess("logout.title"), message: useTranslateSuccess("logout.message"), color: "green.7" });
-      SendTauriDataEvent(TauriTypes.Events.UpdateUser, TauriTypes.EventOperations.SET, undefined);
-      navigate("/");
+      SendTauriDataEvent(TauriTypes.Events.UpdateUser, TauriTypes.EventOperations.SET, u);
     },
     onError: () => notifications.show({ title: useTranslateErrors("logout.title"), message: useTranslateErrors("logout.message"), color: "green.7" }),
   });
@@ -48,49 +45,52 @@ export function UserMenu() {
         color: "green.7",
       });
     },
-    onError: (e: ResponseError) => {
-      let i18n_key = e.extra_data.i18n_key || "message";
-      console.error(i18n_key);
-      notifications.show({
-        title: useTranslateErrors("update_settings.title"),
-        message: useTranslateErrors(`update_settings.${i18n_key}`),
-        color: "red.7",
-      });
-    },
+    onError: () => {},
   });
-
   return (
     <Menu shadow="md" width={200} transitionProps={{ transition: "fade-down", duration: 150 }} position="bottom-end" offset={5}>
       <Menu.Target>
         <Group>
-          {!user?.qf_banned && !user?.wfm_banned ? (
-            <Indicator
-              inline
-              size={16}
-              offset={7}
-              position="bottom-start"
-              withBorder
-              classNames={classes}
-              disabled={!user || user?.anonymous}
-              data-user-status={user?.status || UserStatus.Invisible}
-            >
-              <Avatar variant="subtle" src={WFMThumbnail(user?.avatar || "")} alt={user?.ingame_name} radius="xl" size="48px" />
-            </Indicator>
-          ) : (
-            <Text tt="uppercase" fw={500}>
-              Err
-            </Text>
-          )}
+          <Indicator
+            inline
+            hidden
+            size={16}
+            offset={7}
+            position="bottom-start"
+            withBorder
+            classNames={classes}
+            disabled={!user || user?.anonymous || app_error?.isWebSocketError()}
+            data-user-status={user?.wfm_status || UserStatus.Invisible}
+          >
+            <Avatar
+              data-error={app_error?.isWebSocketError()}
+              className={classes.avatar}
+              variant="subtle"
+              name="User Avatar"
+              src={user?.wfm_avatar && user?.wfm_avatar != "" ? WFMThumbnail(user?.wfm_avatar) : "/default_avatar.png"}
+              alt={user?.wfm_username}
+              radius="xl"
+              size="48px"
+            />
+          </Indicator>
         </Group>
       </Menu.Target>
 
       <Menu.Dropdown>
-        {user && !user.anonymous && !user?.qf_banned && !user?.wfm_banned && (
+        {user && !user.anonymous && !user?.qf_banned && !user?.wfm_banned && !app_error?.isWebSocketError() && (
           <>
             <Menu.Item
-              leftSection={<Avatar variant="subtle" src={WFMThumbnail(user?.avatar || "")} alt={user?.ingame_name} radius="xl" size={"md"} />}
+              leftSection={
+                <Avatar
+                  variant="subtle"
+                  src={user?.wfm_avatar && user?.wfm_avatar != "" ? WFMThumbnail(user?.wfm_avatar) : "/default_avatar.png"}
+                  alt={user?.wfm_username}
+                  radius="xl"
+                  size={"md"}
+                />
+              }
             >
-              {user?.ingame_name || "Unknown"}
+              {user?.wfm_username || "Unknown"}
             </Menu.Item>
             <Menu.Divider />
             <Group gap={3} mt="xs" classNames={{ root: classes.user_status }}>
@@ -100,8 +100,8 @@ export function UserMenu() {
                   p={3}
                   fullWidth
                   variant="subtle"
-                  data-active={status == user?.status}
-                  onClick={() => api.auth.set_status(status)}
+                  data-active={status == user?.wfm_status}
+                  onClick={() => api.user.set_status(status)}
                 >
                   <Text tt="uppercase" data-color-mode="text" data-user-status={status} fw={500}>
                     {useTranslateUserStatus(status)}
@@ -125,6 +125,7 @@ export function UserMenu() {
                   value={settings}
                   onSubmit={async (s) => {
                     await updateSettingsMutation.mutateAsync(s);
+                    SendTauriEvent(TauriTypes.Events.RefreshSettings);
                     modals.closeAll();
                   }}
                 />
@@ -135,6 +136,7 @@ export function UserMenu() {
           {useTranslateUserMenu("items.settings")}
         </Menu.Item>
         <Menu.Item
+          disabled={!user || user?.anonymous}
           leftSection={<FontAwesomeIcon icon={faRightFromBracket} />}
           onClick={async () => {
             await logOutMutation.mutateAsync();

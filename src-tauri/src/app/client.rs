@@ -1,42 +1,290 @@
-use tauri::AppHandle;
-use tauri::PackageInfo;
+use std::sync::Mutex;
 
-use crate::utils::modules::logger;
-use crate::utils::modules::logger::LoggerOptions;
+use crate::app::{Settings, User};
+use crate::notification::enums::{UIEvent, UIOperationEvent};
+use crate::utils::enums::log_level::LogLevel;
+use crate::utils::modules::error::AppError;
+use crate::utils::modules::{logger, states};
+use crate::{helper, APP};
+use qf_api::errors::ApiError as QFApiError;
+use qf_api::types::UserPrivate as QFUserPrivate;
+use qf_api::Client as QFClient;
+use serde_json::{json, Value};
+use sha256::digest;
+use tauri::{AppHandle, Emitter, Manager};
+use wf_market::client::Authenticated as WFAuthenticated;
+use wf_market::enums::ApiVersion;
+use wf_market::types::websocket::WsClient;
+use wf_market::types::UserPrivate as WFUserPrivate;
+use wf_market::Client as WFClient;
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct AppState {
-    pub app_id: String,
-    pub is_first_install: bool,
-    pub is_pre_release: bool,
-    pub is_development: bool,
-    pub tauri_app: AppHandle,
+    pub user: User,
+    pub settings: Settings,
+    pub wfm_client: WFClient<WFAuthenticated>,
+    pub qf_client: QFClient,
+    pub wfm_socket: Option<WsClient>,
+}
+
+fn update_user(mut cu_user: User, user: &WFUserPrivate, qf_user: &QFUserPrivate) -> User {
+    cu_user.anonymous = false;
+    cu_user.verification = user.verification;
+    cu_user.wfm_banned = user.banned.unwrap_or(false);
+    cu_user.qf_banned = qf_user.banned;
+    cu_user.wfm_id = user.id.to_string();
+    cu_user.wfm_username = user.ingame_name.clone();
+    cu_user.check_code = user.check_code.clone();
+    cu_user.locale = user.locale.clone();
+    cu_user.platform = user.platform.clone();
+    cu_user.unread_messages = user.unread_messages as i64;
+    cu_user.wfm_username = user.ingame_name.clone();
+    cu_user.wfm_id = user.id.to_string();
+    cu_user.wfm_avatar = user.avatar.clone();
+    cu_user
+}
+
+fn send_ws_state(event: UIEvent, cause: &str, data: Value) -> AppError {
+    let notify = states::notify_client().expect("Failed to get notification client state");
+    let err = AppError::new("WebSocket", "Connection state")
+        .with_context(data)
+        .with_cause(cause)
+        .set_log_level(LogLevel::Warning);
+    err.log(Some("websocket_info.log"));
+    notify.gui().send_event(event, Some(json!(err)));
+    err
+}
+
+async fn setup_socket(wfm_client: WFClient<WFAuthenticated>) -> Result<WsClient, AppError> {
+    if wfm_client.get_user().is_err() {
+        return Err(AppError::new(
+            "AppState:SetupSocket",
+            "WFM client user is not authenticated, please login first.",
+        ));
+    }
+
+    let ws_client = wfm_client
+        .create_websocket(ApiVersion::V1)
+        .register_callback("internal/connected", move |msg, _, _| {
+            send_ws_state(UIEvent::OnError, "connected", json!(msg.payload));
+            Ok(())
+        })
+        .unwrap()
+        .register_callback("internal/disconnected", move |msg, _, _| {
+            send_ws_state(UIEvent::OnError, "disconnected", json!(msg.payload));
+            Ok(())
+        })
+        .unwrap()
+        .register_callback("internal/reconnecting", move |msg, _, _| {
+            send_ws_state(UIEvent::OnError, "reconnecting", json!(msg.payload));
+            Ok(())
+        })
+        .unwrap()
+        .register_callback("MESSAGE/ONLINE_COUNT", move |_, _, _| Ok(()))
+        .unwrap()
+        .register_callback("USER/SET_STATUS", move |msg, _, _| {
+            let app = APP.get().expect("APP not initialized");
+            let state = app.state::<Mutex<AppState>>();
+            let mut guard = state.lock().expect("Failed to lock notification state");
+            match msg.payload.as_ref() {
+                Some(payload) => {
+                    guard.user.wfm_status = payload.as_str().unwrap_or("").to_string();
+                    guard.user.save().expect("Failed to save user status");
+                }
+                None => {}
+            }
+            let notify = states::notify_client().expect("Failed to get notification client state");
+            notify.gui().send_event_update(
+                UIEvent::UpdateUser,
+                UIOperationEvent::CreateOrUpdate,
+                Some(json!({
+                    "wfm_status": msg.payload
+                })),
+            );
+            Ok(())
+        })
+        .unwrap()
+        .register_callback("ERROR", move |msg, _, _| {
+            logger::warning(
+                "WebSocket:Error",
+                &format!("WebSocket error: {:?}", msg),
+                logger::LoggerOptions::default().set_file("websocket_info.log"),
+            );
+            Ok(())
+        })
+        .unwrap()
+        .build()
+        .await
+        .unwrap();
+    Ok(ws_client)
 }
 
 impl AppState {
-    pub fn new(tauri_app: AppHandle, is_first_install: bool, is_pre_release: bool) -> AppState {
-        AppState {
-            app_id: if cfg!(dev) {
-                "DEV".to_string()
-            } else {
-                "rqf6ahg*RFY3wkn4neq".to_string()
-            },
-            tauri_app,
-            is_first_install,
-            is_pre_release,
-            is_development: cfg!(dev),
+    pub async fn new(tauri_app: AppHandle) -> Self {
+        let user = User::load().expect("Failed to load user from auth.json");
+        let info = tauri_app.package_info().clone();
+
+        let mut state = AppState {
+            wfm_client: WFClient::new_default(&user.wfm_token, "N/A")
+                .await
+                .expect("Failed to create WFM client"),
+            qf_client: QFClient::new(
+                &user.qf_token,
+                "rqf6ahg*RFY3wkn4neq",
+                &tauri_plugin_os::platform().to_string(),
+                &digest(format!("hashStart-{}-hashEnd", helper::get_device_id()).as_bytes()),
+                true,
+                &info.name,
+                &info.version.to_string(),
+                "N/A",
+                "N/A",
+                "N/A",
+            ),
+            user,
+            settings: Settings::load().expect("Failed to load settings from settings.json"),
+            wfm_socket: None,
+        };
+
+        state
+            .qf_client
+            .analytics()
+            .add_metric("app_start", info.version.to_string());
+        match state.validate().await {
+            Ok((wfu, qfu)) => {
+                state.user = update_user(state.user, &wfu, &qfu);
+            }
+            Err(e) => {
+                e.log(Some("user_validation.log"));
+                state.user = User::default();
+            }
+        }
+        state.user.save().expect("Failed to save user to auth.json");
+        state
+    }
+}
+
+impl AppState {
+    pub async fn login(
+        &self,
+        email: &str,
+        password: &str,
+    ) -> Result<(QFClient, WFClient<WFAuthenticated>, User, WsClient), AppError> {
+        // Login to WFM client
+        let mut wfm_client = match WFClient::new()
+            .login(email, password, &self.wfm_client.get_device_id())
+            .await
+        {
+            Ok(client) => client,
+            Err(e) => {
+                return Err(AppError::from_wfm(
+                    "AppState:Login",
+                    "Failed to login to WFM client",
+                    e,
+                ))
+            }
+        };
+        let wfm_user = wfm_client
+            .get_user()
+            .map_err(|e| AppError::from_wfm("Login", "Failed to get WFM user", e))?;
+
+        let mut user = self.user.clone();
+        wfm_client.set_device_id(&self.qf_client.device);
+        user.wfm_token = wfm_client.get_token();
+
+        let mut qf_client = self.qf_client.clone();
+        qf_client.set_wfm_id(&wfm_user.id);
+        qf_client.set_wfm_username(&wfm_user.ingame_name);
+        qf_client.set_wfm_platform(&wfm_user.platform);
+
+        // Try to sign in to QF client, auto-register if user doesn't exist
+        let qf_user = self.authenticate_qf_user(&qf_client, &wfm_user).await?;
+        user.qf_token = qf_user.token.clone().unwrap();
+        qf_client.set_token(&user.qf_token);
+        let updated_user = update_user(user, &wfm_user, &qf_user);
+        let ws = setup_socket(wfm_client.clone()).await?;
+        updated_user.save()?;
+        Ok((qf_client, wfm_client, updated_user, ws))
+    }
+
+    pub async fn validate(&mut self) -> Result<(WFUserPrivate, QFUserPrivate), AppError> {
+        if self.user.wfm_token == "" || self.user.qf_token == "" {
+            return Err(AppError::new(
+                "AppState:Validate",
+                "User tokens are empty, please login first.",
+            ));
+        }
+        let wfm_user = match self.wfm_client.refresh().await {
+            Ok(_) => self.wfm_client.get_user().map_err(|e| {
+                AppError::from_wfm("AppState:Validate", "Failed to get WFM user", e)
+            })?,
+            Err(e) => {
+                return Err(AppError::from_wfm(
+                    "AppState:Validate",
+                    "Failed to refresh WFM client",
+                    e,
+                ))
+            }
+        };
+        self.qf_client.set_wfm_id(&wfm_user.id);
+        self.qf_client.set_wfm_username(&wfm_user.ingame_name);
+        self.qf_client.set_wfm_platform(&wfm_user.platform);
+        let qf_user = match self.qf_client.authentication().me().await {
+            Ok(u) => u,
+            Err(QFApiError::Unauthorized(err)) if err.error.message == "Unauthorized" => {
+                self.authenticate_qf_user(&self.qf_client, &wfm_user)
+                    .await?
+            }
+            Err(e) => {
+                return Err(AppError::from_qf(
+                    "AppState:Validate",
+                    "Failed to get QF user",
+                    e,
+                ))
+            }
+        };
+        let ws = setup_socket(self.wfm_client.clone()).await?;
+        self.wfm_socket = Some(ws);
+        self.qf_client.analytics().start().map_err(|e| {
+            AppError::from_qf("AppState:Validate", "Failed to start QF analytics", e)
+        })?;
+        Ok((wfm_user, qf_user))
+    }
+
+    async fn authenticate_qf_user(
+        &self,
+        qf_client: &QFClient,
+        wfm_user: &WFUserPrivate,
+    ) -> Result<QFUserPrivate, AppError> {
+        match qf_client
+            .authentication()
+            .signin(&wfm_user.id, &wfm_user.check_code)
+            .await
+        {
+            Ok(user) => Ok(user),
+            Err(QFApiError::InvalidCredentials(err)) if err.error.message == "invalid_username" => {
+                qf_client
+                    .authentication()
+                    .register(&wfm_user.id, &wfm_user.check_code)
+                    .await
+                    .map_err(|e| {
+                        AppError::from_qf(
+                            "AppState:AuthenticateQFUser",
+                            "Failed to register QF user",
+                            e,
+                        )
+                    })
+            }
+            Err(e) => Err(AppError::from_qf(
+                "AppState:AuthenticateQFUser",
+                "Failed to authenticate QF user",
+                e,
+            )),
         }
     }
 
-    pub fn get_app_info(&self) -> PackageInfo {
-        self.tauri_app.package_info().clone()
-    }
-
-    pub fn initialize(&self) {
-        logger::info(
-            "Initializing AppState...",
-            "client",
-            LoggerOptions::default(),
-        );
+    pub fn update_settings(&mut self, settings: Settings) -> Result<(), AppError> {
+        self.settings = settings;
+        self.settings.save()?;
+        Ok(())
     }
 }

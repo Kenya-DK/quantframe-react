@@ -3,41 +3,42 @@
 #![allow(deprecated)]
 // #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use app::client::AppState;
-use auth::AuthState;
-use cache::client::CacheClient;
-use debug::DebugClient;
-use live_scraper::client::LiveScraperClient;
-use log_parser::client::LogParser;
+// use cache::client::CacheClient;
+// use debug::DebugClient;
+// use live_scraper::client::LiveScraperClient;
+// use log_parser::client::LogParser;
 use migration::{Migrator, MigratorTrait};
-use notification::client::NotifyClient;
+// use notification::client::NotifyClient;
 use service::sea_orm::{Database, DatabaseConnection};
-use settings::SettingsState;
+// use settings::SettingsState;
 use utils::modules::error::AppError;
 use utils::modules::logger::{self, LoggerOptions, START_TIME};
 
+use std::env;
 use std::panic;
 use std::sync::{Arc, OnceLock};
 use std::time::Instant;
-use std::{env, sync::Mutex};
-
 use tauri::async_runtime::block_on;
 use tauri::{App, Manager};
+use tokio::sync::Mutex;
+
+use crate::notification::client::NotificationState;
 
 mod app;
-mod auth;
-mod cache;
+// mod auth;
+// mod cache;
 mod commands;
-mod debug;
+// mod debug;
 mod enums;
 mod helper;
-mod http_client;
-mod live_scraper;
-mod log_parser;
+// mod http_client;
+// mod live_scraper;
+// mod log_parser;
 mod notification;
-mod qf_client;
-mod settings;
+// mod qf_client;
+// mod settings;
 mod utils;
-mod wfm_client;
+// mod wfm_client;
 
 pub static APP: OnceLock<tauri::AppHandle> = OnceLock::new();
 pub static DATABASE: OnceLock<DatabaseConnection> = OnceLock::new();
@@ -104,114 +105,13 @@ async fn setup_manages(app: &mut App) -> Result<(), AppError> {
     );
     logger::clear_logs(7)?;
 
-    // Check if the app is being run for the first time
-    let is_first_install = !helper::dose_app_exist();
+    let notify_state: std::sync::Mutex<NotificationState> =
+        std::sync::Mutex::new(NotificationState::new());
+    app.manage(notify_state);
 
-    // Create and manage Notification state
-    let app_arc: Arc<Mutex<AppState>> = Arc::new(Mutex::new(AppState::new(
-        app.handle().clone(),
-        is_first_install,
-        false,
-    )));
-    logger::info(
-        "Setup:AppState",
-        "Creating AppState",
-        LoggerOptions::default(),
-    );
-    app.manage(app_arc.clone());
+    let app_state = std::sync::Mutex::new(AppState::new(app.handle().clone()).await);
+    app.manage(app_state);
 
-    // Create and manage Notification state
-    let notify_arc: Arc<Mutex<NotifyClient>> = Arc::new(Mutex::new(NotifyClient::new()));
-    logger::info(
-        "Setup:NotifyClient",
-        "Creating NotifyClient",
-        LoggerOptions::default(),
-    );
-    app.manage(notify_arc.clone());
-
-    // create and manage Settings state
-    let settings_arc = Arc::new(Mutex::new(SettingsState::setup()?));
-    logger::info(
-        "Setup:SettingsState",
-        "Creating SettingsState",
-        LoggerOptions::default(),
-    );
-    app.manage(settings_arc.clone());
-
-    // create and manage Auth state
-    let auth_arc = Arc::new(Mutex::new(AuthState::setup()?));
-    logger::info(
-        "Setup:AuthState",
-        "Creating AuthState",
-        LoggerOptions::default(),
-    );
-    app.manage(auth_arc.clone());
-
-    // create and manage Quantframe client state
-    let qf_client = Arc::new(Mutex::new(qf_client::client::QFClient::new()));
-    logger::info(
-        "Setup:QFClient",
-        "Creating QFClient",
-        LoggerOptions::default(),
-    );
-    app.manage(qf_client.clone());
-
-    // create and manage Warframe Market API client state
-    let wfm_client = Arc::new(Mutex::new(wfm_client::client::WFMClient::new()));
-    logger::info(
-        "Setup:WFMClient",
-        "Creating WFMClient",
-        LoggerOptions::default(),
-    );
-    app.manage(wfm_client.clone());
-
-    // create and manage Cache state
-    let cache_arc = Arc::new(Mutex::new(CacheClient::new()));
-    logger::info(
-        "Setup:CacheClient",
-        "Creating CacheClient",
-        LoggerOptions::default(),
-    );
-    app.manage(cache_arc.clone());
-
-    // create and manage HTTP client state
-    let http_client_arc = Arc::new(Mutex::new(http_client::client::HttpClient::setup()?));
-    logger::info(
-        "Setup:HttpClient",
-        "Creating HttpClient",
-        LoggerOptions::default(),
-    );
-    app.manage(http_client_arc.clone());
-
-    // create and manage LiveScraper state
-    let live_scraper = LiveScraperClient::new();
-    logger::info(
-        "Setup:LiveScraperClient",
-        "Creating LiveScraperClient",
-        LoggerOptions::default(),
-    );
-    app.manage(Arc::new(Mutex::new(live_scraper)));
-
-    // create and manage WhisperScraper state
-    let debug_client = DebugClient::new();
-    logger::info(
-        "Setup:DebugClient",
-        "Creating DebugClient",
-        LoggerOptions::default(),
-    );
-    app.manage(Arc::new(Mutex::new(debug_client)));
-
-    let log_parser = LogParser::new();
-    logger::info(
-        "Setup:LogParser",
-        "Creating LogParser",
-        LoggerOptions::default(),
-    );
-    app.manage(Arc::new(Mutex::new(log_parser)));
-
-    // Return AppState to be used in the app
-    let app_state = app_arc.lock().unwrap();
-    app_state.initialize();
     Ok(())
 }
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -235,130 +135,121 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(move |app| {
-            log_parser::types::trade_detection::init_detections();
+            // log_parser::types::trade_detection::init_detections();
             START_TIME.set(Instant::now()).unwrap();
             APP.get_or_init(|| app.handle().clone());
 
-            match block_on(init_database(false)) {
+            match block_on(init_database(true)) {
                 Ok(_) => {}
-                Err(e) => {
-                    let component = e.component();
-                    let cause = e.cause();
-                    let backtrace = e.backtrace();
-                    let log_level = e.log_level();
-                    logger::dolog(
-                        log_level,
-                        component.as_str(),
-                        format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
-                        LoggerOptions::default().set_file("init_database_error.log"),
-                    );
-                }
+                Err(e) => e.log(Some("init_database_error.log")),
             };
 
             // Setup Manages for the app
             match block_on(setup_manages(app)) {
                 Ok(_) => {}
-                Err(e) => {
-                    let component = e.component();
-                    let cause = e.cause();
-                    let backtrace = e.backtrace();
-                    let log_level = e.log_level();
-                    logger::dolog(
-                        log_level,
-                        component.as_str(),
-                        format!("Error: {:?}, {:?}", backtrace, cause).as_str(),
-                        LoggerOptions::default().set_file("setup_error.log"),
-                    );
-                }
+                Err(e) => e.log(Some("setup_error.log")),
             };
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             // Base commands
-            commands::app::app_init,
-            commands::app::app_exit,
+            commands::app::app_get_app_info,
+            commands::app::app_get_settings,
             commands::app::app_update_settings,
             // Auth commands
+            commands::auth::auth_me,
             commands::auth::auth_login,
-            commands::auth::auth_set_status,
             commands::auth::auth_logout,
-            // Cache commands
-            commands::cache::cache_reload,
-            commands::cache::cache_get_tradable_items,
-            commands::cache::cache_get_riven_weapons,
-            commands::cache::cache_get_riven_attributes,
-            commands::cache::cache_get_tradable_item,
-            // Transaction commands
-            commands::transaction::transaction_get_all,
-            commands::transaction::transaction_update,
-            commands::transaction::transaction_delete,
-            // Debug commands
+            // User commands
+            commands::user::user_set_status,
+            // User commands
+            commands::user::user_set_status,
+            // Analytics commands
+            commands::analytics::analytics_add_metric,
             commands::analytics::analytics_set_last_user_activity,
-            commands::analytics::analytics_send_metric,
-            // Debug commands
-            commands::debug::debug_db_reset,
-            // Log commands
-            commands::log::log_open_folder,
-            commands::log::log_export,
-            commands::log::log_send,
-            // Auctions commands
-            commands::auctions::auction_refresh,
-            commands::auctions::auction_delete,
-            commands::auctions::auction_delete_all,
-            commands::auctions::auction_import,
-            // Orders commands
-            commands::orders::order_delete,
-            commands::orders::order_delete_all,
-            commands::orders::order_refresh,
-            // Chat commands
-            commands::chat::chat_refresh,
-            commands::chat::chat_delete,
-            commands::chat::chat_send_message,
-            commands::chat::chat_on_message,
-            commands::chat::chat_get_messages,
-            commands::chat::chat_set_active,
-            commands::chat::chat_delete_all,
-            // Live Trading commands
-            commands::live_scraper::live_scraper_set_running_state,
-            // Stock Item commands
-            commands::stock_item::get_stock_items,
-            commands::stock_item::get_stock_item_overview,
-            commands::stock_item::stock_item_create,
-            commands::stock_item::stock_item_update,
-            commands::stock_item::stock_item_update_bulk,
-            commands::stock_item::stock_item_sell,
-            commands::stock_item::stock_item_delete,
-            commands::stock_item::stock_item_delete_bulk,
-            // Stock Riven commands
-            commands::stock_riven::get_stock_rivens,
-            commands::stock_riven::get_stock_riven_overview,
-            commands::stock_riven::stock_riven_update,
-            commands::stock_riven::stock_riven_update_bulk,
-            commands::stock_riven::stock_riven_sell,
-            commands::stock_riven::stock_riven_delete,
-            commands::stock_riven::stock_riven_delete_bulk,
-            commands::stock_riven::stock_riven_create,
-            // Wish List commands
-            commands::wish_list::get_wish_lists,
-            commands::wish_list::get_wish_list_overview,
-            commands::wish_list::wish_list_create,
-            commands::wish_list::wish_list_update,
-            commands::wish_list::wish_list_delete,
-            commands::wish_list::wish_list_bought,
-            // Notification commands
-            commands::notification::send_system_notification,
-            // Page Home commands
-            commands::pages::home::get_statistic,
-            // Log Parser commands
-            commands::log_parser::get_cache_lines,
-            commands::log_parser::get_last_read_date,
-            commands::log_parser::clear_cache_lines,
-            commands::log_parser::dump_cache_lines,
-            // Quantframe API commands
-            commands::qf_client::qf_get,
-            commands::qf_client::qf_post,
-            // Summary commands
-            commands::summary::summary_overview,
+            // Alert commands
+            commands::alert::alert_get_alerts,
+            // commands::auth::auth_set_status,
+
+            // commands::app::app_exit,
+            // commands::app::app_update_settings,
+            // // Cache commands
+            // commands::cache::cache_reload,
+            // commands::cache::cache_get_tradable_items,
+            // commands::cache::cache_get_riven_weapons,
+            // commands::cache::cache_get_riven_attributes,
+            // commands::cache::cache_get_tradable_item,
+            // // Transaction commands
+            // commands::transaction::transaction_get_all,
+            // commands::transaction::transaction_update,
+            // commands::transaction::transaction_delete,
+            // // Debug commands
+            // commands::analytics::analytics_set_last_user_activity,
+            // commands::analytics::analytics_send_metric,
+            // // Debug commands
+            // commands::debug::debug_db_reset,
+            // // Log commands
+            // commands::log::log_open_folder,
+            // commands::log::log_export,
+            // commands::log::log_send,
+            // // Auctions commands
+            // commands::auctions::auction_refresh,
+            // commands::auctions::auction_delete,
+            // commands::auctions::auction_delete_all,
+            // commands::auctions::auction_import,
+            // // Orders commands
+            // commands::orders::order_delete,
+            // commands::orders::order_delete_all,
+            // commands::orders::order_refresh,
+            // // Chat commands
+            // commands::chat::chat_refresh,
+            // commands::chat::chat_delete,
+            // commands::chat::chat_send_message,
+            // commands::chat::chat_on_message,
+            // commands::chat::chat_get_messages,
+            // commands::chat::chat_set_active,
+            // commands::chat::chat_delete_all,
+            // // Live Trading commands
+            // commands::live_scraper::live_scraper_set_running_state,
+            // // Stock Item commands
+            // commands::stock_item::get_stock_items,
+            // commands::stock_item::get_stock_item_overview,
+            // commands::stock_item::stock_item_create,
+            // commands::stock_item::stock_item_update,
+            // commands::stock_item::stock_item_update_bulk,
+            // commands::stock_item::stock_item_sell,
+            // commands::stock_item::stock_item_delete,
+            // commands::stock_item::stock_item_delete_bulk,
+            // // Stock Riven commands
+            // commands::stock_riven::get_stock_rivens,
+            // commands::stock_riven::get_stock_riven_overview,
+            // commands::stock_riven::stock_riven_update,
+            // commands::stock_riven::stock_riven_update_bulk,
+            // commands::stock_riven::stock_riven_sell,
+            // commands::stock_riven::stock_riven_delete,
+            // commands::stock_riven::stock_riven_delete_bulk,
+            // commands::stock_riven::stock_riven_create,
+            // // Wish List commands
+            // commands::wish_list::get_wish_lists,
+            // commands::wish_list::get_wish_list_overview,
+            // commands::wish_list::wish_list_create,
+            // commands::wish_list::wish_list_update,
+            // commands::wish_list::wish_list_delete,
+            // commands::wish_list::wish_list_bought,
+            // // Notification commands
+            // commands::notification::send_system_notification,
+            // // Page Home commands
+            // commands::pages::home::get_statistic,
+            // // Log Parser commands
+            // commands::log_parser::get_cache_lines,
+            // commands::log_parser::get_last_read_date,
+            // commands::log_parser::clear_cache_lines,
+            // commands::log_parser::dump_cache_lines,
+            // // Quantframe API commands
+            // commands::qf_client::qf_get,
+            // commands::qf_client::qf_post,
+            // // Summary commands
+            // commands::summary::summary_overview,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

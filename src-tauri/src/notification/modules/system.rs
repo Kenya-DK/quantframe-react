@@ -1,38 +1,29 @@
-use crate::APP;
-use tauri::Url;
-use tauri_plugin_notification::{Attachment, NotificationExt};
+use std::sync::{Arc, Weak};
 
-#[derive(Clone, Debug)]
-pub struct SystemModule {}
+use crate::notification::client::NotificationState;
 
-impl SystemModule {
-    pub fn new() -> Self {
-        SystemModule {}
+#[derive(Debug)]
+pub struct SystemModel {
+    client: Weak<NotificationState>,
+}
+
+impl SystemModel {
+    /**
+     * Creates a new `SystemModel` with an empty Authentication list.
+     * The `client` parameter is an `Arc<Client<State>>` that allows the route
+     */
+    pub fn new(client: Arc<NotificationState>) -> Arc<Self> {
+        Arc::new(Self {
+            client: Arc::downgrade(&client),
+        })
     }
-
-    pub fn send_notification(
-        &self,
-        title: &str,
-        body: &str,
-        icon: Option<&str>,
-        sound: Option<&str>,
-    ) {
-        let app = APP.get().expect("App not initialized");
-        let sound = match sound {
-            Some(s) => s,
-            None => "Default",
-        };
-        app.notification()
-            .builder()
-            .title(title)
-            .body(body)
-            .icon(icon.unwrap_or("assets/icons/icon.png"))
-            .sound(sound)
-            .attachment(Attachment::new(
-                "AS".to_string(),
-                Url::parse("icon://assets/icons/icon.png").unwrap(),
-            ))
-            .show()
-            .expect("Failed to show notification");
+    /**
+     * Creates a new `SystemModel` from an existing one, sharing the client.
+     * This is useful for cloning routes when the client state changes.
+     */
+    pub fn from_existing(_old: &SystemModel, client: Arc<NotificationState>) -> Arc<Self> {
+        Arc::new(Self {
+            client: Arc::downgrade(&client),
+        })
     }
 }

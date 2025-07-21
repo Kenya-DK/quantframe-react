@@ -1,1 +1,0 @@
-export { RestCard } from './RestCard';

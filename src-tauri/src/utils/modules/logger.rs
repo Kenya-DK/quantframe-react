@@ -1,4 +1,3 @@
-use eyre::eyre;
 use serde_json::Value;
 use std::{
     fs::{self, OpenOptions},
@@ -42,8 +41,8 @@ impl LoggerOptions {
         self.console = value;
         self.clone()
     }
-    pub fn set_file(&mut self, value: &str) -> Self {
-        self.file = Some(value.to_string());
+    pub fn set_file(&mut self, value: impl Into<String>) -> Self {
+        self.file = Some(value.into());
         self.clone()
     }
     pub fn set_show_time(&mut self, value: bool) -> Self {
@@ -159,6 +158,23 @@ pub fn dolog(level: LogLevel, component: &str, msg: &str, options: LoggerOptions
     }
 }
 
+pub fn log_error(err: &AppError, options: LoggerOptions) {
+    let mut message = String::new();
+    if !err.message.is_empty() {
+        message.push_str(&format!("{}: ", err.message));
+    }
+    if !err.cause.is_empty() {
+        message.push_str(&format!("Cause: {} ", err.cause));
+    }
+    if let Some(context) = err.context.as_ref() {
+        message.push_str(&format!(
+            "Context: {}",
+            serde_json::to_string(context).unwrap_or_default()
+        ));
+    }
+    dolog(err.log_level.clone(), &err.component, &message, options);
+}
+
 pub fn get_log_folder() -> PathBuf {
     let app_path = helper::get_app_storage_path();
     let log_path = app_path.join("logs");
@@ -178,35 +194,38 @@ pub fn get_log_folder() -> PathBuf {
     }
     log_path
 }
-
+#[allow(dead_code)]
 pub fn debug(component: &str, msg: &str, options: LoggerOptions) {
     dolog(LogLevel::Debug, component, msg, options);
 }
 
+#[allow(dead_code)]
 pub fn error(component: &str, msg: &str, options: LoggerOptions) {
     dolog(LogLevel::Error, component, msg, options);
 }
 
+#[allow(dead_code)]
 pub fn info(component: &str, msg: &str, options: LoggerOptions) {
     dolog(LogLevel::Info, component, msg, options);
 }
 
+#[allow(dead_code)]
 pub fn trace(component: &str, msg: &str, options: LoggerOptions) {
     dolog(LogLevel::Trace, component, msg, options);
 }
+#[allow(dead_code)]
 pub fn critical(component: &str, msg: &str, options: LoggerOptions) {
     dolog(LogLevel::Critical, component, msg, options);
 }
-
+#[allow(dead_code)]
 pub fn warning(component: &str, msg: &str, options: LoggerOptions) {
     dolog(LogLevel::Warning, component, msg, options);
 }
-
 #[allow(dead_code)]
 pub fn clear_log_file(file_path: &str) -> Result<(), AppError> {
     let path = get_log_folder().join(file_path);
     if path.exists() {
-        fs::write(&path, "").map_err(|e| AppError::new("clear_log_file", eyre!(e.to_string())))?;
+        fs::write(&path, "").map_err(|e| AppError::new("Logger:ClearLogFile", &e.to_string()))?;
     }
     Ok(())
 }
@@ -215,10 +234,10 @@ pub fn clear_log_file(file_path: &str) -> Result<(), AppError> {
 pub fn log_json(file_path: &str, data: &Value) -> Result<(), AppError> {
     let path = get_log_folder().join(file_path);
     let file =
-        std::fs::File::create(path).map_err(|e| AppError::new("log_json", eyre!(e.to_string())))?;
+        std::fs::File::create(path).map_err(|e| AppError::new("Logger:LogJson", &e.to_string()))?;
     let writer = std::io::BufWriter::new(file);
     serde_json::to_writer_pretty(writer, data)
-        .map_err(|e| AppError::new("log_json", eyre!(e.to_string())))?;
+        .map_err(|e| AppError::new("Logger:LogJson", &e.to_string()))?;
     Ok(())
 }
 pub fn clear_logs(days: i64) -> Result<(), AppError> {
@@ -242,7 +261,7 @@ pub fn clear_logs(days: i64) -> Result<(), AppError> {
                     continue;
                 }
                 fs::remove_dir_all(path)
-                    .map_err(|e| AppError::new("clear_logs", eyre!(e.to_string())))?;
+                    .map_err(|e| AppError::new("Logger:ClearLogs", &e.to_string()))?;
             }
             Err(_) => continue,
         }

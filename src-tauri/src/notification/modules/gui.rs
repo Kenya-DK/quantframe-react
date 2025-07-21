@@ -1,30 +1,28 @@
+use std::sync::{Arc, Mutex, Weak};
+
 use serde_json::{json, Value};
 use tauri::Emitter;
 
 use crate::{
-    notification::client::NotifyClient,
-    utils::{
-        enums::ui_events::{UIEvent, UIOperationEvent},
-        modules::logger::{self, LoggerOptions},
-    },
+    notification::{client::NotificationState, enums::*},
+    utils::modules::logger::{self, LoggerOptions},
     APP,
 };
 
-#[derive(Clone, Debug)]
-pub struct GUIModule {
-    client: NotifyClient,
-    component: String,
+#[derive(Debug)]
+pub struct GuiModel {
+    client: Weak<NotificationState>,
 }
 
-impl GUIModule {
-    pub fn new(client: NotifyClient) -> Self {
-        GUIModule {
-            client,
-            component: "GUINotification".to_string(),
-        }
-    }
-    fn get_component(&self, component: &str) -> String {
-        format!("{}:{}:{}", self.client.component, self.component, component)
+impl GuiModel {
+    /**
+     * Creates a new `GuiModel` with an empty Authentication list.
+     * The `client` parameter is an `Arc<NotificationState<State>>` that allows the route
+     */
+    pub fn new(client: Arc<NotificationState>) -> Arc<Self> {
+        Arc::new(Self {
+            client: Arc::downgrade(&client),
+        })
     }
 
     pub fn send_event(&self, event: UIEvent, data: Option<Value>) {
@@ -32,14 +30,14 @@ impl GUIModule {
         match app.emit("message", json!({ "event": event.as_str(), "data":  data })) {
             Ok(_) => {
                 logger::info(
-                    &self.get_component("SendEvent"),
+                    "Notification:GuiModel:SendEvent",
                     format!("Event: {}", event.as_str()).as_str(),
                     LoggerOptions::default(),
                 );
             }
             Err(e) => {
                 logger::error(
-                    &self.get_component("SendEvent"),
+                    "Notification:GuiModel:SendEvent",
                     format!("Event: {}", e).as_str(),
                     LoggerOptions::default(),
                 );
@@ -59,18 +57,27 @@ impl GUIModule {
         ) {
             Ok(_) => {
                 logger::info(
-                    &self.get_component("SendEventUpdate"),
+                    "Notification:GuiModel:SendEventUpdate",
                     format!("Event: {}", event.as_str()).as_str(),
                     LoggerOptions::default(),
                 );
             }
             Err(e) => {
                 logger::error(
-                    &self.get_component("SendEventUpdate"),
+                    "Notification:GuiModel:SendEventUpdate",
                     format!("Event: {}", e).as_str(),
                     LoggerOptions::default(),
                 );
             }
         }
+    }
+    /**
+     * Creates a new `GuiModel` from an existing one, sharing the client.
+     * This is useful for cloning routes when the client state changes.
+     */
+    pub fn from_existing(_old: &GuiModel, client: Arc<NotificationState>) -> Arc<Self> {
+        Arc::new(Self {
+            client: Arc::downgrade(&client),
+        })
     }
 }

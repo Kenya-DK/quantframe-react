@@ -16,10 +16,34 @@
 }
 
 .user_status {
-
   button[data-active='true'] {
     background-color: var(--mantine-color-default-hover);
   }
+}
 
+.avatar {
 
+  /* Red cross overlay */
+  &[data-error="true"]::before,
+  &[data-error="true"]::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 4px;
+    /* Thickness of the cross */
+    background-color: red;
+    transform-origin: center;
+    pointer-events: none;
+    border-radius: 2px;
+  }
+
+  &[data-error="true"]::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  &[data-error="true"]::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
 }

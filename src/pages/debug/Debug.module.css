@@ -1,15 +1,18 @@
-.transactions {
-  --offset: 250px;
-  height: calc(100vh - var(--offset)) !important;
+.container {
   &.alert {
-    --offset: 280px;
+    margin-top: 30px;
   }
 }
 
-.log_parser {
-  --offset: 334px;
+.databaseLogging {
+  margin-top: 30px;
+}
+
+.databaseLogging {
+  --offset: 300px;
   height: calc(100vh - var(--offset)) !important;
-  &.alert {
-    --offset: 280px;
+
+  &[data-alert="true"] {
+    --offset: 350px;
   }
 }

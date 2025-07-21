@@ -6,10 +6,10 @@ export type DeepPartial<T> = T extends object
 export type ErrOrResult<RES> = [ResponseError, null] | [null, RES] | [ResponseError, undefined] | [undefined, RES];
 
 export interface ResponseError extends Error {
-  backtrace: string;
-  cause: string;
   component: string;
-  extra_data: Record<string, any>;
+  message: string;
+  cause?: string;
+  context: Record<string, any>;
   log_level: string;
 }
 export interface MinMaxDto {

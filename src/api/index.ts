@@ -1,68 +1,95 @@
 import { invoke } from "@tauri-apps/api/core";
 import { AppModule } from "./app";
-import { AuctionModule } from "./auction";
 import { AuthModule } from "./auth";
-import { ChatModule } from "./chat";
-import { DebugModule } from "./debug";
-import { LiveScraperModule } from "./live_scraper";
-import { OrderModule } from "./order";
-import { StockModule } from "./stock";
-import { TransactionModule } from "./transaction";
 import { EventModule } from "./events";
-import { SummaryModule } from "./summary";
-import { CacheModule } from "./cache";
-import { ErrOrResult, TauriTypes } from "$types";
-import { LogModule } from "./log";
-import { AnalyticsModule } from "./analytics";
-import { NotificationModule } from "./notification";
-import { ItemModule } from "./item";
-import { LogParserModule } from "./log_parser";
-import { RivenModule } from "./riven";
+import { TauriTypes } from "$types";
 import { UserModule } from "./user";
+import { AnalyticsModule } from "./analytics";
+import { AlertModule } from "./alert";
 
 export class TauriClient {
+  _logging: string[] = [];
+  _loggingCount: Record<string, number> = {};
+
+  // private _logs: string[] = [];
   constructor() {
     this.app = new AppModule(this);
-    this.auction = new AuctionModule(this);
+    this.alert = new AlertModule(this);
+    this.events = new EventModule(this);
     this.auth = new AuthModule(this);
-    this.chat = new ChatModule(this);
-    this.debug = new DebugModule(this);
-    // this.items = new ItemModule(this);
-    this.live_scraper = new LiveScraperModule(this);
-    this.order = new OrderModule(this);
-    this.stock = new StockModule(this);
-    this.transaction = new TransactionModule(this);
-    this.events = new EventModule();
-    this.notification = new NotificationModule(this);
-    this.summary = new SummaryModule(this);
-    this.cache = new CacheModule(this);
-    this.items = new ItemModule(this);
-    this.rivens = new RivenModule(this);
     this.user = new UserModule(this);
-    this.log = new LogModule(this);
     this.analytics = new AnalyticsModule(this);
-    this.log_parser = new LogParserModule(this);
+    this._logging = localStorage.getItem("tauri_logs") ? JSON.parse(localStorage.getItem("tauri_logs")!) : ["*"];
   }
 
-  async sendInvoke<T>(command: string, data?: any): Promise<ErrOrResult<T>> {
-    console.log(`Sending invoke: ${command}`, data);
-    if (data) data = this.convertToCamelCase(data);
-    return new Promise((resolve) => {
-      invoke(command, data)
-        .then((res) => {
-          resolve([null, res] as ErrOrResult<T>);
-        })
-        .catch((err) => {
-          resolve([err, null] as ErrOrResult<T>);
-        });
+  private logInvoke(command: string, data?: any, response?: any, error?: any) {
+    this._loggingCount[command] = (this._loggingCount[command] || 0) + 1;
+    if (this._logging.includes("*")) this._loggingCount["*"] = (this._loggingCount["*"] || 0) + 1;
+
+    if (!this._logging.includes(command) && !this._logging.includes("*") && !error) return;
+    // Enhanced console theming
+    let groupStyleBackground = "#257bebff";
+    if (error) groupStyleBackground = "#dc2626"; // Error background
+
+    const groupStyle = `color: #ffffff; background: ${groupStyleBackground}; padding: 2px 8px; border-radius: 3px; font-weight: bold;`;
+    const dataStyle = "color: #059669; font-weight: 600;";
+    const responseStyle = "color: #0891b2; font-weight: 600;";
+    const errorStyle = "color: #dc2626; font-weight: bold; background: #fef2f2; padding: 2px 4px; border-radius: 3px;";
+    const successStyle = "color: #16a34a; font-weight: bold; background: #f0fdf4; padding: 2px 4px; border-radius: 3px;";
+    const timeStyle = "color: #6b7280; ";
+
+    const time = new Date().toLocaleTimeString("da-DK", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+    console.group(`%cTauri Invoke - ${command}`, groupStyle);
+    console.log(`%cTime:`, timeStyle, time);
+    if (data) console.log(`%cData:`, dataStyle, data);
+    if (response) console.log(`%cResponse:`, responseStyle, response);
+    if (error) console.error(`%cError:`, errorStyle, error);
+    else console.log(`%cSuccess`, successStyle);
+    console.groupEnd();
+  }
+
+  getLogging(search: string): { command: string; count: number }[] {
+    let filteredLogs = this._logging;
+    if (search) filteredLogs = this._logging.filter((log) => log.toLowerCase().includes(search.toLowerCase()));
+    return filteredLogs.map((command) => {
+      return { command, count: this._loggingCount[command] || 0 };
     });
   }
-  async get<T>(path: string, parameters?: string[]): Promise<T> {
-    const url = `${path}${parameters && parameters.length > 0 ? `?${parameters.join("&")}` : ""}`;
-    const [err, result] = await this.sendInvoke<T>("qf_get", { url });
-    console.log(`GET ${url}`, result);
-    if (err) throw err;
-    return result;
+
+  private saveLogging() {
+    localStorage.setItem("tauri_logs", JSON.stringify(this._logging));
+  }
+
+  async addLog(command: string) {
+    if (!this._logging.includes(command)) this._logging.push(command);
+    this.saveLogging();
+  }
+
+  async removeLog(command: string) {
+    this._logging = this._logging.filter((log) => log !== command);
+    this.saveLogging();
+  }
+
+  async sendInvoke<T>(command: string, data?: any): Promise<T> {
+    if (data) data = this.convertToCamelCase(data);
+    return new Promise((resolve, reject) => {
+      invoke(command, data)
+        .then((res) => {
+          this.logInvoke(command, data, res);
+          resolve(res as T);
+        })
+        .catch((err) => {
+          this.logInvoke(command, data, undefined, err);
+          reject(err);
+        });
+    });
   }
 
   convertToCamelCase(payload: Record<string, any>): Record<string, any> {
@@ -111,25 +138,11 @@ export class TauriClient {
   }
   // Modules
   app: AppModule;
-  auction: AuctionModule;
-  auth: AuthModule;
-  chat: ChatModule;
-  debug: DebugModule;
-  // items: ItemModule;
-  live_scraper: LiveScraperModule;
-  order: OrderModule;
-  stock: StockModule;
-  transaction: TransactionModule;
+  alert: AlertModule;
   events: EventModule;
-  notification: NotificationModule;
-  summary: SummaryModule;
-  cache: CacheModule;
+  auth: AuthModule;
   analytics: AnalyticsModule;
-  log: LogModule;
-  items: ItemModule;
-  rivens: RivenModule;
   user: UserModule;
-  log_parser: LogParserModule;
 }
 
 declare global {
@@ -140,7 +153,6 @@ declare global {
 }
 
 window.api = new TauriClient();
-// (window as any).api = api as
 const OnTauriEvent = <T>(event: string, callback: (data: T) => void) => window.api.events.OnEvent(event, callback);
 const OnTauriDataEvent = <T>(event: string, callback: (data: { operation: TauriTypes.EventOperations; data: T }) => void) =>
   window.api.events.OnEvent(event, callback);
@@ -152,18 +164,9 @@ const OffTauriDataEvent = <T>(event: string, callback: (data: { operation: Tauri
 const SendTauriEvent = async (event: string, data?: any) => window.api.events.FireEvent(event, data);
 const SendTauriDataEvent = async (event: string, operation: TauriTypes.EventOperations, data: any) =>
   window.api.events.FireEvent(event, { operation, data });
-
 const WFMThumbnail = (thumb: string) => `https://warframe.market/static/assets/${thumb}`;
-const SendNotificationToWindow = async (title: string, message: string) => window.api.notification.sendSystemNotification(title, message);
-
-export {
-  OnTauriEvent,
-  OnTauriDataEvent,
-  OffTauriEvent,
-  OffTauriDataEvent,
-  SendTauriEvent,
-  SendTauriDataEvent,
-  WFMThumbnail,
-  SendNotificationToWindow,
+const AddMetric = (metric: string, value: number | string) => {
+  window.api.analytics.add_metric(metric, value);
 };
+export { WFMThumbnail, OnTauriEvent, OffTauriEvent, SendTauriEvent, OnTauriDataEvent, OffTauriDataEvent, SendTauriDataEvent, AddMetric };
 export default window.api;

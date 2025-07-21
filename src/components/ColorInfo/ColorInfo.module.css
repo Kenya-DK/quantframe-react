@@ -1,8 +1,0 @@
-.box {
-  border-radius: 3px;
-}
-button {
-  &[disabled] {
-    cursor: default;
-  }
-}

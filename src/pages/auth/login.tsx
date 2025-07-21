@@ -43,42 +43,19 @@ export default function LoginPage() {
       setBannedReason(u.qf_banned_reason);
       notifications.show({
         title: useTranslateSuccess("login.title"),
-        message: useTranslateSuccess("login.message", { name: u.ingame_name }),
+        message: useTranslateSuccess("login.message", { name: u.wfm_username }),
         color: "green.7",
       });
-      setInterval(1);
-      setProgressText(useTranslateProgress("refreshing_orders"));
-      await api.order.refresh();
-
-      setProgressText(useTranslateProgress("refreshing_auctions"));
-      setInterval(2);
-      await api.auction.refresh();
-
-      setProgressText(useTranslateProgress("refreshing_chat"));
-      setInterval(3);
-      await api.chat.refresh();
-
-      setProgressText(useTranslateProgress("refreshing_cache"));
-      setInterval(4);
-      await api.cache.reload();
-
-      setProgressText(useTranslateProgress("login.progress_text_4"));
-      setInterval(6);
       SendTauriDataEvent(TauriTypes.Events.UpdateUser, TauriTypes.EventOperations.SET, u);
     },
     onError: (err: ResponseError) => {
       console.error(err);
-      const { ApiError }: { ApiError: { messages: string[] } } = err.extra_data as any;
-      if (ApiError.messages.some((m) => m.includes("app.account.email_not_exist")))
-        return notifications.show({ title: useTranslateErrors("login.title"), message: useTranslateErrors("login.email_not_exist"), color: "red.7" });
-      if (ApiError.messages.some((m) => m.includes("app.account.password_invalid")))
-        return notifications.show({
-          title: useTranslateErrors("login.title"),
-          message: useTranslateErrors("login.password_invalid"),
-          color: "red.7",
-        });
-
-      return notifications.show({ title: useTranslateErrors("login.title"), message: useTranslateErrors("login.message"), color: "red.7" });
+      const { type } = err.context as any;
+      return notifications.show({
+        title: useTranslateErrors("login.title"),
+        message: useTranslateErrors(`login.${type}`),
+        color: "red.7",
+      });
     },
   });
 

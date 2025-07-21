@@ -8,12 +8,7 @@ import { dk } from "./lang/dk";
 import { DatesProvider } from "@mantine/dates";
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import { AppRoutes } from "@components/Layouts/Routes";
-import { PromptModal } from "@components/Modals/Prompt";
 import { AppContextProvider } from "@contexts/app.context";
-import { LiveScraperContextProvider } from "@contexts/liveScraper.context";
-import { WarframeMarketContextProvider } from "@contexts/warframeMarket.context";
-import { useEffect } from "react";
-import api from "./api";
 import faMoneyBillTrendDown from "@icons/faMoneyBillTrendDown";
 import faTradingAnalytics from "@icons/faTradingAnalytics";
 import faAmberStar from "@icons/faAmberStar";
@@ -30,6 +25,9 @@ import faPolarityNaramon from "@icons/faPolarityNaramon";
 import faPolarityMadurai from "@icons/faPolarityMadurai";
 import faPolarityAura from "@icons/faPolarityAura";
 import faPolarityVazarin from "@icons/faPolarityVazarin";
+import { useEffect } from "react";
+import api from "./api";
+import { PromptModal } from "./components/Modals/Prompt";
 library.add(faMoneyBillTrendDown);
 library.add(faTradingAnalytics);
 library.add(faAmberStar);
@@ -47,13 +45,6 @@ library.add(faPolarityMadurai);
 library.add(faPolarityAura);
 library.add(faPolarityVazarin);
 dom.watch();
-const modals = {
-  prompt: PromptModal,
-  /* ...other modals */
-};
-export interface MantineModalsOverride {
-  modals: typeof modals;
-}
 
 i18n.use(initReactI18next).init({
   resources: {
@@ -73,12 +64,16 @@ export const queryClient = new QueryClient({
     },
   },
 });
-
+const modals = {
+  prompt: PromptModal,
+  /* ...other modals */
+};
+export interface MantineModalsOverride {
+  modals: typeof modals;
+}
 function App() {
   useEffect(() => {
-    window.onclick = async () => {
-      await api.analytics.setLastUserActivity();
-    };
+    window.onclick = async () => await api.analytics.setLastUserActivity();
   }, []);
 
   return (
@@ -93,11 +88,7 @@ function App() {
       >
         <DatesProvider settings={{ locale: "en" }}>
           <AppContextProvider>
-            <WarframeMarketContextProvider>
-              <LiveScraperContextProvider>
-                <AppRoutes />
-              </LiveScraperContextProvider>
-            </WarframeMarketContextProvider>
+            <AppRoutes />
           </AppContextProvider>
         </DatesProvider>
         {/* <ReactQueryDevtools initialIsOpen={false} /> */}
