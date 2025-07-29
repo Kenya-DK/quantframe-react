@@ -18,8 +18,7 @@ pub struct ArcaneModule {
 impl ArcaneModule {
     pub fn new(client: Arc<CacheState>) -> Arc<Self> {
         Arc::new(Self {
-            // path: client.base_path.join("items/Arcanes.json"),
-            path: client.base_path.join("items/TradableItems.json"),
+            path: client.base_path.join("items/Arcanes.json"),
             items: Mutex::new(Vec::new()),
             client: Arc::downgrade(&client),
         })
