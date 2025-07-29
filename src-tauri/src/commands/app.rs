@@ -1,16 +1,20 @@
 use std::sync::Mutex;
 
 use serde_json::{json, Value};
+use utils::Error;
 
 use crate::{
     app::{client::AppState, Settings},
-    notification::client::NotificationState,
-    utils::modules::error::AppError,
-    APP,
+    APP, HAS_STARTED,
 };
 
 #[tauri::command]
-pub async fn app_get_app_info() -> Result<Value, AppError> {
+pub async fn was_initialized() -> Result<bool, Error> {
+    let started = HAS_STARTED.get().cloned().unwrap_or(false);
+    return Ok(started);
+}
+#[tauri::command]
+pub async fn app_get_app_info() -> Result<Value, Error> {
     let tauri_app = APP.get().expect("App handle not found");
     let info = tauri_app.package_info().clone();
     Ok(json!({
@@ -23,10 +27,8 @@ pub async fn app_get_app_info() -> Result<Value, AppError> {
 }
 
 #[tauri::command]
-pub async fn app_get_settings(
-    app: tauri::State<'_, Mutex<AppState>>,
-) -> Result<Settings, AppError> {
-    let app = app.lock().expect("Failed to lock AppState");
+pub async fn app_get_settings(app: tauri::State<'_, Mutex<AppState>>) -> Result<Settings, Error> {
+    let app = app.lock()?;
     Ok(app.settings.clone())
 }
 
@@ -34,10 +36,8 @@ pub async fn app_get_settings(
 pub async fn app_update_settings(
     settings: Settings,
     app: tauri::State<'_, Mutex<AppState>>,
-) -> Result<Settings, AppError> {
-    let mut app = app.lock().expect("Failed to lock AppState");
-    app.settings = settings.clone();
-    // Save settings to file or database if necessary
-    app.settings.save()?;
+) -> Result<Settings, Error> {
+    let mut app = app.lock()?;
+    app.update_settings(settings.clone())?;
     Ok(settings.clone())
 }

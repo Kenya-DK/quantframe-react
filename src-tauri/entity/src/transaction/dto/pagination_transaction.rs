@@ -49,33 +49,33 @@ impl TransactionPaginationQueryDto {
         self.clone()
     }
 
-    pub fn set_query(&mut self, query: Option<String>) -> Self {
-        self.query = query;
+    pub fn set_query(&mut self, query: impl Into<String>) -> Self {
+        self.query = Some(query.into());
         self.clone()
     }
 
-    pub fn set_sort_by(&mut self, sort_by: Option<String>) -> Self {
-        self.sort_by = sort_by;
+    pub fn set_sort_by(&mut self, sort_by: impl Into<String>) -> Self {
+        self.sort_by = Some(sort_by.into());
         self.clone()
     }
-    pub fn set_sort_direction(&mut self, sort_direction: Option<SortDirection>) -> Self {
-        self.sort_direction = sort_direction;
+    pub fn set_sort_direction(&mut self, sort_direction: SortDirection) -> Self {
+        self.sort_direction = Some(sort_direction);
         self.clone()
     }
-    pub fn set_transaction_type(&mut self, transaction_type: Option<TransactionType>) -> Self {
-        self.transaction_type = transaction_type;
+    pub fn set_transaction_type(&mut self, transaction_type: TransactionType) -> Self {
+        self.transaction_type = Some(transaction_type);
         self.clone()
     }
-    pub fn set_item_type(&mut self, item_type: Option<TransactionItemType>) -> Self {
-        self.item_type = item_type;
+    pub fn set_item_type(&mut self, item_type: TransactionItemType) -> Self {
+        self.item_type = Some(item_type);
         self.clone()
     }
-    pub fn set_from_date(&mut self, from_date: Option<DateTimeUtc>) -> Self {
-        self.from_date = from_date;
+    pub fn set_from_date(&mut self, from_date: DateTimeUtc) -> Self {
+        self.from_date = Some(from_date);
         self.clone()
     }
-    pub fn set_to_date(&mut self, to_date: Option<DateTimeUtc>) -> Self {
-        self.to_date = to_date;
+    pub fn set_to_date(&mut self, to_date: DateTimeUtc) -> Self {
+        self.to_date = Some(to_date);
         self.clone()
     }
 }

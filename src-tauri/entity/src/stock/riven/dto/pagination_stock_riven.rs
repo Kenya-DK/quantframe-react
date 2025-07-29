@@ -12,3 +12,23 @@ pub struct StockRivenPaginationQueryDto {
     pub status: Option<String>,
     // You can add more fields as needed for filtering
 }
+impl StockRivenPaginationQueryDto {
+    pub fn new(page: i64, limit: i64) -> Self {
+        Self {
+            pagination: PaginationQueryDto::new(page, limit),
+            query: None,
+            sort_by: None,
+            sort_direction: Some(SortDirection::Asc),
+            status: None,
+        }
+    }
+    pub fn default() -> Self {
+        Self {
+            pagination: PaginationQueryDto::default(),
+            query: None,
+            sort_by: None,
+            sort_direction: Some(SortDirection::Asc),
+            status: None,
+        }
+    }
+}

@@ -1,7 +1,7 @@
 import { ResponseError } from "../types";
 
 export class AppError {
-  constructor(private error: ResponseError) {}
+  constructor(public error: ResponseError) {}
 
   isWebSocket() {
     return this.error.component === "WebSocket";

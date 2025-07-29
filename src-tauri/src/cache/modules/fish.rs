@@ -1,61 +1,49 @@
-use std::path::PathBuf;
-
-use eyre::eyre;
-
-use crate::{
-    cache::{
-        client::CacheClient,
-        types::{cache_fish::CacheFish, cache_item_base::CacheItemBase},
-    },
-    utils::modules::error::AppError,
+use std::{
+    path::PathBuf,
+    sync::{Arc, Mutex, Weak},
 };
 
-#[derive(Clone, Debug)]
+use utils::{find_by, get_location, info, read_json_file, Error, LoggerOptions};
+
+use crate::cache::{client::CacheState, types::CacheFish};
+
+#[derive(Debug)]
 pub struct FishModule {
-    pub client: CacheClient,
-    // debug_id: String,
-    component: String,
     path: PathBuf,
-    pub items: Vec<CacheFish>,
+    items: Mutex<Vec<CacheFish>>,
+    client: Weak<CacheState>,
 }
 
 impl FishModule {
-    pub fn new(client: CacheClient) -> Self {
-        FishModule {
-            client,
-            // debug_id: "ch_client_auction".to_string(),
-            component: "Fish".to_string(),
-            path: PathBuf::from("items/Fish.json"),
-            items: Vec::new(),
+    pub fn new(client: Arc<CacheState>) -> Arc<Self> {
+        Arc::new(Self {
+            path: client.base_path.join("items/Fish.json"),
+            items: Mutex::new(Vec::new()),
+            client: Arc::downgrade(&client),
+        })
+    }
+    pub fn get_items(&self) -> Result<Vec<CacheFish>, Error> {
+        let items = self
+            .items
+            .lock()
+            .expect("Failed to lock items mutex")
+            .clone();
+        Ok(items)
+    }
+    pub fn load(&self) -> Result<(), Error> {
+        let client = self.client.upgrade().expect("Client should not be dropped");
+        match read_json_file::<Vec<CacheFish>>(&client.base_path.join(self.path.clone())) {
+            Ok(items) => {
+                let mut items_lock = self.items.lock().unwrap();
+                *items_lock = items;
+                info(
+                    "Cache:Fish:load",
+                    "Loaded Fish items from cache",
+                    LoggerOptions::default(),
+                );
+            }
+            Err(e) => return Err(e.with_location(get_location!())),
         }
-    }
-    fn get_component(&self, component: &str) -> String {
-        format!("{}:{}", self.component, component)
-    }
-    fn update_state(&self) {
-        self.client.update_fish_module(self.clone());
-    }
-    pub fn get_all(&self) -> Vec<CacheItemBase> {
-        let mut items: Vec<CacheItemBase> = Vec::new();
-        items.append(
-            &mut self
-                .items
-                .iter()
-                .map(|item| item.convert_to_base_item())
-                .collect(),
-        );
-        items
-    }
-    pub fn load(&mut self) -> Result<(), AppError> {
-        let content = self.client.read_text_from_file(&self.path)?;
-        let items: Vec<CacheFish> = serde_json::from_str(&content).map_err(|e| {
-            AppError::new(
-                self.get_component("Load").as_str(),
-                eyre!(format!("Failed to parse FishModule from file: {}", e)),
-            )
-        })?;
-        self.items = items;
-        self.update_state();
         Ok(())
     }
 }

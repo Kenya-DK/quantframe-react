@@ -8,6 +8,7 @@ export type ErrOrResult<RES> = [ResponseError, null] | [null, RES] | [ResponseEr
 export interface ResponseError extends Error {
   component: string;
   message: string;
+  location: string;
   cause?: string;
   context: Record<string, any>;
   log_level: string;

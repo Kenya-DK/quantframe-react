@@ -7,27 +7,36 @@ use app::client::AppState;
 // use debug::DebugClient;
 // use live_scraper::client::LiveScraperClient;
 // use log_parser::client::LogParser;
+use ::utils::clear_logs;
+use ::utils::critical;
+use ::utils::error;
+use ::utils::info;
 use migration::{Migrator, MigratorTrait};
 // use notification::client::NotifyClient;
+use ::utils::init_logger;
+use ::utils::set_base_path;
+use ::utils::warning;
+use ::utils::Error;
+use ::utils::LoggerOptions;
 use service::sea_orm::{Database, DatabaseConnection};
 // use settings::SettingsState;
-use utils::modules::error::AppError;
-use utils::modules::logger::{self, LoggerOptions, START_TIME};
 
 use std::env;
 use std::panic;
-use std::sync::{Arc, OnceLock};
+use std::sync::{Mutex, OnceLock};
 use std::time::Instant;
-use tauri::async_runtime::block_on;
-use tauri::{App, Manager};
-use tokio::sync::Mutex;
+use tauri::{App, Emitter, Manager};
 
+use crate::cache::client::CacheState;
 use crate::notification::client::NotificationState;
 
 mod app;
+mod utils;
 // mod auth;
-// mod cache;
+mod cache;
 mod commands;
+mod macros;
+
 // mod debug;
 mod enums;
 mod helper;
@@ -37,14 +46,14 @@ mod helper;
 mod notification;
 // mod qf_client;
 // mod settings;
-mod utils;
 // mod wfm_client;
 
 pub static APP: OnceLock<tauri::AppHandle> = OnceLock::new();
 pub static DATABASE: OnceLock<DatabaseConnection> = OnceLock::new();
+pub static HAS_STARTED: OnceLock<bool> = OnceLock::new();
 
 // If use_debug is true the debug database will be used and all data will be lost on restart
-async fn init_database(use_debug: bool) -> Result<(), AppError> {
+async fn init_database(use_debug: bool) -> Result<(), Error> {
     // Create the database connection and store it
     let storage_path = helper::get_app_storage_path();
 
@@ -56,7 +65,7 @@ async fn init_database(use_debug: bool) -> Result<(), AppError> {
 
     // Create the path to the database file
     let file_path_backup = format!("{}/{}_backup", storage_path.to_str().unwrap(), file_name);
-    logger::info(
+    info(
         "Setup:Database",
         "Creating a backup of the database file",
         LoggerOptions::default(),
@@ -69,7 +78,7 @@ async fn init_database(use_debug: bool) -> Result<(), AppError> {
     if use_debug {
         let db_debug_file_path_backup = file_path.replace(file_name, debug_file_name);
         file_name = debug_file_name;
-        logger::warning(
+        warning(
             "Setup:Database",
             "Debug mode is enabled, using the debug database file no data wil be saved",
             LoggerOptions::default(),
@@ -96,29 +105,31 @@ async fn init_database(use_debug: bool) -> Result<(), AppError> {
     Ok(())
 }
 
-async fn setup_manages(app: &mut App) -> Result<(), AppError> {
+async fn setup_manages(app: tauri::AppHandle) -> Result<(), Error> {
     // Clear the logs older then 7 days
-    logger::info(
-        "Setup:Logs",
-        "Clearing logs older then 7 days",
-        LoggerOptions::default(),
-    );
-    logger::clear_logs(7)?;
+    clear_logs(7)?;
 
-    let notify_state: std::sync::Mutex<NotificationState> =
-        std::sync::Mutex::new(NotificationState::new());
+    let notify_state: Mutex<NotificationState> = Mutex::new(NotificationState::new());
     app.manage(notify_state);
 
-    let app_state = std::sync::Mutex::new(AppState::new(app.handle().clone()).await);
-    app.manage(app_state);
+    // Clone the fields needed for CacheState before moving app_state
+    let app_state = AppState::new(app.clone()).await;
+    let qf_client = app_state.qf_client.clone();
+    let user = app_state.user.clone();
+    app.manage(Mutex::new(app_state));
+
+    let cache_state = Mutex::new(CacheState::new(&qf_client, &user).await?);
+    app.manage(cache_state);
 
     Ok(())
 }
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // Initialize the logger for elapsed time tracking
+
     panic::set_hook(Box::new(|panic_info| {
         eprintln!("Panic: {:?}", panic_info);
-        logger::critical(
+        critical(
             "Panic",
             format!("Panic: {:?}", panic_info).as_str(),
             LoggerOptions::default().set_file("panic.log"),
@@ -136,23 +147,36 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(move |app| {
             // log_parser::types::trade_detection::init_detections();
-            START_TIME.set(Instant::now()).unwrap();
             APP.get_or_init(|| app.handle().clone());
+            // Clone the handle for async task
+            let app_handle = app.handle().clone();
 
-            match block_on(init_database(true)) {
-                Ok(_) => {}
-                Err(e) => e.log(Some("init_database_error.log")),
-            };
-
-            // Setup Manages for the app
-            match block_on(setup_manages(app)) {
-                Ok(_) => {}
-                Err(e) => e.log(Some("setup_error.log")),
-            };
+            tauri::async_runtime::spawn(async move {
+                if let Err(e) = init_database(true).await {
+                    emit_error!(e);
+                    e.log(Some("init_database_error.log"));
+                }
+                if let Err(e) = setup_manages(app_handle.clone()).await {
+                    emit_error!(e);
+                    e.log(Some("setup_error.log"));
+                }
+                if let Err(e) = app_handle.emit("app:ready", ()) {
+                    error(
+                        "Emit",
+                        &format!("Failed to emit app:ready event: {:?}", e),
+                        LoggerOptions::default().set_file("emit_error.log"),
+                    );
+                }
+                HAS_STARTED.set(true).unwrap();
+            });
+            init_logger();
+            set_base_path(helper::get_app_storage_path().to_str().unwrap());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             // Base commands
+            commands::dashboard::dashboard_summary,
+            commands::app::was_initialized,
             commands::app::app_get_app_info,
             commands::app::app_get_settings,
             commands::app::app_update_settings,
@@ -169,87 +193,10 @@ pub fn run() {
             commands::analytics::analytics_set_last_user_activity,
             // Alert commands
             commands::alert::alert_get_alerts,
-            // commands::auth::auth_set_status,
-
-            // commands::app::app_exit,
-            // commands::app::app_update_settings,
-            // // Cache commands
-            // commands::cache::cache_reload,
-            // commands::cache::cache_get_tradable_items,
-            // commands::cache::cache_get_riven_weapons,
-            // commands::cache::cache_get_riven_attributes,
-            // commands::cache::cache_get_tradable_item,
-            // // Transaction commands
-            // commands::transaction::transaction_get_all,
-            // commands::transaction::transaction_update,
-            // commands::transaction::transaction_delete,
-            // // Debug commands
-            // commands::analytics::analytics_set_last_user_activity,
-            // commands::analytics::analytics_send_metric,
-            // // Debug commands
-            // commands::debug::debug_db_reset,
-            // // Log commands
-            // commands::log::log_open_folder,
-            // commands::log::log_export,
-            // commands::log::log_send,
-            // // Auctions commands
-            // commands::auctions::auction_refresh,
-            // commands::auctions::auction_delete,
-            // commands::auctions::auction_delete_all,
-            // commands::auctions::auction_import,
-            // // Orders commands
-            // commands::orders::order_delete,
-            // commands::orders::order_delete_all,
-            // commands::orders::order_refresh,
-            // // Chat commands
-            // commands::chat::chat_refresh,
-            // commands::chat::chat_delete,
-            // commands::chat::chat_send_message,
-            // commands::chat::chat_on_message,
-            // commands::chat::chat_get_messages,
-            // commands::chat::chat_set_active,
-            // commands::chat::chat_delete_all,
-            // // Live Trading commands
-            // commands::live_scraper::live_scraper_set_running_state,
-            // // Stock Item commands
-            // commands::stock_item::get_stock_items,
-            // commands::stock_item::get_stock_item_overview,
-            // commands::stock_item::stock_item_create,
-            // commands::stock_item::stock_item_update,
-            // commands::stock_item::stock_item_update_bulk,
-            // commands::stock_item::stock_item_sell,
-            // commands::stock_item::stock_item_delete,
-            // commands::stock_item::stock_item_delete_bulk,
-            // // Stock Riven commands
-            // commands::stock_riven::get_stock_rivens,
-            // commands::stock_riven::get_stock_riven_overview,
-            // commands::stock_riven::stock_riven_update,
-            // commands::stock_riven::stock_riven_update_bulk,
-            // commands::stock_riven::stock_riven_sell,
-            // commands::stock_riven::stock_riven_delete,
-            // commands::stock_riven::stock_riven_delete_bulk,
-            // commands::stock_riven::stock_riven_create,
-            // // Wish List commands
-            // commands::wish_list::get_wish_lists,
-            // commands::wish_list::get_wish_list_overview,
-            // commands::wish_list::wish_list_create,
-            // commands::wish_list::wish_list_update,
-            // commands::wish_list::wish_list_delete,
-            // commands::wish_list::wish_list_bought,
-            // // Notification commands
-            // commands::notification::send_system_notification,
-            // // Page Home commands
-            // commands::pages::home::get_statistic,
-            // // Log Parser commands
-            // commands::log_parser::get_cache_lines,
-            // commands::log_parser::get_last_read_date,
-            // commands::log_parser::clear_cache_lines,
-            // commands::log_parser::dump_cache_lines,
-            // // Quantframe API commands
-            // commands::qf_client::qf_get,
-            // commands::qf_client::qf_post,
-            // // Summary commands
-            // commands::summary::summary_overview,
+            // Cache commands
+            commands::cache::cache_get_tradable_items,
+            // Log commands
+            commands::logs::log_export,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

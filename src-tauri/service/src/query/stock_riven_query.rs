@@ -1,4 +1,4 @@
-use ::entity::dto::StockEntryOverview;
+use ::entity::dto::*;
 use ::entity::enums::stock_status::StockStatus;
 use ::entity::stock::riven::dto::StockRivenPaginationQueryDto;
 use ::entity::stock::riven::{stock_riven, stock_riven::Entity as StockRiven};
@@ -11,44 +11,7 @@ use sea_query::Expr;
 pub struct StockRivenQuery;
 
 impl StockRivenQuery {
-    pub async fn get_overview(db: &DbConn) -> Result<Vec<StockEntryOverview>, DbErr> {
-        // Overview - Group by status with aggregations
-        Ok(StockRiven::find()
-            .select_only()
-            .column_as(Expr::val("status"), "id")
-            .column_as(stock_riven::Column::Status, "key")
-            .column_as(Expr::col(stock_riven::Column::Id).count(), "count")
-            .column_as(
-                Expr::expr(Func::coalesce([
-                    Expr::col(stock_riven::Column::ListPrice).sum().into(),
-                    Expr::val(0).into(),
-                ])),
-                "revenue",
-            )
-            .column_as(
-                Expr::expr(Func::coalesce([
-                    Expr::col(stock_riven::Column::Bought).sum().into(),
-                    Expr::val(0).into(),
-                ])),
-                "expenses",
-            )
-            .column_as(
-                Expr::expr(Func::coalesce([
-                    Expr::col(stock_riven::Column::ListPrice)
-                        .sum()
-                        .sub(Expr::col(stock_riven::Column::Bought).sum())
-                        .into(),
-                    Expr::val(0).into(),
-                ])),
-                "profit",
-            )
-            .group_by(stock_riven::Column::Status)
-            .into_model::<StockEntryOverview>()
-            .all(db)
-            .await?)
-    }
-
-    pub async fn get_all_v2(
+    pub async fn get_all(
         db: &DbConn,
         query: StockRivenPaginationQueryDto,
     ) -> Result<::entity::dto::pagination::PaginatedDto<stock_riven::Model>, DbErr> {
@@ -114,13 +77,10 @@ impl StockRivenQuery {
             total, limit, page, results,
         ))
     }
-    pub async fn get_all(db: &DbConn) -> Result<Vec<stock_riven::Model>, DbErr> {
-        StockRiven::find().all(db).await
-    }
 
     pub async fn get_all_ids(db: &DbConn) -> Result<Vec<i64>, DbErr> {
-        let items = StockRivenQuery::get_all(db).await?;
-        let res = items.iter().map(|x| x.id).collect();
+        let data = StockRivenQuery::get_all(db, StockRivenPaginationQueryDto::new(1, -1)).await?;
+        let res = data.results.iter().map(|x| x.id).collect();
         Ok(res)
     }
 
@@ -141,24 +101,6 @@ impl StockRivenQuery {
             .filter(Expr::col(stock_riven::Column::Id).is_in(ids))
             .all(db)
             .await
-    }
-    pub async fn clear_all_order_id(db: &DbConn) -> Result<Vec<stock_riven::Model>, DbErr> {
-        StockRiven::update_many()
-            .col_expr(
-                stock_riven::Column::WfmOrderId,
-                Expr::value(Option::<String>::None),
-            )
-            .col_expr(
-                stock_riven::Column::Status,
-                Expr::value(StockStatus::Pending),
-            )
-            .col_expr(
-                stock_riven::Column::ListPrice,
-                Expr::value(Option::<i64>::None),
-            )
-            .exec(db)
-            .await?;
-        StockRivenQuery::get_all(db).await
     }
 
     pub async fn get_by_riven_name(

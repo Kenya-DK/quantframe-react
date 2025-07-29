@@ -54,6 +54,7 @@ migration = { path = "./migration" }
 service = { path = "./service" }
 entity = { path = "./entity" }
 qf_api = { path = "./qf_api" }
+utils = { path = "./utils" }
 
 [workspace]
-members = [".", "qf_api", "service", "entity", "migration"]
+members = [".", "qf_api", "service", "entity", "migration", "utils"]

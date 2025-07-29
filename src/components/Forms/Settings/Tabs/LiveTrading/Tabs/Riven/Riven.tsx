@@ -2,7 +2,7 @@ import { Box, Button, Group, NumberInput } from "@mantine/core";
 import { TauriTypes } from "$types";
 import { useTranslateCommon, useTranslateForms } from "@hooks/useTranslate.hook";
 import { useForm } from "@mantine/form";
-import { TooltipIcon } from "@components/TooltipIcon";
+import { TooltipIcon } from "@components/Shared/TooltipIcon";
 
 export type RivenPanelProps = {
   value: TauriTypes.SettingsStockRiven;

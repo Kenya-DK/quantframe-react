@@ -1,10 +1,10 @@
 import { Center, Progress } from "@mantine/core";
 import { LogInForm } from "@components/Forms/LogIn";
-import api, { SendTauriDataEvent } from "@api/index";
+import api, { SendTauriDataEvent, SendTauriEvent } from "@api/index";
 import { useMutation } from "@tanstack/react-query";
 import { notifications } from "@mantine/notifications";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
-import { TextTranslate } from "@components/TextTranslate";
+import { TextTranslate } from "@components/Shared/TextTranslate";
 import { ResponseError, TauriTypes } from "$types";
 import { useState } from "react";
 
@@ -51,6 +51,7 @@ export default function LoginPage() {
     onError: (err: ResponseError) => {
       console.error(err);
       const { type } = err.context as any;
+      SendTauriEvent(TauriTypes.Events.OnError, err);
       return notifications.show({
         title: useTranslateErrors("login.title"),
         message: useTranslateErrors(`login.${type}`),

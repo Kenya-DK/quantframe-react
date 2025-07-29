@@ -1,6 +1,17 @@
 export const en = {
   months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-  notifications: {},
+  notifications: {
+    log_export: {
+      error: {
+        title: "Log Export Error",
+        message: "An error occurred while exporting logs.",
+      },
+      success: {
+        title: "Log Export Success",
+        message: "Logs have been exported successfully to {{path}}.",
+      },
+    },
+  },
   common: {
     buttons: {
       save: {
@@ -81,7 +92,40 @@ export const en = {
         },
       },
     },
+    select_item_tags: {
+      tags: {
+        label: "Tags",
+        description: "Select tags to filter items",
+      },
+    },
     forms: {
+      create_category_summary: {
+        fields: {
+          icon: {
+            label: "Icon",
+            placeholder: "Icon",
+            description: "The icon of the category",
+            tooltip: "The icon of the category",
+            error: "Invalid icon",
+          },
+          name: {
+            label: "Name",
+            placeholder: "Name",
+            description: "The name of the category",
+            tooltip: "The name of the category",
+            error: "Invalid name",
+          },
+          types: {
+            label: "Types",
+            description: "Types for the category",
+          },
+        },
+        buttons: {
+          submit: {
+            label: "Create/Save Category",
+          },
+        },
+      },
       log_in: {
         title: "Warframe Market - Login",
         register: "Don't have an account? Register",
@@ -103,6 +147,46 @@ export const en = {
       },
       settings: {
         tabs: {
+          themes: {
+            title: "Themes",
+          },
+          notifications: {
+            title: "Notifications",
+          },
+          advanced: {
+            title: "Advanced",
+          },
+          summary: {
+            title: "Summary",
+            fields: {
+              resent_days: {
+                label: "Resent Days",
+                tooltip: "How many days of data to show",
+              },
+              resent_transactions: {
+                label: "Resent Transactions",
+                tooltip: "How many transactions to show",
+              },
+            },
+            datatable: {
+              columns: {
+                name: "Name",
+                tags: "Tags",
+                types: "Types",
+                actions: {
+                  title: "Actions",
+                  buttons: {
+                    edit: {
+                      tooltip: "Edit Item",
+                    },
+                    delete: {
+                      tooltip: "Delete Item",
+                    },
+                  },
+                },
+              },
+            },
+          },
           live_trading: {
             title: "Live Trading",
             general: {
@@ -277,10 +361,102 @@ export const en = {
           cancel: "Cancel",
         },
       },
+      app_error: {
+        title: "Error in {{component}} component",
+        version: "Version: {{version}}",
+        cause: "Cause: {{cause}}",
+        message: "Message: {{message}}",
+        location: "Location: {{location}}",
+        footer:
+          "Please report this error to the developers,\nBy exporting the log file just click the button below this wil create a file in on your desktop",
+        export_log: "Export Log",
+      },
     },
   },
   context: {},
   pages: {
+    home: {
+      tooltips: {
+        bar_chart: {
+          footer: {
+            expense: "Total expenses",
+            revenue: "Total revenue",
+            profit: "Total profit",
+            trades: "Number of trades",
+            sales: "Number of sales",
+            purchases: "Number of purchases",
+          },
+        },
+      },
+      cards: {
+        total: {
+          title: "Total Profit",
+          footer:
+            "Sales: <blue>{{sales}}</blue> | Purchases: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | Profit Margin: <blue>{{profit_margin}}</blue>%",
+          bar_chart: {
+            title: "Total Profit",
+            datasets: {
+              this_year: "This Year",
+              last_year: "Last Year",
+            },
+            footers: {
+              profit: "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+              trades: "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>",
+            },
+          },
+        },
+        today: {
+          title: "Today's Profit",
+          footer:
+            "Sales: <blue>{{sales}}</blue> | Purchases: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | Profit Margin: <blue>{{profit_margin}}</blue>%",
+          bar_chart: {
+            title: "Today's Profit",
+            datasets: {
+              profit: "Profit",
+            },
+            footers: {
+              profit: "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+              trades: "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>",
+            },
+          },
+        },
+        recent_days: {
+          bar_chart: {
+            title: "Last {{days}} days",
+            datasets: {
+              profit: "Profit",
+            },
+            footers: {
+              profit: "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+              trades: "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>",
+            },
+          },
+        },
+        best_seller: {
+          title: "Best Seller Profit",
+          footer:
+            "Name: <blue>{{name}}</blue> | S: <blue>{{sales}}</blue> | P: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | PM: <blue>{{profit_margin}}</blue>%",
+          by_category: {
+            datatable: {
+              columns: {
+                name: "Name",
+                revenue: "Revenue",
+                expense: "Expense",
+                profit: "Profit",
+                profit_margin: "Profit Margin",
+              },
+            },
+          },
+        },
+        last_transaction: {
+          title: "Last Transaction",
+          info_box: {
+            purchase: "Purchase {{count}}",
+            sale: "Sale {{count}}",
+          },
+        },
+      },
+    },
     debug: {
       tabs: {
         logging: {

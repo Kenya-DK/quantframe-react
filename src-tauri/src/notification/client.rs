@@ -1,4 +1,4 @@
-use crate::notification::{enums::*, modules::*, types::*};
+use crate::notification::{enums::*, modules::*};
 use std::{
     num::{NonZero, NonZeroU32},
     sync::{Arc, OnceLock},
@@ -14,16 +14,7 @@ pub struct NotificationState {
 }
 impl NotificationState {
     fn arc(&self) -> Arc<Self> {
-        self.self_arc
-            .get_or_init(|| {
-                Arc::new(Self {
-                    self_arc: OnceLock::new(),
-                    discord_model: OnceLock::new(),
-                    gui_model: OnceLock::new(),
-                    system_model: OnceLock::new(),
-                })
-            })
-            .clone()
+        self.self_arc.get_or_init(|| Arc::new(Self::new())).clone()
     }
     pub fn new() -> Self {
         Self {

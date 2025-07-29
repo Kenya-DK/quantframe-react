@@ -1,13 +1,15 @@
 use std::sync::{Arc, Mutex, Weak};
 
-use serde_json::{json, Value};
-use tauri::Emitter;
-
+use crate::app::client::AppState;
+use crate::emit_event;
 use crate::{
+    macros,
     notification::{client::NotificationState, enums::*},
-    utils::modules::logger::{self, LoggerOptions},
     APP,
 };
+use serde_json::{json, Value};
+use tauri::{Emitter, Manager};
+use utils::{error, info, LoggerOptions};
 
 #[derive(Debug)]
 pub struct GuiModel {
@@ -26,50 +28,24 @@ impl GuiModel {
     }
 
     pub fn send_event(&self, event: UIEvent, data: Option<Value>) {
-        let app = APP.get().expect("App not initialized");
-        match app.emit("message", json!({ "event": event.as_str(), "data":  data })) {
-            Ok(_) => {
-                logger::info(
-                    "Notification:GuiModel:SendEvent",
-                    format!("Event: {}", event.as_str()).as_str(),
-                    LoggerOptions::default(),
-                );
-            }
-            Err(e) => {
-                logger::error(
-                    "Notification:GuiModel:SendEvent",
-                    format!("Event: {}", e).as_str(),
-                    LoggerOptions::default(),
-                );
-            }
-        }
+        emit_event!(
+            "message",
+            json!({ "event": event.as_str(), "data": data }),
+            "SendEvent"
+        );
     }
+
     pub fn send_event_update(
         &self,
         event: UIEvent,
         operation: UIOperationEvent,
         data: Option<Value>,
     ) {
-        let app = APP.get().expect("App not initialized");
-        match app.emit(
+        emit_event!(
             "message_update",
-            json!({ "event": event.as_str(), "operation":operation.as_str(), "data":  data }),
-        ) {
-            Ok(_) => {
-                logger::info(
-                    "Notification:GuiModel:SendEventUpdate",
-                    format!("Event: {}", event.as_str()).as_str(),
-                    LoggerOptions::default(),
-                );
-            }
-            Err(e) => {
-                logger::error(
-                    "Notification:GuiModel:SendEventUpdate",
-                    format!("Event: {}", e).as_str(),
-                    LoggerOptions::default(),
-                );
-            }
-        }
+            json!({ "event": event.as_str(), "operation": operation.as_str(), "data": data }),
+            "SendEventUpdate"
+        );
     }
     /**
      * Creates a new `GuiModel` from an existing one, sharing the client.

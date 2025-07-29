@@ -1,4 +1,4 @@
-use crate::{endpoints::*, errors::*, utils::*};
+use crate::{endpoints::*, enums::*, errors::*, utils::*};
 use governor::{
     RateLimiter,
     clock::DefaultClock,
@@ -35,6 +35,8 @@ pub struct Client {
     authentication_route: OnceLock<Arc<AuthenticationRoute>>,
     analytics_route: OnceLock<Arc<AnalyticsRoute>>,
     alert_route: OnceLock<Arc<AlertRoute>>,
+    cache_route: OnceLock<Arc<CacheRoute>>,
+    item_price_route: OnceLock<Arc<ItemPriceRoute>>,
 }
 impl Client {
     fn arc(&self) -> Arc<Self> {
@@ -56,6 +58,8 @@ impl Client {
                     authentication_route: self.authentication_route.clone(),
                     analytics_route: self.analytics_route.clone(),
                     alert_route: self.alert_route.clone(),
+                    cache_route: self.cache_route.clone(),
+                    item_price_route: self.item_price_route.clone(),
                     limiter: self.limiter.clone(),
                 })
             })
@@ -107,6 +111,8 @@ impl Client {
             authentication_route: OnceLock::new(),
             analytics_route: OnceLock::new(),
             alert_route: OnceLock::new(),
+            cache_route: OnceLock::new(),
+            item_price_route: OnceLock::new(),
             limiter: build_limiter(REQUESTS_PER_SECOND).into(),
         }
     }
@@ -116,7 +122,8 @@ impl Client {
         path: &str,
         body: Option<Value>,
         headers: Option<HashMap<String, String>>,
-    ) -> Result<(T, HeaderMap, RequestError), ApiError> {
+        response_format: ResponseFormat,
+    ) -> Result<(ApiResponse<T>, HeaderMap, RequestError), ApiError> {
         let url = format!("{}{}", "http://localhost:6969", path);
         let mut default_headers = reqwest::header::HeaderMap::new();
 
@@ -200,12 +207,6 @@ impl Client {
                 let headers = resp.headers().clone();
                 let status = resp.status();
 
-                let body = resp
-                    .text()
-                    .await
-                    .map_err(|_| ApiError::Unknown("Error".to_string()))?;
-                // Log the error with the response body
-                error.set_content(body.clone());
                 error.set_status_code(status.as_u16());
                 // Check if the status code indicates an error
                 match status {
@@ -217,6 +218,9 @@ impl Client {
                     | reqwest::StatusCode::FORBIDDEN
                     | reqwest::StatusCode::UNAUTHORIZED
                     | reqwest::StatusCode::NOT_FOUND => {
+                        let body = resp.text().await.map_err(|_| {
+                            ApiError::Unknown("Failed to read response body".to_string())
+                        })?;
                         match serde_json::from_str::<ResponseError>(&body) {
                             Ok(r) => error.set_error(r),
                             Err(e) => return Err(ApiError::ParsingError(error, e)),
@@ -239,11 +243,38 @@ impl Client {
                     }
                 }
 
-                let data = serde_json::from_str::<T>(&body);
+                match response_format {
+                    ResponseFormat::Json => {
+                        let body = resp
+                            .text()
+                            .await
+                            .map_err(|_| ApiError::Unknown("Failed to read JSON".to_string()))?;
+                        error.set_content(body.clone());
+                        error.set_status_code(status.as_u16());
 
-                match data {
-                    Ok(data) => Ok((data, headers, error)),
-                    Err(e) => Err(ApiError::ParsingError(error, e)),
+                        match serde_json::from_str::<T>(&body) {
+                            Ok(data) => Ok((ApiResponse::Json(data), headers, error)),
+                            Err(e) => Err(ApiError::ParsingError(error, e)),
+                        }
+                    }
+                    ResponseFormat::String => {
+                        let body = resp
+                            .text()
+                            .await
+                            .map_err(|_| ApiError::Unknown("Failed to read string".to_string()))?;
+                        error.set_content(body.clone());
+                        error.set_status_code(status.as_u16());
+                        Ok((ApiResponse::String(body), headers, error))
+                    }
+                    ResponseFormat::Bytes => {
+                        let bytes = resp
+                            .bytes()
+                            .await
+                            .map_err(|_| ApiError::Unknown("Failed to read bytes".to_string()))?;
+                        error.set_content("[binary data]".to_string());
+                        error.set_status_code(status.as_u16());
+                        Ok((ApiResponse::Bytes(bytes.to_vec()), headers, error))
+                    }
                 }
             }
             Err(_) => Err(ApiError::RequestError(error)),
@@ -264,6 +295,16 @@ impl Client {
     pub fn alert(&self) -> Arc<AlertRoute> {
         self.alert_route
             .get_or_init(|| AlertRoute::new(self.arc()))
+            .clone()
+    }
+    pub fn cache(&self) -> Arc<CacheRoute> {
+        self.cache_route
+            .get_or_init(|| CacheRoute::new(self.arc()))
+            .clone()
+    }
+    pub fn item_price(&self) -> Arc<ItemPriceRoute> {
+        self.item_price_route
+            .get_or_init(|| ItemPriceRoute::new(self.arc()))
             .clone()
     }
 }
@@ -334,6 +375,21 @@ impl Client {
             let new_analytics = AnalyticsRoute::from_existing(&old_analytics, self.arc());
             self.analytics_route = OnceLock::new();
             let _ = self.analytics_route.set(new_analytics);
+        }
+        if let Some(old_alert) = self.alert_route.get().cloned() {
+            let new_alert = AlertRoute::from_existing(&old_alert, self.arc());
+            self.alert_route = OnceLock::new();
+            let _ = self.alert_route.set(new_alert);
+        }
+        if let Some(old_cache) = self.cache_route.get().cloned() {
+            let new_cache = CacheRoute::from_existing(&old_cache, self.arc());
+            self.cache_route = OnceLock::new();
+            let _ = self.cache_route.set(new_cache);
+        }
+        if let Some(old_item_price) = self.item_price_route.get().cloned() {
+            let new_item_price = ItemPriceRoute::from_existing(&old_item_price, self.arc());
+            self.item_price_route = OnceLock::new();
+            let _ = self.item_price_route.set(new_item_price);
         }
     }
 }

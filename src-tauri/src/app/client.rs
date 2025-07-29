@@ -2,21 +2,22 @@ use std::sync::Mutex;
 
 use crate::app::{Settings, User};
 use crate::notification::enums::{UIEvent, UIOperationEvent};
-use crate::utils::enums::log_level::LogLevel;
-use crate::utils::modules::error::AppError;
-use crate::utils::modules::{logger, states};
+use crate::utils::modules::states::{self, ErrorFromExt};
 use crate::{helper, APP};
 use qf_api::errors::ApiError as QFApiError;
 use qf_api::types::UserPrivate as QFUserPrivate;
 use qf_api::Client as QFClient;
 use serde_json::{json, Value};
 use sha256::digest;
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::{AppHandle, Manager};
+use utils::{get_location, warning, Error, LogLevel, LoggerOptions};
 use wf_market::client::Authenticated as WFAuthenticated;
 use wf_market::enums::ApiVersion;
 use wf_market::types::websocket::WsClient;
 use wf_market::types::UserPrivate as WFUserPrivate;
 use wf_market::Client as WFClient;
+
+static COMPONENT_ID: &str = "AppState";
 
 #[derive(Clone)]
 pub struct AppState {
@@ -44,22 +45,23 @@ fn update_user(mut cu_user: User, user: &WFUserPrivate, qf_user: &QFUserPrivate)
     cu_user
 }
 
-fn send_ws_state(event: UIEvent, cause: &str, data: Value) -> AppError {
+fn send_ws_state(event: UIEvent, cause: &str, data: Value) -> Error {
     let notify = states::notify_client().expect("Failed to get notification client state");
-    let err = AppError::new("WebSocket", "Connection state")
+    let err = Error::new("WebSocket", "Connection state", get_location!())
         .with_context(data)
         .with_cause(cause)
         .set_log_level(LogLevel::Warning);
-    err.log(Some("websocket_info.log"));
+    err.log(Some("websocket_info.log".to_string()));
     notify.gui().send_event(event, Some(json!(err)));
     err
 }
 
-async fn setup_socket(wfm_client: WFClient<WFAuthenticated>) -> Result<WsClient, AppError> {
+async fn setup_socket(wfm_client: WFClient<WFAuthenticated>) -> Result<WsClient, Error> {
     if wfm_client.get_user().is_err() {
-        return Err(AppError::new(
+        return Err(Error::new(
             "AppState:SetupSocket",
             "WFM client user is not authenticated, please login first.",
+            get_location!(),
         ));
     }
 
@@ -105,10 +107,10 @@ async fn setup_socket(wfm_client: WFClient<WFAuthenticated>) -> Result<WsClient,
         })
         .unwrap()
         .register_callback("ERROR", move |msg, _, _| {
-            logger::warning(
+            warning(
                 "WebSocket:Error",
                 &format!("WebSocket error: {:?}", msg),
-                logger::LoggerOptions::default().set_file("websocket_info.log"),
+                LoggerOptions::default().set_file("websocket_info.log"),
             );
             Ok(())
         })
@@ -168,7 +170,7 @@ impl AppState {
         &self,
         email: &str,
         password: &str,
-    ) -> Result<(QFClient, WFClient<WFAuthenticated>, User, WsClient), AppError> {
+    ) -> Result<(QFClient, WFClient<WFAuthenticated>, User, WsClient), Error> {
         // Login to WFM client
         let mut wfm_client = match WFClient::new()
             .login(email, password, &self.wfm_client.get_device_id())
@@ -176,16 +178,17 @@ impl AppState {
         {
             Ok(client) => client,
             Err(e) => {
-                return Err(AppError::from_wfm(
+                return Err(Error::from_wfm(
                     "AppState:Login",
                     "Failed to login to WFM client",
                     e,
+                    get_location!(),
                 ))
             }
         };
         let wfm_user = wfm_client
             .get_user()
-            .map_err(|e| AppError::from_wfm("Login", "Failed to get WFM user", e))?;
+            .map_err(|e| Error::from_wfm("Login", "Failed to get WFM user", e, get_location!()))?;
 
         let mut user = self.user.clone();
         wfm_client.set_device_id(&self.qf_client.device);
@@ -206,22 +209,29 @@ impl AppState {
         Ok((qf_client, wfm_client, updated_user, ws))
     }
 
-    pub async fn validate(&mut self) -> Result<(WFUserPrivate, QFUserPrivate), AppError> {
+    pub async fn validate(&mut self) -> Result<(WFUserPrivate, QFUserPrivate), Error> {
         if self.user.wfm_token == "" || self.user.qf_token == "" {
-            return Err(AppError::new(
+            return Err(Error::new(
                 "AppState:Validate",
                 "User tokens are empty, please login first.",
+                get_location!(),
             ));
         }
         let wfm_user = match self.wfm_client.refresh().await {
             Ok(_) => self.wfm_client.get_user().map_err(|e| {
-                AppError::from_wfm("AppState:Validate", "Failed to get WFM user", e)
+                Error::from_wfm(
+                    "AppState:Validate",
+                    "Failed to get WFM user",
+                    e,
+                    get_location!(),
+                )
             })?,
             Err(e) => {
-                return Err(AppError::from_wfm(
+                return Err(Error::from_wfm(
                     "AppState:Validate",
                     "Failed to refresh WFM client",
                     e,
+                    get_location!(),
                 ))
             }
         };
@@ -235,18 +245,25 @@ impl AppState {
                     .await?
             }
             Err(e) => {
-                return Err(AppError::from_qf(
+                return Err(Error::from_qf(
                     "AppState:Validate",
                     "Failed to get QF user",
                     e,
+                    get_location!(),
                 ))
             }
         };
         let ws = setup_socket(self.wfm_client.clone()).await?;
         self.wfm_socket = Some(ws);
         self.qf_client.analytics().start().map_err(|e| {
-            AppError::from_qf("AppState:Validate", "Failed to start QF analytics", e)
+            Error::from_qf(
+                "AppState:Validate",
+                "Failed to start QF analytics",
+                e,
+                get_location!(),
+            )
         })?;
+
         Ok((wfm_user, qf_user))
     }
 
@@ -254,7 +271,7 @@ impl AppState {
         &self,
         qf_client: &QFClient,
         wfm_user: &WFUserPrivate,
-    ) -> Result<QFUserPrivate, AppError> {
+    ) -> Result<QFUserPrivate, Error> {
         match qf_client
             .authentication()
             .signin(&wfm_user.id, &wfm_user.check_code)
@@ -267,22 +284,24 @@ impl AppState {
                     .register(&wfm_user.id, &wfm_user.check_code)
                     .await
                     .map_err(|e| {
-                        AppError::from_qf(
+                        Error::from_qf(
                             "AppState:AuthenticateQFUser",
                             "Failed to register QF user",
                             e,
+                            get_location!(),
                         )
                     })
             }
-            Err(e) => Err(AppError::from_qf(
+            Err(e) => Err(Error::from_qf(
                 "AppState:AuthenticateQFUser",
                 "Failed to authenticate QF user",
                 e,
+                get_location!(),
             )),
         }
     }
 
-    pub fn update_settings(&mut self, settings: Settings) -> Result<(), AppError> {
+    pub fn update_settings(&mut self, settings: Settings) -> Result<(), Error> {
         self.settings = settings;
         self.settings.save()?;
         Ok(())

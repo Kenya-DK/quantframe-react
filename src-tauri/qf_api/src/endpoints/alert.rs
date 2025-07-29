@@ -7,7 +7,12 @@ use std::{
 use reqwest::Method;
 use serde_json::{Value, json};
 
-use crate::{client::Client, errors::ApiError, types::*};
+use crate::{
+    client::Client,
+    enums::{ApiResponse, ResponseFormat},
+    errors::ApiError,
+    types::*,
+};
 
 #[derive(Debug)]
 pub struct AlertRoute {
@@ -34,11 +39,13 @@ impl AlertRoute {
                 "/alert?page=1&limit=25&enabled=true",
                 None,
                 None,
+                ResponseFormat::Json,
             )
             .await
         {
-            Ok((alerts, _, _)) => Ok(alerts),
+            Ok((ApiResponse::Json(alerts), _, _)) => Ok(alerts),
             Err(e) => return Err(e),
+            _ => Err(ApiError::Unknown("Unexpected response format".to_string())),
         }
     }
     /**

@@ -1,6 +1,10 @@
 import { PaperProps, Container, Tabs } from "@mantine/core";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { TauriTypes } from "$types";
+import { AdvancedPanel } from "./Tabs/Advanced";
+import { NotificationsPanel } from "./Tabs/Notifications";
+import { SummaryPanel } from "./Tabs/Summary";
+import { ThemesPanel } from "./Tabs/Themes";
 import { LiveTradingPanel } from "./Tabs/LiveTrading";
 import { useLocalStorage } from "@mantine/hooks";
 
@@ -20,16 +24,28 @@ export function SettingsForm({ onSubmit, value }: SettingsFormProps) {
   const tabs = [
     {
       label: useTranslateTabs("live_trading.title"),
-      component: (
-        <LiveTradingPanel
-          value={value.live_scraper}
-          onSubmit={(v) => {
-            console.log("LiveTradingPanel onSubmit", v);
-            onSubmit({ ...value, live_scraper: v });
-          }}
-        />
-      ),
+      component: <LiveTradingPanel value={value.live_scraper} onSubmit={(v) => onSubmit({ ...value, live_scraper: v })} />,
       id: "live_trading",
+    },
+    {
+      label: useTranslateTabs("themes.title"),
+      component: <ThemesPanel value={value} onSubmit={(v) => onSubmit({ ...value, ...v })} />,
+      id: "themes",
+    },
+    {
+      label: useTranslateTabs("notifications.title"),
+      component: <NotificationsPanel value={value.notifications} onSubmit={(v) => onSubmit({ ...value, notifications: v })} />,
+      id: "notifications",
+    },
+    {
+      label: useTranslateTabs("advanced.title"),
+      component: <AdvancedPanel value={value.live_scraper} onSubmit={(v) => onSubmit({ ...value, live_scraper: v })} />,
+      id: "advanced",
+    },
+    {
+      label: useTranslateTabs("summary.title"),
+      component: <SummaryPanel value={value.summary_settings} onSubmit={(v) => onSubmit({ ...value, summary_settings: v })} />,
+      id: "summary",
     },
   ];
 

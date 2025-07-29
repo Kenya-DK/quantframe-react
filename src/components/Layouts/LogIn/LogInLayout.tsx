@@ -5,12 +5,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBug, faHome } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
 import { useEffect, useState } from "react";
-import { NavbarLinkProps, NavbarMinimalColored } from "@components/NavbarMinimalColored";
-import { Header } from "@components/Header";
+import { NavbarLinkProps, NavbarMinimalColored } from "@components/Layouts/Shared/NavbarMinimalColored";
+import { Header } from "@components/Layouts/Shared/Header";
 import { useAuthContext } from "@contexts/auth.context";
 import { open } from "@tauri-apps/plugin-shell";
 import { AddMetric } from "@api/index";
-import { Ticker } from "@components/Ticker";
+import { Ticker } from "@components/Layouts/Shared/Ticker";
 import { QuantframeApiTypes } from "$types";
 import { useAppContext } from "@contexts/app.context";
 

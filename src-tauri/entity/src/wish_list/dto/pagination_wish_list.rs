@@ -13,19 +13,22 @@ pub struct WishListPaginationQueryDto {
     // You can add more fields as needed for filtering
 }
 impl WishListPaginationQueryDto {
-    pub fn new(
-        pagination: PaginationQueryDto,
-        query: Option<String>,
-        sort_by: Option<String>,
-        sort_direction: Option<SortDirection>,
-        status: Option<String>,
-    ) -> Self {
+    pub fn new(page: i64, limit: i64) -> Self {
         Self {
-            pagination,
-            query,
-            sort_by,
-            sort_direction,
-            status,
+            pagination: PaginationQueryDto::new(page, limit),
+            query: None,
+            sort_by: None,
+            sort_direction: Some(SortDirection::Asc),
+            status: None,
+        }
+    }
+    pub fn default() -> Self {
+        Self {
+            pagination: PaginationQueryDto::default(),
+            query: None,
+            sort_by: None,
+            sort_direction: Some(SortDirection::Asc),
+            status: None,
         }
     }
 }

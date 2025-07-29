@@ -10,6 +10,7 @@ export class AppModule {
       queryKey: ["app_get_settings"],
       queryFn: () => this.client.sendInvoke<TauriTypes.Settings>("app_get_settings"),
       retry: false,
+      enabled: false, // Disable automatic fetching
     });
   }
 
@@ -18,6 +19,7 @@ export class AppModule {
       queryKey: ["app_get_info"],
       queryFn: () => this.client.sendInvoke<TauriTypes.AppInfo>("app_get_app_info"),
       retry: false,
+      enabled: false, // Disable automatic fetching
     });
   }
   updateSettings(settings: TauriTypes.Settings): Promise<TauriTypes.Settings> {

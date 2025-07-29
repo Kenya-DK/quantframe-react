@@ -9,48 +9,7 @@ use sea_orm::{sea_query::Expr, *};
 pub struct StockItemQuery;
 
 impl StockItemQuery {
-    pub async fn find_all_transactions(db: &DbConn) -> Result<Vec<stock_item::Model>, DbErr> {
-        StockItem::find().all(db).await
-    }
-
-    pub async fn get_overview(db: &DbConn) -> Result<Vec<StockEntryOverview>, DbErr> {
-        // Overview - Group by status with aggregations
-        Ok(StockItem::find()
-            .select_only()
-            .column_as(Expr::val("status"), "id")
-            .column_as(stock_item::Column::Status, "key")
-            .column_as(Expr::col(stock_item::Column::Id).count(), "count")
-            .column_as(
-                Expr::expr(Func::coalesce([
-                    Expr::col(stock_item::Column::ListPrice).sum().into(),
-                    Expr::val(0).into(),
-                ])),
-                "revenue",
-            )
-            .column_as(
-                Expr::expr(Func::coalesce([
-                    Expr::col(stock_item::Column::Bought).sum().into(),
-                    Expr::val(0).into(),
-                ])),
-                "expenses",
-            )
-            .column_as(
-                Expr::expr(Func::coalesce([
-                    Expr::col(stock_item::Column::ListPrice)
-                        .sum()
-                        .sub(Expr::col(stock_item::Column::Bought).sum())
-                        .into(),
-                    Expr::val(0).into(),
-                ])),
-                "profit",
-            )
-            .group_by(stock_item::Column::Status)
-            .into_model::<StockEntryOverview>()
-            .all(db)
-            .await?)
-    }
-
-    pub async fn get_all_v2(
+    pub async fn get_all(
         db: &DbConn,
         query: StockItemPaginationQueryDto,
     ) -> Result<::entity::dto::pagination::PaginatedDto<stock_item::Model>, DbErr> {
@@ -113,43 +72,7 @@ impl StockItemQuery {
             total, limit, page, results,
         ))
     }
-    pub async fn get_all(
-        db: &DbConn,
-        query: Option<StockItemPaginationQueryDto>,
-    ) -> Result<Vec<stock_item::Model>, DbErr> {
-        let mut stmt = StockItem::find();
-        if let Some(query) = query {
-            // Filtering by query (search)
-            if let Some(ref q) = query.query {
-                stmt = stmt.filter(
-                    Condition::any()
-                        .add(
-                            Expr::expr(Func::lower(Expr::col(stock_item::Column::WfmUrl)))
-                                .like(&format!("%{}%", q.to_lowercase())),
-                        )
-                        .add(
-                            Expr::expr(Func::lower(Expr::col(stock_item::Column::ItemName)))
-                                .like(&format!("%{}%", q.to_lowercase())),
-                        ),
-                );
-            }
-            // Filtering by status
-            if let Some(ref status) = query.status {
-                stmt = stmt.filter(stock_item::Column::Status.eq(status));
-            }
-        }
-        stmt.all(db).await
-    }
 
-    pub async fn get_all_stock_items(
-        db: &DbConn,
-        minimum_owned: i32,
-    ) -> Result<Vec<stock_item::Model>, DbErr> {
-        StockItem::find()
-            .filter(Expr::col(stock_item::Column::Owned).gt(minimum_owned))
-            .all(db)
-            .await
-    }
     pub async fn get_by_id(db: &DbConn, id: i64) -> Result<Option<stock_item::Model>, DbErr> {
         StockItem::find_by_id(id).one(db).await
     }

@@ -3,7 +3,10 @@ import api, { OffTauriEvent, OnTauriEvent } from "@api/index";
 import { QuantframeApiTypes, ResponseError, TauriTypes } from "$types";
 import { AuthContextProvider } from "./auth.context";
 import { AppError } from "../model/appError";
+import { SplashScreen } from "@components/Layouts/Shared/SplashScreen";
 import { useQuery } from "@tanstack/react-query";
+import { listen } from "@tauri-apps/api/event";
+import { invoke } from "@tauri-apps/api/core";
 
 export type AppContextProps = {
   app_info: TauriTypes.AppInfo | undefined;
@@ -36,29 +39,56 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
   const [error, setError] = useState<AppError | undefined>(undefined);
 
   const { data: settings, refetch: refetchSettings } = api.app.get_settings();
-  const { data: app_info } = api.app.get_app_info();
+  const { data: app_info, refetch: refetchAppInfo } = api.app.get_app_info();
+  const [loading, setLoading] = useState(true);
 
-  const handleAppError = (error: ResponseError | undefined) => setError(error ? new AppError(error) : undefined);
+  const handleAppError = (error: ResponseError | undefined) => {
+    // setError(error ? new AppError(error) : undefined);
+    setError((prevError) => {
+      if (prevError && !prevError.isWebSocket()) return prevError; // No error to set
+      return error ? new AppError(error) : undefined;
+    });
+  };
 
   const handleUpdateSettings = () => refetchSettings();
 
   // Fetch data from rust side
-  const { data: alerts, refetch: refetchAlerts } = useQuery({
+  const {
+    data: alerts,
+    error: alertsError,
+    refetch: refetchAlerts,
+  } = useQuery({
     queryKey: ["alerts"],
     queryFn: () => api.alert.get_alerts(),
     retry: 0,
+    enabled: false, // Disable automatic fetching
   });
   useEffect(() => {
     // 10 Minutes interval to keep the app alive
     setInterval(async () => {
       await refetchAlerts();
-    }, 1 * 60 * 1000);
+    }, 10 * 60 * 1000);
   }, []);
+
+  const InitializeApp = async () => {
+    await refetchAlerts();
+    await refetchSettings();
+    await refetchAppInfo();
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (alertsError) handleAppError(alertsError as ResponseError);
+  }, [alertsError]);
 
   // Hook on tauri events from rust side
   useEffect(() => {
     OnTauriEvent<ResponseError | undefined>(TauriTypes.Events.OnError, (data) => handleAppError(data));
     OnTauriEvent<undefined>(TauriTypes.Events.RefreshSettings, () => handleUpdateSettings());
+    invoke("was_initialized")
+      .then((wasInitialized) => (wasInitialized ? InitializeApp() : console.log("App was not initialized")))
+      .catch((e) => console.error("Error checking initialization:", e));
+    listen("app:ready", () => InitializeApp());
     return () => {
       OffTauriEvent<ResponseError | undefined>(TauriTypes.Events.OnError, (data) => handleAppError(data));
       OffTauriEvent<undefined>(TauriTypes.Events.RefreshSettings, () => handleUpdateSettings());
@@ -66,7 +96,8 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
   }, []);
   return (
     <AppContext.Provider value={{ settings, alerts: alerts?.results || [], app_info: app_info, app_error: error }}>
-      <AuthContextProvider>{children}</AuthContextProvider>
+      <SplashScreen opened={loading} text={"Kenya"} />
+      {!loading && <AuthContextProvider>{children}</AuthContextProvider>}
     </AppContext.Provider>
   );
 }

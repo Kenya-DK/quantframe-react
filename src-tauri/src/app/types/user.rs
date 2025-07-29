@@ -3,8 +3,9 @@ use std::{fs::File, io::Read, path::PathBuf};
 use qf_api::errors::ApiError;
 use serde::{de, Deserialize, Serialize};
 use serde_json::Value;
+use utils::{get_location, Error};
 
-use crate::{helper, utils::modules::error::AppError};
+use crate::helper;
 
 fn get_path() -> PathBuf {
     helper::get_app_storage_path().join("auth.json")
@@ -68,7 +69,7 @@ impl Default for User {
 }
 
 impl User {
-    pub fn load() -> Result<Self, AppError> {
+    pub fn load() -> Result<Self, Error> {
         let path = &get_path();
         if !path.exists() {
             let user = User::default();
@@ -76,19 +77,36 @@ impl User {
             return Ok(user);
         }
         // Open the file and read its contents
-        let mut file = File::open(path)
-            .map_err(|e| AppError::from_io("User", path, "Failed to open auth file", e))?;
+        let mut file = File::open(path).map_err(|e| {
+            Error::from_io("User", path, "Failed to open auth file", e, get_location!())
+        })?;
         let mut content = String::new();
-        file.read_to_string(&mut content)
-            .map_err(|e| AppError::from_io("User", path, "Failed to read auth file", e))?;
+        file.read_to_string(&mut content).map_err(|e| {
+            Error::from_io("User", path, "Failed to read auth file", e, get_location!())
+        })?;
 
         // Parse the JSON string into a Value object
-        let json_value: Value = serde_json::from_str(&content)
-            .map_err(|e| AppError::from_json("User", &content, "Failed to parse auth file", e))?;
+        let json_value: Value = serde_json::from_str(&content).map_err(|e| {
+            Error::from_json(
+                "User",
+                path,
+                &content,
+                "Failed to parse auth file",
+                e,
+                get_location!(),
+            )
+        })?;
 
         // Required properties for the settings.json file
         let required_json = serde_json::to_value(User::default()).map_err(|e| {
-            AppError::from_json("User", "N/A", "Failed to serialize default user", e)
+            Error::from_json(
+                "User",
+                path,
+                &content,
+                "Failed to serialize default user",
+                e,
+                get_location!(),
+            )
         })?;
 
         // Validate the JSON object against the required properties
@@ -111,12 +129,27 @@ impl User {
             }
         }
     }
-    pub fn save(&self) -> Result<(), AppError> {
+    pub fn save(&self) -> Result<(), Error> {
         let path = &get_path();
-        let content = serde_json::to_string(self)
-            .map_err(|e| AppError::from_json("User", "N/A", "Failed to serialize user", e))?;
-        std::fs::write(path, content)
-            .map_err(|e| AppError::from_io("User", path, "Failed to write user to file", e))?;
+        let content = serde_json::to_string(self).map_err(|e| {
+            Error::from_json(
+                "User",
+                path,
+                "N/A",
+                "Failed to serialize user",
+                e,
+                get_location!(),
+            )
+        })?;
+        std::fs::write(path, content).map_err(|e| {
+            Error::from_io(
+                "User",
+                path,
+                "Failed to write user to file",
+                e,
+                get_location!(),
+            )
+        })?;
         Ok(())
     }
 }

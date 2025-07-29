@@ -6,6 +6,9 @@ import { TauriTypes } from "$types";
 import { UserModule } from "./user";
 import { AnalyticsModule } from "./analytics";
 import { AlertModule } from "./alert";
+import { DashboardModule } from "./dashboard";
+import { CacheModule } from "./cache";
+import { LogModule } from "./log";
 
 export class TauriClient {
   _logging: string[] = [];
@@ -14,11 +17,14 @@ export class TauriClient {
   // private _logs: string[] = [];
   constructor() {
     this.app = new AppModule(this);
+    this.dashboard = new DashboardModule(this);
     this.alert = new AlertModule(this);
     this.events = new EventModule(this);
     this.auth = new AuthModule(this);
     this.user = new UserModule(this);
+    this.cache = new CacheModule(this);
     this.analytics = new AnalyticsModule(this);
+    this.log = new LogModule(this);
     this._logging = localStorage.getItem("tauri_logs") ? JSON.parse(localStorage.getItem("tauri_logs")!) : ["*"];
   }
 
@@ -138,9 +144,12 @@ export class TauriClient {
   }
   // Modules
   app: AppModule;
+  dashboard: DashboardModule;
   alert: AlertModule;
   events: EventModule;
+  cache: CacheModule;
   auth: AuthModule;
+  log: LogModule;
   analytics: AnalyticsModule;
   user: UserModule;
 }

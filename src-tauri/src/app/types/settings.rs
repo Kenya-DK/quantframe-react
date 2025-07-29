@@ -2,8 +2,9 @@ use std::{fs::File, io::Read, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use utils::{get_location, Error};
 
-use crate::{app::types::*, helper, utils::modules::error::AppError};
+use crate::{app::types::*, helper};
 
 fn get_path() -> PathBuf {
     helper::get_app_storage_path().join("settings.json")
@@ -11,18 +12,22 @@ fn get_path() -> PathBuf {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Settings {
-    live_scraper: LiveScraperSettings,
+    pub live_scraper: LiveScraperSettings,
+    pub summary_settings: SummarySettings,
+    pub advanced_settings: AdvancedSettings,
 }
 impl Default for Settings {
     fn default() -> Self {
         Settings {
             live_scraper: LiveScraperSettings::default(),
+            summary_settings: SummarySettings::default(),
+            advanced_settings: AdvancedSettings::default(),
         }
     }
 }
 
 impl Settings {
-    pub fn load() -> Result<Self, AppError> {
+    pub fn load() -> Result<Self, Error> {
         let path = &get_path();
         if !path.exists() {
             let user = Settings::default();
@@ -30,22 +35,44 @@ impl Settings {
             return Ok(user);
         }
         // Open the file and read its contents
-        let mut file = File::open(path)
-            .map_err(|e| AppError::from_io("Settings", path, "Failed to open auth file", e))?;
+        let mut file = File::open(path).map_err(|e| {
+            Error::from_io(
+                "Settings",
+                path,
+                "Failed to open auth file",
+                e,
+                get_location!(),
+            )
+        })?;
         let mut content = String::new();
-        file.read_to_string(&mut content)
-            .map_err(|e| AppError::from_io("Settings", path, "Failed to read auth file", e))?;
+        file.read_to_string(&mut content).map_err(|e| {
+            Error::from_io(
+                "Settings",
+                path,
+                "Failed to read auth file",
+                e,
+                get_location!(),
+            )
+        })?;
 
         // Parse the JSON string into a Value object
         let json_value: Value = serde_json::from_str(&content).map_err(|e| {
-            AppError::from_json("Settings", &content, "Failed to parse settings.json", e)
+            Error::from_json(
+                "Settings",
+                &path,
+                &content,
+                "Failed to parse settings.json",
+                e,
+                get_location!(),
+            )
         })?;
 
         // Required properties for the settings.json file
         let required_json = serde_json::to_value(Settings::default()).map_err(|e| {
-            AppError::new(
+            Error::new(
                 "Settings",
                 &format!("Failed to serialize default settings: {}", e),
+                get_location!(),
             )
         })?;
 
@@ -69,13 +96,27 @@ impl Settings {
             }
         }
     }
-    pub fn save(&self) -> Result<(), AppError> {
+    pub fn save(&self) -> Result<(), Error> {
         let path = &get_path();
         let content = serde_json::to_string(self).map_err(|e| {
-            AppError::from_json("Settings", "N/A", "Failed to serialize settings", e)
+            Error::from_json(
+                "Settings",
+                path,
+                "N/A",
+                "Failed to serialize settings",
+                e,
+                get_location!(),
+            )
         })?;
-        std::fs::write(path, content)
-            .map_err(|e| AppError::from_io("Settings", path, "Failed to write settings file", e))?;
+        std::fs::write(path, content).map_err(|e| {
+            Error::from_io(
+                "Settings",
+                path,
+                "Failed to write settings file",
+                e,
+                get_location!(),
+            )
+        })?;
         Ok(())
     }
 }

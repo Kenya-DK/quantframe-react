@@ -1,79 +1,49 @@
-use std::path::PathBuf;
-
-use eyre::eyre;
-
-use crate::{
-    cache::{
-        client::CacheClient,
-        types::{
-            cache_item_base::CacheItemBase, cache_item_component::CacheItemComponent,
-            cache_warframe::CacheWarframe,
-        },
-    },
-    utils::modules::error::AppError,
+use std::{
+    path::PathBuf,
+    sync::{Arc, Mutex, Weak},
 };
 
-#[derive(Clone, Debug)]
+use utils::{find_by, get_location, info, read_json_file, Error, LoggerOptions};
+
+use crate::cache::{client::CacheState, types::CacheWarframe};
+
+#[derive(Debug)]
 pub struct WarframeModule {
-    pub client: CacheClient,
-    // debug_id: String,
-    component: String,
     path: PathBuf,
-    pub items: Vec<CacheWarframe>,
-    pub components: Vec<CacheItemComponent>,
+    items: Mutex<Vec<CacheWarframe>>,
+    client: Weak<CacheState>,
 }
 
 impl WarframeModule {
-    pub fn new(client: CacheClient) -> Self {
-        WarframeModule {
-            client,
-            // debug_id: "ch_client_auction".to_string(),
-            component: "Warframe".to_string(),
-            path: PathBuf::from("items/Warframes.json"),
-            items: Vec::new(),
-            components: Vec::new(),
-        }
+    pub fn new(client: Arc<CacheState>) -> Arc<Self> {
+        Arc::new(Self {
+            path: client.base_path.join("items/Warframes.json"),
+            items: Mutex::new(Vec::new()),
+            client: Arc::downgrade(&client),
+        })
     }
-    fn get_component(&self, component: &str) -> String {
-        format!("{}:{}", self.component, component)
+    pub fn get_items(&self) -> Result<Vec<CacheWarframe>, Error> {
+        let items = self
+            .items
+            .lock()
+            .expect("Failed to lock items mutex")
+            .clone();
+        Ok(items)
     }
-    fn update_state(&self) {
-        self.client.update_warframe_module(self.clone());
-    }
-    pub fn get_all(&self) -> Vec<CacheItemBase> {
-        let mut items: Vec<CacheItemBase> = Vec::new();
-        items.append(
-            &mut self
-                .items
-                .iter()
-                .map(|item| item.convert_to_base_item())
-                .collect(),
-        );
-        items.append(
-            &mut self
-                .components
-                .iter()
-                .map(|item| item.convert_to_base_item())
-                .collect(),
-        );
-        items
-    }
-    pub fn load(&mut self) -> Result<(), AppError> {
-        let content = self.client.read_text_from_file(&self.path)?;
-        let items: Vec<CacheWarframe> = serde_json::from_str(&content).map_err(|e| {
-            AppError::new(
-                self.get_component("Load").as_str(),
-                eyre!(format!("Failed to parse WarframeModule from file: {}", e)),
-            )
-        })?;
-        self.items = items.clone();
-        for item in items {
-            if item.components.is_none() {
-                continue;
+    pub fn load(&self) -> Result<(), Error> {
+        let client = self.client.upgrade().expect("Client should not be dropped");
+        match read_json_file::<Vec<CacheWarframe>>(&client.base_path.join(self.path.clone())) {
+            Ok(items) => {
+                let mut items_lock = self.items.lock().unwrap();
+                *items_lock = items;
+                info(
+                    "Cache:Warframe:load",
+                    "Loaded Warframe items from cache",
+                    LoggerOptions::default(),
+                );
             }
-            self.components.append(&mut item.components.unwrap());
+            Err(e) => return Err(e.with_location(get_location!())),
         }
-        self.update_state();
         Ok(())
     }
 }

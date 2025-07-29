@@ -105,6 +105,59 @@ export namespace TauriTypes {
     permissions?: string;
   }
 
+  export interface DashboardSummary {
+    best_seller: FinancialItemReport;
+    recent_days: FinancialWithGraph;
+    today: FinancialWithGraph;
+    total: DashboardTotal;
+    resent_transactions: TransactionDto[];
+    categories: FinancialCategoryReport[];
+  }
+  export interface DashboardTotal extends FinancialReport {
+    last_year: FinancialWithGraph;
+    present_year: FinancialWithGraph;
+  }
+
+  export interface FinancialReport {
+    average_expense: number;
+    average_profit: number;
+    average_revenue: number;
+    average_transaction: number;
+    expenses: number;
+    profit_margin: number;
+    purchases: number;
+    revenue: number;
+    roi: number;
+    sale_count: number;
+    total_profit: number;
+    total_transactions: number;
+    total_value: number;
+  }
+  export interface FinancialItemProperties {
+    item_name: string;
+    item_type: string;
+    wfm_id: string;
+  }
+  export interface FinancialCategoryProperties {
+    icon: string;
+    name: string;
+  }
+  export interface FinancialItemReport extends FinancialReport {
+    properties: FinancialItemProperties;
+  }
+  export interface FinancialCategoryReport extends FinancialReport {
+    properties: FinancialCategoryProperties;
+  }
+  export interface FinancialWithGraph {
+    summary: FinancialItemReport;
+    chart: Chart;
+  }
+
+  export interface Chart {
+    labels: string[];
+    values: number[];
+  }
+
   // Old code for TauriClient
   export interface AppInfo {
     authors: string;

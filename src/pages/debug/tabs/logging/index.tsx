@@ -1,9 +1,9 @@
 import { Box, Button } from "@mantine/core";
 import api from "@api/index";
 import { useQuery } from "@tanstack/react-query";
-import { SearchField } from "@components/SearchField";
+import { SearchField } from "@components/Forms/SearchField";
 import { useState } from "react";
-import { ActionWithTooltip } from "@components/ActionWithTooltip";
+import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { DataTable } from "mantine-datatable";
 import { useTranslatePages } from "@hooks/useTranslate.hook";

@@ -1,80 +1,51 @@
-use std::path::PathBuf;
-
-use eyre::eyre;
+use std::{
+    path::PathBuf,
+    sync::{Arc, Mutex, Weak},
+};
+use utils::{find_by, get_location, info, read_json_file, Error, LoggerOptions};
 
 use crate::{
-    cache::{
-        client::CacheClient,
-        types::{
-            cache_arcane::CacheArcane, cache_item_base::CacheItemBase,
-            cache_item_component::CacheItemComponent,
-        },
-    },
-    utils::modules::error::AppError,
+    cache::{client::CacheState, types::CacheArcane},
+    emit_error,
 };
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct ArcaneModule {
-    pub client: CacheClient,
-    // debug_id: String,
-    component: String,
     path: PathBuf,
-    pub items: Vec<CacheArcane>,
-    pub components: Vec<CacheItemComponent>,
+    items: Mutex<Vec<CacheArcane>>,
+    client: Weak<CacheState>,
 }
-
 impl ArcaneModule {
-    pub fn new(client: CacheClient) -> Self {
-        ArcaneModule {
-            client,
-            // debug_id: "ch_client_auction".to_string(),
-            component: "Arcane".to_string(),
-            path: PathBuf::from("items/Arcanes.json"),
-            items: Vec::new(),
-            components: Vec::new(),
-        }
+    pub fn new(client: Arc<CacheState>) -> Arc<Self> {
+        Arc::new(Self {
+            // path: client.base_path.join("items/Arcanes.json"),
+            path: client.base_path.join("items/TradableItems.json"),
+            items: Mutex::new(Vec::new()),
+            client: Arc::downgrade(&client),
+        })
     }
-    fn get_component(&self, component: &str) -> String {
-        format!("{}:{}", self.component, component)
+    pub fn get_items(&self) -> Result<Vec<CacheArcane>, Error> {
+        let items = self
+            .items
+            .lock()
+            .expect("Failed to lock items mutex")
+            .clone();
+        Ok(items)
     }
-    fn update_state(&self) {
-        self.client.update_arcane_module(self.clone());
-    }
-
-    pub fn load(&mut self) -> Result<(), AppError> {
-        let content = self.client.read_text_from_file(&self.path)?;
-        let items: Vec<CacheArcane> = serde_json::from_str(&content).map_err(|e| {
-            AppError::new(
-                self.get_component("Load").as_str(),
-                eyre!(format!("Failed to parse ArcaneModule from file: {}", e)),
-            )
-        })?;
-        self.items = items.clone();
-        for item in items {
-            if item.components.is_none() {
-                continue;
+    pub fn load(&self) -> Result<(), Error> {
+        let client = self.client.upgrade().expect("Client should not be dropped");
+        match read_json_file::<Vec<CacheArcane>>(&client.base_path.join(self.path.clone())) {
+            Ok(items) => {
+                let mut items_lock = self.items.lock().unwrap();
+                *items_lock = items;
+                info(
+                    "Cache:Arcane:load",
+                    "Loaded Arcane items from cache",
+                    LoggerOptions::default(),
+                );
             }
-            self.components.append(&mut item.components.unwrap());
+            Err(e) => return Err(e.with_location(get_location!())),
         }
-        self.update_state();
         Ok(())
-    }
-    pub fn get_all(&self) -> Vec<CacheItemBase> {
-        let mut items: Vec<CacheItemBase> = Vec::new();
-        items.append(
-            &mut self
-                .items
-                .iter()
-                .map(|item| item.convert_to_base_item())
-                .collect(),
-        );
-        items.append(
-            &mut self
-                .components
-                .iter()
-                .map(|item| item.convert_to_base_item())
-                .collect(),
-        );
-        items
     }
 }

@@ -6,7 +6,12 @@ use std::{
 use reqwest::Method;
 use serde_json::json;
 
-use crate::{client::Client, errors::ApiError, types::*};
+use crate::{
+    client::Client,
+    enums::{ApiResponse, ResponseFormat},
+    errors::ApiError,
+    types::*,
+};
 
 #[derive(Debug)]
 pub struct AuthenticationRoute {
@@ -42,10 +47,11 @@ impl AuthenticationRoute {
                 "/auth/login",
                 Some(serde_json::to_value(map).unwrap()),
                 None,
+                ResponseFormat::Json,
             )
             .await
         {
-            Ok((user, _, _)) => {
+            Ok((ApiResponse::Json(user), _, _)) => {
                 let mut count_lock = self.count.lock().unwrap();
                 *count_lock += 1;
                 // Update the user in the route
@@ -59,6 +65,7 @@ impl AuthenticationRoute {
                 ApiError::RequestError(err) => return Err(ApiError::InvalidCredentials(err)),
                 _ => Err(e),
             },
+            _ => Err(ApiError::Unknown("Unexpected response format".to_string())),
         }
     }
 
@@ -91,10 +98,10 @@ impl AuthenticationRoute {
 
         match client
             .as_ref()
-            .call_api::<UserPrivate>(Method::GET, "/auth/me", None, None)
+            .call_api::<UserPrivate>(Method::GET, "/auth/me", None, None, ResponseFormat::Json)
             .await
         {
-            Ok((user, _, _)) => {
+            Ok((ApiResponse::Json(user), _, _)) => {
                 // Update the count in the route
                 let mut count_lock = self.count.lock().unwrap();
                 *count_lock += 1;
@@ -106,6 +113,7 @@ impl AuthenticationRoute {
             Err(e) => {
                 return Err(e);
             }
+            _ => Err(ApiError::Unknown("Unexpected response format".to_string())),
         }
     }
 
@@ -131,10 +139,11 @@ impl AuthenticationRoute {
                 "/users",
                 Some(serde_json::to_value(map).unwrap()),
                 None,
+                ResponseFormat::Json,
             )
             .await
         {
-            Ok((user, _, _)) => {
+            Ok((ApiResponse::Json(user), _, _)) => {
                 // Update the user in the route
                 let mut user_lock = self.user.lock().unwrap();
                 *user_lock = Some(user.clone());
@@ -143,6 +152,7 @@ impl AuthenticationRoute {
             Err(e) => {
                 return Err(e);
             }
+            _ => Err(ApiError::Unknown("Unexpected response format".to_string())),
         }
     }
 

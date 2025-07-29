@@ -1,79 +1,50 @@
-use std::path::PathBuf;
-
-use eyre::eyre;
-
-use crate::{
-    cache::{
-        client::CacheClient,
-        types::{
-            cache_arch_gun::CacheArchGun, cache_item_base::CacheItemBase,
-            cache_item_component::CacheItemComponent,
-        },
-    },
-    utils::modules::error::AppError,
+use std::{
+    path::PathBuf,
+    sync::{Arc, Mutex, Weak},
 };
 
-#[derive(Clone, Debug)]
+use utils::{find_by, get_location, info, read_json_file, Error, LoggerOptions};
+
+use crate::cache::{client::CacheState, types::CacheArchGun};
+
+#[derive(Debug)]
 pub struct ArchGunModule {
-    pub client: CacheClient,
-    // debug_id: String,
-    component: String,
     path: PathBuf,
-    pub items: Vec<CacheArchGun>,
-    pub components: Vec<CacheItemComponent>,
+    items: Mutex<Vec<CacheArchGun>>,
+    client: Weak<CacheState>,
 }
 
 impl ArchGunModule {
-    pub fn new(client: CacheClient) -> Self {
-        ArchGunModule {
-            client,
-            // debug_id: "ch_client_auction".to_string(),
-            component: "ArchGun".to_string(),
-            path: PathBuf::from("items/Arch-Gun.json"),
-            items: Vec::new(),
-            components: Vec::new(),
-        }
+    pub fn new(client: Arc<CacheState>) -> Arc<Self> {
+        Arc::new(Self {
+            path: client.base_path.join("items/Arch-Gun.json"),
+            items: Mutex::new(Vec::new()),
+            client: Arc::downgrade(&client),
+        })
     }
-    fn get_component(&self, component: &str) -> String {
-        format!("{}:{}", self.component, component)
+
+    pub fn get_items(&self) -> Result<Vec<CacheArchGun>, Error> {
+        let items = self
+            .items
+            .lock()
+            .expect("Failed to lock items mutex")
+            .clone();
+        Ok(items)
     }
-    fn update_state(&self) {
-        self.client.update_arch_gun_module(self.clone());
-    }
-    pub fn get_all(&self) -> Vec<CacheItemBase> {
-        let mut items: Vec<CacheItemBase> = Vec::new();
-        items.append(
-            &mut self
-                .items
-                .iter()
-                .map(|item| item.convert_to_base_item())
-                .collect(),
-        );
-        items.append(
-            &mut self
-                .components
-                .iter()
-                .map(|item| item.convert_to_base_item())
-                .collect(),
-        );
-        items
-    }
-    pub fn load(&mut self) -> Result<(), AppError> {
-        let content = self.client.read_text_from_file(&self.path)?;
-        let items: Vec<CacheArchGun> = serde_json::from_str(&content).map_err(|e| {
-            AppError::new(
-                self.get_component("Load").as_str(),
-                eyre!(format!("Failed to parse ArchGunModule from file: {}", e)),
-            )
-        })?;
-        self.items = items.clone();
-        for item in items {
-            if item.components.is_none() {
-                continue;
+    pub fn load(&self) -> Result<(), Error> {
+        let client = self.client.upgrade().expect("Client should not be dropped");
+        match read_json_file::<Vec<CacheArchGun>>(&client.base_path.join(self.path.clone())) {
+            Ok(items) => {
+                let mut items_lock = self.items.lock().unwrap();
+                *items_lock = items;
+                info(
+                    "Cache:ArchGun:load",
+                    "Loaded ArchGun items from cache",
+                    LoggerOptions::default(),
+                );
             }
-            self.components.append(&mut item.components.unwrap());
+            Err(e) => return Err(e.with_location(get_location!())),
         }
-        self.update_state();
         Ok(())
     }
 }
