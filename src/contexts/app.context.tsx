@@ -7,6 +7,10 @@ import { SplashScreen } from "@components/Layouts/Shared/SplashScreen";
 import { useQuery } from "@tanstack/react-query";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
+import { check } from "@tauri-apps/plugin-updater";
+import { modals } from "@mantine/modals";
+import { UpdateAvailableModal } from "../components/Modals/UpdateAvailable";
+import { useTranslateComponent } from "../hooks/useTranslate.hook";
 
 export type AppContextProps = {
   app_info: TauriTypes.AppInfo | undefined;
@@ -50,7 +54,18 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     });
   };
 
-  const handleUpdateSettings = () => refetchSettings();
+  const checkForUpdates = async (info: TauriTypes.AppInfo) => {
+    const update = await check();
+    if (!update) return;
+    modals.open({
+      title: useTranslateComponent("modals.update_available.title", { version: update.version }),
+      withCloseButton: false,
+      closeOnClickOutside: false,
+      closeOnEscape: false,
+      size: "75%",
+      children: <UpdateAvailableModal updater={update} app_info={info} context={update.body || ""} />,
+    });
+  };
 
   // Fetch data from rust side
   const {
@@ -63,6 +78,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     retry: 0,
     enabled: false, // Disable automatic fetching
   });
+
   useEffect(() => {
     // 10 Minutes interval to keep the app alive
     setInterval(async () => {
@@ -70,10 +86,15 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     }, 10 * 60 * 1000);
   }, []);
 
+  useEffect(() => {
+    if (!app_info) return;
+    checkForUpdates(app_info);
+  }, [app_info]);
+
   const InitializeApp = async () => {
+    await refetchAppInfo();
     await refetchAlerts();
     await refetchSettings();
-    await refetchAppInfo();
     setLoading(false);
   };
 
@@ -84,14 +105,14 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
   // Hook on tauri events from rust side
   useEffect(() => {
     OnTauriEvent<ResponseError | undefined>(TauriTypes.Events.OnError, (data) => handleAppError(data));
-    OnTauriEvent<undefined>(TauriTypes.Events.RefreshSettings, () => handleUpdateSettings());
+    OnTauriEvent<undefined>(TauriTypes.Events.RefreshSettings, () => refetchSettings());
     invoke("was_initialized")
       .then((wasInitialized) => (wasInitialized ? InitializeApp() : console.log("App was not initialized")))
       .catch((e) => console.error("Error checking initialization:", e));
     listen("app:ready", () => InitializeApp());
     return () => {
       OffTauriEvent<ResponseError | undefined>(TauriTypes.Events.OnError, (data) => handleAppError(data));
-      OffTauriEvent<undefined>(TauriTypes.Events.RefreshSettings, () => handleUpdateSettings());
+      OffTauriEvent<undefined>(TauriTypes.Events.RefreshSettings, () => refetchSettings());
     };
   }, []);
   return (

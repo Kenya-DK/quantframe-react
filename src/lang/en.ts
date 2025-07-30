@@ -361,6 +361,13 @@ export const en = {
           cancel: "Cancel",
         },
       },
+      update_available: {
+        title: "New Update Available (v{{version}})",
+        buttons: {
+          download: "Download And Install",
+          read_more: "Read More",
+        },
+      },
       app_error: {
         title: "Error in {{component}} component",
         version: "Version: {{version}}",

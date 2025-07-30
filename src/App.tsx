@@ -45,7 +45,6 @@ library.add(faPolarityMadurai);
 library.add(faPolarityAura);
 library.add(faPolarityVazarin);
 dom.watch();
-import { check } from "@tauri-apps/plugin-updater";
 i18n.use(initReactI18next).init({
   resources: {
     en: { translation: en },
@@ -71,31 +70,7 @@ const modals = {
 export interface MantineModalsOverride {
   modals: typeof modals;
 }
-const update = await check();
-console.log("Update check result:", update);
-if (update) {
-  console.log(`found update ${update.version} from ${update.date} with notes ${update.body}`);
-  // return;
-  // // alternatively we could also call update.download() and update.install() separately
-  // await update.downloadAndInstall((event) => {
-  //   switch (event.event) {
-  //     case "Started":
-  //       contentLength = event.data.contentLength || 0;
-  //       console.log(`started downloading ${event.data.contentLength} bytes`);
-  //       break;
-  //     case "Progress":
-  //       downloaded += event.data.chunkLength;
-  //       console.log(`downloaded ${downloaded} from ${contentLength}`);
-  //       break;
-  //     case "Finished":
-  //       console.log("download finished");
-  //       break;
-  //   }
-  // });
 
-  // console.log("update installed");
-  // await relaunch();
-}
 function App() {
   useEffect(() => {
     window.onclick = async () => await api.analytics.setLastUserActivity();
