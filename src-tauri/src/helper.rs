@@ -20,7 +20,6 @@ use std::{
 };
 use tauri::{Manager, State};
 use utils::Error;
-use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 
 use crate::{
     utils::enums::ui_events::{UIEvent, UIOperationEvent},

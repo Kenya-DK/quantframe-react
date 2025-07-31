@@ -36,16 +36,10 @@ tauri-plugin-shell = "2"
 tauri-plugin-notification = "2"
 tauri-plugin-os = "2"
 # Other dependencies
-futures-util = "0.3.31"
-tokio = { version = "1.29.0", features = ["full"] }
-tokio-tungstenite = { version = "0.26.2", features = ["native-tls"] }
-uuid = {version = "1.17.0", features = ["v4"] }
+
 regex = "1.9.1"
 chrono = "0.4"
-reqwest = { version = "0.11", features = ["json"] }
 zip = "0.6"
-actix-web = "4"
-actix-cors = "0.7.0"
 sha256 = "1.5.0"
 wf-market = { path = "C:/Users/Kenya/Desktop/Andet/Coding/Warframe/wf-market" }
 
