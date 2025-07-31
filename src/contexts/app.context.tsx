@@ -89,9 +89,8 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
         <TermsAndConditions
           content={context}
           onAccept={async () => {
-            modals.close(modalId);
-            if (!settings) return;
             await api.app.accept_tos(id);
+            modals.close(modalId);
           }}
           onDecline={async () => {
             api.app.exit();
