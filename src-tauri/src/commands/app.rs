@@ -14,7 +14,8 @@ pub async fn was_initialized() -> Result<bool, Error> {
     return Ok(started);
 }
 #[tauri::command]
-pub async fn app_get_app_info() -> Result<Value, Error> {
+pub async fn app_get_app_info(app: tauri::State<'_, Mutex<AppState>>) -> Result<Value, Error> {
+    let app = app.lock()?;
     let tauri_app = APP.get().expect("App handle not found");
     let info = tauri_app.package_info().clone();
     Ok(json!({
@@ -23,6 +24,7 @@ pub async fn app_get_app_info() -> Result<Value, Error> {
         "description": info.description,
         "authors": info.authors,
         "is_dev": cfg!(dev),
+        "tos_uuid": app.settings.tos_uuid.clone()
     }))
 }
 
@@ -40,4 +42,19 @@ pub async fn app_update_settings(
     let mut app = app.lock()?;
     app.update_settings(settings.clone())?;
     Ok(settings.clone())
+}
+
+#[tauri::command]
+pub async fn app_exit() -> Result<Settings, Error> {
+    std::process::exit(0);
+}
+#[tauri::command]
+pub async fn app_accept_tos(
+    id: String,
+    app: tauri::State<'_, Mutex<AppState>>,
+) -> Result<(), Error> {
+    let mut app = app.lock()?;
+    app.settings.tos_uuid = id;
+    app.settings.save()?;
+    Ok(())
 }

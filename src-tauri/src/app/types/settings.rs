@@ -15,6 +15,7 @@ pub struct Settings {
     pub live_scraper: LiveScraperSettings,
     pub summary_settings: SummarySettings,
     pub advanced_settings: AdvancedSettings,
+    pub tos_uuid: String,
 }
 impl Default for Settings {
     fn default() -> Self {
@@ -22,6 +23,7 @@ impl Default for Settings {
             live_scraper: LiveScraperSettings::default(),
             summary_settings: SummarySettings::default(),
             advanced_settings: AdvancedSettings::default(),
+            tos_uuid: String::new(),
         }
     }
 }

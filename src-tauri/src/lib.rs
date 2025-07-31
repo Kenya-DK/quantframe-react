@@ -180,6 +180,8 @@ pub fn run() {
             commands::app::app_get_app_info,
             commands::app::app_get_settings,
             commands::app::app_update_settings,
+            commands::app::app_exit,
+            commands::app::app_accept_tos,
             // Auth commands
             commands::auth::auth_me,
             commands::auth::auth_login,
