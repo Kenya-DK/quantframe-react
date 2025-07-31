@@ -13,6 +13,7 @@
     "createUpdaterArtifacts": "v1Compatible",
     "resources": {
       "resources/*": "resources/",
+      "resources/themes/*": "resources/themes/",
       "lang/*": "lang/"
     }
   },

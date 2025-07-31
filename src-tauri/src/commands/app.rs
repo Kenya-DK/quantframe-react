@@ -1,7 +1,8 @@
 use std::sync::Mutex;
 
 use serde_json::{json, Value};
-use utils::Error;
+use tauri::{path::BaseDirectory, Manager};
+use utils::{get_location, info, Error, LoggerOptions};
 
 use crate::{
     app::{client::AppState, Settings},
@@ -31,6 +32,37 @@ pub async fn app_get_app_info(app: tauri::State<'_, Mutex<AppState>>) -> Result<
 #[tauri::command]
 pub async fn app_get_settings(app: tauri::State<'_, Mutex<AppState>>) -> Result<Settings, Error> {
     let app = app.lock()?;
+    let app2 = APP.get().expect("App handle not found");
+    let resource_path = app2
+        .path()
+        .resolve("resources/themes/", BaseDirectory::Resource)
+        .unwrap();
+    // Get All files in the themes directory
+    let themes = std::fs::read_dir(resource_path.clone()).map_err(|e| {
+        Error::new(
+            "AppState:GetSettings",
+            "Failed to read themes directory",
+            get_location!(),
+        )
+    })?;
+    let themes: Vec<String> = themes
+        .filter_map(|entry| {
+            entry.ok().and_then(|e| {
+                let path = e.path();
+                if path.is_file() && path.extension().map_or(false, |ext| ext == "json") {
+                    path.file_stem().and_then(|s| s.to_str()).map(String::from)
+                } else {
+                    None
+                }
+            })
+        })
+        .collect();
+    info(
+        "Commands:AppGetSettings",
+        &format!("Available themes: {:?}", themes),
+        LoggerOptions::default(),
+    );
+    println!("Resource path: {:?}", resource_path);
     Ok(app.settings.clone())
 }
 

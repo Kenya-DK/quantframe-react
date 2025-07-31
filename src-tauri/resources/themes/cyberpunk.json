@@ -1,0 +1,91 @@
+{
+  "name": "Cyberpunk",
+  "author": "Kenya-DK",
+  "properties": {
+    "colors": {
+      "primary": ["#ff006e", "#e91e63", "#c2185b", "#ad1457", "#880e4f", "#4a148c", "#6a1b9a", "#7b1fa2", "#8e24aa", "#9c27b0"],
+
+      "cyan": ["#00ffff", "#00e5ff", "#00b8d4", "#0097a7", "#00838f", "#006064", "#004d40", "#00695c", "#00796b", "#00897b"],
+
+      "violet": ["#9c27b0", "#8e24aa", "#7b1fa2", "#6a1b9a", "#4a148c", "#311b92", "#1a0033", "#0d001a", "#05000d", "#000000"],
+
+      "dark": ["#f0f0f0", "#d0d0d0", "#b0b0b0", "#909090", "#404040", "#2a2a2a", "#1a1a1a", "#0f0f0f", "#0a0a0a", "#000000"],
+
+      "user-status": ["#00ff41", "#a1a1a1", "#ff0040", "#bf00ff", "#00ffff", "#ff006e", "#ffffff", "#ffffff", "#ffffff", "#ffffff"],
+      "trade-type": ["#ff0040", "#00ff41", "#b8b8b8", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff"],
+      "stock-status": ["#ff006e", "#00ff41", "#ffbf00", "#ff4800", "#00ffff", "#ff0040", "#bf00ff", "#00fcf8", "#ff006e", "#ff904f"],
+      "item-type": ["#ff006e", "#00ffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff"],
+      "order-type": ["#ff0040", "#00ff41", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff"],
+      "alert-type": ["#ff0040", "#ffbf00", "#00ffff", "#00ff41", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff"]
+    },
+    "primaryColor": "primary",
+    "defaultRadius": "md",
+
+    "components": {
+      "Button": {
+        "defaultProps": {
+          "variant": "outline"
+        },
+        "styles": {
+          "root": {
+            "borderColor": "#ff006e",
+            "color": "#ff006e",
+            "&:hover": {
+              "backgroundColor": "rgba(255, 0, 110, 0.1)",
+              "borderColor": "#00ffff",
+              "color": "#00ffff"
+            }
+          }
+        }
+      },
+
+      "Paper": {
+        "styles": {
+          "root": {
+            "backgroundColor": "rgba(0, 0, 0, 0.8)",
+            "backdropFilter": "blur(10px)",
+            "border": "1px solid rgba(255, 0, 110, 0.3)",
+            "boxShadow": "0 0 20px rgba(255, 0, 110, 0.2)"
+          }
+        }
+      },
+
+      "Modal": {
+        "styles": {
+          "content": {
+            "backgroundColor": "rgba(0, 0, 0, 0.9)",
+            "border": "1px solid rgba(0, 255, 255, 0.5)",
+            "boxShadow": "0 0 30px rgba(0, 255, 255, 0.3)"
+          }
+        }
+      },
+
+      "TextInput": {
+        "styles": {
+          "input": {
+            "backgroundColor": "rgba(0, 0, 0, 0.7)",
+            "borderColor": "#ff006e",
+            "color": "#ffffff",
+            "&:focus": {
+              "borderColor": "#00ffff",
+              "boxShadow": "0 0 10px rgba(0, 255, 255, 0.3)"
+            }
+          }
+        }
+      },
+      "Select": {
+        "styles": {
+          "input": {
+            "backgroundColor": "rgba(0, 0, 0, 0.7)",
+            "borderColor": "#ff006e",
+            "color": "#ffffff",
+            "&:focus": {
+              "borderColor": "#00ffff",
+              "boxShadow": "0 0 10px rgba(0, 255, 255, 0.3)"
+            }
+          }
+        }
+      }
+    }
+  }
+}

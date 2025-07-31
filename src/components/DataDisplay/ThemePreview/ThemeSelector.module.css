@@ -1,0 +1,38 @@
+.themePreviewOption {
+  padding: 0;
+}
+
+.themePreview {
+  cursor: pointer;
+}
+
+[data-mantine-color-scheme='dark'] .themePreview:hover {
+  background-color: #333 !important;
+  color: #fff !important;
+}
+
+.themePreview:hover {
+  background-color: #eaeaea !important;
+}
+
+[aria-selected='false'] .themePreview {
+  border-width: 1px !important;
+  border-color: #eaeaea !important;
+}
+
+[data-mantine-color-scheme='dark'] [aria-selected='false'] .themePreview {
+  border-color: #333 !important;
+}
+
+.themePreviewOptions>div>div>div>div>div {
+  padding: 1rem;
+  overflow: hidden;
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.themePreviewDropdown {
+  padding: 0;
+  overflow: hidden;
+}

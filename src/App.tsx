@@ -28,6 +28,9 @@ import faPolarityVazarin from "@icons/faPolarityVazarin";
 import { useEffect } from "react";
 import api from "./api";
 import { PromptModal } from "./components/Modals/Prompt";
+import { MantineProvider } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
+import { ThemeProvider, useTheme } from "./contexts/theme.context";
 library.add(faMoneyBillTrendDown);
 library.add(faTradingAnalytics);
 library.add(faAmberStar);
@@ -70,14 +73,13 @@ const modals = {
 export interface MantineModalsOverride {
   modals: typeof modals;
 }
-
-function App() {
-  useEffect(() => {
-    window.onclick = async () => await api.analytics.setLastUserActivity();
-  }, []);
+// AppContent component that uses the theme context
+function AppContent() {
+  const { theme } = useTheme();
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <MantineProvider defaultColorScheme="dark" theme={theme}>
+      <Notifications position="bottom-right" />
       <ModalsProvider
         modals={modals}
         modalProps={{
@@ -93,6 +95,19 @@ function App() {
         </DatesProvider>
         {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       </ModalsProvider>
+    </MantineProvider>
+  );
+}
+
+function App() {
+  useEffect(() => {
+    window.onclick = async () => await api.analytics.setLastUserActivity();
+  }, []);
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
