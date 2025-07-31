@@ -368,6 +368,13 @@ export const en = {
           read_more: "Read More",
         },
       },
+      tos: {
+        title: "Terms of Service",
+        buttons: {
+          accept: "Accept",
+          decline: "Decline",
+        },
+      },
       app_error: {
         title: "Error in {{component}} component",
         version: "Version: {{version}}",

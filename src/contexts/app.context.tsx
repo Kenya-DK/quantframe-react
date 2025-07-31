@@ -9,8 +9,11 @@ import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { check } from "@tauri-apps/plugin-updater";
 import { modals } from "@mantine/modals";
-import { UpdateAvailableModal } from "../components/Modals/UpdateAvailable";
-import { useTranslateComponent } from "../hooks/useTranslate.hook";
+import { UpdateAvailableModal } from "@components/Modals/UpdateAvailable";
+import { TermsAndConditions } from "@components/Modals/TermsAndConditions";
+import { useTranslateComponent } from "@hooks/useTranslate.hook";
+import { resolveResource } from "@tauri-apps/api/path";
+import { readTextFile } from "@tauri-apps/plugin-fs";
 
 export type AppContextProps = {
   app_info: TauriTypes.AppInfo | undefined;
@@ -67,6 +70,37 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     });
   };
 
+  const checkForTosUpdates = async (info: TauriTypes.AppInfo) => {
+    const resourcePath = await resolveResource("resources/tos.md");
+    const context = await readTextFile(resourcePath);
+    // Get Text Between <ID</ID>
+    const start = context.indexOf("<ID>") + 4;
+    const end = context.indexOf("</ID>");
+    const id = context.substring(start, end);
+    console.log("OpenTos", info?.tos_uuid, id);
+    if (id == info?.tos_uuid) return;
+    const modalId = modals.open({
+      title: useTranslateComponent("modals.tos.title", { version: id }),
+      withCloseButton: false,
+      closeOnClickOutside: false,
+      closeOnEscape: false,
+      size: "75%",
+      children: (
+        <TermsAndConditions
+          content={context}
+          onAccept={async () => {
+            modals.close(modalId);
+            if (!settings) return;
+            await api.app.accept_tos(id);
+          }}
+          onDecline={async () => {
+            api.app.exit();
+          }}
+        />
+      ),
+    });
+  };
+
   // Fetch data from rust side
   const {
     data: alerts,
@@ -89,6 +123,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
   useEffect(() => {
     if (!app_info) return;
     checkForUpdates(app_info);
+    checkForTosUpdates(app_info);
   }, [app_info]);
 
   const InitializeApp = async () => {

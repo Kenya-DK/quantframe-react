@@ -25,4 +25,10 @@ export class AppModule {
   updateSettings(settings: TauriTypes.Settings): Promise<TauriTypes.Settings> {
     return this.client.sendInvoke<TauriTypes.Settings>("app_update_settings", { settings });
   }
+  exit() {
+    return this.client.sendInvoke<void>("app_exit");
+  }
+  accept_tos(id: string): Promise<void> {
+    return this.client.sendInvoke<void>("app_accept_tos", { id });
+  }
 }

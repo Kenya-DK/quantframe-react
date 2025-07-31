@@ -59,11 +59,11 @@ export namespace TauriTypes {
     name: string;
     version: string;
     is_dev: boolean;
+    tos_uuid: string;
   }
 
   export interface Settings {
     debug: string[];
-    tos_uuid: string;
     cross_play: boolean;
     dev_mode: boolean;
     wf_log_path: string;
