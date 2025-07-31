@@ -387,7 +387,20 @@ export const en = {
       },
     },
   },
-  context: {},
+  context: {
+    app: {
+      starting_up: "Starting up...",
+      validation: {
+        success: "Validation successful, Welcome to {{name}}",
+        error: "Validation failed, please log in again",
+      },
+      cache: {
+        initializing: "Initializing cache...",
+        updating: "Updating cache...",
+        item_price_updating: "Updating item prices...",
+      },
+    },
+  },
   pages: {
     home: {
       tooltips: {

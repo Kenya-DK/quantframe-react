@@ -3,7 +3,7 @@ use std::sync::Mutex;
 use crate::app::{Settings, User};
 use crate::notification::enums::{UIEvent, UIOperationEvent};
 use crate::utils::modules::states::{self, ErrorFromExt};
-use crate::{helper, APP};
+use crate::{emit_startup, helper, APP};
 use qf_api::errors::ApiError as QFApiError;
 use qf_api::types::UserPrivate as QFUserPrivate;
 use qf_api::Client as QFClient;
@@ -153,10 +153,17 @@ impl AppState {
             .add_metric("app_start", info.version.to_string());
         match state.validate().await {
             Ok((wfu, qfu)) => {
+                emit_startup!(
+                    "validation.success",
+                    json!({
+                        "name": wfu.ingame_name,
+                    })
+                );
                 state.user = update_user(state.user, &wfu, &qfu);
             }
             Err(e) => {
                 e.log(Some("user_validation.log"));
+                emit_startup!("validation.error", json!({}));
                 state.user = User::default();
             }
         }

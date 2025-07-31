@@ -11,7 +11,7 @@ import { check } from "@tauri-apps/plugin-updater";
 import { modals } from "@mantine/modals";
 import { UpdateAvailableModal } from "@components/Modals/UpdateAvailable";
 import { TermsAndConditions } from "@components/Modals/TermsAndConditions";
-import { useTranslateComponent } from "@hooks/useTranslate.hook";
+import { useTranslateComponent, useTranslateContexts } from "@hooks/useTranslate.hook";
 import { resolveResource } from "@tauri-apps/api/path";
 import { readTextFile } from "@tauri-apps/plugin-fs";
 
@@ -44,6 +44,10 @@ export const useAppError = () => {
 
 export function AppContextProvider({ children }: AppContextProviderProps) {
   const [error, setError] = useState<AppError | undefined>(undefined);
+  const [startingUp, setStartingUp] = useState<{ i18n_key: string; values: {} }>({
+    i18n_key: "starting_up",
+    values: {},
+  });
 
   const { data: settings, refetch: refetchSettings } = api.app.get_settings();
   const { data: app_info, refetch: refetchAppInfo } = api.app.get_app_info();
@@ -140,6 +144,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
   useEffect(() => {
     OnTauriEvent<ResponseError | undefined>(TauriTypes.Events.OnError, (data) => handleAppError(data));
     OnTauriEvent<undefined>(TauriTypes.Events.RefreshSettings, () => refetchSettings());
+    OnTauriEvent<any>(TauriTypes.Events.OnStartingUp, (data) => setStartingUp(data));
     invoke("was_initialized")
       .then((wasInitialized) => (wasInitialized ? InitializeApp() : console.log("App was not initialized")))
       .catch((e) => console.error("Error checking initialization:", e));
@@ -147,11 +152,12 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     return () => {
       OffTauriEvent<ResponseError | undefined>(TauriTypes.Events.OnError, (data) => handleAppError(data));
       OffTauriEvent<undefined>(TauriTypes.Events.RefreshSettings, () => refetchSettings());
+      OffTauriEvent<any>(TauriTypes.Events.OnStartingUp, (data) => setStartingUp(data));
     };
   }, []);
   return (
     <AppContext.Provider value={{ settings, alerts: alerts?.results || [], app_info: app_info, app_error: error }}>
-      <SplashScreen opened={loading} text={"Kenya"} />
+      <SplashScreen opened={loading} text={useTranslateContexts(`app.${startingUp.i18n_key}`, startingUp.values)} />
       {!loading && <AuthContextProvider>{children}</AuthContextProvider>}
     </AppContext.Provider>
   );

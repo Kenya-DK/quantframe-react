@@ -35,14 +35,14 @@ macro_rules! emit_error {
 
 #[macro_export]
 macro_rules! emit_startup {
-    ($i18n_key:expr, $value:expr) => {{
+    ($i18n_key:expr, $Option:expr) => {{
         use crate::notification::enums::UIEvent;
         use crate::utils::modules::states;
         use serde_json::json;
         let notify = states::notify_client().expect("Failed to get notification client state");
-        notify.gui().send_event("App:StartingUp", Some(json!({
+        notify.gui().send_event(UIEvent::OnStartingUp, Some(json!({
             "i18n_key": $i18n_key,
-            "value": $value
+            "values": $Option
         })));
     }};
 }

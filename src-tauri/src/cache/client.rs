@@ -12,7 +12,7 @@ use wf_market::endpoints::user;
 use crate::{
     app::User,
     cache::types::CacheVersion,
-    helper,
+    emit_startup, helper,
     utils::modules::states::{self, ErrorFromExt},
 };
 
@@ -84,6 +84,7 @@ impl CacheState {
         let version =
             CacheVersion::load().expect("Failed to load cache version from cache_version.json");
 
+        emit_startup!("cache.initializing", json!({}));
         let mut client = CacheState {
             self_arc: OnceLock::new(),
             base_path: helper::get_app_storage_path().join("cache"),
@@ -151,6 +152,7 @@ impl CacheState {
             self.item_price().check_update(qf_client).await?;
 
         if cache_require_update {
+            emit_startup!("cache.updating", json!({}));
             match self.extract(qf_client).await {
                 Ok(()) => {
                     info(
