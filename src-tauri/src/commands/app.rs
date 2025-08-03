@@ -1,12 +1,13 @@
-use std::sync::Mutex;
+use std::{io::Read, path::PathBuf, sync::Mutex};
 
 use serde_json::{json, Value};
 use tauri::{path::BaseDirectory, Manager};
+use tauri_plugin_dialog::DialogExt;
 use utils::{get_location, info, Error, LoggerOptions};
 
 use crate::{
     app::{client::AppState, Settings},
-    APP, HAS_STARTED,
+    helper, APP, HAS_STARTED,
 };
 
 #[tauri::command]
@@ -32,37 +33,6 @@ pub async fn app_get_app_info(app: tauri::State<'_, Mutex<AppState>>) -> Result<
 #[tauri::command]
 pub async fn app_get_settings(app: tauri::State<'_, Mutex<AppState>>) -> Result<Settings, Error> {
     let app = app.lock()?;
-    let app2 = APP.get().expect("App handle not found");
-    let resource_path = app2
-        .path()
-        .resolve("resources/themes/", BaseDirectory::Resource)
-        .unwrap();
-    // Get All files in the themes directory
-    let themes = std::fs::read_dir(resource_path.clone()).map_err(|e| {
-        Error::new(
-            "AppState:GetSettings",
-            "Failed to read themes directory",
-            get_location!(),
-        )
-    })?;
-    let themes: Vec<String> = themes
-        .filter_map(|entry| {
-            entry.ok().and_then(|e| {
-                let path = e.path();
-                if path.is_file() && path.extension().map_or(false, |ext| ext == "json") {
-                    path.file_stem().and_then(|s| s.to_str()).map(String::from)
-                } else {
-                    None
-                }
-            })
-        })
-        .collect();
-    info(
-        "Commands:AppGetSettings",
-        &format!("Available themes: {:?}", themes),
-        LoggerOptions::default(),
-    );
-    println!("Resource path: {:?}", resource_path);
     Ok(app.settings.clone())
 }
 
@@ -89,4 +59,36 @@ pub async fn app_accept_tos(
     app.settings.tos_uuid = id;
     app.settings.save()?;
     Ok(())
+}
+const BASE64_CHARS: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+fn base64_encode_bytes(data: &[u8]) -> String {
+    let mut encoded = String::new();
+    let mut i = 0;
+
+    while i < data.len() {
+        let b1 = data[i];
+        let b2 = if i + 1 < data.len() { data[i + 1] } else { 0 };
+        let b3 = if i + 2 < data.len() { data[i + 2] } else { 0 };
+
+        let triple = ((b1 as u32) << 16) | ((b2 as u32) << 8) | (b3 as u32);
+
+        encoded.push(BASE64_CHARS[((triple >> 18) & 0x3F) as usize] as char);
+        encoded.push(BASE64_CHARS[((triple >> 12) & 0x3F) as usize] as char);
+
+        if i + 1 < data.len() {
+            encoded.push(BASE64_CHARS[((triple >> 6) & 0x3F) as usize] as char);
+        } else {
+            encoded.push('=');
+        }
+
+        if i + 2 < data.len() {
+            encoded.push(BASE64_CHARS[(triple & 0x3F) as usize] as char);
+        } else {
+            encoded.push('=');
+        }
+
+        i += 3;
+    }
+
+    encoded
 }

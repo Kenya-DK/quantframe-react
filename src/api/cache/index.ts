@@ -1,5 +1,6 @@
 import { TauriClient } from "..";
 import { TauriTypes } from "$types";
+import { useQuery } from "@tanstack/react-query";
 enum CacheType {
   TradableItems = "tradable_items",
   RivenWeapons = "riven_weapons",
@@ -15,5 +16,15 @@ export class CacheModule {
     const items = await this.client.sendInvoke<TauriTypes.CacheTradableItem[]>("cache_get_tradable_items");
     this._cache.set(CacheType.TradableItems, items);
     return items;
+  }
+  getThemePresets() {
+    return useQuery({
+      queryKey: ["cache_get_theme_presets"],
+      queryFn: () => this.client.sendInvoke<TauriTypes.CacheTheme[]>("cache_get_theme_presets"),
+      retry: false,
+    });
+  }
+  createTheme(name: string, author: string, properties: any): Promise<void> {
+    return this.client.sendInvoke<void>("cache_create_theme", { name, author, properties });
   }
 }

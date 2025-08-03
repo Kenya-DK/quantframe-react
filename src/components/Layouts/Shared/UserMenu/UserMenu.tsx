@@ -106,7 +106,7 @@ export function UserMenu() {
             </Menu.Item>
             <Menu.Divider />
             <Group gap={3} mt="xs" classNames={{ root: classes.user_status }}>
-              {Object.values(UserStatus).map((status) => (
+              {Object.values(UserStatus).map((status, i) => (
                 <Button
                   key={status}
                   p={3}
@@ -115,7 +115,7 @@ export function UserMenu() {
                   data-active={status == user?.wfm_status}
                   onClick={() => api.user.set_status(status)}
                 >
-                  <Text tt="uppercase" data-color-mode="text" data-user-status={status} fw={500}>
+                  <Text tt="uppercase" c={"user-status." + i} fw={500}>
                     {useTranslateUserStatus(status)}
                   </Text>
                 </Button>

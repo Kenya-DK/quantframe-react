@@ -1,0 +1,13 @@
+use serde::{Deserialize, Serialize};
+
+use super::cache_item_base::CacheItemBase;
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct CacheTheme {
+    pub name: String,
+    pub author: String,
+    #[serde(rename = "iconBase64")]
+    pub icon_base64: String,
+
+    properties: serde_json::Value,
+}

@@ -17,7 +17,6 @@
   --size: 100px;
   position: absolute;
   width: var(--size);
-  fill: var(--mantine-color-blue-7);
 
   &[data-opened] {
     animation: zoomIn 2.0s forwards;

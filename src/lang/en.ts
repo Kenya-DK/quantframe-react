@@ -20,6 +20,55 @@ export const en = {
     },
   },
   enums: {
+    item_type: {
+      riven: "Riven",
+      item: "Item",
+      details: {
+        riven: "Riven",
+        item: "Item",
+      },
+    },
+    order_type: {
+      buy: "Buy Order",
+      sell: "Sell Order",
+      closed: "Closed Orders",
+      details: {
+        buy: "Buy",
+        sell: "Sell",
+      },
+    },
+    transaction_type: {
+      purchase: "Purchase",
+      sale: "Sale",
+      details: {
+        purchase: "Purchase",
+        sale: "Sale",
+      },
+    },
+    stock_status: {
+      pending: "Pending",
+      live: "Live",
+      to_low_profit: "Low Profit",
+      no_sellers: "No Sellers",
+      no_buyers: "No Buyers",
+      inactive: "Inactive",
+      sma_limit: "SMA Limit",
+      order_limit: "Order Limit",
+      overpriced: "Overpriced",
+      underpriced: "Underpriced",
+      details: {
+        pending: "Waiting to be processed",
+        live: "Live on Warframe Market",
+        to_low_profit: "Was not processed due to low profit based on settings",
+        no_sellers: "No sellers found for this item",
+        no_buyers: "No buyers found for this item",
+        inactive: "Is inactive and will not be processed",
+        sma_limit: "Is limited by the SMA",
+        order_limit: "Is limited by the order limit",
+        overpriced: "Is overpriced",
+        underpriced: "Is underpriced",
+      },
+    },
     stock_mode: {
       all: "All",
       riven: "Riven",
@@ -98,6 +147,38 @@ export const en = {
         description: "Select tags to filter items",
       },
     },
+    theme_editor: {
+      color_palettes: {
+        title: "Color Palettes",
+        base_colors: "Base Colors",
+        stock_status: "Stock Status",
+        user_status: "User Status",
+        transaction_type: "Transaction Type",
+        item_type: "Item Type",
+        logo_color: "Logo Color",
+      },
+      sharing: {
+        title: "Sharing",
+      },
+      buttons: {
+        copy_to_clipboard: "Copy to Clipboard",
+        import_from_clipboard: "Import from Clipboard",
+        open_themes_folder: "Open Themes Folder",
+        export_theme: "Export Theme",
+      },
+      fields: {
+        export_name: {
+          label: "Name",
+          placeholder: "Enter theme name",
+          error: "Invalid theme name",
+        },
+        export_author: {
+          label: "Author",
+          placeholder: "Enter author name",
+          error: "Invalid author name",
+        },
+      },
+    },
     forms: {
       create_category_summary: {
         fields: {
@@ -149,6 +230,8 @@ export const en = {
         tabs: {
           themes: {
             title: "Themes",
+            community_themes: "Community Themes",
+            theme_configuration: "Theme Configuration",
           },
           notifications: {
             title: "Notifications",

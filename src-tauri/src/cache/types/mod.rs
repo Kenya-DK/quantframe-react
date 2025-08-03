@@ -63,3 +63,6 @@ pub use item_price_info::*;
 
 pub mod cache_version;
 pub use cache_version::*;
+
+pub mod cache_theme;
+pub use cache_theme::*;

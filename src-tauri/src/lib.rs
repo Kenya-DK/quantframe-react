@@ -197,6 +197,8 @@ pub fn run() {
             commands::alert::alert_get_alerts,
             // Cache commands
             commands::cache::cache_get_tradable_items,
+            commands::cache::cache_get_theme_presets,
+            commands::cache::cache_create_theme,
             // Log commands
             commands::logs::log_export,
         ])

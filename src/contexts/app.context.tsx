@@ -81,7 +81,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     const start = context.indexOf("<ID>") + 4;
     const end = context.indexOf("</ID>");
     const id = context.substring(start, end);
-    console.log("OpenTos", info?.tos_uuid, id);
+
     if (id == info?.tos_uuid) return;
     const modalId = modals.open({
       title: useTranslateComponent("modals.tos.title", { version: id }),

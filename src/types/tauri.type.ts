@@ -158,7 +158,6 @@ export namespace TauriTypes {
     labels: string[];
     values: number[];
   }
-
   // Old code for TauriClient
   export interface AppInfo {
     authors: string;
@@ -171,6 +170,13 @@ export namespace TauriTypes {
   export interface CacheItemBase {
     name: string;
     uniqueName: string;
+  }
+  export interface CacheTheme {
+    name: string;
+    author: string;
+    fileName: string;
+    iconBase64: string;
+    properties: Record<string, any>;
   }
   export interface CacheRivenAttribute {
     id: string;

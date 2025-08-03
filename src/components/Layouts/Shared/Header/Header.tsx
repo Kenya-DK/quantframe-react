@@ -10,7 +10,7 @@ export function Header({}: HeaderProps) {
   const theme = useMantineTheme();
   return (
     <Group ml={"sm"} mr={"sm"} justify="space-between" className={classes.header}>
-      <Logo color={theme.colors.blue[7]} />
+      <Logo color={theme.other.logoColor} />
       <Clock />
       <UserMenu />
     </Group>

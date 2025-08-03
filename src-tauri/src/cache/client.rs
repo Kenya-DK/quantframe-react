@@ -44,6 +44,7 @@ pub struct CacheState {
     tradable_item_module: OnceLock<Arc<TradableItemModule>>,
     warframe_module: OnceLock<Arc<WarframeModule>>,
     item_price_module: OnceLock<Arc<ItemPriceModule>>,
+    theme_module: OnceLock<Arc<ThemeModule>>,
 }
 
 impl CacheState {
@@ -75,6 +76,7 @@ impl CacheState {
                     tradable_item_module: self.tradable_item_module.clone(),
                     warframe_module: self.warframe_module.clone(),
                     item_price_module: self.item_price_module.clone(),
+                    theme_module: self.theme_module.clone(),
                 })
             })
             .clone()
@@ -109,6 +111,7 @@ impl CacheState {
             tradable_item_module: OnceLock::new(),
             warframe_module: OnceLock::new(),
             item_price_module: OnceLock::new(),
+            theme_module: OnceLock::new(),
         };
         if !user.verification {
             return Ok(client);
@@ -188,6 +191,7 @@ impl CacheState {
         self.tradable_item().load()?;
         self.warframe().load()?;
         self.all_items().load()?;
+        self.theme().load()?;
         Ok((cache_version_id, price_version_id))
     }
 
@@ -377,6 +381,11 @@ impl CacheState {
     pub fn warframe(&self) -> Arc<WarframeModule> {
         self.warframe_module
             .get_or_init(|| WarframeModule::new(self.arc()))
+            .clone()
+    }
+    pub fn theme(&self) -> Arc<ThemeModule> {
+        self.theme_module
+            .get_or_init(|| ThemeModule::new(self.arc()))
             .clone()
     }
 }
