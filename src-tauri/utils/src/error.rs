@@ -104,6 +104,21 @@ impl Error {
         self
     }
 
+    /// Set the message for this error
+    ///
+    /// # Arguments
+    /// * `message` - A descriptive error message
+    ///
+    /// # Example
+    /// ```
+    /// let error = Error::new("FileLogger", "Failed to write to file")
+    ///     .set_message("Unable to write to log file");
+    /// ```
+    pub fn set_message(mut self, message: impl Into<String>) -> Self {
+        self.message = message.into();
+        self
+    }
+
     /// Add contextual information to this error
     ///
     /// # Arguments
