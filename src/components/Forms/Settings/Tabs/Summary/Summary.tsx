@@ -92,6 +92,7 @@ export const SummaryPanel = ({ value, onSubmit }: SummaryPanelProps) => {
                 height={"50vh"}
                 withColumnBorders
                 striped
+                idAccessor={"name"}
                 highlightOnHover
                 records={form.values.categories}
                 columns={[
