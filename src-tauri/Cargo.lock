@@ -25,6 +25,7 @@ dependencies = [
  "tauri-plugin-process",
  "tauri-plugin-shell",
  "tauri-plugin-updater",
+ "tokio",
  "utils",
  "wf-market",
  "zip 0.6.6",

@@ -36,7 +36,7 @@ tauri-plugin-shell = "2"
 tauri-plugin-notification = "2"
 tauri-plugin-os = "2"
 # Other dependencies
-
+tokio = {version =  "1.45.1", features = ["full"] }
 regex = "1.9.1"
 chrono = "0.4"
 zip = "0.6"
