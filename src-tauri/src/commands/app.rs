@@ -60,35 +60,3 @@ pub async fn app_accept_tos(
     app.settings.save()?;
     Ok(())
 }
-const BASE64_CHARS: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-fn base64_encode_bytes(data: &[u8]) -> String {
-    let mut encoded = String::new();
-    let mut i = 0;
-
-    while i < data.len() {
-        let b1 = data[i];
-        let b2 = if i + 1 < data.len() { data[i + 1] } else { 0 };
-        let b3 = if i + 2 < data.len() { data[i + 2] } else { 0 };
-
-        let triple = ((b1 as u32) << 16) | ((b2 as u32) << 8) | (b3 as u32);
-
-        encoded.push(BASE64_CHARS[((triple >> 18) & 0x3F) as usize] as char);
-        encoded.push(BASE64_CHARS[((triple >> 12) & 0x3F) as usize] as char);
-
-        if i + 1 < data.len() {
-            encoded.push(BASE64_CHARS[((triple >> 6) & 0x3F) as usize] as char);
-        } else {
-            encoded.push('=');
-        }
-
-        if i + 2 < data.len() {
-            encoded.push(BASE64_CHARS[(triple & 0x3F) as usize] as char);
-        } else {
-            encoded.push('=');
-        }
-
-        i += 3;
-    }
-
-    encoded
-}
