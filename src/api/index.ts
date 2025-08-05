@@ -9,6 +9,7 @@ import { AlertModule } from "./alert";
 import { DashboardModule } from "./dashboard";
 import { CacheModule } from "./cache";
 import { LogModule } from "./log";
+import { LiveScraperModule } from "./live_scraper";
 
 export class TauriClient {
   _logging: string[] = [];
@@ -24,6 +25,7 @@ export class TauriClient {
     this.user = new UserModule(this);
     this.cache = new CacheModule(this);
     this.analytics = new AnalyticsModule(this);
+    this.live_scraper = new LiveScraperModule(this);
     this.log = new LogModule(this);
     this._logging = localStorage.getItem("tauri_logs") ? JSON.parse(localStorage.getItem("tauri_logs")!) : ["*"];
   }
@@ -152,6 +154,7 @@ export class TauriClient {
   log: LogModule;
   analytics: AnalyticsModule;
   user: UserModule;
+  live_scraper: LiveScraperModule;
 }
 
 declare global {

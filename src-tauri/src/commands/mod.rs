@@ -8,7 +8,7 @@ pub mod logs;
 pub mod user;
 // pub mod chat;
 // pub mod debug;
-// pub mod live_scraper;
+pub mod live_scraper;
 // pub mod log;
 // pub mod log_parser;
 // pub mod notification;

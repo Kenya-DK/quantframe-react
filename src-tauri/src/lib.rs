@@ -28,6 +28,7 @@ use std::time::Instant;
 use tauri::{App, Emitter, Manager};
 
 use crate::cache::client::CacheState;
+use crate::live_scraper::LiveScraperState;
 use crate::notification::client::NotificationState;
 
 mod app;
@@ -41,7 +42,7 @@ mod macros;
 mod enums;
 mod helper;
 // mod http_client;
-// mod live_scraper;
+mod live_scraper;
 // mod log_parser;
 mod notification;
 // mod qf_client;
@@ -120,6 +121,9 @@ async fn setup_manages(app: tauri::AppHandle) -> Result<(), Error> {
 
     let cache_state = Mutex::new(CacheState::new(&qf_client, &user).await?);
     app.manage(cache_state);
+
+    let live_scraper_state = LiveScraperState::new();
+    app.manage(live_scraper_state);
 
     Ok(())
 }
@@ -201,6 +205,8 @@ pub fn run() {
             commands::cache::cache_create_theme,
             // Log commands
             commands::logs::log_export,
+            // Live Scraper commands
+            commands::live_scraper::live_scraper_toggle,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
