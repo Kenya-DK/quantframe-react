@@ -4,7 +4,6 @@ import classes from "./Logo.module.css";
 
 export function Logo({ color }: { color: string }) {
   const { app_info } = useAppContext();
-  console.log("Logo Rendered", color);
   return (
     <Group gap="xs">
       <svg version="1.1" xmlns="http://www.w3.org/2000/svg" fill={color} className={classes.logo} viewBox="0 0 382.36 370.14">
