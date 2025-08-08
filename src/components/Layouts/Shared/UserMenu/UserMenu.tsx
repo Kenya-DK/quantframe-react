@@ -59,6 +59,16 @@ export function UserMenu() {
     return true;
   };
 
+  const IsAuthenticated = () => {
+    if (!user) return false;
+    if (user.anonymous) return false;
+    if (user.qf_banned || user.wfm_banned) return false;
+    if (!user.verification) return false;
+    if (app_error && !app_error?.isWebSocket()) return false;
+    if (app_error && app_error?.isWebSocketError()) return false;
+    return true;
+  };
+
   return (
     <Menu shadow="md" width={200} transitionProps={{ transition: "fade-down", duration: 150 }} position="bottom-end" offset={5}>
       <Menu.Target>
@@ -150,7 +160,7 @@ export function UserMenu() {
           {useTranslateUserMenu("items.settings")}
         </Menu.Item>
         <Menu.Item
-          disabled={!user || user?.anonymous || user?.verification}
+          disabled={!IsAuthenticated()}
           leftSection={<FontAwesomeIcon icon={faRightFromBracket} />}
           onClick={async () => {
             await logOutMutation.mutateAsync();
