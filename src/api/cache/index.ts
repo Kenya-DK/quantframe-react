@@ -27,4 +27,7 @@ export class CacheModule {
   createTheme(name: string, author: string, properties: any): Promise<void> {
     return this.client.sendInvoke<void>("cache_create_theme", { name, author, properties });
   }
+  openThemeFolder(): Promise<void> {
+    return this.client.sendInvoke<void>("cache_open_theme_folder");
+  }
 }

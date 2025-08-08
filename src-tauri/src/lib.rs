@@ -148,6 +148,7 @@ pub fn run() {
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(move |app| {
             // log_parser::types::trade_detection::init_detections();
@@ -203,6 +204,7 @@ pub fn run() {
             commands::cache::cache_get_tradable_items,
             commands::cache::cache_get_theme_presets,
             commands::cache::cache_create_theme,
+            commands::cache::cache_open_theme_folder,
             // Log commands
             commands::logs::log_export,
             // Live Scraper commands

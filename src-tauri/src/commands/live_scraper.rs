@@ -11,15 +11,10 @@ use crate::{
 pub async fn live_scraper_toggle(
     live_scraper: tauri::State<'_, Arc<LiveScraperState>>,
 ) -> Result<(), Error> {
-    println!("Toggling live scraper");
-
     if live_scraper.is_running.load(Ordering::SeqCst) {
-        println!("Stopping live scraper");
         live_scraper.stop();
     } else {
-        println!("Starting live scraper");
         live_scraper.start();
     }
-
     Ok(())
 }

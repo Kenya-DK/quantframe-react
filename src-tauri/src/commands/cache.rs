@@ -1,4 +1,4 @@
-use std::sync::Mutex;
+use std::{process::Command, sync::Mutex};
 
 use serde_json::Value;
 use utils::Error;
@@ -45,6 +45,7 @@ pub async fn cache_create_theme(
     let cache = cache.lock()?;
     match cache.theme().create_theme(name, author, properties) {
         Ok(_) => {
+            cache.theme().load()?;
             return Ok(());
         }
         Err(e) => {
@@ -52,4 +53,15 @@ pub async fn cache_create_theme(
             return Err(e);
         }
     }
+}
+#[tauri::command]
+pub fn cache_open_theme_folder(cache: tauri::State<'_, Mutex<CacheState>>) {
+    let cache = cache.lock().expect("Failed to lock cache state");
+    Command::new("explorer")
+        .args([
+            "/select,",
+            &cache.theme().get_theme_folder().to_str().unwrap(),
+        ])
+        .spawn()
+        .unwrap();
 }

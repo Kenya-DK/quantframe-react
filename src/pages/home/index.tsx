@@ -4,7 +4,6 @@ import {
   Text,
   Image,
   Divider,
-  getGradient,
   Grid,
   Group,
   Paper,
@@ -44,7 +43,6 @@ const BarChartFooter = ({ i18nKey, statistics }: { i18nKey: string; statistics: 
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`home.${key}`, { ...context }, i18Key);
   const useTranslateTooltips = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslate(`tooltips.bar_chart.footer.${key}`, { ...context }, i18Key);
-
   const ExtraComponents = {
     expenseIco: (
       <Tooltip label={useTranslateTooltips("expense")}>
@@ -114,7 +112,7 @@ export default function HomePage() {
         <Grid.Col span={4}>
           <StatsWithIcon
             count={summary?.total.total_profit || 0}
-            color={getGradient({ deg: 180, from: "green.7", to: "green.9" }, theme)}
+            color={theme.other.chartStyles.total.bgColor}
             title={useTranslateCards("total.title")}
             icon={<FontAwesomeIcon size="2x" icon={faMoneyBill} />}
             footer={
@@ -133,7 +131,7 @@ export default function HomePage() {
         <Grid.Col span={4}>
           <StatsWithIcon
             count={summary?.today.summary.total_profit || 0}
-            color={getGradient({ deg: 180, from: "grape.7", to: "grape.9" }, theme)}
+            color={theme.other.chartStyles.today.bgColor}
             title={useTranslateCards("today.title")}
             icon={<FontAwesomeIcon size="2x" icon={faCalendarAlt} />}
             footer={
@@ -152,7 +150,7 @@ export default function HomePage() {
         <Grid.Col span={4}>
           <StatsWithIcon
             count={summary?.best_seller.total_profit || 0}
-            color={getGradient({ deg: 180, from: "blue.7", to: "blue.9" }, theme)}
+            color={theme.other.chartStyles.lastDays.bgColor}
             title={useTranslateCards("best_seller.title")}
             icon={<FontAwesomeIcon size="2x" icon={faBoxOpen} />}
             footer={
@@ -175,18 +173,17 @@ export default function HomePage() {
           <BarCardChart
             title={useTranslateCards("total.bar_chart.title")}
             labels={i18next.t("months", { returnObjects: true }) as string[]}
-            // labels={data?.total.present_year.chart.labels || []}
-            chartStyle={{ background: getGradient({ deg: 180, from: "green.8", to: "green.9" }, theme), height: "200px" }}
+            chartStyle={{ background: theme.other.chartStyles.total.bgColor, height: "200px" }}
             datasets={[
               {
                 label: useTranslateCards("total.bar_chart.datasets.this_year"),
                 data: summary?.total.present_year.chart.values || [],
-                backgroundColor: getCssVariable("--mantine-color-blue-3"),
+                backgroundColor: theme.other.chartStyles.total.currentYearLineColor,
               },
               {
                 label: useTranslateCards("total.bar_chart.datasets.last_year"),
                 data: summary?.total.last_year.chart.values || [],
-                backgroundColor: getCssVariable("--mantine-color-blue-7"),
+                backgroundColor: theme.other.chartStyles.total.lastYearLineColor,
               },
             ]}
             context={
@@ -201,12 +198,12 @@ export default function HomePage() {
           <BarCardChart
             title={useTranslateCards("today.bar_chart.title")}
             labels={summary?.today.chart.labels || []}
-            chartStyle={{ background: getGradient({ deg: 180, from: "grape.8", to: "grape.9" }, theme), height: "200px" }}
+            chartStyle={{ background: theme.other.chartStyles.today.bgColor, height: "200px" }}
             datasets={[
               {
                 label: useTranslateCards("today.bar_chart.datasets.profit"),
                 data: summary?.today.chart.values || [],
-                backgroundColor: getCssVariable("--profit-bar-color"),
+                backgroundColor: theme.other.chartStyles.today.lineColor,
               },
             ]}
             context={
@@ -221,7 +218,7 @@ export default function HomePage() {
           <BarCardChart
             title={useTranslateCards("recent_days.bar_chart.title", { days: summary?.recent_days.chart.labels.length || 0 })}
             labels={summary?.recent_days.chart.labels || []}
-            chartStyle={{ background: getGradient({ deg: 180, from: "blue.8", to: "blue.9" }, theme), height: "200px" }}
+            chartStyle={{ background: theme.other.chartStyles.lastDays.bgColor, height: "200px" }}
             datasets={[
               {
                 label: useTranslateCards("recent_days.bar_chart.datasets.profit"),
@@ -247,14 +244,14 @@ export default function HomePage() {
                 <ColorInfo
                   infoProps={{
                     "data-color-mode": "bg",
-                    "data-trade-type": "purchase",
+                    "data-transaction-type": "purchase",
                   }}
                   text={useTranslateCards("last_transaction.info_box.purchase", { count: summary?.total.purchases || 0 })}
                 />
                 <ColorInfo
                   infoProps={{
                     "data-color-mode": "bg",
-                    "data-trade-type": "sale",
+                    "data-transaction-type": "sale",
                   }}
                   text={useTranslateCards("last_transaction.info_box.sale", { count: summary?.total.sale_count || 0 })}
                 />
@@ -298,11 +295,16 @@ export default function HomePage() {
               {
                 accessor: "profit",
                 title: useTranslateCards("best_seller.by_category.datatable.columns.profit"),
-                customCellAttributes: ({ total_profit }) => ({
-                  "data-color-mode": "text",
-                  "data-profit": total_profit > 0 ? "positive" : "negative",
-                }),
-                render: ({ total_profit }) => <NumberFormatter thousandSeparator="." decimalSeparator="," value={total_profit} />,
+                render: ({ total_profit }) => (
+                  <NumberFormatter
+                    style={{ color: total_profit > 0 ? theme.other.profit : theme.other.loss } as React.CSSProperties}
+                    // data-color={total_profit > 0 ? theme.other.profit : theme.other.loss}
+                    // data-color-mode="text"
+                    thousandSeparator="."
+                    decimalSeparator=","
+                    value={total_profit}
+                  />
+                ),
               },
               {
                 accessor: "profit_margin",

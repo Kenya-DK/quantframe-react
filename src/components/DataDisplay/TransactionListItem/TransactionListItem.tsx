@@ -18,7 +18,7 @@ export function TransactionListItem({ transaction }: TransactionListItemProps) {
     }
   };
   return (
-    <Paper mt={5} classNames={classes} p={5} data-trade-type={transaction.transaction_type} data-color-mode="box-shadow">
+    <Paper mt={5} classNames={classes} p={5} data-transaction-type={transaction.transaction_type} data-color-mode="box-shadow">
       <Group justify="space-between">
         <Group ml={10} gap={"sm"} w={"50%"}>
           <Text c="gray.4">{GetTransactionDisplay()}</Text>

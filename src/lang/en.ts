@@ -40,9 +40,11 @@ export const en = {
     transaction_type: {
       purchase: "Purchase",
       sale: "Sale",
+      trade: "Trade",
       details: {
         purchase: "Purchase",
         sale: "Sale",
+        trade: "Trade",
       },
     },
     stock_status: {
@@ -83,6 +85,12 @@ export const en = {
       online: "Online",
       ingame: "In game",
       invisible: "Offline",
+    },
+    alert_type: {
+      info: "Information",
+      warning: "Warning",
+      error: "Error",
+      success: "Success",
     },
   },
   components: {
@@ -148,14 +156,29 @@ export const en = {
       },
     },
     theme_editor: {
+      chart_styles: {
+        title: "Chart Styles",
+        fields: {
+          bgColor: "Background Color",
+          lineColor: "Line Color",
+          lastYearLineColor: "Last Year Line Color",
+          currentYearLineColor: "Current Year Line Color",
+        },
+        total: "Total",
+        today: "Today",
+        last_days: "Last 7 Days",
+      },
       color_palettes: {
         title: "Color Palettes",
         base_colors: "Base Colors",
         stock_status: "Stock Status",
         user_status: "User Status",
+        alert_type: "Alert Type",
         transaction_type: "Transaction Type",
         item_type: "Item Type",
         logo_color: "Logo Color",
+        profit: "Profit",
+        loss: "Loss",
       },
       sharing: {
         title: "Sharing",
@@ -164,7 +187,6 @@ export const en = {
         copy_to_clipboard: "Copy to Clipboard",
         import_from_clipboard: "Import from Clipboard",
         open_themes_folder: "Open Themes Folder",
-        export_theme: "Export Theme",
       },
       fields: {
         export_name: {
@@ -176,7 +198,16 @@ export const en = {
           label: "Author",
           placeholder: "Enter author name",
           error: "Invalid author name",
+          tooltip: "Create",
         },
+      },
+      export_success: {
+        title: "Export Theme Success",
+        message: "Theme has been successfully exported.",
+      },
+      export_error: {
+        title: "Export Theme Error",
+        message: "An error occurred while exporting the theme: {{error}}",
       },
     },
     forms: {

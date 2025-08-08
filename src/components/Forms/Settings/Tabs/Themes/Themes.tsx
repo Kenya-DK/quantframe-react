@@ -1,5 +1,6 @@
 import { TauriTypes } from "$types";
-import { defaultTheme, useTheme } from "@contexts/theme.context";
+import { defaultTheme } from "@contexts/static";
+import { useTheme } from "@contexts/theme.context";
 import { Box, Flex, Title } from "@mantine/core";
 import { ThemePreview } from "@components/DataDisplay/ThemePreview";
 import { LiveThemeEditor } from "@components/ThemeEditor/LiveThemeEditor";
@@ -17,7 +18,7 @@ export const ThemesPanel = ({}: ThemesPanelProps) => {
   const useTranslateEditor = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForms(`settings.tabs.themes.${key}`, { ...context }, i18Key);
 
-  const { data } = api.cache.getThemePresets();
+  const { data, refetch } = api.cache.getThemePresets();
   return (
     <Box p={"md"}>
       <Title order={4} mb="md">
@@ -46,7 +47,7 @@ export const ThemesPanel = ({}: ThemesPanelProps) => {
       <Title order={4} mb="md">
         {useTranslateEditor("theme_configuration")}
       </Title>
-      <LiveThemeEditor />
+      <LiveThemeEditor onNewTheme={() => refetch()} />
     </Box>
   );
 };

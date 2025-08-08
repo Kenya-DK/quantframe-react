@@ -38,6 +38,7 @@ export function ThemePreview({ fileName, theme, author, name, icon, onClick }: T
         fontFamily,
         color: fontColor,
         borderColor: primaryColorArray ? primaryColorArray[6] : DEFAULT_THEME.colors.blue[6],
+        cursor: "pointer",
       }}
     >
       <Group gap={5}>

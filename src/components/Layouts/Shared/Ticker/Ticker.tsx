@@ -6,6 +6,7 @@ import { faMousePointer } from "@fortawesome/free-solid-svg-icons";
 export interface TickerItemProps {
   label: string;
   props?: { [key: string]: any };
+  itemStyle?: { [key: string]: any };
   onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 

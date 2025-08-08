@@ -36,6 +36,9 @@ impl ThemeModule {
             .clone();
         Ok(items)
     }
+    pub fn get_theme_folder(&self) -> PathBuf {
+        self.path.clone()
+    }
     pub fn load(&self) -> Result<(), Error> {
         if !self.path.exists() && !self.path.is_dir() {
             info(
@@ -57,12 +60,12 @@ impl ThemeModule {
                 return Err(Error::from(e).with_location(get_location!()));
             }
         };
-
+        let mut items_lock = self.items.lock().unwrap();
+        items_lock.clear(); // Clear existing items before loading new ones
         for file in files {
             let file = file.map_err(|e| Error::from(e).with_location(get_location!()))?;
             match read_json_file::<CacheTheme>(&file.path()) {
                 Ok(items) => {
-                    let mut items_lock = self.items.lock().unwrap();
                     items_lock.push(items);
                     info(
                         "Cache:Theme:load",

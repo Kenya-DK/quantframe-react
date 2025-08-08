@@ -75,10 +75,9 @@ export interface MantineModalsOverride {
 }
 // AppContent component that uses the theme context
 function AppContent() {
-  const { theme } = useTheme();
-
+  const { theme, resolver } = useTheme();
   return (
-    <MantineProvider defaultColorScheme="dark" theme={theme}>
+    <MantineProvider defaultColorScheme="dark" theme={theme} cssVariablesResolver={resolver}>
       <Notifications position="bottom-right" />
       <ModalsProvider
         modals={modals}

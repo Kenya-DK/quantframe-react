@@ -1,4 +1,4 @@
-import { AppShell, Box } from "@mantine/core";
+import { AppShell, Box, useMantineTheme } from "@mantine/core";
 import classes from "./LogInLayout.module.css";
 import { Outlet, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

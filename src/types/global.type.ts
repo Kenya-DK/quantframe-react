@@ -35,6 +35,7 @@ export enum UserStatus {
   Invisible = "invisible",
   Ingame = "ingame",
 }
+
 export interface PriceHistory {
   created_at: Date;
   name: string;

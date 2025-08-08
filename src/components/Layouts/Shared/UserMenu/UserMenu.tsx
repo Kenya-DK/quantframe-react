@@ -72,13 +72,13 @@ export function UserMenu() {
             withBorder
             classNames={classes}
             disabled={!IsConnected()}
+            data-color-mode="text"
             data-user-status={user?.wfm_status || UserStatus.Invisible}
           >
             <Avatar
               data-error={!IsConnected()}
               className={classes.avatar}
               variant="subtle"
-              name="User Avatar"
               src={user?.wfm_avatar && user?.wfm_avatar != "" ? WFMThumbnail(user?.wfm_avatar) : "/default_avatar.png"}
               alt={user?.wfm_username}
               radius="xl"
@@ -106,16 +106,18 @@ export function UserMenu() {
             </Menu.Item>
             <Menu.Divider />
             <Group gap={3} mt="xs" classNames={{ root: classes.user_status }}>
-              {Object.values(UserStatus).map((status, i) => (
+              {Object.values(UserStatus).map((status) => (
                 <Button
                   key={status}
                   p={3}
                   fullWidth
                   variant="subtle"
+                  data-color-mode="text"
+                  data-user-status={status}
                   data-active={status == user?.wfm_status}
                   onClick={() => api.user.set_status(status)}
                 >
-                  <Text tt="uppercase" c={"user-status." + i} fw={500}>
+                  <Text tt="uppercase" fw={500}>
                     {useTranslateUserStatus(status)}
                   </Text>
                 </Button>
