@@ -1,6 +1,5 @@
 /// Macro to emit events with automatic logging
 #[macro_export]
-#[macro_use]
 macro_rules! emit_event {
     ($event_name:expr, $payload:expr, $log_context:expr) => {{
         let app = APP.get().expect("App not initialized");
@@ -40,9 +39,20 @@ macro_rules! emit_startup {
         use crate::utils::modules::states;
         use serde_json::json;
         let notify = states::notify_client().expect("Failed to get notification client state");
-        notify.gui().send_event(UIEvent::OnStartingUp, Some(json!({
-            "i18n_key": $i18n_key,
-            "values": $Option
-        })));
+        notify.gui().send_event(UIEvent::OnStartingUp, Some(json!({"i18n_key": $i18n_key, "values": $Option})));
+    }};
+}
+#[macro_export]
+macro_rules! emit_update_user {
+    ($user:expr) => {{
+        use crate::notification::enums::*;
+        use crate::utils::modules::states;
+        use serde_json::json;
+        let notify = states::notify_client().expect("Failed to get notification client state");
+        notify.gui().send_event_update(
+            UIEvent::UpdateUser,
+            UIOperationEvent::CreateOrUpdate,
+            Some(json!($user)),
+        );
     }};
 }

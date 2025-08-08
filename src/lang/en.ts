@@ -640,6 +640,18 @@ export const en = {
         },
       },
     },
+    banned: {
+      wfm: {
+        title: "Warframe Market Account Suspended due to:",
+        reason: "Reason: {{reason}}",
+        until: "Until:",
+      },
+      qf: {
+        title: "Quantframe Account Suspended due to:",
+        reason: "Reason: {{reason}}",
+        until: "Until:",
+      },
+    },
     auth: {
       errors: {
         login: {

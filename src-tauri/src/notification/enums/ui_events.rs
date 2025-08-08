@@ -4,6 +4,7 @@ pub enum UIEvent {
     UpdateUser,
     // WebSocket use if the WebSocket is connected or not
     OnError,
+    OnBanned,
 }
 impl UIEvent {
     pub fn as_str(&self) -> &str {
@@ -11,6 +12,7 @@ impl UIEvent {
             UIEvent::OnStartingUp => "App:StartingUp",
             UIEvent::UpdateUser => "User:Update",
             UIEvent::OnError => "App:Error",
+            UIEvent::OnBanned => "User:Banned",
         }
     }
 }

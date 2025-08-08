@@ -113,7 +113,7 @@ impl CacheState {
             item_price_module: OnceLock::new(),
             theme_module: OnceLock::new(),
         };
-        if !user.verification {
+        if !user.verification || !user.qf_banned || !user.wfm_banned {
             return Ok(client);
         }
         match client.load(qf_client).await {

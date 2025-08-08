@@ -8,16 +8,17 @@ use reqwest::{
     Method,
     header::{HeaderMap, HeaderName, HeaderValue},
 };
-use serde_json::Value;
+use serde_json::{Value, json};
 use std::{
     collections::HashMap,
     num::{NonZero, NonZeroU32},
-    sync::{Arc, OnceLock},
+    sync::{Arc, Mutex, OnceLock},
 };
 
 const REQUESTS_PER_SECOND: NonZeroU32 = NonZero::new(3).unwrap();
-
-#[derive(Debug, Clone)]
+// Callback types
+pub type ClientCallback = Box<dyn Fn(&str, &Value) + Send + Sync>;
+#[derive(Clone)]
 pub struct Client {
     self_arc: OnceLock<Arc<Client>>,
     pub token: String,
@@ -31,6 +32,7 @@ pub struct Client {
     wfm_username: String,
     wfm_id: String,
     limiter: Arc<RateLimiter<NotKeyed, InMemoryState, DefaultClock>>,
+    callbacks: Arc<Mutex<HashMap<String, Vec<ClientCallback>>>>,
     // Routes
     authentication_route: OnceLock<Arc<AuthenticationRoute>>,
     analytics_route: OnceLock<Arc<AnalyticsRoute>>,
@@ -54,13 +56,14 @@ impl Client {
                     wfm_platform: self.wfm_platform.clone(),
                     wfm_username: self.wfm_username.clone(),
                     wfm_id: self.wfm_id.clone(),
+                    limiter: self.limiter.clone(),
+                    callbacks: self.callbacks.clone(),
                     // Initialize the routes with the new client
                     authentication_route: self.authentication_route.clone(),
                     analytics_route: self.analytics_route.clone(),
                     alert_route: self.alert_route.clone(),
                     cache_route: self.cache_route.clone(),
                     item_price_route: self.item_price_route.clone(),
-                    limiter: self.limiter.clone(),
                 })
             })
             .clone()
@@ -108,12 +111,14 @@ impl Client {
             wfm_platform: wfm_platform.to_string(),
             wfm_username: wfm_username.to_string(),
             wfm_id: wfm_id.to_string(),
+            limiter: build_limiter(REQUESTS_PER_SECOND).into(),
+            callbacks: Arc::new(Mutex::new(HashMap::new())),
+            // Initialize the routes with the new client
             authentication_route: OnceLock::new(),
             analytics_route: OnceLock::new(),
             alert_route: OnceLock::new(),
             cache_route: OnceLock::new(),
             item_price_route: OnceLock::new(),
-            limiter: build_limiter(REQUESTS_PER_SECOND).into(),
         }
     }
     pub async fn call_api<T: serde::de::DeserializeOwned>(
@@ -225,6 +230,19 @@ impl Client {
                             Ok(r) => error.set_error(r),
                             Err(e) => return Err(ApiError::ParsingError(error, e)),
                         };
+
+                        if error.error.error == "banned" {
+                            let ban = match serde_json::from_str::<ResponseBanError>(&body) {
+                                Ok(r) => r,
+                                Err(e) => return Err(ApiError::ParsingError(error, e)),
+                            };
+                            self.emit("user_banned", &json!(ban));
+                            error
+                                .error
+                                .set_ban_info(ban.banned_reason, ban.banned_until);
+                            return Err(ApiError::UserBanned(error));
+                        }
+
                         if status == reqwest::StatusCode::FORBIDDEN {
                             return Err(ApiError::Forbidden(error));
                         } else if status == reqwest::StatusCode::NOT_FOUND {
@@ -390,6 +408,66 @@ impl Client {
             let new_item_price = ItemPriceRoute::from_existing(&old_item_price, self.arc());
             self.item_price_route = OnceLock::new();
             let _ = self.item_price_route.set(new_item_price);
+        }
+    }
+}
+
+// ---------- Client Callback Methods ----------
+impl Client {
+    /**
+     * Registers a callback for a specific event.
+     * # Arguments
+     * * `event` - A string representing the event name to listen for.
+     * * `callback` - A boxed closure that will be called when the event is triggered.
+     */
+    pub fn on<F>(&self, event: impl Into<String>, callback: F)
+    where
+        F: Fn(&str, &Value) + Send + Sync + 'static,
+    {
+        let event = event.into();
+        let callback = Box::new(callback);
+
+        if let Ok(mut callbacks) = self.callbacks.lock() {
+            callbacks
+                .entry(event)
+                .or_insert_with(Vec::new)
+                .push(callback);
+        }
+    }
+
+    /**
+     * Triggers all callbacks registered for a specific event.
+     * # Arguments
+     * * `event` - A string representing the event name to trigger.
+     * * `data` - JSON value containing event data to pass to callbacks.
+     */
+    pub fn emit(&self, event: &str, data: &Value) {
+        if let Ok(callbacks) = self.callbacks.lock() {
+            if let Some(event_callbacks) = callbacks.get(event) {
+                for callback in event_callbacks {
+                    callback(event, data);
+                }
+            }
+        }
+    }
+
+    /**
+     * Removes all callbacks for a specific event.
+     * # Arguments
+     * * `event` - A string representing the event name to clear callbacks for.
+     */
+    pub fn off(&self, event: &str) {
+        if let Ok(mut callbacks) = self.callbacks.lock() {
+            callbacks.remove(event);
+        }
+    }
+
+    /**
+     * Removes all callbacks for all events.
+     */
+    pub fn clear_callbacks(&self) {
+        if let Ok(mut callbacks) = self.callbacks.lock() {
+            callbacks.clear();
         }
     }
 }

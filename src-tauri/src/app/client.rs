@@ -3,7 +3,7 @@ use std::sync::Mutex;
 use crate::app::{Settings, User};
 use crate::notification::enums::{UIEvent, UIOperationEvent};
 use crate::utils::modules::states::{self, ErrorFromExt};
-use crate::{emit_startup, helper, APP};
+use crate::{emit_startup, emit_update_user, helper, APP};
 use qf_api::errors::ApiError as QFApiError;
 use qf_api::types::UserPrivate as QFUserPrivate;
 use qf_api::Client as QFClient;
@@ -16,8 +16,6 @@ use wf_market::enums::ApiVersion;
 use wf_market::types::websocket::WsClient;
 use wf_market::types::UserPrivate as WFUserPrivate;
 use wf_market::Client as WFClient;
-
-static COMPONENT_ID: &str = "AppState";
 
 #[derive(Clone)]
 pub struct AppState {
@@ -32,7 +30,11 @@ fn update_user(mut cu_user: User, user: &WFUserPrivate, qf_user: &QFUserPrivate)
     cu_user.anonymous = false;
     cu_user.verification = user.verification;
     cu_user.wfm_banned = user.banned.unwrap_or(false);
+    cu_user.wfm_banned_reason = user.ban_message.clone();
+    cu_user.wfm_banned_until = user.ban_until.clone();
     cu_user.qf_banned = qf_user.banned;
+    cu_user.qf_banned_reason = qf_user.banned_reason.clone();
+    cu_user.qf_banned_until = qf_user.banned_until.clone();
     cu_user.wfm_id = user.id.to_string();
     cu_user.wfm_username = user.ingame_name.clone();
     cu_user.check_code = user.check_code.clone();
@@ -82,6 +84,22 @@ async fn setup_socket(wfm_client: WFClient<WFAuthenticated>) -> Result<WsClient,
             Ok(())
         })
         .unwrap()
+        .register_callback("event/account/banned", move |msg, _, _| {
+            let payload = msg.clone().payload.unwrap();
+            println!("WebSocket: Reconnecting: {}", payload);
+            emit_update_user!(json!({
+                "wfm_banned": true,
+                "wfm_banned_reason": payload["banMessage"].as_str().unwrap_or("").to_string(),
+                "wfm_banned_until": payload["banUntil"].as_str().unwrap_or("").to_string()
+            }));
+            Ok(())
+        })
+        .unwrap()
+        .register_callback("event/account/banLifted", move |_, _, _| {
+            emit_update_user!(json!({"wfm_banned": false}));
+            Ok(())
+        })
+        .unwrap()
         .register_callback("MESSAGE/ONLINE_COUNT", move |_, _, _| Ok(()))
         .unwrap()
         .register_callback("USER/SET_STATUS", move |msg, _, _| {
@@ -95,14 +113,7 @@ async fn setup_socket(wfm_client: WFClient<WFAuthenticated>) -> Result<WsClient,
                 }
                 None => {}
             }
-            let notify = states::notify_client().expect("Failed to get notification client state");
-            notify.gui().send_event_update(
-                UIEvent::UpdateUser,
-                UIOperationEvent::CreateOrUpdate,
-                Some(json!({
-                    "wfm_status": msg.payload
-                })),
-            );
+            emit_update_user!(json!({"wfm_status": msg.payload}));
             Ok(())
         })
         .unwrap()
@@ -151,6 +162,13 @@ impl AppState {
             .qf_client
             .analytics()
             .add_metric("app_start", info.version.to_string());
+        state.qf_client.on("user_banned", move |_, data| {
+            emit_update_user!(json!({
+                "qf_banned": true,
+                "qf_banned_reason": data["banned_reason"].as_str().unwrap_or("").to_string(),
+                "qf_banned_until": data["banned_until"].as_str().unwrap_or("").to_string()
+            }));
+        });
         match state.validate().await {
             Ok((wfu, qfu)) => {
                 emit_startup!(
@@ -262,14 +280,20 @@ impl AppState {
         };
         let ws = setup_socket(self.wfm_client.clone()).await?;
         self.wfm_socket = Some(ws);
-        self.qf_client.analytics().start().map_err(|e| {
-            Error::from_qf(
-                "AppState:Validate",
-                "Failed to start QF analytics",
-                e,
-                get_location!(),
-            )
-        })?;
+        if !qf_user.banned {
+            match self.qf_client.analytics().start() {
+                Ok(_) => {}
+                Err(e) => {
+                    println!("Failed to start QF analytics: {}", e);
+                    return Err(Error::from_qf(
+                        "AppState:Validate",
+                        "Failed to start QF analytics",
+                        e,
+                        get_location!(),
+                    ));
+                }
+            }
+        }
 
         Ok((wfm_user, qf_user))
     }

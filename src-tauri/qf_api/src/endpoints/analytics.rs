@@ -62,7 +62,7 @@ impl AnalyticsRoute {
                     if *this._stop.lock().unwrap() {
                         break;
                     }
-                    if last_metric_time.elapsed() < Duration::from_secs(60) || !this.is_active() {
+                    if last_metric_time.elapsed() < Duration::from_secs(30) || !this.is_active() {
                         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
                         continue;
                     }
@@ -118,6 +118,12 @@ impl AnalyticsRoute {
                 }
                 Err(e) => e,
             };
+            if let ApiError::UserBanned(_) = &err {
+                let mut stop = self._stop.lock().unwrap();
+                *stop = true;
+                return Err(err);
+            }
+
             if retry_count == 0 {
                 return Err(err);
             }

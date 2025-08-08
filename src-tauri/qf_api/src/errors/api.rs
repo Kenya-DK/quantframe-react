@@ -13,6 +13,7 @@ pub enum ApiError {
     BadRequest(RequestError),
     InvalidCredentials(RequestError),
     Forbidden(RequestError),
+    UserBanned(RequestError),
     Unknown(String),
     InvalidType { expected: String, found: String },
 }
@@ -27,6 +28,7 @@ impl ApiError {
             ApiError::BadRequest(req_err) => req_err.mask_sensitive_data(properties),
             ApiError::InvalidCredentials(req_err) => req_err.mask_sensitive_data(properties),
             ApiError::Forbidden(req_err) => req_err.mask_sensitive_data(properties),
+            ApiError::UserBanned(req_err) => req_err.mask_sensitive_data(properties),
             ApiError::Unknown(_) | ApiError::InvalidType { .. } => {}
         }
     }
@@ -74,6 +76,10 @@ impl ApiError {
                 "expected": expected,
                 "found": found,
             }),
+            ApiError::UserBanned(req_err) => json!({
+                "type": "UserBanned",
+                "error": req_err,
+            }),
         }
     }
 }
@@ -118,6 +124,9 @@ impl Display for ApiError {
                     "Invalid type: expected '{}', found '{}'",
                     expected, found
                 )
+            }
+            ApiError::UserBanned(req_err) => {
+                write!(f, "User banned: {}", req_err.error_sentence())
             }
         }
     }

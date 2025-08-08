@@ -21,10 +21,7 @@ use std::{
 use tauri::{Manager, State};
 use utils::Error;
 
-use crate::{
-    utils::enums::ui_events::{UIEvent, UIOperationEvent},
-    APP, DATABASE,
-};
+use crate::{APP, DATABASE};
 
 pub static APP_PATH: &str = "dev.kenya.quantframe";
 

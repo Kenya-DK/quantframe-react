@@ -1,4 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { useAppContext } from "@contexts/app.context";
+import { useAuthContext } from "@contexts/auth.context";
 
 // Layouts
 import { LogInLayout } from "./LogIn";
@@ -20,10 +22,11 @@ import PDebug from "@pages/debug";
 import PError from "@pages/error";
 
 // Banned Routes
-import { useAppContext } from "../../contexts/app.context";
+import PBanned from "@pages/banned";
 
 export function AppRoutes() {
   const { app_error } = useAppContext();
+  const { user } = useAuthContext();
 
   const ShowErrorPage = () => {
     if (!app_error) return false;
@@ -31,10 +34,17 @@ export function AppRoutes() {
     return true;
   };
 
+  const IsUserBanned = () => {
+    if (!user) return false;
+    if (user.anonymous) return false;
+    if (user.qf_banned || user.wfm_banned) return true;
+    return false;
+  };
+
   return (
     <BrowserRouter>
       <Routes>
-        {!ShowErrorPage() && (
+        {!ShowErrorPage() && !IsUserBanned() && (
           <>
             <Route element={<AuthenticatedGate exclude goTo="/" />}>
               <Route path="/auth" element={<LogOutLayout />}>
@@ -48,6 +58,7 @@ export function AppRoutes() {
                   <Route index element={<PDebug />} />
                 </Route>
               </Route>
+              <Route path="*" element={<PHome />} />
             </Route>
           </>
         )}
@@ -56,10 +67,11 @@ export function AppRoutes() {
             <Route path="*" element={<PError />} />
           </Route>
         )}
-        {/* <Route path="/info" element={<LogOutLayout />}>
-          <Route path="banned" element={<PBanned />} />
-          <Route path="error" element={<PError />} />
-        </Route> */}
+        {IsUserBanned() && (
+          <Route path="*" element={<LogOutLayout />}>
+            <Route path="*" element={<PBanned />} />
+          </Route>
+        )}
       </Routes>
     </BrowserRouter>
   );
