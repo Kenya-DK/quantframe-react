@@ -18,11 +18,11 @@ impl GroupByDate {
         }
     }
 }
-pub fn sort_grouped<T>(grouped: &HashMap<String, Vec<T>>) -> Vec<(String, Vec<T>)>
+pub fn sort_grouped<T>(grouped: &HashMap<String, T>) -> Vec<(String, T)>
 where
     T: Clone,
 {
-    let mut entries: Vec<(String, Vec<T>)> = grouped
+    let mut entries: Vec<(String, T)> = grouped
         .iter()
         .map(|(k, v)| (k.clone(), v.clone()))
         .collect();

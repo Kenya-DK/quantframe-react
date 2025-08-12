@@ -264,7 +264,7 @@ impl Error {
     ///
     /// # Returns
     /// A formatted string suitable for logging
-    pub fn log(&self, file: Option<impl Into<String>>) {
+    pub fn log(&self, file: Option<impl Into<String>>) -> Self {
         let mut options = LoggerOptions::default();
         if let Some(file_name) = file {
             options.set_file(file_name);
@@ -339,6 +339,7 @@ impl Error {
             // No context to worry about
             dolog(self.log_level.clone(), &self.component, message, options);
         }
+        self.clone() // Return self for chaining if needed
     }
 
     /// Check if this is a critical error
