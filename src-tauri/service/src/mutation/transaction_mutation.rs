@@ -4,30 +4,6 @@ use sea_orm::*;
 pub struct TransactionMutation;
 
 impl TransactionMutation {
-    pub async fn create_from_old(
-        db: &DbConn,
-        form_data: transaction::Model,
-    ) -> Result<transaction::Model, DbErr> {
-        transaction::ActiveModel {
-            wfm_id: Set(form_data.wfm_id.to_owned()),
-            wfm_url: Set(form_data.wfm_url.to_owned()),
-            item_name: Set(form_data.item_name.to_owned()),
-            item_type: Set(form_data.item_type.to_owned()),
-            item_unique_name: Set(form_data.item_unique_name.to_owned()),
-            sub_type: Set(form_data.sub_type.to_owned()),
-            tags: Set(form_data.tags.to_owned()),
-            transaction_type: Set(form_data.transaction_type.to_owned()),
-            quantity: Set(form_data.quantity.to_owned()),
-            user_name: Set(form_data.user_name.to_owned()),
-            price: Set(form_data.price.to_owned()),
-            properties: Set(form_data.properties.to_owned()),
-            created_at: Set(form_data.created_at.to_owned()),
-            updated_at: Set(form_data.updated_at.to_owned()),
-            ..Default::default()
-        }
-        .insert(db)
-        .await
-    }
     pub async fn create(
         db: &DbConn,
         form_data: &transaction::Model,

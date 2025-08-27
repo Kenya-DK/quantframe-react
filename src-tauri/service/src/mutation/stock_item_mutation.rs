@@ -1,8 +1,4 @@
-use ::entity::{
-    enums::stock_status::StockStatus,
-    stock::item::stock_item::{self, Entity as StockItem},
-    sub_type::SubType,
-};
+use ::entity::{dto::*, enums::*, stock_item::*};
 use prelude::Expr;
 use sea_orm::*;
 
@@ -42,7 +38,7 @@ impl StockItemMutation {
         mut quantity: i64,
     ) -> Result<(String, Option<stock_item::Model>), DbErr> {
         // Find the item by id
-        let item = StockItem::find_by_id(id).one(db).await?;
+        let item = Entity::find_by_id(id).one(db).await?;
         if item.is_none() {
             return Ok(("NotFound".to_string(), None));
         }
@@ -53,9 +49,9 @@ impl StockItemMutation {
         }
 
         // Update the item
-        let mut item = item.unwrap();
-        item.owned = item.owned - quantity;
-        if item.owned <= 0 {
+        let item = item.unwrap();
+        let owned = item.owned - quantity;
+        if owned <= 0 {
             match StockItemMutation::delete_by_id(db, id).await {
                 Ok(_) => {
                     return Ok(("Deleted".to_string(), Some(item)));
@@ -65,7 +61,12 @@ impl StockItemMutation {
                 }
             }
         } else {
-            match StockItemMutation::update_by_id(db, id, item.clone()).await {
+            match StockItemMutation::update_by_id(
+                db,
+                UpdateStockItem::new(item.id).with_owned(owned),
+            )
+            .await
+            {
                 Ok(_) => {
                     return Ok(("Updated".to_string(), Some(item)));
                 }
@@ -94,7 +95,7 @@ impl StockItemMutation {
     pub async fn add_item(
         db: &DbConn,
         stock: stock_item::Model,
-    ) -> Result<stock_item::Model, DbErr> {
+    ) -> Result<(String, stock_item::Model), DbErr> {
         // Find the item by id
         let item = StockItemQuery::find_by_url_name_and_sub_type(
             db,
@@ -105,7 +106,7 @@ impl StockItemMutation {
         if item.is_none() {
             match StockItemMutation::create(db, stock.clone()).await {
                 Ok(insert) => {
-                    return Ok(insert);
+                    return Ok(("Created".to_string(), insert));
                 }
                 Err(e) => {
                     return Err(e);
@@ -113,18 +114,22 @@ impl StockItemMutation {
             }
         }
         // Update the item
-        let mut item = item.unwrap();
+        let item = item.unwrap();
         let total_owned = item.owned + stock.owned;
 
         // Get Price Per Unit
         let total_bought = (item.bought * item.owned) + stock.bought;
         let weighted_average = total_bought / total_owned;
-        item.owned = total_owned;
-        item.bought = weighted_average;
-        item.updated_at = chrono::Utc::now();
-        match StockItemMutation::update_by_id(db, item.id, item.clone()).await {
+        match StockItemMutation::update_by_id(
+            db,
+            UpdateStockItem::new(item.id)
+                .with_bought(weighted_average)
+                .with_owned(total_owned),
+        )
+        .await
+        {
             Ok(up_item) => {
-                return Ok(up_item);
+                return Ok(("Updated".to_string(), up_item));
             }
             Err(e) => {
                 return Err(e);
@@ -134,38 +139,20 @@ impl StockItemMutation {
 
     pub async fn update_by_id(
         db: &DbConn,
-        id: i64,
-        form_data: stock_item::Model,
+        input: UpdateStockItem,
     ) -> Result<stock_item::Model, DbErr> {
-        let post: stock_item::ActiveModel = StockItem::find_by_id(id)
+        let item = Entity::find_by_id(input.id)
             .one(db)
             .await?
-            .ok_or(DbErr::Custom("Cannot find post.".to_owned()))
-            .map(Into::into)?;
+            .ok_or(DbErr::Custom("Cannot find Item.".to_owned()))?;
 
-        stock_item::ActiveModel {
-            id: post.id,
-            wfm_id: Set(form_data.wfm_id.to_owned()),
-            wfm_url: Set(form_data.wfm_url.to_owned()),
-            item_name: Set(form_data.item_name.to_owned()),
-            item_unique_name: Set(form_data.item_unique_name.to_owned()),
-            sub_type: Set(form_data.sub_type.to_owned()),
-            bought: Set(form_data.bought.to_owned()),
-            minimum_price: Set(form_data.minimum_price.to_owned()),
-            list_price: Set(form_data.list_price.to_owned()),
-            owned: Set(form_data.owned.to_owned()),
-            is_hidden: Set(form_data.is_hidden.to_owned()),
-            status: Set(form_data.status.to_owned()),
-            price_history: Set(form_data.price_history.to_owned()),
-            created_at: post.created_at.clone(),
-            updated_at: Set(chrono::Utc::now()),
-        }
-        .update(db)
-        .await
+        let mut active: stock_item::ActiveModel = input.apply_to(item.into());
+        active.updated_at = Set(chrono::Utc::now());
+        active.update(db).await
     }
 
     pub async fn delete_by_id(db: &DbConn, id: i64) -> Result<DeleteResult, DbErr> {
-        let post: stock_item::ActiveModel = StockItem::find_by_id(id)
+        let post: stock_item::ActiveModel = Entity::find_by_id(id)
             .one(db)
             .await?
             .ok_or(DbErr::Custom("Cannot find Item.".to_owned()))
@@ -174,41 +161,21 @@ impl StockItemMutation {
         post.delete(db).await
     }
 
-    pub async fn update_bulk(
-        db: &DbConn,
-        ids: Vec<i64>,
-        minimum_price: Option<i64>,
-        is_hidden: Option<bool>,
-    ) -> Result<Vec<stock_item::Model>, DbErr> {
-        let mut query = StockItem::update_many();
-
-        if let Some(minimum_price) = minimum_price {
-            query = query.col_expr(stock_item::Column::MinimumPrice, minimum_price.into());
-        }
-        if let Some(is_hidden) = is_hidden {
-            query = query.col_expr(stock_item::Column::IsHidden, is_hidden.into());
-        }
-        query = query.filter(Expr::col(stock_item::Column::Id).is_in(ids));
-
-        query.exec(db).await?;
-        StockItem::find().all(db).await
-    }
-
     pub async fn update_all(
         db: &DbConn,
         status: StockStatus,
         list_price: Option<i64>,
     ) -> Result<Vec<stock_item::Model>, DbErr> {
-        StockItem::update_many()
+        Entity::update_many()
             .col_expr(stock_item::Column::Status, status.into())
             .col_expr(stock_item::Column::ListPrice, list_price.into())
             .exec(db)
             .await?;
 
-        StockItem::find().all(db).await
+        Entity::find().all(db).await
     }
 
     pub async fn delete_all(db: &DbConn) -> Result<DeleteResult, DbErr> {
-        StockItem::delete_many().exec(db).await
+        Entity::delete_many().exec(db).await
     }
 }
