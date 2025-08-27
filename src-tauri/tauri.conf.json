@@ -23,10 +23,7 @@
   "plugins": {
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQ3NEIwMTI1MzA3Q0E1OEYKUldTUHBYd3dKUUZMMTczQ2pIYTR0bklLQXlaMkxvK0V0a0RMQytNMTdqZzBCWitQRnNIWDhxYnAK",
-      "endpoints": [
-        "http://localhost:6969/release/{{target}}/{{arch}}/{{current_version}}",
-        "https://api.quantframe.app/release/{{target}}/{{arch}}/{{current_version}}"
-      ]
+      "endpoints": ["https://api.quantframe.app/release/{{target}}/{{arch}}/{{current_version}}"]
     }
   },
   "app": {
