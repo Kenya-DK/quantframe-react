@@ -16,16 +16,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         show_elapsed_time: true,
         show_level: true,
         color: true,
+        ..Default::default()
     };
 
     log_info_opt!(
         "Demo",
-        log_opts.clone(),
+        &log_opts.clone(),
         "Starting error context handling demonstration"
     );
 
     // 1. Create an error with small context
-    log_info_opt!("Demo", log_opts.clone(), "=== Small Context Error ===");
+    log_info_opt!("Demo", &log_opts.clone(), "=== Small Context Error ===");
     let small_error = Error::new("Database", "Connection timeout", get_location!())
         .with_cause("Network unreachable")
         .with_context(json!({
@@ -37,13 +38,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     log_info_opt!(
         "Demo",
-        log_opts.clone(),
+        &log_opts.clone(),
         "Logging error with small context:"
     );
     small_error.log(Some("error_context_demo.log"));
 
     // 2. Create an error with large context (over 2048 characters)
-    log_info_opt!("Demo", log_opts.clone(), "=== Large Context Error ===");
+    log_info_opt!("Demo", &log_opts.clone(), "=== Large Context Error ===");
 
     // Create a large context object
     let large_context = json!({
@@ -121,13 +122,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     log_info_opt!(
         "Demo",
-        log_opts.clone(),
+        &log_opts.clone(),
         "Logging error with large context (will be truncated for console):"
     );
     large_error.log(Some("error_context_demo.log"));
 
     // 3. Create an error with massive context
-    log_info_opt!("Demo", log_opts.clone(), "=== Massive Context Error ===");
+    log_info_opt!("Demo", &log_opts.clone(), "=== Massive Context Error ===");
 
     let massive_data = (0..500)
         .map(|i| format!("data_item_{}: {}", i, "x".repeat(20)))
@@ -155,27 +156,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     log_info_opt!(
         "Demo",
-        log_opts.clone(),
+        &log_opts.clone(),
         "Logging error with massive context (heavily truncated for console):"
     );
     massive_error.log(Some("error_context_demo.log"));
 
     // 4. Demonstrate error with no context
-    log_info_opt!("Demo", log_opts.clone(), "=== Error Without Context ===");
+    log_info_opt!("Demo", &log_opts.clone(), "=== Error Without Context ===");
     let simple_error = Error::new("Authentication", "Invalid credentials", get_location!())
         .with_cause("Username not found in database")
         .set_log_level(LogLevel::Warning);
 
     log_info_opt!(
         "Demo",
-        log_opts.clone(),
+        &log_opts.clone(),
         "Logging simple error without context:"
     );
     simple_error.log(Some("error_context_demo.log"));
 
     log_info_opt!(
         "Demo",
-        log_opts.clone(),
+        &log_opts.clone(),
         "Error context handling demonstration completed"
     );
 

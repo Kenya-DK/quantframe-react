@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! log_info {
     ($component:expr, $($arg:tt)*) => {
-        $crate::info($component, format!($($arg)*), $crate::LoggerOptions::default())
+        $crate::info($component, format!($($arg)*), &$crate::LoggerOptions::default())
     };
 }
 
@@ -15,7 +15,7 @@ macro_rules! log_info_opt {
 #[macro_export]
 macro_rules! log_error {
     ($component:expr, $($arg:tt)*) => {
-        $crate::error($component, format!($($arg)*), $crate::LoggerOptions::default())
+        $crate::error($component, format!($($arg)*), &$crate::LoggerOptions::default())
     };
 }
 
@@ -29,7 +29,7 @@ macro_rules! log_error_opt {
 #[macro_export]
 macro_rules! log_debug {
     ($component:expr, $($arg:tt)*) => {
-        $crate::debug($component, format!($($arg)*), $crate::LoggerOptions::default())
+        $crate::debug($component, format!($($arg)*), &$crate::LoggerOptions::default())
     };
 }
 
@@ -43,7 +43,7 @@ macro_rules! log_debug_opt {
 #[macro_export]
 macro_rules! log_warn {
     ($component:expr, $($arg:tt)*) => {
-        $crate::warning($component, format!($($arg)*), $crate::LoggerOptions::default())
+        $crate::warning($component, format!($($arg)*), &$crate::LoggerOptions::default())
     };
 }
 
@@ -57,7 +57,7 @@ macro_rules! log_warn_opt {
 #[macro_export]
 macro_rules! log_critical {
     ($component:expr, $($arg:tt)*) => {
-        $crate::critical($component, format!($($arg)*), $crate::LoggerOptions::default())
+        $crate::critical($component, format!($($arg)*), &$crate::LoggerOptions::default())
     };
 }
 
@@ -109,6 +109,46 @@ macro_rules! zip_log_critical {
 macro_rules! clear_logs {
     ($days:expr) => {
         $crate::clear_logs($days)
+    };
+}
+
+/// Macro to set global component filter
+#[macro_export]
+macro_rules! filter_component {
+    ($component:expr) => {
+        $crate::set_filter_component($component)
+    };
+}
+
+/// Macro to set multiple global component filters
+#[macro_export]
+macro_rules! filter_components {
+    ($($component:expr),+ $(,)?) => {
+        $crate::set_filter_components(vec![$($component),+])
+    };
+}
+
+/// Macro to add a component to existing filters
+#[macro_export]
+macro_rules! add_filter_component {
+    ($component:expr) => {
+        $crate::add_filter_component($component)
+    };
+}
+
+/// Macro to clear all component filters
+#[macro_export]
+macro_rules! clear_filter_components {
+    () => {
+        $crate::clear_filter_components()
+    };
+}
+
+/// Macro to set global minimum log level
+#[macro_export]
+macro_rules! filter_log_level {
+    ($level:expr) => {
+        $crate::set_min_log_level($level)
     };
 }
 

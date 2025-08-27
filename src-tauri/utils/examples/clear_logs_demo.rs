@@ -15,13 +15,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         show_elapsed_time: true,
         show_level: true,
         color: true,
+        ..Default::default()
     };
 
     // Log some messages
-    log_info_opt!("CleanupDemo", log_opts.clone(), "Starting cleanup demo...");
+    log_info_opt!("CleanupDemo", &log_opts.clone(), "Starting cleanup demo...");
     log_info_opt!(
         "CleanupDemo",
-        log_opts.clone(),
+        &log_opts.clone(),
         "Current log files before cleanup:"
     );
 
@@ -34,7 +35,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 if let Some(dir_name) = entry.path().file_name().and_then(|name| name.to_str()) {
                     log_info_opt!(
                         "CleanupDemo",
-                        log_opts.clone(),
+                        &log_opts.clone(),
                         "Found log directory: {}",
                         dir_name
                     );
@@ -42,13 +43,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
     } else {
-        log_info_opt!("CleanupDemo", log_opts.clone(), "No logs directory found");
+        log_info_opt!("CleanupDemo", &log_opts.clone(), "No logs directory found");
     }
 
     // Clear logs older than 7 days
     log_info_opt!(
         "CleanupDemo",
-        log_opts.clone(),
+        &log_opts.clone(),
         "Clearing logs older than 7 days..."
     );
 
@@ -56,14 +57,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Ok(()) => {
             log_info_opt!(
                 "CleanupDemo",
-                log_opts.clone(),
+                &log_opts.clone(),
                 "Successfully cleared old logs"
             );
         }
         Err(e) => {
             log_error_opt!(
                 "CleanupDemo",
-                log_opts.clone(),
+                &log_opts.clone(),
                 "Failed to clear logs: {}",
                 e
             );
@@ -73,7 +74,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Show remaining log directories
     log_info_opt!(
         "CleanupDemo",
-        log_opts.clone(),
+        &log_opts.clone(),
         "Remaining log directories after cleanup:"
     );
     if logs_path.exists() {
@@ -83,7 +84,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 if let Some(dir_name) = entry.path().file_name().and_then(|name| name.to_str()) {
                     log_info_opt!(
                         "CleanupDemo",
-                        log_opts.clone(),
+                        &log_opts.clone(),
                         "Remaining directory: {}",
                         dir_name
                     );
@@ -92,7 +93,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    log_info_opt!("CleanupDemo", log_opts.clone(), "Cleanup demo completed");
+    log_info_opt!("CleanupDemo", &log_opts.clone(), "Cleanup demo completed");
 
     println!("\n=== Demo Complete ===");
     println!("The clear_logs function has been executed.");

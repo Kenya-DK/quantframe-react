@@ -27,22 +27,15 @@ fn main() -> Result<(), Error> {
         show_elapsed_time: true,
         show_level: true,
         color: true,
+        ..Default::default()
     };
 
     println!("\n=== Logging to console, file, and adding to zip ===");
 
     // Log some messages normally
-    log_info_opt!(
-        "ZipDemo",
-        file_opts.clone(),
-        "This goes to console and file"
-    );
-    log_error_opt!(
-        "ZipDemo",
-        file_opts.clone(),
-        "Error message in console and file"
-    );
-    log_debug_opt!("ZipDemo", file_opts, "Debug info in console and file");
+    log_info_opt!("ZipDemo", &file_opts, "This goes to console and file");
+    log_error_opt!("ZipDemo", &file_opts, "Error message in console and file");
+    log_debug_opt!("ZipDemo", &file_opts, "Debug info in console and file");
 
     // Add the session log file to the zip archive
     let current_date = chrono::Local::now().format("%Y-%m-%d").to_string();

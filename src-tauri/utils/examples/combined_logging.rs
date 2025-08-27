@@ -15,34 +15,35 @@ fn main() -> Result<(), Error> {
         show_elapsed_time: true,
         show_level: true,
         color: true,
+        ..Default::default()
     };
 
     // Start a zip archive for this session
     let zip_logger = ZipLogger::start("session_archive.zip")?;
 
     // Simulate some application activity
-    log_info_opt!("App", log_opts.clone(), "Application starting up...");
+    log_info_opt!("App", &log_opts.clone(), "Application starting up...");
     zip_log_info!(zip_logger, "App", "Application starting up...");
 
-    log_info_opt!("Config", log_opts.clone(), "Loading configuration files");
+    log_info_opt!("Config", &log_opts.clone(), "Loading configuration files");
     zip_log_info!(zip_logger, "Config", "Loading configuration files");
 
-    log_warn_opt!("Memory", log_opts.clone(), "Memory usage at 75%");
+    log_warn_opt!("Memory", &log_opts.clone(), "Memory usage at 75%");
     zip_log_warn!(zip_logger, "Memory", "Memory usage at 75%");
 
     log_error_opt!(
         "Network",
-        log_opts.clone(),
+        &log_opts.clone(),
         "Failed to connect to external API"
     );
     zip_log_error!(zip_logger, "Network", "Failed to connect to external API");
 
-    log_debug_opt!("Cache", log_opts.clone(), "Cache miss ratio: {:.2}%", 15.5);
+    log_debug_opt!("Cache", &log_opts.clone(), "Cache miss ratio: {:.2}%", 15.5);
     zip_log_debug!(zip_logger, "Cache", "Cache miss ratio: 15.50%");
 
     log_critical_opt!(
         "Security",
-        log_opts.clone(),
+        &log_opts.clone(),
         "Multiple failed login attempts detected"
     );
     zip_log_critical!(
@@ -53,7 +54,7 @@ fn main() -> Result<(), Error> {
 
     log_info_opt!(
         "App",
-        log_opts.clone(),
+        &log_opts.clone(),
         "Application shutting down gracefully"
     );
     zip_log_info!(zip_logger, "App", "Application shutting down gracefully");

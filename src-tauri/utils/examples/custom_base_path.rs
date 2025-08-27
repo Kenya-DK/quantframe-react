@@ -23,19 +23,20 @@ fn main() -> Result<(), Error> {
         show_elapsed_time: true,
         show_level: true,
         color: true,
+        ..Default::default()
     };
 
     log_info_opt!(
         "CustomPath",
-        log_opts.clone(),
+        &log_opts.clone(),
         "This log goes to custom base path"
     );
     log_warn_opt!(
         "CustomPath",
-        log_opts.clone(),
+        &log_opts.clone(),
         "Warning in custom directory"
     );
-    log_error_opt!("CustomPath", log_opts, "Error logged to custom location");
+    log_error_opt!("CustomPath", &log_opts, "Error logged to custom location");
 
     // JSON logging
     log_json(

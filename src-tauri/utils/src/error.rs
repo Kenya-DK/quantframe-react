@@ -267,7 +267,7 @@ impl Error {
     pub fn log(&self, file: Option<impl Into<String>>) -> Self {
         let mut options = LoggerOptions::default();
         if let Some(file_name) = file {
-            options.set_file(file_name);
+            options.file = Some(file_name.into());
         }
         let mut message = format!("{}", self.message);
 
@@ -306,13 +306,13 @@ impl Error {
                     let console_options = LoggerOptions {
                         console: true,
                         file: None,
-                        ..options.clone()
+                        ..options
                     };
                     dolog(
                         self.log_level.clone(),
                         &self.component,
                         console_message,
-                        console_options,
+                        &console_options,
                     );
                 }
 
@@ -321,23 +321,23 @@ impl Error {
                     let file_message = format!("{} | Context: {}", message, context_str);
                     let file_options = LoggerOptions {
                         console: false,
-                        ..options
+                        ..options.clone()
                     };
                     dolog(
                         self.log_level.clone(),
                         &self.component,
                         file_message,
-                        file_options,
+                        &file_options,
                     );
                 }
             } else {
                 // Context is small enough, include it normally
                 message.push_str(&format!(" | Context: {}", context_str));
-                dolog(self.log_level.clone(), &self.component, message, options);
+                dolog(self.log_level.clone(), &self.component, message, &options);
             }
         } else {
             // No context to worry about
-            dolog(self.log_level.clone(), &self.component, message, options);
+            dolog(self.log_level.clone(), &self.component, message, &options);
         }
         self.clone() // Return self for chaining if needed
     }

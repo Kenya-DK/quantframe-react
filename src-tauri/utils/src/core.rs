@@ -27,14 +27,45 @@ impl LogLevel {
             LogLevel::Critical => "CRITICAL",
         }
     }
+
+    /// Get the priority level for filtering (higher number = higher priority)
+    /// Debug(0) < Trace(1) < Info(2) < Warning(3) < Error(4) < Critical(5)
+    pub fn priority(&self) -> u8 {
+        match self {
+            LogLevel::Debug => 0,
+            LogLevel::Trace => 1,
+            LogLevel::Info => 2,
+            LogLevel::Warning => 3,
+            LogLevel::Error => 4,
+            LogLevel::Critical => 5,
+        }
+    }
 }
 
 pub fn dolog(
     level: LogLevel,
     component: impl Into<String>,
     msg: impl Into<String>,
-    options: LoggerOptions,
+    options: &LoggerOptions,
 ) {
+    if !options.enable {
+        return;
+    }
+    let component_str = component.into();
+
+    // Filter by global component filters if set
+    let filter_components = crate::options::get_filter_components();
+    if !filter_components.is_empty() && !filter_components.contains(&component_str) {
+        return; // Skip logging if component is not in the filter list
+    }
+
+    // Filter by global minimum log level if set
+    if let Some(min_level) = crate::options::get_min_log_level() {
+        if level.priority() < min_level.priority() {
+            return; // Skip logging if level is below minimum
+        }
+    }
+
     let now = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
     let time = format_square_bracket(&now, options.color);
 
@@ -43,12 +74,29 @@ pub fn dolog(
         .map_or(0.0, |start| start.elapsed().as_secs_f64());
     let elapsed_str = format_square_bracket(format!("{:.4}", elapsed), options.color);
 
-    let component_str = format_square_bracket(
-        format_text(component.into(), "magenta", true, options.color),
+    let component_formatted = format_square_bracket(
+        format_text(component_str.clone(), "magenta", true, options.color),
         options.color,
     );
-    let msg = format_text(msg, "white", false, options.color);
-
+    let mut message = msg.into();
+    if options.centered {
+        let width = options.width.min(80);
+        let message_length = message.len();
+        if message_length >= width {
+            return;
+        }
+        let padding = width - message_length;
+        let left_padding: usize = padding / 2;
+        let right_padding = padding - left_padding;
+        let line = format!(
+            "{}{}{}",
+            "-".repeat(left_padding),
+            message,
+            "-".repeat(right_padding)
+        );
+        message = line;
+    }
+    let msg = format_text(message, "white", false, options.color);
     let log_level_str = match level {
         LogLevel::Info => format_square_bracket(
             format_text(level.prefix(), "green", true, options.color),
@@ -87,7 +135,7 @@ pub fn dolog(
         prefix += &format!("{} ", log_level_str);
     }
     if options.show_component {
-        prefix += &format!("{} ", component_str);
+        prefix += &format!("{} ", component_formatted);
     }
 
     let message = format!("{}{}", prefix, msg);
@@ -96,7 +144,7 @@ pub fn dolog(
         println!("{}", message.trim());
     }
 
-    if let Some(file_name) = options.file {
+    if let Some(file_name) = &options.file {
         let folder_path = crate::options::get_folder();
         let file_path = folder_path.join(file_name);
 
@@ -111,7 +159,11 @@ pub fn dolog(
 
 macro_rules! make_level_fn {
     ($func:ident, $level:ident) => {
-        pub fn $func(component: impl Into<String>, msg: impl Into<String>, options: LoggerOptions) {
+        pub fn $func(
+            component: impl Into<String>,
+            msg: impl Into<String>,
+            options: &LoggerOptions,
+        ) {
             dolog(LogLevel::$level, component, msg, options)
         }
     };

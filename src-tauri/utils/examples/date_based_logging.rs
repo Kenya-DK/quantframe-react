@@ -16,19 +16,20 @@ fn main() -> Result<(), Error> {
         show_elapsed_time: true,
         show_level: true,
         color: true,
+        ..Default::default()
     };
 
     log_info_opt!(
         "DateDemo",
-        log_opts.clone(),
+        &log_opts.clone(),
         "Regular logging to date-based directory"
     );
     log_warn_opt!(
         "DateDemo",
-        log_opts.clone(),
+        &log_opts.clone(),
         "Warning message saved to today's folder"
     );
-    log_error_opt!("DateDemo", log_opts, "Error logged in dated subdirectory");
+    log_error_opt!("DateDemo", &log_opts, "Error logged in dated subdirectory");
 
     // JSON logging - will also go to logs/2025-07-26/
     log_json(

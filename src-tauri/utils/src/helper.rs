@@ -280,3 +280,91 @@ pub fn smart_text_processing(
 
     (console_text, file_text)
 }
+
+/// Calculates the average of the lowest prices, with a limit and threshold filter.
+///
+/// # Arguments
+///
+/// * `prices` - A list of prices sorted in ascending order by buyout price.
+/// * `limit_to` - The maximum number of lowest prices to consider.
+/// * `threshold_percentage` - A percentage filter relative to the minimum price.
+///   Prices above `min_price * (1.0 + threshold_percentage)` are discarded.
+///
+/// # Returns
+///
+/// * The average of the filtered prices.
+/// * Returns `-1` if no valid prices remain after filtering.
+///
+/// # Example
+///
+/// ```
+/// let prices = vec![100, 102, 105, 110, 150, 200];
+/// let avg = average_filtered_lowest_prices(prices, 5, 0.10);
+/// assert_eq!(avg, 104); // (100 + 102 + 105 + 110) / 4
+/// ```
+pub fn average_filtered_lowest_prices(
+    prices: Vec<i64>,          // List of ascending prices
+    limit_to: i64,             // Limit of auctions to consider
+    threshold_percentage: f64, // Percentage threshold for filtering
+) -> i64 {
+    if prices.is_empty() {
+        return -1;
+    }
+
+    // Take only the lowest `limit_to` prices
+    let mut top_price: Vec<i64> = prices.into_iter().take(limit_to as usize).collect();
+
+    if top_price.is_empty() {
+        return -1;
+    }
+
+    // The minimum price is always the first element (since input is sorted)
+    let min_price = *top_price.first().unwrap_or(&0);
+
+    // Threshold = min_price * (1 + threshold_percentage)
+    let threshold = min_price as f64 * (1.0 + threshold_percentage);
+
+    // Keep only prices within the threshold
+    top_price.retain(|&price| price <= threshold as i64);
+
+    if top_price.is_empty() {
+        return -1;
+    }
+
+    // Return the average
+    top_price.iter().sum::<i64>() / top_price.len() as i64
+}
+
+/*
+    Validates a JSON object against a set of required properties.
+    - If a required property is missing, it is added to the modified JSON.
+    - Returns a tuple containing the modified JSON and a list of missing properties.
+*/
+pub fn validate_json(json: &Value, required: &Value, path: &str) -> (Value, Vec<String>) {
+    let mut modified_json = json.clone();
+    let mut missing_properties = Vec::new();
+
+    if let Some(required_obj) = required.as_object() {
+        for (key, value) in required_obj {
+            let full_path = if path.is_empty() {
+                key.clone()
+            } else {
+                format!("{}.{}", path, key)
+            };
+
+            if !json.as_object().unwrap().contains_key(key) {
+                missing_properties.push(full_path.clone());
+                modified_json[key] = required_obj[key].clone();
+            } else if value.is_object() {
+                let sub_json = json.get(key).unwrap();
+                let (modified_sub_json, sub_missing) = validate_json(sub_json, value, &full_path);
+                if !sub_missing.is_empty() {
+                    modified_json[key] = modified_sub_json;
+                    missing_properties.extend(sub_missing);
+                }
+            }
+        }
+    }
+
+    (modified_json, missing_properties)
+}

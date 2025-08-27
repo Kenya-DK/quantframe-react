@@ -22,15 +22,16 @@ fn main() {
         show_elapsed_time: true,
         show_level: true,
         color: true,
+        ..Default::default()
     };
 
     println!("\n=== Testing with file logging ===");
     log_info_opt!(
         "FileDemo",
-        file_opts.clone(),
+        &file_opts.clone(),
         "This message will be saved to demo.log"
     );
-    log_error_opt!("FileDemo", file_opts, "Error message also saved to file");
+    log_error_opt!("FileDemo", &file_opts, "Error message also saved to file");
 
     // Test with no colors
     let no_color_opts = LoggerOptions {
@@ -39,7 +40,7 @@ fn main() {
     };
 
     println!("\n=== Testing without colors ===");
-    log_info_opt!("NoColor", no_color_opts, "This message has no colors");
+    log_info_opt!("NoColor", &no_color_opts, "This message has no colors");
 
     println!("\n=== Demo completed ===");
 }
