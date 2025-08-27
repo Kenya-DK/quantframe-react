@@ -1,27 +1,14 @@
-use chrono::{DateTime, Datelike, NaiveDate, Timelike, Utc};
-use entity::{
-    stock::{
-        item::{create::CreateStockItem, stock_item},
-        riven::{create::CreateStockRiven, stock_riven},
-    },
-    sub_type::SubType,
-    transaction::transaction::TransactionType,
-    wish_list::{create::CreateWishListItem, wish_list},
-};
-use regex::Regex;
-use serde_json::{json, Map, Value};
-use service::{StockItemMutation, StockRivenMutation, TransactionMutation, WishListMutation};
+use chrono::{DateTime, Utc};
+use entity::dto::{FinancialGraph, FinancialReport};
+use serde_json::Value;
 use std::{
-    collections::HashMap,
-    fs::{self, File},
-    io::{self, Read, Write},
-    path::{Path, PathBuf},
-    sync::{Arc, Mutex},
+    fs::{self},
+    path::PathBuf,
 };
-use tauri::{Manager, State};
-use utils::Error;
+use tauri::Manager;
+use utils::*;
 
-use crate::{APP, DATABASE};
+use crate::APP;
 
 pub static APP_PATH: &str = "dev.kenya.quantframe";
 
@@ -61,31 +48,24 @@ pub fn get_desktop_path() -> PathBuf {
     };
     desktop_path
 }
-pub fn validate_json(json: &Value, required: &Value, path: &str) -> (Value, Vec<String>) {
-    let mut modified_json = json.clone();
-    let mut missing_properties = Vec::new();
+pub fn generate_transaction_summary(
+    transactions: &Vec<entity::transaction::Model>,
+    date: DateTime<Utc>,
+    group_by1: GroupByDate,
+    group_by2: &[GroupByDate],
+    _previous: bool,
+) -> (FinancialReport, FinancialGraph<i64>) {
+    let (start, end) = get_start_end_of(date, group_by1);
+    let transactions = filters_by(transactions, |t| {
+        t.created_at >= start && t.created_at <= end
+    });
 
-    if let Some(required_obj) = required.as_object() {
-        for (key, value) in required_obj {
-            let full_path = if path.is_empty() {
-                key.clone()
-            } else {
-                format!("{}.{}", path, key)
-            };
+    let mut grouped = group_by_date(&transactions, |t| t.created_at, group_by2);
 
-            if !json.as_object().unwrap().contains_key(key) {
-                missing_properties.push(full_path.clone());
-                modified_json[key] = required_obj[key].clone();
-            } else if value.is_object() {
-                let sub_json = json.get(key).unwrap();
-                let (modified_sub_json, sub_missing) = validate_json(sub_json, value, &full_path);
-                if !sub_missing.is_empty() {
-                    modified_json[key] = modified_sub_json;
-                    missing_properties.extend(sub_missing);
-                }
-            }
-        }
-    }
+    fill_missing_date_keys(&mut grouped, start, end, group_by2);
 
-    (modified_json, missing_properties)
+    let graph = FinancialGraph::<i64>::from(&grouped, |group| {
+        FinancialReport::from(&group.to_vec()).total_profit
+    });
+    (FinancialReport::from(&transactions), graph)
 }

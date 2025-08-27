@@ -36,3 +36,9 @@ impl Default for LiveScraperSettings {
         }
     }
 }
+
+impl LiveScraperSettings {
+    pub fn has_trade_mode(&self, mode: TradeMode) -> bool {
+        self.trade_modes.contains(&mode)
+    }
+}

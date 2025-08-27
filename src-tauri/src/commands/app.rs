@@ -1,4 +1,8 @@
-use std::{io::Read, path::PathBuf, sync::Mutex};
+use std::{
+    io::Read,
+    path::PathBuf,
+    sync::{atomic::Ordering, Arc, Mutex},
+};
 
 use serde_json::{json, Value};
 use tauri::{path::BaseDirectory, Manager};
@@ -7,7 +11,7 @@ use utils::{get_location, info, Error, LoggerOptions};
 
 use crate::{
     app::{client::AppState, Settings},
-    helper, APP, HAS_STARTED,
+    APP, HAS_STARTED,
 };
 
 #[tauri::command]

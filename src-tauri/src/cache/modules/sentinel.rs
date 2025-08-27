@@ -39,7 +39,7 @@ impl SentinelModule {
                 info(
                     "Cache:Sentinel:load",
                     "Loaded Sentinel items from cache",
-                    LoggerOptions::default(),
+                    &LoggerOptions::default(),
                 );
             }
             Err(e) => return Err(e.with_location(get_location!())),

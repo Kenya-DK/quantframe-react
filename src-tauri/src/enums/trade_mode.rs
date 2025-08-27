@@ -21,7 +21,7 @@ impl Serialize for TradeMode {
             TradeMode::Unknown(i) => {
                 log_critical_opt!(
                     "TradeMode",
-                    LoggerOptions::default().set_file("enums.log"),
+                    &LoggerOptions::default().set_file("enums.log"),
                     "Unknown TradeMode: {}",
                     i
                 );

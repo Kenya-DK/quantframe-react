@@ -39,7 +39,7 @@ impl SkinModule {
                 info(
                     "Cache:Skin:load",
                     "Loaded Skin items from cache",
-                    LoggerOptions::default(),
+                    &LoggerOptions::default(),
                 );
             }
             Err(e) => return Err(e.with_location(get_location!())),

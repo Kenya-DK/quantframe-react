@@ -21,6 +21,36 @@ pub async fn cache_get_tradable_items(
     }
 }
 #[tauri::command]
+pub async fn cache_get_riven_attributes(
+    cache: tauri::State<'_, Mutex<CacheState>>,
+) -> Result<Vec<CacheRivenWFMAttribute>, Error> {
+    let cache = cache.lock()?;
+    match cache.riven().get_items() {
+        Ok(items) => {
+            return Ok(items.attributes);
+        }
+        Err(e) => {
+            e.log(Some("cache_get_riven_attributes.log"));
+            return Err(e);
+        }
+    }
+}
+#[tauri::command]
+pub async fn cache_get_riven_weapons(
+    cache: tauri::State<'_, Mutex<CacheState>>,
+) -> Result<Vec<CacheRivenWeapon>, Error> {
+    let cache = cache.lock()?;
+    match cache.riven().get_items() {
+        Ok(items) => {
+            return Ok(items.weapons);
+        }
+        Err(e) => {
+            e.log(Some("cache_get_riven_weapons.log"));
+            return Err(e);
+        }
+    }
+}
+#[tauri::command]
 pub async fn cache_get_theme_presets(
     cache: tauri::State<'_, Mutex<CacheState>>,
 ) -> Result<Vec<CacheTheme>, Error> {

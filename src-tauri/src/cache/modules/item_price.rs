@@ -10,9 +10,9 @@ use crate::{
     cache::{client::CacheState, types::item_price_info::ItemPriceInfo},
     emit_startup,
     enums::FindBy,
-    utils::modules::states::{self, ErrorFromExt},
+    utils::ErrorFromExt,
 };
-use entity::sub_type::SubType;
+use entity::dto::SubType;
 use qf_api::Client as QFClient;
 use utils::{find_by, get_location, info, read_json_file, Error, LoggerOptions};
 use wf_market::endpoints::order;
@@ -63,7 +63,7 @@ impl ItemPriceModule {
                     info(
                         "Cache:ItemPrice:Load",
                         "Item price cache extracted successfully.",
-                        LoggerOptions::default(),
+                        &LoggerOptions::default(),
                     );
                 }
                 Err(e) => {
@@ -78,8 +78,11 @@ impl ItemPriceModule {
                 *items_lock = items;
                 info(
                     "Cache:ItemPrice:Load",
-                    "Item prices loaded successfully.",
-                    LoggerOptions::default(),
+                    format!(
+                        "Item price cache loaded successfully with {} items.",
+                        items_lock.len()
+                    ),
+                    &LoggerOptions::default(),
                 );
             }
             Err(e) => return Err(e.with_location(get_location!())),
@@ -140,5 +143,29 @@ impl ItemPriceModule {
             u.wfm_url == url && u.sub_type == sub_type && u.order_type == order_type
         });
         Ok(item.cloned())
+    }
+    pub fn find_by_id(
+        &self,
+        id: impl Into<String>,
+        sub_type: Option<SubType>,
+        order_type: impl Into<String>,
+    ) -> Result<Option<ItemPriceInfo>, Error> {
+        let id = id.into();
+        let order_type = order_type.into();
+        let items = self.get_items()?;
+        let item = find_by(&items, |u| {
+            u.wfm_id == id && u.sub_type == sub_type && u.order_type == order_type
+        });
+        Ok(item.cloned())
+    }
+    pub fn get_by_filter<F>(&self, predicate: F) -> Vec<ItemPriceInfo>
+    where
+        F: Fn(&ItemPriceInfo) -> bool,
+    {
+        let items = self.get_items().expect("Failed to get items");
+        items
+            .into_iter()
+            .filter(|item| predicate(item))
+            .collect::<Vec<ItemPriceInfo>>()
     }
 }

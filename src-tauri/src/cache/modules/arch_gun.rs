@@ -40,7 +40,7 @@ impl ArchGunModule {
                 info(
                     "Cache:ArchGun:load",
                     "Loaded ArchGun items from cache",
-                    LoggerOptions::default(),
+                    &LoggerOptions::default(),
                 );
             }
             Err(e) => return Err(e.with_location(get_location!())),

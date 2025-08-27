@@ -39,7 +39,7 @@ impl MeleeModule {
                 info(
                     "Cache:Melee:load",
                     "Loaded Melee items from cache",
-                    LoggerOptions::default(),
+                    &LoggerOptions::default(),
                 );
             }
             Err(e) => return Err(e.with_location(get_location!())),

@@ -3,9 +3,14 @@ use std::{
     sync::{Arc, Mutex, Weak},
 };
 
+use chrono::format;
 use utils::{find_by, get_location, info, read_json_file, Error, LoggerOptions};
 
-use crate::cache::{client::CacheState, types::CacheTradableItem};
+use crate::{
+    cache::{client::CacheState, types::CacheTradableItem},
+    enums::{FindBy, FindByType},
+    DATABASE,
+};
 
 #[derive(Debug)]
 pub struct TradableItemModule {
@@ -38,12 +43,36 @@ impl TradableItemModule {
                 *items_lock = items;
                 info(
                     "Cache:TradableItem:load",
-                    "Loaded TradableItem items from cache",
-                    LoggerOptions::default(),
+                    format!("Loaded {} tradable items from cache", items_lock.len()),
+                    &LoggerOptions::default(),
                 );
             }
             Err(e) => return Err(e.with_location(get_location!())),
         }
         Ok(())
+    }
+    pub fn get_by(&self, find_by: FindBy) -> Result<Option<CacheTradableItem>, Error> {
+        let items = self.get_items()?;
+
+        match find_by.find_by {
+            FindByType::Name => {
+                return Ok(items.into_iter().find(|item| item.name == find_by.value))
+            }
+            FindByType::Url => {
+                return Ok(items
+                    .into_iter()
+                    .find(|item| item.wfm_url_name == find_by.value))
+            }
+            FindByType::UniqueName => {
+                return Ok(items
+                    .into_iter()
+                    .find(|item| item.unique_name == find_by.value))
+            }
+            _ => Err(Error::new(
+                "Cache:TradableItem:get_by",
+                "Unsupported FindBy type",
+                get_location!(),
+            )),
+        }
     }
 }

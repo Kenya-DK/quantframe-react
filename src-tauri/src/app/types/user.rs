@@ -3,7 +3,7 @@ use std::{fs::File, io::Read, path::PathBuf};
 use qf_api::errors::ApiError;
 use serde::{de, Deserialize, Serialize};
 use serde_json::Value;
-use utils::{get_location, Error};
+use utils::{get_location, validate_json, Error};
 
 use crate::helper;
 
@@ -110,8 +110,7 @@ impl User {
         })?;
 
         // Validate the JSON object against the required properties
-        let (validated_json, missing_properties) =
-            helper::validate_json(&json_value, &required_json, "");
+        let (validated_json, missing_properties) = validate_json(&json_value, &required_json, "");
 
         // Check for missing properties
         if !missing_properties.is_empty() {
@@ -151,5 +150,9 @@ impl User {
             )
         })?;
         Ok(())
+    }
+
+    pub fn is_banned(&self) -> bool {
+        self.wfm_banned || self.qf_banned
     }
 }

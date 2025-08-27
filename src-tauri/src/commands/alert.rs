@@ -3,7 +3,7 @@ use std::sync::Mutex;
 use qf_api::types::*;
 use utils::{get_location, Error};
 
-use crate::{app::client::AppState, utils::modules::states::ErrorFromExt};
+use crate::{app::client::AppState, utils::ErrorFromExt};
 
 #[tauri::command]
 pub async fn alert_get_alerts(

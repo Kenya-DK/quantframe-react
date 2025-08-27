@@ -2,8 +2,8 @@ use std::sync::Mutex;
 
 use crate::app::{Settings, User};
 use crate::notification::enums::{UIEvent, UIOperationEvent};
-use crate::utils::modules::states::{self, ErrorFromExt};
-use crate::{emit_startup, emit_update_user, helper, APP};
+use crate::utils::{ErrorFromExt, OrderListExt};
+use crate::{emit_startup, emit_update_user, helper, send_event, APP};
 use qf_api::errors::ApiError as QFApiError;
 use qf_api::types::UserPrivate as QFUserPrivate;
 use qf_api::Client as QFClient;
@@ -48,13 +48,12 @@ fn update_user(mut cu_user: User, user: &WFUserPrivate, qf_user: &QFUserPrivate)
 }
 
 fn send_ws_state(event: UIEvent, cause: &str, data: Value) -> Error {
-    let notify = states::notify_client().expect("Failed to get notification client state");
     let err = Error::new("WebSocket", "Connection state", get_location!())
         .with_context(data)
         .with_cause(cause)
         .set_log_level(LogLevel::Warning);
     err.log(Some("websocket_info.log".to_string()));
-    notify.gui().send_event(event, Some(json!(err)));
+    send_event!(event, Some(json!(err)));
     err
 }
 
@@ -69,6 +68,7 @@ async fn setup_socket(wfm_client: WFClient<WFAuthenticated>) -> Result<WsClient,
 
     let ws_client = wfm_client
         .create_websocket(ApiVersion::V1)
+        .set_log_unhandled(true)
         .register_callback("internal/connected", move |msg, _, _| {
             send_ws_state(UIEvent::OnError, "connected", json!(msg.payload));
             Ok(())
@@ -86,7 +86,6 @@ async fn setup_socket(wfm_client: WFClient<WFAuthenticated>) -> Result<WsClient,
         .unwrap()
         .register_callback("event/account/banned", move |msg, _, _| {
             let payload = msg.clone().payload.unwrap();
-            println!("WebSocket: Reconnecting: {}", payload);
             emit_update_user!(json!({
                 "wfm_banned": true,
                 "wfm_banned_reason": payload["banMessage"].as_str().unwrap_or("").to_string(),
@@ -121,7 +120,7 @@ async fn setup_socket(wfm_client: WFClient<WFAuthenticated>) -> Result<WsClient,
             warning(
                 "WebSocket:Error",
                 &format!("WebSocket error: {:?}", msg),
-                LoggerOptions::default().set_file("websocket_info.log"),
+                &LoggerOptions::default().set_file("websocket_info.log"),
             );
             Ok(())
         })
@@ -185,6 +184,7 @@ impl AppState {
                 state.user = User::default();
             }
         }
+
         state.user.save().expect("Failed to save user to auth.json");
         state
     }
@@ -231,6 +231,7 @@ impl AppState {
         let updated_user = update_user(user, &wfm_user, &qf_user);
         let ws = setup_socket(wfm_client.clone()).await?;
         updated_user.save()?;
+        wfm_client.order().cache_orders_mut().apply_trade_info()?;
         Ok((qf_client, wfm_client, updated_user, ws))
     }
 
@@ -242,24 +243,22 @@ impl AppState {
                 get_location!(),
             ));
         }
-        let wfm_user = match self.wfm_client.refresh().await {
-            Ok(_) => self.wfm_client.get_user().map_err(|e| {
-                Error::from_wfm(
-                    "AppState:Validate",
-                    "Failed to get WFM user",
-                    e,
-                    get_location!(),
-                )
-            })?,
+        let wfm_client = match WFClient::new()
+            .login_with_token(&self.user.wfm_token, &self.wfm_client.get_device_id())
+            .await
+        {
+            Ok(client) => client,
             Err(e) => {
                 return Err(Error::from_wfm(
                     "AppState:Validate",
-                    "Failed to refresh WFM client",
+                    "Failed to login with WFM token",
                     e,
                     get_location!(),
-                ))
+                ));
             }
         };
+        let wfm_user = wfm_client.get_user().unwrap();
+
         self.qf_client.set_wfm_id(&wfm_user.id);
         self.qf_client.set_wfm_username(&wfm_user.ingame_name);
         self.qf_client.set_wfm_platform(&wfm_user.platform);
@@ -278,13 +277,12 @@ impl AppState {
                 ))
             }
         };
-        let ws = setup_socket(self.wfm_client.clone()).await?;
+        let ws = setup_socket(wfm_client.clone()).await?;
         self.wfm_socket = Some(ws);
         if !qf_user.banned {
             match self.qf_client.analytics().start() {
                 Ok(_) => {}
                 Err(e) => {
-                    println!("Failed to start QF analytics: {}", e);
                     return Err(Error::from_qf(
                         "AppState:Validate",
                         "Failed to start QF analytics",
@@ -294,7 +292,7 @@ impl AppState {
                 }
             }
         }
-
+        self.wfm_client = wfm_client;
         Ok((wfm_user, qf_user))
     }
 

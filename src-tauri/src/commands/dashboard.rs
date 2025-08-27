@@ -2,6 +2,7 @@ use std::sync::Mutex;
 
 use crate::{
     app::{client::AppState, SummaryCategorySetting},
+    helper::generate_transaction_summary,
     DATABASE,
 };
 use chrono::{DateTime, Utc};
@@ -13,46 +14,22 @@ use serde_json::{json, Value};
 use service::*;
 use utils::*;
 
-async fn generate_transaction_report(
-    transactions: &Vec<transaction::Model>,
-    date: DateTime<Utc>,
-    group_by1: GroupByDate,
-    group_by2: &[GroupByDate],
-    _previous: bool,
-) -> (FinancialReport, FinancialGraph<i64>) {
-    let (start, end) = get_start_end_of(date, group_by1);
-    let transactions = filters_by(transactions, |t| {
-        t.created_at >= start && t.created_at <= end
-    });
-
-    let mut grouped = group_by_date(&transactions, |t| t.created_at, group_by2);
-
-    fill_missing_date_keys(&mut grouped, start, end, group_by2);
-
-    let graph = FinancialGraph::<i64>::from(&grouped, |group| {
-        FinancialReport::from(&group.to_vec()).total_profit
-    });
-    (FinancialReport::from(&transactions), graph)
-}
-
 pub async fn get_total_summary(transactions: &Vec<transaction::Model>) -> Result<Value, Error> {
-    let (this_year_total, this_year_graph) = generate_transaction_report(
+    let (this_year_total, this_year_graph) = generate_transaction_summary(
         transactions,
         Utc::now(),
         GroupByDate::Year,
         &[GroupByDate::Year, GroupByDate::Month],
         false,
-    )
-    .await;
+    );
 
-    let (last_year_total, last_year_graph) = generate_transaction_report(
+    let (last_year_total, last_year_graph) = generate_transaction_summary(
         transactions,
         Utc::now() - chrono::Duration::days(365),
         GroupByDate::Year,
         &[GroupByDate::Year, GroupByDate::Month],
         false,
-    )
-    .await;
+    );
 
     let mut payload = json!(FinancialReport::from(transactions));
     payload["present_year"] = json!({
@@ -68,14 +45,13 @@ pub async fn get_total_summary(transactions: &Vec<transaction::Model>) -> Result
 }
 
 pub async fn get_today_summary(transactions: &Vec<transaction::Model>) -> Result<Value, Error> {
-    let (report, graph) = generate_transaction_report(
+    let (report, graph) = generate_transaction_summary(
         transactions,
         Utc::now(),
         GroupByDate::Day,
         &[GroupByDate::Hour],
         false,
-    )
-    .await;
+    );
     Ok(json!({
         "summary": report,
         "chart": graph
@@ -182,20 +158,21 @@ pub async fn dashboard_summary(app: tauri::State<'_, Mutex<AppState>>) -> Result
             .set_sort_by("created_at".to_string())
             .set_sort_direction(SortDirection::Desc),
     )
-    .await
-    .unwrap()
-    .results;
+    .await.unwrap() ;
 
     let app = app.lock()?.clone();
-    let category_summary =
-        get_category_summary(&transactions, &app.settings.summary_settings.categories).await?;
+    let category_summary = get_category_summary(
+        &transactions.results,
+        &app.settings.summary_settings.categories,
+    )
+    .await?;
 
     Ok(json!({
-        "total": get_total_summary(&transactions).await.unwrap(),
-        "today": get_today_summary(&transactions).await.unwrap(),
-        "recent_days": get_recent_days_summary(&transactions, 7).await.unwrap(),
-        "best_seller": get_best_selling_items(&transactions).await?,
+        "total": get_total_summary(&transactions.results).await.unwrap(),
+        "today": get_today_summary(&transactions.results).await.unwrap(),
+        "recent_days": get_recent_days_summary(&transactions.results, 7).await.unwrap(),
+        "best_seller": get_best_selling_items(&transactions.results).await?,
         "categories": category_summary,
-        "resent_transactions": transactions.into_iter().take(app.settings.summary_settings.resent_transactions as usize).collect::<Vec<_>>()
+        "resent_transactions": transactions.take_top(app.settings.summary_settings.resent_transactions as usize)
     }))
 }

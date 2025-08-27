@@ -2,7 +2,7 @@ use std::{fs::File, io::Read, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use utils::{get_location, Error};
+use utils::{get_location, validate_json, Error};
 
 use crate::helper;
 
@@ -76,8 +76,7 @@ impl CacheVersion {
         })?;
 
         // Validate the JSON object against the required properties
-        let (validated_json, missing_properties) =
-            helper::validate_json(&json_value, &required_json, "");
+        let (validated_json, missing_properties) = validate_json(&json_value, &required_json, "");
 
         // Check for missing properties
         if !missing_properties.is_empty() {

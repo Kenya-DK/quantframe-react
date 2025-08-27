@@ -9,7 +9,6 @@ pub struct NotificationState {
     self_arc: OnceLock<Arc<NotificationState>>,
     // Routes
     discord_model: OnceLock<Arc<DiscordModel>>,
-    gui_model: OnceLock<Arc<GuiModel>>,
     system_model: OnceLock<Arc<SystemModel>>,
 }
 impl NotificationState {
@@ -20,7 +19,6 @@ impl NotificationState {
         Self {
             self_arc: OnceLock::new(),
             discord_model: OnceLock::new(),
-            gui_model: OnceLock::new(),
             system_model: OnceLock::new(),
         }
     }
@@ -29,11 +27,6 @@ impl NotificationState {
     pub fn discord(&self) -> Arc<DiscordModel> {
         self.discord_model
             .get_or_init(|| DiscordModel::new(self.arc()))
-            .clone()
-    }
-    pub fn gui(&self) -> Arc<GuiModel> {
-        self.gui_model
-            .get_or_init(|| GuiModel::new(self.arc()))
             .clone()
     }
     pub fn system(&self) -> Arc<SystemModel> {

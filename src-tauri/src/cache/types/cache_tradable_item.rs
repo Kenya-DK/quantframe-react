@@ -33,6 +33,10 @@ pub struct CacheTradableItem {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_rank: Option<i64>,
 
+    #[serde(rename = "bulk_tradable")]
+    #[serde(default)]
+    pub bulk_tradable: bool,
+
     #[serde(rename = "sub_type")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sub_type: Option<SubType>,

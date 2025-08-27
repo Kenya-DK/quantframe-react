@@ -36,6 +36,7 @@ mod utils;
 // mod auth;
 mod cache;
 mod commands;
+mod handlers;
 mod macros;
 
 // mod debug;
@@ -69,7 +70,7 @@ async fn init_database(use_debug: bool) -> Result<(), Error> {
     info(
         "Setup:Database",
         "Creating a backup of the database file",
-        LoggerOptions::default(),
+        &LoggerOptions::default(),
     );
     if std::path::Path::new(&file_path).exists() {
         std::fs::copy(&file_path, &file_path_backup)
@@ -82,7 +83,7 @@ async fn init_database(use_debug: bool) -> Result<(), Error> {
         warning(
             "Setup:Database",
             "Debug mode is enabled, using the debug database file no data wil be saved",
-            LoggerOptions::default(),
+            &LoggerOptions::default(),
         );
         if std::path::Path::new(&file_path).exists() {
             std::fs::copy(&file_path, &db_debug_file_path_backup)
@@ -136,7 +137,7 @@ pub fn run() {
         critical(
             "Panic",
             format!("Panic: {:?}", panic_info).as_str(),
-            LoggerOptions::default().set_file("panic.log"),
+            &LoggerOptions::default().set_file("panic.log"),
         );
     }));
 
@@ -169,7 +170,7 @@ pub fn run() {
                     error(
                         "Emit",
                         &format!("Failed to emit app:ready event: {:?}", e),
-                        LoggerOptions::default().set_file("emit_error.log"),
+                        &LoggerOptions::default().set_file("emit_error.log"),
                     );
                 }
                 HAS_STARTED.set(true).unwrap();
@@ -202,13 +203,48 @@ pub fn run() {
             commands::alert::alert_get_alerts,
             // Cache commands
             commands::cache::cache_get_tradable_items,
+            commands::cache::cache_get_riven_attributes,
+            commands::cache::cache_get_riven_weapons,
             commands::cache::cache_get_theme_presets,
             commands::cache::cache_create_theme,
             commands::cache::cache_open_theme_folder,
             // Log commands
             commands::logs::log_export,
             // Live Scraper commands
+            commands::live_scraper::live_scraper_get_state,
             commands::live_scraper::live_scraper_toggle,
+            // Stock Item commands
+            commands::stock_item::get_stock_item_pagination,
+            commands::stock_item::get_stock_item_financial_report,
+            commands::stock_item::get_stock_item_status_counts,
+            commands::stock_item::stock_item_create,
+            commands::stock_item::stock_item_delete,
+            commands::stock_item::stock_item_sell,
+            commands::stock_item::stock_item_update,
+            commands::stock_item::stock_item_get_by_id,
+            // Stock Riven commands
+            commands::stock_riven::get_stock_riven_pagination,
+            commands::stock_riven::get_stock_riven_financial_report,
+            commands::stock_riven::get_stock_riven_status_counts,
+            commands::stock_riven::stock_riven_create,
+            commands::stock_riven::stock_riven_delete,
+            commands::stock_riven::stock_riven_sell,
+            commands::stock_riven::stock_riven_update,
+            commands::stock_riven::stock_riven_get_by_id,
+            // Debug commands
+            commands::debug::debug_get_wfm_state,
+            // Order commands
+            commands::order::order_refresh,
+            commands::order::order_delete_all,
+            // Wish List commands
+            commands::wish_list::get_wish_list_pagination,
+            commands::wish_list::get_wish_list_financial_report,
+            commands::wish_list::get_wish_list_status_counts,
+            commands::wish_list::wish_list_create,
+            commands::wish_list::wish_list_bought,
+            commands::wish_list::wish_list_delete,
+            commands::wish_list::wish_list_update,
+            commands::wish_list::wish_list_get_by_id,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

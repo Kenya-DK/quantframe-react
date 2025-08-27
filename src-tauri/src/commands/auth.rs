@@ -1,11 +1,13 @@
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 use utils::{get_location, info, Error, LoggerOptions};
 
 use crate::{
     app::{client::AppState, User},
     cache::client::CacheState,
-    utils::modules::states::ErrorFromExt,
+    commands::live_scraper,
+    live_scraper::LiveScraperState,
+    utils::ErrorFromExt,
 };
 
 #[tauri::command]
@@ -34,7 +36,7 @@ pub async fn auth_login(
     info(
         "Commands:AuthLogin",
         &format!("User {} logged in successfully", updated_user.wfm_username),
-        LoggerOptions::default(),
+        &LoggerOptions::default(),
     );
     qf_client
         .analytics()
@@ -57,6 +59,7 @@ pub async fn auth_login(
     };
     let mut app = app.lock()?;
     let mut cache = cache.lock()?;
+    *cache = cache_state;
     cache.version.id = cache_version_id;
     cache.version.id_price = price_version_id;
     cache.version.save()?;
@@ -69,16 +72,19 @@ pub async fn auth_login(
 }
 
 #[tauri::command]
-pub async fn auth_logout(app: tauri::State<'_, Mutex<AppState>>) -> Result<User, Error> {
+pub async fn auth_logout(
+    app: tauri::State<'_, Mutex<AppState>>,
+    live_scraper: tauri::State<'_, Arc<LiveScraperState>>,
+) -> Result<User, Error> {
     let app_state = app.lock().unwrap().clone();
-
+    live_scraper.stop();
     // Stop the WebSocket if it exists
     if let Some(ws) = &app_state.wfm_socket {
         match ws.disconnect() {
             Ok(_) => info(
                 "Commands:AuthLogout",
                 "WebSocket disconnected successfully",
-                LoggerOptions::default().set_file("auth_logout.log"),
+                &LoggerOptions::default().set_file("auth_logout.log"),
             ),
             Err(e) => {
                 let err = Error::new(
@@ -100,7 +106,7 @@ pub async fn auth_logout(app: tauri::State<'_, Mutex<AppState>>) -> Result<User,
         Ok(_) => info(
             "Commands:AuthLogout",
             "Successfully sent current metrics",
-            LoggerOptions::default(),
+            &LoggerOptions::default(),
         ),
         Err(e) => {
             let err = Error::from_qf(

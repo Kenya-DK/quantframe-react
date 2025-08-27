@@ -1,19 +1,17 @@
 use std::{
     fs::File,
-    io::{Read, Write},
     path::PathBuf,
-    sync::{Arc, OnceLock, RwLock},
+    sync::{Arc, OnceLock},
 };
 
+use ::utils::*;
 use qf_api::Client as QFClient;
-use utils::{get_location, info, Error, LoggerOptions};
-use wf_market::endpoints::user;
 
 use crate::{
     app::User,
     cache::types::CacheVersion,
     emit_startup, helper,
-    utils::modules::states::{self, ErrorFromExt},
+    utils::{self, ErrorFromExt},
 };
 
 use super::modules::*;
@@ -113,7 +111,12 @@ impl CacheState {
             item_price_module: OnceLock::new(),
             theme_module: OnceLock::new(),
         };
-        if !user.verification || !user.qf_banned || !user.wfm_banned {
+        if !user.verification || user.qf_banned || user.wfm_banned {
+            warning(
+                "Cache:Client",
+                "User is not verified or banned",
+                &LoggerOptions::default(),
+            );
             return Ok(client);
         }
         match client.load(qf_client).await {
@@ -124,7 +127,7 @@ impl CacheState {
                 info(
                     "Cache:Version",
                     "Cache loaded successfully.",
-                    LoggerOptions::default(),
+                    &LoggerOptions::default(),
                 );
             }
             Err(e) => return Err(e.with_location(get_location!())),
@@ -161,7 +164,7 @@ impl CacheState {
                     info(
                         "Cache:Load",
                         "Cache updated successfully.",
-                        LoggerOptions::default(),
+                        &LoggerOptions::default(),
                     );
                 }
                 Err(e) => return Err(e.with_location(get_location!())),
@@ -277,7 +280,7 @@ impl CacheState {
         info(
             "Cache:Extract",
             format!("Extracting cache... ({} bytes)", total_size),
-            LoggerOptions::default(),
+            &LoggerOptions::default(),
         );
         Ok(())
     }

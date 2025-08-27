@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 #[derive(PartialEq, Debug, Clone)]
 pub enum UIEvent {
     OnStartingUp,
@@ -5,6 +7,11 @@ pub enum UIEvent {
     // WebSocket use if the WebSocket is connected or not
     OnError,
     OnBanned,
+    UpdateLiveScraperRunningState,
+    SendLiveScraperMessage,
+    RefreshStockItems,
+    RefreshStockRivens,
+    RefreshWishListItems,
 }
 impl UIEvent {
     pub fn as_str(&self) -> &str {
@@ -13,7 +20,18 @@ impl UIEvent {
             UIEvent::UpdateUser => "User:Update",
             UIEvent::OnError => "App:Error",
             UIEvent::OnBanned => "User:Banned",
+            UIEvent::UpdateLiveScraperRunningState => "LiveScraper:UpdateRunningState",
+            UIEvent::SendLiveScraperMessage => "LiveScraper:OnMessage",
+            UIEvent::RefreshStockItems => "LiveScraper:RefreshStockItems",
+            UIEvent::RefreshStockRivens => "LiveScraper:RefreshStockRivens",
+            UIEvent::RefreshWishListItems => "LiveScraper:RefreshWishListItems",
         }
+    }
+}
+
+impl Display for UIEvent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_str())
     }
 }
 

@@ -21,3 +21,6 @@ pub use summary_category_setting::*;
 
 pub mod advanced_settings;
 pub use advanced_settings::*;
+
+pub mod debugging_settings;
+pub use debugging_settings::*;

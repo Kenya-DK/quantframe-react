@@ -44,7 +44,7 @@ impl ThemeModule {
             info(
                 "Cache:Theme:load",
                 "Theme cache path does not exist, creating it.",
-                LoggerOptions::default(),
+                &LoggerOptions::default(),
             );
             return Err(Error::new(
                 "Cache:Theme:load",
@@ -70,7 +70,7 @@ impl ThemeModule {
                     info(
                         "Cache:Theme:load",
                         "Loaded Theme items from cache",
-                        LoggerOptions::default(),
+                        &LoggerOptions::default(),
                     );
                 }
                 Err(e) => return Err(e.with_location(get_location!())),

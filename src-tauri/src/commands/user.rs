@@ -24,7 +24,7 @@ pub async fn user_set_status(
             info(
                 "Commands:UserSetStatus",
                 &format!("User status set to {}", status),
-                LoggerOptions::default(),
+                &LoggerOptions::default(),
             );
         }
         Err(e) => panic!("{:?}", e),

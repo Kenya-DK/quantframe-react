@@ -39,7 +39,7 @@ impl WarframeModule {
                 info(
                     "Cache:Warframe:load",
                     "Loaded Warframe items from cache",
-                    LoggerOptions::default(),
+                    &LoggerOptions::default(),
                 );
             }
             Err(e) => return Err(e.with_location(get_location!())),

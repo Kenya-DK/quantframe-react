@@ -31,7 +31,7 @@ impl Serialize for StockMode {
             StockMode::Unknown(i) => {
                 log_critical_opt!(
                     "OrderMode",
-                    LoggerOptions::default().set_file("enums.log"),
+                    &LoggerOptions::default().set_file("enums.log"),
                     "Unknown OrderMode: {}",
                     i
                 );

@@ -39,7 +39,7 @@ impl MiscModule {
                 info(
                     "Cache:Misc:load",
                     "Loaded Misc items from cache",
-                    LoggerOptions::default(),
+                    &LoggerOptions::default(),
                 );
             }
             Err(e) => return Err(e.with_location(get_location!())),
