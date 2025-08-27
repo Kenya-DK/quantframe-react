@@ -12,7 +12,7 @@ export function TransactionListItem({ transaction }: TransactionListItemProps) {
   const GetTransactionDisplay = () => {
     switch (transaction.item_type) {
       case TauriTypes.TransactionItemType.Riven:
-        return transaction.item_name + " " + transaction.properties["mod_name"];
+        return transaction.item_name + " " + (transaction.properties["mod_name"] || "<Unknown Mod>");
       case TauriTypes.TransactionItemType.Item:
         return transaction.item_name;
     }
