@@ -5,19 +5,42 @@ use qf_api::errors::ApiError as QFRequestError;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use utils::{Error, LogLevel};
-use wf_market::types::Auction;
+use wf_market::types::{Auction, AuctionWithOwner};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AuctionDetails {
     pub auction_id: String,
+    #[serde(default)]
+    #[serde(rename = "lowest_price")]
+    pub lowest_price: i64,
+
+    #[serde(default)]
+    #[serde(rename = "highest_price")]
+    pub highest_price: i64,
     // Default implementation for string
     #[serde(rename = "operation")]
     #[serde(default)]
     pub operations: Vec<String>,
+
+    #[serde(rename = "auctions")]
+    #[serde(default)]
+    pub auctions: Vec<AuctionWithOwner>,
 }
 impl AuctionDetails {
     pub fn set_auction_id(mut self, auction_id: impl Into<String>) -> Self {
         self.auction_id = auction_id.into();
+        self
+    }
+    pub fn set_lowest_price(mut self, lowest_price: i64) -> Self {
+        self.lowest_price = lowest_price;
+        self
+    }
+    pub fn set_highest_price(mut self, highest_price: i64) -> Self {
+        self.highest_price = highest_price;
+        self
+    }
+    pub fn set_auctions(mut self, auctions: Vec<AuctionWithOwner>) -> Self {
+        self.auctions = auctions;
         self
     }
     pub fn set_operation(mut self, operation: &[&str]) -> Self {
@@ -37,7 +60,10 @@ impl Default for AuctionDetails {
     fn default() -> Self {
         AuctionDetails {
             auction_id: String::new(),
+            lowest_price: 0,
+            highest_price: 0,
             operations: vec!["Create".to_string()],
+            auctions: vec![],
         }
     }
 }

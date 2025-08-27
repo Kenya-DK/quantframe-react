@@ -2,7 +2,7 @@ import { Title, Grid, Group, Text, TextInput, Center, Button } from "@mantine/co
 import { TauriTypes } from "$types";
 import { useTranslateModals } from "@hooks/useTranslate.hook";
 import dayjs from "dayjs";
-import { WFMOrder } from "../../../../DataDisplay/WFMOrder";
+import { WFMOrder } from "@components/DataDisplay/WFMOrder";
 
 export type WFMTabProps = {
   value: TauriTypes.StockItemDetails | undefined;

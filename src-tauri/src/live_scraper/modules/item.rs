@@ -582,13 +582,15 @@ impl ItemModule {
         order_info = order_info.set_closed_avg(closed_avg as f64);
         order_info = order_info.set_highest_price(live_orders.highest_price(OrderType::Sell));
         order_info = order_info.set_lowest_price(live_orders.lowest_price(OrderType::Sell));
-        order_info = order_info.set_orders(live_orders.take_top(10, OrderType::Sell));
+        order_info = order_info.set_orders(live_orders.take_top(5, OrderType::Sell));
         stock_item.set_list_price(Some(post_price));
         stock_item.set_status(StockStatus::Live);
-        stock_item.add_price_history(PriceHistory::new(
-            chrono::Local::now().naive_local().to_string(),
-            post_price,
-        ));
+        if stock_item.status == StockStatus::Live {
+            stock_item.add_price_history(PriceHistory::new(
+                chrono::Local::now().naive_local().to_string(),
+                post_price,
+            ));
+        }
 
         // Summary log
         info(
@@ -717,6 +719,7 @@ impl ItemModule {
         // Update Order Info
         order_info = order_info.set_highest_price(highest_price);
         order_info = order_info.set_lowest_price(live_orders.lowest_price(OrderType::Buy));
+        order_info = order_info.set_orders(live_orders.take_top(10, OrderType::Buy));
 
         // Summary log
         info(
@@ -749,6 +752,12 @@ impl ItemModule {
         }
         wishlist_item.set_list_price(Some(post_price));
         wishlist_item.set_status(StockStatus::Live);
+        if wishlist_item.status == StockStatus::Live {
+            wishlist_item.add_price_history(PriceHistory::new(
+                chrono::Local::now().naive_local().to_string(),
+                post_price,
+            ));
+        }
         if wishlist_item.is_dirty {
             match WishListMutation::update_by_id(conn, wishlist_item.to_update()).await {
                 Ok(_) => {
