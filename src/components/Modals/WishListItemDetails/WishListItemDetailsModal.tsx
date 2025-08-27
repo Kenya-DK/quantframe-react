@@ -1,12 +1,10 @@
-import { Box, Container, Divider, Group, Stack, Tabs, Text } from "@mantine/core";
+import { Box, Container, Divider, Group, Tabs, Text } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
 import { useTranslateModals } from "@hooks/useTranslate.hook";
-import { OverviewTab, AnalyticsTab, WFMTab } from "./Tabs/index";
-import { modals } from "@mantine/modals";
-import { faClose } from "@fortawesome/free-solid-svg-icons";
-import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
+import { OverviewTab, WFMTab } from "./Tabs/index";
 import { Loading } from "@components/Shared/Loading";
+import { GetSubTypeDisplay } from "@utils/helper";
 
 export type WishListItemDetailsModalProps = {
   value: number;
@@ -24,7 +22,6 @@ export function WishListItemDetailsModal({ value }: WishListItemDetailsModalProp
 
   const tabs = [
     { label: useTranslateTabs("overview.title"), component: <OverviewTab value={data} />, id: "overview" },
-    { label: useTranslateTabs("analytics.title"), component: <AnalyticsTab value={data} />, id: "analytics" },
     { label: useTranslateTabs("wfm.title"), component: <WFMTab value={data} />, id: "wfm" },
   ];
   return (
@@ -38,12 +35,9 @@ export function WishListItemDetailsModal({ value }: WishListItemDetailsModalProp
       {data && (
         <>
           <Group justify="space-between" mb={"md"}>
-            <Stack gap={0}>
-              <Text fw={500}>TODO</Text>
-            </Stack>
-            <Group>
-              <ActionWithTooltip color="red.7" icon={faClose} tooltip={useTranslate("buttons.refresh")} onClick={() => modals.closeAll()} />
-            </Group>
+            <Text fw={500}>
+              {data.stock.item_name} {GetSubTypeDisplay(data.stock.sub_type)}
+            </Text>
           </Group>
           <Divider />
           <Tabs defaultValue={tabs[0].id}>

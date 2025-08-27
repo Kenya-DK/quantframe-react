@@ -7,7 +7,7 @@ export namespace WFMarketTypes {
     itemId: string;
     perTrade?: number;
     platinum: number;
-    properties: Properties | null;
+    properties: ItemProperties | null;
     quantity: number;
     rank: number;
     type: string;
@@ -22,7 +22,7 @@ export namespace WFMarketTypes {
     avatar?: string;
     status: UserStatus;
   }
-  export interface Properties {
+  export interface ItemProperties {
     closed_avg: number;
     highest_price: number;
     item_id: string;
@@ -34,5 +34,58 @@ export namespace WFMarketTypes {
     profit: number;
     quantity: number;
     sub_type: SubType;
+  }
+  export interface AuctionProperties {
+    auction_id: string;
+    auctions: Auction[];
+    highest_price: number;
+    lowest_price: number;
+    operation: string[];
+  }
+
+  export interface Auction {
+    buyout_price: number;
+    closed: boolean;
+    created: string;
+    id: string;
+    is_direct_sell: boolean;
+    is_marked_for: string | null;
+    item: Item;
+    marked_operation_at: string | null;
+    minimal_reputation: number;
+    note: string;
+    note_raw: string;
+    platform: string;
+    private: boolean;
+    properties: AuctionProperties | null;
+    starting_price: number;
+    top_bid: unknown | null;
+    updated: string;
+    uuid: string;
+    visible: boolean;
+    owner: User | null;
+    winner: unknown | null;
+  }
+  export interface Item {
+    attributes: Attribute[];
+    mastery_level: number;
+    mod_rank: number;
+    name: string;
+    polarity: string;
+    re_rolls: number;
+    similarity: Similarity;
+    type: string;
+    weapon_url_name: string;
+  }
+  export interface Attribute {
+    positive: boolean;
+    url_name: string;
+    value: number;
+  }
+
+  export interface Similarity {
+    extra: any[];
+    missing: any[];
+    score: number;
   }
 }

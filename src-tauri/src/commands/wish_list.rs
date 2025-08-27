@@ -8,7 +8,8 @@ use wf_market::enums::OrderType;
 
 use crate::{
     app::client::AppState,
-    enums::FindByType,
+    cache::client::CacheState,
+    enums::{FindBy, FindByType},
     handlers::{
         handle_wfm_item, handle_wish_list, handle_wish_list_by_entity, stock_item::handle_item,
     },
@@ -143,6 +144,48 @@ pub async fn wish_list_update(input: UpdateWishList) -> Result<Model, Error> {
 }
 
 #[tauri::command]
-pub async fn wish_list_get_by_id(id: i64) -> Result<Value, Error> {
-    Ok(json!({}))
+pub async fn wish_list_get_by_id(
+    id: i64,
+    app: tauri::State<'_, Mutex<AppState>>,
+    cache: tauri::State<'_, Mutex<CacheState>>,
+) -> Result<Value, Error> {
+    let app = app.lock()?.clone();
+    let cache = cache.lock()?.clone();
+    let conn = DATABASE.get().unwrap();
+    let item = match WishListQuery::find_by_id(conn, id).await {
+        Ok(wish_list_item) => {
+            if let Some(item) = wish_list_item {
+                item
+            } else {
+                return Err(Error::new(
+                    "Command::WishListGetById",
+                    "Wish list item not found",
+                    get_location!(),
+                ));
+            }
+        }
+        Err(e) => {
+            return Err(Error::from_db(
+                "Command::WishListGetById",
+                "Failed to get wish list item by ID: {}",
+                e,
+                get_location!(),
+            ))
+        }
+    };
+
+    let order = app.wfm_client.order().cache_orders().find_order(
+        &item.wfm_id,
+        &SubTypeExt::from_entity(item.sub_type.clone()),
+        OrderType::Buy,
+    );
+
+    let mut payload = json!({});
+    payload["item_info"] = json!(cache
+        .tradable_item()
+        .get_by(FindBy::new(FindByType::Url, &item.wfm_url))?);
+    payload["stock"] = json!(item);
+    payload["order_info"] = json!(order);
+
+    Ok(payload)
 }

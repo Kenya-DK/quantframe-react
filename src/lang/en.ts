@@ -807,16 +807,80 @@ export const en = {
           },
         },
       },
+      wish_list_details: {
+        tabs: {
+          overview: {
+            title: "Overview",
+            buttons: {
+              wiki: "Wiki",
+            },
+            fields: {
+              created_at: "Created At",
+              updated_at: "Updated At",
+              status: "Status",
+              maximum_price: "Maximum Price",
+              quantity: "Quantity",
+              list_price: "List Price",
+              highest_price: "Highest Price",
+              lowest_price: "Lowest Price",
+              listed: "Listed Prices History",
+              no_listed: "No previous listed prices",
+            },
+          },
+          wfm: {
+            title: "WFM",
+            fields: {
+              created_at: "Created At",
+              updated_at: "Updated At",
+              order_list: "Current Live Orders",
+              no_listed: "No current live orders",
+            },
+            buttons: {
+              wfm: "Warframe Market",
+            },
+          },
+        },
+      },
       stock_riven_details: {
         tabs: {
           overview: {
             title: "Overview",
+            buttons: {
+              wiki: "Wiki",
+            },
+            fields: {
+              created_at: "Created At",
+              updated_at: "Updated At",
+              status: "Status",
+              minimum_price: "Minimum Price",
+              owned: "Owned",
+              bought: "Average Bought Price",
+              list_price: "List Price",
+              profit: "Profit",
+              highest_price: "Highest Price",
+              lowest_price: "Lowest Price",
+              listed: "Listed Prices History",
+              no_listed: "No previous listed prices",
+            },
           },
           analytics: {
             title: "Analytics",
+            last_transactions: {
+              title: "Last Transactions",
+              info_box: {
+                purchase: "{{count}} purchases",
+                sale: "{{count}} sales",
+              },
+            },
           },
           wfm: {
             title: "WFM",
+            fields: {
+              created_at: "Created At",
+              updated_at: "Updated At",
+              auction_list: "Current Live Auctions",
+              no_listed: "No current live auctions",
+            },
           },
         },
       },

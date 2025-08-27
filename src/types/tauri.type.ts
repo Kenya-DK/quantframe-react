@@ -188,7 +188,6 @@ export namespace TauriTypes {
     /** The current page */
     page: number;
   }
-  // Old code for TauriClient
   export interface AppInfo {
     authors: string;
     description: string;
@@ -526,14 +525,11 @@ export namespace TauriTypes {
     price: number;
     attributes: RivenAttribute[];
   }
-  export interface StockRivenDetails {
-    changes: string;
-    highest_price: number;
-    is_dirty: boolean;
-    lowest_price: number;
-    profit: number;
-    total_buyers: number;
-    total_sellers: number;
+  export interface StockRivenDetails extends FinancialReport {
+    stock: StockRiven;
+    auction_info: WFMarketTypes.Auction | null;
+    last_transactions: TransactionDto[];
+    stock_profit: number;
   }
   export interface SubType {
     rank?: number;
@@ -571,7 +567,11 @@ export namespace TauriTypes {
     maximum_price?: number;
     is_hidden: boolean;
   }
-  export interface WishListItemDetails {}
+  export interface WishListItemDetails {
+    stock: WishListItem;
+    item_info: CacheTradableItem;
+    order_info: WFMarketTypes.Order | null;
+  }
   export interface CreateWishListItem extends Omit<CreateStockItem, "bought" | "minimum_price"> {
     maximum_price?: number;
   }
