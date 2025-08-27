@@ -11,5 +11,9 @@ export function OverviewTab({ value }: OverviewTabProps) {
   //   useTranslateModals(`stock_item_details.tabs.overview.${key}`, { ...context }, i18Key);
 
   if (!value) return <></>;
-  return <Grid>TODO</Grid>;
+  return (
+    <Grid>
+      <Grid.Col span={12}></Grid.Col>
+    </Grid>
+  );
 }

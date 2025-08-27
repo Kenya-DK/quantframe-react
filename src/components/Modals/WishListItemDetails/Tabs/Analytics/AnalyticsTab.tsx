@@ -11,5 +11,9 @@ export function AnalyticsTab({ value }: AnalyticsTabProps) {
   // const useTranslateTab = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
   //   useTranslateModals(`stock_item_details.tabs.analytics.${key}`, { ...context }, i18Key);
 
-  return <Grid>TODO</Grid>;
+  return (
+    <Grid>
+      <Grid.Col span={12}></Grid.Col>
+    </Grid>
+  );
 }

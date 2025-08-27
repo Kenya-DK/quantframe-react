@@ -807,6 +807,19 @@ export const en = {
           },
         },
       },
+      stock_riven_details: {
+        tabs: {
+          overview: {
+            title: "Overview",
+          },
+          analytics: {
+            title: "Analytics",
+          },
+          wfm: {
+            title: "WFM",
+          },
+        },
+      },
       update_available: {
         title: "New Update Available (v{{version}})",
         buttons: {

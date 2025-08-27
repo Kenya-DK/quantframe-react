@@ -11,5 +11,9 @@ export function WFMTab({ value }: WFMTabProps) {
   //   useTranslateModals(`stock_item_details.tabs.wfm.${key}`, { ...context }, i18Key);
 
   if (!value) return <></>;
-  return <Grid>TODO</Grid>;
+  return (
+    <Grid>
+      <Grid.Col span={12}></Grid.Col>
+    </Grid>
+  );
 }
