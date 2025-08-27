@@ -11,9 +11,10 @@ export const defaultTheme = {
       dark: ["#d5d7e0", "#acaebf", "#8c8fa3", "#666980", "#4d4f66", "#34354a", "#2b2c3d", "#1d1e30", "#0c0d21", "#01010a"],
     } as { [key: string]: string[] },
     other: {
-      logoColor: "#296dff",
-      profit: DEFAULT_COLORS.green[7],
-      loss: DEFAULT_COLORS.red[7],
+      logoColor: DEFAULT_COLORS.blue[7],
+      positiveColor: DEFAULT_COLORS.green[7],
+      negativeColor: DEFAULT_COLORS.red[7],
+      profit: DEFAULT_COLORS.violet[7],
       userStatus: {
         [UserStatus.Online]: DEFAULT_COLORS.green[7],
         [UserStatus.Invisible]: DEFAULT_COLORS.red[7],
@@ -83,7 +84,7 @@ export const generateCSSVariables = (other: Record<string, any>) => {
 
   Object.entries(other).forEach(([key, value]) => {
     // Skip non-object values and chartStyles
-    if (typeof value === "string" || key === "chartStyles") return;
+    if (key === "chartStyles" || key === "logoColor") return;
 
     const kebabKey = camelToKebab(key);
 
@@ -96,6 +97,12 @@ export const generateCSSVariables = (other: Record<string, any>) => {
                       --color: var(${varKey});
                     }`;
       });
+    } else if (typeof value === "string") {
+      let varKey = `--qf-${kebabKey}`;
+      variables[varKey] = String(value);
+      cssRoot += `[data-${kebabKey}] {
+                    --color: var(${varKey});
+                  }`;
     }
   });
   // console.log(cssRoot);

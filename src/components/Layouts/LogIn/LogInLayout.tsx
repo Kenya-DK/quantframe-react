@@ -1,8 +1,8 @@
-import { AppShell, Box, useMantineTheme } from "@mantine/core";
+import { AppShell, Box } from "@mantine/core";
 import classes from "./LogInLayout.module.css";
 import { Outlet, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBug, faHome } from "@fortawesome/free-solid-svg-icons";
+import { faBug, faGlobe, faHome } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
 import { useEffect, useState } from "react";
 import { NavbarLinkProps, NavbarMinimalColored } from "@components/Layouts/Shared/NavbarMinimalColored";
@@ -34,6 +34,14 @@ export function LogInLayout() {
       link: "/",
       icon: <FontAwesomeIcon size={"lg"} icon={faHome} />,
       label: useTranslateNavBar("home"),
+      onClick: (e: NavbarLinkProps) => handleNavigate(e),
+    },
+    {
+      align: "top",
+      id: "live_scraper",
+      link: "live_scraper",
+      icon: <FontAwesomeIcon size={"lg"} icon={faGlobe} />,
+      label: useTranslateNavBar("live_scraper"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
     },
     {

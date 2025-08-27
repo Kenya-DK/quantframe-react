@@ -11,25 +11,28 @@ export namespace TauriTypes {
     Sell = "sell",
     Wishlist = "wishlist",
   }
-
   export enum Events {
     // App
     OnError = "App:Error",
     OnStartingUp = "App:StartingUp",
-
     // User
     UpdateUser = "User:Update",
-
     // Settings
     RefreshSettings = "Settings:Refresh",
+    // Live Scraper
+    UpdateLiveScraperRunningState = "LiveScraper:UpdateRunningState",
+    OnLiveScraperMessage = "LiveScraper:OnMessage",
+    // Stock
+    RefreshStockItems = "LiveScraper:RefreshStockItems",
+    RefreshStockRiven = "LiveScraper:RefreshStockRiven",
+    RefreshWishListItems = "LiveScraper:RefreshWishListItems",
+    RefreshStockRivens = "LiveScraper:RefreshStockRivens",
   }
-
   export enum EventOperations {
     CREATE_OR_UPDATE = "CREATE_OR_UPDATE",
     DELETE = "DELETE",
     SET = "SET",
   }
-
   export enum StockStatus {
     Pending = "pending",
     Live = "live",
@@ -42,18 +45,15 @@ export namespace TauriTypes {
     Overpriced = "overpriced",
     Underpriced = "underpriced",
   }
-
   export enum TransactionType {
     Purchase = "purchase",
     Sale = "sale",
     Trade = "trade",
   }
-
   export enum TransactionItemType {
     Item = "item",
     Riven = "riven",
   }
-
   export interface AppInfo {
     authors: string;
     description: string;
@@ -62,13 +62,39 @@ export namespace TauriTypes {
     is_dev: boolean;
     tos_uuid: string;
   }
-
   export interface Settings {
     debug: string[];
     cross_play: boolean;
     dev_mode: boolean;
     wf_log_path: string;
     live_scraper: SettingsLiveScraper;
+    debugging: SettingsDebugging;
+  }
+  export interface SettingsDebugging {
+    live_scraper: {
+      entries: DebuggingLiveItemEntry[];
+    };
+  }
+  export interface DebuggingLiveItemEntry {
+    stock_id?: number | null;
+    wish_list_id?: number | null;
+    wfm_url: string;
+    sub_type?: SubType | null;
+    priority: number;
+    buy_quantity: number;
+    sell_quantity: number;
+    operation: string[];
+    order_type: string;
+  }
+  export interface SettingsLiveScraper {
+    stock_mode: StockMode;
+    trade_modes: TradeMode[];
+    report_to_wfm: boolean;
+    auto_delete: boolean;
+    auto_trade: boolean;
+    should_delete_other_types: boolean;
+    stock_item: SettingsStockItem;
+    stock_riven: SettingsStockRiven;
   }
   export interface SettingsLiveScraper {
     stock_mode: StockMode;
@@ -105,7 +131,6 @@ export namespace TauriTypes {
     patreon_tier?: string;
     permissions?: string;
   }
-
   export interface DashboardSummary {
     best_seller: FinancialItemReport;
     recent_days: FinancialWithGraph;
@@ -118,7 +143,6 @@ export namespace TauriTypes {
     last_year: FinancialWithGraph;
     present_year: FinancialWithGraph;
   }
-
   export interface FinancialReport {
     average_expense: number;
     average_profit: number;
@@ -126,13 +150,12 @@ export namespace TauriTypes {
     average_transaction: number;
     expenses: number;
     profit_margin: number;
-    purchases: number;
+    purchases_count: number;
     revenue: number;
     roi: number;
     sale_count: number;
     total_profit: number;
     total_transactions: number;
-    total_value: number;
   }
   export interface FinancialItemProperties {
     item_name: string;
@@ -153,10 +176,17 @@ export namespace TauriTypes {
     summary: FinancialItemReport;
     chart: Chart;
   }
-
   export interface Chart {
     labels: string[];
     values: number[];
+  }
+  export interface PaginatedDto {
+    /** The total number of items in the database */
+    total: number;
+    /** The number of items returned in this request */
+    limit: number;
+    /** The current page */
+    page: number;
   }
   // Old code for TauriClient
   export interface AppInfo {
@@ -192,7 +222,6 @@ export namespace TauriTypes {
     positiveOnly?: boolean;
     negativeOnly?: boolean;
   }
-
   export interface CacheRivenWeapon {
     disposition: number;
     godRoll: RivenGodRoll;
@@ -207,18 +236,15 @@ export namespace TauriTypes {
     wfm_thumb: string;
     wfm_url_name: string;
   }
-
   export interface RivenGodRoll {
     good_rolls: RivenGoodRoll[];
     negative_attributes: string[];
     weapon_url_name: string;
   }
-
   export interface RivenGoodRoll {
     optional: string[];
     required: string[];
   }
-
   export interface CacheTradableItem extends CacheItemBase {
     description: string;
     wfm_id: string;
@@ -231,14 +257,12 @@ export namespace TauriTypes {
     image_url: string;
     sub_type?: CacheTradableItemSubType;
   }
-
   export interface CacheTradableItemSubType {
     max_rank?: number;
     variants?: string[];
     amber_stars?: number;
     cyan_stars?: number;
   }
-
   export interface OnToggleControlPayload {
     id: string;
     state: boolean;
@@ -247,7 +271,6 @@ export namespace TauriTypes {
     app_info: AppInfo;
     settings: Settings;
   }
-
   export interface Settings {
     debug: string[];
     tos_uuid: string;
@@ -264,14 +287,12 @@ export namespace TauriTypes {
     resent_days: number;
     resent_transactions: number;
   }
-
   export interface SettingsCategorySummary {
     icon: string;
     name: string;
     tags: string[];
     types: string[];
   }
-
   export interface SettingsStockItem {
     min_profit: number;
     auto_delete: boolean;
@@ -287,8 +308,8 @@ export namespace TauriTypes {
     report_to_wfm: boolean;
     volume_threshold: number;
     min_wtb_profit_margin: number;
+    quantity_per_trade: number;
   }
-
   export interface SettingsStockRiven {
     min_profit: number;
     threshold_percentage: number;
@@ -305,7 +326,6 @@ export namespace TauriTypes {
     on_wfm_chat_message: SettingsNotification;
     on_new_trade: SettingsNotification;
   }
-
   export interface SettingsNotification {
     content: string;
     discord_notify: boolean;
@@ -314,15 +334,12 @@ export namespace TauriTypes {
     user_ids: any[];
     webhook: string;
   }
-
   export interface ChartWithValuesDto {
     values: Array<number>;
   }
-
   export interface ChartWithMultipleValuesDto {
     profit_values: Array<number>;
   }
-
   export interface StockEntryOverview {
     id: string;
     key: string;
@@ -331,15 +348,11 @@ export namespace TauriTypes {
     expenses: number;
     profit: number;
   }
-
   export interface ChartWithLabelsDto {
     labels: Array<string>;
   }
-
   export interface ChartDto extends ChartWithValuesDto, ChartWithLabelsDto {}
-
   export interface ChartMultipleDto extends ChartWithMultipleValuesDto, ChartWithLabelsDto {}
-
   export interface TradingSummaryDto {
     best_selling_items: TransactionItemSummaryDto[];
     category_summary: TransactionCategorySummaryDto[];
@@ -348,7 +361,6 @@ export namespace TauriTypes {
     today: TransactionSummaryWithChartDto;
     total: TransactionSummaryWithYearDto;
   }
-
   export interface TransactionSummaryDto {
     average_expense: number;
     average_profit: number;
@@ -372,7 +384,6 @@ export namespace TauriTypes {
     labels: string[];
     values: number[];
   }
-
   export interface TransactionItemSummaryDto {
     average_price: number;
     expenses: number;
@@ -389,7 +400,6 @@ export namespace TauriTypes {
     total_transactions: number;
     wfm_id: string;
   }
-
   export interface TransactionCategorySummaryDto {
     expenses: number;
     icon: string;
@@ -398,7 +408,6 @@ export namespace TauriTypes {
     profit_margin: number;
     revenue: number;
   }
-
   export interface StockEntryBase {
     id: number;
     bought: number;
@@ -410,7 +419,6 @@ export namespace TauriTypes {
     updated_at: string;
     price_history: PriceHistory[];
   }
-
   export interface StockItem extends StockEntryBase {
     created_at: string;
     id: number;
@@ -423,39 +431,35 @@ export namespace TauriTypes {
     wfm_url: string;
     info?: StockItemDetails;
   }
-
+  export interface StockItemDetails extends FinancialReport {
+    stock: StockItem;
+    item_info: CacheTradableItem;
+    order_info: WFMarketTypes.Order | null;
+    last_transactions: TransactionDto[];
+    stock_profit: number;
+  }
   export interface CreateStockItem {
-    wfm_url: string;
-    bought: number;
+    raw: string;
     quantity: number;
+    bought: number;
     minimum_price?: number;
     sub_type?: SubType;
   }
-
   export interface UpdateStockItem {
-    id?: number;
+    id: number;
+    owned?: number;
     bought?: number;
-    quantity?: number;
     minimum_price?: number;
+    list_price?: number;
+    status?: StockStatus;
     is_hidden?: boolean;
-    sub_type?: SubType;
   }
-
   export interface SellStockItem {
     id: number;
     wfm_url: string;
     sub_type?: SubType;
     quantity: number;
     price: number;
-  }
-
-  export interface StockItemDetails {
-    highest_price: number;
-    lowest_price: number;
-    moving_avg: number;
-    orders: WFMarketTypes.OrderDto[];
-    profit: number;
-    total_sellers: number;
   }
   export interface StockRiven extends StockEntryBase {
     attributes: RivenAttribute[];
@@ -477,7 +481,6 @@ export namespace TauriTypes {
     wfm_weapon_url: string;
     info?: StockRivenDetails;
   }
-
   export interface StockRivenFilter {
     attributes?: StockRivenFilterAttribute[];
     enabled: boolean;
@@ -488,40 +491,42 @@ export namespace TauriTypes {
     required_negative?: boolean;
     similarity?: null | number;
   }
-
   export interface StockRivenFilterAttribute {
     positive: boolean;
     is_required: boolean;
     url_name: string;
   }
-
   export interface CreateStockRiven {
-    wfm_url: string;
+    raw: string;
     mod_name: string;
     mastery_rank: number;
     re_rolls: number;
     polarity: string;
     attributes: RivenAttribute[];
-    bought: number;
     rank: number;
+    bought: number;
   }
-
   export interface UpdateStockRiven {
-    id?: number;
-    bought?: number;
-    quantity?: number;
-    minimum_price?: number;
-    is_hidden?: boolean;
-    filter?: StockRivenFilter;
-  }
-
-  export interface SellStockRiven {
     id: number;
-    quantity: number;
+    bought?: number;
+    minimum_price?: number;
+    list_price?: number;
+    status?: StockStatus;
+    filter?: StockRivenFilter;
+    is_hidden?: boolean;
+  }
+  export interface SellStockRiven {
+    id?: number;
+    wfm_url: string;
+    mod_name: string;
+    mastery_rank: number;
+    re_rolls: number;
+    polarity: string;
+    rank: number;
     price: number;
+    attributes: RivenAttribute[];
   }
   export interface StockRivenDetails {
-    auctions: WFMarketTypes.Auction<WFMarketTypes.AuctionOwner>[];
     changes: string;
     highest_price: number;
     is_dirty: boolean;
@@ -553,13 +558,11 @@ export namespace TauriTypes {
     wfm_id: string;
     wfm_url: string;
   }
-
   export interface UpdateTransactionDto {
     id: number;
     price: number;
     quantity: number;
   }
-
   export interface WishListItem extends Omit<StockEntryBase, "minimum_price"> {
     id: number;
     item_name: string;
@@ -567,33 +570,26 @@ export namespace TauriTypes {
     quantity: number;
     maximum_price?: number;
     is_hidden: boolean;
-    info?: WishListItemDetails;
   }
+  export interface WishListItemDetails {}
   export interface CreateWishListItem extends Omit<CreateStockItem, "bought" | "minimum_price"> {
     maximum_price?: number;
   }
-
   export interface UpdateWishListItem {
     id: number;
+    quantity?: number;
     maximum_price?: number;
+    list_price?: number;
+    status?: StockStatus;
     is_hidden?: boolean;
-    sub_type?: SubType;
   }
-
   export interface BoughtWishListItem {
     id: number;
+    wfm_url: string;
+    sub_type?: SubType;
+    quantity: number;
     price: number;
   }
-
-  export interface WishListItemDetails {
-    highest_price: number;
-    lowest_price: number;
-    moving_avg: number;
-    orders: WFMarketTypes.OrderDto[];
-    profit: number;
-    total_sellers: number;
-  }
-
   export interface StockEntryBaseDto {
     id: number;
     bought: number;
@@ -605,7 +601,6 @@ export namespace TauriTypes {
     updated_at: string;
     price_history: PriceHistory[];
   }
-
   export interface StockItemDto extends StockEntryBaseDto {
     created_at: string;
     id: number;
@@ -618,125 +613,37 @@ export namespace TauriTypes {
     wfm_url: string;
     info?: StockItemDetails;
   }
-
   export interface StockItemControllerGetListParams {
-    /**
-     * For pagination. Defines which page the results are fetched from.
-     * @min 1
-     * @default 1
-     */
     page: number;
-    /**
-     * For pagination. Defines how many entries are returned per page.
-     * @min 0
-     * @max 100
-     * @default 25
-     */
     limit: number;
     sort_by?: string;
-    /** Sort direction used when sorting by a specific field. */
     sort_direction?: "asc" | "desc";
-    /** A search query to filter the users by name or email. */
     query?: string;
-    /** Filter by stock status */
     status?: TauriTypes.StockStatus;
   }
-
-  export interface PaginatedDto {
-    /** The total number of items in the database */
-    total: number;
-    /** The number of items returned in this request */
-    limit: number;
-    /** The current page */
-    page: number;
-  }
-
-  /** PaginatedResponseOfAlertDto */
   export type StockItemControllerGetListData = PaginatedDto & {
     results?: StockItemDto[];
   };
-
   export interface StockRivenControllerGetListParams {
-    /**
-     * For pagination. Defines which page the results are fetched from.
-     * @min 1
-     * @default 1
-     */
     page: number;
-    /**
-     * For pagination. Defines how many entries are returned per page.
-     * @min 0
-     * @max 100
-     * @default 25
-     */
     limit: number;
     sort_by?: string;
-    /** Sort direction used when sorting by a specific field. */
     sort_direction?: "asc" | "desc";
-    /** A search query to filter the users by name or email. */
     query?: string;
-    /** Filter by stock status */
     status?: TauriTypes.StockStatus;
   }
-
-  /** PaginatedResponseOfAlertDto */
   export type StockRivenControllerGetListData = PaginatedDto & {
     results?: StockRiven[];
   };
   export interface WishListControllerGetListParams {
-    /**
-     * For pagination. Defines which page the results are fetched from.
-     * @min 1
-     * @default 1
-     */
     page: number;
-    /**
-     * For pagination. Defines how many entries are returned per page.
-     * @min 0
-     * @max 100
-     * @default 25
-     */
     limit: number;
     sort_by?: string;
-    /** Sort direction used when sorting by a specific field. */
     sort_direction?: "asc" | "desc";
-    /** A search query to filter the users by name or email. */
     query?: string;
-    /** Filter by stock status */
     status?: TauriTypes.StockStatus;
   }
-
-  /** PaginatedResponseOfAlertDto */
   export type WishListControllerGetListData = PaginatedDto & {
     results?: WishListItem[];
-  };
-  export interface TransactionControllerGetListParams {
-    /**
-     * For pagination. Defines which page the results are fetched from.
-     * @min 1
-     * @default 1
-     */
-    page: number;
-    /**
-     * For pagination. Defines how many entries are returned per page.
-     * @min 0
-     * @max 100
-     * @default 25
-     */
-    limit: number;
-    sort_by?: string;
-    /** Sort direction used when sorting by a specific field. */
-    sort_direction?: "asc" | "desc";
-    /** A search query to filter the users by name or email. */
-    query?: string;
-    /** Filter by stock status */
-    item_type?: TauriTypes.TransactionItemType;
-    /** Filter by transaction type */
-    transaction_type?: TauriTypes.TransactionType;
-  }
-
-  /** PaginatedResponseOfAlertDto */
-  export type TransactionControllerGetListData = PaginatedDto & {
-    results?: TransactionDto[];
   };
 }

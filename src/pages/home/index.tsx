@@ -28,7 +28,6 @@ import {
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { TextTranslate } from "@components/Shared/TextTranslate";
 import i18next from "i18next";
-import { getCssVariable } from "@utils/helper";
 import { TauriTypes } from "$types";
 import { DataTable } from "mantine-datatable";
 import classes from "./Home.module.css";
@@ -87,9 +86,9 @@ const BarChartFooter = ({ i18nKey, statistics }: { i18nKey: string; statistics: 
       <TextTranslate
         i18nKey={`${i18nKey}.trades`}
         values={{
-          purchases: statistics?.purchases || 0,
+          purchases: statistics?.purchases_count || 0,
           sales: statistics?.sale_count || 0,
-          trades: (statistics?.sale_count || 0) + (statistics?.purchases || 0),
+          trades: (statistics?.sale_count || 0) + (statistics?.purchases_count || 0),
         }}
         components={ExtraComponents}
       />
@@ -120,7 +119,7 @@ export default function HomePage() {
                 i18nKey={useTranslateCards("total.footer")}
                 values={{
                   sales: summary?.total.sale_count || 0,
-                  purchases: summary?.total.purchases || 0,
+                  purchases: summary?.total.purchases_count || 0,
                   quantity: summary?.total.total_transactions || 0,
                   profit_margin: (summary?.total.profit_margin || 0).toFixed(2),
                 }}
@@ -139,7 +138,7 @@ export default function HomePage() {
                 i18nKey={useTranslateCards("today.footer")}
                 values={{
                   sales: summary?.today.summary.sale_count || 0,
-                  purchases: summary?.today.summary.purchases || 0,
+                  purchases: summary?.today.summary.purchases_count || 0,
                   quantity: summary?.today.summary.total_transactions || 0,
                   profit_margin: (summary?.today.summary.profit_margin || 0).toFixed(2),
                 }}
@@ -159,7 +158,7 @@ export default function HomePage() {
                 values={{
                   name: summary?.best_seller.properties.item_name || "",
                   sales: summary?.best_seller.sale_count || 0,
-                  purchases: summary?.best_seller.purchases || 0,
+                  purchases: summary?.best_seller.purchases_count || 0,
                   quantity: summary?.best_seller.total_transactions || 0,
                   profit_margin: (summary?.best_seller.profit_margin || 0).toFixed(2),
                 }}
@@ -223,7 +222,7 @@ export default function HomePage() {
               {
                 label: useTranslateCards("recent_days.bar_chart.datasets.profit"),
                 data: summary?.recent_days.chart.values || [],
-                backgroundColor: getCssVariable("--profit-bar-color"),
+                backgroundColor: theme.other.chartStyles.lastDays.lineColor,
               },
             ]}
             context={
@@ -246,7 +245,7 @@ export default function HomePage() {
                     "data-color-mode": "bg",
                     "data-transaction-type": "purchase",
                   }}
-                  text={useTranslateCards("last_transaction.info_box.purchase", { count: summary?.total.purchases || 0 })}
+                  text={useTranslateCards("last_transaction.info_box.purchase", { count: summary?.total.purchases_count || 0 })}
                 />
                 <ColorInfo
                   infoProps={{
@@ -297,9 +296,7 @@ export default function HomePage() {
                 title: useTranslateCards("best_seller.by_category.datatable.columns.profit"),
                 render: ({ total_profit }) => (
                   <NumberFormatter
-                    style={{ color: total_profit > 0 ? theme.other.profit : theme.other.loss } as React.CSSProperties}
-                    // data-color={total_profit > 0 ? theme.other.profit : theme.other.loss}
-                    // data-color-mode="text"
+                    style={{ color: total_profit > 0 ? theme.other.positiveColor : theme.other.negativeColor } as React.CSSProperties}
                     thousandSeparator="."
                     decimalSeparator=","
                     value={total_profit}

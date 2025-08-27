@@ -10,6 +10,11 @@ import { DashboardModule } from "./dashboard";
 import { CacheModule } from "./cache";
 import { LogModule } from "./log";
 import { LiveScraperModule } from "./live_scraper";
+import { StockItemModule } from "./stack_item";
+import { DebugModule } from "./debug";
+import { OrderModule } from "./order";
+import { WishListModule } from "./wish_list";
+import { StockRivenModule } from "./stack_riven";
 
 export class TauriClient {
   _logging: string[] = [];
@@ -27,6 +32,11 @@ export class TauriClient {
     this.analytics = new AnalyticsModule(this);
     this.live_scraper = new LiveScraperModule(this);
     this.log = new LogModule(this);
+    this.stock_item = new StockItemModule(this);
+    this.stock_riven = new StockRivenModule(this);
+    this.wish_list = new WishListModule(this);
+    this.debug = new DebugModule(this);
+    this.order = new OrderModule(this);
     this._logging = localStorage.getItem("tauri_logs") ? JSON.parse(localStorage.getItem("tauri_logs")!) : ["*"];
   }
 
@@ -152,9 +162,14 @@ export class TauriClient {
   cache: CacheModule;
   auth: AuthModule;
   log: LogModule;
+  order: OrderModule;
   analytics: AnalyticsModule;
   user: UserModule;
   live_scraper: LiveScraperModule;
+  stock_item: StockItemModule;
+  stock_riven: StockRivenModule;
+  wish_list: WishListModule;
+  debug: DebugModule;
 }
 
 declare global {

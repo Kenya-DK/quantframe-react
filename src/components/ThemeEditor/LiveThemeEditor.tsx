@@ -158,6 +158,14 @@ export function LiveThemeEditor({ onNewTheme }: LiveThemeEditorProps) {
             onColorChange={(property, color) => handlePropertyChange(`other.alertType.${property}`, color)}
           />
           <ChartColorPaletteEditor
+            colorName={useTranslateEditor("color_palettes.user_status")}
+            baseTranslation={(key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+              useTranslateEnums(`user_status.${key}`, { ...context }, i18Key)
+            }
+            colors={other.userStatus}
+            onColorChange={(property, color) => handlePropertyChange(`other.userStatus.${property}`, color)}
+          />
+          <ChartColorPaletteEditor
             colorName={useTranslateEditor("color_palettes.item_type")}
             baseTranslation={(key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
               useTranslateEnums(`item_type.${key}`, { ...context }, i18Key)
@@ -175,18 +183,26 @@ export function LiveThemeEditor({ onNewTheme }: LiveThemeEditorProps) {
               withEyeDropper={false}
             />
             <ColorInput
-              label={useTranslateEditor("color_palettes.profit")}
+              label={useTranslateEditor("color_palettes.positive")}
               size="xs"
-              value={other.profit}
-              onChangeEnd={(value) => handlePropertyChange("other.profit", value)}
+              value={other.positiveColor}
+              onChangeEnd={(value) => handlePropertyChange("other.positiveColor", value)}
               w={100}
               withEyeDropper={false}
             />
             <ColorInput
-              label={useTranslateEditor("color_palettes.loss")}
+              label={useTranslateEditor("color_palettes.negative")}
               size="xs"
-              value={other.loss}
-              onChangeEnd={(value) => handlePropertyChange("other.loss", value)}
+              value={other.negativeColor}
+              onChangeEnd={(value) => handlePropertyChange("other.negativeColor", value)}
+              w={100}
+              withEyeDropper={false}
+            />
+            <ColorInput
+              label={useTranslateEditor("color_palettes.profit")}
+              size="xs"
+              value={other.profit}
+              onChangeEnd={(value) => handlePropertyChange("other.profit", value)}
               w={100}
               withEyeDropper={false}
             />

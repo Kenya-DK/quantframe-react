@@ -1,7 +1,10 @@
-import { Accordion, JsonInput } from "@mantine/core";
+import { Accordion, Button, Grid, Group, JsonInput, Text, Title } from "@mantine/core";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { useAppContext } from "@contexts/app.context";
 import { useAuthContext } from "@contexts/auth.context";
+import { useLiveScraperContext } from "@contexts/liveScraper.context";
+import { useQuery } from "@tanstack/react-query";
+import api from "@api/index";
 interface StatesPanelProps {}
 export const StatesPanel = ({}: StatesPanelProps) => {
   const { app_info, app_error, alerts, settings } = useAppContext();
@@ -12,7 +15,12 @@ export const StatesPanel = ({}: StatesPanelProps) => {
     useTranslatePages(`debug.tabs.states.${key}`, { ...context }, i18Key);
   const useTranslateDataGridColumns = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTabLogging(`accordions.${key}`, { ...context }, i18Key);
-
+  // Queries
+  const { data: wfmState, refetch: refetchWfmState } = useQuery({
+    queryKey: ["get_wfm_state"],
+    queryFn: () => api.debug.get_wfm_state(),
+    retry: false,
+  });
   return (
     <Accordion>
       <Accordion.Item value="app_info">
@@ -60,7 +68,6 @@ export const StatesPanel = ({}: StatesPanelProps) => {
           />
         </Accordion.Panel>
       </Accordion.Item>
-
       <Accordion.Item value="settings">
         <Accordion.Control>{useTranslateDataGridColumns("settings")}</Accordion.Control>
         <Accordion.Panel>
@@ -76,7 +83,6 @@ export const StatesPanel = ({}: StatesPanelProps) => {
           />
         </Accordion.Panel>
       </Accordion.Item>
-
       <Accordion.Item value="user">
         <Accordion.Control>{useTranslateDataGridColumns("user")}</Accordion.Control>
         <Accordion.Panel>
@@ -90,6 +96,64 @@ export const StatesPanel = ({}: StatesPanelProps) => {
             readOnly
             style={{ width: "100%" }}
           />
+        </Accordion.Panel>
+      </Accordion.Item>
+      <Accordion.Item value="live_scraper">
+        <Accordion.Control>{useTranslateDataGridColumns("live_scraper")}</Accordion.Control>
+        <Accordion.Panel>
+          <JsonInput
+            value={JSON.stringify(useLiveScraperContext(), null, 2)}
+            validationError="Invalid JSON"
+            formatOnBlur
+            autosize
+            minRows={10}
+            maxRows={20}
+            readOnly
+            style={{ width: "100%" }}
+          />
+        </Accordion.Panel>
+      </Accordion.Item>
+      <Accordion.Item value="wfm_state">
+        <Accordion.Control>{useTranslateDataGridColumns("wfm_state")}</Accordion.Control>
+        <Accordion.Panel>
+          <Group>
+            <Button mb={"md"} onClick={() => refetchWfmState()}>
+              Refetch
+            </Button>
+            <Text>Order Limit: {wfmState?.order_limit || "N/A"}</Text>
+          </Group>
+          <Grid>
+            <Grid.Col span={6}>
+              <Title order={3} mb={"md"}>
+                Buy Orders: {wfmState?.user_orders.buy_orders.length || 0}
+              </Title>
+              <JsonInput
+                value={JSON.stringify(wfmState?.user_orders.buy_orders || {}, null, 2)}
+                validationError="Invalid JSON"
+                formatOnBlur
+                autosize
+                minRows={10}
+                maxRows={20}
+                readOnly
+                style={{ width: "100%" }}
+              />
+            </Grid.Col>
+            <Grid.Col span={6}>
+              <Title order={3} mb={"md"}>
+                Sell Orders: {wfmState?.user_orders.sell_orders.length || 0}
+              </Title>
+              <JsonInput
+                value={JSON.stringify(wfmState?.user_orders.sell_orders || {}, null, 2)}
+                validationError="Invalid JSON"
+                formatOnBlur
+                autosize
+                minRows={10}
+                maxRows={20}
+                readOnly
+                style={{ width: "100%" }}
+              />
+            </Grid.Col>
+          </Grid>
         </Accordion.Panel>
       </Accordion.Item>
     </Accordion>

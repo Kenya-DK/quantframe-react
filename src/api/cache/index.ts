@@ -17,6 +17,10 @@ export class CacheModule {
     this._cache.set(CacheType.TradableItems, items);
     return items;
   }
+  async getTradableItemById(id: string): Promise<TauriTypes.CacheTradableItem | undefined> {
+    let items = await this.getTradableItems();
+    return items.find((i) => i.wfm_id === id);
+  }
   getThemePresets() {
     return useQuery({
       queryKey: ["cache_get_theme_presets"],
@@ -29,5 +33,17 @@ export class CacheModule {
   }
   openThemeFolder(): Promise<void> {
     return this.client.sendInvoke<void>("cache_open_theme_folder");
+  }
+  async getRivenAttributes(): Promise<TauriTypes.CacheRivenAttribute[]> {
+    if (this._cache.has(CacheType.RivenAttributes)) return this._cache.get(CacheType.RivenAttributes);
+    const items = await this.client.sendInvoke<TauriTypes.CacheRivenAttribute[]>("cache_get_riven_attributes");
+    this._cache.set(CacheType.RivenAttributes, items);
+    return items;
+  }
+  async getRivenWeapons(): Promise<TauriTypes.CacheRivenWeapon[]> {
+    if (this._cache.has(CacheType.RivenWeapons)) return this._cache.get(CacheType.RivenWeapons);
+    const items = await this.client.sendInvoke<TauriTypes.CacheRivenWeapon[]>("cache_get_riven_weapons");
+    this._cache.set(CacheType.RivenWeapons, items);
+    return items;
   }
 }

@@ -123,12 +123,25 @@ export const WTBItemAccordion = ({ value, onSubmit }: WTBItemAccordionProps) => 
           <NumberInput
             label={useTranslateFormFields("buy_quantity.label")}
             min={1}
-            max={999}
+            max={6}
             placeholder={useTranslateFormFields("buy_quantity.placeholder")}
             value={form.values.buy_quantity}
             onChange={(event) => form.setFieldValue("buy_quantity", Number(event))}
             error={form.errors.buy_quantity && useTranslateFormFields("buy_quantity.error")}
             rightSection={<TooltipIcon label={useTranslateFormFields("buy_quantity.tooltip")} link={useTranslateFormFields("buy_quantity.link")} />}
+            radius="md"
+          />
+          <NumberInput
+            label={useTranslateFormFields("quantity_per_trade.label")}
+            min={1}
+            max={999}
+            placeholder={useTranslateFormFields("quantity_per_trade.placeholder")}
+            value={form.values.quantity_per_trade}
+            onChange={(event) => form.setFieldValue("quantity_per_trade", Number(event))}
+            error={form.errors.quantity_per_trade && useTranslateFormFields("quantity_per_trade.error")}
+            rightSection={
+              <TooltipIcon label={useTranslateFormFields("quantity_per_trade.tooltip")} link={useTranslateFormFields("quantity_per_trade.link")} />
+            }
             radius="md"
           />
         </Group>

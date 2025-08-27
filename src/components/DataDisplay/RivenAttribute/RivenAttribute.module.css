@@ -1,0 +1,14 @@
+.root {
+
+  border: 0.1rem solid;
+  border-radius: 0.2em;
+  padding: 2px 10px 2px 10px;
+
+  &[data-positive='true'] {
+    border-color: var(--qf-positive-color);
+  }
+
+  &[data-positive='false'] {
+    border-color: var(--qf-negative-color);
+  }
+}

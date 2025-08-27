@@ -18,6 +18,39 @@ export const en = {
         label: "Save",
       },
     },
+    datatable_columns: {
+      list_price: "Listed",
+      maximum_price: {
+        title: "Maximum Price",
+        value: "{{maximum_price}} ({{currency}})",
+        edit_tooltip: "Edit Maximum Price",
+      },
+      minimum_price: {
+        title: "Minimum Price",
+        value: "{{minimum_price}} ({{currency}})",
+        edit_tooltip: "Edit Minimum Price",
+      },
+      actions: {
+        title: "Actions",
+        buttons: {
+          manual_tooltip: "Sell Manually",
+          auto_tooltip: "Sell as listed",
+          bought_manual_tooltip: "Mark as Bought",
+          bought_auto_tooltip: "Bought at listed price",
+          hide: {
+            disabled_tooltip: "Show",
+            enabled_tooltip: "Hide",
+          },
+          info_tooltip: "Info",
+          delete_tooltip: "Item",
+          open_filter_tooltip: "Open Filter",
+        },
+      },
+    },
+    item_name: {
+      title: "Name",
+      value: "{{name}} <blue>{{sub_type}}</blue>",
+    },
   },
   enums: {
     item_type: {
@@ -84,6 +117,7 @@ export const en = {
     user_status: {
       online: "Online",
       ingame: "In game",
+      in_game: "In game",
       invisible: "Offline",
     },
     alert_type: {
@@ -94,6 +128,45 @@ export const en = {
     },
   },
   components: {
+    timer_stamp: {
+      months: "{{months}} months ago",
+      days: "{{days}} days ago",
+      hours: "{{hours}} hours ago",
+      minutes: "{{minutes}} minutes ago",
+      seconds: "{{seconds}} seconds ago",
+    },
+    wfm_order: {
+      fields: {
+        quantity: "<qty/> <blue>{{quantity}}</blue>",
+        platinum: "<blue>{{platinum}}</blue> <plat/>",
+        mod_rank: "Rank: <blue>{{mod_rank}}</blue>/<blue>{{mod_max_rank}}</blue>",
+        subtype: "<blue>{{sub_type}}</blue>",
+      },
+    },
+    riven_attribute: {
+      effect: "<num_color_tag>{{value}}</num_color_tag> {{name}}",
+    },
+    live_scraper_control: {
+      buttons: {
+        start: "Start Live Trading",
+        stop: "Stop Live Trading",
+      },
+      prompts: {
+        start: {
+          title: "Warning",
+          message: "Are you sure you want to start live trading? This action will delete all non-blacklisted orders on WFM.",
+          confirm: "Start",
+          cancel: "Cancel",
+        },
+      },
+      item: {
+        checking: "Checking Item: <blue>{{name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        deleted: "Deleting Orders: <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+      },
+      riven: {
+        checking: "Checking Riven: <blue>{{name}}</blue> <blue>{{mod_name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+      },
+    },
     searchfield: {
       label: "Search",
       placeholder: "Search...",
@@ -146,6 +219,7 @@ export const en = {
         navbar: {
           home: "Home",
           debug: "Debug",
+          live_scraper: "Live Scraper",
         },
       },
     },
@@ -177,8 +251,9 @@ export const en = {
         transaction_type: "Transaction Type",
         item_type: "Item Type",
         logo_color: "Logo Color",
+        positive: "Positive",
+        negative: "Negative",
         profit: "Profit",
-        loss: "Loss",
       },
       sharing: {
         title: "Sharing",
@@ -211,6 +286,160 @@ export const en = {
       },
     },
     forms: {
+      riven_filter_attribute: {
+        fields: {
+          is_required: {
+            tooltip: "Is Required",
+          },
+        },
+      },
+      riven_filter: {
+        fields: {
+          enabled: {
+            label: "Enabled",
+          },
+          similarity: {
+            label: "Similarity",
+          },
+          rank: {
+            label: "Rank",
+          },
+          mastery_rank: {
+            label: "Mastery Rank",
+          },
+          required_negative: {
+            label: "Required Negative",
+          },
+          re_rolls: {
+            label: "Re-Rolls",
+          },
+        },
+        buttons: {
+          save: {
+            label: "Save",
+          },
+        },
+      },
+      create_riven_attributes: {
+        fields: {
+          positive: {
+            title: "Positive Attributes",
+            add: "Add",
+          },
+          negative: {
+            title: "Negative Attributes",
+          },
+        },
+        buttons: {
+          add: "+ Add",
+        },
+      },
+      create_riven_attribute: {
+        fields: {
+          value: {
+            error: "Invalid value",
+          },
+        },
+        buttons: {
+          remove: "Remove",
+        },
+      },
+      create_riven: {
+        buttons: {
+          submit: {
+            label: "Create",
+          },
+        },
+        fields: {
+          mastery_rank: {
+            label: "Mastery Rank",
+            placeholder: "8",
+            error: "Invalid mastery rank",
+          },
+          re_rolls: {
+            label: "Re-Rolls",
+            placeholder: "0",
+            error: "Invalid re-rolls",
+          },
+          rank: {
+            label: "Rank",
+            placeholder: "0",
+            error: "Invalid rank",
+          },
+          polarity: {
+            label: "Polarity",
+            error: "Invalid polarity",
+          },
+          weapon: {
+            label: "Weapon Name",
+            placeholder: "Weapon",
+            error: "Invalid weapon",
+          },
+          bought: {
+            label: "Bought",
+            placeholder: "Bought",
+            error: "Invalid bought",
+          },
+          attributes: {
+            label: "Attributes",
+            error: "Riven must have at least 2 positive attributes",
+          },
+          mod_name: {
+            label: "Mod Name",
+            placeholder: "Mod Name",
+            error: "Invalid mod name",
+          },
+        },
+      },
+      debugging_live_item_entry: {
+        fields: {
+          wfm_url: {
+            label: "Item",
+            placeholder: "Select item...",
+            error: "Please select an item",
+          },
+          stock_id: {
+            label: "Stock ID",
+            placeholder: "Enter stock ID...",
+            error: "Invalid stock ID",
+          },
+          wish_list_id: {
+            label: "Wish List ID",
+            placeholder: "Enter wish list ID...",
+            error: "Invalid wish list ID",
+          },
+          priority: {
+            label: "Priority",
+            placeholder: "Enter priority...",
+            error: "Priority must be 0 or greater",
+          },
+          buy_quantity: {
+            label: "Buy Quantity",
+            placeholder: "Enter buy quantity...",
+            error: "Buy quantity must be 0 or greater",
+          },
+          sell_quantity: {
+            label: "Sell Quantity",
+            placeholder: "Enter sell quantity...",
+            error: "Sell quantity must be 0 or greater",
+          },
+          operation: {
+            label: "Operations",
+            placeholder: "Select operations...",
+            error: "Please select at least one operation",
+          },
+          order_type: {
+            label: "Order Type",
+            placeholder: "Select order type...",
+            error: "Please select an order type",
+          },
+        },
+        buttons: {
+          add: {
+            tooltip: "Add debugging live item entry",
+          },
+        },
+      },
       create_category_summary: {
         fields: {
           icon: {
@@ -235,6 +464,56 @@ export const en = {
         buttons: {
           submit: {
             label: "Create/Save Category",
+          },
+        },
+      },
+      select_tradable_item: {
+        fields: {
+          item: {
+            label: "Item",
+            placeholder: "Select item...",
+          },
+          variant: {
+            label: "Variant",
+            placeholder: "Select variant...",
+            description: "Please select a variant",
+          },
+          rank: {
+            label: "Rank",
+            placeholder: "Select rank...",
+            description: "Please select a rank",
+          },
+          cyan_stars: {
+            label: "Cyan Stars",
+            placeholder: "Select cyan stars...",
+            description: "How many cyan stars",
+          },
+          amber_stars: {
+            label: "Amber Stars",
+            placeholder: "Select amber stars...",
+            description: "How many amber stars",
+          },
+        },
+      },
+      create_item: {
+        fields: {
+          quantity: {
+            label: "Quantity",
+            placeholder: "Quantity",
+            error: "Invalid quantity",
+          },
+          bought: {
+            label: "Bought",
+            placeholder: "Bought",
+            error: "Invalid bought",
+          },
+        },
+        buttons: {
+          add: {
+            tooltip: {
+              description_with_report: "Add item to stock and report to Warframe Market",
+              description_without_report: "Add item to stock",
+            },
           },
         },
       },
@@ -405,6 +684,13 @@ export const en = {
                     tooltip: "Minimum profit margin for WTB trades",
                     link: "https://quantframe.app/features/live-trading/settings/item/wtb#profit-margin-threshold",
                   },
+                  quantity_per_trade: {
+                    label: "Quantity Per Trade",
+                    placeholder: "Quantity Per Trade",
+                    error: "Invalid quantity per trade",
+                    tooltip: "The quantity of goods to trade per transaction: NOTE this is only valid for some items like arcanes",
+                    link: "https://quantframe.app/features/live-trading/settings/item/wtb#quantity-per-trade",
+                  },
                   wts: {
                     title: "WTS",
                     fields: {},
@@ -473,6 +759,52 @@ export const en = {
         buttons: {
           confirm: "Confirm",
           cancel: "Cancel",
+        },
+      },
+      stock_item_details: {
+        tabs: {
+          overview: {
+            title: "Overview",
+            buttons: {
+              wiki: "Wiki",
+            },
+            fields: {
+              created_at: "Created At",
+              updated_at: "Updated At",
+              status: "Status",
+              minimum_price: "Minimum Price",
+              owned: "Owned",
+              bought: "Average Bought Price",
+              list_price: "List Price",
+              profit: "Profit",
+              highest_price: "Highest Price",
+              lowest_price: "Lowest Price",
+              listed: "Listed Prices History",
+              no_listed: "No previous listed prices",
+            },
+          },
+          analytics: {
+            title: "Analytics",
+            last_transactions: {
+              title: "Last Transactions",
+              info_box: {
+                purchase: "{{count}} purchases",
+                sale: "{{count}} sales",
+              },
+            },
+          },
+          wfm: {
+            title: "WFM",
+            fields: {
+              created_at: "Created At",
+              updated_at: "Updated At",
+              order_list: "Current Live Orders",
+              no_listed: "No current live orders",
+            },
+            buttons: {
+              wfm: "Warframe Market",
+            },
+          },
         },
       },
       update_available: {
@@ -636,6 +968,29 @@ export const en = {
             settings: "Settings",
             alerts: "Alerts",
             user: "User",
+            live_scraper: "Live Scraper",
+            wfm_state: "WFM State",
+          },
+        },
+        debugging: {
+          title: "Debugging",
+          datatable: {
+            columns: {
+              wfm_url: { title: "Name", value: "{{name}} <blue>{{sub_type}}</blue>" },
+              stock_id: "Stock ID",
+              wish_list_id: "Wish List ID",
+              priority: "Priority",
+              buy_quantity: "Buy Quantity",
+              sell_quantity: "Sell Quantity",
+              operation: "Operation",
+              order_type: "Order Type",
+              actions: {
+                title: "Actions",
+                buttons: {
+                  delete_tooltip: "Delete Debugging Live Item Entry",
+                },
+              },
+            },
           },
         },
       },
@@ -667,6 +1022,185 @@ export const en = {
         login: {
           title: "Login Success",
           message: "Welcome back! {{name}}",
+        },
+      },
+    },
+    live_scraper: {
+      segments: {
+        bought: "Bought",
+        listed: "Listed",
+        profit: "Profit",
+      },
+      prompts: {
+        minimum_price: {
+          title: "Minimum Price",
+          fields: {
+            minimum_price: {
+              label: "Minimum Price",
+              description: "The minimum price for the item",
+            },
+          },
+        },
+        sell: {
+          title: "Sold for",
+          fields: {
+            sell: {
+              label: "Price",
+            },
+          },
+        },
+        bought: {
+          title: "Bought for",
+          fields: {
+            bought: {
+              label: "Price",
+            },
+          },
+        },
+        delete: {
+          title: "Are you sure?",
+          message: "This action cannot be undone.",
+          cancel: "Cancel",
+          confirm: "Confirm",
+        },
+        update_filter: {
+          title: "Update Filter",
+        },
+      },
+      tabs: {
+        item: {
+          title: "Item",
+          datatable: {
+            columns: {
+              bought: "Bought",
+              owned: "Owned",
+            },
+          },
+          errors: {
+            create_stock: {
+              title: "Create Stock Error",
+              message: "An error occurred while trying to create stock.",
+            },
+            update_stock: {
+              title: "Update Stock Error",
+              message: "An error occurred while trying to update stock.",
+            },
+            sell_stock: {
+              title: "Sell Stock Error",
+              message: "An error occurred while trying to sell stock.",
+            },
+            delete_stock: {
+              title: "Delete Stock Error",
+              message: "An error occurred while trying to delete stock.",
+            },
+          },
+          success: {
+            create_stock: {
+              title: "Create Stock Success",
+              message: "Stock item {{name}} has been successfully created.",
+            },
+            update_stock: {
+              title: "Update Stock Success",
+              message: "Stock item {{name}} has been successfully updated.",
+            },
+            sell_stock: {
+              title: "Sell Stock Success",
+              message: "Stock item {{name}} has been successfully sold.",
+            },
+            delete_stock: {
+              title: "Delete Stock Success",
+              message: "Stock item has been successfully deleted.",
+            },
+          },
+        },
+        riven: {
+          title: "Riven",
+          datatable: {
+            columns: {
+              attributes: "Attributes",
+              bought: "Bought",
+            },
+          },
+          errors: {
+            create_stock: {
+              title: "Create Stock Error",
+              message: "An error occurred while trying to create stock.",
+            },
+            update_stock: {
+              title: "Update Stock Error",
+              message: "An error occurred while trying to update stock.",
+            },
+            sell_stock: {
+              title: "Sell Stock Error",
+              message: "An error occurred while trying to sell stock.",
+            },
+            delete_stock: {
+              title: "Delete Stock Error",
+              message: "An error occurred while trying to delete stock.",
+            },
+          },
+          success: {
+            create_stock: {
+              title: "Create Stock Success",
+              message: "Stock item {{name}} has been successfully created.",
+            },
+            update_stock: {
+              title: "Update Stock Success",
+              message: "Stock item {{name}} has been successfully updated.",
+            },
+            sell_stock: {
+              title: "Sell Stock Success",
+              message: "Stock item {{name}} has been successfully sold.",
+            },
+            delete_stock: {
+              title: "Delete Stock Success",
+              message: "Stock item has been successfully deleted.",
+            },
+          },
+        },
+        wish_list: {
+          title: "Wishlist",
+          datatable: {
+            columns: {
+              quantity: "Quantity",
+            },
+          },
+          errors: {
+            create_wish_list: {
+              title: "Create Wishlist Error",
+              message: "An error occurred while trying to create the wishlist.",
+            },
+            update_wish_list: {
+              title: "Update Wishlist Error",
+              message: "An error occurred while trying to update the wishlist.",
+            },
+            delete_wish_list: {
+              title: "Delete Wishlist Error",
+              message: "An error occurred while trying to delete the wishlist.",
+            },
+            bought_wish_list: {
+              title: "Bought Wishlist Error",
+              message: "An error occurred while trying to mark the wishlist as bought.",
+            },
+          },
+          success: {
+            create_wish_list: {
+              title: "Create Wishlist Success",
+              message: "The wishlist has been successfully created.",
+            },
+            update_wish_list: {
+              title: "Update Wishlist Success",
+              message: "The wishlist has been successfully updated.",
+            },
+            delete_wish_list: {
+              title: "Delete Wishlist Success",
+              message: "The wishlist has been successfully deleted.",
+            },
+            bought_wish_list: {
+              title: "Bought Wishlist Success",
+              message: "The wishlist has been successfully marked as bought.",
+            },
+          },
         },
       },
     },

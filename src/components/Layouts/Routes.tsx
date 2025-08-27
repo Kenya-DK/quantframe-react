@@ -24,6 +24,9 @@ import PError from "@pages/error";
 // Banned Routes
 import PBanned from "@pages/banned";
 
+// Live Scraper
+import PLiveScraper from "@pages/live_scraper";
+
 export function AppRoutes() {
   const { app_error } = useAppContext();
   const { user } = useAuthContext();
@@ -57,6 +60,7 @@ export function AppRoutes() {
                 <Route path="debug">
                   <Route index element={<PDebug />} />
                 </Route>
+                <Route path="live_scraper" element={<PLiveScraper />} />
               </Route>
               <Route path="*" element={<PHome />} />
             </Route>

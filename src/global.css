@@ -41,7 +41,8 @@
   --color: var(--qf-user-status-invisible);
 }
 
-[data-user-status="ingame"] {
+[data-user-status="ingame"],
+[data-user-status="in_game"] {
   --color: var(--qf-user-status-ingame);
 }
 
@@ -119,4 +120,12 @@
 
 [data-item-type="riven"] {
   --color: var(--qf-item-type-riven);
+}
+
+[data-order-type="buy"] {
+  --color: var(--qf-negative-color);
+}
+
+[data-order-type="sell"] {
+  --color: var(--qf-positive-color);
 }

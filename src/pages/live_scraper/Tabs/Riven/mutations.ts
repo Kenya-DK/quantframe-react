@@ -1,0 +1,111 @@
+import { useMutation } from "@tanstack/react-query";
+import { notifications } from "@mantine/notifications";
+import { TauriTypes } from "$types";
+import api from "@api/index";
+
+interface MutationHooks {
+  useTranslateSuccess: (key: string, context?: { [key: string]: any }) => string;
+  useTranslateErrors: (key: string, context?: { [key: string]: any }) => string;
+  refetchQueries: (refetchStatus?: boolean) => void;
+  setLoadingRows: (callback: (prev: string[]) => string[]) => void;
+}
+
+// Generic mutation creator function
+const createGenericMutation = <TData, TVariables>(
+  config: {
+    mutationFn: (data: TVariables) => Promise<TData>;
+    successKey: string;
+    errorKey: string;
+    getLoadingId?: (variables: TVariables) => string | string[];
+    getSuccessMessage?: (data: TData, variables: TVariables) => { [key: string]: any };
+  },
+  hooks: MutationHooks
+) => {
+  return useMutation({
+    mutationFn: config.mutationFn,
+    onMutate: config.getLoadingId
+      ? (variables: TVariables) => {
+          const loadingIds = config.getLoadingId!(variables);
+          const ids = Array.isArray(loadingIds) ? loadingIds : [loadingIds];
+          hooks.setLoadingRows((prev: string[]) => [...prev, ...ids]);
+        }
+      : undefined,
+    onSettled: config.getLoadingId
+      ? (_data: TData | undefined, _error: any, variables: TVariables) => {
+          const loadingIds = config.getLoadingId!(variables);
+          const ids = Array.isArray(loadingIds) ? loadingIds : [loadingIds];
+          hooks.setLoadingRows((prev: string[]) => prev.filter((id: string) => !ids.includes(id)));
+        }
+      : undefined,
+    onSuccess: (data: TData, variables: TVariables) => {
+      let refetchStatusString = ["create_stock"];
+      hooks.refetchQueries(refetchStatusString.includes(config.successKey));
+      notifications.show({
+        title: hooks.useTranslateSuccess(`${config.successKey}.title`),
+        message: hooks.useTranslateSuccess(`${config.successKey}.message`, config.getSuccessMessage ? config.getSuccessMessage(data, variables) : {}),
+        color: "green.7",
+      });
+    },
+    onError: (e: any) => {
+      console.error(e);
+      notifications.show({
+        title: hooks.useTranslateErrors(`${config.errorKey}.title`),
+        message: hooks.useTranslateErrors(`${config.errorKey}.message`),
+        color: "red.7",
+      });
+    },
+  });
+};
+
+export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, refetchQueries, setLoadingRows }: MutationHooks) => {
+  const hooks = { useTranslateSuccess, useTranslateErrors, refetchQueries, setLoadingRows };
+
+  const createStockMutation = createGenericMutation(
+    {
+      mutationFn: (data: TauriTypes.CreateStockRiven) => api.stock_riven.create(data),
+      successKey: "create_stock",
+      errorKey: "create_stock",
+      getSuccessMessage: (data: any) => ({ name: data.item_name }),
+    },
+    hooks
+  );
+
+  const updateStockMutation = createGenericMutation(
+    {
+      mutationFn: (data: TauriTypes.UpdateStockRiven) => api.stock_riven.update(data),
+      successKey: "update_stock",
+      errorKey: "update_stock",
+      getLoadingId: (variables: TauriTypes.UpdateStockRiven) => `${variables.id}`,
+      getSuccessMessage: (data: any) => ({ name: data.item_name }),
+    },
+    hooks
+  );
+
+  const sellStockMutation = createGenericMutation(
+    {
+      mutationFn: (data: TauriTypes.SellStockRiven) => api.stock_riven.sell(data),
+      successKey: "sell_stock",
+      errorKey: "sell_stock",
+      getLoadingId: (variables: TauriTypes.SellStockRiven) => `${variables.id}`,
+      getSuccessMessage: (data: any) => ({ name: data.item_name }),
+    },
+    hooks
+  );
+
+  const deleteStockMutation = createGenericMutation(
+    {
+      mutationFn: (id: number) => api.stock_riven.delete(id),
+      successKey: "delete_stock",
+      errorKey: "delete_stock",
+      getLoadingId: (variables: number) => `${variables}`,
+    },
+    hooks
+  );
+
+  return {
+    createStockMutation,
+    updateStockMutation,
+    sellStockMutation,
+    deleteStockMutation,
+  };
+};

@@ -4,6 +4,7 @@ import { LoggingPanel } from "./tabs/logging";
 import { StatesPanel } from "./tabs/states";
 import classes from "./Debug.module.css";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
+import { DebuggingPanel } from "./tabs/debugging";
 export default function DebugPage() {
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`debug.${key}`, { ...context }, i18Key);
@@ -12,6 +13,7 @@ export default function DebugPage() {
   const tabs = [
     { label: useTranslateTabs("logging.title"), component: <LoggingPanel />, id: "tr", icon: <div>Stocks</div> },
     { label: useTranslateTabs("states.title"), component: <StatesPanel />, id: "states", icon: <div>States</div> },
+    { label: useTranslateTabs("debugging.title"), component: <DebuggingPanel />, id: "debugging", icon: <div>Debugging</div> },
   ];
   return (
     <Container p={20} size={"900%"} className={`${classes.container} ${useHasAlert() ? classes.alert : ""}`}>

@@ -3,7 +3,7 @@ import { ComposedListener } from "@utils/listener/Composed.listener";
 import { TauriClient } from "..";
 
 export class EventModule {
-  private listener = new ComposedListener();
+  public listener = new ComposedListener();
   constructor(private client: TauriClient) {
     this.Initializer();
   }
@@ -56,7 +56,6 @@ export class EventModule {
 
   OffEvent<T>(event: string, callback: (data: T) => void) {
     this.listener.remove(event, callback);
-    this.listener.clean();
   }
 
   FireEvent<T>(event: string, data: T) {

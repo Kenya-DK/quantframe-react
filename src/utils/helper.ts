@@ -120,10 +120,6 @@ export const formatNumber = (num: number) => {
   return num;
 };
 
-export const getCssVariable = (name: string) => {
-  return getComputedStyle(document.documentElement).getPropertyValue(name);
-};
-
 export const GetSubTypeDisplay = (subType: TauriTypes.SubType | undefined) => {
   if (!subType || Object.keys(subType).length == 0) return "";
   const { rank, variant, amber_stars, cyan_stars } = subType;

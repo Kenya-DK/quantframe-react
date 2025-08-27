@@ -102,7 +102,7 @@ export const SummaryPanel = ({ value, onSubmit }: SummaryPanelProps) => {
                     width: 150,
                     render: (record) => (
                       <Group gap="xs" grow>
-                        <Image src={"/" + record.icon} alt={record.name} width={48} style={{ borderRadius: "50%" }} />
+                        <Image src={record.icon} alt={record.name} width={48} style={{ borderRadius: "50%" }} />
                         <Text>{record.name}</Text>
                       </Group>
                     ),

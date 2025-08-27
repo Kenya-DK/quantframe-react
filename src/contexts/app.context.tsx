@@ -14,6 +14,7 @@ import { TermsAndConditions } from "@components/Modals/TermsAndConditions";
 import { useTranslateComponent, useTranslateContexts } from "@hooks/useTranslate.hook";
 import { resolveResource } from "@tauri-apps/api/path";
 import { readTextFile } from "@tauri-apps/plugin-fs";
+import { LiveScraperContextProvider } from "./liveScraper.context";
 
 export type AppContextProps = {
   app_info: TauriTypes.AppInfo | undefined;
@@ -158,7 +159,11 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
   return (
     <AppContext.Provider value={{ settings, alerts: alerts?.results || [], app_info: app_info, app_error: error }}>
       <SplashScreen opened={loading} text={useTranslateContexts(`app.${startingUp.i18n_key}`, startingUp.values)} />
-      {!loading && <AuthContextProvider>{children}</AuthContextProvider>}
+      {!loading && (
+        <AuthContextProvider>
+          <LiveScraperContextProvider>{children}</LiveScraperContextProvider>
+        </AuthContextProvider>
+      )}
     </AppContext.Provider>
   );
 }

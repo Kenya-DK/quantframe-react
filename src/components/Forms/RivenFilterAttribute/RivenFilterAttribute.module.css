@@ -1,0 +1,18 @@
+.root {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid;
+  border-radius: 0.2em;
+  padding: 2px 10px 2px 10px;
+
+  &[data-positive='true'] {
+    border-color: var(--qf-positive-color);
+    background: linear-gradient(90deg, var(--qf-positive-color) 0%, var(--qf-positive-color) 100%);
+  }
+
+  &[data-positive='false'] {
+    border-color: var(--qf-negative-color);
+    background: linear-gradient(90deg, var(--qf-negative-color) 0%, var(--qf-negative-color) 100%);
+  }
+}
