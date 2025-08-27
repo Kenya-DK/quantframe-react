@@ -1,7 +1,6 @@
 pub mod dto;
 pub mod enums;
-pub mod price_history;
-pub mod stock;
-pub mod sub_type;
+pub mod stock_item;
+pub mod stock_riven;
 pub mod transaction;
 pub mod wish_list;

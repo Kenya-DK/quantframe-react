@@ -1,15 +1,10 @@
-use crate::{
-    stock::{item::stock_item, riven::stock_riven},
-    transaction::*,
-    wish_list,
-};
+use crate::{enums::*, stock_item, stock_riven, transaction::*, wish_list};
 use serde::Serialize;
 
 #[derive(Serialize, Debug)]
 pub struct FinancialReport {
     // General transaction metrics
     pub total_transactions: usize,
-    pub total_value: f64,
     pub average_transaction: f64,
 
     // Profit metrics
@@ -24,7 +19,7 @@ pub struct FinancialReport {
     pub average_revenue: f64,
 
     // Expense metrics
-    pub purchases: usize,
+    pub purchases_count: usize,
     pub expenses: f64,
     pub average_expense: f64,
 
@@ -36,7 +31,7 @@ impl FinancialReport {
     pub fn new(
         total_transactions: usize,
         sale_count: usize,
-        purchases: usize,
+        purchases_count: usize,
         revenue: i64,
         expenses: i64,
     ) -> Self {
@@ -66,8 +61,8 @@ impl FinancialReport {
             0.0
         };
 
-        let average_expense = if purchases > 0 {
-            expenses as f64 / purchases as f64
+        let average_expense = if purchases_count > 0 {
+            expenses as f64 / purchases_count as f64
         } else {
             0.0
         };
@@ -82,7 +77,6 @@ impl FinancialReport {
 
         Self {
             total_transactions,
-            total_value,
             average_transaction,
             total_profit,
             average_profit,
@@ -91,7 +85,7 @@ impl FinancialReport {
             sale_count,
             revenue: revenue as f64,
             average_revenue,
-            purchases,
+            purchases_count,
             expenses: expenses as f64,
             average_expense,
             properties: None,
@@ -107,7 +101,6 @@ impl Default for FinancialReport {
     fn default() -> Self {
         Self {
             total_transactions: 0,
-            total_value: 0.0,
             average_transaction: 0.0,
             total_profit: 0,
             average_profit: 0.0,
@@ -116,7 +109,7 @@ impl Default for FinancialReport {
             sale_count: 0,
             revenue: 0.0,
             average_revenue: 0.0,
-            purchases: 0,
+            purchases_count: 0,
             expenses: 0.0,
             average_expense: 0.0,
             properties: None,

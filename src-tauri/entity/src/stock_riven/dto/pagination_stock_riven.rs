@@ -1,13 +1,11 @@
-use crate::dto::*;
-use crate::enums::*;
-use crate::wish_list::*;
+use crate::{dto::*, enums::*, stock_riven::*};
 use sea_orm::sea_query::Func;
 use sea_orm::*;
 use sea_query::Expr;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct WishListPaginationQueryDto {
+pub struct StockRivenPaginationQueryDto {
     #[serde(flatten)]
     pub pagination: PaginationQueryDto,
     // Add any stock riven specific filters or fields here
@@ -21,7 +19,7 @@ pub struct WishListPaginationQueryDto {
     pub status: FieldChange<String>,
     // You can add more fields as needed for filtering
 }
-impl WishListPaginationQueryDto {
+impl StockRivenPaginationQueryDto {
     pub fn new(page: i64, limit: i64) -> Self {
         Self {
             pagination: PaginationQueryDto::new(page, limit),
@@ -31,19 +29,23 @@ impl WishListPaginationQueryDto {
             status: FieldChange::Ignore,
         }
     }
-    pub fn get_query(&self) -> Select<Entity> {
+    pub fn get_query(&self) -> Select<stock_riven::Entity> {
         use FieldChange::*;
-        let mut stmt = Entity::find();
+        let mut stmt = stock_riven::Entity::find();
         match &self.query {
             Value(q) => {
                 stmt = stmt.filter(
                     Condition::any()
                         .add(
-                            Expr::expr(Func::lower(Expr::col(Column::WfmUrl)))
+                            Expr::expr(Func::lower(Expr::col(stock_riven::Column::WeaponName)))
                                 .like(&format!("%{}%", q.to_lowercase())),
                         )
                         .add(
-                            Expr::expr(Func::lower(Expr::col(Column::ItemName)))
+                            Expr::expr(Func::lower(Expr::col(stock_riven::Column::WfmWeaponUrl)))
+                                .like(&format!("%{}%", q.to_lowercase())),
+                        )
+                        .add(
+                            Expr::expr(Func::lower(Expr::col(stock_riven::Column::ModName)))
                                 .like(&format!("%{}%", q.to_lowercase())),
                         ),
                 )
@@ -51,7 +53,7 @@ impl WishListPaginationQueryDto {
             _ => {}
         }
         match self.status {
-            Value(ref q) => stmt = stmt.filter(Column::Status.eq(q)),
+            Value(ref q) => stmt = stmt.filter(stock_riven::Column::Status.eq(q)),
             _ => {}
         }
         match &self.sort_by {
@@ -66,10 +68,13 @@ impl WishListPaginationQueryDto {
                 };
                 // Only allow sorting by known columns for safety
                 match sort_by.as_str() {
-                    "item_name" => stmt = stmt.order_by(Column::ItemName, order),
-                    "status" => stmt = stmt.order_by(Column::Status, order),
-                    "maximum_price" => stmt = stmt.order_by(Column::MaximumPrice, order),
-                    "list_price" => stmt = stmt.order_by(Column::ListPrice, order),
+                    "item_name" => stmt = stmt.order_by(stock_riven::Column::WeaponName, order),
+                    "bought" => stmt = stmt.order_by(stock_riven::Column::Bought, order),
+                    "status" => stmt = stmt.order_by(stock_riven::Column::Status, order),
+                    "minimum_price" => {
+                        stmt = stmt.order_by(stock_riven::Column::MinimumPrice, order)
+                    }
+                    "list_price" => stmt = stmt.order_by(stock_riven::Column::ListPrice, order),
                     _ => {}
                 }
             }
@@ -103,7 +108,7 @@ impl WishListPaginationQueryDto {
     }
 }
 
-impl Default for WishListPaginationQueryDto {
+impl Default for StockRivenPaginationQueryDto {
     fn default() -> Self {
         Self {
             pagination: PaginationQueryDto::default(),

@@ -1,81 +1,184 @@
 use sea_orm::prelude::DateTimeUtc;
+use sea_orm::sea_query::Func;
+use sea_orm::*;
+use sea_query::Expr;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    dto::{pagination::PaginationQueryDto, sort::SortDirection},
-    transaction::transaction::{TransactionItemType, TransactionType},
-};
-
+use crate::{dto::*, enums::*, transaction::*};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TransactionPaginationQueryDto {
+    #[serde(flatten)]
     pub pagination: PaginationQueryDto,
     // Add any stock item specific filters or fields here
-    pub query: Option<String>,
-    pub sort_by: Option<String>,
-    pub sort_direction: Option<SortDirection>,
-    pub transaction_type: Option<TransactionType>, // e.g., "sale" or "purchase"
-    pub item_type: Option<TransactionItemType>,    // e.g., "item" or "riven"
-    pub from_date: Option<DateTimeUtc>,            // Optional field for filtering by date range
-    pub to_date: Option<DateTimeUtc>,              // Optional field for filtering by date range
-                                                   // You can add more fields as needed for filtering
+    #[serde(default)]
+    pub query: FieldChange<String>,
+    #[serde(default)]
+    pub sort_by: FieldChange<String>,
+    #[serde(default)]
+    pub sort_direction: FieldChange<SortDirection>,
+    #[serde(default)]
+    pub transaction_type: FieldChange<TransactionType>,
+    #[serde(default)]
+    pub item_type: FieldChange<TransactionItemType>,
+    #[serde(default)]
+    pub from_date: FieldChange<DateTimeUtc>,
+    #[serde(default)]
+    pub to_date: FieldChange<DateTimeUtc>,
+    #[serde(default)]
+    pub wfm_id: FieldChange<String>,
+    #[serde(default)]
+    pub sub_type: FieldChange<SubType>,
 }
 impl TransactionPaginationQueryDto {
     pub fn new(page: i64, limit: i64) -> Self {
         Self {
             pagination: PaginationQueryDto::new(page, limit),
-            query: None,
-            sort_by: None,
-            sort_direction: Some(SortDirection::Asc),
-            transaction_type: None,
-            item_type: None,
-            from_date: None,
-            to_date: None,
+            query: FieldChange::Ignore,
+            sort_by: FieldChange::Ignore,
+            sort_direction: FieldChange::Value(SortDirection::Asc),
+            transaction_type: FieldChange::Ignore,
+            item_type: FieldChange::Ignore,
+            from_date: FieldChange::Ignore,
+            to_date: FieldChange::Ignore,
+            wfm_id: FieldChange::Ignore,
+            sub_type: FieldChange::Ignore,
         }
     }
-    pub fn default() -> Self {
+    pub fn get_query(&self) -> Select<Entity> {
+        use FieldChange::*;
+        let mut stmt = Entity::find();
+        match &self.query {
+            Value(q) => {
+                stmt = stmt.filter(
+                    Condition::any()
+                        .add(
+                            Expr::expr(Func::lower(Expr::col(transaction::Column::WfmUrl)))
+                                .like(&format!("%{}%", q.to_lowercase())),
+                        )
+                        .add(
+                            Expr::expr(Func::lower(Expr::col(transaction::Column::ItemName)))
+                                .like(&format!("%{}%", q.to_lowercase())),
+                        )
+                        .add(
+                            Expr::expr(Func::lower(Expr::col(transaction::Column::UserName)))
+                                .like(&format!("%{}%", q.to_lowercase())),
+                        ),
+                )
+            }
+            _ => {}
+        }
+        match &self.transaction_type {
+            Value(q) => stmt = stmt.filter(transaction::Column::TransactionType.eq(q.to_string())),
+            _ => {}
+        }
+        match &self.item_type {
+            Value(q) => stmt = stmt.filter(transaction::Column::ItemType.eq(q.to_string())),
+            _ => {}
+        }
+        match &self.from_date {
+            Value(from_date) => stmt = stmt.filter(transaction::Column::CreatedAt.gte(*from_date)),
+            _ => {}
+        }
+        match &self.to_date {
+            Value(to_date) => stmt = stmt.filter(transaction::Column::CreatedAt.lte(*to_date)),
+            _ => {}
+        }
+        match &self.wfm_id {
+            Value(wfm_id) => stmt = stmt.filter(transaction::Column::WfmId.eq(wfm_id)),
+            _ => {}
+        }
+        match &self.sub_type {
+            Value(sub_type) => {
+                stmt = stmt.filter(transaction::Column::SubType.eq(sub_type.clone()))
+            }
+            _ => {}
+        }
+        match &self.sort_by {
+            Value(sort_by) => {
+                let dir = match &self.sort_direction {
+                    Value(dir) => dir,
+                    _ => &SortDirection::Asc,
+                };
+                let order = match dir {
+                    SortDirection::Asc => Order::Asc,
+                    SortDirection::Desc => Order::Desc,
+                };
+                // Only allow sorting by known columns for safety
+                match sort_by.as_str() {
+                    "wfm_url" => stmt = stmt.order_by(transaction::Column::WfmUrl, order),
+                    "price" => stmt = stmt.order_by(transaction::Column::Price, order),
+                    "transaction_type" => {
+                        stmt = stmt.order_by(transaction::Column::TransactionType, order)
+                    }
+                    "item_type" => stmt = stmt.order_by(transaction::Column::ItemType, order),
+                    "created_at" => stmt = stmt.order_by(transaction::Column::CreatedAt, order),
+                    _ => {}
+                }
+            }
+            _ => {}
+        }
+        stmt
+    }
+    pub fn set_pagination(mut self, pagination: PaginationQueryDto) -> Self {
+        self.pagination = pagination;
+        self
+    }
+
+    pub fn set_query(mut self, query: impl Into<String>) -> Self {
+        self.query = FieldChange::Value(query.into());
+        self
+    }
+
+    pub fn set_sort_by(mut self, sort_by: impl Into<String>) -> Self {
+        self.sort_by = FieldChange::Value(sort_by.into());
+        self
+    }
+    pub fn set_sort_direction(mut self, sort_direction: SortDirection) -> Self {
+        self.sort_direction = FieldChange::Value(sort_direction);
+        self
+    }
+    pub fn set_transaction_type(mut self, transaction_type: TransactionType) -> Self {
+        self.transaction_type = FieldChange::Value(transaction_type);
+        self
+    }
+    pub fn set_item_type(mut self, item_type: TransactionItemType) -> Self {
+        self.item_type = FieldChange::Value(item_type);
+        self
+    }
+    pub fn set_from_date(mut self, from_date: DateTimeUtc) -> Self {
+        self.from_date = FieldChange::Value(from_date);
+        self
+    }
+    pub fn set_to_date(mut self, to_date: DateTimeUtc) -> Self {
+        self.to_date = FieldChange::Value(to_date);
+        self
+    }
+    pub fn set_wfm_id(&mut self, wfm_id: impl Into<String>) -> Self {
+        self.wfm_id = FieldChange::Value(wfm_id.into());
+        self.clone()
+    }
+    pub fn set_sub_type(mut self, sub_type: Option<SubType>) -> Self {
+        self.sub_type = match sub_type {
+            Some(v) => FieldChange::Value(v),
+            None => FieldChange::Null,
+        };
+        self
+    }
+}
+
+impl Default for TransactionPaginationQueryDto {
+    fn default() -> Self {
         Self {
             pagination: PaginationQueryDto::default(),
-            query: None,
-            sort_by: None,
-            sort_direction: Some(SortDirection::Asc),
-            transaction_type: None,
-            item_type: None,
-            from_date: None,
-            to_date: None,
+            query: FieldChange::Ignore,
+            sort_by: FieldChange::Ignore,
+            sort_direction: FieldChange::Value(SortDirection::Asc),
+            transaction_type: FieldChange::Ignore,
+            item_type: FieldChange::Ignore,
+            from_date: FieldChange::Ignore,
+            to_date: FieldChange::Ignore,
+            wfm_id: FieldChange::Ignore,
+            sub_type: FieldChange::Ignore,
         }
-    }
-    pub fn set_pagination(&mut self, pagination: PaginationQueryDto) -> Self {
-        self.pagination = pagination;
-        self.clone()
-    }
-
-    pub fn set_query(&mut self, query: impl Into<String>) -> Self {
-        self.query = Some(query.into());
-        self.clone()
-    }
-
-    pub fn set_sort_by(&mut self, sort_by: impl Into<String>) -> Self {
-        self.sort_by = Some(sort_by.into());
-        self.clone()
-    }
-    pub fn set_sort_direction(&mut self, sort_direction: SortDirection) -> Self {
-        self.sort_direction = Some(sort_direction);
-        self.clone()
-    }
-    pub fn set_transaction_type(&mut self, transaction_type: TransactionType) -> Self {
-        self.transaction_type = Some(transaction_type);
-        self.clone()
-    }
-    pub fn set_item_type(&mut self, item_type: TransactionItemType) -> Self {
-        self.item_type = Some(item_type);
-        self.clone()
-    }
-    pub fn set_from_date(&mut self, from_date: DateTimeUtc) -> Self {
-        self.from_date = Some(from_date);
-        self.clone()
-    }
-    pub fn set_to_date(&mut self, to_date: DateTimeUtc) -> Self {
-        self.to_date = Some(to_date);
-        self.clone()
     }
 }

@@ -3,7 +3,8 @@
 use sea_orm::{entity::prelude::*, FromJsonQueryResult};
 use serde::{Deserialize, Serialize};
 
-use crate::sub_type::SubType;
+use crate::dto::*;
+use crate::enums::*;
 
 #[derive(
     Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize, FromJsonQueryResult,
@@ -30,114 +31,6 @@ pub struct Model {
     #[sea_orm(created_at)]
     pub created_at: DateTimeUtc,
     pub properties: Option<serde_json::Value>,
-}
-#[derive(Debug, Clone, PartialEq, sea_orm::EnumIter, sea_orm::DeriveActiveEnum)]
-#[sea_orm(rs_type = "String", db_type = "String(Some(15))")]
-#[derive(Eq)]
-pub enum TransactionItemType {
-    #[sea_orm(string_value = "item")]
-    Item,
-    #[sea_orm(string_value = "riven")]
-    Riven,
-}
-
-impl TransactionItemType {
-    pub fn from_str(s: &str) -> Self {
-        match s {
-            "item" => Self::Item,
-            "riven" => Self::Riven,
-            _ => panic!("Invalid transaction type"),
-        }
-    }
-    pub fn to_string(&self) -> String {
-        match self {
-            Self::Item => "item".to_string(),
-            Self::Riven => "riven".to_string(),
-        }
-    }
-    pub fn as_str(&self) -> &str {
-        match self {
-            Self::Item => "item",
-            Self::Riven => "riven",
-        }
-    }
-}
-impl Serialize for TransactionItemType {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let value = match self {
-            TransactionItemType::Item => "item",
-            TransactionItemType::Riven => "riven",
-        };
-        serializer.serialize_str(value)
-    }
-}
-
-impl<'de> Deserialize<'de> for TransactionItemType {
-    fn deserialize<D>(deserializer: D) -> Result<TransactionItemType, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let s: String = String::deserialize(deserializer)?;
-        Ok(match s.as_str() {
-            "item" => TransactionItemType::Item,
-            "riven" => TransactionItemType::Riven,
-            _ => panic!("Invalid transaction type"),
-        })
-    }
-}
-#[derive(Debug, Clone, PartialEq, sea_orm::EnumIter, sea_orm::DeriveActiveEnum)]
-#[sea_orm(rs_type = "String", db_type = "String(Some(15))")]
-#[derive(Eq)]
-pub enum TransactionType {
-    #[sea_orm(string_value = "sale")]
-    Sale,
-    #[sea_orm(string_value = "purchase")]
-    Purchase,
-}
-
-impl TransactionType {
-    pub fn from_str(s: &str) -> Self {
-        match s {
-            "sale" => Self::Sale,
-            "purchase" => Self::Purchase,
-            _ => panic!("Invalid transaction type"),
-        }
-    }
-    pub fn to_string(&self) -> String {
-        match self {
-            TransactionType::Sale => "sale".to_string(),
-            TransactionType::Purchase => "purchase".to_string(),
-        }
-    }
-}
-impl Serialize for TransactionType {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let value = match self {
-            TransactionType::Purchase => "purchase",
-            TransactionType::Sale => "sale",
-        };
-        serializer.serialize_str(value)
-    }
-}
-
-impl<'de> Deserialize<'de> for TransactionType {
-    fn deserialize<D>(deserializer: D) -> Result<TransactionType, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let s: String = String::deserialize(deserializer)?;
-        Ok(match s.as_str() {
-            "purchase" => TransactionType::Purchase,
-            "sale" => TransactionType::Sale,
-            _ => panic!("Invalid transaction type"),
-        })
-    }
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

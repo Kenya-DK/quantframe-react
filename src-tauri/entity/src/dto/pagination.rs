@@ -48,7 +48,7 @@ pub struct PaginatedDto<T> {
     pub results: Vec<T>,
 }
 
-impl<T> PaginatedDto<T> {
+impl<T: Clone> PaginatedDto<T> {
     pub fn new(total: i64, limit: i64, page: i64, results: Vec<T>) -> Self {
         Self {
             total,
@@ -56,5 +56,11 @@ impl<T> PaginatedDto<T> {
             page,
             results,
         }
+    }
+    /*
+       Returns the top `n` results from the paginated response.
+    */
+    pub fn take_top(&self, n: usize) -> Vec<T> {
+        self.results.iter().take(n).cloned().collect()
     }
 }

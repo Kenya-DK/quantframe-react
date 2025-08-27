@@ -7,6 +7,8 @@ pub struct SubType {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "rank")]
     pub rank: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub charges: Option<i64>, // Charges remaining (Requiem mods)
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "variant")]
@@ -25,6 +27,7 @@ impl Default for SubType {
         Self {
             rank: None,
             variant: None,
+            charges: None,
             amber_stars: None,
             cyan_stars: None,
         }
@@ -34,6 +37,7 @@ impl Default for SubType {
 impl SubType {
     pub fn new(
         rank: Option<i64>,
+        charges: Option<i64>,
         variant: Option<String>,
         amber_stars: Option<i64>,
         cyan_stars: Option<i64>,
@@ -41,6 +45,7 @@ impl SubType {
         Self {
             rank,
             variant,
+            charges,
             amber_stars,
             cyan_stars,
         }
@@ -52,6 +57,7 @@ impl SubType {
             variant: None,
             amber_stars: None,
             cyan_stars: None,
+            charges: None,
         }
     }
     pub fn variant(variant: &str) -> Self {
@@ -60,6 +66,7 @@ impl SubType {
             variant: Some(variant.to_string()),
             amber_stars: None,
             cyan_stars: None,
+            charges: None,
         }
     }
     pub fn new_empty() -> Self {
@@ -68,12 +75,16 @@ impl SubType {
             variant: None,
             amber_stars: None,
             cyan_stars: None,
+            charges: None,
         }
     }
     pub fn display(&self) -> String {
         let mut display = String::new();
         if let Some(rank) = self.rank {
             display.push_str(&format!("Rank: {} ", rank));
+        }
+        if let Some(charges) = self.charges {
+            display.push_str(&format!("Charges: {} ", charges));
         }
         if let Some(variant) = &self.variant {
             display.push_str(&format!("Variant: {} ", variant));
@@ -91,6 +102,9 @@ impl SubType {
         if let Some(rank) = self.rank {
             display.push_str(&format!("R {} ", rank));
         }
+        if let Some(charges) = self.charges {
+            display.push_str(&format!("Ch {} ", charges));
+        }
         if let Some(variant) = &self.variant {
             display.push_str(&format!("V {} ", variant));
         }
@@ -102,11 +116,19 @@ impl SubType {
         }
         display.trim().to_string()
     }
+    pub fn is_empty(&self) -> bool {
+        self.rank.is_none()
+            && self.variant.is_none()
+            && self.charges.is_none()
+            && self.amber_stars.is_none()
+            && self.cyan_stars.is_none()
+    }
 }
 impl Hash for SubType {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.rank.hash(state);
         self.variant.hash(state);
+        self.charges.hash(state);
         self.amber_stars.hash(state);
         self.cyan_stars.hash(state);
     }

@@ -1,9 +1,10 @@
 use serde::{Deserialize, Serialize};
 
 use super::attribute::RivenAttribute;
-
+use crate::stock_riven::*;
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CreateStockRiven {
+    // Properties use for validation
     #[serde(rename = "raw")]
     pub raw: String,
 
@@ -11,6 +12,24 @@ pub struct CreateStockRiven {
     #[serde(rename = "bought")]
     pub bought: Option<i64>,
 
+    #[serde(rename = "mastery_rank")]
+    pub mastery_rank: i64,
+
+    #[serde(rename = "re_rolls")]
+    pub re_rolls: i64,
+
+    #[serde(rename = "polarity")]
+    pub polarity: String,
+
+    #[serde(rename = "attributes")]
+    pub attributes: Vec<RivenAttribute>,
+    #[serde(rename = "rank")]
+    pub rank: i64,
+
+    #[serde(rename = "mod_name")]
+    pub mod_name: String,
+
+    // Set By validation method
     #[serde(rename = "wfm_id")]
     #[serde(default = "String::default")]
     pub wfm_id: String,
@@ -18,9 +37,6 @@ pub struct CreateStockRiven {
     #[serde(rename = "wfm_url")]
     #[serde(default = "String::default")]
     pub wfm_url: String,
-
-    #[serde(rename = "mod_name")]
-    pub mod_name: String,
 
     #[serde(default = "String::default")]
     #[serde(rename = "weapon_name")]
@@ -34,30 +50,13 @@ pub struct CreateStockRiven {
     #[serde(default = "String::default")]
     pub weapon_type: String,
 
-    #[serde(rename = "mastery_rank")]
-    pub mastery_rank: i64,
-
-    #[serde(rename = "re_rolls")]
-    pub re_rolls: i64,
-
-    #[serde(rename = "polarity")]
-    pub polarity: String,
-
-    #[serde(rename = "attributes")]
-    pub attributes: Vec<RivenAttribute>,
-
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "minimum_price")]
     pub minimum_price: Option<i64>,
 
-    #[serde(rename = "rank")]
-    pub rank: i64,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub stock_id: Option<i64>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub wfm_order_id: Option<String>,
+    #[serde(rename = "is_validated")]
+    #[serde(default = "bool::default")]
+    pub is_validated: bool,
 }
 
 impl CreateStockRiven {
@@ -69,9 +68,6 @@ impl CreateStockRiven {
         polarity: String,
         attributes: Vec<RivenAttribute>,
         rank: i64,
-        bought: Option<i64>,
-        wfm_order_id: Option<String>,
-        stock_id: Option<i64>,
     ) -> Self {
         CreateStockRiven {
             raw,
@@ -86,54 +82,19 @@ impl CreateStockRiven {
             polarity,
             attributes,
             minimum_price: None,
-            bought,
+            bought: None,
             rank,
-            stock_id,
-            wfm_order_id,
+            is_validated: false,
         }
     }
-    pub fn new_valid(
-        raw: String,
-        wfm_id: String,
-        wfm_url: String,
-        weapon_name: String,
-        weapon_unique_name: String,
-        weapon_type: String,
-        mod_name: String,
-        mastery_rank: i64,
-        re_rolls: i64,
-        polarity: String,
-        attributes: Vec<RivenAttribute>,
-        minimum_price: Option<i64>,
-        bought: Option<i64>,
-        rank: i64,
-        order_id: Option<String>,
-        stock_id: Option<i64>,
-    ) -> Self {
-        CreateStockRiven {
-            raw,
-            wfm_id,
-            wfm_url,
-            weapon_name,
-            weapon_unique_name,
-            weapon_type,
-            mod_name,
-            mastery_rank,
-            re_rolls,
-            polarity,
-            attributes,
-            minimum_price,
-            bought,
-            rank,
-            stock_id,
-            wfm_order_id: order_id,
-        }
+    pub fn set_bought(mut self, bought: i64) -> Self {
+        self.bought = Some(bought);
+        self
     }
-    pub fn to_model(&self) -> super::stock_riven::Model {
-        super::stock_riven::Model::new(
+    pub fn to_model(&self) -> Model {
+        Model::new(
             self.wfm_id.clone(),
             self.wfm_url.clone(),
-            self.wfm_order_id.clone(),
             self.weapon_name.clone(),
             self.weapon_type.clone(),
             self.weapon_unique_name.clone(),

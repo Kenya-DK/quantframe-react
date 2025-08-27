@@ -3,12 +3,7 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    enums::stock_status::StockStatus,
-    price_history::{PriceHistory, PriceHistoryVec},
-    sub_type::SubType,
-    transaction,
-};
+use crate::{dto::*, enums::*, stock_item::dto::UpdateStockItem};
 
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize)]
 #[sea_orm(table_name = "stock_item")]
@@ -46,9 +41,8 @@ pub struct Model {
     pub locked: bool,
 
     #[sea_orm(ignore)]
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "changes")]
-    pub changes: Option<String>,
+    pub changes: Vec<String>,
 
     #[sea_orm(ignore)]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -91,32 +85,9 @@ impl Model {
             created_at: Default::default(),
             is_dirty: true,
             locked: false,
-            changes: None,
+            changes: vec![],
             info: None,
         }
-    }
-    pub fn to_transaction(
-        &self,
-        user_name: &str,
-        tags: Vec<String>,
-        quantity: i64,
-        price: i64,
-        transaction_type: transaction::transaction::TransactionType,
-    ) -> transaction::transaction::Model {
-        transaction::transaction::Model::new(
-            self.wfm_id.clone(),
-            self.wfm_url.clone(),
-            self.item_name.clone(),
-            transaction::transaction::TransactionItemType::Item,
-            self.item_unique_name.clone(),
-            self.sub_type.clone(),
-            tags,
-            transaction_type,
-            quantity,
-            user_name.to_string(),
-            price,
-            None,
-        )
     }
     fn set_if_changed<T: PartialEq>(current: &mut T, new_value: T, is_dirty: &mut bool) -> bool {
         if *current != new_value {
@@ -126,13 +97,21 @@ impl Model {
         }
         false
     }
-
+    fn add_change(&mut self, field: &str) {
+        if !self.changes.contains(&field.to_string()) {
+            self.changes.push(field.to_string());
+        }
+    }
+    pub fn has_change(&self, field: impl Into<String>) -> bool {
+        self.changes.contains(&field.into())
+    }
     pub fn set_list_price(&mut self, list_price: Option<i64>) {
         if self.locked {
             return;
         }
         if Self::set_if_changed(&mut self.list_price, list_price, &mut self.is_dirty) {
-            self.changes = Some("list_price".to_string());
+            println!("Updated list_price for item: {}", self.item_name);
+            self.add_change("list_price");
         }
     }
 
@@ -141,23 +120,21 @@ impl Model {
             return;
         }
         if Self::set_if_changed(&mut self.status, status, &mut self.is_dirty) {
-            self.changes = Some("status".to_string());
+            self.add_change("status");
         }
     }
     pub fn add_price_history(&mut self, price_history: PriceHistory) {
         let mut items = self.price_history.0.clone();
 
-        if items
-            .last()
-            .map_or(true, |last| last.price != price_history.price)
-        {
+        let last_item = items.last().cloned();
+        if last_item.is_none() || last_item.unwrap().price != price_history.price {
             // Limit to 5 elements
             if items.len() >= 5 {
                 items.remove(0);
             }
             items.push(price_history);
             self.is_dirty = true;
-            self.changes = Some("price_history".to_string());
+            self.add_change("price_history");
             self.price_history = PriceHistoryVec(items);
         }
     }
@@ -167,5 +144,24 @@ impl Model {
             uuid.push_str(&format!("-{}", sub_type.shot_display()));
         }
         uuid
+    }
+    pub fn to_update(&self) -> UpdateStockItem {
+        UpdateStockItem {
+            id: self.id,
+            owned: FieldChange::Value(self.owned),
+            bought: FieldChange::Value(self.bought),
+            minimum_price: self
+                .minimum_price
+                .map_or(FieldChange::Null, |v| FieldChange::Value(v)),
+            list_price: self
+                .list_price
+                .map_or(FieldChange::Null, |v| FieldChange::Value(v)),
+            is_hidden: FieldChange::Value(self.is_hidden),
+            status: FieldChange::Value(self.status.clone()),
+            price_history: FieldChange::Value(self.price_history.0.clone()),
+        }
+    }
+    pub fn update_gui(&self) -> bool {
+        self.has_change("list_price") || self.has_change("status")
     }
 }

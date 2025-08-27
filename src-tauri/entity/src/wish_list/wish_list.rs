@@ -3,12 +3,7 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    enums::stock_status::StockStatus,
-    price_history::{PriceHistory, PriceHistoryVec},
-    sub_type::SubType,
-    transaction,
-};
+use crate::{dto::*, enums::*, transaction::Model as TransactionModel, wish_list::dto::*};
 
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize)]
 #[sea_orm(table_name = "wish_list")]
@@ -90,13 +85,13 @@ impl Model {
         tags: Vec<String>,
         quantity: i64,
         price: i64,
-        transaction_type: transaction::transaction::TransactionType,
-    ) -> transaction::transaction::Model {
-        transaction::transaction::Model::new(
+        transaction_type: TransactionType,
+    ) -> TransactionModel {
+        TransactionModel::new(
             self.wfm_id.clone(),
             self.wfm_url.clone(),
             self.item_name.clone(),
-            transaction::transaction::TransactionItemType::Item,
+            TransactionItemType::Item,
             self.item_unique_name.clone(),
             self.sub_type.clone(),
             tags,
@@ -155,6 +150,20 @@ impl Model {
             self.is_dirty = true;
             self.changes = Some("price_history".to_string());
             self.price_history = PriceHistoryVec(items);
+        }
+    }
+    pub fn to_update(&self) -> UpdateWishList {
+        UpdateWishList {
+            id: self.id,
+            quantity: FieldChange::Value(self.quantity),
+            maximum_price: self
+                .maximum_price
+                .map_or(FieldChange::Null, |v| FieldChange::Value(v)),
+            list_price: self
+                .list_price
+                .map_or(FieldChange::Null, |v| FieldChange::Value(v)),
+            is_hidden: FieldChange::Value(self.is_hidden),
+            status: FieldChange::Value(self.status.clone()),
         }
     }
 }

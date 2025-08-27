@@ -6,8 +6,6 @@ pub struct MatchRivenStruct {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub enabled: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub rank: Option<MinMaxStruct>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub mastery_rank: Option<MinMaxStruct>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub re_rolls: Option<MinMaxStruct>,
@@ -25,7 +23,6 @@ impl MatchRivenStruct {
     pub fn new() -> Self {
         Self {
             enabled: Some(false),
-            rank: None,
             mastery_rank: None,
             re_rolls: None,
             polarity: None,

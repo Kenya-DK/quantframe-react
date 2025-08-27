@@ -1,16 +1,15 @@
-use crate::dto::*;
-use crate::enums::*;
-use crate::wish_list::*;
 use sea_orm::sea_query::Func;
 use sea_orm::*;
 use sea_query::Expr;
 use serde::{Deserialize, Serialize};
+use std::fmt::Display;
+
+use crate::{dto::*, enums::*, stock_item::*};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct WishListPaginationQueryDto {
-    #[serde(flatten)]
+pub struct StockItemPaginationQueryDto {
     pub pagination: PaginationQueryDto,
-    // Add any stock riven specific filters or fields here
+    // Add any stock item specific filters or fields here
     #[serde(default)]
     pub query: FieldChange<String>,
     #[serde(default)]
@@ -21,7 +20,7 @@ pub struct WishListPaginationQueryDto {
     pub status: FieldChange<String>,
     // You can add more fields as needed for filtering
 }
-impl WishListPaginationQueryDto {
+impl StockItemPaginationQueryDto {
     pub fn new(page: i64, limit: i64) -> Self {
         Self {
             pagination: PaginationQueryDto::new(page, limit),
@@ -31,19 +30,23 @@ impl WishListPaginationQueryDto {
             status: FieldChange::Ignore,
         }
     }
-    pub fn get_query(&self) -> Select<Entity> {
+    pub fn get_query(&self) -> Select<stock_item::Entity> {
         use FieldChange::*;
-        let mut stmt = Entity::find();
+        let mut stmt = stock_item::Entity::find();
         match &self.query {
             Value(q) => {
                 stmt = stmt.filter(
                     Condition::any()
                         .add(
-                            Expr::expr(Func::lower(Expr::col(Column::WfmUrl)))
+                            Expr::expr(Func::lower(Expr::col(stock_item::Column::WfmUrl)))
                                 .like(&format!("%{}%", q.to_lowercase())),
                         )
                         .add(
-                            Expr::expr(Func::lower(Expr::col(Column::ItemName)))
+                            Expr::expr(Func::lower(Expr::col(stock_item::Column::ItemName)))
+                                .like(&format!("%{}%", q.to_lowercase())),
+                        )
+                        .add(
+                            Expr::expr(Func::lower(Expr::col(stock_item::Column::ItemUniqueName)))
                                 .like(&format!("%{}%", q.to_lowercase())),
                         ),
                 )
@@ -51,7 +54,7 @@ impl WishListPaginationQueryDto {
             _ => {}
         }
         match self.status {
-            Value(ref q) => stmt = stmt.filter(Column::Status.eq(q)),
+            Value(ref q) => stmt = stmt.filter(stock_item::Column::Status.eq(q)),
             _ => {}
         }
         match &self.sort_by {
@@ -66,10 +69,14 @@ impl WishListPaginationQueryDto {
                 };
                 // Only allow sorting by known columns for safety
                 match sort_by.as_str() {
-                    "item_name" => stmt = stmt.order_by(Column::ItemName, order),
-                    "status" => stmt = stmt.order_by(Column::Status, order),
-                    "maximum_price" => stmt = stmt.order_by(Column::MaximumPrice, order),
-                    "list_price" => stmt = stmt.order_by(Column::ListPrice, order),
+                    "item_name" => stmt = stmt.order_by(stock_item::Column::ItemName, order),
+                    "bought" => stmt = stmt.order_by(stock_item::Column::Bought, order),
+                    "status" => stmt = stmt.order_by(stock_item::Column::Status, order),
+                    "minimum_price" => {
+                        stmt = stmt.order_by(stock_item::Column::MinimumPrice, order)
+                    }
+                    "list_price" => stmt = stmt.order_by(stock_item::Column::ListPrice, order),
+                    "owned" => stmt = stmt.order_by(stock_item::Column::Owned, order),
                     _ => {}
                 }
             }
@@ -103,7 +110,41 @@ impl WishListPaginationQueryDto {
     }
 }
 
-impl Default for WishListPaginationQueryDto {
+impl Display for StockItemPaginationQueryDto {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let query_str = match &self.query {
+            FieldChange::Value(q) => format!("Some(\"{}\")", q),
+            FieldChange::Ignore => "Ignore".to_string(),
+            FieldChange::Null => "Null".to_string(),
+        };
+        let sort_by_str = match &self.sort_by {
+            FieldChange::Value(s) => format!("Some(\"{}\")", s),
+            FieldChange::Ignore => "Ignore".to_string(),
+            FieldChange::Null => "Null".to_string(),
+        };
+        let sort_direction_str = match &self.sort_direction {
+            FieldChange::Value(d) => format!("Some({:?})", d),
+            FieldChange::Ignore => "Ignore".to_string(),
+            FieldChange::Null => "Null".to_string(),
+        };
+        let status_str = match &self.status {
+            FieldChange::Value(s) => format!("Some(\"{}\")", s),
+            FieldChange::Ignore => "Ignore".to_string(),
+            FieldChange::Null => "Null".to_string(),
+        };
+        write!(
+            f,
+            "Page: {}, Limit: {}, Query: {}, Sort By: {}, Sort Direction: {}, Status: {}",
+            self.pagination.page,
+            self.pagination.limit,
+            query_str,
+            sort_by_str,
+            sort_direction_str,
+            status_str
+        )
+    }
+}
+impl Default for StockItemPaginationQueryDto {
     fn default() -> Self {
         Self {
             pagination: PaginationQueryDto::default(),
