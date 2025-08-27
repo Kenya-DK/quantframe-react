@@ -46,4 +46,8 @@ export class CacheModule {
     this._cache.set(CacheType.RivenWeapons, items);
     return items;
   }
+  async getWeaponByUrl(id: string): Promise<TauriTypes.CacheRivenWeapon | undefined> {
+    let items = await this.getRivenWeapons();
+    return items.find((i) => i.wfm_url_name === id);
+  }
 }
