@@ -210,6 +210,10 @@ impl RivenModule {
             &log_options,
             );
 
+            auction_info = auction_info.set_highest_price(live_auctions.highest_price());
+            auction_info = auction_info.set_lowest_price(live_auctions.lowest_price());
+            auction_info = auction_info.set_auctions(live_auctions.take_top(5));
+
             let can_create_order = wfm_client.order().can_create_order();
             if auction_info.has_operation("Create")
                 && !auction_info.has_operation("Delete")
@@ -217,29 +221,36 @@ impl RivenModule {
             {
                 match wfm_client
                     .auction()
-                    .create(CreateAuctionParams::new(
-                        post_price as i32,
-                        Some(post_price as i32),
-                        0,
-                        true,
-                        "",
-                        CreateAuctionItem::new_riven(
-                            &stock_riven.wfm_weapon_url,
-                            &stock_riven.mod_name,
-                            stock_riven
-                                .attributes
-                                .0
-                                .iter()
-                                .map(|attr| {
-                                    ItemAttribute::new(&attr.url_name, attr.positive, attr.value)
-                                })
-                                .collect(),
-                            stock_riven.re_rolls as i32,
-                            stock_riven.mastery_rank as i32,
-                            stock_riven.sub_type.clone().unwrap().rank.unwrap_or(0) as i32,
-                            Polarity::from_str(&stock_riven.polarity).unwrap_or_default(),
-                        ),
-                    ))
+                    .create(
+                        CreateAuctionParams::new(
+                            post_price as i32,
+                            Some(post_price as i32),
+                            0,
+                            true,
+                            "",
+                            CreateAuctionItem::new_riven(
+                                &stock_riven.wfm_weapon_url,
+                                &stock_riven.mod_name,
+                                stock_riven
+                                    .attributes
+                                    .0
+                                    .iter()
+                                    .map(|attr| {
+                                        ItemAttribute::new(
+                                            &attr.url_name,
+                                            attr.positive,
+                                            attr.value,
+                                        )
+                                    })
+                                    .collect(),
+                                stock_riven.re_rolls as i32,
+                                stock_riven.mastery_rank as i32,
+                                stock_riven.sub_type.clone().unwrap().rank.unwrap_or(0) as i32,
+                                Polarity::from_str(&stock_riven.polarity).unwrap_or_default(),
+                            ),
+                        )
+                        .with_properties(json!(auction_info)),
+                    )
                     .await
                 {
                     Ok(auction) => {
@@ -272,7 +283,8 @@ impl RivenModule {
                         &auction_info.auction_id,
                         UpdateAuctionParams::new()
                             .with_buyout_price(Some(post_price as u32))
-                            .with_starting_price(post_price as u32),
+                            .with_starting_price(post_price as u32)
+                            .with_properties(json!(auction_info)),
                     )
                     .await
                 {
@@ -352,10 +364,12 @@ impl RivenModule {
             }
             stock_riven.set_list_price(Some(post_price));
             stock_riven.set_status(StockStatus::Live);
-            stock_riven.add_price_history(PriceHistory::new(
-                chrono::Local::now().naive_local().to_string(),
-                post_price,
-            ));
+            if stock_riven.status == StockStatus::Live {
+                stock_riven.add_price_history(PriceHistory::new(
+                    chrono::Local::now().naive_local().to_string(),
+                    post_price,
+                ));
+            }
             if stock_riven.is_dirty {
                 match StockRivenMutation::update_by_id(conn, stock_riven.to_update()).await {
                     Ok(_) => {

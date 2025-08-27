@@ -1,0 +1,12 @@
+.root {
+  border: 0.1rem solid transparent;
+  border-radius: 0.2em;
+
+  &[data-border] {
+    border-color: var(--mantine-color-gray-8);
+  }
+}
+
+.userName {
+  border-bottom: rem(3px) solid;
+}
