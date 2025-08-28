@@ -2,8 +2,9 @@ use std::sync::Mutex;
 
 use crate::app::{Settings, User};
 use crate::notification::enums::{UIEvent, UIOperationEvent};
+use crate::utils::modules::states;
 use crate::utils::{ErrorFromExt, OrderListExt};
-use crate::{emit_startup, emit_update_user, helper, send_event, APP};
+use crate::{emit_startup, emit_update_user, helper, send_event, APP, HAS_STARTED};
 use qf_api::errors::ApiError as QFApiError;
 use qf_api::types::UserPrivate as QFUserPrivate;
 use qf_api::Client as QFClient;
@@ -57,6 +58,16 @@ fn send_ws_state(event: UIEvent, cause: &str, data: Value) -> Error {
     err
 }
 
+fn update_user_status(states: impl Into<String>) {
+    let states = states.into();
+    let app = APP.get().expect("APP not initialized");
+    let state = app.state::<Mutex<AppState>>();
+    let mut guard = state.lock().expect("Failed to lock notification state");
+    guard.user.wfm_status = states;
+    guard.user.save().expect("Failed to save user status");
+    emit_update_user!(json!({"wfm_status": guard.user.wfm_status}));
+}
+
 async fn setup_socket(wfm_client: WFClient<WFAuthenticated>) -> Result<WsClient, Error> {
     if wfm_client.get_user().is_err() {
         return Err(Error::new(
@@ -101,18 +112,45 @@ async fn setup_socket(wfm_client: WFClient<WFAuthenticated>) -> Result<WsClient,
         .unwrap()
         .register_callback("MESSAGE/ONLINE_COUNT", move |_, _, _| Ok(()))
         .unwrap()
+        .register_callback("event/reports/online", move |_, _, _| Ok(()))
+        .unwrap()
         .register_callback("USER/SET_STATUS", move |msg, _, _| {
-            let app = APP.get().expect("APP not initialized");
-            let state = app.state::<Mutex<AppState>>();
-            let mut guard = state.lock().expect("Failed to lock notification state");
             match msg.payload.as_ref() {
-                Some(payload) => {
-                    guard.user.wfm_status = payload.as_str().unwrap_or("").to_string();
-                    guard.user.save().expect("Failed to save user status");
-                }
+                Some(payload) => update_user_status(payload.as_str().unwrap_or("").to_string()),
                 None => {}
             }
             emit_update_user!(json!({"wfm_status": msg.payload}));
+            Ok(())
+        })
+        .unwrap()
+        .register_callback("cmd/status/set:ok", move |msg, _, _| {
+            match msg.payload.as_ref() {
+                Some(payload) => update_user_status(
+                    payload["status"]
+                        .as_str()
+                        .unwrap_or("invisible")
+                        .to_string(),
+                ),
+
+                None => {}
+            }
+            Ok(())
+        })
+        .unwrap()
+        .register_callback("event/status/set", move |msg, _, _| {
+            if !HAS_STARTED.get().cloned().unwrap_or(false) {
+                return Ok(());
+            }
+            match msg.payload.as_ref() {
+                Some(payload) => update_user_status(
+                    payload["status"]
+                        .as_str()
+                        .unwrap_or("invisible")
+                        .to_string(),
+                ),
+
+                None => {}
+            }
             Ok(())
         })
         .unwrap()
