@@ -20,7 +20,7 @@ use crate::{
 #[tauri::command]
 pub async fn get_wish_list_pagination(
     query: WishListPaginationQueryDto,
-) -> Result<PaginatedDto<Model>, Error> {
+) -> Result<PaginatedResult<Model>, Error> {
     let conn = DATABASE.get().unwrap();
     match WishListQuery::get_all(conn, query).await {
         Ok(data) => return Ok(data),

@@ -10,7 +10,7 @@ impl StockRivenQuery {
     pub async fn get_all(
         db: &DbConn,
         query: StockRivenPaginationQueryDto,
-    ) -> Result<::entity::dto::pagination::PaginatedDto<stock_riven::Model>, DbErr> {
+    ) -> Result<::entity::dto::pagination::PaginatedResult<stock_riven::Model>, DbErr> {
         let stmt = query.get_query();
 
         // Pagination
@@ -25,7 +25,7 @@ impl StockRivenQuery {
             total = paginator.num_items().await? as i64;
             paginator.fetch_page((page - 1) as u64).await?
         };
-        Ok(::entity::dto::pagination::PaginatedDto::new(
+        Ok(::entity::dto::pagination::PaginatedResult::new(
             total, limit, page, results,
         ))
     }

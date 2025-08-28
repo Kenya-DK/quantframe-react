@@ -20,7 +20,7 @@ use crate::{
 #[tauri::command]
 pub async fn get_stock_riven_pagination(
     query: StockRivenPaginationQueryDto,
-) -> Result<PaginatedDto<stock_riven::Model>, Error> {
+) -> Result<PaginatedResult<stock_riven::Model>, Error> {
     let conn = DATABASE.get().unwrap();
     match StockRivenQuery::get_all(conn, query).await {
         Ok(data) => return Ok(data),

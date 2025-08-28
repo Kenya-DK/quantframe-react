@@ -37,7 +37,7 @@ impl PaginationQueryDto {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PaginatedDto<T> {
+pub struct PaginatedResult<T> {
     /// The total number of items in the database
     pub total: i64,
     /// The number of items returned in this request
@@ -48,7 +48,7 @@ pub struct PaginatedDto<T> {
     pub results: Vec<T>,
 }
 
-impl<T: Clone> PaginatedDto<T> {
+impl<T: Clone> PaginatedResult<T> {
     pub fn new(total: i64, limit: i64, page: i64, results: Vec<T>) -> Self {
         Self {
             total,
