@@ -2,6 +2,7 @@ import { modals } from "@mantine/modals";
 import { Text } from "@mantine/core";
 import { TauriTypes } from "$types";
 import { WishListItemDetailsModal } from "@components/Modals/WishListItemDetails";
+import { useTranslateCommon } from "@hooks/useTranslate.hook";
 
 interface ModalHooks {
   useTranslateBasePrompt: (key: string, context?: { [key: string]: any }) => string;
@@ -17,25 +18,19 @@ interface ModalHooks {
   };
 }
 
-export const useStockModals = ({
-  useTranslateBasePrompt,
-  useTranslatePrompt,
-  updateWishListMutation,
-  deleteWishListMutation,
-  boughtWishListMutation,
-}: ModalHooks) => {
+export const useStockModals = ({ useTranslatePrompt, updateWishListMutation, deleteWishListMutation, boughtWishListMutation }: ModalHooks) => {
   const OpenMinimumPriceModal = (id: number, maximum_price: number) => {
     modals.openContextModal({
       modal: "prompt",
-      title: useTranslateBasePrompt("maximum_price.title"),
+      title: useTranslateCommon("prompts.maximum_price.title"),
       innerProps: {
         fields: [
           {
             name: "maximum_price",
-            label: useTranslateBasePrompt("maximum_price.fields.maximum_price.label"),
+            label: useTranslateCommon("prompts.maximum_price.fields.maximum_price.label"),
             attributes: {
               min: 0,
-              description: useTranslateBasePrompt("maximum_price.fields.maximum_price.description"),
+              description: useTranslateCommon("prompts.maximum_price.fields.maximum_price.description"),
             },
             value: maximum_price,
             type: "number",
@@ -68,9 +63,9 @@ export const useStockModals = ({
 
   const OpenDeleteModal = (id: number) => {
     modals.openConfirmModal({
-      title: useTranslateBasePrompt("delete.title"),
-      children: <Text size="sm">{useTranslateBasePrompt("delete.message", { count: 1 })}</Text>,
-      labels: { confirm: useTranslateBasePrompt("delete.confirm"), cancel: useTranslateBasePrompt("delete.cancel") },
+      title: useTranslateCommon("prompts.delete_item.title"),
+      children: <Text size="sm">{useTranslateCommon("prompts.delete_item.message", { count: 1 })}</Text>,
+      labels: { confirm: useTranslateCommon("prompts.delete_item.confirm"), cancel: useTranslateCommon("prompts.delete_item.cancel") },
       onConfirm: async () => await deleteWishListMutation.mutateAsync(id),
     });
   };
@@ -78,12 +73,12 @@ export const useStockModals = ({
   const OpenBoughtModal = (stock: TauriTypes.WishListItem) => {
     modals.openContextModal({
       modal: "prompt",
-      title: useTranslateBasePrompt("bought.title"),
+      title: useTranslateCommon("prompts.bought_manual.title"),
       innerProps: {
         fields: [
           {
             name: "bought",
-            label: useTranslateBasePrompt("bought.fields.bought.label"),
+            label: useTranslateCommon("prompts.bought_manual.fields.bought.label"),
             attributes: {
               min: 0,
             },

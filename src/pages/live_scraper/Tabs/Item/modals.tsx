@@ -2,6 +2,7 @@ import { modals } from "@mantine/modals";
 import { Text } from "@mantine/core";
 import { TauriTypes } from "$types";
 import { StockItemDetailsModal } from "@components/Modals/StockItemDetails";
+import { useTranslateCommon } from "@hooks/useTranslate.hook";
 
 interface ModalHooks {
   useTranslateBasePrompt: (key: string, context?: { [key: string]: any }) => string;
@@ -17,25 +18,19 @@ interface ModalHooks {
   };
 }
 
-export const useStockModals = ({
-  useTranslateBasePrompt,
-  useTranslatePrompt,
-  updateStockMutation,
-  sellStockMutation,
-  deleteStockMutation,
-}: ModalHooks) => {
+export const useStockModals = ({ useTranslatePrompt, updateStockMutation, sellStockMutation, deleteStockMutation }: ModalHooks) => {
   const OpenMinimumPriceModal = (id: number, minimum_price: number) => {
     modals.openContextModal({
       modal: "prompt",
-      title: useTranslateBasePrompt("minimum_price.title"),
+      title: useTranslateCommon("prompts.minimum_price.title"),
       innerProps: {
         fields: [
           {
             name: "minimum_price",
-            label: useTranslateBasePrompt("minimum_price.fields.minimum_price.label"),
+            label: useTranslateCommon("prompts.minimum_price.fields.minimum_price.label"),
             attributes: {
               min: 0,
-              description: useTranslateBasePrompt("minimum_price.fields.minimum_price.description"),
+              description: useTranslateCommon("prompts.minimum_price.fields.minimum_price.description"),
             },
             value: minimum_price,
             type: "number",
@@ -54,12 +49,12 @@ export const useStockModals = ({
   const OpenSellModal = (stock: TauriTypes.StockItem) => {
     modals.openContextModal({
       modal: "prompt",
-      title: useTranslateBasePrompt("sell.title"),
+      title: useTranslateCommon("prompts.sell_manual.title"),
       innerProps: {
         fields: [
           {
             name: "sell",
-            label: useTranslateBasePrompt("sell.fields.sell.label"),
+            label: useTranslateCommon("prompts.sell_manual.fields.sell.label"),
             attributes: {
               min: 0,
             },
@@ -94,9 +89,9 @@ export const useStockModals = ({
 
   const OpenDeleteModal = (id: number) => {
     modals.openConfirmModal({
-      title: useTranslateBasePrompt("delete.title"),
-      children: <Text size="sm">{useTranslateBasePrompt("delete.message", { count: 1 })}</Text>,
-      labels: { confirm: useTranslateBasePrompt("delete.confirm"), cancel: useTranslateBasePrompt("delete.cancel") },
+      title: useTranslateCommon("prompts.delete_item.title"),
+      children: <Text size="sm">{useTranslateCommon("prompts.delete_item.message", { count: 1 })}</Text>,
+      labels: { confirm: useTranslateCommon("prompts.delete_item.confirm"), cancel: useTranslateCommon("prompts.delete_item.cancel") },
       onConfirm: async () => await deleteStockMutation.mutateAsync(id),
     });
   };

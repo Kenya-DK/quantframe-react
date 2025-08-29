@@ -2,6 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { notifications } from "@mantine/notifications";
 import { TauriTypes } from "$types";
 import api from "@api/index";
+import { useTranslateCommon } from "@hooks/useTranslate.hook";
 
 interface MutationHooks {
   useTranslateSuccess: (key: string, context?: { [key: string]: any }) => string;
@@ -38,19 +39,22 @@ const createGenericMutation = <TData, TVariables>(
         }
       : undefined,
     onSuccess: (data: TData, variables: TVariables) => {
-      let refetchStatusString = ["create_stock"];
+      let refetchStatusString = ["create_stock_item"];
       hooks.refetchQueries(refetchStatusString.includes(config.successKey));
       notifications.show({
-        title: hooks.useTranslateSuccess(`${config.successKey}.title`),
-        message: hooks.useTranslateSuccess(`${config.successKey}.message`, config.getSuccessMessage ? config.getSuccessMessage(data, variables) : {}),
+        title: useTranslateCommon(`notifications.${config.successKey}.success.title`),
+        message: useTranslateCommon(
+          `notifications.${config.successKey}.success.message`,
+          config.getSuccessMessage ? config.getSuccessMessage(data, variables) : {}
+        ),
         color: "green.7",
       });
     },
     onError: (e: any) => {
       console.error(e);
       notifications.show({
-        title: hooks.useTranslateErrors(`${config.errorKey}.title`),
-        message: hooks.useTranslateErrors(`${config.errorKey}.message`),
+        title: useTranslateCommon(`notifications.${config.errorKey}.error.title`),
+        message: useTranslateCommon(`notifications.${config.errorKey}.error.message`),
         color: "red.7",
       });
     },
@@ -63,8 +67,8 @@ export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, ref
   const createStockMutation = createGenericMutation(
     {
       mutationFn: (data: TauriTypes.CreateStockItem) => api.stock_item.create(data),
-      successKey: "create_stock",
-      errorKey: "create_stock",
+      successKey: "create_stock_item",
+      errorKey: "create_stock_item",
       getSuccessMessage: (data: any) => ({ name: data.item_name }),
     },
     hooks
@@ -73,8 +77,8 @@ export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, ref
   const updateStockMutation = createGenericMutation(
     {
       mutationFn: (data: TauriTypes.UpdateStockItem) => api.stock_item.update(data),
-      successKey: "update_stock",
-      errorKey: "update_stock",
+      successKey: "update_stock_item",
+      errorKey: "update_stock_item",
       getLoadingId: (variables: TauriTypes.UpdateStockItem) => `${variables.id}`,
       getSuccessMessage: (data: any) => ({ name: data.item_name }),
     },
@@ -84,8 +88,8 @@ export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, ref
   const sellStockMutation = createGenericMutation(
     {
       mutationFn: (data: TauriTypes.SellStockItem) => api.stock_item.sell(data),
-      successKey: "sell_stock",
-      errorKey: "sell_stock",
+      successKey: "sell_stock_item",
+      errorKey: "sell_stock_item",
       getLoadingId: (variables: TauriTypes.SellStockItem) => `${variables.id}`,
       getSuccessMessage: (data: any) => ({ name: data.item_name }),
     },
@@ -95,9 +99,10 @@ export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, ref
   const deleteStockMutation = createGenericMutation(
     {
       mutationFn: (id: number) => api.stock_item.delete(id),
-      successKey: "delete_stock",
-      errorKey: "delete_stock",
+      successKey: "delete_stock_item",
+      errorKey: "delete_stock_item",
       getLoadingId: (variables: number) => `${variables}`,
+      getSuccessMessage: (data: any) => ({ name: data.item_name }),
     },
     hooks
   );

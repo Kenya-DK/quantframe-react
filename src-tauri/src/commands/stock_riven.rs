@@ -112,7 +112,7 @@ pub async fn stock_riven_sell(
 pub async fn stock_riven_delete(
     id: i64,
     app: tauri::State<'_, Mutex<AppState>>,
-) -> Result<(), Error> {
+) -> Result<stock_riven::Model, Error> {
     let app = app.lock()?.clone();
     let conn = DATABASE.get().unwrap();
 
@@ -168,7 +168,7 @@ pub async fn stock_riven_delete(
         }
     }
 
-    Ok(())
+    Ok(item)
 }
 #[tauri::command]
 pub async fn stock_riven_update(input: UpdateStockRiven) -> Result<stock_riven::Model, Error> {

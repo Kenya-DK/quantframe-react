@@ -85,7 +85,7 @@ pub async fn wish_list_bought(
 }
 
 #[tauri::command]
-pub async fn wish_list_delete(id: i64) -> Result<(), Error> {
+pub async fn wish_list_delete(id: i64) -> Result<Model, Error> {
     let conn = DATABASE.get().unwrap();
 
     let item = WishListQuery::get_by_id(conn, id).await.map_err(|e| {
@@ -105,7 +105,7 @@ pub async fn wish_list_delete(id: i64) -> Result<(), Error> {
     }
     let item = item.unwrap();
 
-    handle_wfm_item(item.wfm_id, &item.sub_type, 1, OrderType::Buy, true)
+    handle_wfm_item(&item.wfm_id, &item.sub_type, 1, OrderType::Buy, true)
         .await
         .map_err(|e| {
             e.with_location(get_location!())
@@ -124,7 +124,7 @@ pub async fn wish_list_delete(id: i64) -> Result<(), Error> {
         }
     }
 
-    Ok(())
+    Ok(item)
 }
 #[tauri::command]
 pub async fn wish_list_update(input: UpdateWishList) -> Result<Model, Error> {

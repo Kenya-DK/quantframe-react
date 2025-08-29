@@ -19,8 +19,8 @@ export class StockItemModule {
     return await this.client.sendInvoke<{ [key: string]: number }>("get_stock_item_status_counts", { query: this.client.convertToTauriQuery(query) });
   }
 
-  async create(input: TauriTypes.CreateStockItem) {
-    return await this.client.sendInvoke<TauriTypes.StockItem>("stock_item_create", { input });
+  async create(input: TauriTypes.CreateStockItem, by?: string) {
+    return await this.client.sendInvoke<TauriTypes.StockItem>("stock_item_create", { input, by });
   }
 
   async update(input: TauriTypes.UpdateStockItem): Promise<TauriTypes.StockItem> {
@@ -31,8 +31,8 @@ export class StockItemModule {
     return await this.client.sendInvoke<TauriTypes.StockItem>("stock_item_delete", { id });
   }
 
-  async sell(entry: TauriTypes.SellStockItem): Promise<TauriTypes.StockItem> {
-    return await this.client.sendInvoke<TauriTypes.StockItem>("stock_item_sell", { ...entry });
+  async sell(entry: TauriTypes.SellStockItem, by?: string): Promise<TauriTypes.StockItem> {
+    return await this.client.sendInvoke<TauriTypes.StockItem>("stock_item_sell", { ...entry, by });
   }
 
   async getById(id: number): Promise<TauriTypes.StockItemDetails> {

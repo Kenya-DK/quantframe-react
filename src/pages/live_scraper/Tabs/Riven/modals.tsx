@@ -4,6 +4,7 @@ import { TauriTypes } from "$types";
 import { CreateRiven } from "@components/Forms/CreateRiven";
 import { RivenFilter } from "@components/Forms/RivenFilter";
 import { StockRivenDetailsModal } from "@components/Modals/StockRivenDetails";
+import { useTranslateCommon } from "@hooks/useTranslate.hook";
 interface ModalHooks {
   useTranslateBasePrompt: (key: string, context?: { [key: string]: any }) => string;
   useTranslatePrompt: (key: string, context?: { [key: string]: any }) => string;
@@ -32,15 +33,15 @@ export const useStockModals = ({
   const OpenMinimumPriceModal = (id: number, minimum_price: number) => {
     modals.openContextModal({
       modal: "prompt",
-      title: useTranslateBasePrompt("minimum_price.title"),
+      title: useTranslateCommon("prompts.minimum_price.title"),
       innerProps: {
         fields: [
           {
             name: "minimum_price",
-            label: useTranslateBasePrompt("minimum_price.fields.minimum_price.label"),
+            label: useTranslateCommon("prompts.minimum_price.fields.minimum_price.label"),
             attributes: {
               min: 0,
-              description: useTranslateBasePrompt("minimum_price.fields.minimum_price.description"),
+              description: useTranslateCommon("prompts.minimum_price.fields.minimum_price.description"),
             },
             value: minimum_price,
             type: "number",
@@ -59,12 +60,12 @@ export const useStockModals = ({
   const OpenSellModal = (stock: TauriTypes.SellStockRiven) => {
     modals.openContextModal({
       modal: "prompt",
-      title: useTranslateBasePrompt("sell.title"),
+      title: useTranslateCommon("prompts.sell_manual.title"),
       innerProps: {
         fields: [
           {
             name: "sell",
-            label: useTranslateBasePrompt("sell.fields.sell.label"),
+            label: useTranslateCommon("prompts.sell_manual.fields.sell.label"),
             attributes: {
               min: 0,
             },
@@ -92,7 +93,7 @@ export const useStockModals = ({
 
   const OpenCreateRiven = () => {
     modals.open({
-      title: useTranslatePrompt("create_riven.title"),
+      title: useTranslateBasePrompt("create_riven.title"),
       size: "950px",
       children: (
         <CreateRiven
@@ -118,9 +119,9 @@ export const useStockModals = ({
 
   const OpenDeleteModal = (id: number) => {
     modals.openConfirmModal({
-      title: useTranslateBasePrompt("delete.title"),
-      children: <Text size="sm">{useTranslateBasePrompt("delete.message", { count: 1 })}</Text>,
-      labels: { confirm: useTranslateBasePrompt("delete.confirm"), cancel: useTranslateBasePrompt("delete.cancel") },
+      title: useTranslateCommon("prompts.delete_item.title"),
+      children: <Text size="sm">{useTranslateCommon("prompts.delete_item.message", { count: 1 })}</Text>,
+      labels: { confirm: useTranslateCommon("prompts.delete_item.confirm"), cancel: useTranslateCommon("prompts.delete_item.cancel") },
       onConfirm: async () => await deleteStockMutation.mutateAsync(id),
     });
   };

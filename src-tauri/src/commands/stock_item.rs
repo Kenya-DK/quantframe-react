@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Mutex};
+use std::{collections::HashMap, str::FromStr, sync::Mutex};
 
 use chrono::Utc;
 use entity::{dto::*, stock_item::*, transaction::dto::TransactionPaginationQueryDto};
@@ -56,8 +56,16 @@ pub async fn get_stock_item_status_counts(
 }
 
 #[tauri::command]
-pub async fn stock_item_create(input: CreateStockItem) -> Result<stock_item::Model, Error> {
-    match handle_item_by_entity(input, "", OrderType::Buy).await {
+pub async fn stock_item_create(
+    input: CreateStockItem,
+    by: Option<String>,
+) -> Result<stock_item::Model, Error> {
+    let find_by_type = if by.is_some() {
+        FindByType::from_str(by.unwrap().as_str())?
+    } else {
+        FindByType::Url
+    };
+    match handle_item_by_entity(input, "", OrderType::Buy, find_by_type).await {
         Ok((_, updated_item)) => return Ok(updated_item),
         Err(e) => {
             return Err(e
@@ -73,8 +81,24 @@ pub async fn stock_item_sell(
     sub_type: Option<SubType>,
     quantity: i64,
     price: i64,
+    by: Option<String>,
 ) -> Result<stock_item::Model, Error> {
-    match handle_item(wfm_url, sub_type, quantity, price, "", OrderType::Sell).await {
+    let find_by_type = if by.is_some() {
+        FindByType::from_str(by.unwrap().as_str())?
+    } else {
+        FindByType::Url
+    };
+    match handle_item(
+        wfm_url,
+        sub_type,
+        quantity,
+        price,
+        "",
+        OrderType::Sell,
+        find_by_type,
+    )
+    .await
+    {
         Ok((_, updated_item)) => return Ok(updated_item),
         Err(e) => {
             return Err(e
@@ -85,7 +109,7 @@ pub async fn stock_item_sell(
 }
 
 #[tauri::command]
-pub async fn stock_item_delete(id: i64) -> Result<(), Error> {
+pub async fn stock_item_delete(id: i64) -> Result<stock_item::Model, Error> {
     let conn = DATABASE.get().unwrap();
 
     let item = StockItemQuery::find_by_id(conn, id).await.map_err(|e| {
@@ -105,7 +129,7 @@ pub async fn stock_item_delete(id: i64) -> Result<(), Error> {
     }
     let item = item.unwrap();
 
-    handle_wfm_item(item.wfm_id, &item.sub_type, 1, OrderType::Sell, true)
+    handle_wfm_item(&item.wfm_id, &item.sub_type, 1, OrderType::Sell, true)
         .await
         .map_err(|e| {
             e.with_location(get_location!())
@@ -124,8 +148,9 @@ pub async fn stock_item_delete(id: i64) -> Result<(), Error> {
         }
     }
 
-    Ok(())
+    Ok(item)
 }
+
 #[tauri::command]
 pub async fn stock_item_update(input: UpdateStockItem) -> Result<stock_item::Model, Error> {
     let conn = DATABASE.get().unwrap();
@@ -141,6 +166,7 @@ pub async fn stock_item_update(input: UpdateStockItem) -> Result<stock_item::Mod
         }
     }
 }
+
 #[tauri::command]
 pub async fn stock_item_get_by_id(
     id: i64,

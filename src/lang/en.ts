@@ -18,6 +18,56 @@ export const en = {
         label: "Save",
       },
     },
+    notifications: {
+      create_stock_item: {
+        error: { title: "Create Stock Error", message: "An error occurred while trying to create stock." },
+        success: { title: "Create Stock Success", message: "Stock item {{name}} has been successfully created." },
+      },
+      update_stock_item: {
+        error: { title: "Update Stock Error", message: "An error occurred while trying to update stock." },
+        success: { title: "Update Stock Success", message: "Stock item {{name}} has been successfully updated." },
+      },
+      delete_stock_item: {
+        error: { title: "Delete Stock Error", message: "An error occurred while trying to delete stock." },
+        success: { title: "Delete Stock Success", message: "Stock item {{name}} has been successfully deleted." },
+      },
+      sell_stock_item: {
+        error: { title: "Sell Stock Error", message: "An error occurred while trying to sell stock." },
+        success: { title: "Sell Stock Success", message: "Stock item {{name}} has been successfully sold." },
+      },
+      create_stock_riven: {
+        error: { title: "Create Stock Error", message: "An error occurred while trying to create stock." },
+        success: { title: "Create Stock Success", message: "Stock item {{name}} has been successfully created." },
+      },
+      update_stock_riven: {
+        error: { title: "Update Stock Error", message: "An error occurred while trying to update stock." },
+        success: { title: "Update Stock Success", message: "Stock item {{name}} has been successfully updated." },
+      },
+      delete_stock_riven: {
+        error: { title: "Delete Stock Error", message: "An error occurred while trying to delete stock." },
+        success: { title: "Delete Stock Success", message: "Stock item {{name}} has been successfully deleted." },
+      },
+      sell_stock_riven: {
+        error: { title: "Sell Stock Error", message: "An error occurred while trying to sell stock." },
+        success: { title: "Sell Stock Success", message: "Stock item {{name}} has been successfully sold." },
+      },
+      create_wish_list: {
+        error: { title: "Create Wishlist Error", message: "An error occurred while trying to create the wishlist." },
+        success: { title: "Create Wishlist Success", message: "The wishlist has been successfully created." },
+      },
+      update_wish_list: {
+        error: { title: "Update Wishlist Error", message: "An error occurred while trying to update the wishlist." },
+        success: { title: "Update Wishlist Success", message: "The wishlist has been successfully updated." },
+      },
+      delete_wish_list: {
+        error: { title: "Delete Wishlist Error", message: "An error occurred while trying to delete the wishlist." },
+        success: { title: "Delete Wishlist Success", message: "The wishlist has been successfully deleted." },
+      },
+      bought_wish_list: {
+        error: { title: "Bought Wishlist Error", message: "An error occurred while trying to mark the wishlist as bought." },
+        success: { title: "Bought Wishlist Success", message: "The wishlist has been successfully marked as bought." },
+      },
+    },
     datatable_columns: {
       list_price: "Listed",
       maximum_price: {
@@ -50,6 +100,48 @@ export const en = {
     item_name: {
       title: "Name",
       value: "{{name}} <blue>{{sub_type}}</blue>",
+    },
+    prompts: {
+      delete_item: {
+        title: "Are you sure?",
+        message: "This action cannot be undone.",
+        cancel: "Cancel",
+        confirm: "Confirm",
+      },
+      sell_manual: {
+        title: "Sold for",
+        fields: {
+          sell: {
+            label: "Price",
+          },
+        },
+      },
+      bought_manual: {
+        title: "Bought for",
+        fields: {
+          bought: {
+            label: "Price",
+          },
+        },
+      },
+      minimum_price: {
+        title: "Minimum Price",
+        fields: {
+          minimum_price: {
+            label: "Minimum Price",
+            description: "The minimum price for the item",
+          },
+        },
+      },
+      maximum_price: {
+        title: "Maximum Price",
+        fields: {
+          maximum_price: {
+            label: "Maximum Price",
+            description: "The maximum price for the item",
+          },
+        },
+      },
     },
   },
   enums: {
@@ -220,6 +312,7 @@ export const en = {
           home: "Home",
           debug: "Debug",
           live_scraper: "Live Scraper",
+          warframe_market: "Warframe Market",
         },
       },
     },
@@ -1109,39 +1202,11 @@ export const en = {
         profit: "Profit",
       },
       prompts: {
-        minimum_price: {
-          title: "Minimum Price",
-          fields: {
-            minimum_price: {
-              label: "Minimum Price",
-              description: "The minimum price for the item",
-            },
-          },
-        },
-        sell: {
-          title: "Sold for",
-          fields: {
-            sell: {
-              label: "Price",
-            },
-          },
-        },
-        bought: {
-          title: "Bought for",
-          fields: {
-            bought: {
-              label: "Price",
-            },
-          },
-        },
-        delete: {
-          title: "Are you sure?",
-          message: "This action cannot be undone.",
-          cancel: "Cancel",
-          confirm: "Confirm",
-        },
         update_filter: {
           title: "Update Filter",
+        },
+        create_riven: {
+          title: "Create Riven",
         },
       },
       tabs: {
@@ -1153,42 +1218,6 @@ export const en = {
               owned: "Owned",
             },
           },
-          errors: {
-            create_stock: {
-              title: "Create Stock Error",
-              message: "An error occurred while trying to create stock.",
-            },
-            update_stock: {
-              title: "Update Stock Error",
-              message: "An error occurred while trying to update stock.",
-            },
-            sell_stock: {
-              title: "Sell Stock Error",
-              message: "An error occurred while trying to sell stock.",
-            },
-            delete_stock: {
-              title: "Delete Stock Error",
-              message: "An error occurred while trying to delete stock.",
-            },
-          },
-          success: {
-            create_stock: {
-              title: "Create Stock Success",
-              message: "Stock item {{name}} has been successfully created.",
-            },
-            update_stock: {
-              title: "Update Stock Success",
-              message: "Stock item {{name}} has been successfully updated.",
-            },
-            sell_stock: {
-              title: "Sell Stock Success",
-              message: "Stock item {{name}} has been successfully sold.",
-            },
-            delete_stock: {
-              title: "Delete Stock Success",
-              message: "Stock item has been successfully deleted.",
-            },
-          },
         },
         riven: {
           title: "Riven",
@@ -1196,42 +1225,6 @@ export const en = {
             columns: {
               attributes: "Attributes",
               bought: "Bought",
-            },
-          },
-          errors: {
-            create_stock: {
-              title: "Create Stock Error",
-              message: "An error occurred while trying to create stock.",
-            },
-            update_stock: {
-              title: "Update Stock Error",
-              message: "An error occurred while trying to update stock.",
-            },
-            sell_stock: {
-              title: "Sell Stock Error",
-              message: "An error occurred while trying to sell stock.",
-            },
-            delete_stock: {
-              title: "Delete Stock Error",
-              message: "An error occurred while trying to delete stock.",
-            },
-          },
-          success: {
-            create_stock: {
-              title: "Create Stock Success",
-              message: "Stock item {{name}} has been successfully created.",
-            },
-            update_stock: {
-              title: "Update Stock Success",
-              message: "Stock item {{name}} has been successfully updated.",
-            },
-            sell_stock: {
-              title: "Sell Stock Success",
-              message: "Stock item {{name}} has been successfully sold.",
-            },
-            delete_stock: {
-              title: "Delete Stock Success",
-              message: "Stock item has been successfully deleted.",
             },
           },
         },
@@ -1242,44 +1235,33 @@ export const en = {
               quantity: "Quantity",
             },
           },
-          errors: {
-            create_wish_list: {
-              title: "Create Wishlist Error",
-              message: "An error occurred while trying to create the wishlist.",
+        },
+      },
+    },
+    warframe_market: {
+      tabs: {
+        orders: {
+          title: "Orders",
+          buttons: {
+            refresh_tooltip: "Refresh the order list",
+            delete_all_tooltip: "Delete all orders",
+            delete_tooltip: "Delete this order",
+            sell_manual: {
+              buy_tooltip: "Bought manually",
+              sell_tooltip: "Sold manually",
             },
-            update_wish_list: {
-              title: "Update Wishlist Error",
-              message: "An error occurred while trying to update the wishlist.",
-            },
-            delete_wish_list: {
-              title: "Delete Wishlist Error",
-              message: "An error occurred while trying to delete the wishlist.",
-            },
-            bought_wish_list: {
-              title: "Bought Wishlist Error",
-              message: "An error occurred while trying to mark the wishlist as bought.",
-            },
-          },
-          success: {
-            create_wish_list: {
-              title: "Create Wishlist Success",
-              message: "The wishlist has been successfully created.",
-            },
-            update_wish_list: {
-              title: "Update Wishlist Success",
-              message: "The wishlist has been successfully updated.",
-            },
-            delete_wish_list: {
-              title: "Delete Wishlist Success",
-              message: "The wishlist has been successfully deleted.",
-            },
-            bought_wish_list: {
-              title: "Bought Wishlist Success",
-              message: "The wishlist has been successfully marked as bought.",
+            sell_auto: {
+              buy_tooltip: "Bought for listed price",
+              sell_tooltip: "Sold for listed price",
             },
           },
         },
+        auctions: {
+          title: "Auctions",
+        },
       },
+      errors: {},
+      success: {},
     },
   },
 };
