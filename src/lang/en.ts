@@ -1255,13 +1255,39 @@ export const en = {
               sell_tooltip: "Sold for listed price",
             },
           },
+          errors: {
+            refresh_orders: {
+              title: "Refresh Orders Error",
+              message: "There was an error refreshing the order list.",
+            },
+            delete_all_orders: {
+              title: "Delete All Orders Error",
+              message: "There was an error deleting all orders.",
+            },
+            delete_order: {
+              title: "Delete Order Error",
+              message: "There was an error deleting the order.",
+            },
+          },
+          success: {
+            refresh_orders: {
+              title: "Refresh Orders Success",
+              message: "The order list has been refreshed successfully.",
+            },
+            delete_all_orders: {
+              title: "Delete All Orders Success",
+              message: "All orders have been deleted successfully.",
+            },
+            delete_order: {
+              title: "Delete Order Success",
+              message: "The order has been deleted successfully.",
+            },
+          },
         },
         auctions: {
           title: "Auctions",
         },
       },
-      errors: {},
-      success: {},
     },
   },
 };

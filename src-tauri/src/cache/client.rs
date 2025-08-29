@@ -1,17 +1,19 @@
 use std::{
     fs::File,
     path::PathBuf,
-    sync::{Arc, OnceLock},
+    sync::{Arc, Mutex, OnceLock},
 };
 
 use ::utils::*;
 use qf_api::Client as QFClient;
+use tauri::Manager;
 
 use crate::{
-    app::User,
+    app::{client::AppState, User},
     cache::types::CacheVersion,
     emit_startup, helper,
-    utils::{self, ErrorFromExt},
+    utils::{self, ErrorFromExt, OrderListExt},
+    APP,
 };
 
 use super::modules::*;
@@ -129,6 +131,14 @@ impl CacheState {
                     "Cache loaded successfully.",
                     &LoggerOptions::default(),
                 );
+                let app = APP.get().expect("APP not initialized");
+                let state = app.state::<Mutex<AppState>>();
+                let guard = state.lock()?;
+                guard
+                    .wfm_client
+                    .order()
+                    .cache_orders_mut()
+                    .apply_item_info(&client)?;
             }
             Err(e) => return Err(e.with_location(get_location!())),
         }

@@ -14,6 +14,7 @@ pub async fn handle_item_by_entity(
     mut item: CreateStockItem,
     user_name: impl Into<String>,
     operation: OrderType,
+    find_by: FindByType,
 ) -> Result<(Vec<String>, Model), Error> {
     let conn = DATABASE.get().unwrap();
     let component = "HandleItem";
@@ -21,11 +22,12 @@ pub async fn handle_item_by_entity(
     let mut operations: Vec<String> = vec![];
     // Create and validate the item
 
-    item.validate(FindByType::Url).map_err(|e| {
-        let err = e.clone();
-        err.with_location(get_location!()).log(Some(file));
-        e
-    })?;
+    item.validate(FindBy::new(find_by, item.raw.clone()))
+        .map_err(|e| {
+            let err = e.clone();
+            err.with_location(get_location!()).log(Some(file));
+            e
+        })?;
 
     let mut model = item.to_model();
 
@@ -183,11 +185,13 @@ pub async fn handle_item(
     price: i64,
     user_name: impl Into<String>,
     operation: OrderType,
+    find_by: FindByType,
 ) -> Result<(Vec<String>, Model), Error> {
     handle_item_by_entity(
         CreateStockItem::new(wfm_url, sub_type.clone(), quantity).set_bought(price),
         user_name,
         operation,
+        find_by,
     )
     .await
     .map_err(|e| e.with_location(get_location!()))

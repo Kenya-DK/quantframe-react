@@ -2,10 +2,9 @@ import { Paper, Stack, PaperProps, Group, Divider, Box, Avatar, Text, Image, Gri
 import classes from "./WFMOrder.module.css";
 import { WFMarketTypes } from "$types/index";
 import { useTranslateCommon, useTranslateComponent, useTranslateEnums } from "@hooks/useTranslate.hook";
-import api, { WFMThumbnail } from "@api/index";
+import { WFMThumbnail } from "@api/index";
 import { notifications } from "@mantine/notifications";
 import { TextTranslate } from "@components/Shared/TextTranslate";
-import { useQuery } from "@tanstack/react-query";
 import { GetSubTypeDisplay } from "../../../utils/helper";
 import { TimerStamp } from "../../Shared/TimerStamp";
 
@@ -19,12 +18,6 @@ export type WFMOrderProps = {
 };
 
 export function WFMOrder({ show_border, paperProps, order, footer, show_user, display_style }: WFMOrderProps) {
-  // Fetch data from rust side
-  const { data: item } = useQuery({
-    queryKey: ["cache_item", order.itemId],
-    queryFn: () => api.cache.getTradableItemById(order.itemId),
-  });
-
   // Translate general
   const useTranslateStockItemInfo = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateComponent(`wfm_order.${key}`, { ...context }, i18Key);
@@ -44,7 +37,7 @@ export function WFMOrder({ show_border, paperProps, order, footer, show_user, di
               <Text
                 style={{ cursor: "copy" }}
                 onClick={() => {
-                  navigator.clipboard.writeText(item?.name || "Unknown Item");
+                  navigator.clipboard.writeText(order?.properties?.item_name || "Unknown Item");
                   notifications.show({
                     title: useTranslateNotifications("copied.title"),
                     message: useTranslateNotifications("copied.message", { message: "" }),
@@ -54,7 +47,7 @@ export function WFMOrder({ show_border, paperProps, order, footer, show_user, di
                 size="lg"
                 fw={700}
               >
-                {item?.name || "Unknown Item"}
+                {order?.properties?.item_name || "Unknown Item"}
               </Text>
             </Group>
             <Group>
@@ -64,7 +57,14 @@ export function WFMOrder({ show_border, paperProps, order, footer, show_user, di
           <Divider />
           <Group align="center" grow p={"sm"}>
             <Group>
-              <Image w={"50%"} ml={"sm"} width={64} height={64} fit="contain" src={item?.image_url ? WFMThumbnail(item.image_url) : undefined} />
+              <Image
+                w={"50%"}
+                ml={"sm"}
+                width={64}
+                height={64}
+                fit="contain"
+                src={order?.properties?.image_url ? WFMThumbnail(order.properties.image_url) : undefined}
+              />
             </Group>
             <Group justify="flex-end">
               <Box>
@@ -139,7 +139,7 @@ export function WFMOrder({ show_border, paperProps, order, footer, show_user, di
                 size="lg"
                 i18nKey={useTranslateCommon("item_name.value", undefined, true)}
                 values={{
-                  name: item?.name || "<Unknown Item>",
+                  name: order?.properties?.item_name || "<Unknown Item>",
                   sub_type: GetSubTypeDisplay(order),
                 }}
               />

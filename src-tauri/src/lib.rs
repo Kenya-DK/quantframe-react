@@ -30,6 +30,7 @@ use tauri::{App, Emitter, Manager};
 use crate::cache::client::CacheState;
 use crate::live_scraper::LiveScraperState;
 use crate::notification::client::NotificationState;
+use crate::utils::OrderListExt;
 
 mod app;
 mod utils;
@@ -125,7 +126,6 @@ async fn setup_manages(app: tauri::AppHandle) -> Result<(), Error> {
 
     let live_scraper_state = LiveScraperState::new();
     app.manage(live_scraper_state);
-
     Ok(())
 }
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -234,8 +234,11 @@ pub fn run() {
             // Debug commands
             commands::debug::debug_get_wfm_state,
             // Order commands
+            commands::order::get_wfm_orders_pagination,
+            commands::order::get_wfm_orders_status_counts,
             commands::order::order_refresh,
             commands::order::order_delete_all,
+            commands::order::order_delete_by_id,
             // Wish List commands
             commands::wish_list::get_wish_list_pagination,
             commands::wish_list::get_wish_list_financial_report,

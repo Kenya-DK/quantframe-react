@@ -68,6 +68,9 @@ impl TradableItemModule {
                     .into_iter()
                     .find(|item| item.unique_name == find_by.value))
             }
+            FindByType::Id => {
+                return Ok(items.into_iter().find(|item| item.wfm_id == find_by.value))
+            }
             _ => Err(Error::new(
                 "Cache:TradableItem:get_by",
                 "Unsupported FindBy type",

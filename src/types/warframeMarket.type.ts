@@ -1,6 +1,11 @@
-import { SubType, UserStatus } from "./global.type";
+import { PaginatedDto, SubType, UserStatus } from "./global.type";
 
 export namespace WFMarketTypes {
+  export enum OrderType {
+    Buy = "buy",
+    Sell = "sell",
+    Closed = "closed",
+  }
   export interface Order {
     createdAt: Date;
     id: string;
@@ -27,6 +32,7 @@ export namespace WFMarketTypes {
     highest_price: number;
     item_id: string;
     item_name: string;
+    image_url: string;
     lowest_price: number;
     operation: string[];
     order_id: string;
@@ -87,5 +93,16 @@ export namespace WFMarketTypes {
     extra: any[];
     missing: any[];
     score: number;
+  }
+  export type WfmOrderControllerGetListData = PaginatedDto & {
+    results?: WFMarketTypes.Order[];
+  };
+  export interface WfmOrderControllerGetListParams {
+    page: number;
+    limit: number;
+    sort_by?: string;
+    sort_direction?: "asc" | "desc";
+    order_type?: WFMarketTypes.OrderType;
+    query?: string;
   }
 }

@@ -27,6 +27,9 @@ export namespace TauriTypes {
     RefreshStockRiven = "LiveScraper:RefreshStockRiven",
     RefreshWishListItems = "LiveScraper:RefreshWishListItems",
     RefreshStockRivens = "LiveScraper:RefreshStockRivens",
+    // Warframe Market
+    RefreshWfmOrders = "LiveScraper:RefreshWfmOrders",
+    OnDeleteWfmOrders = "Wfm:OnDeleteOrders",
   }
   export enum EventOperations {
     CREATE_OR_UPDATE = "CREATE_OR_UPDATE",
@@ -454,7 +457,7 @@ export namespace TauriTypes {
     is_hidden?: boolean;
   }
   export interface SellStockItem {
-    id: number;
+    id?: number;
     wfm_url: string;
     sub_type?: SubType;
     quantity: number;

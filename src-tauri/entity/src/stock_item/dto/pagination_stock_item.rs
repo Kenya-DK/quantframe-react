@@ -8,6 +8,7 @@ use crate::{dto::*, enums::*, stock_item::*};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StockItemPaginationQueryDto {
+    #[serde(flatten)]
     pub pagination: PaginationQueryDto,
     // Add any stock item specific filters or fields here
     #[serde(default)]

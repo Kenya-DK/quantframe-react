@@ -1,31 +1,117 @@
-use std::sync::{Arc, Mutex};
-
-use utils::{get_location, Error};
-
-use crate::{
-    app::client::AppState,
-    live_scraper::LiveScraperState,
-    utils::{ErrorFromExt, OrderListExt},
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
 };
 
+use entity::{dto::*, enums::*};
+use serde_json::{json, Value};
+use service::StockItemQuery;
+use utils::{filters_by, get_location, group_by, Error};
+use wf_market::{
+    enums::OrderType,
+    types::{item, Order},
+};
+
+use crate::{
+    app::client::AppState, cache::client::CacheState, enums::*, helper::paginate,
+    live_scraper::LiveScraperState, notification::enums::UIEvent, send_event, utils::*, DATABASE,
+};
 #[tauri::command]
-pub async fn order_refresh(app: tauri::State<'_, Mutex<AppState>>) -> Result<(), Error> {
-    let app = app.lock()?.clone();
-    app.wfm_client.order().my_orders().await.map_err(|e| {
-        let err = Error::from_wfm(
-            "OrderRefresh",
-            "Failed to refresh orders",
-            e,
-            get_location!(),
-        );
-        err.log(Some("order_refresh.log"));
-        err
-    })?;
-    app.wfm_client
+pub async fn order_refresh(
+    app: tauri::State<'_, Mutex<AppState>>,
+    cache: tauri::State<'_, Mutex<CacheState>>,
+) -> Result<(), Error> {
+    let app_state = app.lock()?.clone();
+    let cache_state = cache.lock()?.clone();
+    app_state
+        .wfm_client
+        .order()
+        .my_orders()
+        .await
+        .map_err(|e| {
+            let err = Error::from_wfm(
+                "OrderRefresh",
+                "Failed to refresh orders",
+                e,
+                get_location!(),
+            );
+            err.log(Some("order_refresh.log"));
+            err
+        })?;
+    app_state
+        .wfm_client
         .order()
         .cache_orders_mut()
-        .apply_trade_info()?;
+        .apply_item_info(&cache_state)?;
     Ok(())
+}
+
+#[tauri::command]
+pub fn get_wfm_orders_pagination(
+    query: WfmOrderPaginationQueryDto,
+    app: tauri::State<'_, Mutex<AppState>>,
+) -> Result<PaginatedResult<Order>, Error> {
+    let app = app.lock()?.clone();
+
+    let filtered_orders = filters_by(&app.wfm_client.order().cache_orders().to_vec(), |o| {
+        match &query.query {
+            FieldChange::Value(q) => {
+                let q = q.to_lowercase();
+                if !o.get_details().item_name.to_lowercase().contains(&q) {
+                    return false;
+                }
+            }
+            _ => {}
+        }
+        match &query.order_type {
+            FieldChange::Value(order_type) => {
+                if o.order_type != *order_type {
+                    return false;
+                }
+            }
+            _ => {}
+        }
+
+        true
+    });
+
+    let p = paginate(
+        &filtered_orders,
+        query.pagination.page,
+        query.pagination.limit,
+    );
+
+    Ok(p)
+}
+
+#[tauri::command]
+pub async fn get_wfm_orders_status_counts(
+    query: WfmOrderPaginationQueryDto,
+    app: tauri::State<'_, Mutex<AppState>>,
+) -> Result<HashMap<String, (usize, i64)>, Error> {
+    let items = get_wfm_orders_pagination(query, app)?.results;
+    let mut grouped = group_by(&items, |item| item.order_type.to_string())
+        .iter()
+        .map(|(status, items)| {
+            (
+                status.clone(),
+                (
+                    items.len(),
+                    items
+                        .iter()
+                        .map(|item| (item.platinum * item.quantity) as i64)
+                        .sum(),
+                ),
+            )
+        })
+        .collect::<HashMap<_, _>>();
+    if grouped.get("buy").is_none() {
+        grouped.insert("buy".to_string(), (0, 0));
+    }
+    if grouped.get("sell").is_none() {
+        grouped.insert("sell".to_string(), (0, 0));
+    }
+    Ok(grouped)
 }
 
 #[tauri::command]
@@ -43,6 +129,8 @@ pub async fn order_delete_all(
             return Err(err);
         }
     };
+    let total = orders.total_orders();
+    let mut current = total;
     for order in orders.to_vec() {
         if let Err(e) = app.wfm_client.order().delete(&order.id).await {
             let err = Error::from_wfm(
@@ -52,6 +140,41 @@ pub async fn order_delete_all(
                 get_location!(),
             );
             err.log(Some("order_delete_all.log"));
+            return Err(err);
+        }
+        current -= 1;
+        send_event!(
+            UIEvent::OnDeleteWfmOrders,
+            json!({"source": "order_delete_all", "current": current, "total": total})
+        );
+    }
+    Ok(())
+}
+#[tauri::command]
+pub async fn order_delete_by_id(
+    id: String,
+    app: tauri::State<'_, Mutex<AppState>>,
+) -> Result<(), Error> {
+    let app = app.lock()?.clone();
+    let order = app.wfm_client.order().cache_orders().get_by_id(&id);
+    if order.is_none() {
+        return Err(Error::new(
+            "Command::OrderDeleteById",
+            "Order not found",
+            get_location!(),
+        ));
+    }
+    let order = order.unwrap();
+    match app.wfm_client.order().delete(&order.id).await {
+        Ok(_) => {}
+        Err(e) => {
+            let err = Error::from_wfm(
+                "Command::OrderDeleteById",
+                "Failed to delete order",
+                e,
+                get_location!(),
+            );
+            err.log(Some("order_delete_by_id.log"));
             return Err(err);
         }
     }

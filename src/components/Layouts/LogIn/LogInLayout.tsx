@@ -13,6 +13,7 @@ import { AddMetric } from "@api/index";
 import { Ticker } from "@components/Layouts/Shared/Ticker";
 import { QuantframeApiTypes } from "$types";
 import { useAppContext } from "@contexts/app.context";
+import faWarframeMarket from "@icons/facWarframeMarket";
 
 export function LogInLayout() {
   // States
@@ -42,6 +43,14 @@ export function LogInLayout() {
       link: "live_scraper",
       icon: <FontAwesomeIcon size={"lg"} icon={faGlobe} />,
       label: useTranslateNavBar("live_scraper"),
+      onClick: (e: NavbarLinkProps) => handleNavigate(e),
+    },
+    {
+      align: "top",
+      id: "warframe_market",
+      link: "warframe-market",
+      icon: <FontAwesomeIcon size={"xl"} icon={faWarframeMarket} />,
+      label: useTranslateNavBar("warframe_market"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
     },
     {

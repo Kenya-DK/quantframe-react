@@ -10,14 +10,12 @@ use crate::{
 /// Extension trait for creating Error instances from different error types
 pub trait CreateStockItemExt {
     /// Validate the stock item creation data
-    fn validate(&mut self, find_by_type: FindByType) -> Result<(), Error>;
+    fn validate(&mut self, find_by: FindBy) -> Result<(), Error>;
 }
 
 impl CreateStockItemExt for CreateStockItem {
-    fn validate(&mut self, find_by_type: FindByType) -> Result<(), Error> {
+    fn validate(&mut self, find_by: FindBy) -> Result<(), Error> {
         let cache = states::cache_client()?;
-        let find_by = FindBy::new(find_by_type, self.raw.clone());
-
         let item = cache.tradable_item().get_by(find_by.clone())?;
 
         if item.is_none() {

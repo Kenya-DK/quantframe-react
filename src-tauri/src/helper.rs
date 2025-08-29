@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use entity::dto::{FinancialGraph, FinancialReport};
+use entity::dto::{FinancialGraph, FinancialReport, PaginatedResult};
 use serde_json::Value;
 use std::{
     fs::{self},
@@ -68,4 +68,30 @@ pub fn generate_transaction_summary(
         FinancialReport::from(&group.to_vec()).total_profit
     });
     (FinancialReport::from(&transactions), graph)
+}
+
+/// Paginate a vector of items
+pub fn paginate<T: Clone>(items: &[T], page: i64, per_page: i64) -> PaginatedResult<T> {
+    let total_items = items.len() as i64;
+
+    let start = (page.saturating_sub(1)) * per_page;
+    let end = (start + per_page).min(total_items);
+
+    let start_usize = start as usize;
+    let end_usize = end as usize;
+
+    let page_items = if start < total_items && end > 0 {
+        items[start_usize..end_usize].to_vec()
+    } else if per_page == -1 {
+        items.to_vec()
+    } else {
+        Vec::new()
+    };
+
+    PaginatedResult {
+        results: page_items,
+        page,
+        limit: per_page,
+        total: total_items,
+    }
 }

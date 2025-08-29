@@ -4,11 +4,16 @@ use wf_market::{
     types::{Order, OrderList},
 };
 
-use crate::utils::{modules::states, order_ext::OrderDetails, OrderExt, SubTypeExt};
+use crate::{
+    cache::client::CacheState,
+    enums::FindBy,
+    utils::{modules::states, order_ext::OrderDetails, OrderExt, SubTypeExt},
+};
 
 /// Extension trait for order list
 pub trait OrderListExt {
     fn apply_trade_info(&mut self) -> Result<(), Error>;
+    fn apply_item_info(&mut self, cache: &CacheState) -> Result<(), Error>;
     fn extract_order_summary(&self, order_type: OrderType) -> Vec<(i64, f64, String, String)>;
 }
 
@@ -27,7 +32,8 @@ impl OrderListExt for OrderList<Order> {
                 "closed",
             )? {
                 order.update_details(
-                    OrderDetails::default()
+                    order
+                        .get_details()
                         .set_closed_avg(price.avg_price)
                         .set_profit(price.profit)
                         .set_order_id(order.id.clone()),
@@ -54,5 +60,33 @@ impl OrderListExt for OrderList<Order> {
                 (platinum, profit, wfm_id, id)
             })
             .collect::<Vec<(i64, f64, String, String)>>()
+    }
+    fn apply_item_info(&mut self, cache: &CacheState) -> Result<(), Error> {
+        for order in self
+            .buy_orders
+            .iter_mut()
+            .chain(self.sell_orders.iter_mut())
+        {
+            match cache
+                .tradable_item()
+                .get_by(FindBy::new(crate::enums::FindByType::Id, &order.item_id))
+            {
+                Ok(item) => {
+                    if let Some(item) = item {
+                        order.update_details(
+                            order
+                                .get_details()
+                                .set_item_name(&item.name)
+                                .set_image_url(&item.image_url),
+                        );
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Failed to get item info for order {}: {}", order.id, e);
+                }
+            }
+        }
+
+        Ok(())
     }
 }

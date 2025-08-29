@@ -14,6 +14,8 @@ use crate::{
     cache::types::{CacheTradableItem, ItemPriceInfo},
     enums::*,
     live_scraper::*,
+    notification::enums::UIEvent,
+    send_event,
     utils::{modules::states, order_ext::OrderDetails, ErrorFromExt, OrderExt, SubTypeExt},
     DATABASE,
 };
@@ -250,12 +252,13 @@ pub fn get_order_info(
             order
                 .get_details()
                 .set_operation(&["Update"])
-                .set_order_id(order.id.clone())
+                .set_order_id(&order.id)
         })
         .unwrap_or_default()
-        .set_item_id(item_info.wfm_id.clone())
+        .set_item_id(&item_info.wfm_id)
+        .set_item_name(&item_info.name)
+        .set_image_url(&item_info.image_url)
         .set_quantity(quantity as u32)
-        .set_item_name(item_info.name.clone())
         .set_sub_type(entry.sub_type.clone())
 }
 
@@ -296,6 +299,7 @@ pub async fn progress_order(
                     ),
                     &log_options,
                 );
+                send_event!(UIEvent::RefreshWfmOrders, json!({"source": component}));
             }
             Err(e) => {
                 return Err(Error::from_wfm(
@@ -341,7 +345,7 @@ pub async fn progress_order(
     } else if order_info.has_operation("Update") && order_info.has_operation("Delete") {
         match wfm_client.order().delete(&order_info.order_id).await {
             Ok(_) => {
-                trace(
+                info(
                     format!("{}DeleteSuccess", component),
                     &format!(
                         "Deleted order for item {}: {}",
@@ -349,6 +353,7 @@ pub async fn progress_order(
                     ),
                     &log_options,
                 );
+                send_event!(UIEvent::RefreshWfmOrders, json!({"source": component}));
             }
             Err(e) => {
                 return Err(Error::from_wfm(

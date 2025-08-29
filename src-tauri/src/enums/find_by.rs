@@ -1,18 +1,47 @@
 use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
+use utils::{get_location, Error};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum FindByType {
     Name,
+    Id,
     Url,
     UniqueName,
+}
+impl FindByType {
+    pub fn from_str(s: &str) -> Result<Self, Error> {
+        match s.to_lowercase().as_str() {
+            "name" => Ok(FindByType::Name),
+            "id" => Ok(FindByType::Id),
+            "url" => Ok(FindByType::Url),
+            "unique_name" | "uniquename" => Ok(FindByType::UniqueName),
+            _ => Err(Error::new(
+                "FindByType::from_str",
+                format!("Unknown find_by type: {}", s),
+                get_location!(),
+            )),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Language {
     English,
+}
+impl Language {
+    pub fn from_str(s: &str) -> Result<Self, Error> {
+        match s.to_lowercase().as_str() {
+            "en" | "english" => Ok(Language::English),
+            _ => Err(Error::new(
+                "Language::from_str",
+                format!("Unknown language: {}", s),
+                get_location!(),
+            )),
+        }
+    }
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FindBy {

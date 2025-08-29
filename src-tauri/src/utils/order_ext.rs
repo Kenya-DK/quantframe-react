@@ -12,7 +12,6 @@ pub struct OrderDetails {
     pub order_id: String,
     pub item_id: String,
     pub sub_type: Option<SubType>,
-    pub item_name: String,
     pub quantity: u32,
     #[serde(rename = "profit")]
     #[serde(default)]
@@ -38,6 +37,10 @@ pub struct OrderDetails {
     #[serde(rename = "orders")]
     #[serde(default)]
     pub orders: Vec<OrderWithUser>,
+
+    // Item Info
+    pub item_name: String,
+    pub image_url: String,
 }
 impl OrderDetails {
     pub fn set_closed_avg(mut self, closed_avg: f64) -> Self {
@@ -91,6 +94,10 @@ impl OrderDetails {
         self.orders = orders;
         self
     }
+    pub fn set_image_url(mut self, image_url: impl Into<String>) -> Self {
+        self.image_url = image_url.into();
+        self
+    }
 }
 // Default implementation for OrderDetails
 impl Default for OrderDetails {
@@ -100,6 +107,7 @@ impl Default for OrderDetails {
             item_id: String::from("N/A"),
             sub_type: None,
             item_name: String::from("Unknown Item"),
+            image_url: String::from("https://via.placeholder.com/150"),
             quantity: 1,
             closed_avg: 0.0,
             profit: 0.0,
