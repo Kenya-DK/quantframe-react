@@ -107,4 +107,15 @@ export namespace WFMarketTypes {
     order_type?: WFMarketTypes.OrderType;
     query?: string;
   }
+  export type WfmAuctionControllerGetListData = PaginatedDto & {
+    results?: WFMarketTypes.Auction[];
+  };
+  export interface WfmAuctionControllerGetListParams {
+    page: number;
+    limit: number;
+    sort_by?: string;
+    sort_direction?: "asc" | "desc";
+    order_type?: WFMarketTypes.OrderType;
+    query?: string;
+  }
 }

@@ -139,7 +139,6 @@ export function WFMAuction({ show_border, paperProps, auction, footer, show_user
                 i18nKey={useTranslateCommon("item_name.value", undefined, true)}
                 values={{
                   name: `${auction?.properties?.item_name || "<Unknown Item>"}  ${auction.item.name}`,
-                  // sub_type: order.item.sub_type ? GetSubTypeDisplay(order.item.sub_type) : "<Unknown>",
                   sub_type: `R(${auction.item.mod_rank})`,
                 }}
               />

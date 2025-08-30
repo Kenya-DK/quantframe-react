@@ -67,24 +67,7 @@ impl OrderListExt for OrderList<Order> {
             .iter_mut()
             .chain(self.sell_orders.iter_mut())
         {
-            match cache
-                .tradable_item()
-                .get_by(FindBy::new(crate::enums::FindByType::Id, &order.item_id))
-            {
-                Ok(item) => {
-                    if let Some(item) = item {
-                        order.update_details(
-                            order
-                                .get_details()
-                                .set_item_name(&item.name)
-                                .set_image_url(&item.image_url),
-                        );
-                    }
-                }
-                Err(e) => {
-                    eprintln!("Failed to get item info for order {}: {}", order.id, e);
-                }
-            }
+            order.apply_item_info(cache)?;
         }
 
         Ok(())

@@ -13,7 +13,7 @@ use crate::{
     enums::{FindBy, FindByType},
     handlers::{handle_item_by_entity, handle_wfm_item, stock_item::handle_item},
     helper::generate_transaction_summary,
-    utils::{ErrorFromExt, SubTypeExt},
+    utils::{ErrorFromExt, OrderExt, SubTypeExt},
     DATABASE,
 };
 
@@ -225,13 +225,20 @@ pub async fn stock_item_get_by_id(
         .tradable_item()
         .get_by(FindBy::new(FindByType::Url, &item.wfm_url))?);
     payload["stock"] = json!(item);
-    payload["order_info"] = json!(order);
-    payload["last_transactions"] = json!(transaction_paginate.take_top(5));
-
-    if order.is_some() {
-        let order_info = order.unwrap();
+    if let Some(mut order_info) = order {
+        let mut details = order_info.get_details();
+        let mut orders = details.orders;
+        if !orders.is_empty() {
+            for ord in orders.iter_mut() {
+                ord.order.apply_item_info(&cache)?;
+            }
+            details.orders = orders;
+            order_info.update_details(details);
+        }
+        payload["order_info"] = json!(order_info);
         payload["stock_profit"] = json!(order_info.platinum - item.bought as u32);
     }
+    payload["last_transactions"] = json!(transaction_paginate.take_top(5));
 
     Ok(payload)
 }

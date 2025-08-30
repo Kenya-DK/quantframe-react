@@ -256,10 +256,9 @@ pub fn get_order_info(
         })
         .unwrap_or_default()
         .set_item_id(&item_info.wfm_id)
-        .set_item_name(&item_info.name)
-        .set_image_url(&item_info.image_url)
         .set_quantity(quantity as u32)
         .set_sub_type(entry.sub_type.clone())
+        .set_info(item_info)
 }
 
 pub async fn progress_order(

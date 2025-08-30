@@ -30,6 +30,8 @@ export namespace TauriTypes {
     // Warframe Market
     RefreshWfmOrders = "LiveScraper:RefreshWfmOrders",
     OnDeleteWfmOrders = "Wfm:OnDeleteOrders",
+    RefreshWfmAuctions = "LiveScraper:RefreshWfmAuctions",
+    OnDeleteWfmAuctions = "Wfm:OnDeleteAuctions",
   }
   export enum EventOperations {
     CREATE_OR_UPDATE = "CREATE_OR_UPDATE",

@@ -232,7 +232,7 @@ impl RivenModule {
 
             auction_info = auction_info.set_highest_price(live_auctions.highest_price());
             auction_info = auction_info.set_lowest_price(live_auctions.lowest_price());
-            auction_info = auction_info.set_auctions(live_auctions.take_top(5), &cache);
+            auction_info = auction_info.set_auctions(live_auctions.take_top(5));
 
             let can_create_order = wfm_client.order().can_create_order();
             if auction_info.has_operation("Create")

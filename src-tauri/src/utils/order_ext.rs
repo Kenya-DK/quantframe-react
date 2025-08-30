@@ -4,10 +4,13 @@ use entity::dto::*;
 use qf_api::errors::ApiError as QFRequestError;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use utils::{Error, LogLevel};
+use utils::{warning, Error, LogLevel, LoggerOptions};
 use wf_market::types::{order, Order, OrderWithUser};
 
-use crate::{cache::client::CacheState, enums::FindBy};
+use crate::{
+    cache::{client::CacheState, types::CacheTradableItem},
+    enums::FindBy,
+};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct OrderDetails {
@@ -72,10 +75,7 @@ impl OrderDetails {
         self.item_id = item_id.into();
         self
     }
-    pub fn set_item_name(mut self, item_name: impl Into<String>) -> Self {
-        self.item_name = item_name.into();
-        self
-    }
+
     pub fn set_quantity(mut self, quantity: u32) -> Self {
         self.quantity = quantity;
         self
@@ -92,34 +92,17 @@ impl OrderDetails {
         self.highest_price = highest_price;
         self
     }
-    pub fn set_orders(mut self, mut orders: Vec<OrderWithUser>, cache: &CacheState) -> Self {
-        for order in &mut orders {
-            match cache.tradable_item().get_by(FindBy::new(
-                crate::enums::FindByType::Id,
-                &order.order.item_id,
-            )) {
-                Ok(item) => {
-                    if let Some(weapon) = item {
-                        order.order.update_details(
-                            order
-                                .order
-                                .get_details()
-                                .set_item_name(weapon.name)
-                                .set_image_url(weapon.image_url),
-                        );
-                    }
-                }
-                Err(_) => {}
-            }
-        }
+    pub fn set_orders(mut self, orders: Vec<OrderWithUser>) -> Self {
         self.orders = orders;
         self
     }
-    pub fn set_image_url(mut self, image_url: impl Into<String>) -> Self {
-        self.image_url = image_url.into();
+    pub fn set_info(mut self, info: &CacheTradableItem) -> Self {
+        self.item_name = info.name.clone();
+        self.image_url = info.image_url.clone();
         self
     }
 }
+
 // Default implementation for OrderDetails
 impl Default for OrderDetails {
     fn default() -> Self {
@@ -172,6 +155,11 @@ impl Display for OrderDetails {
 pub trait OrderExt {
     fn get_details(&self) -> OrderDetails;
     fn update_details(&mut self, details: OrderDetails) -> Self;
+    fn apply_item_info(&mut self, cache: &CacheState) -> Result<(), Error>;
+    fn apply_item_info_by_entry(
+        &mut self,
+        item_info: &Option<CacheTradableItem>,
+    ) -> Result<(), Error>;
 }
 
 impl OrderExt for Order {
@@ -186,5 +174,29 @@ impl OrderExt for Order {
     fn update_details(&mut self, details: OrderDetails) -> Self {
         self.properties = Some(serde_json::to_value(details).unwrap());
         self.clone()
+    }
+    fn apply_item_info_by_entry(
+        &mut self,
+        item_info: &Option<CacheTradableItem>,
+    ) -> Result<(), Error> {
+        if let Some(item_info) = item_info {
+            self.update_details(self.get_details().set_info(item_info));
+        }
+        Ok(())
+    }
+    fn apply_item_info(&mut self, cache: &CacheState) -> Result<(), Error> {
+        if let Ok(item) = cache
+            .tradable_item()
+            .get_by(FindBy::new(crate::enums::FindByType::Id, &self.item_id))
+        {
+            self.apply_item_info_by_entry(&item)?;
+        } else {
+            warning(
+                "Order",
+                format!("Item info not found for item_id: {}", self.item_id),
+                &LoggerOptions::default(),
+            );
+        }
+        Ok(())
     }
 }

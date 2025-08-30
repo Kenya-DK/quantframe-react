@@ -45,25 +45,7 @@ impl AuctionDetails {
         self.highest_price = highest_price;
         self
     }
-    pub fn set_auctions(mut self, mut auctions: Vec<AuctionWithOwner>, cache: &CacheState) -> Self {
-        for auction in &mut auctions {
-            match cache.riven().get_riven_by(FindBy::new(
-                crate::enums::FindByType::Url,
-                &auction.auction.item.weapon_url_name,
-            )) {
-                Ok(weapon) => {
-                    if let Some(weapon) = weapon {
-                        auction.update_details(
-                            auction
-                                .get_details()
-                                .set_item_name(weapon.name)
-                                .set_image_url(weapon.wfm_icon),
-                        );
-                    }
-                }
-                Err(_) => {}
-            }
-        }
+    pub fn set_auctions(mut self, auctions: Vec<AuctionWithOwner>) -> Self {
         self.auctions = auctions;
         self
     }

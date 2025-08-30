@@ -15,6 +15,7 @@ import { DebugModule } from "./debug";
 import { OrderModule } from "./order";
 import { WishListModule } from "./wish_list";
 import { StockRivenModule } from "./stack_riven";
+import { AuctionModule } from "./auction";
 
 export class TauriClient {
   _logging: string[] = [];
@@ -37,6 +38,7 @@ export class TauriClient {
     this.wish_list = new WishListModule(this);
     this.debug = new DebugModule(this);
     this.order = new OrderModule(this);
+    this.auction = new AuctionModule(this);
     this._logging = localStorage.getItem("tauri_logs") ? JSON.parse(localStorage.getItem("tauri_logs")!) : ["*"];
   }
 
@@ -163,6 +165,7 @@ export class TauriClient {
   auth: AuthModule;
   log: LogModule;
   order: OrderModule;
+  auction: AuctionModule;
   analytics: AnalyticsModule;
   user: UserModule;
   live_scraper: LiveScraperModule;
