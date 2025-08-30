@@ -45,15 +45,7 @@ pub async fn get_stock_items(
     match StockItemQuery::get_all_v2(conn, query).await {
         Ok(mut data) => {
             helper::add_metric("Stock_ItemGetAll", "manual");
-            for item in data.results.iter_mut() {
-                if let Some(order) = wfm.orders().cache_orders.find_order_by_url_sub_type(
-                    &item.wfm_url,
-                    OrderType::All,
-                    item.sub_type.as_ref(),
-                ) {
-                    item.info = Some(json!(order.info.clone()));
-                }
-            }
+            for item in data.results.iter_mut() {}
             return Ok(data);
         }
         Err(e) => {
@@ -139,7 +131,8 @@ pub async fn stock_item_delete(
         }
     }
 
-    let order = wfm.orders().cache_orders.find_order_by_url_sub_type(
+    let my_orders = wfm.orders().get_my_orders().await?;
+    let order = my_orders.find_order_by_url_sub_type(
         &stock_item.wfm_url,
         OrderType::Sell,
         stock_item.sub_type.as_ref(),
@@ -305,7 +298,8 @@ pub async fn stock_item_delete_bulk(
             }
         }
         // Delete the order on WFM
-        match wfm.orders().cache_orders.find_order_by_url_sub_type(
+        let my_orders = wfm.orders().get_my_orders().await?;
+        match my_orders.find_order_by_url_sub_type(
             &stock.wfm_url,
             OrderType::Sell,
             stock.sub_type.as_ref(),

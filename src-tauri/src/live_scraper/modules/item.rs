@@ -156,7 +156,9 @@ impl ItemModule {
         }
 
         // Get My Orders from Warframe Market.
-        let my_orders = wfm.orders().cache_orders;
+        let mut my_orders = wfm.orders().get_my_orders().await?;
+        // Apply Trade Info.
+        my_orders.apply_trade_info()?;
 
         // Handle Delete Orders based on the trade mode.
         let order_ids = if delete_other_types {
@@ -298,7 +300,13 @@ impl ItemModule {
                 && !item_entry.operation.contains(&"WishList".to_string())
             {
                 match self
-                    .progress_buying(&item_info, &item_entry, &price, live_orders.clone())
+                    .progress_buying(
+                        &item_info,
+                        &item_entry,
+                        &price,
+                        live_orders.clone(),
+                        &mut my_orders,
+                    )
                     .await
                 {
                     Ok(_) => {}
@@ -314,7 +322,13 @@ impl ItemModule {
             // Only check if the order mode is buy or both and if the item is in stock items
             if item_entry.operation.contains(&"WishList".to_string()) {
                 match self
-                    .progress_wish_list(&item_info, &item_entry, &price, live_orders.clone())
+                    .progress_wish_list(
+                        &item_info,
+                        &item_entry,
+                        &price,
+                        live_orders.clone(),
+                        &mut my_orders,
+                    )
                     .await
                 {
                     Ok(_) => {}
@@ -330,7 +344,13 @@ impl ItemModule {
             // Only check if the order mode is sell or both and if the item is in stock items
             if item_entry.operation.contains(&"Sell".to_string()) && item_entry.stock_id.is_some() {
                 match self
-                    .progress_selling(&item_info, &item_entry, &price, live_orders.clone())
+                    .progress_selling(
+                        &item_info,
+                        &item_entry,
+                        &price,
+                        live_orders.clone(),
+                        &mut my_orders,
+                    )
                     .await
                 {
                     Ok(_) => {}
@@ -354,7 +374,7 @@ impl ItemModule {
         let _notify = states::notify_client()?;
         let settings = states::settings()?.live_scraper;
         let blacklist = settings.stock_item.blacklist.clone();
-        let mut current_orders = wfm.orders().cache_orders;
+        let mut current_orders = wfm.orders().get_my_orders().await?;
 
         match StockItemMutation::update_all(conn, StockStatus::Pending, None).await {
             Ok(_) => self.send_stock_update(),
@@ -579,6 +599,7 @@ impl ItemModule {
         entry: &ItemEntry,
         price: &ItemPriceInfo,
         live_orders: Orders,
+        my_orders: &mut Orders,
     ) -> Result<Option<Vec<Order>>, AppError> {
         // Load Managers.
         let conn = DATABASE.get().unwrap();
@@ -611,7 +632,7 @@ impl ItemModule {
         let mut wish_list_item = wish_list_item.unwrap();
 
         // Get my order if it exists, otherwise empty values.
-        let mut user_order = match wfm.orders().cache_orders.find_order_by_url_sub_type(
+        let mut user_order = match my_orders.find_order_by_url_sub_type(
             &entry.wfm_url,
             OrderType::Buy,
             entry.sub_type.as_ref(),
@@ -775,6 +796,7 @@ impl ItemModule {
         entry: &ItemEntry,
         price: &ItemPriceInfo,
         live_orders: Orders,
+        my_orders: &mut Orders,
     ) -> Result<Option<Vec<Order>>, AppError> {
         // Load Managers.
         let settings = states::settings()?.live_scraper;
@@ -793,7 +815,7 @@ impl ItemModule {
         let closed_avg = price.moving_avg.unwrap_or(0.0);
 
         // Get my order if it exists, otherwise empty values.
-        let mut user_order = match wfm.orders().cache_orders.find_order_by_url_sub_type(
+        let mut user_order = match my_orders.find_order_by_url_sub_type(
             &item_info.wfm_url_name,
             OrderType::Buy,
             entry.sub_type.as_ref(),
@@ -892,10 +914,8 @@ impl ItemModule {
                 .operation
                 .push("ValidatedMaxPriceCap".to_string());
             if user_order.operation.contains(&"Created".to_string()) {
-                if wfm.orders().cache_orders.buy_orders.len() != 0 {
-                    buy_orders_list = wfm
-                        .orders()
-                        .cache_orders
+                if my_orders.buy_orders.len() != 0 {
+                    buy_orders_list = my_orders
                         .buy_orders
                         .iter()
                         .filter(|order| !order.info.tags.contains(&"WishList".to_string()))
@@ -1095,6 +1115,7 @@ impl ItemModule {
         entry: &ItemEntry,
         price: &ItemPriceInfo,
         live_orders: Orders,
+        my_orders: &mut Orders,
     ) -> Result<(), AppError> {
         // Load Managers.
         let conn = DATABASE.get().unwrap();
@@ -1132,7 +1153,7 @@ impl ItemModule {
         let mut stock_item = stock_item.unwrap();
 
         // Get my order if it exists, otherwise empty values.
-        let mut user_order = match wfm.orders().cache_orders.find_order_by_url_sub_type(
+        let mut user_order = match my_orders.find_order_by_url_sub_type(
             &item_info.wfm_url_name,
             OrderType::Sell,
             stock_item.sub_type.as_ref(),

@@ -23,7 +23,7 @@ use eyre::eyre;
 pub struct OrderModule {
     pub client: WFMClient,
     pub debug_id: String,
-    pub cache_orders: Orders,
+    pub total_orders: i64,
     component: String,
 }
 
@@ -32,11 +32,8 @@ impl OrderModule {
         OrderModule {
             client,
             debug_id: "wfm_client_order".to_string(),
+            total_orders: 0,
             component: "Orders".to_string(),
-            cache_orders: Orders {
-                buy_orders: Vec::new(),
-                sell_orders: Vec::new(),
-            },
         }
     }
     fn get_component(&self, component: &str) -> String {
@@ -45,7 +42,28 @@ impl OrderModule {
     fn update_state(&self) {
         self.client.update_order_module(self.clone());
     }
+    pub fn set_order_count(&mut self, increment: i64) -> Result<(), AppError> {
+        let ref mut count = self.total_orders;
+        *count = increment;
+        self.update_state();
+        Ok(())
+    }
+    pub fn subtract_order_count(&mut self, increment: i64) -> Result<(), AppError> {
+        let ref mut count = self.total_orders;
+        *count -= increment;
+        if *count < 0 {
+            *count = 0;
+        }
+        self.update_state();
+        Ok(())
+    }
 
+    pub fn add_order_count(&mut self, increment: i64) -> Result<(), AppError> {
+        let ref mut count = self.total_orders;
+        *count += increment;
+        self.update_state();
+        Ok(())
+    }
     pub async fn progress_order(
         &mut self,
         url: &str,
@@ -62,7 +80,7 @@ impl OrderModule {
             quantity = 1;
         }
         // Get WFM Order
-        let orders = wfm.orders().cache_orders;
+        let orders = wfm.orders().get_my_orders().await?;
         let mut order = orders.find_order_by_url_sub_type(&url, order_type, sub_type.as_ref());
 
         // Check if order exists
@@ -99,16 +117,11 @@ impl OrderModule {
         }
         return Ok((operation.to_string(), order));
     }
-
-    pub async fn refresh_my_orders(&mut self) -> Result<Orders, AppError> {
+    pub async fn get_my_orders(&mut self) -> Result<Orders, AppError> {
         let auth = states::auth()?;
         let orders = self.get_user_orders(auth.ingame_name.as_str()).await?;
-        self.cache_orders = orders.clone();
-        self.cache_orders.apply_trade_info()?;
-        self.update_state();
         Ok(orders)
     }
-
     pub async fn get_user_orders(&mut self, ingame_name: &str) -> Result<Orders, AppError> {
         let url = format!("profile/{}/orders", ingame_name);
         match self.client.get::<Orders>(&url, None).await {
@@ -122,6 +135,7 @@ impl OrderModule {
                     format!("{} orders were fetched.", total_orders).as_str(),
                     None,
                 );
+                self.set_order_count(total_orders as i64)?;
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
@@ -152,7 +166,7 @@ impl OrderModule {
         let auth = states::auth()?;
         let limit = auth.order_limit;
 
-        if limit != -1 && self.cache_orders.total_count() >= limit {
+        if limit != -1 && self.total_orders >= limit {
             logger::warning(
                 &self.get_component("Create"),
                 "You have reached the maximum number of orders",
@@ -192,16 +206,7 @@ impl OrderModule {
             .await
         {
             Ok(ApiResult::Success(mut payload, _headers)) => {
-                if info.is_some() {
-                    payload.info = info.unwrap();
-                    payload.info.reset_changes();
-                }
-                if order_type == "sell" {
-                    self.cache_orders.sell_orders.push(payload.clone());
-                } else if order_type == "buy" {
-                    self.cache_orders.buy_orders.push(payload.clone());
-                }
-                self.update_state();
+                self.add_order_count(1)?;
                 self.client.debug(
                     &self.debug_id,
                     &self.get_component("Create"),
@@ -212,7 +217,7 @@ impl OrderModule {
                         platinum,
                         quantity,
                         sub_type.unwrap_or(SubType::new_empty()).display(),
-                        self.cache_orders.total_count(),
+                        self.total_orders,
                         limit.clone()
                     )
                     .as_str(),
@@ -248,20 +253,17 @@ impl OrderModule {
         self.client.auth().is_logged_in()?;
         match self.client.delete::<String>(&url, Some("order_id")).await {
             Ok(ApiResult::Success(payload, _headers)) => {
-                self.cache_orders
-                    .delete_order_by_id(OrderType::All, &payload);
+                self.subtract_order_count(1)?;
                 self.client.debug(
                     &self.debug_id,
                     &self.get_component("Delete"),
                     format!(
                         "Order {} was deleted. Total orders: {}",
-                        order_id,
-                        self.cache_orders.total_count()
+                        order_id, self.total_orders
                     )
                     .as_str(),
                     None,
                 );
-                self.update_state();
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {
@@ -306,18 +308,6 @@ impl OrderModule {
             .await
         {
             Ok(ApiResult::Success(mut payload, _headers)) => {
-                if info.is_some() {
-                    payload.info = info.unwrap();
-                    payload.info.reset_changes();
-                }
-                self.cache_orders.update_order(
-                    payload.order_type.clone(),
-                    &payload.id,
-                    Some(payload.platinum),
-                    Some(payload.quantity),
-                    Some(payload.visible),
-                    Some(payload.info.clone()),
-                );
                 self.client.debug(
                     &self.debug_id,
                     &self.get_component("Update"),
@@ -364,19 +354,7 @@ impl OrderModule {
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {
-                if let Some(order_close) = &payload {
-                    self.cache_orders.update_order(
-                        OrderType::from_str(&order_close.order_type),
-                        id,
-                        Some(order_close.platinum),
-                        Some(order_close.quantity),
-                        Some(order_close.visible),
-                        None,
-                    );
-                } else {
-                    self.cache_orders.delete_order_by_id(OrderType::All, id);
-                }
-                self.update_state();
+                self.subtract_order_count(1)?;
                 return Ok(payload);
             }
             Ok(ApiResult::Error(error, _headers)) => {

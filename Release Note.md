@@ -11,4 +11,4 @@ How To migrate:
 
 ## Fix's
 
-- 🛠️ Fix so the overview over the stuck wil be updated properly
+- 🛠️ Fix Live trader kept stopping

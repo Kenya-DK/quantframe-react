@@ -241,7 +241,7 @@ pub async fn app_init(
         notify
             .gui()
             .send_event(UIEvent::OnInitialize, Some(json!("user_orders")));
-        let mut orders_vec = match wfm.orders().refresh_my_orders().await {
+        let mut orders_vec = match wfm.orders().get_my_orders().await {
             Ok(orders_vec) => orders_vec,
             Err(e) => {
                 error::create_log_file("command.log", &e);

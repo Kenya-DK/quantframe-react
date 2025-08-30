@@ -6,7 +6,10 @@ use crate::{
     qf_client::client::QFClient,
     utils::{
         enums::log_level::LogLevel,
-        modules::error::{ApiResult, AppError},
+        modules::{
+            error::{ApiResult, AppError},
+            logger,
+        },
     },
 };
 
@@ -43,6 +46,7 @@ pub async fn qf_get(
 
     match qf.get::<Value>(url, false).await {
         Ok(ApiResult::Success(data, _)) => {
+            logger::log_json("data.json", &data).unwrap();
             return Ok(data);
         }
         Ok(ApiResult::Error(e, _headers)) => {
