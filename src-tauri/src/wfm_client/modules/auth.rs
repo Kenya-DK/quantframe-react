@@ -25,7 +25,12 @@ pub struct AuthModule {
     pub ws_client: Option<WsClient>,
     component: String,
 }
-
+pub fn update_user_status(status: String) {
+    let notify = states::notify_client().unwrap();
+    notify
+        .gui()
+        .send_event(UIEvent::UpdateUserStatus, Some(json!(status)));
+}
 impl AuthModule {
     pub fn new(client: WFMClient) -> Self {
         AuthModule {
@@ -98,10 +103,41 @@ impl AuthModule {
         let build = WsClientBuilder::new(ApiVersion::V1, token.to_string(), "QF".to_string());
         let client = build
             .register_callback("USER/SET_STATUS", move |msg, _, _| {
-                let notify = states::notify_client().unwrap();
-                notify
-                    .gui()
-                    .send_event(UIEvent::UpdateUserStatus, msg.payload.clone());
+                update_user_status(
+                    msg.payload
+                        .as_ref()
+                        .unwrap()
+                        .as_str()
+                        .unwrap_or("invisible")
+                        .to_string(),
+                );
+                Ok(())
+            })
+            .unwrap()
+            .register_callback("cmd/status/set:ok", move |msg, _, _| {
+                match msg.payload.as_ref() {
+                    Some(payload) => update_user_status(
+                        payload["status"]
+                            .as_str()
+                            .unwrap_or("invisible")
+                            .to_string(),
+                    ),
+                    None => {}
+                }
+                Ok(())
+            })
+            .unwrap()
+            .register_callback("event/status/set", move |msg, _, _| {
+                match msg.payload.as_ref() {
+                    Some(payload) => update_user_status(
+                        payload["status"]
+                            .as_str()
+                            .unwrap_or("invisible")
+                            .to_string(),
+                    ),
+
+                    None => {}
+                }
                 Ok(())
             })
             .unwrap()
@@ -138,6 +174,16 @@ impl AuthModule {
                 Ok(_) => {}
                 Err(e) => panic!("{:?}", e),
             }
+
+            // match ws_client.send_request(
+            //     "@wfm|cmd/status/set",
+            //     json!({
+            //         "status": status
+            //     }),
+            // ) {
+            //     Ok(_) => {}
+            //     Err(e) => panic!("{:?}", e),
+            // }
         } else {
             println!("WS client is not initialized, cannot set user status");
         }
