@@ -14,7 +14,10 @@ use wf_market::{
 
 use crate::{
     app::{client::AppState, Settings},
-    cache::types::{CacheTradableItem, ItemPriceInfo},
+    cache::{
+        client::CacheState,
+        types::{CacheTradableItem, ItemPriceInfo},
+    },
     enums::FindBy,
     utils::{ErrorFromExt, OrderListExt},
 };
@@ -267,7 +270,7 @@ impl ItemModule {
             // Process wishlist logic (future expansion)
             if item_entry.operation.contains(&"WishList".to_string()) {
                 if let Err(e) = self
-                    .progress_wish_list(&item_info, &item_entry, &item_price, &orders)
+                    .progress_wish_list(&item_info, &item_entry, &item_price, &orders, &cache)
                     .await
                 {
                     return Err(e.with_location(get_location!()));
@@ -286,7 +289,7 @@ impl ItemModule {
             // Process selling logic (future expansion)
             if item_entry.operation.contains(&"Sell".to_string()) && item_entry.stock_id.is_some() {
                 if let Err(e) = self
-                    .progress_selling(&item_info, &item_entry, &item_price, &orders)
+                    .progress_selling(&item_info, &item_entry, &item_price, &orders, &cache)
                     .await
                 {
                     return Err(e.with_location(get_location!()));
@@ -478,6 +481,7 @@ impl ItemModule {
         entry: &ItemEntry,
         price: &ItemPriceInfo,
         live_orders: &OrderList<OrderWithUser>,
+        cache: &CacheState,
     ) -> Result<(), Error> {
         let conn = DATABASE.get().unwrap();
         let log_options = &LoggerOptions::default()
@@ -582,7 +586,7 @@ impl ItemModule {
         order_info = order_info.set_closed_avg(closed_avg as f64);
         order_info = order_info.set_highest_price(live_orders.highest_price(OrderType::Sell));
         order_info = order_info.set_lowest_price(live_orders.lowest_price(OrderType::Sell));
-        order_info = order_info.set_orders(live_orders.take_top(5, OrderType::Sell));
+        order_info = order_info.set_orders(live_orders.take_top(5, OrderType::Sell), cache);
         stock_item.set_list_price(Some(post_price));
         stock_item.set_status(StockStatus::Live);
         if stock_item.status == StockStatus::Live {
@@ -657,6 +661,7 @@ impl ItemModule {
         entry: &ItemEntry,
         price: &ItemPriceInfo,
         live_orders: &OrderList<OrderWithUser>,
+        cache: &CacheState,
     ) -> Result<(), Error> {
         let conn = DATABASE.get().unwrap();
         let log_options = &LoggerOptions::default()
@@ -719,7 +724,7 @@ impl ItemModule {
         // Update Order Info
         order_info = order_info.set_highest_price(highest_price);
         order_info = order_info.set_lowest_price(live_orders.lowest_price(OrderType::Buy));
-        order_info = order_info.set_orders(live_orders.take_top(10, OrderType::Buy));
+        order_info = order_info.set_orders(live_orders.take_top(10, OrderType::Buy), cache);
 
         // Summary log
         info(

@@ -7,6 +7,8 @@ use serde_json::json;
 use utils::{Error, LogLevel};
 use wf_market::types::{Auction, AuctionWithOwner};
 
+use crate::{cache::client::CacheState, enums::FindBy};
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AuctionDetails {
     pub auction_id: String,
@@ -25,6 +27,10 @@ pub struct AuctionDetails {
     #[serde(rename = "auctions")]
     #[serde(default)]
     pub auctions: Vec<AuctionWithOwner>,
+
+    // Item Info
+    pub item_name: String,
+    pub image_url: String,
 }
 impl AuctionDetails {
     pub fn set_auction_id(mut self, auction_id: impl Into<String>) -> Self {
@@ -39,7 +45,25 @@ impl AuctionDetails {
         self.highest_price = highest_price;
         self
     }
-    pub fn set_auctions(mut self, auctions: Vec<AuctionWithOwner>) -> Self {
+    pub fn set_auctions(mut self, mut auctions: Vec<AuctionWithOwner>, cache: &CacheState) -> Self {
+        for auction in &mut auctions {
+            match cache.riven().get_riven_by(FindBy::new(
+                crate::enums::FindByType::Url,
+                &auction.auction.item.weapon_url_name,
+            )) {
+                Ok(weapon) => {
+                    if let Some(weapon) = weapon {
+                        auction.update_details(
+                            auction
+                                .get_details()
+                                .set_item_name(weapon.name)
+                                .set_image_url(weapon.wfm_icon),
+                        );
+                    }
+                }
+                Err(_) => {}
+            }
+        }
         self.auctions = auctions;
         self
     }
@@ -54,6 +78,14 @@ impl AuctionDetails {
         let operation = operation.into();
         self.operations.iter().any(|op| op == &operation)
     }
+    pub fn set_image_url(mut self, image_url: impl Into<String>) -> Self {
+        self.image_url = image_url.into();
+        self
+    }
+    pub fn set_item_name(mut self, item_name: impl Into<String>) -> Self {
+        self.item_name = item_name.into();
+        self
+    }
 }
 // Default implementation for AuctionDetails
 impl Default for AuctionDetails {
@@ -64,6 +96,8 @@ impl Default for AuctionDetails {
             highest_price: 0,
             operations: vec!["Create".to_string()],
             auctions: vec![],
+            item_name: String::new(),
+            image_url: String::new(),
         }
     }
 }
@@ -97,6 +131,20 @@ impl AuctionExt for Auction {
 
     fn update_details(&mut self, details: AuctionDetails) -> Self {
         self.properties = Some(serde_json::to_value(details).unwrap());
+        self.clone()
+    }
+}
+impl AuctionExt for AuctionWithOwner {
+    fn get_details(&self) -> AuctionDetails {
+        if let Some(properties) = &self.auction.properties {
+            serde_json::from_value(properties.clone()).unwrap_or_else(|_| AuctionDetails::default())
+        } else {
+            AuctionDetails::default()
+        }
+    }
+
+    fn update_details(&mut self, details: AuctionDetails) -> Self {
+        self.auction.properties = Some(serde_json::to_value(details).unwrap());
         self.clone()
     }
 }

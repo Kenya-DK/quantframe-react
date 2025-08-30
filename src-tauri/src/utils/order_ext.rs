@@ -7,6 +7,8 @@ use serde_json::json;
 use utils::{Error, LogLevel};
 use wf_market::types::{order, Order, OrderWithUser};
 
+use crate::{cache::client::CacheState, enums::FindBy};
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct OrderDetails {
     pub order_id: String,
@@ -90,7 +92,26 @@ impl OrderDetails {
         self.highest_price = highest_price;
         self
     }
-    pub fn set_orders(mut self, orders: Vec<OrderWithUser>) -> Self {
+    pub fn set_orders(mut self, mut orders: Vec<OrderWithUser>, cache: &CacheState) -> Self {
+        for order in &mut orders {
+            match cache.tradable_item().get_by(FindBy::new(
+                crate::enums::FindByType::Id,
+                &order.order.item_id,
+            )) {
+                Ok(item) => {
+                    if let Some(weapon) = item {
+                        order.order.update_details(
+                            order
+                                .order
+                                .get_details()
+                                .set_item_name(weapon.name)
+                                .set_image_url(weapon.image_url),
+                        );
+                    }
+                }
+                Err(_) => {}
+            }
+        }
         self.orders = orders;
         self
     }

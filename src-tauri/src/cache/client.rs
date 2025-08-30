@@ -12,7 +12,7 @@ use crate::{
     app::{client::AppState, User},
     cache::types::CacheVersion,
     emit_startup, helper,
-    utils::{self, ErrorFromExt, OrderListExt},
+    utils::{self, AuctionListExt, ErrorFromExt, OrderListExt},
     APP,
 };
 
@@ -138,6 +138,11 @@ impl CacheState {
                     .wfm_client
                     .order()
                     .cache_orders_mut()
+                    .apply_item_info(&client)?;
+                guard
+                    .wfm_client
+                    .auction()
+                    .cache_auctions_mut()
                     .apply_item_info(&client)?;
             }
             Err(e) => return Err(e.with_location(get_location!())),

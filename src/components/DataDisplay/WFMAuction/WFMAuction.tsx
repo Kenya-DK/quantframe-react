@@ -2,10 +2,9 @@ import { Paper, Stack, PaperProps, Group, Divider, Box, Avatar, Text, Image, Gri
 import classes from "./WFMAuction.module.css";
 import { WFMarketTypes } from "$types/index";
 import { useTranslateCommon, useTranslateComponent, useTranslateEnums } from "@hooks/useTranslate.hook";
-import api, { WFMThumbnail } from "@api/index";
+import { WFMThumbnail } from "@api/index";
 import { notifications } from "@mantine/notifications";
 import { TextTranslate } from "@components/Shared/TextTranslate";
-import { useQuery } from "@tanstack/react-query";
 import { TimerStamp } from "../../Shared/TimerStamp";
 
 export type WFMAuctionProps = {
@@ -18,12 +17,6 @@ export type WFMAuctionProps = {
 };
 
 export function WFMAuction({ show_border, paperProps, auction, footer, show_user, display_style }: WFMAuctionProps) {
-  // Fetch data from rust side
-  const { data: item } = useQuery({
-    queryKey: ["cache_weapon", auction.item.weapon_url_name],
-    queryFn: () => api.cache.getWeaponByUrl(auction.item.weapon_url_name),
-  });
-
   // Translate general
   const useTranslateStockItemInfo = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateComponent(`wfm_order.${key}`, { ...context }, i18Key);
@@ -43,7 +36,7 @@ export function WFMAuction({ show_border, paperProps, auction, footer, show_user
               <Text
                 style={{ cursor: "copy" }}
                 onClick={() => {
-                  navigator.clipboard.writeText(item?.name || "Unknown Item");
+                  navigator.clipboard.writeText(auction?.properties?.item_name || "Unknown Item");
                   notifications.show({
                     title: useTranslateNotifications("copied.title"),
                     message: useTranslateNotifications("copied.message", { message: "" }),
@@ -53,7 +46,7 @@ export function WFMAuction({ show_border, paperProps, auction, footer, show_user
                 size="lg"
                 fw={700}
               >
-                {item?.name || "Unknown Item"}
+                {auction?.properties?.item_name || "Unknown Item"}
               </Text>
             </Group>
             <Group>
@@ -63,7 +56,14 @@ export function WFMAuction({ show_border, paperProps, auction, footer, show_user
           <Divider />
           <Group align="center" grow p={"sm"}>
             <Group>
-              <Image w={"50%"} ml={"sm"} width={64} height={64} fit="contain" src={item?.wfm_icon ? WFMThumbnail(item.wfm_icon) : undefined} />
+              <Image
+                w={"50%"}
+                ml={"sm"}
+                width={64}
+                height={64}
+                fit="contain"
+                src={auction?.properties?.image_url ? WFMThumbnail(auction.properties.image_url) : undefined}
+              />
             </Group>
             <Group justify="flex-end">
               <Box>
@@ -138,7 +138,7 @@ export function WFMAuction({ show_border, paperProps, auction, footer, show_user
                 size="lg"
                 i18nKey={useTranslateCommon("item_name.value", undefined, true)}
                 values={{
-                  name: `${item?.name || "<Unknown Item>"}  ${auction.item.name}`,
+                  name: `${auction?.properties?.item_name || "<Unknown Item>"}  ${auction.item.name}`,
                   // sub_type: order.item.sub_type ? GetSubTypeDisplay(order.item.sub_type) : "<Unknown>",
                   sub_type: `R(${auction.item.mod_rank})`,
                 }}

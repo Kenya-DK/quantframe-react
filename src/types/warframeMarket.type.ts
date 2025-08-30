@@ -47,6 +47,8 @@ export namespace WFMarketTypes {
     highest_price: number;
     lowest_price: number;
     operation: string[];
+    item_name: string;
+    image_url: string;
   }
 
   export interface Auction {

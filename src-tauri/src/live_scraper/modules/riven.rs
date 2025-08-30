@@ -20,6 +20,8 @@ static COMPONENT: &str = "LiveScraper:RivenModule";
 static LOG_FILE: &str = "live_scraper_item.log";
 use crate::{
     app::settings,
+    cache::types::CacheRivenWeapon,
+    enums::FindBy,
     live_scraper::{is_disabled, LiveScraperState},
     notification::enums::UIEvent,
     send_event,
@@ -67,6 +69,7 @@ impl RivenModule {
 
     pub async fn check(&self) -> Result<(), Error> {
         let conn = DATABASE.get().unwrap();
+        let cache = states::cache_client()?;
         let app = states::app_state()?;
         let wfm_client = app.wfm_client;
         info(
@@ -119,7 +122,24 @@ impl RivenModule {
             // Settings
             let settings = states::get_settings()?.live_scraper.stock_riven;
 
-            let mut auction_info = get_auction_details(&stock_riven.uuid, &wfm_client);
+            // Get tradable item info from cache
+            let Some(item_info) = cache.riven().get_riven_by(FindBy::new(
+                crate::enums::FindByType::Url,
+                &stock_riven.wfm_weapon_url,
+            ))?
+            else {
+                error(
+                    format!("{}:Check", COMPONENT),
+                    &format!(
+                        "Item not found in riven items: {}",
+                        stock_riven.wfm_weapon_url
+                    ),
+                    &&LoggerOptions::default(),
+                );
+                continue;
+            };
+
+            let mut auction_info = get_auction_details(&stock_riven.uuid, &item_info, &wfm_client);
             if stock_riven.is_hidden && stock_riven.status == StockStatus::InActive {
                 info(
                     format!("{}Skip", COMPONENT),
@@ -212,7 +232,7 @@ impl RivenModule {
 
             auction_info = auction_info.set_highest_price(live_auctions.highest_price());
             auction_info = auction_info.set_lowest_price(live_auctions.lowest_price());
-            auction_info = auction_info.set_auctions(live_auctions.take_top(5));
+            auction_info = auction_info.set_auctions(live_auctions.take_top(5), &cache);
 
             let can_create_order = wfm_client.order().can_create_order();
             if auction_info.has_operation("Create")
@@ -410,6 +430,7 @@ impl RivenModule {
 
 pub fn get_auction_details(
     uuid: impl Into<String>,
+    item_info: &CacheRivenWeapon,
     wfm_client: &wf_market::Client<wf_market::Authenticated>,
 ) -> AuctionDetails {
     wfm_client
@@ -421,8 +442,12 @@ pub fn get_auction_details(
                 .get_details()
                 .set_operation(&["Update"])
                 .set_auction_id(auction.id.clone())
+                .set_item_name(&item_info.name)
+                .set_image_url(&item_info.wfm_icon)
         })
         .unwrap_or_default()
+        .set_item_name(&item_info.name)
+        .set_image_url(&item_info.wfm_icon)
 }
 
 fn get_filter(entity: &Model) -> AuctionFilter {
