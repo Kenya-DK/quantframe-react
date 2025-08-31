@@ -6,6 +6,7 @@ import { faMousePointer } from "@fortawesome/free-solid-svg-icons";
 export interface TickerItemProps {
   label: string;
   props?: { [key: string]: any };
+  itemStyle?: { [key: string]: any };
   onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
@@ -57,17 +58,3 @@ export function Ticker({ loop, speed, itemStyle, direction, delay, tickerClassNa
     </Paper>
   );
 }
-Ticker.defaultProps = {
-  data: [],
-  component: null,
-  keyName: null,
-  speed: 100,
-  delay: 0,
-  direction: "normal",
-  tickerClassName: "",
-  itemClassName: "",
-  tickerTextClassName: "",
-  tickerStyle: {},
-  itemStyle: {},
-  loop: true,
-};

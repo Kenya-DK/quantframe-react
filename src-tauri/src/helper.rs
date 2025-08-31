@@ -894,18 +894,16 @@ pub async fn progress_stock_riven(
 //     }
 // }
 pub fn calculate_average_of_top_lowest_prices(
-    prices: Vec<i64>,           // The list of prices to consider (assumed to be sorted by buyout_price ascending)
-    limit_to: i64,               // Limit the number of auctions to consider
-    threshold_percentage: f64,   // The threshold percentage to filter prices
+    prices: Vec<i64>, // The list of prices to consider (assumed to be sorted by buyout_price ascending)
+    limit_to: i64,    // Limit the number of auctions to consider
+    threshold_percentage: f64, // The threshold percentage to filter prices
 ) -> i64 {
     if prices.is_empty() {
         return -1;
     }
 
     // Get the top `limit_to` lowest starting prices directly, as prices is sorted
-    let mut top_price: Vec<i64> = prices.into_iter()
-                                       .take(limit_to as usize)
-                                       .collect();
+    let mut top_price: Vec<i64> = prices.into_iter().take(limit_to as usize).collect();
 
     // Ensure we have some prices after taking the limit
     if top_price.is_empty() {

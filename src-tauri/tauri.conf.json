@@ -18,12 +18,15 @@
   },
   "productName": "Quantframe",
   "mainBinaryName": "Quantframe",
-  "version": "1.5.2",
+  "version": "1.4.0",
   "identifier": "dev.kenya.quantframe",
   "plugins": {
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQ3NEIwMTI1MzA3Q0E1OEYKUldTUHBYd3dKUUZMMTczQ2pIYTR0bklLQXlaMkxvK0V0a0RMQytNMTdqZzBCWitQRnNIWDhxYnAK",
-      "endpoints": ["https://api.quantframe.app/release/{{target}}/{{arch}}/{{current_version}}"]
+      "endpoints": [
+        "http://localhost:6969/release/{{target}}/{{arch}}/{{current_version}}",
+        "https://api.quantframe.app/release/{{target}}/{{arch}}/{{current_version}}"
+      ]
     }
   },
   "app": {
@@ -32,7 +35,7 @@
         "fullscreen": false,
         "userAgent": "Quantframe",
         "resizable": true,
-        "title": "Quantframe v1.5.2 - By Kenya-DK",
+        "title": "Quantframe v1.5.1 - By Kenya-DK",
         "width": 1455,
         "height": 912,
         "useHttpsScheme": true

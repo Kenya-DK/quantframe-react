@@ -153,6 +153,7 @@ export function LogInLayout() {
         <Header />
         {alerts.length > 0 && (
           <Ticker
+            loop
             data={alerts.map((alert) => ({
               label: alert.context,
               props: {
