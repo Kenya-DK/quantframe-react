@@ -107,6 +107,7 @@ export function LogInLayout() {
             },
             onClick: alert.properties ? () => handleAlertClick(alert) : undefined,
           }))}
+          loop
         />
       </AppShell.Header>
 
