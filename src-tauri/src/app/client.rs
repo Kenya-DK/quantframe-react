@@ -3,7 +3,7 @@ use std::sync::Mutex;
 use crate::app::{Settings, User};
 use crate::notification::enums::{UIEvent, UIOperationEvent};
 use crate::utils::modules::states;
-use crate::utils::{ErrorFromExt, OrderListExt};
+use crate::utils::{AuctionListExt, ErrorFromExt, OrderListExt};
 use crate::{emit_startup, emit_update_user, helper, send_event, APP, HAS_STARTED};
 use qf_api::errors::ApiError as QFApiError;
 use qf_api::types::UserPrivate as QFUserPrivate;
@@ -234,6 +234,7 @@ impl AppState {
         email: &str,
         password: &str,
     ) -> Result<(QFClient, WFClient<WFAuthenticated>, User, WsClient), Error> {
+        let cache = states::cache_client()?;
         // Login to WFM client
         let mut wfm_client = match WFClient::new()
             .login(email, password, &self.wfm_client.get_device_id())
@@ -269,7 +270,6 @@ impl AppState {
         let updated_user = update_user(user, &wfm_user, &qf_user);
         let ws = setup_socket(wfm_client.clone()).await?;
         updated_user.save()?;
-        wfm_client.order().cache_orders_mut().apply_trade_info()?;
         Ok((qf_client, wfm_client, updated_user, ws))
     }
 

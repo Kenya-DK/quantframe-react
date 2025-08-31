@@ -7,7 +7,7 @@ use crate::{
     cache::client::CacheState,
     commands::live_scraper,
     live_scraper::LiveScraperState,
-    utils::ErrorFromExt,
+    utils::{AuctionListExt, ErrorFromExt, OrderListExt},
 };
 
 #[tauri::command]
@@ -63,6 +63,15 @@ pub async fn auth_login(
     cache.version.id = cache_version_id;
     cache.version.id_price = price_version_id;
     cache.version.save()?;
+    // Apply item info to WFM client
+    wfm_client
+        .order()
+        .cache_orders_mut()
+        .apply_item_info(&cache)?;
+    wfm_client
+        .auction()
+        .cache_auctions_mut()
+        .apply_item_info(&cache)?;
     app.wfm_client = wfm_client;
     app.user = updated_user.clone();
     app.qf_client = qf_client;
