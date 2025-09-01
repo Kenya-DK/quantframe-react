@@ -235,6 +235,12 @@ export const en = {
         subtype: "<blue>{{sub_type}}</blue>",
       },
     },
+    wfm_auction: {
+      fields: {
+        riven: "MR: <blue>{{mastery_level}}</blue> Rank: <blue>{{mod_rank}}</blue> Re-rolls: <blue>{{re_rolls}}</blue> Polarity: <polarity/>",
+        selling_price: "Selling Price: <blue>{{price}}</blue> <plat/>",
+      },
+    },
     riven_attribute: {
       effect: "<num_color_tag>{{value}}</num_color_tag> {{name}}",
     },
@@ -1286,6 +1292,40 @@ export const en = {
         },
         auctions: {
           title: "Auctions",
+          buttons: {
+            refresh_tooltip: "Refresh the auction list",
+            delete_all_tooltip: "Delete all auctions",
+            delete_tooltip: "Delete this auction",
+            import_tooltip: "Import this auction",
+          },
+          errors: {
+            refresh_auctions: {
+              title: "Refresh Auctions Error",
+              message: "There was an error refreshing the auction list.",
+            },
+            delete_all_auctions: {
+              title: "Delete All Auctions Error",
+              message: "There was an error deleting all auctions.",
+            },
+            delete_auction: {
+              title: "Delete Auction Error",
+              message: "There was an error deleting the auction.",
+            },
+          },
+          success: {
+            refresh_auctions: {
+              title: "Refresh Auctions Success",
+              message: "The auction list has been refreshed successfully.",
+            },
+            delete_all_auctions: {
+              title: "Delete All Auctions Success",
+              message: "All auctions have been deleted successfully.",
+            },
+            delete_auction: {
+              title: "Delete Auction Success",
+              message: "The auction has been deleted successfully.",
+            },
+          },
         },
       },
     },

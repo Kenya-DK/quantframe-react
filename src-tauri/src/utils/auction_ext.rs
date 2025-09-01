@@ -1,13 +1,22 @@
 use std::{collections::VecDeque, fmt::Display};
 
-use entity::dto::*;
+use entity::{
+    dto::*,
+    stock_riven::{CreateStockRiven, RivenAttribute},
+};
 use qf_api::errors::ApiError as QFRequestError;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use utils::{Error, LogLevel};
-use wf_market::types::{Auction, AuctionWithOwner};
+use utils::{get_location, warning, Error, LogLevel, LoggerOptions};
+use wf_market::{
+    enums::AuctionType,
+    types::{Auction, AuctionLike, AuctionWithOwner},
+};
 
-use crate::{cache::client::CacheState, enums::FindBy};
+use crate::{
+    cache::{client::CacheState, types::CacheRivenWeapon},
+    enums::FindBy,
+};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AuctionDetails {
@@ -27,6 +36,9 @@ pub struct AuctionDetails {
     #[serde(rename = "auctions")]
     #[serde(default)]
     pub auctions: Vec<AuctionWithOwner>,
+
+    #[serde(default)]
+    pub can_import: bool,
 
     // Item Info
     pub item_name: String,
@@ -60,12 +72,15 @@ impl AuctionDetails {
         let operation = operation.into();
         self.operations.iter().any(|op| op == &operation)
     }
-    pub fn set_image_url(mut self, image_url: impl Into<String>) -> Self {
-        self.image_url = image_url.into();
+
+    pub fn set_can_import(mut self, can_import: bool) -> Self {
+        self.can_import = can_import;
         self
     }
-    pub fn set_item_name(mut self, item_name: impl Into<String>) -> Self {
-        self.item_name = item_name.into();
+
+    pub fn set_info(mut self, info: &CacheRivenWeapon) -> Self {
+        self.item_name = info.name.clone();
+        self.image_url = info.wfm_icon.clone();
         self
     }
 }
@@ -80,6 +95,7 @@ impl Default for AuctionDetails {
             auctions: vec![],
             item_name: String::new(),
             image_url: String::new(),
+            can_import: false,
         }
     }
 }
@@ -100,6 +116,12 @@ impl Display for AuctionDetails {
 pub trait AuctionExt {
     fn get_details(&self) -> AuctionDetails;
     fn update_details(&mut self, details: AuctionDetails) -> Self;
+    fn apply_item_info(&mut self, cache: &CacheState) -> Result<(), Error>;
+    fn apply_item_info_by_entry(
+        &mut self,
+        item_info: &Option<CacheRivenWeapon>,
+    ) -> Result<(), Error>;
+    fn to_create(&self) -> Result<CreateStockRiven, Error>;
 }
 
 impl AuctionExt for Auction {
@@ -115,18 +137,55 @@ impl AuctionExt for Auction {
         self.properties = Some(serde_json::to_value(details).unwrap());
         self.clone()
     }
-}
-impl AuctionExt for AuctionWithOwner {
-    fn get_details(&self) -> AuctionDetails {
-        if let Some(properties) = &self.auction.properties {
-            serde_json::from_value(properties.clone()).unwrap_or_else(|_| AuctionDetails::default())
-        } else {
-            AuctionDetails::default()
+    fn apply_item_info_by_entry(
+        &mut self,
+        item_info: &Option<CacheRivenWeapon>,
+    ) -> Result<(), Error> {
+        if let Some(item_info) = item_info {
+            self.update_details(self.get_details().set_info(item_info));
         }
+        Ok(())
+    }
+    fn apply_item_info(&mut self, cache: &CacheState) -> Result<(), Error> {
+        if let Ok(item) = cache.riven().get_riven_by(FindBy::new(
+            crate::enums::FindByType::Url,
+            &self.item.weapon_url_name,
+        )) {
+            self.apply_item_info_by_entry(&item)?;
+        } else {
+            warning(
+                "Auction",
+                format!("Item info not found for url: {}", self.item.weapon_url_name),
+                &LoggerOptions::default(),
+            );
+        }
+        Ok(())
     }
 
-    fn update_details(&mut self, details: AuctionDetails) -> Self {
-        self.auction.properties = Some(serde_json::to_value(details).unwrap());
-        self.clone()
+    fn to_create(&self) -> Result<CreateStockRiven, Error> {
+        if self.item.item_type != AuctionType::Riven {
+            return Err(Error::new(
+                "ToCreateStockRiven",
+                "Cant only create stock riven from riven auction",
+                get_location!(),
+            ));
+        }
+        let item = CreateStockRiven::new(
+            self.item.weapon_url_name.clone(),
+            self.item.mod_name.clone().unwrap_or(String::new()),
+            self.item.mastery_level.unwrap_or(0).into(),
+            self.item.re_rolls.unwrap_or(0).into(),
+            self.item.polarity.clone().unwrap_or(String::new()),
+            self.item
+                .attributes
+                .clone()
+                .unwrap_or(vec![])
+                .to_vec()
+                .iter()
+                .map(|a| RivenAttribute::new(a.positive, a.value, a.url_name.clone()))
+                .collect(),
+            self.item.mod_rank.unwrap_or(0).into(),
+        );
+        Ok(item)
     }
 }

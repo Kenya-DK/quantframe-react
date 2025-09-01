@@ -1,120 +1,94 @@
-import { Paper, Stack, PaperProps, Group, Divider, Box, Avatar, Text, Image, Grid } from "@mantine/core";
+import { Paper, Stack, PaperProps, Group, Divider, Avatar, Text, Image, Grid } from "@mantine/core";
 import classes from "./WFMAuction.module.css";
 import { WFMarketTypes } from "$types/index";
 import { useTranslateCommon, useTranslateComponent, useTranslateEnums } from "@hooks/useTranslate.hook";
-import { WFMThumbnail } from "@api/index";
-import { notifications } from "@mantine/notifications";
+import api, { WFMThumbnail } from "@api/index";
 import { TextTranslate } from "@components/Shared/TextTranslate";
 import { TimerStamp } from "../../Shared/TimerStamp";
+import { RivenAttribute } from "../RivenAttribute";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export type WFMAuctionProps = {
   auction: WFMarketTypes.Auction;
   show_user?: boolean;
+  header?: React.ReactNode;
   footer?: React.ReactNode;
   show_border?: boolean;
   display_style: "grid" | "list";
   paperProps?: PaperProps;
 };
 
-export function WFMAuction({ show_border, paperProps, auction, footer, show_user, display_style }: WFMAuctionProps) {
+export function WFMAuction({ show_border, paperProps, auction, header, show_user, display_style }: WFMAuctionProps) {
   // Translate general
   const useTranslateStockItemInfo = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateComponent(`wfm_order.${key}`, { ...context }, i18Key);
+    useTranslateComponent(`wfm_auction.${key}`, { ...context }, i18Key);
   const useTranslateFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateStockItemInfo(`fields.${key}`, { ...context }, i18Key);
   const useTranslateUserStatus = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateEnums(`user_status.${key}`, { ...context }, i18Key);
-  const useTranslateNotifications = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateStockItemInfo(`notifications.${key}`, { ...context }, i18Key);
 
   return (
     <Paper {...paperProps} classNames={classes} p={7} data-border={show_border}>
       {display_style === "grid" && (
         <Stack gap={3}>
-          <Group ml={"xs"} justify="space-between">
+          <Group justify="space-between">
             <Group>
-              <Text
-                style={{ cursor: "copy" }}
-                onClick={() => {
-                  navigator.clipboard.writeText(auction?.properties?.item_name || "Unknown Item");
-                  notifications.show({
-                    title: useTranslateNotifications("copied.title"),
-                    message: useTranslateNotifications("copied.message", { message: "" }),
-                    color: "green.7",
-                  });
-                }}
-                size="lg"
-                fw={700}
-              >
-                {auction?.properties?.item_name || "Unknown Item"}
-              </Text>
-            </Group>
-            <Group>
-              <TextTranslate size="md" i18nKey={useTranslateFields("quantity", undefined, true)} values={{ quantity: auction.id }} />
-            </Group>
-          </Group>
-          <Divider />
-          <Group align="center" grow p={"sm"}>
-            <Group>
-              <Image
-                w={"50%"}
-                ml={"sm"}
-                width={64}
-                height={64}
-                fit="contain"
-                src={auction?.properties?.image_url ? WFMThumbnail(auction.properties.image_url) : undefined}
-              />
-            </Group>
-            <Group justify="flex-end">
-              <Box>
-                {/* {order.mod_rank != undefined && (
-                <TextTranslate
-                size="lg"
-                i18nKey={useTranslateFields("mod_rank", undefined, true)}
-                values={{ mod_rank: order.mod_rank, mod_max_rank: order.item?.mod_max_rank || 0 }}
+              <Group>
+                <Image
+                  width={32}
+                  height={32}
+                  fit="contain"
+                  src={auction?.properties?.image_url ? WFMThumbnail(auction.properties.image_url) : undefined}
                 />
-                )}
-                {order.amber_stars != undefined && (
-                  <Rating
-                  fullSymbol={<FontAwesomeIcon icon={faCyanStar} color={theme.colors.blue[5]} />}
-                  value={order.amber_stars}
-                  count={order.amber_stars}
-                  readOnly
-                  />
-                  )}
-                  {order.cyan_stars != undefined && (
-                    <Rating
-                    fullSymbol={<FontAwesomeIcon icon={faAmberStar} color={theme.colors.yellow[7]} />}
-                    value={order.cyan_stars}
-                    count={order.cyan_stars}
-                    readOnly
-                    />
-                    )}
-                    {order.subtype && (
-                      <TextTranslate
-                      size="lg"
-                      i18nKey={useTranslateFields("subtype", undefined, true)}
-                      values={{ sub_type: order.subtype ? `${upperFirst(order.subtype)}` : "" }}
-                      />
-                      )} */}
-              </Box>
-            </Group>
-          </Group>
-          <Divider />
-          <Group align="center" grow p={3}>
-            <Group>
+              </Group>
               <TextTranslate
-                textProps={{
-                  span: true,
-                }}
                 size="lg"
-                i18nKey={useTranslateFields("platinum", undefined, true)}
-                values={{ platinum: auction.starting_price }}
+                i18nKey={useTranslateCommon("item_name.value", undefined, true)}
+                values={{
+                  name: `${auction?.properties?.item_name || "<Unknown Item>"}  ${auction.item.name}`,
+                  sub_type: ``,
+                }}
               />
             </Group>
-            <Group gap={"sm"} justify="flex-end">
-              {footer}
-            </Group>
+            {header}
+          </Group>
+          <Divider />
+          <Grid>
+            <Grid.Col span={9} p={"xs"}>
+              <Group mt={5} mb={5} gap={"xs"}>
+                {auction.item.attributes?.map((attr) => (
+                  <RivenAttribute key={attr.url_name} value={attr} />
+                ))}
+              </Group>
+            </Grid.Col>
+            <Grid.Col span={3} display="flex" style={{ justifyContent: "center", flexDirection: "column", alignItems: "center" }}>
+              <TextTranslate
+                textProps={{ span: true }}
+                i18nKey={useTranslateFields("selling_price", undefined, true)}
+                values={{
+                  price: auction.starting_price,
+                }}
+              />
+            </Grid.Col>
+          </Grid>
+
+          <Divider />
+          <Group>
+            <TextTranslate
+              size="lg"
+              i18nKey={useTranslateFields("riven", undefined, true)}
+              components={{
+                polarity: <FontAwesomeIcon className={classes.polarity} icon={api.auction.polarityToIcon(auction.item.polarity)} />,
+              }}
+              values={{
+                mastery_level: auction.item.mastery_level,
+                mod_rank: auction.item.mod_rank,
+                re_rolls: auction.item.re_rolls,
+                polarity: auction.item.polarity,
+                name: `${auction?.properties?.item_name || "<Unknown Item>"}  ${auction.item.name}`,
+                sub_type: ``,
+              }}
+            />
           </Group>
           {show_user && auction.owner && (
             <Group>

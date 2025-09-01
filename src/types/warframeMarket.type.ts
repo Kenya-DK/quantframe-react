@@ -49,6 +49,7 @@ export namespace WFMarketTypes {
     operation: string[];
     item_name: string;
     image_url: string;
+    can_import: boolean;
   }
 
   export interface Auction {
@@ -89,6 +90,7 @@ export namespace WFMarketTypes {
     positive: boolean;
     url_name: string;
     value: number;
+    effect?: string;
   }
 
   export interface Similarity {

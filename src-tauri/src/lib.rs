@@ -244,6 +244,7 @@ pub fn run() {
             commands::auction::get_wfm_auctions_pagination,
             commands::auction::auction_delete_all,
             commands::auction::auction_delete_by_id,
+            commands::auction::auction_import_by_id,
             // Wish List commands
             commands::wish_list::get_wish_list_pagination,
             commands::wish_list::get_wish_list_financial_report,

@@ -1,7 +1,7 @@
 import { Box, Divider, Group, Pagination, ScrollArea, SimpleGrid } from "@mantine/core";
 import { SearchField } from "@components/Forms/SearchField";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faCartShopping, faPen, faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faFileImport, faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import classes from "../../WarframeMarket.module.css";
@@ -12,7 +12,7 @@ import { useStockMutations } from "./mutations";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 import { Loading } from "@components/Shared/Loading";
 import { useStockModals } from "./modals";
-import { WFMAuction } from "../../../../components/DataDisplay/WFMAuction";
+import { WFMAuction } from "@components/DataDisplay/WFMAuction";
 interface AuctionPanelProps {}
 export const AuctionPanel = ({}: AuctionPanelProps) => {
   const [queryData, setQueryData] = useState<WFMarketTypes.WfmAuctionControllerGetListParams>({ page: 1, limit: 12 });
@@ -20,7 +20,7 @@ export const AuctionPanel = ({}: AuctionPanelProps) => {
   const [deletingOrders, setDeletingOrders] = useState<{ current: number; total: number }>({ current: 0, total: 0 });
   // Translate general
   const useTranslateTabOrder = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslatePages(`warframe_market.tabs.orders.${key}`, { ...context }, i18Key);
+    useTranslatePages(`warframe_market.tabs.auctions.${key}`, { ...context }, i18Key);
   const useTranslateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTabOrder(`buttons.${key}`, { ...context }, i18Key);
   const useTranslateBasePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -34,7 +34,7 @@ export const AuctionPanel = ({}: AuctionPanelProps) => {
   const { refetchQueries, paginationQuery } = useStockQueries({ queryData });
 
   // Mutations
-  const { refreshAuctionsMutation, deleteAllAuctionsMutation, deleteStockMutation, createStockMutation, sellStockMutation } = useStockMutations({
+  const { refreshAuctionsMutation, importStockMutation, deleteAllAuctionsMutation, deleteStockMutation } = useStockMutations({
     useTranslateSuccess,
     useTranslateErrors,
     refetchQueries,
@@ -42,10 +42,9 @@ export const AuctionPanel = ({}: AuctionPanelProps) => {
   });
 
   // Modals
-  const { OpenDeleteModal, HandleModalOrder } = useStockModals({
-    createStockMutation,
-    sellStockMutation,
+  const { OpenDeleteModal, OpenImportModal } = useStockModals({
     useTranslateBasePrompt,
+    importStockMutation,
     deleteStockMutation,
   });
   const handleRefresh = (_data: any) => {
@@ -93,37 +92,29 @@ export const AuctionPanel = ({}: AuctionPanelProps) => {
       />
       <ScrollArea mt={"md"} className={classes.orders} data-has-alert={useHasAlert()}>
         {deleteAllAuctionsMutation.isPending && <Loading text={`${deletingOrders.current} / ${deletingOrders.total}`} />}
-        <SimpleGrid cols={4} spacing="sm">
+        <SimpleGrid cols={2} spacing="sm">
           {paginationQuery.data?.results?.map((order) => (
             <WFMAuction
               display_style="grid"
+              show_user
               key={order.id}
               auction={order}
-              footer={
-                <>
-                  <ActionWithTooltip
-                    tooltip={useTranslateButtons("sell_manual.sell_tooltip")}
-                    icon={faPen}
-                    loading={loadingRows.includes(`${order.id}`)}
-                    color={"blue.7"}
-                    actionProps={{ size: "sm" }}
-                    iconProps={{ size: "xs" }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // HandleModalOrder(order);
-                    }}
-                  />
-                  <ActionWithTooltip
-                    tooltip={useTranslateButtons("sell_auto.sell_tooltip")}
-                    icon={faCartShopping}
-                    loading={loadingRows.includes(`${order.id}`)}
-                    color={"green.7"}
-                    actionProps={{ size: "sm" }}
-                    iconProps={{ size: "xs" }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                  />
+              header={
+                <Group gap={"xs"}>
+                  {order.properties?.can_import && (
+                    <ActionWithTooltip
+                      tooltip={useTranslateButtons("import_tooltip")}
+                      icon={faFileImport}
+                      loading={loadingRows.includes(`${order.id}`)}
+                      color={"blue.7"}
+                      actionProps={{ size: "sm" }}
+                      iconProps={{ size: "xs" }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        OpenImportModal(order.id);
+                      }}
+                    />
+                  )}
                   <ActionWithTooltip
                     tooltip={useTranslateButtons("delete_tooltip")}
                     icon={faTrashCan}
@@ -136,7 +127,7 @@ export const AuctionPanel = ({}: AuctionPanelProps) => {
                       OpenDeleteModal(order.id);
                     }}
                   />
-                </>
+                </Group>
               }
             />
           ))}

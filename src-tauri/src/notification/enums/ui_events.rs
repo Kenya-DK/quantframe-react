@@ -14,6 +14,8 @@ pub enum UIEvent {
     RefreshWishListItems,
     RefreshWfmOrders,
     OnDeleteWfmOrders,
+    OnDeleteWfmAuctions,
+    RefreshWfmAuctions,
 }
 impl UIEvent {
     pub fn as_str(&self) -> &str {
@@ -29,6 +31,8 @@ impl UIEvent {
             UIEvent::RefreshWishListItems => "LiveScraper:RefreshWishListItems",
             UIEvent::RefreshWfmOrders => "LiveScraper:RefreshWfmOrders",
             UIEvent::OnDeleteWfmOrders => "Wfm:OnDeleteOrders",
+            UIEvent::OnDeleteWfmAuctions => "Wfm:OnDeleteAuctions",
+            UIEvent::RefreshWfmAuctions => "Wfm:RefreshAuctions",
         }
     }
 }

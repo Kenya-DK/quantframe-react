@@ -1,6 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
 import { notifications } from "@mantine/notifications";
-import { WFMarketTypes } from "$types";
 import api from "@api/index";
 import { useTranslateCommon } from "@hooks/useTranslate.hook";
 
@@ -40,7 +39,7 @@ const createGenericMutation = <TData, TVariables>(
         }
       : undefined,
     onSuccess: (data: TData, variables: TVariables) => {
-      let refetchStatusString = ["create_stock_riven", "refresh_auctions", "delete_all_auctions"];
+      let refetchStatusString = ["import_tooltip", "refresh_auctions", "delete_all_auctions"];
       hooks.refetchQueries(refetchStatusString.includes(config.successKey));
       notifications.show({
         title: config.translateCommon
@@ -91,54 +90,23 @@ export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, ref
     hooks
   );
 
-  const createStockMutation = createGenericMutation(
-    {
-      mutationFn: (data: WFMarketTypes.Order) =>
-        api.stock_item.create(
-          {
-            raw: data.itemId,
-            quantity: data.quantity,
-            sub_type: data,
-            bought: data.platinum,
-          },
-          "id"
-        ),
-      successKey: "create_stock_riven",
-      errorKey: "create_stock_riven",
-      translateCommon: true,
-      getSuccessMessage: (data: any) => ({ name: data.item_name }),
-    },
-    hooks
-  );
-
-  const sellStockMutation = createGenericMutation(
-    {
-      mutationFn: (data: WFMarketTypes.Order) =>
-        api.stock_item.sell(
-          {
-            id: -1,
-            wfm_url: data.itemId,
-            sub_type: data,
-            price: data.platinum,
-            quantity: 1,
-          },
-          "id"
-        ),
-      successKey: "sell_stock_riven",
-      errorKey: "sell_stock_riven",
-      translateCommon: true,
-      getLoadingId: (variables: WFMarketTypes.Order) => `${variables.id}`,
-      getSuccessMessage: (data: any) => ({ name: data.item_name }),
-    },
-    hooks
-  );
-
   const deleteStockMutation = createGenericMutation(
     {
-      mutationFn: (id: string) => api.order.deleteById(id),
+      mutationFn: (id: string) => api.auction.deleteById(id),
       successKey: "delete_auction",
       errorKey: "delete_auction",
       getLoadingId: (variables: string) => `${variables}`,
+    },
+    hooks
+  );
+  const importStockMutation = createGenericMutation(
+    {
+      mutationFn: (data: { id: string; bought: number }) => api.auction.importById(data.id, data.bought),
+      successKey: "create_stock_riven",
+      errorKey: "create_stock_riven",
+      translateCommon: true,
+      getLoadingId: (variables: { id: string; bought: number }) => `${variables.id}`,
+      getSuccessMessage: (data: any) => ({ name: `${data.weapon_name} ${data.mod_name}` }),
     },
     hooks
   );
@@ -146,8 +114,7 @@ export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, ref
   return {
     refreshAuctionsMutation,
     deleteAllAuctionsMutation,
-    createStockMutation,
-    sellStockMutation,
     deleteStockMutation,
+    importStockMutation,
   };
 };

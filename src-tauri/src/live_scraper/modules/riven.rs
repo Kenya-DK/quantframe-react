@@ -234,10 +234,10 @@ impl RivenModule {
             auction_info = auction_info.set_lowest_price(live_auctions.lowest_price());
             auction_info = auction_info.set_auctions(live_auctions.take_top(5));
 
-            let can_create_order = wfm_client.order().can_create_order();
+            let can_create = wfm_client.auction().can_create_auction();
             if auction_info.has_operation("Create")
                 && !auction_info.has_operation("Delete")
-                && can_create_order
+                && can_create
             {
                 match wfm_client
                     .auction()
@@ -247,7 +247,7 @@ impl RivenModule {
                             Some(post_price as i32),
                             0,
                             true,
-                            "",
+                            &stock_riven.comment,
                             CreateAuctionItem::new_riven(
                                 &stock_riven.wfm_weapon_url,
                                 &stock_riven.mod_name,
@@ -282,6 +282,7 @@ impl RivenModule {
                             ),
                             &log_options,
                         );
+                        send_event!(UIEvent::RefreshWfmAuctions, json!({"source": COMPONENT}));
                     }
                     Err(e) => {
                         return Err(Error::from_wfm(
@@ -333,6 +334,7 @@ impl RivenModule {
             } else if auction_info.has_operation("Update") && auction_info.has_operation("Delete") {
                 match wfm_client.auction().delete(&auction_info.auction_id).await {
                     Ok(_) => {
+                        send_event!(UIEvent::RefreshWfmAuctions, json!({"source": COMPONENT}));
                         info(
                             format!("{}DeleteSuccess", COMPONENT),
                             &format!(
@@ -363,7 +365,7 @@ impl RivenModule {
                     ),
                     &log_options,
                 );
-            } else if !can_create_order {
+            } else if !can_create {
                 warning(
                     format!("{}Skip", COMPONENT),
                     &format!(
@@ -442,12 +444,9 @@ pub fn get_auction_details(
                 .get_details()
                 .set_operation(&["Update"])
                 .set_auction_id(auction.id.clone())
-                .set_item_name(&item_info.name)
-                .set_image_url(&item_info.wfm_icon)
         })
         .unwrap_or_default()
-        .set_item_name(&item_info.name)
-        .set_image_url(&item_info.wfm_icon)
+        .set_info(item_info)
 }
 
 fn get_filter(entity: &Model) -> AuctionFilter {
