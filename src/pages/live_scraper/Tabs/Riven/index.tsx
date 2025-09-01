@@ -19,9 +19,11 @@ import { useStockMutations } from "./mutations";
 import { useStockModals } from "./modals";
 import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 import { ColumnActions } from "../../Columns/ColumnActions";
-export type RivenPanelProps = {};
+export type RivenPanelProps = {
+  isActive?: boolean;
+};
 
-export const RivenPanel = ({}: RivenPanelProps) => {
+export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
   // Treat as “wide” only when landscape AND ≥800px wide
   const isWide = useMediaQuery("(min-width: 800px) and (orientation: landscape)");
   // Contexts
@@ -55,7 +57,7 @@ export const RivenPanel = ({}: RivenPanelProps) => {
   const useTranslatePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTabRiven(`prompts.${key}`, { ...context }, i18Key);
   // Queries
-  const { paginationQuery, financialReportQuery, statusCountsQuery, refetchQueries } = useStockQueries({ queryData });
+  const { paginationQuery, financialReportQuery, statusCountsQuery, refetchQueries } = useStockQueries({ queryData, isActive });
   const handleRefresh = (_data: any) => {
     refetchQueries(true);
   };

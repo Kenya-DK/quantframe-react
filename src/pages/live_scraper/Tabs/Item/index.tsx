@@ -21,7 +21,11 @@ import { GetSubTypeDisplay } from "@utils/helper";
 import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 import { ColumnActions } from "../../Columns/ColumnActions";
 
-export const ItemPanel = () => {
+interface ItemPanelProps {
+  isActive?: boolean;
+}
+
+export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
   // Contexts
   const { is_running } = useLiveScraperContext();
   // States For DataGrid
@@ -53,7 +57,7 @@ export const ItemPanel = () => {
   const useTranslatePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTabItem(`prompts.${key}`, { ...context }, i18Key);
   // Queries
-  const { paginationQuery, financialReportQuery, statusCountsQuery, refetchQueries } = useStockQueries({ queryData });
+  const { paginationQuery, financialReportQuery, statusCountsQuery, refetchQueries } = useStockQueries({ queryData, isActive });
 
   // Mutations
   const { createStockMutation, updateStockMutation, sellStockMutation, deleteStockMutation } = useStockMutations({

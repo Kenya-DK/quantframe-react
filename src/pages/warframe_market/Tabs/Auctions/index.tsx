@@ -13,8 +13,10 @@ import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 import { Loading } from "@components/Shared/Loading";
 import { useStockModals } from "./modals";
 import { WFMAuction } from "@components/DataDisplay/WFMAuction";
-interface AuctionPanelProps {}
-export const AuctionPanel = ({}: AuctionPanelProps) => {
+interface AuctionPanelProps {
+  isActive?: boolean;
+}
+export const AuctionPanel = ({ isActive }: AuctionPanelProps) => {
   const [queryData, setQueryData] = useState<WFMarketTypes.WfmAuctionControllerGetListParams>({ page: 1, limit: 12 });
   const [loadingRows, setLoadingRows] = useState<string[]>([]);
   const [deletingOrders, setDeletingOrders] = useState<{ current: number; total: number }>({ current: 0, total: 0 });
@@ -31,7 +33,7 @@ export const AuctionPanel = ({}: AuctionPanelProps) => {
     useTranslateTabOrder(`success.${key}`, { ...context }, i18Key);
 
   // Queries
-  const { refetchQueries, paginationQuery } = useStockQueries({ queryData });
+  const { refetchQueries, paginationQuery } = useStockQueries({ queryData, isActive });
 
   // Mutations
   const { refreshAuctionsMutation, importStockMutation, deleteAllAuctionsMutation, deleteStockMutation } = useStockMutations({

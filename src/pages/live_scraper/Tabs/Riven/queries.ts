@@ -4,23 +4,27 @@ import api from "@api/index";
 
 interface QueriesHooks {
   queryData: TauriTypes.StockRivenControllerGetListParams;
+  isActive?: boolean;
 }
 
-export const useStockQueries = ({ queryData }: QueriesHooks) => {
+export const useStockQueries = ({ queryData, isActive }: QueriesHooks) => {
   const getPaginationQuery = useQuery({
     queryKey: ["get_stock_riven_pagination", queryData],
     queryFn: () => api.stock_riven.getPagination(queryData),
     retry: false,
+    enabled: isActive,
   });
   const getFinancialReportQuery = useQuery({
     queryKey: ["get_stock_riven_financial_report", queryData],
     queryFn: () => api.stock_riven.getFinancialReport(queryData),
     retry: false,
+    enabled: isActive,
   });
   const getStatusCountsQuery = useQuery({
     queryKey: ["get_stock_riven_status_counts"],
     queryFn: () => api.stock_riven.getStatusCounts({ page: 1, limit: -1 }),
     retry: false,
+    enabled: isActive,
   });
   const refetchQueries = (refetchStatus: boolean = false) => {
     getPaginationQuery.refetch();

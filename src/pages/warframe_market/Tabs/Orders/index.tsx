@@ -14,8 +14,10 @@ import { useStockMutations } from "./mutations";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 import { Loading } from "@components/Shared/Loading";
 import { useStockModals } from "./modals";
-interface OrderPanelProps {}
-export const OrderPanel = ({}: OrderPanelProps) => {
+interface OrderPanelProps {
+  isActive?: boolean;
+}
+export const OrderPanel = ({ isActive }: OrderPanelProps) => {
   const [queryData, setQueryData] = useState<WFMarketTypes.WfmOrderControllerGetListParams>({ page: 1, limit: 12 });
   const [loadingRows, setLoadingRows] = useState<string[]>([]);
   const [deletingOrders, setDeletingOrders] = useState<{ current: number; total: number }>({ current: 0, total: 0 });
@@ -34,7 +36,7 @@ export const OrderPanel = ({}: OrderPanelProps) => {
     useTranslateTabOrder(`success.${key}`, { ...context }, i18Key);
 
   // Queries
-  const { refetchQueries, paginationQuery, statusCountsQuery } = useStockQueries({ queryData });
+  const { refetchQueries, paginationQuery, statusCountsQuery } = useStockQueries({ queryData, isActive });
 
   // Mutations
   const { refreshOrdersMutation, deleteAllOrdersMutation, deleteStockMutation, createStockMutation, sellStockMutation } = useStockMutations({

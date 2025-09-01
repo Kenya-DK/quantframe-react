@@ -16,17 +16,17 @@ export default function LiveScraperPage() {
   const tabs = [
     {
       label: useTranslateTabs("item.title"),
-      component: <ItemPanel />,
+      component: (isActive: boolean) => <ItemPanel isActive={isActive} />,
       id: "item",
     },
     {
       label: useTranslateTabs("riven.title"),
-      component: <RivenPanel />,
+      component: (isActive: boolean) => <RivenPanel isActive={isActive} />,
       id: "riven",
     },
     {
       label: useTranslateTabs("wish_list.title"),
-      component: <WishListPanel />,
+      component: (isActive: boolean) => <WishListPanel isActive={isActive} />,
       id: "wish_list",
     },
   ];
@@ -51,7 +51,7 @@ export default function LiveScraperPage() {
         </Tabs.List>
         {tabs.map((tab) => (
           <Tabs.Panel value={tab.id} key={tab.id}>
-            {tab.component}
+            {tab.component(activeTab === tab.id)}
           </Tabs.Panel>
         ))}
       </Tabs>

@@ -21,7 +21,11 @@ import { useStockModals } from "./modals";
 import { ColumnActions } from "../../Columns/ColumnActions";
 import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 
-export const WishListPanel = () => {
+interface WishListPanelProps {
+  isActive?: boolean;
+}
+
+export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
   // Contexts
   const { is_running } = useLiveScraperContext();
   // States For DataGrid
@@ -53,7 +57,7 @@ export const WishListPanel = () => {
   const useTranslatePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTabItem(`prompts.${key}`, { ...context }, i18Key);
   // Queries
-  const { paginationQuery, financialReportQuery, statusCountsQuery, refetchQueries } = useWishListQueries({ queryData });
+  const { paginationQuery, financialReportQuery, statusCountsQuery, refetchQueries } = useWishListQueries({ queryData, isActive });
 
   // Mutations
   const { createWishListMutation, boughtWishListMutation, updateWishListMutation, deleteWishListMutation } = useWishListMutations({
