@@ -87,7 +87,6 @@ impl CacheVersion {
         match serde_json::from_value::<CacheVersion>(validated_json) {
             Ok(cache_version) => Ok(cache_version),
             Err(_) => {
-                println!("Invalid JSON structure, creating default cache version.");
                 let default_cache_version = CacheVersion::default();
                 default_cache_version.save()?;
                 return Ok(default_cache_version);

@@ -4,15 +4,13 @@ use std::{
 };
 use utils::{find_by, get_location, info, read_json_file, Error, LoggerOptions};
 
-use crate::{
-    cache::{client::CacheState, types::CacheArcane},
-    emit_error,
-};
+use crate::cache::*;
 
 #[derive(Debug)]
 pub struct ArcaneModule {
     path: PathBuf,
     items: Mutex<Vec<CacheArcane>>,
+    components: Mutex<Vec<CacheItemComponent>>,
     client: Weak<CacheState>,
 }
 impl ArcaneModule {
@@ -20,6 +18,7 @@ impl ArcaneModule {
         Arc::new(Self {
             path: client.base_path.join("items/Arcanes.json"),
             items: Mutex::new(Vec::new()),
+            components: Mutex::new(Vec::new()),
             client: Arc::downgrade(&client),
         })
     }
@@ -36,15 +35,52 @@ impl ArcaneModule {
         match read_json_file::<Vec<CacheArcane>>(&client.base_path.join(self.path.clone())) {
             Ok(items) => {
                 let mut items_lock = self.items.lock().unwrap();
-                *items_lock = items;
+                let mut components_lock = self.components.lock().unwrap();
                 info(
                     "Cache:Arcane:load",
-                    "Loaded Arcane items from cache",
+                    format!("Loaded {} Arcane items", items.len()),
                     &LoggerOptions::default(),
                 );
+                *items_lock = items.clone();
+                for mut item in items {
+                    if item.components.is_none() {
+                        continue;
+                    }
+                    components_lock.append(&mut item.components.take().unwrap());
+                }
             }
             Err(e) => return Err(e.with_location(get_location!())),
         }
         Ok(())
+    }
+    pub fn collect_all_items(&self) -> Vec<CacheItemBase> {
+        let items_lock = self.items.lock().unwrap();
+        let components_lock = self.components.lock().unwrap();
+        let mut items: Vec<CacheItemBase> = Vec::new();
+        items.append(
+            &mut items_lock
+                .iter()
+                .map(|item| item.convert_to_base_item())
+                .collect(),
+        );
+        items.append(
+            &mut components_lock
+                .iter()
+                .map(|item| item.convert_to_base_item())
+                .collect(),
+        );
+        items
+    }
+    /**
+     * Creates a new `ArcaneModule` from an existing one, sharing the client.
+     * This is useful for cloning modules when the client state changes.
+     */
+    pub fn from_existing(old: &ArcaneModule, client: Arc<CacheState>) -> Arc<Self> {
+        Arc::new(Self {
+            path: old.path.clone(),
+            client: Arc::downgrade(&client),
+            items: Mutex::new(old.items.lock().unwrap().clone()),
+            components: Mutex::new(old.components.lock().unwrap().clone()),
+        })
     }
 }

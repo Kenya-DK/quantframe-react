@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     path::PathBuf,
     sync::{Arc, Mutex, Weak},
 };
@@ -56,20 +57,22 @@ impl TradableItemModule {
 
         match find_by.find_by {
             FindByType::Name => {
-                return Ok(items.into_iter().find(|item| item.name == find_by.value))
+                return Ok(items.into_iter().find(|item| find_by.is_match(&item.name)))
             }
             FindByType::Url => {
                 return Ok(items
                     .into_iter()
-                    .find(|item| item.wfm_url_name == find_by.value))
+                    .find(|item| find_by.is_match(&item.wfm_url_name)))
             }
             FindByType::UniqueName => {
                 return Ok(items
                     .into_iter()
-                    .find(|item| item.unique_name == find_by.value))
+                    .find(|item| find_by.is_match(&item.unique_name)))
             }
             FindByType::Id => {
-                return Ok(items.into_iter().find(|item| item.wfm_id == find_by.value))
+                return Ok(items
+                    .into_iter()
+                    .find(|item| find_by.is_match(&item.wfm_id)))
             }
             _ => Err(Error::new(
                 "Cache:TradableItem:get_by",
@@ -77,5 +80,54 @@ impl TradableItemModule {
                 get_location!(),
             )),
         }
+    }
+    pub fn get_dict(
+        &self,
+        find_by: FindByType,
+    ) -> Result<HashMap<String, CacheTradableItem>, Error> {
+        let items = self.get_items()?;
+
+        match find_by {
+            FindByType::Name => {
+                return Ok(items
+                    .iter()
+                    .map(|x| (x.name.clone(), x.clone()))
+                    .collect::<HashMap<String, CacheTradableItem>>())
+            }
+            FindByType::Url => {
+                return Ok(items
+                    .iter()
+                    .map(|x| (x.wfm_url_name.clone(), x.clone()))
+                    .collect::<HashMap<String, CacheTradableItem>>())
+            }
+            FindByType::UniqueName => {
+                return Ok(items
+                    .iter()
+                    .map(|x| (x.unique_name.clone(), x.clone()))
+                    .collect::<HashMap<String, CacheTradableItem>>())
+            }
+            FindByType::Id => {
+                return Ok(items
+                    .iter()
+                    .map(|x| (x.wfm_id.clone(), x.clone()))
+                    .collect::<HashMap<String, CacheTradableItem>>())
+            }
+            _ => Err(Error::new(
+                "Cache:TradableItem:get_by",
+                "Unsupported FindBy type",
+                get_location!(),
+            )),
+        }
+    }
+    /**
+     * Creates a new `TradableItemModule` from an existing one, sharing the client.
+     * This is useful for cloning modules when the client state changes.
+     */
+    pub fn from_existing(old: &TradableItemModule, client: Arc<CacheState>) -> Arc<Self> {
+        Arc::new(Self {
+            path: old.path.clone(),
+            client: Arc::downgrade(&client),
+            items: Mutex::new(old.items.lock().unwrap().clone()),
+        })
     }
 }

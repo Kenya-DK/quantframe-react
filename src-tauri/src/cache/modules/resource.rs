@@ -5,7 +5,7 @@ use std::{
 
 use utils::{find_by, get_location, info, read_json_file, Error, LoggerOptions};
 
-use crate::cache::{client::CacheState, types::CacheResource};
+use crate::cache::*;
 
 #[derive(Debug)]
 pub struct ResourceModule {
@@ -38,12 +38,34 @@ impl ResourceModule {
                 *items_lock = items;
                 info(
                     "Cache:Resource:load",
-                    "Loaded Resource items from cache",
+                    format!("Loaded {} Resource items", items_lock.len()),
                     &LoggerOptions::default(),
                 );
             }
             Err(e) => return Err(e.with_location(get_location!())),
         }
         Ok(())
+    }
+    pub fn collect_all_items(&self) -> Vec<CacheItemBase> {
+        let items_lock = self.items.lock().unwrap();
+        let mut items: Vec<CacheItemBase> = Vec::new();
+        items.append(
+            &mut items_lock
+                .iter()
+                .map(|item| item.convert_to_base_item())
+                .collect(),
+        );
+        items
+    }
+    /**
+     * Creates a new `ResourceModule` from an existing one, sharing the client.
+     * This is useful for cloning modules when the client state changes.
+     */
+    pub fn from_existing(old: &ResourceModule, client: Arc<CacheState>) -> Arc<Self> {
+        Arc::new(Self {
+            path: old.path.clone(),
+            client: Arc::downgrade(&client),
+            items: Mutex::new(old.items.lock().unwrap().clone()),
+        })
     }
 }

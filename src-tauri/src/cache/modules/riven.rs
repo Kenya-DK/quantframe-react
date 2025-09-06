@@ -57,17 +57,17 @@ impl RivenModule {
 
         match find_by.find_by {
             FindByType::Name => {
-                return Ok(items.into_iter().find(|item| item.name == find_by.value))
+                return Ok(items.into_iter().find(|item| find_by.is_match(&item.name)))
             }
             FindByType::Url => {
                 return Ok(items
                     .into_iter()
-                    .find(|item| item.wfm_url_name == find_by.value))
+                    .find(|item| find_by.is_match(&item.wfm_url_name)))
             }
             FindByType::UniqueName => {
                 return Ok(items
                     .into_iter()
-                    .find(|item| item.unique_name == find_by.value))
+                    .find(|item| find_by.is_match(&item.unique_name)))
             }
             _ => Err(Error::new(
                 "Cache:TradableItem:get_by",
@@ -84,17 +84,19 @@ impl RivenModule {
 
         match find_by.find_by {
             FindByType::Name => {
-                return Ok(items.into_iter().find(|item| item.effect == find_by.value))
+                return Ok(items
+                    .into_iter()
+                    .find(|item| find_by.is_match(&item.effect)))
             }
             FindByType::Url => {
                 return Ok(items
                     .into_iter()
-                    .find(|item| item.url_name == find_by.value))
+                    .find(|item| find_by.is_match(&item.url_name)))
             }
             FindByType::UniqueName => {
                 return Ok(items
                     .into_iter()
-                    .find(|item| item.game_ref == find_by.value))
+                    .find(|item| find_by.is_match(&item.game_ref)))
             }
             _ => Err(Error::new(
                 "Cache:TradableItem:get_by",
@@ -102,5 +104,16 @@ impl RivenModule {
                 get_location!(),
             )),
         }
+    }
+    /**
+     * Creates a new `RivenModule` from an existing one, sharing the client.
+     * This is useful for cloning modules when the client state changes.
+     */
+    pub fn from_existing(old: &RivenModule, client: Arc<CacheState>) -> Arc<Self> {
+        Arc::new(Self {
+            path: old.path.clone(),
+            client: Arc::downgrade(&client),
+            data: Mutex::new(old.data.lock().unwrap().clone()),
+        })
     }
 }

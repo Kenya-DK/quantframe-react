@@ -44,7 +44,7 @@ impl ItemPriceModule {
                     e,
                     get_location!(),
                 );
-                err.log(Some("cache_version.json"));
+                err.log("cache_version.json");
                 return Err(err);
             }
         };
@@ -67,7 +67,7 @@ impl ItemPriceModule {
                     );
                 }
                 Err(e) => {
-                    e.log(Some("cache_version.json"));
+                    e.log("cache_version.json");
                     return Err(e);
                 }
             }
@@ -167,5 +167,16 @@ impl ItemPriceModule {
             .into_iter()
             .filter(|item| predicate(item))
             .collect::<Vec<ItemPriceInfo>>()
+    }
+    /**
+     * Creates a new `ItemPriceModule` from an existing one, sharing the client.
+     * This is useful for cloning modules when the client state changes.
+     */
+    pub fn from_existing(old: &ItemPriceModule, client: Arc<CacheState>) -> Arc<Self> {
+        Arc::new(Self {
+            path: old.path.clone(),
+            client: Arc::downgrade(&client),
+            items: Mutex::new(old.items.lock().unwrap().clone()),
+        })
     }
 }
