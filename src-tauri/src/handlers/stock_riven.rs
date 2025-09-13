@@ -1,54 +1,57 @@
+use std::os::windows::fs::OpenOptionsExt;
+
+use chrono::format;
 use entity::{dto::*, enums::*, stock_riven::*};
-use service::{StockItemMutation, StockRivenMutation};
+use service::{StockItemMutation, StockRivenMutation, StockRivenQuery};
 use utils::{get_location, info, Error};
 use wf_market::enums::OrderType;
 
 use crate::{
     enums::*,
     handlers::*,
-    utils::{modules::states, CreateStockRivenExt},
+    types::OperationSet,
+    utils::{modules::states, CreateStockRivenExt, ErrorFromExt},
     DATABASE,
 };
 
-pub async fn handle_riven_by_entity(
-    mut item: CreateStockRiven,
+pub async fn handle_riven_by_model(
+    mut model: Model,
     user_name: impl Into<String>,
     operation: OrderType,
-) -> Result<(Vec<String>, Model), Error> {
+    operation_flags: &[&str],
+) -> Result<(OperationSet, Model), Error> {
     let conn = DATABASE.get().unwrap();
     let component = "HandleRiven";
     let file = "handle_riven.log";
-    let mut operations: Vec<String> = vec![];
-    item.validate(FindByType::Url).map_err(|e| {
-        let err = e.clone();
-        err.with_location(get_location!()).log(Some(file));
-        e
-    })?;
-    let mut model = item.to_model();
-
+    let mut operations: OperationSet = OperationSet::new();
     // Handle StockItem creation, deletion, or update
     if operation == OrderType::Sell {
         match StockRivenMutation::delete_uuid(conn, &model.uuid).await {
             Ok(_) => {
-                operations.push("StockRiven_Deleted".to_string());
+                operations.add("StockRiven_Deleted".to_string());
             }
             Err(e) => {
-                return Err(Error::new(
-                    component,
-                    format!("Failed to delete StockRiven: {}", e),
-                    get_location!(),
-                ))
+                if e.to_string().contains("NotFound") {
+                    operations.add("StockRiven_NotFound".to_string());
+                } else {
+                    return Err(Error::new(
+                        component,
+                        format!("Failed to delete StockRiven: {}", e),
+                        get_location!(),
+                    ));
+                }
             }
         }
     } else if operation == OrderType::Buy {
         match StockRivenMutation::create(conn, model).await {
             Ok((c_operation, created_item)) => {
-                operations.push(c_operation);
+                operations.add(c_operation);
                 model = created_item;
                 info(
                     format!("{}:Create", component),
                     &format!("Created stock riven: {}", model.weapon_name),
-                    &utils::LoggerOptions::default(),
+                    &utils::LoggerOptions::default()
+                        .set_enable(!operation_flags.contains(&"DisableCreateLog")),
                 );
             }
             Err(e) => {
@@ -57,7 +60,7 @@ pub async fn handle_riven_by_entity(
                     format!("Failed to create StockRiven: {}", e),
                     get_location!(),
                 )
-                .log(Some(file)));
+                .log(file));
             }
         }
     }
@@ -73,7 +76,7 @@ pub async fn handle_riven_by_entity(
         {
             match app.wfm_client.auction().delete(&auction.id).await {
                 Ok(_) => {
-                    operations.push("Auction_Deleted".to_string());
+                    operations.add("Auction_Deleted".to_string());
                 }
                 Err(e) => {
                     return Err(Error::new(
@@ -85,36 +88,100 @@ pub async fn handle_riven_by_entity(
             }
         }
     }
-
-    // Create a transaction from the item
-    if !item.is_validated {
-        return Err(Error::new(
-            component,
-            "Stock riven item is not validated yet",
-            get_location!(),
-        )
-        .log(Some(file)));
+    if operation_flags.iter().any(|op| op.starts_with("ReturnOn:")) {
+        let return_on = operation_flags
+            .iter()
+            .filter(|op| op.starts_with("ReturnOn:"))
+            .cloned()
+            .collect::<Vec<_>>();
+        if return_on.len() > 0 {
+            let return_on = return_on[0].replace("ReturnOn:", "");
+            if operations.ends_with(&return_on) {
+                return Ok((operations, model));
+            }
+        }
     }
-    if item.bought.unwrap_or(0) <= 0 {
+
+    if model.bought <= 0 {
         return Ok((operations, model));
     }
 
-    let mut transaction = model.to_transaction(
-        user_name,
-        item.bought.unwrap_or(0),
-        TransactionType::Purchase,
-    );
+    let mut transaction = model.to_transaction(user_name, model.bought, TransactionType::Purchase);
     if operation == OrderType::Sell {
         transaction.transaction_type = TransactionType::Sale;
     }
     handle_transaction(transaction)
         .await
-        .map_err(|e| e.with_location(get_location!()).log(Some(file)))?;
+        .map_err(|e| e.with_location(get_location!()).log(file))?;
 
     Ok((operations, model))
 }
+pub async fn handle_riven_by_entity(
+    mut item: CreateStockRiven,
+    user_name: impl Into<String>,
+    operation: OrderType,
+    find_by: FindByType,
+    operation_flags: &[&str],
+) -> Result<(OperationSet, Model), Error> {
+    let file = "handle_riven.log";
+    item.validate(find_by).map_err(|e| {
+        let err = e.clone();
+        err.with_location(get_location!()).log(file);
+        e
+    })?;
+    handle_riven_by_model(item.to_model(), user_name, operation, operation_flags)
+        .await
+        .map_err(|e| e.with_location(get_location!()))
+}
 
 /// Handles stock riven operations (buy/sell) with WFM integration
+pub async fn handle_riven_by_name(
+    weapon_url: impl Into<String>,
+    mod_name: impl Into<String>,
+    sub_type: SubType,
+    bought: i64,
+    user_name: impl Into<String>,
+    operation: OrderType,
+    operation_flags: &[&str],
+) -> Result<(OperationSet, Option<Model>), Error> {
+    let conn = DATABASE.get().unwrap();
+    let component = "HandleRivenByName";
+    let file = "handle_riven_by_name.log";
+    let mut operations: OperationSet = OperationSet::new();
+    let weapon_url = weapon_url.into();
+    let mod_name = mod_name.into();
+    let model = match StockRivenQuery::get_by_riven_name(
+        conn,
+        &weapon_url,
+        &mod_name,
+        sub_type,
+    )
+    .await
+    {
+        Ok(model_opt) => model_opt,
+        Err(e) => {
+            return Err(Error::from_db(
+                component,
+                format!("Failed to query StockRiven by name: {}", weapon_url),
+                e,
+                get_location!(),
+            )
+            .log(file))
+        }
+    };
+    if model.is_none() {
+        operations.add("StockRiven_NotFound".to_string());
+        return Ok((operations, None));
+    }
+    let mut model = model.unwrap();
+    model.bought = bought;
+    match handle_riven_by_model(model, user_name, operation, operation_flags).await {
+        Ok((operations, model)) => {
+            return Ok((operations, Some(model)));
+        }
+        Err(e) => return Err(e.with_location(get_location!()).log(file)),
+    }
+}
 pub async fn handle_riven(
     wfm_url: String,
     mod_name: String,
@@ -126,7 +193,9 @@ pub async fn handle_riven(
     bought: i64,
     user_name: impl Into<String>,
     operation: OrderType,
-) -> Result<(Vec<String>, Model), Error> {
+    find_by: FindByType,
+    operation_flags: &[&str],
+) -> Result<(OperationSet, Model), Error> {
     handle_riven_by_entity(
         CreateStockRiven::new(
             wfm_url,
@@ -140,6 +209,8 @@ pub async fn handle_riven(
         .set_bought(bought),
         user_name,
         operation,
+        find_by,
+        operation_flags,
     )
     .await
     .map_err(|e| e.with_location(get_location!()))

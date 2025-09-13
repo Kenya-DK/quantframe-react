@@ -52,7 +52,7 @@ pub async fn handle_wfm_item(
                         e,
                         get_location!(),
                     );
-                    error.log(Some(file));
+                    error.log(file);
                     return Err(error);
                 }
             }
@@ -73,7 +73,7 @@ pub async fn handle_wfm_item(
                         e,
                         get_location!(),
                     );
-                    error.log(Some(file));
+                    error.log(file);
                     return Err(error);
                 }
             }
@@ -102,7 +102,7 @@ pub async fn handle_wfm_item(
                         e,
                         get_location!(),
                     );
-                    error.log(Some(file));
+                    error.log(file);
                     return Err(error);
                 }
             }
@@ -135,7 +135,7 @@ pub async fn handle_transaction(
                 e,
                 get_location!(),
             );
-            error.log(Some("handle_transaction.log"));
+            error.log("handle_transaction.log");
             Err(error)
         }
     }
