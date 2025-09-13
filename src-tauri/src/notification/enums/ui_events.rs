@@ -6,7 +6,6 @@ pub enum UIEvent {
     UpdateUser,
     // WebSocket use if the WebSocket is connected or not
     OnError,
-    OnBanned,
     UpdateLiveScraperRunningState,
     SendLiveScraperMessage,
     RefreshStockItems,
@@ -16,6 +15,7 @@ pub enum UIEvent {
     OnDeleteWfmOrders,
     OnDeleteWfmAuctions,
     RefreshWfmAuctions,
+    OnNotify,
 }
 impl UIEvent {
     pub fn as_str(&self) -> &str {
@@ -23,7 +23,6 @@ impl UIEvent {
             UIEvent::OnStartingUp => "App:StartingUp",
             UIEvent::UpdateUser => "User:Update",
             UIEvent::OnError => "App:Error",
-            UIEvent::OnBanned => "User:Banned",
             UIEvent::UpdateLiveScraperRunningState => "LiveScraper:UpdateRunningState",
             UIEvent::SendLiveScraperMessage => "LiveScraper:OnMessage",
             UIEvent::RefreshStockItems => "LiveScraper:RefreshStockItems",
@@ -33,6 +32,7 @@ impl UIEvent {
             UIEvent::OnDeleteWfmOrders => "Wfm:OnDeleteOrders",
             UIEvent::OnDeleteWfmAuctions => "Wfm:OnDeleteAuctions",
             UIEvent::RefreshWfmAuctions => "Wfm:RefreshAuctions",
+            UIEvent::OnNotify => "App:OnNotify",
         }
     }
 }

@@ -82,3 +82,37 @@ macro_rules! emit_update_user {
         );
     }};
 }
+
+#[macro_export]
+macro_rules! notify_gui {
+    ($i18n_key:expr, $color:expr, $notify_type:expr, $values:expr) => {{
+        use crate::send_event;
+        use crate::notification::enums::*;
+        send_event!(
+            UIEvent::OnNotify,
+            Some(json!({"i18n_key": $i18n_key, "color": $color, "type": $notify_type, "values": $values}))
+        );
+    }};
+}
+
+// #[macro_export]
+// macro_rules! send_system_notification {
+//     ($title:expr, $body:expr, $icon:expr, $sound:expr) => {{
+// use crate::APP;
+// use tauri::Url;
+// use tauri_plugin_notification::{Attachment, NotificationExt};
+//         let app = APP.get().expect("App not initialized");
+//         app.notification()
+//             .builder()
+//             .title(title)
+//             .body(body)
+//             .icon(icon.unwrap_or("assets/icons/icon.png"))
+//             .sound(sound)
+//             .attachment(Attachment::new(
+//                 "AS".to_string(),
+//                 Url::parse("icon://assets/icons/icon.png").unwrap(),
+//             ))
+//             .show()
+//             .expect("Failed to show notification");
+//     }};
+// }
