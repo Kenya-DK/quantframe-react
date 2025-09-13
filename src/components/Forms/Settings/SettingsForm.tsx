@@ -39,7 +39,7 @@ export function SettingsForm({ onSubmit, value }: SettingsFormProps) {
     },
     {
       label: useTranslateTabs("advanced.title"),
-      component: <AdvancedPanel value={value.live_scraper} onSubmit={(v) => onSubmit({ ...value, live_scraper: v })} />,
+      component: <AdvancedPanel value={value.advanced_settings} onSubmit={(v) => onSubmit({ ...value, advanced_settings: v })} />,
       id: "advanced",
     },
     {
