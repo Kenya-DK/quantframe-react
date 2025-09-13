@@ -219,7 +219,6 @@ impl RivenModule {
                 profit = post_price - stock_riven.bought;
             }
 
-            // println!("Post price: {:?}", post_price);
             // Summary log
             info(
             format!("{}Summary", COMPONENT),

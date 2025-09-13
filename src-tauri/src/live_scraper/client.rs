@@ -60,7 +60,7 @@ impl LiveScraperState {
                 Ok(_) => {}
                 Err(e) => {
                     e.with_location(get_location!())
-                        .log(Some("live_scraper.log"));
+                        .log("live_scraper.log");
                 }
             }
         }
@@ -81,7 +81,7 @@ impl LiveScraperState {
                             Err(e) => {
                                 e.clone()
                                     .with_location(get_location!())
-                                    .log(Some("live_scraper_riven.log"));
+                                    .log("live_scraper_riven.log");
                                 match e.log_level {
                                     LogLevel::Critical | LogLevel::Error => {
                                         // Stop the live scraper
@@ -103,7 +103,7 @@ impl LiveScraperState {
                             Err(e) => {
                                 e.clone()
                                     .with_location(get_location!())
-                                    .log(Some("live_scraper_item.log"));
+                                    .log("live_scraper_item.log");
                                 match e.log_level {
                                     LogLevel::Critical | LogLevel::Error => {
                                         // Stop the live scraper
