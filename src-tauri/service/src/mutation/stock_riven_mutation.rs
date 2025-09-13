@@ -48,7 +48,7 @@ impl StockRivenMutation {
         let item = Entity::find_by_id(input.id)
             .one(db)
             .await?
-            .ok_or(DbErr::Custom("Cannot find stock riven.".to_owned()))?;
+            .ok_or(DbErr::Custom("NotFound".to_owned()))?;
 
         let mut active: stock_riven::ActiveModel = input.apply_to(item.into());
         active.updated_at = Set(chrono::Utc::now());
@@ -62,7 +62,7 @@ impl StockRivenMutation {
         let post: stock_riven::ActiveModel = Entity::find_by_id(id)
             .one(db)
             .await?
-            .ok_or(DbErr::Custom("Cannot find post.".to_owned()))
+            .ok_or(DbErr::Custom("NotFound".to_owned()))
             .map(Into::into)?;
 
         post.delete(db).await
@@ -72,7 +72,7 @@ impl StockRivenMutation {
         if let Some(entry) = entry {
             StockRivenMutation::delete(db, entry.id).await
         } else {
-            Err(DbErr::Custom("Cannot find post.".to_owned()))
+            Err(DbErr::Custom("NotFound".to_string()))
         }
     }
 

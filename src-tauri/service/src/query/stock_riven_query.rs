@@ -67,13 +67,14 @@ impl StockRivenQuery {
 
     pub async fn get_by_riven_name(
         db: &DbConn,
-        weapon_url: &str,
-        mod_name: &str,
+        weapon_url: impl Into<String>,
+        mod_name: impl Into<String>,
         sub_type: SubType,
     ) -> Result<Option<stock_riven::Model>, DbErr> {
+        // Ignore case for mod_name
         Entity::find()
-            .filter(stock_riven::Column::WfmWeaponUrl.eq(weapon_url))
-            .filter(stock_riven::Column::ModName.eq(mod_name))
+            .filter(stock_riven::Column::WfmWeaponUrl.eq(weapon_url.into()))
+            .filter(stock_riven::Column::ModName.like(format!("{}", mod_name.into())))
             .filter(stock_riven::Column::SubType.eq(sub_type))
             .one(db)
             .await
