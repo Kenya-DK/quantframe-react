@@ -95,3 +95,14 @@ pub fn paginate<T: Clone>(items: &[T], page: i64, per_page: i64) -> PaginatedRes
         total: total_items,
     }
 }
+
+pub fn get_local_data_path() -> PathBuf {
+    let app = APP.get().unwrap();
+    let local_path = match app.path().local_data_dir() {
+        Ok(val) => val,
+        Err(_) => {
+            panic!("Could not find local data path");
+        }
+    };
+    local_path
+}

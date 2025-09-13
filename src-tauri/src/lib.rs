@@ -29,8 +29,11 @@ use tauri::{App, Emitter, Manager};
 
 use crate::cache::client::CacheState;
 use crate::live_scraper::LiveScraperState;
+use crate::log_parser::init_detections;
+use crate::log_parser::LogParserState;
 use crate::notification::client::NotificationState;
 use crate::utils::OrderListExt;
+use tauri_plugin_notification::{Attachment, NotificationExt};
 
 mod app;
 mod utils;
@@ -43,9 +46,10 @@ mod macros;
 // mod debug;
 mod enums;
 mod helper;
+mod types;
 // mod http_client;
 mod live_scraper;
-// mod log_parser;
+mod log_parser;
 mod notification;
 // mod qf_client;
 // mod settings;
@@ -109,6 +113,7 @@ async fn init_database(use_debug: bool) -> Result<(), Error> {
 }
 
 async fn setup_manages(app: tauri::AppHandle) -> Result<(), Error> {
+    init_detections();
     // Clear the logs older then 7 days
     clear_logs(7)?;
 
@@ -118,6 +123,7 @@ async fn setup_manages(app: tauri::AppHandle) -> Result<(), Error> {
     // Clone the fields needed for CacheState before moving app_state
     let app_state = AppState::new(app.clone()).await;
     let qf_client = app_state.qf_client.clone();
+    let settings = app_state.settings.clone();
     let user = app_state.user.clone();
     app.manage(Mutex::new(app_state));
 
@@ -126,6 +132,8 @@ async fn setup_manages(app: tauri::AppHandle) -> Result<(), Error> {
 
     let live_scraper_state = LiveScraperState::new();
     app.manage(live_scraper_state);
+
+    app.manage(Mutex::new(LogParserState::new(&settings.advanced_settings)));
     Ok(())
 }
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -160,11 +168,11 @@ pub fn run() {
             tauri::async_runtime::spawn(async move {
                 if let Err(e) = init_database(true).await {
                     emit_error!(e);
-                    e.log(Some("init_database_error.log"));
+                    e.log("init_database_error.log");
                 }
                 if let Err(e) = setup_manages(app_handle.clone()).await {
                     emit_error!(e);
-                    e.log(Some("setup_error.log"));
+                    e.log("setup_error.log");
                 }
                 if let Err(e) = app_handle.emit("app:ready", ()) {
                     error(
@@ -173,6 +181,21 @@ pub fn run() {
                         &LoggerOptions::default().set_file("emit_error.log"),
                     );
                 }
+                // send_system_notification!(
+                //     "Quantframe Started",
+                //     "The application has started successfully.",
+                //     None,
+                //     None
+                // );
+                let app = APP.get().expect("App not initialized");
+                app.notification()
+                    .builder()
+                    .title("Quantframe Started")
+                    .body("The application has started successfully.")
+                    .icon("assets/icons/icon.png")
+                    // .sound(None)
+                    .show()
+                    .expect("Failed to show notification");
                 HAS_STARTED.set(true).unwrap();
             });
             init_logger();
