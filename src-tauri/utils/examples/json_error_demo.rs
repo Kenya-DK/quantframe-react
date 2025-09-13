@@ -91,7 +91,7 @@ fn test_json_parsing(test_name: &str, json_content: &str) {
 
             // Log the error to see the full formatted output
             println!("  📝 Full error log:");
-            error.log(Some("json_errors.log"));
+            error.log("json_errors.log");
         }
     }
     println!();

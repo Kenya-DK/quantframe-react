@@ -264,10 +264,11 @@ impl Error {
     ///
     /// # Returns
     /// A formatted string suitable for logging
-    pub fn log(&self, file: Option<impl Into<String>>) -> Self {
+    pub fn log(&self, file: impl Into<String>) -> Self {
         let mut options = LoggerOptions::default();
-        if let Some(file_name) = file {
-            options.file = Some(file_name.into());
+        let file_name = file.into();
+        if !file_name.is_empty() {
+            options.file = Some(file_name);
         }
         let mut message = format!("{}", self.message);
 

@@ -68,42 +68,6 @@ macro_rules! log_critical_opt {
     };
 }
 
-// Zip logging macros
-#[macro_export]
-macro_rules! zip_log_info {
-    ($zip_logger:expr, $component:expr, $($arg:tt)*) => {
-        $zip_logger.add_log("INFO", $component, format!($($arg)*)).ok();
-    };
-}
-
-#[macro_export]
-macro_rules! zip_log_error {
-    ($zip_logger:expr, $component:expr, $($arg:tt)*) => {
-        $zip_logger.add_log("ERROR", $component, format!($($arg)*)).ok();
-    };
-}
-
-#[macro_export]
-macro_rules! zip_log_warn {
-    ($zip_logger:expr, $component:expr, $($arg:tt)*) => {
-        $zip_logger.add_log("WARN", $component, format!($($arg)*)).ok();
-    };
-}
-
-#[macro_export]
-macro_rules! zip_log_debug {
-    ($zip_logger:expr, $component:expr, $($arg:tt)*) => {
-        $zip_logger.add_log("DEBUG", $component, format!($($arg)*)).ok();
-    };
-}
-
-#[macro_export]
-macro_rules! zip_log_critical {
-    ($zip_logger:expr, $component:expr, $($arg:tt)*) => {
-        $zip_logger.add_log("CRITICAL", $component, format!($($arg)*)).ok();
-    };
-}
-
 /// Macro to clear logs older than specified number of days
 #[macro_export]
 macro_rules! clear_logs {

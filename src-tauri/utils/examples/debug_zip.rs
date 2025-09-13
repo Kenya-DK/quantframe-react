@@ -38,9 +38,6 @@ fn main() -> Result<(), Error> {
     println!("Creating ZipLogger...");
     let zip_logger = ZipLogger::start("debug_archive.zip")?;
 
-    // Add a simple log entry
-    zip_log_info!(zip_logger, "Test", "This is a debug test entry");
-
     // Finalize
     println!("Finalizing zip...");
     zip_logger.finalize()?;

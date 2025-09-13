@@ -1,5 +1,5 @@
 use crate::helper::remove_ansi_codes;
-use crate::{Error, get_location};
+use crate::{Error, delete_log, get_location};
 use chrono::Local;
 use std::fs::File;
 use std::io::{BufWriter, Write};
@@ -49,22 +49,9 @@ impl ZipLogger {
     }
 
     /// Add a log entry to the zip archive
-    pub fn add_log(
-        &self,
-        level: &str,
-        component: impl Into<String>,
-        message: impl Into<String>,
-    ) -> Result<(), Error> {
-        let timestamp = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+    pub fn add_log(&self, message: impl Into<String>) -> Result<(), Error> {
         let elapsed = self.start_time.elapsed().as_secs_f64();
-        let log_entry = format!(
-            "[{}] [{}] [{}] {}: {}\n",
-            timestamp,
-            elapsed,
-            level,
-            component.into(),
-            message.into()
-        );
+        let log_entry = format!("[{}]: {}\n", elapsed, message.into());
 
         // Clean log entry (remove ANSI codes)
         let clean_entry = remove_ansi_codes(log_entry);
@@ -82,7 +69,8 @@ impl ZipLogger {
         file_path: impl AsRef<Path>,
         archive_path: impl Into<String>,
     ) -> Result<(), Error> {
-        let file_path = file_path.as_ref().to_path_buf();
+        let folder_path = crate::options::get_folder();
+        let file_path = folder_path.join(file_path.as_ref());
         let content = std::fs::read_to_string(file_path.clone()).map_err(|e| {
             Error::from_io(
                 &self.component("AddLogFile"),
@@ -116,6 +104,16 @@ impl ZipLogger {
             )
         })?;
 
+        Ok(())
+    }
+
+    pub fn add_error(&self, error: &Error) -> Result<(), Error> {
+        let timestamp = Local::now().format("%Y%m%d_%H%M%S");
+        let error_file_name = format!("error_{}.log", timestamp);
+        error.log(&error_file_name);
+        if let Ok(_) = self.add_log_file(&error_file_name, &error_file_name) {
+            delete_log(&error_file_name)?;
+        }
         Ok(())
     }
 
@@ -154,20 +152,11 @@ impl ZipLogger {
     }
 
     /// Finalize and close the zip archive
-    pub fn finalize(self) -> Result<(), Error> {
+    pub fn finalize(&self) -> Result<(), Error> {
         let component = self.component("Finalize");
-        // Save all accumulated log entries to a single file in the zip
-        let entries = Arc::try_unwrap(self.log_entries)
-            .map_err(|e| {
-                Error::new(
-                    &component,
-                    &format!("Failed to unwrap log entries: {:?}", e),
-                    get_location!(),
-                )
-            })?
-            .into_inner()
-            .unwrap();
 
+        // Extract and clear accumulated log entries
+        let mut entries = self.log_entries.lock().unwrap();
         if !entries.is_empty() {
             let mut writer = self.writer.lock().unwrap();
             writer
@@ -190,20 +179,12 @@ impl ZipLogger {
                     get_location!(),
                 )
             })?;
+            entries.clear(); // prevent double-finalization writes
         }
+        drop(entries);
 
-        let mut writer = Arc::try_unwrap(self.writer)
-            .map_err(|_| "Failed to unwrap Arc")
-            .map_err(|e| {
-                Error::new(
-                    &component,
-                    &format!("Failed to unwrap writer: {:?}", e),
-                    get_location!(),
-                )
-            })?
-            .into_inner()
-            .unwrap();
-
+        // Finish the zip writer
+        let mut writer = self.writer.lock().unwrap();
         writer.finish().map_err(|e| {
             Error::from_zip(
                 &component,
@@ -213,11 +194,6 @@ impl ZipLogger {
                 get_location!(),
             )
         })?;
-        let date_folder = chrono::Local::now().format("%Y-%m-%d").to_string();
-        println!(
-            "Zip archive '{}' created successfully in logs/{}/",
-            self.archive_name, date_folder
-        );
         Ok(())
     }
 

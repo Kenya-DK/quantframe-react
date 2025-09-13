@@ -12,11 +12,11 @@ fn main() -> Result<(), Error> {
 
     // Add multiple log entries
     println!("\n=== Adding multiple log entries ===");
-    zip_log_info!(zip_logger, "App", "First log entry");
-    zip_log_warn!(zip_logger, "System", "Second log entry - warning");
-    zip_log_error!(zip_logger, "Network", "Third log entry - error");
-    zip_log_debug!(zip_logger, "Cache", "Fourth log entry - debug");
-    zip_log_critical!(zip_logger, "Security", "Fifth log entry - critical");
+    // zip_log_info!(zip_logger, "App", "First log entry");
+    // zip_log_warn!(zip_logger, "System", "Second log entry - warning");
+    // zip_log_error!(zip_logger, "Network", "Third log entry - error");
+    // zip_log_debug!(zip_logger, "Cache", "Fourth log entry - debug");
+    // zip_log_critical!(zip_logger, "Security", "Fifth log entry - critical");
 
     println!("Added 5 log entries to the zip archive");
 

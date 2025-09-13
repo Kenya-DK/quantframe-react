@@ -1,7 +1,9 @@
 pub mod core;
 pub mod error;
+pub mod file_watcher;
 pub mod grouping;
 pub mod helper;
+pub mod line_detection;
 pub mod macros;
 pub mod options;
 pub mod zip_folder;
@@ -9,8 +11,10 @@ pub mod zip_logger;
 
 pub use core::*;
 pub use error::*;
+pub use file_watcher::*;
 pub use grouping::*;
 pub use helper::*;
+pub use line_detection::*;
 pub use options::*;
 pub use zip_folder::*;
 pub use zip_logger::*;

@@ -43,27 +43,12 @@ fn main() -> Result<(), Error> {
         "daily_json.json",
     )?;
 
-    // Zip logging - archive will be in logs/2025-07-26/
-    let zip_logger = ZipLogger::start("daily_archive.zip")?;
-    zip_log_info!(
-        zip_logger,
-        "DateDemo",
-        "This zip archive is in today's directory"
-    );
-    zip_log_warn!(
-        zip_logger,
-        "DateDemo",
-        "All logs organized by date automatically"
-    );
-    zip_logger.finalize()?;
-
     let current_date = chrono::Local::now().format("%Y-%m-%d").to_string();
 
     println!("\n✅ All logs saved to date-based directories!");
     println!("📁 Check logs/{}/", current_date);
     println!("   • daily_app.log (regular log file)");
     println!("   • daily_json.json (JSON formatted log)");
-    println!("   • daily_archive.zip (compressed logs)");
     println!(
         "\n📅 Tomorrow's logs will automatically go to logs/{}/",
         chrono::Local::now()

@@ -12,11 +12,11 @@ fn main() -> Result<(), Error> {
 
     // Add individual log entries to the zip
     println!("\n=== Adding individual log entries to zip ===");
-    zip_logger.add_log("INFO", "App", "Application started successfully")?;
-    zip_logger.add_log("WARN", "Database", "Connection pool running low")?;
-    zip_logger.add_log("ERROR", "Auth", "Failed login attempt from user 'admin'")?;
-    zip_logger.add_log("DEBUG", "Cache", "Cache hit ratio: 85%")?;
-    zip_logger.add_log("CRITICAL", "System", "Low disk space warning")?;
+    zip_logger.add_log("Application started successfully")?;
+    zip_logger.add_log("Connection pool running low")?;
+    zip_logger.add_log("Failed login attempt from user 'admin'")?;
+    zip_logger.add_log("Cache hit ratio: 85%")?;
+    zip_logger.add_log("Low disk space warning")?;
 
     // Also log to console and file simultaneously
     let file_opts = LoggerOptions {

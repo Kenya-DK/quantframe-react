@@ -41,7 +41,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &log_opts.clone(),
         "Logging error with small context:"
     );
-    small_error.log(Some("error_context_demo.log"));
+    small_error.log("error_context_demo.log");
 
     // 2. Create an error with large context (over 2048 characters)
     log_info_opt!("Demo", &log_opts.clone(), "=== Large Context Error ===");
@@ -125,7 +125,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &log_opts.clone(),
         "Logging error with large context (will be truncated for console):"
     );
-    large_error.log(Some("error_context_demo.log"));
+    large_error.log("error_context_demo.log");
 
     // 3. Create an error with massive context
     log_info_opt!("Demo", &log_opts.clone(), "=== Massive Context Error ===");
@@ -159,7 +159,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &log_opts.clone(),
         "Logging error with massive context (heavily truncated for console):"
     );
-    massive_error.log(Some("error_context_demo.log"));
+    massive_error.log("error_context_demo.log");
 
     // 4. Demonstrate error with no context
     log_info_opt!("Demo", &log_opts.clone(), "=== Error Without Context ===");
@@ -172,7 +172,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &log_opts.clone(),
         "Logging simple error without context:"
     );
-    simple_error.log(Some("error_context_demo.log"));
+    simple_error.log("error_context_demo.log");
 
     log_info_opt!(
         "Demo",

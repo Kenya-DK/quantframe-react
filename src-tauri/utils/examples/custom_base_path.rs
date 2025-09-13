@@ -51,22 +51,11 @@ fn main() -> Result<(), Error> {
         "custom_logs.json",
     )?;
 
-    // Zip logging
-    let zip_logger = ZipLogger::start("custom_archive.zip")?;
-    zip_log_info!(zip_logger, "CustomPath", "Zip archive in custom directory");
-    zip_log_warn!(
-        zip_logger,
-        "CustomPath",
-        "All logging respects the custom base path"
-    );
-    zip_logger.finalize()?;
-
     println!("\n✅ All logs saved to custom base path!");
     println!("📂 Check the following location:");
     println!("   C:\\Users\\Kenya\\Desktop\\Andet\\2025-07-26\\");
     println!("   • custom_app.log");
     println!("   • custom_logs.json");
-    println!("   • custom_archive.zip");
 
     println!("\n💡 Tip: You can change the base path anytime by calling set_base_path() again!");
 

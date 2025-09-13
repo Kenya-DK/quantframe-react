@@ -110,10 +110,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Demo 5: Log the masked errors
     println!("\n=== Logging Masked Errors ===");
-    error.log(Some("masked_errors.log".to_string()));
-    payment_error.log(Some("masked_errors.log".to_string()));
-    api_error.log(Some("masked_errors.log".to_string()));
-    db_error.log(Some("masked_errors.log".to_string()));
+    error.log("masked_errors.log".to_string());
+    payment_error.log("masked_errors.log".to_string());
+    api_error.log("masked_errors.log".to_string());
+    db_error.log("masked_errors.log".to_string());
 
     println!("All masked errors have been logged to 'masked_errors.log'");
 
@@ -133,7 +133,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Chain masking with other operations
     chained_error.mask_sensitive_data(&["attempted_password", "api_token", "session_id"]);
-    chained_error.log(Some("security.log".to_string()));
+    chained_error.log("security.log".to_string());
 
     println!("Chained error with masking logged to 'security.log'");
 

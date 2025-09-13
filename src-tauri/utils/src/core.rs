@@ -350,3 +350,31 @@ pub fn clear_logs(days: i64) -> Result<(), Error> {
 
     Ok(())
 }
+
+/// Delete a specific log file
+/// # Arguments
+/// * `file` - The filename to delete (will be looked for in the logs/
+/// directory)
+/// # Example
+/// ```
+/// delete_log("error.log")?;
+/// ```
+pub fn delete_log(file: impl AsRef<Path>) -> Result<(), Error> {
+    let component = "Utility:DeleteLog";
+    let folder_path = crate::options::get_folder();
+    let file_path = folder_path.join(file.as_ref());
+
+    if file_path.exists() {
+        fs::remove_file(&file_path).map_err(|e| {
+            Error::from_io(
+                component,
+                &file_path,
+                "deleting log file",
+                e,
+                get_location!(),
+            )
+        })?;
+    }
+
+    Ok(())
+}

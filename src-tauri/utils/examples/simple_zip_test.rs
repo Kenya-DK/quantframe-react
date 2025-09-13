@@ -11,23 +11,23 @@ fn main() {
             );
 
             // Test adding a simple log
-            if let Err(e) = zip_logger.add_log("INFO", "Test", "Hello from zip logger!") {
+            if let Err(e) = zip_logger.add_log("Hello from zip logger!") {
                 println!("❌ Error adding log: {}", e);
                 return;
             }
-            if let Err(e) = zip_logger.add_log("INFO", "Test", "Hello from zip logger!") {
+            if let Err(e) = zip_logger.add_log("Hello from zip logger!") {
                 println!("❌ Error adding log: {}", e);
                 return;
             }
-            if let Err(e) = zip_logger.add_log("INFO", "Test", "Hello from zip logger!") {
+            if let Err(e) = zip_logger.add_log("Hello from zip logger!") {
                 println!("❌ Error adding log: {}", e);
                 return;
             }
-            if let Err(e) = zip_logger.add_log("INFO", "Test", "Hello from zip logger!") {
+            if let Err(e) = zip_logger.add_log("Hello from zip logger!") {
                 println!("❌ Error adding log: {}", e);
                 return;
             }
-            if let Err(e) = zip_logger.add_log("INFO", "Test", "Hello from zip logger!") {
+            if let Err(e) = zip_logger.add_log("Hello from zip logger!") {
                 println!("❌ Error adding log: {}", e);
                 return;
             }

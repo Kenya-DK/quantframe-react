@@ -23,32 +23,22 @@ fn main() -> Result<(), Error> {
 
     // Simulate some application activity
     log_info_opt!("App", &log_opts.clone(), "Application starting up...");
-    zip_log_info!(zip_logger, "App", "Application starting up...");
 
     log_info_opt!("Config", &log_opts.clone(), "Loading configuration files");
-    zip_log_info!(zip_logger, "Config", "Loading configuration files");
 
     log_warn_opt!("Memory", &log_opts.clone(), "Memory usage at 75%");
-    zip_log_warn!(zip_logger, "Memory", "Memory usage at 75%");
 
     log_error_opt!(
         "Network",
         &log_opts.clone(),
         "Failed to connect to external API"
     );
-    zip_log_error!(zip_logger, "Network", "Failed to connect to external API");
 
     log_debug_opt!("Cache", &log_opts.clone(), "Cache miss ratio: {:.2}%", 15.5);
-    zip_log_debug!(zip_logger, "Cache", "Cache miss ratio: 15.50%");
 
     log_critical_opt!(
         "Security",
         &log_opts.clone(),
-        "Multiple failed login attempts detected"
-    );
-    zip_log_critical!(
-        zip_logger,
-        "Security",
         "Multiple failed login attempts detected"
     );
 
@@ -57,7 +47,6 @@ fn main() -> Result<(), Error> {
         &log_opts.clone(),
         "Application shutting down gracefully"
     );
-    zip_log_info!(zip_logger, "App", "Application shutting down gracefully");
 
     // Add the session log file to the zip archive
     let current_date = chrono::Local::now().format("%Y-%m-%d").to_string();

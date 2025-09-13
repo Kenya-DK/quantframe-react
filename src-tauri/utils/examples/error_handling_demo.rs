@@ -16,7 +16,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "Failed to create log directory",
         get_location!(),
     );
-    basic_error.log(Some("error_log.txt"));
+    basic_error.log("error_log.txt");
     println!("Is critical: {}", basic_error.is_critical());
 
     // Demo 2: Error with cause
@@ -24,7 +24,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let error_with_cause = Error::new("Network", "HTTP request failed", get_location!())
         .with_cause("Connection timeout after 30 seconds")
         .set_log_level(LogLevel::Error);
-    error_with_cause.log(Some("error_log.txt"));
+    error_with_cause.log("error_log.txt");
 
     // Demo 3: Error with context
     println!("\n=== Error with Context ===");
@@ -37,7 +37,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             "retry_count": 3,
             "connection_pool_size": 10
         }));
-    error_with_context.log(Some("error_log.txt"));
+    error_with_context.log("error_log.txt");
 
     // Demo 4: Different error levels
     println!("\n=== Different Error Levels ===");
@@ -53,8 +53,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     .set_log_level(LogLevel::Info)
     .with_context(json!({"response_time_ms": 45, "endpoint": "/api/users"}));
 
-    info.log(Some("error_log.txt"));
-    warning.log(Some("error_log.txt"));
+    info.log("error_log.txt");
+    warning.log("error_log.txt");
 
     // Demo 5: Error conversion from standard errors
     println!("\n=== Error Conversion Examples ===");
@@ -73,7 +73,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             io_err,
             get_location!(),
         );
-        logging_error.log(Some("error_log.txt"));
+        logging_error.log("error_log.txt");
     }
 
     // Demo 6: Using errors with actual logging
@@ -88,7 +88,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }));
 
     // Log the error using regular logging functions
-    critical_error.log(Some("error_log.txt"));
+    critical_error.log("error_log.txt");
 
     // Demo 7: JSON serialization
     println!("\n=== JSON Serialization ===");
