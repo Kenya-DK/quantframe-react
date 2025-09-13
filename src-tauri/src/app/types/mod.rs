@@ -24,3 +24,9 @@ pub use advanced_settings::*;
 
 pub mod debugging_settings;
 pub use debugging_settings::*;
+
+pub mod notification_setting;
+pub use notification_setting::*;
+
+pub mod notifications_setting;
+pub use notifications_setting::*;

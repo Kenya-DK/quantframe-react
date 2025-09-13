@@ -53,7 +53,7 @@ fn send_ws_state(event: UIEvent, cause: &str, data: Value) -> Error {
         .with_context(data)
         .with_cause(cause)
         .set_log_level(LogLevel::Warning);
-    err.log(Some("websocket_info.log".to_string()));
+    err.log("websocket_info.log");
     send_event!(event, Some(json!(err)));
     err
 }
@@ -217,7 +217,7 @@ impl AppState {
                 state.user = update_user(state.user, &wfu, &qfu);
             }
             Err(e) => {
-                e.log(Some("user_validation.log"));
+                e.log("user_validation.log");
                 emit_startup!("validation.error", json!({}));
                 state.user = User::default();
             }
@@ -315,6 +315,7 @@ impl AppState {
                 ))
             }
         };
+        self.qf_client.set_token(qf_user.token.as_ref().unwrap());
         let ws = setup_socket(wfm_client.clone()).await?;
         self.wfm_socket = Some(ws);
         if !qf_user.banned {

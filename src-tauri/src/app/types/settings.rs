@@ -16,6 +16,7 @@ pub struct Settings {
     pub summary_settings: SummarySettings,
     pub advanced_settings: AdvancedSettings,
     pub debugging: DebuggingSettings,
+    pub notifications: NotificationsSetting,
     pub tos_uuid: String,
 }
 impl Default for Settings {
@@ -24,6 +25,7 @@ impl Default for Settings {
             live_scraper: LiveScraperSettings::default(),
             summary_settings: SummarySettings::default(),
             advanced_settings: AdvancedSettings::default(),
+            notifications: NotificationsSetting::default(),
             debugging: DebuggingSettings::default(),
             tos_uuid: String::new(),
         }
@@ -92,7 +94,6 @@ impl Settings {
         match serde_json::from_value::<Settings>(validated_json) {
             Ok(user) => Ok(user),
             Err(_) => {
-                println!("Invalid JSON structure, creating default user.");
                 let default_user = Settings::default();
                 default_user.save()?;
                 return Ok(default_user);

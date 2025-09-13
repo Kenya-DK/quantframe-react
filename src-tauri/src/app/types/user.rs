@@ -121,7 +121,6 @@ impl User {
         match serde_json::from_value::<User>(validated_json) {
             Ok(user) => Ok(user),
             Err(_) => {
-                println!("Invalid JSON structure, creating default user.");
                 let default_user = User::default();
                 default_user.save()?;
                 return Ok(default_user);
