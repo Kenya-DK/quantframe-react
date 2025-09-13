@@ -61,25 +61,25 @@ pub struct CreateStockRiven {
 
 impl CreateStockRiven {
     pub fn new(
-        raw: String,
-        mod_name: String,
+        raw: impl Into<String>,
+        mod_name: impl Into<String>,
         mastery_rank: i64,
         re_rolls: i64,
-        polarity: String,
+        polarity: impl Into<String>,
         attributes: Vec<RivenAttribute>,
         rank: i64,
     ) -> Self {
         CreateStockRiven {
-            raw,
+            raw: raw.into(),
             wfm_id: "".to_string(),
             wfm_url: "".to_string(),
-            mod_name,
+            mod_name: mod_name.into(),
             weapon_name: "".to_string(),
             weapon_unique_name: "".to_string(),
             weapon_type: "".to_string(),
             mastery_rank,
             re_rolls,
-            polarity,
+            polarity: polarity.into(),
             attributes,
             minimum_price: None,
             bought: None,

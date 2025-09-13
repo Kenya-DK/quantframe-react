@@ -51,9 +51,9 @@ pub struct CreateWishListItem {
 }
 
 impl CreateWishListItem {
-    pub fn new(raw: String, sub_type: Option<SubType>, quantity: i64) -> Self {
+    pub fn new(raw: impl Into<String>, sub_type: Option<SubType>, quantity: i64) -> Self {
         CreateWishListItem {
-            raw,
+            raw: raw.into(),
             wfm_id: "".to_string(),
             wfm_url: "".to_string(),
             item_name: "".to_string(),
