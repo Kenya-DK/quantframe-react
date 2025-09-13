@@ -11,10 +11,12 @@ import { check } from "@tauri-apps/plugin-updater";
 import { modals } from "@mantine/modals";
 import { UpdateAvailableModal } from "@components/Modals/UpdateAvailable";
 import { TermsAndConditions } from "@components/Modals/TermsAndConditions";
-import { useTranslateComponent, useTranslateContexts } from "@hooks/useTranslate.hook";
+import { useTranslateCommon, useTranslateComponent, useTranslateContexts } from "@hooks/useTranslate.hook";
 import { resolveResource } from "@tauri-apps/api/path";
 import { readTextFile } from "@tauri-apps/plugin-fs";
 import { LiveScraperContextProvider } from "./liveScraper.context";
+import { notifications } from "@mantine/notifications";
+import { TextTranslate } from "../components/Shared/TextTranslate";
 
 export type AppContextProps = {
   app_info: TauriTypes.AppInfo | undefined;
@@ -59,6 +61,16 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     setError((prevError) => {
       if (prevError && !prevError.isWebSocket()) return prevError; // No error to set
       return error ? new AppError(error) : undefined;
+    });
+  };
+
+  const handleOnNotify = (data: { i18n_key: string; color: string; type: string; values: Record<string, any> }) => {
+    notifications.show({
+      title: useTranslateCommon(`notifications.${data.i18n_key}.${data.type}.title`, data.values),
+      color: data.color,
+      message: (
+        <TextTranslate i18nKey={useTranslateCommon(`notifications.${data.i18n_key}.${data.type}.message`, undefined, true)} values={data.values} />
+      ),
     });
   };
 
@@ -146,6 +158,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     OnTauriEvent<ResponseError | undefined>(TauriTypes.Events.OnError, (data) => handleAppError(data));
     OnTauriEvent<undefined>(TauriTypes.Events.RefreshSettings, () => refetchSettings());
     OnTauriEvent<any>(TauriTypes.Events.OnStartingUp, (data) => setStartingUp(data));
+    OnTauriEvent<any>(TauriTypes.Events.OnNotify, (data) => handleOnNotify(data));
     invoke("was_initialized")
       .then((wasInitialized) => (wasInitialized ? InitializeApp() : console.log("App was not initialized")))
       .catch((e) => console.error("Error checking initialization:", e));
@@ -154,6 +167,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
       OffTauriEvent<ResponseError | undefined>(TauriTypes.Events.OnError, (data) => handleAppError(data));
       OffTauriEvent<undefined>(TauriTypes.Events.RefreshSettings, () => refetchSettings());
       OffTauriEvent<any>(TauriTypes.Events.OnStartingUp, (data) => setStartingUp(data));
+      OffTauriEvent<any>(TauriTypes.Events.OnNotify, (data) => handleOnNotify(data));
     };
   }, []);
   return (

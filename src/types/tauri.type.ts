@@ -32,6 +32,7 @@ export namespace TauriTypes {
     OnDeleteWfmOrders = "Wfm:OnDeleteOrders",
     RefreshWfmAuctions = "LiveScraper:RefreshWfmAuctions",
     OnDeleteWfmAuctions = "Wfm:OnDeleteAuctions",
+    OnNotify = "App:OnNotify",
   }
   export enum EventOperations {
     CREATE_OR_UPDATE = "CREATE_OR_UPDATE",
@@ -74,6 +75,10 @@ export namespace TauriTypes {
     wf_log_path: string;
     live_scraper: SettingsLiveScraper;
     debugging: SettingsDebugging;
+    advanced_settings: SettingsAdvanced;
+  }
+  export interface SettingsAdvanced {
+    wf_log_path: string;
   }
   export interface SettingsDebugging {
     live_scraper: {

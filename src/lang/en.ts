@@ -19,6 +19,20 @@ export const en = {
       },
     },
     notifications: {
+      on_trade_event: {
+        multiple_items: {
+          title: "Trade with {{player_name}} not processed",
+          message: "Trade with {{player_name}} not processed due to multiple items.",
+        },
+        no_valid_items: {
+          title: "Trade with {{player_name}} not processed",
+          message: "Trade with {{player_name}} not processed due to no valid items.",
+        },
+        success: {
+          title: "Trade with {{player_name}} complete",
+          message: "<blue>{{item_name}}</blue> X<blue>{{quantity}}</blue> <blue>{{trade_type}}</blue> For {{platinum}}p",
+        },
+      },
       create_stock_item: {
         error: { title: "Create Stock Error", message: "An error occurred while trying to create stock." },
         success: { title: "Create Stock Success", message: "Stock item {{name}} has been successfully created." },
@@ -647,6 +661,14 @@ export const en = {
           },
           advanced: {
             title: "Advanced",
+            fields: {
+              wf_log_path: {
+                label: "Warframe Log Path",
+                placeholder: "Default Warframe log path",
+                error: "Invalid Warframe log path",
+                tooltip: "The path to the Warframe log file. leave empty for default path.",
+              },
+            },
           },
           summary: {
             title: "Summary",
