@@ -11,6 +11,7 @@ use utils::{get_location, info, Error, LoggerOptions};
 
 use crate::{
     app::{client::AppState, Settings},
+    log_parser::{self, LogParserState},
     APP, HAS_STARTED,
 };
 
@@ -44,9 +45,12 @@ pub async fn app_get_settings(app: tauri::State<'_, Mutex<AppState>>) -> Result<
 pub async fn app_update_settings(
     settings: Settings,
     app: tauri::State<'_, Mutex<AppState>>,
+    log_parser: tauri::State<'_, Mutex<Arc<LogParserState>>>,
 ) -> Result<Settings, Error> {
     let mut app = app.lock()?;
+    let mut log_parser = log_parser.lock()?;
     app.update_settings(settings.clone())?;
+    log_parser.set_path(&app.settings.advanced_settings.wf_log_path)?;
     Ok(settings.clone())
 }
 

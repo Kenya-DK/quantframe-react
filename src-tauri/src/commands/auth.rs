@@ -23,12 +23,12 @@ pub async fn auth_login(
     cache: tauri::State<'_, Mutex<CacheState>>,
 ) -> Result<User, Error> {
     let app_state = app.lock()?.clone();
-    let cache_state = cache.lock()?.clone();
+    let mut cache_state = cache.lock()?.clone();
 
     let (qf_client, wfm_client, updated_user, ws) = match app_state.login(&email, &password).await {
         Ok((qf_client, wfm_client, user, ws)) => (qf_client, wfm_client, user, ws),
         Err(e) => {
-            e.log(Some("auth_login.log"));
+            e.log("auth_login.log");
             return Err(e);
         }
     };
@@ -53,7 +53,7 @@ pub async fn auth_login(
     let (cache_version_id, price_version_id) = match cache_state.load(&qf_client).await {
         Ok((cache_version_id, price_version_id)) => (cache_version_id, price_version_id),
         Err(e) => {
-            e.log(Some("auth_login.log"));
+            e.log("auth_login.log");
             return Err(e);
         }
     };
@@ -101,7 +101,7 @@ pub async fn auth_logout(
                     &format!("Failed to close WebSocket: {:?}", e),
                     get_location!(),
                 );
-                err.log(Some("auth_logout.log"));
+                err.log("auth_logout.log");
                 return Err(err);
             }
         }
@@ -124,7 +124,7 @@ pub async fn auth_logout(
                 e,
                 get_location!(),
             );
-            err.log(Some("auth_logout.log"));
+            err.log("auth_logout.log");
             return Err(err);
         }
     }
@@ -135,7 +135,7 @@ pub async fn auth_logout(
     new_user
         .save()
         .map_err(|e| {
-            e.log(Some("auth_logout.log"));
+            e.log("auth_logout.log");
         })
         .unwrap();
     // Update The current AuthState

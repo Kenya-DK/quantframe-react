@@ -15,7 +15,7 @@ pub async fn cache_get_tradable_items(
             return Ok(items);
         }
         Err(e) => {
-            e.log(Some("cache_get_tradable_items.log"));
+            e.log("cache_get_tradable_items.log");
             return Err(e);
         }
     }
@@ -30,7 +30,7 @@ pub async fn cache_get_riven_attributes(
             return Ok(items.attributes);
         }
         Err(e) => {
-            e.log(Some("cache_get_riven_attributes.log"));
+            e.log("cache_get_riven_attributes.log");
             return Err(e);
         }
     }
@@ -45,7 +45,7 @@ pub async fn cache_get_riven_weapons(
             return Ok(items.weapons);
         }
         Err(e) => {
-            e.log(Some("cache_get_riven_weapons.log"));
+            e.log("cache_get_riven_weapons.log");
             return Err(e);
         }
     }
@@ -60,7 +60,7 @@ pub async fn cache_get_theme_presets(
             return Ok(items);
         }
         Err(e) => {
-            e.log(Some("cache_get_theme_presets.log"));
+            e.log("cache_get_theme_presets.log");
             return Err(e);
         }
     }
@@ -79,7 +79,7 @@ pub async fn cache_create_theme(
             return Ok(());
         }
         Err(e) => {
-            e.log(Some("cache_create_theme.log"));
+            e.log("cache_create_theme.log");
             return Err(e);
         }
     }

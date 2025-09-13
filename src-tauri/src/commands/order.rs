@@ -35,7 +35,7 @@ pub async fn order_refresh(
                 e,
                 get_location!(),
             );
-            err.log(Some("order_refresh.log"));
+            err.log("order_refresh.log");
             err
         })?;
     app_state
@@ -125,7 +125,7 @@ pub async fn order_delete_all(
         Ok(orders) => orders,
         Err(e) => {
             let err = Error::from_wfm("OrderDeleteAll", "Failed to get orders", e, get_location!());
-            err.log(Some("order_delete_all.log"));
+            err.log("order_delete_all.log");
             return Err(err);
         }
     };
@@ -139,7 +139,7 @@ pub async fn order_delete_all(
                 e,
                 get_location!(),
             );
-            err.log(Some("order_delete_all.log"));
+            err.log("order_delete_all.log");
             return Err(err);
         }
         current -= 1;
@@ -174,7 +174,7 @@ pub async fn order_delete_by_id(
                 e,
                 get_location!(),
             );
-            err.log(Some("order_delete_by_id.log"));
+            err.log("order_delete_by_id.log");
             return Err(err);
         }
     }

@@ -57,12 +57,10 @@ pub async fn get_wish_list_status_counts(
 
 #[tauri::command]
 pub async fn wish_list_create(input: CreateWishListItem) -> Result<Model, Error> {
-    match handle_wish_list_by_entity(input, "", OrderType::Sell).await {
+    match handle_wish_list_by_entity(input, "", OrderType::Sell, FindByType::Url, &[]).await {
         Ok((_, item)) => return Ok(item),
         Err(e) => {
-            return Err(e
-                .with_location(get_location!())
-                .log(Some("wish_list_buy.log")));
+            return Err(e.with_location(get_location!()).log("wish_list_buy.log"));
         }
     }
 }
@@ -74,12 +72,21 @@ pub async fn wish_list_bought(
     quantity: i64,
     price: i64,
 ) -> Result<Model, Error> {
-    match handle_wish_list(wfm_url, sub_type, quantity, price, "", OrderType::Buy).await {
+    match handle_wish_list(
+        wfm_url,
+        &sub_type,
+        quantity,
+        price,
+        "",
+        OrderType::Buy,
+        FindByType::Url,
+        &[],
+    )
+    .await
+    {
         Ok((_, updated_item)) => return Ok(updated_item),
         Err(e) => {
-            return Err(e
-                .with_location(get_location!())
-                .log(Some("wish_list_buy.log")));
+            return Err(e.with_location(get_location!()).log("wish_list_buy.log"));
         }
     }
 }
@@ -107,10 +114,7 @@ pub async fn wish_list_delete(id: i64) -> Result<Model, Error> {
 
     handle_wfm_item(&item.wfm_id, &item.sub_type, 1, OrderType::Buy, true)
         .await
-        .map_err(|e| {
-            e.with_location(get_location!())
-                .log(Some("wish_list_delete.log"))
-        })?;
+        .map_err(|e| e.with_location(get_location!()).log("wish_list_delete.log"))?;
 
     match WishListMutation::delete_by_id(conn, id).await {
         Ok(_) => {}

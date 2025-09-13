@@ -65,12 +65,12 @@ pub async fn stock_item_create(
     } else {
         FindByType::Url
     };
-    match handle_item_by_entity(input, "", OrderType::Buy, find_by_type).await {
+    match handle_item_by_entity(input, "", OrderType::Buy, find_by_type, &[]).await {
         Ok((_, updated_item)) => return Ok(updated_item),
         Err(e) => {
             return Err(e
                 .with_location(get_location!())
-                .log(Some("stock_item_create.log")));
+                .log("stock_item_create.log"));
         }
     }
 }
@@ -96,6 +96,7 @@ pub async fn stock_item_sell(
         "",
         OrderType::Sell,
         find_by_type,
+        &[],
     )
     .await
     {
@@ -103,7 +104,7 @@ pub async fn stock_item_sell(
         Err(e) => {
             return Err(e
                 .with_location(get_location!())
-                .log(Some("stock_item_sell.log")));
+                .log("stock_item_sell.log"));
         }
     }
 }
@@ -133,7 +134,7 @@ pub async fn stock_item_delete(id: i64) -> Result<stock_item::Model, Error> {
         .await
         .map_err(|e| {
             e.with_location(get_location!())
-                .log(Some("stock_item_delete.log"))
+                .log("stock_item_delete.log")
         })?;
 
     match StockItemMutation::delete_by_id(conn, id).await {

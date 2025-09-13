@@ -40,7 +40,7 @@ pub async fn auction_refresh(
                 e,
                 get_location!(),
             );
-            err.log(Some("auction_refresh.log"));
+            err.log("auction_refresh.log");
             err
         })?;
     app_state
@@ -71,7 +71,7 @@ pub async fn get_wfm_auctions_pagination(
                 format!("Failed to get rivens from database: {}", e),
                 get_location!(),
             );
-            err.log(Some("get_wfm_auctions_pagination.log"));
+            err.log("get_wfm_auctions_pagination.log");
             return Err(err);
         }
     };
@@ -127,7 +127,7 @@ pub async fn auction_delete_all(
                 e,
                 get_location!(),
             );
-            err.log(Some("auction_delete_all.log"));
+            err.log("auction_delete_all.log");
             return Err(err);
         }
     };
@@ -141,7 +141,7 @@ pub async fn auction_delete_all(
                 e,
                 get_location!(),
             );
-            err.log(Some("auction_delete_all.log"));
+            err.log("auction_delete_all.log");
             return Err(err);
         }
         current -= 1;
@@ -176,7 +176,7 @@ pub async fn auction_delete_by_id(
                 e,
                 get_location!(),
             );
-            err.log(Some("auction_delete_by_id.log"));
+            err.log("auction_delete_by_id.log");
             return Err(err);
         }
     }
@@ -198,7 +198,13 @@ pub async fn auction_import_by_id(
         ));
     }
     let auction = auction.unwrap();
-    let (_, model) =
-        handle_riven_by_entity(auction.to_create()?.set_bought(bought), "", OrderType::Buy).await?;
+    let (_, model) = handle_riven_by_entity(
+        auction.to_create()?.set_bought(bought),
+        "",
+        OrderType::Buy,
+        FindByType::Url,
+        &[],
+    )
+    .await?;
     Ok(model)
 }
