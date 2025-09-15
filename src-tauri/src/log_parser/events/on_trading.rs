@@ -3,9 +3,8 @@ use std::{f64::consts::E, sync::Mutex};
 use crate::{
     handlers::{base, handle_item, handle_riven, handle_riven_by_name, handle_wish_list},
     log_parser::*,
-    notification::enums::UIEvent,
     notify_gui, send_event,
-    types::OperationSet,
+    types::*,
     utils::modules::states,
 };
 use migration::backend;
@@ -198,7 +197,8 @@ impl OnTradeEvent {
             i += 1;
         }
 
-        self.current_trade.trade_time = chrono::Local::now().to_string();
+        self.current_trade.trade_time =
+            chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
         add_to_zip(format!("Trade Time Set: {}", self.current_trade.trade_time));
 
         self.current_trade.calculate();
@@ -216,7 +216,6 @@ impl OnTradeEvent {
     pub fn trade_accepted(&mut self) -> Result<(), Error> {
         add_to_zip("Trade Was Successful");
         let trade = self.current_trade.clone();
-        let uuid = self.uuid.clone();
         let settings = states::get_settings()?.clone();
         let order_type = match trade.trade_type {
             TradeClassification::Sale => OrderType::Sell,
@@ -407,6 +406,13 @@ impl LineHandler for OnTradeEvent {
 }
 
 fn process_operations(trade: &PlayerTrade, operations: OperationSet) {
+    let settings = match states::get_settings() {
+        Ok(s) => s.notifications.on_new_trade,
+        Err(e) => {
+            e.log("OnTradeEvent");
+            return;
+        }
+    };
     // Find Name:Item Name and Quantity:#
     let name = operations
         .get_value_after("Name")
@@ -456,6 +462,9 @@ fn process_operations(trade: &PlayerTrade, operations: OperationSet) {
             })
         );
     }
+
+    settings.send(&trade.get_notify_variables());
+
     info(
         get_component("TradeAccepted"),
         &trade.to_string(),

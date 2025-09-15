@@ -345,6 +345,9 @@ pub fn validate_json(json: &Value, required: &Value, path: &str) -> (Value, Vec<
     let mut missing_properties = Vec::new();
 
     if let Some(required_obj) = required.as_object() {
+        // If json isn't an object, replace it with an empty one
+        let mut json_obj = json.as_object().cloned().unwrap_or_default();
+
         for (key, value) in required_obj {
             let full_path = if path.is_empty() {
                 key.clone()
@@ -352,18 +355,33 @@ pub fn validate_json(json: &Value, required: &Value, path: &str) -> (Value, Vec<
                 format!("{}.{}", path, key)
             };
 
-            if !json.as_object().unwrap().contains_key(key) {
-                missing_properties.push(full_path.clone());
-                modified_json[key] = required_obj[key].clone();
-            } else if value.is_object() {
-                let sub_json = json.get(key).unwrap();
-                let (modified_sub_json, sub_missing) = validate_json(sub_json, value, &full_path);
-                if !sub_missing.is_empty() {
-                    modified_json[key] = modified_sub_json;
-                    missing_properties.extend(sub_missing);
+            match json_obj.get(key) {
+                None => {
+                    // Key missing → add default
+                    missing_properties.push(full_path.clone());
+                    json_obj.insert(key.clone(), value.clone());
+                }
+                Some(existing_val) if value.is_object() => {
+                    // Both sides are objects → recurse
+                    let (modified_sub_json, sub_missing) =
+                        validate_json(existing_val, value, &full_path);
+
+                    if !sub_missing.is_empty() {
+                        json_obj.insert(key.clone(), modified_sub_json);
+                        missing_properties.extend(sub_missing);
+                    }
+                }
+                Some(existing_val) => {
+                    // Existing type mismatch with required (object vs non-object)
+                    if value.is_object() && !existing_val.is_object() {
+                        missing_properties.push(full_path.clone());
+                        json_obj.insert(key.clone(), value.clone());
+                    }
                 }
             }
         }
+
+        modified_json = Value::Object(json_obj);
     }
 
     (modified_json, missing_properties)

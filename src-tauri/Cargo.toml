@@ -33,10 +33,11 @@ tauri-plugin-dialog = "2"
 tauri-plugin-http = "2"
 tauri-plugin-process = "2"
 tauri-plugin-shell = "2"
-tauri-plugin-notification = "2"
+tauri-plugin-notification = "2.0.0"
 tauri-plugin-os = "2"
 tauri-plugin-clipboard-manager = "2.3.0"
 # Other dependencies
+reqwest = { version = "0.12.19", features = ["json"] }
 tokio = {version =  "1.45.1", features = ["full"] }
 regex = "1.9.1"
 chrono = "0.4"

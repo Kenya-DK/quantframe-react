@@ -5,8 +5,8 @@ use serde_json::{json, Value};
 use utils::{get_location, Error};
 
 use crate::{
-    app::client::AppState, live_scraper::LiveScraperState, notification::enums::UIEvent,
-    send_event, utils::ErrorFromExt,
+    app::client::AppState, live_scraper::LiveScraperState, send_event, types::*,
+    utils::ErrorFromExt,
 };
 
 #[tauri::command]

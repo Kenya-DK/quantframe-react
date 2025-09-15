@@ -1,4 +1,8 @@
-use utils::{trace, Error, LineHandler, LoggerOptions};
+use std::collections::HashMap;
+
+use utils::{info, trace, Error, LineHandler, LoggerOptions};
+
+use utils::*;
 
 use crate::utils::modules::states;
 
@@ -48,7 +52,12 @@ impl LineHandler for OnConversationEvent {
 
 fn notify(player_name: &str) {
     let settings = states::get_settings().expect("Failed to get settings");
-    if !settings.notifications.on_new_conversation.is_enabled() {
-        return;
-    }
+    info(
+        "OnConversationEvent",
+        format!("OnConversationEvent: New conversation from {}", player_name,),
+        &LoggerOptions::default(),
+    );
+    let mut variables = HashMap::new();
+    variables.insert("<PLAYER_NAME>".to_string(), player_name.to_string());
+    settings.notifications.on_new_conversation.send(&variables);
 }

@@ -90,12 +90,12 @@ export function LiveThemeEditor({ onNewTheme }: LiveThemeEditorProps) {
 
   const export_form = useForm({
     initialValues: {
-      name: "",
-      author: "",
+      name: "" as string,
+      author: "" as string,
     },
     validate: {
-      name: (value) => (value.length < 3 ? useTranslateFormFields("export_name.error") : null),
-      author: (value) => (value.length < 3 ? useTranslateFormFields("export_author.error") : null),
+      name: (value: string) => (value.length < 3 ? useTranslateFormFields("export_name.error") : null),
+      author: (value: string) => (value.length < 3 ? useTranslateFormFields("export_author.error") : null),
     },
   });
 

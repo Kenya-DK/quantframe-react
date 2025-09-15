@@ -1,10 +1,17 @@
-use std::fmt::Display;
+use std::{collections::HashMap, fmt::Display};
 
 use entity::enums::stock_type::StockType;
 use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
 use utils::{get_location, Error, ZipLogger};
 
-use crate::{enums::FindBy, log_parser::*, utils::modules::states, DATABASE};
+use crate::{
+    app::{NotificationSetting, NotificationsSetting},
+    enums::FindBy,
+    log_parser::*,
+    utils::modules::states,
+    DATABASE,
+};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct PlayerTrade {
@@ -123,7 +130,6 @@ impl PlayerTrade {
             add_to_zip("Classified Trade as Regular Item-for-Item Trade".to_string());
         }
     }
-
     pub fn get_item_by_type(
         &self,
         trade_type: &TradeClassification,
@@ -132,7 +138,6 @@ impl PlayerTrade {
         let items = self.get_valid_items(trade_type);
         items.iter().find(|p| &p.item_type == item_type).cloned()
     }
-
     pub fn is_set(&self) -> Result<(bool, String), Error> {
         let trade_type = match self.trade_type {
             TradeClassification::Sale => TradeClassification::Purchase,
@@ -210,6 +215,43 @@ impl PlayerTrade {
         }
         add_to_zip(&format!("Full set found: {}", set.display()));
         return Ok((true, set.unique_name));
+    }
+
+    pub fn get_notify_variables(&self) -> HashMap<String, String> {
+        let offered_items = self
+            .get_valid_items(&TradeClassification::Purchase)
+            .iter()
+            .map(|x| format!("{} X{}", x.item_name(), x.quantity))
+            .collect::<Vec<String>>()
+            .join("\n");
+
+        let received_items = self
+            .get_valid_items(&TradeClassification::Sale)
+            .iter()
+            .map(|x| format!("{} X{}", x.item_name(), x.quantity))
+            .collect::<Vec<String>>()
+            .join("\n");
+
+        return HashMap::from([
+            (
+                "<TR_TYPE>".to_string(),
+                self.trade_type.to_str().to_string(),
+            ),
+            ("<PLAYER_NAME>".to_string(), self.player_name.clone()),
+            (
+                "<OF_COUNT>".to_string(),
+                self.offered_items.len().to_string(),
+            ),
+            ("<OF_ITEMS>".to_string(), offered_items),
+            (
+                "<RE_COUNT>".to_string(),
+                self.received_items.len().to_string(),
+            ),
+            ("<TIME>".to_string(), self.trade_time.clone()),
+            ("<RE_ITEMS>".to_string(), received_items),
+            ("<LOGS>".to_string(), self.logs.join("\n")),
+            ("<TOTAL_PLAT>".to_string(), self.platinum.to_string()),
+        ]);
     }
 }
 impl Display for PlayerTrade {

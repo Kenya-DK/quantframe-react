@@ -14,8 +14,8 @@ use crate::{
     cache::types::{CacheTradableItem, ItemPriceInfo},
     enums::*,
     live_scraper::*,
-    notification::enums::UIEvent,
     send_event,
+    types::*,
     utils::{modules::states, order_ext::OrderDetails, ErrorFromExt, OrderExt, SubTypeExt},
     DATABASE,
 };

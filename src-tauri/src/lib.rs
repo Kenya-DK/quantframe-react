@@ -31,7 +31,6 @@ use crate::cache::client::CacheState;
 use crate::live_scraper::LiveScraperState;
 use crate::log_parser::init_detections;
 use crate::log_parser::LogParserState;
-use crate::notification::client::NotificationState;
 use crate::utils::OrderListExt;
 use tauri_plugin_notification::{Attachment, NotificationExt};
 
@@ -50,7 +49,6 @@ mod types;
 // mod http_client;
 mod live_scraper;
 mod log_parser;
-mod notification;
 // mod qf_client;
 // mod settings;
 // mod wfm_client;
@@ -117,9 +115,6 @@ async fn setup_manages(app: tauri::AppHandle) -> Result<(), Error> {
     // Clear the logs older then 7 days
     clear_logs(7)?;
 
-    let notify_state: Mutex<NotificationState> = Mutex::new(NotificationState::new());
-    app.manage(notify_state);
-
     // Clone the fields needed for CacheState before moving app_state
     let app_state = AppState::new(app.clone()).await;
     let qf_client = app_state.qf_client.clone();
@@ -181,21 +176,8 @@ pub fn run() {
                         &LoggerOptions::default().set_file("emit_error.log"),
                     );
                 }
-                // send_system_notification!(
-                //     "Quantframe Started",
-                //     "The application has started successfully.",
-                //     None,
-                //     None
-                // );
+
                 let app = APP.get().expect("App not initialized");
-                app.notification()
-                    .builder()
-                    .title("Quantframe Started")
-                    .body("The application has started successfully.")
-                    .icon("assets/icons/icon.png")
-                    // .sound(None)
-                    .show()
-                    .expect("Failed to show notification");
                 HAS_STARTED.set(true).unwrap();
             });
             init_logger();

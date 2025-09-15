@@ -1,7 +1,7 @@
 use std::sync::Mutex;
 
 use crate::app::{Settings, User};
-use crate::notification::enums::{UIEvent, UIOperationEvent};
+use crate::types::*;
 use crate::utils::modules::states;
 use crate::utils::{AuctionListExt, ErrorFromExt, OrderListExt};
 use crate::{emit_startup, emit_update_user, helper, send_event, APP, HAS_STARTED};
@@ -24,6 +24,7 @@ pub struct AppState {
     pub settings: Settings,
     pub wfm_client: WFClient<WFAuthenticated>,
     pub qf_client: QFClient,
+    pub is_development: bool,
     pub wfm_socket: Option<WsClient>,
 }
 
@@ -173,7 +174,7 @@ impl AppState {
     pub async fn new(tauri_app: AppHandle) -> Self {
         let user = User::load().expect("Failed to load user from auth.json");
         let info = tauri_app.package_info().clone();
-
+        let is_development = if cfg!(dev) { true } else { false };
         let mut state = AppState {
             wfm_client: WFClient::new_default(&user.wfm_token, "N/A")
                 .await
@@ -183,7 +184,7 @@ impl AppState {
                 "rqf6ahg*RFY3wkn4neq",
                 &tauri_plugin_os::platform().to_string(),
                 &digest(format!("hashStart-{}-hashEnd", helper::get_device_id()).as_bytes()),
-                true,
+                is_development,
                 &info.name,
                 &info.version.to_string(),
                 "N/A",
@@ -191,6 +192,7 @@ impl AppState {
                 "N/A",
             ),
             user,
+            is_development,
             settings: Settings::load().expect("Failed to load settings from settings.json"),
             wfm_socket: None,
         };
@@ -315,7 +317,9 @@ impl AppState {
                 ))
             }
         };
-        self.qf_client.set_token(qf_user.token.as_ref().unwrap());
+        if !qf_user.token.is_none() {
+            self.qf_client.set_token(qf_user.token.as_ref().unwrap());
+        }
         let ws = setup_socket(wfm_client.clone()).await?;
         self.wfm_socket = Some(ws);
         if !qf_user.banned {

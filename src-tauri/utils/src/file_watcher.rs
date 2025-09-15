@@ -55,12 +55,20 @@ impl FileWatcher {
         if *path == new_path {
             return;
         }
+        if !Path::new(&new_path).exists() {
+            warning(
+                "FileWatcher",
+                &format!("FileWatcher switched to non-existing file: {}", new_path),
+                &LoggerOptions::default(),
+            );
+            return;
+        }
         let mut last_pos = self.last_pos.lock().unwrap();
         let mut prev_line = self.prev_line.lock().unwrap();
         let mut cache = self.cache.lock().unwrap();
-
+        let current_file_size = std::fs::metadata(&new_path).map(|m| m.len()).unwrap_or(0);
         *path = new_path;
-        *last_pos = 0; // reset position
+        *last_pos = current_file_size;
         *prev_line = None; // reset previous line
         cache.clear(); // reset cache
 

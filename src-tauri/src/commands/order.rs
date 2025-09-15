@@ -14,7 +14,7 @@ use wf_market::{
 
 use crate::{
     app::client::AppState, cache::client::CacheState, enums::*, helper::paginate,
-    live_scraper::LiveScraperState, notification::enums::UIEvent, send_event, utils::*, DATABASE,
+    live_scraper::LiveScraperState, send_event, types::*, utils::*, DATABASE,
 };
 #[tauri::command]
 pub async fn order_refresh(

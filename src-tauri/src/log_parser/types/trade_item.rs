@@ -286,6 +286,23 @@ impl TradeItem {
         }
         Ok(DetectionStatus::None)
     }
+    pub fn item_name(&self) -> String {
+        let ch = states::cache_client().expect("Cache not found");
+        let name = match ch.tradable_item().get_by(FindBy::new(
+            crate::enums::FindByType::UniqueName,
+            &self.unique_name,
+        )) {
+            Ok(mach) => {
+                if mach.is_some() {
+                    mach.unwrap().name.clone()
+                } else {
+                    self.raw.clone()
+                }
+            }
+            Err(_) => self.raw.clone(),
+        };
+        name
+    }
     pub fn is_valid(&self) -> bool {
         !self.raw.is_empty()
     }

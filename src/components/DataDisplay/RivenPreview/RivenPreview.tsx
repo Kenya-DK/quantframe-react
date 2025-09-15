@@ -18,7 +18,7 @@ import faPolarityAura from "@icons/faPolarityAura";
 import faPolarityVazarin from "@icons/faPolarityVazarin";
 
 export type RivenPreviewProps = {
-  riven: WFMarketTypes.Auction<WFMarketTypes.AuctionOwner> | WFMarketTypes.Auction<string> | TauriTypes.StockRiven;
+  riven: WFMarketTypes.Auction | TauriTypes.StockRiven;
   paperProps?: PaperProps;
 };
 
@@ -59,7 +59,7 @@ export function RivenPreview({ paperProps, riven }: RivenPreviewProps) {
     let weapon_url_name = "";
     // Check id type
     if (typeof riven.id == "string") {
-      const auction = riven as WFMarketTypes.Auction<WFMarketTypes.AuctionOwner>;
+      const auction = riven as WFMarketTypes.Auction;
       if (!auction.item.attributes) return;
       weapon_url_name = auction.item.weapon_url_name;
       setPolarity(auction.item.polarity);
@@ -81,26 +81,26 @@ export function RivenPreview({ paperProps, riven }: RivenPreviewProps) {
       setRank(auction.item.mod_rank);
     }
     if (typeof riven.id == "number") {
-      const stockRiven = riven as TauriTypes.StockRiven;
-      weapon_url_name = stockRiven.wfm_weapon_url;
-      setPolarity(stockRiven.polarity);
-      setModName(stockRiven.mod_name);
-      if (stockRiven.attributes)
-        setAttributes(
-          stockRiven.attributes.map((item) => {
-            const attribute = allAttributes?.find((attribute) => attribute.url_name == item.url_name);
-            let symbol = GetUnitSymbol(attribute?.unit);
-            return {
-              ...item,
-              effect: attribute?.effect || "",
-              units: attribute?.unit || "",
-              symbol,
-            };
-          })
-        );
-      setMastery(stockRiven.mastery_rank);
-      setReRolls(stockRiven.re_rolls);
-      setRank(stockRiven.sub_type?.rank || 0);
+      // const stockRiven = riven as TauriTypes.StockRiven;
+      // weapon_url_name = stockRiven.wfm_weapon_url;
+      // setPolarity(stockRiven.polarity);
+      // setModName(stockRiven.mod_name);
+      // if (stockRiven.attributes)
+      //   setAttributes(
+      //     stockRiven.attributes.map((item) => {
+      //       const attribute = allAttributes?.find((attribute) => attribute.url_name == item.url_name);
+      //       let symbol = GetUnitSymbol(attribute?.unit);
+      //       return {
+      //         ...item,
+      //         effect: attribute?.effect || "",
+      //         units: attribute?.unit || "",
+      //         symbol,
+      //       };
+      //     })
+      //   );
+      // setMastery(stockRiven.mastery_rank);
+      // setReRolls(stockRiven.re_rolls);
+      // setRank(stockRiven.sub_type?.rank || 0);
     }
     if (weapons && weapon_url_name != "") setWeapon(weapons.find((item) => item.wfm_url_name == weapon_url_name));
   }, [riven, weapons]);

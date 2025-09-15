@@ -12,7 +12,7 @@ use utils::{get_location, info, Error, LoggerOptions};
 use crate::{
     app::{client::AppState, Settings},
     log_parser::{self, LogParserState},
-    APP, HAS_STARTED,
+    send_system_notification, APP, HAS_STARTED,
 };
 
 #[tauri::command]
@@ -48,9 +48,15 @@ pub async fn app_update_settings(
     log_parser: tauri::State<'_, Mutex<Arc<LogParserState>>>,
 ) -> Result<Settings, Error> {
     let mut app = app.lock()?;
-    let mut log_parser = log_parser.lock()?;
+    let log_parser = log_parser.lock()?;
     app.update_settings(settings.clone())?;
     log_parser.set_path(&app.settings.advanced_settings.wf_log_path)?;
+    send_system_notification!(
+        "Quantframe Started",
+        "The application has started successfully.",
+        None,
+        None
+    );
     Ok(settings.clone())
 }
 

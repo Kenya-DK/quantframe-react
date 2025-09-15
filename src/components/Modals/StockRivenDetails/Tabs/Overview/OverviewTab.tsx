@@ -14,8 +14,6 @@ export function OverviewTab({ value }: OverviewTabProps) {
     useTranslateModals(`stock_riven_details.tabs.overview.${key}`, { ...context }, i18Key);
   const useTranslateFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTab(`fields.${key}`, { ...context }, i18Key);
-  const useTranslateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateTab(`buttons.${key}`, { ...context }, i18Key);
   const useTranslateStockStatus = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateEnums(`stock_status.${key}`, { ...context }, i18Key);
   if (!value) return <></>;

@@ -23,8 +23,8 @@ use crate::{
     cache::types::CacheRivenWeapon,
     enums::FindBy,
     live_scraper::{is_disabled, LiveScraperState},
-    notification::enums::UIEvent,
     send_event,
+    types::*,
     utils::{auction_ext::AuctionDetails, modules::states, AuctionExt, ErrorFromExt},
     DATABASE,
 };
