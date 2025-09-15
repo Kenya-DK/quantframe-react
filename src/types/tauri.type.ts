@@ -76,6 +76,7 @@ export namespace TauriTypes {
     live_scraper: SettingsLiveScraper;
     debugging: SettingsDebugging;
     advanced_settings: SettingsAdvanced;
+    notifications: SettingsNotifications;
   }
   export interface SettingsAdvanced {
     wf_log_path: string;
@@ -84,6 +85,26 @@ export namespace TauriTypes {
     live_scraper: {
       entries: DebuggingLiveItemEntry[];
     };
+  }
+  export interface SettingsNotifications {
+    on_new_conversation: NotificationSetting;
+    on_wfm_chat_message: NotificationSetting;
+    on_new_trade: NotificationSetting;
+  }
+  export interface NotificationSetting {
+    discord_notify: DiscordNotify;
+    system_notify: SystemNotify;
+  }
+  export interface SystemNotify {
+    enabled: boolean;
+    title: string;
+    content: string;
+  }
+  export interface DiscordNotify {
+    enabled: boolean;
+    content: string;
+    webhook: string;
+    user_ids: string[];
   }
   export interface DebuggingLiveItemEntry {
     stock_id?: number | null;
@@ -329,11 +350,6 @@ export namespace TauriTypes {
     transaction: boolean;
     stock_item: boolean;
     stock_riven: boolean;
-  }
-  export interface SettingsNotifications {
-    on_new_conversation: SettingsNotification;
-    on_wfm_chat_message: SettingsNotification;
-    on_new_trade: SettingsNotification;
   }
   export interface SettingsNotification {
     content: string;

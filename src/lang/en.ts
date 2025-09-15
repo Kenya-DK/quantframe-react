@@ -658,6 +658,9 @@ export const en = {
           },
           notifications: {
             title: "Notifications",
+            on_new_conversation_title: "On New Conversation",
+            on_new_trade_title: "On New Trade",
+            on_wfm_chat_message_title: "On WFM Chat Message",
           },
           advanced: {
             title: "Advanced",
@@ -707,7 +710,7 @@ export const en = {
               title: "General",
               fields: {
                 auto_trade: {
-                  label: "Auto Trade (WIP)",
+                  label: "Auto Trade",
                   error: "Invalid auto trade",
                   tooltip: "Automatically add/sell stock if true",
                 },
