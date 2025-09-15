@@ -6,6 +6,7 @@ How To migrate:
 
 ## TODO's
 
+- ⏳ Add a edit modal for the stock items
 - ⏳ Add a preview for items to to buy.
 - ⏳ Add Stock Riven Details Modal and wishList
 - ⏳ Add Min Profit & Min SMA per item in the live trader stock items
