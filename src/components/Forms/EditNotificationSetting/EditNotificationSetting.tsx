@@ -18,10 +18,10 @@ export function EditNotificationSetting({ value, onChange }: EditNotificationSet
   // Translate general
   const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForms(`edit_notification_setting.${key}`, { ...context }, i18Key);
-  const useTranslateFormFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateForm(`fields.${key}`, { ...context }, i18Key);
-  const useTranslateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateForm(`buttons.${key}`, { ...context }, i18Key);
+  const useTranslateFormSystemFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateForm(`system.fields.${key}`, { ...context }, i18Key);
+  const useTranslateFormDiscordFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateForm(`discord.fields.${key}`, { ...context }, i18Key);
   // User form
   const form = useForm({
     initialValues: value,
@@ -33,7 +33,7 @@ export function EditNotificationSetting({ value, onChange }: EditNotificationSet
       <Paper shadow="xs">
         <Group m="xs" gap={5}>
           <ActionWithTooltip
-            tooltip={useTranslateButtons("system.tooltip")}
+            tooltip={useTranslateForm("system.tooltip")}
             color={form.values.system_notify.enabled ? "green.7" : "blue.7"}
             icon={faBell}
             onClick={() => {
@@ -41,7 +41,7 @@ export function EditNotificationSetting({ value, onChange }: EditNotificationSet
             }}
           />
           <ActionWithTooltip
-            tooltip={useTranslateButtons("discord.tooltip")}
+            tooltip={useTranslateForm("discord.tooltip")}
             icon={faDiscord}
             color={form.values.discord_notify.enabled ? "green.7" : "blue.7"}
             onClick={() => {
@@ -53,20 +53,20 @@ export function EditNotificationSetting({ value, onChange }: EditNotificationSet
         <ScrollAreaAutosize mah={"calc(85vh - 100px)"} scrollbarSize={6}>
           <Collapse in={form.values.system_notify.enabled}>
             <Title order={4} mb="xs" mt="sm">
-              {useTranslateFormFields("system.title")}
+              {useTranslateForm("system.title")}
             </Title>
             <TextInput
               required
-              label={useTranslateFormFields("system.title.label")}
-              placeholder={useTranslateFormFields("system.title.placeholder")}
+              label={useTranslateFormSystemFields("title.label")}
+              placeholder={useTranslateFormSystemFields("title.placeholder")}
               value={form.values.system_notify.title}
               onChange={(event) => form.setFieldValue("system_notify.title", event.currentTarget.value)}
               radius="md"
             />
             <Textarea
               required
-              label={useTranslateFormFields("system.content.label")}
-              placeholder={useTranslateFormFields("system.content.placeholder")}
+              label={useTranslateFormSystemFields("content.label")}
+              placeholder={useTranslateFormSystemFields("content.placeholder")}
               value={form.values.system_notify.content}
               onChange={(event) => form.setFieldValue("system_notify.content", event.currentTarget.value)}
               radius="md"
@@ -76,20 +76,20 @@ export function EditNotificationSetting({ value, onChange }: EditNotificationSet
           </Collapse>
           <Collapse in={form.values.discord_notify.enabled}>
             <Title order={4} mb="xs" mt="sm">
-              {useTranslateFormFields("discord.title")}
+              {useTranslateForm("discord.title")}
             </Title>
             <TextInput
               required
-              label={useTranslateFormFields("discord.webhook.label")}
-              placeholder={useTranslateFormFields("discord.webhook.placeholder")}
+              label={useTranslateFormDiscordFields("webhook.label")}
+              placeholder={useTranslateFormDiscordFields("webhook.placeholder")}
               value={form.values.discord_notify.webhook}
               onChange={(event) => form.setFieldValue("discord_notify.webhook", event.currentTarget.value)}
               radius="md"
             />
             <Textarea
               required
-              label={useTranslateFormFields("discord.content.label")}
-              placeholder={useTranslateFormFields("discord.content.placeholder")}
+              label={useTranslateFormDiscordFields("content.label")}
+              placeholder={useTranslateFormDiscordFields("content.placeholder")}
               value={form.values.discord_notify.content}
               onChange={(event) => form.setFieldValue("discord_notify.content", event.currentTarget.value)}
               radius="md"
@@ -97,10 +97,10 @@ export function EditNotificationSetting({ value, onChange }: EditNotificationSet
               maxRows={7}
             />
             <TextInput
-              label={useTranslateFormFields("user_ids.label")}
-              placeholder={useTranslateFormFields("user_ids.placeholder")}
+              label={useTranslateFormDiscordFields("user_ids.label")}
+              placeholder={useTranslateFormDiscordFields("user_ids.placeholder")}
               value={form.values.discord_notify.user_ids.join(", ")}
-              rightSection={<TooltipIcon label={useTranslateFormFields("user_ids.description")} />}
+              rightSection={<TooltipIcon label={useTranslateFormDiscordFields("user_ids.description")} />}
               onChange={(event) =>
                 form.setFieldValue(
                   "discord_notify.user_ids",

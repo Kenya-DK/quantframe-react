@@ -399,6 +399,41 @@ export const en = {
       },
     },
     forms: {
+      edit_notification_setting: {
+        discord: {
+          tooltip: "Toggle Discord Notifications",
+          title: "Discord Notifications",
+          fields: {
+            webhook: {
+              label: "Webhook URL",
+              placeholder: "Enter Discord webhook URL",
+            },
+            content: {
+              label: "Content",
+              placeholder: "Enter notification content",
+            },
+            user_ids: {
+              label: "User IDs",
+              placeholder: "Enter user IDs (comma separated)",
+              description: "Specify user IDs to receive notifications",
+            },
+          },
+        },
+        system: {
+          tooltip: "Toggle System Notifications",
+          title: "System Notifications",
+          fields: {
+            title: {
+              label: "Title",
+              placeholder: "Enter notification title",
+            },
+            content: {
+              label: "Content",
+              placeholder: "Enter notification content",
+            },
+          },
+        },
+      },
       riven_filter_attribute: {
         fields: {
           is_required: {
