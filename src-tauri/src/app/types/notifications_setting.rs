@@ -17,7 +17,7 @@ impl Default for NotificationsSetting {
                 SystemNotify::new("New Conversation", "From: <PLAYER_NAME>"),
             ),
             on_wfm_chat_message: NotificationSetting::new(
-                DiscordNotify::new( "From: <WFM_MESSAGE>", "", vec![]),
+                DiscordNotify::new( r#"<MENTION>\n```ansi\n\u001b[1;36m🗨️ Context\n<WFM_MESSAGE>\n```"#, "", vec![]),
                 SystemNotify::new("New WFM Message", "From: <WFM_MESSAGE>"),
             ),
             on_new_trade: NotificationSetting::new(

@@ -16,6 +16,7 @@ pub enum UIEvent {
     OnDeleteWfmAuctions,
     RefreshWfmAuctions,
     OnNotify,
+    OnWfmChatMessage,
 }
 impl UIEvent {
     pub fn as_str(&self) -> &str {
@@ -33,6 +34,7 @@ impl UIEvent {
             UIEvent::OnDeleteWfmAuctions => "Wfm:OnDeleteAuctions",
             UIEvent::RefreshWfmAuctions => "Wfm:RefreshAuctions",
             UIEvent::OnNotify => "App:OnNotify",
+            UIEvent::OnWfmChatMessage => "Wfm:OnChatMessage",
         }
     }
 }

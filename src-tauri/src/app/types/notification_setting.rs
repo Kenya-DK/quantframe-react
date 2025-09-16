@@ -68,6 +68,8 @@ impl DiscordNotify {
             }
             if !tags.is_empty() {
                 variables.insert("<MENTION>".to_string(), tags.join(" ").to_string());
+            } else {
+                variables.insert("<MENTION>".to_string(), "".to_string());
             }
         }
         let mut content = self.content.clone();

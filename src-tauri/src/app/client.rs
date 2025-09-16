@@ -1,4 +1,5 @@
-use std::sync::Mutex;
+use std::collections::HashMap;
+use std::sync::{Mutex, OnceLock};
 
 use crate::app::{Settings, User};
 use crate::types::*;
@@ -17,6 +18,8 @@ use wf_market::enums::ApiVersion;
 use wf_market::types::websocket::WsClient;
 use wf_market::types::UserPrivate as WFUserPrivate;
 use wf_market::Client as WFClient;
+
+pub static USER_NAME_CACHE: OnceLock<HashMap<String, String>> = OnceLock::new();
 
 #[derive(Clone)]
 pub struct AppState {
@@ -150,6 +153,25 @@ async fn setup_socket(wfm_client: WFClient<WFAuthenticated>) -> Result<WsClient,
                         .to_string(),
                 ),
 
+                None => {}
+            }
+            Ok(())
+        })
+        .unwrap()
+        .register_callback("chats/NEW_MESSAGE", move |msg, _, _| {
+            match msg.payload.as_ref() {
+                Some(payload) => {
+                    let settings = states::get_settings()
+                        .expect("Failed to get settings")
+                        .notifications
+                        .on_wfm_chat_message;
+                    send_event!(UIEvent::OnWfmChatMessage, Some(payload.clone()));
+                    let message = payload["raw_message"].as_str().unwrap_or("");
+                    settings.send(&HashMap::from([(
+                        "<WFM_MESSAGE>".to_string(),
+                        message.to_string(),
+                    )]));
+                }
                 None => {}
             }
             Ok(())
