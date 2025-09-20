@@ -1,10 +1,12 @@
-import { Accordion, Button, Grid, Group, JsonInput, Text, Title } from "@mantine/core";
+import { Accordion, Button, Container, Grid, Group, JsonInput, Text, Title } from "@mantine/core";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { useAppContext } from "@contexts/app.context";
 import { useAuthContext } from "@contexts/auth.context";
 import { useLiveScraperContext } from "@contexts/liveScraper.context";
 import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
+import { useEffect, useState } from "react";
+import { DataTable } from "mantine-datatable";
 interface StatesPanelProps {}
 export const StatesPanel = ({}: StatesPanelProps) => {
   const { app_info, app_error, alerts, settings } = useAppContext();
@@ -15,12 +17,21 @@ export const StatesPanel = ({}: StatesPanelProps) => {
     useTranslatePages(`debug.tabs.states.${key}`, { ...context }, i18Key);
   const useTranslateDataGridColumns = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTabLogging(`accordions.${key}`, { ...context }, i18Key);
+
+  // State's
+  const [tauriEvents, setTauriEvents] = useState<Array<{ event: string; count: number }>>([]);
+
   // Queries
   const { data: wfmState, refetch: refetchWfmState } = useQuery({
     queryKey: ["get_wfm_state"],
     queryFn: () => api.debug.get_wfm_state(),
     retry: false,
   });
+
+  useEffect(() => {
+    setTauriEvents(api.events.listener.getInfo());
+  }, []);
+
   return (
     <Accordion>
       <Accordion.Item value="app_info">
@@ -154,6 +165,19 @@ export const StatesPanel = ({}: StatesPanelProps) => {
               />
             </Grid.Col>
           </Grid>
+        </Accordion.Panel>
+      </Accordion.Item>
+      <Accordion.Item value="tauri_events">
+        <Accordion.Control>{useTranslateDataGridColumns("tauri_events")}</Accordion.Control>
+        <Accordion.Panel>
+          <DataTable
+            records={tauriEvents}
+            idAccessor={"event"}
+            columns={[
+              { accessor: "event", title: "Event" },
+              { accessor: "count", title: "Listener Count" },
+            ]}
+          />
         </Accordion.Panel>
       </Accordion.Item>
     </Accordion>

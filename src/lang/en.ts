@@ -1206,6 +1206,7 @@ export const en = {
             user: "User",
             live_scraper: "Live Scraper",
             wfm_state: "WFM State",
+            tauri_events: "Tauri Events",
           },
         },
         debugging: {
