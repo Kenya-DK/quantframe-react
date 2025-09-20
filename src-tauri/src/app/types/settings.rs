@@ -91,18 +91,22 @@ impl Settings {
                 println!("Missing property: {}", property);
             }
         }
-        match serde_json::from_value::<Settings>(validated_json) {
-            Ok(user) => Ok(user),
+        let data = match serde_json::from_value::<Settings>(validated_json) {
+            Ok(user) => user,
             Err(_) => {
                 let default_user = Settings::default();
                 default_user.save()?;
                 return Ok(default_user);
             }
+        };
+        if missing_properties.len() > 0 {
+            data.save()?;
         }
+        Ok(data)
     }
     pub fn save(&self) -> Result<(), Error> {
         let path = &get_path();
-        let content = serde_json::to_string(self).map_err(|e| {
+        let content = serde_json::to_string_pretty(self).map_err(|e| {
             Error::from_json(
                 "Settings",
                 path,
