@@ -34,6 +34,7 @@ export const NotificationsPanel = ({ value, onSubmit }: NotificationsPanelProps)
       label: useTranslateForm("on_new_conversation_title"),
       component: (
         <EditNotificationSetting
+          id="on_new_conversation"
           title={useTranslateForm("on_new_conversation_title")}
           value={form.values.on_new_conversation}
           onChange={(newValue) => form.setFieldValue("on_new_conversation", newValue)}
@@ -45,6 +46,7 @@ export const NotificationsPanel = ({ value, onSubmit }: NotificationsPanelProps)
       label: useTranslateForm("on_new_trade_title"),
       component: (
         <EditNotificationSetting
+          id="on_new_trade"
           title={useTranslateForm("on_new_trade_title")}
           value={form.values.on_new_trade}
           onChange={(newValue) => form.setFieldValue("on_new_trade", newValue)}
@@ -56,6 +58,7 @@ export const NotificationsPanel = ({ value, onSubmit }: NotificationsPanelProps)
       label: useTranslateForm("on_wfm_chat_message_title"),
       component: (
         <EditNotificationSetting
+          id="on_wfm_chat_message"
           title={useTranslateForm("on_wfm_chat_message_title")}
           value={form.values.on_wfm_chat_message}
           onChange={(newValue) => form.setFieldValue("on_wfm_chat_message", newValue)}

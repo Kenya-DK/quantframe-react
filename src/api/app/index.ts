@@ -31,4 +31,7 @@ export class AppModule {
   accept_tos(id: string): Promise<void> {
     return this.client.sendInvoke<void>("app_accept_tos", { id });
   }
+  notify_reset(id: string): Promise<TauriTypes.NotificationSetting> {
+    return this.client.sendInvoke<TauriTypes.NotificationSetting>("app_notify_reset", { id });
+  }
 }

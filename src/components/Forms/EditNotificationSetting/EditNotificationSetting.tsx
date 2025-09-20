@@ -1,4 +1,4 @@
-import { Collapse, Group, TextInput, Title, Divider, Textarea, Paper, ScrollAreaAutosize } from "@mantine/core";
+import { Collapse, Group, TextInput, Title, Divider, Textarea, Paper, ScrollAreaAutosize, Button } from "@mantine/core";
 // import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { useForm } from "@mantine/form";
 import { TauriTypes } from "$types";
@@ -7,14 +7,15 @@ import { ActionWithTooltip } from "../../Shared/ActionWithTooltip";
 import { faBell } from "@fortawesome/free-solid-svg-icons";
 import { faDiscord } from "@fortawesome/free-brands-svg-icons";
 import { TooltipIcon } from "../../Shared/TooltipIcon";
-
+import api from "@api/index";
 export type EditNotificationSettingProps = {
   title: string;
+  id: string;
   value?: TauriTypes.NotificationSetting;
   onChange: (values: TauriTypes.NotificationSetting) => void;
 };
 
-export function EditNotificationSetting({ value, onChange }: EditNotificationSettingProps) {
+export function EditNotificationSetting({ id, value, onChange }: EditNotificationSettingProps) {
   // Translate general
   const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForms(`edit_notification_setting.${key}`, { ...context }, i18Key);
@@ -28,6 +29,12 @@ export function EditNotificationSetting({ value, onChange }: EditNotificationSet
     onValuesChange: (values) => onChange(values as TauriTypes.NotificationSetting),
     validate: {},
   });
+
+  const handleContentReset = async () => {
+    const defaultNotification = await api.app.notify_reset(id);
+    form.setFieldValue("discord_notify.content", defaultNotification.discord_notify.content.replace(/\\n/g, "\n"));
+  };
+
   return (
     <form>
       <Paper shadow="xs">
@@ -96,6 +103,10 @@ export function EditNotificationSetting({ value, onChange }: EditNotificationSet
               rows={7}
               maxRows={7}
             />
+
+            <Button mt={5} onClick={() => handleContentReset()}>
+              {useTranslateFormDiscordFields("content.reset_button")}
+            </Button>
             <TextInput
               label={useTranslateFormDiscordFields("user_ids.label")}
               placeholder={useTranslateFormDiscordFields("user_ids.placeholder")}
