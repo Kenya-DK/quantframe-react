@@ -6,6 +6,7 @@ How To migrate:
 
 ## TODO's
 
+- ⏳ Do so items don't flip around when the list is updated in the wfm tab
 - ⏳ Add a edit modal for the stock items
 - ⏳ Add a preview for items to to buy.
 - ⏳ Add Stock Riven Details Modal and wishList
