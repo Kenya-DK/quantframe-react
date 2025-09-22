@@ -1,8 +1,8 @@
-import { AppShell, Box } from "@mantine/core";
+import { AppShell, Box, Indicator } from "@mantine/core";
 import classes from "./LogInLayout.module.css";
 import { Outlet, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBug, faGlobe, faHome } from "@fortawesome/free-solid-svg-icons";
+import { faBug, faEnvelope, faGlobe, faHome } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
 import { useEffect, useState } from "react";
 import { NavbarLinkProps, NavbarMinimalColored } from "@components/Layouts/Shared/NavbarMinimalColored";
@@ -52,6 +52,24 @@ export function LogInLayout() {
       icon: <FontAwesomeIcon size={"xl"} icon={faWarframeMarket} />,
       label: useTranslateNavBar("warframe_market"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
+    },
+    {
+      align: "top",
+      id: "chat",
+      link: "chat",
+      icon: (
+        <Indicator
+          disabled={(user?.unread_messages || 0) <= 0}
+          label={(user?.unread_messages || 0) > 0 ? user?.unread_messages : undefined}
+          inline
+          size={16}
+          position="top-start"
+        >
+          <FontAwesomeIcon size={"lg"} icon={faEnvelope} />
+        </Indicator>
+      ),
+      onClick: (e: NavbarLinkProps) => handleNavigate(e),
+      label: useTranslateNavBar("chat"),
     },
     {
       align: "top",

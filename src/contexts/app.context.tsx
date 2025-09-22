@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import api, { OffTauriEvent, OnTauriEvent } from "@api/index";
+import api from "@api/index";
 import { QuantframeApiTypes, ResponseError, TauriTypes } from "$types";
 import { AuthContextProvider } from "./auth.context";
 import { AppError } from "../model/appError";
@@ -17,6 +17,7 @@ import { readTextFile } from "@tauri-apps/plugin-fs";
 import { LiveScraperContextProvider } from "./liveScraper.context";
 import { notifications } from "@mantine/notifications";
 import { TextTranslate } from "../components/Shared/TextTranslate";
+import { useTauriEvent } from "../hooks/useTauriEvent.hook";
 
 export type AppContextProps = {
   app_info: TauriTypes.AppInfo | undefined;
@@ -154,21 +155,16 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
   }, [alertsError]);
 
   // Hook on tauri events from rust side
+  useTauriEvent(TauriTypes.Events.OnError, handleAppError, []);
+  useTauriEvent(TauriTypes.Events.RefreshSettings, refetchSettings, []);
+  useTauriEvent(TauriTypes.Events.OnStartingUp, setStartingUp, []);
+  useTauriEvent(TauriTypes.Events.OnNotify, handleOnNotify, []);
   useEffect(() => {
-    OnTauriEvent<ResponseError | undefined>(TauriTypes.Events.OnError, (data) => handleAppError(data));
-    OnTauriEvent<undefined>(TauriTypes.Events.RefreshSettings, () => refetchSettings());
-    OnTauriEvent<any>(TauriTypes.Events.OnStartingUp, (data) => setStartingUp(data));
-    OnTauriEvent<any>(TauriTypes.Events.OnNotify, (data) => handleOnNotify(data));
     invoke("was_initialized")
       .then((wasInitialized) => (wasInitialized ? InitializeApp() : console.log("App was not initialized")))
       .catch((e) => console.error("Error checking initialization:", e));
     listen("app:ready", () => InitializeApp());
-    return () => {
-      OffTauriEvent<ResponseError | undefined>(TauriTypes.Events.OnError, (data) => handleAppError(data));
-      OffTauriEvent<undefined>(TauriTypes.Events.RefreshSettings, () => refetchSettings());
-      OffTauriEvent<any>(TauriTypes.Events.OnStartingUp, (data) => setStartingUp(data));
-      OffTauriEvent<any>(TauriTypes.Events.OnNotify, (data) => handleOnNotify(data));
-    };
+    return () => {};
   }, []);
   return (
     <AppContext.Provider value={{ settings, alerts: alerts?.results || [], app_info: app_info, app_error: error }}>

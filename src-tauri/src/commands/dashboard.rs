@@ -158,7 +158,8 @@ pub async fn dashboard_summary(app: tauri::State<'_, Mutex<AppState>>) -> Result
             .set_sort_by("created_at".to_string())
             .set_sort_direction(SortDirection::Desc),
     )
-    .await.unwrap() ;
+    .await
+    .unwrap();
 
     let app = app.lock()?.clone();
     let category_summary = get_category_summary(

@@ -176,8 +176,6 @@ pub fn run() {
                         &LoggerOptions::default().set_file("emit_error.log"),
                     );
                 }
-
-                let app = APP.get().expect("App not initialized");
                 HAS_STARTED.set(true).unwrap();
             });
             init_logger();
@@ -193,6 +191,7 @@ pub fn run() {
             commands::app::app_update_settings,
             commands::app::app_exit,
             commands::app::app_accept_tos,
+            commands::app::app_notify_reset,
             // Auth commands
             commands::auth::auth_me,
             commands::auth::auth_login,
@@ -259,6 +258,13 @@ pub fn run() {
             commands::wish_list::wish_list_delete,
             commands::wish_list::wish_list_update,
             commands::wish_list::wish_list_get_by_id,
+            // Chat commands
+            commands::chat::chat_refresh,
+            commands::chat::get_chat_pagination,
+            commands::chat::chat_get_messages_by_id,
+            commands::chat::chat_delete,
+            commands::chat::chat_set_active,
+            commands::chat::chat_send_message
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

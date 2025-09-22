@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::path::PathBuf;
 use std::sync::{Mutex, OnceLock};
 
 use crate::app::{Settings, User};
@@ -12,15 +13,23 @@ use qf_api::Client as QFClient;
 use serde_json::{json, Value};
 use sha256::digest;
 use tauri::{AppHandle, Manager};
-use utils::{get_location, warning, Error, LogLevel, LoggerOptions};
+use utils::{get_location, info, warning, Error, LogLevel, LoggerOptions};
 use wf_market::client::Authenticated as WFAuthenticated;
 use wf_market::enums::ApiVersion;
-use wf_market::types::websocket::WsClient;
-use wf_market::types::UserPrivate as WFUserPrivate;
+use wf_market::types::websocket::{WsClient, WsMessage};
+use wf_market::types::{Chat, ChatMessage, UserPrivate as WFUserPrivate};
 use wf_market::Client as WFClient;
-
-pub static USER_NAME_CACHE: OnceLock<HashMap<String, String>> = OnceLock::new();
-
+pub static ACTIVE_CHAT_ID: OnceLock<Mutex<Option<String>>> = OnceLock::new();
+pub fn set_active_chat_id(chat_id: Option<String>) {
+    let active_chat_id = ACTIVE_CHAT_ID.get_or_init(|| Mutex::new(None));
+    let mut guard = active_chat_id.lock().unwrap();
+    *guard = chat_id;
+}
+pub fn get_active_chat_id() -> Option<String> {
+    let active_chat_id = ACTIVE_CHAT_ID.get_or_init(|| Mutex::new(None));
+    let guard = active_chat_id.lock().unwrap();
+    guard.clone()
+}
 #[derive(Clone)]
 pub struct AppState {
     pub user: User,
@@ -49,6 +58,7 @@ fn update_user(mut cu_user: User, user: &WFUserPrivate, qf_user: &QFUserPrivate)
     cu_user.wfm_username = user.ingame_name.clone();
     cu_user.wfm_id = user.id.to_string();
     cu_user.wfm_avatar = user.avatar.clone();
+    cu_user.unread_messages = user.unread_messages as i64;
     cu_user
 }
 
@@ -70,6 +80,112 @@ fn update_user_status(states: impl Into<String>) {
     guard.user.wfm_status = states;
     guard.user.save().expect("Failed to save user status");
     emit_update_user!(json!({"wfm_status": guard.user.wfm_status}));
+}
+
+fn handle_new_message(wfm_client: &WFClient<WFAuthenticated>, msg: &WsMessage) {
+    let binding = wfm_client.chat();
+    let active_chat_id = get_active_chat_id().unwrap_or_default();
+    let chat_message = match msg
+        .get_payload_as::<ChatMessage>(msg.route.ends_with("MESSAGE_SENT").then_some("message"))
+    {
+        Ok(chat_msg) => chat_msg,
+        Err(e) => {
+            let err = Error::from_json(
+                "ChatMessage:Received",
+                &PathBuf::from("websocket"),
+                msg.payload.as_ref().unwrap_or(&json!({})).to_string(),
+                "Failed to parse chat message from websocket",
+                e,
+                get_location!(),
+            );
+            err.log("websocket_info.log");
+            return;
+        }
+    };
+    if chat_message.is_none() {
+        return;
+    }
+    let chat_message = chat_message.unwrap();
+
+    fn handle_notify(
+        chat: &Chat,
+        chat_message: &ChatMessage,
+        active_chat_id: impl Into<String>,
+        requirer_refresh: bool,
+        un_read: u32,
+    ) {
+        let active_chat_id = active_chat_id.into();
+        let state = states::app_state().expect("Failed to get settings");
+
+        let from_user = match chat.find_user(&chat_message.message_from) {
+            Some(c) => c.name.clone(),
+            None => "".to_string(),
+        };
+        let mut chat_payload = json!(chat_message);
+        chat_payload["requirer_refresh"] = json!(requirer_refresh);
+        send_event!(UIEvent::OnWfmChatMessage, chat_payload);
+
+        if active_chat_id == chat.id || state.user.wfm_id == chat_message.message_from {
+            return;
+        }
+        emit_update_user!(json!({ "unread_messages": un_read }));
+        state
+            .settings
+            .notifications
+            .on_wfm_chat_message
+            .send(&HashMap::from([
+                (
+                    "<WFM_MESSAGE>".to_string(),
+                    chat_message.raw_message.clone(),
+                ),
+                ("<CHAT_NAME>".to_string(), chat.chat_name.clone()),
+                ("<FROM_USER>".to_string(), from_user.clone()),
+            ]));
+        info(
+            "ChatMessage:Notify",
+            &format!("New message in chat {} from {}", chat.chat_name, from_user),
+            &LoggerOptions::default(),
+        );
+    }
+
+    let chat = binding
+        .cache_chats_mut()
+        .handle_chat_message(&chat_message, &active_chat_id);
+    if chat.is_none() {
+        tauri::async_runtime::spawn(async move {
+            match binding.get_chats().await {
+                Ok(mut messages) => {
+                    let chat = messages.get_by_id(&chat_message.chat_id, true);
+                    if chat.is_some() {
+                        handle_notify(
+                            &chat.unwrap(),
+                            &chat_message,
+                            &active_chat_id,
+                            true,
+                            binding.cache_chats().total_unread_count(),
+                        );
+                    }
+                }
+                Err(e) => {
+                    let err = Error::from_wfm(
+                        "ChatMessage:FetchChat",
+                        "Failed to fetch chats after receiving new message",
+                        e,
+                        get_location!(),
+                    );
+                    err.log("websocket_info.log");
+                }
+            }
+        });
+    } else {
+        handle_notify(
+            &chat.unwrap(),
+            &chat_message,
+            &active_chat_id,
+            false,
+            binding.cache_chats().total_unread_count(),
+        );
+    }
 }
 
 async fn setup_socket(wfm_client: WFClient<WFAuthenticated>) -> Result<WsClient, Error> {
@@ -158,22 +274,11 @@ async fn setup_socket(wfm_client: WFClient<WFAuthenticated>) -> Result<WsClient,
             Ok(())
         })
         .unwrap()
-        .register_callback("chats/NEW_MESSAGE", move |msg, _, _| {
-            match msg.payload.as_ref() {
-                Some(payload) => {
-                    let settings = states::get_settings()
-                        .expect("Failed to get settings")
-                        .notifications
-                        .on_wfm_chat_message;
-                    send_event!(UIEvent::OnWfmChatMessage, Some(payload.clone()));
-                    let message = payload["raw_message"].as_str().unwrap_or("");
-                    settings.send(&HashMap::from([(
-                        "<WFM_MESSAGE>".to_string(),
-                        message.to_string(),
-                    )]));
-                }
-                None => {}
+        .register_callback("chats/NEW_MESSAGE,chats/MESSAGE_SENT", move |msg, _, _| {
+            if !HAS_STARTED.get().cloned().unwrap_or(false) {
+                return Ok(());
             }
+            handle_new_message(&wfm_client, msg);
             Ok(())
         })
         .unwrap()
@@ -274,10 +379,11 @@ impl AppState {
                 ))
             }
         };
-        let wfm_user = wfm_client
+        let mut wfm_user = wfm_client
             .get_user()
             .map_err(|e| Error::from_wfm("Login", "Failed to get WFM user", e, get_location!()))?;
 
+        wfm_user.unread_messages = wfm_client.chat().cache_chats().total_unread_count() as i16;
         let mut user = self.user.clone();
         wfm_client.set_device_id(&self.qf_client.device);
         user.wfm_token = wfm_client.get_token();
@@ -319,8 +425,8 @@ impl AppState {
                 ));
             }
         };
-        let wfm_user = wfm_client.get_user().unwrap();
-
+        let mut wfm_user = wfm_client.get_user().unwrap();
+        wfm_user.unread_messages = wfm_client.chat().cache_chats().total_unread_count() as i16;
         self.qf_client.set_wfm_id(&wfm_user.id);
         self.qf_client.set_wfm_username(&wfm_user.ingame_name);
         self.qf_client.set_wfm_platform(&wfm_user.platform);

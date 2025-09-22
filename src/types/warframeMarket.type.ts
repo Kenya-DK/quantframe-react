@@ -120,4 +120,38 @@ export namespace WFMarketTypes {
     order_type?: WFMarketTypes.OrderType;
     query?: string;
   }
+  export interface WfmChatDataControllerGetListParams {
+    page: number;
+    limit: number;
+    sort_by?: string;
+    sort_direction?: "asc" | "desc";
+    order_type?: WFMarketTypes.OrderType;
+    query?: string;
+  }
+  export type WfmChatDataControllerGetListData = PaginatedDto & {
+    results?: WFMarketTypes.ChatData[];
+  };
+  export interface ChatData {
+    id: string;
+    chat_with: User[];
+    unread_count: number;
+    chat_name: string;
+    messages: ChatMessage[];
+    last_update: string;
+  }
+
+  export interface ChatMessageSent {
+    message: ChatMessage;
+    temp_id: string;
+  }
+
+  export interface ChatMessage {
+    id: string;
+    message: string;
+    chat_id: string;
+    send_date: string;
+    message_from: string;
+    raw_message: string;
+    requirer_refresh?: boolean;
+  }
 }

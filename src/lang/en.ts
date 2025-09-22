@@ -81,6 +81,10 @@ export const en = {
         error: { title: "Bought Wishlist Error", message: "An error occurred while trying to mark the wishlist as bought." },
         success: { title: "Bought Wishlist Success", message: "The wishlist has been successfully marked as bought." },
       },
+      delete_chat: {
+        error: { title: "Delete Chat Error", message: "An error occurred while trying to delete the chat." },
+        success: { title: "Delete Chat Success", message: "The chat has been successfully deleted." },
+      },
     },
     datatable_columns: {
       list_price: "Listed",
@@ -333,6 +337,7 @@ export const en = {
           debug: "Debug",
           live_scraper: "Live Scraper",
           warframe_market: "Warframe Market",
+          chat: "Chat",
         },
       },
     },
@@ -411,6 +416,7 @@ export const en = {
             content: {
               label: "Content",
               placeholder: "Enter notification content",
+              reset_button: "Reset to default",
             },
             user_ids: {
               label: "User IDs",
@@ -1068,6 +1074,26 @@ export const en = {
         export_log: "Export Log",
       },
     },
+    chat_item: {
+      delete_tooltip: "Delete Conversation",
+      last_update: "Last update ",
+    },
+    chat_rome: {
+      fields: {
+        message: {
+          too_long: "Message is too long",
+          placeholder: "Type your message here...",
+        },
+      },
+      buttons: {
+        back_label: "Back",
+        send_label: "Send",
+        options: {
+          label: "Options",
+          delete: "Why are you here?",
+        },
+      },
+    },
   },
   context: {
     app: {
@@ -1388,6 +1414,20 @@ export const en = {
             },
           },
         },
+      },
+    },
+    chat: {
+      prompts: {
+        delete_chat: {
+          title: "Delete Chat",
+          message: "Are you sure you want to delete this chat? This action cannot be undone.",
+          cancel: "Cancel",
+          confirm: "Delete",
+        },
+      },
+      buttons: {
+        refresh_tooltip: "Refresh the chat list",
+        delete_all_tooltip: "Delete all chats",
       },
     },
   },

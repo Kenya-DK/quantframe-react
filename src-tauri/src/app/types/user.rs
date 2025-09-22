@@ -1,6 +1,6 @@
 use std::{fs::File, io::Read, path::PathBuf};
 
-use qf_api::errors::ApiError;
+use qf_api::{errors::ApiError, utils::write_json_file};
 use serde::{de, Deserialize, Serialize};
 use serde_json::Value;
 use utils::{get_location, validate_json, Error};
@@ -129,6 +129,7 @@ impl User {
     }
     pub fn save(&self) -> Result<(), Error> {
         let path = &get_path();
+        // Format the user data as a JSON string
         let content = serde_json::to_string(self).map_err(|e| {
             Error::from_json(
                 "User",

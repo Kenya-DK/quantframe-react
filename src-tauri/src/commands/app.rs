@@ -74,3 +74,11 @@ pub async fn app_accept_tos(
     app.settings.save()?;
     Ok(())
 }
+#[tauri::command]
+pub async fn app_notify_reset(id: String) -> Result<Value, Error> {
+    let value = json!(crate::app::NotificationsSetting::default());
+    if value[id.clone()].is_object() {
+        return Ok(value[id.clone()].clone());
+    }
+    Ok(json!({}))
+}

@@ -27,8 +27,9 @@ import PBanned from "@pages/banned";
 // Live Scraper
 import PLiveScraper from "@pages/live_scraper";
 
-// Live Scraper
+// Warframe Market
 import PWarframeMarket from "@pages/warframe_market";
+import PWarframeMarketChat from "@pages/chat";
 
 export function AppRoutes() {
   const { app_error } = useAppContext();
@@ -65,6 +66,7 @@ export function AppRoutes() {
                 </Route>
                 <Route path="live_scraper" element={<PLiveScraper />} />
                 <Route path="warframe-market" element={<PWarframeMarket />} />
+                <Route path="chat" element={<PWarframeMarketChat />} />
               </Route>
               <Route path="*" element={<PHome />} />
             </Route>

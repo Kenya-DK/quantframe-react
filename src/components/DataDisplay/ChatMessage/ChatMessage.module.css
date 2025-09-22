@@ -1,0 +1,10 @@
+.root {
+  &[data-position="left"],
+  [data-position="left"] {
+    justify-content: left;
+  }
+  &[data-position="right"],
+  [data-position="right"] {
+    justify-content: right;
+  }
+}

@@ -33,6 +33,7 @@ export namespace TauriTypes {
     RefreshWfmAuctions = "LiveScraper:RefreshWfmAuctions",
     OnDeleteWfmAuctions = "Wfm:OnDeleteAuctions",
     OnNotify = "App:OnNotify",
+    OnChatMessage = "Wfm:OnChatMessage",
   }
   export enum EventOperations {
     CREATE_OR_UPDATE = "CREATE_OR_UPDATE",
@@ -142,7 +143,7 @@ export namespace TauriTypes {
     auctions_limit: number;
     wfm_avatar?: string;
     check_code: string;
-    id: string;
+    wfm_id: string;
     wfm_username: string;
     locale: string;
     order_limit: number;

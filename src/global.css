@@ -37,7 +37,8 @@
   --color: var(--qf-user-status-online);
 }
 
-[data-user-status="invisible"] {
+[data-user-status="invisible"],
+[data-user-status="offline"] {
   --color: var(--qf-user-status-invisible);
 }
 
