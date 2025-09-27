@@ -10,6 +10,7 @@ use utils::*;
 use wf_market::{
     enums::{OrderType, StatusType},
     types::{Order, OrderList, OrderWithUser},
+    utils::write_json_file,
 };
 
 use crate::{
@@ -270,7 +271,7 @@ impl ItemModule {
             // Process wishlist logic (future expansion)
             if item_entry.operation.contains(&"WishList".to_string()) {
                 if let Err(e) = self
-                    .progress_wish_list(&item_info, &item_entry, &item_price, &orders, &cache)
+                    .progress_wish_list(&item_info, &item_entry, &item_price, &orders)
                     .await
                 {
                     return Err(e.with_location(get_location!()));
@@ -289,7 +290,7 @@ impl ItemModule {
             // Process selling logic (future expansion)
             if item_entry.operation.contains(&"Sell".to_string()) && item_entry.stock_id.is_some() {
                 if let Err(e) = self
-                    .progress_selling(&item_info, &item_entry, &item_price, &orders, &cache)
+                    .progress_selling(&item_info, &item_entry, &item_price, &orders)
                     .await
                 {
                     return Err(e.with_location(get_location!()));
@@ -332,6 +333,20 @@ impl ItemModule {
                 .set_enable(true),
         );
         let settings = states::get_settings()?.live_scraper.stock_item;
+
+        // Check if item is blacklisted for buying
+        if settings.is_item_blacklisted(&item_info.wfm_id, &TradeMode::Buy) {
+            info(
+                format!("{}Blacklisted", COMPONENT),
+                &format!(
+                    "Item {} is blacklisted for buying. Skipping.",
+                    item_info.name
+                ),
+                &log_options,
+            );
+            return Ok(());
+        }
+
         let wfm_client = states::app_state()?.wfm_client;
         // Skip if no relevant market activity
         let (should_skip, _operation) = skip_if_no_market_activity(live_orders);
@@ -481,7 +496,6 @@ impl ItemModule {
         entry: &ItemEntry,
         price: &ItemPriceInfo,
         live_orders: &OrderList<OrderWithUser>,
-        cache: &CacheState,
     ) -> Result<(), Error> {
         let conn = DATABASE.get().unwrap();
         let log_options = &LoggerOptions::default()
@@ -499,6 +513,20 @@ impl ItemModule {
         );
         // Get Settings.
         let settings = states::get_settings()?.live_scraper.stock_item;
+
+        // Check if item is blacklisted for selling
+        if settings.is_item_blacklisted(&item_info.wfm_id, &TradeMode::Sell) {
+            info(
+                format!("{}Blacklisted", COMPONENT),
+                &format!(
+                    "Item {} is blacklisted for selling. Skipping.",
+                    item_info.name
+                ),
+                &log_options,
+            );
+            return Ok(());
+        }
+
         let wfm_client = states::app_state()?.wfm_client;
         let per_trade = if item_info.bulk_tradable {
             Some(1)
@@ -661,7 +689,6 @@ impl ItemModule {
         entry: &ItemEntry,
         price: &ItemPriceInfo,
         live_orders: &OrderList<OrderWithUser>,
-        cache: &CacheState,
     ) -> Result<(), Error> {
         let conn = DATABASE.get().unwrap();
         let log_options = &LoggerOptions::default()
@@ -677,6 +704,19 @@ impl ItemModule {
                 .set_width(180)
                 .set_enable(true),
         );
+        let settings = states::get_settings()?.live_scraper.stock_item;
+        // Check if item is blacklisted for wishlist
+        if settings.is_item_blacklisted(&item_info.wfm_id, &TradeMode::WishList) {
+            info(
+                format!("{}Blacklisted", COMPONENT),
+                &format!(
+                    "Item {} is blacklisted for wishlist. Skipping.",
+                    item_info.name
+                ),
+                &log_options,
+            );
+            return Ok(());
+        }
         let wfm_client = states::app_state()?.wfm_client;
         let per_trade = if item_info.bulk_tradable {
             Some(1)

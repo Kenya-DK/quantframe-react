@@ -22,7 +22,7 @@ export const RivenPanel = ({ value, onSubmit }: RivenPanelProps) => {
     validate: {},
   });
   return (
-    <Box h="100%">
+    <Box h="100%" p={"md"}>
       <form onSubmit={form.onSubmit((values) => onSubmit(values))}>
         <Group gap={"md"}>
           <NumberInput

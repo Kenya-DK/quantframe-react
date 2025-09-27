@@ -9,15 +9,12 @@ pub enum TradeMode {
     WishList,
     Unknown(String),
 }
-impl Serialize for TradeMode {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let value = match self {
-            TradeMode::Buy => "buy",
-            TradeMode::Sell => "sell",
-            TradeMode::WishList => "wishlist",
+impl TradeMode {
+    pub fn to_string(&self) -> String {
+        match self {
+            TradeMode::Buy => "buy".to_string(),
+            TradeMode::Sell => "sell".to_string(),
+            TradeMode::WishList => "wishlist".to_string(),
             TradeMode::Unknown(i) => {
                 log_critical_opt!(
                     "TradeMode",
@@ -25,10 +22,17 @@ impl Serialize for TradeMode {
                     "Unknown TradeMode: {}",
                     i
                 );
-                "unknown"
+                "unknown".to_string()
             }
-        };
-        serializer.serialize_str(value)
+        }
+    }
+}
+impl Serialize for TradeMode {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
     }
 }
 

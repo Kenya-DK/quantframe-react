@@ -12,6 +12,8 @@ export type LiveTradingPanelProps = {
 };
 
 export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => {
+  const [hideTab, setHideTab] = useState<boolean>(false);
+
   // Translate general
   const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForms(`settings.${key}`, { ...context }, i18Key);
@@ -24,6 +26,7 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
       component: (
         <GeneralPanel
           value={value}
+          setHideTab={(v) => setHideTab(v)}
           onSubmit={(v) => {
             onSubmit({ ...value, ...v });
           }}
@@ -61,7 +64,7 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
 
   return (
     <Tabs h={"82vh"} orientation="vertical" value={activeTab} onChange={(value) => setActiveTab(value || tabs[0].id)}>
-      <Tabs.List>
+      <Tabs.List display={hideTab ? "none" : ""}>
         {tabs.map((tab) => (
           <Tabs.Tab value={tab.id} key={tab.id}>
             {tab.label}

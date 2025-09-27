@@ -155,6 +155,7 @@ pub async fn collect_interesting_items(
     let component = component.into();
     let conn = DATABASE.get().unwrap();
     // Variables.
+    let stock_item_settings = &settings.live_scraper.stock_item;
     let mut interesting_items: HashMap<String, ItemEntry> = HashMap::new();
 
     // -- Debugging Mode --
@@ -173,7 +174,9 @@ pub async fn collect_interesting_items(
         for item in buy_list {
             let item_entry = ItemEntry::from(&item)
                 .set_buy_quantity(settings.live_scraper.stock_item.buy_quantity);
-            interesting_items.insert(item_entry.uuid().clone(), item_entry);
+            if !stock_item_settings.is_item_blacklisted(&item.wfm_id, &TradeMode::Buy) {
+                interesting_items.insert(item_entry.uuid().clone(), item_entry);
+            }
         }
     }
 
@@ -190,15 +193,17 @@ pub async fn collect_interesting_items(
                 )
             })?;
         for item in stock_items.results {
-            interesting_items
-                .entry(item.uuid())
-                .and_modify(|entry| {
-                    entry.priority = 1;
-                    entry.sell_quantity = item.owned;
-                    entry.stock_id = Some(item.id);
-                    entry.operation.push("Sell".to_string());
-                })
-                .or_insert_with(|| ItemEntry::from(&item).set_sell_quantity(item.owned));
+            if !stock_item_settings.is_item_blacklisted(&item.wfm_id, &TradeMode::Sell) {
+                interesting_items
+                    .entry(item.uuid())
+                    .and_modify(|entry| {
+                        entry.priority = 1;
+                        entry.sell_quantity = item.owned;
+                        entry.stock_id = Some(item.id);
+                        entry.operation.push("Sell".to_string());
+                    })
+                    .or_insert_with(|| ItemEntry::from(&item).set_sell_quantity(item.owned));
+            }
         }
     }
 
@@ -215,15 +220,17 @@ pub async fn collect_interesting_items(
                 )
             })?;
         for item in wish_items.results {
-            interesting_items
-                .entry(item.uuid())
-                .and_modify(|entry| {
-                    entry.priority = 2;
-                    entry.buy_quantity = item.quantity;
-                    entry.wish_list_id = Some(item.id);
-                    entry.operation.push("WishList".to_string());
-                })
-                .or_insert_with(|| ItemEntry::from(&item));
+            if !stock_item_settings.is_item_blacklisted(&item.wfm_id, &TradeMode::WishList) {
+                interesting_items
+                    .entry(item.uuid())
+                    .and_modify(|entry| {
+                        entry.priority = 2;
+                        entry.buy_quantity = item.quantity;
+                        entry.wish_list_id = Some(item.id);
+                        entry.operation.push("WishList".to_string());
+                    })
+                    .or_insert_with(|| ItemEntry::from(&item));
+            }
         }
     }
     Ok(interesting_items.into_values().collect())

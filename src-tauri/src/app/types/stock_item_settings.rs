@@ -1,7 +1,25 @@
 use serde::{Deserialize, Serialize};
 
+use crate::enums::TradeMode;
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct BlackListItemSetting {
+    // WTB Settings
+    pub wfm_id: String,
+    pub disabled_for: Vec<TradeMode>,
+}
+
+impl BlackListItemSetting {
+    pub fn is_disabled_for(&self, wfm_id: impl Into<String>, mode: &TradeMode) -> bool {
+        self.wfm_id == wfm_id.into() && self.disabled_for.contains(mode)
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StockItemSettings {
+    // General Settings
+    pub blacklist: Vec<BlackListItemSetting>,
+
     // WTB Settings
     pub volume_threshold: i64,
     pub profit_threshold: i64,
@@ -21,6 +39,7 @@ pub struct StockItemSettings {
 impl Default for StockItemSettings {
     fn default() -> Self {
         StockItemSettings {
+            blacklist: vec![],
             min_sma: 3,
             min_profit: 10,
             volume_threshold: 15,
@@ -51,5 +70,13 @@ impl StockItemSettings {
             self.min_sma,
             self.min_profit
         )
+    }
+    pub fn is_item_blacklisted(&self, wfm_id: &str, mode: &TradeMode) -> bool {
+        for item in &self.blacklist {
+            if item.is_disabled_for(wfm_id, mode) {
+                return true;
+            }
+        }
+        false
     }
 }

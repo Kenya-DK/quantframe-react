@@ -325,13 +325,13 @@ export namespace TauriTypes {
     types: string[];
   }
   export interface SettingsStockItem {
+    blacklist: BlackListItemSetting[];
     min_profit: number;
     auto_delete: boolean;
     auto_trade: boolean;
     avg_price_cap: number;
     trading_tax_cap: number;
     buy_quantity: number;
-    blacklist: string[];
     max_total_price_cap: number;
     min_sma: number;
     price_shift_threshold: number;
@@ -340,6 +340,10 @@ export namespace TauriTypes {
     volume_threshold: number;
     min_wtb_profit_margin: number;
     quantity_per_trade: number;
+  }
+  export interface BlackListItemSetting {
+    wfm_id: string;
+    disabled_for: TradeMode[];
   }
   export interface SettingsStockRiven {
     min_profit: number;

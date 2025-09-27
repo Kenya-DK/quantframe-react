@@ -8,7 +8,8 @@ import { upperFirst } from "@mantine/hooks";
 
 export type SelectTradableItemProps = {
   value: string;
-  decoration?: string;
+  description?: string;
+  hide_sub_type?: boolean;
   onChange(item: SelectCacheTradableItem): void;
 };
 
@@ -18,7 +19,7 @@ export interface SelectCacheTradableItem extends Omit<TauriTypes.CacheTradableIt
   available_sub_types?: TauriTypes.CacheTradableItemSubType;
   sub_type?: TauriTypes.SubType;
 }
-export function SelectTradableItem({ value, onChange, decoration }: SelectTradableItemProps) {
+export function SelectTradableItem({ hide_sub_type, value, onChange, description }: SelectTradableItemProps) {
   // State
   const [items, setItems] = useState<SelectCacheTradableItem[]>([]);
   const [filteredItems, setFilteredItems] = useState(items);
@@ -71,10 +72,10 @@ export function SelectTradableItem({ value, onChange, decoration }: SelectTradab
   return (
     <Group>
       <Select
-        w={300}
+        w={250}
         label={useTranslateFormFields("item.label")}
         placeholder={useTranslateFormFields("item.placeholder")}
-        description={decoration}
+        description={description}
         data={filteredItems}
         searchable
         limit={10}
@@ -104,13 +105,13 @@ export function SelectTradableItem({ value, onChange, decoration }: SelectTradab
           handleSelect(tItem);
         }}
       />
-      {selectedItem && selectedItem.available_sub_types && (
+      {selectedItem && selectedItem.available_sub_types && !hide_sub_type && (
         <Group>
           {selectedItem.available_sub_types.variants && (
             <Select
               label={useTranslateFormFields("variant.label")}
               placeholder={useTranslateFormFields("variant.placeholder")}
-              description={decoration ? useTranslateFormFields("variant.description") : ""}
+              description={description ? useTranslateFormFields("variant.description") : ""}
               data={selectedItem.available_sub_types.variants.map((variant) => ({ label: upperFirst(variant), value: variant }))}
               required
               value={selectedItem.sub_type?.variant || selectedItem.available_sub_types.variants[0] || ""}
@@ -126,7 +127,7 @@ export function SelectTradableItem({ value, onChange, decoration }: SelectTradab
               required
               label={useTranslateFormFields("rank.label")}
               placeholder={useTranslateFormFields("rank.placeholder")}
-              description={decoration ? useTranslateFormFields("rank.description") : ""}
+              description={description ? useTranslateFormFields("rank.description") : ""}
               value={selectedItem.sub_type?.rank || 0}
               min={0}
               max={selectedItem.available_sub_types.max_rank}
@@ -139,7 +140,7 @@ export function SelectTradableItem({ value, onChange, decoration }: SelectTradab
               required
               label={useTranslateFormFields("cyan_stars.label")}
               placeholder={useTranslateFormFields("cyan_stars.placeholder")}
-              description={decoration ? useTranslateFormFields("cyan_stars.description") : ""}
+              description={description ? useTranslateFormFields("cyan_stars.description") : ""}
               value={selectedItem.sub_type?.cyan_stars || 0}
               min={0}
               max={selectedItem.available_sub_types.cyan_stars}
@@ -157,7 +158,7 @@ export function SelectTradableItem({ value, onChange, decoration }: SelectTradab
               required
               label={useTranslateFormFields("amber_stars.label")}
               placeholder={useTranslateFormFields("amber_stars.placeholder")}
-              description={decoration ? useTranslateFormFields("amber_stars.description") : ""}
+              description={description ? useTranslateFormFields("amber_stars.description") : ""}
               value={selectedItem.sub_type?.amber_stars || 0}
               min={0}
               max={selectedItem.available_sub_types.amber_stars}

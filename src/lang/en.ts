@@ -404,6 +404,9 @@ export const en = {
       },
     },
     forms: {
+      generic_item_list: {
+        add_all_tooltip: "Add All Items",
+      },
       edit_notification_setting: {
         discord: {
           tooltip: "Toggle Discord Notifications",
@@ -786,6 +789,22 @@ export const en = {
                   placeholder: "Stock Mode",
                   error: "Invalid stock mode",
                 },
+              },
+              buttons: {
+                edit_blacklist_label: "Edit Blacklist {{count}}",
+              },
+              black_list: {
+                available_items_label: "Available Items",
+                selected_items_label: "Blacklisted Items",
+                name_title: "Name",
+                trade_tax_title: "Trade Tax",
+                trade_tax_label: "Trade Tax {{min}} - {{max}}",
+                mr_requirement_label: "MR Requirement {{min}} - {{max}}",
+                mr_requirement_title: "MR Requirement",
+                disabled_for_title: "Disabled For",
+                go_back_label: "Go Back",
+                set_trade_modes_tooltip: "Set Trade Modes currently selected {{modes}}",
+                no_trade_selected: "No trade modes selected",
               },
             },
             item: {
