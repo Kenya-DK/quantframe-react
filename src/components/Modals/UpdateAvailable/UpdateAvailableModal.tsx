@@ -11,10 +11,13 @@ import { relaunch } from "@tauri-apps/plugin-process";
 export interface UpdateAvailableModalProps {
   app_info: TauriTypes.AppInfo | undefined;
   context?: string;
-  updater: Update;
+  is_manual?: boolean;
+  new_version?: string;
+  download_url?: string;
+  updater?: Update;
 }
 
-export function UpdateAvailableModal({ app_info, context, updater }: UpdateAvailableModalProps) {
+export function UpdateAvailableModal({ is_manual, download_url, context, updater, new_version }: UpdateAvailableModalProps) {
   const useTranslateModal = (key: string, ctx?: Record<string, any>, raw?: boolean) => useTranslateModals(`update_available.${key}`, ctx, raw);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -67,6 +70,8 @@ export function UpdateAvailableModal({ app_info, context, updater }: UpdateAvail
         <Button
           loading={isDownloading}
           onClick={async () => {
+            if (is_manual) return open(download_url);
+            if (!updater) return;
             if (isDownloading) return;
             setIsDownloading(true);
             setDownloadProgress(0);
@@ -94,12 +99,12 @@ export function UpdateAvailableModal({ app_info, context, updater }: UpdateAvail
             await relaunch();
           }}
         >
-          {useTranslateModal("buttons.download")}
+          {is_manual ? useTranslateModal("buttons.download_manual") : useTranslateModal("buttons.download")}
         </Button>
         <Button
           disabled={isDownloading}
           onClick={async () => {
-            open(`https://github.com/Kenya-DK/quantframe-react/releases/tag/v${app_info?.version}`);
+            open(`https://github.com/Kenya-DK/quantframe-react/releases/tag/v${updater?.version || new_version}`);
           }}
         >
           {useTranslateModal("buttons.read_more")}

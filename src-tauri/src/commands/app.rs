@@ -4,6 +4,7 @@ use std::{
     sync::{atomic::Ordering, Arc, Mutex},
 };
 
+use qf_api::types::ManualUpdate;
 use serde_json::{json, Value};
 use tauri::{path::BaseDirectory, Manager};
 use tauri_plugin_dialog::DialogExt;
@@ -12,7 +13,9 @@ use utils::{get_location, info, Error, LoggerOptions};
 use crate::{
     app::{client::AppState, Settings},
     log_parser::{self, LogParserState},
-    send_system_notification, APP, HAS_STARTED,
+    send_system_notification,
+    utils::ErrorFromExt,
+    APP, HAS_STARTED,
 };
 
 #[tauri::command]
@@ -30,8 +33,9 @@ pub async fn app_get_app_info(app: tauri::State<'_, Mutex<AppState>>) -> Result<
         "name": info.name,
         "description": info.description,
         "authors": info.authors,
-        "is_dev": cfg!(dev),
-        "tos_uuid": app.settings.tos_uuid.clone()
+        "is_dev": app.is_development,
+        "tos_uuid": app.settings.tos_uuid.clone(),
+        "patreon_usernames": vec!["Tetsuo K.", "Willjsnider s", "Hmh", "Jessie"],
     }))
 }
 
@@ -81,4 +85,32 @@ pub async fn app_notify_reset(id: String) -> Result<Value, Error> {
         return Ok(value[id.clone()].clone());
     }
     Ok(json!({}))
+}
+#[tauri::command]
+pub async fn app_check_for_updates(
+    app: tauri::State<'_, Mutex<AppState>>,
+) -> Result<ManualUpdate, Error> {
+    let app = app.lock()?.clone();
+    let target = std::env::consts::OS;
+    let arch = std::env::consts::ARCH;
+    let tauri_app = APP.get().expect("App handle not found");
+    match app
+        .qf_client
+        .check_updates(
+            target,
+            arch,
+            tauri_app.package_info().clone().version.to_string(),
+        )
+        .await
+    {
+        Ok(release) => Ok(release),
+        Err(e) => {
+            return Err(Error::from_qf(
+                "Command::AppCheckForUpdates",
+                "Failed to check for updates: {}",
+                e,
+                get_location!(),
+            ));
+        }
+    }
 }

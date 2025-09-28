@@ -35,23 +35,17 @@ use crate::utils::OrderListExt;
 use tauri_plugin_notification::{Attachment, NotificationExt};
 
 mod app;
-mod utils;
-// mod auth;
 mod cache;
 mod commands;
 mod handlers;
 mod macros;
+mod utils;
 
-// mod debug;
 mod enums;
 mod helper;
-mod types;
-// mod http_client;
 mod live_scraper;
 mod log_parser;
-// mod qf_client;
-// mod settings;
-// mod wfm_client;
+mod types;
 
 pub static APP: OnceLock<tauri::AppHandle> = OnceLock::new();
 pub static DATABASE: OnceLock<DatabaseConnection> = OnceLock::new();
@@ -192,6 +186,7 @@ pub fn run() {
             commands::app::app_exit,
             commands::app::app_accept_tos,
             commands::app::app_notify_reset,
+            commands::app::app_check_for_updates,
             // Auth commands
             commands::auth::auth_me,
             commands::auth::auth_login,

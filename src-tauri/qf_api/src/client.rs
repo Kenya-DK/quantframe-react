@@ -1,4 +1,4 @@
-use crate::{endpoints::*, enums::*, errors::*, utils::*};
+use crate::{endpoints::*, enums::*, errors::*, types::*, utils::*};
 use governor::{
     RateLimiter,
     clock::DefaultClock,
@@ -303,6 +303,34 @@ impl Client {
                 }
             }
             Err(_) => Err(ApiError::RequestError(error)),
+        }
+    }
+
+    pub async fn check_updates(
+        &self,
+        target: impl Into<String>,
+        arch: impl Into<String>,
+        version: impl Into<String>,
+    ) -> Result<ManualUpdate, ApiError> {
+        match self
+            .call_api::<ManualUpdate>(
+                Method::GET,
+                format!(
+                    "/manual_update/{}/{}/{}",
+                    target.into(),
+                    arch.into(),
+                    version.into()
+                )
+                .as_str(),
+                None,
+                None,
+                ResponseFormat::Json,
+            )
+            .await
+        {
+            Ok((ApiResponse::Json(update), _, _)) => Ok(update),
+            Err(e) => return Err(e),
+            _ => Err(ApiError::Unknown("Unexpected response format".to_string())),
         }
     }
 
