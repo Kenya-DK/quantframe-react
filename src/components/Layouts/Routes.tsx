@@ -31,6 +31,9 @@ import PLiveScraper from "@pages/live_scraper";
 import PWarframeMarket from "@pages/warframe_market";
 import PWarframeMarketChat from "@pages/chat";
 
+// About Page
+import AboutPage from "@pages/about";
+
 export function AppRoutes() {
   const { app_error } = useAppContext();
   const { user } = useAuthContext();
@@ -67,6 +70,7 @@ export function AppRoutes() {
                 <Route path="live_scraper" element={<PLiveScraper />} />
                 <Route path="warframe-market" element={<PWarframeMarket />} />
                 <Route path="chat" element={<PWarframeMarketChat />} />
+                <Route path="about" element={<AboutPage />} />
               </Route>
               <Route path="*" element={<PHome />} />
             </Route>
