@@ -13,7 +13,10 @@ use crate::{
 #[tauri::command]
 pub async fn auth_me(app: tauri::State<'_, Mutex<AppState>>) -> Result<User, Error> {
     let app = app.lock().unwrap();
-    Ok(app.user.clone())
+    let mut user = app.user.clone();
+    user.qf_token = String::new(); // Do not expose the token
+    user.wfm_token = String::new(); // Do not expose the token
+    Ok(user)
 }
 #[tauri::command]
 pub async fn auth_login(
