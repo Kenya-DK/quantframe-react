@@ -945,6 +945,17 @@ export const en = {
           cancel: "Cancel",
         },
       },
+      patreon_modal: {
+        title: "Support the development of Quantframe",
+        description: "Get access to premium features by supporting me on Patreon",
+        premium_content: "User activity | Riven Price Lookup",
+        join_the_community: "Join the community of supporters and help shape the future of Quantframe.",
+        link_your_account: "2. Link your Patreon account",
+        buttons: {
+          info: "Patreon",
+          link: "Link your account",
+        },
+      },
       stock_item_details: {
         tabs: {
           overview: {
@@ -1072,6 +1083,7 @@ export const en = {
         title: "New Update Available (v{{version}})",
         buttons: {
           download: "Download And Install",
+          download_manual: "Download Manually",
           read_more: "Read More",
         },
       },
@@ -1210,6 +1222,29 @@ export const en = {
           },
         },
       },
+    },
+    about: {
+      cards: {
+        coffee: {
+          title: "Coffee",
+        },
+        patreon: {
+          title: "Support me on Patreon",
+        },
+        discord: {
+          title: "Discord",
+        },
+        guide: {
+          title: "Wiki/Guide",
+        },
+      },
+      no_updates_available: "No updates available, you are running the latest version",
+      text: {
+        version: "Version: <blue>{{version}}</blue>  Made with ❤️ in 🇩🇰. © 2023-{{year}} Kenya-DK. All rights reserved ",
+        patreon_thanks: " A special thanks to the Patreon 'Quantframe Users' supporters for making Quantframe possible: <blue>{{users}}</blue>.",
+        disclaimer: "Quantframe is a third-party app and is not affiliated with Digital Extremes.",
+      },
+      button_check_for_updates: "Check for Updates",
     },
     debug: {
       tabs: {

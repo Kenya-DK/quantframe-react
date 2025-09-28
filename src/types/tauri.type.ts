@@ -68,6 +68,7 @@ export namespace TauriTypes {
     version: string;
     is_dev: boolean;
     tos_uuid: string;
+    patreon_usernames: string[];
   }
   export interface Settings {
     debug: string[];
@@ -86,6 +87,12 @@ export namespace TauriTypes {
     live_scraper: {
       entries: DebuggingLiveItemEntry[];
     };
+  }
+  export interface ManualUpdate {
+    has_update: boolean;
+    message: string;
+    download: string;
+    version: string;
   }
   export interface SettingsNotifications {
     on_new_conversation: NotificationSetting;
@@ -226,7 +233,7 @@ export namespace TauriTypes {
     name: string;
     version: string;
     is_pre_release: boolean;
-    is_development: boolean;
+    is_dev: boolean;
   }
   export interface CacheItemBase {
     name: string;

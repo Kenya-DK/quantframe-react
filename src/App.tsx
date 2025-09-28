@@ -27,7 +27,8 @@ import faPolarityAura from "@icons/faPolarityAura";
 import faPolarityVazarin from "@icons/faPolarityVazarin";
 import { useEffect } from "react";
 import api from "./api";
-import { PromptModal } from "./components/Modals/Prompt";
+import { PromptModal } from "@components/Modals/Prompt";
+import { PatreonModal } from "@components/Modals/PatreonModal/indexx";
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { ThemeProvider, useTheme } from "./contexts/theme.context";
@@ -68,6 +69,7 @@ export const queryClient = new QueryClient({
 });
 const modals = {
   prompt: PromptModal,
+  patreon: PatreonModal,
   /* ...other modals */
 };
 export interface MantineModalsOverride {
