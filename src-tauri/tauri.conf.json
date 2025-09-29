@@ -9,7 +9,13 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
     "createUpdaterArtifacts": "v1Compatible",
     "resources": {
       "resources/*": "resources/",
@@ -18,12 +24,14 @@
   },
   "productName": "Quantframe",
   "mainBinaryName": "Quantframe",
-  "version": "1.5.3",
+  "version": "1.5.4",
   "identifier": "dev.kenya.quantframe",
   "plugins": {
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQ3NEIwMTI1MzA3Q0E1OEYKUldTUHBYd3dKUUZMMTczQ2pIYTR0bklLQXlaMkxvK0V0a0RMQytNMTdqZzBCWitQRnNIWDhxYnAK",
-      "endpoints": ["https://api.quantframe.app/release/{{target}}/{{arch}}/{{current_version}}"]
+      "endpoints": [
+        "https://api.quantframe.app/release/{{target}}/{{arch}}/{{current_version}}"
+      ]
     }
   },
   "app": {
@@ -32,7 +40,7 @@
         "fullscreen": false,
         "userAgent": "Quantframe",
         "resizable": true,
-        "title": "Quantframe v1.5.3 - By Kenya-DK",
+        "title": "Quantframe v1.5.4 - By Kenya-DK",
         "width": 1455,
         "height": 912,
         "useHttpsScheme": true
@@ -45,7 +53,9 @@
     },
     "security": {
       "assetProtocol": {
-        "scope": ["**"],
+        "scope": [
+          "**"
+        ],
         "enable": true
       },
       "csp": null

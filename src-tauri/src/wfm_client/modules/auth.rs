@@ -100,7 +100,7 @@ impl AuthModule {
             return Ok(());
         }
         self.is_init = true;
-        let build = WsClientBuilder::new(ApiVersion::V1, token.to_string(), "QF".to_string());
+        let build = WsClientBuilder::new(ApiVersion::V2, token.to_string(), "QF".to_string());
         let client = build
             .register_callback("USER/SET_STATUS", move |msg, _, _| {
                 update_user_status(
@@ -170,20 +170,20 @@ impl AuthModule {
     }
     pub fn set_user_status(&self, status: String) -> Result<(), AppError> {
         if let Some(ws_client) = &self.ws_client {
-            match ws_client.send_request("@WS/USER/SET_STATUS", json!(status)) {
-                Ok(_) => {}
-                Err(e) => panic!("{:?}", e),
-            }
-
-            // match ws_client.send_request(
-            //     "@wfm|cmd/status/set",
-            //     json!({
-            //         "status": status
-            //     }),
-            // ) {
+            // match ws_client.send_request("@WS/USER/SET_STATUS", json!(status)) {
             //     Ok(_) => {}
             //     Err(e) => panic!("{:?}", e),
             // }
+
+            match ws_client.send_request(
+                "@wfm|cmd/status/set",
+                json!({
+                    "status": status
+                }),
+            ) {
+                Ok(_) => {}
+                Err(e) => panic!("{:?}", e),
+            }
         } else {
             println!("WS client is not initialized, cannot set user status");
         }
