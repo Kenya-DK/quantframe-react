@@ -23,6 +23,7 @@ pub struct AuthModule {
     pub client: WFMClient,
     is_init: bool,
     pub ws_client: Option<WsClient>,
+    pub ws_client_old: Option<WsClient>,
     component: String,
 }
 pub fn update_user_status(status: String) {
@@ -36,6 +37,7 @@ impl AuthModule {
         AuthModule {
             is_init: false,
             ws_client: None,
+            ws_client_old: None,
             client,
             component: "Auth".to_string(),
         }
@@ -102,18 +104,6 @@ impl AuthModule {
         self.is_init = true;
         let build = WsClientBuilder::new(ApiVersion::V2, token.to_string(), "QF".to_string());
         let client = build
-            .register_callback("USER/SET_STATUS", move |msg, _, _| {
-                update_user_status(
-                    msg.payload
-                        .as_ref()
-                        .unwrap()
-                        .as_str()
-                        .unwrap_or("invisible")
-                        .to_string(),
-                );
-                Ok(())
-            })
-            .unwrap()
             .register_callback("cmd/status/set:ok", move |msg, _, _| {
                 match msg.payload.as_ref() {
                     Some(payload) => update_user_status(
@@ -141,6 +131,15 @@ impl AuthModule {
                 Ok(())
             })
             .unwrap()
+            .register_callback("MESSAGE/ONLINE_COUNT", move |_, _, _| Ok(()))
+            .unwrap()
+            .register_callback("internal/disconnected", move |_, _, _| Ok(()))
+            .unwrap()
+            .build()
+            .await
+            .unwrap();
+        let build2 = WsClientBuilder::new(ApiVersion::V1, token.to_string(), "QF".to_string());
+        let client2 = build2
             .register_callback("chats/NEW_MESSAGE", move |msg, _, _| {
                 let notify = states::notify_client().unwrap();
                 notify
@@ -157,14 +156,11 @@ impl AuthModule {
                 Ok(())
             })
             .unwrap()
-            .register_callback("MESSAGE/ONLINE_COUNT", move |_, _, _| Ok(()))
-            .unwrap()
-            .register_callback("internal/disconnected", move |_, _, _| Ok(()))
-            .unwrap()
             .build()
             .await
             .unwrap();
         self.ws_client = Some(client);
+        self.ws_client_old = Some(client2);
         self.client.update_auth_module(self.clone());
         Ok(())
     }

@@ -151,7 +151,7 @@ pub async fn chat_send_message(
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
 ) -> Result<(), AppError> {
     let wfm = wfm.lock()?.clone();
-    let websocket = wfm.auth().ws_client.clone();
+    let websocket = wfm.auth().ws_client_old.clone();
     if websocket.is_none() {
         return Err(AppError::new(
             "WebSocket client is not initialized",
