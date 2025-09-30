@@ -87,12 +87,17 @@ pub fn paginate<T: Clone>(items: &[T], page: i64, per_page: i64) -> PaginatedRes
     } else {
         Vec::new()
     };
-
+    let total_pages = if per_page == -1 {
+        1
+    } else {
+        (total_items as f64 / per_page as f64).ceil() as i64
+    };
     PaginatedResult {
         results: page_items,
         page,
         limit: per_page,
         total: total_items,
+        total_pages,
     }
 }
 

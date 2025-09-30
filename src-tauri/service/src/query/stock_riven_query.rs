@@ -1,9 +1,9 @@
 use ::entity::stock_riven::*;
 
+use crate::paginate_query;
 use ::entity::dto::SubType;
 use sea_orm::*;
 use sea_query::Expr;
-
 pub struct StockRivenQuery;
 
 impl StockRivenQuery {
@@ -14,20 +14,9 @@ impl StockRivenQuery {
         let stmt = query.get_query();
 
         // Pagination
-        let page = query.pagination.page.max(1);
-        let limit = query.pagination.limit.max(1);
-        let total;
-        let results = if query.pagination.limit == -1 {
-            total = stmt.clone().count(db).await? as i64;
-            stmt.all(db).await?
-        } else {
-            let paginator = stmt.paginate(db, limit as u64);
-            total = paginator.num_items().await? as i64;
-            paginator.fetch_page((page - 1) as u64).await?
-        };
-        Ok(::entity::dto::pagination::PaginatedResult::new(
-            total, limit, page, results,
-        ))
+        let paginated_result =
+            paginate_query(stmt, db, query.pagination.page, query.pagination.limit).await?;
+        Ok(paginated_result)
     }
 
     pub async fn get_all_ids(db: &DbConn) -> Result<Vec<i64>, DbErr> {

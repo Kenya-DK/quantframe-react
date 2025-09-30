@@ -145,3 +145,11 @@ export const CreateTradeMessage = (prefix: string, items: { price: number; name:
   message += suffix;
   return message;
 };
+
+// At the top of your component or in a separate utils file
+export const getSafePage = (requestedPage: number | undefined, totalPages: number | undefined): number => {
+  const page = requestedPage ?? 1;
+  const maxPages = totalPages ?? 1;
+  console.log({ page, maxPages });
+  return Math.min(page, maxPages);
+};

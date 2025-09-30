@@ -17,7 +17,7 @@ import { SearchField } from "@components/Forms/SearchField";
 import { TextTranslate } from "@components/Shared/TextTranslate";
 import { ColorInfo } from "@components/Shared/ColorInfo";
 import { notifications } from "@mantine/notifications";
-import { GetSubTypeDisplay } from "@utils/helper";
+import { GetSubTypeDisplay, getSafePage } from "@utils/helper";
 import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 import { ColumnActions } from "../../Columns/ColumnActions";
 
@@ -133,7 +133,7 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
         striped
         fetching={paginationQuery.isLoading}
         records={paginationQuery.data?.results || []}
-        page={queryData.page || 1}
+        page={getSafePage(queryData.page, paginationQuery.data?.total_pages)}
         onPageChange={(page) => setQueryData((prev) => ({ ...prev, page }))}
         totalRecords={paginationQuery.data?.total || 0}
         recordsPerPage={queryData.limit || 10}

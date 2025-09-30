@@ -226,6 +226,8 @@ export namespace TauriTypes {
     limit: number;
     /** The current page */
     page: number;
+    /** The total number of pages */
+    total_pages: number;
   }
   export interface AppInfo {
     authors: string;

@@ -11,7 +11,7 @@ import { DataTable } from "mantine-datatable";
 import classes from "../../LiveScraper.module.css";
 import { notifications } from "@mantine/notifications";
 import { TextTranslate } from "@components/Shared/TextTranslate";
-import { GetSubTypeDisplay } from "@utils/helper";
+import { getSafePage, GetSubTypeDisplay } from "@utils/helper";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useLiveScraperContext } from "@contexts/liveScraper.context";
 import { useWishListQueries } from "./queries";
@@ -129,7 +129,7 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
         striped
         fetching={paginationQuery.isLoading}
         records={paginationQuery.data?.results || []}
-        page={queryData.page || 1}
+        page={getSafePage(queryData.page, paginationQuery.data?.total_pages)}
         onPageChange={(page) => setQueryData((prev) => ({ ...prev, page }))}
         totalRecords={paginationQuery.data?.total || 0}
         recordsPerPage={queryData.limit || 10}

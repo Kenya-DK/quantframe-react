@@ -13,7 +13,7 @@ import { DataTable } from "mantine-datatable";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 import { TextTranslate } from "@components/Shared/TextTranslate";
-import { GetSubTypeDisplay } from "@utils/helper";
+import { getSafePage, GetSubTypeDisplay } from "@utils/helper";
 import { RivenAttributes } from "@components/DataDisplay/RivenAttributes";
 import { useStockMutations } from "./mutations";
 import { useStockModals } from "./modals";
@@ -135,7 +135,7 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
         striped
         fetching={paginationQuery.isLoading}
         records={paginationQuery.data?.results || []}
-        page={queryData.page || 1}
+        page={getSafePage(queryData.page, paginationQuery.data?.total_pages)}
         onPageChange={(page) => setQueryData((prev) => ({ ...prev, page }))}
         totalRecords={paginationQuery.data?.total || 0}
         recordsPerPage={queryData.limit || 10}

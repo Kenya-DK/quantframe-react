@@ -3,6 +3,8 @@ use ::entity::stock_item::*;
 use ::entity::dto::SubType;
 use sea_orm::{sea_query::Expr, *};
 
+use crate::paginate_query;
+
 pub struct StockItemQuery;
 
 impl StockItemQuery {
@@ -13,21 +15,9 @@ impl StockItemQuery {
         let stmt = query.get_query();
 
         // Pagination
-        let page = query.pagination.page.max(1);
-        let limit = query.pagination.limit.max(1);
-        let total;
-        let results = if query.pagination.limit == -1 {
-            total = stmt.clone().count(db).await? as i64;
-            stmt.all(db).await?
-        } else {
-            let paginator = stmt.paginate(db, limit as u64);
-            total = paginator.num_items().await? as i64;
-            paginator.fetch_page((page - 1) as u64).await?
-        };
-
-        Ok(::entity::dto::pagination::PaginatedResult::new(
-            total, limit, page, results,
-        ))
+        let paginated_result =
+            paginate_query(stmt, db, query.pagination.page, query.pagination.limit).await?;
+        Ok(paginated_result)
     }
     pub async fn find_by_url_name(
         db: &DbConn,

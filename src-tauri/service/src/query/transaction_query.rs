@@ -1,7 +1,7 @@
+use crate::paginate_query;
 use ::entity::transaction::dto::TransactionPaginationQueryDto;
 use ::entity::transaction::{transaction, transaction::Entity as Transaction};
 use sea_orm::*;
-
 pub struct TransactionQuery;
 
 impl TransactionQuery {
@@ -18,20 +18,9 @@ impl TransactionQuery {
         // );
 
         // Pagination
-        let page = query.pagination.page.max(1);
-        let limit = query.pagination.limit.max(1);
-        let total;
-        let results = if query.pagination.limit == -1 {
-            total = stmt.clone().count(db).await? as i64;
-            stmt.all(db).await?
-        } else {
-            let paginator = stmt.paginate(db, limit as u64);
-            total = paginator.num_items().await? as i64;
-            paginator.fetch_page((page - 1) as u64).await?
-        };
-        Ok(::entity::dto::pagination::PaginatedResult::new(
-            total, limit, page, results,
-        ))
+        let paginated_result =
+            paginate_query(stmt, db, query.pagination.page, query.pagination.limit).await?;
+        Ok(paginated_result)
     }
 
     pub async fn find_by_id(db: &DbConn, id: i64) -> Result<Option<transaction::Model>, DbErr> {

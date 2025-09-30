@@ -44,16 +44,19 @@ pub struct PaginatedResult<T> {
     pub limit: i64,
     /// The current page
     pub page: i64,
+    /// The total number of pages
+    pub total_pages: i64,
     /// The results for this page
     pub results: Vec<T>,
 }
 
 impl<T: Clone> PaginatedResult<T> {
-    pub fn new(total: i64, limit: i64, page: i64, results: Vec<T>) -> Self {
+    pub fn new(total: i64, limit: i64, page: i64, total_pages: i64, results: Vec<T>) -> Self {
         Self {
             total,
             limit,
             page,
+            total_pages,
             results,
         }
     }
