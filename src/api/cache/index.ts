@@ -42,7 +42,8 @@ export class CacheModule {
   }
   async getRivenWeapons(): Promise<TauriTypes.CacheRivenWeapon[]> {
     if (this._cache.has(CacheType.RivenWeapons)) return this._cache.get(CacheType.RivenWeapons);
-    const items = await this.client.sendInvoke<TauriTypes.CacheRivenWeapon[]>("cache_get_riven_weapons");
+    let items = await this.client.sendInvoke<TauriTypes.CacheRivenWeapon[]>("cache_get_riven_weapons");
+    items = items.filter((i) => !i.is_variant);
     this._cache.set(CacheType.RivenWeapons, items);
     return items;
   }

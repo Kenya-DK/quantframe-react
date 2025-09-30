@@ -273,6 +273,7 @@ export namespace TauriTypes {
     wfm_id: string;
     wfm_thumb: string;
     wfm_url_name: string;
+    is_variant: boolean;
   }
   export interface RivenGodRoll {
     good_rolls: RivenGoodRoll[];

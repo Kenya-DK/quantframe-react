@@ -33,6 +33,8 @@ pub struct CacheRivenWeapon {
     pub riven_type: String,
     #[serde(rename = "wfm_icon")]
     pub wfm_icon: String,
+    #[serde(rename = "is_variant")]
+    pub is_variant: bool,
     #[serde(rename = "wfm_icon_format")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub wfm_icon_format: Option<String>,

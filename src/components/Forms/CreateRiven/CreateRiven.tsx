@@ -60,6 +60,7 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
     if (!weapons) return [];
 
     const group = groupBy("wfm_group", weapons);
+    console.log(group);
     return Object.entries(group).map(([key, value]) => {
       return {
         group: upperFirst(key),
@@ -154,7 +155,7 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
             <Group gap="md" grow>
               <Select
                 searchable
-                limit={5}
+                limit={20}
                 required
                 allowDeselect={false}
                 label={useTranslateFormFields("weapon.label")}

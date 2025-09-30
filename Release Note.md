@@ -15,4 +15,5 @@ How To migrate:
 
 ## Fix's
 
+- 🛠️ Some Riven weapons are not showing up in create a new riven Tombfinger, Verglas
 - 🛠️ Fix so the overview over the stuck wil be updated properly
