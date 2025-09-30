@@ -161,6 +161,12 @@ export const en = {
         },
       },
     },
+    sort_by: {
+      created_at: "Created At",
+      platinum: "Platinum",
+      updated_at: "Updated At",
+      order_type: "Order Type",
+    },
   },
   enums: {
     item_type: {

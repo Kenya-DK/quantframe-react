@@ -28,4 +28,9 @@ pub struct WfmAuctionPaginationQueryDto {
 
     #[serde(default)]
     pub query: FieldChange<String>,
+
+    #[serde(default)]
+    pub sort_by: FieldChange<String>,
+    #[serde(default)]
+    pub sort_direction: FieldChange<SortDirection>,
 }

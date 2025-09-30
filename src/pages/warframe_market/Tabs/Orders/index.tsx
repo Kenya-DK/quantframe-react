@@ -1,8 +1,8 @@
-import { Box, Divider, Group, Pagination, ScrollArea, SimpleGrid } from "@mantine/core";
+import { ActionIcon, Box, Divider, Group, Pagination, ScrollArea, Select, SimpleGrid } from "@mantine/core";
 import { SearchField } from "@components/Forms/SearchField";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faCartShopping, faPen, faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
-import { useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
+import { faArrowDown, faArrowUp, faCartShopping, faPen, faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import classes from "../../WarframeMarket.module.css";
 import { WFMOrder } from "@components/DataDisplay/WFMOrder";
@@ -14,11 +14,18 @@ import { useStockMutations } from "./mutations";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 import { Loading } from "@components/Shared/Loading";
 import { useStockModals } from "./modals";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 interface OrderPanelProps {
   isActive?: boolean;
 }
 export const OrderPanel = ({ isActive }: OrderPanelProps) => {
-  const [queryData, setQueryData] = useState<WFMarketTypes.WfmOrderControllerGetListParams>({ page: 1, limit: 12 });
+  const [queryData, setQueryData] = useState<WFMarketTypes.WfmOrderControllerGetListParams>({
+    page: 1,
+    limit: 25,
+    sort_by: "order_type",
+    sort_direction: "desc",
+  });
   const [loadingRows, setLoadingRows] = useState<string[]>([]);
   const [deletingOrders, setDeletingOrders] = useState<{ current: number; total: number }>({ current: 0, total: 0 });
   // Translate general
@@ -96,27 +103,50 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
           </Group>
         }
       />
-      <Group gap={"sm"} mt={"md"}>
-        {Object.entries(statusCountsQuery.data || {})
-          .sort(([a], [b]) => a.localeCompare(b))
-          .map(([key, count]) => (
-            <ColorInfo
-              active={key == queryData.order_type}
-              key={key}
-              onClick={() =>
-                setQueryData((prev) => ({
-                  ...prev,
-                  order_type: (key as WFMarketTypes.OrderType) == prev.order_type ? undefined : (key as WFMarketTypes.OrderType),
-                }))
-              }
-              infoProps={{
-                "data-color-mode": "bg",
-                "data-order-type": key,
-              }}
-              text={useTranslateOrderType(`${key}`) + ` (${count[0]})` + ` (${count[1]})`}
-              tooltip={useTranslateOrderType(`details.${key}`)}
-            />
-          ))}
+
+      <Group gap={"sm"} mt={"md"} justify="space-between">
+        <Group>
+          {Object.entries(statusCountsQuery.data || {})
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([key, count]) => (
+              <ColorInfo
+                active={key == queryData.order_type}
+                key={key}
+                onClick={() =>
+                  setQueryData((prev) => ({
+                    ...prev,
+                    order_type: (key as WFMarketTypes.OrderType) == prev.order_type ? undefined : (key as WFMarketTypes.OrderType),
+                  }))
+                }
+                infoProps={{
+                  "data-color-mode": "bg",
+                  "data-order-type": key,
+                }}
+                text={useTranslateOrderType(`${key}`) + ` (${count[0]})` + ` (${count[1]})`}
+                tooltip={useTranslateOrderType(`details.${key}`)}
+              />
+            ))}
+        </Group>
+        <Group gap="xs">
+          <Select
+            value={queryData.sort_by}
+            allowDeselect={false}
+            onChange={(value) => setQueryData((prev) => ({ ...prev, sort_by: value || "platinum" }))}
+            data={["created_at", "platinum", "updated_at", "order_type"].map((key) => ({ label: useTranslateCommon(`sort_by.${key}`), value: key }))}
+            size="xs"
+          />
+          <ActionIcon
+            variant="light"
+            color="blue"
+            size="lg"
+            onClick={() => {
+              const direction = queryData.sort_direction === "asc" ? "desc" : "asc";
+              setQueryData((prev) => ({ ...prev, sort_direction: direction }));
+            }}
+          >
+            {queryData.sort_direction === "asc" ? <FontAwesomeIcon icon={faArrowUp} /> : <FontAwesomeIcon icon={faArrowDown} />}
+          </ActionIcon>
+        </Group>
       </Group>
       <ScrollArea mt={"md"} className={classes.orders} data-has-alert={useHasAlert()}>
         {deleteAllOrdersMutation.isPending && <Loading text={`${deletingOrders.current} / ${deletingOrders.total}`} />}

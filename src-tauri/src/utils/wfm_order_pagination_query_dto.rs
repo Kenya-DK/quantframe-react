@@ -31,4 +31,9 @@ pub struct WfmOrderPaginationQueryDto {
 
     #[serde(default)]
     pub order_type: FieldChange<OrderType>,
+
+    #[serde(default)]
+    pub sort_by: FieldChange<String>,
+    #[serde(default)]
+    pub sort_direction: FieldChange<SortDirection>,
 }

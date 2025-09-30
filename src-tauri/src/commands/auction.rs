@@ -75,27 +75,54 @@ pub async fn get_wfm_auctions_pagination(
         }
     };
 
-    let filtered_auctions = filters_by(&app.wfm_client.auction().cache_auctions().to_vec(), |o| {
-        match &query.query {
-            FieldChange::Value(q) => {
-                let q = q.to_lowercase();
-                let details = o.get_details();
-                let item_name = details.item_name.to_lowercase();
-                let mod_name = o
-                    .item
-                    .mod_name
-                    .clone()
-                    .unwrap_or("".to_string())
-                    .to_lowercase();
-                if !item_name.contains(&q) && !mod_name.contains(&q) {
-                    return false;
+    let mut filtered_auctions =
+        filters_by(&app.wfm_client.auction().cache_auctions().to_vec(), |o| {
+            match &query.query {
+                FieldChange::Value(q) => {
+                    let q = q.to_lowercase();
+                    let details = o.get_details();
+                    let item_name = details.item_name.to_lowercase();
+                    let mod_name = o
+                        .item
+                        .mod_name
+                        .clone()
+                        .unwrap_or("".to_string())
+                        .to_lowercase();
+                    if !item_name.contains(&q) && !mod_name.contains(&q) {
+                        return false;
+                    }
                 }
+                _ => {}
             }
-            _ => {}
-        }
 
-        true
-    });
+            true
+        });
+
+    match &query.sort_by {
+        FieldChange::Value(sort_by) => {
+            let dir = match &query.sort_direction {
+                FieldChange::Value(dir) => dir,
+                _ => &SortDirection::Asc,
+            };
+            // Only allow sorting by known columns for safety
+            match sort_by.as_str() {
+                "created_at" => filtered_auctions.sort_by(|a, b| match dir {
+                    SortDirection::Asc => a.created.cmp(&b.created),
+                    SortDirection::Desc => b.created.cmp(&a.created),
+                }),
+                "updated_at" => filtered_auctions.sort_by(|a, b| match dir {
+                    SortDirection::Asc => a.updated.cmp(&b.updated),
+                    SortDirection::Desc => b.updated.cmp(&a.updated),
+                }),
+                "platinum" => filtered_auctions.sort_by(|a, b| match dir {
+                    SortDirection::Asc => a.starting_price.cmp(&b.starting_price),
+                    SortDirection::Desc => b.starting_price.cmp(&a.starting_price),
+                }),
+                _ => {}
+            }
+        }
+        _ => {}
+    }
 
     let mut paginate = paginate(
         &filtered_auctions,

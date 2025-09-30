@@ -53,7 +53,7 @@ pub fn get_wfm_orders_pagination(
 ) -> Result<PaginatedResult<Order>, Error> {
     let app = app.lock()?.clone();
 
-    let filtered_orders = filters_by(&app.wfm_client.order().cache_orders().to_vec(), |o| {
+    let mut filtered_orders = filters_by(&app.wfm_client.order().cache_orders().to_vec(), |o| {
         match &query.query {
             FieldChange::Value(q) => {
                 let q = q.to_lowercase();
@@ -75,6 +75,35 @@ pub fn get_wfm_orders_pagination(
         true
     });
 
+    match &query.sort_by {
+        FieldChange::Value(sort_by) => {
+            let dir = match &query.sort_direction {
+                FieldChange::Value(dir) => dir,
+                _ => &SortDirection::Asc,
+            };
+            // Only allow sorting by known columns for safety
+            match sort_by.as_str() {
+                "created_at" => filtered_orders.sort_by(|a, b| match dir {
+                    SortDirection::Asc => a.created_at.cmp(&b.created_at),
+                    SortDirection::Desc => b.created_at.cmp(&a.created_at),
+                }),
+                "platinum" => filtered_orders.sort_by(|a, b| match dir {
+                    SortDirection::Asc => a.platinum.cmp(&b.platinum),
+                    SortDirection::Desc => b.platinum.cmp(&a.platinum),
+                }),
+                "updated_at" => filtered_orders.sort_by(|a, b| match dir {
+                    SortDirection::Asc => a.updated_at.cmp(&b.updated_at),
+                    SortDirection::Desc => b.updated_at.cmp(&a.updated_at),
+                }),
+                "order_type" => filtered_orders.sort_by(|a, b| match dir {
+                    SortDirection::Asc => a.order_type.cmp(&b.order_type),
+                    SortDirection::Desc => b.order_type.cmp(&a.order_type),
+                }),
+                _ => {}
+            }
+        }
+        _ => {}
+    }
     let p = paginate(
         &filtered_orders,
         query.pagination.page,

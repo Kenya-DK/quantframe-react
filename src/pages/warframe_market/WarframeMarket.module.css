@@ -5,10 +5,10 @@
 }
 
 .orders {
-  height: calc(100vh - 310px);
+  height: calc(100vh - 325px);
 
   &[data-has-alert="true"] {
-    height: calc(100vh - 340px);
+    height: calc(100vh - 355px);
   }
 }
 

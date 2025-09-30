@@ -1,8 +1,8 @@
-import { Box, Divider, Group, Pagination, ScrollArea, SimpleGrid } from "@mantine/core";
+import { ActionIcon, Box, Divider, Group, Pagination, ScrollArea, Select, SimpleGrid } from "@mantine/core";
 import { SearchField } from "@components/Forms/SearchField";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faFileImport, faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
-import { useTranslatePages } from "@hooks/useTranslate.hook";
+import { faArrowDown, faArrowUp, faFileImport, faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { useTranslateCommon, useTranslatePages } from "@hooks/useTranslate.hook";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import classes from "../../WarframeMarket.module.css";
 import { TauriTypes, WFMarketTypes } from "$types";
@@ -13,11 +13,17 @@ import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 import { Loading } from "@components/Shared/Loading";
 import { useStockModals } from "./modals";
 import { WFMAuction } from "@components/DataDisplay/WFMAuction";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 interface AuctionPanelProps {
   isActive?: boolean;
 }
 export const AuctionPanel = ({ isActive }: AuctionPanelProps) => {
-  const [queryData, setQueryData] = useState<WFMarketTypes.WfmAuctionControllerGetListParams>({ page: 1, limit: 12 });
+  const [queryData, setQueryData] = useState<WFMarketTypes.WfmAuctionControllerGetListParams>({
+    page: 1,
+    limit: 12,
+    sort_by: "created_at",
+    sort_direction: "desc",
+  });
   const [loadingRows, setLoadingRows] = useState<string[]>([]);
   const [deletingOrders, setDeletingOrders] = useState<{ current: number; total: number }>({ current: 0, total: 0 });
   // Translate general
@@ -92,6 +98,26 @@ export const AuctionPanel = ({ isActive }: AuctionPanelProps) => {
           </Group>
         }
       />
+      <Group gap={"sm"} mt={"md"} justify="flex-end">
+        <Select
+          value={queryData.sort_by}
+          allowDeselect={false}
+          onChange={(value) => setQueryData((prev) => ({ ...prev, sort_by: value || "platinum" }))}
+          data={["created_at", "platinum", "updated_at"].map((key) => ({ label: useTranslateCommon(`sort_by.${key}`), value: key }))}
+          size="xs"
+        />
+        <ActionIcon
+          variant="light"
+          color="blue"
+          size="lg"
+          onClick={() => {
+            const direction = queryData.sort_direction === "asc" ? "desc" : "asc";
+            setQueryData((prev) => ({ ...prev, sort_direction: direction }));
+          }}
+        >
+          {queryData.sort_direction === "asc" ? <FontAwesomeIcon icon={faArrowUp} /> : <FontAwesomeIcon icon={faArrowDown} />}
+        </ActionIcon>
+      </Group>
       <ScrollArea mt={"md"} className={classes.orders} data-has-alert={useHasAlert()}>
         {deleteAllAuctionsMutation.isPending && <Loading text={`${deletingOrders.current} / ${deletingOrders.total}`} />}
         <SimpleGrid cols={2} spacing="sm">
