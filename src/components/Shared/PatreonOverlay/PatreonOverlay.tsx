@@ -1,11 +1,16 @@
 import { Button, Card, Center, Group, Overlay, Text } from "@mantine/core";
 import classes from "./PatreonOverlay.module.css";
+import { HasPermission, PermissionsFlags } from "@utils/permissions";
+import { useGetUser } from "@hooks/useGetUser.hook";
+export type PatreonOverlayProps = {
+  permission?: PermissionsFlags;
+};
 
-export type PatreonOverlayProps = {};
-
-export function PatreonOverlay({}: PatreonOverlayProps) {
+export function PatreonOverlay({ permission }: PatreonOverlayProps) {
+  const user = useGetUser();
+  const shouldShowOverlay = permission ? !HasPermission(user?.permissions, permission) : true;
   return (
-    <Overlay color="#5a5858ff" backgroundOpacity={0.8} blur={6}>
+    <Overlay hidden={!shouldShowOverlay} color="#5a5858ff" backgroundOpacity={0.8} blur={6}>
       <Center style={{ height: "100%" }}>
         <Card shadow="xl" radius="md" padding="lg" withBorder className={classes.patreonCard}>
           <Group gap="xs" mb="sm">

@@ -1,7 +1,5 @@
 export enum PermissionsFlags {
   ALL = "all",
-  RIVEN_PRICES_SEARCH = "riven_prices_search",
-  WFM_USER_ACTIVE_HISTORY = "wfm_user_active_history",
 }
 
 /**
