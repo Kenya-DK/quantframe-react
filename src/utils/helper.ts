@@ -150,6 +150,5 @@ export const CreateTradeMessage = (prefix: string, items: { price: number; name:
 export const getSafePage = (requestedPage: number | undefined, totalPages: number | undefined): number => {
   const page = requestedPage ?? 1;
   const maxPages = totalPages ?? 1;
-  console.log({ page, maxPages });
   return Math.min(page, maxPages);
 };
