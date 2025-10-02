@@ -22,8 +22,7 @@ import { ColumnActions } from "../../Columns/ColumnActions";
 import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
-import { HasPermission, PermissionsFlags } from "@utils/permissions";
-import { useAuthContext } from "@contexts/auth.context";
+import { HasPermission } from "@api/index";
 
 interface WishListPanelProps {
   isActive?: boolean;
@@ -31,7 +30,6 @@ interface WishListPanelProps {
 
 export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
   // Contexts
-  const { user } = useAuthContext();
   const { is_running } = useLiveScraperContext();
   // States For DataGrid
   const [queryData, setQueryData] = useLocalStorage<TauriTypes.WishListControllerGetListParams>({
@@ -129,7 +127,7 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
               tooltip={useTranslate("export_json_tooltip")}
               icon={faDownload}
               iconProps={{ size: "xs" }}
-              actionProps={{ size: "sm", disabled: HasPermission(user?.permissions, PermissionsFlags.EXPORT_DATA) }}
+              actionProps={{ size: "sm", disabled: !HasPermission(TauriTypes.PermissionsFlags.EXPORT_DATA) }}
               onClick={() => exportMutation.mutate(queryData)}
             />
           </Group>

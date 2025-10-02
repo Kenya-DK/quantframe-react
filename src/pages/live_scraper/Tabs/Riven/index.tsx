@@ -21,15 +21,12 @@ import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 import { ColumnActions } from "../../Columns/ColumnActions";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
-import { HasPermission, PermissionsFlags } from "@utils/permissions";
-import { useAuthContext } from "@contexts/auth.context";
+import { HasPermission } from "@api/index";
 export type RivenPanelProps = {
   isActive?: boolean;
 };
 
 export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
-  // User Info
-  const { user } = useAuthContext();
   // Responsive
   // Treat as “wide” only when landscape AND ≥800px wide
   const isWide = useMediaQuery("(min-width: 800px) and (orientation: landscape)");
@@ -136,7 +133,7 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
               tooltip={useTranslate("export_json_tooltip")}
               icon={faDownload}
               iconProps={{ size: "xs" }}
-              actionProps={{ size: "sm", disabled: HasPermission(user?.permissions, PermissionsFlags.EXPORT_DATA) }}
+              actionProps={{ size: "sm", disabled: !HasPermission(TauriTypes.PermissionsFlags.EXPORT_DATA) }}
               onClick={() => exportMutation.mutate(queryData)}
             />
           </Group>
