@@ -19,11 +19,18 @@ import { useStockMutations } from "./mutations";
 import { useStockModals } from "./modals";
 import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 import { ColumnActions } from "../../Columns/ColumnActions";
+import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
+import { faDownload } from "@fortawesome/free-solid-svg-icons";
+import { HasPermission, PermissionsFlags } from "@utils/permissions";
+import { useAuthContext } from "@contexts/auth.context";
 export type RivenPanelProps = {
   isActive?: boolean;
 };
 
 export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
+  // User Info
+  const { user } = useAuthContext();
+  // Responsive
   // Treat as “wide” only when landscape AND ≥800px wide
   const isWide = useMediaQuery("(min-width: 800px) and (orientation: landscape)");
   // Contexts
@@ -62,7 +69,7 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
     refetchQueries(true);
   };
   // Mutations
-  const { updateStockMutation, createStockMutation, sellStockMutation, deleteStockMutation } = useStockMutations({
+  const { updateStockMutation, createStockMutation, exportMutation, sellStockMutation, deleteStockMutation } = useStockMutations({
     useTranslateSuccess,
     useTranslateErrors,
     refetchQueries,
@@ -122,6 +129,18 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
         value={queryData.query || ""}
         onChange={(value) => setQueryData((prev) => ({ ...prev, query: value }))}
         onCreate={() => OpenCreateRiven()}
+        rightSectionWidth={75}
+        rightSection={
+          <Group>
+            <ActionWithTooltip
+              tooltip={useTranslate("export_json_tooltip")}
+              icon={faDownload}
+              iconProps={{ size: "xs" }}
+              actionProps={{ size: "sm", disabled: HasPermission(user?.permissions, PermissionsFlags.EXPORT_DATA) }}
+              onClick={() => exportMutation.mutate(queryData)}
+            />
+          </Group>
+        }
       />
       <DataTable
         className={`${classes.databaseStockRivens} ${useHasAlert() ? classes.alert : ""} ${is_running ? classes.running : ""}`}

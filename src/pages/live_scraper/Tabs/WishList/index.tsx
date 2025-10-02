@@ -20,6 +20,10 @@ import { useState } from "react";
 import { useStockModals } from "./modals";
 import { ColumnActions } from "../../Columns/ColumnActions";
 import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
+import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
+import { faDownload } from "@fortawesome/free-solid-svg-icons";
+import { HasPermission, PermissionsFlags } from "@utils/permissions";
+import { useAuthContext } from "@contexts/auth.context";
 
 interface WishListPanelProps {
   isActive?: boolean;
@@ -27,6 +31,7 @@ interface WishListPanelProps {
 
 export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
   // Contexts
+  const { user } = useAuthContext();
   const { is_running } = useLiveScraperContext();
   // States For DataGrid
   const [queryData, setQueryData] = useLocalStorage<TauriTypes.WishListControllerGetListParams>({
@@ -46,8 +51,6 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
     useTranslate(`segments.${key}`, { ...context }, i18Key);
   const useTranslateStockStatus = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateEnums(`stock_status.${key}`, { ...context }, i18Key);
-  const useTranslateDataGridColumns = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateTabItem(`datatable.columns.${key}`, { ...context }, i18Key);
   const useTranslateErrors = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTabItem(`errors.${key}`, { ...context }, i18Key);
   const useTranslateSuccess = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -60,7 +63,7 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
   const { paginationQuery, financialReportQuery, statusCountsQuery, refetchQueries } = useWishListQueries({ queryData, isActive });
 
   // Mutations
-  const { createWishListMutation, boughtWishListMutation, updateWishListMutation, deleteWishListMutation } = useWishListMutations({
+  const { createWishListMutation, boughtWishListMutation, exportMutation, updateWishListMutation, deleteWishListMutation } = useWishListMutations({
     useTranslateSuccess,
     useTranslateErrors,
     refetchQueries,
@@ -116,7 +119,22 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
           />
         </Grid.Col>
       </Grid>
-      <SearchField value={queryData.query || ""} onChange={(value) => setQueryData((prev) => ({ ...prev, query: value }))} />
+      <SearchField
+        value={queryData.query || ""}
+        onChange={(value) => setQueryData((prev) => ({ ...prev, query: value }))}
+        rightSectionWidth={45}
+        rightSection={
+          <Group>
+            <ActionWithTooltip
+              tooltip={useTranslate("export_json_tooltip")}
+              icon={faDownload}
+              iconProps={{ size: "xs" }}
+              actionProps={{ size: "sm", disabled: HasPermission(user?.permissions, PermissionsFlags.EXPORT_DATA) }}
+              onClick={() => exportMutation.mutate(queryData)}
+            />
+          </Group>
+        }
+      />
       <DataTable
         className={`${classes.databaseStockItems} ${useHasAlert() ? classes.alert : ""} ${is_running ? classes.running : ""}`}
         customRowAttributes={(record) => {
@@ -170,7 +188,7 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
           },
           {
             accessor: "quantity",
-            title: useTranslateDataGridColumns("quantity"),
+            title: useTranslateCommon("datatable_columns.quantity.title"),
           },
           {
             accessor: "maximum_price",

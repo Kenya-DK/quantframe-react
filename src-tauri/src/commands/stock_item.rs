@@ -4,7 +4,8 @@ use chrono::Utc;
 use entity::{dto::*, stock_item::*, transaction::dto::TransactionPaginationQueryDto};
 use serde_json::{json, Value};
 use service::{StockItemMutation, StockItemQuery, TransactionQuery};
-use utils::{get_location, group_by, info, Error, GroupByDate};
+use tauri_plugin_dialog::DialogExt;
+use utils::{get_location, group_by, info, Error, GroupByDate, LoggerOptions};
 use wf_market::enums::OrderType;
 
 use crate::{
@@ -14,7 +15,7 @@ use crate::{
     handlers::{handle_item_by_entity, handle_wfm_item, stock_item::handle_item},
     helper::generate_transaction_summary,
     utils::{ErrorFromExt, OrderExt, SubTypeExt},
-    DATABASE,
+    APP, DATABASE,
 };
 
 #[tauri::command]
@@ -102,9 +103,7 @@ pub async fn stock_item_sell(
     {
         Ok((_, updated_item)) => return Ok(updated_item),
         Err(e) => {
-            return Err(e
-                .with_location(get_location!())
-                .log("stock_item_sell.log"));
+            return Err(e.with_location(get_location!()).log("stock_item_sell.log"));
         }
     }
 }
@@ -242,4 +241,54 @@ pub async fn stock_item_get_by_id(
     payload["last_transactions"] = json!(transaction_paginate.take_top(5));
 
     Ok(payload)
+}
+#[tauri::command]
+pub async fn export_stock_item_json(
+    mut query: StockItemPaginationQueryDto,
+) -> Result<String, Error> {
+    let app = APP.get().unwrap();
+    let conn = DATABASE.get().unwrap();
+    query.pagination.limit = -1; // fetch all
+    match StockItemQuery::get_all(conn, query).await {
+        Ok(stock_items) => {
+            let file_path = app
+                .dialog()
+                .file()
+                .add_filter("Quantframe_Stock_Item", &["json"])
+                .blocking_save_file();
+            if let Some(file_path) = file_path {
+                let json = serde_json::to_string_pretty(&stock_items.results).map_err(|e| {
+                    Error::new(
+                        "Command::ExportStockItemJson",
+                        format!("Failed to serialize stock item to JSON: {}", e),
+                        get_location!(),
+                    )
+                })?;
+                std::fs::write(file_path.as_path().unwrap(), json).map_err(|e| {
+                    Error::new(
+                        "Command::ExportStockItemJson",
+                        format!("Failed to write stock item to file: {}", e),
+                        get_location!(),
+                    )
+                })?;
+                info(
+                    "Command::ExportStockItemJson",
+                    format!("Exported stock item to JSON file: {}", file_path),
+                    &LoggerOptions::default(),
+                );
+                return Ok(file_path.to_string());
+            }
+            // do something with the optional file path here
+            // the file path is `None` if the user closed the dialog
+            return Ok("".to_string());
+        }
+        Err(e) => {
+            return Err(Error::from_db(
+                "Command::StockItemUpdate",
+                "Failed to get stock item by ID: {}",
+                e,
+                get_location!(),
+            ))
+        }
+    }
 }

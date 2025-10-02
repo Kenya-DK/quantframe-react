@@ -38,4 +38,9 @@ export class StockItemModule {
   async getById(id: number): Promise<TauriTypes.StockItemDetails> {
     return await this.client.sendInvoke<TauriTypes.StockItemDetails>("stock_item_get_by_id", { id });
   }
+  exportJson = async (query: TauriTypes.StockItemControllerGetListParams): Promise<string> => {
+    return await this.client.sendInvoke<string>("export_stock_item_json", {
+      query: this.client.convertToTauriQuery(query),
+    });
+  };
 }

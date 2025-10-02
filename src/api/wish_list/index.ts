@@ -37,4 +37,9 @@ export class WishListModule {
   async getById(id: number): Promise<TauriTypes.WishListItemDetails> {
     return await this.client.sendInvoke<TauriTypes.WishListItemDetails>("wish_list_get_by_id", { id });
   }
+  exportJson = async (query: TauriTypes.WishListControllerGetListParams): Promise<string> => {
+    return await this.client.sendInvoke<string>("export_wish_list_json", {
+      query: this.client.convertToTauriQuery(query),
+    });
+  };
 }

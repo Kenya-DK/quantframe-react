@@ -3,7 +3,8 @@ use std::{collections::HashMap, sync::Mutex};
 use entity::{dto::*, wish_list::*};
 use serde_json::{json, Value};
 use service::{WishListMutation, WishListQuery};
-use utils::{get_location, group_by, info, Error};
+use tauri_plugin_dialog::DialogExt;
+use utils::{get_location, group_by, info, Error, LoggerOptions};
 use wf_market::enums::OrderType;
 
 use crate::{
@@ -14,7 +15,7 @@ use crate::{
         handle_wfm_item, handle_wish_list, handle_wish_list_by_entity, stock_item::handle_item,
     },
     utils::{CreateWishListItemExt, ErrorFromExt, SubTypeExt},
-    DATABASE,
+    APP, DATABASE,
 };
 
 #[tauri::command]
@@ -192,4 +193,52 @@ pub async fn wish_list_get_by_id(
     payload["order_info"] = json!(order);
 
     Ok(payload)
+}
+#[tauri::command]
+pub async fn export_wish_list_json(mut query: WishListPaginationQueryDto) -> Result<String, Error> {
+    let app = APP.get().unwrap();
+    let conn = DATABASE.get().unwrap();
+    query.pagination.limit = -1; // fetch all
+    match WishListQuery::get_all(conn, query).await {
+        Ok(wish_list) => {
+            let file_path = app
+                .dialog()
+                .file()
+                .add_filter("Quantframe_Wish_List", &["json"])
+                .blocking_save_file();
+            if let Some(file_path) = file_path {
+                let json = serde_json::to_string_pretty(&wish_list.results).map_err(|e| {
+                    Error::new(
+                        "Command::ExportWishListJson",
+                        format!("Failed to serialize wish list to JSON: {}", e),
+                        get_location!(),
+                    )
+                })?;
+                std::fs::write(file_path.as_path().unwrap(), json).map_err(|e| {
+                    Error::new(
+                        "Command::ExportWishListJson",
+                        format!("Failed to write wish list to file: {}", e),
+                        get_location!(),
+                    )
+                })?;
+                info(
+                    "Command::ExportWishListJson",
+                    format!("Exported wish list to JSON file: {}", file_path),
+                    &LoggerOptions::default(),
+                );
+                return Ok(file_path.to_string());
+            }
+            // do something with the optional file path here
+            // the file path is `None` if the user closed the dialog
+            return Ok("".to_string());
+        }
+        Err(e) => {
+            return Err(Error::from_db(
+                "Command::WishListUpdate",
+                "Failed to get wish list by ID: {}",
+                e,
+                get_location!(),
+            ))
+        }
+    }
 }

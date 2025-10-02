@@ -20,6 +20,10 @@ import { notifications } from "@mantine/notifications";
 import { GetSubTypeDisplay, getSafePage } from "@utils/helper";
 import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 import { ColumnActions } from "../../Columns/ColumnActions";
+import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
+import { faDownload } from "@fortawesome/free-solid-svg-icons";
+import { HasPermission, PermissionsFlags } from "@utils/permissions";
+import { useAuthContext } from "@contexts/auth.context";
 
 interface ItemPanelProps {
   isActive?: boolean;
@@ -27,6 +31,7 @@ interface ItemPanelProps {
 
 export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
   // Contexts
+  const { user } = useAuthContext();
   const { is_running } = useLiveScraperContext();
   // States For DataGrid
   const [queryData, setQueryData] = useLocalStorage<TauriTypes.StockItemControllerGetListParams>({
@@ -60,7 +65,7 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
   const { paginationQuery, financialReportQuery, statusCountsQuery, refetchQueries } = useStockQueries({ queryData, isActive });
 
   // Mutations
-  const { createStockMutation, updateStockMutation, sellStockMutation, deleteStockMutation } = useStockMutations({
+  const { createStockMutation, updateStockMutation, exportMutation, sellStockMutation, deleteStockMutation } = useStockMutations({
     useTranslateSuccess,
     useTranslateErrors,
     refetchQueries,
@@ -120,7 +125,22 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
           />
         </Grid.Col>
       </Grid>
-      <SearchField value={queryData.query || ""} onChange={(value) => setQueryData((prev) => ({ ...prev, query: value }))} />
+      <SearchField
+        value={queryData.query || ""}
+        onChange={(value) => setQueryData((prev) => ({ ...prev, query: value }))}
+        rightSectionWidth={45}
+        rightSection={
+          <Group>
+            <ActionWithTooltip
+              tooltip={useTranslate("export_json_tooltip")}
+              icon={faDownload}
+              iconProps={{ size: "xs" }}
+              actionProps={{ size: "sm", disabled: HasPermission(user?.permissions, PermissionsFlags.EXPORT_DATA) }}
+              onClick={() => exportMutation.mutate(queryData)}
+            />
+          </Group>
+        }
+      />
       <DataTable
         className={`${classes.databaseStockItems} ${useHasAlert() ? classes.alert : ""} ${is_running ? classes.running : ""}`}
         customRowAttributes={(record) => {

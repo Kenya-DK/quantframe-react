@@ -63,7 +63,15 @@ const createGenericMutation = <TData, TVariables>(
 
 export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, refetchQueries, setLoadingRows }: MutationHooks) => {
   const hooks = { useTranslateSuccess, useTranslateErrors, refetchQueries, setLoadingRows };
-
+  const exportMutation = createGenericMutation(
+    {
+      mutationFn: (data: TauriTypes.StockItemControllerGetListParams) => api.stock_item.exportJson(data),
+      successKey: "export_data",
+      errorKey: "export_data",
+      getSuccessMessage: (data: any) => ({ path: data }),
+    },
+    hooks
+  );
   const createStockMutation = createGenericMutation(
     {
       mutationFn: (data: TauriTypes.CreateStockItem) => api.stock_item.create(data),
@@ -108,6 +116,7 @@ export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, ref
   );
 
   return {
+    exportMutation,
     createStockMutation,
     updateStockMutation,
     sellStockMutation,

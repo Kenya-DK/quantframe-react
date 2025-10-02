@@ -64,6 +64,15 @@ const createGenericMutation = <TData, TVariables>(
 export const useWishListMutations = ({ useTranslateSuccess, useTranslateErrors, refetchQueries, setLoadingRows }: MutationHooks) => {
   const hooks = { useTranslateSuccess, useTranslateErrors, refetchQueries, setLoadingRows };
 
+  const exportMutation = createGenericMutation(
+    {
+      mutationFn: (data: TauriTypes.WishListControllerGetListParams) => api.wish_list.exportJson(data),
+      successKey: "export_data",
+      errorKey: "export_data",
+      getSuccessMessage: (data: any) => ({ path: data }),
+    },
+    hooks
+  );
   const createWishListMutation = createGenericMutation(
     {
       mutationFn: (data: TauriTypes.CreateWishListItem) => api.wish_list.create(data),
@@ -106,6 +115,7 @@ export const useWishListMutations = ({ useTranslateSuccess, useTranslateErrors, 
     hooks
   );
   return {
+    exportMutation,
     createWishListMutation,
     updateWishListMutation,
     boughtWishListMutation,

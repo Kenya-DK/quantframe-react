@@ -24,15 +24,12 @@ use service::sea_orm::{Database, DatabaseConnection};
 use std::env;
 use std::panic;
 use std::sync::{Mutex, OnceLock};
-use std::time::Instant;
-use tauri::{App, Emitter, Manager};
+use tauri::{Emitter, Manager};
 
 use crate::cache::client::CacheState;
 use crate::live_scraper::LiveScraperState;
 use crate::log_parser::init_detections;
 use crate::log_parser::LogParserState;
-use crate::utils::OrderListExt;
-use tauri_plugin_notification::{Attachment, NotificationExt};
 
 mod app;
 mod cache;
@@ -221,6 +218,7 @@ pub fn run() {
             commands::stock_item::stock_item_sell,
             commands::stock_item::stock_item_update,
             commands::stock_item::stock_item_get_by_id,
+            commands::stock_item::export_stock_item_json,
             // Stock Riven commands
             commands::stock_riven::get_stock_riven_pagination,
             commands::stock_riven::get_stock_riven_financial_report,
@@ -230,6 +228,7 @@ pub fn run() {
             commands::stock_riven::stock_riven_sell,
             commands::stock_riven::stock_riven_update,
             commands::stock_riven::stock_riven_get_by_id,
+            commands::stock_riven::export_stock_riven_json,
             // Debug commands
             commands::debug::debug_get_wfm_state,
             // Order commands
@@ -253,13 +252,21 @@ pub fn run() {
             commands::wish_list::wish_list_delete,
             commands::wish_list::wish_list_update,
             commands::wish_list::wish_list_get_by_id,
+            commands::wish_list::export_wish_list_json,
             // Chat commands
             commands::chat::chat_refresh,
             commands::chat::get_chat_pagination,
             commands::chat::chat_get_messages_by_id,
             commands::chat::chat_delete,
             commands::chat::chat_set_active,
-            commands::chat::chat_send_message
+            commands::chat::chat_send_message,
+            // Transaction commands
+            commands::transaction::get_transaction_pagination,
+            commands::transaction::get_transaction_financial_report,
+            commands::transaction::transaction_update,
+            commands::transaction::transaction_delete,
+            commands::transaction::transaction_delete_bulk,
+            commands::transaction::export_transaction_json,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
