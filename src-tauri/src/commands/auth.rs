@@ -7,6 +7,7 @@ use crate::{
     cache::client::CacheState,
     commands::live_scraper,
     live_scraper::LiveScraperState,
+    types::PermissionsFlags,
     utils::{AuctionListExt, ErrorFromExt, OrderListExt},
 };
 
@@ -145,4 +146,19 @@ pub async fn auth_logout(
     let mut app = app.lock().expect("Could not lock auth");
     app.user = new_user.clone();
     Ok(new_user)
+}
+
+#[tauri::command]
+pub async fn auth_has_permission(
+    flag: String,
+    app: tauri::State<'_, Mutex<AppState>>,
+) -> Result<bool, Error> {
+    let app_state = app.lock().unwrap().clone();
+    if let Err(_) = app_state
+        .user
+        .has_permission(PermissionsFlags::from_str(&flag))
+    {
+        return Ok(false);
+    }
+    return Ok(true);
 }

@@ -14,6 +14,7 @@ use crate::{
     enums::{FindBy, FindByType},
     handlers::{handle_item_by_entity, handle_wfm_item, stock_item::handle_item},
     helper::generate_transaction_summary,
+    types::PermissionsFlags,
     utils::{ErrorFromExt, OrderExt, SubTypeExt},
     APP, DATABASE,
 };
@@ -244,9 +245,16 @@ pub async fn stock_item_get_by_id(
 }
 #[tauri::command]
 pub async fn export_stock_item_json(
+    app_state: tauri::State<'_, Mutex<AppState>>,
     mut query: StockItemPaginationQueryDto,
 ) -> Result<String, Error> {
+    let app_state = app_state.lock()?.clone();
     let app = APP.get().unwrap();
+    if let Err(e) = app_state.user.has_permission(PermissionsFlags::ExportData) {
+        e.log("export_stock_item_json.log");
+        return Err(e);
+    }
+
     let conn = DATABASE.get().unwrap();
     query.pagination.limit = -1; // fetch all
     match StockItemQuery::get_all(conn, query).await {

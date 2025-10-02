@@ -19,7 +19,12 @@ pub async fn user_set_status(
         ));
     }
     let wfm_socket = app_state.wfm_socket.as_ref().unwrap();
-    match wfm_socket.send_request("@WS/USER/SET_STATUS", json!(status)) {
+    match wfm_socket.send_request(
+        "@wfm|cmd/status/set",
+        json!({
+            "status": status
+        }),
+    ) {
         Ok(_) => {
             info(
                 "Commands:UserSetStatus",
@@ -29,20 +34,5 @@ pub async fn user_set_status(
         }
         Err(e) => panic!("{:?}", e),
     }
-    // match wfm_socket.send_request(
-    //     "@wfm|cmd/status/set",
-    //     json!({
-    //         "status": status
-    //     }),
-    // ) {
-    //     Ok(_) => {
-    //         info(
-    //             "Commands:UserSetStatus",
-    //             &format!("User status set to {}", status),
-    //             &LoggerOptions::default(),
-    //         );
-    //     }
-    //     Err(e) => panic!("{:?}", e),
-    // }
     Ok(())
 }

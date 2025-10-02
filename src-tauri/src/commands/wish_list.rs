@@ -14,6 +14,7 @@ use crate::{
     handlers::{
         handle_wfm_item, handle_wish_list, handle_wish_list_by_entity, stock_item::handle_item,
     },
+    types::PermissionsFlags,
     utils::{CreateWishListItemExt, ErrorFromExt, SubTypeExt},
     APP, DATABASE,
 };
@@ -195,8 +196,16 @@ pub async fn wish_list_get_by_id(
     Ok(payload)
 }
 #[tauri::command]
-pub async fn export_wish_list_json(mut query: WishListPaginationQueryDto) -> Result<String, Error> {
+pub async fn export_wish_list_json(
+    app_state: tauri::State<'_, Mutex<AppState>>,
+    mut query: WishListPaginationQueryDto,
+) -> Result<String, Error> {
+    let app_state = app_state.lock()?.clone();
     let app = APP.get().unwrap();
+    if let Err(e) = app_state.user.has_permission(PermissionsFlags::ExportData) {
+        e.log("export_wish_list_json.log");
+        return Err(e);
+    }
     let conn = DATABASE.get().unwrap();
     query.pagination.limit = -1; // fetch all
     match WishListQuery::get_all(conn, query).await {

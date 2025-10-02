@@ -14,6 +14,7 @@ use crate::{
     cache::client::CacheState,
     enums::{FindBy, FindByType},
     handlers::{handle_riven, handle_riven_by_entity, stock_item::handle_item},
+    types::PermissionsFlags,
     utils::{ErrorFromExt, SubTypeExt},
     APP, DATABASE,
 };
@@ -253,9 +254,15 @@ pub async fn stock_riven_get_by_id(
 
 #[tauri::command]
 pub async fn export_stock_riven_json(
+    app_state: tauri::State<'_, Mutex<AppState>>,
     mut query: StockRivenPaginationQueryDto,
 ) -> Result<String, Error> {
+    let app_state = app_state.lock()?.clone();
     let app = APP.get().unwrap();
+    if let Err(e) = app_state.user.has_permission(PermissionsFlags::ExportData) {
+        e.log("export_stock_riven_json.log");
+        return Err(e);
+    }
     let conn = DATABASE.get().unwrap();
     query.pagination.limit = -1; // fetch all
     match StockRivenQuery::get_all(conn, query).await {
