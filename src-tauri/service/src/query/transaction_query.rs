@@ -11,7 +11,7 @@ impl TransactionQuery {
     ) -> Result<::entity::dto::pagination::PaginatedResult<transaction::Model>, DbErr> {
         let stmt = query.get_query();
 
-        // // Print the generated SQL for debugging
+        // Print the generated SQL for debugging
         // println!(
         //     "Generating SQL for StockItemQuery::get_all_v2: {}",
         //     stmt.clone().build(db.get_database_backend()).to_string()

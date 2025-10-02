@@ -17,6 +17,7 @@ import { WishListModule } from "./wish_list";
 import { StockRivenModule } from "./stack_riven";
 import { AuctionModule } from "./auction";
 import { ChatModule } from "./chat";
+import { TransactionModule } from "./transaction";
 
 export class TauriClient {
   _logging: string[] = [];
@@ -41,6 +42,7 @@ export class TauriClient {
     this.order = new OrderModule(this);
     this.chat = new ChatModule(this);
     this.auction = new AuctionModule(this);
+    this.transaction = new TransactionModule(this);
     this._logging = localStorage.getItem("tauri_logs") ? JSON.parse(localStorage.getItem("tauri_logs")!) : ["*"];
   }
 
@@ -71,7 +73,7 @@ export class TauriClient {
     console.group(`%cTauri Invoke - ${command}`, groupStyle);
     console.log(`%cTime:`, timeStyle, time);
     if (data) console.log(`%cData:`, dataStyle, data);
-    if (response) console.log(`%cResponse:`, responseStyle, response);
+    if (response != undefined) console.log(`%cResponse:`, responseStyle, response);
     if (error) console.error(`%cError:`, errorStyle, error);
     else console.log(`%cSuccess`, successStyle);
     console.groupEnd();
@@ -176,6 +178,7 @@ export class TauriClient {
   wish_list: WishListModule;
   debug: DebugModule;
   chat: ChatModule;
+  transaction: TransactionModule;
 }
 
 declare global {
@@ -201,5 +204,21 @@ const WFMThumbnail = (thumb: string) => `https://warframe.market/static/assets/$
 const AddMetric = (metric: string, value: number | string) => {
   window.api.analytics.add_metric(metric, value);
 };
-export { WFMThumbnail, OnTauriEvent, OffTauriEvent, SendTauriEvent, OnTauriDataEvent, OffTauriDataEvent, SendTauriDataEvent, AddMetric };
+const HasPermission = (flag: TauriTypes.PermissionsFlags): boolean => {
+  window.api.auth.hasPermission(flag).then((res) => {
+    return res;
+  });
+  return false;
+};
+export {
+  WFMThumbnail,
+  HasPermission,
+  OnTauriEvent,
+  OffTauriEvent,
+  SendTauriEvent,
+  OnTauriDataEvent,
+  OffTauriDataEvent,
+  SendTauriDataEvent,
+  AddMetric,
+};
 export default window.api;

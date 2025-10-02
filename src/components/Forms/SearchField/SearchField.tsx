@@ -9,6 +9,7 @@ export type SearchFieldProps = {
   value: string;
   onChange: (text: string) => void;
   onSearch?: (text: string) => void;
+  hideSearch?: boolean;
   searchDisabled?: boolean;
   description?: string;
   onCreate?: () => void;
@@ -25,6 +26,7 @@ export function SearchField({
   searchDisabled,
   onCreate,
   onChange,
+  hideSearch,
   rightSection,
   onFilterToggle,
   rightSectionWidth,
@@ -79,7 +81,7 @@ export function SearchField({
                 onClick={async () => setOpenFilter()}
               />
             )}
-            {onSearch && (
+            {onSearch && !hideSearch && (
               <ActionWithTooltip
                 tooltip={useTranslateSearchFieldButtons("search.tooltip")}
                 icon={faSearch}

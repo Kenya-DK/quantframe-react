@@ -85,6 +85,10 @@ export const en = {
         error: { title: "Delete Chat Error", message: "An error occurred while trying to delete the chat." },
         success: { title: "Delete Chat Success", message: "The chat has been successfully deleted." },
       },
+      export_data: {
+        error: { title: "Export Data Error", message: "An error occurred while trying to export the data." },
+        success: { title: "Export Data Success", message: "The data has been successfully exported to {{path}}." },
+      },
     },
     datatable_columns: {
       list_price: "Listed",
@@ -110,10 +114,12 @@ export const en = {
             enabled_tooltip: "Hide",
           },
           info_tooltip: "Info",
-          delete_tooltip: "Item",
+          delete_tooltip: "Delete",
+          edit_tooltip: "Edit",
           open_filter_tooltip: "Open Filter",
         },
       },
+      quantity: { title: "Quantity" },
     },
     item_name: {
       title: "Name",
@@ -123,6 +129,12 @@ export const en = {
       delete_item: {
         title: "Are you sure?",
         message: "This action cannot be undone.",
+        cancel: "Cancel",
+        confirm: "Confirm",
+      },
+      delete_bulk_item: {
+        title: "Are you sure?",
+        message: "Are you sure you want to delete these {{count}} items? This action cannot be undone.",
         cancel: "Cancel",
         confirm: "Confirm",
       },
@@ -343,6 +355,7 @@ export const en = {
           debug: "Debug",
           live_scraper: "Live Scraper",
           warframe_market: "Warframe Market",
+          trading_analytics: "Trading Analytics",
           chat: "Chat",
         },
       },
@@ -410,6 +423,20 @@ export const en = {
       },
     },
     forms: {
+      update_transaction: {
+        fields: {
+          price: {
+            label: "Price",
+            placeholder: "Enter price",
+            description: "The price of the transaction in platinum.",
+          },
+          quantity: {
+            label: "Quantity",
+            placeholder: "Enter quantity",
+            description: "The quantity of the item being traded.",
+          },
+        },
+      },
       generic_item_list: {
         add_all_tooltip: "Add All Items",
       },
@@ -954,7 +981,7 @@ export const en = {
       patreon_modal: {
         title: "Support the development of Quantframe",
         description: "Get access to premium features by supporting me on Patreon",
-        premium_content: "User activity | Riven Price Lookup",
+        premium_content: "User activity | Riven Price Lookup | Export Data",
         join_the_community: "Join the community of supporters and help shape the future of Quantframe.",
         link_your_account: "2. Link your Patreon account",
         buttons: {
@@ -1349,6 +1376,7 @@ export const en = {
       },
     },
     live_scraper: {
+      export_json_tooltip: "Export Items to JSON (Patreon T1+)",
       segments: {
         bought: "Bought",
         listed: "Listed",
@@ -1383,11 +1411,6 @@ export const en = {
         },
         wish_list: {
           title: "Wishlist",
-          datatable: {
-            columns: {
-              quantity: "Quantity",
-            },
-          },
         },
       },
     },
@@ -1488,6 +1511,28 @@ export const en = {
       buttons: {
         refresh_tooltip: "Refresh the chat list",
         delete_all_tooltip: "Delete all chats",
+      },
+    },
+    trading_analytics: {
+      tabs: {
+        transaction: {
+          title: "Transaction",
+          prompts: {
+            update_title: "Update Transaction",
+          },
+          buttons: {
+            export_transactions_tooltip: "Export transactions to JSON  (Patreon T1+)",
+            show_financial_report_tooltip: "Show report",
+            delete_all_tooltip: "Delete all transactions {{count}}",
+          },
+          datatable: {
+            columns: {
+              item_type: "Item Type",
+              price: "Price",
+              created_at: "Created At",
+            },
+          },
+        },
       },
     },
   },

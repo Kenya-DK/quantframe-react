@@ -14,6 +14,7 @@ import { Ticker } from "@components/Layouts/Shared/Ticker";
 import { QuantframeApiTypes } from "$types";
 import { useAppContext } from "@contexts/app.context";
 import faWarframeMarket from "@icons/facWarframeMarket";
+import facTradingAnalytics from "@icons/faTradingAnalytics";
 
 export function LogInLayout() {
   // States
@@ -70,6 +71,14 @@ export function LogInLayout() {
       ),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
       label: useTranslateNavBar("chat"),
+    },
+    {
+      align: "top",
+      id: "trading_analytics",
+      link: "trading_analytics",
+      icon: <FontAwesomeIcon size={"lg"} icon={facTradingAnalytics} />,
+      label: useTranslateNavBar("trading_analytics"),
+      onClick: (e: NavbarLinkProps) => handleNavigate(e),
     },
     {
       align: "top",

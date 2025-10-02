@@ -28,6 +28,8 @@ pub struct TransactionPaginationQueryDto {
     pub wfm_id: FieldChange<String>,
     #[serde(default)]
     pub sub_type: FieldChange<SubType>,
+    #[serde(default)]
+    pub tags: FieldChange<Vec<String>>,
 }
 impl TransactionPaginationQueryDto {
     pub fn new(page: i64, limit: i64) -> Self {
@@ -42,6 +44,7 @@ impl TransactionPaginationQueryDto {
             to_date: FieldChange::Ignore,
             wfm_id: FieldChange::Ignore,
             sub_type: FieldChange::Ignore,
+            tags: FieldChange::Ignore,
         }
     }
     pub fn get_query(&self) -> Select<Entity> {
@@ -93,6 +96,24 @@ impl TransactionPaginationQueryDto {
             }
             _ => {}
         }
+        match &self.tags {
+            Value(tags) => {
+                if !tags.is_empty() {
+                    // Create a condition that matches any of the provided tags
+                    let mut tag_condition = Condition::any();
+                    for tag in tags {
+                        if !tag.trim().is_empty() {
+                            tag_condition = tag_condition.add(
+                                Expr::col(transaction::Column::Tags)
+                                    .like(format!("%{}%", tag.trim())),
+                            );
+                        }
+                    }
+                    stmt = stmt.filter(tag_condition);
+                }
+            }
+            _ => {}
+        }
         match &self.sort_by {
             Value(sort_by) => {
                 let dir = match &self.sort_direction {
@@ -112,6 +133,8 @@ impl TransactionPaginationQueryDto {
                     }
                     "item_type" => stmt = stmt.order_by(transaction::Column::ItemType, order),
                     "created_at" => stmt = stmt.order_by(transaction::Column::CreatedAt, order),
+                    "item_name" => stmt = stmt.order_by(transaction::Column::ItemName, order),
+                    "user_name" => stmt = stmt.order_by(transaction::Column::UserName, order),
                     _ => {}
                 }
             }
@@ -164,6 +187,10 @@ impl TransactionPaginationQueryDto {
         };
         self
     }
+    pub fn set_tag(mut self, tags: Vec<String>) -> Self {
+        self.tags = FieldChange::Value(tags);
+        self
+    }
 }
 
 impl Default for TransactionPaginationQueryDto {
@@ -179,6 +206,7 @@ impl Default for TransactionPaginationQueryDto {
             to_date: FieldChange::Ignore,
             wfm_id: FieldChange::Ignore,
             sub_type: FieldChange::Ignore,
+            tags: FieldChange::Ignore,
         }
     }
 }

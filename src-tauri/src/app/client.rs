@@ -201,7 +201,7 @@ async fn setup_socket(wfm_client: WFClient<WFAuthenticated>) -> Result<WsClient,
     }
 
     let ws_client = wfm_client
-        .create_websocket(ApiVersion::V1)
+        .create_websocket(ApiVersion::V2)
         .set_log_unhandled(true)
         .register_callback("internal/connected", move |msg, _, _| {
             send_ws_state(UIEvent::OnError, "connected", json!(msg.payload));

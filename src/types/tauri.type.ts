@@ -6,6 +6,10 @@ export namespace TauriTypes {
     Riven = "riven",
     Item = "item",
   }
+  export enum PermissionsFlags {
+    ALL = "all",
+    EXPORT_DATA = "export_data",
+  }
   export enum TradeMode {
     Buy = "buy",
     Sell = "sell",
@@ -31,6 +35,7 @@ export namespace TauriTypes {
     RefreshWfmOrders = "LiveScraper:RefreshWfmOrders",
     OnDeleteWfmOrders = "Wfm:OnDeleteOrders",
     RefreshWfmAuctions = "LiveScraper:RefreshWfmAuctions",
+    RefreshTransactions = "RefreshTransactions",
     OnDeleteWfmAuctions = "Wfm:OnDeleteAuctions",
     OnNotify = "App:OnNotify",
     OnChatMessage = "Wfm:OnChatMessage",
@@ -595,7 +600,7 @@ export namespace TauriTypes {
     wfm_id: string;
     wfm_url: string;
   }
-  export interface UpdateTransactionDto {
+  export interface UpdateTransaction {
     id: number;
     price: number;
     quantity: number;
@@ -686,5 +691,20 @@ export namespace TauriTypes {
   }
   export type WishListControllerGetListData = PaginatedDto & {
     results?: WishListItem[];
+  };
+  export interface TransactionControllerGetListParams {
+    page: number;
+    limit: number;
+    sort_by?: string;
+    sort_direction?: "asc" | "desc";
+    query?: string;
+    transaction_type?: TauriTypes.TransactionType;
+    item_type?: TauriTypes.TransactionItemType;
+    tags?: string[];
+    from_date?: string;
+    to_date?: string;
+  }
+  export type TransactionControllerGetListData = PaginatedDto & {
+    results?: TransactionDto[];
   };
 }

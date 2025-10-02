@@ -27,6 +27,9 @@ import PBanned from "@pages/banned";
 // Live Scraper
 import PLiveScraper from "@pages/live_scraper";
 
+// Trading Analytics
+import TradingAnalyticsPage from "@pages/trading_analytics";
+
 // Warframe Market
 import PWarframeMarket from "@pages/warframe_market";
 import PWarframeMarketChat from "@pages/chat";
@@ -70,6 +73,7 @@ export function AppRoutes() {
                 <Route path="live_scraper" element={<PLiveScraper />} />
                 <Route path="warframe-market" element={<PWarframeMarket />} />
                 <Route path="chat" element={<PWarframeMarketChat />} />
+                <Route path="trading_analytics" element={<TradingAnalyticsPage />} />
                 <Route path="about" element={<AboutPage />} />
               </Route>
               <Route path="*" element={<PHome />} />
