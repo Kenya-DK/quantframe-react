@@ -188,6 +188,7 @@ pub fn run() {
             commands::auth::auth_me,
             commands::auth::auth_login,
             commands::auth::auth_logout,
+            commands::auth::auth_has_permission,
             // User commands
             commands::user::user_set_status,
             // User commands

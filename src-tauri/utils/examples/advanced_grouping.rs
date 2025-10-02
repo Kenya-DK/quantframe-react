@@ -1,6 +1,6 @@
-use utils::grouping::*;
-use chrono::{DateTime, Utc, TimeZone};
+use chrono::{DateTime, TimeZone, Utc};
 use std::collections::HashMap;
+use utils::grouping::*;
 
 #[derive(Debug, Clone)]
 struct LogMetric {
@@ -108,21 +108,26 @@ fn example_multi_dimensional_grouping(metrics: &[LogMetric]) {
 
     // Group by service and log level
     let by_service_level = group_by(metrics, |m| (m.service.clone(), m.level.clone()));
-    
+
     println!("  By Service and Level:");
     for ((service, level), logs) in &by_service_level {
-        let avg_response_time: f64 = logs.iter().map(|l| l.response_time_ms as f64).sum::<f64>() / logs.len() as f64;
-        println!("    {}/{}: {} logs, avg response: {:.1}ms", service, level, logs.len(), avg_response_time);
+        let avg_response_time: f64 =
+            logs.iter().map(|l| l.response_time_ms as f64).sum::<f64>() / logs.len() as f64;
+        println!(
+            "    {}/{}: {} logs, avg response: {:.1}ms",
+            service,
+            level,
+            logs.len(),
+            avg_response_time
+        );
     }
 
     // Group by status code category
-    let by_status_category = group_by(metrics, |m| {
-        match m.status_code {
-            200..=299 => "Success",
-            400..=499 => "Client Error",
-            500..=599 => "Server Error",
-            _ => "Other",
-        }
+    let by_status_category = group_by(metrics, |m| match m.status_code {
+        200..=299 => "Success",
+        400..=499 => "Client Error",
+        500..=599 => "Server Error",
+        _ => "Other",
     });
 
     println!("\n  By Status Category:");
@@ -132,8 +137,15 @@ fn example_multi_dimensional_grouping(metrics: &[LogMetric]) {
 
     // Group by endpoint and day
     let by_endpoint_day = group_by(metrics, |m| {
-        let day_key = group_by_date(&[m.clone()], |metric| metric.timestamp, &[GroupByDate::Year, GroupByDate::Month, GroupByDate::Day])
-            .keys().next().unwrap().clone();
+        let day_key = group_by_date(
+            &[m.clone()],
+            |metric| metric.timestamp,
+            &[GroupByDate::Year, GroupByDate::Month, GroupByDate::Day],
+        )
+        .keys()
+        .next()
+        .unwrap()
+        .clone();
         (m.endpoint.clone(), day_key)
     });
 
@@ -149,7 +161,16 @@ fn example_time_series_with_gaps(metrics: &[LogMetric]) {
     println!("2. Time Series Analysis with Gap Filling:");
 
     // Group by hour
-    let mut by_hour = group_by_date(metrics, |m| m.timestamp, &[GroupByDate::Year, GroupByDate::Month, GroupByDate::Day, GroupByDate::Hour]);
+    let mut by_hour = group_by_date(
+        metrics,
+        |m| m.timestamp,
+        &[
+            GroupByDate::Year,
+            GroupByDate::Month,
+            GroupByDate::Day,
+            GroupByDate::Hour,
+        ],
+    );
 
     println!("  Original hourly data:");
     let sorted_hours = sort_grouped(&by_hour);
@@ -179,7 +200,11 @@ fn example_performance_analysis(metrics: &[LogMetric]) {
     println!("3. Performance Analysis by Time Periods:");
 
     // Analyze performance by day
-    let by_day = group_by_date(metrics, |m| m.timestamp, &[GroupByDate::Year, GroupByDate::Month, GroupByDate::Day]);
+    let by_day = group_by_date(
+        metrics,
+        |m| m.timestamp,
+        &[GroupByDate::Year, GroupByDate::Month, GroupByDate::Day],
+    );
     let sorted_days = sort_grouped(&by_day);
 
     println!("  Daily Performance Summary:");
@@ -189,7 +214,8 @@ fn example_performance_analysis(metrics: &[LogMetric]) {
         }
 
         let total_requests = logs.len();
-        let avg_response_time: f64 = logs.iter().map(|l| l.response_time_ms as f64).sum::<f64>() / total_requests as f64;
+        let avg_response_time: f64 =
+            logs.iter().map(|l| l.response_time_ms as f64).sum::<f64>() / total_requests as f64;
         let max_response_time = logs.iter().map(|l| l.response_time_ms).max().unwrap();
         let min_response_time = logs.iter().map(|l| l.response_time_ms).min().unwrap();
         let error_count = logs.iter().filter(|l| l.status_code >= 400).count();
@@ -198,8 +224,14 @@ fn example_performance_analysis(metrics: &[LogMetric]) {
         println!("    {}:", day);
         println!("      Requests: {}", total_requests);
         println!("      Avg Response: {:.1}ms", avg_response_time);
-        println!("      Min/Max Response: {}ms/{}ms", min_response_time, max_response_time);
-        println!("      Error Rate: {:.1}% ({} errors)", error_rate, error_count);
+        println!(
+            "      Min/Max Response: {}ms/{}ms",
+            min_response_time, max_response_time
+        );
+        println!(
+            "      Error Rate: {:.1}% ({} errors)",
+            error_rate, error_count
+        );
     }
 
     // Time boundary analysis
@@ -213,15 +245,18 @@ fn example_performance_analysis(metrics: &[LogMetric]) {
     ];
 
     for (period, (start, end)) in boundaries {
-        let metrics_in_period: Vec<&LogMetric> = metrics.iter()
+        let metrics_in_period: Vec<&LogMetric> = metrics
+            .iter()
             .filter(|m| m.timestamp >= start && m.timestamp <= end)
             .collect();
-        
-        println!("    {} period ({} to {}): {} metrics", 
-            period, 
-            start.format("%Y-%m-%d %H:%M"), 
+
+        println!(
+            "    {} period ({} to {}): {} metrics",
+            period,
+            start.format("%Y-%m-%d %H:%M"),
             end.format("%Y-%m-%d %H:%M"),
-            metrics_in_period.len());
+            metrics_in_period.len()
+        );
     }
 
     println!();
@@ -232,8 +267,15 @@ fn example_custom_aggregations(metrics: &[LogMetric]) {
 
     // Service health score by day
     let by_service_day = group_by(metrics, |m| {
-        let day_key = group_by_date(&[m.clone()], |metric| metric.timestamp, &[GroupByDate::Year, GroupByDate::Month, GroupByDate::Day])
-            .keys().next().unwrap().clone();
+        let day_key = group_by_date(
+            &[m.clone()],
+            |metric| metric.timestamp,
+            &[GroupByDate::Year, GroupByDate::Month, GroupByDate::Day],
+        )
+        .keys()
+        .next()
+        .unwrap()
+        .clone();
         (m.service.clone(), day_key)
     });
 
@@ -241,20 +283,24 @@ fn example_custom_aggregations(metrics: &[LogMetric]) {
     for ((service, day), logs) in &by_service_day {
         let total_requests = logs.len() as f64;
         let successful_requests = logs.iter().filter(|l| l.status_code < 400).count() as f64;
-        let avg_response_time: f64 = logs.iter().map(|l| l.response_time_ms as f64).sum::<f64>() / total_requests;
-        
+        let avg_response_time: f64 =
+            logs.iter().map(|l| l.response_time_ms as f64).sum::<f64>() / total_requests;
+
         // Custom health score: success rate - response time penalty
         let success_rate = (successful_requests / total_requests) * 100.0;
         let response_penalty = (avg_response_time / 1000.0).min(50.0); // Cap at 50 point penalty
         let health_score = (success_rate - response_penalty).max(0.0);
 
-        println!("    {} on {}: Health Score: {:.1}/100 (Success: {:.1}%, Avg RT: {:.0}ms)", 
-            service, day, health_score, success_rate, avg_response_time);
+        println!(
+            "    {} on {}: Health Score: {:.1}/100 (Success: {:.1}%, Avg RT: {:.0}ms)",
+            service, day, health_score, success_rate, avg_response_time
+        );
     }
 
     // Peak usage hours
     let by_hour_only = group_by_date(metrics, |m| m.timestamp, &[GroupByDate::Hour]);
-    let mut hour_counts: Vec<(String, usize)> = by_hour_only.iter()
+    let mut hour_counts: Vec<(String, usize)> = by_hour_only
+        .iter()
         .map(|(hour, logs)| (hour.clone(), logs.len()))
         .collect();
     hour_counts.sort_by(|a, b| b.1.cmp(&a.1)); // Sort by count descending
@@ -266,9 +312,11 @@ fn example_custom_aggregations(metrics: &[LogMetric]) {
 
     // Endpoint performance ranking
     let by_endpoint = group_by(metrics, |m| m.endpoint.clone());
-    let mut endpoint_performance: Vec<(String, f64, usize)> = by_endpoint.iter()
+    let mut endpoint_performance: Vec<(String, f64, usize)> = by_endpoint
+        .iter()
         .map(|(endpoint, logs)| {
-            let avg_response: f64 = logs.iter().map(|l| l.response_time_ms as f64).sum::<f64>() / logs.len() as f64;
+            let avg_response: f64 =
+                logs.iter().map(|l| l.response_time_ms as f64).sum::<f64>() / logs.len() as f64;
             (endpoint.clone(), avg_response, logs.len())
         })
         .collect();
@@ -276,7 +324,13 @@ fn example_custom_aggregations(metrics: &[LogMetric]) {
 
     println!("\n  Endpoint Performance Ranking (by avg response time):");
     for (i, (endpoint, avg_response, count)) in endpoint_performance.iter().enumerate() {
-        println!("    {}. {}: {:.1}ms avg ({} requests)", i + 1, endpoint, avg_response, count);
+        println!(
+            "    {}. {}: {:.1}ms avg ({} requests)",
+            i + 1,
+            endpoint,
+            avg_response,
+            count
+        );
     }
 
     println!();

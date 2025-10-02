@@ -5,7 +5,7 @@ use serde::{de, Deserialize, Serialize};
 use serde_json::Value;
 use utils::{get_location, validate_json, Error};
 
-use crate::helper;
+use crate::{helper, types::PermissionsFlags, utils::ErrorFromExt};
 
 fn get_path() -> PathBuf {
     helper::get_app_storage_path().join("auth.json")
@@ -154,5 +154,21 @@ impl User {
 
     pub fn is_banned(&self) -> bool {
         self.wfm_banned || self.qf_banned
+    }
+    pub fn has_permission(&self, flag: PermissionsFlags) -> Result<bool, Error> {
+        if flag == PermissionsFlags::None {
+            return Ok(false);
+        }
+        if self.anonymous || self.permissions.is_none() {
+            return Err(Error::new_permission_denied(flag.as_str()));
+        }
+        let permissions = self.permissions.as_ref().unwrap();
+        let has_permission = permissions
+            .split(',')
+            .any(|perm| perm == flag.as_str() || perm == "all");
+        if !has_permission {
+            return Err(Error::new_permission_denied(flag.as_str()));
+        }
+        Ok(has_permission)
     }
 }
