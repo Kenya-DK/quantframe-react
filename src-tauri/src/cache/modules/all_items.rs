@@ -27,6 +27,7 @@ impl AllItemsModule {
     pub fn load(&self) -> Result<(), Error> {
         let client = self.client.upgrade().expect("Client should not be dropped");
         let mut items_lock = self.items.lock().unwrap();
+        items_lock.clear();
         items_lock.append(&mut client.arcane().collect_all_items());
         items_lock.append(&mut client.archgun().collect_all_items());
         items_lock.append(&mut client.archmelee().collect_all_items());
