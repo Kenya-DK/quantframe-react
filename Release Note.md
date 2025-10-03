@@ -15,6 +15,9 @@ How To migrate:
 ## Feature's
 
 - ✨ Add sorting for the auctions and orders tab
+- ✨ Add export to JSON for transactions, Stock items, WishList, Stock Rivens, WishList Require patron T1+
+- ✨ Add theme support for the app
+- ✨ Overhaul the Blacklist system now you can add items to the blacklist each trade method
 
 ## Fix's
 
