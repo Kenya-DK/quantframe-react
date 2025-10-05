@@ -96,6 +96,7 @@ impl Display for ApiError {
                 write!(f, "Unauthorized: {}", req_err.error_sentence())
             }
             ApiError::ParsingError(req_err, parse_err) => {
+                println!("Request error: {:?}", parse_err);
                 write!(
                     f,
                     "Parsing error: {} - {}",

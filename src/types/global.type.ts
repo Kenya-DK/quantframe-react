@@ -26,6 +26,8 @@ export interface PaginatedDto {
   limit: number;
   /** The current page */
   page: number;
+  /** The total number of pages */
+  total_pages: number;
 }
 export enum UserStatus {
   Online = "online",

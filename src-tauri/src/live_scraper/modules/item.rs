@@ -190,11 +190,7 @@ impl ItemModule {
             // Get item price from cache
             let item_price = cache
                 .item_price()
-                .find_by(
-                    &item_entry.wfm_url,
-                    item_entry.sub_type.clone(),
-                    &item_entry.order_type,
-                )?
+                .find_by(&item_entry.wfm_url, item_entry.sub_type.clone())?
                 .unwrap_or_default();
 
             // GUI event for progress

@@ -134,28 +134,20 @@ impl ItemPriceModule {
         &self,
         url: impl Into<String>,
         sub_type: Option<SubType>,
-        order_type: impl Into<String>,
     ) -> Result<Option<ItemPriceInfo>, Error> {
         let url = url.into();
-        let order_type = order_type.into();
         let items = self.get_items()?;
-        let item = find_by(&items, |u| {
-            u.wfm_url == url && u.sub_type == sub_type && u.order_type == order_type
-        });
+        let item = find_by(&items, |u| u.wfm_url == url && u.sub_type == sub_type);
         Ok(item.cloned())
     }
     pub fn find_by_id(
         &self,
         id: impl Into<String>,
         sub_type: Option<SubType>,
-        order_type: impl Into<String>,
     ) -> Result<Option<ItemPriceInfo>, Error> {
         let id = id.into();
-        let order_type = order_type.into();
         let items = self.get_items()?;
-        let item = find_by(&items, |u| {
-            u.wfm_id == id && u.sub_type == sub_type && u.order_type == order_type
-        });
+        let item = find_by(&items, |u| u.wfm_id == id && u.sub_type == sub_type);
         Ok(item.cloned())
     }
     pub fn get_by_filter<F>(&self, predicate: F) -> Vec<ItemPriceInfo>

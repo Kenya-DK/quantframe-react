@@ -268,6 +268,9 @@ pub fn run() {
             commands::transaction::transaction_delete,
             commands::transaction::transaction_delete_bulk,
             commands::transaction::export_transaction_json,
+            // Item commands
+            commands::item::item_prices_lookup,
+            commands::item::export_item_price_data,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

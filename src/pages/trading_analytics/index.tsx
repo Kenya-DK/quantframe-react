@@ -1,6 +1,6 @@
 import { Tabs } from "@mantine/core";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
-import { TransactionPanel } from "./Tabs";
+import { TransactionPanel, ItemPanel, RivenPanel, UserPanel } from "./Tabs";
 import { useLocalStorage } from "@mantine/hooks";
 import classes from "./TradingAnalytics.module.css";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
@@ -17,6 +17,21 @@ export default function TradingAnalyticsPage() {
       label: useTranslateTabs("transaction.title"),
       component: (isActive: boolean) => <TransactionPanel isActive={isActive} />,
       id: "transaction",
+    },
+    {
+      label: useTranslateTabs("item.title"),
+      component: (isActive: boolean) => <ItemPanel isActive={isActive} />,
+      id: "item",
+    },
+    {
+      label: useTranslateTabs("riven.title"),
+      component: (isActive: boolean) => <RivenPanel isActive={isActive} />,
+      id: "riven",
+    },
+    {
+      label: useTranslateTabs("user.title"),
+      component: (isActive: boolean) => <UserPanel isActive={isActive} />,
+      id: "user",
     },
   ];
 

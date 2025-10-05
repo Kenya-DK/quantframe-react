@@ -435,7 +435,7 @@ impl AppState {
         self.qf_client.set_wfm_platform(&wfm_user.platform);
         let qf_user = match self.qf_client.authentication().me().await {
             Ok(u) => u,
-            Err(QFApiError::Unauthorized(err)) if err.error.message == "Unauthorized" => {
+            Err(QFApiError::Unauthorized(err)) if err.error.message.contains("Unauthorized") => {
                 self.authenticate_qf_user(&self.qf_client, &wfm_user)
                     .await?
             }
@@ -481,7 +481,9 @@ impl AppState {
             .await
         {
             Ok(user) => Ok(user),
-            Err(QFApiError::InvalidCredentials(err)) if err.error.message == "invalid_username" => {
+            Err(QFApiError::InvalidCredentials(err))
+                if err.error.message.contains("invalid_username") =>
+            {
                 qf_client
                     .authentication()
                     .register(&wfm_user.id, &wfm_user.check_code)

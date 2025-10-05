@@ -99,7 +99,7 @@ impl RequestError {
         }
 
         // Add WFM error if available
-        if self.error.message != "N/A" {
+        if !self.error.message.is_empty() {
             parts.push(format!("error: {}", self.error));
         }
 

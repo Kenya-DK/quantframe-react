@@ -47,8 +47,6 @@ pub fn get_interesting_items(settings: &StockItemSettings) -> Vec<ItemPriceInfo>
         is_disabled(profit_margin) || item.profit_margin >= profit_margin as f64
     };
 
-    let order_type = |item: &ItemPriceInfo| item.order_type == "closed";
-
     let volume_filter = |item: &ItemPriceInfo| {
         is_disabled(volume_threshold) || item.volume > volume_threshold as f64
     };
@@ -67,8 +65,7 @@ pub fn get_interesting_items(settings: &StockItemSettings) -> Vec<ItemPriceInfo>
 
     // Combine multiple filters dynamically
     let combined_filter = |item: &ItemPriceInfo| {
-        order_type(item)
-            && volume_filter(item)
+        volume_filter(item)
             && profit_filter(item)
             && avg_price_filter(item)
             && week_price_shift_filter(item)

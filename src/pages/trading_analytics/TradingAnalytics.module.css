@@ -23,3 +23,21 @@
     --offset: 410px;
   }
 }
+
+.databaseItem {
+  --offset: 500px;
+  height: calc(100vh - var(--offset)) !important;
+  transition: height 0.2s ease;
+
+  &.alert {
+    --offset: 250px;
+  }
+
+  &.filterOpened {
+    --offset: 325px;
+  }
+
+  &.alert.filterOpened {
+    --offset: 367px;
+  }
+}

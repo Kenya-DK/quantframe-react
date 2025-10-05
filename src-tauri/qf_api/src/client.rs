@@ -41,6 +41,7 @@ pub struct Client {
     alert_route: OnceLock<Arc<AlertRoute>>,
     cache_route: OnceLock<Arc<CacheRoute>>,
     item_price_route: OnceLock<Arc<ItemPriceRoute>>,
+    item_route: OnceLock<Arc<ItemRoute>>,
 }
 impl Client {
     fn arc(&self) -> Arc<Self> {
@@ -66,6 +67,7 @@ impl Client {
                     alert_route: self.alert_route.clone(),
                     cache_route: self.cache_route.clone(),
                     item_price_route: self.item_price_route.clone(),
+                    item_route: self.item_route.clone(),
                 })
             })
             .clone()
@@ -121,6 +123,7 @@ impl Client {
             alert_route: OnceLock::new(),
             cache_route: OnceLock::new(),
             item_price_route: OnceLock::new(),
+            item_route: OnceLock::new(),
         }
     }
     pub async fn call_api<T: serde::de::DeserializeOwned>(
@@ -360,6 +363,11 @@ impl Client {
             .get_or_init(|| ItemPriceRoute::new(self.arc()))
             .clone()
     }
+    pub fn item(&self) -> Arc<ItemRoute> {
+        self.item_route
+            .get_or_init(|| ItemRoute::new(self.arc()))
+            .clone()
+    }
 }
 
 // ---------- Client Get/Set Methods ----------
@@ -443,6 +451,11 @@ impl Client {
             let new_item_price = ItemPriceRoute::from_existing(&old_item_price, self.arc());
             self.item_price_route = OnceLock::new();
             let _ = self.item_price_route.set(new_item_price);
+        }
+        if let Some(old_item) = self.item_route.get().cloned() {
+            let new_item = ItemRoute::from_existing(&old_item, self.arc());
+            self.item_route = OnceLock::new();
+            let _ = self.item_route.set(new_item);
         }
     }
 }

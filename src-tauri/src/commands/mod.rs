@@ -18,6 +18,7 @@ pub mod order;
 // pub mod qf_client;
 // pub mod riven;
 pub mod debug;
+pub mod item;
 pub mod stock_item;
 pub mod stock_riven;
 pub mod transaction;

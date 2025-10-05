@@ -26,11 +26,10 @@ impl OrderListExt for OrderList<Order> {
             .iter_mut()
             .chain(self.sell_orders.iter_mut())
         {
-            if let Some(price) = cache.item_price().find_by_id(
-                &order.item_id,
-                order.subtype.to_entity(),
-                "closed",
-            )? {
+            if let Some(price) = cache
+                .item_price()
+                .find_by_id(&order.item_id, order.subtype.to_entity())?
+            {
                 order.update_details(
                     order
                         .get_details()
