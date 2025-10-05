@@ -16,7 +16,7 @@ import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useLiveScraperContext } from "@contexts/liveScraper.context";
 import { useWishListQueries } from "./queries";
 import { useWishListMutations } from "./mutations";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useStockModals } from "./modals";
 import { ColumnActions } from "../../Columns/ColumnActions";
 import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
@@ -39,6 +39,12 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
   });
   // States
   const [loadingRows, setLoadingRows] = useState<string[]>([]);
+  const [canExport, setCanExport] = useState<boolean>(false);
+
+  // Check permissions for export on mount
+  useEffect(() => {
+    HasPermission(TauriTypes.PermissionsFlags.EXPORT_DATA).then((res) => setCanExport(res));
+  }, []);
 
   // Translate
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -127,7 +133,7 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
               tooltip={useTranslate("export_json_tooltip")}
               icon={faDownload}
               iconProps={{ size: "xs" }}
-              actionProps={{ size: "sm", disabled: !HasPermission(TauriTypes.PermissionsFlags.EXPORT_DATA) }}
+              actionProps={{ size: "sm", disabled: !canExport }}
               onClick={() => exportMutation.mutate(queryData)}
             />
           </Group>

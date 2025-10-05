@@ -18,6 +18,7 @@ import { StockRivenModule } from "./stack_riven";
 import { AuctionModule } from "./auction";
 import { ChatModule } from "./chat";
 import { TransactionModule } from "./transaction";
+import { ItemModule } from "./item";
 
 export class TauriClient {
   _logging: string[] = [];
@@ -43,6 +44,7 @@ export class TauriClient {
     this.chat = new ChatModule(this);
     this.auction = new AuctionModule(this);
     this.transaction = new TransactionModule(this);
+    this.item = new ItemModule(this);
     this._logging = localStorage.getItem("tauri_logs") ? JSON.parse(localStorage.getItem("tauri_logs")!) : ["*"];
   }
 
@@ -179,6 +181,7 @@ export class TauriClient {
   debug: DebugModule;
   chat: ChatModule;
   transaction: TransactionModule;
+  item: ItemModule;
 }
 
 declare global {
@@ -204,11 +207,8 @@ const WFMThumbnail = (thumb: string) => `https://warframe.market/static/assets/$
 const AddMetric = (metric: string, value: number | string) => {
   window.api.analytics.add_metric(metric, value);
 };
-const HasPermission = (flag: TauriTypes.PermissionsFlags): boolean => {
-  window.api.auth.hasPermission(flag).then((res) => {
-    return res;
-  });
-  return false;
+const HasPermission = async (flag: TauriTypes.PermissionsFlags): Promise<boolean> => {
+  return await window.api.auth.hasPermission(flag);
 };
 export {
   WFMThumbnail,

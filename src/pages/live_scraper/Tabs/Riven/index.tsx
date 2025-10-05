@@ -1,7 +1,7 @@
 import { Box, Grid, Group, NumberFormatter } from "@mantine/core";
 import { useLiveScraperContext } from "@contexts/liveScraper.context";
 import { useLocalStorage, useMediaQuery } from "@mantine/hooks";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { TauriTypes } from "$types";
 import { useStockQueries } from "./queries";
@@ -40,6 +40,12 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
   });
   // States
   const [loadingRows, setLoadingRows] = useState<string[]>([]);
+  const [canExport, setCanExport] = useState<boolean>(false);
+
+  // Check permissions for export on mount
+  useEffect(() => {
+    HasPermission(TauriTypes.PermissionsFlags.EXPORT_DATA).then((res) => setCanExport(res));
+  }, []);
 
   // Translate
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -133,7 +139,7 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
               tooltip={useTranslate("export_json_tooltip")}
               icon={faDownload}
               iconProps={{ size: "xs" }}
-              actionProps={{ size: "sm", disabled: !HasPermission(TauriTypes.PermissionsFlags.EXPORT_DATA) }}
+              actionProps={{ size: "sm", disabled: !canExport }}
               onClick={() => exportMutation.mutate(queryData)}
             />
           </Group>
