@@ -1,6 +1,6 @@
 import { Box, Grid, Group, Paper, Text } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TauriTypes } from "$types";
 import { useQueries } from "./queries";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
@@ -55,6 +55,12 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
   const [selectedRecords, setSelectedRecords] = useState<TauriTypes.TransactionDto[]>([]); // New state for selected records
   const [showReport, setShowReport] = useState<boolean>(false);
   const [filterOpened, setFilterOpened] = useState<boolean>(false);
+  const [canExport, setCanExport] = useState<boolean>(false);
+
+  // Check permissions for export on mount
+  useEffect(() => {
+    HasPermission(TauriTypes.PermissionsFlags.EXPORT_DATA).then((res) => setCanExport(res));
+  }, []);
 
   // Queries
   const { paginationQuery, financialReportQuery, refetchQueries } = useQueries({ queryData, isActive });
@@ -107,7 +113,7 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
                   tooltip={useTranslateButtons("export_transactions_tooltip")}
                   icon={faDownload}
                   iconProps={{ size: "xs" }}
-                  actionProps={{ size: "sm", disabled: !HasPermission(TauriTypes.PermissionsFlags.EXPORT_DATA) }}
+                  actionProps={{ size: "sm", disabled: !canExport }}
                   onClick={() => exportMutation.mutate(queryData)}
                 />
                 <ActionWithTooltip
