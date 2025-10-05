@@ -48,7 +48,12 @@ impl ItemPriceModule {
                 return Err(err);
             }
         };
-        Ok((current_version != remote_version, remote_version))
+
+        if !self.path.exists() {
+            Ok((true, remote_version))
+        } else {
+            Ok((current_version != remote_version, remote_version))
+        }
     }
 
     pub async fn load(

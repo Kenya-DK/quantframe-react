@@ -164,7 +164,11 @@ impl CacheState {
                 return Err(err);
             }
         };
-        Ok((current_version != remote_version, remote_version))
+        if !self.base_path.exists() {
+            Ok((true, remote_version))
+        } else {
+            Ok((current_version != remote_version, remote_version))
+        }
     }
 
     pub async fn load(&mut self, qf_client: &QFClient) -> Result<(String, String), Error> {
@@ -231,7 +235,21 @@ impl CacheState {
             )
         })?;
 
-        let extract_to = helper::get_app_storage_path().join("cache");
+        let extract_to = self.base_path.clone();
+
+        // Clear existing cache
+        if extract_to.exists() {
+            std::fs::remove_dir_all(&extract_to).map_err(|e| {
+                Error::from_io(
+                    "Cache",
+                    &extract_to,
+                    "Failed to clear existing cache directory",
+                    e,
+                    get_location!(),
+                )
+            })?;
+        }
+
         let mut total_size = 0u64;
         for i in 0..archive.len() {
             let mut file = archive.by_index(i).map_err(|e| {
