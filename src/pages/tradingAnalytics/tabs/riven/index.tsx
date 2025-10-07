@@ -13,6 +13,8 @@ import { DatePickerInput } from "@mantine/dates";
 import { useEffect, useState } from "react";
 import { PremiumOverlay } from "@components/PremiumOverlay";
 import { PermissionsFlags } from "@utils/permissions";
+import { useHasAlert } from "@hooks/useHasAlert.hook";
+import classes from "../../TradingAnalytics.module.css";
 
 interface RivenPanelProps {}
 
@@ -117,7 +119,7 @@ export const RivenPanel = ({}: RivenPanelProps) => {
       />
       <DataTable
         mt={"md"}
-        height={`calc(100vh - ${filterOpened ? 306 : 225}px)`}
+        className={`${classes.databaseRivens} ${useHasAlert() ? classes.alert : ""} ${filterOpened ? classes.filterOpened : ""}`}
         fetching={isFetching || !!error}
         customLoader={
           <Box style={{ width: "100%", height: "100%" }} p={"md"}>

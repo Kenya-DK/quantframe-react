@@ -13,6 +13,8 @@ import { useEffect, useState } from "react";
 import { Loading } from "@components/Loading";
 import { AlertError } from "@components/AlertError";
 import { SelectItemTags } from "@components/SelectItemTags";
+import { useHasAlert } from "@hooks/useHasAlert.hook";
+import classes from "../../TradingAnalytics.module.css";
 
 interface ItemPanelProps {}
 
@@ -107,6 +109,7 @@ export const ItemPanel = ({}: ItemPanelProps) => {
       />
       <DataTable
         mt={"md"}
+        className={`${classes.databaseItems} ${useHasAlert() ? classes.alert : ""} ${filterOpened ? classes.filterOpened : ""}`}
         height={`calc(100vh - ${filterOpened ? 306 : 225}px)`}
         fetching={isFetching || !!error}
         records={data?.results || []}
