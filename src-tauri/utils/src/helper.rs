@@ -386,3 +386,53 @@ pub fn validate_json(json: &Value, required: &Value, path: &str) -> (Value, Vec<
 
     (modified_json, missing_properties)
 }
+
+/// Trait for inserting text at a specific line and column position in a String
+pub trait InsertAt {
+    /// Insert text at the specified line and column position
+    /// 
+    /// # Arguments
+    /// * `line` - 1-based line number
+    /// * `column` - 1-based column number
+    /// * `text` - Text to insert
+    /// 
+    /// # Examples
+    /// ```
+    /// use utils::InsertAt;
+    /// 
+    /// let mut content = String::from("Hello\nWorld");
+    /// content.insert_at(1, 6, " there");
+    /// assert_eq!(content, "Hello there\nWorld");
+    /// ```
+    fn insert_at(&mut self, line: usize, column: usize, text: &str);
+}
+
+impl InsertAt for String {
+    fn insert_at(&mut self, line: usize, column: usize, text: &str) {
+        // Split into lines
+        let mut lines: Vec<String> = self.lines().map(|s| s.to_string()).collect();
+
+        // Convert to zero-based indices
+        let line_idx = line.saturating_sub(1);
+        let col_idx = column.saturating_sub(1);
+
+        if let Some(target_line) = lines.get_mut(line_idx) {
+            // Make sure we don't go out of bounds
+            if col_idx <= target_line.chars().count() {
+                // Handle UTF-8 safely using char indices
+                let byte_pos = target_line
+                    .char_indices()
+                    .nth(col_idx)
+                    .map(|(i, _)| i)
+                    .unwrap_or_else(|| target_line.len());
+                target_line.insert_str(byte_pos, text);
+            } else {
+                eprintln!("Column index out of range for line {}", line);
+            }
+        } else {
+            eprintln!("Line {} does not exist", line);
+        }
+
+        *self = lines.join("\n");
+    }
+}

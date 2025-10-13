@@ -377,7 +377,7 @@ impl Error {
         err: serde_json::Error,
         location: impl Into<String>,
     ) -> Self {
-        let content_str = content.into();
+        let mut content_str = content.into();
 
         // Extract line and column information from serde_json::Error
         let line_info = err.line();
@@ -393,6 +393,8 @@ impl Error {
             serde_json::error::Category::Data => "Data",
             serde_json::error::Category::Eof => "EOF",
         };
+        // Highlight the error position in the content (if possible)
+        content_str.insert_at(line_info, column_info, " <<< ERROR HERE <<< ");
 
         Error {
             component: format!("ParseError:{}", component.into()),

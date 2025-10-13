@@ -4,6 +4,13 @@ fn main() {
     // Initialize the logger for elapsed time tracking
     init_logger();
 
+    let mut error_message = String::from("An error occurred\nPlease check the logs.");
+
+    // Demonstrate the InsertAt trait
+    println!("Before InsertAt: {}", error_message);
+    error_message.insert_at(1, 12, " unexpectedly");
+    println!("After InsertAt:  {}", error_message);
+
     println!("=== utils Logging Library Demo ===\n");
 
     // Test basic macros
