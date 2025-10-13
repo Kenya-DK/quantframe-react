@@ -25,7 +25,7 @@
 }
 
 .databaseItem {
-  --offset: 500px;
+  --offset: 230px;
   height: calc(100vh - var(--offset)) !important;
   transition: height 0.2s ease;
 
@@ -34,7 +34,7 @@
   }
 
   &.filterOpened {
-    --offset: 325px;
+    --offset: 350px;
   }
 
   &.alert.filterOpened {

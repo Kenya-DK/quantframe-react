@@ -17,6 +17,7 @@ import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import { HasPermission } from "@api/index";
 import { useMutations } from "./mutations";
+import { Loading } from "@components/Shared/Loading";
 interface ItemPanelProps {
   isActive?: boolean;
 }
@@ -67,7 +68,7 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
     if (dates[1]) queryData.setFieldValue("to_date", dates[1]);
   }, [dates]);
 
-  const IsLoading = (paginationQuery.isLoading || exportMutation.isPending) && isActive;
+  const IsLoading = () => (paginationQuery.isFetching || exportMutation.isPending) && isActive;
 
   return (
     <Box p={"md"}>
@@ -99,7 +100,7 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
               tooltip={useTranslateTabItem("export_json_tooltip")}
               icon={faDownload}
               iconProps={{ size: "xs" }}
-              actionProps={{ size: "sm", disabled: !canExport || IsLoading }}
+              actionProps={{ size: "sm", disabled: !canExport || IsLoading() }}
               onClick={() => exportMutation.mutate(queryData.values)}
             />
           </Group>
@@ -116,7 +117,8 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
         className={`${classes.databaseItem} ${useHasAlert() ? classes.alert : ""} ${filterOpened ? classes.filterOpened : ""}`}
         mt={"md"}
         striped
-        fetching={IsLoading}
+        customLoader={<Loading />}
+        fetching={IsLoading()}
         records={paginationQuery.data?.results || []}
         page={getSafePage(queryData.values.page, paginationQuery.data?.total_pages)}
         onPageChange={(page) => queryData.setFieldValue("page", page)}

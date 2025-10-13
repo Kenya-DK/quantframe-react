@@ -9,8 +9,26 @@ interface QueriesHooks {
 }
 
 export const useQueries = ({ queryData, isActive }: QueriesHooks) => {
+  const IsValid = () => {
+    if (queryData.to_date && queryData.from_date && isActive) {
+      const fromDate = new Date(queryData.from_date);
+      const toDate = new Date(queryData.to_date);
+      return fromDate <= toDate;
+    }
+    return false;
+  };
   const getPaginationQuery = useQuery({
-    queryKey: ["get_item_pagination", queryData],
+    queryKey: [
+      "get_item_pagination",
+      queryData.from_date,
+      queryData.to_date,
+      queryData.page,
+      queryData.limit,
+      queryData.tags,
+      queryData.query,
+      queryData.sort_by,
+      queryData.sort_direction,
+    ],
     queryFn: () => api.item.getAll(queryData),
     retry: false,
     throwOnError(error: ResponseError, query) {
@@ -24,9 +42,10 @@ export const useQueries = ({ queryData, isActive }: QueriesHooks) => {
       console.error("Error in query:", query.queryKey, error);
       return false;
     },
-    enabled: isActive,
+    enabled: IsValid(),
   });
   const refetchQueries = () => {
+    if (!IsValid()) return;
     getPaginationQuery.refetch();
   };
 
