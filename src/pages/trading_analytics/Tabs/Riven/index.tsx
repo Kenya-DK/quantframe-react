@@ -1,8 +1,176 @@
-import { Box } from "@mantine/core";
+import { Box, Group, NumberFormatter } from "@mantine/core";
+import { useEffect, useState } from "react";
+import { QuantframeApiTypes, TauriTypes } from "$types";
+import { useQueries } from "./queries";
+import { SearchField } from "@components/Forms/SearchField";
+import { useTranslateCommon, useTranslatePages } from "@hooks/useTranslate.hook";
+import classes from "../../TradingAnalytics.module.css";
+import { DataTable } from "mantine-datatable";
+import { getSafePage } from "@utils/helper";
+import { useHasAlert } from "@hooks/useHasAlert.hook";
+import dayjs from "dayjs";
+import { useForm } from "@mantine/form";
+import { DatePickerInput } from "@mantine/dates";
+import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
+import { faDownload } from "@fortawesome/free-solid-svg-icons";
+import { HasPermission } from "@api/index";
+import { useMutations } from "./mutations";
+import { Loading } from "@components/Shared/Loading";
+import { PatreonOverlay } from "@components/Shared/PatreonOverlay/PatreonOverlay";
 interface RivenPanelProps {
   isActive?: boolean;
 }
 
-export const RivenPanel = ({}: RivenPanelProps = {}) => {
-  return <Box p={"md"}></Box>;
+export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
+  // States For DataGrid
+  const queryData = useForm({
+    initialValues: { page: 1, limit: 10, query: "" } as QuantframeApiTypes.RivenPriceControllerGetListParams,
+    validate: {
+      to_date: (value: string | undefined) => {
+        const fromDate = queryData.values.from_date;
+        if (!fromDate) return true;
+        const to_date = dayjs(value).format("YYYY-MM-DD");
+        if (dayjs(to_date).diff(dayjs(fromDate), "day") > 90) return true;
+        if (!dayjs(to_date).isBefore(dayjs().subtract(1, "day"))) return true;
+        return false;
+      },
+    },
+  });
+
+  // Translate general
+  const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslatePages(`trading_analytics.${key}`, { ...context }, i18Key);
+  const useTranslateTabItem = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslate(`tabs.riven.${key}`, { ...context }, i18Key);
+  const useTranslateDataGridColumns = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateTabItem(`datatable.columns.${key}`, { ...context }, i18Key);
+
+  // States
+  const [filterOpened, setFilterOpened] = useState<boolean>(false);
+  const [dates, setDates] = useState<[string | null, string | null]>([null, null]);
+  const [canExport, setCanExport] = useState<boolean>(false);
+  const [canUse, setCanUse] = useState<boolean>(false);
+
+  // Check permissions for export on mount
+  useEffect(() => {
+    HasPermission(TauriTypes.PermissionsFlags.EXPORT_DATA).then((res) => setCanExport(res));
+    HasPermission(TauriTypes.PermissionsFlags.RIVEN_PRICES_SEARCH).then((res) => setCanUse(res));
+  }, []);
+
+  // Queries
+  const { paginationQuery, refetchQueries } = useQueries({ queryData: queryData.values, isActive });
+
+  // Mutations
+  const { exportMutation } = useMutations({
+    refetchQueries,
+  });
+  useEffect(() => {
+    if (dates[0] && dates[1] && dates[0] > dates[1]) return;
+    if (dates[0]) queryData.setFieldValue("from_date", dates[0]);
+    if (dates[1]) queryData.setFieldValue("to_date", dates[1]);
+  }, [dates]);
+
+  const IsLoading = () => (paginationQuery.isFetching || exportMutation.isPending) && isActive && canUse;
+
+  return (
+    <Box p={"md"} pos={"relative"}>
+      <PatreonOverlay permission={TauriTypes.PermissionsFlags.RIVEN_PRICES_SEARCH} tier="T2+" />
+      <SearchField
+        value={queryData.values.query || ""}
+        onSearch={() => {
+          queryData.validate();
+          if (queryData.isValid()) refetchQueries();
+        }}
+        searchDisabled={IsLoading()}
+        onChange={(text) => queryData.setFieldValue("query", text)}
+        onFilterToggle={(s) => setFilterOpened(s)}
+        rightSectionWidth={270}
+        rightSection={
+          <Group gap={3}>
+            <DatePickerInput
+              required
+              placeholder={useTranslateTabItem("date_range_placeholder")}
+              minDate={dayjs(queryData.values.to_date).subtract(90, "day").format("YYYY-MM-DD")}
+              maxDate={dayjs().subtract(1, "day").format("YYYY-MM-DD")}
+              w={200}
+              type="range"
+              valueFormat="YYYY MMM DD"
+              value={dates}
+              onChange={setDates}
+              error={queryData.errors.from_date || queryData.errors.to_date}
+            />
+            <ActionWithTooltip
+              tooltip={useTranslateTabItem("export_json_tooltip")}
+              icon={faDownload}
+              iconProps={{ size: "xs" }}
+              actionProps={{ size: "sm", disabled: !canExport || IsLoading() }}
+              onClick={() => exportMutation.mutate(queryData.values)}
+            />
+          </Group>
+        }
+      />
+      <DataTable
+        className={`${classes.databaseItem} ${useHasAlert() ? classes.alert : ""} ${filterOpened ? classes.filterOpened : ""}`}
+        mt={"md"}
+        striped
+        fetching={IsLoading()}
+        records={paginationQuery.data?.results || []}
+        page={getSafePage(queryData.values.page, paginationQuery.data?.total_pages)}
+        onPageChange={(page) => queryData.setFieldValue("page", page)}
+        totalRecords={paginationQuery.data?.total || 0}
+        recordsPerPage={queryData.values.limit || 10}
+        recordsPerPageOptions={[5, 10, 15, 20, 25, 50, 100]}
+        onRecordsPerPageChange={(limit) => queryData.setFieldValue("limit", limit)}
+        customLoader={<Loading />}
+        sortStatus={{
+          columnAccessor: queryData.values.sort_by || "name",
+          direction: queryData.values.sort_direction || "desc",
+        }}
+        onSortStatusChange={(sort) => {
+          if (!sort || !sort.columnAccessor) return;
+          queryData.setFieldValue("sort_by", sort.columnAccessor as any);
+          queryData.setFieldValue("sort_direction", sort.direction);
+        }}
+        // define columns
+        columns={[
+          {
+            accessor: "name",
+            title: useTranslateCommon("item_name.title"),
+            sortable: true,
+            width: 250,
+          },
+          {
+            accessor: "volume",
+            sortable: true,
+            title: useTranslateDataGridColumns("volume"),
+            render: ({ volume }) => <NumberFormatter decimalScale={2} value={volume} />,
+          },
+          {
+            accessor: "min_price",
+            sortable: true,
+            title: useTranslateDataGridColumns("min_price"),
+            render: ({ min_price }) => <NumberFormatter decimalScale={2} value={min_price} />,
+          },
+          {
+            accessor: "max_price",
+            sortable: true,
+            title: useTranslateDataGridColumns("max_price"),
+            render: ({ max_price }) => <NumberFormatter decimalScale={2} value={max_price} />,
+          },
+          {
+            accessor: "avg_price",
+            sortable: true,
+            title: useTranslateDataGridColumns("avg_price"),
+            render: ({ avg_price }) => <NumberFormatter decimalScale={2} value={avg_price} />,
+          },
+          {
+            accessor: "median_price",
+            sortable: true,
+            title: useTranslateDataGridColumns("median_price"),
+            render: ({ median_price }) => <NumberFormatter decimalScale={2} value={median_price} />,
+          },
+        ]}
+      />
+    </Box>
+  );
 };

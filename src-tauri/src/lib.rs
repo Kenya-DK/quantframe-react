@@ -271,6 +271,9 @@ pub fn run() {
             // Item commands
             commands::item::item_prices_lookup,
             commands::item::export_item_price_data,
+            // Riven commands
+            commands::riven::riven_prices_lookup,
+            commands::riven::export_riven_price_data,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

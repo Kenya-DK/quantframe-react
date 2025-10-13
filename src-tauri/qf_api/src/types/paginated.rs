@@ -46,4 +46,7 @@ pub struct Paginated<T> {
 
     #[serde(rename = "results")]
     pub results: Vec<T>,
+
+    #[serde(rename = "total_pages")]
+    pub total_pages: i64,
 }

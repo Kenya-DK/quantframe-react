@@ -147,4 +147,63 @@ export namespace QuantframeApiTypes {
   export type ItemPriceControllerGetListData = PaginatedDto & {
     results?: ItemPriceDto[];
   };
+
+  export interface RivenPriceDto {
+    /** The WFM ID of the item. */
+    wfm_id: string;
+    /** The URL of the item on Warframe Market. */
+    wfm_url: string;
+    /** The price of the item. */
+    uuid: string;
+
+    name: string;
+
+    datetime: string;
+    /** The trading volume of the item. */
+    volume: number;
+    /** The minimum price of the item. */
+    min_price: number;
+    /** The maximum price of the item. */
+    max_price: number;
+    /** The opening price of the item. */
+    median_price: number;
+    /** The opening price of the item. */
+    avg_price: number;
+  }
+  export interface RivenPriceControllerGetListParams {
+    /**
+     * For pagination. Defines which page the results are fetched from.
+     * @min 1
+     * @default 1
+     */
+    page: number;
+    /**
+     * For pagination. Defines how many entries are returned per page.
+     * @min 0
+     * @max 100
+     * @default 25
+     */
+    limit: number;
+    sort_by?: string;
+    /** Sort direction used when sorting by a specific field. */
+    sort_direction?: "asc" | "desc";
+    /**
+     * Select the start date.
+     * @format date-time
+     * @example "2025-05-18"
+     */
+    from_date?: string;
+    /**
+     * Select the end date.
+     * @format date-time
+     * @example "2025-05-18"
+     */
+    to_date?: string;
+    /** Search for orders that contain this query. */
+    query?: string;
+  }
+  /** PaginatedResponseOfRivenPriceDto */
+  export type RivenPriceControllerGetListData = PaginatedDto & {
+    results?: RivenPriceDto[];
+  };
 }

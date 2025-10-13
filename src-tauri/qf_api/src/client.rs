@@ -15,6 +15,40 @@ use std::{
     sync::{Arc, Mutex, OnceLock},
 };
 
+trait InsertAt {
+    fn insert_at(&mut self, line: usize, column: usize, text: &str);
+}
+
+impl InsertAt for String {
+    fn insert_at(&mut self, line: usize, column: usize, text: &str) {
+        // Split into lines
+        let mut lines: Vec<String> = self.lines().map(|s| s.to_string()).collect();
+
+        // Convert to zero-based indices
+        let line_idx = line.saturating_sub(1);
+        let col_idx = column.saturating_sub(1);
+
+        if let Some(target_line) = lines.get_mut(line_idx) {
+            // Make sure we don't go out of bounds
+            if col_idx <= target_line.chars().count() {
+                // Handle UTF-8 safely using char indices
+                let byte_pos = target_line
+                    .char_indices()
+                    .nth(col_idx)
+                    .map(|(i, _)| i)
+                    .unwrap_or_else(|| target_line.len());
+                target_line.insert_str(byte_pos, text);
+            } else {
+                eprintln!("Column index out of range for line {}", line);
+            }
+        } else {
+            eprintln!("Line {} does not exist", line);
+        }
+
+        *self = lines.join("\n");
+    }
+}
+
 const REQUESTS_PER_SECOND: NonZeroU32 = NonZero::new(3).unwrap();
 const DEVELOPMENT_URL: &str = "http://localhost:6969";
 const PRODUCTION_URL: &str = "https://api.quantframe.app";
@@ -42,6 +76,7 @@ pub struct Client {
     cache_route: OnceLock<Arc<CacheRoute>>,
     item_price_route: OnceLock<Arc<ItemPriceRoute>>,
     item_route: OnceLock<Arc<ItemRoute>>,
+    riven_price_route: OnceLock<Arc<RivenPriceRoute>>,
 }
 impl Client {
     fn arc(&self) -> Arc<Self> {
@@ -68,6 +103,7 @@ impl Client {
                     cache_route: self.cache_route.clone(),
                     item_price_route: self.item_price_route.clone(),
                     item_route: self.item_route.clone(),
+                    riven_price_route: self.riven_price_route.clone(),
                 })
             })
             .clone()
@@ -124,6 +160,7 @@ impl Client {
             cache_route: OnceLock::new(),
             item_price_route: OnceLock::new(),
             item_route: OnceLock::new(),
+            riven_price_route: OnceLock::new(),
         }
     }
     pub async fn call_api<T: serde::de::DeserializeOwned>(
@@ -282,7 +319,20 @@ impl Client {
 
                         match serde_json::from_str::<T>(&body) {
                             Ok(data) => Ok((ApiResponse::Json(data), headers, error)),
-                            Err(e) => Err(ApiError::ParsingError(error, e)),
+                            Err(e) => {
+                                println!(
+                                    "Failed to parse JSON: Line {}, Column {}",
+                                    e.line(),
+                                    e.column()
+                                );
+                                // Add Text where the error occurred to the error content
+                                error.content.insert_at(
+                                    e.line(),
+                                    e.column(),
+                                    " <<< ERROR HERE <<< ",
+                                );
+                                Err(ApiError::ParsingError(error, e))
+                            }
                         }
                     }
                     ResponseFormat::String => {
@@ -366,6 +416,11 @@ impl Client {
     pub fn item(&self) -> Arc<ItemRoute> {
         self.item_route
             .get_or_init(|| ItemRoute::new(self.arc()))
+            .clone()
+    }
+    pub fn riven(&self) -> Arc<RivenPriceRoute> {
+        self.riven_price_route
+            .get_or_init(|| RivenPriceRoute::new(self.arc()))
             .clone()
     }
 }
@@ -456,6 +511,11 @@ impl Client {
             let new_item = ItemRoute::from_existing(&old_item, self.arc());
             self.item_route = OnceLock::new();
             let _ = self.item_route.set(new_item);
+        }
+        if let Some(old_riven) = self.riven_price_route.get().cloned() {
+            let new_riven = RivenPriceRoute::from_existing(&old_riven, self.arc());
+            self.riven_price_route = OnceLock::new();
+            let _ = self.riven_price_route.set(new_riven);
         }
     }
 }

@@ -9,6 +9,8 @@ export namespace TauriTypes {
   export enum PermissionsFlags {
     ALL = "all",
     EXPORT_DATA = "export_data",
+    RIVEN_PRICES_SEARCH = "riven_prices_search",
+    WFM_USER_ACTIVE_HISTORY = "wfm_user_active_history",
   }
   export enum TradeMode {
     Buy = "buy",

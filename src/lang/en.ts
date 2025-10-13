@@ -256,6 +256,13 @@ export const en = {
     },
   },
   components: {
+    patreon_overlay: {
+      title: "Restricted Content",
+      description: "This content is restricted to Patreon supporters of tier <blue>{{tier}}</blue> or higher.",
+      buttons: {
+        become_a_patron: "Become a Patron",
+      },
+    },
     timer_stamp: {
       months: "{{months}} months ago",
       days: "{{days}} days ago",
@@ -981,7 +988,7 @@ export const en = {
       patreon_modal: {
         title: "Support the development of Quantframe",
         description: "Get access to premium features by supporting me on Patreon",
-        premium_content: "User activity | Riven Price Lookup | Export Data",
+        premium_content: "User activity | Riven Price Lookup | Export Data | Item Statistics",
         join_the_community: "Join the community of supporters and help shape the future of Quantframe.",
         link_your_account: "2. Link your Patreon account",
         buttons: {
@@ -1554,6 +1561,21 @@ export const en = {
               trading_tax: "Trading Tax",
               supply: "Supply",
               demand: "Demand",
+            },
+          },
+        },
+        riven: {
+          title: "Riven",
+          export_json_tooltip: "Export Riven to JSON (Patreon T1+)",
+          open_table_options_tooltip: "Open table options",
+          date_range_placeholder: "Select date range",
+          datatable: {
+            columns: {
+              volume: "Volume",
+              min_price: "Min Price",
+              max_price: "Max Price",
+              avg_price: "Avg Price",
+              median_price: "Median Price",
             },
           },
         },
