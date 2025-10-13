@@ -14,7 +14,6 @@ pub async fn item_prices_lookup(
     match app_state.qf_client.item().get_prices(query).await {
         Ok(data) => return Ok(data),
         Err(e) => {
-            log_json_formatted(e.to_json(), "item_prices_lookup.log", true).ok();
             let error = Error::from_qf(
                 "ItemPricesLookup",
                 "Failed to lookup item prices: {}",
@@ -68,7 +67,6 @@ pub async fn export_item_price_data(
             return Ok("".to_string());
         }
         Err(e) => {
-            log_json_formatted(e.to_json(), "item_prices_lookup.log", true).ok();
             let error = Error::from_qf(
                 "ItemPricesLookup",
                 "Failed to lookup item prices: {}",
