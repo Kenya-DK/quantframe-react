@@ -19,6 +19,7 @@ pub mod order;
 // pub mod riven;
 pub mod debug;
 pub mod item;
+pub mod riven;
 pub mod stock_item;
 pub mod stock_riven;
 pub mod transaction;

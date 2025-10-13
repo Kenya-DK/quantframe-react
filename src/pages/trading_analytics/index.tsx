@@ -27,11 +27,13 @@ export default function TradingAnalyticsPage() {
       label: useTranslateTabs("riven.title"),
       component: (isActive: boolean) => <RivenPanel isActive={isActive} />,
       id: "riven",
+      isPremium: true,
     },
     {
       label: useTranslateTabs("user.title"),
       component: (isActive: boolean) => <UserPanel isActive={isActive} />,
       id: "user",
+      isPremium: true,
     },
   ];
 
@@ -44,7 +46,7 @@ export default function TradingAnalyticsPage() {
     <Tabs value={activeTab} onChange={(value) => setActiveTab(value || tabs[0].id)} data-has-alert={useHasAlert()} className={classes.tabs}>
       <Tabs.List>
         {tabs.map((tab) => (
-          <Tabs.Tab value={tab.id} key={tab.id}>
+          <Tabs.Tab value={tab.id} key={tab.id} rightSection={tab.isPremium ? "👑" : undefined}>
             {tab.label}
           </Tabs.Tab>
         ))}

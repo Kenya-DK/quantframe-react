@@ -157,9 +157,12 @@ impl User {
     }
     pub fn has_permission(&self, flag: PermissionsFlags) -> Result<bool, Error> {
         if flag == PermissionsFlags::None {
-            return Ok(false);
+            return Err(Error::new_permission_denied(flag.as_str()));
         }
-        if self.anonymous || self.permissions.is_none() {
+        if self.anonymous
+            || self.permissions.is_none()
+            || self.permissions.as_ref().unwrap().is_empty()
+        {
             return Err(Error::new_permission_denied(flag.as_str()));
         }
         let permissions = self.permissions.as_ref().unwrap();

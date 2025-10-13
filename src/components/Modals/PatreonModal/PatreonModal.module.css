@@ -93,6 +93,11 @@
   }
 }
 
+.linkText {
+  transition: all 0.2s ease;
+  animation: slideInFromRight 0.8s ease-out 1s both;
+}
+
 .secondaryButton {
   color: #ff7b54;
   transition: all 0.2s ease;

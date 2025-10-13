@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use utils::{get_location, info, Error, LoggerOptions};
+use utils::{get_location, info, warning, Error, LoggerOptions};
 
 use crate::{
     app::{client::AppState, User},
@@ -154,11 +154,22 @@ pub async fn auth_has_permission(
     app: tauri::State<'_, Mutex<AppState>>,
 ) -> Result<bool, Error> {
     let app_state = app.lock().unwrap().clone();
+
     if let Err(_) = app_state
         .user
         .has_permission(PermissionsFlags::from_str(&flag))
     {
+        warning(
+            "Commands:AuthHasPermission",
+            &format!("User does not have permission for flag: {}", flag),
+            &LoggerOptions::default(),
+        );
         return Ok(false);
     }
+    info(
+        "Commands:AuthHasPermission",
+        &format!("User has permission for flag: {}", flag),
+        &LoggerOptions::default(),
+    );
     return Ok(true);
 }

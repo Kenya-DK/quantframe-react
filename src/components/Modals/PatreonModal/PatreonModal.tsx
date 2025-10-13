@@ -92,7 +92,7 @@ export function PatreonModal({ innerProps: { user, is_dev } }: ContextModalProps
           </Group>
 
           <Group justify="center" gap="md">
-            <Text size="sm" c="dimmed">
+            <Text size="sm" c="dimmed" className={classes.linkText}>
               {useTranslate("link_your_account")}
             </Text>
             <Button
