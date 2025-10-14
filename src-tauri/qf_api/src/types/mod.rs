@@ -24,3 +24,6 @@ pub use pagination_item_price::*;
 
 pub mod pagination_riven_price;
 pub use pagination_riven_price::*;
+
+pub mod pagination_user_activity;
+pub use pagination_user_activity::*;

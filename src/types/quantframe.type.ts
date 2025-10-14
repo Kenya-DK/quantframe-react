@@ -206,4 +206,20 @@ export namespace QuantframeApiTypes {
   export type RivenPriceControllerGetListData = PaginatedDto & {
     results?: RivenPriceDto[];
   };
+  export interface WfmControllerGetUserActiveHistoryParams {
+    /**
+     * The item name.
+     * @format date-time
+     * @example "2025-05-18"
+     */
+    from_date: string;
+    /**
+     * To date.
+     * @format date-time
+     * @example "2025-05-18"
+     */
+    to_date: string;
+    /** The weapon type. */
+    group_by: "day" | "hour";
+  }
 }

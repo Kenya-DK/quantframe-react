@@ -274,6 +274,8 @@ pub fn run() {
             // Riven commands
             commands::riven::riven_prices_lookup,
             commands::riven::export_riven_price_data,
+            // Market commands
+            commands::market::get_user_activity,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

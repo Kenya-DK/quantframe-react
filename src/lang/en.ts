@@ -482,6 +482,16 @@ export const en = {
             },
           },
         },
+        webhook: {
+          tooltip: "Toggle Webhook Notifications",
+          title: "Webhook Notifications",
+          fields: {
+            url: {
+              label: "Webhook URL",
+              placeholder: "Enter webhook URL",
+            },
+          },
+        },
       },
       riven_filter_attribute: {
         fields: {
@@ -1576,6 +1586,28 @@ export const en = {
               max_price: "Max Price",
               avg_price: "Avg Price",
               median_price: "Median Price",
+            },
+          },
+        },
+        user: {
+          title: "User Activity",
+          chart: {
+            datasets: {
+              registered_users: "Registered Users",
+              active_users: "Active Users",
+            },
+          },
+          fields: {
+            group_by: {
+              label: "Group By",
+              options: {
+                day: "Day",
+                hour: "Hour",
+              },
+            },
+            date_range: {
+              label: "Date Range",
+              placeholder: "Select date range",
             },
           },
         },

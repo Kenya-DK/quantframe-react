@@ -77,6 +77,7 @@ pub struct Client {
     item_price_route: OnceLock<Arc<ItemPriceRoute>>,
     item_route: OnceLock<Arc<ItemRoute>>,
     riven_price_route: OnceLock<Arc<RivenPriceRoute>>,
+    market_route: OnceLock<Arc<MarketRoute>>,
 }
 impl Client {
     fn arc(&self) -> Arc<Self> {
@@ -104,6 +105,7 @@ impl Client {
                     item_price_route: self.item_price_route.clone(),
                     item_route: self.item_route.clone(),
                     riven_price_route: self.riven_price_route.clone(),
+                    market_route: self.market_route.clone(),
                 })
             })
             .clone()
@@ -161,6 +163,7 @@ impl Client {
             item_price_route: OnceLock::new(),
             item_route: OnceLock::new(),
             riven_price_route: OnceLock::new(),
+            market_route: OnceLock::new(),
         }
     }
     pub async fn call_api<T: serde::de::DeserializeOwned>(
@@ -423,6 +426,11 @@ impl Client {
             .get_or_init(|| RivenPriceRoute::new(self.arc()))
             .clone()
     }
+    pub fn market(&self) -> Arc<MarketRoute> {
+        self.market_route
+            .get_or_init(|| MarketRoute::new(self.arc()))
+            .clone()
+    }
 }
 
 // ---------- Client Get/Set Methods ----------
@@ -516,6 +524,11 @@ impl Client {
             let new_riven = RivenPriceRoute::from_existing(&old_riven, self.arc());
             self.riven_price_route = OnceLock::new();
             let _ = self.riven_price_route.set(new_riven);
+        }
+        if let Some(old_market) = self.market_route.get().cloned() {
+            let new_market = MarketRoute::from_existing(&old_market, self.arc());
+            self.market_route = OnceLock::new();
+            let _ = self.market_route.set(new_market);
         }
     }
 }
