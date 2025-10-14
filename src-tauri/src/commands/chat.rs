@@ -150,14 +150,14 @@ pub async fn chat_send_message(
     app: tauri::State<'_, Mutex<AppState>>,
 ) -> Result<(), Error> {
     let app_state = app.lock().unwrap().clone();
-    if app_state.wfm_socket.is_none() {
+    if app_state.wfm_chat_socket.is_none() {
         return Err(Error::new(
             "Commands:ChatSendMessage",
             "WebSocket is not connected, please login first.",
             get_location!(),
         ));
     }
-    let wfm_socket = app_state.wfm_socket.as_ref().unwrap();
+    let wfm_socket = app_state.wfm_chat_socket.as_ref().unwrap();
     match wfm_socket.send_request(
         "@WS/chats/SEND_MESSAGE",
         json!({

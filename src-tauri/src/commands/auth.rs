@@ -29,13 +29,16 @@ pub async fn auth_login(
     let app_state = app.lock()?.clone();
     let mut cache_state = cache.lock()?.clone();
 
-    let (qf_client, wfm_client, updated_user, ws) = match app_state.login(&email, &password).await {
-        Ok((qf_client, wfm_client, user, ws)) => (qf_client, wfm_client, user, ws),
-        Err(e) => {
-            e.log("auth_login.log");
-            return Err(e);
-        }
-    };
+    let (qf_client, wfm_client, updated_user, ws, ws_chat) =
+        match app_state.login(&email, &password).await {
+            Ok((qf_client, wfm_client, user, ws, ws_chat)) => {
+                (qf_client, wfm_client, user, ws, ws_chat)
+            }
+            Err(e) => {
+                e.log("auth_login.log");
+                return Err(e);
+            }
+        };
     // Update The current AuthState
     info(
         "Commands:AuthLogin",
@@ -80,6 +83,7 @@ pub async fn auth_login(
     app.user = updated_user.clone();
     app.qf_client = qf_client;
     app.wfm_socket = Some(ws);
+    app.wfm_chat_socket = Some(ws_chat);
 
     Ok(updated_user)
 }

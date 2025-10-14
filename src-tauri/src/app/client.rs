@@ -38,6 +38,7 @@ pub struct AppState {
     pub qf_client: QFClient,
     pub is_development: bool,
     pub wfm_socket: Option<WsClient>,
+    pub wfm_chat_socket: Option<WsClient>,
 }
 
 fn update_user(mut cu_user: User, user: &WFUserPrivate, qf_user: &QFUserPrivate) -> User {
@@ -61,7 +62,6 @@ fn update_user(mut cu_user: User, user: &WFUserPrivate, qf_user: &QFUserPrivate)
     cu_user.wfm_id = user.id.to_string();
     cu_user.wfm_avatar = user.avatar.clone();
     cu_user.unread_messages = user.unread_messages as i64;
-
     cu_user
 }
 
@@ -196,7 +196,9 @@ fn handle_new_message(wfm_client: &WFClient<WFAuthenticated>, msg: &WsMessage) {
     }
 }
 
-async fn setup_socket(wfm_client: WFClient<WFAuthenticated>) -> Result<WsClient, Error> {
+async fn setup_socket(
+    wfm_client: WFClient<WFAuthenticated>,
+) -> Result<(WsClient, WsClient), Error> {
     if wfm_client.get_user().is_err() {
         return Err(Error::new(
             "AppState:SetupSocket",
@@ -238,18 +240,7 @@ async fn setup_socket(wfm_client: WFClient<WFAuthenticated>) -> Result<WsClient,
             Ok(())
         })
         .unwrap()
-        .register_callback("MESSAGE/ONLINE_COUNT", move |_, _, _| Ok(()))
-        .unwrap()
         .register_callback("event/reports/online", move |_, _, _| Ok(()))
-        .unwrap()
-        .register_callback("USER/SET_STATUS", move |msg, _, _| {
-            match msg.payload.as_ref() {
-                Some(payload) => update_user_status(payload.as_str().unwrap_or("").to_string()),
-                None => {}
-            }
-            emit_update_user!(json!({"wfm_status": msg.payload}));
-            Ok(())
-        })
         .unwrap()
         .register_callback("cmd/status/set:ok", move |msg, _, _| {
             match msg.payload.as_ref() {
@@ -282,6 +273,26 @@ async fn setup_socket(wfm_client: WFClient<WFAuthenticated>) -> Result<WsClient,
             Ok(())
         })
         .unwrap()
+        .build()
+        .await
+        .unwrap();
+    let ws_client_chat = wfm_client
+        .create_websocket(ApiVersion::V1)
+        .register_callback("internal/connected", move |msg, _, _| {
+            send_ws_state(UIEvent::OnError, "connected", json!(msg.payload));
+            Ok(())
+        })
+        .unwrap()
+        .register_callback("internal/disconnected", move |msg, _, _| {
+            send_ws_state(UIEvent::OnError, "disconnected", json!(msg.payload));
+            Ok(())
+        })
+        .unwrap()
+        .register_callback("internal/reconnecting", move |msg, _, _| {
+            send_ws_state(UIEvent::OnError, "reconnecting", json!(msg.payload));
+            Ok(())
+        })
+        .unwrap()
         .register_callback("chats/NEW_MESSAGE,chats/MESSAGE_SENT", move |msg, _, _| {
             if !HAS_STARTED.get().cloned().unwrap_or(false) {
                 return Ok(());
@@ -290,19 +301,10 @@ async fn setup_socket(wfm_client: WFClient<WFAuthenticated>) -> Result<WsClient,
             Ok(())
         })
         .unwrap()
-        .register_callback("ERROR", move |msg, _, _| {
-            warning(
-                "WebSocket:Error",
-                &format!("WebSocket error: {:?}", msg),
-                &LoggerOptions::default().set_file("websocket_info.log"),
-            );
-            Ok(())
-        })
-        .unwrap()
         .build()
         .await
         .unwrap();
-    Ok(ws_client)
+    Ok((ws_client, ws_client_chat))
 }
 
 impl AppState {
@@ -330,6 +332,7 @@ impl AppState {
             is_development,
             settings: Settings::load().expect("Failed to load settings from settings.json"),
             wfm_socket: None,
+            wfm_chat_socket: None,
         };
 
         state
@@ -370,8 +373,16 @@ impl AppState {
         &self,
         email: &str,
         password: &str,
-    ) -> Result<(QFClient, WFClient<WFAuthenticated>, User, WsClient), Error> {
-        let cache = states::cache_client()?;
+    ) -> Result<
+        (
+            QFClient,
+            WFClient<WFAuthenticated>,
+            User,
+            WsClient,
+            WsClient,
+        ),
+        Error,
+    > {
         // Login to WFM client
         let mut wfm_client = match WFClient::new()
             .login(email, password, &self.wfm_client.get_device_id())
@@ -406,9 +417,9 @@ impl AppState {
         user.qf_token = qf_user.token.clone().unwrap();
         qf_client.set_token(&user.qf_token);
         let updated_user = update_user(user, &wfm_user, &qf_user);
-        let ws = setup_socket(wfm_client.clone()).await?;
+        let (ws, ws_chat) = setup_socket(wfm_client.clone()).await?;
         updated_user.save()?;
-        Ok((qf_client, wfm_client, updated_user, ws))
+        Ok((qf_client, wfm_client, updated_user, ws, ws_chat))
     }
 
     pub async fn validate(&mut self) -> Result<(WFUserPrivate, QFUserPrivate), Error> {
@@ -456,8 +467,9 @@ impl AppState {
         if !qf_user.token.is_none() {
             self.qf_client.set_token(qf_user.token.as_ref().unwrap());
         }
-        let ws = setup_socket(wfm_client.clone()).await?;
+        let (ws, ws_chat) = setup_socket(wfm_client.clone()).await?;
         self.wfm_socket = Some(ws);
+        self.wfm_chat_socket = Some(ws_chat);
         if !qf_user.banned {
             match self.qf_client.analytics().start() {
                 Ok(_) => {}
