@@ -8,6 +8,7 @@ import { faBell } from "@fortawesome/free-solid-svg-icons";
 import { faDiscord } from "@fortawesome/free-brands-svg-icons";
 import { TooltipIcon } from "../../Shared/TooltipIcon";
 import api from "@api/index";
+import faWebHook from "../../../icons/faWebHook";
 export type EditNotificationSettingProps = {
   title: string;
   id: string;
@@ -23,6 +24,8 @@ export function EditNotificationSetting({ id, value, onChange }: EditNotificatio
     useTranslateForm(`system.fields.${key}`, { ...context }, i18Key);
   const useTranslateFormDiscordFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForm(`discord.fields.${key}`, { ...context }, i18Key);
+  const useTranslateFormWebhookFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateForm(`webhook.fields.${key}`, { ...context }, i18Key);
   // User form
   const form = useForm({
     initialValues: value,
@@ -53,6 +56,14 @@ export function EditNotificationSetting({ id, value, onChange }: EditNotificatio
             color={form.values.discord_notify.enabled ? "green.7" : "blue.7"}
             onClick={() => {
               form.setFieldValue("discord_notify.enabled", !form.values.discord_notify?.enabled);
+            }}
+          />
+          <ActionWithTooltip
+            tooltip={useTranslateForm("webhook.tooltip")}
+            icon={faWebHook}
+            color={form.values.webhook_notify.enabled ? "green.7" : "blue.7"}
+            onClick={() => {
+              form.setFieldValue("webhook_notify.enabled", !form.values.webhook_notify?.enabled);
             }}
           />
         </Group>
@@ -118,6 +129,19 @@ export function EditNotificationSetting({ id, value, onChange }: EditNotificatio
                   event.currentTarget.value.split(",").map((v) => v.trim())
                 )
               }
+              radius="md"
+            />
+          </Collapse>
+          <Collapse in={form.values.webhook_notify.enabled}>
+            <Title order={4} mb="xs" mt="sm">
+              {useTranslateForm("webhook.title")}
+            </Title>
+            <TextInput
+              required
+              label={useTranslateFormWebhookFields("url.label")}
+              placeholder={useTranslateFormWebhookFields("url.placeholder")}
+              value={form.values.webhook_notify.url}
+              onChange={(event) => form.setFieldValue("webhook_notify.url", event.currentTarget.value)}
               radius="md"
             />
           </Collapse>

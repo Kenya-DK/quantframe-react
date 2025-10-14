@@ -109,6 +109,11 @@ export namespace TauriTypes {
   export interface NotificationSetting {
     discord_notify: DiscordNotify;
     system_notify: SystemNotify;
+    webhook_notify: WebhookNotify;
+  }
+  export interface WebhookNotify {
+    enabled: boolean;
+    url: string;
   }
   export interface SystemNotify {
     enabled: boolean;

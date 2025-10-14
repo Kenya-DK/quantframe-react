@@ -23,6 +23,7 @@ import faPolarityUmbra from "@icons/faPolarityUmbra";
 import faPolarityPenjaga from "@icons/faPolarityPenjaga";
 import faPolarityNaramon from "@icons/faPolarityNaramon";
 import faPolarityMadurai from "@icons/faPolarityMadurai";
+import faWebHook from "@icons/faWebHook";
 import faPolarityAura from "@icons/faPolarityAura";
 import faPolarityVazarin from "@icons/faPolarityVazarin";
 import { useEffect } from "react";
@@ -48,6 +49,7 @@ library.add(faPolarityNaramon);
 library.add(faPolarityMadurai);
 library.add(faPolarityAura);
 library.add(faPolarityVazarin);
+library.add(faWebHook);
 dom.watch();
 i18n.use(initReactI18next).init({
   resources: {
