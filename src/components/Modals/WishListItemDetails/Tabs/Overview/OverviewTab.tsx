@@ -62,7 +62,7 @@ export function OverviewTab({ value }: OverviewTabProps) {
       <Grid.Col span={6}>
         <Title order={3}>{useTranslateFields("listed")}</Title>
         {value.stock.price_history.length <= 0 && (
-          <Center h={"100%"}>
+          <Center h={"90%"}>
             <Title order={3}>{useTranslateFields("no_listed")}</Title>
           </Center>
         )}
