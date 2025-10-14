@@ -1,4 +1,4 @@
-import { Collapse, Group, TextInput, Title, Divider, Textarea, Paper, ScrollAreaAutosize, Button } from "@mantine/core";
+import { Collapse, Group, TextInput, Title, Divider, Textarea, ScrollAreaAutosize, Button, Box, Stack } from "@mantine/core";
 // import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { useForm } from "@mantine/form";
 import { TauriTypes } from "$types";
@@ -8,7 +8,7 @@ import { faBell } from "@fortawesome/free-solid-svg-icons";
 import { faDiscord } from "@fortawesome/free-brands-svg-icons";
 import { TooltipIcon } from "../../Shared/TooltipIcon";
 import api from "@api/index";
-import faWebHook from "../../../icons/faWebHook";
+import faWebHook from "@icons/faWebHook";
 export type EditNotificationSettingProps = {
   title: string;
   id: string;
@@ -40,7 +40,7 @@ export function EditNotificationSetting({ id, value, onChange }: EditNotificatio
 
   return (
     <form>
-      <Paper shadow="xs">
+      <Box p="md">
         <Group m="xs" gap={5}>
           <ActionWithTooltip
             tooltip={useTranslateForm("system.tooltip")}
@@ -68,85 +68,90 @@ export function EditNotificationSetting({ id, value, onChange }: EditNotificatio
           />
         </Group>
         <Divider />
-        <ScrollAreaAutosize mah={"calc(85vh - 100px)"} scrollbarSize={6}>
-          <Collapse in={form.values.system_notify.enabled}>
-            <Title order={4} mb="xs" mt="sm">
-              {useTranslateForm("system.title")}
-            </Title>
-            <TextInput
-              required
-              label={useTranslateFormSystemFields("title.label")}
-              placeholder={useTranslateFormSystemFields("title.placeholder")}
-              value={form.values.system_notify.title}
-              onChange={(event) => form.setFieldValue("system_notify.title", event.currentTarget.value)}
-              radius="md"
-            />
-            <Textarea
-              required
-              label={useTranslateFormSystemFields("content.label")}
-              placeholder={useTranslateFormSystemFields("content.placeholder")}
-              value={form.values.system_notify.content}
-              onChange={(event) => form.setFieldValue("system_notify.content", event.currentTarget.value)}
-              radius="md"
-              rows={3}
-              maxRows={3}
-            />
-          </Collapse>
-          <Collapse in={form.values.discord_notify.enabled}>
-            <Title order={4} mb="xs" mt="sm">
-              {useTranslateForm("discord.title")}
-            </Title>
-            <TextInput
-              required
-              label={useTranslateFormDiscordFields("webhook.label")}
-              placeholder={useTranslateFormDiscordFields("webhook.placeholder")}
-              value={form.values.discord_notify.webhook}
-              onChange={(event) => form.setFieldValue("discord_notify.webhook", event.currentTarget.value)}
-              radius="md"
-            />
-            <Textarea
-              required
-              label={useTranslateFormDiscordFields("content.label")}
-              placeholder={useTranslateFormDiscordFields("content.placeholder")}
-              value={form.values.discord_notify.content}
-              onChange={(event) => form.setFieldValue("discord_notify.content", event.currentTarget.value)}
-              radius="md"
-              rows={7}
-              maxRows={7}
-            />
+        <ScrollAreaAutosize mah={"calc(80vh - 100px)"} scrollbarSize={6}>
+          <Stack gap={5}>
+            <Collapse in={form.values.system_notify.enabled}>
+              <Title order={4} mb="xs" mt="sm">
+                {useTranslateForm("system.title")}
+              </Title>
+              <TextInput
+                required
+                label={useTranslateFormSystemFields("title.label")}
+                placeholder={useTranslateFormSystemFields("title.placeholder")}
+                value={form.values.system_notify.title}
+                onChange={(event) => form.setFieldValue("system_notify.title", event.currentTarget.value)}
+                radius="md"
+              />
+              <Textarea
+                required
+                label={useTranslateFormSystemFields("content.label")}
+                placeholder={useTranslateFormSystemFields("content.placeholder")}
+                value={form.values.system_notify.content}
+                onChange={(event) => form.setFieldValue("system_notify.content", event.currentTarget.value)}
+                radius="md"
+                rows={3}
+                maxRows={3}
+              />
+              <Divider my="sm" />
+            </Collapse>
+            <Collapse in={form.values.discord_notify.enabled}>
+              <Title order={4} mb="xs" mt="sm">
+                {useTranslateForm("discord.title")}
+              </Title>
+              <TextInput
+                required
+                label={useTranslateFormDiscordFields("webhook.label")}
+                placeholder={useTranslateFormDiscordFields("webhook.placeholder")}
+                value={form.values.discord_notify.webhook}
+                onChange={(event) => form.setFieldValue("discord_notify.webhook", event.currentTarget.value)}
+                radius="md"
+              />
+              <Textarea
+                required
+                label={useTranslateFormDiscordFields("content.label")}
+                placeholder={useTranslateFormDiscordFields("content.placeholder")}
+                value={form.values.discord_notify.content}
+                onChange={(event) => form.setFieldValue("discord_notify.content", event.currentTarget.value)}
+                radius="md"
+                rows={7}
+                maxRows={7}
+              />
 
-            <Button mt={5} onClick={() => handleContentReset()}>
-              {useTranslateFormDiscordFields("content.reset_button")}
-            </Button>
-            <TextInput
-              label={useTranslateFormDiscordFields("user_ids.label")}
-              placeholder={useTranslateFormDiscordFields("user_ids.placeholder")}
-              value={form.values.discord_notify.user_ids.join(", ")}
-              rightSection={<TooltipIcon label={useTranslateFormDiscordFields("user_ids.description")} />}
-              onChange={(event) =>
-                form.setFieldValue(
-                  "discord_notify.user_ids",
-                  event.currentTarget.value.split(",").map((v) => v.trim())
-                )
-              }
-              radius="md"
-            />
-          </Collapse>
-          <Collapse in={form.values.webhook_notify.enabled}>
-            <Title order={4} mb="xs" mt="sm">
-              {useTranslateForm("webhook.title")}
-            </Title>
-            <TextInput
-              required
-              label={useTranslateFormWebhookFields("url.label")}
-              placeholder={useTranslateFormWebhookFields("url.placeholder")}
-              value={form.values.webhook_notify.url}
-              onChange={(event) => form.setFieldValue("webhook_notify.url", event.currentTarget.value)}
-              radius="md"
-            />
-          </Collapse>
+              <Button mt={5} onClick={() => handleContentReset()}>
+                {useTranslateFormDiscordFields("content.reset_button")}
+              </Button>
+              <TextInput
+                label={useTranslateFormDiscordFields("user_ids.label")}
+                placeholder={useTranslateFormDiscordFields("user_ids.placeholder")}
+                value={form.values.discord_notify.user_ids.join(", ")}
+                rightSection={<TooltipIcon label={useTranslateFormDiscordFields("user_ids.description")} />}
+                onChange={(event) =>
+                  form.setFieldValue(
+                    "discord_notify.user_ids",
+                    event.currentTarget.value.split(",").map((v) => v.trim())
+                  )
+                }
+                radius="md"
+              />
+              <Divider my="sm" />
+            </Collapse>
+            <Collapse in={form.values.webhook_notify.enabled}>
+              <Title order={4} mb="xs" mt="sm">
+                {useTranslateForm("webhook.title")}
+              </Title>
+              <TextInput
+                required
+                label={useTranslateFormWebhookFields("url.label")}
+                placeholder={useTranslateFormWebhookFields("url.placeholder")}
+                value={form.values.webhook_notify.url}
+                onChange={(event) => form.setFieldValue("webhook_notify.url", event.currentTarget.value)}
+                radius="md"
+              />
+              <Divider my="sm" />
+            </Collapse>
+          </Stack>
         </ScrollAreaAutosize>
-      </Paper>
+      </Box>
     </form>
   );
 }

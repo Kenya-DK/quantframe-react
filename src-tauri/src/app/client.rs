@@ -132,18 +132,23 @@ fn handle_new_message(wfm_client: &WFClient<WFAuthenticated>, msg: &WsMessage) {
             return;
         }
         emit_update_user!(json!({ "unread_messages": un_read }));
-        state
-            .settings
-            .notifications
-            .on_wfm_chat_message
-            .send(&HashMap::from([
+        state.settings.notifications.on_wfm_chat_message.send(
+            &HashMap::from([
                 (
                     "<WFM_MESSAGE>".to_string(),
                     chat_message.raw_message.clone(),
                 ),
                 ("<CHAT_NAME>".to_string(), chat.chat_name.clone()),
                 ("<FROM_USER>".to_string(), from_user.clone()),
-            ]));
+            ]),
+            Some(json!({
+                "chatId": chat.id,
+                "chatName": chat.chat_name,
+                "fromUserId": chat_message.message_from,
+                "fromUserName": from_user,
+                "message": chat_message.raw_message,
+            })),
+        );
         info(
             "ChatMessage:Notify",
             &format!("New message in chat {} from {}", chat.chat_name, from_user),

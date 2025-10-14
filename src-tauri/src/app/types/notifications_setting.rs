@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::app::{DiscordNotify, NotificationSetting, SystemNotify};
+use crate::app::{DiscordNotify, NotificationSetting, SystemNotify, WebHookNotify};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct NotificationsSetting {

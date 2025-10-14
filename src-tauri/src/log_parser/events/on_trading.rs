@@ -463,7 +463,7 @@ fn process_operations(trade: &PlayerTrade, operations: OperationSet) {
         );
     }
 
-    settings.send(&trade.get_notify_variables());
+    settings.send(&trade.get_notify_variables(), Some(json!(trade)));
 
     info(
         get_component("TradeAccepted"),

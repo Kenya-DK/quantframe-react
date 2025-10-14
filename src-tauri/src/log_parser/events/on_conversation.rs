@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use serde_json::json;
 use utils::{info, trace, Error, LineHandler, LoggerOptions};
 
 use utils::*;
@@ -59,5 +60,8 @@ fn notify(player_name: &str) {
     );
     let mut variables = HashMap::new();
     variables.insert("<PLAYER_NAME>".to_string(), player_name.to_string());
-    settings.notifications.on_new_conversation.send(&variables);
+    settings
+        .notifications
+        .on_new_conversation
+        .send(&variables, Some(json!({ "playerName": player_name })));
 }

@@ -129,9 +129,7 @@ pub struct WebHookNotify {
     pub url: String,
 }
 impl WebHookNotify {
-    pub fn new(
-        url: impl Into<String>,
-    ) -> Self {
+    pub fn new(url: impl Into<String>) -> Self {
         Self {
             enabled: false,
             url: url.into(),
@@ -146,10 +144,19 @@ impl WebHookNotify {
         let app_info = tauri_app.package_info().clone();
         tauri::async_runtime::spawn(async move {
             let client = reqwest::Client::new();
-            let res = client.post(url)
-            .header("Content-Type", "application/json")
-            .header("User-Agent", format!("{} v{} ({})",app_info.name, app_info.version, app_info.authors))
-            .json(&value).send().await;
+            let res = client
+                .post(&url)
+                .header("Content-Type", "application/json")
+                .header(
+                    "User-Agent",
+                    format!(
+                        "{} v{} ({})",
+                        app_info.name, app_info.version, app_info.authors
+                    ),
+                )
+                .json(&value)
+                .send()
+                .await;
             match res {
                 Ok(_) => {
                     info(
@@ -178,7 +185,11 @@ pub struct NotificationSetting {
     webhook_notify: WebHookNotify,
 }
 impl NotificationSetting {
-    pub fn new(discord_notify: DiscordNotify, system_notify: SystemNotify, webhook_notify: WebHookNotify) -> Self {
+    pub fn new(
+        discord_notify: DiscordNotify,
+        system_notify: SystemNotify,
+        webhook_notify: WebHookNotify,
+    ) -> Self {
         Self {
             discord_notify,
             system_notify,

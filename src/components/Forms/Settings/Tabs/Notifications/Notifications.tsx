@@ -14,7 +14,7 @@ export const NotificationsPanel = ({ value, onSubmit }: NotificationsPanelProps)
   type NotificationKey = keyof TauriTypes.SettingsNotifications;
 
   const isEnabled = (da: TauriTypes.NotificationSetting) => {
-    return da.system_notify.enabled || da.discord_notify.enabled;
+    return da.system_notify.enabled || da.discord_notify.enabled || da.webhook_notify.enabled;
   };
 
   const form = useForm({
