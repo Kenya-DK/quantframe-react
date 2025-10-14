@@ -46,7 +46,7 @@ export const useQueries = ({ queryData, isActive }: QueriesHooks) => {
   });
   const refetchQueries = () => {
     if (!IsValid()) return;
-    // getPaginationQuery.refetch();
+    getPaginationQuery.refetch();
   };
 
   // Return the queries
