@@ -17,6 +17,9 @@ export const en = {
       save: {
         label: "Save",
       },
+      delete: {
+        label: "Delete",
+      },
     },
     notifications: {
       on_trade_event: {
@@ -1048,6 +1051,20 @@ export const en = {
             },
             buttons: {
               wfm: "Warframe Market",
+            },
+          },
+          edit: {
+            title: "Edit",
+            fields: {
+              listed: "Listed Prices History",
+              bought: {
+                label: "Bought",
+                placeholder: "Bought",
+              },
+              owned: {
+                label: "Owned",
+                placeholder: "Owned",
+              },
             },
           },
         },
