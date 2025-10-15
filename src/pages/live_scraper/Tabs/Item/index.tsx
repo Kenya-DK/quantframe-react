@@ -61,10 +61,6 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
     useTranslateTabItem(`errors.${key}`, { ...context }, i18Key);
   const useTranslateSuccess = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTabItem(`success.${key}`, { ...context }, i18Key);
-  const useTranslateBasePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslate(`prompts.${key}`, { ...context }, i18Key);
-  const useTranslatePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateTabItem(`prompts.${key}`, { ...context }, i18Key);
   // Queries
   const { paginationQuery, financialReportQuery, statusCountsQuery, refetchQueries } = useStockQueries({ queryData, isActive });
 
@@ -77,8 +73,6 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
   });
   // Modals
   const { OpenMinimumPriceModal, OpenSellModal, OpenInfoModal, OpenDeleteModal } = useStockModals({
-    useTranslateBasePrompt,
-    useTranslatePrompt,
     updateStockMutation,
     sellStockMutation,
     deleteStockMutation,

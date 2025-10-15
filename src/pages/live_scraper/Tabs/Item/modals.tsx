@@ -5,8 +5,6 @@ import { StockItemDetailsModal } from "@components/Modals/StockItemDetails";
 import { useTranslateCommon } from "@hooks/useTranslate.hook";
 
 interface ModalHooks {
-  useTranslateBasePrompt: (key: string, context?: { [key: string]: any }) => string;
-  useTranslatePrompt: (key: string, context?: { [key: string]: any }) => string;
   updateStockMutation: {
     mutateAsync: (data: TauriTypes.UpdateStockItem) => Promise<any>;
   };
@@ -18,7 +16,7 @@ interface ModalHooks {
   };
 }
 
-export const useStockModals = ({ useTranslatePrompt, updateStockMutation, sellStockMutation, deleteStockMutation }: ModalHooks) => {
+export const useStockModals = ({ updateStockMutation, sellStockMutation, deleteStockMutation }: ModalHooks) => {
   const OpenMinimumPriceModal = (id: number, minimum_price: number) => {
     modals.openContextModal({
       modal: "prompt",
@@ -73,17 +71,18 @@ export const useStockModals = ({ useTranslatePrompt, updateStockMutation, sellSt
   };
 
   const OpenInfoModal = (item: TauriTypes.StockItem) => {
-    modals.open({
+    let id = modals.open({
       size: "100%",
       withCloseButton: false,
-      children: <StockItemDetailsModal value={item.id} />,
-    });
-  };
-
-  const OpenUpdateModal = (_items: TauriTypes.UpdateStockItem[]) => {
-    modals.open({
-      title: useTranslatePrompt("update_bulk.title"),
-      children: <></>,
+      children: (
+        <StockItemDetailsModal
+          value={item.id}
+          onUpdate={async (data) => {
+            await updateStockMutation.mutateAsync(data);
+            modals.close(id);
+          }}
+        />
+      ),
     });
   };
 
@@ -100,7 +99,6 @@ export const useStockModals = ({ useTranslatePrompt, updateStockMutation, sellSt
     OpenMinimumPriceModal,
     OpenSellModal,
     OpenInfoModal,
-    OpenUpdateModal,
     OpenDeleteModal,
   };
 };
