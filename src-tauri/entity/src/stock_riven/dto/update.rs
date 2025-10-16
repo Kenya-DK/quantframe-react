@@ -19,6 +19,12 @@ pub struct UpdateStockRiven {
     pub list_price: FieldChange<i64>,
 
     #[serde(default)]
+    pub re_rolls: FieldChange<i64>,
+
+    #[serde(default)]
+    pub mastery_rank: FieldChange<i64>,
+
+    #[serde(default)]
     pub status: FieldChange<StockStatus>,
 
     #[serde(default)]
@@ -60,6 +66,14 @@ impl UpdateStockRiven {
             Value(v) => item.filter = Set(v),
             _ => {}
         }
+        match self.mastery_rank {
+            Value(v) => item.mastery_rank = Set(v),
+            _ => {}
+        }
+        match self.re_rolls {
+            Value(v) => item.re_rolls = Set(v),
+            _ => {}
+        }
         match self.price_history {
             Value(v) => item.price_history = Set(PriceHistoryVec(v)),
             _ => {}
@@ -76,6 +90,8 @@ impl UpdateStockRiven {
             is_hidden: FieldChange::Ignore,
             filter: FieldChange::Ignore,
             status: FieldChange::Ignore,
+            mastery_rank: FieldChange::Ignore,
+            re_rolls: FieldChange::Ignore,
             price_history: FieldChange::Ignore,
         }
     }

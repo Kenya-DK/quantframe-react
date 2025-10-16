@@ -84,10 +84,19 @@ export const useStockModals = ({
   };
 
   const OpenInfoModal = (item: TauriTypes.StockRiven) => {
-    modals.open({
+    const id = modals.open({
       size: "100%",
       withCloseButton: false,
-      children: <StockRivenDetailsModal value={item.id} />,
+      children: (
+        <StockRivenDetailsModal
+          value={item.id}
+          onUpdate={async (data) => {
+            console.log(data);
+            await updateStockMutation.mutateAsync(data);
+            modals.close(id);
+          }}
+        />
+      ),
     });
   };
 

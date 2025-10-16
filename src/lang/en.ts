@@ -1057,14 +1057,8 @@ export const en = {
             title: "Edit",
             fields: {
               listed: "Listed Prices History",
-              bought: {
-                label: "Bought",
-                placeholder: "Bought",
-              },
-              owned: {
-                label: "Owned",
-                placeholder: "Owned",
-              },
+              bought_label: "Bought",
+              owned_label: "Owned",
             },
           },
         },
@@ -1099,6 +1093,13 @@ export const en = {
             },
             buttons: {
               wfm: "Warframe Market",
+            },
+          },
+          edit: {
+            title: "Edit",
+            fields: {
+              listed: "Listed Prices History",
+              quantity_label: "Quantity",
             },
           },
         },
@@ -1142,6 +1143,15 @@ export const en = {
               updated_at: "Updated At",
               auction_list: "Current Live Auctions",
               no_listed: "No current live auctions",
+            },
+          },
+          edit: {
+            title: "Edit",
+            fields: {
+              listed: "Listed Prices History",
+              bought_label: "Bought",
+              mastery_rank_label: "Mastery Rank",
+              re_rolls_label: "Re Rolls",
             },
           },
         },

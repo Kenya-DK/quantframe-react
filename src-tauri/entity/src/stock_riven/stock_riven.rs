@@ -213,6 +213,8 @@ impl Model {
             is_hidden: FieldChange::Value(self.is_hidden),
             filter: FieldChange::Value(self.filter.clone()),
             status: FieldChange::Value(self.status.clone()),
+            mastery_rank: FieldChange::Value(self.mastery_rank),
+            re_rolls: FieldChange::Value(self.re_rolls),
             price_history: FieldChange::Value(self.price_history.0.clone()),
         }
     }
