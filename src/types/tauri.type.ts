@@ -227,6 +227,7 @@ export namespace TauriTypes {
     summary: FinancialItemReport;
     chart: Chart;
   }
+
   export interface Chart {
     labels: string[];
     values: number[];
@@ -320,6 +321,23 @@ export namespace TauriTypes {
     id: string;
     state: boolean;
   }
+  export interface ItemPriceInfo {
+    wfm_url: string;
+    wfm_id: string;
+    uuid: string;
+    volume: number;
+    max_price: number;
+    min_price: number;
+    avg_price: number;
+    moving_avg: number;
+    median: number;
+    profit: number;
+    profit_margin: number;
+    trading_tax: number;
+    week_price_shift: number;
+    sub_type: SubType;
+  }
+
   export interface InitializeResponds {
     app_info: AppInfo;
     settings: Settings;

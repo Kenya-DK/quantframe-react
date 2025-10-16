@@ -6,21 +6,21 @@ How To migrate:
 
 ## TODO's
 
-- ⏳ Add a edit modal for the stock items
-- ⏳ Add a preview for items to to buy.
-- ⏳ Add Stock Riven Details Modal and wishList
 - ⏳ Add Min Profit & Min SMA per item in the live trader stock items
 - ⏳ Add Max Price for WTB orders Fx Arcane XX wil not put up a price for more than 100p if it is set to 100 but i can go below 100p
 - ⏳ Add min max filter for the trading anylisis
 
 ## Feature's
 
+- ✨ Add a preview for items to to buy.
+- ✨ Add Stock Riven Details Modal and wishList
 - ✨ Add sorting for the auctions and orders tab
 - ✨ Add export to JSON for transactions, Stock items, WishList, Stock Rivens, WishList, Items Prices, Rivens Prices Require patron T1+
 - ✨ Add theme support for the app
 - ✨ Overhaul the Blacklist system now you can add items to the blacklist each trade method
 - ✨ You can now fully customize the notifications you get from the app
 - ✨ Add a new notification webhook type where it wil send a object. (WIP)
+- ✨ Add a edit modal for the stock items
 
 ## Fix's
 

@@ -123,6 +123,7 @@ export const en = {
         },
       },
       quantity: { title: "Quantity" },
+      volume: { title: "Volume" },
     },
     item_name: {
       title: "Name",
@@ -951,6 +952,16 @@ export const en = {
                     tooltip: "Minimum profit to consider for trading",
                     link: "https://quantframe.app/features/live-trading/settings/item/wts#min-profit",
                   },
+                },
+              },
+              summary: {
+                title: "Summary",
+                datatable_columns: {
+                  profit: "Potential Profit",
+                  trading_tax: "Trading Tax",
+                },
+                buttons: {
+                  show_interesting_wtb_items: "Show Interesting WTB Items",
                 },
               },
             },

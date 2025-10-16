@@ -210,6 +210,7 @@ pub fn run() {
             // Live Scraper commands
             commands::live_scraper::live_scraper_get_state,
             commands::live_scraper::live_scraper_toggle,
+            commands::live_scraper::live_scraper_get_interesting_wtb_items,
             // Stock Item commands
             commands::stock_item::get_stock_item_pagination,
             commands::stock_item::get_stock_item_financial_report,

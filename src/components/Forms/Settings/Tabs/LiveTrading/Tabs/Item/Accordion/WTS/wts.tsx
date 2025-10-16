@@ -7,9 +7,10 @@ import { TooltipIcon } from "@components/Shared/TooltipIcon";
 export type WTSItemAccordionProps = {
   value: TauriTypes.SettingsStockItem;
   onSubmit: (value: TauriTypes.SettingsStockItem) => void;
+  onChange?: (value: TauriTypes.SettingsStockItem) => void;
 };
 
-export const WTSItemAccordion = ({ value, onSubmit }: WTSItemAccordionProps) => {
+export const WTSItemAccordion = ({ value, onSubmit, onChange }: WTSItemAccordionProps) => {
   // Translate general
   const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForms(`settings.tabs.live_trading.item.wts.${key}`, { ...context }, i18Key);
@@ -20,6 +21,9 @@ export const WTSItemAccordion = ({ value, onSubmit }: WTSItemAccordionProps) => 
   const form = useForm({
     initialValues: value,
     validate: {},
+    onValuesChange: (values) => {
+      onChange?.(values);
+    },
   });
   return (
     <Box h="100%">

@@ -5,7 +5,11 @@ use serde_json::{json, Value};
 use utils::{get_location, Error};
 
 use crate::{
-    app::client::AppState, live_scraper::LiveScraperState, send_event, types::*,
+    app::{client::AppState, Settings, StockItemSettings},
+    cache::ItemPriceInfo,
+    live_scraper::{self, LiveScraperState},
+    send_event,
+    types::*,
     utils::ErrorFromExt,
 };
 
@@ -31,4 +35,12 @@ pub async fn live_scraper_get_state(
     Ok(json!({
         "is_running": live_scraper.is_running.load(Ordering::SeqCst)
     }))
+}
+
+#[tauri::command]
+pub async fn live_scraper_get_interesting_wtb_items(
+    settings: StockItemSettings,
+) -> Result<Vec<ItemPriceInfo>, Error> {
+    let items = live_scraper::helpers::get_interesting_items(&settings);
+    Ok(items)
 }
