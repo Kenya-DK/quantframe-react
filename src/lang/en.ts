@@ -181,7 +181,6 @@ export const en = {
       created_at: "Created At",
       platinum: "Platinum",
       updated_at: "Updated At",
-      order_type: "Order Type",
     },
   },
   enums: {
@@ -638,11 +637,6 @@ export const en = {
             label: "Operations",
             placeholder: "Select operations...",
             error: "Please select at least one operation",
-          },
-          order_type: {
-            label: "Order Type",
-            placeholder: "Select order type...",
-            error: "Please select an order type",
           },
         },
         buttons: {
@@ -1388,7 +1382,6 @@ export const en = {
               buy_quantity: "Buy Quantity",
               sell_quantity: "Sell Quantity",
               operation: "Operation",
-              order_type: "Order Type",
               actions: {
                 title: "Actions",
                 buttons: {

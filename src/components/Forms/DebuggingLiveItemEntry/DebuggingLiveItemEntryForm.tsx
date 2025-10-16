@@ -1,4 +1,4 @@
-import { Group, NumberInput, BoxProps, Box, Select, MultiSelect } from "@mantine/core";
+import { Group, NumberInput, BoxProps, Box, MultiSelect } from "@mantine/core";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { useForm } from "@mantine/form";
 import { TauriTypes } from "$types";
@@ -137,18 +137,6 @@ export function DebuggingLiveItemEntryForm({ disabled, boxProps, onSubmit, initi
             value={form.values.operation}
             onChange={(value) => form.setFieldValue("operation", value)}
             error={form.errors.operation}
-            radius="md"
-          />
-
-          {/* Order Type */}
-          <Select
-            required
-            label={useTranslateFormFields("order_type.label")}
-            placeholder={useTranslateFormFields("order_type.placeholder")}
-            data={ORDER_TYPE_OPTIONS}
-            value={form.values.order_type}
-            onChange={(value) => form.setFieldValue("order_type", value || "")}
-            error={form.errors.order_type}
             radius="md"
           />
 
