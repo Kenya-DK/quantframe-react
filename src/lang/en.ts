@@ -181,6 +181,7 @@ export const en = {
       created_at: "Created At",
       platinum: "Platinum",
       updated_at: "Updated At",
+      order_type: "Order Type",
     },
   },
   enums: {
