@@ -3,7 +3,6 @@ import { TauriTypes } from "$types";
 import { useTranslateCommon, useTranslateModals } from "@hooks/useTranslate.hook";
 import { useForm } from "@mantine/form";
 import { PriceHistoryListItem } from "@components/DataDisplay/PriceHistoryListItem";
-import api from "@api/index";
 import { useEffect } from "react";
 
 export type EditTabProps = {
@@ -27,12 +26,8 @@ export function EditTab({ value, onUpdate }: EditTabProps) {
   }, [value]);
 
   return (
-    // bought
-    // owned
-    // price_history
     <form
       onSubmit={form.onSubmit(async (values) => {
-        await api.stock_item.update(values.stock);
         onUpdate?.(values.stock);
       })}
     >
