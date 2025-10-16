@@ -163,6 +163,7 @@ impl Model {
                 .list_price
                 .map_or(FieldChange::Null, |v| FieldChange::Value(v)),
             is_hidden: FieldChange::Value(self.is_hidden),
+            price_history: FieldChange::Value(self.price_history.0.clone()),
             status: FieldChange::Value(self.status.clone()),
         }
     }

@@ -1,7 +1,11 @@
 use sea_orm::Set;
 use serde::{Deserialize, Serialize};
 
-use crate::{enums::*, wish_list::wish_list};
+use crate::{
+    dto::{PriceHistory, PriceHistoryVec},
+    enums::*,
+    wish_list::wish_list,
+};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct UpdateWishList {
@@ -21,6 +25,9 @@ pub struct UpdateWishList {
 
     #[serde(default)]
     pub is_hidden: FieldChange<bool>,
+
+    #[serde(default)]
+    pub price_history: FieldChange<Vec<PriceHistory>>,
 }
 
 impl UpdateWishList {
@@ -49,6 +56,10 @@ impl UpdateWishList {
             Value(v) => item.status = Set(v),
             _ => {}
         }
+        match self.price_history {
+            Value(v) => item.price_history = Set(PriceHistoryVec(v)),
+            _ => {}
+        }
 
         item
     }
@@ -60,6 +71,7 @@ impl UpdateWishList {
             list_price: FieldChange::Ignore,
             is_hidden: FieldChange::Ignore,
             status: FieldChange::Ignore,
+            price_history: FieldChange::Ignore,
         }
     }
     pub fn with_quantity(mut self, quantity: i64) -> Self {
@@ -90,6 +102,10 @@ impl UpdateWishList {
 
     pub fn with_status(mut self, status: StockStatus) -> Self {
         self.status = FieldChange::Value(status);
+        self
+    }
+    pub fn with_price_history(mut self, price_history: Vec<PriceHistory>) -> Self {
+        self.price_history = FieldChange::Value(price_history);
         self
     }
 }

@@ -47,10 +47,18 @@ export const useStockModals = ({ useTranslatePrompt, updateWishListMutation, del
   };
 
   const OpenInfoModal = (item: TauriTypes.WishListItem) => {
-    modals.open({
+    const id = modals.open({
       size: "100%",
       withCloseButton: false,
-      children: <WishListItemDetailsModal value={item.id} />,
+      children: (
+        <WishListItemDetailsModal
+          value={item.id}
+          onUpdate={async (data) => {
+            await updateWishListMutation.mutateAsync(data);
+            modals.close(id);
+          }}
+        />
+      ),
     });
   };
 
