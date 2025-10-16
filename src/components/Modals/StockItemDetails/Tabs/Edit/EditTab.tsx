@@ -34,8 +34,8 @@ export function EditTab({ value, onUpdate }: EditTabProps) {
       <Box h={"50vh"}>
         <Grid>
           <Grid.Col span={6}>
-            <NumberInput min={0} label={useTranslateFields("bought.label")} {...form.getInputProps("stock.bought")} />
-            <NumberInput min={1} label={useTranslateFields("owned.label")} {...form.getInputProps("stock.owned")} />
+            <NumberInput min={0} label={useTranslateFields("bought_label")} {...form.getInputProps("stock.bought")} />
+            <NumberInput min={1} label={useTranslateFields("owned_label")} {...form.getInputProps("stock.owned")} />
           </Grid.Col>
           <Grid.Col span={6}>
             <Title order={3}>{useTranslateFields("listed")}</Title>
