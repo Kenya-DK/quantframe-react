@@ -34,7 +34,12 @@ export function EditTab({ value, onUpdate }: EditTabProps) {
       <Box h={"50vh"}>
         <Grid>
           <Grid.Col span={6}>
-            <NumberInput min={0} label={useTranslateFields("quantity_label")} {...form.getInputProps("stock.quantity")} />
+            <NumberInput
+              min={0}
+              label={useTranslateFields("quantity_label")}
+              value={form.values.stock.quantity}
+              onChange={(value) => form.setFieldValue("stock.quantity", Number(value))}
+            />
           </Grid.Col>
           <Grid.Col span={6}>
             <Title order={3}>{useTranslateFields("listed")}</Title>
