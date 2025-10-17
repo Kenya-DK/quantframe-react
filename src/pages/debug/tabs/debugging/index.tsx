@@ -3,13 +3,13 @@ import { DataTable } from "mantine-datatable";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import classes from "../../Debug.module.css";
-import { useAppContext } from "../../../../contexts/app.context";
-import { DebuggingLiveItemEntryForm } from "../../../../components/Forms/DebuggingLiveItemEntry";
-import api, { SendTauriEvent } from "../../../../api";
-import { TauriTypes } from "../../../../types";
-import { GetSubTypeDisplay } from "../../../../utils/helper";
-import { TextTranslate } from "../../../../components/Shared/TextTranslate";
-import { ActionWithTooltip } from "../../../../components/Shared/ActionWithTooltip";
+import api, { SendTauriEvent } from "@api/index";
+import { TauriTypes } from "$types";
+import { GetSubTypeDisplay } from "@utils/helper";
+import { TextTranslate } from "@components/Shared/TextTranslate";
+import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
+import { useAppContext } from "@contexts/app.context";
+import { DebuggingLiveItemEntryForm } from "@components/Forms/DebuggingLiveItemEntry";
 import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
 interface DebuggingPanelProps {}
 export const DebuggingPanel = ({}: DebuggingPanelProps) => {
@@ -66,7 +66,6 @@ export const DebuggingPanel = ({}: DebuggingPanelProps) => {
           { accessor: "buy_quantity", title: useTranslateDataGridColumns("buy_quantity") },
           { accessor: "sell_quantity", title: useTranslateDataGridColumns("sell_quantity") },
           { accessor: "operation", title: useTranslateDataGridColumns("operation") },
-          { accessor: "order_type", title: useTranslateDataGridColumns("order_type") },
           {
             accessor: "actions",
             title: useTranslateDataGridColumns("actions.title"),
