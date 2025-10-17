@@ -1,6 +1,7 @@
 use std::{fs::File, io, path::PathBuf};
 
 use serde_json::{Map, Value, json};
+use uuid::Uuid;
 
 use crate::{Error, get_location};
 
@@ -387,19 +388,77 @@ pub fn validate_json(json: &Value, required: &Value, path: &str) -> (Value, Vec<
     (modified_json, missing_properties)
 }
 
+/// Generate a UUID v5 from an object with optional prefix and suffix
+///
+/// This function creates a deterministic UUID based on the content of a JSON object.
+/// The same object will always generate the same UUID, making it useful for
+/// creating consistent identifiers.
+///
+/// # Arguments
+/// * `prefix` - String to prepend to the object data
+/// * `object` - Optional JSON Value object to generate UUID from
+/// * `suffix` - String to append to the object data
+///
+/// # Returns
+/// A tuple containing:
+/// * The generated UUID as a string
+/// * The key string used to generate the UUID
+///
+/// # Examples
+/// ```
+/// use serde_json::{json, Value};
+/// use utils::generate_uuid_from_object;
+///
+/// let obj = Some(json!({"name": "John", "age": 30}));
+/// let (uuid, key) = generate_uuid_from_object("user_", &obj, "_v1");
+/// println!("UUID: {}, Key: {}", uuid, key);
+/// ```
+pub fn generate_uuid_from_object(
+    prefix: impl Into<String>,
+    object: &Option<Value>,
+    suffix: impl Into<String>,
+) -> (String, String) {
+    let mut key = prefix.into();
+
+    if let Some(obj) = object {
+        let mut object_values: Vec<String> = Vec::new();
+        // Sort the keys to ensure consistent ordering
+        if let Some(map) = obj.as_object() {
+            let mut keys: Vec<_> = map.keys().collect();
+            keys.sort();
+            for k in keys {
+                if let Some(v) = map.get(k) {
+                    // Remove quotes from string values
+                    let value_str = match v {
+                        Value::String(s) => s.clone(),
+                        _ => v.to_string().trim_matches('"').to_string(),
+                    };
+                    object_values.push(format!("{}:{}", k, value_str));
+                }
+            }
+        }
+        key.push_str(&object_values.join(";"));
+    }
+    key.push_str(&suffix.into());
+    (
+        Uuid::new_v5(&Uuid::NAMESPACE_OID, key.as_bytes()).to_string(),
+        key,
+    )
+}
+
 /// Trait for inserting text at a specific line and column position in a String
 pub trait InsertAt {
     /// Insert text at the specified line and column position
-    /// 
+    ///
     /// # Arguments
     /// * `line` - 1-based line number
     /// * `column` - 1-based column number
     /// * `text` - Text to insert
-    /// 
+    ///
     /// # Examples
     /// ```
     /// use utils::InsertAt;
-    /// 
+    ///
     /// let mut content = String::from("Hello\nWorld");
     /// content.insert_at(1, 6, " there");
     /// assert_eq!(content, "Hello there\nWorld");

@@ -6920,6 +6920,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
+ "uuid",
  "zip 0.6.6",
 ]
 
