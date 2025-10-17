@@ -21,6 +21,10 @@ pub struct Model {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub minimum_price: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub minimum_profit: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub minimum_sma: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub list_price: Option<i64>,
     pub owned: i64,
     pub is_hidden: bool,
@@ -80,6 +84,8 @@ impl Model {
             owned,
             is_hidden,
             status: StockStatus::Pending,
+            minimum_profit: None,
+            minimum_sma: None,
             price_history: PriceHistoryVec(vec![]),
             updated_at: Default::default(),
             created_at: Default::default(),
@@ -152,6 +158,12 @@ impl Model {
             bought: FieldChange::Value(self.bought),
             minimum_price: self
                 .minimum_price
+                .map_or(FieldChange::Null, |v| FieldChange::Value(v)),
+            minimum_profit: self
+                .minimum_profit
+                .map_or(FieldChange::Null, |v| FieldChange::Value(v)),
+            minimum_sma: self
+                .minimum_sma
                 .map_or(FieldChange::Null, |v| FieldChange::Value(v)),
             list_price: self
                 .list_price

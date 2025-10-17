@@ -1065,6 +1065,8 @@ export const en = {
               listed: "Listed Prices History",
               bought_label: "Bought",
               owned_label: "Owned",
+              minimum_sma_label: "Minimum SMA",
+              minimum_profit_label: "Minimum Profit",
             },
           },
         },

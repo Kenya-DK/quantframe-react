@@ -34,8 +34,30 @@ export function EditTab({ value, onUpdate }: EditTabProps) {
       <Box h={"50vh"}>
         <Grid>
           <Grid.Col span={6}>
-            <NumberInput min={0} label={useTranslateFields("bought_label")} {...form.getInputProps("stock.bought")} />
-            <NumberInput min={1} label={useTranslateFields("owned_label")} {...form.getInputProps("stock.owned")} />
+            <NumberInput
+              min={0}
+              label={useTranslateFields("bought_label")}
+              value={form.values.stock.bought}
+              onChange={(value) => form.setFieldValue("stock.bought", Number(value))}
+            />
+            <NumberInput
+              min={1}
+              label={useTranslateFields("owned_label")}
+              value={form.values.stock.owned}
+              onChange={(value) => form.setFieldValue("stock.owned", Number(value))}
+            />
+            <NumberInput
+              min={-1}
+              label={useTranslateFields("minimum_sma_label")}
+              value={form.values.stock.minimum_sma}
+              onChange={(value) => form.setFieldValue("stock.minimum_sma", Number(value))}
+            />
+            <NumberInput
+              min={-1}
+              label={useTranslateFields("minimum_profit_label")}
+              value={form.values.stock.minimum_profit}
+              onChange={(value) => form.setFieldValue("stock.minimum_profit", Number(value))}
+            />
           </Grid.Col>
           <Grid.Col span={6}>
             <Title order={3}>{useTranslateFields("listed")}</Title>

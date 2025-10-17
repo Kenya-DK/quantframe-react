@@ -482,6 +482,7 @@ export namespace TauriTypes {
     id: number;
     bought: number;
     minimum_price?: number;
+    minimum_profit?: number;
     list_price?: number;
     sub_type?: SubType;
     status: StockStatus;
@@ -494,6 +495,7 @@ export namespace TauriTypes {
     id: number;
     is_hidden: boolean;
     item_name: string;
+    minimum_sma?: number;
     item_unique_name: string;
     owned: number;
     updated_at: string;
@@ -520,6 +522,8 @@ export namespace TauriTypes {
     owned?: number;
     bought?: number;
     minimum_price?: number;
+    minimum_sma?: number;
+    minimum_profit?: number;
     list_price?: number;
     status?: StockStatus;
     is_hidden?: boolean;

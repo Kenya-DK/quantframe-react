@@ -581,8 +581,15 @@ impl ItemModule {
             }
         }
 
+        // Handle SMA Threshold Global/Item Specific
+        let minimum_sma = if stock_item.minimum_sma.is_some() {
+            stock_item.minimum_sma.unwrap()
+        } else {
+            settings.min_sma
+        };
+
         // Handle SMA Limit
-        if !is_disabled(settings.min_sma) && post_price < (closed_avg - settings.min_sma) {
+        if !is_disabled(minimum_sma) && post_price < (closed_avg - minimum_sma) {
             post_price = closed_avg;
             order_info.add_operation("SMALimit");
             stock_item.set_list_price(Some(post_price));
@@ -595,9 +602,15 @@ impl ItemModule {
         // Calculate the profit from the post price
         let mut profit = post_price - bought_price;
 
+        // Handle Profit Threshold Global/Item Specific
+        let minimum_profit = if stock_item.minimum_profit.is_some() {
+            stock_item.minimum_profit.unwrap()
+        } else {
+            settings.min_profit
+        };
         // Handle Low Profit
-        if !is_disabled(settings.min_profit) && profit < settings.min_profit {
-            post_price += settings.min_profit - profit;
+        if !is_disabled(minimum_profit) && profit < minimum_profit {
+            post_price += minimum_profit - profit;
             stock_item.set_status(StockStatus::ToLowProfit);
             stock_item.set_list_price(Some(post_price));
             stock_item.locked = true;

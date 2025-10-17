@@ -45,7 +45,13 @@ impl UpdateStockRiven {
             _ => {}
         }
         match self.minimum_price {
-            Value(v) => item.minimum_price = Set(Some(v)),
+            Value(v) => {
+                if v <= 0 {
+                    item.minimum_price = Set(None)
+                } else {
+                    item.minimum_price = Set(Some(v))
+                }
+            }
             Null => item.minimum_price = Set(None),
             _ => {}
         }

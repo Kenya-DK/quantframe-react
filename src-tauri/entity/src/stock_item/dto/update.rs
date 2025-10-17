@@ -17,6 +17,12 @@ pub struct UpdateStockItem {
     pub minimum_price: FieldChange<i64>,
 
     #[serde(default)]
+    pub minimum_profit: FieldChange<i64>,
+
+    #[serde(default)]
+    pub minimum_sma: FieldChange<i64>,
+
+    #[serde(default)]
     pub list_price: FieldChange<i64>,
 
     #[serde(default)]
@@ -42,7 +48,13 @@ impl UpdateStockItem {
             _ => {}
         }
         match self.minimum_price {
-            Value(v) => item.minimum_price = Set(Some(v)),
+            Value(v) => {
+                if v <= 0 {
+                    item.minimum_price = Set(None)
+                } else {
+                    item.minimum_price = Set(Some(v))
+                }
+            }
             Null => item.minimum_price = Set(None),
             _ => {}
         }
@@ -63,6 +75,28 @@ impl UpdateStockItem {
             Value(v) => item.price_history = Set(PriceHistoryVec(v)),
             _ => {}
         }
+        match self.minimum_profit {
+            Value(v) => {
+                if v <= 0 {
+                    item.minimum_profit = Set(None)
+                } else {
+                    item.minimum_profit = Set(Some(v))
+                }
+            }
+            Null => item.minimum_profit = Set(None),
+            _ => {}
+        }
+        match self.minimum_sma {
+            Value(v) => {
+                if v <= 0 {
+                    item.minimum_sma = Set(None)
+                } else {
+                    item.minimum_sma = Set(Some(v))
+                }
+            }
+            Null => item.minimum_sma = Set(None),
+            _ => {}
+        }
         item
     }
     pub fn new(id: i64) -> Self {
@@ -74,6 +108,8 @@ impl UpdateStockItem {
             list_price: FieldChange::Ignore,
             is_hidden: FieldChange::Ignore,
             status: FieldChange::Ignore,
+            minimum_profit: FieldChange::Ignore,
+            minimum_sma: FieldChange::Ignore,
             price_history: FieldChange::Ignore,
         }
     }
@@ -114,6 +150,20 @@ impl UpdateStockItem {
     }
     pub fn with_price_history(mut self, price_history: Option<Vec<PriceHistory>>) -> Self {
         self.price_history = match price_history {
+            Some(v) => FieldChange::Value(v),
+            None => FieldChange::Null,
+        };
+        self
+    }
+    pub fn with_minimum_profit(mut self, minimum_profit: Option<i64>) -> Self {
+        self.minimum_profit = match minimum_profit {
+            Some(v) => FieldChange::Value(v),
+            None => FieldChange::Null,
+        };
+        self
+    }
+    pub fn with_minimum_sma(mut self, minimum_sma: Option<i64>) -> Self {
+        self.minimum_sma = match minimum_sma {
             Some(v) => FieldChange::Value(v),
             None => FieldChange::Null,
         };
