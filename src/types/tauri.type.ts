@@ -122,6 +122,7 @@ export namespace TauriTypes {
     upgrade_type: string;
     wfm_group: string;
     wfm_icon: string;
+    is_variant: boolean;
     wfm_icon_format: string;
     wfm_id: string;
     wfm_thumb: string;

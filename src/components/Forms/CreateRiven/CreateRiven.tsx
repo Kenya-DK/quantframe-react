@@ -154,7 +154,6 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
             <Group gap="md" grow>
               <Select
                 searchable
-                limit={5}
                 required
                 allowDeselect={false}
                 label={useTranslateFormFields("weapon.label")}

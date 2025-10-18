@@ -42,6 +42,8 @@ pub struct CacheRivenWeapon {
     pub unique_name: String,
     #[serde(rename = "name")]
     pub name: String,
+    #[serde(rename = "is_variant")]
+    pub is_variant: bool,
     #[serde(rename = "disposition")]
     pub disposition: f64,
     #[serde(rename = "upgrade_type")]

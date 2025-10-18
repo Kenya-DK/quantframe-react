@@ -34,8 +34,10 @@ export class CacheModule {
   // Rivens
   async getRivenWeapons(): Promise<TauriTypes.CacheRivenWeapon[]> {
     if (this._cache.has(CacheType.RivenWeapons)) return this._cache.get(CacheType.RivenWeapons);
-    const [err, items] = await this.client.sendInvoke<TauriTypes.CacheRivenWeapon[]>("cache_get_riven_weapons");
-    if (err) throw err;
+    let [err, items] = await this.client.sendInvoke<TauriTypes.CacheRivenWeapon[]>("cache_get_riven_weapons");
+    if (err || !items) throw err;
+
+    items = items.filter((i) => !i.is_variant);
     this._cache.set(CacheType.RivenWeapons, items);
     return items;
   }

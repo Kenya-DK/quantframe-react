@@ -11,4 +11,4 @@ How To migrate:
 
 ## Fix's
 
-- 🛠️ Fix Live trader kept stopping
+- 🛠️ Fix Missing rivens
