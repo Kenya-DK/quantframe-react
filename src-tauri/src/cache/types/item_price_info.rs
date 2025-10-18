@@ -9,9 +9,6 @@ pub struct ItemPriceInfo {
     #[serde(rename = "wfm_id")]
     pub wfm_id: String,
 
-    #[serde(rename = "order_type")]
-    pub order_type: String,
-
     #[serde(rename = "volume")]
     pub volume: f64,
 
@@ -52,7 +49,6 @@ impl Default for ItemPriceInfo {
         ItemPriceInfo {
             wfm_url: "".to_string(),
             wfm_id: "".to_string(),
-            order_type: "".to_string(),
             volume: 0.0,
             max_price: 0.0,
             min_price: 0.0,

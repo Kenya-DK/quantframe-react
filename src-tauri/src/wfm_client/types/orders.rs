@@ -250,7 +250,7 @@ impl Orders {
             let info_result = order.item.as_ref().map(|item| {
                 cache
                     .item_price()
-                    .get_item_price(&item.url_name, order.get_subtype(), "closed")
+                    .get_item_price(&item.url_name, order.get_subtype())
             });
             match info_result {
                 Some(Ok(info)) => {

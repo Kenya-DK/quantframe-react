@@ -286,11 +286,10 @@ impl ItemModule {
             }
 
             // Get the item stats from the price scraper
-            let price = match cache.item_price().get_item_price(
-                &item_entry.wfm_url,
-                item_entry.sub_type.clone(),
-                &item_entry.order_type,
-            ) {
+            let price = match cache
+                .item_price()
+                .get_item_price(&item_entry.wfm_url, item_entry.sub_type.clone())
+            {
                 Ok(p) => p,
                 Err(_) => ItemPriceInfo::default(),
             };
@@ -471,8 +470,6 @@ impl ItemModule {
         let profit_margin_filter =
             |item: &ItemPriceInfo| profit_margin <= 0 || item.profit_margin >= profit_margin as f64;
 
-        let order_type_filter = |item: &ItemPriceInfo| item.order_type == "closed";
-
         let volume_filter =
             |item: &ItemPriceInfo| volume_threshold <= 0 || item.volume > volume_threshold as f64;
 
@@ -491,8 +488,7 @@ impl ItemModule {
 
         // Combine multiple filters dynamically
         let combined_filter = |item: &ItemPriceInfo| {
-            order_type_filter(item)
-                && volume_filter(item)
+            volume_filter(item)
                 && profit_filter(item)
                 && avg_price_filter(item)
                 && week_price_shift_filter(item)
