@@ -44,7 +44,7 @@ pub struct WFMClient {
 impl WFMClient {
     pub fn new() -> Self {
         WFMClient {
-            endpoint: "https://api.warframe.market/v1/".to_string(),
+            endpoint: "https://api.warframe.market/v2/".to_string(),
             component: "WarframeMarket".to_string(),
             limiter: Arc::new(tokio::sync::Mutex::new(RateLimiter::new(
                 1.0,
