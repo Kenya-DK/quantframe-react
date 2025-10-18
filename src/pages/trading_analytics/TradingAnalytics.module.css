@@ -34,10 +34,10 @@
   }
 
   &.filterOpened {
-    --offset: 350px;
+    --offset: 397px;
   }
 
   &.alert.filterOpened {
-    --offset: 367px;
+    --offset: 416px;
   }
 }

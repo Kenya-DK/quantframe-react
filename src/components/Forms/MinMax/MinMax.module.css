@@ -1,0 +1,36 @@
+/* MinMax Component Styles */
+.infinityIcon {
+  color: var(--mantine-color-dimmed);
+  font-size: 0.875rem;
+  opacity: 0.6;
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+}
+
+.inputWrapper {
+  flex: 1;
+}
+
+.placeholderGroup {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* Hover effects for the infinity icon */
+.infinityIcon:hover {
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+/* Dark mode support */
+[data-mantine-color-scheme="dark"] .infinityIcon {
+  color: var(--mantine-color-dark-3);
+}
+
+[data-mantine-color-scheme="light"] .infinityIcon {
+  color: var(--mantine-color-gray-6);
+}

@@ -1,4 +1,4 @@
-import { Box, Group, NumberFormatter, Paper } from "@mantine/core";
+import { Box, Grid, Group, NumberFormatter, Paper, SimpleGrid } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { QuantframeApiTypes, TauriTypes } from "$types";
 import { useQueries } from "./queries";
@@ -18,6 +18,7 @@ import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import { HasPermission } from "@api/index";
 import { useMutations } from "./mutations";
 import { Loading } from "@components/Shared/Loading";
+import { MinMax } from "@components/Forms/MinMax";
 interface ItemPanelProps {
   isActive?: boolean;
 }
@@ -107,9 +108,60 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
         }
         filter={
           <Paper p={"sm"} mt={"md"}>
-            <Group>
-              <SelectItemTags value={queryData.values.tags || []} onChange={(value) => queryData.setFieldValue("tags", value)} />
-            </Group>
+            <Grid>
+              <Grid.Col span={3}>
+                <SelectItemTags value={queryData.values.tags || []} onChange={(value) => queryData.setFieldValue("tags", value)} />
+              </Grid.Col>
+              <Grid.Col span={9}>
+                <SimpleGrid cols={3} spacing={"sm"}>
+                  <MinMax
+                    label={useTranslateTabItem("volume_label")}
+                    value={[queryData.values.volume_gt, queryData.values.volume_lt]}
+                    onChange={(value) => {
+                      if (!value) return;
+                      queryData.setFieldValue("volume_gt", value[0]);
+                      queryData.setFieldValue("volume_lt", value[1] || undefined);
+                    }}
+                  />
+                  <MinMax
+                    label={useTranslateTabItem("supply_label")}
+                    value={[queryData.values.supply_gt, queryData.values.supply_lt]}
+                    onChange={(value) => {
+                      if (!value) return;
+                      queryData.setFieldValue("supply_gt", value[0]);
+                      queryData.setFieldValue("supply_lt", value[1] || undefined);
+                    }}
+                  />
+                  <MinMax
+                    label={useTranslateTabItem("demand_label")}
+                    value={[queryData.values.demand_gt, queryData.values.demand_lt]}
+                    onChange={(value) => {
+                      if (!value) return;
+                      queryData.setFieldValue("demand_gt", value[0]);
+                      queryData.setFieldValue("demand_lt", value[1] || undefined);
+                    }}
+                  />
+                  <MinMax
+                    label={useTranslateTabItem("min_price_label")}
+                    value={[queryData.values.min_price_gt, queryData.values.min_price_lt]}
+                    onChange={(value) => {
+                      if (!value) return;
+                      queryData.setFieldValue("min_price_gt", value[0]);
+                      queryData.setFieldValue("min_price_lt", value[1] || undefined);
+                    }}
+                  />
+                  <MinMax
+                    label={useTranslateTabItem("max_price_label")}
+                    value={[queryData.values.max_price_gt, queryData.values.max_price_lt]}
+                    onChange={(value) => {
+                      if (!value) return;
+                      queryData.setFieldValue("max_price_gt", value[0]);
+                      queryData.setFieldValue("max_price_lt", value[1] || undefined);
+                    }}
+                  />
+                </SimpleGrid>
+              </Grid.Col>
+            </Grid>
           </Paper>
         }
       />
@@ -126,6 +178,7 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
         recordsPerPage={queryData.values.limit || 10}
         recordsPerPageOptions={[5, 10, 15, 20, 25, 50, 100]}
         onRecordsPerPageChange={(limit) => queryData.setFieldValue("limit", limit)}
+        idAccessor={(record) => `item-price-${record.wfm_id}${record.datetime}`}
         sortStatus={{
           columnAccessor: queryData.values.sort_by || "name",
           direction: queryData.values.sort_direction || "desc",

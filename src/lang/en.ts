@@ -1589,6 +1589,11 @@ export const en = {
           export_json_tooltip: "Export Items to JSON (Patreon T1+)",
           open_table_options_tooltip: "Open table options",
           date_range_placeholder: "Select date range",
+          volume_label: "Volume",
+          min_price_label: "Min Price",
+          max_price_label: "Max Price",
+          supply_label: "Supply",
+          demand_label: "Demand",
           datatable: {
             columns: {
               volume: "Volume",
@@ -1613,6 +1618,10 @@ export const en = {
           export_json_tooltip: "Export Riven to JSON (Patreon T1+)",
           open_table_options_tooltip: "Open table options",
           date_range_placeholder: "Select date range",
+          volume_label: "Volume",
+          min_price_label: "Min Price",
+          max_price_label: "Max Price",
+          avg_price_label: "Avg Price",
           datatable: {
             columns: {
               volume: "Volume",

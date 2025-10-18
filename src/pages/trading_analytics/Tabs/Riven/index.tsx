@@ -1,4 +1,4 @@
-import { Box, Group, NumberFormatter } from "@mantine/core";
+import { Box, Group, NumberFormatter, Paper, SimpleGrid } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { QuantframeApiTypes, TauriTypes } from "$types";
 import { useQueries } from "./queries";
@@ -17,6 +17,7 @@ import { HasPermission } from "@api/index";
 import { useMutations } from "./mutations";
 import { Loading } from "@components/Shared/Loading";
 import { PatreonOverlay } from "@components/Shared/PatreonOverlay/PatreonOverlay";
+import { MinMax } from "@components/Forms/MinMax";
 interface RivenPanelProps {
   isActive?: boolean;
 }
@@ -84,7 +85,7 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
         searchDisabled={IsLoading()}
         onChange={(text) => queryData.setFieldValue("query", text)}
         onFilterToggle={(s) => setFilterOpened(s)}
-        rightSectionWidth={270}
+        rightSectionWidth={295}
         rightSection={
           <Group gap={3}>
             <DatePickerInput
@@ -107,6 +108,48 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
               onClick={() => exportMutation.mutate(queryData.values)}
             />
           </Group>
+        }
+        filter={
+          <Paper p={"sm"} mt={"md"}>
+            <SimpleGrid cols={3} spacing={"sm"}>
+              <MinMax
+                label={useTranslateTabItem("volume_label")}
+                value={[queryData.values.volume_gt, queryData.values.volume_lt]}
+                onChange={(value) => {
+                  if (!value) return;
+                  queryData.setFieldValue("volume_gt", value[0]);
+                  queryData.setFieldValue("volume_lt", value[1] || undefined);
+                }}
+              />
+              <MinMax
+                label={useTranslateTabItem("avg_price_label")}
+                value={[queryData.values.avg_price_gt, queryData.values.avg_price_lt]}
+                onChange={(value) => {
+                  if (!value) return;
+                  queryData.setFieldValue("avg_price_gt", value[0]);
+                  queryData.setFieldValue("avg_price_lt", value[1] || undefined);
+                }}
+              />
+              <MinMax
+                label={useTranslateTabItem("min_price_label")}
+                value={[queryData.values.min_price_gt, queryData.values.min_price_lt]}
+                onChange={(value) => {
+                  if (!value) return;
+                  queryData.setFieldValue("min_price_gt", value[0]);
+                  queryData.setFieldValue("min_price_lt", value[1] || undefined);
+                }}
+              />
+              <MinMax
+                label={useTranslateTabItem("max_price_label")}
+                value={[queryData.values.max_price_gt, queryData.values.max_price_lt]}
+                onChange={(value) => {
+                  if (!value) return;
+                  queryData.setFieldValue("max_price_gt", value[0]);
+                  queryData.setFieldValue("max_price_lt", value[1] || undefined);
+                }}
+              />
+            </SimpleGrid>
+          </Paper>
         }
       />
       <DataTable

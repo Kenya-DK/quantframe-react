@@ -142,6 +142,17 @@ export namespace QuantframeApiTypes {
      * @example ["pistol","rifle"]
      */
     tags?: string[];
+
+    volume_gt?: number;
+    volume_lt?: number;
+    supply_gt?: number;
+    supply_lt?: number;
+    demand_gt?: number;
+    demand_lt?: number;
+    min_price_gt?: number;
+    min_price_lt?: number;
+    max_price_gt?: number;
+    max_price_lt?: number;
   }
   /** PaginatedResponseOfItemPriceDto */
   export type ItemPriceControllerGetListData = PaginatedDto & {
@@ -201,6 +212,15 @@ export namespace QuantframeApiTypes {
     to_date?: string;
     /** Search for orders that contain this query. */
     query?: string;
+    volume_gt?: number;
+    volume_lt?: number;
+    min_price_gt?: number;
+    min_price_lt?: number;
+    max_price_gt?: number;
+    max_price_lt?: number;
+
+    avg_price_gt?: number;
+    avg_price_lt?: number;
   }
   /** PaginatedResponseOfRivenPriceDto */
   export type RivenPriceControllerGetListData = PaginatedDto & {

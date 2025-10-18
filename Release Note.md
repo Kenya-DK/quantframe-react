@@ -7,7 +7,6 @@ How To migrate:
 ## TODO's
 
 - ⏳ Add Max Price for WTB orders Fx Arcane XX wil not put up a price for more than 100p if it is set to 100 but i can go below 100p
-- ⏳ Add min max filter for the trading anylisis
 
 ## Feature's
 
@@ -21,6 +20,7 @@ How To migrate:
 - ✨ Add a new notification webhook type where it wil send a object. (WIP)
 - ✨ Add a edit modal for the stock items
 - ✨ Add Min Profit & Min SMA per item in the live trader stock items
+- ✨ Add min max filter for the trading analysis
 
 ## Dev Notes
 

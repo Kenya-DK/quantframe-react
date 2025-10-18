@@ -20,6 +20,27 @@ pub struct ItemPricePaginationQueryDto {
     to_date: String,
     #[serde(default)]
     tags: FieldChange<Vec<String>>,
+
+    #[serde(default)]
+    pub volume_gt: FieldChange<i64>,
+    #[serde(default)]
+    pub volume_lt: FieldChange<i64>,
+    #[serde(default)]
+    pub supply_gt: FieldChange<i64>,
+    #[serde(default)]
+    pub supply_lt: FieldChange<i64>,
+    #[serde(default)]
+    pub demand_gt: FieldChange<i64>,
+    #[serde(default)]
+    pub demand_lt: FieldChange<i64>,
+    #[serde(default)]
+    pub min_price_gt: FieldChange<i64>,
+    #[serde(default)]
+    pub min_price_lt: FieldChange<i64>,
+    #[serde(default)]
+    pub max_price_gt: FieldChange<i64>,
+    #[serde(default)]
+    pub max_price_lt: FieldChange<i64>,
 }
 impl ItemPricePaginationQueryDto {
     pub fn new(page: i64, limit: i64, from_date: String, to_date: String) -> Self {
@@ -31,6 +52,16 @@ impl ItemPricePaginationQueryDto {
             from_date,
             to_date,
             tags: FieldChange::Ignore,
+            volume_gt: FieldChange::Ignore,
+            volume_lt: FieldChange::Ignore,
+            supply_gt: FieldChange::Ignore,
+            supply_lt: FieldChange::Ignore,
+            demand_gt: FieldChange::Ignore,
+            demand_lt: FieldChange::Ignore,
+            min_price_gt: FieldChange::Ignore,
+            min_price_lt: FieldChange::Ignore,
+            max_price_gt: FieldChange::Ignore,
+            max_price_lt: FieldChange::Ignore,
         }
     }
     pub fn get_query(&self) -> String {
@@ -48,6 +79,46 @@ impl ItemPricePaginationQueryDto {
         }
         match &self.sort_direction {
             Value(d) => query.push(format!("sort_direction={}", d.to_string())),
+            _ => {}
+        }
+        match &self.volume_gt {
+            Value(v) => query.push(format!("volumeGt={}", v)),
+            _ => {}
+        }
+        match &self.volume_lt {
+            Value(v) => query.push(format!("volumeLt={}", v)),
+            _ => {}
+        }
+        match &self.supply_gt {
+            Value(v) => query.push(format!("supplyGt={}", v)),
+            _ => {}
+        }
+        match &self.supply_lt {
+            Value(v) => query.push(format!("supplyLt={}", v)),
+            _ => {}
+        }
+        match &self.demand_gt {
+            Value(v) => query.push(format!("demandGt={}", v)),
+            _ => {}
+        }
+        match &self.demand_lt {
+            Value(v) => query.push(format!("demandLt={}", v)),
+            _ => {}
+        }
+        match &self.min_price_gt {
+            Value(v) => query.push(format!("minPriceGt={}", v)),
+            _ => {}
+        }
+        match &self.min_price_lt {
+            Value(v) => query.push(format!("minPriceLt={}", v)),
+            _ => {}
+        }
+        match &self.max_price_gt {
+            Value(v) => query.push(format!("maxPriceGt={}", v)),
+            _ => {}
+        }
+        match &self.max_price_lt {
+            Value(v) => query.push(format!("maxPriceLt={}", v)),
             _ => {}
         }
         query.push(format!("from_date={}", self.from_date));

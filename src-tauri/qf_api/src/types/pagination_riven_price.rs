@@ -18,6 +18,26 @@ pub struct RivenPricePaginationQueryDto {
 
     from_date: String,
     to_date: String,
+
+    #[serde(default)]
+    pub volume_gt: FieldChange<i64>,
+    #[serde(default)]
+    pub volume_lt: FieldChange<i64>,
+
+    #[serde(default)]
+    pub avg_price_gt: FieldChange<i64>,
+    #[serde(default)]
+    pub avg_price_lt: FieldChange<i64>,
+
+    #[serde(default)]
+    pub min_price_gt: FieldChange<i64>,
+    #[serde(default)]
+    pub min_price_lt: FieldChange<i64>,
+
+    #[serde(default)]
+    pub max_price_gt: FieldChange<i64>,
+    #[serde(default)]
+    pub max_price_lt: FieldChange<i64>,
 }
 impl RivenPricePaginationQueryDto {
     pub fn new(page: i64, limit: i64, from_date: String, to_date: String) -> Self {
@@ -28,6 +48,14 @@ impl RivenPricePaginationQueryDto {
             sort_direction: FieldChange::Value(SortDirection::Asc),
             from_date,
             to_date,
+            volume_gt: FieldChange::Ignore,
+            volume_lt: FieldChange::Ignore,
+            avg_price_gt: FieldChange::Ignore,
+            avg_price_lt: FieldChange::Ignore,
+            min_price_gt: FieldChange::Ignore,
+            min_price_lt: FieldChange::Ignore,
+            max_price_gt: FieldChange::Ignore,
+            max_price_lt: FieldChange::Ignore,
         }
     }
     pub fn get_query(&self) -> String {
@@ -45,6 +73,38 @@ impl RivenPricePaginationQueryDto {
         }
         match &self.sort_direction {
             Value(d) => query.push(format!("sort_direction={}", d.to_string())),
+            _ => {}
+        }
+        match &self.volume_gt {
+            Value(v) => query.push(format!("volumeGt={}", v)),
+            _ => {}
+        }
+        match &self.volume_lt {
+            Value(v) => query.push(format!("volumeLt={}", v)),
+            _ => {}
+        }
+        match &self.avg_price_gt {
+            Value(v) => query.push(format!("avgPriceGt={}", v)),
+            _ => {}
+        }
+        match &self.avg_price_lt {
+            Value(v) => query.push(format!("avgPriceLt={}", v)),
+            _ => {}
+        }
+        match &self.min_price_gt {
+            Value(v) => query.push(format!("minPriceGt={}", v)),
+            _ => {}
+        }
+        match &self.min_price_lt {
+            Value(v) => query.push(format!("minPriceLt={}", v)),
+            _ => {}
+        }
+        match &self.max_price_gt {
+            Value(v) => query.push(format!("maxPriceGt={}", v)),
+            _ => {}
+        }
+        match &self.max_price_lt {
+            Value(v) => query.push(format!("maxPriceLt={}", v)),
             _ => {}
         }
         query.push(format!("from_date={}", self.from_date));
