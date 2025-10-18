@@ -6,6 +6,7 @@ How To migrate:
 
 ## TODO's
 
+- ⏳ Add a delay for riven stock updates to reduce api calls on the livec
 - ⏳ Add Max Price for WTB orders Fx Arcane XX wil not put up a price for more than 100p if it is set to 100 but i can go below 100p
 
 ## Feature's
