@@ -145,10 +145,7 @@ export const ItemPanel = ({}: ItemPanelProps) => {
             accessor: "name",
             title: useTranslateDataTable("columns.name"),
           },
-          {
-            accessor: "order_type",
-            title: useTranslateDataTable("columns.order_type"),
-          },
+
           {
             accessor: "volume",
             title: useTranslateDataTable("columns.volume"),
@@ -178,6 +175,18 @@ export const ItemPanel = ({}: ItemPanelProps) => {
             title: useTranslateDataTable("columns.moving_avg"),
             sortable: true,
             render: (item) => <NumberFormatter thousandSeparator decimalScale={2} value={item.moving_avg} />,
+          },
+          {
+            accessor: "supply",
+            sortable: true,
+            title: useTranslateDataTable("columns.supply"),
+            render: (item) => <NumberFormatter thousandSeparator decimalScale={2} value={item.supply} />,
+          },
+          {
+            accessor: "demand",
+            sortable: true,
+            title: useTranslateDataTable("columns.demand"),
+            render: (item) => <NumberFormatter thousandSeparator decimalScale={2} value={item.demand} />,
           },
         ]}
       />

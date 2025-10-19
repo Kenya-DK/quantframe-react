@@ -256,6 +256,8 @@ export namespace QuantframeApiTypes {
     order_type: string;
     /** The trading tax for the item. */
     trading_tax: number;
+    supply: number;
+    demand: number;
     /** Details about the sub-type of the item, if applicable. */
     sub_type?: ItemSubTypeDto;
   }

@@ -11,4 +11,4 @@ How To migrate:
 
 ## Fix's
 
-- 🛠️ Fix Missing rivens
+- 🛠️ Add supply & demand to the trading analytics

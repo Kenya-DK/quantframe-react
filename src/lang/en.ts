@@ -1623,6 +1623,8 @@ export const en = {
               max_price: "Max Price",
               avg_price: "Avg Price",
               moving_avg: "Moving Avg",
+              supply: "Supply",
+              demand: "Demand",
             },
           },
         },
