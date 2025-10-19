@@ -74,11 +74,12 @@ export namespace WFMarketTypes {
     last_update: Date;
     user?: UserDto;
     operation: string;
-    order_type: string;
+    type: string;
     platform: string;
     platinum: number;
     quantity: number;
     region: string;
+    itemId: string;
     visible: boolean;
     // Mod
     mod_rank?: number;
@@ -101,6 +102,8 @@ export namespace WFMarketTypes {
     total_buyers?: number;
     total_sellers?: number;
     profit?: number;
+    name: string;
+    image: string;
     range?: number;
   }
 

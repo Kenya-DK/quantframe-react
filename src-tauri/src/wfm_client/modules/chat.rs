@@ -46,7 +46,7 @@ impl ChatModule {
         self.client.auth().is_logged_in()?;
         match self
             .client
-            .get::<Vec<ChatData>>("im/chats", Some("chats"))
+            .get::<Vec<ChatData>>("v1", "im/chats", Some("chats"))
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {
@@ -79,7 +79,7 @@ impl ChatModule {
         self.client.auth().is_logged_in()?;
         match self
             .client
-            .get::<Vec<ChatMessage>>(&url, Some("messages"))
+            .get::<Vec<ChatMessage>>("v1", &url, Some("messages"))
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {
@@ -108,7 +108,7 @@ impl ChatModule {
     pub async fn delete(&mut self, id: String) -> Result<String, AppError> {
         let url = format!("im/chats/{}", id);
         self.client.auth().is_logged_in()?;
-        match self.client.delete(&url, Some("chat_id")).await {
+        match self.client.delete("v1", &url, Some("chat_id")).await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.chats.retain(|chat| chat.id != id);
                 self.update_state();

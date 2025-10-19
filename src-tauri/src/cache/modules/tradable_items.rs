@@ -113,6 +113,11 @@ impl TradableItemModule {
                 .iter()
                 .find(|x| helper::is_match(&x.unique_name, input, case_insensitive, remove_string))
                 .cloned()
+        } else if mode == "id" {
+            items
+                .iter()
+                .find(|x| helper::is_match(&x.wfm_id, input, case_insensitive, remove_string))
+                .cloned()
         } else {
             return Err(AppError::new(
                 &self.get_component("GetBy"),

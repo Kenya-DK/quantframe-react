@@ -105,7 +105,7 @@ pub async fn order_delete_all(
             .live_scraper
             .stock_item
             .blacklist
-            .contains(&order.item.clone().unwrap().url_name)
+            .contains(&order.info.wfm_url)
         {
             continue;
         }

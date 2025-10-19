@@ -462,7 +462,7 @@ pub fn open_json_and_replace(path: &str, properties: Vec<String>) -> Result<Valu
 }
 
 pub async fn progress_wfm_order(
-    url: &str,
+    wfm_id: &str,
     sub_type: Option<SubType>,
     quantity: i64,
     operation: OrderType,
@@ -473,7 +473,7 @@ pub async fn progress_wfm_order(
     // Process the order on WFM
     match wfm
         .orders()
-        .progress_order(&url, sub_type.clone(), quantity, operation.clone())
+        .progress_order(&wfm_id, sub_type.clone(), quantity, operation.clone())
         .await
     {
         Ok((operation, order)) => {
@@ -588,7 +588,7 @@ pub async fn progress_wish_item(
     notify.gui().send_event(UIEvent::RefreshWishListItems, None);
     // Process the order on WFM
     match progress_wfm_order(
-        entity.wfm_url.as_str(),
+        &entity.wfm_id.as_str(),
         entity.sub_type.clone(),
         entity.quantity,
         OrderType::Buy,
@@ -711,7 +711,7 @@ pub async fn progress_stock_item(
     // Process the order on WFM
     if progress_wfm {
         match progress_wfm_order(
-            entity.wfm_url.as_str(),
+            &entity.wfm_id.as_str(),
             entity.sub_type.clone(),
             entity.quantity,
             operation.clone(),

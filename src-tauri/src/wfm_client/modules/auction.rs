@@ -75,7 +75,7 @@ impl AuctionModule {
         self.client.auth().is_logged_in()?;
         match self
             .client
-            .get::<Vec<Auction<String>>>(&url, Some("auctions"))
+            .get::<Vec<Auction<String>>>("v1", &url, Some("auctions"))
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {
@@ -119,7 +119,7 @@ impl AuctionModule {
         let url = format!("auctions/entry/{}", auction_id);
         match self
             .client
-            .get::<Auction<AuctionOwner>>(&url, Some("auction"))
+            .get::<Auction<AuctionOwner>>("v1", &url, Some("auction"))
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {
@@ -177,7 +177,7 @@ impl AuctionModule {
         }
         match self
             .client
-            .post("auctions/create", Some("auction"), body)
+            .post("v1", "auctions/create", Some("auction"), body)
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {
@@ -229,7 +229,11 @@ impl AuctionModule {
         });
         let url = format!("auctions/entry/{}", auction_id);
 
-        match self.client.put(&url, Some("auction"), Some(body)).await {
+        match self
+            .client
+            .put("v1", &url, Some("auction"), Some(body))
+            .await
+        {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
                     &self.debug_id,
@@ -310,7 +314,7 @@ impl AuctionModule {
 
         match self
             .client
-            .get::<Vec<Auction<AuctionOwner>>>(&url, Some("auctions"))
+            .get::<Vec<Auction<AuctionOwner>>>("v1", &url, Some("auctions"))
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {
@@ -349,7 +353,7 @@ impl AuctionModule {
         let url = format!("auctions/entry/{}/close", auction_id);
 
         self.client.auth().is_logged_in()?;
-        match self.client.put(&url, Some("auction_id"), None).await {
+        match self.client.put("v1", &url, Some("auction_id"), None).await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.subtract_auction_count(1)?;
                 self.client.debug(

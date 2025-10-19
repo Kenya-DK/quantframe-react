@@ -29,6 +29,10 @@ pub struct CacheTradableItem {
     #[serde(rename = "image_url")]
     pub image_url: String,
 
+    #[serde(rename = "bulk_tradable")]
+    #[serde(default)]
+    pub bulk_tradable: bool,
+
     #[serde(rename = "max_rank")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_rank: Option<i64>,

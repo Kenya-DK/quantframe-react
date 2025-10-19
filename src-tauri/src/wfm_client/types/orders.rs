@@ -17,6 +17,12 @@ pub struct Orders {
     pub buy_orders: Vec<Order>,
 }
 impl Orders {
+    pub fn new(sell_orders: Vec<Order>, buy_orders: Vec<Order>) -> Self {
+        Orders {
+            sell_orders,
+            buy_orders,
+        }
+    }
     pub fn get_all_orders(&self) -> Vec<Order> {
         let mut orders = self.sell_orders.clone();
         orders.append(&mut self.buy_orders.clone());
@@ -208,7 +214,7 @@ impl Orders {
         }
     }
 
-    pub fn get_orders_by_url(&self, wfm_url: &str, order_type: OrderType) -> Vec<Order> {
+    pub fn get_orders_by_id(&self, wfm_id: &str, order_type: OrderType) -> Vec<Order> {
         let orders = match order_type {
             OrderType::Sell => &self.sell_orders,
             OrderType::Buy => &self.buy_orders,
@@ -216,15 +222,17 @@ impl Orders {
         };
         let filtered_orders = orders
             .iter()
-            .filter(|order| {
-                order.item.is_some() && order.item.as_ref().unwrap().url_name == wfm_url
-            })
+            .filter(|order| order.item_id == wfm_id)
             .cloned()
             .collect::<Vec<Order>>();
         filtered_orders
     }
 
-    pub fn get_orders_ids(&self, order_type: OrderType, exclude_items: Vec<String>) -> Vec<String> {
+    pub fn get_orders_ids2(
+        &self,
+        order_type: OrderType,
+        exclude_items: Vec<String>,
+    ) -> Vec<String> {
         let mut ids = vec![];
         let orders = match order_type {
             OrderType::Sell => &self.sell_orders,
@@ -233,7 +241,7 @@ impl Orders {
         };
 
         for order in orders.iter() {
-            if !exclude_items.contains(&order.item.as_ref().unwrap().url_name) {
+            if !exclude_items.contains(&order.info.wfm_url) {
                 ids.push(order.id.clone());
             }
         }
@@ -247,19 +255,30 @@ impl Orders {
             .iter_mut()
             .chain(self.sell_orders.iter_mut())
         {
-            let info_result = order.item.as_ref().map(|item| {
-                cache
-                    .item_price()
-                    .get_item_price(&item.url_name, order.get_subtype())
-            });
-            match info_result {
-                Some(Ok(info)) => {
+            let item_info = cache
+                .tradable_items()
+                .get_by(&order.item_id, "--item_by id")?;
+
+            if let Some(item_info) = item_info {
+                order.info.set_wfm_url(item_info.wfm_url_name.clone());
+                order.info.set_name(item_info.name.clone());
+                order.info.set_image(item_info.image_url.clone());
+            } else {
+                order.info.set_name("Unknown Item".to_string());
+                order.info.set_image("".to_string());
+            }
+
+            match cache
+                .item_price()
+                .get_item_price2(&order.item_id, order.get_subtype())
+            {
+                Ok(info) => {
                     order.info.set_closed_avg(info.avg_price);
                     order
                         .info
                         .set_profit(order.platinum as f64 - info.avg_price);
                 }
-                _ => {
+                Err(_) => {
                     order.info.set_closed_avg(0.0);
                     order.info.set_profit(0.0);
                 }
@@ -270,11 +289,11 @@ impl Orders {
 
     pub fn find_order_by_url_sub_type(
         &self,
-        wfm_url: &str,
+        wfm_id: &str,
         order_type: OrderType,
         sub_type: Option<&SubType>,
     ) -> Option<Order> {
-        let orders = self.get_orders_by_url(wfm_url, order_type);
+        let orders = self.get_orders_by_id(wfm_id, order_type);
         for order in orders {
             let type_sub_type = order.get_subtype();
             if type_sub_type.as_ref() == sub_type {

@@ -66,7 +66,7 @@ impl OrderModule {
     }
     pub async fn progress_order(
         &mut self,
-        url: &str,
+        wfm_id: &str,
         sub_type: Option<SubType>,
         mut quantity: i64,
         order_type: OrderType,
@@ -81,7 +81,7 @@ impl OrderModule {
         }
         // Get WFM Order
         let orders = wfm.orders().get_my_orders().await?;
-        let mut order = orders.find_order_by_url_sub_type(&url, order_type, sub_type.as_ref());
+        let mut order = orders.find_order_by_url_sub_type(&wfm_id, order_type, sub_type.as_ref());
 
         // Check if order exists
         if order.is_some() {
@@ -118,16 +118,26 @@ impl OrderModule {
         return Ok((operation.to_string(), order));
     }
     pub async fn get_my_orders(&mut self) -> Result<Orders, AppError> {
-        let auth = states::auth()?;
-        let orders = self.get_user_orders(auth.ingame_name.as_str()).await?;
+        let orders = self.get_user_orders().await?;
         Ok(orders)
     }
-    pub async fn get_user_orders(&mut self, ingame_name: &str) -> Result<Orders, AppError> {
-        let url = format!("profile/{}/orders", ingame_name);
-        match self.client.get::<Orders>(&url, None).await {
-            Ok(ApiResult::Success(mut payload, _headers)) => {
-                payload.apply_trade_info()?;
-                let total_orders = payload.buy_orders.len() + payload.sell_orders.len();
+    pub async fn get_user_orders(&mut self) -> Result<Orders, AppError> {
+        match self.client.get::<Vec<Order>>("v2", "orders/my", None).await {
+            Ok(ApiResult::Success(payload, _headers)) => {
+                let buy_orders: Vec<Order> = payload
+                    .iter()
+                    .filter(|o| o.order_type == OrderType::Buy)
+                    .cloned()
+                    .collect();
+
+                let sell_orders: Vec<Order> = payload
+                    .iter()
+                    .filter(|o| o.order_type == OrderType::Sell)
+                    .cloned()
+                    .collect();
+                let mut orders = Orders::new(sell_orders, buy_orders);
+                orders.apply_trade_info()?;
+                let total_orders = orders.buy_orders.len() + orders.sell_orders.len();
 
                 self.client.debug(
                     &self.debug_id,
@@ -136,13 +146,13 @@ impl OrderModule {
                     None,
                 );
                 self.set_order_count(total_orders as i64)?;
-                return Ok(payload);
+                return Ok(orders);
             }
             Ok(ApiResult::Error(error, _headers)) => {
                 return Err(self.client.create_api_error(
                     &self.get_component("GetUserOrders"),
                     error,
-                    eyre!("There was an error fetching orders for {}", ingame_name),
+                    eyre!("There was an error fetching orders"),
                     LogLevel::Error,
                 ));
             }
@@ -159,6 +169,7 @@ impl OrderModule {
         platinum: i64,
         quantity: i64,
         visible: bool,
+        per_trade: Option<i64>,
         sub_type: Option<SubType>,
         info: Option<OrderDetails>,
     ) -> Result<(String, Option<Order>), AppError> {
@@ -177,12 +188,20 @@ impl OrderModule {
 
         // Construct any JSON body
         let mut body = json!({
-            "item": item_id,
-            "order_type": order_type,
+            "itemId": item_id,
+            "type": order_type,
             "platinum": platinum,
             "quantity": quantity,
             "visible": visible
         });
+
+        if let Some(per_trade) = per_trade {
+            if per_trade <= 0 {
+                body["perTrade"] = json!(1);
+            } else {
+                body["perTrade"] = json!(per_trade);
+            }
+        }
 
         // Add SubType data
         if let Some(item_sub) = sub_type.clone() {
@@ -202,7 +221,7 @@ impl OrderModule {
 
         match self
             .client
-            .post::<Order>("profile/orders", Some("order"), body)
+            .post::<Order>("v2", "order", Some("order"), body)
             .await
         {
             Ok(ApiResult::Success(mut payload, _headers)) => {
@@ -248,10 +267,14 @@ impl OrderModule {
         }
     }
 
-    pub async fn delete(&mut self, order_id: &str) -> Result<String, AppError> {
-        let url = format!("profile/orders/{}", order_id);
+    pub async fn delete(&mut self, order_id: &str) -> Result<Order, AppError> {
+        let url = format!("order/{}", order_id);
         self.client.auth().is_logged_in()?;
-        match self.client.delete::<String>(&url, Some("order_id")).await {
+        match self
+            .client
+            .delete::<Order>("v2", &url, Some("order_id"))
+            .await
+        {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.subtract_order_count(1)?;
                 self.client.debug(
@@ -268,9 +291,7 @@ impl OrderModule {
             }
             Ok(ApiResult::Error(error, _headers)) => {
                 let log_level = match error.messages.get(0) {
-                    Some(message) if message.contains("app.delete_order.order_not_exist") => {
-                        LogLevel::Warning
-                    }
+                    Some(message) if message.contains("app.order.notFound") => LogLevel::Warning,
                     _ => LogLevel::Error,
                 };
                 return Err(self.client.create_api_error(
@@ -300,11 +321,11 @@ impl OrderModule {
             "quantity": quantity,
             "visible": visible
         });
-        let url = format!("profile/orders/{}", order_id);
+        let url = format!("order/{}", order_id);
         self.client.auth().is_logged_in()?;
         match self
             .client
-            .put::<Order>(&url, Some("order"), Some(body))
+            .patch::<Order>("v2", &url, Some("order"), Some(body))
             .await
         {
             Ok(ApiResult::Success(mut payload, _headers)) => {
@@ -345,12 +366,12 @@ impl OrderModule {
     }
 
     pub async fn close(&mut self, id: &str) -> Result<Option<OrderClose>, AppError> {
-        let url = format!("profile/orders/close/{}", id);
+        let url = format!("order/{}/close", id);
         self.client.auth().is_logged_in()?;
 
         match self
             .client
-            .put::<Option<OrderClose>>(&url, Some("order"), None)
+            .post::<Option<OrderClose>>("v2", &url, Some("order"), json!({ "quantity": 1 }))
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {
@@ -393,9 +414,13 @@ impl OrderModule {
         //     }
         // }
 
-        let url = format!("items/{}/orders", item);
+        let url = format!("orders/item/{}", item);
 
-        let orders = match self.client.get::<Vec<Order>>(&url, Some("orders")).await {
+        let orders = match self
+            .client
+            .get::<Vec<Order>>("v2", &url, Some("orders"))
+            .await
+        {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
                     &self.debug_id,

@@ -1,4 +1,4 @@
-import { Text, Box, Center, Select, NumberFormatter } from "@mantine/core";
+import { Box, Center, NumberFormatter } from "@mantine/core";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
@@ -73,7 +73,7 @@ export const RivenPanel = ({}: RivenPanelProps) => {
         searchDisabled={isFetching}
         onChange={(text) => dataGridState.setFieldValue("query", text)}
         onFilterToggle={(op) => setFilterOpened(op)}
-        rightSectionWidth={275}
+        rightSectionWidth={255}
         rightSection={
           <DatePickerInput
             required
@@ -87,34 +87,6 @@ export const RivenPanel = ({}: RivenPanelProps) => {
             onChange={setDates}
             error={dataGridState.errors.from_date || dataGridState.errors.to_date}
           />
-        }
-        filter={
-          <Box mb={"md"}>
-            <Select
-              label={useTranslateFields("rolled.label")}
-              description={useTranslateFields("rolled.description")}
-              data={[
-                {
-                  value: "any",
-                  label: useTranslateFields("rolled.options.any"),
-                },
-                {
-                  value: "yes",
-                  label: useTranslateFields("rolled.options.yes"),
-                },
-                {
-                  value: "no",
-                  label: useTranslateFields("rolled.options.no"),
-                },
-              ]}
-              value={dataGridState.values.rolled == undefined ? "any" : dataGridState.values.rolled ? "yes" : "no"}
-              onChange={(value) => {
-                if (value === "yes") dataGridState.setFieldValue("rolled", true);
-                else if (value === "no") dataGridState.setFieldValue("rolled", false);
-                else dataGridState.setFieldValue("rolled", undefined);
-              }}
-            />
-          </Box>
         }
       />
       <DataTable
@@ -153,16 +125,6 @@ export const RivenPanel = ({}: RivenPanelProps) => {
           {
             accessor: "name",
             title: useTranslateDataTable("columns.name"),
-          },
-          {
-            accessor: "rolled",
-            title: useTranslateDataTable("columns.rolled.label"),
-            render: (item) =>
-              item.rolled ? (
-                <Text c={"green.7"}>{useTranslateDataTable("columns.rolled.yes")}</Text>
-              ) : (
-                <Text c={"red.7"}>{useTranslateDataTable("columns.rolled.no")}</Text>
-              ),
           },
           {
             accessor: "volume",

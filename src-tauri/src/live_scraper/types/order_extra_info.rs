@@ -7,6 +7,9 @@ use crate::wfm_client::types::order::Order;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct OrderDetails {
+    #[serde(rename = "wfm_url")]
+    pub wfm_url: String,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "total_buyers")]
     pub total_buyers: Option<i64>,
@@ -22,6 +25,14 @@ pub struct OrderDetails {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "range")]
     pub range: Option<i64>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "name")]
+    pub name: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "image")]
+    pub image: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "lowest_price")]
@@ -64,6 +75,7 @@ impl Default for OrderDetails {
     fn default() -> Self {
         OrderDetails {
             is_dirty: true,
+            wfm_url: String::new(),
             total_buyers: None,
             total_sellers: None,
             closed_avg: None,
@@ -71,6 +83,8 @@ impl Default for OrderDetails {
             range: None,
             highest_price: None,
             profit: None,
+            name: None,
+            image: None,
             moving_avg: None,
             orders: Vec::new(),
             tags: Vec::new(),
@@ -159,6 +173,23 @@ impl OrderDetails {
         let profit = Some(profit);
         if Self::set_if_changed(&mut self.profit, profit, &mut self.is_dirty) {
             self.changes.push("profit".to_string());
+        }
+    }
+    pub fn set_wfm_url(&mut self, wfm_url: String) {
+        if Self::set_if_changed(&mut self.wfm_url, wfm_url, &mut self.is_dirty) {
+            self.changes.push("wfm_url".to_string());
+        }
+    }
+    pub fn set_name(&mut self, name: String) {
+        let name = Some(name);
+        if Self::set_if_changed(&mut self.name, name, &mut self.is_dirty) {
+            self.changes.push("name".to_string());
+        }
+    }
+    pub fn set_image(&mut self, image: String) {
+        let image = Some(image);
+        if Self::set_if_changed(&mut self.image, image, &mut self.is_dirty) {
+            self.changes.push("image".to_string());
         }
     }
 }

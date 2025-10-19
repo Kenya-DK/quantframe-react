@@ -8,6 +8,7 @@ use eyre::eyre;
 use reqwest::{Client, Method, Url};
 use serde::de::DeserializeOwned;
 use serde_json::{json, Value};
+use tauri::http::version;
 
 use crate::{
     logger,
@@ -32,6 +33,7 @@ use super::modules::{
 #[derive(Clone, Debug)]
 pub struct WFMClient {
     endpoint: String,
+    endpoint_v2: String,
     pub component: String,
     limiter: Arc<tokio::sync::Mutex<RateLimiter>>,
     order_module: Arc<RwLock<Option<OrderModule>>>,
@@ -45,6 +47,7 @@ impl WFMClient {
     pub fn new() -> Self {
         WFMClient {
             endpoint: "https://api.warframe.market/v1/".to_string(),
+            endpoint_v2: "https://api.warframe.market/v2/".to_string(),
             component: "WarframeMarket".to_string(),
             limiter: Arc::new(tokio::sync::Mutex::new(RateLimiter::new(
                 1.0,
@@ -116,6 +119,7 @@ impl WFMClient {
 
     async fn send_request<T: DeserializeOwned>(
         &self,
+        version: &str,
         method: Method,
         url: &str,
         payload_key: Option<&str>,
@@ -131,14 +135,23 @@ impl WFMClient {
         let packageinfo = app.get_app_info();
 
         let client = Client::new();
-        let new_url = format!("{}{}", self.endpoint, url);
+        let new_url = match version {
+            "v1" => format!("{}{}", self.endpoint, url),
+            "v2" => format!("{}{}", self.endpoint_v2, url),
+            _ => format!("{}{}", self.endpoint, url),
+        };
+
+        let prefix = if let "v1" = version { "JWT" } else { "Bearer" };
+
+        println!("Calling URL: {}", new_url);
 
         let request = client
             .request(method.clone(), Url::parse(&new_url).unwrap())
             .header(
                 "Authorization",
                 format!(
-                    "JWT {}",
+                    "{} {}",
+                    prefix,
                     auth.wfm_access_token.clone().unwrap_or("".to_string())
                 ),
             )
@@ -208,7 +221,7 @@ impl WFMClient {
         };
 
         // Check if the response is an error
-        if response.get("error").is_some() {
+        if response.get("error").is_some() && response["error"] != Value::Null {
             error_def.error = "ApiError".to_string();
 
             let error: Value = response["error"].clone();
@@ -256,12 +269,23 @@ impl WFMClient {
 
         // Get the payload from the response if it exists
         let mut data = response.clone();
-        if response.get("payload").is_some() {
-            data = response["payload"].clone();
-        }
 
-        if let Some(payload_key) = payload_key {
-            data = data[payload_key].clone();
+        match version {
+            "v1" => {
+                if response.get("payload").is_some() {
+                    data = response["payload"].clone();
+                }
+
+                if let Some(payload_key) = payload_key {
+                    data = data[payload_key].clone();
+                }
+            }
+            "v2" => {
+                if response.get("data").is_some() {
+                    data = response["data"].clone();
+                }
+            }
+            _ => {}
         }
 
         // Convert the response to a T object
@@ -282,50 +306,65 @@ impl WFMClient {
 
     pub async fn get<T: DeserializeOwned>(
         &self,
+        version: &str,
         url: &str,
         payload_key: Option<&str>,
     ) -> Result<ApiResult<T>, AppError> {
         let payload: ApiResult<T> = self
-            .send_request(Method::GET, url, payload_key, None)
+            .send_request(version, Method::GET, url, payload_key, None)
             .await?;
         Ok(payload)
     }
 
     pub async fn post<T: DeserializeOwned>(
         &self,
+        version: &str,
         url: &str,
         payload_key: Option<&str>,
         body: Value,
     ) -> Result<ApiResult<T>, AppError> {
         let payload: ApiResult<T> = self
-            .send_request(Method::POST, url, payload_key, Some(body))
+            .send_request(version, Method::POST, url, payload_key, Some(body))
             .await?;
         Ok(payload)
     }
 
     pub async fn delete<T: DeserializeOwned>(
         &self,
+        version: &str,
         url: &str,
         payload_key: Option<&str>,
     ) -> Result<ApiResult<T>, AppError> {
         let payload: ApiResult<T> = self
-            .send_request(Method::DELETE, url, payload_key, None)
+            .send_request(version, Method::DELETE, url, payload_key, None)
             .await?;
         Ok(payload)
     }
 
     pub async fn put<T: DeserializeOwned>(
         &self,
+        version: &str,
         url: &str,
         payload_key: Option<&str>,
         body: Option<Value>,
     ) -> Result<ApiResult<T>, AppError> {
         let payload: ApiResult<T> = self
-            .send_request(Method::PUT, url, payload_key, body)
+            .send_request(version, Method::PUT, url, payload_key, body)
             .await?;
         Ok(payload)
     }
-
+    pub async fn patch<T: DeserializeOwned>(
+        &self,
+        version: &str,
+        url: &str,
+        payload_key: Option<&str>,
+        body: Option<Value>,
+    ) -> Result<ApiResult<T>, AppError> {
+        let payload: ApiResult<T> = self
+            .send_request(version, Method::PATCH, url, payload_key, body)
+            .await?;
+        Ok(payload)
+    }
     pub fn auth(&self) -> AuthModule {
         // Lazily initialize ItemModule if not already initialized
         if self.auth_module.read().unwrap().is_none() {

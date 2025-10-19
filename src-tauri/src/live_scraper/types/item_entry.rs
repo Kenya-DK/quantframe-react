@@ -13,6 +13,9 @@ pub struct ItemEntry {
     #[serde(rename = "wish_list_id")]
     pub wish_list_id: Option<i64>,
 
+    #[serde(rename = "wfm_id")]
+    pub wfm_id: String,
+
     #[serde(rename = "wfm_url")]
     pub wfm_url: String,
 
@@ -54,6 +57,7 @@ impl ItemEntry {
         stock_id: Option<i64>,
         wish_list_id: Option<i64>,
         wfm_url: String,
+        wfm_id: String,
         sub_type: Option<SubType>,
         priority: i64,
         buy_quantity: i64,
@@ -65,6 +69,7 @@ impl ItemEntry {
             stock_id,
             wish_list_id,
             wfm_url,
+            wfm_id,
             sub_type,
             priority,
             buy_quantity,

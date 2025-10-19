@@ -145,19 +145,19 @@ impl ItemPriceModule {
         Ok(())
     }
 
-    pub fn get_item_price(
+    pub fn get_item_price2(
         &self,
-        url_name: &str,
+        wfm_id: &str,
         sub_type: Option<SubType>,
     ) -> Result<ItemPriceInfo, AppError> {
         let items = self.get_all()?;
         let item = items
             .iter()
-            .find(|item| item.wfm_url == url_name && item.sub_type == sub_type)
+            .find(|item| item.wfm_id == wfm_id && item.sub_type == sub_type)
             .ok_or_else(|| {
                 AppError::new(
                     &self.component,
-                    eyre!(format!("Item not found: {}", url_name)),
+                    eyre!(format!("Item not found: {}", wfm_id)),
                 )
             })?;
         Ok(item.clone())

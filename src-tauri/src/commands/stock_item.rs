@@ -133,7 +133,7 @@ pub async fn stock_item_delete(
 
     let my_orders = wfm.orders().get_my_orders().await?;
     let order = my_orders.find_order_by_url_sub_type(
-        &stock_item.wfm_url,
+        &stock_item.wfm_id,
         OrderType::Sell,
         stock_item.sub_type.as_ref(),
     );
@@ -300,7 +300,7 @@ pub async fn stock_item_delete_bulk(
         // Delete the order on WFM
         let my_orders = wfm.orders().get_my_orders().await?;
         match my_orders.find_order_by_url_sub_type(
-            &stock.wfm_url,
+            &stock.wfm_id,
             OrderType::Sell,
             stock.sub_type.as_ref(),
         ) {

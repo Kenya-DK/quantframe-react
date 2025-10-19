@@ -114,6 +114,7 @@ impl ItemModule {
                             Some(item.id),
                             None,
                             item.wfm_url.clone(),
+                            item.wfm_id.clone(),
                             item.sub_type.clone(),
                             1,
                             0,
@@ -144,6 +145,7 @@ impl ItemModule {
                             None,
                             Some(item.id),
                             item.wfm_url.clone(),
+                            item.wfm_id.clone(),
                             item.sub_type.clone(),
                             2,
                             item.quantity,
@@ -169,11 +171,11 @@ impl ItemModule {
             match (buy, sell, wish) {
                 // Buy and Sell
                 (true, false, true) => {
-                    my_orders.get_orders_ids(OrderType::Sell, blacklist_items.clone())
+                    my_orders.get_orders_ids2(OrderType::Sell, blacklist_items.clone())
                 }
                 // Sell
                 (false, true, false) => {
-                    my_orders.get_orders_ids(OrderType::Buy, blacklist_items.clone())
+                    my_orders.get_orders_ids2(OrderType::Buy, blacklist_items.clone())
                 }
                 _ => vec![],
             }
@@ -288,10 +290,21 @@ impl ItemModule {
             // Get the item stats from the price scraper
             let price = match cache
                 .item_price()
-                .get_item_price(&item_entry.wfm_url, item_entry.sub_type.clone())
+                .get_item_price2(&item_entry.wfm_id, item_entry.sub_type.clone())
             {
                 Ok(p) => p,
-                Err(_) => ItemPriceInfo::default(),
+                Err(_) => {
+                    logger::warning(
+                        &self.get_component("CheckStock"),
+                        format!(
+                            "Item Price Info for {} not found in cache",
+                            item_info.name.clone()
+                        )
+                        .as_str(),
+                        LoggerOptions::default(),
+                    );
+                    ItemPriceInfo::default()
+                }
             };
 
             // Only check if the order mode is buy or both and if the item is in stock items
@@ -402,13 +415,14 @@ impl ItemModule {
                 self.send_msg("idle", None);
                 return Ok(());
             }
+
             // Send GUI Update.
             self.send_msg(
                 "deleting_orders",
                 Some(json!({ "current": current_index,"total": total})),
             );
             // Check if item is in blacklist
-            if blacklist.contains(&order.clone().item.unwrap().url_name) {
+            if blacklist.contains(&order.info.wfm_url) {
                 continue;
             }
             match wfm.orders().delete(&order.id).await {
@@ -507,6 +521,7 @@ impl ItemModule {
                     None,
                     None,
                     item.wfm_url.clone(),
+                    item.wfm_id.clone(),
                     item.sub_type.clone(),
                     0,
                     buy_quantity,
@@ -629,7 +644,7 @@ impl ItemModule {
 
         // Get my order if it exists, otherwise empty values.
         let mut user_order = match my_orders.find_order_by_url_sub_type(
-            &entry.wfm_url,
+            &entry.wfm_id,
             OrderType::Buy,
             entry.sub_type.as_ref(),
         ) {
@@ -639,7 +654,11 @@ impl ItemModule {
             }
             None => Order::default(),
         };
-
+        let per_trade = if item_info.bulk_tradable {
+            Some(1)
+        } else {
+            None
+        };
         // If the order is visible and the item is hidden, delete the order.
         if wish_list_item.is_hidden {
             wish_list_item.set_status(StockStatus::InActive);
@@ -690,6 +709,8 @@ impl ItemModule {
         user_order
             .info
             .set_lowest_price(live_orders.lowest_price(OrderType::Buy));
+        user_order.info.set_name(item_info.name.clone());
+        user_order.info.set_image(item_info.image_url.clone());
         user_order
             .info
             .set_total_buyers(live_orders.buy_orders.len() as i64);
@@ -725,6 +746,7 @@ impl ItemModule {
                     post_price,
                     entry.buy_quantity,
                     true,
+                    per_trade,
                     entry.sub_type.clone(),
                     Some(user_order.info.clone()),
                 )
@@ -812,7 +834,7 @@ impl ItemModule {
 
         // Get my order if it exists, otherwise empty values.
         let mut user_order = match my_orders.find_order_by_url_sub_type(
-            &item_info.wfm_url_name,
+            &item_info.wfm_id,
             OrderType::Buy,
             entry.sub_type.as_ref(),
         ) {
@@ -837,6 +859,12 @@ impl ItemModule {
             );
             return Ok(None);
         }
+
+        let per_trade = if item_info.bulk_tradable {
+            Some(0)
+        } else {
+            None
+        };
 
         // Get The highest buy order returns 0 if there are no buy orders.
         let highest_price = live_orders.highest_price(OrderType::Buy);
@@ -894,6 +922,8 @@ impl ItemModule {
             .set_total_buyers(live_orders.buy_orders.len() as i64);
         user_order.info.set_orders(live_orders.buy_orders.clone());
         user_order.info.set_moving_avg(closed_avg as i64);
+        user_order.info.set_name(item_info.name.clone());
+        user_order.info.set_image(item_info.image_url.clone());
         user_order.info.set_profit(potential_profit as f64);
         user_order.info.add_price_history(price_history.clone());
 
@@ -918,7 +948,7 @@ impl ItemModule {
                         .map(|order| {
                             let platinum = order.platinum;
                             let profit = order.info.profit.unwrap();
-                            let url_name = order.item.as_ref().unwrap().url_name.clone();
+                            let url_name = order.info.wfm_url.clone();
                             let id = order.id.clone();
                             (platinum, profit, url_name, id)
                         })
@@ -1012,6 +1042,7 @@ impl ItemModule {
                     post_price,
                     entry.buy_quantity,
                     true,
+                    per_trade,
                     entry.sub_type.clone(),
                     Some(user_order.info.clone()),
                 )
@@ -1150,7 +1181,7 @@ impl ItemModule {
 
         // Get my order if it exists, otherwise empty values.
         let mut user_order = match my_orders.find_order_by_url_sub_type(
-            &item_info.wfm_url_name,
+            &item_info.wfm_id,
             OrderType::Sell,
             stock_item.sub_type.as_ref(),
         ) {
@@ -1183,6 +1214,12 @@ impl ItemModule {
 
         // Get the price the item was bought for.
         let bought_price = stock_item.bought as i64;
+
+        let per_trade = if item_info.bulk_tradable {
+            Some(0)
+        } else {
+            None
+        };
 
         // Get the quantity of owned item.
         let quantity = entry.sell_quantity;
@@ -1232,6 +1269,8 @@ impl ItemModule {
             .set_total_sellers(live_orders.sell_orders.len() as i64);
         user_order.info.set_orders(live_orders.sell_orders.clone());
         user_order.info.set_moving_avg(moving_avg);
+        user_order.info.set_name(item_info.name.clone());
+        user_order.info.set_image(item_info.image_url.clone());
         user_order.info.set_highest_price(highest_price);
         user_order
             .info
@@ -1264,6 +1303,7 @@ impl ItemModule {
                     post_price,
                     quantity,
                     true,
+                    per_trade,
                     stock_item.sub_type.clone(),
                     Some(user_order.info.clone()),
                 )

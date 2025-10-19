@@ -3,12 +3,13 @@ import classes from "./OrderItem.module.css";
 import { WFMarketTypes } from "$types/index";
 import { useTranslateComponent, useTranslateEnums } from "@hooks/useTranslate.hook";
 import { TextTranslate } from "@components/TextTranslate";
-import { WFMThumbnail } from "@api/index";
+import api, { WFMThumbnail } from "@api/index";
 import { upperFirst } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import faAmberStar from "@icons/faAmberStar";
 import faCyanStar from "@icons/faCyanStar";
+import { useQuery } from "@tanstack/react-query";
 
 export type OrderItemProps = {
   order: WFMarketTypes.OrderDto;
@@ -22,6 +23,12 @@ export function OrderItem({ show_border, paperProps, order, footer, show_user }:
   // State
   const theme = useMantineTheme();
 
+  // Fetch data from rust side
+  const { data } = useQuery({
+    queryKey: ["cache_items"],
+    queryFn: () => api.cache.getTradableItems(),
+  });
+
   // Translate general
   const useTranslateStockItemInfo = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateComponent(`order_item.${key}`, { ...context }, i18Key);
@@ -32,25 +39,30 @@ export function OrderItem({ show_border, paperProps, order, footer, show_user }:
   const useTranslateNotifications = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateStockItemInfo(`notifications.${key}`, { ...context }, i18Key);
 
+  const GetItemInfo = (wfm_id: string) => {
+    if (!data) return null;
+    return data.find((item) => item.wfm_id === wfm_id) || null;
+  };
+
   return (
-    <Paper {...paperProps} classNames={classes} p={7} data-border={show_border} data-color-mode="box-shadow" data-order-type={order.order_type}>
+    <Paper {...paperProps} classNames={classes} p={7} data-border={show_border} data-color-mode="box-shadow" data-order-type={order.type}>
       <Stack gap={3}>
         <Group ml={"xs"} justify="space-between">
           <Group>
             <Text
               style={{ cursor: "copy" }}
               onClick={() => {
-                navigator.clipboard.writeText(order.item?.en?.item_name || "");
+                navigator.clipboard.writeText(order.info.name || "");
                 notifications.show({
                   title: useTranslateNotifications("copied.title"),
-                  message: useTranslateNotifications("copied.message", { message: order.item?.en?.item_name || "" }),
+                  message: useTranslateNotifications("copied.message", { message: order.info.name || GetItemInfo(order.itemId)?.name || "" }),
                   color: "green.7",
                 });
               }}
               size="lg"
               fw={700}
             >
-              {order.item?.en?.item_name}
+              {order.info.name || GetItemInfo(order.itemId)?.name || ""}
             </Text>
           </Group>
           <Group>
@@ -60,7 +72,14 @@ export function OrderItem({ show_border, paperProps, order, footer, show_user }:
         <Divider />
         <Group align="center" grow p={"sm"}>
           <Group>
-            <Image w={"50%"} ml={"sm"} width={64} height={64} fit="contain" src={WFMThumbnail(order.item?.icon || "")} />
+            <Image
+              w={"50%"}
+              ml={"sm"}
+              width={64}
+              height={64}
+              fit="contain"
+              src={WFMThumbnail(order.info.image || GetItemInfo(order.itemId)?.image_url || "")}
+            />
           </Group>
           <Group justify="flex-end">
             <Box>
@@ -68,7 +87,7 @@ export function OrderItem({ show_border, paperProps, order, footer, show_user }:
                 <TextTranslate
                   size="lg"
                   i18nKey={useTranslateFields("mod_rank", undefined, true)}
-                  values={{ mod_rank: order.mod_rank, mod_max_rank: order.item?.mod_max_rank || 0 }}
+                  values={{ mod_rank: order.mod_rank, mod_max_rank: -1 || 0 }}
                 />
               )}
               {order.amber_stars != undefined && (

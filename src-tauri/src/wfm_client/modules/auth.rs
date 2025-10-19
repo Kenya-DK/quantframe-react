@@ -61,7 +61,7 @@ impl AuthModule {
     pub async fn me(&self) -> Result<UserProfile, AppError> {
         match self
             .client
-            .get::<UserProfile>("/profile", Some("profile"))
+            .get::<UserProfile>("v1", "/profile", Some("profile"))
             .await
         {
             Ok(ApiResult::Success(user, _)) => {
@@ -197,7 +197,7 @@ impl AuthModule {
 
         let (user, headers): (UserProfile, HeaderMap) = match self
             .client
-            .post::<UserProfile>("/auth/signin", Some("user"), body)
+            .post::<UserProfile>("v1", "/auth/signin", Some("user"), body)
             .await
         {
             Ok(ApiResult::Success(user, headers)) => {
