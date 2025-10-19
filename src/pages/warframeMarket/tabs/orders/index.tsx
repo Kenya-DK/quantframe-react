@@ -223,7 +223,7 @@ export const OrderPanel = ({}: OrderPanelProps) => {
   const OpenInfoModal = (order: WFMarketTypes.OrderDto) => {
     modals.open({
       size: "100%",
-      title: order.item?.en?.item_name,
+      title: order.info.name,
       children: <OrderDetails value={order} />,
     });
   };

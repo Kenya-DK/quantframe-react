@@ -69,7 +69,7 @@ export function OrderDetails({ value }: OrderDetailsProps) {
                 color="blue"
                 variant="outline"
                 onClick={() => {
-                  open(`https://warframe.market/items/${value.item?.url_name}`);
+                  open(`https://warframe.market/items/${value.info.wfm_url}`);
                 }}
               >
                 {useTranslateButtons("wfm")}

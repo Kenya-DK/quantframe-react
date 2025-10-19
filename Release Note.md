@@ -13,3 +13,4 @@ How To migrate:
 
 - 🛠️ Add supply & demand to the trading analytics
 - 🛠️ Fix search in the Warframe Market orders tab. If you can't find the item please hit refresh.
+- 🛠️ Fix item title in the Warframe Market order details modal and wfm link

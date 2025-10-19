@@ -93,6 +93,7 @@ export namespace WFMarketTypes {
   }
 
   export interface OrderInfo {
+    wfm_url: string;
     closed_avg?: number;
     moving_avg?: number;
     highest_price?: number;
