@@ -15,6 +15,8 @@ import { AlertError } from "@components/AlertError";
 import { SelectItemTags } from "@components/SelectItemTags";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import classes from "../../TradingAnalytics.module.css";
+import { TextTranslate } from "../../../../components/TextTranslate";
+import { GetSubTypeDisplay } from "../../../../utils/helper";
 
 interface ItemPanelProps {}
 
@@ -143,7 +145,17 @@ export const ItemPanel = ({}: ItemPanelProps) => {
         columns={[
           {
             accessor: "name",
-            title: useTranslateDataTable("columns.name"),
+            title: useTranslateDataTable("columns.name.title"),
+            render: ({ name, sub_type }) => (
+              <TextTranslate
+                color="gray.4"
+                i18nKey={useTranslateDataTable("columns.name.value", undefined, true)}
+                values={{
+                  name: name || "Unknown",
+                  sub_type: GetSubTypeDisplay(sub_type),
+                }}
+              />
+            ),
           },
 
           {

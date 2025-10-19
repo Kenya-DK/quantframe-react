@@ -1616,7 +1616,10 @@ export const en = {
           },
           datatable: {
             columns: {
-              name: "Name",
+              name: {
+                title: "Name",
+                value: "{{name}} <blue>{{sub_type}}</blue>",
+              },
               order_type: "Order Type",
               volume: "Volume",
               min_price: "Min Price",
