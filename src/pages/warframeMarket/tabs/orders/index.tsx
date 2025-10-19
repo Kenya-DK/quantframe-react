@@ -140,7 +140,7 @@ export const OrderPanel = ({}: OrderPanelProps) => {
     if (filterOrderType) ordersF = ordersF.filter((order) => order.type === filterOrderType);
 
     // Filter by query
-    if (query) ordersF = ordersF.filter((order) => order.item?.en?.item_name.toLowerCase().includes(query.toLowerCase()));
+    if (query) ordersF = ordersF.filter((order) => order.info.name.toLowerCase().includes(query.toLowerCase()));
 
     // Update total pages
     setTotalPages(Math.ceil(ordersF.length / pageSize));

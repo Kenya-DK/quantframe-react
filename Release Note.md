@@ -12,3 +12,4 @@ How To migrate:
 ## Fix's
 
 - 🛠️ Add supply & demand to the trading analytics
+- 🛠️ Fix search in the Warframe Market orders tab. If you can't find the item please hit refresh.
