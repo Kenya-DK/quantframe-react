@@ -25,7 +25,8 @@ How To migrate:
 
 ## Dev Notes
 
-- 🛠️ Using a new system for riven so pls can for duplication on warframe market
+- 🛠️ Using a new system for riven so pls check for duplication on warframe market
+- 🛠️ Look into this https://github.com/knoellle/wfinfo-ng
 
 ## Fix's
 
