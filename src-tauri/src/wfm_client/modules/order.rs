@@ -226,6 +226,9 @@ impl OrderModule {
         {
             Ok(ApiResult::Success(mut payload, _headers)) => {
                 self.add_order_count(1)?;
+                if info.is_some() {
+                    payload.info = info.unwrap();
+                }
                 self.client.debug(
                     &self.debug_id,
                     &self.get_component("Create"),
