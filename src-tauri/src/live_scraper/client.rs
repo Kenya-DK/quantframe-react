@@ -2,6 +2,8 @@ use crate::{
     emit_error,
     enums::*,
     live_scraper::modules::*,
+    send_event,
+    types::UIEvent,
     utils::{modules::states, OrderListExt},
 };
 use serde_json::Value;
@@ -12,6 +14,7 @@ use std::{
         atomic::{AtomicBool, Ordering},
         Arc, OnceLock,
     },
+    time::{Duration, Instant},
 };
 use utils::{critical, get_location, warning, LogLevel, LoggerOptions};
 
@@ -59,8 +62,7 @@ impl LiveScraperState {
             match app.wfm_client.order().cache_orders_mut().apply_trade_info() {
                 Ok(_) => {}
                 Err(e) => {
-                    e.with_location(get_location!())
-                        .log("live_scraper.log");
+                    e.with_location(get_location!()).log("live_scraper.log");
                 }
             }
         }
@@ -70,27 +72,42 @@ impl LiveScraperState {
         let this = self.clone();
         tauri::async_runtime::spawn({
             async move {
+                // Start Riven last update timer
+                let riven_interval = settings.live_scraper.stock_riven.update_interval as u64;
+                let mut last_riven_update =
+                    Instant::now() - Duration::from_secs(riven_interval * 2);
+
                 while is_running.load(Ordering::SeqCst) {
                     let app = states::app_state().expect("App state not initialized");
                     if matches!(
                         app.settings.live_scraper.stock_mode,
                         StockMode::Riven | StockMode::All
                     ) {
-                        match this.riven().check().await {
-                            Ok(_) => {}
-                            Err(e) => {
-                                e.clone()
-                                    .with_location(get_location!())
-                                    .log("live_scraper_riven.log");
-                                match e.log_level {
-                                    LogLevel::Critical | LogLevel::Error => {
-                                        // Stop the live scraper
-                                        is_running.store(false, Ordering::SeqCst);
-                                        emit_error!(e);
+                        // Check Time
+                        let time_elapsed = last_riven_update.elapsed();
+                        if time_elapsed > Duration::from_secs(riven_interval) {
+                            last_riven_update = Instant::now();
+                            match this.riven().check().await {
+                                Ok(_) => {}
+                                Err(e) => {
+                                    e.clone()
+                                        .with_location(get_location!())
+                                        .log("live_scraper_riven.log");
+                                    match e.log_level {
+                                        LogLevel::Critical | LogLevel::Error => {
+                                            // Stop the live scraper
+                                            is_running.store(false, Ordering::SeqCst);
+                                            emit_error!(e);
+                                        }
+                                        _ => {}
                                     }
-                                    _ => {}
                                 }
                             }
+                        } else {
+                            send_event!(
+                                UIEvent::SendLiveScraperMessage,
+                                json!({"i18nKey": "riven.cooldown", "values": json!({"seconds": (riven_interval - time_elapsed.as_secs())})})
+                            );
                         }
                     }
 
