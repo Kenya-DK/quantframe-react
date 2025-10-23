@@ -840,8 +840,13 @@ export const en = {
                   error: "Invalid stock mode",
                 },
               },
+              columns: {
+                name: "Name",
+                maximum_price: "Maximum Price",
+              },
               buttons: {
                 edit_blacklist_label: "Edit Blacklist {{count}}",
+                edit_buy_list_label: "Edit Buy List {{count}}",
               },
               black_list: {
                 available_items_label: "Available Items",

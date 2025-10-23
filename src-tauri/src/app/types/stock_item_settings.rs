@@ -16,9 +16,17 @@ impl BlackListItemSetting {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct BuyListItemSetting {
+    // WTB Settings
+    pub wfm_id: String,
+    pub max_price: i64,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StockItemSettings {
     // General Settings
     pub blacklist: Vec<BlackListItemSetting>,
+    pub buy_list: Vec<BuyListItemSetting>,
 
     // WTB Settings
     pub volume_threshold: i64,
@@ -40,6 +48,7 @@ impl Default for StockItemSettings {
     fn default() -> Self {
         StockItemSettings {
             blacklist: vec![],
+            buy_list: vec![],
             min_sma: 3,
             min_profit: 10,
             volume_threshold: 15,
@@ -78,5 +87,13 @@ impl StockItemSettings {
             }
         }
         false
+    }
+    pub fn get_item_max_price(&self, wfm_id: &str) -> i64 {
+        for item in &self.buy_list {
+            if item.wfm_id == wfm_id {
+                return item.max_price;
+            }
+        }
+        0
     }
 }

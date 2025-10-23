@@ -9,12 +9,15 @@ import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 
 export type CreateItemFormProps = {
   onSubmit: (values: TauriTypes.CreateStockItem) => void;
+  idField?: string;
   boxProps?: BoxProps;
   disabled?: boolean;
   hide_bought?: boolean;
+  hide_sub_type?: boolean;
+  hide_quantity?: boolean;
 };
 
-export function CreateItemForm({ hide_bought, disabled, boxProps, onSubmit }: CreateItemFormProps) {
+export function CreateItemForm({ hide_quantity, hide_sub_type, idField, hide_bought, disabled, boxProps, onSubmit }: CreateItemFormProps) {
   // Context States
   const { settings } = useAppContext();
 
@@ -42,18 +45,21 @@ export function CreateItemForm({ hide_bought, disabled, boxProps, onSubmit }: Cr
       <form
         onSubmit={form.onSubmit((data) => {
           if (disabled) return;
-          onSubmit({ ...data, raw: data.wfm_url });
+          onSubmit({ ...data, raw: idField ? (data as any)[idField] : data.wfm_url });
         })}
       >
         <Group gap="md">
           <SelectTradableItem
             value={form.values.wfm_url}
+            hide_sub_type={hide_sub_type}
             onChange={(item) => {
               form.setFieldValue("wfm_url", item.wfm_url_name);
+              form.setFieldValue("wfm_id", item.wfm_id);
               form.setFieldValue("sub_type", item.sub_type);
             }}
           />
           <NumberInput
+            display={hide_quantity ? "none" : ""}
             w={100}
             required
             label={useTranslateFormFields("quantity.label")}

@@ -3,16 +3,18 @@ import { TauriTypes } from "$types";
 import { useForm } from "@mantine/form";
 import { useTranslateCommon, useTranslateEnums, useTranslateForms } from "@hooks/useTranslate.hook";
 import { useEffect, useState } from "react";
-import { SelectMultipleItems } from "../../../../../SelectMultipleItems";
-import api from "../../../../../../../api";
+import { SelectMultipleItems } from "@components/Forms/SelectMultipleItems";
+import api from "@api/index";
 import { useQuery } from "@tanstack/react-query";
-import { faHandshake } from "@fortawesome/free-solid-svg-icons";
-import { ActionWithTooltip } from "../../../../../../Shared/ActionWithTooltip";
-import { SelectItemTags } from "../../../../../SelectItemTags";
-import { FieldFilter, Operator, OperatorType } from "../../../../../../../utils/filter.helper";
+import { faHandshake, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
+import { SelectItemTags } from "@components/Forms/SelectItemTags";
+import { FieldFilter, Operator, OperatorType } from "@utils/filter.helper";
 import { useDisclosure } from "@mantine/hooks";
-import { TextTranslate } from "../../../../../../Shared/TextTranslate";
+import { TextTranslate } from "@components/Shared/TextTranslate";
 import { notifications } from "@mantine/notifications";
+import { DataTable } from "mantine-datatable";
+import { CreateItemForm } from "@components/Forms/CreateItem";
 export type GeneralPanelProps = {
   value: TauriTypes.SettingsLiveScraper;
   onSubmit: (value: TauriTypes.SettingsLiveScraper) => void;
@@ -21,6 +23,7 @@ export type GeneralPanelProps = {
 enum ViewMode {
   General = "general",
   Blacklist = "blacklist",
+  BuyList = "buy_list",
 }
 interface BlackList extends TauriTypes.BlackListItemSetting {
   name?: string;
@@ -140,6 +143,11 @@ export const GeneralPanel = ({ value, onSubmit, setHideTab }: GeneralPanelProps)
     };
   };
 
+  const GetNameById = (id: string) => {
+    const item = tradableItems?.find((item) => item.wfm_id === id);
+    return item ? item.name : id;
+  };
+
   return (
     <Box h="100%" p={"md"}>
       <Modal zIndex={299} opened={opened} onClose={close} withCloseButton={false} centered>
@@ -230,6 +238,14 @@ export const GeneralPanel = ({ value, onSubmit, setHideTab }: GeneralPanelProps)
               }}
             >
               {useTranslateForm("buttons.edit_blacklist_label", { count: form.values.stock_item.blacklist?.length || 0 })}
+            </Button>
+            <Button
+              onClick={() => {
+                if (setHideTab) setHideTab(true);
+                setViewMode(ViewMode.BuyList);
+              }}
+            >
+              {useTranslateForm("buttons.edit_buy_list_label", { count: form.values.stock_item.buy_list?.length || 0 })}
             </Button>
           </Group>
           <Group
@@ -348,6 +364,69 @@ export const GeneralPanel = ({ value, onSubmit, setHideTab }: GeneralPanelProps)
                 },
               ],
             }}
+          />
+          <Button
+            color="blue"
+            variant="light"
+            onClick={() => {
+              setHideTab && setHideTab(false);
+              setViewMode(ViewMode.General);
+            }}
+          >
+            {useTranslateBlacklist("go_back_label")}
+          </Button>
+        </Stack>
+      )}
+      {viewMode == ViewMode.BuyList && (
+        <Stack>
+          <CreateItemForm
+            idField="wfm_id"
+            hide_sub_type
+            hide_quantity
+            onSubmit={(values) => {
+              if (form.values.stock_item.buy_list.find((buyItem) => buyItem.wfm_id === values.raw) || values.bought <= 0) return;
+              form.setFieldValue("stock_item", {
+                ...form.values.stock_item,
+                buy_list: form.values.stock_item.buy_list.concat([{ wfm_id: values.raw, max_price: values.bought }]),
+              });
+            }}
+          />
+          <DataTable
+            height={"60vh"}
+            withColumnBorders
+            withTableBorder
+            striped
+            records={form.values.stock_item.buy_list || []}
+            columns={[
+              {
+                accessor: "wfm_id",
+                title: useTranslateForm("columns.name"),
+                render: (item) => GetNameById(item.wfm_id),
+              },
+              {
+                accessor: "max_price",
+                title: useTranslateForm("columns.maximum_price"),
+              },
+              {
+                accessor: "actions",
+                title: useTranslateCommon("datatable_columns.actions.title"),
+                render: (item) => (
+                  <ActionWithTooltip
+                    tooltip={useTranslateCommon("datatable_columns.actions.buttons.delete_tooltip")}
+                    icon={faTrash}
+                    color="red.7"
+                    actionProps={{ size: "sm" }}
+                    iconProps={{ size: "xs" }}
+                    onClick={() => {
+                      form.setFieldValue("stock_item", {
+                        ...form.values.stock_item,
+                        buy_list: form.values.stock_item.buy_list.filter((buyItem) => buyItem.wfm_id !== item.wfm_id),
+                      });
+                    }}
+                  />
+                ),
+              },
+            ]}
           />
           <Button
             color="blue"

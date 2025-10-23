@@ -366,6 +366,7 @@ export namespace TauriTypes {
   }
   export interface SettingsStockItem {
     blacklist: BlackListItemSetting[];
+    buy_list: BuyListItemSetting[];
     min_profit: number;
     auto_delete: boolean;
     auto_trade: boolean;
@@ -384,6 +385,10 @@ export namespace TauriTypes {
   export interface BlackListItemSetting {
     wfm_id: string;
     disabled_for: TradeMode[];
+  }
+  export interface BuyListItemSetting {
+    wfm_id: string;
+    max_price: number;
   }
   export interface SettingsStockRiven {
     min_profit: number;

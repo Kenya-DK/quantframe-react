@@ -381,6 +381,21 @@ impl ItemModule {
         order_info = order_info.set_highest_price(highest_price);
         order_info = order_info.set_lowest_price(live_orders.lowest_price(OrderType::Buy));
 
+        // Check Max Buy Price for Item
+        let item_max_price = settings.get_item_max_price(&item_info.wfm_id);
+        if post_price as i64 > item_max_price && item_max_price > 0 {
+            order_info.add_operation("AboveMaxBuyPrice");
+            post_price = item_max_price;
+            warning(
+                format!("{}AboveMaxBuyPrice", component),
+                &format!(
+                    "Item {} post price {} is above max buy price {}.",
+                    item_info.name, post_price, item_max_price
+                ),
+                &log_options,
+            );
+        }
+
         // Log overpriced warning
         if !is_disabled(avg_price_cap) && (post_price as i64) > avg_price_cap {
             order_info.add_operation("AboveAvgPrice");
