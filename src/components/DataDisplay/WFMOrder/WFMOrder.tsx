@@ -5,7 +5,7 @@ import { useTranslateCommon, useTranslateComponent, useTranslateEnums } from "@h
 import { WFMThumbnail } from "@api/index";
 import { notifications } from "@mantine/notifications";
 import { TextTranslate } from "@components/Shared/TextTranslate";
-import { GetSubTypeDisplay } from "../../../utils/helper";
+import { GetSubTypeDisplay } from "@utils/helper";
 import { TimerStamp } from "../../Shared/TimerStamp";
 
 export type WFMOrderProps = {
@@ -25,8 +25,6 @@ export function WFMOrder({ show_border, paperProps, order, footer, show_user, di
     useTranslateStockItemInfo(`fields.${key}`, { ...context }, i18Key);
   const useTranslateUserStatus = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateEnums(`user_status.${key}`, { ...context }, i18Key);
-  const useTranslateNotifications = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateStockItemInfo(`notifications.${key}`, { ...context }, i18Key);
 
   return (
     <Paper {...paperProps} classNames={classes} p={7} data-border={show_border} data-color-mode="box-shadow" data-order-type={order.type}>
@@ -37,10 +35,11 @@ export function WFMOrder({ show_border, paperProps, order, footer, show_user, di
               <Text
                 style={{ cursor: "copy" }}
                 onClick={() => {
-                  navigator.clipboard.writeText(order?.properties?.item_name || "Unknown Item");
+                  let name = order?.properties?.item_name || "Unknown Item";
+                  navigator.clipboard.writeText(name);
                   notifications.show({
-                    title: useTranslateNotifications("copied.title"),
-                    message: useTranslateNotifications("copied.message", { message: "" }),
+                    title: useTranslateCommon("notifications.copy_to_clipboard.title"),
+                    message: useTranslateCommon("notifications.copy_to_clipboard.message", { message: name }),
                     color: "green.7",
                   });
                 }}

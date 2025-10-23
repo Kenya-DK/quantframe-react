@@ -22,6 +22,10 @@ export const en = {
       },
     },
     notifications: {
+      copy_to_clipboard: {
+        title: "Copied to Clipboard",
+        message: "{{message}} has been copied to clipboard.",
+      },
       on_trade_event: {
         multiple_items: {
           title: "Trade with {{player_name}} not processed",

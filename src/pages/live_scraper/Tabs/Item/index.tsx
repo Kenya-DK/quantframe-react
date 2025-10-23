@@ -170,8 +170,13 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
         onCellClick={({ record, column }) => {
           switch (column.accessor) {
             case "item_name":
-              navigator.clipboard.writeText(record.item_name);
-              notifications.show({ title: useTranslate("notifications.copied.title"), message: record.item_name, color: "green.7" });
+              let name = record.item_name;
+              navigator.clipboard.writeText(name);
+              notifications.show({
+                title: useTranslateCommon("notifications.copy_to_clipboard.title"),
+                message: useTranslateCommon("notifications.copy_to_clipboard.message", { message: name }),
+                color: "green.7",
+              });
               break;
           }
         }}

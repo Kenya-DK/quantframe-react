@@ -22,6 +22,7 @@ import { ColumnActions } from "../../Columns/ColumnActions";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import { HasPermission } from "@api/index";
+import { notifications } from "@mantine/notifications";
 export type RivenPanelProps = {
   isActive?: boolean;
 };
@@ -170,6 +171,19 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
         onSortStatusChange={(sort) => {
           if (!sort || !sort.columnAccessor) return;
           setQueryData((prev) => ({ ...prev, sort_by: sort.columnAccessor as string, sort_direction: sort.direction }));
+        }}
+        onCellClick={({ record, column }) => {
+          switch (column.accessor) {
+            case "weapon_name":
+              let name = record.weapon_name + " " + record.mod_name;
+              navigator.clipboard.writeText(name);
+              notifications.show({
+                title: useTranslateCommon("notifications.copy_to_clipboard.title"),
+                message: useTranslateCommon("notifications.copy_to_clipboard.message", { message: name }),
+                color: "green.7",
+              });
+              break;
+          }
         }}
         columns={[
           {
