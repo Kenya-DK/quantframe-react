@@ -18,12 +18,15 @@ interface InfoCardProps {
   link?: string;
   onClick?: () => void;
   cardProps?: CardProps;
+  titleColor?: string;
+  borderColor?: string;
 }
-const InfoCard = ({ icon, title, cardProps, link, onClick }: InfoCardProps) => {
+const InfoCard = ({ icon, title, cardProps, link, onClick, titleColor, borderColor }: InfoCardProps) => {
   return (
     <Card
       {...cardProps}
       className={classes.card}
+      style={{ ...cardProps?.style, borderColor: borderColor }}
       onClick={() => {
         if (onClick) onClick();
         if (!link) return;
@@ -33,7 +36,7 @@ const InfoCard = ({ icon, title, cardProps, link, onClick }: InfoCardProps) => {
     >
       {icon}
       <Group justify="space-between">
-        <Text size="xl">{title}</Text>
+        <Text size="xl" style={{ color: titleColor }}>{title}</Text>
       </Group>
     </Card>
   );
@@ -54,28 +57,37 @@ export default function AboutPage() {
   return (
     <Box p={"md"}>
       <Center w={"100%"} h={"80vh"}>
-        <Stack gap={"lg"} align={"center"}>
-          <Group grow gap={"5vw"}>
-            <InfoCard link="https://quantframe.app" icon={<FontAwesomeIcon size="5x" icon={faBookOpen} />} title={useTranslateCards("guide.title")} />
+        <Stack gap={"xl"} align={"center"} w={"100%"} maw={800}>
+          <Group grow gap={"xl"} w={"100%"}>
+            <InfoCard 
+              link="https://quantframe.app" 
+              icon={<FontAwesomeIcon size="5x" icon={faBookOpen} />} 
+              title={useTranslateCards("guide.title")} 
+              cardProps={{ h: 200, w: "100%" }}
+            />
             <InfoCard
               link="https://quantframe.app/faq"
               icon={<FontAwesomeIcon size="5x" icon={faQuestion} />}
               title={useTranslateCards("faq.title")}
+              cardProps={{ h: 200, w: "100%" }}
             />
             <InfoCard
               link="https://discord.gg/dPSFPG5Qt6"
               icon={<FontAwesomeIcon size="5x" icon={faDiscord} />}
               title={useTranslateCards("discord.title")}
+              cardProps={{ h: 200, w: "100%" }}
             />
           </Group>
-          <Group gap={"5vw"}>
+          <Group gap={"xl"} justify="center" w={"100%"}>
             <InfoCard
               link="https://www.buymeacoffee.com/kenyadk"
-              icon={<FontAwesomeIcon size="3x" icon={faCoffee} style={{ color: "#ffa000" }} />}
+              icon={<FontAwesomeIcon size="5x" icon={faCoffee} style={{ color: "#ffffff" }} />}
               title={useTranslateCards("coffee.title")}
+              cardProps={{ h: 200, w: "calc((100% - var(--mantine-spacing-xl)) / 3)", style: { backgroundColor: "#ffa000" } }}
+              titleColor="#ffffff"
+              borderColor="#ffb941ff"
             />
             <InfoCard
-              // cardProps={{ style: { width: "1000px" } }}
               onClick={() => {
                 modals.open({
                   title: useTranslateModals("base.titles.premium"),
@@ -85,16 +97,21 @@ export default function AboutPage() {
                 });
               }}
               icon={
-                <Text fw={700} fz={"3rem"} style={{ color: "#e07550" }}>
-                  Patreon
-                </Text>
+                <img 
+                  src="/about/PATREON_SYMBOL_1_WHITE_RGB.svg" 
+                  alt="Patreon" 
+                  style={{ width: "80px", height: "80px" }}
+                />
               }
               title={useTranslateCards("patreon.title")}
+              cardProps={{ h: 200, w: "calc((100% - var(--mantine-spacing-xl)) / 3)", style: { backgroundColor: "#fc674d" } }}
+              titleColor="#ffffff"
+              borderColor="#ff9d8bff"
             />
           </Group>
         </Stack>
       </Center>
-      <Box>
+      <Box mt={"xl"}>
         <TextTranslate size="lg" i18nKey={useTranslateText("version", undefined, true)} values={{ version: app_info?.version || "0.0.0" }} />
         <TextTranslate size="lg" i18nKey={useTranslateText("disclaimer", undefined, true)} values={{}} />
       </Box>

@@ -4,11 +4,23 @@
   justify-content: center;
   align-items: center;
   border: 2px solid var(--mantine-color-gray-6);
-  box-shadow: 0 0 10px var(--mantine-color-blue-0);
   border-radius: 5px;
   cursor: pointer;
+  transition: box-shadow 0.2s ease-in-out;
   &:hover {
-    box-shadow: 0 0 10px var(--mantine-color-blue-6);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+  }
+  
+  /* Coffee card specific hover */
+  &[style*="background-color: rgb(255, 160, 0)"]:hover,
+  &[style*="background-color:#ffa000"]:hover {
+    box-shadow: 0 0 20px rgba(255, 160, 0, 0.8);
+  }
+  
+  /* Patreon card specific hover */
+  &[style*="background-color: rgb(252, 103, 77)"]:hover,
+  &[style*="background-color:#fc674d"]:hover {
+    box-shadow: 0 0 20px rgba(252, 103, 77, 0.8);
   }
 }
 .icon {
