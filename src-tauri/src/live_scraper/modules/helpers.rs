@@ -257,6 +257,7 @@ pub fn get_order_info(
                 .get_details()
                 .set_operation(&["Update"])
                 .set_order_id(&order.id)
+                .set_update_string(&order.update_string())
         })
         .unwrap_or_default()
         .set_item_id(&item_info.wfm_id)
@@ -275,6 +276,7 @@ pub async fn progress_order(
     log_options: &LoggerOptions,
 ) -> Result<(), Error> {
     let can_create_order = wfm_client.order().can_create_order();
+    let update_string = format!("p:{}", post_price);
     if order_info.has_operation("Create") && !order_info.has_operation("Delete") && can_create_order
     {
         match wfm_client
@@ -302,6 +304,7 @@ pub async fn progress_order(
                     ),
                     &log_options,
                 );
+
                 send_event!(UIEvent::RefreshWfmOrders, json!({"source": component}));
             }
             Err(e) => {
@@ -326,7 +329,7 @@ pub async fn progress_order(
             )
             .await
         {
-            Ok(_) => {
+            Ok(order) => {
                 info(
                     format!("{}UpdateSuccess", component),
                     &format!(
@@ -335,6 +338,9 @@ pub async fn progress_order(
                     ),
                     &log_options,
                 );
+                if order.update_string() != order_info.update_string {
+                    send_event!(UIEvent::RefreshWfmOrders, json!({"source": component}));
+                }
             }
             Err(e) => {
                 return Err(Error::from_wfm(

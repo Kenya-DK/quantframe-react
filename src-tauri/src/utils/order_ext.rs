@@ -5,7 +5,7 @@ use qf_api::errors::ApiError as QFRequestError;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use utils::{warning, Error, LogLevel, LoggerOptions};
-use wf_market::types::{order, Order, OrderWithUser};
+use wf_market::types::{order, Order, OrderLike, OrderWithUser};
 
 use crate::{
     cache::{client::CacheState, types::CacheTradableItem},
@@ -33,6 +33,10 @@ pub struct OrderDetails {
     #[serde(default)]
     #[serde(rename = "highest_price")]
     pub highest_price: i64,
+
+    #[serde(default)]
+    #[serde(rename = "update_string")]
+    pub update_string: String,
 
     // Default implementation for string
     #[serde(rename = "operation")]
@@ -101,6 +105,10 @@ impl OrderDetails {
         self.image_url = info.image_url.clone();
         self
     }
+    pub fn set_update_string(mut self, update_string: impl Into<String>) -> Self {
+        self.update_string = update_string.into();
+        self
+    }
 }
 
 // Default implementation for OrderDetails
@@ -118,6 +126,7 @@ impl Default for OrderDetails {
             lowest_price: -1,
             highest_price: -1,
             operations: vec!["Create".to_string()],
+            update_string: String::new(),
             orders: vec![],
         }
     }
@@ -160,6 +169,7 @@ pub trait OrderExt {
         &mut self,
         item_info: &Option<CacheTradableItem>,
     ) -> Result<(), Error>;
+    fn update_string(&self) -> String;
 }
 
 impl OrderExt for Order {
@@ -198,5 +208,8 @@ impl OrderExt for Order {
             );
         }
         Ok(())
+    }
+    fn update_string(&self) -> String {
+        format!("p:{}", self.to_order().platinum)
     }
 }
