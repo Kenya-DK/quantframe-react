@@ -59,18 +59,16 @@ impl DiscordNotify {
         if self.webhook.is_empty() {
             return;
         }
-        if !self.user_ids.is_empty() {
-            let mut tags = Vec::new();
-            for user_id in &self.user_ids {
-                if !user_id.is_empty() {
-                    tags.push(format!("<@{}>", user_id));
-                }
+        let mut tags = Vec::new();
+        for user_id in &self.user_ids {
+            if !user_id.is_empty() {
+                tags.push(format!("<@{}>", user_id));
             }
-            if !tags.is_empty() {
-                variables.insert("<MENTION>".to_string(), tags.join(" ").to_string());
-            } else {
-                variables.insert("<MENTION>".to_string(), "".to_string());
-            }
+        }
+        if !tags.is_empty() {
+            variables.insert("<MENTION>".to_string(), tags.join(" ").to_string());
+        } else {
+            variables.insert("<MENTION>".to_string(), "".to_string());
         }
         let mut content = self.content.clone();
         for (k, v) in variables.iter() {
