@@ -604,15 +604,16 @@ impl ItemModule {
         };
 
         // Handle SMA Limit
-        if !is_disabled(minimum_sma) && post_price < (closed_avg - minimum_sma) {
+        if !is_disabled(minimum_sma)
+            && post_price < (closed_avg - minimum_sma)
+            && lowest_price > bought_price
+        {
             post_price = closed_avg;
             order_info.add_operation("SMALimit");
             stock_item.set_list_price(Some(post_price));
             stock_item.set_status(StockStatus::SMALimit);
             stock_item.locked = true;
         }
-
-        post_price = std::cmp::max(post_price, 1);
 
         // Calculate the profit from the post price
         let mut profit = post_price - bought_price;
@@ -647,6 +648,9 @@ impl ItemModule {
                 post_price,
             ));
         }
+
+        // Ensure post price is at least 1 platinum
+        post_price = std::cmp::max(post_price, 1);
 
         // Summary log
         info(
