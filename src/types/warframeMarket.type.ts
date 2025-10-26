@@ -1,4 +1,5 @@
 import { PaginatedDto, SubType, UserStatus } from "./global.type";
+import { TauriTypes } from "./tauri.type";
 
 export namespace WFMarketTypes {
   export enum OrderType {
@@ -15,7 +16,10 @@ export namespace WFMarketTypes {
     properties: ItemProperties | null;
     quantity: number;
     rank: number;
+    cyanStars?: number;
+    amberStars?: number;
     type: string;
+    subtype: string;
     updatedAt: Date;
     visible: boolean;
     user?: User;
@@ -40,6 +44,7 @@ export namespace WFMarketTypes {
     profit: number;
     quantity: number;
     sub_type: SubType;
+    trade_sub_type?: TauriTypes.CacheTradableItemSubType;
   }
   export interface AuctionProperties {
     auction_id: string;

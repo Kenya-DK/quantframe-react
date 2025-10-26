@@ -8,7 +8,7 @@ use utils::{warning, Error, LogLevel, LoggerOptions};
 use wf_market::types::{order, Order, OrderLike, OrderWithUser};
 
 use crate::{
-    cache::{client::CacheState, types::CacheTradableItem},
+    cache::{client::CacheState, types::CacheTradableItem, types::SubType as CacheSubType},
     enums::FindBy,
 };
 
@@ -50,6 +50,7 @@ pub struct OrderDetails {
     // Item Info
     pub item_name: String,
     pub image_url: String,
+    pub trade_sub_type: Option<CacheSubType>,
 }
 impl OrderDetails {
     pub fn set_closed_avg(mut self, closed_avg: f64) -> Self {
@@ -103,6 +104,7 @@ impl OrderDetails {
     pub fn set_info(mut self, info: &CacheTradableItem) -> Self {
         self.item_name = info.name.clone();
         self.image_url = info.image_url.clone();
+        self.trade_sub_type = info.sub_type.clone();
         self
     }
     pub fn set_update_string(mut self, update_string: impl Into<String>) -> Self {
@@ -128,6 +130,7 @@ impl Default for OrderDetails {
             operations: vec!["Create".to_string()],
             update_string: String::new(),
             orders: vec![],
+            trade_sub_type: None,
         }
     }
 }

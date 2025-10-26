@@ -1,4 +1,4 @@
-import { Paper, Stack, PaperProps, Group, Divider, Box, Avatar, Text, Image, Grid } from "@mantine/core";
+import { Paper, Stack, PaperProps, Group, Divider, Box, Avatar, Text, Image, Grid, Rating, useMantineTheme } from "@mantine/core";
 import classes from "./WFMOrder.module.css";
 import { WFMarketTypes } from "$types/index";
 import { useTranslateCommon, useTranslateComponent, useTranslateEnums } from "@hooks/useTranslate.hook";
@@ -7,6 +7,10 @@ import { notifications } from "@mantine/notifications";
 import { TextTranslate } from "@components/Shared/TextTranslate";
 import { GetSubTypeDisplay } from "@utils/helper";
 import { TimerStamp } from "../../Shared/TimerStamp";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import faAmberStar from "@icons/faAmberStar";
+import faCyanStar from "@icons/faCyanStar";
+import { upperFirst } from "@mantine/hooks";
 
 export type WFMOrderProps = {
   order: WFMarketTypes.Order;
@@ -18,6 +22,8 @@ export type WFMOrderProps = {
 };
 
 export function WFMOrder({ show_border, paperProps, order, footer, show_user, display_style }: WFMOrderProps) {
+  const theme = useMantineTheme();
+
   // Translate general
   const useTranslateStockItemInfo = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateComponent(`wfm_order.${key}`, { ...context }, i18Key);
@@ -67,36 +73,36 @@ export function WFMOrder({ show_border, paperProps, order, footer, show_user, di
             </Group>
             <Group justify="flex-end">
               <Box>
-                {/* {order.mod_rank != undefined && (
-                <TextTranslate
-                size="lg"
-                i18nKey={useTranslateFields("mod_rank", undefined, true)}
-                values={{ mod_rank: order.mod_rank, mod_max_rank: order.item?.mod_max_rank || 0 }}
-                />
-                )}
-                {order.amber_stars != undefined && (
-                  <Rating
-                  fullSymbol={<FontAwesomeIcon icon={faCyanStar} color={theme.colors.blue[5]} />}
-                  value={order.amber_stars}
-                  count={order.amber_stars}
-                  readOnly
+                {order.rank != undefined && (
+                  <TextTranslate
+                    size="lg"
+                    i18nKey={useTranslateFields("mod_rank", undefined, true)}
+                    values={{ mod_rank: order.rank, mod_max_rank: order.properties?.trade_sub_type?.max_rank || "?" }}
                   />
-                  )}
-                  {order.cyan_stars != undefined && (
-                    <Rating
+                )}
+                {order.amberStars != undefined && (
+                  <Rating
                     fullSymbol={<FontAwesomeIcon icon={faAmberStar} color={theme.colors.yellow[7]} />}
-                    value={order.cyan_stars}
-                    count={order.cyan_stars}
+                    value={order.amberStars}
+                    count={order.amberStars}
                     readOnly
-                    />
-                    )}
-                    {order.subtype && (
-                      <TextTranslate
-                      size="lg"
-                      i18nKey={useTranslateFields("subtype", undefined, true)}
-                      values={{ sub_type: order.subtype ? `${upperFirst(order.subtype)}` : "" }}
-                      />
-                      )} */}
+                  />
+                )}
+                {order.cyanStars != undefined && (
+                  <Rating
+                    fullSymbol={<FontAwesomeIcon icon={faCyanStar} color={theme.colors.blue[7]} />}
+                    value={order.cyanStars}
+                    count={order.cyanStars}
+                    readOnly
+                  />
+                )}
+                {order.subtype && (
+                  <TextTranslate
+                    size="lg"
+                    i18nKey={useTranslateFields("subtype", undefined, true)}
+                    values={{ sub_type: order.subtype ? `${upperFirst(order.subtype)}` : "" }}
+                  />
+                )}
               </Box>
             </Group>
           </Group>
