@@ -149,23 +149,20 @@ pub async fn handle_item_by_entity(
         }
     }
 
-    // If the operation is a sale, we need to check if there's an existing order
-    if operation == OrderType::Sell {
-        match handle_wfm_item(
-            &item.wfm_id,
-            &item.sub_type,
-            item.quantity,
-            operation,
-            false,
-        )
-        .await
-        {
-            Ok(operation_status) => {
-                operations.add(format!("WFMItem_{}", operation_status));
-            }
-            Err(e) => {
-                return Err(e.with_location(get_location!()).log(file));
-            }
+    match handle_wfm_item(
+        &item.wfm_id,
+        &item.sub_type,
+        item.quantity,
+        operation,
+        false,
+    )
+    .await
+    {
+        Ok(operation_status) => {
+            operations.add(format!("WFMItem_{}", operation_status));
+        }
+        Err(e) => {
+            return Err(e.with_location(get_location!()).log(file));
         }
     }
 

@@ -22,6 +22,11 @@ pub async fn handle_wfm_item(
     let mut operation_status = "NoOrder".to_string();
     let wf_sub_type: wf_market::types::SubType = SubTypeExt::from_entity(sub_type.to_owned());
 
+    // Skip if order type is Buy and report to WFM is disabled
+    if operation == OrderType::Buy && !app.settings.live_scraper.report_to_wfm {
+        return Ok("SkippedBuyWfmReportDisabled".to_string());
+    }
+
     if let Some(mut order) =
         app.wfm_client
             .order()
