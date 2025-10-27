@@ -93,8 +93,8 @@ pub async fn get_recent_days_summary(
     transactions: &Vec<transaction::Model>,
     days: i64,
 ) -> Result<Value, Error> {
-    let (start, mut end) = get_start_end_of(Utc::now(), GroupByDate::Day);
-    end = end + chrono::Duration::days(days); // Include the end date
+    let (mut start, end) = get_start_end_of(Utc::now(), GroupByDate::Day);
+    start = start - chrono::Duration::days(days); // Include the end date
 
     let transactions = filters_by(transactions, |t| {
         t.created_at >= start && t.created_at <= end
@@ -171,7 +171,7 @@ pub async fn dashboard_summary(app: tauri::State<'_, Mutex<AppState>>) -> Result
     Ok(json!({
         "total": get_total_summary(&transactions.results).await.unwrap(),
         "today": get_today_summary(&transactions.results).await.unwrap(),
-        "recent_days": get_recent_days_summary(&transactions.results, 7).await.unwrap(),
+        "recent_days": get_recent_days_summary(&transactions.results, app.settings.summary_settings.resent_days).await.unwrap(),
         "best_seller": get_best_selling_items(&transactions.results).await?,
         "categories": category_summary,
         "resent_transactions": transactions.take_top(app.settings.summary_settings.resent_transactions as usize)

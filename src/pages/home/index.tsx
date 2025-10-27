@@ -98,7 +98,6 @@ const BarChartFooter = ({ i18nKey, statistics }: { i18nKey: string; statistics: 
 
 export default function HomePage() {
   const theme = useMantineTheme();
-  // State's
 
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`home.${key}`, { ...context }, i18Key);
@@ -215,7 +214,7 @@ export default function HomePage() {
         </Grid.Col>
         <Grid.Col span={4}>
           <BarCardChart
-            title={useTranslateCards("recent_days.bar_chart.title", { days: summary?.recent_days.chart.labels.length || 0 })}
+            title={useTranslateCards("recent_days.bar_chart.title", { days: (summary?.recent_days.chart.labels.length || 1) - 1 || 0 })}
             labels={summary?.recent_days.chart.labels || []}
             chartStyle={{ background: theme.other.chartStyles.lastDays.bgColor, height: "200px" }}
             datasets={[
