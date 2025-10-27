@@ -1578,6 +1578,9 @@ export const en = {
       tabs: {
         transaction: {
           title: "Transaction",
+          date_range_label: "Date Range",
+          date_range_description: "Range of dates to filter transactions",
+          date_range_placeholder: "Select date range",
           prompts: {
             update_title: "Update Transaction",
           },

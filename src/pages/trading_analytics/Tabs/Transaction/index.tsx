@@ -11,7 +11,6 @@ import { DataTable } from "mantine-datatable";
 import { getSafePage, GetSubTypeDisplay } from "@utils/helper";
 import { TextTranslate } from "@components/Shared/TextTranslate";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
-import dayjs from "dayjs";
 import { ColorInfo } from "@components/Shared/ColorInfo";
 import { SelectItemTags } from "@components/Forms/SelectItemTags";
 import { FinancialReportCard } from "@components/Shared/FinancialReportCard";
@@ -20,6 +19,8 @@ import { faCoins, faDownload, faHammer, faTrash } from "@fortawesome/free-solid-
 import { useMutations } from "./mutations";
 import { useModals } from "./modals";
 import { HasPermission } from "@api/index";
+import { DatePickerInput } from "@mantine/dates";
+import dayjs from "dayjs";
 interface TransactionPanelProps {
   isActive?: boolean;
 }
@@ -103,6 +104,20 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
               <Paper p={"sm"} mt={"md"}>
                 <Group>
                   <SelectItemTags value={queryData.tags || []} onChange={(value) => setQueryData((prev) => ({ ...prev, tags: value }))} />
+                  <DatePickerInput
+                    clearable
+                    label={useTranslateTabItem("date_range_label")}
+                    description={useTranslateTabItem("date_range_description")}
+                    placeholder={useTranslateTabItem("date_range_placeholder")}
+                    w={200}
+                    type="range"
+                    valueFormat="YYYY MMM DD"
+                    value={[queryData.from_date ? new Date(queryData.from_date) : null, queryData.to_date ? new Date(queryData.to_date) : null]}
+                    onChange={(value) => {
+                      let [start, end] = value || [undefined, undefined];
+                      setQueryData((prev) => ({ ...prev, from_date: start || undefined, to_date: end || undefined }));
+                    }}
+                  />
                 </Group>
               </Paper>
             }
