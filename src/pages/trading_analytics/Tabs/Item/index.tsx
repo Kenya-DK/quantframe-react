@@ -195,7 +195,7 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
             title: useTranslateCommon("item_name.title"),
             sortable: true,
             width: 250,
-            render: (row) => <ItemName value={row} />,
+            render: (row) => <ItemName color="gray.4" size="md" value={row} />,
           },
           {
             accessor: "volume",

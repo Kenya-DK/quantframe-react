@@ -12,7 +12,7 @@ export function TransactionListItem({ transaction }: TransactionListItemProps) {
     <Paper mt={5} classNames={classes} p={5} data-transaction-type={transaction.transaction_type} data-color-mode="box-shadow">
       <Group justify="space-between">
         <Group ml={10} gap={"sm"} w={"50%"}>
-          <ItemName value={transaction} />
+          <ItemName color="gray.4" size="md" value={transaction} />
         </Group>
         <Group w={100}>
           <Text c="blue.5">{transaction.price * transaction.quantity} </Text>

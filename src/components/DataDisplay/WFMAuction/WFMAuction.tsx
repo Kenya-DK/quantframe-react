@@ -47,6 +47,7 @@ export function WFMAuction({ show_border, paperProps, auction, header, show_user
                 values={{
                   name: `${auction?.properties?.item_name || "<Unknown Item>"}  ${auction.item.name}`,
                   sub_type: ``,
+                  quantity: ``,
                 }}
               />
             </Group>
