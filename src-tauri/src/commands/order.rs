@@ -4,17 +4,25 @@ use std::{
 };
 
 use entity::{dto::*, enums::*};
+use serde::de;
 use serde_json::{json, Value};
 use service::StockItemQuery;
-use utils::{filters_by, get_location, group_by, Error};
+use utils::{filters_by, get_location, group_by, warning, Error, LoggerOptions};
 use wf_market::{
     enums::OrderType,
     types::{item, Order},
 };
 
 use crate::{
-    app::client::AppState, cache::client::CacheState, enums::*, helper::paginate,
-    live_scraper::LiveScraperState, send_event, types::*, utils::*, DATABASE,
+    app::client::AppState,
+    cache::client::CacheState,
+    enums::*,
+    helper::{self, paginate},
+    live_scraper::LiveScraperState,
+    send_event,
+    types::*,
+    utils::*,
+    DATABASE,
 };
 #[tauri::command]
 pub async fn order_refresh(
@@ -208,4 +216,29 @@ pub async fn order_delete_by_id(
         }
     }
     Ok(())
+}
+#[tauri::command]
+pub async fn get_wfm_order_by_id(
+    id: String,
+    app: tauri::State<'_, Mutex<AppState>>,
+) -> Result<Value, Error> {
+    let app = app.lock()?.clone();
+    let order = app.wfm_client.order().cache_orders().get_by_id(&id);
+    if order.is_none() {
+        return Err(Error::new(
+            "Command::GetWfmOrderById",
+            "Order not found",
+            get_location!(),
+        ));
+    }
+    let order = order.unwrap();
+    let (payload, _, _) = helper::get_item_details(
+        FindByType::Id,
+        &order.item_id,
+        order.subtype.to_entity(),
+        order.order_type.clone(),
+    )
+    .await?;
+
+    Ok(payload)
 }

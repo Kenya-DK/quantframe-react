@@ -50,13 +50,25 @@ export function AnalyticsTab({ value }: AnalyticsTabProps) {
       <Grid.Col span={6}>
         <StatsWithSegments
           segments={[
-            { label: "Expenses", tooltip: "Average Expense", count: value.expenses, part: value.average_expense, color: theme.colors.red[7] },
-            { label: "Revenue", tooltip: "Average Revenue", count: value.revenue, part: value.average_revenue, color: theme.colors.green[7] },
+            {
+              label: "Expenses",
+              tooltip: "Average Expense",
+              count: value.report.expenses,
+              part: value.report.average_expense,
+              color: theme.colors.red[7],
+            },
+            {
+              label: "Revenue",
+              tooltip: "Average Revenue",
+              count: value.report.revenue,
+              part: value.report.average_revenue,
+              color: theme.colors.green[7],
+            },
             {
               label: "Total profit",
               tooltip: "Average Profit",
-              count: value.total_profit,
-              part: value.average_profit,
+              count: value.report.total_profit,
+              part: value.report.average_profit,
               color: theme.colors.violet[7],
             },
           ]}
@@ -68,15 +80,15 @@ export function AnalyticsTab({ value }: AnalyticsTabProps) {
             {
               label: "Purchases",
               tooltip: "Average Expense",
-              count: value.purchases_count,
+              count: value.report.purchases_count,
               color: theme.colors.red[7],
             },
-            { label: "Sales", tooltip: "Average Revenue", count: value.sale_count, color: theme.colors.green[7] },
+            { label: "Sales", tooltip: "Average Revenue", count: value.report.sale_count, color: theme.colors.green[7] },
             {
               label: "Total",
               tooltip: "Average Profit",
-              count: value.total_transactions,
-              part: value.profit_margin,
+              count: value.report.total_transactions,
+              part: value.report.profit_margin,
               color: theme.colors.violet[7],
             },
           ]}

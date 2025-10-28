@@ -5,7 +5,7 @@ use entity::{dto::*, stock_item::*, transaction::dto::TransactionPaginationQuery
 use serde_json::{json, Value};
 use service::{StockItemMutation, StockItemQuery, TransactionQuery};
 use tauri_plugin_dialog::DialogExt;
-use utils::{get_location, group_by, info, Error, GroupByDate, LoggerOptions};
+use utils::{get_location, group_by, info, warning, Error, GroupByDate, LoggerOptions};
 use wf_market::enums::OrderType;
 
 use crate::{
@@ -13,7 +13,7 @@ use crate::{
     cache::client::CacheState,
     enums::{FindBy, FindByType},
     handlers::{handle_item_by_entity, handle_wfm_item, stock_item::handle_item},
-    helper::generate_transaction_summary,
+    helper::{self, generate_transaction_summary},
     types::PermissionsFlags,
     utils::{ErrorFromExt, OrderExt, SubTypeExt},
     APP, DATABASE,
@@ -169,13 +169,7 @@ pub async fn stock_item_update(input: UpdateStockItem) -> Result<stock_item::Mod
 }
 
 #[tauri::command]
-pub async fn stock_item_get_by_id(
-    id: i64,
-    app: tauri::State<'_, Mutex<AppState>>,
-    cache: tauri::State<'_, Mutex<CacheState>>,
-) -> Result<Value, Error> {
-    let app = app.lock()?.clone();
-    let cache = cache.lock()?.clone();
+pub async fn stock_item_get_by_id(id: i64) -> Result<Value, Error> {
     let conn = DATABASE.get().unwrap();
     let item = match StockItemQuery::find_by_id(conn, id).await {
         Ok(stock_item) => {
@@ -199,47 +193,19 @@ pub async fn stock_item_get_by_id(
         }
     };
 
-    let transaction_paginate = TransactionQuery::get_all(
-        conn,
-        TransactionPaginationQueryDto::new(1, -1)
-            .set_wfm_id(&item.wfm_id)
-            .set_sub_type(item.sub_type.clone()),
-    )
-    .await
-    .map_err(|e| {
-        Error::from_db(
-            "Command::StockItemGetById",
-            "Failed to get transactions: {}",
-            e,
-            get_location!(),
-        )
-    })?;
-
-    let order = app.wfm_client.order().cache_orders().find_order(
+    let (mut payload, _, order) = helper::get_item_details(
+        FindByType::Id,
         &item.wfm_id,
-        &SubTypeExt::from_entity(item.sub_type.clone()),
+        item.sub_type.clone(),
         OrderType::Sell,
-    );
+    )
+    .await?;
 
-    let mut payload = json!(FinancialReport::from(&transaction_paginate.results));
-    payload["item_info"] = json!(cache
-        .tradable_item()
-        .get_by(FindBy::new(FindByType::Url, &item.wfm_url))?);
-    payload["stock"] = json!(item);
-    if let Some(mut order_info) = order {
-        let mut details = order_info.get_details();
-        let mut orders = details.orders;
-        if !orders.is_empty() {
-            for ord in orders.iter_mut() {
-                ord.order.apply_item_info(&cache)?;
-            }
-            details.orders = orders;
-            order_info.update_details(details);
-        }
-        payload["order_info"] = json!(order_info);
-        payload["stock_profit"] = json!(order_info.platinum - item.bought as u32);
+    if let Some(order) = order {
+        payload["potential_profit"] = json!(order.platinum - item.bought as u32);
     }
-    payload["last_transactions"] = json!(transaction_paginate.take_top(5));
+
+    payload["stock"] = json!(item);
 
     Ok(payload)
 }

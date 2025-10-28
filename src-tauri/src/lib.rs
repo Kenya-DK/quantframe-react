@@ -191,8 +191,6 @@ pub fn run() {
             commands::auth::auth_has_permission,
             // User commands
             commands::user::user_set_status,
-            // User commands
-            commands::user::user_set_status,
             // Analytics commands
             commands::analytics::analytics_add_metric,
             commands::analytics::analytics_set_last_user_activity,
@@ -239,6 +237,7 @@ pub fn run() {
             commands::order::order_refresh,
             commands::order::order_delete_all,
             commands::order::order_delete_by_id,
+            commands::order::get_wfm_order_by_id,
             // Auction commands
             commands::auction::auction_refresh,
             commands::auction::get_wfm_auctions_pagination,

@@ -51,6 +51,10 @@ pub struct OrderDetails {
     pub item_name: String,
     pub image_url: String,
     pub trade_sub_type: Option<CacheSubType>,
+
+    #[serde(rename = "price_history")]
+    #[serde(default)]
+    pub price_history: Vec<PriceHistory>,
 }
 impl OrderDetails {
     pub fn set_closed_avg(mut self, closed_avg: f64) -> Self {
@@ -111,6 +115,19 @@ impl OrderDetails {
         self.update_string = update_string.into();
         self
     }
+    pub fn add_price_history(&mut self, price_history: PriceHistory) {
+        let mut items = self.price_history.clone();
+
+        let last_item = items.last().cloned();
+        if last_item.is_none() || last_item.unwrap().price != price_history.price {
+            // Limit to 5 elements
+            if items.len() >= 5 {
+                items.remove(0);
+            }
+            items.push(price_history);
+            self.price_history = items;
+        }
+    }
 }
 
 // Default implementation for OrderDetails
@@ -130,6 +147,7 @@ impl Default for OrderDetails {
             operations: vec!["Create".to_string()],
             update_string: String::new(),
             orders: vec![],
+            price_history: vec![],
             trade_sub_type: None,
         }
     }

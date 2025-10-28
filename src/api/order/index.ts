@@ -21,4 +21,7 @@ export class OrderModule {
   async deleteById(id: string): Promise<any> {
     return await this.client.sendInvoke<any>("order_delete_by_id", { id });
   }
+  async getById(id: string): Promise<WFMarketTypes.OrderDetails> {
+    return await this.client.sendInvoke<WFMarketTypes.OrderDetails>("get_wfm_order_by_id", { id });
+  }
 }

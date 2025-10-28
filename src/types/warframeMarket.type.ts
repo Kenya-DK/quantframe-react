@@ -1,4 +1,4 @@
-import { PaginatedDto, SubType, UserStatus } from "./global.type";
+import { PaginatedDto, PriceHistory, SubType, UserStatus } from "./global.type";
 import { TauriTypes } from "./tauri.type";
 
 export namespace WFMarketTypes {
@@ -24,6 +24,8 @@ export namespace WFMarketTypes {
     visible: boolean;
     user?: User;
   }
+  export interface OrderDetails extends TauriTypes.BaseItemDetails {}
+
   export interface User {
     id: string;
     ingame_name: string;
@@ -45,6 +47,7 @@ export namespace WFMarketTypes {
     quantity: number;
     sub_type: SubType;
     trade_sub_type?: TauriTypes.CacheTradableItemSubType;
+    price_history: PriceHistory[];
   }
   export interface AuctionProperties {
     auction_id: string;

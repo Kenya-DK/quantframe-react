@@ -265,6 +265,7 @@ export const en = {
   },
   components: {
     item_component: "<blue>{{name}}</blue> x<blue>{{count}}</blue>",
+    item_components: "Item Components",
     patreon_overlay: {
       title: "Restricted Content",
       description: "This content is restricted to Patreon supporters of tier <blue>{{tier}}</blue> or higher.",
@@ -281,6 +282,7 @@ export const en = {
     },
     wfm_order: {
       fields: {
+        quantity: "<qty/> <blue>{{quantity}}</blue>",
         platinum: "<blue>{{platinum}}</blue> <plat/>",
         mod_rank: "Rank: <blue>{{mod_rank}}</blue>/<blue>{{mod_max_rank}}</blue>",
         subtype: "<blue>{{sub_type}}</blue>",
@@ -1200,6 +1202,31 @@ export const en = {
         footer:
           "Please report this error to the developers,\nBy exporting the log file just click the button below this wil create a file in on your desktop",
         export_log: "Export Log",
+      },
+      wfm_order_details: {
+        tabs: {
+          overview: {
+            title: "Overview",
+            fields: {
+              created_at: "Created At",
+              updated_at: "Updated At",
+              quantity: "Quantity",
+              order_type: "Order Type",
+              operations: "Operations",
+              platinum: "Platinum",
+              closed_avg: "Closed Average Price",
+              profit: "Profit",
+              highest_price: "Highest Price",
+              lowest_price: "Lowest Price",
+              listed: "Listed Prices History",
+              no_listed: "No previous listed prices",
+              per_trade: "Per Trade",
+            },
+            buttons: {
+              wfm: "Warframe Market",
+            },
+          },
+        },
       },
     },
     chat_item: {

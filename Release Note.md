@@ -6,11 +6,7 @@ How To migrate:
 
 ## TODO's
 
-- [ ] Fix when you didn't put in a user id in the discord notification it just says <MENTION>
 - [ ] Add show parts for item set
-- [ ] Fix items in not reported to wfm
-- [ ] The Stock items selling listed price is not using the bought price
-- [ ] Add date filter for the trading analysis
 
 ## Feature's
 
@@ -26,6 +22,7 @@ How To migrate:
 - ✨ Add Min Profit & Min SMA per item in the live trader stock items
 - ✨ Add min max filter for the trading analysis
 - ✨ Add Max Price for WTB orders Fx Arcane XX wil not put up a price for more than 100p if it is set to 100 but i can go below 100p
+- ✨ Add date filter for the trading analysis
 
 ## Dev Notes
 
@@ -40,3 +37,6 @@ How To migrate:
 - 🛠️ Fix so the overview over the stuck wil be updated properly
 - 🛠️ Fix so the stock items don't disappear when the list is updated
 - 🛠️ Fix Ranks is not show in the wfm tab
+- 🛠️ The Stock items selling listed price is not using the bought price
+- 🛠️ Fix the dashboard not loading the last X days properly
+- 🛠️ Fix items in not reported to wfm

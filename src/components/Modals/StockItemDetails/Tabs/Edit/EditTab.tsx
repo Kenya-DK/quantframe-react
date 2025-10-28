@@ -68,7 +68,6 @@ export function EditTab({ value, onUpdate }: EditTabProps) {
                   <PriceHistoryListItem
                     index={index}
                     onDelete={(index) => {
-                      console.log(index);
                       const newHistory = form.values.stock.price_history.filter((_, i) => i !== index);
                       form.setFieldValue("stock.price_history", newHistory);
                     }}

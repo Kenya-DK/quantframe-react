@@ -2,6 +2,7 @@ import { modals } from "@mantine/modals";
 import { Text } from "@mantine/core";
 import { WFMarketTypes } from "$types";
 import { useTranslateCommon } from "@hooks/useTranslate.hook";
+import { WFMOrderDetailsModal } from "@components/Modals/WFMOrderDetails";
 
 interface ModalHooks {
   useTranslateBasePrompt: (key: string, context?: { [key: string]: any }) => string;
@@ -87,9 +88,16 @@ export const useStockModals = ({ deleteStockMutation, createStockMutation, sellS
       onConfirm: async () => await deleteStockMutation.mutateAsync(id),
     });
   };
-
+  const OpenInfoModal = (item: WFMarketTypes.Order) => {
+    modals.open({
+      size: "100%",
+      withCloseButton: false,
+      children: <WFMOrderDetailsModal value={item.id} />,
+    });
+  };
   return {
     HandleModalOrder,
     OpenDeleteModal,
+    OpenInfoModal,
   };
 };

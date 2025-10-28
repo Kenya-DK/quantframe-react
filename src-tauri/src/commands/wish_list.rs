@@ -4,7 +4,7 @@ use entity::{dto::*, wish_list::*};
 use serde_json::{json, Value};
 use service::{WishListMutation, WishListQuery};
 use tauri_plugin_dialog::DialogExt;
-use utils::{get_location, group_by, info, Error, LoggerOptions};
+use utils::{get_location, group_by, info, warning, Error, LoggerOptions};
 use wf_market::enums::OrderType;
 
 use crate::{
@@ -14,6 +14,7 @@ use crate::{
     handlers::{
         handle_wfm_item, handle_wish_list, handle_wish_list_by_entity, stock_item::handle_item,
     },
+    helper,
     types::PermissionsFlags,
     utils::{CreateWishListItemExt, ErrorFromExt, SubTypeExt},
     APP, DATABASE,
@@ -150,13 +151,7 @@ pub async fn wish_list_update(input: UpdateWishList) -> Result<Model, Error> {
 }
 
 #[tauri::command]
-pub async fn wish_list_get_by_id(
-    id: i64,
-    app: tauri::State<'_, Mutex<AppState>>,
-    cache: tauri::State<'_, Mutex<CacheState>>,
-) -> Result<Value, Error> {
-    let app = app.lock()?.clone();
-    let cache = cache.lock()?.clone();
+pub async fn wish_list_get_by_id(id: i64) -> Result<Value, Error> {
     let conn = DATABASE.get().unwrap();
     let item = match WishListQuery::find_by_id(conn, id).await {
         Ok(wish_list_item) => {
@@ -180,18 +175,15 @@ pub async fn wish_list_get_by_id(
         }
     };
 
-    let order = app.wfm_client.order().cache_orders().find_order(
+    let (mut payload, _, _) = helper::get_item_details(
+        FindByType::Id,
         &item.wfm_id,
-        &SubTypeExt::from_entity(item.sub_type.clone()),
+        item.sub_type.clone(),
         OrderType::Buy,
-    );
+    )
+    .await?;
 
-    let mut payload = json!({});
-    payload["item_info"] = json!(cache
-        .tradable_item()
-        .get_by(FindBy::new(FindByType::Url, &item.wfm_url))?);
     payload["stock"] = json!(item);
-    payload["order_info"] = json!(order);
 
     Ok(payload)
 }

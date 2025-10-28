@@ -375,12 +375,6 @@ impl ItemModule {
         let closed_avg_metric = (closed_avg - post_price as f64) as i64;
         let potential_profit = closed_avg_metric - 1;
 
-        // Update Order Info
-        order_info = order_info.set_profit(price_range as f64);
-        order_info = order_info.set_closed_avg(closed_avg);
-        order_info = order_info.set_highest_price(highest_price);
-        order_info = order_info.set_lowest_price(live_orders.lowest_price(OrderType::Buy));
-
         // Check Max Buy Price for Item
         let item_max_price = settings.get_item_max_price(&item_info.wfm_id);
         if post_price as i64 > item_max_price && item_max_price > 0 {
@@ -406,6 +400,16 @@ impl ItemModule {
                 &log_options,
             );
         }
+
+        // Update Order Info
+        order_info = order_info.set_profit(price_range as f64);
+        order_info = order_info.set_closed_avg(closed_avg);
+        order_info = order_info.set_highest_price(highest_price);
+        order_info = order_info.set_lowest_price(live_orders.lowest_price(OrderType::Buy));
+        order_info.add_price_history(PriceHistory::new(
+            chrono::Local::now().naive_local().to_string(),
+            post_price,
+        ));
 
         if closed_avg_metric >= 0
             && price_range >= profit_threshold
@@ -471,13 +475,13 @@ impl ItemModule {
 
         // Summary log
         info(
-        format!("{}Summary", component),
-        format!(
-            "Item {}: PostPrice: {} | ClosedAvg: {} | PriceRange: {} | PotentialProfit: {} | ClosedAvgMetric: {} | ProfitThreshold: {} | HighestPrice: {} | {}",
-            item_info.name, post_price, closed_avg, price_range, potential_profit, closed_avg_metric, profit_threshold, highest_price, order_info
-        ),
-        &log_options,
-    );
+            format!("{}Summary", component),
+            format!(
+                "Item {}: PostPrice: {} | ClosedAvg: {} | PriceRange: {} | PotentialProfit: {} | ClosedAvgMetric: {} | ProfitThreshold: {} | HighestPrice: {} | {}",
+                item_info.name, post_price, closed_avg, price_range, potential_profit, closed_avg_metric, profit_threshold, highest_price, order_info
+            ),
+            &log_options,
+        );
 
         // Create/Update/Delete
         match progress_order(
@@ -640,6 +644,10 @@ impl ItemModule {
         order_info = order_info.set_highest_price(live_orders.highest_price(OrderType::Sell));
         order_info = order_info.set_lowest_price(live_orders.lowest_price(OrderType::Sell));
         order_info = order_info.set_orders(live_orders.take_top(5, OrderType::Sell));
+        order_info.add_price_history(PriceHistory::new(
+            chrono::Local::now().naive_local().to_string(),
+            post_price,
+        ));
         stock_item.set_list_price(Some(post_price));
         stock_item.set_status(StockStatus::Live);
         if stock_item.status == StockStatus::Live {
@@ -793,7 +801,10 @@ impl ItemModule {
         order_info = order_info.set_highest_price(highest_price);
         order_info = order_info.set_lowest_price(live_orders.lowest_price(OrderType::Buy));
         order_info = order_info.set_orders(live_orders.take_top(10, OrderType::Buy));
-
+        order_info.add_price_history(PriceHistory::new(
+            chrono::Local::now().naive_local().to_string(),
+            post_price,
+        ));
         // Summary log
         info(
         format!("{}Summary", component),

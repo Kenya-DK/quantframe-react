@@ -1,7 +1,7 @@
 import { ActionIcon, Box, Divider, Group, Pagination, ScrollArea, Select, SimpleGrid } from "@mantine/core";
 import { SearchField } from "@components/Forms/SearchField";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faArrowDown, faArrowUp, faCartShopping, faPen, faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faArrowDown, faArrowUp, faCartShopping, faInfoCircle, faPen, faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import classes from "../../WarframeMarket.module.css";
@@ -54,7 +54,7 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
   });
 
   // Modals
-  const { OpenDeleteModal, HandleModalOrder } = useStockModals({
+  const { OpenDeleteModal, HandleModalOrder, OpenInfoModal } = useStockModals({
     createStockMutation,
     sellStockMutation,
     useTranslateBasePrompt,
@@ -187,6 +187,17 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
                           sellStockMutation.mutateAsync(order);
                           break;
                       }
+                    }}
+                  />
+                  <ActionWithTooltip
+                    tooltip={useTranslateButtons("info_tooltip")}
+                    icon={faInfoCircle}
+                    color={"blue.7"}
+                    actionProps={{ size: "sm" }}
+                    iconProps={{ size: "xs" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      OpenInfoModal(order);
                     }}
                   />
                   <ActionWithTooltip

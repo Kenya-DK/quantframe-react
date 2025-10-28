@@ -276,7 +276,6 @@ pub async fn progress_order(
     log_options: &LoggerOptions,
 ) -> Result<(), Error> {
     let can_create_order = wfm_client.order().can_create_order();
-    let update_string = format!("p:{}", post_price);
     if order_info.has_operation("Create") && !order_info.has_operation("Delete") && can_create_order
     {
         match wfm_client
