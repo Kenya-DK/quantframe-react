@@ -219,7 +219,6 @@ export namespace QuantframeApiTypes {
     min_price_lt?: number;
     max_price_gt?: number;
     max_price_lt?: number;
-
     avg_price_gt?: number;
     avg_price_lt?: number;
   }

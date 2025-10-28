@@ -1,4 +1,4 @@
-import { Accordion, Button, Container, Grid, Group, JsonInput, Text, Title } from "@mantine/core";
+import { Accordion, Button, Grid, Group, JsonInput, Text, Title } from "@mantine/core";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { useAppContext } from "@contexts/app.context";
 import { useAuthContext } from "@contexts/auth.context";

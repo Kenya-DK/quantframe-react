@@ -1,2 +1,2 @@
-export { Footer } from "./Footer";
-export type { FooterProps } from "./Footer";
+export { PatreonOverlay } from "./PatreonOverlay";
+export type { PatreonOverlayProps } from "./PatreonOverlay";
