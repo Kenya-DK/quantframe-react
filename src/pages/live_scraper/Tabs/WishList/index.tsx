@@ -10,8 +10,7 @@ import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 import { DataTable } from "mantine-datatable";
 import classes from "../../LiveScraper.module.css";
 import { notifications } from "@mantine/notifications";
-import { TextTranslate } from "@components/Shared/TextTranslate";
-import { getSafePage, GetSubTypeDisplay } from "@utils/helper";
+import { getSafePage } from "@utils/helper";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useLiveScraperContext } from "@contexts/liveScraper.context";
 import { useWishListQueries } from "./queries";
@@ -23,6 +22,7 @@ import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import { HasPermission } from "@api/index";
+import { ItemName } from "@components/DataDisplay/ItemName/ItemName";
 
 interface WishListPanelProps {
   isActive?: boolean;
@@ -184,16 +184,7 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
             accessor: "item_name",
             title: useTranslateCommon("item_name.title"),
             sortable: true,
-            render: ({ item_name, sub_type }) => (
-              <TextTranslate
-                color="gray.4"
-                i18nKey={useTranslateCommon("item_name.value", undefined, true)}
-                values={{
-                  name: item_name,
-                  sub_type: GetSubTypeDisplay(sub_type),
-                }}
-              />
-            ),
+            render: (row) => <ItemName color="gray.4" size="md" value={row} />,
           },
           {
             accessor: "quantity",

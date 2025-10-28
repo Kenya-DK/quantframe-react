@@ -8,8 +8,7 @@ import { SearchField } from "@components/Forms/SearchField";
 import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import classes from "../../TradingAnalytics.module.css";
 import { DataTable } from "mantine-datatable";
-import { getSafePage, GetSubTypeDisplay } from "@utils/helper";
-import { TextTranslate } from "@components/Shared/TextTranslate";
+import { getSafePage } from "@utils/helper";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { ColorInfo } from "@components/Shared/ColorInfo";
 import { SelectItemTags } from "@components/Forms/SelectItemTags";
@@ -21,6 +20,7 @@ import { useModals } from "./modals";
 import { HasPermission } from "@api/index";
 import { DatePickerInput } from "@mantine/dates";
 import dayjs from "dayjs";
+import { ItemName } from "../../../../components/DataDisplay/ItemName";
 interface TransactionPanelProps {
   isActive?: boolean;
 }
@@ -220,16 +220,7 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
                 title: useTranslateCommon("item_name.title"),
                 sortable: true,
                 width: 250,
-                render: ({ item_name, sub_type, properties }) => (
-                  <TextTranslate
-                    color="gray.4"
-                    i18nKey={useTranslateCommon("item_name.value", undefined, true)}
-                    values={{
-                      name: `${item_name} ${properties ? " " + properties.mod_name : ""}`,
-                      sub_type: GetSubTypeDisplay(sub_type),
-                    }}
-                  />
-                ),
+                render: (row) => <ItemName value={row} />,
               },
               {
                 accessor: "item_type",

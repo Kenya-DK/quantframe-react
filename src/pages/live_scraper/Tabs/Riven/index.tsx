@@ -12,8 +12,7 @@ import classes from "../../LiveScraper.module.css";
 import { DataTable } from "mantine-datatable";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
-import { TextTranslate } from "@components/Shared/TextTranslate";
-import { getSafePage, GetSubTypeDisplay } from "@utils/helper";
+import { getSafePage } from "@utils/helper";
 import { RivenAttributes } from "@components/DataDisplay/RivenAttributes";
 import { useStockMutations } from "./mutations";
 import { useStockModals } from "./modals";
@@ -23,6 +22,7 @@ import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import { HasPermission } from "@api/index";
 import { notifications } from "@mantine/notifications";
+import { ItemName } from "@components/DataDisplay/ItemName/ItemName";
 export type RivenPanelProps = {
   isActive?: boolean;
 };
@@ -190,16 +190,7 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
             accessor: "weapon_name",
             title: useTranslateCommon("item_name.title"),
             sortable: true,
-            render: ({ weapon_name, mod_name, sub_type }) => (
-              <TextTranslate
-                color="gray.4"
-                i18nKey={useTranslateCommon("item_name.value", undefined, true)}
-                values={{
-                  name: weapon_name + " " + mod_name,
-                  sub_type: GetSubTypeDisplay(sub_type),
-                }}
-              />
-            ),
+            render: (row) => <ItemName color="gray.4" size="md" value={row} />,
           },
           {
             accessor: "attributes",

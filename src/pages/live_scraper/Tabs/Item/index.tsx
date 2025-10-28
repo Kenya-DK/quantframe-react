@@ -14,15 +14,15 @@ import { DataTable } from "mantine-datatable";
 import { CreateItemForm } from "@components/Forms/CreateItem";
 import { StatsWithSegments } from "@components/Shared/StatsWithSegments";
 import { SearchField } from "@components/Forms/SearchField";
-import { TextTranslate } from "@components/Shared/TextTranslate";
 import { ColorInfo } from "@components/Shared/ColorInfo";
 import { notifications } from "@mantine/notifications";
-import { GetSubTypeDisplay, getSafePage } from "@utils/helper";
+import { getSafePage } from "@utils/helper";
 import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 import { ColumnActions } from "../../Columns/ColumnActions";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import { HasPermission } from "@api/index";
+import { ItemName } from "../../../../components/DataDisplay/ItemName/ItemName";
 
 interface ItemPanelProps {
   isActive?: boolean;
@@ -186,16 +186,7 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
             accessor: "item_name",
             title: useTranslateCommon("item_name.title"),
             sortable: true,
-            render: ({ item_name, sub_type }) => (
-              <TextTranslate
-                color="gray.4"
-                i18nKey={useTranslateCommon("item_name.value", undefined, true)}
-                values={{
-                  name: item_name,
-                  sub_type: GetSubTypeDisplay(sub_type),
-                }}
-              />
-            ),
+            render: (row) => <ItemName color="gray.4" size="md" value={row} />,
           },
           {
             accessor: "bought",
