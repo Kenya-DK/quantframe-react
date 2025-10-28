@@ -2,30 +2,27 @@ use serde_json::json;
 use std::{
     io::Read,
     path::PathBuf,
-    sync::{Arc, Mutex, Weak},
+    sync::{Arc, Mutex},
 };
 use tauri_plugin_dialog::DialogExt;
-use utils::{find_by, get_location, info, read_json_file, Error, LoggerOptions};
+use utils::{get_location, info, read_json_file, Error, LoggerOptions};
 
 use crate::{
     cache::{client::CacheState, types::CacheTheme},
-    emit_error, helper, APP,
+    helper, APP,
 };
 
-const MAX_SIZE: u64 = 15000; // 15 KB
 const BASE64_CHARS: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 #[derive(Debug)]
 pub struct ThemeModule {
     path: PathBuf,
     items: Mutex<Vec<CacheTheme>>,
-    client: Weak<CacheState>,
 }
 impl ThemeModule {
     pub fn new(client: Arc<CacheState>) -> Arc<Self> {
         Arc::new(Self {
             path: client.base_path.join("themePresets"),
             items: Mutex::new(Vec::new()),
-            client: Arc::downgrade(&client),
         })
     }
     pub fn get_items(&self) -> Result<Vec<CacheTheme>, Error> {
@@ -208,10 +205,9 @@ impl ThemeModule {
      * Creates a new `ThemeModule` from an existing one, sharing the client.
      * This is useful for cloning modules when the client state changes.
      */
-    pub fn from_existing(old: &ThemeModule, client: Arc<CacheState>) -> Arc<Self> {
+    pub fn from_existing(old: &ThemeModule, _client: Arc<CacheState>) -> Arc<Self> {
         Arc::new(Self {
             path: old.path.clone(),
-            client: Arc::downgrade(&client),
             items: Mutex::new(old.items.lock().unwrap().clone()),
         })
     }

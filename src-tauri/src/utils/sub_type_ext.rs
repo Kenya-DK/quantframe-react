@@ -1,7 +1,4 @@
 use entity::dto::SubType as EntitySubType;
-use qf_api::errors::ApiError as QFRequestError;
-use serde_json::json;
-use utils::{Error, LogLevel};
 use wf_market::types::SubType as WFSubType;
 /// Extension trait for creating Error instances from different error types
 pub trait SubTypeExt {

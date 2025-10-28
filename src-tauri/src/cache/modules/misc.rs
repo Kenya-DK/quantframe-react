@@ -3,7 +3,7 @@ use std::{
     sync::{Arc, Mutex, Weak},
 };
 
-use utils::{find_by, get_location, info, read_json_file, Error, LoggerOptions};
+use utils::{get_location, info, read_json_file, Error, LoggerOptions};
 
 use crate::cache::*;
 
@@ -23,14 +23,6 @@ impl MiscModule {
             components: Mutex::new(Vec::new()),
             client: Arc::downgrade(&client),
         })
-    }
-    pub fn get_items(&self) -> Result<Vec<CacheMisc>, Error> {
-        let items = self
-            .items
-            .lock()
-            .expect("Failed to lock items mutex")
-            .clone();
-        Ok(items)
     }
     pub fn load(&self) -> Result<(), Error> {
         let client = self.client.upgrade().expect("Client should not be dropped");

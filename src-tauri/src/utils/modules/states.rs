@@ -1,14 +1,11 @@
-use std::{
-    backtrace::Backtrace,
-    sync::{Arc, Mutex},
-};
+use std::sync::Mutex;
 
 use crate::{
-    app::{self, client::AppState, Settings},
+    app::{client::AppState, Settings},
     cache::client::CacheState,
     APP,
 };
-use tauri::{async_runtime::block_on, Manager};
+use tauri::Manager;
 use utils::Error;
 
 pub fn app_state() -> Result<AppState, Error> {

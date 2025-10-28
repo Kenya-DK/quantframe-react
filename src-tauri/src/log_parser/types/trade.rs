@@ -1,16 +1,12 @@
 use std::{collections::HashMap, fmt::Display};
 
-use entity::enums::stock_type::StockType;
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
-use utils::{get_location, Error, ZipLogger};
+use utils::Error;
 
 use crate::{
-    app::{NotificationSetting, NotificationsSetting},
     enums::FindBy,
     log_parser::*,
     utils::modules::states,
-    DATABASE,
 };
 
 #[derive(Deserialize, Serialize, Clone, Debug)]

@@ -1,23 +1,5 @@
-use crate::{
-    app::AdvancedSettings,
-    emit_error,
-    enums::*,
-    helper,
-    live_scraper::modules::*,
-    log_parser::*,
-    utils::{modules::states, OrderListExt},
-};
-use serde_json::Value;
-use std::{
-    collections::HashMap,
-    num::NonZeroU32,
-    path::PathBuf,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc, OnceLock,
-    },
-    thread,
-};
+use crate::{app::AdvancedSettings, helper, log_parser::*};
+use std::{path::PathBuf, sync::Arc, thread};
 use utils::*;
 
 pub struct LogParserState {
@@ -36,7 +18,7 @@ impl LogParserState {
         this.watcher
             .add_handler(Box::new(OnTradeEvent::new("LogParserState")));
         this.watcher
-            .add_handler(Box::new(OnConversationEvent::new("LogParserState")));
+            .add_handler(Box::new(OnConversationEvent::new()));
         LogParserState::start(this.clone()); // pass Arc
         this
     }

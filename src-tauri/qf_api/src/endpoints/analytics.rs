@@ -7,7 +7,7 @@ use std::{
 use reqwest::Method;
 use serde_json::{Value, json};
 
-use crate::{client::Client, enums::ResponseFormat, errors::ApiError, types::*};
+use crate::{client::Client, enums::ResponseFormat, errors::ApiError};
 
 #[derive(Debug)]
 pub struct AnalyticsRoute {

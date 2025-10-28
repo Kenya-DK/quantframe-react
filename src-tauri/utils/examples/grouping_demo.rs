@@ -1,10 +1,8 @@
 use chrono::{DateTime, TimeZone, Utc};
-use std::collections::HashMap;
 use utils::grouping::*;
 
 #[derive(Debug, Clone)]
 struct LogEntry {
-    id: u32,
     timestamp: DateTime<Utc>,
     level: String,
     message: String,
@@ -13,11 +11,8 @@ struct LogEntry {
 
 #[derive(Debug, Clone)]
 struct SalesRecord {
-    id: u32,
     timestamp: DateTime<Utc>,
     amount: f64,
-    product: String,
-    customer_id: u32,
 }
 
 fn main() {
@@ -87,28 +82,24 @@ fn example_date_grouping() {
 
     let log_entries = vec![
         LogEntry {
-            id: 1,
             timestamp: Utc.with_ymd_and_hms(2025, 7, 27, 10, 30, 0).unwrap(),
             level: "INFO".to_string(),
             message: "Application started".to_string(),
             component: "Main".to_string(),
         },
         LogEntry {
-            id: 2,
             timestamp: Utc.with_ymd_and_hms(2025, 7, 27, 14, 15, 0).unwrap(),
             level: "WARNING".to_string(),
             message: "High memory usage".to_string(),
             component: "Memory".to_string(),
         },
         LogEntry {
-            id: 3,
             timestamp: Utc.with_ymd_and_hms(2025, 7, 28, 9, 45, 0).unwrap(),
             level: "ERROR".to_string(),
             message: "Database connection failed".to_string(),
             component: "Database".to_string(),
         },
         LogEntry {
-            id: 4,
             timestamp: Utc.with_ymd_and_hms(2025, 7, 28, 11, 20, 0).unwrap(),
             level: "INFO".to_string(),
             message: "User logged in".to_string(),
@@ -159,39 +150,24 @@ fn example_multilevel_date_grouping() {
 
     let sales_records = vec![
         SalesRecord {
-            id: 1,
             timestamp: Utc.with_ymd_and_hms(2025, 1, 15, 10, 0, 0).unwrap(),
             amount: 100.0,
-            product: "Widget A".to_string(),
-            customer_id: 1,
         },
         SalesRecord {
-            id: 2,
             timestamp: Utc.with_ymd_and_hms(2025, 1, 20, 14, 0, 0).unwrap(),
             amount: 250.0,
-            product: "Widget B".to_string(),
-            customer_id: 2,
         },
         SalesRecord {
-            id: 3,
             timestamp: Utc.with_ymd_and_hms(2025, 2, 5, 9, 0, 0).unwrap(),
             amount: 150.0,
-            product: "Widget A".to_string(),
-            customer_id: 3,
         },
         SalesRecord {
-            id: 4,
             timestamp: Utc.with_ymd_and_hms(2025, 3, 10, 16, 0, 0).unwrap(),
             amount: 300.0,
-            product: "Widget C".to_string(),
-            customer_id: 1,
         },
         SalesRecord {
-            id: 5,
             timestamp: Utc.with_ymd_and_hms(2025, 3, 25, 11, 0, 0).unwrap(),
             amount: 200.0,
-            product: "Widget B".to_string(),
-            customer_id: 4,
         },
     ];
 
@@ -244,18 +220,12 @@ fn example_fill_missing_dates() {
 
     let sales_records = vec![
         SalesRecord {
-            id: 1,
             timestamp: Utc.with_ymd_and_hms(2025, 7, 25, 10, 0, 0).unwrap(),
             amount: 100.0,
-            product: "Widget A".to_string(),
-            customer_id: 1,
         },
         SalesRecord {
-            id: 2,
             timestamp: Utc.with_ymd_and_hms(2025, 7, 27, 14, 0, 0).unwrap(),
             amount: 250.0,
-            product: "Widget B".to_string(),
-            customer_id: 2,
         },
         // Note: July 26 is missing
     ];

@@ -1,13 +1,12 @@
-use std::{f64::consts::E, sync::Mutex};
+use std::sync::Mutex;
 
 use crate::{
-    handlers::{base, handle_item, handle_riven, handle_riven_by_name, handle_wish_list},
+    handlers::{handle_item, handle_riven_by_name, handle_wish_list},
     log_parser::*,
     notify_gui, send_event,
     types::*,
     utils::modules::states,
 };
-use migration::backend;
 use serde_json::json;
 use utils::*;
 use wf_market::enums::OrderType;
@@ -382,7 +381,7 @@ impl LineHandler for OnTradeEvent {
             {
                 match self.trade_accepted() {
                     Ok(_) => {}
-                    Err(e) => {}
+                    Err(_) => {}
                 }
             } else if self
                 .detection

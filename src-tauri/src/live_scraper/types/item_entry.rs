@@ -3,10 +3,7 @@ use std::hash::{Hash, Hasher};
 use entity::dto::SubType;
 use entity::stock_item::Model as StockItemModel;
 use serde::{Deserialize, Serialize};
-use service::{
-    sea_orm::{DatabaseConnection, EntityTrait},
-    StockItemQuery, WishListQuery,
-};
+use service::{sea_orm::DatabaseConnection, StockItemQuery, WishListQuery};
 use utils::{get_location, Error};
 
 use crate::{cache::types::ItemPriceInfo, utils::ErrorFromExt};

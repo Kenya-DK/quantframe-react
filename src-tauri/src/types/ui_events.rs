@@ -48,15 +48,11 @@ impl Display for UIEvent {
 #[derive(PartialEq, Debug, Clone)]
 pub enum UIOperationEvent {
     CreateOrUpdate,
-    Delete,
-    Set,
 }
 impl UIOperationEvent {
     pub fn as_str(&self) -> &str {
         match *self {
             UIOperationEvent::CreateOrUpdate => "CREATE_OR_UPDATE",
-            UIOperationEvent::Delete => "DELETE",
-            UIOperationEvent::Set => "SET",
         }
     }
 }

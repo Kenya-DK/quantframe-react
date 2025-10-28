@@ -1,18 +1,12 @@
-use std::{
-    io::Read,
-    path::PathBuf,
-    sync::{atomic::Ordering, Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 
 use qf_api::types::ManualUpdate;
 use serde_json::{json, Value};
-use tauri::{path::BaseDirectory, Manager};
-use tauri_plugin_dialog::DialogExt;
-use utils::{get_location, info, Error, LoggerOptions};
+use utils::{get_location, Error};
 
 use crate::{
     app::{client::AppState, Settings},
-    log_parser::{self, LogParserState},
+    log_parser::LogParserState,
     send_system_notification,
     utils::ErrorFromExt,
     APP, HAS_STARTED,

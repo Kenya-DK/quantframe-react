@@ -197,10 +197,6 @@ impl NotificationSetting {
 }
 
 impl NotificationSetting {
-    pub fn is_enabled(&self) -> bool {
-        self.discord_notify.enabled || self.system_notify.enabled || self.webhook_notify.enabled
-    }
-
     pub fn send(&self, variables: &HashMap<String, String>, value: Option<Value>) {
         if self.system_notify.enabled {
             self.system_notify.send(variables);

@@ -1,11 +1,9 @@
-use std::{collections::VecDeque, fmt::Display};
+use std::fmt::Display;
 
 use entity::dto::*;
-use qf_api::errors::ApiError as QFRequestError;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
-use utils::{warning, Error, LogLevel, LoggerOptions};
-use wf_market::types::{order, Order, OrderLike, OrderWithUser};
+use utils::{warning, Error, LoggerOptions};
+use wf_market::types::{Order, OrderLike, OrderWithUser};
 
 use crate::{
     cache::{client::CacheState, types::CacheTradableItem, types::SubType as CacheSubType},

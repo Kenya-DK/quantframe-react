@@ -1,7 +1,4 @@
-use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-
-use crate::types::SubType;
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct RivenPrice {

@@ -1,9 +1,7 @@
-use std::fmt::Display;
-
 use sea_orm::Set;
 use serde::{Deserialize, Serialize};
 
-use crate::{dto::*, enums::*, transaction::*};
+use crate::{enums::*, transaction::*};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct UpdateTransaction {

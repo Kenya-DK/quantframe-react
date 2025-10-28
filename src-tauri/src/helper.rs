@@ -3,14 +3,13 @@ use entity::{
     dto::{FinancialGraph, FinancialReport, PaginatedResult, SubType},
     transaction::TransactionPaginationQueryDto,
 };
-use serde_json::{json, Value};
+use serde_json::json;
 use service::TransactionQuery;
 use std::{
     fs::{self},
     path::PathBuf,
 };
 use tauri::Manager;
-use tokio::join;
 use utils::*;
 use wf_market::{enums::OrderType, types::Order};
 

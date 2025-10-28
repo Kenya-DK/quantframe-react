@@ -1,17 +1,13 @@
-use std::{
-    collections::HashMap,
-    sync::{Arc, Mutex, Weak},
-    time::{Duration, Instant},
-};
+use std::
+    sync::{Arc, Weak}
+;
 
 use reqwest::Method;
-use serde_json::{Value, json};
 
 use crate::{
     client::Client,
     enums::{ApiResponse, ResponseFormat},
     errors::ApiError,
-    types::*,
 };
 
 #[derive(Debug)]

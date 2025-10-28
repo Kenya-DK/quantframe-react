@@ -5,7 +5,7 @@ use crate::{
     helper::generate_transaction_summary,
     DATABASE,
 };
-use chrono::{DateTime, Utc};
+use chrono::Utc;
 use entity::{
     dto::*,
     transaction::{self, dto::*},

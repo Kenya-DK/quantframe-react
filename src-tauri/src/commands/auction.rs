@@ -1,19 +1,16 @@
-use std::{
-    collections::HashMap,
-    sync::{Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 
 use entity::{
     dto::*,
     enums::*,
     stock_riven::{self, StockRivenPaginationQueryDto},
 };
-use serde_json::{json, Value};
-use service::{StockItemQuery, StockRivenQuery};
-use utils::{filters_by, get_location, group_by, Error};
+use serde_json::json;
+use service::StockRivenQuery;
+use utils::{filters_by, get_location, Error};
 use wf_market::{
     enums::OrderType,
-    types::{item, Auction, Order},
+    types::Auction,
 };
 
 use crate::{

@@ -1,9 +1,7 @@
 use std::collections::HashMap;
 
 use serde_json::json;
-use utils::{info, trace, Error, LineHandler, LoggerOptions};
-
-use utils::*;
+use utils::{info, Error, LineHandler, LoggerOptions};
 
 use crate::utils::modules::states;
 
@@ -11,7 +9,7 @@ use crate::utils::modules::states;
 pub struct OnConversationEvent {}
 
 impl OnConversationEvent {
-    pub fn new(base_component: &str) -> Self {
+    pub fn new() -> Self {
         OnConversationEvent {}
     }
 }

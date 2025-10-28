@@ -12,7 +12,7 @@ use crate::{
     app::{client::AppState, User},
     cache::types::CacheVersion,
     emit_startup, helper,
-    utils::{self, AuctionListExt, ErrorFromExt, OrderListExt},
+    utils::{AuctionListExt, ErrorFromExt, OrderListExt},
     APP,
 };
 

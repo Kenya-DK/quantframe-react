@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-use crate::app::SummaryCategorySetting;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AdvancedSettings {

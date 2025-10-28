@@ -1,11 +1,9 @@
 use entity::wish_list::create::CreateWishListItem;
-use qf_api::errors::ApiError as QFRequestError;
 use serde_json::json;
 use utils::{get_location, Error, LogLevel};
-use wf_market::errors::ApiError as WFRequestError;
 
 use crate::{
-    enums::{find_by, FindBy, FindByType},
+    enums::{FindBy, FindByType},
     utils::modules::states,
 };
 

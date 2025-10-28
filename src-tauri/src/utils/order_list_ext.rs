@@ -6,7 +6,6 @@ use wf_market::{
 
 use crate::{
     cache::client::CacheState,
-    enums::FindBy,
     utils::{modules::states, order_ext::OrderDetails, OrderExt, SubTypeExt},
 };
 

@@ -3,7 +3,6 @@ use utils::grouping::*;
 
 #[derive(Debug, Clone)]
 struct Transaction {
-    id: u32,
     timestamp: DateTime<Utc>,
     amount: f64,
     category: String,
@@ -16,35 +15,30 @@ fn main() {
     // Sample transaction data
     let transactions = vec![
         Transaction {
-            id: 1,
             timestamp: Utc.with_ymd_and_hms(2025, 7, 25, 9, 30, 0).unwrap(),
             amount: -45.50,
             category: "Food".to_string(),
             description: "Coffee shop".to_string(),
         },
         Transaction {
-            id: 2,
             timestamp: Utc.with_ymd_and_hms(2025, 7, 25, 14, 15, 0).unwrap(),
             amount: -120.00,
             category: "Shopping".to_string(),
             description: "Grocery store".to_string(),
         },
         Transaction {
-            id: 3,
             timestamp: Utc.with_ymd_and_hms(2025, 7, 26, 10, 0, 0).unwrap(),
             amount: 2500.00,
             category: "Income".to_string(),
             description: "Salary".to_string(),
         },
         Transaction {
-            id: 4,
             timestamp: Utc.with_ymd_and_hms(2025, 7, 26, 16, 45, 0).unwrap(),
             amount: -89.99,
             category: "Shopping".to_string(),
             description: "Online purchase".to_string(),
         },
         Transaction {
-            id: 5,
             timestamp: Utc.with_ymd_and_hms(2025, 7, 27, 12, 30, 0).unwrap(),
             amount: -25.00,
             category: "Food".to_string(),

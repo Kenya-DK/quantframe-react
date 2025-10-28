@@ -5,7 +5,6 @@ use utils::{get_location, info, warning, Error, LoggerOptions};
 use crate::{
     app::{client::AppState, User},
     cache::client::CacheState,
-    commands::live_scraper,
     live_scraper::LiveScraperState,
     types::PermissionsFlags,
     utils::{AuctionListExt, ErrorFromExt, OrderListExt},

@@ -4,19 +4,18 @@ use entity::{dto::*, wish_list::*};
 use serde_json::{json, Value};
 use service::{WishListMutation, WishListQuery};
 use tauri_plugin_dialog::DialogExt;
-use utils::{get_location, group_by, info, warning, Error, LoggerOptions};
+use utils::{get_location, group_by, info, Error, LoggerOptions};
 use wf_market::enums::OrderType;
 
 use crate::{
     app::client::AppState,
-    cache::client::CacheState,
-    enums::{FindBy, FindByType},
+    enums::FindByType,
     handlers::{
-        handle_wfm_item, handle_wish_list, handle_wish_list_by_entity, stock_item::handle_item,
+        handle_wfm_item, handle_wish_list, handle_wish_list_by_entity,
     },
     helper,
     types::PermissionsFlags,
-    utils::{CreateWishListItemExt, ErrorFromExt, SubTypeExt},
+    utils::ErrorFromExt,
     APP, DATABASE,
 };
 

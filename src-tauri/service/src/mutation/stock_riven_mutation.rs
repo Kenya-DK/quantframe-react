@@ -1,5 +1,4 @@
-use ::entity::{enums, stock_riven::*};
-use prelude::Expr;
+use ::entity::stock_riven::*;
 use sea_orm::*;
 
 use crate::StockRivenQuery;

@@ -1,7 +1,7 @@
 use qf_api::types::*;
 use std::sync::Mutex;
 use tauri_plugin_dialog::DialogExt;
-use utils::{get_location, info, log_json_formatted, Error, LoggerOptions};
+use utils::{get_location, info, Error, LoggerOptions};
 
 use crate::{app::client::AppState, utils::ErrorFromExt, APP};
 

@@ -4,13 +4,11 @@ use std::{
     sync::{Arc, Mutex, Weak},
 };
 
-use chrono::format;
-use utils::{find_by, get_location, info, read_json_file, Error, LoggerOptions};
+use utils::{get_location, info, read_json_file, Error, LoggerOptions};
 
 use crate::{
     cache::{client::CacheState, types::CacheTradableItem},
     enums::{FindBy, FindByType},
-    DATABASE,
 };
 
 #[derive(Debug)]

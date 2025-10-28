@@ -1,7 +1,4 @@
-use std::{
-    fmt::format,
-    sync::{atomic::Ordering, Arc, Weak},
-};
+use std::sync::{atomic::Ordering, Arc, Weak};
 
 use entity::{dto::PriceHistory, enums::*, stock_riven::*};
 use serde_json::json;
@@ -17,9 +14,7 @@ use wf_market::{
     },
 };
 static COMPONENT: &str = "LiveScraper:RivenModule";
-static LOG_FILE: &str = "live_scraper_item.log";
 use crate::{
-    app::settings,
     cache::types::CacheRivenWeapon,
     enums::FindBy,
     live_scraper::{is_disabled, LiveScraperState},
@@ -417,15 +412,6 @@ impl RivenModule {
             current_index -= 1;
         }
         Ok(())
-    }
-    /**
-     * Creates a new `RivenModule` from an existing one, sharing the client.
-     * This is useful for cloning routes when the client state changes.
-     */
-    pub fn from_existing(old: &RivenModule, client: Arc<LiveScraperState>) -> Arc<Self> {
-        Arc::new(Self {
-            client: Arc::downgrade(&client),
-        })
     }
 }
 

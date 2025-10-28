@@ -3,7 +3,7 @@ use serde_json::json;
 use utils::{get_location, Error, LogLevel};
 
 use crate::{
-    enums::{FindBy, FindByType},
+    enums::FindBy,
     utils::modules::states,
 };
 

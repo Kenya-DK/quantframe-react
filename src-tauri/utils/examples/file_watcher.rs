@@ -15,9 +15,9 @@ impl OnConversationEvent {
 impl LineHandler for OnConversationEvent {
     fn process_line(
         &mut self,
-        line: &str,
-        prev_line: &str,
-        ignore_combined: bool,
+        _line: &str,
+        _prev_line: &str,
+        _ignore_combined: bool,
     ) -> Result<(bool, bool), Error> {
         Ok((false, false)) // no match → process normally
     }
@@ -35,7 +35,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let index = 0;
     // C:\Users\Kenya\Desktop\Andet\Coding\Warframe\warframe-data\_cache\WFLogSimulation\EE.log
     // C:\Users\Kenya\AppData\Local\Warframe\EE.log
-    let mut watcher = FileWatcher::new(paths[index]);
+    let watcher = FileWatcher::new(paths[index]);
     // Add multiple dynamic handlers
     watcher.add_handler(Box::new(OnConversationEvent::new()));
     println!("Watching file: {}", paths[index]);

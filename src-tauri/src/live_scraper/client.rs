@@ -6,17 +6,14 @@ use crate::{
     types::UIEvent,
     utils::{modules::states, OrderListExt},
 };
-use serde_json::Value;
 use std::{
-    collections::HashMap,
-    num::NonZeroU32,
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc, OnceLock,
     },
     time::{Duration, Instant},
 };
-use utils::{critical, get_location, warning, LogLevel, LoggerOptions};
+use utils::{get_location, warning, LogLevel, LoggerOptions};
 
 #[derive(Debug)]
 pub struct LiveScraperState {
@@ -155,21 +152,5 @@ impl LiveScraperState {
             .get()
             .expect("Riven module not initialized")
             .clone()
-    }
-
-    /// Use this if you need to replace modules while preserving shared state
-    pub fn update_modules(self: &Arc<Self>) {
-        if let Some(_old_item) = self.item_module.get().cloned() {
-            critical(
-                "LiveScraper:UpdateModules",
-                "Not implemented",
-                &LoggerOptions::default(),
-            );
-        }
-
-        if let Some(old_riven) = self.riven_module.get().cloned() {
-            let new_riven = RivenModule::from_existing(&old_riven, self.clone());
-            let _ = self.riven_module.set(new_riven);
-        }
     }
 }

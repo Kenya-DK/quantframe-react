@@ -18,10 +18,7 @@ impl OperationSet {
         let operation = operation.into();
         self.operations.iter().any(|op| op == &operation)
     }
-    pub fn starts_with(&self, prefix: impl Into<String>) -> bool {
-        let prefix = prefix.into();
-        self.operations.iter().any(|op| op.starts_with(&prefix))
-    }
+
     pub fn ends_with(&self, suffix: impl Into<String>) -> bool {
         let suffix = suffix.into();
         self.operations.iter().any(|op| op.ends_with(&suffix))

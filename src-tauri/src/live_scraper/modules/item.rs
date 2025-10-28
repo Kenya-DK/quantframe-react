@@ -10,15 +10,11 @@ use utils::*;
 use wf_market::{
     enums::{OrderType, StatusType},
     types::{Order, OrderList, OrderWithUser},
-    utils::write_json_file,
 };
 
 use crate::{
     app::{client::AppState, Settings},
-    cache::{
-        client::CacheState,
-        types::{CacheTradableItem, ItemPriceInfo},
-    },
+    cache::types::{CacheTradableItem, ItemPriceInfo},
     enums::FindBy,
     utils::{ErrorFromExt, OrderListExt},
 };

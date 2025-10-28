@@ -68,4 +68,3 @@ pub mod cache_theme;
 pub use cache_theme::*;
 
 pub mod pagination;
-pub use pagination::*;

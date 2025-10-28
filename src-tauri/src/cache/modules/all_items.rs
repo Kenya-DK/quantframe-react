@@ -1,11 +1,7 @@
-use std::{
-    path::PathBuf,
-    sync::{Arc, Mutex, Weak},
-};
+use std::sync::{Arc, Mutex, Weak};
 
-use serde_json::json;
 use utils::{
-    find_by, get_location, info, log_json_formatted, read_json_file, Error, LoggerOptions,
+    get_location, info, Error, LoggerOptions,
 };
 
 use crate::{cache::*, enums::*};

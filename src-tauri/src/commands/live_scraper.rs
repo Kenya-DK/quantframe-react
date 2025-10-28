@@ -1,16 +1,14 @@
-use std::sync::{atomic::Ordering, Arc, Mutex};
+use std::sync::{atomic::Ordering, Arc};
 
-use qf_api::types::*;
 use serde_json::{json, Value};
-use utils::{get_location, Error};
+use utils::Error;
 
 use crate::{
-    app::{client::AppState, Settings, StockItemSettings},
+    app::StockItemSettings,
     cache::ItemPriceInfo,
     live_scraper::{self, LiveScraperState},
     send_event,
     types::*,
-    utils::ErrorFromExt,
 };
 
 #[tauri::command]

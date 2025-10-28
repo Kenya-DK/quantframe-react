@@ -4,7 +4,6 @@ use std::{
 };
 
 use reqwest::Method;
-use serde_json::json;
 
 use crate::{
     client::Client,

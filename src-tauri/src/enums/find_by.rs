@@ -65,22 +65,7 @@ impl FindBy {
             case_insensitive: false,
         }
     }
-    pub fn set_category(mut self, category: impl Into<String>) -> Self {
-        self.category = category.into();
-        self
-    }
-    pub fn set_language(mut self, language: Language) -> Self {
-        self.language = language;
-        self
-    }
-    pub fn set_remove_str(mut self, remove_str: impl Into<String>) -> Self {
-        self.remove_str = remove_str.into();
-        self
-    }
-    pub fn set_case_insensitive(mut self, case_insensitive: bool) -> Self {
-        self.case_insensitive = case_insensitive;
-        self
-    }
+    
     pub fn is_match(&self, input: impl Into<String>) -> bool {
         let r = if self.remove_str.is_empty() {
             None

@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use sea_orm::Set;
 use serde::{Deserialize, Serialize};
 

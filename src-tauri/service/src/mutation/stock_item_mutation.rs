@@ -1,5 +1,4 @@
 use ::entity::{dto::*, enums::*, stock_item::*};
-use prelude::Expr;
 use sea_orm::*;
 
 use crate::StockItemQuery;

@@ -1,5 +1,4 @@
 use chrono::{DateTime, TimeZone, Utc};
-use std::collections::HashMap;
 use utils::grouping::*;
 
 #[derive(Debug, Clone)]

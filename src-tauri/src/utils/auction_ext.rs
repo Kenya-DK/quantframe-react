@@ -1,16 +1,11 @@
-use std::{collections::VecDeque, fmt::Display};
+use std::fmt::Display;
 
-use entity::{
-    dto::*,
-    stock_riven::{CreateStockRiven, RivenAttribute},
-};
-use qf_api::errors::ApiError as QFRequestError;
+use entity::stock_riven::{CreateStockRiven, RivenAttribute};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
-use utils::{get_location, warning, Error, LogLevel, LoggerOptions};
+use utils::{get_location, warning, Error, LoggerOptions};
 use wf_market::{
     enums::AuctionType,
-    types::{Auction, AuctionLike, AuctionWithOwner},
+    types::{Auction, AuctionWithOwner},
 };
 
 use crate::{

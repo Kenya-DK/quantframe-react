@@ -29,14 +29,3 @@ impl Default for CreateStockEntity {
         }
     }
 }
-
-impl CreateStockEntity {
-    pub fn new(raw: &str, bought: i64) -> Self {
-        CreateStockEntity {
-            entity_type: StockType::Unknown,
-            item: CreateStockItem::new("", None, 0),
-            riven: CreateStockRiven::new("raw", "mod_name", 0, 0, "", vec![], 0),
-            wish_list: CreateWishListItem::new("raw", None, 0),
-        }
-    }
-}

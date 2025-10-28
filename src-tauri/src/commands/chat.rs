@@ -6,10 +6,10 @@ use entity::{
 };
 use serde_json::json;
 use utils::{filters_by, get_location, info, Error, LoggerOptions};
-use wf_market::types::{update_user_private, Chat, ChatMessage};
+use wf_market::types::{Chat, ChatMessage};
 
 use crate::{
-    app::client::{set_active_chat_id, AppState, ACTIVE_CHAT_ID},
+    app::client::{set_active_chat_id, AppState},
     emit_update_user,
     helper::paginate,
     utils::{ErrorFromExt, WfmChatPaginationQueryDto},

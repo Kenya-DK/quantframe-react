@@ -1,8 +1,8 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 
 use utils::Error;
 
-use crate::{app::client::AppState, helper};
+use crate::app::client::AppState;
 
 #[tauri::command]
 pub fn analytics_set_last_user_activity(
