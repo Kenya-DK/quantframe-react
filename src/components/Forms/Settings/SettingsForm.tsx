@@ -1,12 +1,12 @@
 import { PaperProps, Container, Tabs } from "@mantine/core";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { TauriTypes } from "$types";
-import { AdvancedPanel } from "./Tabs/Advanced";
-import { NotificationsPanel } from "./Tabs/Notifications";
-import { SummaryPanel } from "./Tabs/Summary";
-import { ThemesPanel } from "./Tabs/Themes";
 import { LiveTradingPanel } from "./Tabs/LiveTrading";
 import { useLocalStorage } from "@mantine/hooks";
+import { ThemesPanel } from "./Tabs/Themes";
+import { NotificationsPanel } from "./Tabs/Notifications";
+import { AdvancedPanel } from "./Tabs/Advanced";
+import { SummaryPanel } from "./Tabs/Summary";
 
 export type SettingsFormProps = {
   value: TauriTypes.Settings;
