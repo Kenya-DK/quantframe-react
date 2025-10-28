@@ -45,10 +45,7 @@ impl SecondaryModule {
                 );
                 *items_lock = items.clone();
                 for mut item in items {
-                    if item.components.is_none() {
-                        continue;
-                    }
-                    components_lock.append(&mut item.components.take().unwrap());
+                    components_lock.append(&mut item.components);
                 }
             }
             Err(e) => return Err(e.with_location(get_location!())),

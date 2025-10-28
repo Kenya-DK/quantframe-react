@@ -27,7 +27,7 @@ impl CacheItemComponent {
             wfm_item_url: self.wfm_item_url.clone(),
             category: "Component".to_string(),
             part_of_set: Some(self.part_of_set.clone()),
-            components: None,
+            components: vec![],
         }
     }
     pub fn display(&self) -> String {

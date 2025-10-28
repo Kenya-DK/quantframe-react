@@ -12,8 +12,8 @@ pub struct CacheSecondary {
     pub wfm_item_url: Option<String>,
     #[serde(rename = "category")]
     pub category: String,
-    #[serde(rename = "components")]
-    pub components: Option<Vec<CacheItemComponent>>,
+    #[serde(rename = "components", default)]
+    pub components: Vec<CacheItemComponent>,
 }
 impl CacheSecondary {
     pub fn convert_to_base_item(&self) -> CacheItemBase {

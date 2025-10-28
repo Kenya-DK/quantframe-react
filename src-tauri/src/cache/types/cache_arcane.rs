@@ -12,8 +12,8 @@ pub struct CacheArcane {
     pub wfm_item_url: Option<String>,
     #[serde(rename = "uniqueName")]
     pub unique_name: String,
-    #[serde(rename = "components")]
-    pub components: Option<Vec<CacheItemComponent>>,
+    #[serde(rename = "components", default)]
+    pub components: Vec<CacheItemComponent>,
 }
 
 impl CacheArcane {
