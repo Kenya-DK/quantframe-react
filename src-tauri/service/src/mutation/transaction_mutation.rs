@@ -1,13 +1,15 @@
+use crate::ErrorFromExt;
 use ::entity::transaction::*;
 use sea_orm::*;
-
+use utils::*;
 pub struct TransactionMutation;
 
+static COMPONENT: &str = "TransactionMutation";
 impl TransactionMutation {
     pub async fn create(
         db: &DbConn,
         form_data: &transaction::Model,
-    ) -> Result<transaction::Model, DbErr> {
+    ) -> Result<transaction::Model, Error> {
         transaction::ActiveModel {
             wfm_id: Set(form_data.wfm_id.to_owned()),
             wfm_url: Set(form_data.wfm_url.to_owned()),
@@ -27,33 +29,86 @@ impl TransactionMutation {
         }
         .insert(db)
         .await
+        .map_err(|e| {
+            Error::from_db(
+                format!("{}:Create", COMPONENT),
+                "Failed to create Transaction",
+                e,
+                get_location!(),
+            )
+        })
     }
 
     pub async fn update_by_id(
         db: &DbConn,
         input: UpdateTransaction,
-    ) -> Result<transaction::Model, DbErr> {
+    ) -> Result<transaction::Model, Error> {
         let item = Entity::find_by_id(input.id)
             .one(db)
-            .await?
-            .ok_or(DbErr::Custom("NotFound".to_owned()))?;
+            .await
+            .map_err(|e| {
+                Error::from_db(
+                    format!("{}:UpdateById", COMPONENT),
+                    "Failed to find Transaction by ID",
+                    e,
+                    get_location!(),
+                )
+            })?
+            .ok_or(Error::new(
+                format!("{}:UpdateById", COMPONENT),
+                "Transaction not found",
+                get_location!(),
+            ))?;
 
         let mut active: transaction::ActiveModel = input.apply_to(item.into());
         active.updated_at = Set(chrono::Utc::now());
-        active.update(db).await
+        active.update(db).await.map_err(|e| {
+            Error::from_db(
+                format!("{}:UpdateById", COMPONENT),
+                "Failed to update Transaction",
+                e,
+                get_location!(),
+            )
+        })
     }
 
-    pub async fn delete_by_id(db: &DbConn, id: i64) -> Result<DeleteResult, DbErr> {
+    pub async fn delete_by_id(db: &DbConn, id: i64) -> Result<DeleteResult, Error> {
         let post: transaction::ActiveModel = Entity::find_by_id(id)
             .one(db)
-            .await?
-            .ok_or(DbErr::Custom("Cannot find post.".to_owned()))
-            .map(Into::into)?;
+            .await
+            .map_err(|e| {
+                Error::from_db(
+                    format!("{}:DeleteById", COMPONENT),
+                    "Failed to find Transaction by ID",
+                    e,
+                    get_location!(),
+                )
+            })?
+            .ok_or(Error::new(
+                format!("{}:DeleteById", COMPONENT),
+                "Transaction not found",
+                get_location!(),
+            ))?
+            .into();
 
-        post.delete(db).await
+        post.delete(db).await.map_err(|e| {
+            Error::from_db(
+                format!("{}:DeleteById", COMPONENT),
+                "Failed to delete Transaction",
+                e,
+                get_location!(),
+            )
+        })
     }
 
-    pub async fn delete_all(db: &DbConn) -> Result<DeleteResult, DbErr> {
-        Entity::delete_many().exec(db).await
+    pub async fn delete_all(db: &DbConn) -> Result<DeleteResult, Error> {
+        Entity::delete_many().exec(db).await.map_err(|e| {
+            Error::from_db(
+                format!("{}:DeleteAll", COMPONENT),
+                "Failed to delete all Transactions",
+                e,
+                get_location!(),
+            )
+        })
     }
 }

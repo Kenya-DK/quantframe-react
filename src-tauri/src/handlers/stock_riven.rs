@@ -1,4 +1,3 @@
-
 use entity::{dto::*, enums::*, stock_riven::*};
 use service::{StockRivenMutation, StockRivenQuery};
 use utils::{get_location, info, Error};
@@ -8,7 +7,7 @@ use crate::{
     enums::*,
     handlers::*,
     types::OperationSet,
-    utils::{modules::states, CreateStockRivenExt, ErrorFromExt},
+    utils::{modules::states, CreateStockRivenExt},
     DATABASE,
 };
 
@@ -143,30 +142,15 @@ pub async fn handle_riven_by_name(
     operation_flags: &[&str],
 ) -> Result<(OperationSet, Option<Model>), Error> {
     let conn = DATABASE.get().unwrap();
-    let component = "HandleRivenByName";
     let file = "handle_riven_by_name.log";
     let mut operations: OperationSet = OperationSet::new();
     let weapon_url = weapon_url.into();
     let mod_name = mod_name.into();
-    let model = match StockRivenQuery::get_by_riven_name(
-        conn,
-        &weapon_url,
-        &mod_name,
-        sub_type,
-    )
-    .await
-    {
-        Ok(model_opt) => model_opt,
-        Err(e) => {
-            return Err(Error::from_db(
-                component,
-                format!("Failed to query StockRiven by name: {}", weapon_url),
-                e,
-                get_location!(),
-            )
-            .log(file))
-        }
-    };
+    let model =
+        match StockRivenQuery::get_by_riven_name(conn, &weapon_url, &mod_name, sub_type).await {
+            Ok(model_opt) => model_opt,
+            Err(e) => return Err(e.with_location(get_location!()).log(file)),
+        };
     if model.is_none() {
         operations.add("StockRiven_NotFound".to_string());
         return Ok((operations, None));

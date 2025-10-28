@@ -51,14 +51,7 @@ impl RivenModule {
         let conn = DATABASE.get().unwrap();
         let stocks = StockRivenQuery::get_all(conn, StockRivenPaginationQueryDto::new(1, -1))
             .await
-            .map_err(|e| {
-                Error::from_db(
-                    format!("{}:InterestingItems", COMPONENT),
-                    "Failed to get stock riven items",
-                    e,
-                    get_location!(),
-                )
-            })?;
+            .map_err(|e| e.with_location(get_location!()))?;
         Ok(stocks.results)
     }
 
@@ -399,14 +392,7 @@ impl RivenModule {
                             json!({"id": stock_riven.id, "source": COMPONENT})
                         );
                     }
-                    Err(e) => {
-                        return Err(Error::from_db(
-                            format!("{}StockRivenUpdate", COMPONENT),
-                            &format!("Failed to update stock item {:?}", stock_riven.id),
-                            e,
-                            get_location!(),
-                        ));
-                    }
+                    Err(e) => return Err(e.with_location(get_location!())),
                 }
             }
             current_index -= 1;

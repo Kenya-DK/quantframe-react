@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use service::{sea_orm::DatabaseConnection, StockItemQuery, WishListQuery};
 use utils::{get_location, Error};
 
-use crate::{cache::types::ItemPriceInfo, utils::ErrorFromExt};
+use crate::cache::types::ItemPriceInfo;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ItemEntry {
@@ -108,14 +108,7 @@ impl ItemEntry {
                         .set_log_level(utils::LogLevel::Warning))
                     }
                 }
-                Err(e) => {
-                    return Err(Error::from_db(
-                        "ItemEntry:GetStockItem",
-                        "Failed to get stock item by ID: {}",
-                        e,
-                        get_location!(),
-                    ))
-                }
+                Err(e) => return Err(e.with_location(get_location!())),
             }
         } else {
             Err(Error::new(
@@ -143,14 +136,7 @@ impl ItemEntry {
                         .set_log_level(utils::LogLevel::Warning))
                     }
                 }
-                Err(e) => {
-                    return Err(Error::from_db(
-                        "ItemEntry:GetWishListItem",
-                        "Failed to get wish list item by ID: {}",
-                        e,
-                        get_location!(),
-                    ))
-                }
+                Err(e) => return Err(e.with_location(get_location!())),
             }
         } else {
             Err(Error::new(

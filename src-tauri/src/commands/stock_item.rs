@@ -13,7 +13,6 @@ use crate::{
     handlers::{handle_item_by_entity, handle_wfm_item, stock_item::handle_item},
     helper::{self},
     types::PermissionsFlags,
-    utils::ErrorFromExt,
     APP, DATABASE,
 };
 
@@ -24,15 +23,7 @@ pub async fn get_stock_item_pagination(
     let conn = DATABASE.get().unwrap();
     match StockItemQuery::get_all(conn, query).await {
         Ok(data) => return Ok(data),
-        Err(e) => {
-            let error = Error::from_db(
-                "StockItemQuery::get_stock_items",
-                "Failed to get stock items: {}",
-                e,
-                get_location!(),
-            );
-            return Err(error);
-        }
+        Err(e) => return Err(e.with_location(get_location!())),
     };
 }
 
@@ -111,14 +102,9 @@ pub async fn stock_item_sell(
 pub async fn stock_item_delete(id: i64) -> Result<stock_item::Model, Error> {
     let conn = DATABASE.get().unwrap();
 
-    let item = StockItemQuery::find_by_id(conn, id).await.map_err(|e| {
-        Error::from_db(
-            "Command::StockItemDelete",
-            "Failed to get stock item by ID: {}",
-            e,
-            get_location!(),
-        )
-    })?;
+    let item = StockItemQuery::find_by_id(conn, id)
+        .await
+        .map_err(|e| e.with_location(get_location!()))?;
     if item.is_none() {
         return Err(Error::new(
             "Command::StockItemDelete",
@@ -137,14 +123,7 @@ pub async fn stock_item_delete(id: i64) -> Result<stock_item::Model, Error> {
 
     match StockItemMutation::delete_by_id(conn, id).await {
         Ok(_) => {}
-        Err(e) => {
-            return Err(Error::from_db(
-                "Command::StockItemDelete",
-                "Failed to delete stock item by ID: {}",
-                e,
-                get_location!(),
-            ));
-        }
+        Err(e) => return Err(e.with_location(get_location!())),
     }
 
     Ok(item)
@@ -155,14 +134,7 @@ pub async fn stock_item_update(input: UpdateStockItem) -> Result<stock_item::Mod
     let conn = DATABASE.get().unwrap();
     match StockItemMutation::update_by_id(conn, input).await {
         Ok(stock_item) => Ok(stock_item),
-        Err(e) => {
-            return Err(Error::from_db(
-                "Command::StockItemUpdate",
-                "Failed to get stock item by ID: {}",
-                e,
-                get_location!(),
-            ))
-        }
+        Err(e) => return Err(e.with_location(get_location!())),
     }
 }
 
@@ -181,14 +153,7 @@ pub async fn stock_item_get_by_id(id: i64) -> Result<Value, Error> {
                 ));
             }
         }
-        Err(e) => {
-            return Err(Error::from_db(
-                "Command::StockItemGetById",
-                "Failed to get stock item by ID: {}",
-                e,
-                get_location!(),
-            ))
-        }
+        Err(e) => return Err(e.with_location(get_location!())),
     };
 
     let (mut payload, _, order) = helper::get_item_details(
@@ -254,13 +219,6 @@ pub async fn export_stock_item_json(
             // the file path is `None` if the user closed the dialog
             return Ok("".to_string());
         }
-        Err(e) => {
-            return Err(Error::from_db(
-                "Command::StockItemUpdate",
-                "Failed to get stock item by ID: {}",
-                e,
-                get_location!(),
-            ))
-        }
+        Err(e) => return Err(e.with_location(get_location!())),
     }
 }

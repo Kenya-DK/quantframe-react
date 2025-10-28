@@ -5192,7 +5192,9 @@ dependencies = [
  "chrono",
  "entity",
  "sea-orm",
+ "serde_json",
  "tokio",
+ "utils",
 ]
 
 [[package]]

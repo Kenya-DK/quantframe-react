@@ -1,15 +1,17 @@
 use ::entity::stock_riven::*;
 use sea_orm::*;
+use utils::*;
 
-use crate::StockRivenQuery;
+use crate::{ErrorFromExt, StockRivenQuery};
 
 pub struct StockRivenMutation;
 
+static COMPONENT: &str = "StockRivenMutation";
 impl StockRivenMutation {
     pub async fn create(
         db: &DbConn,
         form_data: stock_riven::Model,
-    ) -> Result<(String, stock_riven::Model), DbErr> {
+    ) -> Result<(String, stock_riven::Model), Error> {
         let model = stock_riven::ActiveModel {
             wfm_weapon_id: Set(form_data.wfm_weapon_id.to_owned()),
             wfm_weapon_url: Set(form_data.wfm_weapon_url.to_owned()),
@@ -36,46 +38,112 @@ impl StockRivenMutation {
             ..Default::default()
         }
         .insert(db)
-        .await?;
+        .await
+        .map_err(|e| {
+            Error::from_db(
+                format!("{}:Create", COMPONENT),
+                "Failed to create Stock Riven",
+                e,
+                get_location!(),
+            )
+        })?;
 
         Ok(("Create".to_string(), model))
     }
     pub async fn update_by_id(
         db: &DbConn,
         input: UpdateStockRiven,
-    ) -> Result<stock_riven::Model, DbErr> {
+    ) -> Result<stock_riven::Model, Error> {
         let item = Entity::find_by_id(input.id)
             .one(db)
-            .await?
-            .ok_or(DbErr::Custom("NotFound".to_owned()))?;
+            .await
+            .map_err(|e| {
+                Error::from_db(
+                    format!("{}:UpdateById", COMPONENT),
+                    "Failed to find Stock Riven by ID",
+                    e,
+                    get_location!(),
+                )
+            })?
+            .ok_or(Error::new(
+                format!("{}:UpdateById", COMPONENT),
+                "Stock Riven not found",
+                get_location!(),
+            ))?;
 
         let mut active: stock_riven::ActiveModel = input.apply_to(item.into());
         active.updated_at = Set(chrono::Utc::now());
-        active.update(db).await
+        active.update(db).await.map_err(|e| {
+            Error::from_db(
+                format!("{}:UpdateById", COMPONENT),
+                "Failed to update Stock Riven",
+                e,
+                get_location!(),
+            )
+        })
     }
-    pub async fn find_by_id(db: &DbConn, id: i64) -> Result<Option<stock_riven::Model>, DbErr> {
-        Entity::find_by_id(id).one(db).await
+    pub async fn find_by_id(db: &DbConn, id: i64) -> Result<Option<stock_riven::Model>, Error> {
+        Entity::find_by_id(id).one(db).await.map_err(|e| {
+            Error::from_db(
+                format!("{}:FindById", COMPONENT),
+                "Failed to find Stock Riven by ID",
+                e,
+                get_location!(),
+            )
+        })
     }
 
-    pub async fn delete(db: &DbConn, id: i64) -> Result<DeleteResult, DbErr> {
+    pub async fn delete(db: &DbConn, id: i64) -> Result<DeleteResult, Error> {
         let post: stock_riven::ActiveModel = Entity::find_by_id(id)
             .one(db)
-            .await?
-            .ok_or(DbErr::Custom("NotFound".to_owned()))
-            .map(Into::into)?;
+            .await
+            .map_err(|e| {
+                Error::from_db(
+                    format!("{}:DeleteById", COMPONENT),
+                    "Failed to find Stock Riven by ID",
+                    e,
+                    get_location!(),
+                )
+            })?
+            .ok_or(Error::new(
+                format!("{}:DeleteById", COMPONENT),
+                "Stock Riven not found",
+                get_location!(),
+            ))?
+            .into();
 
-        post.delete(db).await
+        post.delete(db).await.map_err(|e| {
+            Error::from_db(
+                format!("{}:DeleteById", COMPONENT),
+                "Failed to delete Stock Riven",
+                e,
+                get_location!(),
+            )
+        })
     }
-    pub async fn delete_uuid(db: &DbConn, uuid: impl Into<String>) -> Result<DeleteResult, DbErr> {
-        let entry = StockRivenQuery::get_by_uuid(db, uuid).await?;
+    pub async fn delete_uuid(db: &DbConn, uuid: impl Into<String>) -> Result<DeleteResult, Error> {
+        let entry = StockRivenQuery::get_by_uuid(db, uuid)
+            .await
+            .map_err(|e| e.with_location(get_location!()))?;
         if let Some(entry) = entry {
             StockRivenMutation::delete(db, entry.id).await
         } else {
-            Err(DbErr::Custom("NotFound".to_string()))
+            Err(Error::new(
+                format!("{}:DeleteByUUID", COMPONENT),
+                "Stock Riven not found for given UUID",
+                get_location!(),
+            ))
         }
     }
 
-    pub async fn delete_all(db: &DbConn) -> Result<DeleteResult, DbErr> {
-        Entity::delete_many().exec(db).await
+    pub async fn delete_all(db: &DbConn) -> Result<DeleteResult, Error> {
+        Entity::delete_many().exec(db).await.map_err(|e| {
+            Error::from_db(
+                format!("{}:DeleteAll", COMPONENT),
+                "Failed to delete all Stock Rivens",
+                e,
+                get_location!(),
+            )
+        })
     }
 }

@@ -1,15 +1,17 @@
+use crate::{ErrorFromExt, WishListQuery};
 use ::entity::{dto::*, wish_list::*};
 use sea_orm::*;
-
-use crate::WishListQuery;
+use utils::*;
 
 pub struct WishListMutation;
+
+static COMPONENT: &str = "WishListMutation";
 
 impl WishListMutation {
     pub async fn create(
         db: &DbConn,
         form_data: &wish_list::Model,
-    ) -> Result<wish_list::Model, DbErr> {
+    ) -> Result<wish_list::Model, Error> {
         wish_list::ActiveModel {
             wfm_id: Set(form_data.wfm_id.to_owned()),
             wfm_url: Set(form_data.wfm_url.to_owned()),
@@ -25,15 +27,24 @@ impl WishListMutation {
         }
         .insert(db)
         .await
+        .map_err(|e| {
+            Error::from_db(
+                format!("{}:Create", COMPONENT),
+                "Failed to create Wish List item",
+                e,
+                get_location!(),
+            )
+        })
     }
     pub async fn add_item(
         db: &DbConn,
         item: wish_list::Model,
-    ) -> Result<(String, wish_list::Model), DbErr> {
+    ) -> Result<(String, wish_list::Model), Error> {
         // Find the item by id
         let found_item =
             WishListQuery::find_by_url_name_and_sub_type(db, &item.wfm_url, item.sub_type.clone())
-                .await?;
+                .await
+                .map_err(|e| e.with_location(get_location!()))?;
         if found_item.is_none() {
             match WishListMutation::create(db, &item.clone()).await {
                 Ok(insert) => {
@@ -66,8 +77,10 @@ impl WishListMutation {
         url: &str,
         sub_type: Option<SubType>,
         quantity: i64,
-    ) -> Result<(String, Option<wish_list::Model>), DbErr> {
-        let item = WishListQuery::find_by_url_name_and_sub_type(db, url, sub_type).await?;
+    ) -> Result<(String, Option<wish_list::Model>), Error> {
+        let item = WishListQuery::find_by_url_name_and_sub_type(db, url, sub_type)
+            .await
+            .map_err(|e| e.with_location(get_location!()))?;
         let id = match item {
             Some(i) => i.id,
             None => -1,
@@ -79,9 +92,16 @@ impl WishListMutation {
         db: &DbConn,
         id: i64,
         mut quantity: i64,
-    ) -> Result<(String, Option<wish_list::Model>), DbErr> {
+    ) -> Result<(String, Option<wish_list::Model>), Error> {
         // Find the item by id
-        let item = Entity::find_by_id(id).one(db).await?;
+        let item = Entity::find_by_id(id).one(db).await.map_err(|e| {
+            Error::from_db(
+                format!("{}:BoughtById", COMPONENT),
+                "Failed to find Wish List item by ID",
+                e,
+                get_location!(),
+            )
+        })?;
         if item.is_none() {
             return Ok(("NotFound".to_string(), None));
         }
@@ -123,28 +143,73 @@ impl WishListMutation {
     pub async fn update_by_id(
         db: &DbConn,
         input: UpdateWishList,
-    ) -> Result<wish_list::Model, DbErr> {
+    ) -> Result<wish_list::Model, Error> {
         let item = Entity::find_by_id(input.id)
             .one(db)
-            .await?
-            .ok_or(DbErr::Custom("Cannot find wish list item.".to_owned()))?;
+            .await
+            .map_err(|e| {
+                Error::from_db(
+                    format!("{}:UpdateById", COMPONENT),
+                    "Failed to find Wish List item by ID",
+                    e,
+                    get_location!(),
+                )
+            })?
+            .ok_or(Error::new(
+                format!("{}:UpdateById", COMPONENT),
+                "Wish List item not found",
+                get_location!(),
+            ))?;
 
         let mut active: wish_list::ActiveModel = input.apply_to(item.into());
         active.updated_at = Set(chrono::Utc::now());
-        active.update(db).await
+        active.update(db).await.map_err(|e| {
+            Error::from_db(
+                format!("{}:UpdateById", COMPONENT),
+                "Failed to update Wish List item",
+                e,
+                get_location!(),
+            )
+        })
     }
 
-    pub async fn delete_by_id(db: &DbConn, id: i64) -> Result<DeleteResult, DbErr> {
+    pub async fn delete_by_id(db: &DbConn, id: i64) -> Result<DeleteResult, Error> {
         let post: wish_list::ActiveModel = Entity::find_by_id(id)
             .one(db)
-            .await?
-            .ok_or(DbErr::Custom("Cannot find post.".to_owned()))
-            .map(Into::into)?;
+            .await
+            .map_err(|e| {
+                Error::from_db(
+                    format!("{}:DeleteById", COMPONENT),
+                    "Failed to find Wish List item by ID",
+                    e,
+                    get_location!(),
+                )
+            })?
+            .ok_or(Error::new(
+                format!("{}:DeleteById", COMPONENT),
+                "Wish List item not found",
+                get_location!(),
+            ))?
+            .into();
 
-        post.delete(db).await
+        post.delete(db).await.map_err(|e| {
+            Error::from_db(
+                format!("{}:DeleteById", COMPONENT),
+                "Failed to delete Wish List item",
+                e,
+                get_location!(),
+            )
+        })
     }
 
-    pub async fn delete_all(db: &DbConn) -> Result<DeleteResult, DbErr> {
-        Entity::delete_many().exec(db).await
+    pub async fn delete_all(db: &DbConn) -> Result<DeleteResult, Error> {
+        Entity::delete_many().exec(db).await.map_err(|e| {
+            Error::from_db(
+                format!("{}:DeleteAll", COMPONENT),
+                "Failed to delete all Wish List items",
+                e,
+                get_location!(),
+            )
+        })
     }
 }

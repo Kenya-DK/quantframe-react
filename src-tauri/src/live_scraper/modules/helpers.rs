@@ -181,14 +181,7 @@ pub async fn collect_interesting_items(
     if settings.live_scraper.has_trade_mode(TradeMode::Sell) {
         let stock_items = StockItemQuery::get_all(conn, StockItemPaginationQueryDto::new(1, -1))
             .await
-            .map_err(|e| {
-                Error::from_db(
-                    "ItemModule::check",
-                    "Failed to get stock items: {}",
-                    e,
-                    get_location!(),
-                )
-            })?;
+            .map_err(|e| e.with_location(get_location!()))?;
         for item in stock_items.results {
             if !stock_item_settings.is_item_blacklisted(&item.wfm_id, &TradeMode::Sell) {
                 interesting_items
@@ -208,14 +201,7 @@ pub async fn collect_interesting_items(
     if settings.live_scraper.has_trade_mode(TradeMode::WishList) {
         let wish_items = WishListQuery::get_all(conn, WishListPaginationQueryDto::new(1, -1))
             .await
-            .map_err(|e| {
-                Error::from_db(
-                    "ItemModule::check",
-                    "Failed to get wish list items: {}",
-                    e,
-                    get_location!(),
-                )
-            })?;
+            .map_err(|e| e.with_location(get_location!()))?;
         for item in wish_items.results {
             if !stock_item_settings.is_item_blacklisted(&item.wfm_id, &TradeMode::WishList) {
                 interesting_items

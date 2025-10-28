@@ -3,13 +3,7 @@ use service::StockItemMutation;
 use utils::{get_location, info, Error};
 use wf_market::enums::OrderType;
 
-use crate::{
-    enums::*,
-    handlers::*,
-    types::OperationSet,
-    utils::{CreateStockItemExt, ErrorFromExt},
-    DATABASE,
-};
+use crate::{enums::*, handlers::*, types::OperationSet, utils::CreateStockItemExt, DATABASE};
 
 pub async fn handle_item_by_entity(
     mut item: CreateStockItem,
@@ -89,16 +83,7 @@ pub async fn handle_item_by_entity(
                 }
                 operations.add(format!("ItemSell_{}", s_operation));
             }
-            Err(e) => {
-                let error = Error::from_db(
-                    format!("{}:SoldByUrlAndSubType", component),
-                    format!("Failed to handle sell operation with item: {}", item),
-                    e,
-                    get_location!(),
-                );
-                error.log(file);
-                return Err(error);
-            }
+            Err(e) => return Err(e.with_location(get_location!()).log(file)),
         }
     } else if operation == OrderType::Buy {
         // Handle buy operation
@@ -122,16 +107,7 @@ pub async fn handle_item_by_entity(
                 model = created_item;
                 operations.add(format!("ItemBuy_{}", s_operation));
             }
-            Err(e) => {
-                let error = Error::from_db(
-                    "HandleItem:AddItem",
-                    format!("Failed to handle buy operation with item: {}", item),
-                    e,
-                    get_location!(),
-                );
-                error.log(file);
-                return Err(error);
-            }
+            Err(e) => return Err(e.with_location(get_location!()).log(file)),
         }
     }
 

@@ -20,14 +20,6 @@ pub trait ErrorFromExt {
         error: QFRequestError,
         location: impl Into<String>,
     ) -> Self;
-
-    /// Create an Error from a database error
-    fn from_db(
-        component: impl Into<String>,
-        message: impl Into<String>,
-        error: migration::DbErr,
-        location: impl Into<String>,
-    ) -> Self;
     fn new_permission_denied(flag: impl Into<String>) -> Self;
 }
 
@@ -62,22 +54,6 @@ impl ErrorFromExt for Error {
             message: message.into(),
             log_level: LogLevel::Critical,
             context: Some(error.to_json()),
-            location: Some(location.into()),
-        }
-    }
-
-    fn from_db(
-        component: impl Into<String>,
-        message: impl Into<String>,
-        error: migration::DbErr,
-        location: impl Into<String>,
-    ) -> Self {
-        Error {
-            component: format!("DBClient:{}", component.into()),
-            cause: error.to_string(),
-            message: message.into(),
-            log_level: LogLevel::Critical,
-            context: Some(json!(error.to_string())),
             location: Some(location.into()),
         }
     }

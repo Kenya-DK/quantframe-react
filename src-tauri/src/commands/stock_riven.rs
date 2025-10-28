@@ -2,9 +2,7 @@ use std::{collections::HashMap, sync::Mutex};
 
 use entity::{dto::*, stock_riven::*, transaction::TransactionPaginationQueryDto};
 use serde_json::{json, Value};
-use service::{
-    StockRivenMutation, StockRivenQuery, TransactionQuery,
-};
+use service::{StockRivenMutation, StockRivenQuery, TransactionQuery};
 use tauri_plugin_dialog::DialogExt;
 use utils::{get_location, group_by, info, Error, LoggerOptions};
 use wf_market::enums::OrderType;
@@ -25,15 +23,7 @@ pub async fn get_stock_riven_pagination(
     let conn = DATABASE.get().unwrap();
     match StockRivenQuery::get_all(conn, query).await {
         Ok(data) => return Ok(data),
-        Err(e) => {
-            let error = Error::from_db(
-                "StockRivenQuery::get_stock_riven",
-                "Failed to get stock riven: {}",
-                e,
-                get_location!(),
-            );
-            return Err(error);
-        }
+        Err(e) => return Err(e.with_location(get_location!())),
     };
 }
 
@@ -119,14 +109,9 @@ pub async fn stock_riven_delete(
     let app = app.lock()?.clone();
     let conn = DATABASE.get().unwrap();
 
-    let item = StockRivenQuery::get_by_id(conn, id).await.map_err(|e| {
-        Error::from_db(
-            "Command::StockRivenDelete",
-            "Failed to get stock riven by ID: {}",
-            e,
-            get_location!(),
-        )
-    })?;
+    let item = StockRivenQuery::get_by_id(conn, id)
+        .await
+        .map_err(|e| e.with_location(get_location!()))?;
     if item.is_none() {
         return Err(Error::new(
             "Command::StockRivenDelete",
@@ -161,14 +146,7 @@ pub async fn stock_riven_delete(
 
     match StockRivenMutation::delete(conn, id).await {
         Ok(_) => {}
-        Err(e) => {
-            return Err(Error::from_db(
-                "Command::StockRivenDelete",
-                "Failed to delete stock riven by ID: {}",
-                e,
-                get_location!(),
-            ));
-        }
+        Err(e) => return Err(e.with_location(get_location!())),
     }
 
     Ok(item)
@@ -179,14 +157,7 @@ pub async fn stock_riven_update(input: UpdateStockRiven) -> Result<stock_riven::
 
     match StockRivenMutation::update_by_id(conn, input).await {
         Ok(stock_riven) => Ok(stock_riven),
-        Err(e) => {
-            return Err(Error::from_db(
-                "Command::StockRivenUpdate",
-                "Failed to get stock riven by ID: {}",
-                e,
-                get_location!(),
-            ))
-        }
+        Err(e) => return Err(e.with_location(get_location!())),
     }
 }
 
@@ -209,14 +180,7 @@ pub async fn stock_riven_get_by_id(
                 ));
             }
         }
-        Err(e) => {
-            return Err(Error::from_db(
-                "Command::StockRivenGetById",
-                "Failed to get stock riven by ID: {}",
-                e,
-                get_location!(),
-            ))
-        }
+        Err(e) => return Err(e.with_location(get_location!())),
     };
 
     let transaction_paginate = TransactionQuery::get_all(
@@ -224,14 +188,7 @@ pub async fn stock_riven_get_by_id(
         TransactionPaginationQueryDto::new(1, -1).set_wfm_id(&item.wfm_weapon_id),
     )
     .await
-    .map_err(|e| {
-        Error::from_db(
-            "Command::StockRivenGetById",
-            "Failed to get transactions: {}",
-            e,
-            get_location!(),
-        )
-    })?;
+    .map_err(|e| e.with_location(get_location!()))?;
     let auction = app
         .wfm_client
         .auction()
@@ -297,13 +254,6 @@ pub async fn export_stock_riven_json(
             // the file path is `None` if the user closed the dialog
             return Ok("".to_string());
         }
-        Err(e) => {
-            return Err(Error::from_db(
-                "Command::StockRivenUpdate",
-                "Failed to get stock riven by ID: {}",
-                e,
-                get_location!(),
-            ))
-        }
+        Err(e) => return Err(e.with_location(get_location!())),
     }
 }

@@ -1,15 +1,18 @@
 use ::entity::{dto::*, enums::*, stock_item::*};
 use sea_orm::*;
+use utils::*;
 
-use crate::StockItemQuery;
+use crate::{ErrorFromExt, StockItemQuery};
 
 pub struct StockItemMutation;
+
+static COMPONENT: &str = "StockItemMutation";
 
 impl StockItemMutation {
     pub async fn create(
         db: &DbConn,
         form_data: stock_item::Model,
-    ) -> Result<stock_item::Model, DbErr> {
+    ) -> Result<stock_item::Model, Error> {
         stock_item::ActiveModel {
             wfm_id: Set(form_data.wfm_id.to_owned()),
             wfm_url: Set(form_data.wfm_url.to_owned()),
@@ -29,15 +32,30 @@ impl StockItemMutation {
         }
         .insert(db)
         .await
+        .map_err(|e| {
+            Error::from_db(
+                format!("{}:Create", COMPONENT),
+                "Failed to create Stock Item",
+                e,
+                get_location!(),
+            )
+        })
     }
 
     pub async fn sold_by_id(
         db: &DbConn,
         id: i64,
         mut quantity: i64,
-    ) -> Result<(String, Option<stock_item::Model>), DbErr> {
+    ) -> Result<(String, Option<stock_item::Model>), Error> {
         // Find the item by id
-        let item = Entity::find_by_id(id).one(db).await?;
+        let item = Entity::find_by_id(id).one(db).await.map_err(|e| {
+            Error::from_db(
+                format!("{}:SoldById", COMPONENT),
+                "Failed to find Stock Item by ID",
+                e,
+                get_location!(),
+            )
+        })?;
         if item.is_none() {
             return Ok(("NotFound".to_string(), None));
         }
@@ -81,8 +99,10 @@ impl StockItemMutation {
         url: &str,
         sub_type: Option<SubType>,
         quantity: i64,
-    ) -> Result<(String, Option<stock_item::Model>), DbErr> {
-        let items = StockItemQuery::find_by_url_name(db, url).await?;
+    ) -> Result<(String, Option<stock_item::Model>), Error> {
+        let items = StockItemQuery::find_by_url_name(db, url)
+            .await
+            .map_err(|e| e.with_location(get_location!()))?;
         for item in items {
             if item.sub_type == sub_type {
                 return StockItemMutation::sold_by_id(db, item.id, quantity).await;
@@ -94,14 +114,15 @@ impl StockItemMutation {
     pub async fn add_item(
         db: &DbConn,
         stock: stock_item::Model,
-    ) -> Result<(String, stock_item::Model), DbErr> {
+    ) -> Result<(String, stock_item::Model), Error> {
         // Find the item by id
         let item = StockItemQuery::find_by_url_name_and_sub_type(
             db,
             &stock.wfm_url,
             stock.sub_type.clone(),
         )
-        .await?;
+        .await
+        .map_err(|e| e.with_location(get_location!()))?;
         if item.is_none() {
             match StockItemMutation::create(db, stock.clone()).await {
                 Ok(insert) => {
@@ -139,42 +160,102 @@ impl StockItemMutation {
     pub async fn update_by_id(
         db: &DbConn,
         input: UpdateStockItem,
-    ) -> Result<stock_item::Model, DbErr> {
+    ) -> Result<stock_item::Model, Error> {
         let item = Entity::find_by_id(input.id)
             .one(db)
-            .await?
-            .ok_or(DbErr::Custom("Cannot find Item.".to_owned()))?;
+            .await
+            .map_err(|e| {
+                Error::from_db(
+                    format!("{}:UpdateById", COMPONENT),
+                    "Failed to find Stock Item by ID",
+                    e,
+                    get_location!(),
+                )
+            })?
+            .ok_or(Error::new(
+                format!("{}:UpdateById", COMPONENT),
+                "Stock Item not found",
+                get_location!(),
+            ))?;
 
         let mut active: stock_item::ActiveModel = input.apply_to(item.into());
         active.updated_at = Set(chrono::Utc::now());
-        active.update(db).await
+        active.update(db).await.map_err(|e| {
+            Error::from_db(
+                format!("{}:UpdateById", COMPONENT),
+                "Failed to update Stock Item",
+                e,
+                get_location!(),
+            )
+        })
     }
 
-    pub async fn delete_by_id(db: &DbConn, id: i64) -> Result<DeleteResult, DbErr> {
+    pub async fn delete_by_id(db: &DbConn, id: i64) -> Result<DeleteResult, Error> {
         let post: stock_item::ActiveModel = Entity::find_by_id(id)
             .one(db)
-            .await?
-            .ok_or(DbErr::Custom("Cannot find Item.".to_owned()))
-            .map(Into::into)?;
+            .await
+            .map_err(|e| {
+                Error::from_db(
+                    format!("{}:DeleteById", COMPONENT),
+                    "Failed to find Stock Item by ID",
+                    e,
+                    get_location!(),
+                )
+            })?
+            .ok_or(Error::new(
+                format!("{}:DeleteById", COMPONENT),
+                "Stock Item not found",
+                get_location!(),
+            ))?
+            .into();
 
-        post.delete(db).await
+        post.delete(db).await.map_err(|e| {
+            Error::from_db(
+                format!("{}:DeleteById", COMPONENT),
+                "Failed to delete Stock Item",
+                e,
+                get_location!(),
+            )
+        })
     }
 
     pub async fn update_all(
         db: &DbConn,
         status: StockStatus,
         list_price: Option<i64>,
-    ) -> Result<Vec<stock_item::Model>, DbErr> {
+    ) -> Result<Vec<stock_item::Model>, Error> {
         Entity::update_many()
             .col_expr(stock_item::Column::Status, status.into())
             .col_expr(stock_item::Column::ListPrice, list_price.into())
             .exec(db)
-            .await?;
+            .await
+            .map_err(|e| {
+                Error::from_db(
+                    format!("{}:UpdateAll", COMPONENT),
+                    "Failed to update all Stock Items",
+                    e,
+                    get_location!(),
+                )
+            })?;
 
-        Entity::find().all(db).await
+        Entity::find().all(db).await.map_err(|e| {
+            Error::from_db(
+                format!("{}:UpdateAll", COMPONENT),
+                "Failed to retrieve all Stock Items after update",
+                e,
+                get_location!(),
+            )
+        })
     }
 
-    pub async fn delete_all(db: &DbConn) -> Result<DeleteResult, DbErr> {
-        Entity::delete_many().exec(db).await
+    pub async fn delete_all(db: &DbConn) -> Result<DeleteResult, Error> {
+        Entity::delete_many().exec(db).await.map_err(|e| {
+            Error::from_db(
+                format!("{}:DeleteAll", COMPONENT),
+                "Failed to delete all Stock Items",
+                e,
+                get_location!(),
+            )
+        })
     }
 }

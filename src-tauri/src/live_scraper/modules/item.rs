@@ -701,15 +701,7 @@ impl ItemModule {
                         );
                     }
                 }
-                Err(e) => {
-                    return Err(Error::from_db(
-                        format!("{}StockItemUpdate", component),
-                        &format!("Failed to update stock item {:?}", entry.stock_id),
-                        e,
-                        get_location!(),
-                    )
-                    .with_context(entry.to_json()));
-                }
+                Err(e) => return Err(e.with_location(get_location!())),
             }
         }
         Ok(())
@@ -852,13 +844,9 @@ impl ItemModule {
                     );
                 }
                 Err(e) => {
-                    return Err(Error::from_db(
-                        format!("{}WishListUpdate", component),
-                        &format!("Failed to update wishlist item {:?}", entry.wish_list_id),
-                        e,
-                        get_location!(),
-                    )
-                    .with_context(entry.to_json()));
+                    return Err(e
+                        .with_location(get_location!())
+                        .with_context(entry.to_json()))
                 }
             }
         }

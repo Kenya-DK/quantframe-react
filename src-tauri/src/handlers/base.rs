@@ -133,15 +133,6 @@ pub async fn handle_transaction(
     let conn = DATABASE.get().unwrap();
     match TransactionMutation::create(conn, &transaction).await {
         Ok(updated_item) => Ok(updated_item),
-        Err(e) => {
-            let error = Error::from_db(
-                "HandleTransaction",
-                "Failed to handle transaction",
-                e,
-                get_location!(),
-            );
-            error.log("handle_transaction.log");
-            Err(error)
-        }
+        Err(e) => return Err(e.with_location(get_location!())),
     }
 }

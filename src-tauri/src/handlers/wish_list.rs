@@ -80,16 +80,7 @@ pub async fn handle_wish_list_by_entity(
                 }
                 operations.add(format!("WishListItemBought_{}", s_operation));
             }
-            Err(e) => {
-                let error = Error::from_db(
-                    format!("{}:BoughtByUrlAndSubType", component),
-                    format!("Failed to handle buy operation with item: {}", item),
-                    e,
-                    get_location!(),
-                );
-                error.log(file);
-                return Err(error);
-            }
+            Err(e) => return Err(e.with_location(get_location!()).log(file)),
         }
     } else if operation == OrderType::Sell {
         // Handle sell operation
@@ -113,19 +104,7 @@ pub async fn handle_wish_list_by_entity(
                 model = created_item;
                 operations.add(format!("WishListItemAdded_{}", s_operation));
             }
-            Err(e) => {
-                let error = Error::from_db(
-                    format!("{}:AddWishListItem", component),
-                    format!(
-                        "Failed to handle sell operation with wish list item: {}",
-                        item
-                    ),
-                    e,
-                    get_location!(),
-                );
-                error.log(file);
-                return Err(error);
-            }
+            Err(e) => return Err(e.with_location(get_location!()).log(file)),
         }
     }
 

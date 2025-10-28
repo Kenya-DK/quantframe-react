@@ -197,14 +197,7 @@ pub async fn get_item_details(
             .set_sub_type(sub_type.clone()),
     )
     .await
-    .map_err(|e| {
-        Error::from_db(
-            "Helper::GetItemDetails",
-            "Failed to fetch transactions",
-            e,
-            get_location!(),
-        )
-    })?;
+    .map_err(|e| e.with_location(get_location!()))?;
     payload["report"] = json!(FinancialReport::from(&transaction_paginate.results));
     payload["last_transactions"] = json!(transaction_paginate.take_top(5));
     Ok((payload, Some(item_info), order))

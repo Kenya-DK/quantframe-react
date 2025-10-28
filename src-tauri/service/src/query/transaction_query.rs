@@ -1,14 +1,15 @@
-use crate::paginate_query;
+use crate::{paginate_query, ErrorFromExt};
 use ::entity::transaction::dto::TransactionPaginationQueryDto;
 use ::entity::transaction::{transaction, transaction::Entity as Transaction};
 use sea_orm::*;
+use utils::*;
 pub struct TransactionQuery;
 
 impl TransactionQuery {
     pub async fn get_all(
         db: &DbConn,
         query: TransactionPaginationQueryDto,
-    ) -> Result<::entity::dto::pagination::PaginatedResult<transaction::Model>, DbErr> {
+    ) -> Result<::entity::dto::pagination::PaginatedResult<transaction::Model>, Error> {
         let stmt = query.get_query();
 
         // Print the generated SQL for debugging
@@ -19,11 +20,20 @@ impl TransactionQuery {
 
         // Pagination
         let paginated_result =
-            paginate_query(stmt, db, query.pagination.page, query.pagination.limit).await?;
+            paginate_query(stmt, db, query.pagination.page, query.pagination.limit)
+                .await
+                .map_err(|e| e.with_location(get_location!()))?;
         Ok(paginated_result)
     }
 
-    pub async fn find_by_id(db: &DbConn, id: i64) -> Result<Option<transaction::Model>, DbErr> {
-        Transaction::find_by_id(id).one(db).await
+    pub async fn find_by_id(db: &DbConn, id: i64) -> Result<Option<transaction::Model>, Error> {
+        Transaction::find_by_id(id).one(db).await.map_err(|e| {
+            Error::from_db(
+                "TransactionQuery:FindById".to_string(),
+                "Failed to find Transaction by ID",
+                e,
+                get_location!(),
+            )
+        })
     }
 }
