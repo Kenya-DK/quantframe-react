@@ -1,7 +1,8 @@
 ## Fix's
 
 - 🛠️ Made it more clear on how the blacklist works
-- 🛠️ Fix Sorting for blacklist items and better style
+- 🛠️ Fix sorting for blacklist items and better style
+- 🛠️ Fix typo in settings
 
 ## TODO's
 

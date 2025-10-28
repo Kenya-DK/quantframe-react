@@ -4,16 +4,16 @@ use crate::app::SummaryCategorySetting;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SummarySettings {
-    pub resent_days: i64,         // How many days to keep the summary
-    pub resent_transactions: i64, // How many transactions to keep in the summary
+    pub recent_days: i64,         // How many days to keep the summary
+    pub recent_transactions: i64, // How many transactions to keep in the summary
     pub categories: Vec<SummaryCategorySetting>,
 }
 
 impl Default for SummarySettings {
     fn default() -> Self {
         SummarySettings {
-            resent_days: 7,
-            resent_transactions: 10,
+            recent_days: 7,
+            recent_transactions: 10,
             categories: vec![
                 SummaryCategorySetting::new(
                     "/imgs/categories/mods.png",

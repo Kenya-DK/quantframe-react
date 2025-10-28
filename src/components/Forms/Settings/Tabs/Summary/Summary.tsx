@@ -63,25 +63,25 @@ export const SummaryPanel = ({ value, onSubmit }: SummaryPanelProps) => {
             <Grid.Col span={4}>
               <Group gap="xs" grow>
                 <NumberInput
-                  label={useTranslateFormFields("resent_days.label")}
+                  label={useTranslateFormFields("recent_days.label")}
                   min={1}
                   max={999}
-                  placeholder={useTranslateFormFields("resent_days.placeholder")}
-                  value={form.values.resent_days}
-                  onChange={(event) => form.setFieldValue("resent_days", Number(event))}
-                  error={form.errors.resent_days && useTranslateFormFields("resent_days.error")}
-                  rightSection={<TooltipIcon label={useTranslateFormFields("resent_days.tooltip")} />}
+                  placeholder={useTranslateFormFields("recent_days.placeholder")}
+                  value={form.values.recent_days}
+                  onChange={(event) => form.setFieldValue("recent_days", Number(event))}
+                  error={form.errors.recent_days && useTranslateFormFields("recent_days.error")}
+                  rightSection={<TooltipIcon label={useTranslateFormFields("recent_days.tooltip")} />}
                   radius="md"
                 />
                 <NumberInput
-                  label={useTranslateFormFields("resent_transactions.label")}
+                  label={useTranslateFormFields("recent_transactions.label")}
                   min={1}
                   max={999}
-                  placeholder={useTranslateFormFields("resent_transactions.placeholder")}
-                  value={form.values.resent_transactions}
-                  onChange={(event) => form.setFieldValue("resent_transactions", Number(event))}
-                  error={form.errors.resent_transactions && useTranslateFormFields("resent_transactions.error")}
-                  rightSection={<TooltipIcon label={useTranslateFormFields("resent_transactions.tooltip")} />}
+                  placeholder={useTranslateFormFields("recent_transactions.placeholder")}
+                  value={form.values.recent_transactions}
+                  onChange={(event) => form.setFieldValue("recent_transactions", Number(event))}
+                  error={form.errors.recent_transactions && useTranslateFormFields("recent_transactions.error")}
+                  rightSection={<TooltipIcon label={useTranslateFormFields("recent_transactions.tooltip")} />}
                   radius="md"
                 />
               </Group>

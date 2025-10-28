@@ -363,8 +363,8 @@ export namespace TauriTypes {
   }
   export interface SettingsSummary {
     categories: SettingsCategorySummary[];
-    resent_days: number;
-    resent_transactions: number;
+    recent_days: number;
+    recent_transactions: number;
   }
   export interface SettingsCategorySummary {
     icon: string;

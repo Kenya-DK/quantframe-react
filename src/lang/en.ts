@@ -776,12 +776,12 @@ export const en = {
           summary: {
             title: "Summary",
             fields: {
-              resent_days: {
-                label: "Resent Days",
+              recent_days: {
+                label: "Recent Days",
                 tooltip: "How many days of data to show",
               },
-              resent_transactions: {
-                label: "Resent Transactions",
+              recent_transactions: {
+                label: "Recent Transactions",
                 tooltip: "How many transactions to show",
               },
             },

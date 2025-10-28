@@ -171,9 +171,9 @@ pub async fn dashboard_summary(app: tauri::State<'_, Mutex<AppState>>) -> Result
     Ok(json!({
         "total": get_total_summary(&transactions.results).await.unwrap(),
         "today": get_today_summary(&transactions.results).await.unwrap(),
-        "recent_days": get_recent_days_summary(&transactions.results, app.settings.summary_settings.resent_days).await.unwrap(),
+        "recent_days": get_recent_days_summary(&transactions.results, app.settings.summary_settings.recent_days).await.unwrap(),
         "best_seller": get_best_selling_items(&transactions.results).await?,
         "categories": category_summary,
-        "resent_transactions": transactions.take_top(app.settings.summary_settings.resent_transactions as usize)
+        "resent_transactions": transactions.take_top(app.settings.summary_settings.recent_transactions as usize)
     }))
 }
