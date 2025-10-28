@@ -23,7 +23,6 @@ use service::sea_orm::{Database, DatabaseConnection};
 
 use std::env;
 use std::panic;
-use std::sync::Once;
 use std::sync::{Mutex, OnceLock};
 use tauri::{Emitter, Manager};
 
@@ -48,7 +47,6 @@ mod types;
 pub static APP: OnceLock<tauri::AppHandle> = OnceLock::new();
 pub static DATABASE: OnceLock<DatabaseConnection> = OnceLock::new();
 pub static HAS_STARTED: OnceLock<bool> = OnceLock::new();
-pub static APP_TAGS: OnceLock<Mutex<Vec<String>>> = OnceLock::new();
 
 // If use_debug is true the debug database will be used and all data will be lost on restart
 async fn init_database(use_debug: bool) -> Result<(), Error> {
