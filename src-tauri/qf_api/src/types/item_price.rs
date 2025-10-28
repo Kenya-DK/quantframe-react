@@ -41,6 +41,8 @@ pub struct ItemPrice {
     #[serde(default)]
     pub order_type: String,
     #[serde(default)]
+    pub uuid: String,
+    #[serde(default)]
     pub tags: Vec<String>,
     #[serde(default)]
     pub trading_tax: i32,

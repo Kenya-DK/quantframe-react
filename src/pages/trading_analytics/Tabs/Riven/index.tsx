@@ -174,6 +174,7 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
           queryData.setFieldValue("sort_by", sort.columnAccessor as any);
           queryData.setFieldValue("sort_direction", sort.direction);
         }}
+        idAccessor={(record) => record.uuid}
         // define columns
         columns={[
           {

@@ -65,6 +65,7 @@ export namespace QuantframeApiTypes {
     wfm_id: string;
     /** The URL of the item on Warframe Market. */
     wfm_url: string;
+    uuid: string;
     /** The price of the item. */
     name?: string;
     /** The price of the item. */

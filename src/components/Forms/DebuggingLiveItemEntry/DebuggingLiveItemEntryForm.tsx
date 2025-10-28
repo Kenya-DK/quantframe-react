@@ -20,12 +20,6 @@ const OPERATION_OPTIONS = [
   { value: "WishList", label: "WishList" },
 ];
 
-const ORDER_TYPE_OPTIONS = [
-  { value: "buy", label: "Buy" },
-  { value: "sell", label: "Sell" },
-  { value: "closed", label: "Closed" },
-];
-
 export function DebuggingLiveItemEntryForm({ disabled, boxProps, onSubmit, initialValues }: DebuggingLiveItemEntryFormProps) {
   // Translate general
   const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>

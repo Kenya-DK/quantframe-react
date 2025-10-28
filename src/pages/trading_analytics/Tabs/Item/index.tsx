@@ -178,7 +178,7 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
         recordsPerPage={queryData.values.limit || 10}
         recordsPerPageOptions={[5, 10, 15, 20, 25, 50, 100]}
         onRecordsPerPageChange={(limit) => queryData.setFieldValue("limit", limit)}
-        idAccessor={(record) => `item-price-${record.wfm_id}${record.datetime}`}
+        idAccessor={(record) => record.uuid}
         sortStatus={{
           columnAccessor: queryData.values.sort_by || "name",
           direction: queryData.values.sort_direction || "desc",
