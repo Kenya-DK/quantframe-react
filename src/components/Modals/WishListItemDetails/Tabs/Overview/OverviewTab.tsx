@@ -3,7 +3,30 @@ import { TauriTypes } from "$types";
 import { useTranslateEnums, useTranslateModals } from "@hooks/useTranslate.hook";
 import dayjs from "dayjs";
 import { PriceHistoryListItem } from "@components/DataDisplay/PriceHistoryListItem";
-
+import { ItemComponent } from "@components/DataDisplay/ItemComponent";
+const Components = ({
+  components,
+  translatable,
+}: {
+  components: TauriTypes.ItemComponent[];
+  translatable: (key: string, context?: { [key: string]: any }, i18Key?: boolean) => string;
+}) => {
+  return (
+    <>
+      <Divider mt={"md"} />
+      <Title order={3} mt={"md"}>
+        {translatable("components")}
+      </Title>
+      <Group align="center">
+        {components
+          .filter((x) => x.tradable)
+          .map((component, index) => (
+            <ItemComponent key={index} component={component} />
+          ))}
+      </Group>
+    </>
+  );
+};
 export type OverviewTabProps = {
   value: TauriTypes.WishListItemDetails | undefined;
 };
@@ -45,6 +68,9 @@ export function OverviewTab({ value }: OverviewTabProps) {
           <TextInput label={useTranslateFields("highest_price")} value={value.order_info?.properties?.highest_price || "N/A"} readOnly />
           <TextInput label={useTranslateFields("lowest_price")} value={value.order_info?.properties?.lowest_price || "N/A"} readOnly />
         </Group>
+        {value.item_info?.components && value.item_info.components.length > 0 && (
+          <Components components={value.item_info.components} translatable={useTranslateTab} />
+        )}
         <Divider mt={"md"} />
         {value.item_info && (
           <Button
