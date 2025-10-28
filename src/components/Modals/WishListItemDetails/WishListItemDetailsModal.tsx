@@ -4,8 +4,8 @@ import api from "@api/index";
 import { useTranslateModals } from "@hooks/useTranslate.hook";
 import { EditTab, OverviewTab, WFMTab } from "./Tabs/index";
 import { Loading } from "@components/Shared/Loading";
-import { GetSubTypeDisplay } from "@utils/helper";
 import { TauriTypes } from "$types";
+import { ItemName } from "@components/DataDisplay/ItemName";
 
 export type WishListItemDetailsModalProps = {
   value: number;
@@ -39,7 +39,7 @@ export function WishListItemDetailsModal({ value, onUpdate }: WishListItemDetail
         <>
           <Group justify="space-between" mb={"md"}>
             <Text fw={500}>
-              {data.stock.item_name} {GetSubTypeDisplay(data.stock.sub_type)}
+              <ItemName value={data.stock} />
             </Text>
           </Group>
           <Divider />

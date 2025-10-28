@@ -5,12 +5,11 @@ import { useHasAlert } from "@hooks/useHasAlert.hook";
 import classes from "../../Debug.module.css";
 import api, { SendTauriEvent } from "@api/index";
 import { TauriTypes } from "$types";
-import { GetSubTypeDisplay } from "@utils/helper";
-import { TextTranslate } from "@components/Shared/TextTranslate";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { useAppContext } from "@contexts/app.context";
 import { DebuggingLiveItemEntryForm } from "@components/Forms/DebuggingLiveItemEntry";
 import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { ItemName } from "@components/DataDisplay/ItemName";
 interface DebuggingPanelProps {}
 export const DebuggingPanel = ({}: DebuggingPanelProps) => {
   // Context
@@ -33,7 +32,6 @@ export const DebuggingPanel = ({}: DebuggingPanelProps) => {
             debugging: { ...settings.debugging, live_scraper: { ...settings.debugging.live_scraper, entries: items } },
           });
           SendTauriEvent(TauriTypes.Events.RefreshSettings);
-          console.log("Form submitted:", values);
         }}
       />
       {/* <SearchField value={search} onChange={(e) => setSearch(e)} /> */}
@@ -49,16 +47,7 @@ export const DebuggingPanel = ({}: DebuggingPanelProps) => {
           {
             accessor: "wfm_url",
             title: useTranslateDataGridColumns("wfm_url.title"),
-            render: ({ wfm_url, sub_type }) => (
-              <TextTranslate
-                color="gray.4"
-                i18nKey={useTranslateDataGridColumns("wfm_url.value", undefined, true)}
-                values={{
-                  name: wfm_url,
-                  sub_type: GetSubTypeDisplay(sub_type || undefined),
-                }}
-              />
-            ),
+            render: (row) => <ItemName value={row} />,
           },
           { accessor: "stock_id", title: useTranslateDataGridColumns("stock_id") },
           { accessor: "wish_list_id", title: useTranslateDataGridColumns("wish_list_id") },

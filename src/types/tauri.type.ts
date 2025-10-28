@@ -306,10 +306,18 @@ export namespace TauriTypes {
     trade_tax: number;
     mr_requirement: number;
     tags: string[];
-    components?: Record<string, number>;
     wiki_url: string;
     image_url: string;
     sub_type?: CacheTradableItemSubType;
+    components?: ItemComponent[];
+  }
+  export interface ItemComponent {
+    itemCount: number;
+    name: string;
+    part_of_set: string;
+    tradable: boolean;
+    uniqueName: string;
+    wfm_item_url: string;
   }
   export interface CacheTradableItemSubType {
     max_rank?: number;
@@ -508,12 +516,15 @@ export namespace TauriTypes {
     wfm_url: string;
     info?: StockItemDetails;
   }
-  export interface StockItemDetails extends FinancialReport {
-    stock: StockItem;
+  export interface BaseItemDetails {
     item_info: CacheTradableItem;
-    order_info: WFMarketTypes.Order | null;
     last_transactions: TransactionDto[];
-    stock_profit: number;
+    order_info: WFMarketTypes.Order | null;
+    report: FinancialReport;
+  }
+  export interface StockItemDetails extends BaseItemDetails {
+    stock: StockItem;
+    potential_profit: number;
   }
   export interface CreateStockItem {
     raw: string;
@@ -647,10 +658,8 @@ export namespace TauriTypes {
     maximum_price?: number;
     is_hidden: boolean;
   }
-  export interface WishListItemDetails {
+  export interface WishListItemDetails extends BaseItemDetails {
     stock: WishListItem;
-    item_info: CacheTradableItem;
-    order_info: WFMarketTypes.Order | null;
   }
   export interface CreateWishListItem extends Omit<CreateStockItem, "bought" | "minimum_price"> {
     maximum_price?: number;

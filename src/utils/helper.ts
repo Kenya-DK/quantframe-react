@@ -1,5 +1,5 @@
 import { upperFirst } from "@mantine/hooks";
-import { TauriTypes } from "$types";
+import { TauriTypes, WFMarketTypes } from "$types";
 
 export interface GroupByDateSettings {
   labels?: string[];
@@ -120,14 +120,18 @@ export const formatNumber = (num: number) => {
   return num;
 };
 
-export const GetSubTypeDisplay = (subType: TauriTypes.SubType | undefined) => {
+export const GetSubTypeDisplay = (subType: TauriTypes.SubType | WFMarketTypes.Order | undefined) => {
   if (!subType || Object.keys(subType).length == 0) return "";
-  const { rank, variant, amber_stars, cyan_stars } = subType;
   let display = "";
-  if (rank != undefined) display += `(R${rank})`;
-  if (variant) display += ` [${upperFirst(variant)}]`;
-  if (amber_stars) display += ` ${amber_stars}A`;
-  if (cyan_stars) display += ` ${cyan_stars}C`;
+  if (subType.rank != undefined) display += `(R${subType.rank})`;
+  if ("variant" in subType) display += ` ${upperFirst(subType.variant || "")}`;
+  if ("subtype" in subType) display += ` ${upperFirst(subType.subtype || "")}`;
+
+  // if (subType.variant ) display += ` [${upperFirst(subType.variant)}]`;
+  if ("amber_stars" in subType) display += ` ${subType.amber_stars}A`;
+  if ("amberStars" in subType) display += ` ${subType.amberStars}A`;
+  if ("cyan_stars" in subType) display += ` ${subType.cyan_stars}C`;
+  if ("cyanStars" in subType) display += ` ${subType.cyanStars}C`;
   return display;
 };
 

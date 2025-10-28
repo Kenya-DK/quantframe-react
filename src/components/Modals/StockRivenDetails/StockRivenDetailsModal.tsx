@@ -4,8 +4,8 @@ import api from "@api/index";
 import { useTranslateModals } from "@hooks/useTranslate.hook";
 import { OverviewTab, AnalyticsTab, WFMTab, EditTab } from "./Tabs/index";
 import { Loading } from "@components/Shared/Loading";
-import { GetSubTypeDisplay } from "@utils/helper";
 import { TauriTypes } from "$types";
+import { ItemName } from "@components/DataDisplay/ItemName";
 
 export type StockRivenDetailsModalProps = {
   value: number;
@@ -40,7 +40,7 @@ export function StockRivenDetailsModal({ value, onUpdate }: StockRivenDetailsMod
         <>
           <Group justify="space-between" mb={"md"}>
             <Text fw={500}>
-              {data.stock.weapon_name} {data.stock.mod_name} {GetSubTypeDisplay(data.stock.sub_type)}
+              <ItemName value={data.stock} />
             </Text>
           </Group>
           <Divider />

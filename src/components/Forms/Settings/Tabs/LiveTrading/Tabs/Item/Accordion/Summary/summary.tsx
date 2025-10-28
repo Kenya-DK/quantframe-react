@@ -3,10 +3,10 @@ import { TauriTypes } from "$types";
 import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
 import { DataTable } from "mantine-datatable";
-import { TextTranslate } from "@components/Shared/TextTranslate";
 import { useTranslateCommon, useTranslateForms } from "@hooks/useTranslate.hook";
-import { GetSubTypeDisplay, paginate } from "@utils/helper";
+import { paginate } from "@utils/helper";
 import { useMemo, useState } from "react";
+import { ItemName } from "@components/DataDisplay/ItemName";
 
 export type SummaryAccordionProps = {
   value: TauriTypes.SettingsStockItem;
@@ -22,12 +22,6 @@ export const SummaryAccordion = ({ value }: SummaryAccordionProps) => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(pageSizes[3]);
 
-  // Fetch data from rust side
-  const data = useQuery({
-    queryKey: ["cache_items"],
-    queryFn: () => api.cache.getTradableItems(),
-  });
-
   const getInterestingWtbItems = useQuery({
     queryKey: ["get_interesting_wtb_items"],
     queryFn: () => api.live_scraper.get_interesting_wtb_items(value),
@@ -37,10 +31,6 @@ export const SummaryAccordion = ({ value }: SummaryAccordionProps) => {
   const rows = useMemo(() => {
     return paginate(getInterestingWtbItems.data || [], page, pageSize);
   }, [getInterestingWtbItems.data, page, pageSize]);
-  const GetItemName = (wfm_id: string) => {
-    const item = data.data?.find((i) => i.wfm_id === wfm_id);
-    return item ? item.name : wfm_id;
-  };
   return (
     <Box h="100%">
       <Button
@@ -69,16 +59,7 @@ export const SummaryAccordion = ({ value }: SummaryAccordionProps) => {
           {
             accessor: "name",
             title: useTranslateCommon("item_name.title"),
-            render: ({ wfm_id, sub_type }) => (
-              <TextTranslate
-                color="gray.4"
-                i18nKey={useTranslateCommon("item_name.value", undefined, true)}
-                values={{
-                  name: GetItemName(wfm_id),
-                  sub_type: GetSubTypeDisplay(sub_type),
-                }}
-              />
-            ),
+            render: (row) => <ItemName value={row} />,
           },
           { accessor: "volume", title: useTranslateCommon("datatable_columns.volume.title") },
           { accessor: "min_price", title: useTranslateCommon("datatable_columns.minimum_price.title") },

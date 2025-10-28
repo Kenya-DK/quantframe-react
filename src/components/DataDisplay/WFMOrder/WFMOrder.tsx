@@ -5,12 +5,12 @@ import { useTranslateCommon, useTranslateComponent, useTranslateEnums } from "@h
 import { WFMThumbnail } from "@api/index";
 import { notifications } from "@mantine/notifications";
 import { TextTranslate } from "@components/Shared/TextTranslate";
-import { GetSubTypeDisplay } from "@utils/helper";
 import { TimerStamp } from "../../Shared/TimerStamp";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import faAmberStar from "@icons/faAmberStar";
 import faCyanStar from "@icons/faCyanStar";
 import { upperFirst } from "@mantine/hooks";
+import { ItemName } from "../ItemName";
 
 export type WFMOrderProps = {
   order: WFMarketTypes.Order;
@@ -138,18 +138,7 @@ export function WFMOrder({ show_border, paperProps, order, footer, show_user, di
       {display_style === "list" && (
         <Grid>
           <Grid.Col span={6}>
-            <Group>
-              <TextTranslate
-                color="gray.4"
-                size="lg"
-                i18nKey={useTranslateCommon("item_name.value", undefined, true)}
-                values={{
-                  name: order?.properties?.item_name || "<Unknown Item>",
-                  sub_type: GetSubTypeDisplay(order),
-                }}
-              />
-              <TextTranslate size="md" i18nKey={useTranslateFields("quantity", undefined, true)} values={{ quantity: order.quantity }} />
-            </Group>
+            <ItemName value={order} />
             <Group>
               <TextTranslate
                 textProps={{

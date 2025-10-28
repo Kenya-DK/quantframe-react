@@ -131,7 +131,7 @@ export const en = {
     },
     item_name: {
       title: "Name",
-      value: "{{name}} <blue>{{sub_type}}</blue>",
+      value: "{{name}} {{quantity}} <blue>{{sub_type}}</blue>",
     },
     prompts: {
       delete_item: {
@@ -264,6 +264,7 @@ export const en = {
     },
   },
   components: {
+    item_component: "<blue>{{name}}</blue> x<blue>{{count}}</blue>",
     patreon_overlay: {
       title: "Restricted Content",
       description: "This content is restricted to Patreon supporters of tier <blue>{{tier}}</blue> or higher.",
@@ -280,7 +281,6 @@ export const en = {
     },
     wfm_order: {
       fields: {
-        quantity: "<qty/> <blue>{{quantity}}</blue>",
         platinum: "<blue>{{platinum}}</blue> <plat/>",
         mod_rank: "Rank: <blue>{{mod_rank}}</blue>/<blue>{{mod_max_rank}}</blue>",
         subtype: "<blue>{{sub_type}}</blue>",
@@ -1046,6 +1046,7 @@ export const en = {
               listed: "Listed Prices History",
               no_listed: "No previous listed prices",
             },
+            components: "Components",
           },
           analytics: {
             title: "Analytics",
@@ -1100,6 +1101,7 @@ export const en = {
               listed: "Listed Prices History",
               no_listed: "No previous listed prices",
             },
+            components: "Components",
           },
           wfm: {
             title: "WFM",
@@ -1483,6 +1485,7 @@ export const en = {
             refresh_tooltip: "Refresh the order list",
             delete_all_tooltip: "Delete all orders",
             delete_tooltip: "Delete this order",
+            info_tooltip: "View order details",
             sell_manual: {
               buy_tooltip: "Bought manually",
               sell_tooltip: "Sold manually",
