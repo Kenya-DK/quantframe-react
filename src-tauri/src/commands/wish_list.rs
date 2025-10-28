@@ -8,12 +8,7 @@ use utils::{get_location, group_by, info, Error, LoggerOptions};
 use wf_market::enums::OrderType;
 
 use crate::{
-    app::client::AppState,
-    enums::FindByType,
-    handlers::{handle_wfm_item, handle_wish_list, handle_wish_list_by_entity},
-    helper,
-    types::PermissionsFlags,
-    APP, DATABASE,
+    APP, DATABASE, add_metric, app::client::AppState, enums::FindByType, handlers::{handle_wfm_item, handle_wish_list, handle_wish_list_by_entity}, helper, types::PermissionsFlags
 };
 
 #[tauri::command]
@@ -101,7 +96,7 @@ pub async fn wish_list_delete(id: i64) -> Result<Model, Error> {
     handle_wfm_item(&item.wfm_id, &item.sub_type, 1, OrderType::Buy, true)
         .await
         .map_err(|e| e.with_location(get_location!()).log("wish_list_delete.log"))?;
-
+    add_metric!("wish_list_delete", "manual");
     match WishListMutation::delete_by_id(conn, id).await {
         Ok(_) => {}
         Err(e) => return Err(e.with_location(get_location!())),
@@ -189,6 +184,7 @@ pub async fn export_wish_list_json(
                     format!("Exported wish list to JSON file: {}", file_path),
                     &LoggerOptions::default(),
                 );
+                add_metric!("export_wish_list_json", "success");
                 return Ok(file_path.to_string());
             }
             // do something with the optional file path here

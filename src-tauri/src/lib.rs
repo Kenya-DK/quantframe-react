@@ -152,7 +152,7 @@ pub fn run() {
             let app_handle = app.handle().clone();
 
             tauri::async_runtime::spawn(async move {
-                if let Err(e) = init_database(true).await {
+                if let Err(e) = init_database(false).await {
                     emit_error!(e);
                     e.log("init_database_error.log");
                 }
