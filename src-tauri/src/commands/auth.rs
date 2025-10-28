@@ -3,6 +3,7 @@ use std::sync::{Arc, Mutex};
 use utils::{get_location, info, warning, Error, LoggerOptions};
 
 use crate::{
+    add_metric,
     app::{client::AppState, User},
     cache::client::CacheState,
     live_scraper::LiveScraperState,
@@ -44,6 +45,7 @@ pub async fn auth_login(
         &format!("User {} logged in successfully", updated_user.wfm_username),
         &LoggerOptions::default(),
     );
+    add_metric!("auth_login", updated_user.wfm_username.as_str());
     qf_client
         .analytics()
         .add_metric("login", updated_user.wfm_username.as_str());
@@ -114,10 +116,7 @@ pub async fn auth_logout(
         }
     }
 
-    app_state
-        .qf_client
-        .analytics()
-        .add_metric("logout", app_state.user.wfm_username.clone());
+    add_metric!("auth_logout", app_state.user.wfm_username.as_str());
     match app_state.qf_client.analytics().send_current_metrics().await {
         Ok(_) => info(
             "Commands:AuthLogout",

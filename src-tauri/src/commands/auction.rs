@@ -8,14 +8,12 @@ use entity::{
 use serde_json::json;
 use service::StockRivenQuery;
 use utils::{filters_by, get_location, Error};
-use wf_market::{
-    enums::OrderType,
-    types::Auction,
-};
+use wf_market::{enums::OrderType, types::Auction};
 
 use crate::{
-    app::client::AppState, cache::client::CacheState, enums::*, handlers::handle_riven_by_entity,
-    helper::paginate, live_scraper::LiveScraperState, send_event, types::*, utils::*, DATABASE,
+    add_metric, app::client::AppState, cache::client::CacheState, enums::*,
+    handlers::handle_riven_by_entity, helper::paginate, live_scraper::LiveScraperState, send_event,
+    types::*, utils::*, DATABASE,
 };
 #[tauri::command]
 pub async fn auction_refresh(
@@ -173,6 +171,7 @@ pub async fn auction_delete_all(
             json!({"source": "auction_delete_all", "current": current, "total": total})
         );
     }
+    add_metric!("auction_delete_all", "manual");
     Ok(())
 }
 #[tauri::command]
@@ -203,6 +202,7 @@ pub async fn auction_delete_by_id(
             return Err(err);
         }
     }
+    add_metric!("auction_delete_by_id", "manual");
     Ok(())
 }
 #[tauri::command]
@@ -229,5 +229,6 @@ pub async fn auction_import_by_id(
         &[],
     )
     .await?;
+    add_metric!("auction_import_by_id", "manual");
     Ok(model)
 }

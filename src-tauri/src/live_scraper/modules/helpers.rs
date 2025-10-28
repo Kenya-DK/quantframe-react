@@ -289,7 +289,6 @@ pub async fn progress_order(
                     ),
                     &log_options,
                 );
-
                 send_event!(UIEvent::RefreshWfmOrders, json!({"source": component}));
             }
             Err(e) => {

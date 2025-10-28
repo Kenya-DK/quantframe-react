@@ -3,7 +3,7 @@ use std::sync::Mutex;
 use tauri_plugin_dialog::DialogExt;
 use utils::{get_location, info, Error, LoggerOptions};
 
-use crate::{app::client::AppState, utils::ErrorFromExt, APP};
+use crate::{add_metric, app::client::AppState, utils::ErrorFromExt, APP};
 
 #[tauri::command]
 pub async fn item_prices_lookup(
@@ -60,6 +60,7 @@ pub async fn export_item_price_data(
                     format!("Exported item prices to JSON file: {}", file_path),
                     &LoggerOptions::default(),
                 );
+                add_metric!("export_item_price_data", "success");
                 return Ok(file_path.to_string());
             }
             // do something with the optional file path here

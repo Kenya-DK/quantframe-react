@@ -5,7 +5,7 @@ use service::{TransactionMutation, TransactionQuery};
 use tauri_plugin_dialog::DialogExt;
 use utils::{get_location, info, Error, LoggerOptions};
 
-use crate::{app::client::AppState, types::PermissionsFlags, APP, DATABASE};
+use crate::{add_metric, app::client::AppState, types::PermissionsFlags, APP, DATABASE};
 
 #[tauri::command]
 pub async fn get_transaction_pagination(
@@ -118,6 +118,7 @@ pub async fn export_transaction_json(
                     format!("Exported transactions to JSON file: {}", file_path),
                     &LoggerOptions::default(),
                 );
+                add_metric!("export_transaction_json", "success");
                 return Ok(file_path.to_string());
             }
             // do something with the optional file path here

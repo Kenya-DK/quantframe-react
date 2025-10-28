@@ -8,6 +8,7 @@ use utils::{get_location, group_by, info, Error, LoggerOptions};
 use wf_market::enums::OrderType;
 
 use crate::{
+    add_metric,
     app::client::AppState,
     enums::FindByType,
     handlers::{handle_riven, handle_riven_by_entity},
@@ -55,6 +56,7 @@ pub async fn stock_riven_create(input: CreateStockRiven) -> Result<stock_riven::
                 &format!("Operations: {:?}", operations.operations),
                 &utils::LoggerOptions::default(),
             );
+            add_metric!("stock_riven_create", "success");
             return Ok(updated_item);
         }
         Err(e) => {
@@ -143,7 +145,7 @@ pub async fn stock_riven_delete(
         }
         None => {}
     }
-
+    add_metric!("stock_riven_delete", "manual");
     match StockRivenMutation::delete(conn, id).await {
         Ok(_) => {}
         Err(e) => return Err(e.with_location(get_location!())),

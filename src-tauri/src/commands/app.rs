@@ -5,6 +5,7 @@ use serde_json::{json, Value};
 use utils::{get_location, Error};
 
 use crate::{
+    add_metric,
     app::{client::AppState, Settings},
     log_parser::LogParserState,
     send_system_notification,
@@ -29,7 +30,7 @@ pub async fn app_get_app_info(app: tauri::State<'_, Mutex<AppState>>) -> Result<
         "authors": info.authors,
         "is_dev": app.is_development,
         "tos_uuid": app.settings.tos_uuid.clone(),
-        "patreon_usernames": vec!["Tetsuo K.", "Willjsnider s", "Hmh", "Jessie"],
+        "patreon_usernames": vec!["Willjsnider s", "Hmh", "Jessie"],
     }))
 }
 
@@ -68,8 +69,9 @@ pub async fn app_accept_tos(
     app: tauri::State<'_, Mutex<AppState>>,
 ) -> Result<(), Error> {
     let mut app = app.lock()?;
-    app.settings.tos_uuid = id;
+    app.settings.tos_uuid = id.clone();
     app.settings.save()?;
+    add_metric!("app_accept_tos", id);
     Ok(())
 }
 #[tauri::command]

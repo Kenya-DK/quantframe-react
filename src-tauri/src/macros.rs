@@ -111,3 +111,12 @@ macro_rules! send_system_notification {
             .expect("Failed to show notification");
     }};
 }
+
+#[macro_export]
+macro_rules! add_metric {
+    ($key:expr, $value:expr) => {{
+        use crate::utils::modules::states;
+        let app = states::app_state().expect("App state should be available");
+        app.qf_client.analytics().add_metric($key, $value);
+    }};
+}

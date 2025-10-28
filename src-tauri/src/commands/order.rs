@@ -9,6 +9,7 @@ use utils::{filters_by, get_location, group_by, Error};
 use wf_market::types::Order;
 
 use crate::{
+    add_metric,
     app::client::AppState,
     cache::client::CacheState,
     enums::*,
@@ -179,6 +180,7 @@ pub async fn order_delete_all(
             json!({"source": "order_delete_all", "current": current, "total": total})
         );
     }
+    add_metric!("order_delete_all", "manual");
     Ok(())
 }
 #[tauri::command]
@@ -209,6 +211,7 @@ pub async fn order_delete_by_id(
             return Err(err);
         }
     }
+    add_metric!("order_delete_by_id", "manual");
     Ok(())
 }
 #[tauri::command]

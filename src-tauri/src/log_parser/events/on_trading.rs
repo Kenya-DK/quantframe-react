@@ -1,6 +1,7 @@
 use std::sync::Mutex;
 
 use crate::{
+    add_metric,
     handlers::{handle_item, handle_riven_by_name, handle_wish_list},
     log_parser::*,
     notify_gui, send_event,
@@ -87,6 +88,7 @@ impl OnTradeEvent {
         self.add_trade_message(last_line);
         self.add_trade_message(line);
         add_to_zip("Started");
+        add_metric!("on_trade_event", "trade_started");
     }
     pub fn start_line_processing(&mut self) {
         let mut is_offering = true;
@@ -207,10 +209,12 @@ impl OnTradeEvent {
     pub fn trade_cancelled(&mut self) {
         add_to_zip("Cancelled");
         self.reset();
+        add_metric!("on_trade_event", "trade_cancelled");
     }
     pub fn trade_failed(&mut self) {
         add_to_zip("Failed");
         self.reset();
+        add_metric!("on_trade_event", "trade_failed");
     }
     pub fn trade_accepted(&mut self) -> Result<(), Error> {
         add_to_zip("Trade Was Successful");
@@ -319,6 +323,7 @@ impl OnTradeEvent {
             }
         });
         self.reset();
+        add_metric!("on_trade_event", "trade_accepted");
         Ok(())
     }
     pub fn add_trade_message(&mut self, line: &str) {

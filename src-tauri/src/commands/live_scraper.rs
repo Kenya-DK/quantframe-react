@@ -4,6 +4,7 @@ use serde_json::{json, Value};
 use utils::Error;
 
 use crate::{
+    add_metric,
     app::StockItemSettings,
     cache::ItemPriceInfo,
     live_scraper::{self, LiveScraperState},
@@ -17,8 +18,10 @@ pub async fn live_scraper_toggle(
 ) -> Result<(), Error> {
     if live_scraper.is_running.load(Ordering::SeqCst) {
         live_scraper.stop();
+        add_metric!("live_scraper_toggle", "stopped");
     } else {
         live_scraper.start();
+        add_metric!("live_scraper_toggle", "started");
     }
     send_event!(
         UIEvent::UpdateLiveScraperRunningState,

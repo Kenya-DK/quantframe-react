@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde_json::json;
 use utils::{info, Error, LineHandler, LoggerOptions};
 
-use crate::utils::modules::states;
+use crate::{add_metric, utils::modules::states};
 
 #[derive(Clone, Debug)]
 pub struct OnConversationEvent {}
@@ -41,6 +41,7 @@ impl LineHandler for OnConversationEvent {
                     if !player_name.is_empty() {
                         player_name = player_name.chars().skip(1).collect();
                     }
+                    add_metric!("on_conversation_event", "new_conversation");
                     notify(&player_name);
                 }
             }

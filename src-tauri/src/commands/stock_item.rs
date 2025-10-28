@@ -8,6 +8,7 @@ use utils::{get_location, group_by, info, Error, LoggerOptions};
 use wf_market::enums::OrderType;
 
 use crate::{
+    add_metric,
     app::client::AppState,
     enums::FindByType,
     handlers::{handle_item_by_entity, handle_wfm_item, stock_item::handle_item},
@@ -120,7 +121,7 @@ pub async fn stock_item_delete(id: i64) -> Result<stock_item::Model, Error> {
             e.with_location(get_location!())
                 .log("stock_item_delete.log")
         })?;
-
+    add_metric!("stock_item_delete", "manual");
     match StockItemMutation::delete_by_id(conn, id).await {
         Ok(_) => {}
         Err(e) => return Err(e.with_location(get_location!())),
@@ -213,6 +214,7 @@ pub async fn export_stock_item_json(
                     format!("Exported stock item to JSON file: {}", file_path),
                     &LoggerOptions::default(),
                 );
+                add_metric!("export_stock_item_json", "success");
                 return Ok(file_path.to_string());
             }
             // do something with the optional file path here
