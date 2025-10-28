@@ -37,6 +37,7 @@ pub struct AppState {
     pub wfm_client: WFClient<WFAuthenticated>,
     pub qf_client: QFClient,
     pub is_development: bool,
+    pub use_temp_db: bool,
     pub wfm_socket: Option<WsClient>,
     pub wfm_chat_socket: Option<WsClient>,
 }
@@ -308,7 +309,7 @@ async fn setup_socket(
 }
 
 impl AppState {
-    pub async fn new(tauri_app: AppHandle) -> Self {
+    pub async fn new(tauri_app: AppHandle, use_temp_db: bool) -> Self {
         let user = User::load().expect("Failed to load user from auth.json");
         let info = tauri_app.package_info().clone();
         let is_development = if cfg!(dev) { true } else { false };
@@ -330,6 +331,7 @@ impl AppState {
             ),
             user,
             is_development,
+            use_temp_db,
             settings: Settings::load().expect("Failed to load settings from settings.json"),
             wfm_socket: None,
             wfm_chat_socket: None,

@@ -23,6 +23,7 @@ use service::sea_orm::{Database, DatabaseConnection};
 
 use std::env;
 use std::panic;
+use std::sync::Once;
 use std::sync::{Mutex, OnceLock};
 use tauri::{Emitter, Manager};
 
@@ -47,6 +48,7 @@ mod types;
 pub static APP: OnceLock<tauri::AppHandle> = OnceLock::new();
 pub static DATABASE: OnceLock<DatabaseConnection> = OnceLock::new();
 pub static HAS_STARTED: OnceLock<bool> = OnceLock::new();
+pub static APP_TAGS: OnceLock<Mutex<Vec<String>>> = OnceLock::new();
 
 // If use_debug is true the debug database will be used and all data will be lost on restart
 async fn init_database(use_debug: bool) -> Result<(), Error> {
@@ -101,13 +103,13 @@ async fn init_database(use_debug: bool) -> Result<(), Error> {
     Ok(())
 }
 
-async fn setup_manages(app: tauri::AppHandle) -> Result<(), Error> {
+async fn setup_manages(app: tauri::AppHandle, use_temp_db: bool) -> Result<(), Error> {
     init_detections();
     // Clear the logs older then 7 days
     clear_logs(7)?;
 
     // Clone the fields needed for CacheState before moving app_state
-    let app_state = AppState::new(app.clone()).await;
+    let app_state = AppState::new(app.clone(), use_temp_db).await;
     let qf_client = app_state.qf_client.clone();
     let settings = app_state.settings.clone();
     let user = app_state.user.clone();
@@ -124,6 +126,8 @@ async fn setup_manages(app: tauri::AppHandle) -> Result<(), Error> {
 }
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let use_temp_db = false;
+
     // Initialize the logger for elapsed time tracking
 
     panic::set_hook(Box::new(|panic_info| {
@@ -152,11 +156,11 @@ pub fn run() {
             let app_handle = app.handle().clone();
 
             tauri::async_runtime::spawn(async move {
-                if let Err(e) = init_database(false).await {
+                if let Err(e) = init_database(use_temp_db).await {
                     emit_error!(e);
                     e.log("init_database_error.log");
                 }
-                if let Err(e) = setup_manages(app_handle.clone()).await {
+                if let Err(e) = setup_manages(app_handle.clone(), use_temp_db).await {
                     emit_error!(e);
                     e.log("setup_error.log");
                 }

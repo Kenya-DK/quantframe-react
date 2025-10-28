@@ -14,6 +14,7 @@
       #0099ff,
       #001aff,
       #a200ff);
+  --shine-overlay: #fff;
 }
 
 /* Generic Color Binding by Mode */
@@ -23,6 +24,14 @@
 
 [data-color-mode="text"] {
   color: var(--color);
+}
+
+[data-color-mode="shine"] {
+  background-clip: text !important;
+  background-size: 250%;
+  color: transparent;
+  animation: shine-effect 3s ease-in-out infinite;
+  font-weight: 700
 }
 
 [data-color-mode="box-shadow"] {
@@ -129,4 +138,46 @@
 
 [data-order-type="sell"] {
   --color: var(--qf-positive-color);
+}
+
+[data-color="gold"] {
+  --color: #da9800;
+}
+
+@keyframes shine-effect {
+  0% {
+    background: -webkit-linear-gradient(45deg, var(--color) 0, var(--color) 45%, var(--color) 50%, var(--color) 55%, var(--color) 60%, var(--color) 100%);
+    background: linear-gradient(45deg, var(--color) 0, var(--color) 45%, var(--color) 50%, var(--color) 55%, var(--color) 60%, var(--color) 100%);
+    background-size: 250% auto;
+    background-position: -25% center;
+    background-clip: text;
+    -webkit-background-clip: text
+  }
+
+  50% {
+    background: -webkit-linear-gradient(45deg, var(--color) 0, var(--color) 45%, var(--shine-overlay) 50%, var(--shine-overlay) 50%, var(--color) 60%, var(--color) 100%);
+    background: linear-gradient(45deg, var(--color) 0, var(--color) 45%, var(--shine-overlay) 50%, var(--shine-overlay) 50%, var(--color) 60%, var(--color) 100%);
+    background-size: 250% auto;
+    background-position: -25% center;
+    background-clip: text;
+    -webkit-background-clip: text
+  }
+
+  70% {
+    background: -webkit-linear-gradient(45deg, var(--color) 0, var(--color) 45%, var(--shine-overlay) 50%, var(--shine-overlay) 50%, var(--color) 60%, var(--color) 100%);
+    background: linear-gradient(45deg, var(--color) 0, var(--color) 45%, var(--shine-overlay) 50%, var(--shine-overlay) 50%, var(--color) 60%, var(--color) 100%);
+    background-size: 250% auto;
+    background-position: 135% center;
+    background-clip: text;
+    -webkit-background-clip: text
+  }
+
+  to {
+    background: -webkit-linear-gradient(45deg, var(--color) 0, var(--color) 45%, var(--color) 50%, var(--color) 55%, var(--color) 60%, var(--color) 100%);
+    background: linear-gradient(45deg, var(--color) 0, var(--color) 45%, var(--color) 50%, var(--color) 55%, var(--color) 60%, var(--color) 100%);
+    background-size: 250% auto;
+    background-position: 135% center;
+    background-clip: text;
+    -webkit-background-clip: text
+  }
 }

@@ -83,6 +83,16 @@ export function Logo({ color }: { color: string }) {
       <Text size={"md"} fw={500} style={{ color: color }}>
         v{app_info?.version}
       </Text>
+      {app_info?.is_dev && (
+        <Text size={"md"} fw={500} c="orange.7">
+          [DEV]
+        </Text>
+      )}
+      {app_info?.use_temp_db && (
+        <Text size={"md"} fw={500} data-color="gold" data-color-mode="shine">
+          [TEMP DB]
+        </Text>
+      )}
     </Group>
   );
 }
