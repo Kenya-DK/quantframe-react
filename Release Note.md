@@ -1,12 +1,9 @@
-## Overview
+## Fix's
 
-Note: All previous versions are not supported anymore.
-How To migrate:
-[Read More](https://quantframe.app/upgrading/1.2.X)
+- 🛠️ Made it more clear on how the blacklist works
+- 🛠️ Fix Sorting for blacklist items and better style
 
 ## TODO's
-
-- [ ] Add show parts for item set
 
 ## Feature's
 
@@ -23,6 +20,7 @@ How To migrate:
 - ✨ Add min max filter for the trading analysis
 - ✨ Add Max Price for WTB orders Fx Arcane XX wil not put up a price for more than 100p if it is set to 100 but i can go below 100p
 - ✨ Add date filter for the trading analysis
+- ✨ Add show item parts for item sets
 
 ## Dev Notes
 

@@ -832,7 +832,7 @@ export const en = {
                 },
                 trade_modes: {
                   label: "Trade Mode",
-                  description: "How the bot will trade",
+                  description: "Which trade modes there will be ignored, Click the button on the right of the search box to select trade modes",
                   error: "Invalid trade mode",
                 },
                 stock_mode: {
@@ -865,7 +865,7 @@ export const en = {
                 disabled_for_title: "Disabled For",
                 go_back_label: "Go Back",
                 set_trade_modes_tooltip: "Set Trade Modes currently selected {{modes}}",
-                no_trade_selected: "No trade modes selected",
+                no_trade_selected: "No trade modes selected, please select at least one trade mode",
               },
             },
             item: {

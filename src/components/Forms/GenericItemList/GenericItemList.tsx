@@ -5,6 +5,7 @@ import { paginate } from "@utils/helper";
 import { SearchField } from "@components/Forms/SearchField";
 import classes from "./GenericItemList.module.css";
 import { ApplyFilter, ComplexFilter } from "../../../utils/filter.helper";
+import { SortItems } from "../../../utils/sorting.helper";
 import { ActionWithTooltip } from "../../Shared/ActionWithTooltip";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateForms } from "../../../hooks/useTranslate.hook";
@@ -63,11 +64,12 @@ export function GenericItemList<T>({
     let result = items;
     if (filter) result = result ? ApplyFilter(items, filter) : items;
     return result;
-  }, [items, searchValue, searchFilter, filter]);
+  }, [items, searchValue, searchFilter, filter, sortStatus]);
 
   const rows = useMemo(() => {
-    return paginate(filteredItems, page, pageSize);
-  }, [filteredItems, page, pageSize]);
+    let result = SortItems<T>(filteredItems, { field: sortStatus.columnAccessor as string, direction: sortStatus.direction });
+    return paginate(result, page, pageSize);
+  }, [filteredItems, page, pageSize, sortStatus]);
 
   return (
     <Stack>

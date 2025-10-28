@@ -273,6 +273,7 @@ export const GeneralPanel = ({ value, onSubmit, setHideTab }: GeneralPanelProps)
             onBeforeAdd={(item) => {
               if (!formLeft.values.disable_for || formLeft.values.disable_for.length === 0) {
                 notifications.show({ color: "red.7", message: useTranslateBlacklist("no_trade_selected") });
+                open();
                 return false;
               }
               item.disabled_for = formLeft.values.disable_for ?? [];
@@ -292,9 +293,9 @@ export const GeneralPanel = ({ value, onSubmit, setHideTab }: GeneralPanelProps)
               items: availableItems || [],
               idAccessor: "wfm_id",
               columns: [
-                { accessor: "name", title: useTranslateBlacklist("name_title") },
-                { accessor: "trade_tax", title: useTranslateBlacklist("trade_tax_title") },
-                { accessor: "mr_requirement", title: useTranslateBlacklist("mr_requirement_title") },
+                { sortable: true, accessor: "name", title: useTranslateBlacklist("name_title") },
+                { sortable: true, accessor: "trade_tax", title: useTranslateBlacklist("trade_tax_title") },
+                { sortable: true, accessor: "mr_requirement", title: useTranslateBlacklist("mr_requirement_title") },
               ],
               searchable: true,
               searchValue: formLeft.values.query || "",
@@ -302,13 +303,6 @@ export const GeneralPanel = ({ value, onSubmit, setHideTab }: GeneralPanelProps)
               searchFilter: (
                 <Paper p={"sm"} mt={"md"}>
                   <Group>
-                    <Flex direction="column">
-                      <TextTranslate
-                        i18nKey={useTranslateBlacklist("trade_tax_label", undefined, true)}
-                        values={{ min: formLeft.values.tradeTaxRange?.at(0) || 0, max: formLeft.values.tradeTaxRange?.at(1) || 2100000 }}
-                      />
-                      <RangeSlider w={"150px"} color="blue" step={1000} min={0} max={2100000} {...formLeft.getInputProps("tradeTaxRange")} />
-                    </Flex>
                     <Flex direction="column">
                       <TextTranslate
                         i18nKey={useTranslateBlacklist("mr_requirement_label", undefined, true)}
@@ -324,9 +318,16 @@ export const GeneralPanel = ({ value, onSubmit, setHideTab }: GeneralPanelProps)
                         {...formLeft.getInputProps("mrRequirementRange")}
                       />
                     </Flex>
-                    <Group>
-                      <SelectItemTags value={formLeft.values.tags || []} onChange={(value) => formLeft.setFieldValue("tags", value)} />
-                    </Group>
+                    <Flex direction="column">
+                      <TextTranslate
+                        i18nKey={useTranslateBlacklist("trade_tax_label", undefined, true)}
+                        values={{ min: formLeft.values.tradeTaxRange?.at(0) || 0, max: formLeft.values.tradeTaxRange?.at(1) || 2100000 }}
+                      />
+                      <RangeSlider w={"150px"} color="blue" step={1000} min={0} max={2100000} {...formLeft.getInputProps("tradeTaxRange")} />
+                    </Flex>
+                  </Group>
+                  <Group>
+                    <SelectItemTags value={formLeft.values.tags || []} onChange={(value) => formLeft.setFieldValue("tags", value)} />
                   </Group>
                 </Paper>
               ),
@@ -354,9 +355,9 @@ export const GeneralPanel = ({ value, onSubmit, setHideTab }: GeneralPanelProps)
               onSearchChange: (val) => formRight.setFieldValue("query", val),
               filter: BuildFilter(formRight.values),
               columns: [
-                { accessor: "name", title: useTranslateBlacklist("name_title") },
-                { accessor: "trade_tax", title: useTranslateBlacklist("trade_tax_title") },
-                { accessor: "mr_requirement", title: useTranslateBlacklist("mr_requirement_title") },
+                { sortable: true, accessor: "name", title: useTranslateBlacklist("name_title") },
+                { sortable: true, accessor: "trade_tax", title: useTranslateBlacklist("trade_tax_title") },
+                { sortable: true, accessor: "mr_requirement", title: useTranslateBlacklist("mr_requirement_title") },
                 {
                   accessor: "disabled_for",
                   title: useTranslateBlacklist("disabled_for_title"),

@@ -1,11 +1,11 @@
 .datatable {
-  height: 48vh;
+  height: 60vh;
   background: blue;
   /* transition: height 200ms ease-out;
   overflow: hidden; */
 
   &[data-filter="true"] {
-    height: 28.6vh;
+    height: 42.6vh;
     /* transition: height 50ms ease-in; */
   }
 }
