@@ -16,7 +16,7 @@ use wf_market::{enums::OrderType, types::Order};
 use crate::{
     cache::CacheTradableItem,
     enums::{FindBy, FindByType},
-    utils::{modules::states, ErrorFromExt, OrderExt, SubTypeExt},
+    utils::{modules::states, OrderExt, SubTypeExt},
     APP, DATABASE,
 };
 

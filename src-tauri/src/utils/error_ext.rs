@@ -1,5 +1,4 @@
 use qf_api::errors::ApiError as QFRequestError;
-use serde_json::json;
 use utils::{Error, LogLevel};
 use wf_market::errors::ApiError as WFRequestError;
 
