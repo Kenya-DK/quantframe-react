@@ -15,7 +15,7 @@ export function TransactionListItem({ transaction }: TransactionListItemProps) {
           <ItemName color="gray.4" size="md" value={transaction} />
         </Group>
         <Group w={100}>
-          <Text c="blue.5">{transaction.price * transaction.quantity} </Text>
+          <Text c="blue.5">{transaction.price} </Text>
         </Group>
         <Group justify="right">
           <Text c="gray.4">{dayjs(transaction.created_at).format("DD/MM/YYYY HH:mm:ss")}</Text>
