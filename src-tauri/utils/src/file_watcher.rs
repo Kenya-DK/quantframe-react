@@ -1,12 +1,12 @@
 use core::*;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Seek, SeekFrom};
+use std::io::{BufReader, Seek, SeekFrom};
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 
-use crate::{Error, LoggerOptions, info, trace, warning};
+use crate::{Error, LoggerOptions, get_location, info, trace, warning};
 
 pub trait LineHandler: Send {
     fn process_line(
@@ -112,8 +112,17 @@ impl FileWatcher {
 
                 let reader = BufReader::new(file);
                 let mut ignore_combined = false;
-                for line in reader.lines() {
-                    let line = line?;
+
+                // Try to read lines, handling UTF-8 errors gracefully
+                let lines = match self.read_lines_lossy(reader) {
+                    Ok(lines) => lines,
+                    Err(e) => {
+                        e.with_location(get_location!()).log("file_watcher.log");
+                        Vec::new()
+                    }
+                };
+
+                for line in lines {
                     let mut prev = self.prev_line.lock().unwrap();
 
                     let prev_line_str = prev.as_deref().unwrap_or("");
@@ -160,5 +169,113 @@ impl FileWatcher {
         }
         let cache = self.cache.lock().unwrap();
         cache[start..end.min(cache.len())].to_vec()
+    }
+
+    /// Read lines from a BufReader, handling invalid UTF-8 gracefully
+    fn read_lines_lossy(&self, mut reader: BufReader<File>) -> Result<Vec<String>, Error> {
+        use std::io::Read;
+
+        let mut lines = Vec::new();
+        let mut buffer = Vec::new();
+
+        // Read all remaining bytes
+        match reader.read_to_end(&mut buffer) {
+            Ok(_) => {}
+            Err(e) => {
+                warning(
+                    "FileWatcher",
+                    &format!("Error reading file contents: {}", e),
+                    &LoggerOptions::default(),
+                );
+                return Err(Error::from(e));
+            }
+        }
+
+        if buffer.is_empty() {
+            return Ok(lines);
+        }
+
+        // Convert to string with lossy UTF-8 conversion
+        // This will replace invalid UTF-8 sequences with � (replacement character)
+        let content = String::from_utf8_lossy(&buffer);
+
+        // Split into lines
+        for line in content.lines() {
+            // Skip lines that contain only replacement characters (likely corrupted)
+            if !line.chars().all(|c| c == '�') {
+                lines.push(line.to_string());
+            } else {
+                trace(
+                    "FileWatcher",
+                    &format!("Skipping corrupted line with invalid UTF-8: {}", line),
+                    &LoggerOptions::default(),
+                );
+            }
+        }
+
+        Ok(lines)
+    }
+
+    /// Alternative method for reading lines in chunks (more memory efficient for large files)
+    #[allow(dead_code)]
+    fn read_lines_chunked(&self, mut reader: BufReader<File>) -> Result<Vec<String>, Error> {
+        use std::io::Read;
+
+        let mut lines = Vec::new();
+        let mut buffer = [0u8; 8192]; // 8KB chunks
+        let mut incomplete_line = Vec::new();
+
+        loop {
+            match reader.read(&mut buffer) {
+                Ok(0) => break, // EOF
+                Ok(bytes_read) => {
+                    let mut current_chunk = Vec::new();
+                    current_chunk.extend_from_slice(&incomplete_line);
+                    current_chunk.extend_from_slice(&buffer[..bytes_read]);
+
+                    // Convert chunk to string with lossy conversion
+                    let chunk_str = String::from_utf8_lossy(&current_chunk);
+
+                    let mut chunk_lines: Vec<&str> = chunk_str.lines().collect();
+
+                    // Check if the chunk ends with a complete line
+                    let ends_with_newline = current_chunk.ends_with(&[b'\n'])
+                        || current_chunk.ends_with(&[b'\r', b'\n']);
+
+                    if !ends_with_newline && !chunk_lines.is_empty() {
+                        // Last line is incomplete, save it for next chunk
+                        let incomplete = chunk_lines.pop().unwrap_or("");
+                        incomplete_line = incomplete.as_bytes().to_vec();
+                    } else {
+                        incomplete_line.clear();
+                    }
+
+                    // Add complete lines
+                    for line in chunk_lines {
+                        if !line.chars().all(|c| c == '�') {
+                            lines.push(line.to_string());
+                        }
+                    }
+                }
+                Err(e) => {
+                    warning(
+                        "FileWatcher",
+                        &format!("Error reading file chunk: {}", e),
+                        &LoggerOptions::default(),
+                    );
+                    return Err(Error::from(e));
+                }
+            }
+        }
+
+        // Handle any remaining incomplete line
+        if !incomplete_line.is_empty() {
+            let final_line = String::from_utf8_lossy(&incomplete_line);
+            if !final_line.chars().all(|c| c == '�') {
+                lines.push(final_line.to_string());
+            }
+        }
+
+        Ok(lines)
     }
 }

@@ -1,7 +1,6 @@
 ## Fix/Changes in v1.6.3
 
-- 🛠️ Live Scraper now counts up in progress
-- 🛠️ Fixed some inconsistencies in the UI
+- 🛠️ Log parser was crashing need testing
 
 ## TODO's
 
