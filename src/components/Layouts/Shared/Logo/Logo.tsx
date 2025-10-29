@@ -83,6 +83,9 @@ export function Logo({ color }: { color: string }) {
       <Text size={"md"} fw={500} style={{ color: color }}>
         v{app_info?.version}
       </Text>
+      <Text size={"md"} fw={500} data-color="gold" data-color-mode="shine">
+        [PRE RELEASE]
+      </Text>
       {app_info?.is_dev && (
         <Text size={"md"} fw={500} c="orange.7">
           [DEV]
