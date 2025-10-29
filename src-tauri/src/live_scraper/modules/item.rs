@@ -152,7 +152,7 @@ impl ItemModule {
     ) -> Result<(), Error> {
         let cache = states::cache_client()?;
         let client = self.client.upgrade().expect("Client should not be dropped");
-        let mut current_index = interesting_items.len();
+        let mut current_index = 1;
 
         // Sort by priority (highest first)
         interesting_items.sort_by(|a, b| b.priority.cmp(&a.priority));
@@ -298,7 +298,7 @@ impl ItemModule {
                 );
             }
 
-            current_index -= 1;
+            current_index += 1;
         }
 
         Ok(())

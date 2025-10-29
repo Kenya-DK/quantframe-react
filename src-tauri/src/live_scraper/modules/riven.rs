@@ -68,7 +68,7 @@ impl RivenModule {
         let client = self.client.upgrade().expect("Client should not be dropped");
         let interesting_items = Self::interesting_items().await?;
         let total = interesting_items.len();
-        let mut current_index = interesting_items.len();
+        let mut current_index = 1;
         let log_options = &LoggerOptions::default()
             .set_file("progress_riven.log")
             .set_show_component(false)
@@ -395,7 +395,7 @@ impl RivenModule {
                     Err(e) => return Err(e.with_location(get_location!())),
                 }
             }
-            current_index -= 1;
+            current_index += 1;
         }
         Ok(())
     }
