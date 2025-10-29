@@ -15,7 +15,7 @@ export type SummaryAccordionProps = {
 export const SummaryAccordion = ({ value }: SummaryAccordionProps) => {
   // Translate general
   const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateForms(`settings.tabs.live_trading.item.summary.${key}`, { ...context }, i18Key);
+    useTranslateForms(`settings.tabs.live_scraper.item.summary.${key}`, { ...context }, i18Key);
   const useTranslateDataGridColumns = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForm(`datatable_columns.${key}`, { ...context }, i18Key);
   const pageSizes = [5, 10, 20, 50, 100];

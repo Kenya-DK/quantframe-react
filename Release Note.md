@@ -1,8 +1,7 @@
-## Fix's
+## Fix/Changes in v1.6.3
 
-- 🛠️ Made it more clear on how the blacklist works
-- 🛠️ Fix sorting for blacklist items and better style
-- 🛠️ Fix typo in settings
+- 🛠️ Live Scraper now counts up in progress
+- 🛠️ Fixed some inconsistencies in the UI
 
 ## TODO's
 

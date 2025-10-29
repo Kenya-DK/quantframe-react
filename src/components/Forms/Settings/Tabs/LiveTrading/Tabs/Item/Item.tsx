@@ -22,17 +22,17 @@ export const ItemPanel = ({ value, onSubmit }: ItemPanelProps) => {
 
   const tabs = [
     {
-      label: useTranslateTabs("live_trading.item.wtb.title"),
+      label: useTranslateTabs("live_scraper.item.wtb.title"),
       component: <WTBItemAccordion value={value} onSubmit={(v) => onSubmit(v)} onChange={(v) => setUpdateData(v)} />,
       id: "wtb",
     },
     {
-      label: useTranslateTabs("live_trading.item.wts.title"),
+      label: useTranslateTabs("live_scraper.item.wts.title"),
       component: <WTSItemAccordion value={value} onSubmit={(v) => onSubmit(v)} onChange={(v) => setUpdateData(v)} />,
       id: "wts",
     },
     {
-      label: useTranslateTabs("live_trading.item.summary.title"),
+      label: useTranslateTabs("live_scraper.item.summary.title"),
       component: <SummaryAccordion value={updateData} />,
       id: "summary",
     },

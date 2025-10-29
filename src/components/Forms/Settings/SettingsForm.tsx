@@ -23,9 +23,9 @@ export function SettingsForm({ onSubmit, value }: SettingsFormProps) {
 
   const tabs = [
     {
-      label: useTranslateTabs("live_trading.title"),
+      label: useTranslateTabs("live_scraper.title"),
       component: <LiveTradingPanel value={value.live_scraper} onSubmit={(v) => onSubmit({ ...value, live_scraper: v })} />,
-      id: "live_trading",
+      id: "live_scraper",
     },
     {
       label: useTranslateTabs("themes.title"),

@@ -13,7 +13,7 @@ export type WTBItemAccordionProps = {
 export const WTBItemAccordion = ({ value, onSubmit, onChange }: WTBItemAccordionProps) => {
   // Translate general
   const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateForms(`settings.tabs.live_trading.item.wtb.${key}`, { ...context }, i18Key);
+    useTranslateForms(`settings.tabs.live_scraper.item.wtb.${key}`, { ...context }, i18Key);
   const useTranslateFormFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForm(`fields.${key}`, { ...context }, i18Key);
 

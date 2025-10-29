@@ -299,13 +299,13 @@ export const en = {
     },
     live_scraper_control: {
       buttons: {
-        start: "Start Live Trading",
-        stop: "Stop Live Trading",
+        start: "Start Live Scraper",
+        stop: "Stop Live Scraper",
       },
       prompts: {
         start: {
           title: "Warning",
-          message: "Are you sure you want to start live trading? This action will delete all non-blacklisted orders on WFM.",
+          message: "Are you sure you want to start live scraping? This action will delete all non-blacklisted orders on WFM.",
           confirm: "Start",
           cancel: "Cancel",
         },
@@ -804,8 +804,8 @@ export const en = {
               },
             },
           },
-          live_trading: {
-            title: "Live Trading",
+          live_scraper: {
+            title: "Live Scraper",
             general: {
               title: "General",
               fields: {
@@ -832,7 +832,7 @@ export const en = {
                 },
                 trade_modes: {
                   label: "Trade Mode",
-                  description: "Which trade modes there will be ignored, Click the button on the right of the search box to select trade modes",
+                  description: "Select trade modes",
                   error: "Invalid trade mode",
                 },
                 stock_mode: {

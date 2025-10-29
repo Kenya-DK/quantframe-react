@@ -22,7 +22,7 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
 
   const tabs = [
     {
-      label: useTranslateTabs("live_trading.general.title"),
+      label: useTranslateTabs("live_scraper.general.title"),
       component: (
         <GeneralPanel
           value={value}
@@ -35,7 +35,7 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
       id: "general",
     },
     {
-      label: useTranslateTabs("live_trading.item.title"),
+      label: useTranslateTabs("live_scraper.item.title"),
       component: (
         <ItemPanel
           value={value.stock_item}
@@ -47,7 +47,7 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
       id: "item",
     },
     {
-      label: useTranslateTabs("live_trading.riven.title"),
+      label: useTranslateTabs("live_scraper.riven.title"),
       component: (
         <RivenPanel
           value={value.stock_riven}
