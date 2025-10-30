@@ -5,6 +5,7 @@
 - 🛠️ Fix some style issues in transaction list
 - ✨ Add a http server so you can create a riven by sending a post request to the app
 - ✨ Add so the transactions list wil update when a new transaction is added from the log parser/http server
+- ✨ Add export logs in Settings -> Advanced > Log Export
 
 ## TODO's
 
