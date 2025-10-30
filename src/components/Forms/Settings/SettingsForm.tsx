@@ -7,6 +7,7 @@ import { ThemesPanel } from "./Tabs/Themes";
 import { NotificationsPanel } from "./Tabs/Notifications";
 import { AdvancedPanel } from "./Tabs/Advanced";
 import { SummaryPanel } from "./Tabs/Summary";
+import { HttpServerPanel } from "./Tabs/HttpServer";
 
 export type SettingsFormProps = {
   value: TauriTypes.Settings;
@@ -46,6 +47,11 @@ export function SettingsForm({ onSubmit, value }: SettingsFormProps) {
       label: useTranslateTabs("summary.title"),
       component: <SummaryPanel value={value.summary_settings} onSubmit={(v) => onSubmit({ ...value, summary_settings: v })} />,
       id: "summary",
+    },
+    {
+      label: useTranslateTabs("http_server.title"),
+      component: <HttpServerPanel value={value.http_server} onSubmit={(v) => onSubmit({ ...value, http_server: v })} />,
+      id: "http_server",
     },
   ];
 

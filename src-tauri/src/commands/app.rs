@@ -9,6 +9,7 @@ use crate::{
     app::{client::AppState, Settings},
     log_parser::LogParserState,
     send_system_notification,
+    types::OperationSet,
     utils::ErrorFromExt,
     APP, HAS_STARTED,
 };
@@ -57,6 +58,18 @@ pub async fn app_update_settings(
         None,
         None
     );
+    if settings.http_server.enable {
+        let operation = app
+            .http_server
+            .set_host(&settings.http_server.host, settings.http_server.port);
+        match operation.as_str() {
+            "NO_CHANGE" => app.http_server.start(),
+            "CHANGED" => app.http_server.restart(),
+            _ => {}
+        }
+    } else if app.http_server.is_running() {
+        app.http_server.stop();
+    }
     Ok(settings.clone())
 }
 

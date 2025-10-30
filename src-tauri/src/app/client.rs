@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::{Mutex, OnceLock};
+use std::sync::{Arc, Mutex, OnceLock};
 
 use crate::app::{Settings, User};
+use crate::http_server::HttpServer;
 use crate::types::*;
 use crate::utils::modules::states;
 use crate::utils::ErrorFromExt;
@@ -40,6 +41,7 @@ pub struct AppState {
     pub use_temp_db: bool,
     pub wfm_socket: Option<WsClient>,
     pub wfm_chat_socket: Option<WsClient>,
+    pub http_server: Arc<HttpServer>,
 }
 
 fn update_user(mut cu_user: User, user: &WFUserPrivate, qf_user: &QFUserPrivate) -> User {
@@ -313,6 +315,9 @@ impl AppState {
         let user = User::load().expect("Failed to load user from auth.json");
         let info = tauri_app.package_info().clone();
         let is_development = if cfg!(dev) { true } else { false };
+
+        let settings = Settings::load().expect("Failed to load settings from settings.json");
+        let http_settings = settings.http_server.clone();
         let mut state = AppState {
             wfm_client: WFClient::new_default(&user.wfm_token, "N/A")
                 .await
@@ -332,9 +337,10 @@ impl AppState {
             user,
             is_development,
             use_temp_db,
-            settings: Settings::load().expect("Failed to load settings from settings.json"),
+            settings,
             wfm_socket: None,
             wfm_chat_socket: None,
+            http_server: HttpServer::new(&http_settings.host, http_settings.port),
         };
 
         state
@@ -366,6 +372,9 @@ impl AppState {
         }
 
         state.user.save().expect("Failed to save user to auth.json");
+        if http_settings.enable {
+            state.http_server.start();
+        }
         state
     }
 }

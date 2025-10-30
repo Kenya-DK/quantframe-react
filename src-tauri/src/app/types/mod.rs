@@ -30,3 +30,6 @@ pub use notification_setting::*;
 
 pub mod notifications_setting;
 pub use notifications_setting::*;
+
+pub mod http_server_settings;
+pub use http_server_settings::*;

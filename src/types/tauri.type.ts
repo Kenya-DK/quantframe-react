@@ -37,7 +37,7 @@ export namespace TauriTypes {
     RefreshWfmOrders = "LiveScraper:RefreshWfmOrders",
     OnDeleteWfmOrders = "Wfm:OnDeleteOrders",
     RefreshWfmAuctions = "LiveScraper:RefreshWfmAuctions",
-    RefreshTransactions = "RefreshTransactions",
+    RefreshTransactions = "Transaction:RefreshTransactions",
     OnDeleteWfmAuctions = "Wfm:OnDeleteAuctions",
     OnNotify = "App:OnNotify",
     OnChatMessage = "Wfm:OnChatMessage",
@@ -87,6 +87,7 @@ export namespace TauriTypes {
     debugging: SettingsDebugging;
     advanced_settings: SettingsAdvanced;
     notifications: SettingsNotifications;
+    http_server: HttpServerSettings;
   }
   export interface SettingsAdvanced {
     wf_log_path: string;
@@ -106,6 +107,11 @@ export namespace TauriTypes {
     on_new_conversation: NotificationSetting;
     on_wfm_chat_message: NotificationSetting;
     on_new_trade: NotificationSetting;
+  }
+  export interface HttpServerSettings {
+    enable: boolean;
+    host: string;
+    port: number;
   }
   export interface NotificationSetting {
     discord_notify: DiscordNotify;

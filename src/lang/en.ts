@@ -1006,6 +1006,29 @@ export const en = {
               },
             },
           },
+          http_server: {
+            title: "HTTP Server",
+            general: {
+              title: "General",
+              fields: {
+                enabled: {
+                  label: "Enabled",
+                  tooltip: "Enable or disable the HTTP server",
+                },
+                port: {
+                  label: "Port",
+                  placeholder: "Port",
+                  tooltip: "The port the HTTP server will run on",
+                },
+                host: {
+                  label: "Host",
+                  placeholder: "Host",
+                  error: "Invalid host",
+                  tooltip: "The host the HTTP server will run on",
+                },
+              },
+            },
+          },
         },
       },
     },

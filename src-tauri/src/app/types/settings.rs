@@ -17,6 +17,7 @@ pub struct Settings {
     pub advanced_settings: AdvancedSettings,
     pub debugging: DebuggingSettings,
     pub notifications: NotificationsSetting,
+    pub http_server: HttpServerSettings,
     pub tos_uuid: String,
 }
 impl Default for Settings {
@@ -27,6 +28,7 @@ impl Default for Settings {
             advanced_settings: AdvancedSettings::default(),
             notifications: NotificationsSetting::default(),
             debugging: DebuggingSettings::default(),
+            http_server: HttpServerSettings::default(),
             tos_uuid: String::new(),
         }
     }
