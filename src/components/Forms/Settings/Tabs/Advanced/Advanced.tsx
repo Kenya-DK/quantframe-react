@@ -3,6 +3,7 @@ import { useForm } from "@mantine/form";
 import { useTranslateCommon, useTranslateForms } from "@hooks/useTranslate.hook";
 import { Box, Button, Grid, Group, TextInput } from "@mantine/core";
 import { TooltipIcon } from "@components/Shared/TooltipIcon";
+import api from "@api/index";
 export type AdvancedPanelProps = {
   value: TauriTypes.SettingsAdvanced;
   onSubmit: (value: TauriTypes.SettingsAdvanced) => void;
@@ -14,6 +15,9 @@ export const AdvancedPanel = ({ value, onSubmit }: AdvancedPanelProps) => {
     useTranslateForms(`settings.tabs.advanced.${key}`, { ...context }, i18Key);
   const useTranslateFormFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForm(`fields.${key}`, { ...context }, i18Key);
+
+  const exportLogsMutation = api.log.export_logs();
+
   // User form
   const form = useForm({
     initialValues: value,
@@ -40,8 +44,13 @@ export const AdvancedPanel = ({ value, onSubmit }: AdvancedPanelProps) => {
                 radius="md"
               />
             </Group>
+            <Button mt="md" onClick={() => exportLogsMutation.mutate()} color="blue">
+              {useTranslateForm("button_export_logs")}
+            </Button>
           </Grid.Col>
-          <Grid.Col span={8}></Grid.Col>
+          <Grid.Col span={8}>
+            <Group></Group>
+          </Grid.Col>
         </Grid>
         <Group
           justify="flex-end"

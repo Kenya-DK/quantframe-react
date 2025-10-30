@@ -1,17 +1,5 @@
 export const en = {
   months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-  notifications: {
-    log_export: {
-      error: {
-        title: "Log Export Error",
-        message: "An error occurred while exporting logs.",
-      },
-      success: {
-        title: "Log Export Success",
-        message: "Logs have been exported successfully to {{path}}.",
-      },
-    },
-  },
   common: {
     buttons: {
       save: {
@@ -39,6 +27,10 @@ export const en = {
           title: "Trade with {{player_name}} complete",
           message: "<blue>{{item_name}}</blue> X<blue>{{quantity}}</blue> <blue>{{trade_type}}</blue> For {{platinum}}p",
         },
+      },
+      log_export: {
+        error: { title: "Log Export Error", message: "An error occurred while trying to export logs." },
+        success: { title: "Log Export Success", message: "Logs have been exported successfully to {{path}}." },
       },
       create_stock_item: {
         error: { title: "Create Stock Error", message: "An error occurred while trying to create stock." },
@@ -772,6 +764,7 @@ export const en = {
                 tooltip: "The path to the Warframe log file. leave empty for default path.",
               },
             },
+            button_export_logs: "Log Export",
           },
           summary: {
             title: "Summary",

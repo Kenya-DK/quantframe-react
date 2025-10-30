@@ -35,6 +35,7 @@ mod app;
 mod cache;
 mod commands;
 mod handlers;
+mod http_server;
 mod macros;
 mod utils;
 

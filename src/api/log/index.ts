@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { TauriClient } from "..";
-import { useTranslateNotifications } from "../../hooks/useTranslate.hook";
+import { useTranslateCommon } from "@hooks/useTranslate.hook";
 import { notifications } from "@mantine/notifications";
 
 export class LogModule {
@@ -8,7 +8,7 @@ export class LogModule {
 
   export_logs() {
     const useTranslateBase = (key: string, context?: { [key: string]: any }, i18Key?: boolean): string =>
-      useTranslateNotifications(`log_export.${key}`, { ...context }, i18Key);
+      useTranslateCommon(`notifications.log_export.${key}`, { ...context }, i18Key);
     const useTranslateErrors = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
       useTranslateBase(`error.${key}`, { ...context }, i18Key);
     const useTranslateSuccess = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
