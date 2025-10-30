@@ -66,6 +66,7 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
   // Queries
   const { paginationQuery, financialReportQuery, refetchQueries } = useQueries({ queryData, isActive });
   const handleRefresh = () => {
+    console.log("Refreshing transactions due to Tauri event");
     refetchQueries();
   };
 
@@ -88,7 +89,7 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
   });
 
   // Use the custom hook for Tauri events
-  useTauriEvent(TauriTypes.Events.RefreshTransactions, handleRefresh, [refetchQueries]);
+  useTauriEvent(TauriTypes.Events.RefreshTransactions, handleRefresh, []);
 
   return (
     <Box p={"md"}>
@@ -98,7 +99,6 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
             value={queryData.query || ""}
             onChange={(value) => setQueryData((prev) => ({ ...prev, query: value }))}
             onSearch={() => refetchQueries()}
-            hideSearch
             onFilterToggle={(s) => setFilterOpened(s)}
             filter={
               <Paper p={"sm"} mt={"md"}>
@@ -121,7 +121,7 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
                 </Group>
               </Paper>
             }
-            rightSectionWidth={115}
+            rightSectionWidth={140}
             rightSection={
               <Group gap={3}>
                 <ActionWithTooltip

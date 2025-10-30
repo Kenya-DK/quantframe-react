@@ -37,6 +37,7 @@ import faMoneyBillTrendDown from "@icons/faMoneyBillTrendDown";
 import { ColorInfo } from "@components/Shared/ColorInfo";
 import { TransactionListItem } from "@components/DataDisplay/TransactionListItem";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
+import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 
 const BarChartFooter = ({ i18nKey, statistics }: { i18nKey: string; statistics: TauriTypes.FinancialReport }) => {
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`home.${key}`, { ...context }, i18Key);
@@ -103,7 +104,12 @@ export default function HomePage() {
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`home.${key}`, { ...context }, i18Key);
   const useTranslateCards = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`cards.${key}`, { ...context }, i18Key);
 
-  const { data: summary, refetch: _refetchSummary } = api.dashboard.summary();
+  const { data: summary, refetch: refetchSummary } = api.dashboard.summary();
+  const handleRefresh = (_data: any) => {
+    refetchSummary();
+  };
+  // Use the custom hook for Tauri events
+  useTauriEvent(TauriTypes.Events.RefreshTransactions, handleRefresh, []);
   return (
     <Container size={"100%"}>
       <Grid className={classes.wrapper} data-has-alert={useHasAlert()}>
