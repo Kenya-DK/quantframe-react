@@ -7,7 +7,7 @@
 }
 
 .databaseTransactions {
-  --offset: 500px;
+  --offset: 267px;
   height: calc(100vh - var(--offset)) !important;
   transition: height 0.2s ease;
 
@@ -16,7 +16,7 @@
   }
 
   &.filterOpened {
-    --offset: 425px;
+    --offset: 391px;
   }
 
   &.alert.filterOpened {

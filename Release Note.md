@@ -1,6 +1,10 @@
 ## Fix/Changes in v1.6.3
 
 - 🛠️ Log parser was crashing need testing
+- 🛠️ Fix a item what have the wrong name
+- 🛠️ Fix some style issues in transaction list
+- ✨ Add a http server so you can create a riven by sending a post request to the app
+- ✨ Add so the transactions list wil update when a new transaction is added from the log parser/http server
 
 ## TODO's
 
@@ -20,6 +24,8 @@
 - ✨ Add Max Price for WTB orders Fx Arcane XX wil not put up a price for more than 100p if it is set to 100 but i can go below 100p
 - ✨ Add date filter for the trading analysis
 - ✨ Add show item parts for item sets
+- ✨ Add a http server so you can create a riven by sending a post request to the app
+- ✨ Add a http server so you can create a riven by sending a post request to the app
 
 ## Dev Notes
 
