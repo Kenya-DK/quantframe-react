@@ -62,7 +62,6 @@ impl RivenModule {
                             .iter()
                             .any(|u| u.modifier_tag == upgrade.modifier_tag)
                         {
-                            println!("Adding upgrade type: {}", upgrade.modifier_tag);
                             all_upgrade_types.push(upgrade.clone());
                         }
                     }
