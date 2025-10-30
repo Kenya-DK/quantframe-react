@@ -34,13 +34,15 @@ export function ItemName({ color, size, value }: ItemNameProps) {
     queryFn: () => api.cache.getTradableItems(),
   });
   const GetName = () => {
-    if (!value) return "Unknown Item 1";
-    if ("weapon_name" in value && "mod_name" in value) return value.weapon_name + " " + value.mod_name;
-    if ("item_name" in value) return value.item_name;
-    if ("wfm_id" in value) return data.data?.find((i) => i.wfm_id === value.wfm_id)?.name || value.wfm_id || "Unknown Item";
-    if ("wfm_url" in value) return data.data?.find((i) => i.wfm_url_name === value.wfm_url)?.name || value.wfm_url || "Unknown Item";
-    if ("properties" in value) return value.properties?.item_name || "Unknown Item 2";
-    return "Unknown Item 3";
+    if (!value) return "Unknown Item";
+    let fullName = undefined;
+    if ("weapon_name" in value && !fullName) fullName = value.weapon_name;
+    if ("item_name" in value && !fullName) fullName = value.item_name;
+    if ("wfm_id" in value && !fullName) fullName = data.data?.find((i) => i.wfm_id === value.wfm_id)?.name || value.wfm_id || "Unknown Item";
+
+    if ("properties" in value && value.properties && "mod_name" in value.properties) fullName += ` ${value.properties.mod_name}`;
+    if ("mod_name" in value) fullName += ` ${value.mod_name}`;
+    return fullName || "Unknown Item";
   };
   const GetSubType = (): TauriTypes.SubType | undefined => {
     if (!value) return undefined;
