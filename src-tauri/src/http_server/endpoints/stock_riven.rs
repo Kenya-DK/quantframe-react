@@ -9,7 +9,7 @@ use crate::{
     enums::FindByType,
     handlers::handle_riven_by_entity,
     http_server::{respond_json, respond_text},
-    notify_gui, send_event,
+    send_event,
     types::UIEvent,
 };
 #[derive(Debug, serde::Deserialize)]

@@ -4,7 +4,7 @@ use std::{
     collections::HashMap,
     io::{Read, Write},
     net::{TcpListener, TcpStream},
-    sync::{Arc, Mutex, OnceLock, Weak},
+    sync::{Arc, Mutex, OnceLock},
     thread::{self, JoinHandle},
 };
 use utils::*;
@@ -168,12 +168,7 @@ impl Client {
     }
 
     pub fn order(&self) -> Arc<OrderRoute> {
-        self.order_route
-            .get_or_init(|| {
-                let weak_self = Arc::downgrade(self.self_arc.get().unwrap());
-                OrderRoute::new(weak_self)
-            })
-            .clone()
+        self.order_route.get_or_init(|| OrderRoute::new()).clone()
     }
 
     pub fn set_host(&self, new_host: &str) {
@@ -244,14 +239,12 @@ impl Client {
 #[derive(Debug)]
 pub struct OrderRoute {
     orders: Mutex<Vec<Order>>,
-    client: Weak<Client>,
 }
 
 impl OrderRoute {
-    fn new(client: Weak<Client>) -> Arc<Self> {
+    fn new() -> Arc<Self> {
         Arc::new(Self {
             orders: Mutex::new(Vec::new()),
-            client,
         })
     }
 

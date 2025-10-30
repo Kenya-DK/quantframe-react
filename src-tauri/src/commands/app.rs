@@ -9,7 +9,6 @@ use crate::{
     app::{client::AppState, Settings},
     log_parser::LogParserState,
     send_system_notification,
-    types::OperationSet,
     utils::ErrorFromExt,
     APP, HAS_STARTED,
 };
