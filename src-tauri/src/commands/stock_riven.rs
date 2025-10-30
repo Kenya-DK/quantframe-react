@@ -49,7 +49,16 @@ pub async fn get_stock_riven_status_counts(
 
 #[tauri::command]
 pub async fn stock_riven_create(input: CreateStockRiven) -> Result<stock_riven::Model, Error> {
-    match handle_riven_by_entity(input, "", OrderType::Buy, FindByType::Url, &[]).await {
+    match handle_riven_by_entity(
+        input,
+        "",
+        OrderType::Buy,
+        FindByType::Url,
+        FindByType::Url,
+        &[],
+    )
+    .await
+    {
         Ok((operations, updated_item)) => {
             info(
                 "Command::StockRivenCreate",
@@ -89,6 +98,7 @@ pub async fn stock_riven_sell(
         bought,
         "",
         OrderType::Sell,
+        FindByType::Url,
         FindByType::Url,
         &[],
     )

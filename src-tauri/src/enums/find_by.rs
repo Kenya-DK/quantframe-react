@@ -3,7 +3,7 @@ use std::fmt::Display;
 use serde::{Deserialize, Serialize};
 use utils::{get_location, is_match, Error};
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum FindByType {
     Name,
@@ -11,7 +11,20 @@ pub enum FindByType {
     Url,
     UniqueName,
     Category,
+    Custom(String),
 }
+
+// Custom implementation Deserialize for FindByType
+impl<'de> Deserialize<'de> for FindByType {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let s: String = Deserialize::deserialize(deserializer)?;
+        FindByType::from_str(&s).map_err(serde::de::Error::custom)
+    }
+}
+
 impl FindByType {
     pub fn from_str(s: &str) -> Result<Self, Error> {
         match s.to_lowercase().as_str() {
@@ -20,11 +33,7 @@ impl FindByType {
             "url" => Ok(FindByType::Url),
             "unique_name" | "uniquename" => Ok(FindByType::UniqueName),
             "category" | "categories" => Ok(FindByType::Category),
-            _ => Err(Error::new(
-                "FindByType::from_str",
-                format!("Unknown find_by type: {}", s),
-                get_location!(),
-            )),
+            _ => Ok(FindByType::Custom(s.to_string())),
         }
     }
 }
@@ -65,7 +74,7 @@ impl FindBy {
             case_insensitive: false,
         }
     }
-    
+
     pub fn is_match(&self, input: impl Into<String>) -> bool {
         let r = if self.remove_str.is_empty() {
             None

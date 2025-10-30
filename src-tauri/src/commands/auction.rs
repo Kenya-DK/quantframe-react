@@ -226,6 +226,7 @@ pub async fn auction_import_by_id(
         "",
         OrderType::Buy,
         FindByType::Url,
+        FindByType::Url,
         &[],
     )
     .await?;

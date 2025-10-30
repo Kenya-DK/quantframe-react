@@ -10,13 +10,21 @@ use crate::{
 /// Extension trait for creating Error instances from different error types
 pub trait CreateStockRivenExt {
     /// Validate the stock item creation data
-    fn validate(&mut self, find_by_type: FindByType) -> Result<(), Error>;
+    fn validate(
+        &mut self,
+        weapon_lookup: FindByType,
+        attributes_lookup: FindByType,
+    ) -> Result<(), Error>;
 }
 
 impl CreateStockRivenExt for CreateStockRiven {
-    fn validate(&mut self, find_by_type: FindByType) -> Result<(), Error> {
+    fn validate(
+        &mut self,
+        weapon_lookup: FindByType,
+        attributes_lookup: FindByType,
+    ) -> Result<(), Error> {
         let cache = states::cache_client()?;
-        let find_by = FindBy::new(find_by_type, self.raw.clone());
+        let find_by = FindBy::new(weapon_lookup, self.raw.clone());
 
         let weapon = cache.riven().get_riven_by(find_by.clone())?;
 
@@ -38,7 +46,7 @@ impl CreateStockRivenExt for CreateStockRiven {
         self.weapon_unique_name = weapon.unique_name.clone();
         self.weapon_name = weapon.name.clone();
         for att in self.attributes.iter_mut() {
-            let att_find_by = FindBy::new(FindByType::Url, att.url_name.clone());
+            let att_find_by = FindBy::new(attributes_lookup.clone(), att.url_name.clone());
             match cache.riven().get_riven_attribute_by(att_find_by.clone()) {
                 Ok(attribute) => {
                     if attribute.is_none() {
