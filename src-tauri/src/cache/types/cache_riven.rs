@@ -10,6 +10,8 @@ pub struct CacheRiven {
     pub upgrade_types: HashMap<String, Vec<CacheRivenUpgrade>>,
     #[serde(rename = "attributes")]
     pub attributes: Vec<CacheRivenWFMAttribute>,
+    #[serde(rename = "available_upgrade_types", default)]
+    pub available_upgrade_types: Vec<CacheRivenUpgrade>,
 }
 
 impl CacheRiven {
@@ -18,6 +20,7 @@ impl CacheRiven {
             weapons: Vec::new(),
             upgrade_types: HashMap::new(),
             attributes: Vec::new(),
+            available_upgrade_types: Vec::new(),
         }
     }
 }
