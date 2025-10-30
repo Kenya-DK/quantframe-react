@@ -109,7 +109,7 @@ impl RivenModule {
         find_by: FindBy,
     ) -> Result<Option<CacheRivenUpgrade>, Error> {
         let re = Regex::new(r"<.*?>").unwrap();
-        let items = self.get_items()?.available_upgrade_types;
+        let items = self.get_upgrade_types()?;
         match find_by.find_by {
             FindByType::Name => {
                 return Ok(items
