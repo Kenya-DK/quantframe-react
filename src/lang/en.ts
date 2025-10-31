@@ -37,12 +37,32 @@ export const en = {
         success: { title: "Create Stock Success", message: "Stock item {{name}} has been successfully created." },
       },
       update_stock_item: {
-        error: { title: "Update Stock Error", message: "An error occurred while trying to update stock." },
-        success: { title: "Update Stock Success", message: "Stock item {{name}} has been successfully updated." },
+        error: {
+          title: "Update Stock Error",
+          title_multiple: "Update Stock Error",
+          message: "An error occurred while trying to update stock.",
+          message_multiple: "An error occurred while trying to update multiple stock items.",
+        },
+        success: {
+          title: "Update Stock Success",
+          title_multiple: "Update Stock Success",
+          message: "Stock item {{name}} has been successfully updated.",
+          message_multiple: "{{count}} stock items have been successfully updated.",
+        },
       },
       delete_stock_item: {
-        error: { title: "Delete Stock Error", message: "An error occurred while trying to delete stock." },
-        success: { title: "Delete Stock Success", message: "Stock item {{name}} has been successfully deleted." },
+        error: {
+          title: "Delete Stock Error",
+          title_multiple: "Delete Stock Error",
+          message: "An error occurred while trying to delete stock.",
+          message_multiple: "An error occurred while trying to delete multiple stock items.",
+        },
+        success: {
+          title: "Delete Stock Success",
+          title_multiple: "Delete Stock Success",
+          message: "Stock item {{name}} has been successfully deleted.",
+          message_multiple: "{{count}} stock items have been successfully deleted.",
+        },
       },
       sell_stock_item: {
         error: { title: "Sell Stock Error", message: "An error occurred while trying to sell stock." },
@@ -53,12 +73,32 @@ export const en = {
         success: { title: "Create Stock Success", message: "Stock item {{name}} has been successfully created." },
       },
       update_stock_riven: {
-        error: { title: "Update Stock Error", message: "An error occurred while trying to update stock." },
-        success: { title: "Update Stock Success", message: "Stock item {{name}} has been successfully updated." },
+        error: {
+          title: "Update Stock Error",
+          title_multiple: "Update Stock Error",
+          message: "An error occurred while trying to update stock.",
+          message_multiple: "An error occurred while trying to update multiple stock items.",
+        },
+        success: {
+          title: "Update Stock Success",
+          title_multiple: "Update Stock Success",
+          message: "Stock item {{name}} has been successfully updated.",
+          message_multiple: "{{count}} stock items have been successfully updated.",
+        },
       },
       delete_stock_riven: {
-        error: { title: "Delete Stock Error", message: "An error occurred while trying to delete stock." },
-        success: { title: "Delete Stock Success", message: "Stock item {{name}} has been successfully deleted." },
+        error: {
+          title: "Delete Stock Error",
+          title_multiple: "Delete Stock Error",
+          message: "An error occurred while trying to delete stock.",
+          message_multiple: "An error occurred while trying to delete multiple stock items.",
+        },
+        success: {
+          title: "Delete Stock Success",
+          title_multiple: "Delete Stock Success",
+          message: "Stock riven {{name}} has been successfully deleted.",
+          message_multiple: "{{count}} stock rivens have been successfully deleted.",
+        },
       },
       sell_stock_riven: {
         error: { title: "Sell Stock Error", message: "An error occurred while trying to sell stock." },
@@ -69,12 +109,32 @@ export const en = {
         success: { title: "Create Wishlist Success", message: "The wishlist has been successfully created." },
       },
       update_wish_list: {
-        error: { title: "Update Wishlist Error", message: "An error occurred while trying to update the wishlist." },
-        success: { title: "Update Wishlist Success", message: "The wishlist has been successfully updated." },
+        error: {
+          title: "Update Wishlist Error",
+          title_multiple: "Update Wishlist Error",
+          message: "An error occurred while trying to update the wishlist.",
+          message_multiple: "An error occurred while trying to update multiple wishlists.",
+        },
+        success: {
+          title: "Update Wishlist Success",
+          title_multiple: "Update Wishlist Success",
+          message: "The wishlist has been successfully updated.",
+          message_multiple: "{{count}} wishlists have been successfully updated.",
+        },
       },
       delete_wish_list: {
-        error: { title: "Delete Wishlist Error", message: "An error occurred while trying to delete the wishlist." },
-        success: { title: "Delete Wishlist Success", message: "The wishlist has been successfully deleted." },
+        error: {
+          title: "Delete Wishlist Error",
+          title_multiple: "Delete Wishlist Error",
+          message: "An error occurred while trying to delete the wishlist.",
+          message_multiple: "An error occurred while trying to delete multiple wishlists.",
+        },
+        success: {
+          title: "Delete Wishlist Success",
+          title_multiple: "Delete Wishlist Success",
+          message: "The wishlist has been successfully deleted.",
+          message_multiple: "{{count}} wishlists have been successfully deleted.",
+        },
       },
       bought_wish_list: {
         error: { title: "Bought Wishlist Error", message: "An error occurred while trying to mark the wishlist as bought." },
@@ -132,7 +192,7 @@ export const en = {
         cancel: "Cancel",
         confirm: "Confirm",
       },
-      delete_bulk_item: {
+      delete_multiple_items: {
         title: "Are you sure?",
         message: "Are you sure you want to delete these {{count}} items? This action cannot be undone.",
         cancel: "Cancel",
@@ -1024,6 +1084,34 @@ export const en = {
           },
         },
       },
+      stock_item_update: {
+        title: "Update {{count}} Stock Items",
+        fields: {
+          listed: "Listed Prices History",
+          bought_label: "Bought",
+          minimum_price_label: "Minimum Price",
+          owned_label: "Owned",
+          minimum_sma_label: "Minimum SMA",
+          minimum_profit_label: "Minimum Profit",
+        },
+      },
+      stock_riven_update: {
+        title: "Update {{count}} Stock Rivens",
+        fields: {
+          listed: "Listed Prices History",
+          bought_label: "Bought",
+          minimum_price_label: "Minimum Price",
+          mastery_rank_label: "Mastery Rank",
+          re_rolls_label: "Re Rolls",
+        },
+      },
+      wish_list_item_update: {
+        title: "Update {{count}} Wish List Items",
+        fields: {
+          listed: "Listed Prices History",
+          quantity_label: "Quantity",
+        },
+      },
     },
     modals: {
       base: {
@@ -1088,16 +1176,6 @@ export const en = {
               wfm: "Warframe Market",
             },
           },
-          edit: {
-            title: "Edit",
-            fields: {
-              listed: "Listed Prices History",
-              bought_label: "Bought",
-              owned_label: "Owned",
-              minimum_sma_label: "Minimum SMA",
-              minimum_profit_label: "Minimum Profit",
-            },
-          },
         },
       },
       wish_list_details: {
@@ -1131,13 +1209,6 @@ export const en = {
             },
             buttons: {
               wfm: "Warframe Market",
-            },
-          },
-          edit: {
-            title: "Edit",
-            fields: {
-              listed: "Listed Prices History",
-              quantity_label: "Quantity",
             },
           },
         },
@@ -1181,15 +1252,6 @@ export const en = {
               updated_at: "Updated At",
               auction_list: "Current Live Auctions",
               no_listed: "No current live auctions",
-            },
-          },
-          edit: {
-            title: "Edit",
-            fields: {
-              listed: "Listed Prices History",
-              bought_label: "Bought",
-              mastery_rank_label: "Mastery Rank",
-              re_rolls_label: "Re Rolls",
             },
           },
         },
@@ -1483,6 +1545,8 @@ export const en = {
     },
     live_scraper: {
       export_json_tooltip: "Export Items to JSON (Patreon T1+)",
+      update_multiple_tooltip: "Update Multiple Items",
+      delete_multiple_tooltip: "Delete Multiple Items",
       segments: {
         bought: "Bought",
         listed: "Listed",

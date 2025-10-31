@@ -28,11 +28,15 @@ export class StockRivenModule {
   async update(input: TauriTypes.UpdateStockRiven): Promise<TauriTypes.StockRiven> {
     return await this.client.sendInvoke<TauriTypes.StockRiven>("stock_riven_update", { input });
   }
-
+  async updateMultiple(ids: number[], input: TauriTypes.UpdateStockRiven): Promise<TauriTypes.StockRiven[]> {
+    return await this.client.sendInvoke<TauriTypes.StockRiven[]>("stock_riven_update_multiple", { ids, input });
+  }
   async delete(id: number): Promise<TauriTypes.StockRiven> {
     return await this.client.sendInvoke<TauriTypes.StockRiven>("stock_riven_delete", { id });
   }
-
+  async deleteMultiple(ids: number[]): Promise<number> {
+    return await this.client.sendInvoke<number>("stock_riven_delete_multiple", { ids });
+  }
   async sell(entry: TauriTypes.SellStockRiven): Promise<TauriTypes.StockRiven> {
     return await this.client.sendInvoke<TauriTypes.StockRiven>("stock_riven_sell", { ...entry });
   }

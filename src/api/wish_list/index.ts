@@ -26,9 +26,14 @@ export class WishListModule {
   async update(input: TauriTypes.UpdateWishListItem): Promise<TauriTypes.WishListItem> {
     return await this.client.sendInvoke<TauriTypes.WishListItem>("wish_list_update", { input });
   }
-
+  async updateMultiple(ids: number[], input: TauriTypes.UpdateWishListItem): Promise<TauriTypes.WishListItem[]> {
+    return await this.client.sendInvoke<TauriTypes.WishListItem[]>("wish_list_update_multiple", { ids, input });
+  }
   async delete(id: number): Promise<void> {
     return await this.client.sendInvoke<void>("wish_list_delete", { id });
+  }
+  async deleteMultiple(ids: number[]): Promise<number> {
+    return await this.client.sendInvoke<number>("wish_list_delete_multiple", { ids });
   }
   async bought(entry: TauriTypes.BoughtWishListItem): Promise<TauriTypes.WishListItem> {
     return await this.client.sendInvoke<TauriTypes.WishListItem>("wish_list_bought", { ...entry });

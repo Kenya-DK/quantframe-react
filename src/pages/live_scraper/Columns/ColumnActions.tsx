@@ -1,5 +1,5 @@
 import { Group } from "@mantine/core";
-import { faEye, faEyeSlash, faFilter, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faEdit, faEye, faEyeSlash, faFilter, faHammer, faInfo, faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { useTranslateCommon } from "@hooks/useTranslate.hook";
 export type ColumnActionsProps = {
@@ -14,6 +14,7 @@ export type ColumnActionsProps = {
   onFilter?: () => void;
   onHide: (hide: boolean) => void;
   onDelete: (id: number) => void;
+  onEdit?: (id: number) => void;
 };
 
 export function ColumnActions({
@@ -28,6 +29,7 @@ export function ColumnActions({
   onFilter,
   onHide,
   onDelete,
+  onEdit,
 }: ColumnActionsProps) {
   // Functions
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -41,7 +43,7 @@ export function ColumnActions({
   };
 
   return (
-    <Group gap={"sm"} justify="flex-end">
+    <Group gap={5} justify="flex-end">
       <ActionWithTooltip
         tooltip={useTranslateButtons("manual_tooltip")}
         icon={faPen}
@@ -91,6 +93,20 @@ export function ColumnActions({
           onInfo();
         }}
       />
+      {onEdit && (
+        <ActionWithTooltip
+          {...(buttonProps?.["edit"] || {})}
+          tooltip={useTranslateButtons("edit_tooltip")}
+          icon={faEdit}
+          loading={loadingRows.includes(`${row.id}`)}
+          actionProps={{ size: "sm" }}
+          iconProps={{ size: "xs" }}
+          onClick={async (e) => {
+            e.stopPropagation();
+            onEdit(row.id);
+          }}
+        />
+      )}
       <ActionWithTooltip
         tooltip={useTranslateButtons(`hide.${row.is_hidden ? "disabled_tooltip" : "enabled_tooltip"}`)}
         icon={row.is_hidden ? faEyeSlash : faEye}

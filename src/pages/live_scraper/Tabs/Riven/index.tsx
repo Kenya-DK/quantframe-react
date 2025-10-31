@@ -19,7 +19,7 @@ import { useStockModals } from "./modals";
 import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 import { ColumnActions } from "../../Columns/ColumnActions";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faDownload } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faEdit, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { HasPermission } from "@api/index";
 import { notifications } from "@mantine/notifications";
 import { ItemName } from "@components/DataDisplay/ItemName/ItemName";
@@ -42,6 +42,7 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
   // States
   const [loadingRows, setLoadingRows] = useState<string[]>([]);
   const [canExport, setCanExport] = useState<boolean>(false);
+  const [selectedRecords, setSelectedRecords] = useState<TauriTypes.StockRiven[]>([]);
 
   // Check permissions for export on mount
   useEffect(() => {
@@ -59,35 +60,41 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
     useTranslateEnums(`stock_status.${key}`, { ...context }, i18Key);
   const useTranslateDataGridColumns = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTabRiven(`datatable.columns.${key}`, { ...context }, i18Key);
-  const useTranslateErrors = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateTabRiven(`errors.${key}`, { ...context }, i18Key);
-  const useTranslateSuccess = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateTabRiven(`success.${key}`, { ...context }, i18Key);
   const useTranslateBasePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslate(`prompts.${key}`, { ...context }, i18Key);
-  const useTranslatePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateTabRiven(`prompts.${key}`, { ...context }, i18Key);
   // Queries
   const { paginationQuery, financialReportQuery, statusCountsQuery, refetchQueries } = useStockQueries({ queryData, isActive });
   const handleRefresh = (_data: any) => {
     refetchQueries(true);
   };
   // Mutations
-  const { updateStockMutation, createStockMutation, exportMutation, sellStockMutation, deleteStockMutation } = useStockMutations({
-    useTranslateSuccess,
-    useTranslateErrors,
-    refetchQueries,
-    setLoadingRows,
-  });
+  const { updateMutation, createMutation, exportMutation, sellMutation, deleteMutation, updateMultipleMutation, deleteMultipleMutation } =
+    useStockMutations({
+      refetchQueries,
+      setLoadingRows,
+    });
   // Modals
-  const { OpenMinimumPriceModal, OpenCreateRiven, OpenSellModal, OpenInfoModal, OpenFilterModal, OpenDeleteModal } = useStockModals({
+  const {
+    OpenMinimumPriceModal,
+    OpenCreateRiven,
+    OpenSellModal,
+    OpenInfoModal,
+    OpenFilterModal,
+    OpenDeleteModal,
+    OpenUpdateMultipleModal,
+    OpenDeleteMultipleModal,
+  } = useStockModals({
     useTranslateBasePrompt,
-    useTranslatePrompt,
-    createStockMutation,
-    updateStockMutation,
-    sellStockMutation,
-    deleteStockMutation,
+    createMutation,
+    updateMutation,
+    updateMultipleMutation,
+    sellMutation,
+    deleteMutation,
+    deleteMultipleMutation,
   });
+  useEffect(() => {
+    setSelectedRecords([]);
+  }, [deleteMultipleMutation.isSuccess, deleteMutation.isSuccess]);
   // Use the custom hook for Tauri events
   useTauriEvent(TauriTypes.Events.RefreshStockRivens, handleRefresh, [refetchQueries]);
   return (
@@ -133,15 +140,30 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
         value={queryData.query || ""}
         onChange={(value) => setQueryData((prev) => ({ ...prev, query: value }))}
         onCreate={() => OpenCreateRiven()}
-        rightSectionWidth={75}
+        rightSectionWidth={30 * 4}
         rightSection={
-          <Group>
+          <Group gap={3}>
             <ActionWithTooltip
               tooltip={useTranslate("export_json_tooltip")}
               icon={faDownload}
               iconProps={{ size: "xs" }}
               actionProps={{ size: "sm", disabled: !canExport }}
               onClick={() => exportMutation.mutate(queryData)}
+            />
+            <ActionWithTooltip
+              tooltip={useTranslate("update_multiple_tooltip")}
+              icon={faEdit}
+              iconProps={{ size: "xs" }}
+              actionProps={{ size: "sm", disabled: selectedRecords.length === 0 }}
+              onClick={() => OpenUpdateMultipleModal(selectedRecords.map((r) => r.id))}
+            />
+            <ActionWithTooltip
+              tooltip={useTranslate("delete_multiple_tooltip")}
+              icon={faTrashCan}
+              color="red.7"
+              iconProps={{ size: "xs" }}
+              actionProps={{ size: "sm", disabled: selectedRecords.length === 0 }}
+              onClick={() => OpenDeleteMultipleModal(selectedRecords.map((r) => r.id))}
             />
           </Group>
         }
@@ -185,6 +207,8 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
               break;
           }
         }}
+        selectedRecords={selectedRecords}
+        onSelectedRecordsChange={setSelectedRecords}
         columns={[
           {
             accessor: "weapon_name",
@@ -212,7 +236,7 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
               <ColumnMinMaxPrice
                 id={id}
                 minimum_price={minimum_price}
-                onUpdate={async (id: number, minimum_price: number) => await updateStockMutation.mutateAsync({ id, minimum_price })}
+                onUpdate={async (id: number, minimum_price: number) => await updateMutation.mutateAsync({ id, minimum_price })}
                 onEdit={async (id: number, minimum_price: number) => OpenMinimumPriceModal(id, minimum_price)}
               />
             ),
@@ -236,11 +260,12 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
                 }}
                 loadingRows={loadingRows}
                 onManual={() => OpenSellModal({ ...row, wfm_url: row.wfm_weapon_url, rank: row.sub_type?.rank || 0, price: 0 })}
-                onAuto={(price) => sellStockMutation.mutateAsync({ ...row, wfm_url: row.wfm_weapon_url, rank: row.sub_type?.rank || 0, price })}
+                onAuto={(price) => sellMutation.mutateAsync({ ...row, wfm_url: row.wfm_weapon_url, rank: row.sub_type?.rank || 0, price })}
                 onInfo={() => OpenInfoModal(row)}
                 onFilter={() => OpenFilterModal(row)}
-                onHide={(hide) => updateStockMutation.mutateAsync({ id: row.id, is_hidden: hide })}
+                onHide={(hide) => updateMutation.mutateAsync({ id: row.id, is_hidden: hide })}
                 onDelete={() => OpenDeleteModal(row.id)}
+                onEdit={() => OpenUpdateMultipleModal([row.id])}
               />
             ),
           },

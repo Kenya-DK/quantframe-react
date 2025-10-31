@@ -125,7 +125,7 @@ async fn setup_manages(app: tauri::AppHandle, use_temp_db: bool) -> Result<(), E
 }
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let use_temp_db = false;
+    let use_temp_db = true;
 
     // Initialize the logger for elapsed time tracking
 
@@ -221,6 +221,8 @@ pub fn run() {
             commands::stock_item::stock_item_sell,
             commands::stock_item::stock_item_update,
             commands::stock_item::stock_item_get_by_id,
+            commands::stock_item::stock_item_update_multiple,
+            commands::stock_item::stock_item_delete_multiple,
             commands::stock_item::export_stock_item_json,
             // Stock Riven commands
             commands::stock_riven::get_stock_riven_pagination,
@@ -232,6 +234,8 @@ pub fn run() {
             commands::stock_riven::stock_riven_update,
             commands::stock_riven::stock_riven_get_by_id,
             commands::stock_riven::export_stock_riven_json,
+            commands::stock_riven::stock_riven_update_multiple,
+            commands::stock_riven::stock_riven_delete_multiple,
             // Debug commands
             commands::debug::debug_get_wfm_state,
             // Order commands
@@ -257,6 +261,8 @@ pub fn run() {
             commands::wish_list::wish_list_update,
             commands::wish_list::wish_list_get_by_id,
             commands::wish_list::export_wish_list_json,
+            commands::wish_list::wish_list_update_multiple,
+            commands::wish_list::wish_list_delete_multiple,
             // Chat commands
             commands::chat::chat_refresh,
             commands::chat::get_chat_pagination,

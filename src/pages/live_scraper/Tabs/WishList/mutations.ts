@@ -1,68 +1,9 @@
-import { useMutation } from "@tanstack/react-query";
-import { notifications } from "@mantine/notifications";
 import { TauriTypes } from "$types";
 import api from "@api/index";
-import { useTranslateCommon } from "../../../../hooks/useTranslate.hook";
+import { createGenericMutation, MutationHooks } from "@utils/genericMutation.helper";
 
-interface MutationHooks {
-  useTranslateSuccess: (key: string, context?: { [key: string]: any }) => string;
-  useTranslateErrors: (key: string, context?: { [key: string]: any }) => string;
-  refetchQueries: (refetchStatus?: boolean) => void;
-  setLoadingRows: (callback: (prev: string[]) => string[]) => void;
-}
-
-// Generic mutation creator function
-const createGenericMutation = <TData, TVariables>(
-  config: {
-    mutationFn: (data: TVariables) => Promise<TData>;
-    successKey: string;
-    errorKey: string;
-    getLoadingId?: (variables: TVariables) => string | string[];
-    getSuccessMessage?: (data: TData, variables: TVariables) => { [key: string]: any };
-  },
-  hooks: MutationHooks
-): ReturnType<typeof useMutation<TData, unknown, TVariables, unknown>> => {
-  return useMutation({
-    mutationFn: config.mutationFn,
-    onMutate: config.getLoadingId
-      ? (variables: TVariables) => {
-          const loadingIds = config.getLoadingId!(variables);
-          const ids = Array.isArray(loadingIds) ? loadingIds : [loadingIds];
-          hooks.setLoadingRows((prev: string[]) => [...prev, ...ids]);
-        }
-      : undefined,
-    onSettled: config.getLoadingId
-      ? (_data: TData | undefined, _error: any, variables: TVariables) => {
-          const loadingIds = config.getLoadingId!(variables);
-          const ids = Array.isArray(loadingIds) ? loadingIds : [loadingIds];
-          hooks.setLoadingRows((prev: string[]) => prev.filter((id: string) => !ids.includes(id)));
-        }
-      : undefined,
-    onSuccess: (data: TData, variables: TVariables) => {
-      let refetchStatusString = ["create_stock"];
-      hooks.refetchQueries(refetchStatusString.includes(config.successKey));
-      notifications.show({
-        title: useTranslateCommon(`notifications.${config.successKey}.success.title`),
-        message: useTranslateCommon(
-          `notifications.${config.successKey}.success.message`,
-          config.getSuccessMessage ? config.getSuccessMessage(data, variables) : {}
-        ),
-        color: "green.7",
-      });
-    },
-    onError: (e: any) => {
-      console.error(e);
-      notifications.show({
-        title: useTranslateCommon(`notifications.${config.errorKey}.error.title`),
-        message: useTranslateCommon(`notifications.${config.errorKey}.error.message`),
-        color: "red.7",
-      });
-    },
-  });
-};
-
-export const useWishListMutations = ({ useTranslateSuccess, useTranslateErrors, refetchQueries, setLoadingRows }: MutationHooks) => {
-  const hooks = { useTranslateSuccess, useTranslateErrors, refetchQueries, setLoadingRows };
+export const useWishListMutations = ({ refetchQueries, setLoadingRows }: MutationHooks) => {
+  const hooks = { refetchQueries, setLoadingRows };
 
   const exportMutation = createGenericMutation(
     {
@@ -73,7 +14,7 @@ export const useWishListMutations = ({ useTranslateSuccess, useTranslateErrors, 
     },
     hooks
   );
-  const createWishListMutation = createGenericMutation(
+  const createMutation = createGenericMutation(
     {
       mutationFn: (data: TauriTypes.CreateWishListItem) => api.wish_list.create(data),
       successKey: "create_wish_list",
@@ -83,7 +24,7 @@ export const useWishListMutations = ({ useTranslateSuccess, useTranslateErrors, 
     hooks
   );
 
-  const updateWishListMutation = createGenericMutation(
+  const updateMutation = createGenericMutation(
     {
       mutationFn: (data: TauriTypes.UpdateWishListItem) => api.wish_list.update(data),
       successKey: "update_wish_list",
@@ -93,8 +34,18 @@ export const useWishListMutations = ({ useTranslateSuccess, useTranslateErrors, 
     },
     hooks
   );
-
-  const deleteWishListMutation = createGenericMutation(
+  const updateMultipleMutation = createGenericMutation(
+    {
+      mutationFn: (data: { ids: number[]; input: TauriTypes.UpdateWishListItem }) => api.wish_list.updateMultiple(data.ids, data.input),
+      successKey: "update_wish_list",
+      errorKey: "update_wish_list",
+      isMultiple: (variables: { ids: number[]; input: TauriTypes.UpdateWishListItem }) => variables.ids.length > 1,
+      getLoadingId: (variables: { ids: number[]; input: TauriTypes.UpdateWishListItem }) => variables.ids.map((id) => `${id}`),
+      getSuccessMessage: (data: any) => ({ count: data.length }),
+    },
+    hooks
+  );
+  const deleteMutation = createGenericMutation(
     {
       mutationFn: (id: number) => api.wish_list.delete(id),
       successKey: "delete_wish_list",
@@ -104,7 +55,18 @@ export const useWishListMutations = ({ useTranslateSuccess, useTranslateErrors, 
     },
     hooks
   );
-  const boughtWishListMutation = createGenericMutation(
+  const deleteMultipleMutation = createGenericMutation(
+    {
+      mutationFn: (ids: number[]) => api.wish_list.deleteMultiple(ids),
+      successKey: "delete_wish_list",
+      errorKey: "delete_wish_list",
+      isMultiple: (variables: number[]) => variables.length > 1,
+      getLoadingId: (variables: number[]) => variables.map((id) => `${id}`),
+      getSuccessMessage: (data: any) => ({ count: data }),
+    },
+    hooks
+  );
+  const boughtMutation = createGenericMutation(
     {
       mutationFn: (data: TauriTypes.BoughtWishListItem) => api.wish_list.bought(data),
       successKey: "bought_wish_list",
@@ -116,9 +78,11 @@ export const useWishListMutations = ({ useTranslateSuccess, useTranslateErrors, 
   );
   return {
     exportMutation,
-    createWishListMutation,
-    updateWishListMutation,
-    boughtWishListMutation,
-    deleteWishListMutation,
+    createMutation,
+    updateMutation,
+    updateMultipleMutation,
+    boughtMutation,
+    deleteMutation,
+    deleteMultipleMutation,
   };
 };

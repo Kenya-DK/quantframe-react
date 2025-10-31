@@ -131,12 +131,45 @@ pub async fn stock_item_delete(id: i64) -> Result<stock_item::Model, Error> {
 }
 
 #[tauri::command]
+pub async fn stock_item_delete_multiple(ids: Vec<i64>) -> Result<i64, Error> {
+    let conn = DATABASE.get().unwrap();
+    let mut deleted_count = 0;
+
+    for id in ids {
+        match StockItemMutation::delete_by_id(conn, id).await {
+            Ok(_) => deleted_count += 1,
+            Err(e) => return Err(e.with_location(get_location!())),
+        }
+    }
+    Ok(deleted_count)
+}
+
+#[tauri::command]
 pub async fn stock_item_update(input: UpdateStockItem) -> Result<stock_item::Model, Error> {
     let conn = DATABASE.get().unwrap();
     match StockItemMutation::update_by_id(conn, input).await {
         Ok(stock_item) => Ok(stock_item),
         Err(e) => return Err(e.with_location(get_location!())),
     }
+}
+
+#[tauri::command]
+pub async fn stock_item_update_multiple(
+    ids: Vec<i64>,
+    input: UpdateStockItem,
+) -> Result<Vec<stock_item::Model>, Error> {
+    let conn = DATABASE.get().unwrap();
+    let mut updated_items = Vec::new();
+
+    for id in ids {
+        let mut update_input = input.clone();
+        update_input.id = id;
+        match StockItemMutation::update_by_id(conn, update_input).await {
+            Ok(stock_item) => updated_items.push(stock_item),
+            Err(e) => return Err(e.with_location(get_location!())),
+        }
+    }
+    Ok(updated_items)
 }
 
 #[tauri::command]

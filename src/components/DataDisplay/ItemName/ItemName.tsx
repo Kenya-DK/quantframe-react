@@ -15,6 +15,7 @@ interface HasQuantity {
 export type ItemNameProps = {
   color?: string;
   size?: MantineSize | (string & {});
+  hideQuantity?: boolean;
   value:
     | (WFMarketTypes.Order & HasQuantity)
     | (TauriTypes.StockItem & HasQuantity)
@@ -27,7 +28,7 @@ export type ItemNameProps = {
     | null;
 };
 
-export function ItemName({ color, size, value }: ItemNameProps) {
+export function ItemName({ color, size, hideQuantity, value }: ItemNameProps) {
   // Fetch data from rust side
   const data = useQuery({
     queryKey: ["cache_items"],
@@ -53,7 +54,7 @@ export function ItemName({ color, size, value }: ItemNameProps) {
   const GetQuantity = (): string | number => {
     if (!value) return "";
     let quantity = 0;
-    if ("quantity" in value && value.quantity) quantity = value.quantity;
+    if ("quantity" in value && value.quantity && !hideQuantity) quantity = value.quantity;
 
     return quantity > 1 ? `${quantity}<blue>x</blue> ` : "";
   };

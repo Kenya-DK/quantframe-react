@@ -1,11 +1,6 @@
-## Fix/Changes in v1.6.3
+## Fix/Changes
 
-- 🛠️ Log parser was crashing need testing
-- 🛠️ Fix a item what have the wrong name
-- 🛠️ Fix some style issues in transaction list
-- ✨ Add a http server so you can create a riven by sending a post request to the app
-- ✨ Add so the transactions list wil update when a new transaction is added from the log parser/http server
-- ✨ Add export logs in Settings -> Advanced > Log Export
+- ✨ Add bulk update/delete for stock items, stock rivens and wishlists
 
 ## TODO's
 
@@ -26,13 +21,12 @@
 - ✨ Add date filter for the trading analysis
 - ✨ Add show item parts for item sets
 - ✨ Add a http server so you can create a riven by sending a post request to the app
-- ✨ Add a http server so you can create a riven by sending a post request to the app
+- ✨ Add bulk update for stock items, stock rivens and wishlists
 
 ## Dev Notes
 
 - 🛠️ Add a delay for riven stock updates to reduce api calls on the livec
 - 🛠️ Using a new system for riven so pls can for duplication on warframe market
-- 🛠️ Using a new system for riven so pls check for duplication on warframe market
 - 🛠️ Look into this https://github.com/knoellle/wfinfo-ng
 
 ## Fix's

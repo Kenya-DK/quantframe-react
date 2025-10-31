@@ -2,16 +2,14 @@ import { Box, Container, Divider, Group, Tabs, Text } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
 import { useTranslateModals } from "@hooks/useTranslate.hook";
-import { OverviewTab, AnalyticsTab, WFMTab, EditTab } from "./Tabs/index";
+import { OverviewTab, AnalyticsTab, WFMTab } from "./Tabs/index";
 import { Loading } from "@components/Shared/Loading";
-import { TauriTypes } from "$types";
 import { ItemName } from "@components/DataDisplay/ItemName";
 
 export type StockItemDetailsModalProps = {
   value: number;
-  onUpdate?: (data: TauriTypes.UpdateStockItem) => void;
 };
-export function StockItemDetailsModal({ value, onUpdate }: StockItemDetailsModalProps) {
+export function StockItemDetailsModal({ value }: StockItemDetailsModalProps) {
   const { data } = useQuery({
     queryKey: ["stock_item", value],
     queryFn: () => api.stock_item.getById(value),
@@ -25,7 +23,6 @@ export function StockItemDetailsModal({ value, onUpdate }: StockItemDetailsModal
     { label: useTranslateTabs("overview.title"), component: <OverviewTab value={data} />, id: "overview" },
     { label: useTranslateTabs("analytics.title"), component: <AnalyticsTab value={data} />, id: "analytics" },
     { label: useTranslateTabs("wfm.title"), component: <WFMTab value={data} />, id: "wfm" },
-    { label: useTranslateTabs("edit.title"), component: <EditTab value={data} onUpdate={(data) => onUpdate?.(data)} />, id: "edit" },
   ];
   return (
     <Container size={"100%"} p={0}>

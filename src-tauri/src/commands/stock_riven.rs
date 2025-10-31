@@ -172,7 +172,36 @@ pub async fn stock_riven_update(input: UpdateStockRiven) -> Result<stock_riven::
         Err(e) => return Err(e.with_location(get_location!())),
     }
 }
+#[tauri::command]
+pub async fn stock_riven_delete_multiple(ids: Vec<i64>) -> Result<i64, Error> {
+    let conn = DATABASE.get().unwrap();
+    let mut deleted_count = 0;
+    for id in ids {
+        match StockRivenMutation::delete(conn, id).await {
+            Ok(_) => deleted_count += 1,
+            Err(e) => return Err(e.with_location(get_location!())),
+        }
+    }
+    Ok(deleted_count)
+}
+#[tauri::command]
+pub async fn stock_riven_update_multiple(
+    ids: Vec<i64>,
+    input: UpdateStockRiven,
+) -> Result<Vec<stock_riven::Model>, Error> {
+    let conn = DATABASE.get().unwrap();
+    let mut updated_items = Vec::new();
 
+    for id in ids {
+        let mut update_input = input.clone();
+        update_input.id = id;
+        match StockRivenMutation::update_by_id(conn, update_input).await {
+            Ok(stock_riven) => updated_items.push(stock_riven),
+            Err(e) => return Err(e.with_location(get_location!())),
+        }
+    }
+    Ok(updated_items)
+}
 #[tauri::command]
 pub async fn stock_riven_get_by_id(
     id: i64,

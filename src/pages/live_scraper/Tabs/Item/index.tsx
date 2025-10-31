@@ -7,9 +7,8 @@ import classes from "../../LiveScraper.module.css";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useLiveScraperContext } from "@contexts/liveScraper.context";
 import { useStockQueries } from "./queries";
-import { useStockMutations } from "./mutations";
 import { useEffect, useState } from "react";
-import { useStockModals } from "./modals";
+import { useModals } from "./modals";
 import { DataTable } from "mantine-datatable";
 import { CreateItemForm } from "@components/Forms/CreateItem";
 import { StatsWithSegments } from "@components/Shared/StatsWithSegments";
@@ -20,9 +19,10 @@ import { getSafePage } from "@utils/helper";
 import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 import { ColumnActions } from "../../Columns/ColumnActions";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faDownload } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faEdit, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { HasPermission } from "@api/index";
-import { ItemName } from "../../../../components/DataDisplay/ItemName/ItemName";
+import { ItemName } from "@components/DataDisplay/ItemName/ItemName";
+import { useMutations } from "./mutations";
 
 interface ItemPanelProps {
   isActive?: boolean;
@@ -40,7 +40,7 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
   // States
   const [loadingRows, setLoadingRows] = useState<string[]>([]);
   const [canExport, setCanExport] = useState<boolean>(false);
-
+  const [selectedRecords, setSelectedRecords] = useState<TauriTypes.StockItem[]>([]);
   // Check permissions for export on mount
   useEffect(() => {
     HasPermission(TauriTypes.PermissionsFlags.EXPORT_DATA).then((res) => setCanExport(res));
@@ -57,29 +57,30 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
     useTranslateEnums(`stock_status.${key}`, { ...context }, i18Key);
   const useTranslateDataGridColumns = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTabItem(`datatable.columns.${key}`, { ...context }, i18Key);
-  const useTranslateErrors = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateTabItem(`errors.${key}`, { ...context }, i18Key);
-  const useTranslateSuccess = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateTabItem(`success.${key}`, { ...context }, i18Key);
   // Queries
   const { paginationQuery, financialReportQuery, statusCountsQuery, refetchQueries } = useStockQueries({ queryData, isActive });
 
   // Mutations
-  const { createStockMutation, updateStockMutation, exportMutation, sellStockMutation, deleteStockMutation } = useStockMutations({
-    useTranslateSuccess,
-    useTranslateErrors,
-    refetchQueries,
-    setLoadingRows,
-  });
+  const { createMutation, updateMutation, updateMultipleMutation, exportMutation, sellStockMutation, deleteMutation, deleteMultipleMutation } =
+    useMutations({
+      refetchQueries,
+      setLoadingRows,
+    });
   // Modals
-  const { OpenMinimumPriceModal, OpenSellModal, OpenInfoModal, OpenDeleteModal } = useStockModals({
-    updateStockMutation,
+  const { OpenMinimumPriceModal, OpenDeleteMultipleModal, OpenUpdateMultipleModal, OpenSellModal, OpenInfoModal, OpenDeleteModal } = useModals({
+    updateMutation,
+    updateMultipleMutation,
     sellStockMutation,
-    deleteStockMutation,
+    deleteMutation,
+    deleteMultipleMutation,
   });
   const handleRefresh = (_data: any) => {
     refetchQueries(true);
   };
+
+  useEffect(() => {
+    setSelectedRecords([]);
+  }, [deleteMultipleMutation.isSuccess, deleteMutation.isSuccess]);
 
   // Use the custom hook for Tauri events
   useTauriEvent(TauriTypes.Events.RefreshStockItems, handleRefresh, [refetchQueries]);
@@ -87,7 +88,7 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
     <Box>
       <Grid>
         <Grid.Col span={8}>
-          <CreateItemForm onSubmit={(values) => createStockMutation.mutateAsync(values)} />
+          <CreateItemForm onSubmit={(values) => createMutation.mutateAsync(values)} />
           <Group gap={"md"} mt={"md"}>
             {Object.entries(statusCountsQuery.data || {})
               .sort(([a], [b]) => a.localeCompare(b))
@@ -126,15 +127,30 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
       <SearchField
         value={queryData.query || ""}
         onChange={(value) => setQueryData((prev) => ({ ...prev, query: value }))}
-        rightSectionWidth={45}
+        rightSectionWidth={30 * 3}
         rightSection={
-          <Group>
+          <Group gap={3}>
             <ActionWithTooltip
               tooltip={useTranslate("export_json_tooltip")}
               icon={faDownload}
               iconProps={{ size: "xs" }}
               actionProps={{ size: "sm", disabled: !canExport }}
               onClick={() => exportMutation.mutate(queryData)}
+            />
+            <ActionWithTooltip
+              tooltip={useTranslate("update_multiple_tooltip")}
+              icon={faEdit}
+              iconProps={{ size: "xs" }}
+              actionProps={{ size: "sm", disabled: selectedRecords.length === 0 }}
+              onClick={() => OpenUpdateMultipleModal(selectedRecords.map((r) => r.id))}
+            />
+            <ActionWithTooltip
+              tooltip={useTranslate("delete_multiple_tooltip")}
+              icon={faTrashCan}
+              color="red.7"
+              iconProps={{ size: "xs" }}
+              actionProps={{ size: "sm", disabled: selectedRecords.length === 0 }}
+              onClick={() => OpenDeleteMultipleModal(selectedRecords.map((r) => r.id))}
             />
           </Group>
         }
@@ -157,8 +173,6 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
         recordsPerPage={queryData.limit || 10}
         recordsPerPageOptions={[5, 10, 15, 20, 25, 50, 100]}
         onRecordsPerPageChange={(limit) => setQueryData((prev) => ({ ...prev, limit }))}
-        // selectedRecords={selectedRecords}
-        // onSelectedRecordsChange={setSelectedRecords}
         sortStatus={{
           columnAccessor: queryData.sort_by || "name",
           direction: queryData.sort_direction || "desc",
@@ -180,6 +194,8 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
               break;
           }
         }}
+        selectedRecords={selectedRecords}
+        onSelectedRecordsChange={setSelectedRecords}
         // define columns
         columns={[
           {
@@ -203,7 +219,7 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
               <ColumnMinMaxPrice
                 id={id}
                 minimum_price={minimum_price}
-                onUpdate={async (id: number, minimum_price: number) => await updateStockMutation.mutateAsync({ id, minimum_price, list_price })}
+                onUpdate={async (id: number, minimum_price: number) => await updateMutation.mutateAsync({ id, minimum_price, list_price })}
                 onEdit={async (id: number, minimum_price: number) => OpenMinimumPriceModal(id, minimum_price)}
               />
             ),
@@ -221,7 +237,7 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
           {
             accessor: "actions",
             title: useTranslateCommon("datatable_columns.actions.title"),
-            width: 185,
+            width: 215,
             render: (row) => (
               <ColumnActions
                 row={row}
@@ -230,8 +246,9 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
                 onManual={() => OpenSellModal(row)}
                 onAuto={(price) => sellStockMutation.mutateAsync({ ...row, price, quantity: 1 })}
                 onInfo={() => OpenInfoModal(row)}
-                onHide={(hide) => updateStockMutation.mutateAsync({ id: row.id, is_hidden: hide, list_price: row.list_price })}
+                onHide={(hide) => updateMutation.mutateAsync({ id: row.id, is_hidden: hide, list_price: row.list_price })}
                 onDelete={() => OpenDeleteModal(row.id)}
+                onEdit={() => OpenUpdateMultipleModal([row.id])}
               />
             ),
           },

@@ -26,9 +26,16 @@ export class StockItemModule {
   async update(input: TauriTypes.UpdateStockItem): Promise<TauriTypes.StockItem> {
     return await this.client.sendInvoke<TauriTypes.StockItem>("stock_item_update", { input });
   }
+  async updateMultiple(ids: number[], input: TauriTypes.UpdateStockItem): Promise<TauriTypes.StockItem[]> {
+    return await this.client.sendInvoke<TauriTypes.StockItem[]>("stock_item_update_multiple", { ids, input });
+  }
 
   async delete(id: number): Promise<TauriTypes.StockItem> {
     return await this.client.sendInvoke<TauriTypes.StockItem>("stock_item_delete", { id });
+  }
+
+  async deleteMultiple(ids: number[]): Promise<number> {
+    return await this.client.sendInvoke<number>("stock_item_delete_multiple", { ids });
   }
 
   async sell(entry: TauriTypes.SellStockItem, by?: string): Promise<TauriTypes.StockItem> {

@@ -5,30 +5,37 @@ import { CreateRiven } from "@components/Forms/CreateRiven";
 import { RivenFilter } from "@components/Forms/RivenFilter";
 import { StockRivenDetailsModal } from "@components/Modals/StockRivenDetails";
 import { useTranslateCommon } from "@hooks/useTranslate.hook";
+import { StockRivenUpdate } from "@components/Forms/StockRivenUpdate";
 interface ModalHooks {
   useTranslateBasePrompt: (key: string, context?: { [key: string]: any }) => string;
-  useTranslatePrompt: (key: string, context?: { [key: string]: any }) => string;
-  updateStockMutation: {
+  updateMutation: {
     mutateAsync: (data: TauriTypes.UpdateStockRiven) => Promise<any>;
   };
-  sellStockMutation: {
+  updateMultipleMutation: {
+    mutateAsync: (data: { ids: number[]; input: TauriTypes.UpdateStockRiven }) => Promise<any>;
+  };
+  sellMutation: {
     mutateAsync: (data: TauriTypes.SellStockRiven) => Promise<any>;
   };
-  deleteStockMutation: {
+  deleteMutation: {
     mutateAsync: (id: number) => Promise<any>;
   };
-  createStockMutation: {
+  deleteMultipleMutation: {
+    mutateAsync: (ids: number[]) => Promise<any>;
+  };
+  createMutation: {
     mutateAsync: (data: TauriTypes.CreateStockRiven) => Promise<any>;
   };
 }
 
 export const useStockModals = ({
   useTranslateBasePrompt,
-  useTranslatePrompt,
-  updateStockMutation,
-  sellStockMutation,
-  deleteStockMutation,
-  createStockMutation,
+  updateMutation,
+  updateMultipleMutation,
+  sellMutation,
+  deleteMutation,
+  deleteMultipleMutation,
+  createMutation,
 }: ModalHooks) => {
   const OpenMinimumPriceModal = (id: number, minimum_price: number) => {
     modals.openContextModal({
@@ -50,7 +57,7 @@ export const useStockModals = ({
         onConfirm: async (data: { minimum_price: number }) => {
           if (!id) return;
           const { minimum_price } = data;
-          await updateStockMutation.mutateAsync({ id, minimum_price });
+          await updateMutation.mutateAsync({ id, minimum_price });
         },
         onCancel: (id: string) => modals.close(id),
       },
@@ -76,7 +83,7 @@ export const useStockModals = ({
         onConfirm: async (data: { sell: number }) => {
           if (!stock) return;
           const { sell } = data;
-          await sellStockMutation.mutateAsync({ ...stock, price: sell });
+          await sellMutation.mutateAsync({ ...stock, price: sell });
         },
         onCancel: (id: string) => modals.close(id),
       },
@@ -84,19 +91,10 @@ export const useStockModals = ({
   };
 
   const OpenInfoModal = (item: TauriTypes.StockRiven) => {
-    const id = modals.open({
+    modals.open({
       size: "100%",
       withCloseButton: false,
-      children: (
-        <StockRivenDetailsModal
-          value={item.id}
-          onUpdate={async (data) => {
-            console.log(data);
-            await updateStockMutation.mutateAsync(data);
-            modals.close(id);
-          }}
-        />
-      ),
+      children: <StockRivenDetailsModal value={item.id} />,
     });
   };
 
@@ -107,7 +105,7 @@ export const useStockModals = ({
       children: (
         <CreateRiven
           onSubmit={async (data) => {
-            await createStockMutation.mutateAsync({
+            await createMutation.mutateAsync({
               ...data,
               raw: data.wfm_weapon_url,
               rank: data.sub_type?.rank || 0,
@@ -119,10 +117,20 @@ export const useStockModals = ({
     });
   };
 
-  const OpenUpdateModal = (_items: TauriTypes.UpdateStockRiven[]) => {
-    modals.open({
-      title: useTranslatePrompt("update.title"),
-      children: <></>,
+  const OpenUpdateMultipleModal = (ids: number[]) => {
+    let id = modals.open({
+      size: "100%",
+      withCloseButton: false,
+      children: (
+        <StockRivenUpdate
+          values={ids}
+          onUpdate={async (input) => {
+            if (ids.length == 1) await updateMutation.mutateAsync(input);
+            else await updateMultipleMutation.mutateAsync({ ids, input: { ...input, id: -1 } });
+            modals.close(id);
+          }}
+        />
+      ),
     });
   };
 
@@ -131,7 +139,19 @@ export const useStockModals = ({
       title: useTranslateCommon("prompts.delete_item.title"),
       children: <Text size="sm">{useTranslateCommon("prompts.delete_item.message", { count: 1 })}</Text>,
       labels: { confirm: useTranslateCommon("prompts.delete_item.confirm"), cancel: useTranslateCommon("prompts.delete_item.cancel") },
-      onConfirm: async () => await deleteStockMutation.mutateAsync(id),
+      onConfirm: async () => await deleteMutation.mutateAsync(id),
+    });
+  };
+
+  const OpenDeleteMultipleModal = (ids: number[]) => {
+    modals.openConfirmModal({
+      title: useTranslateCommon("prompts.delete_multiple_items.title"),
+      children: <Text size="sm">{useTranslateCommon("prompts.delete_multiple_items.message", { count: ids.length })}</Text>,
+      labels: {
+        confirm: useTranslateCommon("prompts.delete_multiple_items.confirm"),
+        cancel: useTranslateCommon("prompts.delete_multiple_items.cancel"),
+      },
+      onConfirm: async () => await deleteMultipleMutation.mutateAsync(ids),
     });
   };
 
@@ -146,7 +166,7 @@ export const useStockModals = ({
         <RivenFilter
           value={filter}
           onSubmit={async (data) => {
-            await updateStockMutation.mutateAsync({ id: item.id, filter: data });
+            await updateMutation.mutateAsync({ id: item.id, filter: data });
             modals.closeAll();
           }}
         />
@@ -158,8 +178,9 @@ export const useStockModals = ({
     OpenSellModal,
     OpenFilterModal,
     OpenInfoModal,
+    OpenUpdateMultipleModal,
     OpenCreateRiven,
-    OpenUpdateModal,
     OpenDeleteModal,
+    OpenDeleteMultipleModal,
   };
 };

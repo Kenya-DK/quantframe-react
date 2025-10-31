@@ -607,6 +607,9 @@ export namespace TauriTypes {
     id: number;
     bought?: number;
     minimum_price?: number;
+    minimum_profit?: number;
+    re_rolls?: number;
+    mastery_rank?: number;
     list_price?: number;
     status?: StockStatus;
     filter?: StockRivenFilter;

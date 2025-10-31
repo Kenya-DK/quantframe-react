@@ -8,7 +8,13 @@ use utils::{get_location, group_by, info, Error, LoggerOptions};
 use wf_market::enums::OrderType;
 
 use crate::{
-    APP, DATABASE, add_metric, app::client::AppState, enums::FindByType, handlers::{handle_wfm_item, handle_wish_list, handle_wish_list_by_entity}, helper, types::PermissionsFlags
+    add_metric,
+    app::client::AppState,
+    enums::FindByType,
+    handlers::{handle_wfm_item, handle_wish_list, handle_wish_list_by_entity},
+    helper,
+    types::PermissionsFlags,
+    APP, DATABASE,
 };
 
 #[tauri::command]
@@ -105,6 +111,19 @@ pub async fn wish_list_delete(id: i64) -> Result<Model, Error> {
     Ok(item)
 }
 #[tauri::command]
+pub async fn wish_list_delete_multiple(ids: Vec<i64>) -> Result<i64, Error> {
+    let conn = DATABASE.get().unwrap();
+    let mut deleted_count = 0;
+
+    for id in ids {
+        match WishListMutation::delete_by_id(conn, id).await {
+            Ok(_) => deleted_count += 1,
+            Err(e) => return Err(e.with_location(get_location!())),
+        }
+    }
+    Ok(deleted_count)
+}
+#[tauri::command]
 pub async fn wish_list_update(input: UpdateWishList) -> Result<Model, Error> {
     let conn = DATABASE.get().unwrap();
 
@@ -113,7 +132,24 @@ pub async fn wish_list_update(input: UpdateWishList) -> Result<Model, Error> {
         Err(e) => return Err(e.with_location(get_location!())),
     }
 }
+#[tauri::command]
+pub async fn wish_list_update_multiple(
+    ids: Vec<i64>,
+    input: UpdateWishList,
+) -> Result<Vec<Model>, Error> {
+    let conn = DATABASE.get().unwrap();
+    let mut updated_items = Vec::new();
 
+    for id in ids {
+        let mut update_input = input.clone();
+        update_input.id = id;
+        match WishListMutation::update_by_id(conn, update_input).await {
+            Ok(wish_list) => updated_items.push(wish_list),
+            Err(e) => return Err(e.with_location(get_location!())),
+        }
+    }
+    Ok(updated_items)
+}
 #[tauri::command]
 pub async fn wish_list_get_by_id(id: i64) -> Result<Value, Error> {
     let conn = DATABASE.get().unwrap();

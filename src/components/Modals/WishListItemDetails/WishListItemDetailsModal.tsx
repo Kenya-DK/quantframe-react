@@ -2,17 +2,15 @@ import { Box, Container, Divider, Group, Tabs, Text } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
 import { useTranslateModals } from "@hooks/useTranslate.hook";
-import { EditTab, OverviewTab, WFMTab } from "./Tabs/index";
+import { OverviewTab, WFMTab } from "./Tabs/index";
 import { Loading } from "@components/Shared/Loading";
-import { TauriTypes } from "$types";
 import { ItemName } from "@components/DataDisplay/ItemName";
 
 export type WishListItemDetailsModalProps = {
   value: number;
-  onUpdate?: (data: TauriTypes.UpdateWishListItem) => void;
 };
 
-export function WishListItemDetailsModal({ value, onUpdate }: WishListItemDetailsModalProps) {
+export function WishListItemDetailsModal({ value }: WishListItemDetailsModalProps) {
   const { data } = useQuery({
     queryKey: ["wish_list", value],
     queryFn: () => api.wish_list.getById(value),
@@ -25,7 +23,6 @@ export function WishListItemDetailsModal({ value, onUpdate }: WishListItemDetail
   const tabs = [
     { label: useTranslateTabs("overview.title"), component: <OverviewTab value={data} />, id: "overview" },
     { label: useTranslateTabs("wfm.title"), component: <WFMTab value={data} />, id: "wfm" },
-    { label: useTranslateTabs("edit.title"), component: <EditTab value={data} onUpdate={(data) => onUpdate?.(data)} />, id: "edit" },
   ];
   return (
     <Container size={"100%"} p={0}>

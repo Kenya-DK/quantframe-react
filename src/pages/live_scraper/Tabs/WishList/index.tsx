@@ -20,7 +20,7 @@ import { useStockModals } from "./modals";
 import { ColumnActions } from "../../Columns/ColumnActions";
 import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faDownload } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faEdit, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { HasPermission } from "@api/index";
 import { ItemName } from "@components/DataDisplay/ItemName/ItemName";
 
@@ -40,6 +40,7 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
   // States
   const [loadingRows, setLoadingRows] = useState<string[]>([]);
   const [canExport, setCanExport] = useState<boolean>(false);
+  const [selectedRecords, setSelectedRecords] = useState<TauriTypes.WishListItem[]>([]);
 
   // Check permissions for export on mount
   useEffect(() => {
@@ -49,49 +50,42 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
   // Translate
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslatePages(`live_scraper.${key}`, { ...context }, i18Key);
-  const useTranslateTabItem = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslate(`tabs.wish_list.${key}`, { ...context }, i18Key);
   const useTranslateSegments = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslate(`segments.${key}`, { ...context }, i18Key);
   const useTranslateStockStatus = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateEnums(`stock_status.${key}`, { ...context }, i18Key);
-  const useTranslateErrors = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateTabItem(`errors.${key}`, { ...context }, i18Key);
-  const useTranslateSuccess = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateTabItem(`success.${key}`, { ...context }, i18Key);
-  const useTranslateBasePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslate(`prompts.${key}`, { ...context }, i18Key);
-  const useTranslatePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateTabItem(`prompts.${key}`, { ...context }, i18Key);
   // Queries
   const { paginationQuery, financialReportQuery, statusCountsQuery, refetchQueries } = useWishListQueries({ queryData, isActive });
 
   // Mutations
-  const { createWishListMutation, boughtWishListMutation, exportMutation, updateWishListMutation, deleteWishListMutation } = useWishListMutations({
-    useTranslateSuccess,
-    useTranslateErrors,
-    refetchQueries,
-    setLoadingRows,
-  });
+  const { createMutation, boughtMutation, exportMutation, updateMutation, deleteMutation, deleteMultipleMutation, updateMultipleMutation } =
+    useWishListMutations({
+      refetchQueries,
+      setLoadingRows,
+    });
   // Modals
-  const { OpenMinimumPriceModal, OpenDeleteModal, OpenBoughtModal, OpenInfoModal } = useStockModals({
-    useTranslateBasePrompt,
-    useTranslatePrompt,
-    boughtWishListMutation,
-    updateWishListMutation,
-    deleteWishListMutation,
-  });
+  const { OpenMinimumPriceModal, OpenUpdateMultipleModal, OpenDeleteModal, OpenDeleteMultipleModal, OpenBoughtModal, OpenInfoModal } = useStockModals(
+    {
+      updateMutation,
+      updateMultipleMutation,
+      boughtMutation,
+      deleteMutation,
+      deleteMultipleMutation,
+    }
+  );
   const handleRefresh = (_data: any) => {
     refetchQueries(true);
   };
-
+  useEffect(() => {
+    setSelectedRecords([]);
+  }, [deleteMultipleMutation.isSuccess, deleteMutation.isSuccess]);
   // Use the custom hook for Tauri events
   useTauriEvent(TauriTypes.Events.RefreshWishListItems, handleRefresh, [refetchQueries]);
   return (
     <Box>
       <Grid>
         <Grid.Col span={8}>
-          <CreateItemForm hide_bought onSubmit={(values) => createWishListMutation.mutateAsync(values)} />
+          <CreateItemForm hide_bought onSubmit={(values) => createMutation.mutateAsync(values)} />
           <Group gap={"md"} mt={"md"}>
             {Object.entries(statusCountsQuery.data || {})
               .sort(([a], [b]) => a.localeCompare(b))
@@ -126,15 +120,30 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
       <SearchField
         value={queryData.query || ""}
         onChange={(value) => setQueryData((prev) => ({ ...prev, query: value }))}
-        rightSectionWidth={45}
+        rightSectionWidth={30 * 3}
         rightSection={
-          <Group>
+          <Group gap={3}>
             <ActionWithTooltip
               tooltip={useTranslate("export_json_tooltip")}
               icon={faDownload}
               iconProps={{ size: "xs" }}
               actionProps={{ size: "sm", disabled: !canExport }}
               onClick={() => exportMutation.mutate(queryData)}
+            />
+            <ActionWithTooltip
+              tooltip={useTranslate("update_multiple_tooltip")}
+              icon={faEdit}
+              iconProps={{ size: "xs" }}
+              actionProps={{ size: "sm", disabled: selectedRecords.length === 0 }}
+              onClick={() => OpenUpdateMultipleModal(selectedRecords.map((r) => r.id))}
+            />
+            <ActionWithTooltip
+              tooltip={useTranslate("delete_multiple_tooltip")}
+              icon={faTrashCan}
+              color="red.7"
+              iconProps={{ size: "xs" }}
+              actionProps={{ size: "sm", disabled: selectedRecords.length === 0 }}
+              onClick={() => OpenDeleteMultipleModal(selectedRecords.map((r) => r.id))}
             />
           </Group>
         }
@@ -178,13 +187,15 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
               break;
           }
         }}
+        selectedRecords={selectedRecords}
+        onSelectedRecordsChange={setSelectedRecords}
         // define columns
         columns={[
           {
             accessor: "item_name",
             title: useTranslateCommon("item_name.title"),
             sortable: true,
-            render: (row) => <ItemName color="gray.4" size="md" value={row} />,
+            render: (row) => <ItemName hideQuantity color="gray.4" size="md" value={row} />,
           },
           {
             accessor: "quantity",
@@ -200,7 +211,7 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
                 i18nKey="maximum_price"
                 id={id}
                 minimum_price={maximum_price}
-                onUpdate={async (id: number, minimum_price: number) => await updateWishListMutation.mutateAsync({ id, maximum_price: minimum_price })}
+                onUpdate={async (id: number, minimum_price: number) => await updateMutation.mutateAsync({ id, maximum_price: minimum_price })}
                 onEdit={async (id: number, minimum_price: number) => OpenMinimumPriceModal(id, minimum_price)}
               />
             ),
@@ -212,7 +223,7 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
           {
             accessor: "actions",
             title: useTranslateCommon("datatable_columns.actions.title"),
-            width: 185,
+            width: 215,
             render: (row) => (
               <ColumnActions
                 row={row}
@@ -223,10 +234,11 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
                 hideButtons={["open_filter"]}
                 loadingRows={loadingRows}
                 onManual={() => OpenBoughtModal(row)}
-                onAuto={(price) => boughtWishListMutation.mutateAsync({ ...row, price })}
+                onAuto={(price) => boughtMutation.mutateAsync({ ...row, price })}
                 onInfo={() => OpenInfoModal(row)}
-                onHide={(hide) => updateWishListMutation.mutateAsync({ id: row.id, is_hidden: hide })}
+                onHide={(hide) => updateMutation.mutateAsync({ id: row.id, is_hidden: hide })}
                 onDelete={() => OpenDeleteModal(row.id)}
+                onEdit={() => OpenUpdateMultipleModal([row.id])}
               />
             ),
           },

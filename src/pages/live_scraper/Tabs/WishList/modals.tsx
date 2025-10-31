@@ -3,22 +3,27 @@ import { Text } from "@mantine/core";
 import { TauriTypes } from "$types";
 import { WishListItemDetailsModal } from "@components/Modals/WishListItemDetails";
 import { useTranslateCommon } from "@hooks/useTranslate.hook";
+import { WishListItemUpdate } from "@components/Forms/WishListItemUpdate";
 
 interface ModalHooks {
-  useTranslateBasePrompt: (key: string, context?: { [key: string]: any }) => string;
-  useTranslatePrompt: (key: string, context?: { [key: string]: any }) => string;
-  updateWishListMutation: {
+  updateMutation: {
     mutateAsync: (data: TauriTypes.UpdateWishListItem) => Promise<any>;
   };
-  deleteWishListMutation: {
+  updateMultipleMutation: {
+    mutateAsync: (data: { ids: number[]; input: TauriTypes.UpdateWishListItem }) => Promise<any>;
+  };
+  deleteMutation: {
     mutateAsync: (id: number) => Promise<any>;
   };
-  boughtWishListMutation: {
+  deleteMultipleMutation: {
+    mutateAsync: (ids: number[]) => Promise<any>;
+  };
+  boughtMutation: {
     mutateAsync: (data: TauriTypes.BoughtWishListItem) => Promise<any>;
   };
 }
 
-export const useStockModals = ({ useTranslatePrompt, updateWishListMutation, deleteWishListMutation, boughtWishListMutation }: ModalHooks) => {
+export const useStockModals = ({ updateMutation, deleteMutation, boughtMutation, updateMultipleMutation, deleteMultipleMutation }: ModalHooks) => {
   const OpenMinimumPriceModal = (id: number, maximum_price: number) => {
     modals.openContextModal({
       modal: "prompt",
@@ -39,7 +44,7 @@ export const useStockModals = ({ useTranslatePrompt, updateWishListMutation, del
         onConfirm: async (data: { maximum_price: number }) => {
           if (!id) return;
           const { maximum_price } = data;
-          await updateWishListMutation.mutateAsync({ id, maximum_price });
+          await updateMutation.mutateAsync({ id, maximum_price });
         },
         onCancel: (id: string) => modals.close(id),
       },
@@ -47,25 +52,27 @@ export const useStockModals = ({ useTranslatePrompt, updateWishListMutation, del
   };
 
   const OpenInfoModal = (item: TauriTypes.WishListItem) => {
-    const id = modals.open({
+    modals.open({
+      size: "100%",
+      withCloseButton: false,
+      children: <WishListItemDetailsModal value={item.id} />,
+    });
+  };
+
+  const OpenUpdateMultipleModal = (ids: number[]) => {
+    let id = modals.open({
       size: "100%",
       withCloseButton: false,
       children: (
-        <WishListItemDetailsModal
-          value={item.id}
-          onUpdate={async (data) => {
-            await updateWishListMutation.mutateAsync(data);
+        <WishListItemUpdate
+          values={ids}
+          onUpdate={async (input) => {
+            if (ids.length == 1) await updateMutation.mutateAsync(input);
+            else await updateMultipleMutation.mutateAsync({ ids, input: { ...input, id: -1 } });
             modals.close(id);
           }}
         />
       ),
-    });
-  };
-
-  const OpenUpdateModal = (_items: TauriTypes.UpdateStockItem[]) => {
-    modals.open({
-      title: useTranslatePrompt("update_bulk.title"),
-      children: <></>,
     });
   };
 
@@ -74,10 +81,20 @@ export const useStockModals = ({ useTranslatePrompt, updateWishListMutation, del
       title: useTranslateCommon("prompts.delete_item.title"),
       children: <Text size="sm">{useTranslateCommon("prompts.delete_item.message", { count: 1 })}</Text>,
       labels: { confirm: useTranslateCommon("prompts.delete_item.confirm"), cancel: useTranslateCommon("prompts.delete_item.cancel") },
-      onConfirm: async () => await deleteWishListMutation.mutateAsync(id),
+      onConfirm: async () => await deleteMutation.mutateAsync(id),
     });
   };
-
+  const OpenDeleteMultipleModal = (ids: number[]) => {
+    modals.openConfirmModal({
+      title: useTranslateCommon("prompts.delete_multiple_items.title"),
+      children: <Text size="sm">{useTranslateCommon("prompts.delete_multiple_items.message", { count: ids.length })}</Text>,
+      labels: {
+        confirm: useTranslateCommon("prompts.delete_multiple_items.confirm"),
+        cancel: useTranslateCommon("prompts.delete_multiple_items.cancel"),
+      },
+      onConfirm: async () => await deleteMultipleMutation.mutateAsync(ids),
+    });
+  };
   const OpenBoughtModal = (stock: TauriTypes.WishListItem) => {
     modals.openContextModal({
       modal: "prompt",
@@ -97,7 +114,7 @@ export const useStockModals = ({ useTranslatePrompt, updateWishListMutation, del
         onConfirm: async (data: { bought: number }) => {
           if (!stock) return;
           const { bought } = data;
-          await boughtWishListMutation.mutateAsync({ id: stock.id, wfm_url: stock.wfm_url, sub_type: stock.sub_type, price: bought, quantity: 1 });
+          await boughtMutation.mutateAsync({ id: stock.id, wfm_url: stock.wfm_url, sub_type: stock.sub_type, price: bought, quantity: 1 });
         },
         onCancel: (id: string) => modals.close(id),
       },
@@ -107,8 +124,9 @@ export const useStockModals = ({ useTranslatePrompt, updateWishListMutation, del
   return {
     OpenMinimumPriceModal,
     OpenInfoModal,
-    OpenUpdateModal,
+    OpenUpdateMultipleModal,
     OpenDeleteModal,
+    OpenDeleteMultipleModal,
     OpenBoughtModal,
   };
 };

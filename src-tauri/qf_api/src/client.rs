@@ -280,7 +280,6 @@ impl Client {
                             Ok(r) => error.set_error(r),
                             Err(e) => return Err(ApiError::ParsingError(error, e)),
                         };
-
                         if error.error.error == "banned" {
                             let ban = match serde_json::from_str::<ResponseBanError>(&body) {
                                 Ok(r) => r,

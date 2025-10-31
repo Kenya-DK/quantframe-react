@@ -1,68 +1,9 @@
-import { useMutation } from "@tanstack/react-query";
-import { notifications } from "@mantine/notifications";
 import { TauriTypes } from "$types";
 import api from "@api/index";
-import { useTranslateCommon } from "../../../../hooks/useTranslate.hook";
+import { createGenericMutation, MutationHooks } from "@utils/genericMutation.helper";
 
-interface MutationHooks {
-  useTranslateSuccess: (key: string, context?: { [key: string]: any }) => string;
-  useTranslateErrors: (key: string, context?: { [key: string]: any }) => string;
-  refetchQueries: (refetchStatus?: boolean) => void;
-  setLoadingRows: (callback: (prev: string[]) => string[]) => void;
-}
-
-// Generic mutation creator function
-const createGenericMutation = <TData, TVariables>(
-  config: {
-    mutationFn: (data: TVariables) => Promise<TData>;
-    successKey: string;
-    errorKey: string;
-    getLoadingId?: (variables: TVariables) => string | string[];
-    getSuccessMessage?: (data: TData, variables: TVariables) => { [key: string]: any };
-  },
-  hooks: MutationHooks
-) => {
-  return useMutation({
-    mutationFn: config.mutationFn,
-    onMutate: config.getLoadingId
-      ? (variables: TVariables) => {
-          const loadingIds = config.getLoadingId!(variables);
-          const ids = Array.isArray(loadingIds) ? loadingIds : [loadingIds];
-          hooks.setLoadingRows((prev: string[]) => [...prev, ...ids]);
-        }
-      : undefined,
-    onSettled: config.getLoadingId
-      ? (_data: TData | undefined, _error: any, variables: TVariables) => {
-          const loadingIds = config.getLoadingId!(variables);
-          const ids = Array.isArray(loadingIds) ? loadingIds : [loadingIds];
-          hooks.setLoadingRows((prev: string[]) => prev.filter((id: string) => !ids.includes(id)));
-        }
-      : undefined,
-    onSuccess: (data: TData, variables: TVariables) => {
-      let refetchStatusString = ["create_stock"];
-      hooks.refetchQueries(refetchStatusString.includes(config.successKey));
-      notifications.show({
-        title: useTranslateCommon(`notifications.${config.successKey}.success.title`),
-        message: useTranslateCommon(
-          `notifications.${config.successKey}.success.message`,
-          config.getSuccessMessage ? config.getSuccessMessage(data, variables) : {}
-        ),
-        color: "green.7",
-      });
-    },
-    onError: (e: any) => {
-      console.error(e);
-      notifications.show({
-        title: useTranslateCommon(`notifications.${config.errorKey}.title`),
-        message: useTranslateCommon(`notifications.${config.errorKey}.message`),
-        color: "red.7",
-      });
-    },
-  });
-};
-
-export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, refetchQueries, setLoadingRows }: MutationHooks) => {
-  const hooks = { useTranslateSuccess, useTranslateErrors, refetchQueries, setLoadingRows };
+export const useStockMutations = ({ refetchQueries, setLoadingRows }: MutationHooks) => {
+  const hooks = { refetchQueries, setLoadingRows };
   const exportMutation = createGenericMutation(
     {
       mutationFn: (data: TauriTypes.StockItemControllerGetListParams) => api.stock_riven.exportJson(data),
@@ -72,7 +13,7 @@ export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, ref
     },
     hooks
   );
-  const createStockMutation = createGenericMutation(
+  const createMutation = createGenericMutation(
     {
       mutationFn: (data: TauriTypes.CreateStockRiven) => api.stock_riven.create(data),
       successKey: "create_stock_riven",
@@ -82,7 +23,7 @@ export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, ref
     hooks
   );
 
-  const updateStockMutation = createGenericMutation(
+  const updateMutation = createGenericMutation(
     {
       mutationFn: (data: TauriTypes.UpdateStockRiven) => api.stock_riven.update(data),
       successKey: "update_stock_riven",
@@ -92,8 +33,18 @@ export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, ref
     },
     hooks
   );
-
-  const sellStockMutation = createGenericMutation(
+  const updateMultipleMutation = createGenericMutation(
+    {
+      mutationFn: (data: { ids: number[]; input: TauriTypes.UpdateStockRiven }) => api.stock_riven.updateMultiple(data.ids, data.input),
+      successKey: "update_stock_riven",
+      errorKey: "update_stock_riven",
+      isMultiple: (variables: { ids: number[]; input: TauriTypes.UpdateStockItem }) => variables.ids.length > 1,
+      getLoadingId: (variables: { ids: number[]; input: TauriTypes.UpdateStockItem }) => variables.ids.map((id) => `${id}`),
+      getSuccessMessage: (data: any) => ({ count: data.length }),
+    },
+    hooks
+  );
+  const sellMutation = createGenericMutation(
     {
       mutationFn: (data: TauriTypes.SellStockRiven) => api.stock_riven.sell(data),
       successKey: "sell_stock_riven",
@@ -103,8 +54,8 @@ export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, ref
     },
     hooks
   );
-  44;
-  const deleteStockMutation = createGenericMutation(
+
+  const deleteMutation = createGenericMutation(
     {
       mutationFn: (id: number) => api.stock_riven.delete(id),
       successKey: "delete_stock_riven",
@@ -114,12 +65,24 @@ export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, ref
     },
     hooks
   );
-
+  const deleteMultipleMutation = createGenericMutation(
+    {
+      mutationFn: (ids: number[]) => api.stock_riven.deleteMultiple(ids),
+      successKey: "delete_stock_riven",
+      errorKey: "delete_stock_riven",
+      isMultiple: (variables: number[]) => variables.length > 1,
+      getLoadingId: (variables: number[]) => variables.map((id) => `${id}`),
+      getSuccessMessage: (data: any) => ({ count: data }),
+    },
+    hooks
+  );
   return {
     exportMutation,
-    createStockMutation,
-    updateStockMutation,
-    sellStockMutation,
-    deleteStockMutation,
+    createMutation,
+    updateMutation,
+    updateMultipleMutation,
+    sellMutation,
+    deleteMutation,
+    deleteMultipleMutation,
   };
 };
