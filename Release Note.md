@@ -2,8 +2,11 @@
 
 - ✨ Add bulk update/delete for stock items, stock rivens and wishlists
 - ✨ Add user name column to the transactions data grid
+- 🛠️ Fix minimum SMA and minimum profit was resetting
 
 ## TODO's
+
+- Add listed price history for stock for buy orders and sell orders
 
 ## Feature's
 

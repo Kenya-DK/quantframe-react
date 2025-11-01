@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
 import { useEffect } from "react";
 import { ItemName } from "@components/DataDisplay/ItemName";
+import { TooltipIcon } from "../../Shared/TooltipIcon";
 
 export type StockItemUpdateProps = {
   values?: number[];
@@ -57,18 +58,21 @@ export function StockItemUpdate({ values, onUpdate }: StockItemUpdateProps) {
           label={useTranslateFields("minimum_sma_label")}
           value={form.values.minimum_sma}
           onChange={(value) => form.setFieldValue("minimum_sma", Number(value))}
+          rightSection={<TooltipIcon label={useTranslateFields("minimum_sma_tooltip")} />}
         />
         <NumberInput
           min={-1}
           label={useTranslateFields("minimum_profit_label")}
           value={form.values.minimum_profit}
           onChange={(value) => form.setFieldValue("minimum_profit", Number(value))}
+          rightSection={<TooltipIcon label={useTranslateFields("minimum_profit_tooltip")} />}
         />
         <NumberInput
           min={-1}
           label={useTranslateFields("minimum_price_label")}
           value={form.values.minimum_price}
           onChange={(value) => form.setFieldValue("minimum_price", Number(value))}
+          rightSection={<TooltipIcon label={useTranslateFields("minimum_price_tooltip")} />}
         />
         <Group
           justify="flex-end"

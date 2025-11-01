@@ -6,6 +6,7 @@ use service::*;
 use utils::*;
 use wf_market::{
     enums::OrderType,
+    errors::ApiError,
     types::{CreateOrderParams, OrderList, OrderWithUser, UpdateOrderParams},
 };
 
@@ -327,12 +328,22 @@ pub async fn progress_order(
                 }
             }
             Err(e) => {
-                return Err(Error::from_wfm(
-                    format!("{}UpdateFail", component),
+                let mut err = Error::from_wfm(
+                    format!("{}::UpdateFail", component),
                     format!("Failed to update order for item {}", order_info.item_name),
                     e,
                     get_location!(),
-                ));
+                );
+                if err.cause.contains("Not found") {
+                    err = err.set_log_level(LogLevel::Warning);
+                    err = err.set_message(format!(
+                            "Order for item {} not found during update. It may have already been deleted.",
+                            order_info.item_name
+                        ));
+                    err.log("progress_order.log");
+                    return Ok(());
+                }
+                return Err(err);
             }
         }
     } else if order_info.has_operation("Update") && order_info.has_operation("Delete") {
@@ -349,12 +360,22 @@ pub async fn progress_order(
                 send_event!(UIEvent::RefreshWfmOrders, json!({"source": component}));
             }
             Err(e) => {
-                return Err(Error::from_wfm(
+                let mut err = Error::from_wfm(
                     format!("{}::DeleteFail", component),
                     format!("Failed to delete order for item {}", order_info.item_name),
                     e,
                     get_location!(),
-                ));
+                );
+                if err.cause.contains("NotFound") {
+                    err = err.set_log_level(LogLevel::Warning);
+                    err = err.set_message(format!(
+                            "Order for item {} not found during deletion. It may have already been deleted.",
+                            order_info.item_name
+                        ));
+                    err.log("progress_order.log");
+                    return Ok(());
+                }
+                return Err(err);
             }
         }
     } else if !can_create_order {

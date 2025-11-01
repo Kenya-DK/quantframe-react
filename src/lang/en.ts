@@ -1090,9 +1090,12 @@ export const en = {
           listed: "Listed Prices History",
           bought_label: "Bought",
           minimum_price_label: "Minimum Price",
+          minimum_price_tooltip: "0 = Disabled",
           owned_label: "Owned",
           minimum_sma_label: "Minimum SMA",
+          minimum_sma_tooltip: "0 = Disabled (Use Global Setting), -1 = Ignore SMA",
           minimum_profit_label: "Minimum Profit",
+          minimum_profit_tooltip: "0 = Disabled (Use Global Setting), -1 = Ignore Profit",
         },
       },
       stock_riven_update: {

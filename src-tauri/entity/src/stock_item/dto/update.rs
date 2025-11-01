@@ -77,8 +77,10 @@ impl UpdateStockItem {
         }
         match self.minimum_profit {
             Value(v) => {
-                if v <= 0 {
+                if v == 0 {
                     item.minimum_profit = Set(None)
+                } else if v <= -1 {
+                    item.minimum_profit = Set(Some(v))
                 } else {
                     item.minimum_profit = Set(Some(v))
                 }
@@ -88,8 +90,10 @@ impl UpdateStockItem {
         }
         match self.minimum_sma {
             Value(v) => {
-                if v <= 0 {
+                if v == 0 {
                     item.minimum_sma = Set(None)
+                } else if v <= -1 {
+                    item.minimum_sma = Set(Some(v))
                 } else {
                     item.minimum_sma = Set(Some(v))
                 }
