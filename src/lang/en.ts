@@ -1704,6 +1704,7 @@ export const en = {
               item_type: "Item Type",
               price: "Price",
               created_at: "Created At",
+              user_name: "User Name",
             },
           },
         },

@@ -233,6 +233,11 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
                 ),
               },
               {
+                accessor: "user_name",
+                title: useTranslateDataGridColumns("user_name"),
+                sortable: true,
+              },
+              {
                 accessor: "quantity",
                 title: useTranslateCommon("datatable_columns.quantity.title"),
                 sortable: true,

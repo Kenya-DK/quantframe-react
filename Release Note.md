@@ -1,6 +1,7 @@
 ## Fix/Changes
 
 - ✨ Add bulk update/delete for stock items, stock rivens and wishlists
+- ✨ Add user name column to the transactions data grid
 
 ## TODO's
 
