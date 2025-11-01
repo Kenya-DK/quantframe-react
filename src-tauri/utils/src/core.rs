@@ -66,7 +66,11 @@ pub fn dolog(
         }
     }
 
-    let now = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+    // UTC time format: %Y-%m-%d %H:%M:%S
+    let now = Local::now()
+        .to_utc()
+        .format("%Y-%m-%d %H:%M:%S")
+        .to_string();
     let time = format_square_bracket(&now, options.color);
 
     let elapsed = START_TIME

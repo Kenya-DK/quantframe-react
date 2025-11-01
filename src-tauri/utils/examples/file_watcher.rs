@@ -32,7 +32,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "C:/Users/Kenya/AppData/Local/Warframe/EE.log",
         "C:/Users/Kenya/Desktop/Andet/Coding/Warframe/warframe-data/_cache/WFLogSimulation/EE.log",
     ];
-    let index = 0;
+    let index = 1;
     // C:\Users\Kenya\Desktop\Andet\Coding\Warframe\warframe-data\_cache\WFLogSimulation\EE.log
     // C:\Users\Kenya\AppData\Local\Warframe\EE.log
     let watcher = FileWatcher::new(paths[index]);
@@ -44,8 +44,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Ok(_) => println!("File watcher finished successfully"),
         Err(e) => println!("File watcher error: {}", e),
     }
-    loop {
-        thread::sleep(Duration::from_secs(60));
-        watcher.set_path(paths[1]);
-    }
+    // loop {
+    //     watcher.set_path(paths[1]);
+    // }
+    thread::sleep(Duration::from_secs(6000));
+    Ok(())
 }

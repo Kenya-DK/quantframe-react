@@ -87,8 +87,31 @@ impl FileWatcher {
             let path = { self.path.lock().unwrap().clone() };
 
             if Path::new(&path).exists() {
-                let mut file = File::open(&path)?;
-                let current_file_size = std::fs::metadata(&path)?.len();
+                let mut file = if let Ok(f) = File::open(&path) {
+                    f
+                } else {
+                    warning(
+                        "FileWatcher",
+                        &format!("Failed to open file: {}, retrying... in 5 seconds", path),
+                        &LoggerOptions::default(),
+                    );
+                    thread::sleep(Duration::from_secs(5));
+                    continue;
+                };
+                let current_file_size = if let Ok(metadata) = file.metadata() {
+                    metadata.len()
+                } else {
+                    warning(
+                        "FileWatcher",
+                        &format!(
+                            "Failed to get metadata for file: {}, retrying... in 5 seconds",
+                            path
+                        ),
+                        &LoggerOptions::default(),
+                    );
+                    thread::sleep(Duration::from_secs(5));
+                    continue;
+                };
                 let mut pos = self.last_pos.lock().unwrap();
 
                 if (*pos > current_file_size || current_file_size < *pos) && current_file_size != 0
@@ -152,9 +175,11 @@ impl FileWatcher {
             } else {
                 warning(
                     "FileWatcher",
-                    &format!("File not found: {}", path),
+                    &format!("File not found: {}, retrying... in 5 seconds", path),
                     &LoggerOptions::default(),
                 );
+                // Sleep longer if file does not exist 5 seconds
+                thread::sleep(Duration::from_secs(5));
             }
 
             thread::sleep(Duration::from_millis(1));
