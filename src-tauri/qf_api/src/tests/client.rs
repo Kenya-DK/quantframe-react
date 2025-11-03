@@ -2,8 +2,8 @@ use crate::{Client, errors::ApiError};
 
 #[tokio::test]
 async fn print_token() {
-    let user = "656e3f640549dc1d35dae454";
-    let pass = "FMKW6XX5EYZX";
+    let user = "";
+    let pass = "";
 
     assert!(!user.is_empty());
     assert!(!pass.is_empty());
@@ -19,6 +19,7 @@ async fn print_token() {
         "https://example.com",
         "https://example.com",
         "https://example.com",
+        false,
     );
     match client.authentication().signin(&user, &pass).await {
         Ok(_) => {

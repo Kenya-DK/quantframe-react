@@ -40,7 +40,7 @@ export function UpdateAvailableModal({ is_manual, download_url, context, updater
 
   return (
     <Box>
-      <RichTextEditor editor={editor} maw="100%" mah="60vh">
+      <RichTextEditor editor={editor} maw="100%" mah="60vh" style={{ border: "none" }}>
         <RichTextEditor.Content
           mah="55vh"
           style={{

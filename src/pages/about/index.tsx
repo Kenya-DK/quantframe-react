@@ -1,18 +1,14 @@
 import { Box, Text, Center, Group, Stack, CardProps, Card, Button } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { useGetPatreonInfo } from "@hooks/useGetPatreonInfo.hook";
-import { useTranslateComponent, useTranslatePages } from "@hooks/useTranslate.hook";
+import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { useAppContext } from "@contexts/app.context";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBookOpen, faCoffee } from "@fortawesome/free-solid-svg-icons";
 import { faDiscord } from "@fortawesome/free-brands-svg-icons";
 import classes from "./About.module.css";
 import { TextTranslate } from "@components/Shared/TextTranslate";
-import api from "@api/index";
-import { UpdateAvailableModal } from "@components/Modals/UpdateAvailable";
-import { useMutation } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { notifications } from "@mantine/notifications";
+import { useState } from "react";
 
 interface InfoCardProps {
   icon: React.ReactNode;
@@ -42,7 +38,9 @@ const InfoCard = ({ icon, title, cardProps, link, onClick }: InfoCardProps) => {
 
 export default function AboutPage() {
   const patreonInfo = useGetPatreonInfo();
-  const { app_info } = useAppContext();
+  const { app_info, checkForUpdates } = useAppContext();
+  // State
+  const [isCheckingForUpdates, setIsCheckingForUpdates] = useState(false);
   // Translate general
   const useTranslatePage = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslatePages(`about.${key}`, { ...context }, i18Key);
@@ -50,35 +48,6 @@ export default function AboutPage() {
     useTranslatePage(`cards.${key}`, { ...context }, i18Key);
   const useTranslateText = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslatePage(`text.${key}`, { ...context }, i18Key);
-
-  const updateMutation = useMutation({
-    mutationFn: () => api.app.check_for_update(),
-  });
-
-  useEffect(() => {
-    if (!updateMutation.data) return;
-    if (!updateMutation.data.has_update) {
-      notifications.show({
-        message: useTranslatePage("no_updates_available"),
-        color: "green.7",
-      });
-      return;
-    }
-    modals.open({
-      title: useTranslateComponent("modals.update_available.title", { version: updateMutation.data.version }),
-      withCloseButton: false,
-      size: "75%",
-      children: (
-        <UpdateAvailableModal
-          is_manual
-          download_url={updateMutation.data.download}
-          new_version={updateMutation.data.version}
-          app_info={app_info}
-          context={updateMutation.data.message || ""}
-        />
-      ),
-    });
-  }, [updateMutation.data]);
 
   return (
     <Box p={"md"}>
@@ -131,7 +100,17 @@ export default function AboutPage() {
         />
         <Group justify="space-between">
           <TextTranslate size="lg" i18nKey={useTranslateText("disclaimer", undefined, true)} values={{}} />
-          <Button loading={updateMutation.isPending} onClick={() => updateMutation.mutate()}>
+          <Button
+            loading={isCheckingForUpdates}
+            onClick={async () => {
+              if (app_info && checkForUpdates) {
+                setIsCheckingForUpdates(true);
+                await checkForUpdates(app_info, true, true);
+                setIsCheckingForUpdates(false);
+                // if (!rep) useTranslatePage("no_updates_available");
+              }
+            }}
+          >
             {useTranslatePage("button_check_for_updates")}
           </Button>
         </Group>

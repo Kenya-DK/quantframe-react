@@ -108,7 +108,7 @@ async fn setup_manages(app: tauri::AppHandle, use_temp_db: bool) -> Result<(), E
     clear_logs(7)?;
 
     // Clone the fields needed for CacheState before moving app_state
-    let app_state = AppState::new(app.clone(), use_temp_db).await;
+    let app_state = AppState::new(app.clone(), use_temp_db, true).await;
     let qf_client = app_state.qf_client.clone();
     let settings = app_state.settings.clone();
     let user = app_state.user.clone();
@@ -186,7 +186,6 @@ pub fn run() {
             commands::app::app_exit,
             commands::app::app_accept_tos,
             commands::app::app_notify_reset,
-            commands::app::app_check_for_updates,
             // Auth commands
             commands::auth::auth_me,
             commands::auth::auth_login,

@@ -24,6 +24,7 @@ export type AppContextProps = {
   app_error: AppError | undefined;
   alerts: QuantframeApiTypes.AlertDto[];
   settings: TauriTypes.Settings | undefined;
+  checkForUpdates?: (info: TauriTypes.AppInfo, canClose: boolean, notifyIfNone?: boolean) => Promise<void>;
 };
 
 export type AppContextProviderProps = {
@@ -34,6 +35,7 @@ export const AppContext = createContext<AppContextProps>({
   app_info: undefined,
   alerts: [],
   app_error: undefined,
+  checkForUpdates: undefined,
 });
 
 export const useAppContext = () => useContext(AppContext);
@@ -75,12 +77,18 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     });
   };
 
-  const checkForUpdates = async (info: TauriTypes.AppInfo) => {
-    const update = await check();
+  const checkForUpdates = async (info: TauriTypes.AppInfo, canClose: boolean, notifyIfNone?: boolean) => {
+    const update = await check({ headers: { IsPreRelease: info.is_pre_release ? "true" : "false" } });
+    if (notifyIfNone && !update)
+      notifications.show({
+        title: useTranslateCommon("notifications.no_updates_available.title"),
+        color: "violet.7",
+        message: useTranslateCommon("notifications.no_updates_available.message"),
+      });
     if (!update) return;
     modals.open({
       title: useTranslateComponent("modals.update_available.title", { version: update.version }),
-      withCloseButton: false,
+      withCloseButton: canClose,
       closeOnClickOutside: false,
       closeOnEscape: false,
       size: "75%",
@@ -139,7 +147,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
 
   useEffect(() => {
     if (!app_info) return;
-    checkForUpdates(app_info);
+    checkForUpdates(app_info, true);
     checkForTosUpdates(app_info);
   }, [app_info]);
 
@@ -167,7 +175,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     return () => {};
   }, []);
   return (
-    <AppContext.Provider value={{ settings, alerts: alerts?.results || [], app_info: app_info, app_error: error }}>
+    <AppContext.Provider value={{ settings, alerts: alerts?.results || [], app_info: app_info, app_error: error, checkForUpdates }}>
       <SplashScreen opened={loading} text={useTranslateContexts(`app.${startingUp.i18n_key}`, startingUp.values)} />
       {!loading && (
         <AuthContextProvider>

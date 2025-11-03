@@ -74,6 +74,7 @@ export namespace TauriTypes {
     name: string;
     version: string;
     is_dev: boolean;
+    is_pre_release: boolean;
     tos_uuid: string;
     use_temp_db: boolean;
     patreon_usernames: string[];

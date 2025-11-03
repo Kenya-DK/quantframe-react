@@ -148,6 +148,10 @@ export const en = {
         error: { title: "Export Data Error", message: "An error occurred while trying to export the data." },
         success: { title: "Export Data Success", message: "The data has been successfully exported to {{path}}." },
       },
+      no_updates_available: {
+        title: "No Updates Available",
+        message: "You are already using the latest version.",
+      },
     },
     datatable_columns: {
       list_price: "Listed",
@@ -1443,7 +1447,6 @@ export const en = {
           title: "Wiki/Guide",
         },
       },
-      no_updates_available: "No updates available, you are running the latest version",
       text: {
         version: "Version: <blue>{{version}}</blue>  Made with ❤️ in 🇩🇰. © 2023-{{year}} Kenya-DK. All rights reserved ",
         patreon_thanks: " A special thanks to the Patreon 'Quantframe Users' supporters for making Quantframe possible: <blue>{{users}}</blue>.",

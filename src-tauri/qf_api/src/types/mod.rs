@@ -7,9 +7,6 @@ pub use alert::*;
 pub mod paginated;
 pub use paginated::*;
 
-pub mod manual_update;
-pub use manual_update::*;
-
 pub mod item_price;
 pub use item_price::*;
 

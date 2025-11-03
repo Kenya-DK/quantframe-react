@@ -6,7 +6,6 @@ use service::*;
 use utils::*;
 use wf_market::{
     enums::OrderType,
-    errors::ApiError,
     types::{CreateOrderParams, OrderList, OrderWithUser, UpdateOrderParams},
 };
 

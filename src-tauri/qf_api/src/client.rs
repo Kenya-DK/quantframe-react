@@ -67,6 +67,7 @@ pub struct Client {
     wfm_platform: String,
     wfm_username: String,
     wfm_id: String,
+    is_pre_release: bool,
     limiter: Arc<RateLimiter<NotKeyed, InMemoryState, DefaultClock>>,
     callbacks: Arc<Mutex<HashMap<String, Vec<ClientCallback>>>>,
     // Routes
@@ -95,6 +96,7 @@ impl Client {
                     wfm_platform: self.wfm_platform.clone(),
                     wfm_username: self.wfm_username.clone(),
                     wfm_id: self.wfm_id.clone(),
+                    is_pre_release: self.is_pre_release.clone(),
                     limiter: self.limiter.clone(),
                     callbacks: self.callbacks.clone(),
                     // Initialize the routes with the new client
@@ -140,6 +142,7 @@ impl Client {
         wfm_platform: &str,
         wfm_username: &str,
         wfm_id: &str,
+        is_pre_release: bool,
     ) -> Self {
         Self {
             self_arc: OnceLock::new(),
@@ -153,6 +156,7 @@ impl Client {
             wfm_platform: wfm_platform.to_string(),
             wfm_username: wfm_username.to_string(),
             wfm_id: wfm_id.to_string(),
+            is_pre_release,
             limiter: build_limiter(REQUESTS_PER_SECOND).into(),
             callbacks: Arc::new(Mutex::new(HashMap::new())),
             // Initialize the routes with the new client
@@ -199,6 +203,10 @@ impl Client {
         default_headers.insert("WFMPlatform", self.wfm_platform.parse().unwrap());
         default_headers.insert("WFMUsername", self.wfm_username.parse().unwrap());
         default_headers.insert("WFMId", self.wfm_id.parse().unwrap());
+        default_headers.insert(
+            "IsPreRelease",
+            self.is_pre_release.to_string().parse().unwrap(),
+        );
         default_headers.insert(
             "User-Agent",
             format!(
@@ -358,34 +366,6 @@ impl Client {
                 }
             }
             Err(_) => Err(ApiError::RequestError(error)),
-        }
-    }
-
-    pub async fn check_updates(
-        &self,
-        target: impl Into<String>,
-        arch: impl Into<String>,
-        version: impl Into<String>,
-    ) -> Result<ManualUpdate, ApiError> {
-        match self
-            .call_api::<ManualUpdate>(
-                Method::GET,
-                format!(
-                    "/manual_update/{}/{}/{}",
-                    target.into(),
-                    arch.into(),
-                    version.into()
-                )
-                .as_str(),
-                None,
-                None,
-                ResponseFormat::Json,
-            )
-            .await
-        {
-            Ok((ApiResponse::Json(update), _, _)) => Ok(update),
-            Err(e) => return Err(e),
-            _ => Err(ApiError::Unknown("Unexpected response format".to_string())),
         }
     }
 

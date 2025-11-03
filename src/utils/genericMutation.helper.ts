@@ -1,7 +1,6 @@
 import { notifications } from "@mantine/notifications";
 import { useMutation } from "@tanstack/react-query";
 import { useTranslateCommon } from "@hooks/useTranslate.hook";
-import { Dispatch, SetStateAction } from "react";
 
 export interface MutationHooks {
   refetchQueries: (refetchStatus?: boolean) => void;
