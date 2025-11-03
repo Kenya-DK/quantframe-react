@@ -2,6 +2,7 @@
 
 - ✨ Add bulk update/delete for stock items, stock rivens and wishlists
 - ✨ Add user name column to the transactions data grid
+- ✨ Made it so you can update from qf (Meb)
 - 🛠️ Fix minimum SMA and minimum profit was resetting
 
 ## TODO's
