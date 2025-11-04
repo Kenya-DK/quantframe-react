@@ -258,16 +258,16 @@ impl Error {
         Ok(masked_content)
     }
 
-    /// Convert this error to a formatted log message
-    /// Automatically truncates context if it's too large for console output (max 2048 chars)
+    /// Convert this error to a formatted log message with custom options
+    /// Automatically truncates context if it's too large for console output (max 2048 chars
     /// Includes stack trace information when available
     ///
     /// # Returns
     /// A formatted string suitable for logging
-    pub fn log(&self, file: impl Into<String>) -> Self {
+    pub fn log_with_options(&self, file: impl Into<String>, options: LoggerOptions) -> Self {
         let mut options = LoggerOptions::default();
         let file_name = file.into();
-        if !file_name.is_empty() {
+        if !file_name.is_empty() && options.file.is_none() {
             options.file = Some(file_name);
         }
         let mut message = format!("{}", self.message);
@@ -341,6 +341,90 @@ impl Error {
             dolog(self.log_level.clone(), &self.component, message, &options);
         }
         self.clone() // Return self for chaining if needed
+    }
+    /// Convert this error to a formatted log message
+    /// Automatically truncates context if it's too large for console output (max 2048 chars)
+    /// Includes stack trace information when available
+    ///
+    /// # Returns
+    /// A formatted string suitable for logging
+    pub fn log(&self, file: impl Into<String>) -> Self {
+        self.log_with_options(file, LoggerOptions::default())
+        // let file_name = file.into();
+        // if !file_name.is_empty() {
+        //     options.file = Some(file_name);
+        // }
+        // let mut message = format!("{}", self.message);
+
+        // if !self.cause.is_empty() {
+        //     message.push_str(&format!(" | Cause: {}", self.cause));
+        // }
+
+        // // Handle location
+        // if let Some(location) = &self.location {
+        //     if location.len() > MAX_LOCATION_LENGTH {
+        //         let truncated_location = format!(
+        //             "{}... [LOCATION TRUNCATED - {} total chars]",
+        //             &location[..MAX_LOCATION_LENGTH.saturating_sub(50)],
+        //             location.len()
+        //         );
+        //         message.push_str(&format!(" | Location: {}", truncated_location));
+        //     } else {
+        //         message.push_str(&format!(" | Location: {}", location));
+        //     }
+        // }
+
+        // if let Some(context) = &self.context {
+        //     let context_str = context.to_string();
+
+        //     if context_str.len() > MAX_CONTEXT_LENGTH {
+        //         // Truncate context for console output but keep full context for file
+        //         let truncated_context = format!(
+        //             "{}... [TRUNCATED - {} total chars]",
+        //             &context_str[..MAX_CONTEXT_LENGTH.saturating_sub(50)],
+        //             context_str.len()
+        //         );
+
+        //         // For console: use truncated context
+        //         if options.console {
+        //             let console_message = format!("{} | Context: {}", message, truncated_context);
+        //             let console_options = LoggerOptions {
+        //                 console: true,
+        //                 file: None,
+        //                 ..options
+        //             };
+        //             dolog(
+        //                 self.log_level.clone(),
+        //                 &self.component,
+        //                 console_message,
+        //                 &console_options,
+        //             );
+        //         }
+
+        //         // For file: use full context (but keep stack truncated for readability)
+        //         if options.file.is_some() {
+        //             let file_message = format!("{} | Context: {}", message, context_str);
+        //             let file_options = LoggerOptions {
+        //                 console: false,
+        //                 ..options.clone()
+        //             };
+        //             dolog(
+        //                 self.log_level.clone(),
+        //                 &self.component,
+        //                 file_message,
+        //                 &file_options,
+        //             );
+        //         }
+        //     } else {
+        //         // Context is small enough, include it normally
+        //         message.push_str(&format!(" | Context: {}", context_str));
+        //         dolog(self.log_level.clone(), &self.component, message, &options);
+        //     }
+        // } else {
+        //     // No context to worry about
+        //     dolog(self.log_level.clone(), &self.component, message, &options);
+        // }
+        // self.clone() // Return self for chaining if needed
     }
 
     /// Check if this is a critical error
