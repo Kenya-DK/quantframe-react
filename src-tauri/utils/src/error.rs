@@ -264,8 +264,8 @@ impl Error {
     ///
     /// # Returns
     /// A formatted string suitable for logging
-    pub fn log_with_options(&self, file: impl Into<String>, options: LoggerOptions) -> Self {
-        let mut options = LoggerOptions::default();
+    pub fn log_with_options(&self, file: impl Into<String>, options: &LoggerOptions) -> Self {
+        let mut options = options.clone();
         let file_name = file.into();
         if !file_name.is_empty() && options.file.is_none() {
             options.file = Some(file_name);
@@ -349,7 +349,7 @@ impl Error {
     /// # Returns
     /// A formatted string suitable for logging
     pub fn log(&self, file: impl Into<String>) -> Self {
-        self.log_with_options(file, LoggerOptions::default())
+        self.log_with_options(file, &LoggerOptions::default())
         // let file_name = file.into();
         // if !file_name.is_empty() {
         //     options.file = Some(file_name);

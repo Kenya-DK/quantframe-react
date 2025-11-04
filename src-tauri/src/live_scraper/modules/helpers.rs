@@ -262,6 +262,7 @@ pub async fn progress_order(
     log_options: &LoggerOptions,
 ) -> Result<(), Error> {
     let can_create_order = wfm_client.order().can_create_order();
+    let file_name = "progress_order.log";
     if order_info.has_operation("Create") && !order_info.has_operation("Delete") && can_create_order
     {
         match wfm_client
@@ -297,7 +298,8 @@ pub async fn progress_order(
                     format!("Failed to create order for item {}", order_info.item_name),
                     e,
                     get_location!(),
-                ));
+                )
+                .log_with_options(file_name, &log_options));
             }
         }
     } else if order_info.has_operation("Update") && !order_info.has_operation("Delete") {
@@ -336,11 +338,13 @@ pub async fn progress_order(
                 if err.cause.contains("Not found") {
                     err = err.set_log_level(LogLevel::Warning);
                     err = err.set_message(format!(
-                            "Order for item {} not found during update. It may have already been deleted.",
-                            order_info.item_name
-                        ));
-                    err.log("progress_order.log");
+                        "Order for item {} not found during update. It may have already been deleted.",
+                        order_info.item_name
+                    ));
+                    err.log_with_options(file_name, &log_options);
                     return Ok(());
+                } else {
+                    err.log_with_options(file_name, &log_options);
                 }
                 return Err(err);
             }
@@ -371,7 +375,7 @@ pub async fn progress_order(
                             "Order for item {} not found during deletion. It may have already been deleted.",
                             order_info.item_name
                         ));
-                    err.log("progress_order.log");
+                    err.log_with_options(file_name, log_options);
                     return Ok(());
                 }
                 return Err(err);

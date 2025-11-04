@@ -1,5 +1,8 @@
 ## Fix/Changes
 
+- 🛠️ Fix a crash when loading chat when stating
+- ✏️ added more logging to error logs to help debug issues with live trader
+
 ## TODO's
 
 - Add listed price history for stock for buy orders and sell orders

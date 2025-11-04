@@ -429,6 +429,17 @@ impl ItemModule {
             let (selected_buy_orders, unselected_buy_orders) =
                 knapsack(buy_orders_list.clone(), max_total_price_cap);
 
+            info(
+                format!("{}KnapsackResult", component),
+                &format!(
+                    "Selected {} buy orders out of {} for item {} based on knapsack algorithm.",
+                    selected_buy_orders.len(),
+                    buy_orders_list.len(),
+                    item_info.name
+                ),
+                &log_options,
+            );
+
             let selected_ids: HashSet<_> = selected_buy_orders.iter().map(|o| &o.2).collect();
 
             if selected_ids.contains(&item_info.wfm_id) {
