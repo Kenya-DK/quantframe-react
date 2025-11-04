@@ -25,7 +25,7 @@ impl MigrationTrait for Migration {
                     .to_owned(),
             )
             .await
-            .unwrap();
+            .ok();
 
         // Fetch all items
         let db = manager.get_connection();

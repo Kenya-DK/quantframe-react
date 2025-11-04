@@ -2,11 +2,12 @@
 
 - 🛠️ Fix a crash when loading chat when stating
 - ✏️ added more logging to error logs to help debug issues with live trader
+- ✏️ Better error info from the wf_market module
+- 🛠️ Fix a crash when starting the app
 
 ## TODO's
 
 - Add listed price history for stock for buy orders and sell orders
-- Add some more logging in progress_buying and progress_selling for stock items
 
 ## Feature's
 
