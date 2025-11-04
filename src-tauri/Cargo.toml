@@ -1,6 +1,6 @@
 [package]
 name = "Quantframe"
-version = "1.4.1"
+version = "1.6.6"
 description = "Quantframe"
 authors = ["Kenya-DK"]
 license = ""
@@ -43,7 +43,7 @@ regex = "1.9.1"
 chrono = "0.4"
 zip = "0.6"
 sha256 = "1.5.0"
-wf-market = { path = "C:/Users/Kenya/Desktop/Andet/Coding/Warframe/wf-market" }
+wf-market = { git = "https://github.com/KibbeWater/wf-market", rev = "33726b1c5efef62931a289484f263bf24f6ee620" }
 
 # Database dependencies
 migration = { path = "./migration" }

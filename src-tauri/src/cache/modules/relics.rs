@@ -3,7 +3,7 @@ use std::{
     sync::{Arc, Mutex, Weak},
 };
 
-use utils::{get_location, info, read_json_file, Error, LoggerOptions};
+use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions};
 
 use crate::cache::*;
 
@@ -23,8 +23,8 @@ impl RelicsModule {
         })
     }
     pub fn load(&self) -> Result<(), Error> {
-        let client = self.client.upgrade().expect("Client should not be dropped");
-        match read_json_file::<Vec<CacheRelics>>(&client.base_path.join(self.path.clone())) {
+        let _client = self.client.upgrade().expect("Client should not be dropped");
+        match read_json_file_optional::<Vec<CacheRelics>>(&self.path) {
             Ok(items) => {
                 let mut items_lock = self.items.lock().unwrap();
                 *items_lock = items;

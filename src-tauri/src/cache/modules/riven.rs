@@ -49,8 +49,8 @@ impl RivenModule {
     }
 
     pub fn load(&self) -> Result<(), Error> {
-        let client = self.client.upgrade().expect("Client should not be dropped");
-        match read_json_file::<CacheRiven>(&client.base_path.join(self.path.clone())) {
+        let _client = self.client.upgrade().expect("Client should not be dropped");
+        match read_json_file_optional::<CacheRiven>(&self.path) {
             Ok(mut items) => {
                 let mut items_lock = self.data.lock().unwrap();
 

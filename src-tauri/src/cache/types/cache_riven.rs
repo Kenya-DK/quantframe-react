@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize, Clone, Debug)]
+#[derive(Deserialize, Serialize, Clone, Debug, Default)]
 pub struct CacheRiven {
     #[serde(rename = "weapons")]
     pub weapons: Vec<CacheRivenWeapon>,

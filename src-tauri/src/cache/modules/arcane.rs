@@ -2,7 +2,7 @@ use std::{
     path::PathBuf,
     sync::{Arc, Mutex, Weak},
 };
-use utils::{get_location, info, read_json_file, Error, LoggerOptions};
+use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions};
 
 use crate::cache::*;
 
@@ -23,8 +23,8 @@ impl ArcaneModule {
         })
     }
     pub fn load(&self) -> Result<(), Error> {
-        let client = self.client.upgrade().expect("Client should not be dropped");
-        match read_json_file::<Vec<CacheArcane>>(&client.base_path.join(self.path.clone())) {
+        let _client = self.client.upgrade().expect("Client should not be dropped");
+        match read_json_file_optional::<Vec<CacheArcane>>(&self.path) {
             Ok(items) => {
                 let mut items_lock = self.items.lock().unwrap();
                 let mut components_lock = self.components.lock().unwrap();

@@ -1,4 +1,4 @@
-use crate::{endpoints::*, enums::*, errors::*, types::*, utils::*};
+use crate::{endpoints::*, enums::*, errors::*, utils::*};
 use governor::{
     RateLimiter,
     clock::DefaultClock,

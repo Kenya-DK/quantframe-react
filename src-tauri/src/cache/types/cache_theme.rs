@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 
-#[derive(Deserialize, Serialize, Clone, Debug)]
+#[derive(Deserialize, Serialize, Clone, Debug, Default)]
 pub struct CacheTheme {
     pub name: String,
     pub author: String,
