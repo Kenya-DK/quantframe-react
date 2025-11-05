@@ -1,6 +1,6 @@
 use std::{
     path::PathBuf,
-    sync::{Arc, Mutex, Weak},
+    sync::{Arc, Mutex},
 };
 
 use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions};
@@ -11,7 +11,6 @@ use crate::cache::*;
 pub struct RelicsModule {
     path: PathBuf,
     items: Mutex<Vec<CacheRelics>>,
-    client: Weak<CacheState>,
 }
 
 impl RelicsModule {
@@ -19,11 +18,9 @@ impl RelicsModule {
         Arc::new(Self {
             path: client.base_path.join("items/Relics.json"),
             items: Mutex::new(Vec::new()),
-            client: Arc::downgrade(&client),
         })
     }
     pub fn load(&self) -> Result<(), Error> {
-        let _client = self.client.upgrade().expect("Client should not be dropped");
         match read_json_file_optional::<Vec<CacheRelics>>(&self.path) {
             Ok(items) => {
                 let mut items_lock = self.items.lock().unwrap();
@@ -53,10 +50,9 @@ impl RelicsModule {
      * Creates a new `RelicsModule` from an existing one, sharing the client.
      * This is useful for cloning modules when the client state changes.
      */
-    pub fn from_existing(old: &RelicsModule, client: Arc<CacheState>) -> Arc<Self> {
+    pub fn from_existing(old: &RelicsModule) -> Arc<Self> {
         Arc::new(Self {
             path: old.path.clone(),
-            client: Arc::downgrade(&client),
             items: Mutex::new(old.items.lock().unwrap().clone()),
         })
     }

@@ -1,6 +1,6 @@
 use std::{
     path::PathBuf,
-    sync::{Arc, Mutex, Weak},
+    sync::{Arc, Mutex},
 };
 
 use regex::Regex;
@@ -19,7 +19,6 @@ use crate::{
 pub struct RivenModule {
     path: PathBuf,
     data: Mutex<CacheRiven>,
-    client: Weak<CacheState>,
 }
 
 impl RivenModule {
@@ -27,7 +26,6 @@ impl RivenModule {
         Arc::new(Self {
             path: client.base_path.join("items/Riven.json"),
             data: Mutex::new(CacheRiven::new()),
-            client: Arc::downgrade(&client),
         })
     }
     pub fn get_items(&self) -> Result<CacheRiven, Error> {
@@ -49,7 +47,6 @@ impl RivenModule {
     }
 
     pub fn load(&self) -> Result<(), Error> {
-        let _client = self.client.upgrade().expect("Client should not be dropped");
         match read_json_file_optional::<CacheRiven>(&self.path) {
             Ok(mut items) => {
                 let mut items_lock = self.data.lock().unwrap();
@@ -198,10 +195,9 @@ impl RivenModule {
      * Creates a new `RivenModule` from an existing one, sharing the client.
      * This is useful for cloning modules when the client state changes.
      */
-    pub fn from_existing(old: &RivenModule, client: Arc<CacheState>) -> Arc<Self> {
+    pub fn from_existing(old: &RivenModule) -> Arc<Self> {
         Arc::new(Self {
             path: old.path.clone(),
-            client: Arc::downgrade(&client),
             data: Mutex::new(old.data.lock().unwrap().clone()),
         })
     }

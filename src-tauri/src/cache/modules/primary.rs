@@ -1,6 +1,6 @@
 use std::{
     path::PathBuf,
-    sync::{Arc, Mutex, Weak},
+    sync::{Arc, Mutex},
 };
 
 use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions};
@@ -12,7 +12,6 @@ pub struct PrimaryModule {
     path: PathBuf,
     items: Mutex<Vec<CachePrimary>>,
     components: Mutex<Vec<CacheItemComponent>>,
-    client: Weak<CacheState>,
 }
 
 impl PrimaryModule {
@@ -21,11 +20,9 @@ impl PrimaryModule {
             path: client.base_path.join("items/Primary.json"),
             items: Mutex::new(Vec::new()),
             components: Mutex::new(Vec::new()),
-            client: Arc::downgrade(&client),
         })
     }
     pub fn load(&self) -> Result<(), Error> {
-        let _client = self.client.upgrade().expect("Client should not be dropped");
         match read_json_file_optional::<Vec<CachePrimary>>(&self.path) {
             Ok(items) => {
                 let mut items_lock = self.items.lock().unwrap();
@@ -66,10 +63,9 @@ impl PrimaryModule {
      * Creates a new `PrimaryModule` from an existing one, sharing the client.
      * This is useful for cloning modules when the client state changes.
      */
-    pub fn from_existing(old: &PrimaryModule, client: Arc<CacheState>) -> Arc<Self> {
+    pub fn from_existing(old: &PrimaryModule) -> Arc<Self> {
         Arc::new(Self {
             path: old.path.clone(),
-            client: Arc::downgrade(&client),
             items: Mutex::new(old.items.lock().unwrap().clone()),
             components: Mutex::new(old.components.lock().unwrap().clone()),
         })

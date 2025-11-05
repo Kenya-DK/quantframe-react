@@ -1,6 +1,6 @@
 use std::{
     path::PathBuf,
-    sync::{Arc, Mutex, Weak},
+    sync::{Arc, Mutex},
 };
 
 use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions};
@@ -11,7 +11,6 @@ use crate::cache::*;
 pub struct FishModule {
     path: PathBuf,
     items: Mutex<Vec<CacheFish>>,
-    client: Weak<CacheState>,
 }
 
 impl FishModule {
@@ -19,11 +18,9 @@ impl FishModule {
         Arc::new(Self {
             path: client.base_path.join("items/Fish.json"),
             items: Mutex::new(Vec::new()),
-            client: Arc::downgrade(&client),
         })
     }
     pub fn load(&self) -> Result<(), Error> {
-        let _client = self.client.upgrade().expect("Client should not be dropped");
         match read_json_file_optional::<Vec<CacheFish>>(&self.path) {
             Ok(items) => {
                 let mut items_lock = self.items.lock().unwrap();
@@ -53,10 +50,9 @@ impl FishModule {
      * Creates a new `FishModule` from an existing one, sharing the client.
      * This is useful for cloning modules when the client state changes.
      */
-    pub fn from_existing(old: &FishModule, client: Arc<CacheState>) -> Arc<Self> {
+    pub fn from_existing(old: &FishModule) -> Arc<Self> {
         Arc::new(Self {
             path: old.path.clone(),
-            client: Arc::downgrade(&client),
             items: Mutex::new(old.items.lock().unwrap().clone()),
         })
     }
