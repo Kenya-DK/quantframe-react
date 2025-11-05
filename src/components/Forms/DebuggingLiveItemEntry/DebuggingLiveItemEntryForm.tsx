@@ -5,7 +5,6 @@ import { TauriTypes } from "$types";
 import { SelectTradableItem } from "@components/Forms/SelectTradableItem";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import classes from "./DebuggingLiveItemEntryForm.module.css";
 
 export type DebuggingLiveItemEntryFormProps = {
   onSubmit: (values: TauriTypes.DebuggingLiveItemEntry) => void;
@@ -99,7 +98,7 @@ export function DebuggingLiveItemEntryForm({ disabled, boxProps, onSubmit, initi
             allowNegative={false}
           />
         </Group>
-        <Group gap="md" align="end" className={classes.formGroup}>
+        <Group gap="md" align="end">
           {/* Buy Quantity */}
           <NumberInput
             label={useTranslateFormFields("buy_quantity.label")}

@@ -1,6 +1,5 @@
 import { ActionIcon, Box, Group, Paper, Tooltip } from "@mantine/core";
 import { TauriTypes } from "$types";
-import classes from "./RivenAttributes.module.css";
 import { RivenAttribute } from "../RivenAttribute/RivenAttribute";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faInfo } from "@fortawesome/free-solid-svg-icons";
@@ -13,7 +12,7 @@ export function RivenAttributes({ attributes, tooltip }: RivenAttributesProps) {
   // Functions
 
   return (
-    <Group mt={5} classNames={classes} p={5}>
+    <Group mt={5} p={5}>
       {tooltip ? (
         <Tooltip
           withArrow
