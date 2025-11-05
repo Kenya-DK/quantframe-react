@@ -57,6 +57,16 @@ pub fn mask_sensitive_data(data: &mut Map<String, Value>, properties: &[&str]) {
     }
 }
 
+pub fn read_json_file_optional<T: serde::de::DeserializeOwned + Default>(path: &PathBuf) -> Result<T, Error> {
+    // Return default value if file doesn't exist
+    if !path.exists() {
+        eprintln!("[WARNING] File does not exist, returning default: {}", path.display());
+        return Ok(T::default());
+    }
+
+    read_json_file(path)
+}
+
 pub fn read_json_file<T: serde::de::DeserializeOwned>(path: &PathBuf) -> Result<T, Error> {
     // Check if the file exists
     if !path.exists() {

@@ -1,10 +1,10 @@
 use std::{
     collections::HashMap,
     path::PathBuf,
-    sync::{Arc, Mutex, Weak},
+    sync::{Arc, Mutex},
 };
 
-use utils::{get_location, info, read_json_file, Error, LoggerOptions};
+use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions};
 
 use crate::{
     cache::{client::CacheState, types::CacheTradableItem},
@@ -15,7 +15,6 @@ use crate::{
 pub struct TradableItemModule {
     path: PathBuf,
     items: Mutex<Vec<CacheTradableItem>>,
-    client: Weak<CacheState>,
 }
 
 impl TradableItemModule {
@@ -23,7 +22,6 @@ impl TradableItemModule {
         Arc::new(Self {
             path: client.base_path.join("items/TradableItems.json"),
             items: Mutex::new(Vec::new()),
-            client: Arc::downgrade(&client),
         })
     }
     pub fn get_items(&self) -> Result<Vec<CacheTradableItem>, Error> {
@@ -35,8 +33,7 @@ impl TradableItemModule {
         Ok(items)
     }
     pub fn load(&self) -> Result<(), Error> {
-        let client = self.client.upgrade().expect("Client should not be dropped");
-        match read_json_file::<Vec<CacheTradableItem>>(&client.base_path.join(self.path.clone())) {
+        match read_json_file_optional::<Vec<CacheTradableItem>>(&self.path) {
             Ok(items) => {
                 let mut items_lock = self.items.lock().unwrap();
                 *items_lock = items;
@@ -121,10 +118,9 @@ impl TradableItemModule {
      * Creates a new `TradableItemModule` from an existing one, sharing the client.
      * This is useful for cloning modules when the client state changes.
      */
-    pub fn from_existing(old: &TradableItemModule, client: Arc<CacheState>) -> Arc<Self> {
+    pub fn from_existing(old: &TradableItemModule) -> Arc<Self> {
         Arc::new(Self {
             path: old.path.clone(),
-            client: Arc::downgrade(&client),
             items: Mutex::new(old.items.lock().unwrap().clone()),
         })
     }

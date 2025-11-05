@@ -12,7 +12,7 @@ use crate::{
 };
 use entity::dto::SubType;
 use qf_api::Client as QFClient;
-use utils::{find_by, get_location, info, read_json_file, Error, LoggerOptions};
+use utils::{find_by, get_location, info, read_json_file_optional, Error, LoggerOptions};
 
 #[derive(Debug)]
 pub struct ItemPriceModule {
@@ -58,7 +58,7 @@ impl ItemPriceModule {
         qf_client: &QFClient,
         price_require_update: bool,
     ) -> Result<(), Error> {
-        let client = self.client.upgrade().expect("Client should not be dropped");
+        let _client = self.client.upgrade().expect("Client should not be dropped");
         if price_require_update {
             match self.extract(qf_client).await {
                 Ok(()) => {
@@ -74,7 +74,7 @@ impl ItemPriceModule {
                 }
             }
         }
-        match read_json_file::<Vec<ItemPriceInfo>>(&client.base_path.join(self.path.clone())) {
+        match read_json_file_optional::<Vec<ItemPriceInfo>>(&self.path) {
             Ok(items) => {
                 let mut items_lock = self.items.lock().unwrap();
                 *items_lock = items;
@@ -101,6 +101,20 @@ impl ItemPriceModule {
                 get_location!(),
             )
         })?;
+        
+        // Create parent directory if it doesn't exist
+        if let Some(parent) = self.path.parent() {
+            std::fs::create_dir_all(parent).map_err(|e| {
+                Error::from_io(
+                    "Cache:ItemPrice",
+                    &parent.to_path_buf(),
+                    "Failed to create parent directory",
+                    e,
+                    get_location!(),
+                )
+            })?;
+        }
+        
         let mut file = File::create(self.path.clone()).map_err(|e| {
             Error::from_io(
                 "Cache:ItemPrice",

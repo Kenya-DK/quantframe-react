@@ -439,92 +439,92 @@ impl CacheState {
             let _ = self.all_items_module.set(new);
         }
         if let Some(old) = self.arcane_module.get().cloned() {
-            let new = ArcaneModule::from_existing(&old, self.arc());
+            let new = ArcaneModule::from_existing(&old);
             self.arcane_module = OnceLock::new();
             let _ = self.arcane_module.set(new);
         }
         if let Some(old) = self.archgun_module.get().cloned() {
-            let new = ArchGunModule::from_existing(&old, self.arc());
+            let new = ArchGunModule::from_existing(&old);
             self.archgun_module = OnceLock::new();
             let _ = self.archgun_module.set(new);
         }
         if let Some(old) = self.archmelee_module.get().cloned() {
-            let new = ArchMeleeModule::from_existing(&old, self.arc());
+            let new = ArchMeleeModule::from_existing(&old);
             self.archmelee_module = OnceLock::new();
             let _ = self.archmelee_module.set(new);
         }
         if let Some(old) = self.archwing_module.get().cloned() {
-            let new = ArchwingModule::from_existing(&old, self.arc());
+            let new = ArchwingModule::from_existing(&old);
             self.archwing_module = OnceLock::new();
             let _ = self.archwing_module.set(new);
         }
         if let Some(old) = self.fish_module.get().cloned() {
-            let new = FishModule::from_existing(&old, self.arc());
+            let new = FishModule::from_existing(&old);
             self.fish_module = OnceLock::new();
             let _ = self.fish_module.set(new);
         }
         if let Some(old) = self.melee_module.get().cloned() {
-            let new = MeleeModule::from_existing(&old, self.arc());
+            let new = MeleeModule::from_existing(&old);
             self.melee_module = OnceLock::new();
             let _ = self.melee_module.set(new);
         }
         if let Some(old) = self.misc_module.get().cloned() {
-            let new = MiscModule::from_existing(&old, self.arc());
+            let new = MiscModule::from_existing(&old);
             self.misc_module = OnceLock::new();
             let _ = self.misc_module.set(new);
         }
         if let Some(old) = self.mod_module.get().cloned() {
-            let new = ModModule::from_existing(&old, self.arc());
+            let new = ModModule::from_existing(&old);
             self.mod_module = OnceLock::new();
             let _ = self.mod_module.set(new);
         }
         if let Some(old) = self.pet_module.get().cloned() {
-            let new = PetModule::from_existing(&old, self.arc());
+            let new = PetModule::from_existing(&old);
             self.pet_module = OnceLock::new();
             let _ = self.pet_module.set(new);
         }
         if let Some(old) = self.primary_module.get().cloned() {
-            let new = PrimaryModule::from_existing(&old, self.arc());
+            let new = PrimaryModule::from_existing(&old);
             self.primary_module = OnceLock::new();
             let _ = self.primary_module.set(new);
         }
         if let Some(old) = self.relics_module.get().cloned() {
-            let new = RelicsModule::from_existing(&old, self.arc());
+            let new = RelicsModule::from_existing(&old);
             self.relics_module = OnceLock::new();
             let _ = self.relics_module.set(new);
         }
         if let Some(old) = self.resource_module.get().cloned() {
-            let new = ResourceModule::from_existing(&old, self.arc());
+            let new = ResourceModule::from_existing(&old);
             self.resource_module = OnceLock::new();
             let _ = self.resource_module.set(new);
         }
         if let Some(old) = self.riven_module.get().cloned() {
-            let new = RivenModule::from_existing(&old, self.arc());
+            let new = RivenModule::from_existing(&old);
             self.riven_module = OnceLock::new();
             let _ = self.riven_module.set(new);
         }
         if let Some(old) = self.secondary_module.get().cloned() {
-            let new = SecondaryModule::from_existing(&old, self.arc());
+            let new = SecondaryModule::from_existing(&old);
             self.secondary_module = OnceLock::new();
             let _ = self.secondary_module.set(new);
         }
         if let Some(old) = self.sentinel_module.get().cloned() {
-            let new = SentinelModule::from_existing(&old, self.arc());
+            let new = SentinelModule::from_existing(&old);
             self.sentinel_module = OnceLock::new();
             let _ = self.sentinel_module.set(new);
         }
         if let Some(old) = self.skin_module.get().cloned() {
-            let new = SkinModule::from_existing(&old, self.arc());
+            let new = SkinModule::from_existing(&old);
             self.skin_module = OnceLock::new();
             let _ = self.skin_module.set(new);
         }
         if let Some(old) = self.tradable_item_module.get().cloned() {
-            let new = TradableItemModule::from_existing(&old, self.arc());
+            let new = TradableItemModule::from_existing(&old);
             self.tradable_item_module = OnceLock::new();
             let _ = self.tradable_item_module.set(new);
         }
         if let Some(old) = self.warframe_module.get().cloned() {
-            let new = WarframeModule::from_existing(&old, self.arc());
+            let new = WarframeModule::from_existing(&old);
             self.warframe_module = OnceLock::new();
             let _ = self.warframe_module.set(new);
         }

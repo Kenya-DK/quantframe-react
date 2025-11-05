@@ -5,7 +5,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 use tauri_plugin_dialog::DialogExt;
-use utils::{get_location, info, read_json_file, Error, LoggerOptions};
+use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions};
 
 use crate::{
     cache::{client::CacheState, types::CacheTheme},
@@ -37,15 +37,23 @@ impl ThemeModule {
         self.path.clone()
     }
     pub fn load(&self) -> Result<(), Error> {
-        if !self.path.exists() && !self.path.is_dir() {
+        if !self.path.exists() {
             info(
                 "Cache:Theme:load",
                 "Theme cache path does not exist, creating it.",
                 &LoggerOptions::default(),
             );
+            std::fs::create_dir_all(&self.path).map_err(|e| {
+                Error::from(e)
+                    .with_location(get_location!())
+                    .set_message("Failed to create theme cache directory")
+            })?;
+        }
+
+        if !self.path.is_dir() {
             return Err(Error::new(
                 "Cache:Theme:load",
-                "Theme cache path does not exist or is not a directory.",
+                "Theme cache path exists but is not a directory.",
                 get_location!(),
             ));
         }
@@ -61,7 +69,7 @@ impl ThemeModule {
         items_lock.clear(); // Clear existing items before loading new ones
         for file in files {
             let file = file.map_err(|e| Error::from(e).with_location(get_location!()))?;
-            match read_json_file::<CacheTheme>(&file.path()) {
+            match read_json_file_optional::<CacheTheme>(&file.path()) {
                 Ok(items) => {
                     items_lock.push(items);
                     info(

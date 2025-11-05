@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "Quantframe"
-version = "1.4.1"
+version = "1.6.6"
 dependencies = [
  "chrono",
  "entity",
@@ -7301,6 +7301,7 @@ checksum = "a751b3277700db47d3e574514de2eced5e54dc8a5436a3bf7a0b248b2cee16f3"
 [[package]]
 name = "wf-market"
 version = "0.1.11"
+source = "git+https://github.com/KibbeWater/wf-market?rev=33726b1c5efef62931a289484f263bf24f6ee620#33726b1c5efef62931a289484f263bf24f6ee620"
 dependencies = [
  "chrono",
  "futures-util",
@@ -7347,7 +7348,7 @@ version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf221c93e13a30d793f7645a0e7762c55d169dbb0a49671918a2319d289b10bb"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]

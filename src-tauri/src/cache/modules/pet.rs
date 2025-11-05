@@ -1,9 +1,9 @@
 use std::{
     path::PathBuf,
-    sync::{Arc, Mutex, Weak},
+    sync::{Arc, Mutex},
 };
 
-use utils::{get_location, info, read_json_file, Error, LoggerOptions};
+use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions};
 
 use crate::cache::*;
 
@@ -11,7 +11,6 @@ use crate::cache::*;
 pub struct PetModule {
     path: PathBuf,
     items: Mutex<Vec<CachePet>>,
-    client: Weak<CacheState>,
 }
 
 impl PetModule {
@@ -19,12 +18,10 @@ impl PetModule {
         Arc::new(Self {
             path: client.base_path.join("items/Pets.json"),
             items: Mutex::new(Vec::new()),
-            client: Arc::downgrade(&client),
         })
     }
     pub fn load(&self) -> Result<(), Error> {
-        let client = self.client.upgrade().expect("Client should not be dropped");
-        match read_json_file::<Vec<CachePet>>(&client.base_path.join(self.path.clone())) {
+        match read_json_file_optional::<Vec<CachePet>>(&self.path) {
             Ok(items) => {
                 let mut items_lock = self.items.lock().unwrap();
                 *items_lock = items;
@@ -53,10 +50,9 @@ impl PetModule {
      * Creates a new `PetModule` from an existing one, sharing the client.
      * This is useful for cloning modules when the client state changes.
      */
-    pub fn from_existing(old: &PetModule, client: Arc<CacheState>) -> Arc<Self> {
+    pub fn from_existing(old: &PetModule) -> Arc<Self> {
         Arc::new(Self {
             path: old.path.clone(),
-            client: Arc::downgrade(&client),
             items: Mutex::new(old.items.lock().unwrap().clone()),
         })
     }

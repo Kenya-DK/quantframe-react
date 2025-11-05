@@ -1,8 +1,8 @@
 use std::{
     path::PathBuf,
-    sync::{Arc, Mutex, Weak},
+    sync::{Arc, Mutex},
 };
-use utils::{get_location, info, read_json_file, Error, LoggerOptions};
+use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions};
 
 use crate::cache::*;
 
@@ -11,7 +11,6 @@ pub struct ArcaneModule {
     path: PathBuf,
     items: Mutex<Vec<CacheArcane>>,
     components: Mutex<Vec<CacheItemComponent>>,
-    client: Weak<CacheState>,
 }
 impl ArcaneModule {
     pub fn new(client: Arc<CacheState>) -> Arc<Self> {
@@ -19,12 +18,10 @@ impl ArcaneModule {
             path: client.base_path.join("items/Arcanes.json"),
             items: Mutex::new(Vec::new()),
             components: Mutex::new(Vec::new()),
-            client: Arc::downgrade(&client),
         })
     }
     pub fn load(&self) -> Result<(), Error> {
-        let client = self.client.upgrade().expect("Client should not be dropped");
-        match read_json_file::<Vec<CacheArcane>>(&client.base_path.join(self.path.clone())) {
+        match read_json_file_optional::<Vec<CacheArcane>>(&self.path) {
             Ok(items) => {
                 let mut items_lock = self.items.lock().unwrap();
                 let mut components_lock = self.components.lock().unwrap();
@@ -64,10 +61,9 @@ impl ArcaneModule {
      * Creates a new `ArcaneModule` from an existing one, sharing the client.
      * This is useful for cloning modules when the client state changes.
      */
-    pub fn from_existing(old: &ArcaneModule, client: Arc<CacheState>) -> Arc<Self> {
+    pub fn from_existing(old: &ArcaneModule) -> Arc<Self> {
         Arc::new(Self {
             path: old.path.clone(),
-            client: Arc::downgrade(&client),
             items: Mutex::new(old.items.lock().unwrap().clone()),
             components: Mutex::new(old.components.lock().unwrap().clone()),
         })
