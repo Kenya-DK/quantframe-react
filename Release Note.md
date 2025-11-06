@@ -2,12 +2,12 @@
 
 - ✏️ Made easier to test on different environments Thanks to Yumeo0
 - 🛠️ Fixed update settings notification not showing the error message when failing to update settings
+- 🛠️ Dit so the Http server doesn't complain
 
 ## TODO's
 
 - Add listed price history for stock for buy orders and sell orders
 - Fix knapsack algorithm for stock items
-- Fix Http server trying to start when saving settings
 
 ## Feature's
 

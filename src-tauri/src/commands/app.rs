@@ -7,7 +7,7 @@ use crate::{
     add_metric,
     app::{client::AppState, Settings},
     log_parser::LogParserState,
-    send_system_notification, APP, HAS_STARTED,
+    APP, HAS_STARTED,
 };
 
 #[tauri::command]
@@ -47,26 +47,20 @@ pub async fn app_update_settings(
 ) -> Result<Settings, Error> {
     let mut app = app.lock()?;
     let log_parser = log_parser.lock()?;
-    app.update_settings(settings.clone())?;
     log_parser.set_path(&app.settings.advanced_settings.wf_log_path)?;
-    send_system_notification!(
-        "Quantframe Started",
-        "The application has started successfully.",
-        None,
-        None
-    );
-    if settings.http_server.enable {
+    if settings.http_server.uuid() != app.settings.http_server.uuid() {
         let operation = app
             .http_server
             .set_host(&settings.http_server.host, settings.http_server.port);
-        match operation.as_str() {
-            "NO_CHANGE" => app.http_server.start(),
-            "CHANGED" => app.http_server.restart(),
+        match (settings.http_server.enable, operation.as_str()) {
+            (true, "NO_CHANGE") => app.http_server.start(),
+            (false, "NO_CHANGE") => app.http_server.stop(),
+            (true, "CHANGED") => app.http_server.restart(),
+            (false, "CHANGED") => app.http_server.stop(),
             _ => {}
         }
-    } else if app.http_server.is_running() {
-        app.http_server.stop();
     }
+    app.update_settings(settings.clone())?;
     Ok(settings.clone())
 }
 
