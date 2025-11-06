@@ -74,7 +74,6 @@ export function EditNotificationSetting({ id, value, onChange }: EditNotificatio
               {useTranslateForm("system.title")}
             </Title>
             <TextInput
-              required
               label={useTranslateFormSystemFields("title.label")}
               placeholder={useTranslateFormSystemFields("title.placeholder")}
               value={form.values.system_notify.title}
@@ -82,7 +81,6 @@ export function EditNotificationSetting({ id, value, onChange }: EditNotificatio
               radius="md"
             />
             <Textarea
-              required
               label={useTranslateFormSystemFields("content.label")}
               placeholder={useTranslateFormSystemFields("content.placeholder")}
               value={form.values.system_notify.content}
@@ -98,7 +96,6 @@ export function EditNotificationSetting({ id, value, onChange }: EditNotificatio
               {useTranslateForm("discord.title")}
             </Title>
             <TextInput
-              required
               label={useTranslateFormDiscordFields("webhook.label")}
               placeholder={useTranslateFormDiscordFields("webhook.placeholder")}
               value={form.values.discord_notify.webhook}
@@ -106,7 +103,6 @@ export function EditNotificationSetting({ id, value, onChange }: EditNotificatio
               radius="md"
             />
             <Textarea
-              required
               label={useTranslateFormDiscordFields("content.label")}
               placeholder={useTranslateFormDiscordFields("content.placeholder")}
               value={form.values.discord_notify.content}
@@ -139,7 +135,6 @@ export function EditNotificationSetting({ id, value, onChange }: EditNotificatio
               {useTranslateForm("webhook.title")}
             </Title>
             <TextInput
-              required
               label={useTranslateFormWebhookFields("url.label")}
               placeholder={useTranslateFormWebhookFields("url.placeholder")}
               value={form.values.webhook_notify.url}

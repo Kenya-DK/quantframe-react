@@ -152,6 +152,10 @@ export const en = {
         title: "No Updates Available",
         message: "You are already using the latest version.",
       },
+      update_settings: {
+        error: { title: "Update Settings Error", message: "An error occurred while trying to update settings: \n{{message}}" },
+        success: { title: "Update Settings Success", message: "Settings have been successfully updated" },
+      },
     },
     datatable_columns: {
       list_price: "Listed",
@@ -401,20 +405,11 @@ export const en = {
           title: "Logout Error",
           message: "An error occurred while trying to log out.",
         },
-        update_settings: {
-          title: "Update Settings Error",
-          message: "An error occurred while trying to update settings.",
-          wf_log_path_not_exist: "Warframe log path does not exist",
-        },
       },
       success: {
         logout: {
           title: "Logout Success",
           message: "You have successfully logged out.",
-        },
-        update_settings: {
-          title: "Update Settings Success",
-          message: "Settings have been successfully updated.",
         },
       },
     },

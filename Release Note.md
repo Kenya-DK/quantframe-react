@@ -1,13 +1,13 @@
 ## Fix/Changes
 
-- 🛠️ Fix a crash when loading chat when stating
-- ✏️ added more logging to error logs to help debug issues with live trader
-- ✏️ Better error info from the wf_market module
-- 🛠️ Fix a crash when starting the app
+- ✏️ Made easier to test on different environments Thanks to Yumeo0
+- 🛠️ Fixed update settings notification not showing the error message when failing to update settings
 
 ## TODO's
 
 - Add listed price history for stock for buy orders and sell orders
+- Fix knapsack algorithm for stock items
+- Fix Http server trying to start when saving settings
 
 ## Feature's
 

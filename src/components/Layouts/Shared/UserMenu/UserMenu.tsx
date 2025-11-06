@@ -2,7 +2,7 @@ import { Text, Group, Menu, Avatar, Button, Indicator } from "@mantine/core";
 import api, { SendTauriDataEvent, SendTauriEvent, WFMThumbnail } from "@api/index";
 import { TauriTypes, UserStatus } from "$types";
 import classes from "./UserMenu.module.css";
-import { useTranslateComponent, useTranslateEnums } from "@hooks/useTranslate.hook";
+import { useTranslateCommon, useTranslateComponent, useTranslateEnums } from "@hooks/useTranslate.hook";
 import { faGear, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMutation } from "@tanstack/react-query";
@@ -40,12 +40,19 @@ export function UserMenu() {
     mutationFn: (s: TauriTypes.Settings) => api.app.updateSettings(s),
     onSuccess: () => {
       notifications.show({
-        title: useTranslateSuccess("update_settings.title"),
-        message: useTranslateSuccess("update_settings.message"),
+        title: useTranslateCommon("notifications.update_settings.success.title"),
+        message: useTranslateCommon("notifications.update_settings.success.message"),
         color: "green.7",
       });
     },
-    onError: () => {},
+    onError: (e) => {
+      console.error(e);
+      notifications.show({
+        title: useTranslateCommon("notifications.update_settings.error.title"),
+        message: useTranslateCommon("notifications.update_settings.error.message", e),
+        color: "red.7",
+      });
+    },
   });
 
   const IsConnected = () => {
