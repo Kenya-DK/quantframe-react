@@ -96,40 +96,45 @@ pub fn knapsack(
     Vec<(i64, f64, String, String)>,
 ) {
     let n = items.len();
-    let mut dp = vec![0; (n + 1) as usize];
+    let w_max = max_weight as usize;
 
-    for i in 1..=n {
-        let (_, value, _, _) = items[i - 1];
-        dp[i] = value as i64;
+    // dp[w] = best value achievable with capacity w
+    let mut dp = vec![0.0; w_max + 1];
+
+    // choice[i][w] = true if item i is chosen when capacity is w
+    let mut choice = vec![vec![false; w_max + 1]; n];
+
+    for (i, item) in items.iter().enumerate() {
+        let weight = item.0 as usize;
+        let value = item.1;
+
+        // iterate backwards for 1D DP
+        for w in (weight..=w_max).rev() {
+            let new_val = dp[w - weight] + value;
+            if new_val > dp[w] {
+                dp[w] = new_val;
+                choice[i][w] = true;
+            }
+        }
     }
+
+    // reconstruct chosen items
     let mut selected_items = Vec::new();
     let mut unselected_items = Vec::new();
-    let mut w = max_weight;
-    for i in 0..n - 1 {
-        if w - items[i].0 < 0 {
-            unselected_items.push(items[i].clone());
-        } else if dp[i + 1] != 0 {
+    let mut w = w_max;
+
+    for i in (0..n).rev() {
+        let weight = items[i].0 as usize;
+        if w >= weight && choice[i][w] {
             selected_items.push(items[i].clone());
-            w -= items[i].0;
+            w -= weight;
         } else {
             unselected_items.push(items[i].clone());
         }
     }
 
-    // In the `items` parameter, the last element is always not on Warframe Market (the one currently getting checked),
-    // so it should be added only if it's not already posted, unless the price would go over the max price cap limit.
-    // Because if it is posted and gets added in unselected_items,
-    // it will be expecting an order_id because the item is posted on Warframe Market.
-    if !selected_items
-        .iter()
-        .any(|&(_, _, ref name, _)| name == &items[n - 1].2)
-    {
-        if w - items[n - 1].0 < 0 {
-            unselected_items.push(items[n - 1].clone());
-        } else {
-            selected_items.push(items[n - 1].clone());
-        }
-    }
+    selected_items.reverse();
+    unselected_items.reverse();
 
     (selected_items, unselected_items)
 }

@@ -68,7 +68,7 @@ export const WTBItemAccordion = ({ value, onSubmit, onChange }: WTBItemAccordion
           <NumberInput
             label={useTranslateFormFields("max_total_price_cap.label")}
             min={-1}
-            max={999999}
+            max={150_000}
             placeholder={useTranslateFormFields("max_total_price_cap.placeholder")}
             value={form.values.max_total_price_cap}
             onChange={(event) => form.setFieldValue("max_total_price_cap", Number(event))}

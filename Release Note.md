@@ -3,6 +3,7 @@
 - ✏️ Made easier to test on different environments Thanks to Yumeo0
 - 🛠️ Fixed update settings notification not showing the error message when failing to update settings
 - 🛠️ Dit so the Http server doesn't complain
+- 🛠️ Fix The Max Total Price Cap was ignored
 
 ## TODO's
 

@@ -93,7 +93,7 @@ impl Settings {
                 println!("Missing property: {}", property);
             }
         }
-        let data = match serde_json::from_value::<Settings>(validated_json) {
+        let mut data = match serde_json::from_value::<Settings>(validated_json) {
             Ok(user) => user,
             Err(_) => {
                 let default_user = Settings::default();
@@ -101,6 +101,12 @@ impl Settings {
                 return Ok(default_user);
             }
         };
+
+        // Enforce max cap for live scraper stock item total price cap
+        if data.live_scraper.stock_item.max_total_price_cap > 150_000 {
+            data.live_scraper.stock_item.max_total_price_cap = 150_000;
+        }
+
         if missing_properties.len() > 0 {
             data.save()?;
         }
