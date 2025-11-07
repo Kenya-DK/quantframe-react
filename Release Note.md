@@ -8,7 +8,8 @@
 ## TODO's
 
 - Add listed price history for stock for buy orders and sell orders
-- Fix knapsack algorithm for stock items
+- Add a better indicator for when an item has a min profit set
+- Add generate WTS messages for stock items and stock rivens
 
 ## Feature's
 
