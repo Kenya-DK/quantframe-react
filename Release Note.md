@@ -10,6 +10,7 @@
 - Add listed price history for stock for buy orders and sell orders
 - Add a better indicator for when an item has a min profit set
 - Add generate WTS messages for stock items and stock rivens
+- Add profit in transactions, Wil work like this When you sell a item it will look for the last bought price and show the profit you made
 
 ## Feature's
 

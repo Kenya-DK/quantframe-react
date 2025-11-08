@@ -248,6 +248,12 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
                 sortable: true,
               },
               {
+                accessor: "profit",
+                title: useTranslateDataGridColumns("profit"),
+                sortable: true,
+                render: ({ profit }) => (profit ? <Text c={profit >= 0 ? "green.7" : "red.7"}>{profit.toFixed(2)}</Text> : <Text>N/A</Text>),
+              },
+              {
                 accessor: "created_at",
                 title: useTranslateDataGridColumns("created_at"),
                 sortable: true,

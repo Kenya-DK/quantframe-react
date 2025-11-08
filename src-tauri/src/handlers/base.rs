@@ -1,9 +1,10 @@
-use entity::dto::SubType;
-use service::TransactionMutation;
+use entity::{dto::SubType, enums::TransactionType, transaction::TransactionPaginationQueryDto};
+use service::{TransactionMutation, TransactionQuery};
 use utils::{get_location, info, Error};
 use wf_market::{enums::OrderType, types::UpdateOrderParams};
 
 use crate::{
+    log_parser::TradeItemType,
     utils::{modules::states, ErrorFromExt, SubTypeExt},
     DATABASE,
 };
@@ -128,9 +129,28 @@ pub async fn handle_wfm_item(
 
 /// Handles transaction creation and database persistence
 pub async fn handle_transaction(
-    transaction: entity::transaction::Model,
+    mut transaction: entity::transaction::Model,
 ) -> Result<entity::transaction::Model, Error> {
     let conn = DATABASE.get().unwrap();
+
+    // Find the existing transaction in the database
+    if transaction.transaction_type == TransactionType::Sale {
+        let existing_transaction = TransactionQuery::get_all(
+            conn,
+            TransactionPaginationQueryDto::new(1, 1)
+                .set_transaction_type(TransactionType::Purchase)
+                .set_wfm_id(transaction.wfm_id.clone())
+                .set_sub_type(transaction.sub_type.clone())
+                .set_sort_by("created_at")
+                .set_sort_direction(entity::dto::SortDirection::Desc),
+        )
+        .await?;
+        if let Some(purchase_transaction) = existing_transaction.results.first() {
+            let profit = transaction.price - purchase_transaction.price;
+            transaction.set_profit(profit);
+        }
+    }
+
     match TransactionMutation::create(conn, &transaction).await {
         Ok(updated_item) => Ok(updated_item),
         Err(e) => return Err(e.with_location(get_location!())),

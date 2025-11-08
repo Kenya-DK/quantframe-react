@@ -26,6 +26,7 @@ pub struct Model {
     pub quantity: i64,
     pub user_name: String,
     pub price: i64,
+    pub profit: Option<i64>,
     #[sea_orm(updated_at)]
     pub updated_at: DateTimeUtc,
     #[sea_orm(created_at)]
@@ -67,8 +68,12 @@ impl Model {
             user_name,
             price,
             properties,
+            profit: None,
             updated_at: Default::default(),
             created_at: Default::default(),
         }
+    }
+    pub fn set_profit(&mut self, profit: i64) {
+        self.profit = Some(profit);
     }
 }

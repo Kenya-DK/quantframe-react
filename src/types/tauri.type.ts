@@ -646,6 +646,7 @@ export namespace TauriTypes {
     item_type: TransactionItemType;
     item_unique_name: string;
     price: number;
+    profit?: number;
     properties: Record<string, any>;
     quantity: number;
     sub_type: SubType;

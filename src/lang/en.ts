@@ -1706,6 +1706,7 @@ export const en = {
               price: "Price",
               created_at: "Created At",
               user_name: "User Name",
+              profit: "Profit",
             },
           },
         },
