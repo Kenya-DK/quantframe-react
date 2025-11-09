@@ -12,14 +12,14 @@ import classes from "../../LiveScraper.module.css";
 import { DataTable } from "mantine-datatable";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
-import { getSafePage } from "@utils/helper";
+import { GetItemDisplay, getSafePage, GetSubTypeDisplay } from "@utils/helper";
 import { RivenAttributes } from "@components/DataDisplay/RivenAttributes";
 import { useStockMutations } from "./mutations";
 import { useStockModals } from "./modals";
 import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 import { ColumnActions } from "../../Columns/ColumnActions";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faDownload, faEdit, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faEdit, faMessage, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { HasPermission } from "@api/index";
 import { notifications } from "@mantine/notifications";
 import { ItemName } from "@components/DataDisplay/ItemName/ItemName";
@@ -83,6 +83,7 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
     OpenDeleteModal,
     OpenUpdateMultipleModal,
     OpenDeleteMultipleModal,
+    OpenWTSModal,
   } = useStockModals({
     useTranslateBasePrompt,
     createMutation,
@@ -140,7 +141,7 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
         value={queryData.query || ""}
         onChange={(value) => setQueryData((prev) => ({ ...prev, query: value }))}
         onCreate={() => OpenCreateRiven()}
-        rightSectionWidth={30 * 4}
+        rightSectionWidth={30 * 5}
         rightSection={
           <Group gap={3}>
             <ActionWithTooltip
@@ -156,6 +157,25 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
               iconProps={{ size: "xs" }}
               actionProps={{ size: "sm", disabled: selectedRecords.length === 0 }}
               onClick={() => OpenUpdateMultipleModal(selectedRecords.map((r) => r.id))}
+            />
+            <ActionWithTooltip
+              tooltip={useTranslate("wts_multiple_tooltip")}
+              icon={faMessage}
+              iconProps={{ size: "xs" }}
+              actionProps={{ size: "sm", disabled: selectedRecords.length === 0 }}
+              onClick={() =>
+                OpenWTSModal({
+                  prefix: "WTS ",
+                  suffix: " :heart:",
+                  items: selectedRecords
+                    .filter((r) => r.list_price)
+                    .map((r) => ({
+                      name: `${GetItemDisplay(r)}`,
+                      suffix: GetSubTypeDisplay(r)?.replace("(", "").replace(")", ""),
+                      price: r.list_price || 0,
+                    })),
+                })
+              }
             />
             <ActionWithTooltip
               tooltip={useTranslate("delete_multiple_tooltip")}

@@ -1,5 +1,5 @@
 import { upperFirst } from "@mantine/hooks";
-import { TauriTypes, WFMarketTypes } from "$types";
+import { ItemWithMeta, ItemWithSubType, TauriTypes } from "$types";
 
 export interface GroupByDateSettings {
   labels?: string[];
@@ -120,7 +120,13 @@ export const formatNumber = (num: number) => {
   return num;
 };
 
-export const GetSubTypeDisplay = (subType: TauriTypes.SubType | WFMarketTypes.Order | undefined) => {
+export const GetSubTypeDisplay = (value: ItemWithMeta) => {
+  debugger;
+  let subType: ItemWithSubType | undefined;
+  if (!value) return undefined;
+  if ("sub_type" in value && !subType) subType = value.sub_type as TauriTypes.SubType;
+  if ("properties" in value && !subType) subType = value as TauriTypes.SubType;
+
   if (!subType || Object.keys(subType).length == 0) return "";
   let display = "";
   if (subType.rank != undefined) display += `(R${subType.rank})`;
@@ -134,22 +140,19 @@ export const GetSubTypeDisplay = (subType: TauriTypes.SubType | WFMarketTypes.Or
   if ("cyanStars" in subType) display += ` ${subType.cyanStars}C`;
   return display;
 };
+export const GetItemDisplay = (value: ItemWithMeta, tradableItems?: TauriTypes.CacheTradableItem[]) => {
+  if (!value) return "Unknown Item";
+  let fullName = undefined;
+  if ("weapon_name" in value && !fullName) fullName = value.weapon_name;
+  if ("item_name" in value && !fullName) fullName = value.item_name;
+  if ("wfm_id" in value && !fullName) fullName = tradableItems?.find((i) => i.wfm_id === value.wfm_id)?.name || value.wfm_id || "Unknown Item";
+  if ("wfm_url" in value && !fullName)
+    fullName = tradableItems?.find((i) => i.wfm_url_name === value.wfm_url)?.name || value.wfm_url || "Unknown Item";
 
-export const CreateTradeMessage = (prefix: string, items: { price: number; name: string }[], suffix: string) => {
-  const groupByPrice = groupBy("price", items);
-  const prices = Object.keys(groupByPrice)
-    .map((key) => parseInt(key))
-    .sort((a, b) => b - a);
-  let message = `${prefix} `;
-  for (const price of prices) {
-    const names = groupByPrice[price].map((item) => item.name);
-    message += `${names.join("")}${price}p `;
-  }
-  message = message.trim();
-  message += suffix;
-  return message;
+  if ("properties" in value && value.properties && "mod_name" in value.properties) fullName += ` ${value.properties.mod_name}`;
+  if ("mod_name" in value) fullName += ` ${value.mod_name}`;
+  return fullName || "Unknown Item";
 };
-
 // At the top of your component or in a separate utils file
 export const getSafePage = (requestedPage: number | undefined, totalPages: number | undefined): number => {
   const page = requestedPage ?? 1;

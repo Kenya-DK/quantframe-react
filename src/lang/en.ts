@@ -1122,6 +1122,24 @@ export const en = {
           cancel: "Cancel",
         },
       },
+      generate_trade_message: {
+        title: "Generate Trade Message for {{count}} Item(s)",
+        fields: {
+          prefix: {
+            label: "Prefix",
+            description: "The prefix to use for the trade message",
+          },
+          suffix: {
+            label: "Suffix",
+            description: "The suffix to use for the trade message",
+          },
+          message: {
+            label: "Message",
+            description: "The generated trade message",
+          },
+        },
+        button_copy_tooltip: "Copy to Clipboard",
+      },
       patreon_modal: {
         title: "Support the development of Quantframe",
         description: "Get access to premium features by supporting me on Patreon",
@@ -1548,6 +1566,7 @@ export const en = {
       export_json_tooltip: "Export Items to JSON (Patreon T1+)",
       update_multiple_tooltip: "Update Multiple Items",
       delete_multiple_tooltip: "Delete Multiple Items",
+      wts_multiple_tooltip: "Generate WTS message",
       segments: {
         bought: "Bought",
         listed: "Listed",

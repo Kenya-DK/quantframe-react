@@ -5,6 +5,10 @@
 //   : T;
 // export type ErrOrResult<RES> = [ResponseError, null] | [null, RES] | [ResponseError, undefined] | [undefined, RES];
 
+import { QuantframeApiTypes } from "./quantframe.type";
+import { TauriTypes } from "./tauri.type";
+import { WFMarketTypes } from "./warframeMarket.type";
+
 export interface ResponseError extends Error {
   component: string;
   message: string;
@@ -57,3 +61,21 @@ export interface RivenAttribute {
   value: number;
   effect?: string;
 }
+
+export interface ItemMeta {
+  wfm_id?: string;
+  wfm_url?: string;
+  quantity?: number;
+}
+
+export type ItemWithMeta =
+  | (WFMarketTypes.Order & ItemMeta)
+  | (TauriTypes.StockItem & ItemMeta)
+  | (TauriTypes.StockRiven & ItemMeta)
+  | (TauriTypes.WishListItem & ItemMeta)
+  | (TauriTypes.TransactionDto & ItemMeta)
+  | (TauriTypes.ItemPriceInfo & ItemMeta)
+  | (QuantframeApiTypes.ItemPriceDto & ItemMeta)
+  | (TauriTypes.DebuggingLiveItemEntry & ItemMeta)
+  | null;
+export type ItemWithSubType = TauriTypes.SubType | WFMarketTypes.Order | undefined;

@@ -715,6 +715,20 @@ export namespace TauriTypes {
     wfm_url: string;
     info?: StockItemDetails;
   }
+  export interface TradeEntry {
+    id: number;
+    wfm_id: string;
+    wfm_url: string;
+    name?: string;
+    price: number;
+    trade_type: string;
+    group: string;
+    item_type: string;
+    properties: Record<string, any>;
+    updated_at: string;
+    created_at: string;
+  }
+
   export interface StockItemControllerGetListParams {
     page: number;
     limit: number;

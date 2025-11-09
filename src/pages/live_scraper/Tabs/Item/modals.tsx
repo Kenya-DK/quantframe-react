@@ -3,7 +3,8 @@ import { Text } from "@mantine/core";
 import { TauriTypes } from "$types";
 import { StockItemDetailsModal } from "@components/Modals/StockItemDetails";
 import { StockItemUpdate } from "@components/Forms/StockItemUpdate";
-import { useTranslateCommon } from "@hooks/useTranslate.hook";
+import { useTranslateCommon, useTranslateModals } from "@hooks/useTranslate.hook";
+import { GenerateTradeMessageModal, GenerateTradeMessageModalProps } from "@components/Modals/GenerateTradeMessage";
 
 interface ModalHooks {
   updateMutation: {
@@ -48,6 +49,15 @@ export const useModals = ({ updateMutation, updateMultipleMutation, sellStockMut
         },
         onCancel: (id: string) => modals.close(id),
       },
+    });
+  };
+
+  const OpenWTSModal = (input: GenerateTradeMessageModalProps) => {
+    modals.open({
+      size: "100%",
+      title: useTranslateModals("generate_trade_message.title", { count: input.items.length }),
+      withCloseButton: false,
+      children: <GenerateTradeMessageModal {...input} />,
     });
   };
 
@@ -130,5 +140,6 @@ export const useModals = ({ updateMutation, updateMultipleMutation, sellStockMut
     OpenUpdateMultipleModal,
     OpenDeleteModal,
     OpenDeleteMultipleModal,
+    OpenWTSModal,
   };
 };

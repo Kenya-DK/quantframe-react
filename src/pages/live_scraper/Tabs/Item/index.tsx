@@ -15,11 +15,11 @@ import { StatsWithSegments } from "@components/Shared/StatsWithSegments";
 import { SearchField } from "@components/Forms/SearchField";
 import { ColorInfo } from "@components/Shared/ColorInfo";
 import { notifications } from "@mantine/notifications";
-import { getSafePage } from "@utils/helper";
+import { GetItemDisplay, getSafePage, GetSubTypeDisplay } from "@utils/helper";
 import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 import { ColumnActions } from "../../Columns/ColumnActions";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faDownload, faEdit, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faEdit, faMessage, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { HasPermission } from "@api/index";
 import { ItemName } from "@components/DataDisplay/ItemName/ItemName";
 import { useMutations } from "./mutations";
@@ -41,6 +41,7 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
   const [loadingRows, setLoadingRows] = useState<string[]>([]);
   const [canExport, setCanExport] = useState<boolean>(false);
   const [selectedRecords, setSelectedRecords] = useState<TauriTypes.StockItem[]>([]);
+
   // Check permissions for export on mount
   useEffect(() => {
     HasPermission(TauriTypes.PermissionsFlags.EXPORT_DATA).then((res) => setCanExport(res));
@@ -67,13 +68,14 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
       setLoadingRows,
     });
   // Modals
-  const { OpenMinimumPriceModal, OpenDeleteMultipleModal, OpenUpdateMultipleModal, OpenSellModal, OpenInfoModal, OpenDeleteModal } = useModals({
-    updateMutation,
-    updateMultipleMutation,
-    sellStockMutation,
-    deleteMutation,
-    deleteMultipleMutation,
-  });
+  const { OpenMinimumPriceModal, OpenWTSModal, OpenDeleteMultipleModal, OpenUpdateMultipleModal, OpenSellModal, OpenInfoModal, OpenDeleteModal } =
+    useModals({
+      updateMutation,
+      updateMultipleMutation,
+      sellStockMutation,
+      deleteMutation,
+      deleteMultipleMutation,
+    });
   const handleRefresh = (_data: any) => {
     refetchQueries(true);
   };
@@ -131,7 +133,7 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
       <SearchField
         value={queryData.query || ""}
         onChange={(value) => setQueryData((prev) => ({ ...prev, query: value }))}
-        rightSectionWidth={30 * 3}
+        rightSectionWidth={30 * 4}
         rightSection={
           <Group gap={3}>
             <ActionWithTooltip
@@ -147,6 +149,25 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
               iconProps={{ size: "xs" }}
               actionProps={{ size: "sm", disabled: selectedRecords.length === 0 }}
               onClick={() => OpenUpdateMultipleModal(selectedRecords.map((r) => r.id))}
+            />
+            <ActionWithTooltip
+              tooltip={useTranslate("wts_multiple_tooltip")}
+              icon={faMessage}
+              iconProps={{ size: "xs" }}
+              actionProps={{ size: "sm", disabled: selectedRecords.length === 0 }}
+              onClick={() =>
+                OpenWTSModal({
+                  prefix: "WTS ",
+                  suffix: " :heart:",
+                  items: selectedRecords
+                    .filter((r) => r.item_name && r.list_price)
+                    .map((r) => ({
+                      name: `${GetItemDisplay(r)}`,
+                      suffix: GetSubTypeDisplay(r)?.replace("(", "").replace(")", ""),
+                      price: r.list_price || 0,
+                    })),
+                })
+              }
             />
             <ActionWithTooltip
               tooltip={useTranslate("delete_multiple_tooltip")}

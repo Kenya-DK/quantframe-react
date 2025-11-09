@@ -3,6 +3,7 @@
 - ✨ Add profit in transactions, Wil work like this When you sell a item it will look for the last bought price and show the profit you made
 - ✨ Add listed price history for stock for buy orders and sell orders
 - ✨ Add a better indicator for when an item has a min profit set
+- ✨ Add generate WTS messages for items, rivens and wishlists
 - ✏️ Made easier to test on different environments Thanks to Yumeo0
 - 🛠️ Fixed update settings notification not showing the error message when failing to update settings
 - 🛠️ Dit so the Http server doesn't complain
@@ -10,14 +11,13 @@
 
 ## Dev Notes
 
-- 🛠️ Made it so the cache wil refresh if it hits errors in the live scraper.
+- 🛠️ Made it so the cache will refresh if it hits errors in the live scraper.
 
 ## TODO's
 
-- Add generate WTS messages for stock items and stock rivens
-
 ## Feature's
 
+- ✨ Add generate WTS messages for items, rivens and wishlists
 - ✨ Add a preview for items to to buy.
 - ✨ Add Stock Riven Details Modal and wishList
 - ✨ Add sorting for the auctions and orders tab

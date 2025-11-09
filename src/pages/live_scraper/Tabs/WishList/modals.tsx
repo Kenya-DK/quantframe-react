@@ -2,8 +2,9 @@ import { modals } from "@mantine/modals";
 import { Text } from "@mantine/core";
 import { TauriTypes } from "$types";
 import { WishListItemDetailsModal } from "@components/Modals/WishListItemDetails";
-import { useTranslateCommon } from "@hooks/useTranslate.hook";
+import { useTranslateCommon, useTranslateModals } from "@hooks/useTranslate.hook";
 import { WishListItemUpdate } from "@components/Forms/WishListItemUpdate";
+import { GenerateTradeMessageModal, GenerateTradeMessageModalProps } from "@components/Modals/GenerateTradeMessage";
 
 interface ModalHooks {
   updateMutation: {
@@ -75,7 +76,14 @@ export const useStockModals = ({ updateMutation, deleteMutation, boughtMutation,
       ),
     });
   };
-
+  const OpenWTBModal = (input: GenerateTradeMessageModalProps) => {
+    modals.open({
+      size: "100%",
+      title: useTranslateModals("generate_trade_message.title", { count: input.items.length }),
+      withCloseButton: false,
+      children: <GenerateTradeMessageModal {...input} />,
+    });
+  };
   const OpenDeleteModal = (id: number) => {
     modals.openConfirmModal({
       title: useTranslateCommon("prompts.delete_item.title"),
@@ -128,5 +136,6 @@ export const useStockModals = ({ updateMutation, deleteMutation, boughtMutation,
     OpenDeleteModal,
     OpenDeleteMultipleModal,
     OpenBoughtModal,
+    OpenWTBModal,
   };
 };

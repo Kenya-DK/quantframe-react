@@ -4,8 +4,9 @@ import { TauriTypes } from "$types";
 import { CreateRiven } from "@components/Forms/CreateRiven";
 import { RivenFilter } from "@components/Forms/RivenFilter";
 import { StockRivenDetailsModal } from "@components/Modals/StockRivenDetails";
-import { useTranslateCommon } from "@hooks/useTranslate.hook";
+import { useTranslateCommon, useTranslateModals } from "@hooks/useTranslate.hook";
 import { StockRivenUpdate } from "@components/Forms/StockRivenUpdate";
+import { GenerateTradeMessageModal, GenerateTradeMessageModalProps } from "@components/Modals/GenerateTradeMessage";
 interface ModalHooks {
   useTranslateBasePrompt: (key: string, context?: { [key: string]: any }) => string;
   updateMutation: {
@@ -97,7 +98,14 @@ export const useStockModals = ({
       children: <StockRivenDetailsModal value={item.id} />,
     });
   };
-
+  const OpenWTSModal = (input: GenerateTradeMessageModalProps) => {
+    modals.open({
+      size: "100%",
+      title: useTranslateModals("generate_trade_message.title", { count: input.items.length }),
+      withCloseButton: false,
+      children: <GenerateTradeMessageModal {...input} />,
+    });
+  };
   const OpenCreateRiven = () => {
     modals.open({
       title: useTranslateBasePrompt("create_riven.title"),
@@ -182,5 +190,6 @@ export const useStockModals = ({
     OpenCreateRiven,
     OpenDeleteModal,
     OpenDeleteMultipleModal,
+    OpenWTSModal,
   };
 };

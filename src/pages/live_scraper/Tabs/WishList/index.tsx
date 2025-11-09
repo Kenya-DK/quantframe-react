@@ -10,7 +10,7 @@ import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 import { DataTable } from "mantine-datatable";
 import classes from "../../LiveScraper.module.css";
 import { notifications } from "@mantine/notifications";
-import { getSafePage } from "@utils/helper";
+import { GetItemDisplay, getSafePage, GetSubTypeDisplay } from "@utils/helper";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useLiveScraperContext } from "@contexts/liveScraper.context";
 import { useWishListQueries } from "./queries";
@@ -20,7 +20,7 @@ import { useStockModals } from "./modals";
 import { ColumnActions } from "../../Columns/ColumnActions";
 import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faDownload, faEdit, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faEdit, faMessage, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { HasPermission } from "@api/index";
 import { ItemName } from "@components/DataDisplay/ItemName/ItemName";
 
@@ -64,15 +64,14 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
       setLoadingRows,
     });
   // Modals
-  const { OpenMinimumPriceModal, OpenUpdateMultipleModal, OpenDeleteModal, OpenDeleteMultipleModal, OpenBoughtModal, OpenInfoModal } = useStockModals(
-    {
+  const { OpenMinimumPriceModal, OpenWTBModal, OpenUpdateMultipleModal, OpenDeleteModal, OpenDeleteMultipleModal, OpenBoughtModal, OpenInfoModal } =
+    useStockModals({
       updateMutation,
       updateMultipleMutation,
       boughtMutation,
       deleteMutation,
       deleteMultipleMutation,
-    }
-  );
+    });
   const handleRefresh = (_data: any) => {
     refetchQueries(true);
   };
@@ -120,7 +119,7 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
       <SearchField
         value={queryData.query || ""}
         onChange={(value) => setQueryData((prev) => ({ ...prev, query: value }))}
-        rightSectionWidth={30 * 3}
+        rightSectionWidth={30 * 4}
         rightSection={
           <Group gap={3}>
             <ActionWithTooltip
@@ -136,6 +135,25 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
               iconProps={{ size: "xs" }}
               actionProps={{ size: "sm", disabled: selectedRecords.length === 0 }}
               onClick={() => OpenUpdateMultipleModal(selectedRecords.map((r) => r.id))}
+            />
+            <ActionWithTooltip
+              tooltip={useTranslate("wts_multiple_tooltip")}
+              icon={faMessage}
+              iconProps={{ size: "xs" }}
+              actionProps={{ size: "sm", disabled: selectedRecords.length === 0 }}
+              onClick={() =>
+                OpenWTBModal({
+                  prefix: "WTS ",
+                  suffix: " :heart:",
+                  items: selectedRecords
+                    .filter((r) => r.item_name && r.list_price)
+                    .map((r) => ({
+                      name: `${GetItemDisplay(r)}`,
+                      suffix: GetSubTypeDisplay(r)?.replace("(", "").replace(")", ""),
+                      price: r.list_price || 0,
+                    })),
+                })
+              }
             />
             <ActionWithTooltip
               tooltip={useTranslate("delete_multiple_tooltip")}
