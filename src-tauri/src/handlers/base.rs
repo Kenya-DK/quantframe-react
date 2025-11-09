@@ -4,11 +4,11 @@ use utils::{get_location, info, Error};
 use wf_market::{enums::OrderType, types::UpdateOrderParams};
 
 use crate::{
-    log_parser::TradeItemType,
     utils::{modules::states, ErrorFromExt, SubTypeExt},
     DATABASE,
 };
-/// Handles Warframe Market order operations (close/delete/update)
+
+// Handles Warframe Market order operations (close/delete/update)
 pub async fn handle_wfm_item(
     wfm_id: impl Into<String>,
     sub_type: &Option<SubType>,

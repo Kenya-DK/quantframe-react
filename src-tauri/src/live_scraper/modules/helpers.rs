@@ -16,7 +16,9 @@ use crate::{
     live_scraper::*,
     send_event,
     types::*,
-    utils::{modules::states, order_ext::OrderDetails, ErrorFromExt, OrderExt, SubTypeExt},
+    utils::{
+        modules::states, order_ext::OrderDetails, ErrorFromExt, OrderExt, OrderListExt, SubTypeExt,
+    },
     DATABASE,
 };
 
@@ -257,6 +259,44 @@ pub fn get_order_info(
         .set_info(item_info)
 }
 
+async fn handler_wfm_error(
+    wfm_client: &wf_market::Client<wf_market::Authenticated>,
+    component: &str,
+    action: &str,
+    message: &str,
+    options: &LoggerOptions,
+    e: wf_market::errors::ApiError,
+) -> utils::Error {
+    let log_level = match e {
+        wf_market::errors::ApiError::AuctionLimitExceeded(_) => LogLevel::Warning,
+        wf_market::errors::ApiError::OrderLimitExceededSamePrice(_)
+        | wf_market::errors::ApiError::NotFound(_)
+        | wf_market::errors::ApiError::OrderLimitExceeded(_) => {
+            wfm_client.order().my_orders().await.ok();
+            wfm_client
+                .order()
+                .cache_orders_mut()
+                .apply_trade_info()
+                .ok();
+            trace(
+                format!("{}:{}", component, action),
+                "Refreshed cached orders due to order limit exceeded",
+                options,
+            );
+            LogLevel::Warning
+        }
+        _ => LogLevel::Error,
+    };
+    let mut err = Error::from_wfm(
+        format!("{}:{}", component, action),
+        message.to_string(),
+        e,
+        get_location!(),
+    );
+    err = err.set_log_level(log_level);
+    err
+}
+
 pub async fn progress_order(
     component: &str,
     wfm_client: &wf_market::Client<wf_market::Authenticated>,
@@ -298,13 +338,18 @@ pub async fn progress_order(
                 send_event!(UIEvent::RefreshWfmOrders, json!({"source": component}));
             }
             Err(e) => {
-                return Err(Error::from_wfm(
-                    format!("{}CreateFail", component),
-                    format!("Failed to create order for item {}", order_info.item_name),
+                let err = handler_wfm_error(
+                    wfm_client,
+                    component,
+                    "Create",
+                    &format!("Failed to create order for item {}", order_info.item_name),
+                    log_options,
                     e,
-                    get_location!(),
                 )
-                .log_with_options(file_name, &log_options));
+                .await
+                .with_location(get_location!())
+                .log_with_options(file_name, &log_options);
+                return Err(err);
             }
         }
     } else if order_info.has_operation("Update") && !order_info.has_operation("Delete") {
@@ -334,23 +379,17 @@ pub async fn progress_order(
                 }
             }
             Err(e) => {
-                let mut err = Error::from_wfm(
-                    format!("{}::UpdateFail", component),
-                    format!("Failed to update order for item {}", order_info.item_name),
+                let err = handler_wfm_error(
+                    wfm_client,
+                    component,
+                    "Update",
+                    &format!("Failed to update order for item {}", order_info.item_name),
+                    log_options,
                     e,
-                    get_location!(),
-                );
-                if err.cause.contains("Not found") {
-                    err = err.set_log_level(LogLevel::Warning);
-                    err = err.set_message(format!(
-                        "Order for item {} not found during update. It may have already been deleted.",
-                        order_info.item_name
-                    ));
-                    err.log_with_options(file_name, &log_options);
-                    return Ok(());
-                } else {
-                    err.log_with_options(file_name, &log_options);
-                }
+                )
+                .await
+                .with_location(get_location!())
+                .log_with_options(file_name, &log_options);
                 return Err(err);
             }
         }
@@ -368,21 +407,17 @@ pub async fn progress_order(
                 send_event!(UIEvent::RefreshWfmOrders, json!({"source": component}));
             }
             Err(e) => {
-                let mut err = Error::from_wfm(
-                    format!("{}::DeleteFail", component),
-                    format!("Failed to delete order for item {}", order_info.item_name),
+                let err = handler_wfm_error(
+                    wfm_client,
+                    component,
+                    "Delete",
+                    &format!("Failed to delete order for item {}", order_info.item_name),
+                    log_options,
                     e,
-                    get_location!(),
-                );
-                if err.cause.contains("NotFound") {
-                    err = err.set_log_level(LogLevel::Warning);
-                    err = err.set_message(format!(
-                            "Order for item {} not found during deletion. It may have already been deleted.",
-                            order_info.item_name
-                        ));
-                    err.log_with_options(file_name, log_options);
-                    return Ok(());
-                }
+                )
+                .await
+                .with_location(get_location!())
+                .log_with_options(file_name, &log_options);
                 return Err(err);
             }
         }
