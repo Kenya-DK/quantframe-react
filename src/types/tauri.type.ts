@@ -517,6 +517,7 @@ export namespace TauriTypes {
     is_hidden: boolean;
     item_name: string;
     minimum_sma?: number;
+    minimum_profit?: number;
     item_unique_name: string;
     owned: number;
     updated_at: string;

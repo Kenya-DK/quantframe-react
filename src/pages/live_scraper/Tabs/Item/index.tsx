@@ -82,6 +82,10 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
     setSelectedRecords([]);
   }, [deleteMultipleMutation.isSuccess, deleteMutation.isSuccess]);
 
+  const hasOverride = (record: TauriTypes.StockItem) => {
+    return record.minimum_sma != null || record.minimum_profit != null;
+  };
+
   // Use the custom hook for Tauri events
   useTauriEvent(TauriTypes.Events.RefreshStockItems, handleRefresh, [refetchQueries]);
   return (
@@ -241,6 +245,7 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
             render: (row) => (
               <ColumnActions
                 row={row}
+                buttonProps={{ edit: { color: hasOverride(row) ? "yellow.7" : "blue.7" } }}
                 hideButtons={["open_filter"]}
                 loadingRows={loadingRows}
                 onManual={() => OpenSellModal(row)}
