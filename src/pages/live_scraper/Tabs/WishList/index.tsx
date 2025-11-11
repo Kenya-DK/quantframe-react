@@ -143,7 +143,7 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
               actionProps={{ size: "sm", disabled: selectedRecords.length === 0 }}
               onClick={() =>
                 OpenWTBModal({
-                  prefix: "WTS ",
+                  prefix: "WTB ",
                   suffix: " :heart:",
                   items: selectedRecords
                     .filter((r) => r.item_name && r.list_price)

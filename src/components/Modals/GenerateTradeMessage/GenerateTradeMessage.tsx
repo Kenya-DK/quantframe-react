@@ -1,5 +1,5 @@
 import { useTranslateCommon, useTranslateModals } from "@hooks/useTranslate.hook";
-import { Box, Group, Stack, TextInput } from "@mantine/core";
+import { Box, Checkbox, Group, Stack, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { ActionWithTooltip } from "../../Shared/ActionWithTooltip";
 import { faCopy } from "@fortawesome/free-solid-svg-icons";
@@ -22,6 +22,7 @@ export function GenerateTradeMessageModal({ prefix, suffix, items }: GenerateTra
     initialValues: {
       prefix: prefix,
       suffix: suffix,
+      spacing: true,
     },
   });
 
@@ -40,6 +41,7 @@ export function GenerateTradeMessageModal({ prefix, suffix, items }: GenerateTra
       candidate += `[${item.name}]`;
       if (item.suffix) candidate += `${item.suffix} `;
       candidate += `${item.price}p`;
+      if (form.values.spacing) candidate += " ";
 
       if (candidate.length > MAX_LENGTH) return;
       message = candidate;
@@ -71,6 +73,11 @@ export function GenerateTradeMessageModal({ prefix, suffix, items }: GenerateTra
               label={useTranslateFields("suffix.label")}
               description={useTranslateFields("suffix.description")}
               {...form.getInputProps("suffix")}
+            />
+            <Checkbox
+              label={useTranslateFields("spacing.label")}
+              description={useTranslateFields("spacing.description")}
+              {...form.getInputProps("spacing", { type: "checkbox" })}
             />
           </Group>
         </Group>

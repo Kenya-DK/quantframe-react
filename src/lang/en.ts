@@ -1137,6 +1137,10 @@ export const en = {
             label: "Message",
             description: "The generated trade message",
           },
+          spacing: {
+            label: "Item Spacing",
+            description: "The spacing between items in the message",
+          },
         },
         button_copy_tooltip: "Copy to Clipboard",
       },

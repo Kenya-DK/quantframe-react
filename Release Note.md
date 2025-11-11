@@ -1,17 +1,7 @@
 ## Fix/Changes
 
-- ✨ Add profit in transactions, Wil work like this When you sell a item it will look for the last bought price and show the profit you made
-- ✨ Add listed price history for stock for buy orders and sell orders
-- ✨ Add a better indicator for when an item has a min profit set
-- ✨ Add generate WTS messages for items, rivens and wishlists
-- ✏️ Made easier to test on different environments Thanks to Yumeo0
-- 🛠️ Fixed update settings notification not showing the error message when failing to update settings
-- 🛠️ Dit so the Http server doesn't complain
-- 🛠️ Fix The Max Total Price Cap was ignored
-
-## Dev Notes
-
-- 🛠️ Made it so the cache will refresh if it hits errors in the live scraper.
+- 🛠️ Fix Wishlist generate WTB messages
+- ✨ Y can how add spacing in the Generate WTB/WTS messages.
 
 ## TODO's
 
