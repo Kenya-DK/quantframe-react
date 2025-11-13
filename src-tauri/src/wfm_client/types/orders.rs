@@ -276,7 +276,7 @@ impl Orders {
                     order.info.set_closed_avg(info.avg_price);
                     order
                         .info
-                        .set_profit(order.platinum as f64 - info.avg_price);
+                        .set_profit(order.platinum as f64 - info.min_price);
                 }
                 Err(_) => {
                     order.info.set_closed_avg(0.0);
@@ -301,5 +301,12 @@ impl Orders {
             }
         }
         return None;
+    }
+    pub fn add_order(&mut self, order_type: OrderType, order: Order) {
+        match order_type {
+            OrderType::Sell => self.sell_orders.push(order),
+            OrderType::Buy => self.buy_orders.push(order),
+            _ => {}
+        }
     }
 }

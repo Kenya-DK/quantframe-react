@@ -89,7 +89,10 @@ impl LiveScraperClient {
             );
 
             let mut settings = states::settings().unwrap().clone();
-
+            let wfm = states::wfm_client().unwrap();
+            // Get My Orders from Warframe Market.
+            let mut my_orders = wfm.orders().get_my_orders().await.unwrap();
+            my_orders.apply_trade_info().unwrap();
             // Check if StockMode is set to Riven or All
             if settings.live_scraper.stock_mode == StockMode::Riven
                 || settings.live_scraper.stock_mode == StockMode::All
@@ -135,7 +138,7 @@ impl LiveScraperClient {
                 if settings.live_scraper.stock_mode == StockMode::Item
                     || settings.live_scraper.stock_mode == StockMode::All
                 {
-                    match scraper.item().check_stock().await {
+                    match scraper.item().check_stock(&mut my_orders).await {
                         Ok(_) => {}
                         Err(e) => scraper.report_error(&e),
                     }

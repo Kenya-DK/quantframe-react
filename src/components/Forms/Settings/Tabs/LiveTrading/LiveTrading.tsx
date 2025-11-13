@@ -189,7 +189,7 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
                       <NumberInput
                         label={useTranslateFormFields("max_total_price_cap.label")}
                         min={1}
-                        max={999999}
+                        max={10_000}
                         placeholder={useTranslateFormFields("max_total_price_cap.placeholder")}
                         value={form.values.stock_item.max_total_price_cap}
                         onChange={(event) => form.setFieldValue("stock_item.max_total_price_cap", Number(event))}

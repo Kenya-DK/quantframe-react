@@ -61,7 +61,7 @@ impl ItemModule {
             .send_event_update(UIEvent::UpdateOrders, operation, Some(value));
     }
 
-    pub async fn check_stock(&mut self) -> Result<(), AppError> {
+    pub async fn check_stock(&mut self, my_orders: &mut Orders) -> Result<(), AppError> {
         logger::info(
             &self.component,
             "Running Item Stock Check",
@@ -156,11 +156,6 @@ impl ItemModule {
                     });
             }
         }
-
-        // Get My Orders from Warframe Market.
-        let mut my_orders = wfm.orders().get_my_orders().await?;
-        // Apply Trade Info.
-        my_orders.apply_trade_info()?;
 
         // Handle Delete Orders based on the trade mode.
         let order_ids = if delete_other_types {
@@ -317,7 +312,7 @@ impl ItemModule {
                         &item_entry,
                         &price,
                         live_orders.clone(),
-                        &mut my_orders,
+                        my_orders,
                     )
                     .await
                 {
@@ -339,7 +334,7 @@ impl ItemModule {
                         &item_entry,
                         &price,
                         live_orders.clone(),
-                        &mut my_orders,
+                        my_orders,
                     )
                     .await
                 {
@@ -361,7 +356,7 @@ impl ItemModule {
                         &item_entry,
                         &price,
                         live_orders.clone(),
-                        &mut my_orders,
+                        my_orders,
                     )
                     .await
                 {
@@ -567,40 +562,45 @@ impl ItemModule {
         AppError,
     > {
         let n = items.len();
-        let mut dp = vec![0; (n + 1) as usize];
+        let w_max = max_weight as usize;
 
-        for i in 1..=n {
-            let (_, value, _, _) = items[i - 1];
-            dp[i] = value as i64;
+        // dp[w] = best value achievable with capacity w
+        let mut dp = vec![0.0; w_max + 1];
+
+        // choice[i][w] = true if item i is chosen when capacity is w
+        let mut choice = vec![vec![false; w_max + 1]; n];
+
+        for (i, item) in items.iter().enumerate() {
+            let weight = item.0 as usize;
+            let value = item.1;
+
+            // iterate backwards for 1D DP
+            for w in (weight..=w_max).rev() {
+                let new_val = dp[w - weight] + value;
+                if new_val > dp[w] {
+                    dp[w] = new_val;
+                    choice[i][w] = true;
+                }
+            }
         }
+
+        // reconstruct chosen items
         let mut selected_items = Vec::new();
         let mut unselected_items = Vec::new();
-        let mut w = max_weight;
-        for i in 0..n - 1 {
-            if w - items[i].0 < 0 {
-                unselected_items.push(items[i].clone());
-            } else if dp[i + 1] != 0 {
+        let mut w = w_max;
+
+        for i in (0..n).rev() {
+            let weight = items[i].0 as usize;
+            if w >= weight && choice[i][w] {
                 selected_items.push(items[i].clone());
-                w -= items[i].0;
+                w -= weight;
             } else {
                 unselected_items.push(items[i].clone());
             }
         }
 
-        // In the `items` parameter, the last element is always not on Warframe Market (the one currently getting checked),
-        // so it should be added only if it's not already posted, unless the price would go over the max price cap limit.
-        // Because if it is posted and gets added in unselected_items,
-        // it will be expecting an order_id because the item is posted on Warframe Market.
-        if !selected_items
-            .iter()
-            .any(|&(_, _, ref name, _)| name == &items[n - 1].2)
-        {
-            if w - items[n - 1].0 < 0 {
-                unselected_items.push(items[n - 1].clone());
-            } else {
-                selected_items.push(items[n - 1].clone());
-            }
-        }
+        selected_items.reverse();
+        unselected_items.reverse();
 
         Ok((selected_items, unselected_items))
     }
@@ -963,13 +963,20 @@ impl ItemModule {
                     item_info.wfm_url_name.clone(),
                     "".to_string(),
                 )]);
-
                 // Call the `knapsack` method on `self` with the parameters `buy_orders_list`, `avg_price_cap` and `max_total_price_cap` cast to i64
                 // The `knapsack` method is expected to return a tuple containing the maximum profit, the selected buy orders, and the unselected buy orders
                 // If the method call fails (returns an error), propagate the error with `?`
                 let (selected_buy_orders, unselected_buy_orders) =
                     self.knapsack(buy_orders_list.clone(), max_total_price_cap)?;
 
+                logger::log_json(
+                    "tes.json",
+                    &json!({
+                        "buy_orders_list": buy_orders_list,
+                        "selected_buy_orders": selected_buy_orders,
+                        "unselected_buy_orders": unselected_buy_orders,
+                    }),
+                )?;
                 // Get the selected item names from the selected buy orders
                 let se_item_names: Vec<String> = selected_buy_orders
                     .iter()
@@ -1009,6 +1016,8 @@ impl ItemModule {
                                     if user_order.id == unselected_item.3 {
                                         user_order.operation = vec!["Skip".to_string()];
                                     }
+                                    my_orders
+                                        .delete_order_by_id(OrderType::Buy, &unselected_item.3);
                                 }
                                 Err(e) => {
                                     return Err(e);
@@ -1057,7 +1066,9 @@ impl ItemModule {
                         );
                     }
                 }
-                Ok((_, Some(order))) => {
+                Ok((_, Some(mut order))) => {
+                    order.info.set_profit(potential_profit as f64);
+                    my_orders.add_order(OrderType::Buy, order.clone());
                     self.send_order_update(UIOperationEvent::CreateOrUpdate, json!(order.clone()));
                 }
                 Err(e) => {
@@ -1086,6 +1097,8 @@ impl ItemModule {
             {
                 Ok(_) => {
                     if user_order.info.is_dirty {
+                        user_order.info.set_profit(potential_profit as f64);
+                        my_orders.add_order(OrderType::Buy, user_order.clone());
                         self.send_order_update(UIOperationEvent::CreateOrUpdate, json!(user_order));
                     }
                 }
@@ -1104,6 +1117,7 @@ impl ItemModule {
                         format!("Item {} Deleted", item_info.name).as_str(),
                         LoggerOptions::default(),
                     );
+                    my_orders.delete_order_by_id(OrderType::Buy, &user_order.id);
                 }
                 Err(e) => {
                     self.client.stop_loop();

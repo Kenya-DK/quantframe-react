@@ -174,7 +174,7 @@ impl Default for SettingsState {
                     avg_price_cap: 600,
                     trading_tax_cap: -1,
                     buy_quantity: 1,
-                    max_total_price_cap: 100000,
+                    max_total_price_cap: 10_000,
                     price_shift_threshold: -1,
                     blacklist: vec![],
                     report_to_wfm: true,
@@ -318,8 +318,12 @@ impl SettingsState {
         }
 
         // Deserialize the updated JSON object into a SettingsState struct
-        let deserialized: SettingsState = serde_json::from_value(validated_json)
+        let mut deserialized: SettingsState = serde_json::from_value(validated_json)
             .map_err(|e| AppError::new("Settings", eyre!(e.to_string())))?;
+
+        if deserialized.live_scraper.stock_item.max_total_price_cap > 10_000 {
+            deserialized.live_scraper.stock_item.max_total_price_cap = 10_000;
+        }
 
         Ok((deserialized, missing_properties.is_empty()))
     }
