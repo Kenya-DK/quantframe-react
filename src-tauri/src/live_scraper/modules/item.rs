@@ -968,15 +968,6 @@ impl ItemModule {
                 // If the method call fails (returns an error), propagate the error with `?`
                 let (selected_buy_orders, unselected_buy_orders) =
                     self.knapsack(buy_orders_list.clone(), max_total_price_cap)?;
-
-                logger::log_json(
-                    "tes.json",
-                    &json!({
-                        "buy_orders_list": buy_orders_list,
-                        "selected_buy_orders": selected_buy_orders,
-                        "unselected_buy_orders": unselected_buy_orders,
-                    }),
-                )?;
                 // Get the selected item names from the selected buy orders
                 let se_item_names: Vec<String> = selected_buy_orders
                     .iter()
