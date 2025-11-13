@@ -1,9 +1,13 @@
 use std::{process::Command, sync::Mutex};
 
-use serde_json::Value;
-use utils::Error;
+use serde_json::{json, Value};
+use utils::{get_location, Error};
 
-use crate::cache::{client::CacheState, types::*};
+use crate::{
+    cache::{client::CacheState, types::*},
+    enums::FindBy,
+    types::ChatLink,
+};
 
 #[tauri::command]
 pub async fn cache_get_tradable_items(
@@ -94,4 +98,18 @@ pub fn cache_open_theme_folder(cache: tauri::State<'_, Mutex<CacheState>>) {
         ])
         .spawn()
         .unwrap();
+}
+
+#[tauri::command]
+pub fn cache_get_chat_link(
+    unique_name: String,
+    cache: tauri::State<'_, Mutex<CacheState>>,
+) -> Result<ChatLink, Error> {
+    let cache = cache.lock()?;
+
+    let item = cache.all_items().get_chat_link(FindBy::new(
+        crate::enums::FindByType::UniqueName,
+        unique_name,
+    ))?;
+    Ok(item)
 }

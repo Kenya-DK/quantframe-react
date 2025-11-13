@@ -31,7 +31,7 @@ impl CacheItemBase {
             self.name,
             self.unique_name,
             self.category,
-            self.components.len()
+            self.components.len(),
         )
     }
 }

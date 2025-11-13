@@ -1,5 +1,6 @@
 import { upperFirst } from "@mantine/hooks";
 import { ItemWithMeta, ItemWithSubType, TauriTypes } from "$types";
+import api from "@api/index";
 
 export interface GroupByDateSettings {
   labels?: string[];
@@ -121,7 +122,6 @@ export const formatNumber = (num: number) => {
 };
 
 export const GetSubTypeDisplay = (value: ItemWithMeta) => {
-  debugger;
   let subType: ItemWithSubType | undefined;
   if (!value) return undefined;
   if ("sub_type" in value && !subType) subType = value.sub_type as TauriTypes.SubType;
@@ -139,6 +139,15 @@ export const GetSubTypeDisplay = (value: ItemWithMeta) => {
   if ("cyan_stars" in subType) display += ` ${subType.cyan_stars}C`;
   if ("cyanStars" in subType) display += ` ${subType.cyanStars}C`;
   return display;
+};
+
+export const GetChatLinkName = async (value: ItemWithMeta): Promise<TauriTypes.ChatLink> => {
+  if (!value) return { link: "<Unknown Item>", suffix: "", prefix: "" };
+
+  let findItem = undefined;
+  if ("wfm_id" in value) findItem = await api.cache.getTradableItemById(value.wfm_id || "");
+  if (!findItem) return { link: "<Unknown Item>", suffix: "", prefix: "" };
+  return await api.cache.get_chat_link(findItem!.unique_name || "");
 };
 export const GetItemDisplay = (value: ItemWithMeta, tradableItems?: TauriTypes.CacheTradableItem[]) => {
   if (!value) return "Unknown Item";

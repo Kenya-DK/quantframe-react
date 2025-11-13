@@ -15,7 +15,7 @@ import { StatsWithSegments } from "@components/Shared/StatsWithSegments";
 import { SearchField } from "@components/Forms/SearchField";
 import { ColorInfo } from "@components/Shared/ColorInfo";
 import { notifications } from "@mantine/notifications";
-import { GetItemDisplay, getSafePage, GetSubTypeDisplay } from "@utils/helper";
+import { GetChatLinkName, getSafePage, GetSubTypeDisplay } from "@utils/helper";
 import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 import { ColumnActions } from "../../Columns/ColumnActions";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
@@ -155,19 +155,25 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
               icon={faMessage}
               iconProps={{ size: "xs" }}
               actionProps={{ size: "sm", disabled: selectedRecords.length === 0 }}
-              onClick={() =>
+              onClick={async () => {
+                let asd = selectedRecords.map(async (r) => {
+                  {
+                    let chatLink = await GetChatLinkName(r);
+                    if (chatLink.suffix != "") chatLink.suffix = "<SP>" + chatLink.suffix;
+                    let subTypeDisplay = GetSubTypeDisplay(r);
+                    if (subTypeDisplay != "") chatLink.suffix += "<SP>" + subTypeDisplay;
+                    chatLink.suffix += `<SP>${r.list_price || 0}p`;
+                    return chatLink;
+                  }
+                });
+                let resolvedItems = await Promise.all(asd);
+                console.log(resolvedItems);
                 OpenWTSModal({
                   prefix: "WTS ",
                   suffix: " :heart:",
-                  items: selectedRecords
-                    .filter((r) => r.item_name && r.list_price)
-                    .map((r) => ({
-                      name: `${GetItemDisplay(r)}`,
-                      suffix: GetSubTypeDisplay(r)?.replace("(", "").replace(")", ""),
-                      price: r.list_price || 0,
-                    })),
-                })
-              }
+                  items: resolvedItems,
+                });
+              }}
             />
             <ActionWithTooltip
               tooltip={useTranslate("delete_multiple_tooltip")}

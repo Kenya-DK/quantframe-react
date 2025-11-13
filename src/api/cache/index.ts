@@ -51,4 +51,7 @@ export class CacheModule {
     let items = await this.getRivenWeapons();
     return items.find((i) => i.wfm_url_name === id);
   }
+  async get_chat_link(unique_name: string): Promise<TauriTypes.ChatLink> {
+    return await this.client.sendInvoke<TauriTypes.ChatLink>("cache_get_chat_link", { unique_name });
+  }
 }

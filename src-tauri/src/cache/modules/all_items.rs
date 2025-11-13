@@ -1,10 +1,8 @@
 use std::sync::{Arc, Mutex, Weak};
 
-use utils::{
-    get_location, info, Error, LoggerOptions,
-};
+use utils::{get_location, info, Error, LoggerOptions};
 
-use crate::{cache::*, enums::*};
+use crate::{cache::*, enums::*, types::ChatLink};
 
 #[derive(Debug)]
 pub struct AllItemsModule {
@@ -79,6 +77,53 @@ impl AllItemsModule {
                 get_location!(),
             )),
         }
+    }
+    pub fn get_chat_link(&self, find_by: FindBy) -> Result<ChatLink, Error> {
+        let client = self.client.upgrade().expect("Client should not be dropped");
+        let item = self.get_by(find_by.clone())?;
+        if item.is_none() {
+            return Err(Error::new(
+                "Cache:GetWFName",
+                "Item not found",
+                get_location!(),
+            ));
+        }
+        let item = item.unwrap();
+        let name = item.name.clone();
+
+        let tags = if let Some(trade_module) = client
+            .tradable_item()
+            .get_by(find_by.clone())
+            .ok()
+            .flatten()
+        {
+            trade_module.tags.clone()
+        } else {
+            Vec::new()
+        };
+        let mut suffix = String::new();
+
+        if tags.iter().any(|tag| tag == "blueprint") {
+            suffix.push_str("Blueprint");
+        } else if tags.iter().any(|tag| tag == "set") {
+            suffix.push_str("Set");
+        }
+
+        if item.part_of_set.is_some() {
+            let main_part = self.get_chat_link(FindBy::new(
+                FindByType::UniqueName,
+                item.part_of_set.unwrap(),
+            ))?;
+            if name != "Blueprint" {
+                return Ok(ChatLink::new(
+                    format!("{} {}", main_part.link, name),
+                    &suffix,
+                ));
+            } else {
+                return Ok(ChatLink::new(format!("{}", main_part.link), &suffix));
+            }
+        }
+        return Ok(ChatLink::new(name.trim(), &suffix));
     }
     /**
      * Creates a new `AllItemsModule` from an existing one, sharing the client.

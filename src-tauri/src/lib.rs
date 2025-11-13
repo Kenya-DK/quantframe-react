@@ -205,6 +205,7 @@ pub fn run() {
             commands::cache::cache_get_theme_presets,
             commands::cache::cache_create_theme,
             commands::cache::cache_open_theme_folder,
+            commands::cache::cache_get_chat_link,
             // Log commands
             commands::logs::log_export,
             // Live Scraper commands

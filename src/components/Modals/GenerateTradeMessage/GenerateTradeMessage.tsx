@@ -1,27 +1,23 @@
 import { useTranslateCommon, useTranslateModals } from "@hooks/useTranslate.hook";
-import { Box, Checkbox, Group, Stack, TextInput } from "@mantine/core";
+import { Box, Checkbox, Group, Stack, TextInput, Text } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { ActionWithTooltip } from "../../Shared/ActionWithTooltip";
 import { faCopy } from "@fortawesome/free-solid-svg-icons";
 import { notifications } from "@mantine/notifications";
+import { TauriTypes } from "$types";
+const MAX_LENGTH = 180;
 
-export interface TradeMessage {
-  prefix?: string;
-  suffix?: string;
-  name: string;
-  price: number;
-}
 export interface GenerateTradeMessageModalProps {
   prefix: string;
   suffix: string;
-  items: TradeMessage[];
+  items: TauriTypes.ChatLink[];
 }
 
 export function GenerateTradeMessageModal({ prefix, suffix, items }: GenerateTradeMessageModalProps) {
   const form = useForm({
     initialValues: {
-      prefix: prefix,
-      suffix: suffix,
+      prefix: prefix || "",
+      suffix: suffix || "",
       spacing: true,
     },
   });
@@ -32,23 +28,22 @@ export function GenerateTradeMessageModal({ prefix, suffix, items }: GenerateTra
     useTranslate(`fields.${key}`, { ...context }, i18Key);
 
   const GenerateMessage = () => {
-    const MAX_LENGTH = 180;
     const { prefix, suffix } = form.values;
     let message = prefix;
     items.forEach((item) => {
       let candidate = `${message}`;
       if (item.prefix) candidate += `${item.prefix}`;
-      candidate += `[${item.name}]`;
+      candidate += `[${item.link}]`;
       if (item.suffix) candidate += `${item.suffix} `;
-      candidate += `${item.price}p`;
-      if (form.values.spacing) candidate += " ";
+      if (form.values.spacing) candidate = candidate.replace(/<SP>/g, " ");
+      else candidate = candidate.replace(/<SP>/g, "");
 
       if (candidate.length > MAX_LENGTH) return;
       message = candidate;
     });
     // Add flair if space allows
     if (message.length <= MAX_LENGTH - suffix.length) message += suffix;
-    return message;
+    return message || "";
   };
   const CopyToClipboard = () => {
     const message = GenerateMessage();
@@ -82,6 +77,8 @@ export function GenerateTradeMessageModal({ prefix, suffix, items }: GenerateTra
           </Group>
         </Group>
         <TextInput
+          readOnly
+          maxLength={MAX_LENGTH}
           label={useTranslateFields("message.label")}
           description={useTranslateFields("message.description")}
           value={GenerateMessage()}
@@ -95,6 +92,7 @@ export function GenerateTradeMessageModal({ prefix, suffix, items }: GenerateTra
             />
           }
         />
+        <Text fw={"xs"}>{useTranslateFields("message.length_info", { length: GenerateMessage().length, max: MAX_LENGTH })}</Text>
       </Stack>
     </Box>
   );

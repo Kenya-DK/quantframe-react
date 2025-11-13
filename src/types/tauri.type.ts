@@ -260,7 +260,7 @@ export namespace TauriTypes {
   }
   export interface CacheItemBase {
     name: string;
-    uniqueName: string;
+    unique_name: string;
   }
   export interface CacheTheme {
     name: string;
@@ -714,6 +714,12 @@ export namespace TauriTypes {
     wfm_id: string;
     wfm_url: string;
     info?: StockItemDetails;
+  }
+  export interface ChatLink {
+    prefix: string;
+    link: string;
+    suffix: string;
+    properties?: Record<string, string | number>;
   }
   export interface TradeEntry {
     id: number;
