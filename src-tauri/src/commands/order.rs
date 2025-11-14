@@ -6,7 +6,7 @@ use std::{
 use entity::{dto::*, enums::*};
 use serde_json::{json, Value};
 use utils::{filters_by, get_location, group_by, Error};
-use wf_market::types::Order;
+use wf_market::{enums::OrderType, types::Order};
 
 use crate::{
     add_metric,
@@ -120,7 +120,7 @@ pub fn get_wfm_orders_pagination(
 pub async fn get_wfm_orders_status_counts(
     query: WfmOrderPaginationQueryDto,
     app: tauri::State<'_, Mutex<AppState>>,
-) -> Result<HashMap<String, (usize, i64)>, Error> {
+) -> Result<HashMap<String, (usize, i64, f64)>, Error> {
     let items = get_wfm_orders_pagination(query, app)?.results;
     let mut grouped = group_by(&items, |item| item.order_type.to_string())
         .iter()
@@ -133,18 +133,31 @@ pub async fn get_wfm_orders_status_counts(
                         .iter()
                         .map(|item| (item.platinum * item.quantity) as i64)
                         .sum(),
+                    items
+                        .iter()
+                        .map(|item| (item.get_details().profit * item.quantity as f64) as f64)
+                        .sum(),
                 ),
             )
         })
         .collect::<HashMap<_, _>>();
+
     if grouped.get("buy").is_none() {
-        grouped.insert("buy".to_string(), (0, 0));
+        grouped.insert("buy".to_string(), (0, 0, 0.0));
     }
     if grouped.get("sell").is_none() {
-        grouped.insert("sell".to_string(), (0, 0));
+        grouped.insert("sell".to_string(), (0, 0, 0.0));
     }
     Ok(grouped)
 }
+
+// #[tauri::command]
+// pub async fn get_stock_item_financial_report(
+//     query: StockItemPaginationQueryDto,
+// ) -> Result<FinancialReport, Error> {
+//     let items = get_stock_item_pagination(query).await?;
+//     Ok(FinancialReport::from(&items.results))
+// }
 
 #[tauri::command]
 pub async fn order_delete_all(

@@ -12,7 +12,7 @@ export type ColorInfoProps = {
 };
 export function ColorInfo({ active, onClick, text, tooltip, infoProps }: ColorInfoProps) {
   return (
-    <Tooltip disabled={!text} label={tooltip} position="top">
+    <Tooltip disabled={!!text} label={tooltip} position="top">
       <UnstyledButton disabled={!onClick} className={classes.button} onClick={onClick}>
         <Group gap={5}>
           <Box w={16} h={16} className={classes.box} {...infoProps} />

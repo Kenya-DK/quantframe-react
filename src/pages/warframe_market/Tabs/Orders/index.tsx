@@ -1,7 +1,7 @@
-import { ActionIcon, Box, Divider, Group, Pagination, ScrollArea, Select, SimpleGrid } from "@mantine/core";
+import { ActionIcon, Box, Divider, Group, Pagination, ScrollArea, Select, SimpleGrid, Text, Tooltip } from "@mantine/core";
 import { SearchField } from "@components/Forms/SearchField";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faArrowDown, faArrowUp, faCartShopping, faInfoCircle, faPen, faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faArrowDown, faArrowUp, faCartShopping, faInfoCircle, faPen, faRefresh, faSackDollar, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import classes from "../../WarframeMarket.module.css";
@@ -15,6 +15,7 @@ import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 import { Loading } from "@components/Shared/Loading";
 import { useStockModals } from "./modals";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { TextTranslate } from "../../../../components/Shared/TextTranslate";
 
 interface OrderPanelProps {
   isActive?: boolean;
@@ -66,7 +67,6 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
   const handleDelete = (data: { current: number; total: number }) => {
     setDeletingOrders(data);
   };
-
   // Use the custom hook for Tauri events
   useTauriEvent(TauriTypes.Events.RefreshWfmOrders, handleRefresh, [refetchQueries]);
   useTauriEvent(TauriTypes.Events.OnDeleteWfmOrders, handleDelete, []);
@@ -122,8 +122,26 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
                   "data-color-mode": "bg",
                   "data-order-type": key,
                 }}
-                text={useTranslateOrderType(`${key}`) + ` (${count[0]})` + ` (${count[1]})`}
-                tooltip={useTranslateOrderType(`details.${key}`)}
+                text={
+                  <TextTranslate
+                    i18nKey={useTranslateTabOrder(`status`)}
+                    size="lg"
+                    values={{
+                      type: useTranslateOrderType(`${key}`),
+                      total: count[0],
+                      platinum: count[1],
+                      profit: count[2],
+                    }}
+                    textProps={{ td: key == queryData.order_type ? "line-through" : "" }}
+                    components={{
+                      profitIco: (
+                        <Tooltip label={useTranslateTabOrder("tooltip_profit")}>
+                          <FontAwesomeIcon icon={faSackDollar} />
+                        </Tooltip>
+                      ),
+                    }}
+                  />
+                }
               />
             ))}
         </Group>
@@ -157,7 +175,7 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
               key={order.id}
               order={order}
               footer={
-                <>
+                <Group gap={3}>
                   <ActionWithTooltip
                     tooltip={useTranslateButtons("sell_manual." + (order.type == WFMarketTypes.OrderType.Buy ? "buy_tooltip" : "sell_tooltip"))}
                     icon={faPen}
@@ -212,7 +230,7 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
                       OpenDeleteModal(order.id);
                     }}
                   />
-                </>
+                </Group>
               }
             />
           ))}
@@ -220,6 +238,13 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
       </ScrollArea>
       <Divider mt={"md"} />
       <Group grow mt={"md"}>
+        <Text>
+          {useTranslateCommon("pagination_total_items", {
+            start: (queryData.page - 1) * queryData.limit + 1,
+            end: Math.min(queryData.page * queryData.limit, paginationQuery.data?.total || 0),
+            total: paginationQuery.data?.total || 0,
+          })}
+        </Text>
         <Group justify="flex-end">
           <Pagination
             value={queryData.page}

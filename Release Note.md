@@ -1,9 +1,14 @@
 ## Fix/Changes
 
 - 🛠️ Fix Wishlist generate WTB messages
-- ✨ Y can how add spacing in the Generate WTB/WTS messages.
+- 🛠️ Add missing translations to the about navbar.
+- ✨ You can now add spacing in the Generate WTB/WTS messages.
+- ✨ Show profit on order in the wfm orders tab.
 
 ## TODO's
+
+Fix so the knapsack algorithm doesn't delete akk items after a cycle.
+Make the app more responsive.
 
 ## Feature's
 

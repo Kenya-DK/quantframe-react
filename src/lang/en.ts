@@ -193,6 +193,7 @@ export const en = {
       title: "Name",
       value: "{{name}} {{quantity}} <blue>{{sub_type}}</blue>",
     },
+    pagination_total_items: "{{start}} - {{end}} / {{total}}",
     prompts: {
       delete_item: {
         title: "Are you sure?",
@@ -426,6 +427,7 @@ export const en = {
           warframe_market: "Warframe Market",
           trading_analytics: "Trading Analytics",
           chat: "Chat",
+          about: "About",
         },
       },
     },
@@ -1612,6 +1614,8 @@ export const en = {
       tabs: {
         orders: {
           title: "Orders",
+          status: "<blue>{{type}}</blue> | <qty/> <blue>{{total}}</blue> | <plat/> <blue>{{platinum}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+          tooltip_profit: "Estimated Profit",
           buttons: {
             refresh_tooltip: "Refresh the order list",
             delete_all_tooltip: "Delete all orders",
