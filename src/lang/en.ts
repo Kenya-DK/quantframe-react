@@ -1556,6 +1556,7 @@ export const en = {
           title: "Login Error",
           TooManyRequests: "Too many requests, please try again later",
           InvalidCredentials: "Password invalid",
+          InternalServerError: "Login service is currently unavailable, please try again later",
           banned: "You are banned",
           ban_reason: "<red>Reason: {{reason}}</red>",
           verification: "You need to verify your account Do this on Warframe Market website",
