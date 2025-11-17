@@ -1,7 +1,7 @@
 use std::{process::Command, sync::Mutex};
 
-use serde_json::{json, Value};
-use utils::{get_location, Error};
+use serde_json::Value;
+use utils::Error;
 
 use crate::{
     cache::{client::CacheState, types::*},
