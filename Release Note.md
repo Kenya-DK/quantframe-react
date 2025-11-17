@@ -3,6 +3,8 @@
 - 🛠️ Fix Wishlist generate WTB messages
 - 🛠️ Add missing translations to the about navbar.
 - 🛠️ Fix show alerts washing showing when logout
+- 🛠️ Fix delete multiple transactions not clearing selection
+- 🛠️ Fix ratelimit on rivens
 - ✨ You can now add spacing in the Generate WTB/WTS messages.
 - ✨ Show profit on order in the wfm orders tab.
 

@@ -392,6 +392,7 @@ export const en = {
       riven: {
         cooldown: "Riven Cooldown: <blue>{{seconds}}</blue> seconds remaining",
         checking: "Checking Riven: <blue>{{name}}</blue> <blue>{{mod_name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        rate_limited: "Rate Limited: Waiting for <blue>{{seconds}}</blue> seconds before continuing",
       },
     },
     searchfield: {

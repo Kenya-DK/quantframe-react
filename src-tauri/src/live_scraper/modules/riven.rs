@@ -154,17 +154,34 @@ impl RivenModule {
                     .await
                 {
                     Ok(auctions) => auctions,
-                    Err(e) => {
-                        return Err(Error::from_wfm(
-                            format!("{}:Check", COMPONENT),
-                            &format!(
-                                "Failed to get live auctions for item {}",
-                                stock_riven.wfm_weapon_url
-                            ),
-                            e,
-                            get_location!(),
-                        ))
-                    }
+                    Err(e) => match e {
+                        wf_market::errors::ApiError::TooManyRequests(err) => {
+                            warning(
+                                    format!("{}:Check", COMPONENT),
+                                    &format!(
+                                        "Rate limited when getting live auctions for item {}. Skipping this item for now.",
+                                        stock_riven.wfm_weapon_url
+                                    ),
+                                    &log_options,
+                                );
+                            self.send_event(
+                                "rate_limited",
+                                Some(json!({"seconds": err.retry_after})),
+                            );
+                            continue;
+                        }
+                        _ => {
+                            return Err(Error::from_wfm(
+                                format!("{}:Check", COMPONENT),
+                                &format!(
+                                    "Failed to get live auctions for item {}",
+                                    stock_riven.wfm_weapon_url
+                                ),
+                                e,
+                                get_location!(),
+                            ))
+                        }
+                    },
                 }
             };
             // Apply filters to auctions
