@@ -1138,6 +1138,7 @@ export const en = {
           message: {
             label: "Message",
             description: "The generated trade message",
+            length_info: "{{current}} / {{max}} characters",
           },
           spacing: {
             label: "Item Spacing",

@@ -92,7 +92,7 @@ export function GenerateTradeMessageModal({ prefix, suffix, items }: GenerateTra
             />
           }
         />
-        <Text fw={"xs"}>{useTranslateFields("message.length_info", { length: GenerateMessage().length, max: MAX_LENGTH })}</Text>
+        <Text fw={"xs"}>{useTranslateFields("message.length_info", { current: GenerateMessage().length, max: MAX_LENGTH })}</Text>
       </Stack>
     </Box>
   );
