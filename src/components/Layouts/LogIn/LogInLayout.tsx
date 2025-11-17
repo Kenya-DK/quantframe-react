@@ -10,9 +10,6 @@ import { Header } from "@components/Layouts/Shared/Header";
 import { useAuthContext } from "@contexts/auth.context";
 import { open } from "@tauri-apps/plugin-shell";
 import { AddMetric } from "@api/index";
-import { Ticker } from "@components/Layouts/Shared/Ticker";
-import { QuantframeApiTypes } from "$types";
-import { useAppContext } from "@contexts/app.context";
 import faWarframeMarket from "@icons/facWarframeMarket";
 import facTradingAnalytics from "@icons/faTradingAnalytics";
 
@@ -21,7 +18,6 @@ export function LogInLayout() {
   const [lastPage, setLastPage] = useState<string>("");
   // Contexts
   const { user } = useAuthContext();
-  const { alerts } = useAppContext();
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateComponent(`layout.log_in.${key}`, { ...context }, i18Key);
@@ -110,18 +106,6 @@ export function LogInLayout() {
     setLastPage(link.id || "");
     AddMetric("active_page", link.id);
   };
-  const handleAlertClick = (alert: QuantframeApiTypes.AlertDto) => {
-    if (!alert.properties) return;
-    const { event, payload } = alert.properties as { event: string; payload: any };
-    if (!event) return;
-    switch (event) {
-      case "open_url":
-        if (payload) open(payload);
-        break;
-      default:
-        break;
-    }
-  };
   return (
     <AppShell
       classNames={classes}
@@ -133,17 +117,6 @@ export function LogInLayout() {
     >
       <AppShell.Header withBorder={false}>
         <Header />
-        <Ticker
-          data={alerts.map((alert) => ({
-            label: alert.context,
-            props: {
-              "data-alert-type": alert.type,
-              "data-color-mode": "text",
-            },
-            onClick: alert.properties ? () => handleAlertClick(alert) : undefined,
-          }))}
-          loop
-        />
       </AppShell.Header>
 
       <AppShell.Navbar withBorder={false}>
