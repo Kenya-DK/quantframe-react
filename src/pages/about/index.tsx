@@ -71,7 +71,7 @@ export default function AboutPage() {
               // cardProps={{ style: { width: "1000px" } }}
               onClick={() => {
                 modals.openContextModal({
-                  modal: "patreon",
+                  modalKey: "patreon",
                   withCloseButton: false,
                   size: "50vw",
                   innerProps: patreonInfo,

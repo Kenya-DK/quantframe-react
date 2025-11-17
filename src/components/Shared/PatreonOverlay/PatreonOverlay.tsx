@@ -49,7 +49,7 @@ export function PatreonOverlay({ permission, tier }: PatreonOverlayProps) {
             radius="sm"
             onClick={() => {
               modals.openContextModal({
-                modal: "patreon",
+                modalKey: "patreon",
                 withCloseButton: false,
                 size: "50vw",
                 innerProps: patreonInfo,

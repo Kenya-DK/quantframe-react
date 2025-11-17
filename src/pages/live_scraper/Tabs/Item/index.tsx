@@ -15,7 +15,7 @@ import { StatsWithSegments } from "@components/Shared/StatsWithSegments";
 import { SearchField } from "@components/Forms/SearchField";
 import { ColorInfo } from "@components/Shared/ColorInfo";
 import { notifications } from "@mantine/notifications";
-import { GetChatLinkName, getSafePage, GetSubTypeDisplay } from "@utils/helper";
+import { GetChatLinkNameMultiple, getSafePage } from "@utils/helper";
 import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 import { ColumnActions } from "../../Columns/ColumnActions";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
@@ -156,22 +156,14 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
               iconProps={{ size: "xs" }}
               actionProps={{ size: "sm", disabled: selectedRecords.length === 0 }}
               onClick={async () => {
-                let asd = selectedRecords.map(async (r) => {
-                  {
-                    let chatLink = await GetChatLinkName(r);
-                    if (chatLink.suffix != "") chatLink.suffix = "<SP>" + chatLink.suffix;
-                    let subTypeDisplay = GetSubTypeDisplay(r);
-                    if (subTypeDisplay != "") chatLink.suffix += "<SP>" + subTypeDisplay;
-                    chatLink.suffix += `<SP>${r.list_price || 0}p`;
-                    return chatLink;
-                  }
-                });
-                let resolvedItems = await Promise.all(asd);
-                console.log(resolvedItems);
+                let filteredRecords = selectedRecords.filter((r) => r.list_price && r.list_price > 0);
                 OpenWTSModal({
                   prefix: "WTS ",
                   suffix: " :heart:",
-                  items: resolvedItems,
+                  items: (await GetChatLinkNameMultiple(filteredRecords)).map((chatLink, index) => {
+                    chatLink.suffix += `<SP>${filteredRecords[index].list_price || 0}p`;
+                    return chatLink;
+                  }),
                 });
               }}
             />

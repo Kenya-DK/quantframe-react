@@ -147,7 +147,17 @@ export const GetChatLinkName = async (value: ItemWithMeta): Promise<TauriTypes.C
   let findItem = undefined;
   if ("wfm_id" in value) findItem = await api.cache.getTradableItemById(value.wfm_id || "");
   if (!findItem) return { link: "<Unknown Item>", suffix: "", prefix: "" };
-  return await api.cache.get_chat_link(findItem!.unique_name || "");
+
+  let chatLink = await api.cache.get_chat_link(findItem!.unique_name || "");
+  if (chatLink.suffix != "") chatLink.suffix = "<SP>" + chatLink.suffix;
+  let subTypeDisplay = GetSubTypeDisplay(value);
+  if (subTypeDisplay != "") chatLink.suffix += "<SP>" + subTypeDisplay;
+  return chatLink;
+};
+export const GetChatLinkNameMultiple = async (value: ItemWithMeta[]): Promise<TauriTypes.ChatLink[]> => {
+  let results: TauriTypes.ChatLink[] = [];
+  for (let item of value) results.push(await GetChatLinkName(item));
+  return results;
 };
 export const GetItemDisplay = (value: ItemWithMeta, tradableItems?: TauriTypes.CacheTradableItem[]) => {
   if (!value) return "Unknown Item";

@@ -15,7 +15,7 @@ interface ModalHooks {
 export const useStockModals = ({ deleteStockMutation, importStockMutation }: ModalHooks) => {
   const OpenImportModal = (id: string) => {
     modals.openContextModal({
-      modal: "prompt",
+      modalKey: "prompt",
       title: useTranslateCommon("prompts.bought_manual.title"),
       innerProps: {
         fields: [

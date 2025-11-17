@@ -28,7 +28,7 @@ export const LoggingPanel = ({}: LoggingPanelProps) => {
     useTranslateTabLogging(`prompt.${key}`, { ...context }, i18Key);
   const OpenAddLogModal = () => {
     modals.openContextModal({
-      modal: "prompt",
+      modalKey: "prompt",
       title: useTranslateBasePrompt("name.title"),
       innerProps: {
         fields: [

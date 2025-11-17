@@ -12,7 +12,7 @@ import classes from "../../LiveScraper.module.css";
 import { DataTable } from "mantine-datatable";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
-import { GetItemDisplay, getSafePage, GetSubTypeDisplay } from "@utils/helper";
+import { GetChatLinkNameMultiple, getSafePage } from "@utils/helper";
 import { RivenAttributes } from "@components/DataDisplay/RivenAttributes";
 import { useStockMutations } from "./mutations";
 import { useStockModals } from "./modals";
@@ -163,19 +163,17 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
               icon={faMessage}
               iconProps={{ size: "xs" }}
               actionProps={{ size: "sm", disabled: selectedRecords.length === 0 }}
-              onClick={() =>
+              onClick={async () => {
+                let filteredRecords = selectedRecords.filter((r) => r.list_price && r.list_price > 0);
                 OpenWTSModal({
                   prefix: "WTS ",
                   suffix: " :heart:",
-                  items: selectedRecords
-                    .filter((r) => r.list_price)
-                    .map((r) => ({
-                      name: `${GetItemDisplay(r)}`,
-                      suffix: GetSubTypeDisplay(r)?.replace("(", "").replace(")", ""),
-                      price: r.list_price || 0,
-                    })),
-                })
-              }
+                  items: (await GetChatLinkNameMultiple(filteredRecords)).map((chatLink, index) => {
+                    chatLink.suffix += `<SP>${filteredRecords[index].list_price || 0}p`;
+                    return chatLink;
+                  }),
+                });
+              }}
             />
             <ActionWithTooltip
               tooltip={useTranslate("delete_multiple_tooltip")}
