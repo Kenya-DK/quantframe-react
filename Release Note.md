@@ -2,6 +2,7 @@
 
 - 🛠️ Fix Wishlist generate WTB messages
 - 🛠️ Add missing translations to the about navbar.
+- 🛠️ Fix show alerts washing showing when logout
 - ✨ You can now add spacing in the Generate WTB/WTS messages.
 - ✨ Show profit on order in the wfm orders tab.
 
