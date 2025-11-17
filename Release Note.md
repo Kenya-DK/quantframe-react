@@ -5,6 +5,7 @@
 - 🛠️ Fix show alerts washing showing when logout
 - 🛠️ Fix delete multiple transactions not clearing selection
 - 🛠️ Fix ratelimit on rivens
+- 🛠️ Fix error when have platinum patreon
 - ✨ You can now add spacing in the Generate WTB/WTS messages.
 - ✨ Show profit on order in the wfm orders tab.
 
@@ -12,6 +13,7 @@
 
 Fix so the knapsack algorithm doesn't delete akk items after a cycle.
 Make the app more responsive.
+Add some more if in the auction tab
 
 ## Feature's
 
