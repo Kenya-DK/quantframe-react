@@ -100,6 +100,20 @@ export const en = {
           message_multiple: "{{count}} stock rivens have been successfully deleted.",
         },
       },
+      delete_transaction: {
+        error: {
+          title: "Delete Transaction Error",
+          title_multiple: "Delete Transaction Error",
+          message: "An error occurred while trying to delete the transaction.",
+          message_multiple: "An error occurred while trying to delete multiple transactions.",
+        },
+        success: {
+          title: "Delete Transaction Success",
+          title_multiple: "Delete Transaction Success",
+          message: "Transaction {{name}} has been successfully deleted.",
+          message_multiple: "{{count}} transactions have been successfully deleted.",
+        },
+      },
       sell_stock_riven: {
         error: { title: "Sell Stock Error", message: "An error occurred while trying to sell stock." },
         success: { title: "Sell Stock Success", message: "Stock item {{name}} has been successfully sold." },

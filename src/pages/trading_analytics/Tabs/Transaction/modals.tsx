@@ -15,12 +15,12 @@ interface ModalHooks {
   deleteMutation: {
     mutateAsync: (id: number) => Promise<any>;
   };
-  deleteBulkMutation: {
+  deleteMultipleMutation: {
     mutateAsync: (ids: number[]) => Promise<any>;
   };
 }
 
-export const useModals = ({ useTranslatePrompt, setLoadingRows, updateMutation, deleteMutation, deleteBulkMutation }: ModalHooks) => {
+export const useModals = ({ useTranslatePrompt, setLoadingRows, updateMutation, deleteMutation, deleteMultipleMutation }: ModalHooks) => {
   const OpenUpdateModal = (item: TauriTypes.TransactionDto) => {
     modals.open({
       title: useTranslatePrompt("update_title"),
@@ -47,11 +47,14 @@ export const useModals = ({ useTranslatePrompt, setLoadingRows, updateMutation, 
 
   const OpenDeleteBulkModal = (ids: number[]) => {
     modals.openConfirmModal({
-      title: useTranslateCommon("prompts.delete_bulk_item.title", { count: ids.length }),
-      children: <Text size="sm">{useTranslateCommon("prompts.delete_bulk_item.message", { count: ids.length })}</Text>,
-      labels: { confirm: useTranslateCommon("prompts.delete_bulk_item.confirm"), cancel: useTranslateCommon("prompts.delete_bulk_item.cancel") },
+      title: useTranslateCommon("prompts.delete_multiple_items.title", { count: ids.length }),
+      children: <Text size="sm">{useTranslateCommon("prompts.delete_multiple_items.message", { count: ids.length })}</Text>,
+      labels: {
+        confirm: useTranslateCommon("prompts.delete_multiple_items.confirm"),
+        cancel: useTranslateCommon("prompts.delete_multiple_items.cancel"),
+      },
       onConfirm: async () => {
-        await deleteBulkMutation.mutateAsync(ids);
+        await deleteMultipleMutation.mutateAsync(ids);
         setLoadingRows(() => []);
       },
     });

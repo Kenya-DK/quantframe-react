@@ -20,7 +20,7 @@ import { useModals } from "./modals";
 import { HasPermission } from "@api/index";
 import { DatePickerInput } from "@mantine/dates";
 import dayjs from "dayjs";
-import { ItemName } from "../../../../components/DataDisplay/ItemName";
+import { ItemName } from "@components/DataDisplay/ItemName";
 interface TransactionPanelProps {
   isActive?: boolean;
 }
@@ -71,10 +71,9 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
   };
 
   // Mutations
-  const { exportMutation, updateMutation, deleteMutation, deleteBulkMutation } = useMutations({
+  const { exportMutation, updateMutation, deleteMutation, deleteMultipleMutation } = useMutations({
     refetchQueries,
     setLoadingRows,
-    setSelectedRecords,
   });
 
   // Modals
@@ -83,10 +82,14 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
     deleteMutation,
     setLoadingRows,
     updateMutation,
-    deleteBulkMutation,
+    deleteMultipleMutation,
     useTranslateBasePrompt,
     useTranslatePrompt,
   });
+
+  useEffect(() => {
+    setSelectedRecords([]);
+  }, [deleteMultipleMutation.isSuccess, deleteMutation.isSuccess]);
 
   // Use the custom hook for Tauri events
   useTauriEvent(TauriTypes.Events.RefreshTransactions, handleRefresh, []);
