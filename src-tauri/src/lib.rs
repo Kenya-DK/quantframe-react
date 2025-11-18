@@ -1,25 +1,18 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![allow(non_snake_case)]
 #![allow(deprecated)]
-// #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use app::client::AppState;
-// use cache::client::CacheClient;
-// use debug::DebugClient;
-// use live_scraper::client::LiveScraperClient;
-// use log_parser::client::LogParser;
 use ::utils::clear_logs;
 use ::utils::critical;
 use ::utils::error;
 use ::utils::info;
 use migration::{Migrator, MigratorTrait};
-// use notification::client::NotifyClient;
 use ::utils::init_logger;
 use ::utils::set_base_path;
 use ::utils::warning;
 use ::utils::Error;
 use ::utils::LoggerOptions;
 use service::sea_orm::{Database, DatabaseConnection};
-// use settings::SettingsState;
 
 use std::env;
 use std::panic;
