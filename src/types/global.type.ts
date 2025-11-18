@@ -66,6 +66,7 @@ export interface ItemMeta {
   wfm_id?: string;
   wfm_url?: string;
   quantity?: number;
+  type?: string;
 }
 
 export type ItemWithMeta =

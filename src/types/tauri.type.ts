@@ -288,7 +288,7 @@ export namespace TauriTypes {
     godRoll: RivenGodRoll;
     name: string;
     riven_type: string;
-    uniqueName: string;
+    unique_name: string;
     upgrade_type: string;
     wfm_group: string;
     wfm_icon: string;

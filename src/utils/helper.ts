@@ -143,12 +143,13 @@ export const GetSubTypeDisplay = (value: ItemWithMeta) => {
 
 export const GetChatLinkName = async (value: ItemWithMeta): Promise<TauriTypes.ChatLink> => {
   if (!value) return { link: "<Unknown Item>", suffix: "", prefix: "" };
-
   let findItem = undefined;
   if ("wfm_id" in value) findItem = await api.cache.getTradableItemById(value.wfm_id || "");
+  if ("wfm_weapon_id" in value && !findItem) findItem = await api.cache.getRivenWeaponsById(value.wfm_weapon_id || "");
   if (!findItem) return { link: "<Unknown Item>", suffix: "", prefix: "" };
 
   let chatLink = await api.cache.get_chat_link(findItem!.unique_name || "");
+  if ("mod_name" in value) chatLink.link += ` ${value.mod_name}`;
   if (chatLink.suffix != "") chatLink.suffix = "<SP>" + chatLink.suffix;
   let subTypeDisplay = GetSubTypeDisplay(value);
   if (subTypeDisplay != "") chatLink.suffix += "<SP>" + subTypeDisplay;

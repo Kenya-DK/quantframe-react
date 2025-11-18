@@ -1,13 +1,6 @@
 ## Fix/Changes
 
-- 🛠️ Fix Wishlist generate WTB messages
-- 🛠️ Add missing translations to the about navbar.
-- 🛠️ Fix show alerts washing showing when logout
-- 🛠️ Fix delete multiple transactions not clearing selection
-- 🛠️ Fix ratelimit on rivens
-- 🛠️ Fix error when have platinum patreon
-- ✨ You can now add spacing in the Generate WTB/WTS messages.
-- ✨ Show profit on order in the wfm orders tab.
+- 🛠️ Fix so riven weapons are properly fetched from the cache when generating chat links.
 
 ## TODO's
 
