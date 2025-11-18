@@ -134,7 +134,34 @@ export const StatesPanel = ({}: StatesPanelProps) => {
             <Text>Order Limit: {wfmState?.order_limit || "N/A"}</Text>
           </Group>
           <Grid>
-            <Grid.Col span={6}>
+            <Grid.Col span={3}>
+              <DataTable
+                records={Object.entries(wfmState?.tracking || {}).map(([event, count]) => ({ event, count }))}
+                idAccessor={"event"}
+                columns={[
+                  { accessor: "event", title: "Event" },
+                  { accessor: "count", title: "Listener Count" },
+                ]}
+              />
+            </Grid.Col>
+            <Grid.Col span={3}>
+              <DataTable
+                records={Object.entries(wfmState?.limiters || {}).map(([key, data]) => ({
+                  key,
+                  limit: (data as any).limit,
+                  wait_time_sec: (data as any).wait_time_sec,
+                  quota_type: (data as any).quota_type,
+                }))}
+                idAccessor={"key"}
+                columns={[
+                  { accessor: "key", title: "Key" },
+                  { accessor: "limit", title: "Limit" },
+                  { accessor: "wait_time_sec", title: "Wait Time (sec)" },
+                  { accessor: "quota_type", title: "Quota Type" },
+                ]}
+              />
+            </Grid.Col>
+            <Grid.Col span={3}>
               <Title order={3} mb={"md"}>
                 Buy Orders: {wfmState?.user_orders.buy_orders.length || 0}
               </Title>
@@ -149,7 +176,7 @@ export const StatesPanel = ({}: StatesPanelProps) => {
                 style={{ width: "100%" }}
               />
             </Grid.Col>
-            <Grid.Col span={6}>
+            <Grid.Col span={3}>
               <Title order={3} mb={"md"}>
                 Sell Orders: {wfmState?.user_orders.sell_orders.length || 0}
               </Title>
