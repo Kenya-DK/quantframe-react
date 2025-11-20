@@ -89,17 +89,17 @@ impl AllItemsModule {
             ));
         }
         let item = item.unwrap();
-        let name = item.name.clone();
+        let mut name = item.name.clone();
 
-        let tags = if let Some(trade_module) = client
+        let (trade_name, tags) = if let Some(trade_module) = client
             .tradable_item()
             .get_by(find_by.clone())
             .ok()
             .flatten()
         {
-            trade_module.tags.clone()
+            (trade_module.name.clone(), trade_module.tags.clone())
         } else {
-            Vec::new()
+            (String::new(), Vec::new())
         };
         let mut suffix = String::new();
 
@@ -107,6 +107,8 @@ impl AllItemsModule {
             suffix.push_str("Blueprint");
         } else if tags.iter().any(|tag| tag == "set") {
             suffix.push_str("Set");
+        } else if tags.iter().any(|tag| tag == "relic") {
+            name = format!("{}", trade_name);
         }
 
         if item.part_of_set.is_some() {

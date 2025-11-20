@@ -100,7 +100,7 @@ export function SelectTradableItem({ hide_sub_type, value, onChange, description
         }}
         onChange={async (item) => {
           if (!item) return;
-          const tItem = items.find((i) => i.wfm_url_name === item);
+          let tItem = items.find((i) => i.wfm_url_name === item);
           if (!tItem) return;
           handleSelect(tItem);
         }}

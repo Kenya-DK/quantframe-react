@@ -15,7 +15,7 @@ import { StatsWithSegments } from "@components/Shared/StatsWithSegments";
 import { SearchField } from "@components/Forms/SearchField";
 import { ColorInfo } from "@components/Shared/ColorInfo";
 import { notifications } from "@mantine/notifications";
-import { GetChatLinkNameMultiple, getSafePage } from "@utils/helper";
+import { getSafePage } from "@utils/helper";
 import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 import { ColumnActions } from "../../Columns/ColumnActions";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
@@ -160,10 +160,8 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
                 OpenWTSModal({
                   prefix: "WTS ",
                   suffix: " :heart:",
-                  items: (await GetChatLinkNameMultiple(filteredRecords)).map((chatLink, index) => {
-                    chatLink.suffix += `<SP>${filteredRecords[index].list_price || 0}p`;
-                    return chatLink;
-                  }),
+                  template: "[<link>] <type><variant><rank><amber_stars><cyan_stars><price>",
+                  items: filteredRecords,
                 });
               }}
             />

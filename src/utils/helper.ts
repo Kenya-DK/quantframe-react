@@ -121,43 +121,96 @@ export const formatNumber = (num: number) => {
   return num;
 };
 
-export const GetSubTypeDisplay = (value: ItemWithMeta) => {
-  let subType: ItemWithSubType | undefined;
-  if (!value) return undefined;
-  if ("sub_type" in value && !subType) subType = value.sub_type as TauriTypes.SubType;
-  if ("properties" in value && !subType) subType = value as TauriTypes.SubType;
+export interface DisplaySettings {
+  prefix?: string;
+  value?: string | number;
+  override?: boolean;
+  suffix?: string;
+}
 
-  if (!subType || Object.keys(subType).length == 0) return "";
-  let display = "";
-  if (subType.rank != undefined) display += `(R${subType.rank})`;
-  if ("variant" in subType) display += ` ${upperFirst(subType.variant || "")}`;
-  if ("subtype" in subType) display += ` ${upperFirst(subType.subtype || "")}`;
+export const ApplyTemplate = (template: string, data: Record<string, DisplaySettings>) => {
+  return template.replace(/<([^>]+)>/g, (_, key) => {
+    const { value, prefix, suffix } = data[key] || {};
+    return String(`${prefix || ""}${value || ""}${suffix || ""}`);
+  });
+};
 
-  // if (subType.variant ) display += ` [${upperFirst(subType.variant)}]`;
-  if ("amber_stars" in subType) display += ` ${subType.amber_stars}A`;
-  if ("amberStars" in subType) display += ` ${subType.amberStars}A`;
-  if ("cyan_stars" in subType) display += ` ${subType.cyan_stars}C`;
-  if ("cyanStars" in subType) display += ` ${subType.cyanStars}C`;
+export const GetSubTypeDisplay = (value: ItemWithMeta, template: string, settings: Record<string, DisplaySettings> = {}): string => {
+  return ApplyTemplate(template, GetSubTypeDisplayObject(value, settings));
+};
+const setValue = (display: Record<string, DisplaySettings>, settings: Record<string, DisplaySettings> = {}, key: string, value: string | number) => {
+  display[key] = { ...settings[key], value };
+};
+
+const extractSubType = (value: ItemWithMeta): ItemWithSubType | undefined => {
+  if (!value) return;
+  if ("sub_type" in value && value.sub_type) return value.sub_type as TauriTypes.SubType;
+  if ("properties" in value) return value as TauriTypes.SubType;
+};
+
+export const GetSubTypeDisplayObject = (value: ItemWithMeta, settings: Record<string, DisplaySettings> = {}): Record<string, DisplaySettings> => {
+  const subType = extractSubType(value);
+  if (!subType || Object.keys(subType).length === 0) return {};
+
+  const display: Record<string, DisplaySettings> = {};
+
+  // Rank
+  if (subType.rank !== undefined) setValue(display, settings, "rank", subType.rank);
+
+  // Variant / subtype
+  if ("variant" in subType) setValue(display, settings, "variant", upperFirst(subType.variant ?? ""));
+
+  if ("subtype" in subType) setValue(display, settings, "subtype", upperFirst(subType.subtype ?? ""));
+
+  // Stars (normalize different property names)
+  const amber = (subType as any).amber_stars ?? (subType as any).amberStars;
+  if (amber !== undefined) setValue(display, settings, "amber_stars", amber);
+
+  const cyan = (subType as any).cyan_stars ?? (subType as any).cyanStars;
+  if (cyan !== undefined) setValue(display, settings, "cyan_stars", cyan);
+
   return display;
 };
 
-export const GetChatLinkName = async (value: ItemWithMeta): Promise<TauriTypes.ChatLink> => {
-  if (!value) return { link: "<Unknown Item>", suffix: "", prefix: "" };
-  let findItem = undefined;
-  if ("wfm_id" in value) findItem = await api.cache.getTradableItemById(value.wfm_id || "");
-  if ("wfm_weapon_id" in value && !findItem) findItem = await api.cache.getRivenWeaponsById(value.wfm_weapon_id || "");
-  if (!findItem) return { link: "<Unknown Item>", suffix: "", prefix: "" };
+export const GetChatLinkName = async (
+  value: ItemWithMeta,
+  settings: Record<string, DisplaySettings> = {}
+): Promise<Record<string, DisplaySettings>> => {
+  if (!value) return { link: { value: "<Unknown Item>" } };
 
-  let chatLink = await api.cache.get_chat_link(findItem!.unique_name || "");
-  if ("mod_name" in value) chatLink.link += ` ${value.mod_name}`;
-  if (chatLink.suffix != "") chatLink.suffix = "<SP>" + chatLink.suffix;
-  let subTypeDisplay = GetSubTypeDisplay(value);
-  if (subTypeDisplay != "") chatLink.suffix += "<SP>" + subTypeDisplay;
-  return chatLink;
+  let item =
+    ("wfm_id" in value && value.wfm_id && (await api.cache.getTradableItemById(value.wfm_id))) ||
+    ("wfm_weapon_id" in value && value.wfm_weapon_id && (await api.cache.getRivenWeaponsById(value.wfm_weapon_id)));
+
+  if (!item) return { link: { value: "<Unknown Item>" } };
+
+  const display: Record<string, DisplaySettings> = {};
+
+  // Price
+  const price = ("price" in value ? value.price : undefined) ?? ("list_price" in value ? value.list_price : undefined);
+
+  if (price !== undefined) setValue(display, settings, "price", price);
+
+  // Chat link
+  const chatLink = await api.cache.get_chat_link(item.unique_name!);
+  display["link"] = { value: chatLink.link };
+  if (chatLink.suffix) display["type"] = { value: chatLink.suffix };
+
+  // Mod name
+  if ("mod_name" in value) setValue(display, settings, "mod_name", `${value.mod_name}`);
+
+  // Subtype display
+  Object.assign(display, GetSubTypeDisplayObject(value, settings));
+
+  return display;
 };
-export const GetChatLinkNameMultiple = async (value: ItemWithMeta[]): Promise<TauriTypes.ChatLink[]> => {
-  let results: TauriTypes.ChatLink[] = [];
-  for (let item of value) results.push(await GetChatLinkName(item));
+
+export const GetChatLinkNameMultiple = async (
+  value: ItemWithMeta[],
+  settings?: Record<string, DisplaySettings>
+): Promise<Record<string, DisplaySettings>[]> => {
+  let results: Record<string, DisplaySettings>[] = [];
+  for (let item of value) results.push(await GetChatLinkName(item, settings));
   return results;
 };
 export const GetItemDisplay = (value: ItemWithMeta, tradableItems?: TauriTypes.CacheTradableItem[]) => {

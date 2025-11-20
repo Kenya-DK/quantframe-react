@@ -10,7 +10,7 @@ import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 import { DataTable } from "mantine-datatable";
 import classes from "../../LiveScraper.module.css";
 import { notifications } from "@mantine/notifications";
-import { GetChatLinkNameMultiple, getSafePage } from "@utils/helper";
+import { getSafePage } from "@utils/helper";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useLiveScraperContext } from "@contexts/liveScraper.context";
 import { useWishListQueries } from "./queries";
@@ -146,10 +146,8 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
                 OpenWTBModal({
                   prefix: "WTB ",
                   suffix: " :heart:",
-                  items: (await GetChatLinkNameMultiple(filteredRecords)).map((chatLink, index) => {
-                    chatLink.suffix += `<SP>${filteredRecords[index].list_price || 0}p`;
-                    return chatLink;
-                  }),
+                  template: "[<link>] <type><variant><rank><amber_stars><cyan_stars><price>",
+                  items: filteredRecords,
                 });
               }}
             />

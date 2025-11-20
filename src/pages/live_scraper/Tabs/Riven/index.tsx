@@ -12,7 +12,7 @@ import classes from "../../LiveScraper.module.css";
 import { DataTable } from "mantine-datatable";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
-import { GetChatLinkNameMultiple, getSafePage } from "@utils/helper";
+import { getSafePage } from "@utils/helper";
 import { RivenAttributes } from "@components/DataDisplay/RivenAttributes";
 import { useStockMutations } from "./mutations";
 import { useStockModals } from "./modals";
@@ -168,10 +168,8 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
                 OpenWTSModal({
                   prefix: "WTS ",
                   suffix: " :heart:",
-                  items: (await GetChatLinkNameMultiple(filteredRecords)).map((chatLink, index) => {
-                    chatLink.suffix += `<SP>${filteredRecords[index].list_price || 0}p`;
-                    return chatLink;
-                  }),
+                  template: "[<link> <mod_name>]<rank> <price>p",
+                  items: filteredRecords,
                 });
               }}
             />
