@@ -34,6 +34,9 @@ import TradingAnalyticsPage from "@pages/trading_analytics";
 import PWarframeMarket from "@pages/warframe_market";
 import PWarframeMarketChat from "@pages/chat";
 
+// Trade messages
+import PTradeMessages from "@pages/trade_messages";
+
 // About Page
 import AboutPage from "@pages/about";
 
@@ -74,6 +77,7 @@ export function AppRoutes() {
                 <Route path="warframe-market" element={<PWarframeMarket />} />
                 <Route path="chat" element={<PWarframeMarketChat />} />
                 <Route path="trading_analytics" element={<TradingAnalyticsPage />} />
+                <Route path="trade_messages" element={<PTradeMessages />} />
                 <Route path="about" element={<AboutPage />} />
               </Route>
               <Route path="*" element={<PHome />} />

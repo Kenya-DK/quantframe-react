@@ -23,5 +23,6 @@ pub mod market;
 pub mod riven;
 pub mod stock_item;
 pub mod stock_riven;
+pub mod trade_entry;
 pub mod transaction;
 pub mod wish_list;

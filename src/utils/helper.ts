@@ -180,9 +180,9 @@ export const GetChatLinkName = async (
 
   let item =
     ("wfm_id" in value && value.wfm_id && (await api.cache.getTradableItemById(value.wfm_id))) ||
-    ("wfm_weapon_id" in value && value.wfm_weapon_id && (await api.cache.getRivenWeaponsById(value.wfm_weapon_id)));
+    ("wfm_id" in value && value.wfm_id && (await api.cache.getRivenWeaponsById(value.wfm_id)));
 
-  if (!item) return { link: { value: "<Unknown Item>" } };
+  if (!item != "name" in value) return { link: { value: "<Unknown Item>" } };
 
   const display: Record<string, DisplaySettings> = {};
 
@@ -191,10 +191,14 @@ export const GetChatLinkName = async (
 
   if (price !== undefined) setValue(display, settings, "price", price);
 
+  if ("name" in value) setValue(display, settings, "name", `${value.name}`);
+
   // Chat link
-  const chatLink = await api.cache.get_chat_link(item.unique_name!);
-  display["link"] = { value: chatLink.link };
-  if (chatLink.suffix) display["type"] = { value: chatLink.suffix };
+  if (item && item.unique_name) {
+    const chatLink = await api.cache.get_chat_link(item.unique_name!);
+    display["link"] = { value: chatLink.link };
+    if (chatLink.suffix) display["type"] = { value: chatLink.suffix };
+  }
 
   // Mod name
   if ("mod_name" in value) setValue(display, settings, "mod_name", `${value.mod_name}`);
@@ -213,14 +217,19 @@ export const GetChatLinkNameMultiple = async (
   for (let item of value) results.push(await GetChatLinkName(item, settings));
   return results;
 };
-export const GetItemDisplay = (value: ItemWithMeta, tradableItems?: TauriTypes.CacheTradableItem[]) => {
+export const GetItemDisplay = (
+  value: ItemWithMeta,
+  tradableItems: TauriTypes.CacheTradableItem[] = [],
+  weapons: TauriTypes.CacheRivenWeapon[] = []
+) => {
   if (!value) return "Unknown Item";
   let fullName = undefined;
   if ("weapon_name" in value && !fullName) fullName = value.weapon_name;
   if ("item_name" in value && !fullName) fullName = value.item_name;
-  if ("wfm_id" in value && !fullName) fullName = tradableItems?.find((i) => i.wfm_id === value.wfm_id)?.name || value.wfm_id || "Unknown Item";
-  if ("wfm_url" in value && !fullName)
-    fullName = tradableItems?.find((i) => i.wfm_url_name === value.wfm_url)?.name || value.wfm_url || "Unknown Item";
+  if ("wfm_id" in value && !fullName) fullName = tradableItems?.find((i) => i.wfm_id === value.wfm_id)?.name;
+  if ("wfm_id" in value && !fullName) fullName = weapons?.find((i) => i.wfm_id === value.wfm_id)?.name;
+  if ("name" in value && !fullName) fullName = value.name;
+  if ("wfm_url" in value && !fullName) fullName = tradableItems?.find((i) => i.wfm_url_name === value.wfm_url)?.name;
 
   if ("properties" in value && value.properties && "mod_name" in value.properties) fullName += ` ${value.properties.mod_name}`;
   if ("mod_name" in value) fullName += ` ${value.mod_name}`;

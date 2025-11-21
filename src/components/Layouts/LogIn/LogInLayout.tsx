@@ -2,7 +2,7 @@ import { AppShell, Box, Indicator } from "@mantine/core";
 import classes from "./LogInLayout.module.css";
 import { Outlet, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBug, faEnvelope, faGlobe, faHome, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import { faBug, faEnvelope, faGlobe, faHome, faInfoCircle, faMessage } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
 import { useEffect, useState } from "react";
 import { NavbarLinkProps, NavbarMinimalColored } from "@components/Layouts/Shared/NavbarMinimalColored";
@@ -74,6 +74,14 @@ export function LogInLayout() {
       link: "trading_analytics",
       icon: <FontAwesomeIcon size={"lg"} icon={facTradingAnalytics} />,
       label: useTranslateNavBar("trading_analytics"),
+      onClick: (e: NavbarLinkProps) => handleNavigate(e),
+    },
+    {
+      align: "top",
+      id: "trade_messages",
+      link: "trade_messages",
+      icon: <FontAwesomeIcon size={"lg"} icon={faMessage} />,
+      label: useTranslateNavBar("trade_messages"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
     },
     {

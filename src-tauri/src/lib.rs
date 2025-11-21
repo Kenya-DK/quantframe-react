@@ -1,17 +1,17 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![allow(non_snake_case)]
 #![allow(deprecated)]
-use app::client::AppState;
 use ::utils::clear_logs;
 use ::utils::critical;
 use ::utils::error;
 use ::utils::info;
-use migration::{Migrator, MigratorTrait};
 use ::utils::init_logger;
 use ::utils::set_base_path;
 use ::utils::warning;
 use ::utils::Error;
 use ::utils::LoggerOptions;
+use app::client::AppState;
+use migration::{Migrator, MigratorTrait};
 use service::sea_orm::{Database, DatabaseConnection};
 
 use std::env;
@@ -118,7 +118,7 @@ async fn setup_manages(app: tauri::AppHandle, use_temp_db: bool) -> Result<(), E
 }
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let use_temp_db = false;
+    let use_temp_db = true;
 
     // Initialize the logger for elapsed time tracking
 
@@ -199,6 +199,7 @@ pub fn run() {
             commands::cache::cache_create_theme,
             commands::cache::cache_open_theme_folder,
             commands::cache::cache_get_chat_link,
+            commands::cache::cache_get_chat_icons,
             // Log commands
             commands::logs::log_export,
             // Live Scraper commands
@@ -278,6 +279,15 @@ pub fn run() {
             commands::riven::export_riven_price_data,
             // Market commands
             commands::market::get_user_activity,
+            // Trade Entry commands
+            commands::trade_entry::get_trade_entry_pagination,
+            commands::trade_entry::trade_entry_get_by_id,
+            commands::trade_entry::trade_entry_create,
+            commands::trade_entry::trade_entry_delete,
+            commands::trade_entry::trade_entry_delete_multiple,
+            commands::trade_entry::trade_entry_update,
+            commands::trade_entry::trade_entry_update_multiple,
+            commands::trade_entry::export_trade_entry_json,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

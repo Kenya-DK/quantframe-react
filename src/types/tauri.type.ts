@@ -298,6 +298,11 @@ export namespace TauriTypes {
     wfm_url_name: string;
     is_variant: boolean;
   }
+  export interface CacheChatIcon {
+    name: string;
+    code: string;
+    url: string;
+  }
   export interface RivenGodRoll {
     good_rolls: RivenGoodRoll[];
     negative_attributes: string[];
@@ -724,17 +729,34 @@ export namespace TauriTypes {
   export interface TradeEntry {
     id: number;
     wfm_id: string;
-    wfm_url: string;
-    name?: string;
+    name: string;
+    sub_type?: SubType;
     price: number;
-    trade_type: string;
     group: string;
-    item_type: string;
-    properties: Record<string, any>;
+    tags: string;
     updated_at: string;
     created_at: string;
+    properties: Record<string, any>;
   }
+  export interface TradeEntryDetails extends TradeEntry {}
 
+  export interface CreateTradeEntry {
+    raw: string;
+    name?: string;
+    sub_type?: SubType;
+    price: number;
+    group: string;
+    tags?: string[];
+    properties?: Record<string, any>;
+  }
+  export interface UpdateTradeEntry {
+    id: number;
+    price?: number;
+    sub_type?: SubType;
+    group?: string;
+    tags?: string[];
+    properties?: Record<string, any>;
+  }
   export interface StockItemControllerGetListParams {
     page: number;
     limit: number;
@@ -782,5 +804,17 @@ export namespace TauriTypes {
   }
   export type TransactionControllerGetListData = PaginatedDto & {
     results?: TransactionDto[];
+  };
+  export interface TradeEntryControllerGetListParams {
+    page: number;
+    limit: number;
+    sort_by?: string;
+    sort_direction?: "asc" | "desc";
+    query?: string;
+    group?: string;
+    tags?: string[];
+  }
+  export type TradeEntryControllerGetListData = PaginatedDto & {
+    results?: TradeEntry[];
   };
 }

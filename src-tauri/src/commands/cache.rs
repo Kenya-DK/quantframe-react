@@ -55,6 +55,21 @@ pub async fn cache_get_riven_weapons(
     }
 }
 #[tauri::command]
+pub async fn cache_get_chat_icons(
+    cache: tauri::State<'_, Mutex<CacheState>>,
+) -> Result<Vec<CacheChatIcon>, Error> {
+    let cache = cache.lock()?;
+    match cache.chat_icon().get_items() {
+        Ok(items) => {
+            return Ok(items);
+        }
+        Err(e) => {
+            e.log("cache_get_chat_icons.log");
+            return Err(e);
+        }
+    }
+}
+#[tauri::command]
 pub async fn cache_get_theme_presets(
     cache: tauri::State<'_, Mutex<CacheState>>,
 ) -> Result<Vec<CacheTheme>, Error> {

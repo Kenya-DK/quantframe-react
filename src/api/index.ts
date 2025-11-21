@@ -21,6 +21,7 @@ import { TransactionModule } from "./transaction";
 import { ItemModule } from "./item";
 import { RivenModule } from "./riven";
 import { MarketModule } from "./market";
+import { TradeEntryModule } from "./trade_entry";
 
 export class TauriClient {
   _logging: string[] = [];
@@ -49,6 +50,7 @@ export class TauriClient {
     this.item = new ItemModule(this);
     this.riven = new RivenModule(this);
     this.market = new MarketModule(this);
+    this.trade_entry = new TradeEntryModule(this);
     this._logging = localStorage.getItem("tauri_logs") ? JSON.parse(localStorage.getItem("tauri_logs")!) : ["*"];
   }
 
@@ -188,6 +190,7 @@ export class TauriClient {
   item: ItemModule;
   riven: RivenModule;
   market: MarketModule;
+  trade_entry: TradeEntryModule;
 }
 
 declare global {

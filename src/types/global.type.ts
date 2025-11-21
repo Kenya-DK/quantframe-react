@@ -78,5 +78,6 @@ export type ItemWithMeta =
   | (TauriTypes.ItemPriceInfo & ItemMeta)
   | (QuantframeApiTypes.ItemPriceDto & ItemMeta)
   | (TauriTypes.DebuggingLiveItemEntry & ItemMeta)
+  | (TauriTypes.TradeEntry & ItemMeta)
   | null;
 export type ItemWithSubType = TauriTypes.SubType | WFMarketTypes.Order | undefined;
