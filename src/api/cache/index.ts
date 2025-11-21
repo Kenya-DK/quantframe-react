@@ -5,6 +5,7 @@ enum CacheType {
   TradableItems = "tradable_items",
   RivenWeapons = "riven_weapons",
   RivenAttributes = "riven_attributes",
+  ChatIcons = "chat_icons",
   RivenDataByInternalId = "riven_data_by_internal_id",
 }
 export class CacheModule {
@@ -38,6 +39,12 @@ export class CacheModule {
     if (this._cache.has(CacheType.RivenAttributes)) return this._cache.get(CacheType.RivenAttributes);
     const items = await this.client.sendInvoke<TauriTypes.CacheRivenAttribute[]>("cache_get_riven_attributes");
     this._cache.set(CacheType.RivenAttributes, items);
+    return items;
+  }
+  async getChatIcons(): Promise<TauriTypes.CacheChatIcon[]> {
+    if (this._cache.has(CacheType.ChatIcons)) return this._cache.get(CacheType.ChatIcons);
+    const items = await this.client.sendInvoke<TauriTypes.CacheChatIcon[]>("cache_get_chat_icons");
+    this._cache.set(CacheType.ChatIcons, items);
     return items;
   }
   async getRivenWeapons(): Promise<TauriTypes.CacheRivenWeapon[]> {

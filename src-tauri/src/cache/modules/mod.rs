@@ -60,3 +60,6 @@ pub use warframe::*;
 
 pub mod theme;
 pub use theme::*;
+
+pub mod chat_icon;
+pub use chat_icon::*;

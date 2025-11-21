@@ -67,4 +67,7 @@ pub use cache_version::*;
 pub mod cache_theme;
 pub use cache_theme::*;
 
+pub mod cache_chat_Icon;
+pub use cache_chat_Icon::*;
+
 pub mod pagination;

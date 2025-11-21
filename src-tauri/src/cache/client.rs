@@ -44,6 +44,7 @@ pub struct CacheState {
     tradable_item_module: OnceLock<Arc<TradableItemModule>>,
     warframe_module: OnceLock<Arc<WarframeModule>>,
     item_price_module: OnceLock<Arc<ItemPriceModule>>,
+    chat_icon_module: OnceLock<Arc<ChatIconModule>>,
     theme_module: OnceLock<Arc<ThemeModule>>,
 }
 
@@ -76,6 +77,7 @@ impl CacheState {
                     tradable_item_module: self.tradable_item_module.clone(),
                     warframe_module: self.warframe_module.clone(),
                     item_price_module: self.item_price_module.clone(),
+                    chat_icon_module: self.chat_icon_module.clone(),
                     theme_module: self.theme_module.clone(),
                 })
             })
@@ -111,6 +113,7 @@ impl CacheState {
             tradable_item_module: OnceLock::new(),
             warframe_module: OnceLock::new(),
             item_price_module: OnceLock::new(),
+            chat_icon_module: OnceLock::new(),
             theme_module: OnceLock::new(),
         };
         if !user.verification || user.qf_banned || user.wfm_banned {
@@ -213,6 +216,7 @@ impl CacheState {
         self.tradable_item().load()?;
         self.warframe().load()?;
         self.theme().load()?;
+        self.chat_icon().load()?;
         self.update_routes_client();
         self.all_items().load()?;
         Ok((cache_version_id, price_version_id))
@@ -420,6 +424,11 @@ impl CacheState {
             .get_or_init(|| WarframeModule::new(self.arc()))
             .clone()
     }
+    pub fn chat_icon(&self) -> Arc<ChatIconModule> {
+        self.chat_icon_module
+            .get_or_init(|| ChatIconModule::new(self.arc()))
+            .clone()
+    }
     pub fn theme(&self) -> Arc<ThemeModule> {
         self.theme_module
             .get_or_init(|| ThemeModule::new(self.arc()))
@@ -537,6 +546,11 @@ impl CacheState {
             let new = ThemeModule::from_existing(&old, self.arc());
             self.theme_module = OnceLock::new();
             let _ = self.theme_module.set(new);
+        }
+        if let Some(old) = self.chat_icon_module.get().cloned() {
+            let new = ChatIconModule::from_existing(&old);
+            self.chat_icon_module = OnceLock::new();
+            let _ = self.chat_icon_module.set(new);
         }
     }
 }
