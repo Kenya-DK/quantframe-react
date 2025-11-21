@@ -139,7 +139,11 @@ impl StockItemMutation {
 
         // Get Price Per Unit
         let total_bought = (item.bought * item.owned) + stock.bought;
-        let weighted_average = total_bought / total_owned;
+        let weighted_average = if item.bought == 0 {
+            total_bought / total_owned
+        } else {
+            item.bought
+        };
         match StockItemMutation::update_by_id(
             db,
             UpdateStockItem::new(item.id)
