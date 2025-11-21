@@ -4,13 +4,14 @@ import { useForm } from "@mantine/form";
 import { ActionWithTooltip } from "../../Shared/ActionWithTooltip";
 import { faCopy, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { notifications } from "@mantine/notifications";
-import { DisplaySettings, GetChatLinkNameMultiple, ApplyTemplate } from "@utils/helper";
+import { DisplaySettings, GetChatLinkNameMultiple, ApplyTemplate, GroupByKey } from "@utils/helper";
 import { useEffect, useState } from "react";
 import { ItemWithMeta } from "$types";
 import { DataTable } from "mantine-datatable";
 import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
 import { renderSelectOption } from "./helpeer";
+import { upperFirst } from "@mantine/hooks";
 const MAX_LENGTH = 180;
 
 export interface GenerateTradeMessageModalProps {
@@ -28,6 +29,7 @@ export function GenerateTradeMessageModal({ prefix, template, suffix, displaySet
       prefix: prefix || "",
       suffix: suffix || "",
       template: template || "",
+      groupByKey: "",
       displaySettings: displaySettings || ({} as Record<string, DisplaySettings>),
     },
   });
@@ -37,12 +39,6 @@ export function GenerateTradeMessageModal({ prefix, template, suffix, displaySet
     queryKey: ["cache_chat_icons"],
     queryFn: () => api.cache.getChatIcons(),
   });
-  const ApplyChatIcon = (template: string, data: Record<string, { url: string; code: string }>) => {
-    return template.replace(/:([^:]+):/g, (_, key) => {
-      const iconData = data[`:${key}:`];
-      return iconData ? iconData.url : `:${key}:`;
-    });
-  };
 
   const RenderMessageWithIcons = (message: string) => {
     if (!chatIcons) return <Text size="sm">{message}</Text>;
@@ -134,20 +130,24 @@ export function GenerateTradeMessageModal({ prefix, template, suffix, displaySet
       setAvailableKeys(Array.from(new Set(keys)));
 
       let message = form.values.prefix;
-      let template2 = ApplyChatIcon(
-        template,
-        chatIcons?.reduce((acc, icon) => {
-          acc[icon.code] = { url: icon.url, code: icon.code };
-          return acc;
-        }, {} as Record<string, { url: string; code: string }>) || {}
-      );
-      console.log("Template with chat icon applied:", template2);
-      newItems.forEach((data) => {
-        let candidate = ApplyTemplate(template, data);
-        console.log("Generated candidate:", candidate);
-        if (candidate.length > MAX_LENGTH) return;
-        message += candidate;
-      });
+      if (form.values.groupByKey) {
+        let groupByKey = form.values.groupByKey;
+        let groupedItems = GroupByKey(`${groupByKey}.value`, newItems);
+        for (let [, items] of Object.entries(groupedItems)) {
+          for (let i = 0; i < items.length; i++) {
+            if (i != items.length - 1) delete items[i][groupByKey];
+            let candidate = ApplyTemplate(template, items[i]);
+            if (candidate.length > MAX_LENGTH) return;
+            message += candidate;
+          }
+        }
+      } else
+        newItems.forEach((data) => {
+          let candidate = ApplyTemplate(template, data);
+          if (candidate.length > MAX_LENGTH) return;
+          message += candidate;
+        });
+
       // Add flair if space allows
       if (message.length <= MAX_LENGTH - form.values.suffix.length) message += form.values.suffix;
       setMessagePreview(message.trim());
@@ -191,20 +191,31 @@ export function GenerateTradeMessageModal({ prefix, template, suffix, displaySet
               value={form.values.template}
               onChange={(e) => form.setFieldValue("template", e.currentTarget.value)}
             />
-            <Select
-              searchable
-              allowDeselect={false}
-              label={useTranslateFields("chat_icon.label")}
-              value={chatIcon}
-              onChange={(value) => setChatIcon(value || "")}
-              data={chatIcons ? chatIcons.map((icon) => ({ label: icon.name, value: icon.code, img: icon.url })) : []}
-              renderOption={renderSelectOption}
-              leftSection={<Image src={chatIcons?.find((icon) => icon.code === chatIcon)?.url || ""} fit="contain" width={20} height={20} />}
-              rightSectionPointerEvents="inherit"
-              rightSection={
-                <ActionWithTooltip tooltip={useTranslate("button_copy_tooltip")} icon={faCopy} onClick={() => CopyToClipboard(chatIcon)} />
-              }
-            />
+            <Group grow>
+              <Select
+                searchable
+                label={useTranslateFields("group_by.label")}
+                description={useTranslateFields("group_by.description")}
+                value={form.values.groupByKey}
+                onChange={(value) => form.setFieldValue("groupByKey", value || "")}
+                data={["none", ...availableKeys].map((key) => ({ label: upperFirst(key), value: key == "none" ? "" : key }))}
+              />
+              <Select
+                searchable
+                allowDeselect={false}
+                label={useTranslateFields("chat_icon.label")}
+                description={useTranslateFields("chat_icon.description")}
+                value={chatIcon}
+                onChange={(value) => setChatIcon(value || "")}
+                data={chatIcons ? chatIcons.map((icon) => ({ label: icon.name, value: icon.code, img: icon.url })) : []}
+                renderOption={renderSelectOption}
+                leftSection={<Image src={chatIcons?.find((icon) => icon.code === chatIcon)?.url || ""} fit="contain" width={20} height={20} />}
+                rightSectionPointerEvents="inherit"
+                rightSection={
+                  <ActionWithTooltip tooltip={useTranslate("button_copy_tooltip")} icon={faCopy} onClick={() => CopyToClipboard(chatIcon)} />
+                }
+              />
+            </Group>
           </Grid.Col>
           <Grid.Col span={6}>
             <DataTable

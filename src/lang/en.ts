@@ -1221,6 +1221,11 @@ export const en = {
           },
           chat_icon: {
             label: "Chat Icons",
+            description: "Include Warframe Market chat icons in the message",
+          },
+          group_by: {
+            label: "Group By",
+            description: "Group items by their type in the message",
           },
         },
         datatable: {

@@ -89,12 +89,22 @@ export const GroupByDate = <T>(key: string, items: Array<T>, settings: GroupByDa
 };
 
 type GroupBy<T> = Record<string, T[]>;
-export const groupBy = <T, K extends keyof T>(key: K, array: T[]): GroupBy<T> => {
-  return array.reduce((acc, cur) => {
-    const groupByKey = cur[key] as unknown as string;
-    (acc[groupByKey] = acc[groupByKey] || []).push(cur);
-    return acc;
-  }, {} as GroupBy<T>);
+export const GroupByKey = <T, K extends keyof T>(key: K, array: T[]): GroupBy<T> => {
+  // If the key contains a dot, it means it's a nested key
+  if (key.toString().includes(".")) {
+    return array.reduce((acc, cur) => {
+      const keys = key.toString().split(".");
+      let groupByKey = (cur as any)[keys[0]] as unknown as string;
+      for (let i = 1; i < keys.length; i++) groupByKey = (groupByKey as any)[keys[i]] as unknown as string;
+      (acc[groupByKey] = acc[groupByKey] || []).push(cur);
+      return acc;
+    }, {} as GroupBy<T>);
+  } else
+    return array.reduce((acc, cur) => {
+      const groupByKey = cur[key] as unknown as string;
+      (acc[groupByKey] = acc[groupByKey] || []).push(cur);
+      return acc;
+    }, {} as GroupBy<T>);
 };
 
 export const paginate = <T>(items: Array<T>, page: number, take: number) => {
