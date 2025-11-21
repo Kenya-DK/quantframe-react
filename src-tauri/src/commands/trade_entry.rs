@@ -1,19 +1,13 @@
-use std::{collections::HashMap, sync::Mutex};
+use std::sync::Mutex;
 
 use entity::{dto::*, trade_entry::*};
-use serde_json::{json, Value};
 use service::{TradeEntryMutation, TradeEntryQuery};
 use tauri_plugin_dialog::DialogExt;
-use utils::{get_location, group_by, info, Error, LoggerOptions};
-use wf_market::enums::OrderType;
+use utils::{get_location, info, Error, LoggerOptions};
 
 use crate::{
-    add_metric,
-    app::client::AppState,
-    enums::{FindBy, FindByType},
-    types::PermissionsFlags,
-    utils::CreateTradeEntryExt,
-    APP, DATABASE,
+    add_metric, app::client::AppState, enums::FindByType, types::PermissionsFlags,
+    utils::CreateTradeEntryExt, APP, DATABASE,
 };
 
 #[tauri::command]

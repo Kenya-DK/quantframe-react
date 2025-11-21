@@ -4,7 +4,6 @@ use std::fmt::Display;
 use crate::trade_entry::*;
 
 use crate::dto::*;
-use crate::enums::*;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CreateTradeEntry {
