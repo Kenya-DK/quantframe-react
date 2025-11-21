@@ -170,6 +170,38 @@ export const en = {
         error: { title: "Update Settings Error", message: "An error occurred while trying to update settings: \n{{message}}" },
         success: { title: "Update Settings Success", message: "Settings have been successfully updated" },
       },
+      create_trade_entry: {
+        error: { title: "Create Trade Entry Error", message: "An error occurred while trying to create the trade entry." },
+        success: { title: "Create Trade Entry Success", message: "Trade entry {{name}} has been successfully created." },
+      },
+      update_trade_entry: {
+        error: {
+          title: "Update Trade Entry Error",
+          title_multiple: "Update Trade Entry Error",
+          message: "An error occurred while trying to update the trade entry.",
+          message_multiple: "An error occurred while trying to update multiple trade entries.",
+        },
+        success: {
+          title: "Update Trade Entry Success",
+          title_multiple: "Update Trade Entry Success",
+          message: "Trade entry {{name}} has been successfully updated.",
+          message_multiple: "{{count}} trade entries have been successfully updated.",
+        },
+      },
+      delete_trade_entry: {
+        error: {
+          title: "Delete Trade Entry Error",
+          title_multiple: "Delete Trade Entry Error",
+          message: "An error occurred while trying to delete the trade entry.",
+          message_multiple: "An error occurred while trying to delete multiple trade entries.",
+        },
+        success: {
+          title: "Delete Trade Entry Success",
+          title_multiple: "Delete Trade Entry Success",
+          message: "Trade entry {{name}} has been successfully deleted.",
+          message_multiple: "{{count}} trade entries have been successfully deleted.",
+        },
+      },
     },
     datatable_columns: {
       list_price: "Listed",
@@ -441,6 +473,7 @@ export const en = {
           live_scraper: "Live Scraper",
           warframe_market: "Warframe Market",
           trading_analytics: "Trading Analytics",
+          trade_messages: "Trade Messages",
           chat: "Chat",
           about: "About",
         },
@@ -773,6 +806,14 @@ export const en = {
             label: "Amber Stars",
             placeholder: "Select amber stars...",
             description: "How many amber stars",
+          },
+        },
+      },
+      select_riven_weapon: {
+        fields: {
+          weapon: {
+            label: "Weapon",
+            placeholder: "Select weapon...",
           },
         },
       },
@@ -1131,6 +1172,12 @@ export const en = {
           quantity_label: "Quantity",
         },
       },
+      trade_entry_update: {
+        fields: {
+          price_label: "Price",
+          tags_label: "Tags",
+        },
+      },
     },
     modals: {
       base: {
@@ -1141,26 +1188,49 @@ export const en = {
       },
       generate_trade_message: {
         title: "Generate Trade Message for {{count}} Item(s)",
+        button_add_key_tooltip: "Add Display",
+        button_copy_tooltip: "Copy to Clipboard",
+        titles: {
+          message_settings: "Message Settings",
+          preview_with_icons: "Preview with Icons",
+        },
         fields: {
           prefix: {
             label: "Prefix",
             description: "The prefix to use for the trade message",
+            placeholder: "Prefix",
           },
           suffix: {
             label: "Suffix",
             description: "The suffix to use for the trade message",
+            placeholder: "Suffix",
           },
           message: {
             label: "Message",
             description: "The generated trade message",
             length_info: "{{current}} / {{max}} characters",
           },
-          spacing: {
-            label: "Item Spacing",
-            description: "The spacing between items in the message",
+          key: {
+            label: "Key",
+            description: "The key to use for separating items in the message",
+            placeholder: "Key",
+          },
+          template: {
+            label: "Trade Message Template",
+            description: "The template to use for generating the message.",
+          },
+          chat_icon: {
+            label: "Chat Icons",
           },
         },
-        button_copy_tooltip: "Copy to Clipboard",
+        datatable: {
+          columns: {
+            key: "Key",
+            name: "Name",
+            prefix: "Prefix",
+            suffix: "Suffix",
+          },
+        },
       },
       patreon_modal: {
         title: "Support the development of Quantframe",
@@ -1823,6 +1893,38 @@ export const en = {
               placeholder: "Select date range",
             },
           },
+        },
+      },
+    },
+    trade_messages: {
+      fields: {
+        price_label: "Price",
+        price_placeholder: "Enter the price",
+        tags_label: "Tags",
+        tags_placeholder: "Enter tags",
+      },
+      buttons: {
+        generate_trade_messages_tooltip: "Generate trade messages for {{count}} item(s)",
+        update_multiple_tooltip: "Update Multiple Trade Messages",
+        export_json_tooltip: "Export trade messages to JSON  (Patreon T1+)",
+        delete_multiple_tooltip: "Delete all trade {{count}}",
+        add_tooltip: "Add Trade Message",
+      },
+      datatable: {
+        columns: {
+          price: "Price",
+          tags: "Tags",
+        },
+      },
+      tabs: {
+        item: {
+          title: "Item",
+        },
+        riven: {
+          title: "Riven",
+        },
+        custom: {
+          title: "Custom",
         },
       },
     },

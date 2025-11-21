@@ -1,6 +1,8 @@
 ## Fix/Changes
 
 - 🛠️ Fix so riven weapons are properly fetched from the cache when generating chat links.
+- ✨ Made it possible to save trade message templates in the Generate Trade Message modal.
+- ✨ Made it possible to customize the prefix and suffix of generated trade messages.
 
 ## TODO's
 

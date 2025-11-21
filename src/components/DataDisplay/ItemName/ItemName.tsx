@@ -29,9 +29,13 @@ export type ItemNameProps = {
 export const ItemName = memo(function ItemName({ color, size, hideQuantity, value, displaySettings }: ItemNameProps) {
   const theme = useMantineTheme();
   // Fetch data from rust side
-  const data = useQuery({
+  const { data: tradableItems } = useQuery({
     queryKey: ["cache_items"],
     queryFn: () => api.cache.getTradableItems(),
+  });
+  const { data: weapons } = useQuery({
+    queryKey: ["cache_riven_weapons"],
+    queryFn: () => api.cache.getRivenWeapons(),
   });
   const GetQuantity = (): string | number => {
     if (!value) return "";
@@ -47,7 +51,7 @@ export const ItemName = memo(function ItemName({ color, size, hideQuantity, valu
         size={size}
         i18nKey={useTranslateCommon("item_name.value", undefined, true)}
         values={{
-          name: GetItemDisplay(value, data.data),
+          name: GetItemDisplay(value, tradableItems || [], weapons || []),
           sub_type: GetSubTypeDisplay(value, "<rank><variant><subtype><amber_stars><cyan_stars>", { ...DEFAULT_SETTINGS, ...displaySettings }),
           quantity: GetQuantity(),
         }}

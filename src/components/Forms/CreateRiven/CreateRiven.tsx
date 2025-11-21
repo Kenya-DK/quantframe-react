@@ -4,8 +4,6 @@ import { useForm } from "@mantine/form";
 import { TauriTypes } from "$types";
 import api from "@api/index";
 import { useQuery } from "@tanstack/react-query";
-import { groupBy } from "@utils/helper";
-import { upperFirst } from "@mantine/hooks";
 import { RivenPreview } from "@components/DataDisplay/RivenPreview";
 import { CreateRivenAttributes } from "../CreateRivenAttributes";
 import { useEffect, useState } from "react";
@@ -13,6 +11,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import faPolarityMadurai from "@icons/faPolarityMadurai";
 import faPolarityNaramon from "@icons/faPolarityNaramon";
 import faPolarityVazarin from "@icons/faPolarityVazarin";
+import { SelectRivenWeapon } from "../SelectRivenWeapon";
 
 export type CreateRivenProps = {
   value?: TauriTypes.StockRiven;
@@ -54,20 +53,6 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
     queryKey: ["cache_riven_attributes"],
     queryFn: () => api.cache.getRivenAttributes(),
   });
-
-  // Helper functions
-  const getAvailableWeapons = () => {
-    if (!weapons) return [];
-
-    const group = groupBy("wfm_group", weapons);
-    console.log(group);
-    return Object.entries(group).map(([key, value]) => {
-      return {
-        group: upperFirst(key),
-        items: value.map((item) => ({ label: item.name, value: item.wfm_url_name })),
-      };
-    });
-  };
 
   // User form
   const form = useForm({
@@ -153,15 +138,9 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
           </Grid.Col>
           <Grid.Col span={8}>
             <Group gap="md" grow>
-              <Select
-                searchable
-                limit={20}
-                required
-                allowDeselect={false}
-                label={useTranslateFormFields("weapon.label")}
-                value={form.values.wfm_weapon_url}
-                onChange={(event) => form.setFieldValue("wfm_weapon_url", event || "")}
-                data={getAvailableWeapons()}
+              <SelectRivenWeapon
+                value={form.values.wfm_weapon_url || ""}
+                onChange={(item) => form.setFieldValue("wfm_weapon_url", item.wfm_url_name)}
               />
             </Group>
             <Group>

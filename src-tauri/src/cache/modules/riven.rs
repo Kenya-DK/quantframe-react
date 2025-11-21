@@ -88,6 +88,11 @@ impl RivenModule {
                     .into_iter()
                     .find(|item| find_by.is_match(&item.wfm_url_name)))
             }
+            FindByType::Id => {
+                return Ok(items
+                    .into_iter()
+                    .find(|item| find_by.is_match(&item.wfm_id)))
+            }
             FindByType::UniqueName => {
                 return Ok(items
                     .into_iter()
