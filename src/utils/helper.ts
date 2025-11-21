@@ -180,9 +180,8 @@ export const GetChatLinkName = async (
 
   let item =
     ("wfm_id" in value && value.wfm_id && (await api.cache.getTradableItemById(value.wfm_id))) ||
+    ("wfm_weapon_id" in value && value.wfm_weapon_id && (await api.cache.getRivenWeaponsById(value.wfm_weapon_id))) ||
     ("wfm_id" in value && value.wfm_id && (await api.cache.getRivenWeaponsById(value.wfm_id)));
-
-  if (!item != "name" in value) return { link: { value: "<Unknown Item>" } };
 
   const display: Record<string, DisplaySettings> = {};
 
