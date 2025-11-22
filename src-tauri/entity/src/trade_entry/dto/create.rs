@@ -11,6 +11,11 @@ pub struct CreateTradeEntry {
     #[serde(rename = "raw")]
     pub raw: String,
 
+    // Optional Properties for different find by types
+    #[serde(default)]
+    pub override_existing: bool,
+
+    // Properties to create the Model
     #[serde(default)]
     pub wfm_id: String,
     #[serde(default)]
@@ -33,6 +38,7 @@ impl CreateTradeEntry {
     pub fn new(raw: impl Into<String>, sub_type: Option<SubType>) -> Self {
         CreateTradeEntry {
             raw: raw.into(),
+            override_existing: false,
             sub_type,
             tags: Vec::new(),
             wfm_id: String::new(),

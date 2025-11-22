@@ -28,21 +28,9 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .default(Value::Int(Some(0))),
                     )
-                    .col(
-                        ColumnDef::new(TradeEntry::TradeType)
-                            .string()
-                            .not_null()
-                            .default("buy"),
-                    )
                     .col(ColumnDef::new(TradeEntry::Tags).string().not_null())
                     .col(ColumnDef::new(TradeEntry::Group).string().not_null())
                     .col(ColumnDef::new(TradeEntry::Properties).json())
-                    .col(
-                        ColumnDef::new(TradeEntry::Enabled)
-                            .boolean()
-                            .not_null()
-                            .default(Value::Bool(Some(true))),
-                    )
                     .col(ColumnDef::new(TradeEntry::CreatedAt).date_time().not_null())
                     .col(ColumnDef::new(TradeEntry::UpdatedAt).date_time().not_null())
                     .to_owned(),
@@ -66,11 +54,9 @@ pub enum TradeEntry {
     Name,
     SubType,
     Price,
-    TradeType,
     Tags,
     Group,
     Properties,
-    Enabled,
     CreatedAt,
     UpdatedAt,
 }

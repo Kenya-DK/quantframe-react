@@ -18,7 +18,6 @@ pub struct Model {
     pub price: i64,
     pub group: String,
     pub tags: String,
-    pub enabled: bool,
     #[sea_orm(updated_at)]
     pub updated_at: DateTimeUtc,
     #[sea_orm(created_at)]
@@ -55,7 +54,6 @@ impl Model {
                 .map(|tag| tag.into())
                 .collect::<Vec<String>>()
                 .join(","),
-            enabled: true,
             group: group.into(),
             updated_at: Default::default(),
             created_at: Default::default(),
