@@ -63,3 +63,6 @@ pub use theme::*;
 
 pub mod chat_icon;
 pub use chat_icon::*;
+
+pub mod sentinel_weapon;
+pub use sentinel_weapon::*;

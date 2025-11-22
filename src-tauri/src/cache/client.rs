@@ -40,6 +40,7 @@ pub struct CacheState {
     riven_module: OnceLock<Arc<RivenModule>>,
     secondary_module: OnceLock<Arc<SecondaryModule>>,
     sentinel_module: OnceLock<Arc<SentinelModule>>,
+    sentinel_weapon_module: OnceLock<Arc<SentinelWeaponModule>>,
     skin_module: OnceLock<Arc<SkinModule>>,
     tradable_item_module: OnceLock<Arc<TradableItemModule>>,
     warframe_module: OnceLock<Arc<WarframeModule>>,
@@ -73,6 +74,7 @@ impl CacheState {
                     riven_module: self.riven_module.clone(),
                     secondary_module: self.secondary_module.clone(),
                     sentinel_module: self.sentinel_module.clone(),
+                    sentinel_weapon_module: self.sentinel_weapon_module.clone(),
                     skin_module: self.skin_module.clone(),
                     tradable_item_module: self.tradable_item_module.clone(),
                     warframe_module: self.warframe_module.clone(),
@@ -109,6 +111,7 @@ impl CacheState {
             riven_module: OnceLock::new(),
             secondary_module: OnceLock::new(),
             sentinel_module: OnceLock::new(),
+            sentinel_weapon_module: OnceLock::new(),
             skin_module: OnceLock::new(),
             tradable_item_module: OnceLock::new(),
             warframe_module: OnceLock::new(),
@@ -212,6 +215,7 @@ impl CacheState {
         self.riven().load()?;
         self.secondary().load()?;
         self.sentinel().load()?;
+        self.sentinel_weapon().load()?;
         self.skin().load()?;
         self.tradable_item().load()?;
         self.warframe().load()?;
@@ -409,6 +413,11 @@ impl CacheState {
             .get_or_init(|| SentinelModule::new(self.arc()))
             .clone()
     }
+    pub fn sentinel_weapon(&self) -> Arc<SentinelWeaponModule> {
+        self.sentinel_weapon_module
+            .get_or_init(|| SentinelWeaponModule::new(self.arc()))
+            .clone()
+    }
     pub fn skin(&self) -> Arc<SkinModule> {
         self.skin_module
             .get_or_init(|| SkinModule::new(self.arc()))
@@ -521,6 +530,11 @@ impl CacheState {
             let new = SentinelModule::from_existing(&old);
             self.sentinel_module = OnceLock::new();
             let _ = self.sentinel_module.set(new);
+        }
+        if let Some(old) = self.sentinel_weapon_module.get().cloned() {
+            let new = SentinelWeaponModule::from_existing(&old);
+            self.sentinel_weapon_module = OnceLock::new();
+            let _ = self.sentinel_weapon_module.set(new);
         }
         if let Some(old) = self.skin_module.get().cloned() {
             let new = SkinModule::from_existing(&old);

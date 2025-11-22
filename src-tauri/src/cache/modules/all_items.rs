@@ -36,6 +36,7 @@ impl AllItemsModule {
         items_lock.append(&mut client.resource().collect_all_items());
         items_lock.append(&mut client.secondary().collect_all_items());
         items_lock.append(&mut client.sentinel().collect_all_items());
+        items_lock.append(&mut client.sentinel_weapon().collect_all_items());
         items_lock.append(&mut client.skin().collect_all_items());
         items_lock.append(&mut client.warframe().collect_all_items());
         info(

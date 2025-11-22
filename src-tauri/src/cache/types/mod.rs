@@ -70,4 +70,7 @@ pub use cache_theme::*;
 pub mod cache_chat_Icon;
 pub use cache_chat_Icon::*;
 
+pub mod cache_sentinel_weapon;
+pub use cache_sentinel_weapon::*;
+
 pub mod pagination;
