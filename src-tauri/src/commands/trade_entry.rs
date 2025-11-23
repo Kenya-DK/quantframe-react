@@ -32,7 +32,7 @@ pub async fn trade_entry_create(mut input: CreateTradeEntry) -> Result<Model, Er
     })?;
 
     let model = input.to_model();
-    match TradeEntryMutation::create(conn, &model).await {
+    match TradeEntryMutation::create_or_update(conn, input.override_existing, &model).await {
         Ok(item) => Ok(item),
         Err(e) => return Err(e.with_location(get_location!())),
     }

@@ -10,7 +10,7 @@ import { getSafePage } from "@utils/helper";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useForm } from "@mantine/form";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faDownload, faEdit, faMessage, faPlus, faTrash, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faCalculator, faDownload, faEdit, faMessage, faPlus, faSearch, faTrash, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { HasPermission } from "@api/index";
 import { useMutations } from "./mutations";
 import { Loading } from "@components/Shared/Loading";
@@ -18,19 +18,38 @@ import { ItemName } from "@components/DataDisplay/ItemName";
 import { ButtonIntervals } from "@components/Shared/ButtonIntervals";
 import { useModals } from "./modals";
 import { useLocalStorage } from "@mantine/hooks";
+import { TimerStamp } from "../../../components/Shared/TimerStamp";
 interface TradeEntryListProps {
+  ref?: React.Ref<any>;
   isActive?: boolean;
   group: string;
   defaultDisplaySettings?: any;
   tradeEntry: TauriTypes.CreateTradeEntry & { wfm_url: string };
   setTradeEntry: (data: TauriTypes.CreateTradeEntry & { wfm_url: string }) => void;
   createComponent?: React.ReactNode;
+  rightSection?: React.ReactNode;
+  rightSectionWidth?: number;
+  hideColumns?: string[];
+  onFindInteresting?: (mutations: ReturnType<typeof useMutations>) => void;
+  onCalibratePrices?: (mutations: ReturnType<typeof useMutations>) => void;
 }
 
-export const TradeEntryList = ({ isActive, group, defaultDisplaySettings, tradeEntry, setTradeEntry, createComponent }: TradeEntryListProps) => {
+export const TradeEntryList = ({
+  isActive,
+  group,
+  defaultDisplaySettings,
+  tradeEntry,
+  setTradeEntry,
+  createComponent,
+  rightSection,
+  rightSectionWidth,
+  onFindInteresting,
+  onCalibratePrices,
+  hideColumns,
+}: TradeEntryListProps) => {
   // States For DataGrid
   const queryData = useForm({
-    initialValues: { page: 1, limit: 10, query: "", group } as TauriTypes.TradeEntryControllerGetListParams,
+    initialValues: { page: 1, limit: 50, query: "", group } as TauriTypes.TradeEntryControllerGetListParams,
     validate: {},
   });
 
@@ -60,10 +79,11 @@ export const TradeEntryList = ({ isActive, group, defaultDisplaySettings, tradeE
   const { paginationQuery, refetchQueries } = useQueries({ queryData: queryData.values, isActive });
 
   // Mutations
-  const { createMutation, updateMutation, updateMultipleMutation, deleteMutation, deleteMultipleMutation, exportMutation } = useMutations({
-    refetchQueries,
-    setLoadingRows,
-  });
+  const { createMutation, createMultipleMutation, updateMutation, updateMultipleMutation, deleteMutation, deleteMultipleMutation, exportMutation } =
+    useMutations({
+      refetchQueries,
+      setLoadingRows,
+    });
 
   // Modals
   const { OpenPriceModal, OpenGenerateTradeMessageModal, OpenDeleteMultipleModal, OpenUpdateMultipleModal, OpenDeleteModal } = useModals({
@@ -74,6 +94,17 @@ export const TradeEntryList = ({ isActive, group, defaultDisplaySettings, tradeE
   });
 
   const IsLoading = () => (paginationQuery.isFetching || exportMutation.isPending) && isActive;
+
+  useEffect(() => {
+    setSelectedRecords([]);
+  }, [deleteMultipleMutation.isSuccess, deleteMutation.isSuccess]);
+
+  const GetRightSectionWidth = () => {
+    let baseWidth = 35 * 4;
+    if (onFindInteresting) baseWidth += 35;
+    if (onCalibratePrices) baseWidth += 35;
+    return rightSectionWidth || baseWidth;
+  };
 
   return (
     <Box p={"md"}>
@@ -107,9 +138,48 @@ export const TradeEntryList = ({ isActive, group, defaultDisplaySettings, tradeE
         searchDisabled={paginationQuery.isLoading}
         onChange={(text) => queryData.setFieldValue("query", text)}
         onFilterToggle={(s) => setFilterOpened(s)}
-        rightSectionWidth={35 * 4}
+        rightSectionWidth={GetRightSectionWidth()}
         rightSection={
           <Group gap={3}>
+            {rightSection}
+            {onFindInteresting && (
+              <ActionWithTooltip
+                tooltip={useTranslateButtons("find_interesting_tooltip")}
+                icon={faSearch}
+                iconProps={{ size: "xs" }}
+                actionProps={{ size: "sm" }}
+                onClick={() =>
+                  onFindInteresting({
+                    createMutation,
+                    createMultipleMutation,
+                    updateMutation,
+                    updateMultipleMutation,
+                    deleteMutation,
+                    deleteMultipleMutation,
+                    exportMutation,
+                  })
+                }
+              />
+            )}
+            {onCalibratePrices && (
+              <ActionWithTooltip
+                tooltip={useTranslateButtons("calibrate_prices_tooltip")}
+                icon={faCalculator}
+                iconProps={{ size: "xs" }}
+                actionProps={{ size: "sm" }}
+                onClick={() =>
+                  onCalibratePrices({
+                    createMutation,
+                    createMultipleMutation,
+                    updateMutation,
+                    updateMultipleMutation,
+                    deleteMutation,
+                    deleteMultipleMutation,
+                    exportMutation,
+                  })
+                }
+              />
+            )}
             <ActionWithTooltip
               tooltip={useTranslateButtons("generate_trade_messages_tooltip", {
                 count: selectedRecords.length > 0 ? selectedRecords.length : paginationQuery.data?.results?.length || 0,
@@ -222,6 +292,27 @@ export const TradeEntryList = ({ isActive, group, defaultDisplaySettings, tradeE
                 </Group>
               </Group>
             ),
+          },
+          {
+            accessor: "min_price",
+            hidden: hideColumns?.includes("min_price"),
+            title: useTranslate("datatable.columns.min_price"),
+            sortable: true,
+            render: ({ properties }) => properties?.min_price || "N/A",
+          },
+          {
+            accessor: "updated_at",
+            hidden: hideColumns?.includes("updated_at"),
+            title: useTranslate("datatable.columns.updated_at"),
+            sortable: true,
+            render: (row) => <TimerStamp date={new Date(row.updated_at)} />,
+          },
+          {
+            accessor: "potential_profit",
+            hidden: hideColumns?.includes("potential_profit"),
+            title: useTranslate("datatable.columns.potential_profit"),
+            sortable: true,
+            render: ({ properties }) => properties?.potential_profit || "N/A",
           },
           {
             accessor: "tags",

@@ -283,6 +283,7 @@ pub fn run() {
             commands::trade_entry::get_trade_entry_pagination,
             commands::trade_entry::trade_entry_get_by_id,
             commands::trade_entry::trade_entry_create,
+            commands::trade_entry::trade_entry_create_multiple,
             commands::trade_entry::trade_entry_delete,
             commands::trade_entry::trade_entry_delete_multiple,
             commands::trade_entry::trade_entry_update,

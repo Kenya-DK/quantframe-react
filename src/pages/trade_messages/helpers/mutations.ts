@@ -23,6 +23,17 @@ export const useMutations = ({ refetchQueries, setLoadingRows }: MutationHooks) 
     hooks
   );
 
+  const createMultipleMutation = createGenericMutation(
+    {
+      mutationFn: (data: TauriTypes.CreateTradeEntry[]) => api.trade_entry.createMultiple(data),
+      successKey: "create_trade_entry",
+      errorKey: "create_trade_entry",
+      isMultiple: (variables: TauriTypes.CreateTradeEntry[]) => variables.length > 1,
+      getSuccessMessage: (data: any) => ({ count: data }),
+    },
+    hooks
+  );
+
   const updateMutation = createGenericMutation(
     {
       mutationFn: (data: TauriTypes.UpdateTradeEntry) => api.trade_entry.update(data),
@@ -72,6 +83,7 @@ export const useMutations = ({ refetchQueries, setLoadingRows }: MutationHooks) 
   return {
     exportMutation,
     createMutation,
+    createMultipleMutation,
     updateMutation,
     updateMultipleMutation,
     deleteMutation,
