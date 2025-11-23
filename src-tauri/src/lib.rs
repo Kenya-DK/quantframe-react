@@ -118,7 +118,7 @@ async fn setup_manages(app: tauri::AppHandle, use_temp_db: bool) -> Result<(), E
 }
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let use_temp_db = true;
+    let use_temp_db = false;
 
     // Initialize the logger for elapsed time tracking
 

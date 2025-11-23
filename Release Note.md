@@ -13,7 +13,6 @@
 Fix so the knapsack algorithm doesn't delete akk items after a cycle.
 Make the app more responsive.
 Add Riven ranking
-Fix orddres somtimes æossing info
 
 ## Feature's
 
