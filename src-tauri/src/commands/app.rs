@@ -74,9 +74,9 @@ pub async fn app_accept_tos(
     app: tauri::State<'_, Mutex<AppState>>,
 ) -> Result<(), Error> {
     let mut app = app.lock()?;
-    app.settings.tos_uuid = id.clone();
-    app.settings.save()?;
-    add_metric!("app_accept_tos", id);
+    let mut settings = app.settings.clone();
+    settings.tos_uuid = id.clone();
+    app.update_settings(settings)?;
     Ok(())
 }
 #[tauri::command]
