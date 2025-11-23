@@ -5,6 +5,7 @@
 - ✨ Add generate chat messages.
 - ✨ Add some more info in the auction tab
 - 🛠️ Fix so riven weapons are properly fetched from the cache when generating chat links.
+- 🛠️ Fix missing info on orders in the wfm tab
 - ✏️ Made it so when y buy a stock item it uses the bought price of 0 if you didn't set a bought price.
 
 ## TODO's

@@ -36,8 +36,6 @@ impl OrderListExt for OrderList<Order> {
                         .set_profit(price.profit)
                         .set_order_id(order.id.clone()),
                 );
-            } else {
-                order.update_details(OrderDetails::default());
             }
         }
 
