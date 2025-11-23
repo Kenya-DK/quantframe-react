@@ -39,13 +39,18 @@ impl MigrationTrait for Migration {
             active.update(db).await?;
         }
         // Remove WFMOrderId column
-        manager
+        if let Err(err) = manager
             .get_connection()
             .execute(Statement::from_string(
                 manager.get_database_backend(),
                 "ALTER TABLE stock_riven DROP COLUMN wfm_order_id;".to_owned(),
             ))
-            .await?;
+            .await
+        {
+            if !err.to_string().contains("no such column") {
+                return Err(err);
+            }
+        }
         Ok(())
     }
 

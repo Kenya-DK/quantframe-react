@@ -4,6 +4,7 @@
 use ::utils::clear_logs;
 use ::utils::critical;
 use ::utils::error;
+use ::utils::get_location;
 use ::utils::info;
 use ::utils::init_logger;
 use ::utils::set_base_path;
@@ -90,7 +91,20 @@ async fn init_database(use_debug: bool) -> Result<(), Error> {
     let conn = Database::connect(db_url)
         .await
         .expect("Database connection failed");
-    Migrator::up(&conn, None).await.unwrap();
+    match Migrator::up(&conn, None).await {
+        Ok(_) => info(
+            "Setup:Database",
+            "Database migrations applied successfully",
+            &LoggerOptions::default(),
+        ),
+        Err(e) => {
+            return Err(Error::new(
+                "InitDatabase",
+                format!("Failed to apply database migrations: {}", e),
+                get_location!(),
+            ));
+        }
+    }
     DATABASE.get_or_init(|| conn);
     Ok(())
 }
@@ -148,15 +162,16 @@ pub fn run() {
             let app_handle = app.handle().clone();
 
             tauri::async_runtime::spawn(async move {
+                let mut err = None;
                 if let Err(e) = init_database(use_temp_db).await {
-                    emit_error!(e);
+                    err = Some(e.clone());
                     e.log("init_database_error.log");
                 }
                 if let Err(e) = setup_manages(app_handle.clone(), use_temp_db).await {
-                    emit_error!(e);
+                    err = Some(e.clone());
                     e.log("setup_error.log");
                 }
-                if let Err(e) = app_handle.emit("app:ready", ()) {
+                if let Err(e) = app_handle.emit("app:ready", ()) {                    
                     error(
                         "Emit",
                         &format!("Failed to emit app:ready event: {:?}", e),
@@ -164,6 +179,9 @@ pub fn run() {
                     );
                 }
                 HAS_STARTED.set(true).unwrap();
+                if let Some(e) = err {
+                    emit_error!(e);
+                }
             });
             init_logger();
             set_base_path(helper::get_app_storage_path().to_str().unwrap());
