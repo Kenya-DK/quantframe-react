@@ -14,13 +14,22 @@ export const useStockQueries = ({ queryData, isActive }: QueriesHooks) => {
     retry: false,
     enabled: isActive,
   });
+  const getOverviewQuery = useQuery({
+    queryKey: ["get_wfm_auctions_overview", queryData],
+    queryFn: () => api.auction.getOverview(queryData),
+    retry: false,
+    enabled: isActive,
+  });
+
   const refetchQueries = () => {
     getPaginationQuery.refetch();
+    getOverviewQuery.refetch();
   };
 
   // Return the queries
   return {
     paginationQuery: getPaginationQuery,
+    overviewQuery: getOverviewQuery,
     refetchQueries,
   };
 };

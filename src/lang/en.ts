@@ -1763,6 +1763,8 @@ export const en = {
         },
         auctions: {
           title: "Auctions",
+          overview: "<qty/> <blue>{{total}}</blue> | <plat/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+          tooltip_profit: "Estimated Profit",
           buttons: {
             refresh_tooltip: "Refresh the auction list",
             delete_all_tooltip: "Delete all auctions",

@@ -23,6 +23,11 @@ pub struct AuctionDetails {
     #[serde(default)]
     #[serde(rename = "highest_price")]
     pub highest_price: i64,
+
+    #[serde(default)]
+    #[serde(rename = "profit")]
+    pub profit: i64,
+
     // Default implementation for string
     #[serde(rename = "operation")]
     #[serde(default)]
@@ -50,6 +55,10 @@ impl AuctionDetails {
     }
     pub fn set_highest_price(mut self, highest_price: i64) -> Self {
         self.highest_price = highest_price;
+        self
+    }
+    pub fn set_profit(mut self, profit: i64) -> Self {
+        self.profit = profit;
         self
     }
     pub fn set_auctions(mut self, auctions: Vec<AuctionWithOwner>) -> Self {
@@ -86,6 +95,7 @@ impl Default for AuctionDetails {
             auction_id: String::new(),
             lowest_price: 0,
             highest_price: 0,
+            profit: 0,
             operations: vec!["Create".to_string()],
             auctions: vec![],
             item_name: String::new(),

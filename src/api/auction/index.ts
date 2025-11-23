@@ -15,6 +15,9 @@ export class AuctionModule {
   async getPagination(query: WFMarketTypes.WfmAuctionControllerGetListParams): Promise<WFMarketTypes.WfmAuctionControllerGetListData> {
     return await this.client.sendInvoke<WFMarketTypes.WfmAuctionControllerGetListData>("get_wfm_auctions_pagination", { query });
   }
+  async getOverview(query: WFMarketTypes.WfmAuctionControllerGetListParams): Promise<number[]> {
+    return await this.client.sendInvoke<number[]>("get_wfm_auctions_overview", { query });
+  }
 
   async refreshAuctions(): Promise<any> {
     return await this.client.sendInvoke<any>("auction_refresh");

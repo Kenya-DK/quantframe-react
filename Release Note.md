@@ -3,6 +3,7 @@
 - ✨ Made it possible to save trade message templates in the Generate Trade Message modal.
 - ✨ Made it possible to customize the prefix and suffix of generated trade messages.
 - ✨ Add generate chat messages.
+- ✨ Add some more info in the auction tab
 - 🛠️ Fix so riven weapons are properly fetched from the cache when generating chat links.
 - ✏️ Made it so when y buy a stock item it uses the bought price of 0 if you didn't set a bought price.
 
@@ -10,7 +11,8 @@
 
 Fix so the knapsack algorithm doesn't delete akk items after a cycle.
 Make the app more responsive.
-Add some more if in the auction tab
+Add Riven ranking
+Fix orddres somtimes æossing info
 
 ## Feature's
 

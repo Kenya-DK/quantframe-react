@@ -236,6 +236,7 @@ impl RivenModule {
 
             auction_info = auction_info.set_highest_price(live_auctions.highest_price());
             auction_info = auction_info.set_lowest_price(live_auctions.lowest_price());
+            auction_info = auction_info.set_profit(profit);
             auction_info = auction_info.set_auctions(live_auctions.take_top(5));
 
             let can_create = wfm_client.auction().can_create_auction();

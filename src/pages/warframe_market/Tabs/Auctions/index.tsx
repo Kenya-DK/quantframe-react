@@ -1,7 +1,7 @@
-import { ActionIcon, Box, Divider, Group, Pagination, ScrollArea, Select, SimpleGrid } from "@mantine/core";
+import { ActionIcon, Box, Divider, Group, Pagination, ScrollArea, Select, SimpleGrid, Tooltip } from "@mantine/core";
 import { SearchField } from "@components/Forms/SearchField";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faArrowDown, faArrowUp, faFileImport, faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faArrowDown, faArrowUp, faFileImport, faRefresh, faSackDollar, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateCommon, useTranslatePages } from "@hooks/useTranslate.hook";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import classes from "../../WarframeMarket.module.css";
@@ -14,6 +14,7 @@ import { Loading } from "@components/Shared/Loading";
 import { useStockModals } from "./modals";
 import { WFMAuction } from "@components/DataDisplay/WFMAuction";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { TextTranslate } from "../../../../components/Shared/TextTranslate";
 interface AuctionPanelProps {
   isActive?: boolean;
 }
@@ -39,7 +40,7 @@ export const AuctionPanel = ({ isActive }: AuctionPanelProps) => {
     useTranslateTabOrder(`success.${key}`, { ...context }, i18Key);
 
   // Queries
-  const { refetchQueries, paginationQuery } = useStockQueries({ queryData, isActive });
+  const { refetchQueries, paginationQuery, overviewQuery } = useStockQueries({ queryData, isActive });
 
   // Mutations
   const { refreshAuctionsMutation, importStockMutation, deleteAllAuctionsMutation, deleteStockMutation } = useStockMutations({
@@ -98,25 +99,43 @@ export const AuctionPanel = ({ isActive }: AuctionPanelProps) => {
           </Group>
         }
       />
-      <Group gap={"sm"} mt={"md"} justify="flex-end">
-        <Select
-          value={queryData.sort_by}
-          allowDeselect={false}
-          onChange={(value) => setQueryData((prev) => ({ ...prev, sort_by: value || "platinum" }))}
-          data={["created_at", "platinum", "updated_at"].map((key) => ({ label: useTranslateCommon(`sort_by.${key}`), value: key }))}
-          size="xs"
-        />
-        <ActionIcon
-          variant="light"
-          color="blue"
+      <Group gap={"sm"} mt={"md"} justify="space-between">
+        <TextTranslate
           size="lg"
-          onClick={() => {
-            const direction = queryData.sort_direction === "asc" ? "desc" : "asc";
-            setQueryData((prev) => ({ ...prev, sort_direction: direction }));
+          i18nKey={useTranslateTabOrder("overview", undefined, true)}
+          values={{
+            total: overviewQuery.data?.[0] || 0,
+            revenue: overviewQuery.data?.[1] || 0,
+            profit: overviewQuery.data?.[2] || 0,
           }}
-        >
-          {queryData.sort_direction === "asc" ? <FontAwesomeIcon icon={faArrowUp} /> : <FontAwesomeIcon icon={faArrowDown} />}
-        </ActionIcon>
+          components={{
+            profitIco: (
+              <Tooltip label={useTranslateTabOrder("tooltip_profit")}>
+                <FontAwesomeIcon icon={faSackDollar} />
+              </Tooltip>
+            ),
+          }}
+        />
+        <Group>
+          <Select
+            value={queryData.sort_by}
+            allowDeselect={false}
+            onChange={(value) => setQueryData((prev) => ({ ...prev, sort_by: value || "platinum" }))}
+            data={["created_at", "platinum", "updated_at"].map((key) => ({ label: useTranslateCommon(`sort_by.${key}`), value: key }))}
+            size="xs"
+          />
+          <ActionIcon
+            variant="light"
+            color="blue"
+            size="lg"
+            onClick={() => {
+              const direction = queryData.sort_direction === "asc" ? "desc" : "asc";
+              setQueryData((prev) => ({ ...prev, sort_direction: direction }));
+            }}
+          >
+            {queryData.sort_direction === "asc" ? <FontAwesomeIcon icon={faArrowUp} /> : <FontAwesomeIcon icon={faArrowDown} />}
+          </ActionIcon>
+        </Group>
       </Group>
       <ScrollArea mt={"md"} className={classes.orders} data-has-alert={useHasAlert()}>
         {deleteAllAuctionsMutation.isPending && <Loading text={`${deletingOrders.current} / ${deletingOrders.total}`} />}
