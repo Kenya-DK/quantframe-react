@@ -130,7 +130,7 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
                       type: useTranslateOrderType(`${key}`),
                       total: count[0],
                       platinum: count[1],
-                      profit: count[2],
+                      profit: count[2].toFixed(2),
                     }}
                     textProps={{ td: key == queryData.order_type ? "line-through" : "" }}
                     components={{

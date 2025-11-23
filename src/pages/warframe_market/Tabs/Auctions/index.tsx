@@ -106,7 +106,7 @@ export const AuctionPanel = ({ isActive }: AuctionPanelProps) => {
           values={{
             total: overviewQuery.data?.[0] || 0,
             revenue: overviewQuery.data?.[1] || 0,
-            profit: overviewQuery.data?.[2] || 0,
+            profit: overviewQuery.data?.[2].toFixed(2) || 0,
           }}
           components={{
             profitIco: (
