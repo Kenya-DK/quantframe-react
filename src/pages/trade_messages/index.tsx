@@ -2,7 +2,7 @@ import { Tabs } from "@mantine/core";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { ItemPanel, RivenPanel, CustomPanel } from "./Tabs";
 import { useLocalStorage } from "@mantine/hooks";
-import classes from "./TradingAnalytics.module.css";
+import classes from "./TradeMessages.module.css";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 
 export default function TradeMessagesPage() {

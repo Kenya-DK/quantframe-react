@@ -4,7 +4,7 @@ import { TauriTypes } from "$types";
 import { useQueries } from "./queries";
 import { SearchField } from "@components/Forms/SearchField";
 import { useTranslateCommon, useTranslatePages } from "@hooks/useTranslate.hook";
-import classes from "../TradingAnalytics.module.css";
+import classes from "../TradeMessages.module.css";
 import { DataTable } from "mantine-datatable";
 import { getSafePage } from "@utils/helper";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
