@@ -25,6 +25,7 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
       }
       isActive={isActive}
       group="item"
+      hideColumns={["potential_profit", "min_price"]}
       tradeEntry={tradeEntry}
       setTradeEntry={setTradeEntry}
       defaultDisplaySettings={{

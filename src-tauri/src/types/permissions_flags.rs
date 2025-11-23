@@ -7,6 +7,7 @@ pub enum PermissionsFlags {
     None,
     RivenPricesSearch,
     WFMUserActiveHistory,
+    FindInterestingRivens,
 }
 impl PermissionsFlags {
     pub fn as_str(&self) -> &str {
@@ -15,6 +16,7 @@ impl PermissionsFlags {
             PermissionsFlags::ExportData => "export_data",
             PermissionsFlags::RivenPricesSearch => "riven_prices_search",
             PermissionsFlags::WFMUserActiveHistory => "wfm_user_active_history",
+            PermissionsFlags::FindInterestingRivens => "find_interesting_rivens",
             PermissionsFlags::None => "none",
         }
     }
@@ -24,6 +26,7 @@ impl PermissionsFlags {
             "export_data" => PermissionsFlags::ExportData,
             "riven_prices_search" => PermissionsFlags::RivenPricesSearch,
             "wfm_user_active_history" => PermissionsFlags::WFMUserActiveHistory,
+            "find_interesting_rivens" => PermissionsFlags::FindInterestingRivens,
             _ => PermissionsFlags::None,
         }
     }

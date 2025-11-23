@@ -18,11 +18,12 @@ export const CustomPanel = ({ isActive }: CustomPanelProps = {}) => {
     <TradeEntryList
       createComponent={
         <TextInput
+          label="Name"
           value={tradeEntry?.wfm_url || ""}
           onChange={(e) => setTradeEntry({ ...tradeEntry, raw: e.currentTarget.value, wfm_url: e.currentTarget.value })}
-          placeholder="Enter custom item name or URL"
         />
       }
+      hideColumns={["potential_profit", "min_price"]}
       isActive={isActive}
       group="custom"
       tradeEntry={tradeEntry}
