@@ -8,7 +8,7 @@ use entity::{
 use serde_json::json;
 use service::StockRivenQuery;
 use utils::{filters_by, get_location, Error};
-use wf_market::{endpoints::item, enums::OrderType, types::Auction};
+use wf_market::{enums::OrderType, types::Auction};
 
 use crate::{
     add_metric, app::client::AppState, cache::client::CacheState, enums::*,
