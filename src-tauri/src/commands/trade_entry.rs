@@ -37,6 +37,25 @@ pub async fn trade_entry_create(mut input: CreateTradeEntry) -> Result<Model, Er
         Err(e) => return Err(e.with_location(get_location!())),
     }
 }
+#[tauri::command]
+pub async fn trade_entry_create_multiple(mut inputs: Vec<CreateTradeEntry>) -> Result<i64, Error> {
+    let conn = DATABASE.get().unwrap();
+    let mut total = 0;
+    for input in inputs.iter_mut() {
+        input.validate(FindByType::Id).map_err(|e| {
+            let err = e.clone();
+            err.with_location(get_location!())
+                .log("trade_entry_create_multiple.log");
+            e
+        })?;
+        let model = input.to_model();
+        match TradeEntryMutation::create_or_update(conn, input.override_existing, &model).await {
+            Ok(_) => total += 1,
+            Err(e) => return Err(e.with_location(get_location!())),
+        }
+    }
+    Ok(total)
+}
 
 #[tauri::command]
 pub async fn trade_entry_delete(id: i64) -> Result<Model, Error> {

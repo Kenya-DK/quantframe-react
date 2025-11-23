@@ -34,6 +34,42 @@ impl TradeEntryMutation {
         })
     }
 
+    pub async fn create_or_update(
+        db: &DbConn,
+        override_existing: bool,
+        form_data: &trade_entry::Model,
+    ) -> Result<trade_entry::Model, Error> {
+        if override_existing {
+            // Use Tags and WfmId to find existing entry
+            let existing = Entity::find()
+                .filter(Column::WfmId.eq(form_data.wfm_id.to_owned()))
+                .filter(Column::Tags.eq(form_data.tags.to_owned()))
+                .one(db)
+                .await
+                .map_err(|e| {
+                    Error::from_db(
+                        format!("{}:CreateOrUpdate", COMPONENT),
+                        "Failed to query existing Trade Entry",
+                        e,
+                        get_location!(),
+                    )
+                })?;
+
+            if let Some(existing) = existing {
+                let mut updated_model = form_data.to_owned();
+                updated_model.id = existing.id;
+                return Ok(
+                    TradeEntryMutation::update_by_id(db, updated_model.to_update())
+                        .await
+                        .map_err(|e| e.with_location(get_location!()))?,
+                );
+            }
+        }
+        Ok(TradeEntryMutation::create(db, form_data)
+            .await
+            .map_err(|e| e.with_location(get_location!()))?)
+    }
+
     pub async fn update_by_id(
         db: &DbConn,
         input: UpdateTradeEntry,
