@@ -130,7 +130,10 @@ export const formatNumber = (num: number) => {
   }
   return num;
 };
-
+// Round to nearest base (default 5)
+export const Round = (x: number, base = 5) => {
+  return Math.round(x / base) * base;
+};
 export interface DisplaySettings {
   prefix?: string;
   value?: string | number;

@@ -11,6 +11,7 @@ export namespace TauriTypes {
     EXPORT_DATA = "export_data",
     RIVEN_PRICES_SEARCH = "riven_prices_search",
     WFM_USER_ACTIVE_HISTORY = "wfm_user_active_history",
+    FIND_INTERESTING_RIVENS = "find_interesting_rivens",
   }
   export enum TradeMode {
     Buy = "buy",
@@ -742,6 +743,7 @@ export namespace TauriTypes {
 
   export interface CreateTradeEntry {
     raw: string;
+    override_existing?: boolean;
     name?: string;
     sub_type?: SubType;
     price: number;

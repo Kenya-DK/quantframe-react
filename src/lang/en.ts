@@ -171,8 +171,18 @@ export const en = {
         success: { title: "Update Settings Success", message: "Settings have been successfully updated" },
       },
       create_trade_entry: {
-        error: { title: "Create Trade Entry Error", message: "An error occurred while trying to create the trade entry." },
-        success: { title: "Create Trade Entry Success", message: "Trade entry {{name}} has been successfully created." },
+        error: {
+          title: "Create Trade Entry Error",
+          title_multiple: "Create Trade Entry Error",
+          message: "An error occurred while trying to create the trade entry.",
+          message_multiple: "An error occurred while trying to create multiple trade entries.",
+        },
+        success: {
+          title: "Create Trade Entry Success",
+          title_multiple: "Create Trade Entry Success",
+          message: "Trade entry {{name}} has been successfully created.",
+          message_multiple: "{{count}} trade entries have been successfully created.",
+        },
       },
       update_trade_entry: {
         error: {
@@ -1914,11 +1924,16 @@ export const en = {
         export_json_tooltip: "Export trade messages to JSON  (Patreon T1+)",
         delete_multiple_tooltip: "Delete all trade {{count}}",
         add_tooltip: "Add Trade Message",
+        find_interesting_tooltip: "Find Interesting Trade Messages (Patreon T2+)",
+        calibrate_prices_tooltip: "Calibrate Prices",
       },
       datatable: {
         columns: {
           price: "Price",
           tags: "Tags",
+          min_price: "Min Price",
+          potential_profit: "Potential Profit",
+          updated_at: "Updated At",
         },
       },
       tabs: {
@@ -1927,6 +1942,34 @@ export const en = {
         },
         riven: {
           title: "Riven",
+          modals: {
+            find_interesting_rivens: {
+              title: "Find Interesting Rivens for {{date}}",
+              titles: {
+                filtered: "Filtered Rivens",
+                discount_settings: "Discount Settings",
+                export_settings: "Export Settings",
+              },
+              fields: {
+                min_price_label: "Minimum Price",
+                min_volume_label: "Minimum Volume",
+                discount_percentage_label: "Discount Percentage %",
+                round_to_nearest_label: "Round to Nearest",
+                override_existing_prices_label: "Override Existing Prices",
+                tags_label: "Tags",
+              },
+              datatable_columns: {
+                name: "Name",
+                min_price: "Minimum Price",
+                discount_price: "Discount Price",
+                potential_profit: "Potential Profit",
+                volume: "Volume",
+              },
+              buttons: {
+                export_to_trade_messages: "Export to Trade Messages",
+              },
+            },
+          },
         },
         custom: {
           title: "Custom",

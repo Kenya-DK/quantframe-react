@@ -120,6 +120,11 @@ export function GenerateTradeMessageModal({ prefix, template, suffix, displaySet
   const [availableKeys, setAvailableKeys] = useState<string[]>([]);
   const [chatIcon, setChatIcon] = useState<string>(":alliance:");
 
+  const ValidateLength = (candidate: string, message: string) => {
+    let totalLength = candidate.length + message.length;
+    return totalLength <= MAX_LENGTH;
+  };
+
   useEffect(() => {
     const generateMessages = async () => {
       let template = form.values.template;
@@ -137,14 +142,14 @@ export function GenerateTradeMessageModal({ prefix, template, suffix, displaySet
           for (let i = 0; i < items.length; i++) {
             if (i != items.length - 1) delete items[i][groupByKey];
             let candidate = ApplyTemplate(template, items[i]);
-            if (candidate.length > MAX_LENGTH) return;
+            if (!ValidateLength(candidate, message)) return;
             message += candidate;
           }
         }
       } else
         newItems.forEach((data) => {
           let candidate = ApplyTemplate(template, data);
-          if (candidate.length > MAX_LENGTH) return;
+          if (!ValidateLength(candidate, message)) return;
           message += candidate;
         });
 

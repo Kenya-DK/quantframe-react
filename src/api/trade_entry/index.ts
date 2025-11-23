@@ -12,6 +12,9 @@ export class TradeEntryModule {
   async create(input: TauriTypes.CreateTradeEntry) {
     return await this.client.sendInvoke<TauriTypes.TradeEntry>("trade_entry_create", { input });
   }
+  async createMultiple(inputs: TauriTypes.CreateTradeEntry[]): Promise<TauriTypes.TradeEntry[]> {
+    return await this.client.sendInvoke<TauriTypes.TradeEntry[]>("trade_entry_create_multiple", { inputs });
+  }
 
   async update(input: TauriTypes.UpdateTradeEntry): Promise<TauriTypes.TradeEntry> {
     return await this.client.sendInvoke<TauriTypes.TradeEntry>("trade_entry_update", { input });
