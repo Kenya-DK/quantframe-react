@@ -35,7 +35,7 @@ impl Default for SummarySettings {
                     vec!["prime"],
                 ),
                 SummaryCategorySetting::new(
-                    "/imgs/categories/axi-nectar.png",
+                    "/imgs/categories/axi-intact.png",
                     "Relic",
                     vec![],
                     vec!["relic"],
