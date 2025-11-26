@@ -33,3 +33,6 @@ pub use notifications_setting::*;
 
 pub mod http_server_settings;
 pub use http_server_settings::*;
+
+pub mod generate_trade_message_setting;
+pub use generate_trade_message_setting::*;

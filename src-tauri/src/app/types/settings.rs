@@ -18,6 +18,7 @@ pub struct Settings {
     pub debugging: DebuggingSettings,
     pub notifications: NotificationsSetting,
     pub http_server: HttpServerSettings,
+    pub generate_trade_message: GenerateTradeMessageSetting,
     pub tos_uuid: String,
 }
 impl Default for Settings {
@@ -29,6 +30,7 @@ impl Default for Settings {
             notifications: NotificationsSetting::default(),
             debugging: DebuggingSettings::default(),
             http_server: HttpServerSettings::default(),
+            generate_trade_message: GenerateTradeMessageSetting::default(),
             tos_uuid: String::new(),
         }
     }
