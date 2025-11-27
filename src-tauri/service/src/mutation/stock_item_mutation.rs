@@ -113,8 +113,13 @@ impl StockItemMutation {
 
     pub async fn add_item(
         db: &DbConn,
-        stock: stock_item::Model,
+        mut stock: stock_item::Model,
     ) -> Result<(String, stock_item::Model), Error> {
+
+        if stock.owned >= 1 {
+            stock.bought = stock.bought / stock.owned;
+        }
+
         // Find the item by id
         let item = StockItemQuery::find_by_url_name_and_sub_type(
             db,

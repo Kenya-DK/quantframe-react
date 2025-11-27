@@ -14,6 +14,7 @@ Fix so the knapsack algorithm doesn't delete akk items after a cycle.
 Make the app more responsive.
 Add Riven ranking
 Add a sound or a discord message if the livesraper dies
+Fix wired behavior when trading of mutable of the same item
 
 ## Feature's
 

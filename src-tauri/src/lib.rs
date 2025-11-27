@@ -132,7 +132,7 @@ async fn setup_manages(app: tauri::AppHandle, use_temp_db: bool) -> Result<(), E
 }
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let use_temp_db = false;
+    let use_temp_db = true;
 
     // Initialize the logger for elapsed time tracking
 
@@ -171,7 +171,7 @@ pub fn run() {
                     err = Some(e.clone());
                     e.log("setup_error.log");
                 }
-                if let Err(e) = app_handle.emit("app:ready", ()) {                    
+                if let Err(e) = app_handle.emit("app:ready", ()) {
                     error(
                         "Emit",
                         &format!("Failed to emit app:ready event: {:?}", e),
