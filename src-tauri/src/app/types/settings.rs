@@ -109,6 +109,17 @@ impl Settings {
             data.live_scraper.stock_item.max_total_price_cap = 150_000;
         }
 
+        // Make Sure the default template exists
+        let default_template = SaveTemplateSetting::default();
+        if data
+            .generate_trade_message
+            .templates
+            .iter()
+            .all(|t| t.template != default_template.template)
+        {
+            data.generate_trade_message.templates.push(default_template);
+        }
+
         if missing_properties.len() > 0 {
             data.save()?;
         }

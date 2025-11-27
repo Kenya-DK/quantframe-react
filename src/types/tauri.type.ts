@@ -1,4 +1,5 @@
 import { MinMaxDto, PriceHistory, RivenAttribute, UserStatus, WFMarketTypes } from ".";
+import { DisplaySettings } from "../utils/helper";
 
 export namespace TauriTypes {
   export enum StockMode {
@@ -90,6 +91,7 @@ export namespace TauriTypes {
     advanced_settings: SettingsAdvanced;
     notifications: SettingsNotifications;
     http_server: HttpServerSettings;
+    generate_trade_message: GenerateTradeMessageSettings;
   }
   export interface SettingsAdvanced {
     wf_log_path: string;
@@ -165,6 +167,17 @@ export namespace TauriTypes {
     should_delete_other_types: boolean;
     stock_item: SettingsStockItem;
     stock_riven: SettingsStockRiven;
+  }
+  export interface GenerateTradeMessageSettings {
+    templates: SaveTemplateSetting[];
+  }
+
+  export interface SaveTemplateSetting {
+    name: string;
+    prefix: string;
+    suffix: string;
+    template: string;
+    displaySettings: Record<string, DisplaySettings>;
   }
   export interface User {
     anonymous: boolean;

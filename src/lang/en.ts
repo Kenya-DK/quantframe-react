@@ -212,6 +212,14 @@ export const en = {
           message_multiple: "{{count}} trade entries have been successfully deleted.",
         },
       },
+      create_trade_msg_template: {
+        error: { title: "Create Template Error", message: "An error occurred while trying to create the trade message template." },
+        success: { title: "Create Template Success", message: "The trade message template has been successfully created." },
+      },
+      delete_trade_msg_template: {
+        error: { title: "Delete Template Error", message: "An error occurred while trying to delete the trade message template." },
+        success: { title: "Delete Template Success", message: "The trade message template has been successfully deleted." },
+      },
     },
     datatable_columns: {
       list_price: "Listed",
@@ -294,6 +302,14 @@ export const en = {
           maximum_price: {
             label: "Maximum Price",
             description: "The maximum price for the item",
+          },
+        },
+      },
+      save: {
+        title: "Save",
+        fields: {
+          name: {
+            label: "Name",
           },
         },
       },
@@ -1200,9 +1216,13 @@ export const en = {
         title: "Generate Trade Message for {{count}} Item(s)",
         button_add_key_tooltip: "Add Display",
         button_copy_tooltip: "Copy to Clipboard",
+        button_delete_template_tooltip: "Delete Template",
+        button_load_template_tooltip: "Load Template",
+        button_save_template_tooltip: "Save Template",
         titles: {
           message_settings: "Message Settings",
           preview_with_icons: "Preview with Icons",
+          display_settings: "Display Settings",
         },
         fields: {
           prefix: {
@@ -1236,6 +1256,10 @@ export const en = {
           group_by: {
             label: "Group By",
             description: "Group items by their type in the message",
+          },
+          load_template: {
+            label: "Load Template",
+            description: "Load a saved message template",
           },
         },
         datatable: {

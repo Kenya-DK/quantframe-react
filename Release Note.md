@@ -1,12 +1,6 @@
 ## Fix/Changes
 
-- ✨ Made it possible to save trade message templates in the Generate Trade Message modal.
-- ✨ Made it possible to customize the prefix and suffix of generated trade messages.
-- ✨ Add generate chat messages.
-- ✨ Add some more info in the auction tab
-- 🛠️ Fix so riven weapons are properly fetched from the cache when generating chat links.
-- 🛠️ Fix missing info on orders in the wfm tab
-- ✏️ Made it so when y buy a stock item it uses the bought price of 0 if you didn't set a bought price.
+- ✨ You can now save and load templates for the trade message generator.
 
 ## TODO's
 
@@ -18,7 +12,7 @@ Fix wired behavior when trading of mutable of the same item
 
 ## Feature's
 
-- ✨ Add generate chat messages.
+- ✨ Add generate chat messages with custom templates for ...
 - ✨ Add generate WTS messages for items, rivens and wishlists
 - ✨ Add a preview for items to to buy.
 - ✨ Add Stock Riven Details Modal and wishList
