@@ -1,5 +1,6 @@
 pub mod auction_ext;
 pub mod auction_list_ext;
+pub mod auction_item_attribute_ext;
 pub mod create_stock_item_ext;
 pub mod create_stock_riven_ext;
 pub mod create_trade_entry_ext;
@@ -17,6 +18,7 @@ pub mod wfm_order_pagination_query_dto;
 // Re-export the error extension trait for convenience
 pub use auction_ext::AuctionExt;
 pub use auction_list_ext::AuctionListExt;
+pub use auction_item_attribute_ext::*;
 pub use create_stock_item_ext::CreateStockItemExt;
 pub use create_stock_riven_ext::CreateStockRivenExt;
 pub use create_trade_entry_ext::*;
