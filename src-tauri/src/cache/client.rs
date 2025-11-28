@@ -226,6 +226,7 @@ impl CacheState {
         self.chat_icon().load()?;
         self.update_routes_client();
         self.all_items().load()?;
+        self.riven_parser().load()?;
         Ok((cache_version_id, price_version_id))
     }
 

@@ -76,6 +76,7 @@ impl RivenModule {
         }
         Ok(())
     }
+    
     pub fn get_riven_by(&self, find_by: FindBy) -> Result<Option<CacheRivenWeapon>, Error> {
         let items = self.get_items()?.weapons;
 
@@ -106,12 +107,42 @@ impl RivenModule {
         }
     }
 
+    pub fn get_upgrades_by_type(&self, upgrade_type: impl Into<String>) -> Result<Vec<CacheRivenUpgrade>, Error> {
+        let data = self
+            .data
+            .lock()
+            .expect("Failed to lock items mutex")
+            .clone();
+        let upgrade_type = upgrade_type.into();
+        let items: Vec<CacheRivenUpgrade> = match data.upgrade_types.get(&upgrade_type) {
+            Some(upgrades) => upgrades.clone(),
+            None => Vec::new(),
+        };
+        Ok(items)
+    }
+    
     pub fn get_riven_upgrade_by(
         &self,
         find_by: FindBy,
     ) -> Result<Option<CacheRivenUpgrade>, Error> {
         let re = Regex::new(r"<.*?>").unwrap();
         let items = self.get_upgrade_types()?;
+
+        if find_by.find_by == FindByType::Custom(String::from("short_string")) {
+            // Special handling for short_string to ignore HTML tags
+            return Ok(items.into_iter().find(|item| {
+                find_by.is_match(&re.replace_all(&item.short_string, "").to_string())
+            }));
+        }
+        let upgrade_types = match find_by.find_by {
+            FindByType::Custom(ref s) => match s.as_str() {
+                "upgrade_type|tag" => {
+                    vec![]
+                }
+                _ => self.get_upgrade_types()?),
+        }
+
+
         match find_by.find_by {
             FindByType::Name => {
                 return Ok(items
@@ -130,6 +161,27 @@ impl RivenModule {
             }
             FindByType::Custom(ref s) => match s.as_str() {
                 "short_string" => {
+                    return Ok(items.into_iter().find(|item| {
+                        find_by.is_match(&re.replace_all(&item.short_string, "").to_string())
+                    }));
+                }
+                "upgrade_type|tag" => {
+                    // Spilt by '|' to get the upgrade type and tag
+                    let upgrade_type = find_by.value.split('|').next().unwrap_or("");
+                    let tag = find_by.value.split('|').nth(1).unwrap_or("");
+                    if upgrade_type.is_empty() || tag.is_empty() {
+                        return Err(Error::new(
+                            "Cache:TradableItem:GetBy",
+                            format!(
+                                "Invalid FindBy value for custom type 'upgrade_type|tag': {}",
+                                find_by.value
+                            ),
+                            get_location!(),
+                        ));
+                    }
+
+                    let data = self.get_items()?;
+                    let upgrade_types = s
                     return Ok(items.into_iter().find(|item| {
                         find_by.is_match(&re.replace_all(&item.short_string, "").to_string())
                     }));
@@ -196,6 +248,7 @@ impl RivenModule {
             )),
         }
     }
+    
     /**
      * Creates a new `RivenModule` from an existing one, sharing the client.
      * This is useful for cloning modules when the client state changes.
