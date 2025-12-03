@@ -33,6 +33,7 @@ pub struct Model {
     pub is_hidden: bool,
     pub comment: String,
     pub status: StockStatus,
+    pub grade: RivenGrade,
     // Default UUID
     pub uuid: String,
 
@@ -107,6 +108,7 @@ impl Model {
             locked: false,
             changes: None,
             uuid: "".to_string(),
+            grade: RivenGrade::Unknown,
         };
         item.uuid = item.uuid().to_string();
         item
@@ -135,6 +137,7 @@ impl Model {
              "re_rolls": self.re_rolls,
              "polarity": self.polarity,
              "attributes": self.attributes,
+             "grade": self.grade.as_str(),
             })),
         )
     }
@@ -216,6 +219,7 @@ impl Model {
             mastery_rank: FieldChange::Value(self.mastery_rank),
             re_rolls: FieldChange::Value(self.re_rolls),
             price_history: FieldChange::Value(self.price_history.0.clone()),
+            grade: FieldChange::Value(self.grade.clone()),
         }
     }
 }

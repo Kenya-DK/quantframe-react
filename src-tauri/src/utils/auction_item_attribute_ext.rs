@@ -1,45 +1,49 @@
-use std::fmt::Display;
-
-use entity::stock_riven::{CreateStockRiven, RivenAttribute};
+use entity::enums::RivenAttributeGrade;
 use serde::{Deserialize, Serialize};
-use utils::{get_location, warning, Error, LoggerOptions};
-use wf_market::{
-    enums::AuctionType,
-    types::{Auction, AuctionWithOwner},
-};
-
-use crate::{
-    cache::{client::CacheState, types::CacheRivenWeapon},
-    enums::FindBy,
-};
+use wf_market::types::ItemAttribute;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ItemAttributeDetails {
     #[serde(default)]
+    pub tag: String,
+    #[serde(default)]
     pub grade: String,
     #[serde(default)]
-    pub grade_value: i32,
+    pub role_grade: RivenAttributeGrade,
     #[serde(default)]
-    pub min: f64,
+    pub min: f32,
     #[serde(default)]
-    pub max: f64,
+    pub max: f32,
     #[serde(default)]
     pub score: i32,
 }
 impl ItemAttributeDetails {
+    pub fn new(
+        tag: impl Into<String>,
+        grade: impl Into<String>,
+        role_grade: RivenAttributeGrade,
+        min: f32,
+        max: f32,
+        score: i32,
+    ) -> Self {
+        Self {
+            tag: tag.into(),
+            grade: grade.into(),
+            role_grade,
+            min,
+            max,
+            score,
+        }
+    }
     pub fn set_grade(mut self, grade: impl Into<String>) -> Self {
         self.grade = grade.into();
         self
     }
-    pub fn set_grade_value(mut self, grade_value: i32) -> Self {
-        self.grade_value = grade_value;
-        self
-    }
-    pub fn set_min(mut self, min: f64) -> Self {
+    pub fn set_min(mut self, min: f32) -> Self {
         self.min = min;
         self
     }
-    pub fn set_max(mut self, max: f64) -> Self {
+    pub fn set_max(mut self, max: f32) -> Self {
         self.max = max;
         self
     }
@@ -52,10 +56,11 @@ impl ItemAttributeDetails {
 impl Default for ItemAttributeDetails {
     fn default() -> Self {
         ItemAttributeDetails {
+            tag: "N/A".to_string(),
             grade: "N/A".to_string(),
-            grade_value: 0,
-            min: 0,
-            max: 0,
+            role_grade: RivenAttributeGrade::Unknown,
+            min: 0.0,
+            max: 0.0,
             score: -1,
         }
     }
@@ -70,7 +75,8 @@ pub trait ItemAttributeExt {
 impl ItemAttributeExt for ItemAttribute {
     fn get_details(&self) -> ItemAttributeDetails {
         if let Some(properties) = &self.properties {
-            serde_json::from_value(properties.clone()).unwrap_or_else(|_| ItemAttributeDetails::default())
+            serde_json::from_value(properties.clone())
+                .unwrap_or_else(|_| ItemAttributeDetails::default())
         } else {
             ItemAttributeDetails::default()
         }

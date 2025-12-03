@@ -33,6 +33,9 @@ pub struct UpdateStockRiven {
 
     #[serde(default)]
     pub price_history: FieldChange<Vec<PriceHistory>>,
+
+    #[serde(default)]
+    pub grade: FieldChange<RivenGrade>,
 }
 
 impl UpdateStockRiven {
@@ -82,6 +85,10 @@ impl UpdateStockRiven {
             Value(v) => item.price_history = Set(PriceHistoryVec(v)),
             _ => {}
         }
+        match self.grade {
+            Value(v) => item.grade = Set(v),
+            _ => {}
+        }
 
         item
     }
@@ -97,6 +104,7 @@ impl UpdateStockRiven {
             mastery_rank: FieldChange::Ignore,
             re_rolls: FieldChange::Ignore,
             price_history: FieldChange::Ignore,
+            grade: FieldChange::Ignore,
         }
     }
 
@@ -142,6 +150,10 @@ impl UpdateStockRiven {
             Some(v) => FieldChange::Value(v),
             None => FieldChange::Null,
         };
+        self
+    }
+    pub fn with_grade(mut self, grade: RivenGrade) -> Self {
+        self.grade = FieldChange::Value(grade);
         self
     }
 }

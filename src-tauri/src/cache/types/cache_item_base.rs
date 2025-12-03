@@ -8,9 +8,9 @@ pub struct CacheItemBase {
     pub unique_name: String,
     #[serde(rename = "name")]
     pub name: String,
-    #[serde(rename = "category")]
+    #[serde(default, rename = "category")]
     pub category: String,
-    #[serde(rename = "wfm_item_url")]
+    #[serde(default, rename = "wfm_item_url")]
     pub wfm_item_url: Option<String>,
     #[serde(rename = "part_of_set")]
     pub part_of_set: Option<String>,

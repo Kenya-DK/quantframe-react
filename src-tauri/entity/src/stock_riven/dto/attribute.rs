@@ -20,3 +20,18 @@ impl RivenAttribute {
 }
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct RivenAttributeVec(pub Vec<RivenAttribute>);
+
+impl RivenAttributeVec {
+    pub fn total_buff_curse_count(&self) -> (usize, usize) {
+        let mut buff_count = 0;
+        let mut curse_count = 0;
+        for att in self.0.iter() {
+            if att.positive {
+                buff_count += 1;
+            } else {
+                curse_count += 1;
+            }
+        }
+        (buff_count, curse_count)
+    }
+}

@@ -5,12 +5,13 @@ use serde_json::{json, Value};
 use service::{StockRivenMutation, StockRivenQuery, TransactionQuery};
 use tauri_plugin_dialog::DialogExt;
 use utils::{get_location, group_by, info, Error, LoggerOptions};
-use wf_market::enums::OrderType;
+use wf_market::{enums::OrderType, types::ItemAttribute};
 
 use crate::{
     add_metric,
     app::client::AppState,
-    enums::FindByType,
+    cache::{types::RivenSummary, CacheState},
+    enums::{FindBy, FindByType},
     handlers::{handle_riven, handle_riven_by_entity},
     types::PermissionsFlags,
     utils::ErrorFromExt,
@@ -206,8 +207,10 @@ pub async fn stock_riven_update_multiple(
 pub async fn stock_riven_get_by_id(
     id: i64,
     app: tauri::State<'_, Mutex<AppState>>,
+    cache: tauri::State<'_, Mutex<CacheState>>,
 ) -> Result<Value, Error> {
     let app = app.lock()?.clone();
+    let cache = cache.lock()?.clone();
     let conn = DATABASE.get().unwrap();
     let item = match StockRivenQuery::get_by_id(conn, id).await {
         Ok(stock_riven) => {
@@ -246,6 +249,33 @@ pub async fn stock_riven_get_by_id(
         payload["stock_profit"] = json!(order_info.starting_price - item.bought as i32);
     }
 
+    let attributes = item
+        .attributes
+        .0
+        .iter()
+        .map(|a| (a.url_name.clone(), a.value, a.positive))
+        .collect::<Vec<_>>();
+
+    // let summary = cache
+    //     .riven_parser()
+    //     .create_summary(
+    //         FindBy::new(FindByType::UniqueName, item.weapon_unique_name.clone()),
+    //         item.mastery_rank,
+    //         item.re_rolls,
+    //         item.sub_type.unwrap().rank.unwrap_or(0),
+    //         item.polarity.clone(),
+    //         attributes,
+    //     )
+    //     .map_err(|e| e.with_location(get_location!()))?;
+    // payload["riven_summary"] = json!(summary);
+    payload["riven_summary"] = json!(RivenSummary::new(
+        item.weapon_unique_name,
+        item.mastery_rank,
+        item.re_rolls,
+        item.sub_type.unwrap().rank.unwrap_or(0),
+        item.polarity.clone(),
+        attributes
+    )?);
     Ok(payload)
 }
 

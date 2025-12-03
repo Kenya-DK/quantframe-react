@@ -1,6 +1,9 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
+use entity::enums::{RivenAttributeGrade, RivenGrade};
 use serde::{Deserialize, Serialize};
+
+use crate::cache::CacheItemBase;
 
 #[derive(Deserialize, Serialize, Clone, Debug, Default)]
 pub struct CacheRiven {
@@ -54,7 +57,28 @@ pub struct CacheRivenWeapon {
     #[serde(rename = "rolls")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub god_roll: Option<CacheRivenRolls>,
+    #[serde(default)]
+    pub variants: Vec<CacheRivenWeaponVariant>,
 }
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct CacheRivenWeaponVariant {
+    #[serde(rename = "uniqueName")]
+    pub unique_name: String,
+    #[serde(rename = "name")]
+    pub name: String,
+    #[serde(rename = "disposition", default)]
+    pub disposition: f64,
+}
+impl From<&CacheRivenWeapon> for CacheRivenWeaponVariant {
+    fn from(item: &CacheRivenWeapon) -> Self {
+        CacheRivenWeaponVariant {
+            unique_name: item.unique_name.clone(),
+            name: item.name.clone(),
+            disposition: item.disposition,
+        }
+    }
+}
+
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CacheRivenGoodRoll {
     #[serde(rename = "required")]
@@ -73,6 +97,128 @@ pub struct CacheRivenRolls {
     pub good_rolls: Vec<CacheRivenGoodRoll>,
     #[serde(rename = "negative_attributes")]
     pub negative_attributes: Vec<String>,
+}
+impl CacheRivenRolls {
+    pub fn get_graded_attribute(
+        &self,
+        tag: impl Into<String>,
+        positive: bool,
+    ) -> RivenAttributeGrade {
+        let tag = tag.into();
+        if !positive {
+            if self.negative_attributes.contains(&tag) {
+                RivenAttributeGrade::Good
+            } else if self
+                .good_rolls
+                .iter()
+                .any(|r| r.required.contains(&tag) || r.optional.contains(&tag))
+            {
+                RivenAttributeGrade::Bad
+            } else {
+                RivenAttributeGrade::NotHelping
+            }
+        } else {
+            if self.good_rolls.iter().any(|r| r.required.contains(&tag)) {
+                RivenAttributeGrade::Decisive
+            } else if self.good_rolls.iter().any(|r| r.optional.contains(&tag)) {
+                RivenAttributeGrade::Good
+            } else {
+                RivenAttributeGrade::NotHelping
+            }
+        }
+    }
+    pub fn get_graded_riven(&self, grades: Vec<(bool, RivenAttributeGrade, String)>) -> RivenGrade {
+        let buffs_tags: HashSet<String> = grades
+            .iter()
+            .filter(|(positive, _, _)| *positive)
+            .map(|(_, _, tag)| tag.clone())
+            .collect();
+        let matching_rolls = self
+            .good_rolls
+            .iter()
+            .filter(|roll| {
+                // All required attributes must be present in buffs_tags
+                roll.required.iter().all(|tag| buffs_tags.contains(tag))
+            })
+            .filter(|roll| {
+                // Count of (required + optional) attributes that match must equal total buffs count
+                let required_match_count = roll
+                    .required
+                    .iter()
+                    .filter(|tag| buffs_tags.contains(*tag))
+                    .count();
+                let optional_match_count = roll
+                    .optional
+                    .iter()
+                    .filter(|tag| buffs_tags.contains(*tag))
+                    .count();
+                required_match_count + optional_match_count == buffs_tags.len()
+            })
+            .collect::<Vec<_>>();
+
+        let has_full_pattern_match = !matching_rolls.is_empty();
+
+        let useful_positive_count = grades
+            .iter()
+            .filter(|(positive, grade, _)| {
+                *positive
+                    && matches!(
+                        grade,
+                        RivenAttributeGrade::Decisive | RivenAttributeGrade::Good
+                    )
+            })
+            .count();
+
+        let has_bad_negatives = grades
+            .iter()
+            .any(|(positive, grade, _)| !*positive && matches!(grade, RivenAttributeGrade::Bad));
+
+        let has_not_helping_negatives = grades.iter().any(|(positive, grade, _)| {
+            !*positive && matches!(grade, RivenAttributeGrade::NotHelping)
+        });
+
+        let negative_grades: Vec<_> = grades
+            .iter()
+            .filter(|(positive, _, _)| !*positive)
+            .collect();
+
+        if has_bad_negatives {
+            if (has_full_pattern_match && useful_positive_count >= 2) || useful_positive_count >= 3
+            {
+                return RivenGrade::HasPotential;
+            } else {
+                return RivenGrade::Bad;
+            }
+        }
+
+        if has_not_helping_negatives {
+            if has_full_pattern_match || useful_positive_count >= 2 {
+                return RivenGrade::Good;
+            } else if useful_positive_count >= 1 {
+                return RivenGrade::HasPotential;
+            } else {
+                return RivenGrade::Bad;
+            }
+        }
+
+        if has_full_pattern_match {
+            if useful_positive_count >= 2 && !negative_grades.is_empty() {
+                return RivenGrade::Perfect;
+            } else {
+                return RivenGrade::Good;
+            }
+        }
+
+        if useful_positive_count >= 2 {
+            return RivenGrade::Good;
+        }
+
+        if useful_positive_count >= 1 {
+            return RivenGrade::HasPotential;
+        } else {
+            return RivenGrade::Bad;
+        }
+    }
 }
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CacheRivenUpgrade {
@@ -136,4 +282,9 @@ pub struct CacheRivenWFMAttribute {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "negativeOnly")]
     pub negative_only: Option<bool>,
+
+    #[serde(rename = "localization_string", default)]
+    pub localization_string: String,
+    #[serde(rename = "short_string", default)]
+    pub short_string: String,
 }
