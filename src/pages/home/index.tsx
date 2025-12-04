@@ -25,7 +25,7 @@ import {
   faMoneyBillTrendUp,
   faSackDollar,
 } from "@fortawesome/free-solid-svg-icons";
-import { useTranslatePages } from "@hooks/useTranslate.hook";
+import { useTranslateBase, useTranslatePages } from "@hooks/useTranslate.hook";
 import { TextTranslate } from "@components/Shared/TextTranslate";
 import i18next from "i18next";
 import { TauriTypes } from "$types";
@@ -38,6 +38,7 @@ import { ColorInfo } from "@components/Shared/ColorInfo";
 import { TransactionListItem } from "@components/DataDisplay/TransactionListItem";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
+import { useAppContext } from "../../contexts/app.context";
 
 const BarChartFooter = ({ i18nKey, statistics }: { i18nKey: string; statistics: TauriTypes.FinancialReport }) => {
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`home.${key}`, { ...context }, i18Key);
@@ -99,6 +100,7 @@ const BarChartFooter = ({ i18nKey, statistics }: { i18nKey: string; statistics: 
 
 export default function HomePage() {
   const theme = useMantineTheme();
+  const { settings } = useAppContext();
 
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`home.${key}`, { ...context }, i18Key);
@@ -114,6 +116,13 @@ export default function HomePage() {
     <Container size={"100%"}>
       <Grid className={classes.wrapper} data-has-alert={useHasAlert()}>
         <Grid.Col span={4}>
+          {useTranslateBase("mods.impact_damage.short")}
+          {settings && (
+            <>
+              <button onClick={async () => api.app.updateSettings({ ...settings, lang: "en" })}>English</button>
+              <button onClick={async () => api.app.updateSettings({ ...settings, lang: "es" })}>Español</button>
+            </>
+          )}
           <StatsWithIcon
             count={summary?.total.total_profit || 0}
             color={theme.other.chartStyles.total.bgColor}

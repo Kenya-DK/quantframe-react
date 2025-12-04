@@ -3,8 +3,6 @@ import { ModalsProvider } from "@mantine/modals";
 import i18n from "i18next";
 import classes from "./modals.module.css";
 import { initReactI18next } from "react-i18next";
-import { en } from "./lang/en";
-import { dk } from "./lang/dk";
 import { DatesProvider } from "@mantine/dates";
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import { AppRoutes } from "@components/Layouts/Routes";
@@ -52,10 +50,7 @@ library.add(faPolarityVazarin);
 library.add(faWebHook);
 dom.watch();
 i18n.use(initReactI18next).init({
-  resources: {
-    en: { translation: en },
-    dk: { translation: dk },
-  },
+  resources: {},
   lng: "en",
   fallbackLng: "en",
   interpolation: { escapeValue: false },
@@ -80,6 +75,7 @@ export interface MantineModalsOverride {
 // AppContent component that uses the theme context
 function AppContent() {
   const { theme, resolver } = useTheme();
+
   return (
     <MantineProvider defaultColorScheme="dark" theme={theme} cssVariablesResolver={resolver}>
       <Notifications position="bottom-right" />

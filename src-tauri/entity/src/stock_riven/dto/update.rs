@@ -85,10 +85,10 @@ impl UpdateStockRiven {
             Value(v) => item.price_history = Set(PriceHistoryVec(v)),
             _ => {}
         }
-        match self.grade {
-            Value(v) => item.grade = Set(v),
-            _ => {}
-        }
+        // match self.grade {
+        //     Value(v) => item.grade = Set(v),
+        //     _ => {}
+        // }
 
         item
     }

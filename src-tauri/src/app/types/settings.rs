@@ -12,6 +12,7 @@ fn get_path() -> PathBuf {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Settings {
+    pub lang: String,
     pub live_scraper: LiveScraperSettings,
     pub summary_settings: SummarySettings,
     pub advanced_settings: AdvancedSettings,
@@ -24,6 +25,7 @@ pub struct Settings {
 impl Default for Settings {
     fn default() -> Self {
         Settings {
+            lang: "en".to_string(),
             live_scraper: LiveScraperSettings::default(),
             summary_settings: SummarySettings::default(),
             advanced_settings: AdvancedSettings::default(),

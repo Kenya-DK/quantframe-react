@@ -69,3 +69,6 @@ pub use chat_icon::*;
 
 pub mod sentinel_weapon;
 pub use sentinel_weapon::*;
+
+pub mod language;
+pub use language::*;

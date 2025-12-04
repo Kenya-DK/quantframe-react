@@ -82,6 +82,7 @@ export namespace TauriTypes {
     patreon_usernames: string[];
   }
   export interface Settings {
+    lang: string;
     debug: string[];
     cross_play: boolean;
     dev_mode: boolean;

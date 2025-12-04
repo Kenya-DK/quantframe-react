@@ -318,6 +318,7 @@ impl AppState {
         let is_development = if cfg!(dev) { true } else { false };
 
         let settings = Settings::load().expect("Failed to load settings from settings.json");
+        let lang = settings.lang.clone();
         let http_settings = settings.http_server.clone();
         let mut state = AppState {
             wfm_client: WFClient::new_default(&user.wfm_token, "N/A")
@@ -359,17 +360,10 @@ impl AppState {
         });
         match state.validate().await {
             Ok((wfu, qfu)) => {
-                emit_startup!(
-                    "validation.success",
-                    json!({
-                        "name": wfu.ingame_name,
-                    })
-                );
                 state.user = update_user(state.user, &wfu, &qfu);
             }
             Err(e) => {
                 e.log("user_validation.log");
-                emit_startup!("validation.error", json!({}));
                 state.user = User::default();
             }
         }

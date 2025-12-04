@@ -19,7 +19,7 @@
     "createUpdaterArtifacts": "v1Compatible",
     "resources": {
       "resources/*": "resources/",
-      "lang/*": "lang/"
+      "resources/lang/*": "resources/lang/"
     }
   },
   "productName": "Quantframe",

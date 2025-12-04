@@ -48,6 +48,7 @@ pub struct CacheState {
     item_price_module: OnceLock<Arc<ItemPriceModule>>,
     chat_icon_module: OnceLock<Arc<ChatIconModule>>,
     theme_module: OnceLock<Arc<ThemeModule>>,
+    language_module: OnceLock<Arc<LanguageModule>>,
 }
 
 impl CacheState {
@@ -83,6 +84,7 @@ impl CacheState {
                     item_price_module: self.item_price_module.clone(),
                     chat_icon_module: self.chat_icon_module.clone(),
                     theme_module: self.theme_module.clone(),
+                    language_module: self.language_module.clone(),
                 })
             })
             .clone()
@@ -92,7 +94,6 @@ impl CacheState {
         let version =
             CacheVersion::load().expect("Failed to load cache version from cache_version.json");
 
-        emit_startup!("cache.initializing", json!({}));
         let mut client = CacheState {
             self_arc: OnceLock::new(),
             base_path: helper::get_app_storage_path().join("cache"),
@@ -121,6 +122,7 @@ impl CacheState {
             item_price_module: OnceLock::new(),
             chat_icon_module: OnceLock::new(),
             theme_module: OnceLock::new(),
+            language_module: OnceLock::new(),
         };
         if !user.verification || user.qf_banned || user.wfm_banned {
             warning(
@@ -186,7 +188,6 @@ impl CacheState {
             self.item_price().check_update(qf_client).await?;
 
         if cache_require_update {
-            emit_startup!("cache.updating", json!({}));
             match self.extract(qf_client).await {
                 Ok(()) => {
                     info(
@@ -226,6 +227,7 @@ impl CacheState {
         self.chat_icon().load()?;
         self.update_routes_client();
         self.all_items().load()?;
+        self.language().load()?;
         self.riven_parser().load()?;
         Ok((cache_version_id, price_version_id))
     }
@@ -452,6 +454,11 @@ impl CacheState {
             .get_or_init(|| ThemeModule::new(self.arc()))
             .clone()
     }
+    pub fn language(&self) -> Arc<LanguageModule> {
+        self.language_module
+            .get_or_init(|| LanguageModule::new(self.arc()))
+            .clone()
+    }
     /**
      * Updates the client reference in the modules.
      * This is useful for cloning routes when the client state changes.
@@ -570,15 +577,20 @@ impl CacheState {
             self.item_price_module = OnceLock::new();
             let _ = self.item_price_module.set(new);
         }
+        if let Some(old) = self.chat_icon_module.get().cloned() {
+            let new = ChatIconModule::from_existing(&old);
+            self.chat_icon_module = OnceLock::new();
+            let _ = self.chat_icon_module.set(new);
+        }
         if let Some(old) = self.theme_module.get().cloned() {
             let new = ThemeModule::from_existing(&old, self.arc());
             self.theme_module = OnceLock::new();
             let _ = self.theme_module.set(new);
         }
-        if let Some(old) = self.chat_icon_module.get().cloned() {
-            let new = ChatIconModule::from_existing(&old);
-            self.chat_icon_module = OnceLock::new();
-            let _ = self.chat_icon_module.set(new);
+        if let Some(old) = self.language_module.get().cloned() {
+            let new = LanguageModule::from_existing(&old);
+            self.language_module = OnceLock::new();
+            let _ = self.language_module.set(new);
         }
     }
 }

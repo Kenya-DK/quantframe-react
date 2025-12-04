@@ -11,13 +11,14 @@ import { check } from "@tauri-apps/plugin-updater";
 import { modals } from "@mantine/modals";
 import { UpdateAvailableModal } from "@components/Modals/UpdateAvailable";
 import { TermsAndConditions } from "@components/Modals/TermsAndConditions";
-import { useTranslateCommon, useTranslateComponent, useTranslateContexts } from "@hooks/useTranslate.hook";
+import { useTranslateCommon, useTranslateComponent } from "@hooks/useTranslate.hook";
 import { resolveResource } from "@tauri-apps/api/path";
 import { readTextFile } from "@tauri-apps/plugin-fs";
 import { LiveScraperContextProvider } from "./liveScraper.context";
 import { notifications } from "@mantine/notifications";
 import { TextTranslate } from "../components/Shared/TextTranslate";
 import { useTauriEvent } from "../hooks/useTauriEvent.hook";
+import { useTranslation } from "react-i18next";
 
 export type AppContextProps = {
   app_info: TauriTypes.AppInfo | undefined;
@@ -49,6 +50,7 @@ export const useAppError = () => {
 };
 
 export function AppContextProvider({ children }: AppContextProviderProps) {
+  const { i18n } = useTranslation();
   const [error, setError] = useState<AppError | undefined>(undefined);
   const [startingUp, setStartingUp] = useState<{ i18n_key: string; values: {} }>({
     i18n_key: "starting_up",
@@ -126,6 +128,17 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     });
   };
 
+  const handleSetLanguage = async (data: { lang: string; data: any }) => {
+    console.log("Setting language to:", data.lang);
+    const lang = data?.lang || "en";
+
+    if (!i18n.hasResourceBundle(lang, "translation")) i18n.addResourceBundle(lang, "translation", data.data, true, true);
+    else i18n.addResourceBundle(lang, "translation", data.data, true, true);
+
+    // This triggers React re-render automatically
+    await i18n.changeLanguage(lang);
+  };
+
   // Fetch data from rust side
   const {
     data: alerts,
@@ -172,11 +185,12 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
       .then((wasInitialized) => (wasInitialized ? InitializeApp() : console.log("App was not initialized")))
       .catch((e) => console.error("Error checking initialization:", e));
     listen("app:ready", () => InitializeApp());
+    listen("SetLang", (event) => handleSetLanguage(event.payload as { lang: string; data: any }));
     return () => {};
   }, []);
   return (
     <AppContext.Provider value={{ settings, alerts: alerts?.results || [], app_info: app_info, app_error: error, checkForUpdates }}>
-      <SplashScreen opened={loading} text={useTranslateContexts(`app.${startingUp.i18n_key}`, startingUp.values)} />
+      <SplashScreen opened={loading} text={"Loading..."} />
       {!loading && (
         <AuthContextProvider>
           <LiveScraperContextProvider>{children}</LiveScraperContextProvider>

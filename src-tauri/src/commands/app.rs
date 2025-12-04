@@ -1,18 +1,24 @@
 use std::sync::{Arc, Mutex};
 
-use serde_json::{json, Value};
-use utils::Error;
-
 use crate::{
     add_metric,
-    app::{client::AppState, Settings},
+    app::{self, client::AppState, Settings},
+    helper,
     log_parser::LogParserState,
+    utils::modules::states,
     APP, HAS_STARTED,
 };
+use serde_json::{json, Value};
+use tauri::{path::BaseDirectory, Manager};
+use utils::{get_location, Error};
 
 #[tauri::command]
 pub async fn was_initialized() -> Result<bool, Error> {
     let started = HAS_STARTED.get().cloned().unwrap_or(false);
+    if started {
+        let state = states::app_state()?;
+        helper::set_lang(&state.settings.lang, true)?;
+    }
     return Ok(started);
 }
 #[tauri::command]
@@ -59,6 +65,9 @@ pub async fn app_update_settings(
             (false, "CHANGED") => app.http_server.stop(),
             _ => {}
         }
+    }
+    if settings.lang != app.settings.lang {
+        helper::set_lang(&settings.lang, false)?;
     }
     app.update_settings(settings.clone())?;
     Ok(settings.clone())

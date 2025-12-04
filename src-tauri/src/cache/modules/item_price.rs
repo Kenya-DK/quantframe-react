@@ -92,7 +92,6 @@ impl ItemPriceModule {
         Ok(())
     }
     async fn extract(&self, qf_client: &QFClient) -> Result<(), Error> {
-        emit_startup!("cache.item_price_updating", json!({}));
         let content = qf_client.item_price().download_cache().await.map_err(|e| {
             Error::from_qf(
                 "Cache:ItemPrice",
@@ -101,7 +100,7 @@ impl ItemPriceModule {
                 get_location!(),
             )
         })?;
-        
+
         // Create parent directory if it doesn't exist
         if let Some(parent) = self.path.parent() {
             std::fs::create_dir_all(parent).map_err(|e| {
@@ -114,7 +113,7 @@ impl ItemPriceModule {
                 )
             })?;
         }
-        
+
         let mut file = File::create(self.path.clone()).map_err(|e| {
             Error::from_io(
                 "Cache:ItemPrice",
