@@ -5,7 +5,7 @@ use std::{
 };
 
 use serde_json::Value;
-use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions};
+use utils::{get_location, read_json_file_optional, Error};
 
 use crate::cache::*;
 

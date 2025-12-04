@@ -22,7 +22,6 @@ export namespace TauriTypes {
   export enum Events {
     // App
     OnError = "App:Error",
-    OnStartingUp = "App:StartingUp",
     // User
     UpdateUser = "User:Update",
     // Settings

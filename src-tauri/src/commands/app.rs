@@ -1,16 +1,14 @@
 use std::sync::{Arc, Mutex};
 
 use crate::{
-    add_metric,
-    app::{self, client::AppState, Settings},
+    app::{client::AppState, Settings},
     helper,
     log_parser::LogParserState,
     utils::modules::states,
     APP, HAS_STARTED,
 };
 use serde_json::{json, Value};
-use tauri::{path::BaseDirectory, Manager};
-use utils::{get_location, Error};
+use utils::Error;
 
 #[tauri::command]
 pub async fn was_initialized() -> Result<bool, Error> {

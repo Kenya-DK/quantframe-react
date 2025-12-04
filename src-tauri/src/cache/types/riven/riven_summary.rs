@@ -34,10 +34,10 @@ pub struct RivenSummary {
 impl RivenSummary {
     pub fn new(
         unique_name: impl Into<String>,
-        mastery_rank: i64,
-        rerolls: i64,
+        _mastery_rank: i64,
+        _rerolls: i64,
         rank: i64,
-        polarity: impl Into<String>,
+        _polarity: impl Into<String>,
         attributes: Vec<(String, f64, bool)>,
     ) -> Result<Self, Error> {
         let cache = states::cache_client()?;

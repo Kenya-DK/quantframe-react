@@ -17,7 +17,6 @@ use crate::{
     cache::CacheTradableItem,
     emit_event,
     enums::{FindBy, FindByType},
-    send_event,
     utils::{modules::states, OrderExt, SubTypeExt},
     APP, DATABASE,
 };

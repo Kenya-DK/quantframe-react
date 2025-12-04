@@ -5,7 +5,6 @@ use std::{
 };
 
 use regex::Regex;
-use service::sea_orm::ColIdx;
 use utils::*;
 
 use crate::{
@@ -15,7 +14,6 @@ use crate::{
         CacheRivenUpgrade,
     },
     enums::{FindBy, FindByType},
-    types::operation_set,
 };
 
 #[derive(Debug)]

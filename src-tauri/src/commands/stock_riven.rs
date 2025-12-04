@@ -5,13 +5,13 @@ use serde_json::{json, Value};
 use service::{StockRivenMutation, StockRivenQuery, TransactionQuery};
 use tauri_plugin_dialog::DialogExt;
 use utils::{get_location, group_by, info, Error, LoggerOptions};
-use wf_market::{enums::OrderType, types::ItemAttribute};
+use wf_market::enums::OrderType;
 
 use crate::{
     add_metric,
     app::client::AppState,
-    cache::{types::RivenSummary, CacheState},
-    enums::{FindBy, FindByType},
+    cache::types::RivenSummary,
+    enums::FindByType,
     handlers::{handle_riven, handle_riven_by_entity},
     types::PermissionsFlags,
     utils::ErrorFromExt,
@@ -207,10 +207,8 @@ pub async fn stock_riven_update_multiple(
 pub async fn stock_riven_get_by_id(
     id: i64,
     app: tauri::State<'_, Mutex<AppState>>,
-    cache: tauri::State<'_, Mutex<CacheState>>,
 ) -> Result<Value, Error> {
     let app = app.lock()?.clone();
-    let cache = cache.lock()?.clone();
     let conn = DATABASE.get().unwrap();
     let item = match StockRivenQuery::get_by_id(conn, id).await {
         Ok(stock_riven) => {

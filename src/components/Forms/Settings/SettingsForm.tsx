@@ -8,6 +8,7 @@ import { NotificationsPanel } from "./Tabs/Notifications";
 import { AdvancedPanel } from "./Tabs/Advanced";
 import { SummaryPanel } from "./Tabs/Summary";
 import { HttpServerPanel } from "./Tabs/HttpServer";
+import { GeneralPanel } from "./Tabs/General";
 
 export type SettingsFormProps = {
   value: TauriTypes.Settings;
@@ -23,6 +24,11 @@ export function SettingsForm({ onSubmit, value }: SettingsFormProps) {
     useTranslateForm(`tabs.${key}`, { ...context }, i18Key);
 
   const tabs = [
+    {
+      label: useTranslateTabs("general.title"),
+      component: <GeneralPanel value={value} onSubmit={(v) => onSubmit({ ...value, ...v })} />,
+      id: "general",
+    },
     {
       label: useTranslateTabs("live_scraper.title"),
       component: <LiveTradingPanel value={value.live_scraper} onSubmit={(v) => onSubmit({ ...value, live_scraper: v })} />,

@@ -52,10 +52,6 @@ export const useAppError = () => {
 export function AppContextProvider({ children }: AppContextProviderProps) {
   const { i18n } = useTranslation();
   const [error, setError] = useState<AppError | undefined>(undefined);
-  const [startingUp, setStartingUp] = useState<{ i18n_key: string; values: {} }>({
-    i18n_key: "starting_up",
-    values: {},
-  });
 
   const { data: settings, refetch: refetchSettings } = api.app.get_settings();
   const { data: app_info, refetch: refetchAppInfo } = api.app.get_app_info();
@@ -178,7 +174,6 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
   // Hook on tauri events from rust side
   useTauriEvent(TauriTypes.Events.OnError, handleAppError, []);
   useTauriEvent(TauriTypes.Events.RefreshSettings, refetchSettings, []);
-  useTauriEvent(TauriTypes.Events.OnStartingUp, setStartingUp, []);
   useTauriEvent(TauriTypes.Events.OnNotify, handleOnNotify, []);
   useEffect(() => {
     invoke("was_initialized")

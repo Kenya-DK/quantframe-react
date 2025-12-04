@@ -1,6 +1,8 @@
 ## Fix/Changes
 
 - ✨ You can now save and load templates for the trade message generator.
+- 🛠️ Fix wired behavior when trading of mutable of the same item
+- ✨ Add multiple language support (Require a y contribution to help with the translations NO AI)
 
 ## TODO's
 
@@ -8,10 +10,11 @@ Fix so the knapsack algorithm doesn't delete akk items after a cycle.
 Make the app more responsive.
 Add Riven ranking
 Add a sound or a discord message if the livesraper dies
-Fix wired behavior when trading of mutable of the same item
+Add mutible language support
 
 ## Feature's
 
+- ✨ Add multiple language support (Require a y contribution to help with the translations NO AI)
 - ✨ Add generate chat messages with custom templates for ...
 - ✨ Add generate WTS messages for items, rivens and wishlists
 - ✨ Add a preview for items to to buy.

@@ -7,7 +7,6 @@ use std::{
 
 use crate::{
     cache::{client::CacheState, types::item_price_info::ItemPriceInfo},
-    emit_startup,
     utils::ErrorFromExt,
 };
 use entity::dto::SubType;

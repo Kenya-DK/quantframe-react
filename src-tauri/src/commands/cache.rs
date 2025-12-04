@@ -1,7 +1,6 @@
 use std::{process::Command, sync::Mutex};
 
-use serde_json::{json, Value};
-use tokio::join;
+use serde_json::Value;
 use utils::Error;
 
 use crate::{

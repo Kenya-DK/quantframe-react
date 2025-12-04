@@ -7,7 +7,7 @@ use crate::http_server::HttpServer;
 use crate::types::*;
 use crate::utils::modules::states;
 use crate::utils::ErrorFromExt;
-use crate::{emit_startup, emit_update_user, helper, send_event, APP, HAS_STARTED};
+use crate::{emit_update_user, helper, send_event, APP, HAS_STARTED};
 use qf_api::errors::ApiError as QFApiError;
 use qf_api::types::UserPrivate as QFUserPrivate;
 use qf_api::Client as QFClient;
@@ -318,7 +318,6 @@ impl AppState {
         let is_development = if cfg!(dev) { true } else { false };
 
         let settings = Settings::load().expect("Failed to load settings from settings.json");
-        let lang = settings.lang.clone();
         let http_settings = settings.http_server.clone();
         let mut state = AppState {
             wfm_client: WFClient::new_default(&user.wfm_token, "N/A")

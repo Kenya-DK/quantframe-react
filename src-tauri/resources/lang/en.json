@@ -975,6 +975,16 @@
       },
       "settings": {
         "tabs": {
+          "general": {
+            "title": "General",
+            "fields": {
+              "language": {
+                "label": "Language",
+                "placeholder": "Select Language",
+                "error": "Invalid language"
+              }
+            }
+          },
           "themes": {
             "title": "Themes",
             "community_themes": "Community Themes",

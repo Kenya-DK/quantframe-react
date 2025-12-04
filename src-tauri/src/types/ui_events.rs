@@ -2,7 +2,6 @@ use std::fmt::Display;
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum UIEvent {
-    OnStartingUp,
     UpdateUser,
     // WebSocket use if the WebSocket is connected or not
     OnError,
@@ -22,7 +21,6 @@ pub enum UIEvent {
 impl UIEvent {
     pub fn as_str(&self) -> &str {
         match *self {
-            UIEvent::OnStartingUp => "App:StartingUp",
             UIEvent::UpdateUser => "User:Update",
             UIEvent::OnError => "App:Error",
             UIEvent::UpdateLiveScraperRunningState => "LiveScraper:UpdateRunningState",

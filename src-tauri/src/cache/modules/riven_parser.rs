@@ -1,25 +1,8 @@
-use std::{
-    clone,
-    collections::{HashMap, HashSet},
-    sync::{Arc, Mutex, Weak},
-};
+use std::sync::{Arc, Mutex, Weak};
 
-use entity::{
-    enums::{RivenAttributeGrade, RivenGrade},
-    stock_item::update,
-    stock_riven,
-};
-use serde::{Deserialize, Serialize};
-use serde_json::json;
 use utils::*;
-use wf_market::types::Riven;
 
-use crate::{
-    cache::*,
-    enums::*,
-    types::*,
-    utils::{modules::states, ItemAttributeDetails},
-};
+use crate::cache::*;
 
 #[derive(Debug)]
 pub struct RivenParserModule {

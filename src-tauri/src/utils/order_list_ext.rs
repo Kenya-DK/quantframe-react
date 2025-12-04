@@ -6,7 +6,7 @@ use wf_market::{
 
 use crate::{
     cache::client::CacheState,
-    utils::{modules::states, order_ext::OrderDetails, OrderExt, SubTypeExt},
+    utils::{modules::states, OrderExt, SubTypeExt},
 };
 
 /// Extension trait for order list
