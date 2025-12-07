@@ -25,7 +25,7 @@ import {
   faMoneyBillTrendUp,
   faSackDollar,
 } from "@fortawesome/free-solid-svg-icons";
-import { useTranslateBase, useTranslatePages } from "@hooks/useTranslate.hook";
+import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { TextTranslate } from "@components/Shared/TextTranslate";
 import i18next from "i18next";
 import { TauriTypes } from "$types";
@@ -38,7 +38,6 @@ import { ColorInfo } from "@components/Shared/ColorInfo";
 import { TransactionListItem } from "@components/DataDisplay/TransactionListItem";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
-import { useAppContext } from "../../contexts/app.context";
 
 const BarChartFooter = ({ i18nKey, statistics }: { i18nKey: string; statistics: TauriTypes.FinancialReport }) => {
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`home.${key}`, { ...context }, i18Key);
@@ -100,7 +99,6 @@ const BarChartFooter = ({ i18nKey, statistics }: { i18nKey: string; statistics: 
 
 export default function HomePage() {
   const theme = useMantineTheme();
-  const { settings } = useAppContext();
 
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`home.${key}`, { ...context }, i18Key);

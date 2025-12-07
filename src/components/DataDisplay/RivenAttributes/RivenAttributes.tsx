@@ -1,4 +1,4 @@
-import { ActionIcon, Box, Group, Paper, Tooltip } from "@mantine/core";
+import { ActionIcon, Box, Group, Paper, SimpleGrid, Tooltip } from "@mantine/core";
 import { TauriTypes } from "$types";
 import { RivenAttribute } from "../RivenAttribute/RivenAttribute";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -24,9 +24,9 @@ export function RivenAttributes({ attributes, tooltip }: RivenAttributesProps) {
           }}
           label={
             <Paper withBorder p="xs">
-              <Box style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <Box style={{ display: "flex", flexDirection: "column", gap: "0px" }}>
                 {attributes.map((attr, idx) => (
-                  <RivenAttribute key={idx} value={attr} />
+                  <RivenAttribute key={idx} value={attr} compact />
                 ))}
               </Box>
             </Paper>
@@ -38,9 +38,13 @@ export function RivenAttributes({ attributes, tooltip }: RivenAttributesProps) {
         </Tooltip>
       ) : (
         <>
-          {attributes.map((attr) => (
-            <RivenAttribute key={attr.url_name} value={attr} />
-          ))}
+          <SimpleGrid cols={4}>
+            {attributes.map((attr) => (
+              <Box key={attr.url_name}>
+                <RivenAttribute key={attr.url_name} value={attr} />
+              </Box>
+            ))}
+          </SimpleGrid>
         </>
       )}
     </Group>

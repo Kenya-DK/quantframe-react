@@ -11,6 +11,7 @@ Make the app more responsive.
 Add Riven ranking
 Add a sound or a discord message if the livesraper dies
 Add mutible language support
+Fix Riven select
 
 ## Feature's
 

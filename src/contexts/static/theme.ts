@@ -63,6 +63,10 @@ export const defaultTheme = {
           lineColor: DEFAULT_THEME.colors.violet[7],
         },
       },
+      riven: {
+        positiveTrait: "#4bd24b",
+        negativeTrait: "#ff5555",
+      },
     },
   } as Record<string, any>,
 };

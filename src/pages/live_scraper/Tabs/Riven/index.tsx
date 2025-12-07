@@ -230,12 +230,14 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
             accessor: "weapon_name",
             title: useTranslateCommon("item_name.title"),
             sortable: true,
+            width: "auto",
             render: (row) => <ItemName color="gray.4" size="md" value={row} />,
           },
           {
             accessor: "attributes",
+            width: "auto",
             title: useTranslateDataGridColumns("attributes"),
-            render: ({ attributes }) => <RivenAttributes tooltip={!isWide} attributes={attributes} />,
+            render: ({ attributes }) => <RivenAttributes tooltip={true} attributes={attributes} />,
           },
           {
             accessor: "bought",

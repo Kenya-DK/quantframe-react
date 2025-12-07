@@ -59,7 +59,10 @@ export interface RivenAttribute {
   positive: boolean;
   url_name: string;
   value: number;
-  effect?: string;
+  letterGrade?: string;
+  grade?: string;
+  minValue?: number;
+  maxValue?: number;
 }
 
 export interface ItemMeta {
