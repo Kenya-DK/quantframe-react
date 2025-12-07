@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::ErrorFromExt;
 use ::entity::transaction::*;
 use sea_orm::*;
@@ -101,7 +103,35 @@ impl TransactionMutation {
             )
         })
     }
+    pub async fn update_names(db: &DbConn, mapper: &HashMap<String, String>) -> Result<(), Error> {
+        let items = Entity::find().all(db).await.map_err(|e| {
+            Error::from_db(
+                format!("{}:UpdateNames", COMPONENT),
+                "Failed to retrieve all Transactions",
+                e,
+                get_location!(),
+            )
+        })?;
+        for item in items {
+            let updated_name = match mapper.get(&item.item_unique_name) {
+                Some(name) => name.to_string(),
+                None => continue,
+            };
+            let mut active: transaction::ActiveModel = item.into();
+            active.item_name = Set(updated_name);
+            active.updated_at = Set(chrono::Utc::now());
+            active.update(db).await.map_err(|e| {
+                Error::from_db(
+                    format!("{}:UpdateNames", COMPONENT),
+                    "Failed to update Transaction name",
+                    e,
+                    get_location!(),
+                )
+            })?;
+        }
 
+        Ok(())
+    }
     pub async fn delete_all(db: &DbConn) -> Result<DeleteResult, Error> {
         Entity::delete_many().exec(db).await.map_err(|e| {
             Error::from_db(

@@ -48,7 +48,7 @@ export function LiveScraperContextProvider({ children }: LiveScraperContextProvi
 
   // Get initial state
   useEffect(() => {
-    invoke("was_initialized")
+    invoke("initialized")
       .then((wasInitialized) => wasInitialized && InitializeApp())
       .catch((e) => console.error("Error checking initialization:", e));
   }, []);

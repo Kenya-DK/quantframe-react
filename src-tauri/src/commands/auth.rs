@@ -58,7 +58,10 @@ pub async fn auth_login(
         )
     })?;
 
-    let (cache_version_id, price_version_id) = match cache_state.load(&qf_client).await {
+    let (cache_version_id, price_version_id) = match cache_state
+        .load(&qf_client, app_state.settings.lang.clone())
+        .await
+    {
         Ok((cache_version_id, price_version_id)) => (cache_version_id, price_version_id),
         Err(e) => {
             e.log("auth_login.log");

@@ -121,7 +121,7 @@ async fn setup_manages(app: tauri::AppHandle, use_temp_db: bool) -> Result<(), E
     let user = app_state.user.clone();
     app.manage(Mutex::new(app_state));
 
-    let cache_state = Mutex::new(CacheState::new(&qf_client, &user).await?);
+    let cache_state = Mutex::new(CacheState::new(&qf_client, &user, &settings.lang).await?);
     app.manage(cache_state);
 
     let live_scraper_state = LiveScraperState::new();
@@ -190,7 +190,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             // Base commands
             commands::dashboard::dashboard_summary,
-            commands::app::was_initialized,
+            commands::app::initialized,
             commands::app::app_get_app_info,
             commands::app::app_get_settings,
             commands::app::app_update_settings,

@@ -485,6 +485,19 @@
       "success": "Success"
     }
   },
+  "context": {
+    "app": {
+      "starting_up": "Starting up...",
+      "database": {
+        "updating_names": "Updating names in database please be patient..."
+      },
+      "cache": {
+        "initializing": "Initializing cache...",
+        "updating": "Updating cache...",
+        "item_price_updating": "Updating item prices..."
+      }
+    }
+  },
   "components": {
     "item_component": "<blue>{{name}}</blue> x<blue>{{count}}</blue>",
     "item_components": "Item Components",
@@ -515,9 +528,6 @@
         "riven": "MR: <blue>{{mastery_level}}</blue> Rank: <blue>{{mod_rank}}</blue> Re-rolls: <blue>{{re_rolls}}</blue> Polarity: <polarity/>",
         "selling_price": "Selling Price: <blue>{{price}}</blue> <plat/>"
       }
-    },
-    "riven_attribute": {
-      "effect": "<num_color_tag>{{value}}</num_color_tag> {{name}}"
     },
     "live_scraper_control": {
       "buttons": {

@@ -7,7 +7,7 @@ use std::{
 use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions};
 
 use crate::{
-    cache::{client::CacheState, types::CacheTradableItem},
+    cache::{client::CacheState, modules::LanguageModule, types::CacheTradableItem},
     enums::{FindBy, FindByType},
 };
 
@@ -32,9 +32,18 @@ impl TradableItemModule {
             .clone();
         Ok(items)
     }
-    pub fn load(&self) -> Result<(), Error> {
+    pub fn load(&self, language: &LanguageModule) -> Result<(), Error> {
         match read_json_file_optional::<Vec<CacheTradableItem>>(&self.path) {
-            Ok(items) => {
+            Ok(mut items) => {
+                for item in items.iter_mut() {
+                    item.name = language
+                        .translate(
+                            &item.unique_name,
+                            crate::cache::modules::LanguageKey::WfmName,
+                        )
+                        .unwrap_or(item.name.clone());
+                }
+
                 let mut items_lock = self.items.lock().unwrap();
                 *items_lock = items;
                 info(

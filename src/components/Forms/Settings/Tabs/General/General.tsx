@@ -7,6 +7,24 @@ export type GeneralPanelProps = {
   onSubmit: (value: TauriTypes.Settings) => void;
 };
 
+let languages = [
+  { label: "German", value: "de" },
+  { label: "English", value: "en" },
+  { label: "Spanish", value: "es" },
+  { label: "French", value: "fr" },
+  { label: "Italian", value: "it" },
+  { label: "Korean", value: "ko" },
+  { label: "Polish", value: "pl" },
+  { label: "Portuguese (Brazil)", value: "pt" },
+  { label: "Russian", value: "ru" },
+  { label: "Ukrainian", value: "uk" },
+  { label: "Chinese (Simplified)", value: "zh" },
+  { label: "Chinese (Traditional)", value: "tc" },
+  { label: "Japanese", value: "ja" },
+  { label: "Thai", value: "th" },
+  { label: "Turkish", value: "tr" },
+];
+
 export const GeneralPanel = ({ onSubmit, value }: GeneralPanelProps) => {
   // States
   // Translate general
@@ -33,7 +51,7 @@ export const GeneralPanel = ({ onSubmit, value }: GeneralPanelProps) => {
             w={150}
             label={useTranslateFormFields("language.label")}
             placeholder={useTranslateFormFields("language.placeholder")}
-            data={[{ value: "en", label: "English" }]}
+            data={languages}
             value={form.values.lang}
             onChange={(value) => form.setFieldValue("lang", value || "en")}
             radius="md"

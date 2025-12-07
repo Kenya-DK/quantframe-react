@@ -7,6 +7,7 @@ use std::{
 
 use crate::{
     cache::{client::CacheState, types::item_price_info::ItemPriceInfo},
+    emit_startup,
     utils::ErrorFromExt,
 };
 use entity::dto::SubType;
@@ -91,6 +92,7 @@ impl ItemPriceModule {
         Ok(())
     }
     async fn extract(&self, qf_client: &QFClient) -> Result<(), Error> {
+        emit_startup!("cache.item_price_updating", json!({}));
         let content = qf_client.item_price().download_cache().await.map_err(|e| {
             Error::from_qf(
                 "Cache:ItemPrice",

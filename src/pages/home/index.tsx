@@ -116,13 +116,6 @@ export default function HomePage() {
     <Container size={"100%"}>
       <Grid className={classes.wrapper} data-has-alert={useHasAlert()}>
         <Grid.Col span={4}>
-          {useTranslateBase("mods.impact_damage.short")}
-          {settings && (
-            <>
-              <button onClick={async () => api.app.updateSettings({ ...settings, lang: "en" })}>English</button>
-              <button onClick={async () => api.app.updateSettings({ ...settings, lang: "es" })}>Español</button>
-            </>
-          )}
           <StatsWithIcon
             count={summary?.total.total_profit || 0}
             color={theme.other.chartStyles.total.bgColor}

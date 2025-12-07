@@ -120,8 +120,8 @@ pub struct CacheRivenWFMAttribute {
     #[serde(rename = "id")]
     pub id: String,
 
-    #[serde(rename = "gameRef")]
-    pub game_ref: String,
+    #[serde(rename = "uniqueName")]
+    pub unique_name: String,
 
     #[serde(rename = "group")]
     pub group: String,
@@ -131,9 +131,6 @@ pub struct CacheRivenWFMAttribute {
 
     #[serde(rename = "suffix")]
     pub suffix: String,
-
-    #[serde(rename = "effect")]
-    pub effect: String,
 
     #[serde(rename = "url_name")]
     pub url_name: String,
@@ -158,8 +155,15 @@ pub struct CacheRivenWFMAttribute {
     #[serde(rename = "negativeOnly")]
     pub negative_only: Option<bool>,
 
-    #[serde(rename = "localization_string", default)]
-    pub localization_string: String,
-    #[serde(rename = "short_string", default)]
-    pub short_string: String,
+    #[serde(rename = "full", default)]
+    pub full: String,
+
+    #[serde(rename = "short", default)]
+    pub short: String,
+
+    #[serde(rename = "name", default)]
+    pub name: String,
+
+    #[serde(rename = "text", default)]
+    pub text: String,
 }

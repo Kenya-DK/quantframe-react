@@ -15,7 +15,7 @@ import { SettingsForm } from "@components/Forms/Settings";
 export function UserMenu() {
   // States
   const { user } = useAuthContext();
-  const { settings, app_error } = useAppContext();
+  const { settings, app_error, setLang } = useAppContext();
 
   // Translate general
   const useTranslateUserMenu = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -155,6 +155,7 @@ export function UserMenu() {
                 <SettingsForm
                   value={settings}
                   onSubmit={async (s) => {
+                    if (s.lang != settings.lang && setLang) setLang(s.lang);
                     await updateSettingsMutation.mutateAsync(s);
                     SendTauriEvent(TauriTypes.Events.RefreshSettings);
                     modals.closeAll();

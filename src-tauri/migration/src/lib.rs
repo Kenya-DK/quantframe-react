@@ -9,6 +9,7 @@ mod m20250823_135631_add_uuid_to_stock_riven;
 mod m20251016_203616_stock_add_min_profit_sma;
 mod m20251108_000558_add_profit_to_transactions;
 mod m20251118_125228_create_trade_entry;
+mod m20251206_120316_create_settings;
 
 pub struct Migrator;
 
@@ -25,6 +26,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20251016_203616_stock_add_min_profit_sma::Migration),
             Box::new(m20251108_000558_add_profit_to_transactions::Migration),
             Box::new(m20251118_125228_create_trade_entry::Migration),
+            Box::new(m20251206_120316_create_settings::Migration),
         ]
     }
 }

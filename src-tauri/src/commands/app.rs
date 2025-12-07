@@ -2,8 +2,10 @@ use std::sync::{Arc, Mutex};
 
 use crate::{
     app::{client::AppState, Settings},
-    helper,
+    emit_event, helper,
     log_parser::LogParserState,
+    send_event,
+    types::UIEvent,
     utils::modules::states,
     APP, HAS_STARTED,
 };
@@ -11,12 +13,8 @@ use serde_json::{json, Value};
 use utils::Error;
 
 #[tauri::command]
-pub async fn was_initialized() -> Result<bool, Error> {
+pub async fn initialized() -> Result<bool, Error> {
     let started = HAS_STARTED.get().cloned().unwrap_or(false);
-    if started {
-        let state = states::app_state()?;
-        helper::set_lang(&state.settings.lang, true)?;
-    }
     return Ok(started);
 }
 #[tauri::command]
@@ -63,9 +61,6 @@ pub async fn app_update_settings(
             (false, "CHANGED") => app.http_server.stop(),
             _ => {}
         }
-    }
-    if settings.lang != app.settings.lang {
-        helper::set_lang(&settings.lang, false)?;
     }
     app.update_settings(settings.clone())?;
     Ok(settings.clone())

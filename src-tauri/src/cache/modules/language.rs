@@ -1,81 +1,146 @@
 use std::{
     collections::HashMap,
+    default,
     path::PathBuf,
     sync::{Arc, Mutex},
 };
 
-use serde_json::Value;
-use utils::{get_location, read_json_file_optional, Error};
+use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
+use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions};
 
 use crate::cache::*;
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct TranslationEntry {
+    #[serde(default)]
+    full: String,
+    #[serde(default)]
+    short: String,
+    #[serde(default)]
+    effect: String,
+    #[serde(default)]
+    text: String,
+    #[serde(default)]
+    name: String,
+    #[serde(default)]
+    wfm_name: String,
+}
+
+impl TranslationEntry {
+    pub fn get_key(&self) -> String {
+        if !self.wfm_name.is_empty() {
+            self.wfm_name.clone()
+        } else if !self.name.is_empty() {
+            self.name.clone()
+        } else if !self.full.is_empty() {
+            self.full.clone()
+        } else {
+            "".to_string()
+        }
+    }
+}
+
+pub enum LanguageKey {
+    Full,
+    Short,
+    Effect,
+    Text,
+    Name,
+    WfmName,
+}
 
 #[derive(Debug)]
 pub struct LanguageModule {
     path: PathBuf,
-    languages: Mutex<HashMap<String, Value>>,
+    languages: Mutex<HashMap<String, HashMap<String, TranslationEntry>>>,
+    current_language: Mutex<HashMap<String, TranslationEntry>>,
 }
 
 impl LanguageModule {
     pub fn new(client: Arc<CacheState>) -> Arc<Self> {
         Arc::new(Self {
-            path: client.base_path.join("items/lang"),
+            path: client.base_path.join("lang"),
             languages: Mutex::new(HashMap::new()),
+            current_language: Mutex::new(HashMap::new()),
         })
     }
-    pub fn load(&self) -> Result<(), Error> {
-        // Get All language files in the directory
-        let mut languages_lock = self.languages.lock().unwrap();
-        let entries = std::fs::read_dir(&self.path).map_err(|e| {
-            Error::new(
-                "Cache:Language:Load",
-                format!("Failed to read language directory: {}", e),
-                get_location!(),
-            )
-        })?;
-        for entry in entries {
-            let entry = entry.map_err(|e| {
-                Error::new(
-                    "Cache:Language:Load",
-                    format!("Failed to read language file entry: {}", e),
-                    get_location!(),
-                )
-            })?;
-            let path = entry.path();
-            if path.is_file() {
-                if let Some(extension) = path.extension() {
-                    if extension == "json" {
-                        if let Some(file_stem) = path.file_stem() {
-                            let lang_code = file_stem.to_string_lossy().to_string();
-                            let lang_content =
-                                read_json_file_optional::<Value>(&path).map_err(|e| {
-                                    Error::new(
-                                        "Cache:Language:Load",
-                                        format!(
-                                            "Failed to read language file {}: {}",
-                                            lang_code, e
-                                        ),
-                                        get_location!(),
-                                    )
-                                })?;
-                            languages_lock.insert(lang_code, lang_content);
-                        }
-                    }
-                }
-            }
-        }
+
+    pub fn load(&self, lang: impl Into<String>) -> Result<(), Error> {
+        let data = self.get_language(lang.into())?;
+        let mut current_language_lock = self.current_language.lock().unwrap();
+        *current_language_lock = data;
         Ok(())
     }
-    pub fn get_language(&self, lang: &str) -> Result<Value, Error> {
-        let languages_lock = self.languages.lock().unwrap();
-        if let Some(lang_content) = languages_lock.get(lang) {
-            Ok(lang_content.clone())
-        } else {
-            Err(Error::new(
-                "LanguageModule::GetLanguage",
-                format!("Language '{}' not found in cache", lang),
-                get_location!(),
-            ))
+
+    pub fn get_language(
+        &self,
+        lang: impl Into<String>,
+    ) -> Result<HashMap<String, TranslationEntry>, Error> {
+        let lang = lang.into();
+        let mut languages_lock = self.languages.lock().unwrap();
+        if let Some(lang_content) = languages_lock.get(&lang) {
+            return Ok(lang_content.clone());
         }
+
+        let path = self.path.join(format!("{}.json", lang));
+        if !path.exists() {
+            return Err(Error::new(
+                "LanguageModule::GetLanguage",
+                format!(
+                    "Language file for '{}' does not exist at path: {:?}",
+                    lang, path
+                ),
+                get_location!(),
+            ));
+        }
+
+        match read_json_file_optional::<HashMap<String, TranslationEntry>>(&path) {
+            Ok(data) => {
+                languages_lock.insert(lang.clone(), data.clone());
+                Ok(data)
+            }
+            Err(e) => return Err(e.with_location(get_location!())),
+        }
+    }
+    pub fn translate(&self, key: impl Into<String>, lang_key: LanguageKey) -> Option<String> {
+        let current_language_lock = self.current_language.lock().unwrap();
+        if let Some(entry) = current_language_lock.get(&key.into()) {
+            let value = match lang_key {
+                LanguageKey::Full => entry.full.clone(),
+                LanguageKey::Short => entry.short.clone(),
+                LanguageKey::Effect => entry.effect.clone(),
+                LanguageKey::Text => entry.text.clone(),
+                LanguageKey::Name => entry.name.clone(),
+                LanguageKey::WfmName => entry.wfm_name.clone(),
+            };
+            if !value.is_empty() {
+                Some(value)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+
+    pub fn get_mapper(&self, lang_key: LanguageKey) -> HashMap<String, String> {
+        let current_language_lock = self.current_language.lock().unwrap();
+        let mut mapper: HashMap<String, String> = HashMap::new();
+        for (key, entry) in current_language_lock.iter() {
+            let value = match lang_key {
+                LanguageKey::Full => entry.full.clone(),
+                LanguageKey::Short => entry.short.clone(),
+                LanguageKey::Effect => entry.effect.clone(),
+                LanguageKey::Text => entry.text.clone(),
+                LanguageKey::Name => entry.name.clone(),
+                LanguageKey::WfmName => entry.wfm_name.clone(),
+            };
+            if !value.is_empty() {
+                mapper.insert(key.clone(), value);
+            }
+        }
+        mapper
     }
     /**
      * Creates a new `LanguageModule` from an existing one, sharing the client.
@@ -84,6 +149,7 @@ impl LanguageModule {
     pub fn from_existing(old: &LanguageModule) -> Arc<Self> {
         Arc::new(Self {
             path: old.path.clone(),
+            current_language: Mutex::new(old.current_language.lock().unwrap().clone()),
             languages: Mutex::new(old.languages.lock().unwrap().clone()),
         })
     }

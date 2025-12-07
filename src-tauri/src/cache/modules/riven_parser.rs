@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex, Weak};
 
 use utils::*;
 
-use crate::cache::*;
+use crate::cache::{modules::LanguageModule, *};
 
 #[derive(Debug)]
 pub struct RivenParserModule {
@@ -19,7 +19,7 @@ impl RivenParserModule {
             tag_lookup: Mutex::new(MultiKeyMap::new()),
         })
     }
-    pub fn load(&self) -> Result<(), Error> {
+    pub fn load(&self, language: &LanguageModule) -> Result<(), Error> {
         let client = self.client.upgrade().expect("Client should not be dropped");
         let riven_info = client.riven().get_items()?;
         let mut tag_lookup = self.tag_lookup.lock().unwrap();

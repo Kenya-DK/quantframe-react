@@ -6,14 +6,18 @@ use std::{
 
 use ::utils::*;
 use qf_api::Client as QFClient;
+use service::{
+    SettingMutation, SettingQuery, StockItemMutation, StockRivenMutation, TradeEntryMutation,
+    TransactionMutation, WishListMutation,
+};
 use tauri::Manager;
 
 use crate::{
     app::{client::AppState, User},
     cache::types::CacheVersion,
-    helper,
+    emit_startup, helper,
     utils::{AuctionListExt, ErrorFromExt, OrderListExt},
-    APP,
+    APP, DATABASE,
 };
 
 use super::modules::*;
@@ -90,7 +94,12 @@ impl CacheState {
             .clone()
     }
 
-    pub async fn new(qf_client: &QFClient, user: &User) -> Result<Self, Error> {
+    pub async fn new(
+        qf_client: &QFClient,
+        user: &User,
+        lang: impl Into<String>,
+    ) -> Result<Self, Error> {
+        let lang = lang.into();
         let version =
             CacheVersion::load().expect("Failed to load cache version from cache_version.json");
 
@@ -132,7 +141,7 @@ impl CacheState {
             );
             return Ok(client);
         }
-        match client.load(qf_client).await {
+        match client.load(qf_client, &lang).await {
             Ok((cache_version_id, price_version_id)) => {
                 client.version.id = cache_version_id;
                 client.version.id_price = price_version_id;
@@ -156,6 +165,10 @@ impl CacheState {
                     .cache_auctions_mut()
                     .apply_item_info(&client)?;
             }
+            Err(e) => return Err(e.with_location(get_location!())),
+        }
+        match client.update_da_names(&lang).await {
+            Ok(_) => {}
             Err(e) => return Err(e.with_location(get_location!())),
         }
         Ok(client)
@@ -182,12 +195,19 @@ impl CacheState {
         }
     }
 
-    pub async fn load(&mut self, qf_client: &QFClient) -> Result<(String, String), Error> {
+    pub async fn load(
+        &mut self,
+        qf_client: &QFClient,
+        lang: impl Into<String>,
+    ) -> Result<(String, String), Error> {
+        emit_startup!("cache.initializing", json!({}));
+        let lang = lang.into();
         let (cache_require_update, cache_version_id) = self.check_update(qf_client).await?;
         let (price_require_update, price_version_id) =
             self.item_price().check_update(qf_client).await?;
 
         if cache_require_update {
+            emit_startup!("cache.updating", json!({}));
             match self.extract(qf_client).await {
                 Ok(()) => {
                     info(
@@ -201,34 +221,36 @@ impl CacheState {
         }
 
         // Update Item Prices if user is verified
+        self.language().load(&lang)?;
+        let language_module = self.language();
+        let language = language_module.as_ref();
         self.item_price()
             .load(qf_client, price_require_update)
             .await?;
-        self.arcane().load()?;
-        self.archgun().load()?;
-        self.archmelee().load()?;
-        self.archwing().load()?;
-        self.fish().load()?;
-        self.melee().load()?;
-        self.misc().load()?;
-        self.mods().load()?;
-        self.pet().load()?;
-        self.primary().load()?;
-        self.relics().load()?;
-        self.resource().load()?;
-        self.riven().load()?;
-        self.secondary().load()?;
-        self.sentinel().load()?;
-        self.sentinel_weapon().load()?;
-        self.skin().load()?;
-        self.tradable_item().load()?;
-        self.warframe().load()?;
+        self.tradable_item().load(language)?;
+        self.arcane().load(language)?;
+        self.archgun().load(language)?;
+        self.archmelee().load(language)?;
+        self.archwing().load(language)?;
+        self.fish().load(language)?;
+        self.melee().load(language)?;
+        self.misc().load(language)?;
+        self.mods().load(language)?;
+        self.pet().load(language)?;
+        self.primary().load(language)?;
+        self.relics().load(language)?;
+        self.resource().load(language)?;
+        self.riven().load(language)?;
+        self.secondary().load(language)?;
+        self.sentinel().load(language)?;
+        self.sentinel_weapon().load(language)?;
+        self.skin().load(language)?;
+        self.warframe().load(language)?;
         self.theme().load()?;
         self.chat_icon().load()?;
         self.update_routes_client();
         self.all_items().load()?;
-        self.language().load()?;
-        self.riven_parser().load()?;
+        self.riven_parser().load(language)?;
         Ok((cache_version_id, price_version_id))
     }
 
@@ -330,6 +352,55 @@ impl CacheState {
             format!("Extracting cache... ({} bytes)", total_size),
             &LoggerOptions::default(),
         );
+        Ok(())
+    }
+
+    pub async fn update_da_names(&self, lang: impl Into<String>) -> Result<(), Error> {
+        let mut wa = StopWatch::new();
+        fn log_info(wa: &StopWatch, step: &str) {
+            let hms = wa.elapsed_hms();
+            info(
+                "DataBase:UpdateNames",
+                &format!(
+                    "{} completed in {:02}:{:02}:{:02}",
+                    step, hms.0, hms.1, hms.2
+                ),
+                &LoggerOptions::default(),
+            );
+        }
+        wa.start();
+        let conn = DATABASE.get().unwrap();
+        let lang = lang.into();
+        let db_lang = match SettingQuery::get(conn, "lang", "en").await {
+            Ok(value) => value,
+            Err(e) => return Err(e.with_location(get_location!())),
+        };
+        if db_lang == lang {
+            info(
+                "DataBase:UpdateNames",
+                "Language has not changed, skipping DA names update.",
+                &LoggerOptions::default(),
+            );
+            // return Ok(());
+        }
+        emit_startup!("database.updating_names", json!({}));
+
+        let wfm_name_mapper = self.language().get_mapper(LanguageKey::WfmName);
+        let name_mapper = self.language().get_mapper(LanguageKey::Name);
+
+        StockItemMutation::update_names(conn, &wfm_name_mapper).await?;
+        log_info(&wa, "StockItems");
+        TransactionMutation::update_names(conn, &wfm_name_mapper).await?;
+        log_info(&wa, "Transactions");
+
+        StockRivenMutation::update_names(conn, &name_mapper).await?;
+        log_info(&wa, "StockRivens");
+
+        WishListMutation::update_names(conn, &name_mapper).await?;
+        log_info(&wa, "WishLists");
+
+        SettingMutation::update_create(conn, "lang", &lang).await?;
+        log_info(&wa, "Update Names");
         Ok(())
     }
 

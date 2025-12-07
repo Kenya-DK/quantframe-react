@@ -243,23 +243,11 @@ pub fn get_app_lang(lang: impl Into<String>) -> Result<Value, Error> {
     Ok(lang_json)
 }
 
-pub fn set_lang(lang: impl Into<String>, include_cache: bool) -> Result<Value, Error> {
-    let lang = lang.into();
-    let mut lang_json = get_app_lang(&lang)?;
-    if include_cache {
-        let cache = states::cache_client()?.clone();
-        // Merge with cache language overrides
-        if let Ok(override_lang) = cache.language().get_language(&lang) {
-            lang_json["cache"] = override_lang;
-        }
+pub fn get_cache_lang(lang: impl Into<String>) -> Result<Value, Error> {
+    let cache = states::cache_client()?.clone();
+    // Merge with cache language overrides
+    match cache.language().get_language(&lang.into()) {
+        Ok(override_lang) => Ok(json!(override_lang)),
+        Err(e) => Err(e),
     }
-    emit_event!(
-        "SetLang",
-        json!({
-            "lang": lang,
-            "data": lang_json,
-        }),
-        "SetLang"
-    );
-    Ok(json!({}))
 }

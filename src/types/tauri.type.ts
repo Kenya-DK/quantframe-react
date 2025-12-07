@@ -22,6 +22,7 @@ export namespace TauriTypes {
   export enum Events {
     // App
     OnError = "App:Error",
+    OnStartingUp = "App:StartingUp",
     // User
     UpdateUser = "User:Update",
     // Settings
@@ -289,14 +290,18 @@ export namespace TauriTypes {
     group: string;
     prefix: string;
     suffix: string;
-    effect: string;
     url_name: string;
-    unit?: string;
+    unit: string;
+    full: string;
+    short: string;
+    name: string;
+    text: string;
     exclusiveTo?: string[];
     positiveIsNegative?: boolean;
     positiveOnly?: boolean;
     negativeOnly?: boolean;
   }
+
   export interface CacheRivenWeapon {
     disposition: number;
     godRoll: RivenGodRoll;

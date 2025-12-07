@@ -5,13 +5,12 @@ import { AuthContextProvider } from "./auth.context";
 import { AppError } from "../model/appError";
 import { SplashScreen } from "@components/Layouts/Shared/SplashScreen";
 import { useQuery } from "@tanstack/react-query";
-import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { check } from "@tauri-apps/plugin-updater";
 import { modals } from "@mantine/modals";
 import { UpdateAvailableModal } from "@components/Modals/UpdateAvailable";
 import { TermsAndConditions } from "@components/Modals/TermsAndConditions";
-import { useTranslateCommon, useTranslateComponent } from "@hooks/useTranslate.hook";
+import { useTranslateCommon, useTranslateComponent, useTranslateContexts } from "@hooks/useTranslate.hook";
 import { resolveResource } from "@tauri-apps/api/path";
 import { readTextFile } from "@tauri-apps/plugin-fs";
 import { LiveScraperContextProvider } from "./liveScraper.context";
@@ -19,13 +18,33 @@ import { notifications } from "@mantine/notifications";
 import { TextTranslate } from "../components/Shared/TextTranslate";
 import { useTauriEvent } from "../hooks/useTauriEvent.hook";
 import { useTranslation } from "react-i18next";
+import i18n from "i18next";
+import { useLocalStorage } from "@mantine/hooks";
+import { listen } from "@tauri-apps/api/event";
+export async function loadLanguage(lang: string) {
+  try {
+    const filePath = `resources/lang/${lang}.json`;
+
+    const content = await readTextFile(filePath);
+    const translations = JSON.parse(content);
+
+    // Add the translations to i18next
+    i18n.addResourceBundle(lang, "translation", translations, true, true);
+    await i18n.changeLanguage(lang);
+    console.log(`Language "${lang}" loaded successfully.`);
+  } catch (err) {
+    console.error("Failed to load language:", err);
+  }
+}
 
 export type AppContextProps = {
   app_info: TauriTypes.AppInfo | undefined;
   app_error: AppError | undefined;
   alerts: QuantframeApiTypes.AlertDto[];
   settings: TauriTypes.Settings | undefined;
+  loading?: boolean;
   checkForUpdates?: (info: TauriTypes.AppInfo, canClose: boolean, notifyIfNone?: boolean) => Promise<void>;
+  setLang?: (lang: string) => void;
 };
 
 export type AppContextProviderProps = {
@@ -50,12 +69,17 @@ export const useAppError = () => {
 };
 
 export function AppContextProvider({ children }: AppContextProviderProps) {
-  const { i18n } = useTranslation();
+  useTranslation();
   const [error, setError] = useState<AppError | undefined>(undefined);
 
   const { data: settings, refetch: refetchSettings } = api.app.get_settings();
   const { data: app_info, refetch: refetchAppInfo } = api.app.get_app_info();
+  const [startingUp, setStartingUp] = useState<{ i18n_key: string; values: {} }>({
+    i18n_key: "starting_up",
+    values: {},
+  });
   const [loading, setLoading] = useState(true);
+  const [lang, setLang] = useLocalStorage<string>({ key: "app_language", defaultValue: "en" });
 
   const handleAppError = (error: ResponseError | undefined) => {
     // setError(error ? new AppError(error) : undefined);
@@ -124,17 +148,6 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     });
   };
 
-  const handleSetLanguage = async (data: { lang: string; data: any }) => {
-    console.log("Setting language to:", data.lang);
-    const lang = data?.lang || "en";
-
-    if (!i18n.hasResourceBundle(lang, "translation")) i18n.addResourceBundle(lang, "translation", data.data, true, true);
-    else i18n.addResourceBundle(lang, "translation", data.data, true, true);
-
-    // This triggers React re-render automatically
-    await i18n.changeLanguage(lang);
-  };
-
   // Fetch data from rust side
   const {
     data: alerts,
@@ -153,6 +166,10 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
       await refetchAlerts();
     }, 10 * 60 * 1000);
   }, []);
+
+  useEffect(() => {
+    loadLanguage(lang);
+  }, [lang]);
 
   useEffect(() => {
     if (!app_info) return;
@@ -175,17 +192,18 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
   useTauriEvent(TauriTypes.Events.OnError, handleAppError, []);
   useTauriEvent(TauriTypes.Events.RefreshSettings, refetchSettings, []);
   useTauriEvent(TauriTypes.Events.OnNotify, handleOnNotify, []);
+  useTauriEvent(TauriTypes.Events.OnStartingUp, setStartingUp, []);
+
   useEffect(() => {
-    invoke("was_initialized")
+    invoke("initialized")
       .then((wasInitialized) => (wasInitialized ? InitializeApp() : console.log("App was not initialized")))
       .catch((e) => console.error("Error checking initialization:", e));
     listen("app:ready", () => InitializeApp());
-    listen("SetLang", (event) => handleSetLanguage(event.payload as { lang: string; data: any }));
     return () => {};
   }, []);
   return (
-    <AppContext.Provider value={{ settings, alerts: alerts?.results || [], app_info: app_info, app_error: error, checkForUpdates }}>
-      <SplashScreen opened={loading} text={"Loading..."} />
+    <AppContext.Provider value={{ settings, alerts: alerts?.results || [], app_info: app_info, app_error: error, checkForUpdates, loading, setLang }}>
+      <SplashScreen opened={loading} text={useTranslateContexts(`app.${startingUp.i18n_key}`, startingUp.values)} />
       {!loading && (
         <AuthContextProvider>
           <LiveScraperContextProvider>{children}</LiveScraperContextProvider>

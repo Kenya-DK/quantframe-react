@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use ::entity::stock_riven::*;
 use sea_orm::*;
 use utils::*;
@@ -135,7 +137,35 @@ impl StockRivenMutation {
             ))
         }
     }
+    pub async fn update_names(db: &DbConn, mapper: &HashMap<String, String>) -> Result<(), Error> {
+        let items = Entity::find().all(db).await.map_err(|e| {
+            Error::from_db(
+                format!("{}:UpdateNames", COMPONENT),
+                "Failed to retrieve all Stock Rivens",
+                e,
+                get_location!(),
+            )
+        })?;
+        for item in items {
+            let updated_name = match mapper.get(&item.weapon_unique_name) {
+                Some(name) => name.to_string(),
+                None => continue,
+            };
+            let mut active: stock_riven::ActiveModel = item.into();
+            active.weapon_name = Set(updated_name);
+            active.updated_at = Set(chrono::Utc::now());
+            active.update(db).await.map_err(|e| {
+                Error::from_db(
+                    format!("{}:UpdateNames", COMPONENT),
+                    "Failed to update Stock Riven name",
+                    e,
+                    get_location!(),
+                )
+            })?;
+        }
 
+        Ok(())
+    }
     pub async fn delete_all(db: &DbConn) -> Result<DeleteResult, Error> {
         Entity::delete_many().exec(db).await.map_err(|e| {
             Error::from_db(

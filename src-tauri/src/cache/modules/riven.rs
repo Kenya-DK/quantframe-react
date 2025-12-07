@@ -10,6 +10,7 @@ use utils::*;
 use crate::{
     cache::{
         client::CacheState,
+        modules::LanguageModule,
         types::{CacheRiven, CacheRivenWFMAttribute, CacheRivenWeapon},
         CacheRivenUpgrade,
     },
@@ -47,10 +48,30 @@ impl RivenModule {
         Ok(data)
     }
 
-    pub fn load(&self) -> Result<(), Error> {
+    pub fn load(&self, language: &LanguageModule) -> Result<(), Error> {
         match read_json_file_optional::<CacheRiven>(&self.path) {
             Ok(mut data) => {
                 let mut items_lock = self.data.lock().unwrap();
+
+                for item in data.attributes.iter_mut() {
+                    item.full = language
+                        .translate(&item.unique_name, crate::cache::modules::LanguageKey::Full)
+                        .unwrap_or(item.full.clone());
+                    item.short = language
+                        .translate(&item.unique_name, crate::cache::modules::LanguageKey::Short)
+                        .unwrap_or(item.short.clone());
+                    item.name = language
+                        .translate(&item.unique_name, crate::cache::modules::LanguageKey::Name)
+                        .unwrap_or(item.name.clone());
+                    item.text = language
+                        .translate(&item.unique_name, crate::cache::modules::LanguageKey::Text)
+                        .unwrap_or(item.text.clone());
+                }
+                for item in data.weapons.iter_mut() {
+                    item.name = language
+                        .translate(&item.unique_name, crate::cache::modules::LanguageKey::Name)
+                        .unwrap_or(item.name.clone());
+                }
 
                 // Get All value types for riven upgrades
                 let mut all_upgrade_types: Vec<CacheRivenUpgrade> = Vec::new();
@@ -70,12 +91,6 @@ impl RivenModule {
                 }
 
                 data.available_upgrade_types = all_upgrade_types;
-                for att in data.attributes.iter_mut() {
-                    if let Some(upgrade) = dict_url.get(&att.url_name) {
-                        att.short_string = upgrade.short_string.clone();
-                        att.localization_string = upgrade.localization_string.clone();
-                    }
-                }
                 *items_lock = data;
                 info(
                     "Cache:Riven:load",
@@ -188,9 +203,7 @@ impl RivenModule {
         let items = self.get_items()?.attributes;
         match find_by.find_by {
             FindByType::Name => {
-                return Ok(items
-                    .into_iter()
-                    .find(|item| find_by.is_match(&item.effect)))
+                return Ok(items.into_iter().find(|item| find_by.is_match(&item.name)))
             }
             FindByType::Url => {
                 return Ok(items
@@ -200,7 +213,7 @@ impl RivenModule {
             FindByType::UniqueName => {
                 return Ok(items
                     .into_iter()
-                    .find(|item| find_by.is_match(&item.game_ref)))
+                    .find(|item| find_by.is_match(&item.unique_name)))
             }
             FindByType::Custom(ref s) => {
                 if s.starts_with("upgrade") {

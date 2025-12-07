@@ -57,10 +57,15 @@ pub fn mask_sensitive_data(data: &mut Map<String, Value>, properties: &[&str]) {
     }
 }
 
-pub fn read_json_file_optional<T: serde::de::DeserializeOwned + Default>(path: &PathBuf) -> Result<T, Error> {
+pub fn read_json_file_optional<T: serde::de::DeserializeOwned + Default>(
+    path: &PathBuf,
+) -> Result<T, Error> {
     // Return default value if file doesn't exist
     if !path.exists() {
-        eprintln!("[WARNING] File does not exist, returning default: {}", path.display());
+        eprintln!(
+            "[WARNING] File does not exist, returning default: {}",
+            path.display()
+        );
         return Ok(T::default());
     }
 
@@ -503,5 +508,27 @@ impl InsertAt for String {
         }
 
         *self = lines.join("\n");
+    }
+}
+
+/// Merges two serde_json::Value objects recursively
+///# Arguments
+/// * `target` - The target JSON Value to merge into
+/// * `source` - The source JSON Value to merge from
+pub fn merge_json(target: &mut Value, source: &Value) {
+    match (target, source) {
+        (Value::Object(target_map), Value::Object(source_map)) => {
+            for (key, source_value) in source_map {
+                match target_map.get_mut(key) {
+                    Some(target_value) => merge_json(target_value, source_value),
+                    None => {
+                        target_map.insert(key.clone(), source_value.clone());
+                    }
+                }
+            }
+        }
+        (target_value, source_value) => {
+            *target_value = source_value.clone();
+        }
     }
 }

@@ -5,7 +5,7 @@ use std::{
 
 use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions};
 
-use crate::cache::*;
+use crate::cache::{modules::LanguageModule, *};
 
 #[derive(Debug)]
 pub struct FishModule {
@@ -20,9 +20,14 @@ impl FishModule {
             items: Mutex::new(Vec::new()),
         })
     }
-    pub fn load(&self) -> Result<(), Error> {
+    pub fn load(&self, language: &LanguageModule) -> Result<(), Error> {
         match read_json_file_optional::<Vec<CacheFish>>(&self.path) {
-            Ok(items) => {
+            Ok(mut items) => {
+                for item in items.iter_mut() {
+                    item.name = language
+                        .translate(&item.unique_name, crate::cache::modules::LanguageKey::Name)
+                        .unwrap_or(item.name.clone());
+                }
                 let mut items_lock = self.items.lock().unwrap();
                 *items_lock = items;
                 info(

@@ -7,6 +7,7 @@ pub mod line_detection;
 pub mod macros;
 pub mod multi_key_map;
 pub mod options;
+pub mod stop_watch;
 pub mod zip_folder;
 pub mod zip_logger;
 
@@ -18,5 +19,6 @@ pub use helper::*;
 pub use line_detection::*;
 pub use multi_key_map::*;
 pub use options::*;
+pub use stop_watch::*;
 pub use zip_folder::*;
 pub use zip_logger::*;
