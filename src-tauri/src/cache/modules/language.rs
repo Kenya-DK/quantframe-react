@@ -1,13 +1,11 @@
 use std::{
     collections::HashMap,
-    default,
     path::PathBuf,
     sync::{Arc, Mutex},
 };
 
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
-use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions};
+use utils::{get_location, read_json_file_optional, Error};
 
 use crate::cache::*;
 
@@ -27,24 +25,9 @@ pub struct TranslationEntry {
     wfm_name: String,
 }
 
-impl TranslationEntry {
-    pub fn get_key(&self) -> String {
-        if !self.wfm_name.is_empty() {
-            self.wfm_name.clone()
-        } else if !self.name.is_empty() {
-            self.name.clone()
-        } else if !self.full.is_empty() {
-            self.full.clone()
-        } else {
-            "".to_string()
-        }
-    }
-}
-
 pub enum LanguageKey {
     Full,
     Short,
-    Effect,
     Text,
     Name,
     WfmName,
@@ -109,7 +92,6 @@ impl LanguageModule {
             let value = match lang_key {
                 LanguageKey::Full => entry.full.clone(),
                 LanguageKey::Short => entry.short.clone(),
-                LanguageKey::Effect => entry.effect.clone(),
                 LanguageKey::Text => entry.text.clone(),
                 LanguageKey::Name => entry.name.clone(),
                 LanguageKey::WfmName => entry.wfm_name.clone(),
@@ -131,7 +113,6 @@ impl LanguageModule {
             let value = match lang_key {
                 LanguageKey::Full => entry.full.clone(),
                 LanguageKey::Short => entry.short.clone(),
-                LanguageKey::Effect => entry.effect.clone(),
                 LanguageKey::Text => entry.text.clone(),
                 LanguageKey::Name => entry.name.clone(),
                 LanguageKey::WfmName => entry.wfm_name.clone(),

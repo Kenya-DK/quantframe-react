@@ -7,8 +7,8 @@ use std::{
 use ::utils::*;
 use qf_api::Client as QFClient;
 use service::{
-    SettingMutation, SettingQuery, StockItemMutation, StockRivenMutation, TradeEntryMutation,
-    TransactionMutation, WishListMutation,
+    SettingMutation, SettingQuery, StockItemMutation, StockRivenMutation, TransactionMutation,
+    WishListMutation,
 };
 use tauri::Manager;
 

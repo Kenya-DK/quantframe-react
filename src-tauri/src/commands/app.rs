@@ -2,11 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use crate::{
     app::{client::AppState, Settings},
-    emit_event, helper,
     log_parser::LogParserState,
-    send_event,
-    types::UIEvent,
-    utils::modules::states,
     APP, HAS_STARTED,
 };
 use serde_json::{json, Value};

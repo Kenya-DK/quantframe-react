@@ -3,19 +3,18 @@ use entity::{
     dto::{FinancialGraph, FinancialReport, PaginatedResult, SubType},
     transaction::TransactionPaginationQueryDto,
 };
-use serde_json::{json, Value};
+use serde_json::json;
 use service::TransactionQuery;
 use std::{
     fs::{self},
     path::PathBuf,
 };
-use tauri::{path::BaseDirectory, Manager};
+use tauri::Manager;
 use utils::*;
 use wf_market::{enums::OrderType, types::Order};
 
 use crate::{
     cache::CacheTradableItem,
-    emit_event,
     enums::{FindBy, FindByType},
     utils::{modules::states, OrderExt, SubTypeExt},
     APP, DATABASE,
@@ -202,52 +201,4 @@ pub async fn get_item_details(
     payload["report"] = json!(FinancialReport::from(&transaction_paginate.results));
     payload["last_transactions"] = json!(transaction_paginate.take_top(5));
     Ok((payload, Some(item_info), order))
-}
-
-pub fn get_app_lang(lang: impl Into<String>) -> Result<Value, Error> {
-    let app = APP.get().expect("APP state not initialized");
-    let lang = lang.into();
-    let resource_path = app
-        .path()
-        .resolve(
-            format!("resources/lang/{}.json", lang),
-            BaseDirectory::Resource,
-        )
-        .map_err(|e| {
-            Error::new(
-                "Helper::GetLang",
-                format!("Failed to resolve lang file path: {} for lang {}", e, lang),
-                get_location!(),
-            )
-        })?;
-
-    let lang_content = fs::read_to_string(&resource_path).map_err(|e| {
-        Error::from_io(
-            "Helper::GetLang",
-            &resource_path,
-            &format!("Failed to read lang file: {} for lang {}", e, lang),
-            e,
-            get_location!(),
-        )
-    })?;
-    let lang_json: Value = serde_json::from_str(&lang_content).map_err(|e| {
-        Error::from_json(
-            "Helper::GetLang",
-            &resource_path,
-            &lang_content,
-            format!("Failed to parse lang JSON: {}", e),
-            e,
-            get_location!(),
-        )
-    })?;
-    Ok(lang_json)
-}
-
-pub fn get_cache_lang(lang: impl Into<String>) -> Result<Value, Error> {
-    let cache = states::cache_client()?.clone();
-    // Merge with cache language overrides
-    match cache.language().get_language(&lang.into()) {
-        Ok(override_lang) => Ok(json!(override_lang)),
-        Err(e) => Err(e),
-    }
 }
