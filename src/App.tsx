@@ -24,13 +24,14 @@ import faPolarityMadurai from "@icons/faPolarityMadurai";
 import faWebHook from "@icons/faWebHook";
 import faPolarityAura from "@icons/faPolarityAura";
 import faPolarityVazarin from "@icons/faPolarityVazarin";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import api from "./api";
 import { PromptModal } from "@components/Modals/Prompt";
 import { PatreonModal } from "@components/Modals/PatreonModal/indexx";
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { ThemeProvider, useTheme } from "./contexts/theme.context";
+import { readTextFile } from "@tauri-apps/plugin-fs";
 library.add(faMoneyBillTrendDown);
 library.add(faTradingAnalytics);
 library.add(faAmberStar);
@@ -49,13 +50,22 @@ library.add(faPolarityAura);
 library.add(faPolarityVazarin);
 library.add(faWebHook);
 dom.watch();
-i18n.use(initReactI18next).init({
-  resources: {},
-  lng: "en",
-  fallbackLng: "en",
-  interpolation: { escapeValue: false },
-});
 
+export async function initializeI18n() {
+  const content = await readTextFile("resources/lang/en.json");
+  const translations = JSON.parse(content);
+
+  await i18n.use(initReactI18next).init({
+    resources: {
+      en: { translation: translations },
+    },
+    lng: "en",
+    fallbackLng: "en",
+    interpolation: { escapeValue: false },
+  });
+
+  console.log("Loaded default language from filesystem:", "resources/lang/en.json");
+}
 // Create a Backend Client
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -75,6 +85,13 @@ export interface MantineModalsOverride {
 // AppContent component that uses the theme context
 function AppContent() {
   const { theme, resolver } = useTheme();
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    initializeI18n().then(() => setReady(true));
+  }, []);
+
+  if (!ready) return null;
 
   return (
     <MantineProvider defaultColorScheme="dark" theme={theme} cssVariablesResolver={resolver}>
