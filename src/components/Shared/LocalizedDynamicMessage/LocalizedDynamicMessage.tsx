@@ -8,7 +8,7 @@ export type TokenHandler = {
 export interface LocalizedDynamicMessageProps {
   message: string;
   tokens: TokenHandler[];
-  textProps?: TextProps;
+  textProps?: TextProps & { [key: string]: any };
 }
 export function LocalizedDynamicMessage({ message, tokens, textProps }: LocalizedDynamicMessageProps) {
   let cursor = 0;

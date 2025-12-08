@@ -55,12 +55,10 @@ export function WFMAuction({ show_border, paperProps, auction, header, show_user
           </Group>
           <Divider />
           <Grid>
-            <Grid.Col span={9} p={"xs"}>
-              <Group mt={5} mb={5} gap={"xs"}>
-                {auction.item.attributes?.map((attr) => (
-                  <RivenAttribute key={attr.url_name} value={attr} />
-                ))}
-              </Group>
+            <Grid.Col span={9} p={3}>
+              {auction.item.attributes?.map((attr) => (
+                <RivenAttribute key={attr.url_name} value={attr} />
+              ))}
             </Grid.Col>
             <Grid.Col span={3} display="flex" style={{ justifyContent: "center", flexDirection: "column", alignItems: "center" }}>
               <TextTranslate
@@ -145,9 +143,6 @@ export function WFMAuction({ show_border, paperProps, auction, header, show_user
               {auction.owner?.ingame_name}
             </Text>
           </Grid.Col>
-          {/* <Grid.Col span={5}>
-            
-          </Grid.Col> */}
           <Grid.Col span={3}>
             <TimerStamp date={new Date(auction.created)} />
           </Grid.Col>

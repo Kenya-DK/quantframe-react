@@ -1,6 +1,6 @@
-import { Box, Grid, Group, NumberFormatter } from "@mantine/core";
+import { ActionIcon, Box, Grid, Group, NumberFormatter, Paper, Tooltip } from "@mantine/core";
 import { useLiveScraperContext } from "@contexts/liveScraper.context";
-import { useLocalStorage, useMediaQuery } from "@mantine/hooks";
+import { useLocalStorage } from "@mantine/hooks";
 import { useEffect, useState } from "react";
 import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { TauriTypes } from "$types";
@@ -13,24 +13,23 @@ import { DataTable } from "mantine-datatable";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 import { getSafePage } from "@utils/helper";
-import { RivenAttributes } from "@components/DataDisplay/RivenAttributes";
 import { useStockMutations } from "./mutations";
 import { useStockModals } from "./modals";
 import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 import { ColumnActions } from "../../Columns/ColumnActions";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faDownload, faEdit, faMessage, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faEdit, faInfo, faMessage, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { HasPermission } from "@api/index";
 import { notifications } from "@mantine/notifications";
 import { ItemName } from "@components/DataDisplay/ItemName/ItemName";
+import { RivenAttribute } from "@components/DataDisplay/RivenAttribute";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 export type RivenPanelProps = {
   isActive?: boolean;
 };
 
 export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
   // Responsive
-  // Treat as “wide” only when landscape AND ≥800px wide
-  const isWide = useMediaQuery("(min-width: 800px) and (orientation: landscape)");
   // Contexts
   const { is_running } = useLiveScraperContext();
   // States For DataGrid
@@ -237,7 +236,28 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
             accessor: "attributes",
             width: "auto",
             title: useTranslateDataGridColumns("attributes"),
-            render: ({ attributes }) => <RivenAttributes tooltip={true} attributes={attributes} />,
+            render: ({ attributes }) => (
+              <Tooltip
+                withArrow
+                openDelay={100}
+                closeDelay={100}
+                styles={{
+                  tooltip: { backgroundColor: "transparent", padding: 0, boxShadow: "none" },
+                  arrow: { backgroundColor: "transparent", borderWidth: 0 },
+                }}
+                label={
+                  <Paper withBorder p="xs">
+                    {attributes.map((attr, idx) => (
+                      <RivenAttribute key={idx} value={attr} compact hideDetails={true} />
+                    ))}
+                  </Paper>
+                }
+              >
+                <ActionIcon size="sm" variant="outline">
+                  <FontAwesomeIcon icon={faInfo} />
+                </ActionIcon>
+              </Tooltip>
+            ),
           },
           {
             accessor: "bought",

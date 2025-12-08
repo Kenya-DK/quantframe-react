@@ -47,7 +47,6 @@ export const defaultTheme = {
         [TauriTypes.TransactionItemType.Item]: DEFAULT_COLORS.blue[7],
         [TauriTypes.TransactionItemType.Riven]: DEFAULT_COLORS.violet[7],
       },
-
       chartStyles: {
         total: {
           bgColor: getGradient({ deg: 180, from: "green.7", to: "green.9" }, DEFAULT_THEME),
@@ -63,10 +62,7 @@ export const defaultTheme = {
           lineColor: DEFAULT_THEME.colors.violet[7],
         },
       },
-      riven: {
-        positiveTrait: "#4bd24b",
-        negativeTrait: "#ff5555",
-      },
+      riven: {},
     },
   } as Record<string, any>,
 };

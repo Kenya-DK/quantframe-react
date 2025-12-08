@@ -1,4 +1,4 @@
-import { Box, Group, Image, Progress, useMantineTheme, Text } from "@mantine/core";
+import { Box, Group, Image, Progress, Text } from "@mantine/core";
 import type { RivenAttribute, TauriTypes } from "$types";
 import classes from "./RivenAttribute.module.css";
 import { useQuery } from "@tanstack/react-query";
@@ -12,8 +12,6 @@ export type RivenAttributeProps = {
 };
 
 export function RivenAttribute({ value, hideDetails, compact }: RivenAttributeProps) {
-  const theme = useMantineTheme();
-
   // Fetches detailed attribute metadata (like unit types) from the cache.
   // This query runs once and its data is cached by React Query.
   const { data: cacheAttributes } = useQuery<TauriTypes.CacheRivenAttribute[]>({
@@ -43,17 +41,18 @@ export function RivenAttribute({ value, hideDetails, compact }: RivenAttributePr
   return (
     <Group
       className={classes.root}
+      data-compact={compact ? "true" : "false"}
+      data-hide-details={hideDetails ? "true" : "false"}
       data-positive={value.positive}
       gap={compact ? "sm" : "md"}
       p={compact ? "2" : "4"}
-      // bg={value.positive ? theme.other.riven.positiveTrait : theme.other.riven.negativeTrait}
-      style={{ borderRadius: "20px" }}
     >
       <Group gap="xs" style={{ flex: 1 }}>
         {value.grade && <Image src="/DT_CORROSIVE_COLOR.png" h={28} w="auto" fit="contain" />}
         {value.grade && <Box w={24} />}
         <LocalizedDynamicMessage
-          textProps={{ size: "md", fw: 600, color: value.positive ? theme.other.riven.positiveTrait : theme.other.riven.negativeTrait }}
+          data-hide-details={hideDetails ? "true" : "false"}
+          textProps={{ size: "md", fw: 600, className: classes.attributeText, "data-hide-details": hideDetails ? "true" : "false" }}
           tokens={[
             {
               pattern: /\|STAT1\|/g,
@@ -85,10 +84,13 @@ export function RivenAttribute({ value, hideDetails, compact }: RivenAttributePr
 
           {value.minValue !== undefined && value.value !== undefined && value.maxValue !== undefined && (
             <Progress
+              classNames={{
+                root: classes.progressRoot,
+                section: classes.progressSection,
+              }}
               w={200}
               value={calculateProgress(value.minValue, value.value, value.maxValue)}
               size="lg"
-              color={value.positive ? theme.other.riven.positiveLight : theme.other.riven.negativeLight}
               radius="md"
             />
           )}

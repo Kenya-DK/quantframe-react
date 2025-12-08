@@ -1,1 +1,40 @@
-.root {}
+:root {
+  --minMaxBar: transparent;
+  --background: transparent;
+  --textColor: inherit;
+}
+
+.root {
+  border-radius: 20px;
+
+  &[data-hide-details="false"] {
+    background-color: var(--background);
+  }
+
+  &[data-positive="true"] {
+    --background: #00ff2e42;
+    --minMaxBar: #00ff2eb3;
+    --textColor: #00ff2e;
+  }
+
+  &[data-positive="false"] {
+    --background: #ff000042;
+    --minMaxBar: #ff0000b3;
+    --textColor: #ff0000;
+  }
+
+}
+
+.attributeText {
+  &[data-hide-details="true"] {
+    color: var(--textColor);
+  }
+}
+
+.progressRoot {
+  border: 1px solid #fff;
+}
+
+.progressSection {
+  background-color: var(--minMaxBar);
+}
