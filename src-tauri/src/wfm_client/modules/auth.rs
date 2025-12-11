@@ -1,5 +1,6 @@
 use eyre::eyre;
 use reqwest::header::HeaderMap;
+use serde::Deserialize;
 use serde_json::json;
 
 use crate::{
@@ -14,10 +15,43 @@ use crate::{
     wfm_client::{
         client::WFMClient,
         enums::ApiVersion,
-        types::user_profile::UserProfile,
+        types::user_profile::UserPrivate,
         websocket::{WsClient, WsClientBuilder},
     },
 };
+// TODO: Use for Api version 1
+#[derive(Deserialize)]
+pub struct SigninResponse {
+    pub avatar: Option<String>,
+    pub linked_accounts: SigninLinkedAccounts,
+    pub role: String,
+    pub locale: String,
+    pub background: Option<String>,
+    pub crossplay: bool,
+    pub platform: String,
+    pub reputation: i64,
+    pub has_mail: bool,
+    pub region: String,
+    pub written_reviews: i64,
+    pub id: String,
+    pub ingame_name: String,
+    pub slug: String,
+    pub unread_messages: i64,
+    pub banned: bool,
+    pub check_code: String,
+    pub verification: bool,
+    pub anonymous: bool,
+}
+
+// TODO: Use for Api version 1
+#[derive(Deserialize)]
+pub struct SigninLinkedAccounts {
+    pub steam_profile: bool,
+    pub patreon_profile: bool,
+    pub xbox_profile: bool,
+    pub discord_profile: bool,
+    pub github_profile: bool,
+}
 #[derive(Clone, Debug)]
 pub struct AuthModule {
     pub client: WFMClient,
@@ -58,16 +92,12 @@ impl AuthModule {
         Ok(())
     }
 
-    pub async fn me(&self) -> Result<UserProfile, AppError> {
-        match self
-            .client
-            .get::<UserProfile>("v1", "/profile", Some("profile"))
-            .await
-        {
+    pub async fn me(&self) -> Result<UserPrivate, AppError> {
+        match self.client.get::<UserPrivate>("v2", "me", None).await {
             Ok(ApiResult::Success(user, _)) => {
                 return Ok(user);
             }
-            Ok(ApiResult::Error(e, _headers)) => {
+            Ok(ApiResult::Error(mut e, _headers)) => {
                 return Err(self.client.create_api_error(
                     &self.get_component("Login"),
                     e,
@@ -189,24 +219,21 @@ impl AuthModule {
         &self,
         email: &str,
         password: &str,
-    ) -> Result<(UserProfile, Option<String>), AppError> {
+    ) -> Result<(SigninResponse, Option<String>), AppError> {
         let body = json!({
             "email": email,
             "password": password
         });
 
-        let (user, headers): (UserProfile, HeaderMap) = match self
+        let (user, headers): (SigninResponse, HeaderMap) = match self
             .client
-            .post::<UserProfile>("v1", "/auth/signin", Some("user"), body)
+            .post::<SigninResponse>("v1", "/auth/signin", Some("user"), body)
             .await
         {
             Ok(ApiResult::Success(user, headers)) => {
                 logger::info(
                     &self.get_component("Login"),
-                    &format!(
-                        "User logged in: {}",
-                        user.ingame_name.clone().unwrap_or("".to_string())
-                    ),
+                    &format!("User logged in: {}", user.ingame_name.clone()),
                     LoggerOptions::default(),
                 );
                 (user, headers)
@@ -239,7 +266,7 @@ impl AuthModule {
         Ok((user, token))
     }
 
-    pub async fn validate(&self) -> Result<UserProfile, AppError> {
+    pub async fn validate(&self) -> Result<UserPrivate, AppError> {
         // Validate Auth
         let user = match self.me().await {
             Ok(user) => user,
@@ -248,7 +275,7 @@ impl AuthModule {
                 return Err(e);
             }
         };
-        if user.anonymous || !user.verification {
+        if !user.verification {
             logger::warning(
                 &self.get_component("Validate"),
                 "Validation failed for user, user is anonymous or not verified",

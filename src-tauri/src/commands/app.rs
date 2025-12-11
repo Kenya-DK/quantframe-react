@@ -110,10 +110,10 @@ pub async fn app_init(
         Ok(user) => user,
         Err(e) => {
             error::create_log_file("wfm_validation.log", &e);
-            return Err(e);
+            return Ok(false);
         }
     };
-    auth_state.update_from_wfm_user_profile(&wfm_user, auth_state.wfm_access_token.clone());
+    auth_state.update_from_wfm_user_profile2(&wfm_user, auth_state.wfm_access_token.clone());
     save_auth_state(auth.clone(), auth_state.clone());
 
     // Validate QF Auth
@@ -125,7 +125,7 @@ pub async fn app_init(
         }
     };
 
-    if qf_user.is_none() && !wfm_user.anonymous && wfm_user.verification && !wfm_user.banned {
+    if qf_user.is_none() && wfm_user.verification && !wfm_user.banned.unwrap_or(false) {
         // Login to QuantFrame
         qf_user = match qf
             .auth()
@@ -160,11 +160,10 @@ pub async fn app_init(
     // Save AuthState to Tauri State
     save_auth_state(auth.clone(), auth_state.clone());
 
-    if !wfm_user.anonymous
-        && wfm_user.verification
+    if wfm_user.verification
         && qf_user.is_some()
         && !qf_user.unwrap().banned
-        && !wfm_user.banned
+        && !wfm_user.banned.unwrap_or(false)
     {
         // Setup WebSocket Client
         match wfm

@@ -13,18 +13,17 @@ pub enum LogLevel {
     Unknown(String),
 }
 impl LogLevel {
-    // Create method to convert `OrderType` to a `&str`
-    // pub fn as_str(&self) -> &str {
-    //     match *self {
-    //         LogLevel::Info => "info",
-    //         LogLevel::Warning => "warning",
-    //         LogLevel::Error => "error",
-    //         LogLevel::Debug => "debug",
-    //         LogLevel::Trace => "trace",
-    //         LogLevel::Critical => "critical",
-    //         LogLevel::Unknown(ref i) => i,
-    //     }
-    // }
+    pub fn as_str(&self) -> &str {
+        match *self {
+            LogLevel::Info => "info",
+            LogLevel::Warning => "warning",
+            LogLevel::Error => "error",
+            LogLevel::Debug => "debug",
+            LogLevel::Trace => "trace",
+            LogLevel::Critical => "critical",
+            LogLevel::Unknown(ref i) => i,
+        }
+    }
 }
 impl Serialize for LogLevel {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>

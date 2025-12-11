@@ -1,6 +1,7 @@
 use crate::utils::modules::error::{self, AppError};
 use crate::utils::modules::logger::LoggerOptions;
-use crate::wfm_client::types::user_profile::UserProfile;
+use crate::wfm_client::modules::auth::SigninResponse;
+use crate::wfm_client::types::user_profile::UserPrivate;
 use crate::{helper, logger};
 use eyre::{eyre, Result};
 use serde::{Deserialize, Serialize};
@@ -13,7 +14,6 @@ use std::path::PathBuf;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AuthState {
-    pub anonymous: bool,
     pub verification: bool,
     pub wfm_banned: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -51,7 +51,6 @@ pub struct AuthState {
 impl Default for AuthState {
     fn default() -> Self {
         Self {
-            anonymous: true,
             verification: false,
             wfm_banned: false,
             wfm_banned_until: None,
@@ -78,7 +77,7 @@ impl Default for AuthState {
 }
 impl AuthState {
     pub fn is_logged_in(&self) -> bool {
-        !self.anonymous && self.verification && !self.wfm_banned && !self.qf_banned
+        self.verification && !self.wfm_banned && !self.qf_banned
     }
     fn get_file_path() -> PathBuf {
         let app_path = helper::get_app_storage_path();
@@ -132,36 +131,49 @@ impl AuthState {
 
     pub fn update_from_wfm_user_profile(
         &mut self,
-        user_profile: &UserProfile,
+        user_profile: &SigninResponse,
         token: Option<String>,
     ) {
         self.id = user_profile.id.clone();
-        self.anonymous = user_profile.anonymous;
         self.verification = user_profile.verification;
         self.wfm_banned = user_profile.banned;
-        self.unread_messages = user_profile.unread_messages;
-        self.wfm_banned_reason = user_profile.ban_reason.clone();
-        self.wfm_banned_until = user_profile.ban_until.clone();
-        self.ingame_name = user_profile.ingame_name.clone().unwrap_or("".to_string());
+        self.unread_messages = user_profile.unread_messages as i64;
+        self.ingame_name = user_profile.ingame_name.clone();
         self.avatar = user_profile.avatar.clone();
         self.locale = user_profile.locale.clone();
         self.platform = user_profile.platform.clone();
-        self.region = user_profile.region.clone();
-        self.check_code = user_profile.check_code.clone().unwrap_or("".to_string());
+        self.region = user_profile.locale.clone();
+        self.check_code = user_profile.check_code.clone();
         self.wfm_access_token = token;
         self.order_limit = 100;
         self.auctions_limit = 50;
-        if user_profile.patreon_profile.is_some() {
-            let us = user_profile.patreon_profile.clone().unwrap();
-            if us.subscription.is_some() && us.subscription.unwrap() {
-                self.order_limit = -1;
-                self.auctions_limit = -1;
-            }
+    }
+    pub fn update_from_wfm_user_profile2(
+        &mut self,
+        user_profile: &UserPrivate,
+        token: Option<String>,
+    ) {
+        self.id = user_profile.id.clone();
+        self.verification = user_profile.verification;
+        self.wfm_banned = user_profile.banned.unwrap_or(false);
+        self.unread_messages = user_profile.unread_messages as i64;
+        self.wfm_banned_reason = user_profile.ban_message.clone();
+        self.wfm_banned_until = user_profile.ban_until.clone();
+        self.ingame_name = user_profile.ingame_name.clone();
+        self.avatar = user_profile.avatar.clone();
+        self.locale = user_profile.locale.clone();
+        self.platform = user_profile.platform.clone();
+        self.region = user_profile.locale.clone();
+        self.check_code = user_profile.check_code.clone();
+        self.wfm_access_token = token;
+        self.order_limit = 100;
+        self.auctions_limit = 50;
+        if user_profile.tier.is_some() {
+            self.order_limit = -1;
+            self.auctions_limit = -1;
         }
     }
-
     pub fn reset(&mut self) {
-        self.anonymous = true;
         self.verification = false;
         self.wfm_banned = false;
         self.wfm_banned_until = None;

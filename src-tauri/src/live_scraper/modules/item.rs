@@ -210,7 +210,7 @@ impl ItemModule {
         )?;
         // Loop through all interesting items
         for item_entry in interesting_items.clone() {
-            if auth.qf_banned || auth.wfm_banned || auth.anonymous {
+            if auth.qf_banned || auth.wfm_banned {
                 self.client.stop_loop();
                 break;
             }

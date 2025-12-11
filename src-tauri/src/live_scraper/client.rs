@@ -10,6 +10,7 @@ use serde_json::json;
 
 use crate::{
     enums::{stock_mode::StockMode, trade_mode::TradeMode},
+    helper::add_metric,
     logger,
     utils::{
         enums::{log_level::LogLevel, ui_events::UIEvent},
@@ -43,7 +44,12 @@ impl LiveScraperClient {
         let component = error.component();
         let log_level = error.log_level();
         if log_level == LogLevel::Critical || log_level == LogLevel::Error {
-            self.is_running.store(false, Ordering::SeqCst);
+            add_metric("LiveScraper_Error", log_level.as_str());
+            // self.is_running.store(false, Ordering::SeqCst);
+            notify.gui().send_event(
+                crate::utils::enums::ui_events::UIEvent::OnLiveTradingError,
+                Some(json!(error)),
+            );
         }
         crate::logger::dolog(
             log_level.clone(),
@@ -52,10 +58,6 @@ impl LiveScraperClient {
             LoggerOptions::default()
                 .set_console(true)
                 .set_file(self.log_file),
-        );
-        notify.gui().send_event(
-            crate::utils::enums::ui_events::UIEvent::OnLiveTradingError,
-            Some(json!(error)),
         );
     }
 
