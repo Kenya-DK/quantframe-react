@@ -30,10 +30,15 @@ pub struct RivenSingleAttribute {
     unique_id: String,
     localization: String,
     current_value: f64,
-    worst_case: f64,
-    best_case: f64,
+    #[serde(rename = "minValue")]
+    min_value: f64,
+    #[serde(rename = "maxValue")]
+    max_value: f64,
     raw_random_value: f64,
+    #[serde(rename = "letterGrade")]
     letter_grade: String,
+    #[serde(rename = "grade")]
+    grade: String,
 }
 
 impl RivenSingleAttribute {
@@ -41,16 +46,17 @@ impl RivenSingleAttribute {
         unique_id: impl Into<String>,
         localization: impl Into<String>,
         current_value: f64,
-        worst_case: f64,
-        best_case: f64,
+        min_value: f64,
+        max_value: f64,
         raw_random_value: f64,
     ) -> Self {
         Self {
             unique_id: unique_id.into(),
             localization: localization.into(),
             current_value,
-            worst_case,
-            best_case,
+            grade: String::from(""),
+            min_value,
+            max_value,
             raw_random_value,
             letter_grade: get_attr_letter_grade_from_random_percent(raw_random_value).to_string(),
         }
@@ -58,8 +64,8 @@ impl RivenSingleAttribute {
     pub fn apply_rank_multiplier(&mut self, disposition: f64, rank: f64) {
         let level_multiplier = disposition * ((rank + 1.0) / 9.0);
         self.current_value *= level_multiplier;
-        self.worst_case *= level_multiplier;
-        self.best_case *= level_multiplier;
+        self.min_value *= level_multiplier;
+        self.max_value *= level_multiplier;
     }
 }
 
@@ -67,12 +73,12 @@ impl Display for RivenSingleAttribute {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{} ({}): Current Value: {:.2}, Worst Case: {:.2}, Best Case: {:.2}, Grade: {}",
+            "{} ({}): Current Value: {:.2}, Min Value: {:.2}, Max Value: {:.2}, Grade: {}",
             self.localization,
             self.unique_id,
             self.current_value,
-            self.worst_case,
-            self.best_case,
+            self.min_value,
+            self.max_value,
             self.letter_grade
         )
     }

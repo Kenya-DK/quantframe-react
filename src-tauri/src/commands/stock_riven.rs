@@ -270,7 +270,7 @@ pub async fn stock_riven_get_by_id(
         item.weapon_unique_name,
         item.mastery_rank,
         item.re_rolls,
-        item.sub_type.unwrap().rank.unwrap_or(0),
+        item.sub_type.unwrap().rank.unwrap_or(0) as i32,
         item.polarity.clone(),
         attributes
     )?);

@@ -652,11 +652,28 @@ export namespace TauriTypes {
     price: number;
     attributes: RivenAttribute[];
   }
+  export interface RivenSummary {
+    endo: number;
+    kuva: number;
+    rank: number;
+    mastery_rank: number;
+    polarity: string;
+    rerolls: number;
+    stat_with_weapons: StatWithWeapon[];
+  }
+
+  export interface StatWithWeapon {
+    by_level: { [key: string]: RivenAttribute[] };
+    disposition: number;
+    name: string;
+  }
+
   export interface StockRivenDetails extends FinancialReport {
     stock: StockRiven;
     auction_info: WFMarketTypes.Auction | null;
     last_transactions: TransactionDto[];
     stock_profit: number;
+    riven_summary: RivenSummary;
   }
   export interface SubType {
     rank?: number;

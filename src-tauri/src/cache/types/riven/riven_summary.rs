@@ -28,22 +28,27 @@ const TWO_DIGIT_TAGS: &[&str] = &[
 ];
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RivenSummary {
+    mastery_rank: i64,
+    rerolls: i64,
+    rank: i32,
     stat_with_weapons: Vec<RivenStatWithWeapon>,
+    polarity: String,
+    endo: i64,
+    kuva: i64,
 }
 
 impl RivenSummary {
     pub fn new(
         unique_name: impl Into<String>,
-        _mastery_rank: i64,
-        _rerolls: i64,
-        rank: i64,
-        _polarity: impl Into<String>,
+        mastery_rank: i64,
+        rerolls: i64,
+        mut rank: i32,
+        polarity: impl Into<String>,
         attributes: Vec<(String, f64, bool)>,
     ) -> Result<Self, Error> {
         let cache = states::cache_client()?;
         let riven_lookup = cache.riven();
         let unique_name = unique_name.into();
-        let mut rank = rank as f64;
         let weapon = riven_lookup
             .get_riven_by(FindBy::new(FindByType::UniqueName, &unique_name))
             .map_err(|e| e.with_location(get_location!()))?
@@ -101,12 +106,11 @@ impl RivenSummary {
             }
 
             // Smart rank fallback when no rank is provided but the value fits an R8 curve
-            if rank == 0.0 && (adjusted_value - base_stat).abs() < 0.5 * adjusted_value {
-                rank = 8.0;
+            if rank == 0 && (adjusted_value - base_stat).abs() < 0.5 * adjusted_value {
+                rank = 8;
             }
 
-            let scaled_value = adjusted_value / (rank + 1.0) * 9.0;
-
+            let scaled_value = adjusted_value / (rank as f64 + 1.0) * 9.0;
             let random_factor_raw =
                 ((scaled_value - base_stat * 0.9) / (base_stat * 0.2)).clamp(0.0, 1.0);
 
@@ -143,7 +147,7 @@ impl RivenSummary {
 
         let mut stat_with_weapons = vec![];
         for wea in weapons.iter() {
-            let mut stat_with_weapon = RivenStatWithWeapon::new(wea.name.clone());
+            let mut stat_with_weapon = RivenStatWithWeapon::new(wea.name.clone(), wea.disposition);
             for i in 0..=8 {
                 let new_stats: Vec<RivenSingleAttribute> = stats
                     .iter()
@@ -158,7 +162,40 @@ impl RivenSummary {
             }
             stat_with_weapons.push(stat_with_weapon);
         }
+
+        // Calculate Endo value from dissolving the Riven
+        // Formula: (100 × (Mastery Rank - 8)) + ⌊22.5 × 2^Mod Rank⌋ + (200 × Rerolls) - 7
+        let endo = (100 * (mastery_rank - 8))
+            + ((22.5 * 2_f64.powi(rank as i32)).floor() as i64)
+            + (200 * rerolls)
+            - 7;
+
+        // Calculate total Kuva cost based on rerolls
+        // Kuva cost per cycle: 900, 1000, 1200, 1400, 1700, 2000, 2350, 2750, 3150, 3500 (10+)
+        let kuva = if rerolls == 0 {
+            0
+        } else {
+            let costs = [900, 1000, 1200, 1400, 1700, 2000, 2350, 2750, 3150];
+            let mut total = 0;
+            for i in 0..rerolls as usize {
+                if i < costs.len() {
+                    total += costs[i];
+                } else {
+                    total += 3500; // 10+ cycles cost 3500 each
+                }
+            }
+            total
+        };
+
         println!("Generated {:?} stats for Riven Summary", stats);
-        Ok(RivenSummary { stat_with_weapons })
+        Ok(RivenSummary {
+            stat_with_weapons,
+            mastery_rank,
+            rerolls,
+            polarity: polarity.into(),
+            endo,
+            rank,
+            kuva,
+        })
     }
 }

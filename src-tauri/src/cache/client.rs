@@ -381,7 +381,7 @@ impl CacheState {
                 "Language has not changed, skipping DA names update.",
                 &LoggerOptions::default(),
             );
-            // return Ok(());
+            return Ok(());
         }
         emit_startup!("database.updating_names", json!({}));
 
