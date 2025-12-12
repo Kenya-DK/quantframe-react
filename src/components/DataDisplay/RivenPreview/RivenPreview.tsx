@@ -70,7 +70,7 @@ export function RivenPreview({ paperProps, riven }: RivenPreviewProps) {
           let symbol = GetUnitSymbol(attribute?.unit);
           return {
             ...item,
-            effect: attribute?.effect || "",
+            effect: attribute?.short || "",
             units: attribute?.unit || "",
             symbol,
           };

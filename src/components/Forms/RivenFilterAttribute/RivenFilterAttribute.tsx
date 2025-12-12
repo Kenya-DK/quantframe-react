@@ -24,7 +24,7 @@ export function RivenFilterAttribute({ value, onChange: onChanges }: RivenFilter
     if (data) {
       const map: { [key: string]: string } = {};
       data.forEach((item) => {
-        map[item.url_name] = item.effect;
+        map[item.url_name] = item.short;
       });
       setNameMap(map);
     }
