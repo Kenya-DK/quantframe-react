@@ -98,6 +98,9 @@ export function Logo({ color }: { color: string }) {
           [TEMP DB]
         </Text>
       )}
+      <Text size={"md"} fw={500} data-color="gold" data-color-mode="shine">
+        [CAT]
+      </Text>
     </Group>
   );
 }
