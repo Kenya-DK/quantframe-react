@@ -248,6 +248,33 @@ impl OrderModule {
                 return Ok(("order_created".to_string(), Some(payload)));
             }
             Ok(ApiResult::Error(error, _headers)) => {
+                let is_duplicate_order = error
+                    .messages
+                    .iter()
+                    .any(|message| {
+                        message.contains("app.order.error.exceededOrderLimitSamePrice")
+                            || message.contains("app.post_order.already_created_no_duplicates")
+                    });
+
+                if is_duplicate_order {
+                    let mut existing_order: Option<Order> = None;
+                    if let Ok(current_orders) = self.get_user_orders().await {
+                        existing_order = current_orders.find_order_by_url_sub_type(
+                            item_id,
+                            OrderType::from_str(order_type),
+                            sub_type.as_ref(),
+                        );
+                    }
+
+                    logger::warning(
+                        &self.get_component("Create"),
+                        "Order already exists with the same price, returning existing order",
+                        LoggerOptions::default(),
+                    );
+
+                    return Ok(("order_already_exists".to_string(), existing_order));
+                }
+
                 let log_level = match error.messages.get(0) {
                     Some(message)
                         if message.contains("app.post_order.already_created_no_duplicates")
