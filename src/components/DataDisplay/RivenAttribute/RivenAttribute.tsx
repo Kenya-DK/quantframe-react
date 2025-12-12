@@ -1,4 +1,4 @@
-import { Box, Group, Image, Progress, Text } from "@mantine/core";
+import { Group, Image, Progress, Text } from "@mantine/core";
 import type { RivenAttribute, TauriTypes } from "$types";
 import classes from "./RivenAttribute.module.css";
 import { useQuery } from "@tanstack/react-query";
@@ -45,11 +45,10 @@ export function RivenAttribute({ value, hideDetails, compact }: RivenAttributePr
       data-hide-details={hideDetails ? "true" : "false"}
       data-positive={value.positive}
       gap={compact ? "sm" : "md"}
-      p={compact ? "2" : "4"}
+      p={compact ? "2" : "8px 12px"}
     >
       <Group gap="xs" style={{ flex: 1 }}>
-        {value.grade && <Image src="/DT_CORROSIVE_COLOR.png" h={28} w="auto" fit="contain" />}
-        {value.grade && <Box w={24} />}
+        {value.grade && <Image src={`/grades/gradePerfect.png`} h={20} w="auto" fit="contain" />}
         <LocalizedDynamicMessage
           data-hide-details={hideDetails ? "true" : "false"}
           textProps={{ size: "md", fw: 600, className: classes.attributeText, "data-hide-details": hideDetails ? "true" : "false" }}
@@ -73,12 +72,12 @@ export function RivenAttribute({ value, hideDetails, compact }: RivenAttributePr
       {!hideDetails && (
         <Group gap="md" style={{ flex: "0 0 auto" }}>
           <Group gap={0}>
-            <Text size="xs" fw={600} w={10} ta="center">
+            <Text size="md" fw={700} w={10} ta="center">
               {value.letterGrade}
             </Text>
 
-            <Text size="sm" fw={500} w={40} ta="right">
-              {value.minValue}
+            <Text size="sm" fw={500} w={50} ta="right">
+              {value.minValue?.toFixed(2)}
             </Text>
           </Group>
 
@@ -95,7 +94,7 @@ export function RivenAttribute({ value, hideDetails, compact }: RivenAttributePr
             />
           )}
           <Text size="sm" fw={500} w={40} ta="left">
-            {value.maxValue}
+            {value.maxValue?.toFixed(2)}
           </Text>
         </Group>
       )}

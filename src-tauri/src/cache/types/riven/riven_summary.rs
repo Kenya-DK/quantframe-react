@@ -129,6 +129,7 @@ impl RivenSummary {
                     min_roll * 0.9,
                     max_roll * 1.1,
                     random_factor_raw,
+                    *is_positive,
                 ));
             } else {
                 stats.push(RivenSingleAttribute::new(
@@ -138,12 +139,31 @@ impl RivenSummary {
                     min_roll * 1.0,
                     max_roll * 0.9,
                     1.0 - random_factor_raw,
+                    *is_positive,
                 ));
             }
         }
 
-        let mut weapons = weapon.variants.clone();
-        weapons.push(crate::cache::CacheRivenWeaponVariant::from(&weapon));
+        let mut weapons = vec![crate::cache::CacheRivenWeaponVariant::from(&weapon)];
+        for variant_name in weapon.variants.iter() {
+            let variant = riven_lookup
+                .get_riven_by(FindBy::new(
+                    FindByType::UniqueName,
+                    &variant_name.unique_name,
+                ))
+                .map_err(|e| e.with_location(get_location!()))?
+                .ok_or_else(|| {
+                    Error::new(
+                        "RivenSummary::New",
+                        format!(
+                            "Weapon variant not found for unique name {}",
+                            variant_name.unique_name
+                        ),
+                        get_location!(),
+                    )
+                })?;
+            weapons.push(crate::cache::CacheRivenWeaponVariant::from(&variant));
+        }
 
         let mut stat_with_weapons = vec![];
         for wea in weapons.iter() {

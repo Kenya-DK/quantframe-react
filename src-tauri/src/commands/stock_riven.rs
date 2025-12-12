@@ -247,12 +247,12 @@ pub async fn stock_riven_get_by_id(
         payload["stock_profit"] = json!(order_info.starting_price - item.bought as i32);
     }
 
-    let attributes = item
-        .attributes
-        .0
-        .iter()
-        .map(|a| (a.url_name.clone(), a.value, a.positive))
-        .collect::<Vec<_>>();
+    // let attributes = item
+    //     .attributes
+    //     .0
+    //     .iter()
+    //     .map(|a| (a.url_name.clone(), a.value, a.positive))
+    //     .collect::<Vec<_>>();
 
     // let summary = cache
     //     .riven_parser()
@@ -266,14 +266,14 @@ pub async fn stock_riven_get_by_id(
     //     )
     //     .map_err(|e| e.with_location(get_location!()))?;
     // payload["riven_summary"] = json!(summary);
-    payload["riven_summary"] = json!(RivenSummary::new(
-        item.weapon_unique_name,
-        item.mastery_rank,
-        item.re_rolls,
-        item.sub_type.unwrap().rank.unwrap_or(0) as i32,
-        item.polarity.clone(),
-        attributes
-    )?);
+    // payload["riven_summary"] = json!(RivenSummary::new(
+    //     item.weapon_unique_name,
+    //     item.mastery_rank,
+    //     item.re_rolls,
+    //     item.sub_type.unwrap().rank.unwrap_or(0) as i32,
+    //     item.polarity.clone(),
+    //     attributes
+    // )?);
     Ok(payload)
 }
 

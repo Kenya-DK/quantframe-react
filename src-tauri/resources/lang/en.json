@@ -1475,7 +1475,24 @@
       "stock_riven_details": {
         "tabs": {
           "overview": {
-            "title": "Overview"
+            "title": "Overview",
+            "buttons": {
+              "wiki": "Wiki"
+            },
+            "fields": {
+              "created_at": "Created At",
+              "updated_at": "Updated At",
+              "status": "Status",
+              "minimum_price": "Minimum Price",
+              "owned": "Owned",
+              "bought": "Average Bought Price",
+              "list_price": "List Price",
+              "profit": "Profit",
+              "highest_price": "Highest Price",
+              "lowest_price": "Lowest Price",
+              "listed": "Listed Prices History",
+              "no_listed": "No previous listed prices"
+            }
           },
           "analytics": {
             "title": "Analytics",

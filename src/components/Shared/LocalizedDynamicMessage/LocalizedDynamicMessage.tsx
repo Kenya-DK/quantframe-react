@@ -13,6 +13,7 @@ export interface LocalizedDynamicMessageProps {
 export function LocalizedDynamicMessage({ message, tokens, textProps }: LocalizedDynamicMessageProps) {
   let cursor = 0;
   const parts: React.ReactNode[] = [];
+  if (message == undefined) return "Missing message";
 
   while (cursor < message.length) {
     let earliestMatch: {

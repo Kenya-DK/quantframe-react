@@ -11,7 +11,7 @@ use crate::{emit_update_user, helper, send_event, APP, HAS_STARTED};
 use qf_api::errors::ApiError as QFApiError;
 use qf_api::types::UserPrivate as QFUserPrivate;
 use qf_api::Client as QFClient;
-use serde_json::{json, Value};
+use serde_json::json;
 use sha256::digest;
 use tauri::{AppHandle, Manager};
 use utils::{get_location, info, Error, LogLevel, LoggerOptions};
