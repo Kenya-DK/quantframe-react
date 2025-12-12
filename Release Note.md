@@ -12,14 +12,15 @@ How to back up your database:
    - quantframeV2_debug.sqlite
    - settings.json
 
-After updating, some settings may be reset to their defaults. You can restore your previous settings by copying your backed-up settings.json file back into the Quantframe folder.
+After updating, some settings may be reset to their defaults.
+You can restore your previous settings by copying from your backup settings.json file.
 
 ## TODO's
 
-Fix so the knapsack algorithm doesn't delete akk items after a cycle.
-Add Riven ranking
-Add a sound or a discord message if the livesraper dies
-Fix Riven select
+- ⏱️ Fix so the knapsack algorithm doesn't delete akk items after a cycle.
+- ⏱️ Add Riven ranking
+- ⏱️ Add a sound or a discord message if the livesraper dies
+- ⏱️ Fix Riven select
 
 ## Feature's
 
