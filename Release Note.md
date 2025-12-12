@@ -1,16 +1,14 @@
 ## Fix/Changes
 
 - ✨ You can now save and load templates for the trade message generator.
-- 🛠️ Fix wired behavior when trading of mutable of the same item
 - ✨ Add multiple language support (Require a y contribution to help with the translations NO AI)
+- ✨ Add mutable language support
 
 ## TODO's
 
 Fix so the knapsack algorithm doesn't delete akk items after a cycle.
-Make the app more responsive.
 Add Riven ranking
 Add a sound or a discord message if the livesraper dies
-Add mutible language support
 Fix Riven select
 
 ## Feature's
@@ -44,6 +42,7 @@ Fix Riven select
 
 ## Fix's
 
+- 🛠️ Fix wired behavior when trading of mutable of the same item
 - 🛠️ Some Riven weapons are not showing up in create a new riven Tombfinger, Verglas
 - 🛠️ Fix so the overview over the stuck wil be updated properly
 - 🛠️ Fix so the stock items don't disappear when the list is updated
