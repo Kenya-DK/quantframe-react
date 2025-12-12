@@ -43,8 +43,8 @@ regex = "1.9.1"
 chrono = "0.4"
 zip = "0.6"
 sha256 = "1.5.0"
-wf-market = { path = "C:/Users/Kenya/Desktop/Andet/Coding/Warframe/wf-market" }
-# wf-market = { git = "https://github.com/KibbeWater/wf-market", rev = "d8f8b66b7033c9f5756fdd1cefd8ec2ae093721c" }
+# wf-market = { path = "C:/Users/Kenya/Desktop/Andet/Coding/Warframe/wf-market" }
+wf-market = { git = "https://github.com/KibbeWater/wf-market", rev = "1e73c5c91f735d0cb2b0fbf1c5bd044b68a05bf9" }
 
 # Database dependencies
 migration = { path = "./migration" }
