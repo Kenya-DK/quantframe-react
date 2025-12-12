@@ -1,8 +1,18 @@
-## Fix/Changes
+⚠️⚠️⚠️WARNING: Make a backup of your database before updating!⚠️⚠️⚠️
 
-- ✨ You can now save and load templates for the trade message generator.
-- ✨ Add multiple language support (Require a y contribution to help with the translations NO AI)
-- ✨ Add mutable language support
+How to back up your database:
+
+1. Close Quantframe.
+2. Open the folder where your Quantframe database is stored.
+   - Windows (default):
+     C:\Users\<YourUsername>\AppData\Local\dev.kenya.quantframe
+3. Copy the following files to a safe backup location:
+   - quantframeV2.sqlite
+   - quantframeV2.sqlite_backup
+   - quantframeV2_debug.sqlite
+   - settings.json
+
+After updating, some settings may be reset to their defaults. You can restore your previous settings by copying your backed-up settings.json file back into the Quantframe folder.
 
 ## TODO's
 
@@ -13,6 +23,7 @@ Fix Riven select
 
 ## Feature's
 
+- ✨ You can now save and load templates for the trade message generator.
 - ✨ Add multiple language support (Require a y contribution to help with the translations NO AI)
 - ✨ Add generate chat messages with custom templates for ...
 - ✨ Add generate WTS messages for items, rivens and wishlists
