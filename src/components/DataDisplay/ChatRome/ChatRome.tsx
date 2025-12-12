@@ -13,11 +13,12 @@ import { useAuthContext } from "@contexts/auth.context";
 import { useHasAlert } from "../../../hooks/useHasAlert.hook";
 
 export type ChatRomeProps = {
+  disableChat?: boolean;
   chat: WFMarketTypes.ChatData;
   goBack: () => void;
 };
 
-export const ChatRome = ({ chat, goBack }: ChatRomeProps) => {
+export const ChatRome = ({ chat, goBack, disableChat }: ChatRomeProps) => {
   const { user } = useAuthContext();
   const defaultMsgLength = 30;
   const maxMsgLength = 400;
@@ -127,6 +128,7 @@ export const ChatRome = ({ chat, goBack }: ChatRomeProps) => {
         <Paper radius={0} display={"flex"} p={10} h={75}>
           <Textarea
             w={"90%"}
+            disabled={disableChat}
             value={msg}
             onChange={(e) => setMsg(e.currentTarget.value)}
             error={msg.length > maxMsgLength ? useTranslateFields("message.too_long") : undefined}
@@ -139,7 +141,14 @@ export const ChatRome = ({ chat, goBack }: ChatRomeProps) => {
             placeholder={useTranslateFields("message.placeholder")}
             maxRows={5}
           ></Textarea>
-          <Button disabled={msg.length > maxMsgLength} color="blue" h={"100%"} ml={"md"} w={"10%"} onClick={() => sendMessage.mutateAsync(msg)}>
+          <Button
+            disabled={msg.length > maxMsgLength || disableChat}
+            color="blue"
+            h={"100%"}
+            ml={"md"}
+            w={"10%"}
+            onClick={() => sendMessage.mutateAsync(msg)}
+          >
             {useTranslateButtons("send_label")}
           </Button>
         </Paper>

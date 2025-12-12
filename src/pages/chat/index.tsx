@@ -16,10 +16,12 @@ import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 import classes from "./Chat.module.css";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
+import { useAppContext } from "@contexts/app.context";
 
 export default function ChatPage() {
   // Contexts
   const { user } = useAuthContext();
+  const { app_error } = useAppContext();
   // States
   const [queryData, setQueryData] = useLocalStorage<WFMarketTypes.WfmChatDataControllerGetListParams>({
     key: "chat_query_key",
@@ -110,7 +112,11 @@ export default function ChatPage() {
         </Grid.Col>
         {activeChat && (
           <Grid.Col span={8}>
-            <ChatRome chat={activeChat} goBack={() => setActiveChat(undefined)} />
+            <ChatRome
+              chat={activeChat}
+              goBack={() => setActiveChat(undefined)}
+              disableChat={app_error && app_error.isWebSocket() && app_error.isV1()}
+            />
           </Grid.Col>
         )}
       </Grid>

@@ -69,9 +69,13 @@ fn update_user(mut cu_user: User, user: &WFUserPrivate, qf_user: &QFUserPrivate)
     cu_user
 }
 
-fn send_ws_state(event: UIEvent, cause: &str, data: Value) -> Error {
+fn send_ws_state(event: UIEvent, cause: &str, data: &WsMessage) -> Error {
+    let mut payload = data.payload.clone().unwrap_or(json!({}));
+    payload["route"] = json!(data.route.clone());
+    payload["version"] = json!(data.version.api_url());
+
     let err = Error::new("WebSocket", "Connection state", get_location!())
-        .with_context(data)
+        .with_context(payload)
         .with_cause(cause)
         .set_log_level(LogLevel::Warning);
     err.log("websocket_info.log");
@@ -215,17 +219,17 @@ async fn setup_socket(
         .create_websocket(ApiVersion::V2)
         .set_log_unhandled(true)
         .register_callback("internal/connected", move |msg, _, _| {
-            send_ws_state(UIEvent::OnError, "connected", json!(msg.payload));
+            send_ws_state(UIEvent::OnError, "connected", msg);
             Ok(())
         })
         .unwrap()
         .register_callback("internal/disconnected", move |msg, _, _| {
-            send_ws_state(UIEvent::OnError, "disconnected", json!(msg.payload));
+            send_ws_state(UIEvent::OnError, "disconnected", msg);
             Ok(())
         })
         .unwrap()
         .register_callback("internal/reconnecting", move |msg, _, _| {
-            send_ws_state(UIEvent::OnError, "reconnecting", json!(msg.payload));
+            send_ws_state(UIEvent::OnError, "reconnecting", msg);
             Ok(())
         })
         .unwrap()
@@ -283,17 +287,17 @@ async fn setup_socket(
     let ws_client_chat = wfm_client
         .create_websocket(ApiVersion::V1)
         .register_callback("internal/connected", move |msg, _, _| {
-            send_ws_state(UIEvent::OnError, "connected", json!(msg.payload));
+            send_ws_state(UIEvent::OnError, "connected", msg);
             Ok(())
         })
         .unwrap()
         .register_callback("internal/disconnected", move |msg, _, _| {
-            send_ws_state(UIEvent::OnError, "disconnected", json!(msg.payload));
+            send_ws_state(UIEvent::OnError, "disconnected", msg);
             Ok(())
         })
         .unwrap()
         .register_callback("internal/reconnecting", move |msg, _, _| {
-            send_ws_state(UIEvent::OnError, "reconnecting", json!(msg.payload));
+            send_ws_state(UIEvent::OnError, "reconnecting", msg);
             Ok(())
         })
         .unwrap()
