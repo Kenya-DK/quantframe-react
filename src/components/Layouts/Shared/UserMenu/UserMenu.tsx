@@ -72,6 +72,7 @@ export function UserMenu() {
     if (user.anonymous) return false;
     if (user.qf_banned || user.wfm_banned) return false;
     if (!user.verification) return false;
+    if (app_error && app_error?.isWebSocket() && app_error?.isV1()) return true;
     if (app_error && !app_error?.isWebSocket()) return false;
     if (app_error && app_error?.isWebSocketError()) return false;
     return true;
