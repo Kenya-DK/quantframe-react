@@ -43,9 +43,6 @@ pub use resource::*;
 pub mod riven;
 pub use riven::*;
 
-pub mod riven_parser;
-pub use riven_parser::*;
-
 pub mod secondary;
 pub use secondary::*;
 

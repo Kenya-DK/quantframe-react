@@ -1,12 +1,18 @@
 use std::collections::HashMap;
 use std::sync::LazyLock;
 
-use serde::{Deserialize, Serialize};
+use entity::{
+    enums::{RivenAttributeGrade, RivenGrade},
+    stock_riven,
+};
+use serde::Serialize;
 use utils::*;
 
 use crate::{
-    cache::{RivenSingleAttribute, RivenStatWithWeapon},
-    enums::*,
+    cache::{
+        CacheRivenRolls, RivenFinancialSummary, RivenRollEvaluation, RivenSingleAttribute,
+        RivenStatWithWeapon,
+    },
     utils::modules::states,
 };
 
@@ -26,15 +32,22 @@ const TWO_DIGIT_TAGS: &[&str] = &[
     "WeaponMeleeFactionDamageCorpus",
     "WeaponMeleeFactionDamageInfested",
 ];
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize)]
 pub struct RivenSummary {
     mastery_rank: i64,
+    weapon_name: String,
+    unique_name: String,
+    sub_name: String,
     rerolls: i64,
     rank: i32,
     stat_with_weapons: Vec<RivenStatWithWeapon>,
     polarity: String,
+    image: String,
     endo: i64,
     kuva: i64,
+    roll_evaluation: RivenRollEvaluation,
+    grade: RivenGrade,
+    financial_summary: RivenFinancialSummary,
 }
 
 impl RivenSummary {
@@ -50,15 +63,8 @@ impl RivenSummary {
         let riven_lookup = cache.riven();
         let unique_name = unique_name.into();
         let weapon = riven_lookup
-            .get_riven_by(FindBy::new(FindByType::UniqueName, &unique_name))
-            .map_err(|e| e.with_location(get_location!()))?
-            .ok_or_else(|| {
-                Error::new(
-                    "RivenSummary::New",
-                    format!("Weapon not found for unique name {}", unique_name),
-                    get_location!(),
-                )
-            })?;
+            .get_weapon_by(&unique_name)
+            .map_err(|e| e.with_location(get_location!()))?;
 
         let total_buffs = attributes
             .iter()
@@ -80,10 +86,13 @@ impl RivenSummary {
             }
         };
         let mut stats = vec![];
+        let mut grads = vec![];
+        let mut name_info = vec![];
         for (stat_tag, rolled_value, is_positive) in attributes.iter() {
             let upgrade = cache
-                .riven_parser()
-                .get_riven_upgrade_by(&weapon.upgrade_type, stat_tag)?;
+                .riven()
+                .get_upgrade_by(&weapon.upgrade_type, stat_tag)
+                .map_err(|e| e.with_location(get_location!()))?;
 
             let mut base_stat = 90.0
                 * upgrade.value
@@ -111,63 +120,52 @@ impl RivenSummary {
             }
 
             let scaled_value = adjusted_value / (rank as f64 + 1.0) * 9.0;
-            let random_factor_raw =
+            let mut random_factor_raw =
                 ((scaled_value - base_stat * 0.9) / (base_stat * 0.2)).clamp(0.0, 1.0);
 
             let final_value = (scaled_value * 10.0).round() / 10.0;
 
             let (min_roll, max_roll) = if *is_positive {
+                name_info.push((
+                    upgrade.value,
+                    upgrade.prefix.clone(),
+                    upgrade.suffix.clone(),
+                ));
                 (base_stat * 0.9, base_stat * 1.1)
             } else {
+                random_factor_raw = 1.0 - random_factor_raw;
                 (base_stat * 1.1, base_stat * 0.9)
             };
-            if *is_positive {
-                stats.push(RivenSingleAttribute::new(
-                    stat_tag.clone(),
-                    upgrade.localization_string.clone(),
-                    final_value,
-                    min_roll * 0.9,
-                    max_roll * 1.1,
-                    random_factor_raw,
-                    *is_positive,
-                ));
-            } else {
-                stats.push(RivenSingleAttribute::new(
-                    stat_tag.clone(),
-                    upgrade.localization_string.clone(),
-                    final_value,
-                    min_roll * 1.0,
-                    max_roll * 0.9,
-                    1.0 - random_factor_raw,
-                    *is_positive,
-                ));
-            }
-        }
 
+            let mut grade = RivenAttributeGrade::Unknown;
+            if let Some(god_roll) = &weapon.god_roll {
+                grade = god_roll.get_graded_attribute(&upgrade.modifier_tag, *is_positive);
+            }
+            grads.push((*is_positive, grade.clone(), upgrade.modifier_tag.clone()));
+            stats.push(RivenSingleAttribute::new(
+                stat_tag.clone(),
+                final_value,
+                min_roll,
+                max_roll,
+                random_factor_raw,
+                *is_positive,
+                grade,
+            ));
+        }
         let mut weapons = vec![crate::cache::CacheRivenWeaponVariant::from(&weapon)];
         for variant_name in weapon.variants.iter() {
-            let variant = riven_lookup
-                .get_riven_by(FindBy::new(
-                    FindByType::UniqueName,
-                    &variant_name.unique_name,
-                ))
-                .map_err(|e| e.with_location(get_location!()))?
-                .ok_or_else(|| {
-                    Error::new(
-                        "RivenSummary::New",
-                        format!(
-                            "Weapon variant not found for unique name {}",
-                            variant_name.unique_name
-                        ),
-                        get_location!(),
-                    )
-                })?;
+            let variant = riven_lookup.get_weapon_by(&variant_name.unique_name)?;
             weapons.push(crate::cache::CacheRivenWeaponVariant::from(&variant));
         }
 
         let mut stat_with_weapons = vec![];
         for wea in weapons.iter() {
-            let mut stat_with_weapon = RivenStatWithWeapon::new(wea.name.clone(), wea.disposition);
+            let mut stat_with_weapon = RivenStatWithWeapon::new(
+                &wea.name,
+                &weapon.unique_name,
+                wea.disposition,
+                wea.disposition_rank,
+            );
             for i in 0..=8 {
                 let new_stats: Vec<RivenSingleAttribute> = stats
                     .iter()
@@ -207,15 +205,150 @@ impl RivenSummary {
             total
         };
 
-        println!("Generated {:?} stats for Riven Summary", stats);
+        let riven_grade = match weapon.god_roll {
+            Some(ref rolls) => rolls.get_graded_riven(grads),
+            None => RivenGrade::Unknown,
+        };
+
+        // 0 is lowest value, 1 is prefix, 2 is suffix
+        name_info.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
+        let name = if total_buffs == 2 {
+            format!(
+                "{}{}",
+                name_info[0].1.clone().unwrap_or_default(),
+                name_info[1].2.clone().unwrap_or_default()
+            )
+        } else if total_buffs == 3 {
+            format!(
+                "{}-{}{}",
+                name_info[1].1.clone().unwrap_or_default(),
+                name_info[0].1.clone().unwrap_or_default(),
+                name_info[2].2.clone().unwrap_or_default()
+            )
+        } else {
+            "Unnamed Riven".to_string()
+        };
         Ok(RivenSummary {
+            weapon_name: weapon.name.clone(),
+            unique_name: weapon.unique_name.clone(),
+            sub_name: name,
             stat_with_weapons,
             mastery_rank,
             rerolls,
             polarity: polarity.into(),
             endo,
             rank,
+            image: weapon.wfm_icon.clone(),
             kuva,
+            grade: riven_grade,
+            roll_evaluation: RivenRollEvaluation::default(),
+            financial_summary: RivenFinancialSummary::default(),
         })
+    }
+
+    pub async fn generate_financial_summary(&mut self) -> Result<(), Error> {
+        self.financial_summary =
+            RivenFinancialSummary::new(&self.stat_with_weapons[0].unique_name).await?;
+        Ok(())
+    }
+    pub fn evaluate_rolls(&mut self) -> Result<(), Error> {
+        let cache = states::cache_client()?;
+        let starts = self.stat_with_weapons[0].by_level[&0]
+            .iter()
+            .map(|a| (a.url_name.clone(), a.positive))
+            .collect::<Vec<_>>();
+
+        self.roll_evaluation = cache
+            .riven()
+            .fill_roll_evaluation(&self.stat_with_weapons[0].unique_name, starts)?;
+        Ok(())
+    }
+    pub fn grade_riven(&mut self) -> Result<(), Error> {
+        let cache = states::cache_client()?;
+        let god_roll = if self.unique_name == "Unknown" {
+            let weapon = cache
+                .riven()
+                .get_weapon_by(&self.unique_name)
+                .map_err(|e| e.with_location(get_location!()))?;
+            weapon.god_roll.clone()
+        } else {
+            let weapon = cache
+                .riven()
+                .get_weapon_by(&self.unique_name)
+                .map_err(|e| e.with_location(get_location!()))?;
+            weapon.god_roll.clone()
+        };
+        if let Some(rolls) = god_roll {
+            let mut grads = vec![];
+            for wea in self.stat_with_weapons.iter_mut() {
+                for attr in wea.by_level.iter_mut() {
+                    // let grade = rolls.get_graded_attribute(&attr.url_name, attr.positive);
+                    // grads.push((attr.positive, grade, attr.url_name.clone()));
+                }
+                // let grade = rolls.get_graded_attribute(&attr.url_name, attr.positive);
+                // grads.push((attr.positive, grade, attr.url_name.clone()));
+            }
+            self.grade = rolls.get_graded_riven(grads);
+        } else {
+            self.grade = RivenGrade::Unknown;
+        }
+        Ok(())
+    }
+}
+
+impl Default for RivenSummary {
+    fn default() -> Self {
+        RivenSummary {
+            weapon_name: "Unknown".to_string(),
+            unique_name: "Unknown".to_string(),
+            sub_name: "Unknown".to_string(),
+            stat_with_weapons: vec![],
+            mastery_rank: 0,
+            rerolls: 0,
+            polarity: "".to_string(),
+            endo: 0,
+            rank: 0,
+            image: "".to_string(),
+            kuva: 0,
+            roll_evaluation: RivenRollEvaluation::default(),
+            grade: RivenGrade::Unknown,
+            financial_summary: RivenFinancialSummary::default(),
+        }
+    }
+}
+
+impl From<&stock_riven::Model> for RivenSummary {
+    fn from(item: &stock_riven::Model) -> Self {
+        let attributes = item
+            .attributes
+            .0
+            .iter()
+            .map(|a| (a.url_name.clone(), a.value, a.positive))
+            .collect::<Vec<_>>();
+
+        let rank = if let Some(sub_type) = &item.sub_type {
+            if sub_type.rank.is_none() {
+                0
+            } else {
+                sub_type.rank.unwrap_or(0) as i32
+            }
+        } else {
+            0
+        };
+
+        match RivenSummary::new(
+            &item.weapon_unique_name,
+            item.mastery_rank,
+            item.re_rolls,
+            rank,
+            item.polarity.clone(),
+            attributes,
+        ) {
+            Ok(summary) => summary,
+            Err(e) => {
+                e.log("RivenSummary::from.log");
+                RivenSummary::default()
+            }
+        }
     }
 }

@@ -1,20 +1,19 @@
 use std::{
-    collections::HashMap,
     path::PathBuf,
     sync::{Arc, Mutex},
 };
 
-use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions};
+use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions, MultiKeyMap};
 
-use crate::{
-    cache::{client::CacheState, modules::LanguageModule, types::CacheTradableItem},
-    enums::{FindBy, FindByType},
-};
+use crate::cache::{client::CacheState, modules::LanguageModule, types::CacheTradableItem};
 
 #[derive(Debug)]
 pub struct TradableItemModule {
     path: PathBuf,
     items: Mutex<Vec<CacheTradableItem>>,
+
+    // Lookup maps
+    item_lookup: Mutex<MultiKeyMap<CacheTradableItem>>,
 }
 
 impl TradableItemModule {
@@ -22,6 +21,7 @@ impl TradableItemModule {
         Arc::new(Self {
             path: client.base_path.join("items/TradableItems.json"),
             items: Mutex::new(Vec::new()),
+            item_lookup: Mutex::new(MultiKeyMap::new()),
         })
     }
     pub fn get_items(&self) -> Result<Vec<CacheTradableItem>, Error> {
@@ -35,6 +35,7 @@ impl TradableItemModule {
     pub fn load(&self, language: &LanguageModule) -> Result<(), Error> {
         match read_json_file_optional::<Vec<CacheTradableItem>>(&self.path) {
             Ok(mut items) => {
+                let mut item_lookup = self.item_lookup.lock().unwrap();
                 for item in items.iter_mut() {
                     item.name = language
                         .translate(
@@ -42,6 +43,15 @@ impl TradableItemModule {
                             crate::cache::modules::LanguageKey::WfmName,
                         )
                         .unwrap_or(item.name.clone());
+                    item_lookup.insert_value(
+                        item.clone(),
+                        vec![
+                            item.wfm_id.clone(),
+                            item.name.clone(),
+                            item.wfm_url_name.clone(),
+                            item.unique_name.clone(),
+                        ],
+                    );
                 }
 
                 let mut items_lock = self.items.lock().unwrap();
@@ -56,71 +66,24 @@ impl TradableItemModule {
         }
         Ok(())
     }
-    pub fn get_by(&self, find_by: FindBy) -> Result<Option<CacheTradableItem>, Error> {
-        let items = self.get_items()?;
-
-        match find_by.find_by {
-            FindByType::Name => {
-                return Ok(items.into_iter().find(|item| find_by.is_match(&item.name)))
-            }
-            FindByType::Url => {
-                return Ok(items
-                    .into_iter()
-                    .find(|item| find_by.is_match(&item.wfm_url_name)))
-            }
-            FindByType::UniqueName => {
-                return Ok(items
-                    .into_iter()
-                    .find(|item| find_by.is_match(&item.unique_name)))
-            }
-            FindByType::Id => {
-                return Ok(items
-                    .into_iter()
-                    .find(|item| find_by.is_match(&item.wfm_id)))
-            }
-            _ => Err(Error::new(
-                "Cache:TradableItem:get_by",
-                "Unsupported FindBy type",
+    /* -------------------------------------------------------------
+        Lookup Functions
+    ------------------------------------------------------------- */
+    /// Get a tradable item by various identifiers
+    ///  # Arguments
+    /// - `item_id`: The identifier to search for (name, url, unique name, or id)
+    ///
+    pub fn get_by(&self, item_id: impl Into<String>) -> Result<CacheTradableItem, Error> {
+        let item_id: String = item_id.into();
+        let item_lookup = self.item_lookup.lock().unwrap();
+        if let Some(item) = item_lookup.get(&item_id) {
+            Ok(item.clone())
+        } else {
+            Err(Error::new(
+                "Cache:TradableItem:GetBy",
+                format!("Tradable item not found for id '{}'", item_id),
                 get_location!(),
-            )),
-        }
-    }
-    pub fn get_dict(
-        &self,
-        find_by: FindByType,
-    ) -> Result<HashMap<String, CacheTradableItem>, Error> {
-        let items = self.get_items()?;
-
-        match find_by {
-            FindByType::Name => {
-                return Ok(items
-                    .iter()
-                    .map(|x| (x.name.clone(), x.clone()))
-                    .collect::<HashMap<String, CacheTradableItem>>())
-            }
-            FindByType::Url => {
-                return Ok(items
-                    .iter()
-                    .map(|x| (x.wfm_url_name.clone(), x.clone()))
-                    .collect::<HashMap<String, CacheTradableItem>>())
-            }
-            FindByType::UniqueName => {
-                return Ok(items
-                    .iter()
-                    .map(|x| (x.unique_name.clone(), x.clone()))
-                    .collect::<HashMap<String, CacheTradableItem>>())
-            }
-            FindByType::Id => {
-                return Ok(items
-                    .iter()
-                    .map(|x| (x.wfm_id.clone(), x.clone()))
-                    .collect::<HashMap<String, CacheTradableItem>>())
-            }
-            _ => Err(Error::new(
-                "Cache:TradableItem:get_by",
-                "Unsupported FindBy type",
-                get_location!(),
-            )),
+            ))
         }
     }
     /**
@@ -131,6 +94,7 @@ impl TradableItemModule {
         Arc::new(Self {
             path: old.path.clone(),
             items: Mutex::new(old.items.lock().unwrap().clone()),
+            item_lookup: Mutex::new(old.item_lookup.lock().unwrap().clone()),
         })
     }
 }

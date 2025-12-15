@@ -42,7 +42,6 @@ pub struct CacheState {
     relics_module: OnceLock<Arc<RelicsModule>>,
     resource_module: OnceLock<Arc<ResourceModule>>,
     riven_module: OnceLock<Arc<RivenModule>>,
-    riven_parser_module: OnceLock<Arc<RivenParserModule>>,
     secondary_module: OnceLock<Arc<SecondaryModule>>,
     sentinel_module: OnceLock<Arc<SentinelModule>>,
     sentinel_weapon_module: OnceLock<Arc<SentinelWeaponModule>>,
@@ -78,7 +77,6 @@ impl CacheState {
                     relics_module: self.relics_module.clone(),
                     resource_module: self.resource_module.clone(),
                     riven_module: self.riven_module.clone(),
-                    riven_parser_module: self.riven_parser_module.clone(),
                     secondary_module: self.secondary_module.clone(),
                     sentinel_module: self.sentinel_module.clone(),
                     sentinel_weapon_module: self.sentinel_weapon_module.clone(),
@@ -121,7 +119,6 @@ impl CacheState {
             relics_module: OnceLock::new(),
             resource_module: OnceLock::new(),
             riven_module: OnceLock::new(),
-            riven_parser_module: OnceLock::new(),
             secondary_module: OnceLock::new(),
             sentinel_module: OnceLock::new(),
             sentinel_weapon_module: OnceLock::new(),
@@ -250,7 +247,6 @@ impl CacheState {
         self.chat_icon().load()?;
         self.update_routes_client();
         self.all_items().load()?;
-        self.riven_parser().load(language)?;
         Ok((cache_version_id, price_version_id))
     }
 
@@ -480,11 +476,6 @@ impl CacheState {
             .get_or_init(|| RivenModule::new(self.arc()))
             .clone()
     }
-    pub fn riven_parser(&self) -> Arc<RivenParserModule> {
-        self.riven_parser_module
-            .get_or_init(|| RivenParserModule::new(self.arc()))
-            .clone()
-    }
     pub fn secondary(&self) -> Arc<SecondaryModule> {
         self.secondary_module
             .get_or_init(|| SecondaryModule::new(self.arc()))
@@ -607,11 +598,6 @@ impl CacheState {
             let new = RivenModule::from_existing(&old);
             self.riven_module = OnceLock::new();
             let _ = self.riven_module.set(new);
-        }
-        if let Some(old) = self.riven_parser_module.get().cloned() {
-            let new = RivenParserModule::from_existing(&old, self.arc());
-            self.riven_parser_module = OnceLock::new();
-            let _ = self.riven_parser_module.set(new);
         }
         if let Some(old) = self.secondary_module.get().cloned() {
             let new = SecondaryModule::from_existing(&old);
