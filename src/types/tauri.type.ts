@@ -286,7 +286,7 @@ export namespace TauriTypes {
   }
   export interface CacheRivenAttribute {
     id: string;
-    gameRef: string;
+    uniqueName: string;
     group: string;
     prefix: string;
     suffix: string;
@@ -652,19 +652,33 @@ export namespace TauriTypes {
     price: number;
     attributes: RivenAttribute[];
   }
+  export interface RivenGoodRoll {
+    optional: string[];
+    required: string[];
+  }
+  export interface RivenRolls {
+    good_rolls: RivenGoodRoll[];
+    negative_attributes: string[];
+  }
   export interface RivenSummary {
+    weapon_name: string;
+    sub_name: string;
     endo: number;
     kuva: number;
     rank: number;
     mastery_rank: number;
     polarity: string;
+    grade: string;
+    image: string;
     rerolls: number;
+    good_rolls?: RivenRolls;
     stat_with_weapons: StatWithWeapon[];
   }
 
   export interface StatWithWeapon {
     by_level: { [key: string]: RivenAttribute[] };
     disposition: number;
+    disposition_rank: number;
     name: string;
   }
 

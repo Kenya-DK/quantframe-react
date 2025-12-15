@@ -10,7 +10,14 @@ export type RivenAttributeProps = {
   hideDetails?: boolean;
   compact?: boolean;
 };
-
+const IMAGE_SIZE = 25;
+const grades: Record<string, React.ReactNode> = {
+  decisive: <Image src="/grades/gradePerfect.png" h={IMAGE_SIZE} w="auto" fit="contain" />,
+  good: <Image src="/grades/gradeGreen.png" h={IMAGE_SIZE} w="auto" fit="contain" />,
+  not_helping: <Image src="/question.png" h={IMAGE_SIZE} w="auto" fit="contain" />,
+  bad: <Image src="/grades/gradeRed.png" h={IMAGE_SIZE} w="auto" fit="contain" />,
+  unknown: <Image src="/question.png" h={IMAGE_SIZE} w="auto" fit="contain" />,
+};
 export function RivenAttribute({ value, hideDetails, compact }: RivenAttributeProps) {
   // Fetches detailed attribute metadata (like unit types) from the cache.
   // This query runs once and its data is cached by React Query.
@@ -33,7 +40,7 @@ export function RivenAttribute({ value, hideDetails, compact }: RivenAttributePr
   }, [cacheAttributes]);
 
   const GetValueDisplay = (value: number) => {
-    return `${value > 0 ? "+" : ""}${value}`;
+    return `${value > 0 ? "+" : ""}${value.toFixed(1).replace(/\.0$/, "")}`;
   };
   const calculateProgress = (min: number, current: number, max: number) => {
     return ((current - min) / (max - min)) * 100;
@@ -48,7 +55,7 @@ export function RivenAttribute({ value, hideDetails, compact }: RivenAttributePr
       p={compact ? "2" : "8px 12px"}
     >
       <Group gap="xs" style={{ flex: 1 }}>
-        {value.grade && <Image src={`/grades/gradePerfect.png`} h={20} w="auto" fit="contain" />}
+        {value.grade && grades[value.grade]}
         <LocalizedDynamicMessage
           data-hide-details={hideDetails ? "true" : "false"}
           textProps={{ size: "md", fw: 600, className: classes.attributeText, "data-hide-details": hideDetails ? "true" : "false" }}
@@ -77,7 +84,7 @@ export function RivenAttribute({ value, hideDetails, compact }: RivenAttributePr
             </Text>
 
             <Text size="sm" fw={500} w={50} ta="right">
-              {value.minValue?.toFixed(2)}
+              {value.minValue?.toFixed(1).replace(/\.0$/, "")}
             </Text>
           </Group>
 
@@ -94,7 +101,7 @@ export function RivenAttribute({ value, hideDetails, compact }: RivenAttributePr
             />
           )}
           <Text size="sm" fw={500} w={40} ta="left">
-            {value.maxValue?.toFixed(2)}
+            {value.maxValue?.toFixed(1).replace(/\.0$/, "")}
           </Text>
         </Group>
       )}

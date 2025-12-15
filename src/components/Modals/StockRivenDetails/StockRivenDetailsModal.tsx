@@ -22,6 +22,7 @@ export function StockRivenDetailsModal({ value }: StockRivenDetailsModalProps) {
 
   const tabs = [
     { label: useTranslateTabs("overview.title"), component: <OverviewTab value={data} />, id: "overview" },
+    // { label: useTranslateTabs("overview.title"), component: <OverviewTabV2 value={data} />, id: "overview2" },
     { label: useTranslateTabs("analytics.title"), component: <AnalyticsTab value={data} />, id: "analytics" },
     { label: useTranslateTabs("wfm.title"), component: <WFMTab value={data} />, id: "wfm" },
   ];
