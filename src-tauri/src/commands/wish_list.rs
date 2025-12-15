@@ -10,7 +10,6 @@ use wf_market::enums::OrderType;
 use crate::{
     add_metric,
     app::client::AppState,
-    enums::FindByType,
     handlers::{handle_wfm_item, handle_wish_list, handle_wish_list_by_entity},
     helper,
     types::PermissionsFlags,
@@ -49,7 +48,7 @@ pub async fn get_wish_list_status_counts(
 
 #[tauri::command]
 pub async fn wish_list_create(input: CreateWishListItem) -> Result<Model, Error> {
-    match handle_wish_list_by_entity(input, "", OrderType::Sell, FindByType::Url, &[]).await {
+    match handle_wish_list_by_entity(input, "", OrderType::Sell, &[]).await {
         Ok((_, item)) => return Ok(item),
         Err(e) => {
             return Err(e.with_location(get_location!()).log("wish_list_buy.log"));
@@ -64,18 +63,7 @@ pub async fn wish_list_bought(
     quantity: i64,
     price: i64,
 ) -> Result<Model, Error> {
-    match handle_wish_list(
-        wfm_url,
-        &sub_type,
-        quantity,
-        price,
-        "",
-        OrderType::Buy,
-        FindByType::Url,
-        &[],
-    )
-    .await
-    {
+    match handle_wish_list(wfm_url, &sub_type, quantity, price, "", OrderType::Buy, &[]).await {
         Ok((_, updated_item)) => return Ok(updated_item),
         Err(e) => {
             return Err(e.with_location(get_location!()).log("wish_list_buy.log"));
@@ -168,13 +156,8 @@ pub async fn wish_list_get_by_id(id: i64) -> Result<Value, Error> {
         Err(e) => return Err(e.with_location(get_location!())),
     };
 
-    let (mut payload, _, _) = helper::get_item_details(
-        FindByType::Id,
-        &item.wfm_id,
-        item.sub_type.clone(),
-        OrderType::Buy,
-    )
-    .await?;
+    let (mut payload, _, _) =
+        helper::get_item_details(&item.wfm_id, item.sub_type.clone(), OrderType::Buy).await?;
 
     payload["stock"] = json!(item);
 

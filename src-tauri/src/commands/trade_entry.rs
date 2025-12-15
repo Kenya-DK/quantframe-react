@@ -6,8 +6,8 @@ use tauri_plugin_dialog::DialogExt;
 use utils::{get_location, info, Error, LoggerOptions};
 
 use crate::{
-    add_metric, app::client::AppState, enums::FindByType, types::PermissionsFlags,
-    utils::CreateTradeEntryExt, APP, DATABASE,
+    add_metric, app::client::AppState, types::PermissionsFlags, utils::CreateTradeEntryExt, APP,
+    DATABASE,
 };
 
 #[tauri::command]
@@ -24,7 +24,7 @@ pub async fn get_trade_entry_pagination(
 #[tauri::command]
 pub async fn trade_entry_create(mut input: CreateTradeEntry) -> Result<Model, Error> {
     let conn = DATABASE.get().unwrap();
-    input.validate(FindByType::Id).map_err(|e| {
+    input.validate().map_err(|e| {
         let err = e.clone();
         err.with_location(get_location!())
             .log("trade_entry_create.log");
@@ -42,7 +42,7 @@ pub async fn trade_entry_create_multiple(mut inputs: Vec<CreateTradeEntry>) -> R
     let conn = DATABASE.get().unwrap();
     let mut total = 0;
     for input in inputs.iter_mut() {
-        input.validate(FindByType::Id).map_err(|e| {
+        input.validate().map_err(|e| {
             let err = e.clone();
             err.with_location(get_location!())
                 .log("trade_entry_create_multiple.log");

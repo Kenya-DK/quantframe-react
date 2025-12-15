@@ -15,7 +15,6 @@ use wf_market::{enums::OrderType, types::Order};
 
 use crate::{
     cache::CacheTradableItem,
-    enums::{FindBy, FindByType},
     utils::{modules::states, OrderExt, SubTypeExt},
     APP, DATABASE,
 };
@@ -122,7 +121,6 @@ pub fn get_local_data_path() -> PathBuf {
     local_path
 }
 pub async fn get_item_details(
-    find_by: FindByType,
     raw: impl Into<String>,
     sub_type: Option<SubType>,
     order_type: OrderType,
@@ -136,27 +134,16 @@ pub async fn get_item_details(
     // Get item details from cache
     let item_info = cache
         .tradable_item()
-        .get_by(FindBy::new(find_by.clone(), &item_id))?;
-    if item_info.is_none() {
-        warning(
-            "Helper::GetItemDetails",
-            &format!("Item not found in cache for {:?}: {}", find_by, item_id),
-            &LoggerOptions::default().set_file("helper.log"),
-        );
-    }
-    let item_info = item_info.unwrap();
+        .get_by(&item_id)
+        .map_err(|e| e.with_location(get_location!()))?;
+
     payload["item_info"] = json!(item_info);
-    match cache
-        .all_items()
-        .get_by(FindBy::new(FindByType::UniqueName, &item_info.unique_name))
-    {
-        Ok(full_item) => {
-            if let Some(mut full_item) = full_item {
-                for component in full_item.components.iter_mut() {
-                    component.name = format!("{} {}", full_item.name, component.name);
-                }
-                payload["item_info"]["components"] = json!(full_item.components);
+    match cache.all_items().get_by(&item_info.unique_name) {
+        Ok(mut full_item) => {
+            for component in full_item.components.iter_mut() {
+                component.name = format!("{} {}", full_item.name, component.name);
             }
+            payload["item_info"]["components"] = json!(full_item.components);
         }
         Err(_) => {
             warning(

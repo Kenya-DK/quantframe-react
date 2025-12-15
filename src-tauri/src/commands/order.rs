@@ -12,7 +12,6 @@ use crate::{
     add_metric,
     app::client::AppState,
     cache::client::CacheState,
-    enums::*,
     helper::{self, paginate},
     live_scraper::LiveScraperState,
     send_event,
@@ -243,7 +242,6 @@ pub async fn get_wfm_order_by_id(
     }
     let order = order.unwrap();
     let (payload, _, _) = helper::get_item_details(
-        FindByType::Id,
         &order.item_id,
         order.subtype.to_entity(),
         order.order_type.clone(),

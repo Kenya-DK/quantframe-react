@@ -3,9 +3,7 @@ use std::sync::{atomic::Ordering, Arc, Weak};
 use entity::{dto::PriceHistory, enums::*, stock_riven::*};
 use serde_json::json;
 use service::{StockRivenMutation, StockRivenQuery};
-use utils::{
-    average_filtered_lowest_prices, error, get_location, info, warning, Error, LoggerOptions,
-};
+use utils::{average_filtered_lowest_prices, get_location, info, warning, Error, LoggerOptions};
 use wf_market::{
     enums::{AuctionType, Polarity, StatusType},
     types::{
@@ -16,7 +14,6 @@ use wf_market::{
 static COMPONENT: &str = "LiveScraper:RivenModule";
 use crate::{
     cache::types::CacheRivenWeapon,
-    enums::FindBy,
     live_scraper::{is_disabled, LiveScraperState},
     send_event,
     types::*,
@@ -111,21 +108,10 @@ impl RivenModule {
             let settings = states::get_settings()?.live_scraper.stock_riven;
 
             // Get tradable item info from cache
-            let Some(item_info) = cache.riven().get_riven_by(FindBy::new(
-                crate::enums::FindByType::Url,
-                &stock_riven.wfm_weapon_url,
-            ))?
-            else {
-                error(
-                    format!("{}:Check", COMPONENT),
-                    &format!(
-                        "Item not found in riven items: {}",
-                        stock_riven.wfm_weapon_url
-                    ),
-                    &&LoggerOptions::default(),
-                );
-                continue;
-            };
+            let item_info = cache
+                .riven()
+                .get_weapon_by(&stock_riven.wfm_weapon_url)
+                .map_err(|e| e.with_location(get_location!()))?;
 
             let mut auction_info = get_auction_details(&stock_riven.uuid, &item_info, &wfm_client);
             if stock_riven.is_hidden && stock_riven.status == StockStatus::InActive {

@@ -11,9 +11,8 @@ use utils::{filters_by, get_location, Error};
 use wf_market::{enums::OrderType, types::Auction};
 
 use crate::{
-    add_metric, app::client::AppState, cache::client::CacheState, enums::*,
-    handlers::handle_riven_by_entity, helper::paginate, live_scraper::LiveScraperState, send_event,
-    types::*, utils::*, DATABASE,
+    add_metric, app::client::AppState, cache::client::CacheState, handlers::handle_riven_by_entity,
+    helper::paginate, live_scraper::LiveScraperState, send_event, types::*, utils::*, DATABASE,
 };
 #[tauri::command]
 pub async fn auction_refresh(
@@ -248,8 +247,6 @@ pub async fn auction_import_by_id(
         auction.to_create()?.set_bought(bought),
         "",
         OrderType::Buy,
-        FindByType::Url,
-        FindByType::Url,
         &[],
     )
     .await?;

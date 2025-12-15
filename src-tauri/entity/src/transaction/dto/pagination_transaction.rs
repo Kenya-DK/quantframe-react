@@ -27,6 +27,8 @@ pub struct TransactionPaginationQueryDto {
     #[serde(default)]
     pub wfm_id: FieldChange<String>,
     #[serde(default)]
+    pub unique_name: FieldChange<String>,
+    #[serde(default)]
     pub sub_type: FieldChange<SubType>,
     #[serde(default)]
     pub tags: FieldChange<Vec<String>>,
@@ -43,6 +45,7 @@ impl TransactionPaginationQueryDto {
             from_date: FieldChange::Ignore,
             to_date: FieldChange::Ignore,
             wfm_id: FieldChange::Ignore,
+            unique_name: FieldChange::Ignore,
             sub_type: FieldChange::Ignore,
             tags: FieldChange::Ignore,
         }
@@ -88,6 +91,12 @@ impl TransactionPaginationQueryDto {
         }
         match &self.wfm_id {
             Value(wfm_id) => stmt = stmt.filter(transaction::Column::WfmId.eq(wfm_id)),
+            _ => {}
+        }
+        match &self.unique_name {
+            Value(unique_name) => {
+                stmt = stmt.filter(transaction::Column::ItemUniqueName.eq(unique_name))
+            }
             _ => {}
         }
         match &self.sub_type {
@@ -181,6 +190,10 @@ impl TransactionPaginationQueryDto {
         self.wfm_id = FieldChange::Value(wfm_id.into());
         self.clone()
     }
+    pub fn set_unique_name(mut self, unique_name: impl Into<String>) -> Self {
+        self.unique_name = FieldChange::Value(unique_name.into());
+        self
+    }
     pub fn set_sub_type(mut self, sub_type: Option<SubType>) -> Self {
         self.sub_type = match sub_type {
             Some(v) => FieldChange::Value(v),
@@ -206,6 +219,7 @@ impl Default for TransactionPaginationQueryDto {
             from_date: FieldChange::Ignore,
             to_date: FieldChange::Ignore,
             wfm_id: FieldChange::Ignore,
+            unique_name: FieldChange::Ignore,
             sub_type: FieldChange::Ignore,
             tags: FieldChange::Ignore,
         }

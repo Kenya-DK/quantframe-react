@@ -5,7 +5,6 @@ use utils::multi_key_map::MultiKeyMap;
 struct UserData {
     name: String,
     age: u32,
-    email: String,
 }
 
 fn main() {
@@ -21,7 +20,6 @@ fn main() {
     let user1 = UserData {
         name: "Alice Smith".to_string(),
         age: 30,
-        email: "alice@example.com".to_string(),
     };
 
     // Insert a value with multiple keys
@@ -31,7 +29,6 @@ fn main() {
     let user2 = UserData {
         name: "Bob Johnson".to_string(),
         age: 25,
-        email: "bob@example.com".to_string(),
     };
 
     let id2 = map.insert_value(user2.clone(), vec!["bob", "bobby", "user_002"]);
@@ -87,7 +84,6 @@ fn main() {
         let user = UserData {
             name: format!("User {}", i),
             age: 20 + (i % 50) as u32,
-            email: format!("user{}@example.com", i),
         };
 
         // Each user has 3 different keys
@@ -142,7 +138,6 @@ fn main() {
     struct Session {
         user_id: u64,
         token: String,
-        created_at: u64,
     }
 
     let mut session_map = MultiKeyMap::new();
@@ -151,7 +146,6 @@ fn main() {
     let session1 = Session {
         user_id: 1001,
         token: "abc123def456".to_string(),
-        created_at: 1234567890,
     };
 
     session_map.insert_value(
@@ -166,7 +160,6 @@ fn main() {
     let session2 = Session {
         user_id: 1002,
         token: "xyz789ghi012".to_string(),
-        created_at: 1234567900,
     };
 
     session_map.insert_value(

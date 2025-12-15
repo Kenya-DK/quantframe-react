@@ -4,7 +4,6 @@ use utils::{get_location, info, Error};
 use wf_market::enums::OrderType;
 
 use crate::{
-    enums::*,
     handlers::*,
     types::OperationSet,
     utils::{modules::states, CreateStockRivenExt},
@@ -117,17 +116,14 @@ pub async fn handle_riven_by_entity(
     mut item: CreateStockRiven,
     user_name: impl Into<String>,
     operation: OrderType,
-    weapon_lookup: FindByType,
-    attributes_lookup: FindByType,
     operation_flags: &[&str],
 ) -> Result<(OperationSet, Model), Error> {
     let file = "handle_riven.log";
-    item.validate(weapon_lookup, attributes_lookup)
-        .map_err(|e| {
-            let err = e.clone();
-            err.with_location(get_location!()).log(file);
-            e
-        })?;
+    item.validate().map_err(|e| {
+        let err = e.clone();
+        err.with_location(get_location!()).log(file);
+        e
+    })?;
     handle_riven_by_model(item.to_model(), user_name, operation, operation_flags)
         .await
         .map_err(|e| e.with_location(get_location!()))
@@ -177,8 +173,6 @@ pub async fn handle_riven(
     bought: i64,
     user_name: impl Into<String>,
     operation: OrderType,
-    weapon_lookup: FindByType,
-    attributes_lookup: FindByType,
     operation_flags: &[&str],
 ) -> Result<(OperationSet, Model), Error> {
     handle_riven_by_entity(
@@ -194,8 +188,6 @@ pub async fn handle_riven(
         .set_bought(bought),
         user_name,
         operation,
-        weapon_lookup,
-        attributes_lookup,
         operation_flags,
     )
     .await

@@ -7,7 +7,7 @@ pub struct MultiKeyMap<V> {
     keys: HashMap<String, u64>,
 }
 
-impl<V> MultiKeyMap<V> {
+impl<V: Clone> MultiKeyMap<V> {
     pub fn new() -> Self {
         Self {
             next_id: 0,
@@ -59,5 +59,8 @@ impl<V> MultiKeyMap<V> {
     }
     pub fn len(&self) -> usize {
         self.values.len()
+    }
+    pub fn get_all_values(&self) -> Vec<V> {
+        self.values.values().cloned().collect()
     }
 }

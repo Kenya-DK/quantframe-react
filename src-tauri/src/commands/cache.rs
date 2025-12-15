@@ -5,7 +5,6 @@ use utils::Error;
 
 use crate::{
     cache::{client::CacheState, types::*},
-    enums::FindBy,
     types::ChatLink,
 };
 
@@ -29,9 +28,9 @@ pub async fn cache_get_riven_attributes(
     cache: tauri::State<'_, Mutex<CacheState>>,
 ) -> Result<Vec<CacheRivenWFMAttribute>, Error> {
     let cache = cache.lock()?;
-    match cache.riven().get_items() {
+    match cache.riven().get_all_attributes() {
         Ok(items) => {
-            return Ok(items.attributes);
+            return Ok(items);
         }
         Err(e) => {
             e.log("cache_get_riven_attributes.log");
@@ -44,9 +43,9 @@ pub async fn cache_get_riven_weapons(
     cache: tauri::State<'_, Mutex<CacheState>>,
 ) -> Result<Vec<CacheRivenWeapon>, Error> {
     let cache = cache.lock()?;
-    match cache.riven().get_items() {
+    match cache.riven().get_all_weapons() {
         Ok(items) => {
-            return Ok(items.weapons);
+            return Ok(items);
         }
         Err(e) => {
             e.log("cache_get_riven_weapons.log");
@@ -122,9 +121,6 @@ pub fn cache_get_chat_link(
 ) -> Result<ChatLink, Error> {
     let cache = cache.lock()?;
 
-    let item = cache.all_items().get_chat_link(FindBy::new(
-        crate::enums::FindByType::UniqueName,
-        unique_name,
-    ))?;
+    let item = cache.all_items().get_chat_link(unique_name)?;
     Ok(item)
 }

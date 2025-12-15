@@ -3,11 +3,7 @@ use std::{collections::HashMap, fmt::Display};
 use serde::{Deserialize, Serialize};
 use utils::Error;
 
-use crate::{
-    enums::FindBy,
-    log_parser::*,
-    utils::modules::states,
-};
+use crate::{log_parser::*, utils::modules::states};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct PlayerTrade {
@@ -150,15 +146,16 @@ impl PlayerTrade {
         let main_part = main_part.unwrap();
         let cache = states::cache_client()?;
         // Get the set for the main part
-        let main_part = match cache.all_items().get_by(FindBy::from_str(
-            "--by unique_name --cat Component",
-            &main_part.unique_name,
-        )?)? {
-            Some(set_part) => set_part,
-            None => {
+
+        let main_part = match cache
+            .all_items()
+            .get_by(format!("Component|{}", &main_part.unique_name))
+        {
+            Ok(part) => part,
+            Err(_) => {
                 add_to_zip(&format!(
-                    "Main part not found for by: {}",
-                    main_part.unique_name
+                    "Main part not found for by: Component|{}",
+                    &main_part.unique_name
                 ));
                 return Ok((false, "".to_string()));
             }
@@ -178,12 +175,9 @@ impl PlayerTrade {
         };
         add_to_zip(&format!("Set unique name: {}", set_unique_name));
         // Get the set for the main part
-        let set = match cache
-            .all_items()
-            .get_by(FindBy::from_str("--by unique_name", &set_unique_name)?)?
-        {
-            Some(set) => set,
-            None => {
+        let set = match cache.all_items().get_by(&set_unique_name) {
+            Ok(set) => set,
+            Err(_) => {
                 add_to_zip(&format!("Set not found for by: {}", set_unique_name));
                 return Ok((false, "".to_string()));
             }

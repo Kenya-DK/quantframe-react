@@ -10,7 +10,6 @@ use wf_market::enums::OrderType;
 use crate::{
     add_metric,
     app::client::AppState,
-    enums::FindByType,
     handlers::{handle_item_by_entity, handle_wfm_item, stock_item::handle_item},
     helper::{self},
     types::PermissionsFlags,
@@ -48,16 +47,8 @@ pub async fn get_stock_item_status_counts(
 }
 
 #[tauri::command]
-pub async fn stock_item_create(
-    input: CreateStockItem,
-    by: Option<String>,
-) -> Result<stock_item::Model, Error> {
-    let find_by_type = if by.is_some() {
-        FindByType::from_str(by.unwrap().as_str())?
-    } else {
-        FindByType::Url
-    };
-    match handle_item_by_entity(input, "", OrderType::Buy, find_by_type, &[]).await {
+pub async fn stock_item_create(input: CreateStockItem) -> Result<stock_item::Model, Error> {
+    match handle_item_by_entity(input, "", OrderType::Buy, &[]).await {
         Ok((_, updated_item)) => return Ok(updated_item),
         Err(e) => {
             return Err(e
@@ -73,25 +64,8 @@ pub async fn stock_item_sell(
     sub_type: Option<SubType>,
     quantity: i64,
     price: i64,
-    by: Option<String>,
 ) -> Result<stock_item::Model, Error> {
-    let find_by_type = if by.is_some() {
-        FindByType::from_str(by.unwrap().as_str())?
-    } else {
-        FindByType::Url
-    };
-    match handle_item(
-        wfm_url,
-        sub_type,
-        quantity,
-        price,
-        "",
-        OrderType::Sell,
-        find_by_type,
-        &[],
-    )
-    .await
-    {
+    match handle_item(wfm_url, sub_type, quantity, price, "", OrderType::Sell, &[]).await {
         Ok((_, updated_item)) => return Ok(updated_item),
         Err(e) => {
             return Err(e.with_location(get_location!()).log("stock_item_sell.log"));
@@ -190,13 +164,8 @@ pub async fn stock_item_get_by_id(id: i64) -> Result<Value, Error> {
         Err(e) => return Err(e.with_location(get_location!())),
     };
 
-    let (mut payload, _, order) = helper::get_item_details(
-        FindByType::Id,
-        &item.wfm_id,
-        item.sub_type.clone(),
-        OrderType::Sell,
-    )
-    .await?;
+    let (mut payload, _, order) =
+        helper::get_item_details(&item.wfm_id, item.sub_type.clone(), OrderType::Sell).await?;
 
     if let Some(order) = order {
         payload["potential_profit"] = json!(order.platinum - item.bought as u32);

@@ -11,7 +11,6 @@ use crate::{
     add_metric,
     app::client::AppState,
     cache::types::RivenSummary,
-    enums::FindByType,
     handlers::{handle_riven, handle_riven_by_entity},
     types::PermissionsFlags,
     utils::ErrorFromExt,
@@ -50,16 +49,7 @@ pub async fn get_stock_riven_status_counts(
 
 #[tauri::command]
 pub async fn stock_riven_create(input: CreateStockRiven) -> Result<stock_riven::Model, Error> {
-    match handle_riven_by_entity(
-        input,
-        "",
-        OrderType::Buy,
-        FindByType::Url,
-        FindByType::Url,
-        &[],
-    )
-    .await
-    {
+    match handle_riven_by_entity(input, "", OrderType::Buy, &[]).await {
         Ok((operations, updated_item)) => {
             info(
                 "Command::StockRivenCreate",
@@ -99,8 +89,6 @@ pub async fn stock_riven_sell(
         bought,
         "",
         OrderType::Sell,
-        FindByType::Url,
-        FindByType::Url,
         &[],
     )
     .await
@@ -246,34 +234,10 @@ pub async fn stock_riven_get_by_id(
         let order_info = auction.unwrap();
         payload["stock_profit"] = json!(order_info.starting_price - item.bought as i32);
     }
-
-    // let attributes = item
-    //     .attributes
-    //     .0
-    //     .iter()
-    //     .map(|a| (a.url_name.clone(), a.value, a.positive))
-    //     .collect::<Vec<_>>();
-
-    // let summary = cache
-    //     .riven_parser()
-    //     .create_summary(
-    //         FindBy::new(FindByType::UniqueName, item.weapon_unique_name.clone()),
-    //         item.mastery_rank,
-    //         item.re_rolls,
-    //         item.sub_type.unwrap().rank.unwrap_or(0),
-    //         item.polarity.clone(),
-    //         attributes,
-    //     )
-    //     .map_err(|e| e.with_location(get_location!()))?;
+    // let mut summary = RivenSummary::from(&item);
+    // summary.generate_financial_summary().await?;
+    // summary.evaluate_rolls()?;
     // payload["riven_summary"] = json!(summary);
-    // payload["riven_summary"] = json!(RivenSummary::new(
-    //     item.weapon_unique_name,
-    //     item.mastery_rank,
-    //     item.re_rolls,
-    //     item.sub_type.unwrap().rank.unwrap_or(0) as i32,
-    //     item.polarity.clone(),
-    //     attributes
-    // )?);
     Ok(payload)
 }
 

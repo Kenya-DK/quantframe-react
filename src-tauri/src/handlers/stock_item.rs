@@ -3,13 +3,12 @@ use service::StockItemMutation;
 use utils::{get_location, info, Error};
 use wf_market::enums::OrderType;
 
-use crate::{enums::*, handlers::*, types::OperationSet, utils::CreateStockItemExt, DATABASE};
+use crate::{handlers::*, types::OperationSet, utils::CreateStockItemExt, DATABASE};
 
 pub async fn handle_item_by_entity(
     mut item: CreateStockItem,
     user_name: impl Into<String>,
     operation: OrderType,
-    find_by: FindByType,
     operation_flags: &[&str],
 ) -> Result<(OperationSet, Model), Error> {
     let conn = DATABASE.get().unwrap();
@@ -18,12 +17,11 @@ pub async fn handle_item_by_entity(
     let mut operations = OperationSet::new();
     // Create and validate the item
 
-    item.validate(FindBy::new(find_by, item.raw.clone()))
-        .map_err(|e| {
-            let err = e.clone();
-            err.with_location(get_location!()).log(file);
-            e
-        })?;
+    item.validate().map_err(|e| {
+        let err = e.clone();
+        err.with_location(get_location!()).log(file);
+        e
+    })?;
 
     let mut model = item.to_model();
 
@@ -180,14 +178,12 @@ pub async fn handle_item(
     price: i64,
     user_name: impl Into<String>,
     operation: OrderType,
-    find_by: FindByType,
     operation_flags: &[&str],
 ) -> Result<(OperationSet, Model), Error> {
     handle_item_by_entity(
         CreateStockItem::new(wfm_url, sub_type.clone(), quantity).set_bought(price),
         user_name,
         operation,
-        find_by,
         operation_flags,
     )
     .await

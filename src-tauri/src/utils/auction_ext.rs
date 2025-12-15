@@ -8,10 +8,7 @@ use wf_market::{
     types::{Auction, AuctionWithOwner},
 };
 
-use crate::{
-    cache::{client::CacheState, types::CacheRivenWeapon},
-    enums::FindBy,
-};
+use crate::cache::{client::CacheState, types::CacheRivenWeapon};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AuctionDetails {
@@ -152,17 +149,17 @@ impl AuctionExt for Auction {
         Ok(())
     }
     fn apply_item_info(&mut self, cache: &CacheState) -> Result<(), Error> {
-        if let Ok(item) = cache.riven().get_riven_by(FindBy::new(
-            crate::enums::FindByType::Url,
-            &self.item.weapon_url_name,
-        )) {
-            self.apply_item_info_by_entry(&item)?;
-        } else {
-            warning(
-                "Auction",
-                format!("Item info not found for url: {}", self.item.weapon_url_name),
-                &LoggerOptions::default(),
-            );
+        match cache.riven().get_weapon_by(&self.item.weapon_url_name) {
+            Ok(item) => {
+                self.apply_item_info_by_entry(&Some(item))?;
+            }
+            Err(_) => {
+                warning(
+                    "Auction",
+                    format!("Item info not found for url: {}", self.item.weapon_url_name),
+                    &LoggerOptions::default(),
+                );
+            }
         }
         Ok(())
     }

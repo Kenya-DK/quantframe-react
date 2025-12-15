@@ -7,7 +7,6 @@ use utils::*;
 
 use crate::{
     cache::types::CacheTradableItem,
-    enums::FindBy,
     log_parser::{add_to_zip, TradeItemType},
     utils::modules::states,
 };
@@ -198,23 +197,17 @@ impl TradeItem {
                 } else if let Some(pos) = name_part.rfind(' ') {
                     let ch = states::cache_client().expect("Cache not found");
                     let (weapon, att) = name_part.split_at(pos);
-                    match ch
-                        .riven()
-                        .get_riven_by(FindBy::new(crate::enums::FindByType::Name, weapon))
-                    {
-                        Ok(riven) => {
-                            if let Some(riven) = riven {
-                                self.raw = riven.wfm_url_name;
-                                self.item_type = TradeItemType::RivenUnVeiled;
-                            } else {
-                                let msg = format!("Riven Weapon not found: {}", weapon);
-                                add_to_zip(&msg);
-                                self.error = Some((msg.clone(), Value::Null));
-                                return Ok(DetectionStatus::None);
-                            }
+
+                    match ch.riven().get_weapon_by(weapon) {
+                        Ok(info) => {
+                            self.raw = info.wfm_url_name;
+                            self.item_type = TradeItemType::RivenUnVeiled;
                         }
                         Err(e) => {
-                            self.error = Some((e.to_string(), Value::Null));
+                            let msg = e.to_string();
+                            add_to_zip(&msg);
+                            self.error = Some((msg.clone(), Value::Null));
+                            return Ok(DetectionStatus::None);
                         }
                     }
                     self.unique_name = att.trim().to_string();
@@ -253,23 +246,15 @@ impl TradeItem {
 
     pub fn is_trade_item(&mut self, line: &str, next_line: &str) -> Result<DetectionStatus, Error> {
         let ch = states::cache_client().expect("Cache not found");
-        let machs = ch
-            .tradable_item()
-            .get_dict(crate::enums::FindByType::Name)?;
 
-        if machs.iter().any(|mach| line == mach.0) {
-            let found = machs.get(line).unwrap();
-            self.apply_item_info(found);
+        if let Ok(info) = ch.tradable_item().get_by(line) {
+            self.apply_item_info(&info);
             return Ok(DetectionStatus::Line);
         }
 
-        for mach in machs.iter() {
-            let (combine, status) = combine_and_detect_match(line, next_line, mach.0, false, true);
-            if status.is_found() {
-                let found = machs.get(combine.as_str()).unwrap();
-                self.apply_item_info(found);
-                return Ok(status);
-            }
+        if let Ok(info) = ch.tradable_item().get_by(line.to_string() + next_line) {
+            self.apply_item_info(&info);
+            return Ok(DetectionStatus::Combined);
         }
         Ok(DetectionStatus::None)
     }
@@ -285,17 +270,8 @@ impl TradeItem {
     }
     pub fn item_name(&self) -> String {
         let ch = states::cache_client().expect("Cache not found");
-        let name = match ch.tradable_item().get_by(FindBy::new(
-            crate::enums::FindByType::UniqueName,
-            &self.unique_name,
-        )) {
-            Ok(mach) => {
-                if mach.is_some() {
-                    mach.unwrap().name.clone()
-                } else {
-                    self.raw.clone()
-                }
-            }
+        let name = match ch.tradable_item().get_by(&self.unique_name) {
+            Ok(mach) => mach.name.clone(),
             Err(_) => self.raw.clone(),
         };
         name

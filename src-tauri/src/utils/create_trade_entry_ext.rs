@@ -2,53 +2,30 @@ use entity::trade_entry::create::CreateTradeEntry;
 use serde_json::json;
 use utils::{get_location, Error, LogLevel};
 
-use crate::{
-    enums::{FindBy, FindByType},
-    utils::modules::states,
-};
+use crate::utils::modules::states;
 
 /// Extension trait for creating Error instances from different error types
 pub trait CreateTradeEntryExt {
     /// Validate the trade entry creation data
-    fn validate(&mut self, find_by_type: FindByType) -> Result<(), Error>;
+    fn validate(&mut self) -> Result<(), Error>;
 }
 
 impl CreateTradeEntryExt for CreateTradeEntry {
-    fn validate(&mut self, find_by_type: FindByType) -> Result<(), Error> {
+    fn validate(&mut self) -> Result<(), Error> {
         let cache = states::cache_client()?;
-        let find_by = FindBy::new(find_by_type, self.raw.clone());
-
         match self.group.as_str() {
             "item" => {
-                let item = cache.tradable_item().get_by(find_by.clone())?;
-
-                if item.is_none() {
-                    return Err(Error::new(
-                        "CreateTradeEntryExt::Validate",
-                        format!("Tradable item {} ", find_by),
-                        get_location!(),
-                    )
-                    .with_context(json!(find_by))
-                    .set_log_level(LogLevel::Warning));
-                }
-
-                let item = item.unwrap();
+                let item = cache.tradable_item().get_by(&self.raw).map_err(|e| {
+                    e.with_location(get_location!())
+                        .set_log_level(LogLevel::Warning)
+                })?;
                 self.wfm_id = item.wfm_id.clone();
             }
             "riven" => {
-                let item = cache.riven().get_riven_by(find_by.clone())?;
-
-                if item.is_none() {
-                    return Err(Error::new(
-                        "CreateTradeEntryExt::Validate",
-                        format!("Riven item {} ", find_by),
-                        get_location!(),
-                    )
-                    .with_context(json!(find_by))
-                    .set_log_level(LogLevel::Warning));
-                }
-
-                let item = item.unwrap();
+                let item = cache.riven().get_weapon_by(&self.raw).map_err(|e| {
+                    e.with_location(get_location!())
+                        .set_log_level(LogLevel::Warning)
+                })?;
                 self.wfm_id = item.wfm_id.clone();
             }
             "custom" => {

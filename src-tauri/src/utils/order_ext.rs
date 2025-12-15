@@ -5,10 +5,7 @@ use serde::{Deserialize, Serialize};
 use utils::{warning, Error, LoggerOptions};
 use wf_market::types::{Order, OrderLike, OrderWithUser};
 
-use crate::{
-    cache::{client::CacheState, types::CacheTradableItem, types::SubType as CacheSubType},
-    enums::FindBy,
-};
+use crate::cache::{client::CacheState, types::CacheTradableItem, types::SubType as CacheSubType};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct OrderDetails {
@@ -214,17 +211,20 @@ impl OrderExt for Order {
         Ok(())
     }
     fn apply_item_info(&mut self, cache: &CacheState) -> Result<(), Error> {
-        if let Ok(item) = cache
-            .tradable_item()
-            .get_by(FindBy::new(crate::enums::FindByType::Id, &self.item_id))
-        {
-            self.apply_item_info_by_entry(&item)?;
-        } else {
-            warning(
-                "Order",
-                format!("Item info not found for item_id: {}", self.item_id),
-                &LoggerOptions::default(),
-            );
+        match cache.tradable_item().get_by(&self.item_id) {
+            Ok(item) => {
+                self.apply_item_info_by_entry(&Some(item))?;
+            }
+            Err(_) => {
+                warning(
+                    "Order",
+                    format!(
+                        "Failed to apply item info for Order ID: {} with Item ID: {}",
+                        self.id, self.item_id
+                    ),
+                    &LoggerOptions::default(),
+                );
+            }
         }
         Ok(())
     }

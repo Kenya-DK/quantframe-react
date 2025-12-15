@@ -15,7 +15,6 @@ use wf_market::{
 use crate::{
     app::{client::AppState, Settings},
     cache::types::{CacheTradableItem, ItemPriceInfo},
-    enums::FindBy,
     utils::{ErrorFromExt, OrderListExt},
 };
 use crate::{
@@ -170,17 +169,13 @@ impl ItemModule {
             }
 
             // Get tradable item info from cache
-            let Some(item_info) = cache.tradable_item().get_by(FindBy::new(
-                crate::enums::FindByType::Url,
-                &item_entry.wfm_url,
-            ))?
-            else {
-                error(
-                    format!("{}ProcessItem", COMPONENT),
-                    &format!("Item not found in tradable items: {}", item_entry.wfm_url),
-                    &&LoggerOptions::default(),
-                );
-                continue;
+            let item_info = match cache.tradable_item().get_by(&item_entry.wfm_url) {
+                Ok(item) => item,
+                Err(e) => {
+                    e.set_component(format!("{}ProcessItem", COMPONENT))
+                        .log(LOG_FILE);
+                    continue;
+                }
             };
 
             // Get item price from cache

@@ -514,7 +514,6 @@ async fn process_trade_item(
         platinum,
         player_name,
         OrderType::Buy,
-        crate::enums::FindByType::UniqueName,
         &["ReturnOn:NotFound", ""],
     )
     .await
@@ -533,7 +532,6 @@ async fn process_trade_item(
         platinum,
         player_name,
         order_type,
-        crate::enums::FindByType::UniqueName,
         &["ReturnOn:NotFound", ""],
     )
     .await

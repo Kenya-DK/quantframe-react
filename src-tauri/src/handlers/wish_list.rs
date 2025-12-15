@@ -3,13 +3,12 @@ use service::WishListMutation;
 use utils::{get_location, info, Error};
 use wf_market::enums::OrderType;
 
-use crate::{enums::*, handlers::*, types::*, utils::*, DATABASE};
+use crate::{handlers::*, types::*, utils::*, DATABASE};
 /// Handles wish list operations (add/remove) with WFM integration
 pub async fn handle_wish_list_by_entity(
     mut item: CreateWishListItem,
     user_name: impl Into<String>,
     operation: OrderType,
-    find_by: FindByType,
     operation_flags: &[&str],
 ) -> Result<(OperationSet, Model), Error> {
     let conn = DATABASE.get().unwrap();
@@ -17,7 +16,7 @@ pub async fn handle_wish_list_by_entity(
     let file = "handle_wish_list_item.log";
     let mut operations = OperationSet::new();
 
-    item.validate(find_by).map_err(|e| {
+    item.validate().map_err(|e| {
         let err = e.clone();
         err.with_location(get_location!()).log(file);
         e
@@ -180,14 +179,12 @@ pub async fn handle_wish_list(
     price: i64,
     user_name: impl Into<String>,
     operation: OrderType,
-    find_by: FindByType,
     operation_flags: &[&str],
 ) -> Result<(OperationSet, Model), Error> {
     handle_wish_list_by_entity(
         CreateWishListItem::new(wfm_url, sub_type.clone(), quantity).set_bought(price),
         user_name,
         operation,
-        find_by,
         operation_flags,
     )
     .await
