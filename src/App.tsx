@@ -31,7 +31,6 @@ import { PatreonModal } from "@components/Modals/PatreonModal/indexx";
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { ThemeProvider, useTheme } from "./contexts/theme.context";
-import { readTextFile } from "@tauri-apps/plugin-fs";
 library.add(faMoneyBillTrendDown);
 library.add(faTradingAnalytics);
 library.add(faAmberStar);
@@ -52,9 +51,8 @@ library.add(faWebHook);
 dom.watch();
 
 export async function initializeI18n() {
-  const content = await readTextFile("resources/lang/en.json");
-  const translations = JSON.parse(content);
-
+  const response = await fetch("/lang/en.json");
+  const translations = await response.json();
   await i18n.use(initReactI18next).init({
     resources: {
       en: { translation: translations },

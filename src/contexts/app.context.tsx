@@ -23,11 +23,8 @@ import { useLocalStorage } from "@mantine/hooks";
 import { listen } from "@tauri-apps/api/event";
 export async function loadLanguage(lang: string) {
   try {
-    const filePath = `resources/lang/${lang}.json`;
-
-    const content = await readTextFile(filePath);
-    const translations = JSON.parse(content);
-
+    const response = await fetch(`/lang/${lang}.json`);
+    const translations = await response.json();
     // Add the translations to i18next
     i18n.addResourceBundle(lang, "translation", translations, true, true);
     await i18n.changeLanguage(lang);

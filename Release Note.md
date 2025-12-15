@@ -1,8 +1,9 @@
 ## Fix's
 
 - 🛠️ Fixed an issue where you can't logout
+- 🛠️ Fixed an issue where some user had a whitescreen.
 
-## ⚠️⚠️⚠️WARNING: Make a backup of your database before updating!⚠️⚠️⚠️
+## ⚠️⚠️⚠️WARNING: Make a backup of your database before updating if you are updating from version 1.5.X or older!⚠️⚠️⚠️
 
 How to back up your database:
 
