@@ -1,9 +1,6 @@
-## Fix's
+## ⚠️WARNING: Make a backup of your data!⚠️⚠️⚠️
 
-- 🛠️ Fixed an issue where you can't logout
-- 🛠️ Fixed an issue where some user had a whitescreen.
-
-## ⚠️⚠️⚠️WARNING: Make a backup of your database before updating if you are updating from version 1.5.X or older!⚠️⚠️⚠️
+Only for users updating from version 1.5.X to 1.6.X
 
 How to back up your database:
 
@@ -25,14 +22,14 @@ You can restore your previous settings by copying from your backup settings.json
 - ⏱️ Fix so the knapsack algorithm doesn't delete akk items after a cycle.
 - ⏱️ Add Riven ranking
 - ⏱️ Add a sound or a discord message if the livesraper dies
+- ⏱️ Fix translation sorting
 - ⏱️ Fix Riven select
+- ⏱️ Fix a bug if y have buy quantity set to more the 1 and but it from then wfm tab it wut have the price
 
 ## Feature's
 
 ## Dev Notes
 
-- 🛠️ Add a delay for riven stock updates to reduce api calls on the livec
-- 🛠️ Using a new system for riven so pls can for duplication on warframe market
 - 🛠️ Look into this https://github.com/knoellle/wfinfo-ng
 
 ## Fix's
