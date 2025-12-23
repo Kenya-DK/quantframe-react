@@ -365,6 +365,9 @@
         "fields": {
           "sell": {
             "label": "Price"
+          },
+          "quantity": {
+            "label": "Quantity"
           }
         }
       },
@@ -373,6 +376,9 @@
         "fields": {
           "bought": {
             "label": "Price"
+          },
+          "quantity": {
+            "label": "Quantity"
           }
         }
       },
@@ -525,8 +531,9 @@
     },
     "wfm_auction": {
       "fields": {
-        "riven": "MR: <blue>{{mastery_level}}</blue> Rank: <blue>{{mod_rank}}</blue> Re-rolls: <blue>{{re_rolls}}</blue> Polarity: <polarity/>",
-        "selling_price": "Selling Price: <blue>{{price}}</blue> <plat/>"
+        "selling_price": "Selling Price: <blue>{{price}}</blue> <plat/>",
+        "left_footer": "<blue>{{mod_rank}}</blue>/<blue>{{max_rank}}</blue> <blue>{{drain}}</blue> <polarity/>",
+        "right_footer": "MR: <blue>{{mastery_level}}</blue> <roll/> <blue>{{re_rolls}}</blue>"
       }
     },
     "live_scraper_control": {

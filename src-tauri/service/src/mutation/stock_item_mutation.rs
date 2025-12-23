@@ -117,10 +117,6 @@ impl StockItemMutation {
         db: &DbConn,
         mut stock: stock_item::Model,
     ) -> Result<(String, stock_item::Model), Error> {
-        if stock.owned >= 1 {
-            stock.bought = stock.bought / stock.owned;
-        }
-
         // Find the item by id
         let item = StockItemQuery::find_by_url_name_and_sub_type(
             db,
@@ -130,6 +126,9 @@ impl StockItemMutation {
         .await
         .map_err(|e| e.with_location(get_location!()))?;
         if item.is_none() {
+            if stock.owned > 1 {
+                stock.bought = stock.bought / stock.owned;
+            }
             match StockItemMutation::create(db, stock.clone()).await {
                 Ok(insert) => {
                     return Ok(("Created".to_string(), insert));
@@ -141,11 +140,12 @@ impl StockItemMutation {
         }
         // Update the item
         let item = item.unwrap();
-        let total_owned = item.owned + stock.owned;
 
-        // Get Price Per Unit
-        let total_bought = (item.bought * item.owned) + stock.bought;
-        let weighted_average = if item.bought == 0 {
+        // Calculate new owned and bought values
+        let total_owned = item.owned + stock.owned;
+        let total_bought = item.bought * item.owned + stock.bought * stock.owned;
+        
+        let weighted_average = if item.bought > 0 {
             total_bought / total_owned
         } else {
             item.bought

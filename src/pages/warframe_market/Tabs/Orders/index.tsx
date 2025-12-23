@@ -197,6 +197,7 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
                     iconProps={{ size: "xs" }}
                     onClick={(e) => {
                       e.stopPropagation();
+                      order.quantity = 1;
                       switch (order.type) {
                         case WFMarketTypes.OrderType.Buy:
                           createStockMutation.mutateAsync(order);

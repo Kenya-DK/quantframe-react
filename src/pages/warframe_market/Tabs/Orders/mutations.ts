@@ -120,7 +120,7 @@ export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, ref
             wfm_url: data.itemId,
             sub_type: data,
             price: data.platinum,
-            quantity: 1,
+            quantity: data.quantity,
           },
           "id"
         ),

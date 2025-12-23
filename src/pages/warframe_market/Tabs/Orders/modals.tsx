@@ -25,19 +25,29 @@ export const useStockModals = ({ deleteStockMutation, createStockMutation, sellS
       innerProps: {
         fields: [
           {
+            name: "quantity",
+            label: useTranslateCommon("prompts.sell_manual.fields.quantity.label"),
+            attributes: {
+              min: 0,
+              max: order.quantity,
+            },
+            value: order.quantity,
+            type: "number",
+          },
+          {
             name: "sell",
             label: useTranslateCommon("prompts.sell_manual.fields.sell.label"),
             attributes: {
               min: 0,
             },
-            value: 0,
+            value: order.platinum * order.quantity,
             type: "number",
           },
         ],
-        onConfirm: async (data: { sell: number }) => {
+        onConfirm: async (data: { sell: number; quantity: number }) => {
           if (!order) return;
-          const { sell } = data;
-          await sellStockMutation.mutateAsync({ ...order, quantity: 1, platinum: sell });
+          const { sell, quantity } = data;
+          await sellStockMutation.mutateAsync({ ...order, quantity, platinum: sell });
         },
         onCancel: (id: string) => modals.close(id),
       },
@@ -50,19 +60,29 @@ export const useStockModals = ({ deleteStockMutation, createStockMutation, sellS
       innerProps: {
         fields: [
           {
+            name: "quantity",
+            label: useTranslateCommon("prompts.bought_manual.fields.quantity.label"),
+            attributes: {
+              min: 0,
+              max: order.quantity,
+            },
+            value: order.quantity,
+            type: "number",
+          },
+          {
             name: "bought",
             label: useTranslateCommon("prompts.bought_manual.fields.bought.label"),
             attributes: {
               min: 0,
             },
-            value: 0,
+            value: order.platinum * order.quantity,
             type: "number",
           },
         ],
-        onConfirm: async (data: { bought: number }) => {
+        onConfirm: async (data: { bought: number; quantity: number }) => {
           if (!order) return;
-          const { bought } = data;
-          await createStockMutation.mutateAsync({ ...order, quantity: 1, platinum: bought });
+          const { bought, quantity } = data;
+          await createStockMutation.mutateAsync({ ...order, quantity, platinum: bought });
         },
         onCancel: (id: string) => modals.close(id),
       },

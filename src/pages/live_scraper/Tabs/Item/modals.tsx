@@ -68,6 +68,16 @@ export const useModals = ({ updateMutation, updateMultipleMutation, sellStockMut
       innerProps: {
         fields: [
           {
+            name: "quantity",
+            label: useTranslateCommon("prompts.sell_manual.fields.quantity.label"),
+            attributes: {
+              min: 0,
+              max: stock.owned,
+            },
+            value: stock.owned,
+            type: "number",
+          },
+          {
             name: "sell",
             label: useTranslateCommon("prompts.sell_manual.fields.sell.label"),
             attributes: {
@@ -77,10 +87,10 @@ export const useModals = ({ updateMutation, updateMultipleMutation, sellStockMut
             type: "number",
           },
         ],
-        onConfirm: async (data: { sell: number }) => {
+        onConfirm: async (data: { sell: number; quantity: number }) => {
           if (!stock) return;
-          const { sell } = data;
-          await sellStockMutation.mutateAsync({ id: stock.id, wfm_url: stock.wfm_url, sub_type: stock.sub_type, price: sell, quantity: 1 });
+          const { sell, quantity } = data;
+          await sellStockMutation.mutateAsync({ id: stock.id, wfm_url: stock.wfm_url, sub_type: stock.sub_type, price: sell, quantity });
         },
         onCancel: (id: string) => modals.close(id),
       },
