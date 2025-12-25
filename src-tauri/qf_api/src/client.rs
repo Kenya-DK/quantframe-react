@@ -355,13 +355,17 @@ impl Client {
                         Ok((ApiResponse::String(body), headers, error))
                     }
                     ResponseFormat::Bytes => {
-                        let bytes = resp
-                            .bytes()
-                            .await
-                            .map_err(|_| ApiError::Unknown("Failed to read bytes".to_string()))?;
                         error.set_content("[binary data]".to_string());
                         error.set_status_code(status.as_u16());
-                        Ok((ApiResponse::Bytes(bytes.to_vec()), headers, error))
+                        match resp.bytes().await {
+                            Ok(bytes) => Ok((ApiResponse::Bytes(bytes.to_vec()), headers, error)),
+                            Err(e) => {
+                                return Err(ApiError::Unknown(format!(
+                                    "Failed to read bytes: {}",
+                                    e
+                                )));
+                            }
+                        }
                     }
                 }
             }
