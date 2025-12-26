@@ -7,23 +7,7 @@ import { DatesProvider } from "@mantine/dates";
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import { AppRoutes } from "@components/Layouts/Routes";
 import { AppContextProvider } from "@contexts/app.context";
-import faMoneyBillTrendDown from "@icons/faMoneyBillTrendDown";
-import faTradingAnalytics from "@icons/faTradingAnalytics";
-import faAmberStar from "@icons/faAmberStar";
-import faCyanStar from "@icons/faCyanStar";
-import faInfinity from "@icons/faInfinity";
-import faPlat from "@icons/faPlat";
-import faPolarity from "@icons/faPolarity";
-import faPolarityAny from "@icons/faPolarityAny";
-import faPolarityZenuri from "@icons/faPolarityZenuri";
-import faPolarityUnairu from "@icons/faPolarityUnairu";
-import faPolarityUmbra from "@icons/faPolarityUmbra";
-import faPolarityPenjaga from "@icons/faPolarityPenjaga";
-import faPolarityNaramon from "@icons/faPolarityNaramon";
-import faPolarityMadurai from "@icons/faPolarityMadurai";
-import faWebHook from "@icons/faWebHook";
-import faPolarityAura from "@icons/faPolarityAura";
-import faPolarityVazarin from "@icons/faPolarityVazarin";
+import * as Icons from "@icons";
 import { useEffect, useState } from "react";
 import api from "./api";
 import { PromptModal } from "@components/Modals/Prompt";
@@ -31,23 +15,26 @@ import { PatreonModal } from "@components/Modals/PatreonModal/indexx";
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { ThemeProvider, useTheme } from "./contexts/theme.context";
-library.add(faMoneyBillTrendDown);
-library.add(faTradingAnalytics);
-library.add(faAmberStar);
-library.add(faCyanStar);
-library.add(faInfinity);
-library.add(faPlat);
-library.add(faPolarity);
-library.add(faPolarityAny);
-library.add(faPolarityZenuri);
-library.add(faPolarityUnairu);
-library.add(faPolarityUmbra);
-library.add(faPolarityPenjaga);
-library.add(faPolarityNaramon);
-library.add(faPolarityMadurai);
-library.add(faPolarityAura);
-library.add(faPolarityVazarin);
-library.add(faWebHook);
+const ICONS = [
+  Icons.faMoneyBillTrendDown,
+  Icons.faAmberStar,
+  Icons.faCyanStar,
+  Icons.faInfinity,
+  Icons.faPlat,
+  Icons.faPolarity,
+  Icons.faPolarityAny,
+  Icons.faPolarityZenuri,
+  Icons.faPolarityUnairu,
+  Icons.faPolarityUmbra,
+  Icons.faPolarityPenjaga,
+  Icons.faPolarityNaramon,
+  Icons.faPolarityMadurai,
+  Icons.faPolarityAura,
+  Icons.faPolarityVazarin,
+  Icons.faWebHook,
+];
+
+library.add(...ICONS);
 dom.watch();
 
 export async function initializeI18n() {

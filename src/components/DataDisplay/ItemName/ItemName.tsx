@@ -6,8 +6,7 @@ import { DisplaySettings, GetItemDisplay, GetSubTypeDisplay } from "@utils/helpe
 import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
 import { memo } from "react";
-import faAmberStar from "@icons/faAmberStar";
-import faCyanStar from "@icons/faCyanStar";
+import { faAmberStar, faCyanStar } from "@icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const DEFAULT_SETTINGS: Record<string, DisplaySettings> = {

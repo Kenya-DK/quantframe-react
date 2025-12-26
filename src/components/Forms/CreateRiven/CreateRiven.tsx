@@ -8,25 +8,17 @@ import { RivenPreview } from "@components/DataDisplay/RivenPreview";
 import { CreateRivenAttributes } from "../CreateRivenAttributes";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import faPolarityMadurai from "@icons/faPolarityMadurai";
-import faPolarityNaramon from "@icons/faPolarityNaramon";
-import faPolarityVazarin from "@icons/faPolarityVazarin";
 import { SelectRivenWeapon } from "../SelectRivenWeapon";
+import { getPolarityIcon } from "@icons";
 
 export type CreateRivenProps = {
   value?: TauriTypes.StockRiven;
   onSubmit: (values: TauriTypes.StockRiven) => void;
 };
 
-const icons: Record<string, React.ReactNode> = {
-  madurai: <FontAwesomeIcon icon={faPolarityMadurai} />,
-  naramon: <FontAwesomeIcon icon={faPolarityNaramon} />,
-  vazarin: <FontAwesomeIcon icon={faPolarityVazarin} />,
-};
-
 const renderSelectOption: SelectProps["renderOption"] = ({ option, checked }) => (
   <Group flex="1" gap="xs" style={{ fontWeight: checked ? 700 : 400 }}>
-    {icons[option.value]}
+    {<FontAwesomeIcon icon={getPolarityIcon(option.value)} />}
     {option.label}
   </Group>
 );
@@ -222,7 +214,7 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
                 label={useTranslateFormFields("polarity.label")}
                 value={form.values.polarity}
                 onChange={(event) => form.setFieldValue("polarity", event || "")}
-                leftSection={icons[form.values.polarity]}
+                leftSection={<FontAwesomeIcon icon={getPolarityIcon(form.values.polarity)} />}
                 data={[
                   { value: "madurai", label: "Madurai" },
                   { value: "naramon", label: "Naramon" },

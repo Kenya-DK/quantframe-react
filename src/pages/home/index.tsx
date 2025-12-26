@@ -33,7 +33,7 @@ import { DataTable } from "mantine-datatable";
 import classes from "./Home.module.css";
 import { StatsWithIcon } from "@components/Shared/StatsWithIcon";
 import { BarCardChart } from "@components/Shared/BarCardChart";
-import faMoneyBillTrendDown from "@icons/faMoneyBillTrendDown";
+import { faMoneyBillTrendDown } from "@icons";
 import { ColorInfo } from "@components/Shared/ColorInfo";
 import { TransactionListItem } from "@components/DataDisplay/TransactionListItem";
 import { useHasAlert } from "@hooks/useHasAlert.hook";

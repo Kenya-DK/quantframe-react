@@ -1,6 +1,6 @@
 import { IconDefinition, IconName, IconPrefix } from "@fortawesome/fontawesome-svg-core";
 
-const faPolarityUnairu: IconDefinition = {
+export const faPolarityUnairu: IconDefinition = {
   prefix: "fac" as IconPrefix,
   iconName: "polarity-unairu" as IconName,
   icon: [
@@ -11,5 +11,3 @@ const faPolarityUnairu: IconDefinition = {
     "m 45.24285,24.981603 c -23.070858,-2.696593 -31.010828,0.299621 -31.010828,0.299621 -3.895079,1.947541 -1.94754,13.632779 -1.94754,13.632779 0.125247,4.420632 -3.3480364,1.041886 -3.5954584,0.299622 C 0.14981062,22.43482 12.883725,12.54731 12.883725,12.54731 18.276914,7.3039335 31.759881,7.0043121 31.759881,7.0043121 c 1.198486,2.3969718 -1.498107,4.9437549 -1.498107,4.9437549 -9.438078,4.044891 -5.393187,6.741484 -5.393187,6.741484 16.179561,3.295838 20.374263,6.292052 20.374263,6.292052 z ",
   ],
 };
-
-export default faPolarityUnairu;

@@ -10,8 +10,7 @@ import { Header } from "@components/Layouts/Shared/Header";
 import { useAuthContext } from "@contexts/auth.context";
 import { open } from "@tauri-apps/plugin-shell";
 import { AddMetric } from "@api/index";
-import faWarframeMarket from "@icons/facWarframeMarket";
-import facTradingAnalytics from "@icons/faTradingAnalytics";
+import { faWarframeMarket, facTradingAnalytics } from "@icons";
 
 export function LogInLayout() {
   // States

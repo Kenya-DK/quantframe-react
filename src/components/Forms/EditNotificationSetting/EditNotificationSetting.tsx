@@ -8,7 +8,7 @@ import { faBell } from "@fortawesome/free-solid-svg-icons";
 import { faDiscord } from "@fortawesome/free-brands-svg-icons";
 import { TooltipIcon } from "../../Shared/TooltipIcon";
 import api from "@api/index";
-import faWebHook from "@icons/faWebHook";
+import { faWebHook } from "@icons";
 export type EditNotificationSettingProps = {
   title: string;
   id: string;

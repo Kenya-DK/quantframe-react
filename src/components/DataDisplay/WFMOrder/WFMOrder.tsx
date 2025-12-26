@@ -7,8 +7,7 @@ import { notifications } from "@mantine/notifications";
 import { TextTranslate } from "@components/Shared/TextTranslate";
 import { TimerStamp } from "../../Shared/TimerStamp";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import faAmberStar from "@icons/faAmberStar";
-import faCyanStar from "@icons/faCyanStar";
+import { faAmberStar, faCyanStar } from "@icons";
 import { upperFirst } from "@mantine/hooks";
 import { ItemName } from "../ItemName";
 
