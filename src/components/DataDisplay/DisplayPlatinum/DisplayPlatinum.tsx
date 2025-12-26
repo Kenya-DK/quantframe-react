@@ -5,12 +5,13 @@ import { faPlat } from "@icons";
 
 export type DisplayPlatinumProps = {
   value: number;
+  iconColor?: string;
 };
 
-export const DisplayPlatinum = memo(function DisplayPlatinum({ value }: DisplayPlatinumProps) {
+export const DisplayPlatinum = memo(function DisplayPlatinum({ value, iconColor }: DisplayPlatinumProps) {
   return (
     <Group gap={2}>
-      <NumberFormatter value={value} thousandsGroupStyle="thousand" thousandSeparator="," /> <FontAwesomeIcon icon={faPlat} />
+      <NumberFormatter value={value} thousandsGroupStyle="thousand" thousandSeparator="," /> <FontAwesomeIcon icon={faPlat} color={iconColor} />
     </Group>
   );
 });

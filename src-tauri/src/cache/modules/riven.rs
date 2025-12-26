@@ -220,9 +220,8 @@ impl RivenModule {
             |name: &str, positive: bool| -> bool { stat_lookup.contains(&(name, positive)) };
 
         let resolve_attr = |attr: &str, positive: bool| -> AttributeMatch {
-            let unique_name = format!("WF_Special/RivenAttributes/{}", attr);
-            match self.get_attribute_by(&unique_name) {
-                Ok(att) => AttributeMatch::new(&att.short, has_stat(&att.url_name, positive)),
+            match self.get_upgrade_by(&weapon.upgrade_type, attr) {
+                Ok(att) => AttributeMatch::new(&att.short_string, has_stat(&att.wfm_url, positive)),
                 Err(e) => AttributeMatch::new(e.to_string(), false),
             }
         };

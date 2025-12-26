@@ -29,6 +29,7 @@ fn get_attr_letter_grade_from_random_percent(random_per_one: f64) -> &'static st
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RivenSingleAttribute {
     pub url_name: String,
+    pub tag: String,
     pub value: f64,
     #[serde(rename = "minValue")]
     pub min_value: f64,
@@ -44,6 +45,7 @@ pub struct RivenSingleAttribute {
 impl RivenSingleAttribute {
     pub fn new(
         url_name: impl Into<String>,
+        tag: impl Into<String>,
         value: f64,
         min_value: f64,
         max_value: f64,
@@ -53,6 +55,7 @@ impl RivenSingleAttribute {
     ) -> Self {
         Self {
             url_name: url_name.into(),
+            tag: tag.into(),
             value,
             min_value,
             max_value,

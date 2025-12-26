@@ -1,4 +1,4 @@
-import { Box, Group, NumberFormatter, Progress, SimpleGrid, Text, Tooltip, Flex, StyleProp } from "@mantine/core";
+import { Box, Group, NumberFormatter, Progress, SimpleGrid, Text, Tooltip, Flex, StyleProp, MantineSpacing } from "@mantine/core";
 import classes from "./StatsWithSegments.module.css";
 import React from "react";
 
@@ -14,6 +14,7 @@ export type Segment = {
   suffix?: string;
 };
 export type StatsWithSegmentsProps = {
+  p?: StyleProp<MantineSpacing>;
   showPercent?: boolean;
   hidePercentBar?: boolean;
   segments: Segment[];
@@ -25,6 +26,7 @@ export type StatsWithSegmentsProps = {
 };
 
 export function StatsWithSegments({
+  p = "md",
   segments: segmentsIn,
   hidePercentBar,
   showPercent,
@@ -86,7 +88,7 @@ export function StatsWithSegments({
   const isVertical = orientation === "vertical";
 
   return (
-    <Box p="md">
+    <Box p={p}>
       <Flex direction={isVertical ? "row" : "column"} gap="md" align={isVertical ? "flex-start" : "stretch"}>
         {showPercent && !hidePercentBar && (
           <Box style={{ position: "relative", flex: isVertical ? "0 0 auto" : "1" }} className={classes.progressWrapper}>

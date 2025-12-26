@@ -1,3 +1,4 @@
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 export * from "./faAmberStar";
 export * from "./facWarframeMarket";
 export * from "./faCyanStar";
@@ -8,7 +9,6 @@ export * from "./faTradingAnalytics";
 export * from "./faWebHook";
 export * from "./polarity";
 
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
   faPolarityMadurai,
   faPolarityNaramon,

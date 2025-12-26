@@ -3,7 +3,7 @@ import { FontAwesomeIcon, FontAwesomeIconProps } from "@fortawesome/react-fontaw
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 export type ActionWithTooltipProps = {
   color?: MantineColor;
-  tooltip: string;
+  tooltip?: string;
   width?: number;
   icon: IconProp;
   loading?: boolean;
@@ -14,7 +14,7 @@ export type ActionWithTooltipProps = {
 
 export function ActionWithTooltip({ width, loading, iconProps, actionProps, tooltip, icon, color, onClick }: ActionWithTooltipProps) {
   return (
-    <Tooltip label={tooltip}>
+    <Tooltip label={tooltip} disabled={!tooltip}>
       <ActionIcon w={width} loading={loading} {...actionProps} color={color} variant="filled" onClick={async (e) => onClick(e)}>
         <FontAwesomeIcon {...iconProps} icon={icon} />
       </ActionIcon>

@@ -1480,46 +1480,44 @@
         }
       },
       "stock_riven_details": {
-        "tabs": {
-          "overview": {
-            "title": "Overview",
-            "buttons": {
-              "wiki": "Wiki"
-            },
-            "fields": {
-              "created_at": "Created At",
-              "updated_at": "Updated At",
-              "status": "Status",
-              "minimum_price": "Minimum Price",
-              "owned": "Owned",
-              "bought": "Average Bought Price",
-              "list_price": "List Price",
-              "profit": "Profit",
-              "highest_price": "Highest Price",
-              "lowest_price": "Lowest Price",
-              "listed": "Listed Prices History",
-              "no_listed": "No previous listed prices"
-            }
-          },
-          "analytics": {
-            "title": "Analytics",
-            "last_transactions": {
-              "title": "Last Transactions",
-              "info_box": {
-                "purchase": "{{count}} purchases",
-                "sale": "{{count}} sales"
-              }
-            }
-          },
-          "wfm": {
-            "title": "WFM",
-            "fields": {
-              "created_at": "Created At",
-              "updated_at": "Updated At",
-              "auction_list": "Current Live Auctions",
-              "no_listed": "No current live auctions"
-            }
-          }
+        "titles": {
+          "modifiers": "Modifiers",
+          "similar_auctions": "Similar Auctions",
+          "last_transactions": "Last Transactions",
+          "financial_summary": "Financial Summary"
+        },
+        "tooltips": {
+          "roi": "Return on Investment",
+          "average_profit_per_transaction": "Average Profit Per Transaction",
+          "average_transaction_value": "Average Transaction Value",
+          "average_revenue_per_transaction": "Average Revenue Per Transaction",
+          "average_expense_per_transaction": "Average Expense Per Transaction"
+        },
+        "labels": {
+          "rank": "Rank:",
+          "rerolls": "Rerolls:",
+          "drain": "Drain:",
+          "mastery_rank": "Mastery Rank:",
+          "total_endo": "Total Endo:",
+          "spent_kuva": "Spent Kuva:",
+          "bought_price": "Bought Price:",
+          "potential_profit": "Potential Profit:",
+          "weapon": "Weapon",
+          "best_attributes": "Best Attributes",
+          "mandatory": "Mandatory",
+          "optional": "Optional",
+          "best_bad_attributes": "Best Bad Attributes",
+          "total_profit": "Total Profit",
+          "expenses": "Expenses",
+          "revenue": "Revenue",
+          "total_transactions": "Total Transactions",
+          "average_transaction_value": "Average Transaction Value",
+          "profit_margin": "Profit Margin",
+          "sales_count": "Sales Count",
+          "average_revenue_per_transaction": "Average Revenue Per Transaction",
+          "purchases_count": "Purchases Count",
+          "average_expense_per_transaction": "Average Expense Per Transaction",
+          "price_history": "Price History"
         }
       },
       "update_available": {

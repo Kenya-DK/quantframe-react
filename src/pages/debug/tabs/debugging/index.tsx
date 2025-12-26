@@ -34,7 +34,6 @@ export const DebuggingPanel = ({}: DebuggingPanelProps) => {
           SendTauriEvent(TauriTypes.Events.RefreshSettings);
         }}
       />
-      {/* <SearchField value={search} onChange={(e) => setSearch(e)} /> */}
       <DataTable
         height={400}
         className={`${classes.dataTableLogging}`}

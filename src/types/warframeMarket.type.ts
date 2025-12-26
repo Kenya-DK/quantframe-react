@@ -99,6 +99,7 @@ export namespace WFMarketTypes {
     url_name: string;
     value: number;
     effect?: string;
+    properties?: Record<string, any>;
   }
 
   export interface Similarity {

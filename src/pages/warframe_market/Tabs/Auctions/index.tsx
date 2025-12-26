@@ -12,9 +12,9 @@ import { useStockMutations } from "./mutations";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 import { Loading } from "@components/Shared/Loading";
 import { useStockModals } from "./modals";
-import { WFMAuction } from "@components/DataDisplay/WFMAuction";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { TextTranslate } from "../../../../components/Shared/TextTranslate";
+import { WFMAuction } from "../../../../components/DataDisplay/WFMAuction";
 interface AuctionPanelProps {
   isActive?: boolean;
 }
@@ -139,15 +139,13 @@ export const AuctionPanel = ({ isActive }: AuctionPanelProps) => {
       </Group>
       <ScrollArea mt={"md"} className={classes.orders} data-has-alert={useHasAlert()}>
         {deleteAllAuctionsMutation.isPending && <Loading text={`${deletingOrders.current} / ${deletingOrders.total}`} />}
-        <SimpleGrid cols={2} spacing="sm">
+        <SimpleGrid cols={{ base: 2, xl: 3 }} spacing="sm">
           {paginationQuery.data?.results?.map((order) => (
             <WFMAuction
-              display_style="grid"
-              show_user
               key={order.id}
               auction={order}
-              header={
-                <Group gap={"xs"}>
+              overlayFooter={
+                <Group gap={"xs"} p={3} justify="flex-end">
                   {order.properties?.can_import && (
                     <ActionWithTooltip
                       tooltip={useTranslateButtons("import_tooltip")}

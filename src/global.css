@@ -18,6 +18,7 @@
 }
 
 /* Generic Color Binding by Mode */
+
 [data-color-mode="bg"] {
   background-color: var(--color);
 }
@@ -142,6 +143,14 @@
 
 [data-color="gold"] {
   --color: #da9800;
+}
+
+[data-positive] {
+  --color: var(--qf-positive-color);
+}
+
+[data-positive="negative"] {
+  --color: var(--qf-negative-color);
 }
 
 @keyframes shine-effect {

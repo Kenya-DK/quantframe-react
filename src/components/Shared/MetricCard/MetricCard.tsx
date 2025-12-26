@@ -1,15 +1,19 @@
-import { Paper, Text, Group, ThemeIcon, NumberFormatter } from "@mantine/core";
+import { Text, Group, ThemeIcon, NumberFormatter, Card } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowTrendDown, faArrowTrendUp } from "@fortawesome/free-solid-svg-icons";
+import { DisplayPlatinum } from "../../DataDisplay/DisplayPlatinum";
 export interface MetricCardProps {
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   title: string;
   value: number | string;
+  subValue?: string;
+  subLabel?: string;
   suffix?: string;
   prefix?: string;
   color?: string;
   isPercentage?: boolean;
   isCurrency?: boolean;
+  textTransform?: React.CSSProperties["textTransform"];
   trend?: "up" | "down" | "neutral";
 }
 export const MetricCard = ({
@@ -18,10 +22,13 @@ export const MetricCard = ({
   value,
   suffix,
   prefix,
-  color = "blue",
+  subValue,
+  subLabel,
+  color,
   isPercentage = false,
   isCurrency = false,
   trend = "neutral",
+  textTransform = "uppercase",
 }: MetricCardProps) => {
   const getTrendColor = () => {
     switch (trend) {
@@ -48,14 +55,7 @@ export const MetricCard = ({
       return num.toString();
     };
 
-    if (isCurrency) {
-      // Use condensed format on smaller screens for better readability
-      const isLargeNumber = Math.abs(value as number) >= 10000;
-      if (isLargeNumber && window.innerWidth < 768) {
-        return `${formatLargeNumber(value as number)} Pl`;
-      }
-      return <NumberFormatter value={value} thousandSeparator="." decimalScale={2} decimalSeparator="," suffix=" Pl" />;
-    }
+    if (isCurrency) return <DisplayPlatinum value={value as number} iconColor="gray" />;
 
     if (isPercentage) {
       return <NumberFormatter value={value} decimalScale={2} suffix="%" />;
@@ -71,27 +71,31 @@ export const MetricCard = ({
   };
 
   return (
-    <Paper p="md" withBorder h="100%">
+    <Card padding="md" radius="md">
       <Group justify="space-between" mb="xs" align="flex-start">
-        <ThemeIcon size="lg" variant="light" color={getTrendColor()}>
+        <Text size="xs" c="dimmed" fw={700} tt={textTransform}>
+          {title}
+        </Text>
+        <ThemeIcon size="lg" variant="light" color={getTrendColor()} style={{ display: icon ? "" : "none" }}>
           {icon}
         </ThemeIcon>
+      </Group>
+
+      <Group gap={2}>
+        <Text fw={700} fz="xl" c={getTrendColor()}>
+          {prefix}
+          {renderValue()}
+          {suffix}
+        </Text>
         {trend !== "neutral" && (
           <ThemeIcon size="sm" variant="light" color={getTrendColor()}>
             {trend === "up" ? <FontAwesomeIcon icon={faArrowTrendUp} /> : <FontAwesomeIcon icon={faArrowTrendDown} />}
           </ThemeIcon>
         )}
       </Group>
-
-      <Text size="sm" c="dimmed" mb="xs" style={{ flex: 1 }}>
-        {title}
+      <Text size="xs" c="dimmed" mt={4} style={{ display: subValue && subLabel ? "" : "none" }}>
+        {subLabel}: {subValue}
       </Text>
-
-      <Text fw={700} c={getTrendColor()}>
-        {prefix}
-        {renderValue()}
-        {suffix}
-      </Text>
-    </Paper>
+    </Card>
   );
 };

@@ -27,6 +27,8 @@ pub struct TransactionPaginationQueryDto {
     #[serde(default)]
     pub wfm_id: FieldChange<String>,
     #[serde(default)]
+    pub wfm_url: FieldChange<String>,
+    #[serde(default)]
     pub unique_name: FieldChange<String>,
     #[serde(default)]
     pub sub_type: FieldChange<SubType>,
@@ -45,6 +47,7 @@ impl TransactionPaginationQueryDto {
             from_date: FieldChange::Ignore,
             to_date: FieldChange::Ignore,
             wfm_id: FieldChange::Ignore,
+            wfm_url: FieldChange::Ignore,
             unique_name: FieldChange::Ignore,
             sub_type: FieldChange::Ignore,
             tags: FieldChange::Ignore,
@@ -91,6 +94,10 @@ impl TransactionPaginationQueryDto {
         }
         match &self.wfm_id {
             Value(wfm_id) => stmt = stmt.filter(transaction::Column::WfmId.eq(wfm_id)),
+            _ => {}
+        }
+        match &self.wfm_url {
+            Value(wfm_url) => stmt = stmt.filter(transaction::Column::WfmUrl.eq(wfm_url)),
             _ => {}
         }
         match &self.unique_name {
@@ -190,6 +197,10 @@ impl TransactionPaginationQueryDto {
         self.wfm_id = FieldChange::Value(wfm_id.into());
         self.clone()
     }
+    pub fn set_wfm_url(&mut self, wfm_url: impl Into<String>) -> Self {
+        self.wfm_url = FieldChange::Value(wfm_url.into());
+        self.clone()
+    }
     pub fn set_unique_name(mut self, unique_name: impl Into<String>) -> Self {
         self.unique_name = FieldChange::Value(unique_name.into());
         self
@@ -219,6 +230,7 @@ impl Default for TransactionPaginationQueryDto {
             from_date: FieldChange::Ignore,
             to_date: FieldChange::Ignore,
             wfm_id: FieldChange::Ignore,
+            wfm_url: FieldChange::Ignore,
             unique_name: FieldChange::Ignore,
             sub_type: FieldChange::Ignore,
             tags: FieldChange::Ignore,

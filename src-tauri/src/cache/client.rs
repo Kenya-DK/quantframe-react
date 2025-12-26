@@ -204,6 +204,11 @@ impl CacheState {
             self.item_price().check_update(qf_client).await?;
 
         if cache_require_update {
+            info(
+                "Cache:Load",
+                "Cache update required. Downloading new cache...",
+                &LoggerOptions::default(),
+            );
             emit_startup!("cache.updating", json!({}));
             match self.extract(qf_client).await {
                 Ok(()) => {
@@ -213,8 +218,17 @@ impl CacheState {
                         &LoggerOptions::default(),
                     );
                 }
-                Err(e) => return Err(e.with_location(get_location!())),
+                Err(e) => {
+                    e.log("cache_update.log");
+                    return Err(e.with_location(get_location!()));
+                }
             }
+        } else {
+            info(
+                "Cache:Load",
+                "Cache is up to date. No update required.",
+                &LoggerOptions::default(),
+            );
         }
 
         // Update Item Prices if user is verified

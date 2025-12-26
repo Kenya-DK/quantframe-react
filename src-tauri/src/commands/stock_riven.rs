@@ -1,8 +1,7 @@
 use std::{collections::HashMap, sync::Mutex};
 
-use entity::{dto::*, stock_riven::*, transaction::TransactionPaginationQueryDto};
-use serde_json::{json, Value};
-use service::{StockRivenMutation, StockRivenQuery, TransactionQuery};
+use entity::{dto::*, stock_riven::*};
+use service::{StockRivenMutation, StockRivenQuery};
 use tauri_plugin_dialog::DialogExt;
 use utils::{get_location, group_by, info, Error, LoggerOptions};
 use wf_market::enums::OrderType;
@@ -192,11 +191,7 @@ pub async fn stock_riven_update_multiple(
     Ok(updated_items)
 }
 #[tauri::command]
-pub async fn stock_riven_get_by_id(
-    id: i64,
-    app: tauri::State<'_, Mutex<AppState>>,
-) -> Result<Value, Error> {
-    let app = app.lock()?.clone();
+pub async fn stock_riven_get_by_id(id: i64) -> Result<RivenSummary, Error> {
     let conn = DATABASE.get().unwrap();
     let item = match StockRivenQuery::get_by_id(conn, id).await {
         Ok(stock_riven) => {
@@ -212,33 +207,8 @@ pub async fn stock_riven_get_by_id(
         }
         Err(e) => return Err(e.with_location(get_location!())),
     };
-
-    let transaction_paginate = TransactionQuery::get_all(
-        conn,
-        TransactionPaginationQueryDto::new(1, -1).set_wfm_id(&item.wfm_weapon_id),
-    )
-    .await
-    .map_err(|e| e.with_location(get_location!()))?;
-    let auction = app
-        .wfm_client
-        .auction()
-        .cache_auctions()
-        .get_by_uuid(&item.uuid);
-
-    let mut payload = json!(FinancialReport::from(&transaction_paginate.results));
-    payload["stock"] = json!(item);
-    payload["auction_info"] = json!(auction);
-    payload["last_transactions"] = json!(transaction_paginate.take_top(5));
-
-    if auction.is_some() {
-        let order_info = auction.unwrap();
-        payload["stock_profit"] = json!(order_info.starting_price - item.bought as i32);
-    }
-    // let mut summary = RivenSummary::from(&item);
-    // summary.generate_financial_summary().await?;
-    // summary.evaluate_rolls()?;
-    // payload["riven_summary"] = json!(summary);
-    Ok(payload)
+    let summary = RivenSummary::try_from_model(&item).await?;
+    Ok(summary)
 }
 
 #[tauri::command]

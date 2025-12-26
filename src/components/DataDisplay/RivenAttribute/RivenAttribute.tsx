@@ -1,4 +1,4 @@
-import { Group, Image, Progress, Text } from "@mantine/core";
+import { Group, GroupProps, Image, Progress, Text } from "@mantine/core";
 import type { RivenAttribute, TauriTypes } from "$types";
 import classes from "./RivenAttribute.module.css";
 import { useQuery } from "@tanstack/react-query";
@@ -9,6 +9,10 @@ export type RivenAttributeProps = {
   value: RivenAttribute;
   hideDetails?: boolean;
   compact?: boolean;
+  groupProps?: GroupProps;
+  centered?: boolean;
+  i18nKey?: "full" | "short" | "text";
+  textDecoration?: React.CSSProperties["textDecoration"];
 };
 const IMAGE_SIZE = 25;
 const grades: Record<string, React.ReactNode> = {
@@ -18,7 +22,7 @@ const grades: Record<string, React.ReactNode> = {
   bad: <Image src="/grades/gradeRed.png" h={IMAGE_SIZE} w="auto" fit="contain" />,
   unknown: <Image src="/question.png" h={IMAGE_SIZE} w="auto" fit="contain" />,
 };
-export function RivenAttribute({ value, hideDetails, compact }: RivenAttributeProps) {
+export function RivenAttribute({ value, groupProps, hideDetails, compact, centered, i18nKey, textDecoration }: RivenAttributeProps) {
   // Fetches detailed attribute metadata (like unit types) from the cache.
   // This query runs once and its data is cached by React Query.
   const { data: cacheAttributes } = useQuery<TauriTypes.CacheRivenAttribute[]>({
@@ -53,12 +57,19 @@ export function RivenAttribute({ value, hideDetails, compact }: RivenAttributePr
       data-positive={value.positive}
       gap={compact ? "sm" : "md"}
       p={compact ? "2" : "8px 12px"}
+      {...groupProps}
     >
-      <Group gap="xs" style={{ flex: 1 }}>
+      <Group gap="xs" flex={1} style={{ justifyContent: centered ? "center" : "flex-start" }}>
         {value.grade && grades[value.grade]}
         <LocalizedDynamicMessage
           data-hide-details={hideDetails ? "true" : "false"}
-          textProps={{ size: "md", fw: 600, className: classes.attributeText, "data-hide-details": hideDetails ? "true" : "false" }}
+          textProps={{
+            size: "md",
+            fw: 600,
+            td: textDecoration,
+            className: classes.attributeText,
+            "data-hide-details": hideDetails ? "true" : "false",
+          }}
           tokens={[
             {
               pattern: /\|STAT1\|/g,
@@ -73,7 +84,7 @@ export function RivenAttribute({ value, hideDetails, compact }: RivenAttributePr
               render: (m) => <Image src={`/damageTypes/${m[1]}.png`} h={16} w="auto" fit="contain" mr={2} />,
             },
           ]}
-          message={urlMapper[value.url_name]?.full || value.url_name}
+          message={urlMapper[value.url_name]?.[i18nKey || "full"] || value.url_name}
         />
       </Group>
       {!hideDetails && (

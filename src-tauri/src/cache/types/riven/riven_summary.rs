@@ -2,18 +2,21 @@ use std::collections::HashMap;
 use std::sync::LazyLock;
 
 use entity::{
+    dto::PriceHistory,
     enums::{RivenAttributeGrade, RivenGrade},
     stock_riven,
 };
 use serde::Serialize;
+use serde_json::json;
 use utils::*;
+use wf_market::types::AuctionLike;
 
 use crate::{
     cache::{
-        CacheRivenRolls, RivenFinancialSummary, RivenRollEvaluation, RivenSingleAttribute,
-        RivenStatWithWeapon,
+        AttributeMatch, CacheRivenRolls, RivenFinancialSummary, RivenRollEvaluation,
+        RivenSingleAttribute, RivenStatWithWeapon,
     },
-    utils::modules::states,
+    utils::{modules::states, ErrorFromExt},
 };
 
 static MODIFIERS: LazyLock<HashMap<String, (f64, f64)>> = LazyLock::new(|| {
@@ -48,6 +51,8 @@ pub struct RivenSummary {
     roll_evaluation: RivenRollEvaluation,
     grade: RivenGrade,
     financial_summary: RivenFinancialSummary,
+    similarly_auctions: Vec<wf_market::types::AuctionWithOwner>,
+    price_history: Vec<PriceHistory>,
 }
 
 impl RivenSummary {
@@ -144,6 +149,7 @@ impl RivenSummary {
             grads.push((*is_positive, grade.clone(), upgrade.modifier_tag.clone()));
             stats.push(RivenSingleAttribute::new(
                 stat_tag.clone(),
+                upgrade.modifier_tag.clone(),
                 final_value,
                 min_roll,
                 max_roll,
@@ -243,14 +249,11 @@ impl RivenSummary {
             grade: riven_grade,
             roll_evaluation: RivenRollEvaluation::default(),
             financial_summary: RivenFinancialSummary::default(),
+            similarly_auctions: vec![],
+            price_history: vec![],
         })
     }
 
-    pub async fn generate_financial_summary(&mut self) -> Result<(), Error> {
-        self.financial_summary =
-            RivenFinancialSummary::new(&self.stat_with_weapons[0].unique_name).await?;
-        Ok(())
-    }
     pub fn evaluate_rolls(&mut self) -> Result<(), Error> {
         let cache = states::cache_client()?;
         let starts = self.stat_with_weapons[0].by_level[&0]
@@ -280,13 +283,26 @@ impl RivenSummary {
         };
         if let Some(rolls) = god_roll {
             let mut grads = vec![];
+            let attributes = self.stat_with_weapons[0].by_level.get(&0).ok_or_else(|| {
+                Error::new(
+                    "RivenSummary::grade_riven",
+                    "No level 0 attributes found",
+                    get_location!(),
+                )
+            })?;
+            for attr in attributes.iter() {
+                let grade = rolls.get_graded_attribute(&attr.tag, attr.positive);
+                grads.push((attr.positive, grade.clone(), attr.tag.clone()));
+            }
+
             for wea in self.stat_with_weapons.iter_mut() {
-                for attr in wea.by_level.iter_mut() {
-                    // let grade = rolls.get_graded_attribute(&attr.url_name, attr.positive);
-                    // grads.push((attr.positive, grade, attr.url_name.clone()));
+                for by_level in wea.by_level.iter_mut() {
+                    let mut index = 0;
+                    for attr in by_level.1.iter_mut() {
+                        attr.grade = grads[index].1.clone();
+                        index += 1;
+                    }
                 }
-                // let grade = rolls.get_graded_attribute(&attr.url_name, attr.positive);
-                // grads.push((attr.positive, grade, attr.url_name.clone()));
             }
             self.grade = rolls.get_graded_riven(grads);
         } else {
@@ -294,31 +310,71 @@ impl RivenSummary {
         }
         Ok(())
     }
-}
+    pub async fn find_similar_auctions(&mut self) -> Result<(), Error> {
+        let cache = states::cache_client().map_err(|e| e.with_location(get_location!()))?;
+        let app = states::app_state().map_err(|e| e.with_location(get_location!()))?;
 
-impl Default for RivenSummary {
-    fn default() -> Self {
-        RivenSummary {
-            weapon_name: "Unknown".to_string(),
-            unique_name: "Unknown".to_string(),
-            sub_name: "Unknown".to_string(),
-            stat_with_weapons: vec![],
-            mastery_rank: 0,
-            rerolls: 0,
-            polarity: "".to_string(),
-            endo: 0,
-            rank: 0,
-            image: "".to_string(),
-            kuva: 0,
-            roll_evaluation: RivenRollEvaluation::default(),
-            grade: RivenGrade::Unknown,
-            financial_summary: RivenFinancialSummary::default(),
+        let attributes = self.stat_with_weapons[0].by_level.get(&0).ok_or_else(|| {
+            Error::new(
+                "RivenSummary::grade_riven",
+                "No level 0 attributes found",
+                get_location!(),
+            )
+        })?;
+
+        let weapon = cache
+            .riven()
+            .get_weapon_by(&self.unique_name)
+            .map_err(|e| e.with_location(get_location!()))?;
+
+        let mut filter = wf_market::types::AuctionFilter::new(
+            wf_market::enums::AuctionType::Riven,
+            &weapon.wfm_url_name,
+        );
+        filter.similarity_attributes = Some(
+            attributes
+                .iter()
+                .map(|att| {
+                    wf_market::types::ItemAttribute::new(
+                        att.url_name.clone(),
+                        att.positive,
+                        att.value,
+                    )
+                })
+                .collect(),
+        );
+        filter.similarity = Some(34);
+
+        let mut auctions = app
+            .wfm_client
+            .auction()
+            .search_auctions(filter)
+            .await
+            .map_err(|e| {
+                Error::from_wfm(
+                    "RivenSummary::FindSimilarAuctions",
+                    "Failed to search auctions",
+                    e,
+                    get_location!(),
+                )
+            })?;
+        auctions.sort_by_similarity(false);
+        let mut auctions = auctions.to_vec();
+        for auction in auctions.iter_mut().map(|auction| auction.to_auction_mut()) {
+            let similarity = auction.item.similarity.clone();
+            if let Some(attrs) = &mut auction.item.attributes {
+                for attr in attrs.iter_mut() {
+                    attr.properties =
+                        Some(json!({"matched": similarity.has_attribute(&attr.url_name)}));
+                }
+            }
         }
-    }
-}
 
-impl From<&stock_riven::Model> for RivenSummary {
-    fn from(item: &stock_riven::Model) -> Self {
+        self.similarly_auctions = auctions;
+        Ok(())
+    }
+
+    pub async fn try_from_model(item: &stock_riven::Model) -> Result<Self, Error> {
         let attributes = item
             .attributes
             .0
@@ -344,11 +400,41 @@ impl From<&stock_riven::Model> for RivenSummary {
             item.polarity.clone(),
             attributes,
         ) {
-            Ok(summary) => summary,
+            Ok(mut summary) => {
+                summary.financial_summary = RivenFinancialSummary::try_from_model(item).await?;
+                summary.evaluate_rolls()?;
+                summary.grade_riven()?;
+                summary.find_similar_auctions().await?;
+                summary.price_history = item.price_history.0.clone();
+                Ok(summary)
+            }
             Err(e) => {
                 e.log("RivenSummary::from.log");
-                RivenSummary::default()
+                Err(e)
             }
+        }
+    }
+}
+
+impl Default for RivenSummary {
+    fn default() -> Self {
+        RivenSummary {
+            weapon_name: "Unknown".to_string(),
+            unique_name: "Unknown".to_string(),
+            sub_name: "Unknown".to_string(),
+            stat_with_weapons: vec![],
+            mastery_rank: 0,
+            rerolls: 0,
+            polarity: "".to_string(),
+            endo: 0,
+            rank: 0,
+            image: "".to_string(),
+            kuva: 0,
+            roll_evaluation: RivenRollEvaluation::default(),
+            grade: RivenGrade::Unknown,
+            financial_summary: RivenFinancialSummary::default(),
+            similarly_auctions: vec![],
+            price_history: vec![],
         }
     }
 }

@@ -652,16 +652,30 @@ export namespace TauriTypes {
     price: number;
     attributes: RivenAttribute[];
   }
-  export interface RivenGoodRoll {
-    optional: string[];
-    required: string[];
+
+  export interface RollEvaluation {
+    tolerated_negative_attributes: ToleratedNegativeAttribute[];
+    valid_rolls: ValidRoll[];
   }
-  export interface RivenRolls {
-    good_rolls: RivenGoodRoll[];
-    negative_attributes: string[];
+
+  export interface ToleratedNegativeAttribute {
+    label: string;
+    matches: boolean;
+  }
+
+  export interface ValidRoll {
+    optional: ToleratedNegativeAttribute[];
+    required: ToleratedNegativeAttribute[];
+  }
+
+  export interface RivenSummaryFinancialReport extends FinancialReport {
+    bought_price: number;
+    potential_profit: number;
+    last_transactions: TransactionDto[];
   }
   export interface RivenSummary {
     weapon_name: string;
+    stock_status?: StockStatus;
     sub_name: string;
     endo: number;
     kuva: number;
@@ -671,8 +685,11 @@ export namespace TauriTypes {
     grade: string;
     image: string;
     rerolls: number;
-    good_rolls?: RivenRolls;
+    roll_evaluation?: RollEvaluation;
     stat_with_weapons: StatWithWeapon[];
+    financial_summary: RivenSummaryFinancialReport;
+    similarly_auctions: WFMarketTypes.Auction[];
+    price_history: PriceHistory[];
   }
 
   export interface StatWithWeapon {
@@ -682,13 +699,7 @@ export namespace TauriTypes {
     name: string;
   }
 
-  export interface StockRivenDetails extends FinancialReport {
-    stock: StockRiven;
-    auction_info: WFMarketTypes.Auction | null;
-    last_transactions: TransactionDto[];
-    stock_profit: number;
-    riven_summary: RivenSummary;
-  }
+  export interface StockRivenDetails extends RivenSummary {}
   export interface SubType {
     rank?: number;
     variant?: string;
