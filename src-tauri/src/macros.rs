@@ -57,7 +57,6 @@ macro_rules! emit_error {
     ($err:expr) => {{
         use crate::send_event;
         use crate::types::*;
-        use serde_json::json;
         send_event!(UIEvent::OnError, Some(json!($err)));
     }};
 }

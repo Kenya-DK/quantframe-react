@@ -1,4 +1,3 @@
-use serde::{Deserialize, Serialize};
 use std::{
     io::Read,
     net::{TcpListener, TcpStream},
@@ -242,12 +241,4 @@ async fn handle_client(mut stream: TcpStream, client: Arc<HttpServer>) {
             .handle_request(method, path, body, &mut stream)
             .await;
     }
-}
-
-// ---------- Models ----------
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Order {
-    pub id: String,
-    #[serde(default)]
-    pub item: String,
 }

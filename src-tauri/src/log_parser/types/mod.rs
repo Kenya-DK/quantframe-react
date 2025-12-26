@@ -4,4 +4,3 @@ pub mod trade_item;
 pub use trade_item::*;
 pub mod trade;
 pub use trade::*;
-pub mod create_stock_entity;

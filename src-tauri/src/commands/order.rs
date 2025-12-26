@@ -4,7 +4,7 @@ use std::{
 };
 
 use entity::{dto::*, enums::*};
-use serde_json::{json, Value};
+use serde_json::Value;
 use utils::{filters_by, get_location, group_by, Error};
 use wf_market::types::Order;
 

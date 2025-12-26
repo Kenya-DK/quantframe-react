@@ -1,5 +1,4 @@
 pub mod auction_ext;
-pub mod auction_item_attribute_ext;
 pub mod auction_list_ext;
 pub mod create_stock_item_ext;
 pub mod create_stock_riven_ext;

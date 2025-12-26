@@ -39,7 +39,7 @@ async fn print_token() {
 
 #[tokio::test]
 async fn test_cache_extract() {
-    let mut client = Client::new(
+    let client = Client::new(
         "N/A",
         "default",
         "v1",

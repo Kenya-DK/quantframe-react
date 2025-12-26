@@ -3,7 +3,7 @@ use std::sync::LazyLock;
 
 use entity::{
     dto::PriceHistory,
-    enums::{RivenAttributeGrade, RivenGrade},
+    enums::{RivenAttributeGrade, RivenGrade, StockStatus},
     stock_riven,
 };
 use serde::Serialize;
@@ -13,8 +13,7 @@ use wf_market::types::AuctionLike;
 
 use crate::{
     cache::{
-        AttributeMatch, CacheRivenRolls, RivenFinancialSummary, RivenRollEvaluation,
-        RivenSingleAttribute, RivenStatWithWeapon,
+        RivenFinancialSummary, RivenRollEvaluation, RivenSingleAttribute, RivenStatWithWeapon,
     },
     utils::{modules::states, ErrorFromExt},
 };
@@ -41,6 +40,7 @@ pub struct RivenSummary {
     weapon_name: String,
     unique_name: String,
     sub_name: String,
+    stock_status: Option<StockStatus>,
     rerolls: i64,
     rank: i32,
     stat_with_weapons: Vec<RivenStatWithWeapon>,
@@ -251,6 +251,7 @@ impl RivenSummary {
             financial_summary: RivenFinancialSummary::default(),
             similarly_auctions: vec![],
             price_history: vec![],
+            stock_status: None,
         })
     }
 
@@ -406,6 +407,7 @@ impl RivenSummary {
                 summary.grade_riven()?;
                 summary.find_similar_auctions().await?;
                 summary.price_history = item.price_history.0.clone();
+                summary.stock_status = Some(item.status.clone());
                 Ok(summary)
             }
             Err(e) => {
@@ -435,6 +437,7 @@ impl Default for RivenSummary {
             financial_summary: RivenFinancialSummary::default(),
             similarly_auctions: vec![],
             price_history: vec![],
+            stock_status: None,
         }
     }
 }
