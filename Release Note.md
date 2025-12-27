@@ -6,6 +6,7 @@
 ## Dev Notes
 
 - ✏️ Remove some logging that was only for testing
+- ✏️ Refactor trade processing to be more modular and easier to read when debugging
 
 ## TODO's
 
@@ -13,6 +14,7 @@
 - ⏱️ Add a sound or a discord message if the livesraper dies
 - ⏱️ Add Minimum price for wishlist items
 - ⏱️ Add https://remoraid.dev link to as a way to create a new design and to the settings page
+- ⏱️ Fix user can type in the chat box
 
 ## Feature's
 

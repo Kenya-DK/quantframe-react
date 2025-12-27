@@ -81,45 +81,63 @@ impl PlayerTrade {
         let offer_plat = self.get_offered_plat();
         let receive_plat = self.get_received_plat();
 
-        add_to_zip(format!(
-            "Calculating Trade | Offered Plat: {} | Received Plat: {}",
-            offer_plat, receive_plat
-        ));
+        log(
+            format!(
+                "Calculating Trade | Offered Plat: {} | Received Plat: {}",
+                offer_plat, receive_plat
+            ),
+            None,
+        );
 
         if offer_plat > 0 {
             self.platinum = offer_plat;
-            add_to_zip(format!("Platinum set from Offer: {}", self.platinum));
+            log(format!("Platinum set from Offer: {}", self.platinum), None);
         }
         if receive_plat > 0 {
             self.platinum = receive_plat;
-            add_to_zip(format!("Platinum set from Receive: {}", self.platinum));
+            log(
+                format!("Platinum set from Receive: {}", self.platinum),
+                None,
+            );
         }
 
         // Filter out unknown items
         let offered_items = self.get_valid_items(&TradeClassification::Purchase);
         let received_items = self.get_valid_items(&TradeClassification::Sale);
 
-        add_to_zip(format!(
-            "Filtered Items | Offered: {} | Received: {}",
-            offered_items.len(),
-            received_items.len()
-        ));
+        log(
+            format!(
+                "Filtered Items | Offered: {} | Received: {}",
+                offered_items.len(),
+                received_items.len()
+            ),
+            None,
+        );
 
         if offer_plat > 1 && offered_items.len() == 1 {
             self.trade_type = TradeClassification::Purchase;
-            add_to_zip(format!(
-                "Classified Trade as Purchase | Item: {:?}",
-                offered_items.first()
-            ));
+            log(
+                format!(
+                    "Classified Trade as Purchase | Item: {:?}",
+                    offered_items.first()
+                ),
+                None,
+            );
         } else if receive_plat > 1 && received_items.len() == 1 {
             self.trade_type = TradeClassification::Sale;
-            add_to_zip(format!(
-                "Classified Trade as Sale | Item: {:?}",
-                received_items.first()
-            ));
+            log(
+                format!(
+                    "Classified Trade as Sale | Item: {:?}",
+                    received_items.first()
+                ),
+                None,
+            );
         } else {
             self.trade_type = TradeClassification::Trade;
-            add_to_zip("Classified Trade as Regular Item-for-Item Trade".to_string());
+            log(
+                "Classified Trade as Regular Item-for-Item Trade".to_string(),
+                None,
+            );
         }
     }
     pub fn get_item_by_type(
@@ -153,57 +171,67 @@ impl PlayerTrade {
         {
             Ok(part) => part,
             Err(_) => {
-                add_to_zip(&format!(
-                    "Main part not found for by: Component|{}",
-                    &main_part.unique_name
-                ));
+                log(
+                    format!(
+                        "Main part not found for by: Component|{}",
+                        &main_part.unique_name
+                    ),
+                    None,
+                );
                 return Ok((false, "".to_string()));
             }
         };
-        add_to_zip(&format!("Found main part {} for set", main_part.display()));
-
+        log(
+            &format!("Found main part {} for set", main_part.display()),
+            None,
+        );
         // Get the set unique name if it exists
         let set_unique_name = match main_part.part_of_set {
             Some(set) => set,
             None => {
-                add_to_zip(&format!(
-                    "Part of set not found for by: {:?}",
-                    main_part.part_of_set
-                ));
+                log(
+                    format!("Part of set not found for by: {:?}", main_part.part_of_set),
+                    None,
+                );
                 return Ok((false, "".to_string()));
             }
         };
-        add_to_zip(&format!("Set unique name: {}", set_unique_name));
+        log(&format!("Set unique name: {}", set_unique_name), None);
         // Get the set for the main part
         let set = match cache.all_items().get_by(&set_unique_name) {
             Ok(set) => set,
             Err(_) => {
-                add_to_zip(&format!("Set not found for by: {}", set_unique_name));
+                log(format!("Set not found for by: {}", set_unique_name), None);
                 return Ok((false, "".to_string()));
             }
         };
-        add_to_zip(&format!("Found set {} for main part", set.display()));
-
+        log(&format!("Found set {} for main part", set.display()), None);
         // Get the components for the set
         let components = set.get_tradable_components();
         if components.is_empty() {
-            add_to_zip(&format!("Components not found for set: {}", set.display()));
+            log(
+                format!("Components not found for set: {}", set.display()),
+                None,
+            );
             return Ok((false, "".to_string()));
         }
 
         for component in components {
             let found =
                 self.is_item_in_trade(&trade_type, &component.unique_name, component.item_count);
-            add_to_zip(&format!(
-                "Component: {} | Found: {}",
-                component.display(),
-                found
-            ));
+            log(
+                format!(
+                    "Checking component <{}>: Found={}",
+                    component.display(),
+                    found
+                ),
+                None,
+            );
             if !found {
                 return Ok((false, "".to_string()));
             }
         }
-        add_to_zip(&format!("Full set found: {}", set.display()));
+        log(&format!("Full set found: {}", set.display()), None);
         return Ok((true, set.unique_name));
     }
 

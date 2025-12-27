@@ -7,7 +7,7 @@ use utils::*;
 
 use crate::{
     cache::types::CacheTradableItem,
-    log_parser::{add_to_zip, TradeItemType},
+    log_parser::{log, TradeItemType},
     utils::modules::states,
 };
 
@@ -205,7 +205,7 @@ impl TradeItem {
                         }
                         Err(e) => {
                             let msg = e.to_string();
-                            add_to_zip(&msg);
+                            log(&msg, None);
                             self.error = Some((msg.clone(), Value::Null));
                             return Ok(DetectionStatus::None);
                         }

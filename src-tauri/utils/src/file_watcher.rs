@@ -227,7 +227,7 @@ impl FileWatcher {
         // Split into lines
         for line in content.lines() {
             // Skip lines that contain only replacement characters (likely corrupted)
-            if !line.chars().all(|c| c == '�') {
+            if !line.chars().all(|c| c == '�') || line.is_empty() {
                 lines.push(line.to_string());
             } else {
                 trace(

@@ -1,4 +1,4 @@
-use std::sync::Mutex;
+use std::sync::{LazyLock, Mutex};
 
 use crate::{
     add_metric,
@@ -14,46 +14,27 @@ use wf_market::enums::OrderType;
 
 pub static LOGGER: Mutex<Option<ZipLogger>> = Mutex::new(None);
 pub static COMPONENT: Mutex<String> = Mutex::new(String::new());
-pub fn add_to_zip(content: impl Into<String>) {
+
+static BASE_LOG_OPTIONS: LazyLock<LoggerOptions> = LazyLock::new(|| {
+    LoggerOptions::default()
+        .set_file("trade.log")
+        .set_console(false)
+        .set_show_elapsed_time(false)
+        .set_show_component(false)
+        .set_show_level(false)
+});
+
+pub fn log(content: impl Into<String>, options: Option<&LoggerOptions>) {
     let content = content.into();
-    // trace(
-    //     "OnTradeEvent",
-    //     &content,
-    //     &LoggerOptions::default().set_file("trade.log"),
-    // );
-    if let Some(zip) = LOGGER.lock().unwrap().as_ref() {
-        zip.add_log(content).ok();
-    }
+    let options = if let Some(opts) = options {
+        opts
+    } else {
+        &BASE_LOG_OPTIONS
+    };
+    trace("OnTradeEvent", &content, options);
 }
 fn get_component(component: &str) -> String {
     format!("{}:{}", COMPONENT.lock().unwrap().as_str(), component)
-}
-pub fn write_zip() {
-    let mut log = LOGGER.lock().unwrap();
-    let date = chrono::Local::now().format("%Y-%m-%d_%H-%M-%S").to_string();
-    if let Some(zip) = log.as_ref() {
-        match zip.finalize() {
-            Ok(_) => println!("Zip archive finalized successfully."),
-            Err(e) => {
-                e.log(format!("trade_{}.log", date));
-            }
-        }
-        *log = None;
-    }
-}
-pub fn new_zip() {
-    let date = chrono::Local::now().format("%Y-%m-%d_%H-%M-%S").to_string();
-    *LOGGER.lock().unwrap() = ZipLogger::start(format!("trade_{}.zip", date)).ok();
-}
-pub fn add_error(error: &Error) {
-    if let Some(zip) = LOGGER.lock().unwrap().as_ref() {
-        match zip.add_error(error) {
-            Ok(_) => {}
-            Err(e) => {
-                e.log("add_error.log");
-            }
-        }
-    }
 }
 pub struct OnTradeEvent {
     detection: TradeDetection,
@@ -87,7 +68,10 @@ impl OnTradeEvent {
         self.reset();
         self.add_trade_message(last_line);
         self.add_trade_message(line);
-        add_to_zip("Started");
+        log(
+            "Started",
+            Some(&BASE_LOG_OPTIONS.set_width(180).set_centered(true)),
+        );
         add_metric!("on_trade_event", "trade_started");
     }
     pub fn start_line_processing(&mut self) {
@@ -96,7 +80,7 @@ impl OnTradeEvent {
         self.current_trade.logs = lines.clone();
         let mut i = 0;
 
-        add_to_zip(format!("Processing {} Lines", lines.len()));
+        log(format!("Processing {} Lines", lines.len()), None);
 
         while i < lines.len() {
             let line = lines[i].to_owned().replace("\r", "").replace("\n", "");
@@ -106,16 +90,18 @@ impl OnTradeEvent {
                 "N/A".to_string()
             };
 
-            add_to_zip(format!("Line [{}]: '{}', Next: '{}'", i, line, next_line));
-
             let (is_irrelevant, status) =
                 self.detection.is_irrelevant_trade_line(&line, &next_line);
 
+            log(
+                format!(
+                    "Analyzing Line: '{}' | Next: '{}' | Status: {:?} | Is Irrelevant: {}",
+                    line, next_line, status, !is_irrelevant
+                ),
+                None,
+            );
+
             if !is_irrelevant {
-                add_to_zip(format!(
-                    "Skipping Irrelevant: '{}' (Status: {:?})",
-                    line, status
-                ));
                 i += if status.is_combined() { 2 } else { 1 };
                 continue;
             }
@@ -125,11 +111,10 @@ impl OnTradeEvent {
             if is_offer_line.is_found() {
                 i += if is_offer_line.is_combined() { 2 } else { 1 };
 
-                add_to_zip(format!(
-                    "Detected Offer Line | Full: '{}' | Combined: {}",
-                    full_line,
-                    is_offer_line.is_combined()
-                ));
+                log(
+                    format!("Offer Line Detected: '{}' | Advancing Index", full_line),
+                    None,
+                );
 
                 let player_name = full_line
                     .replace(&self.detection.receive_line_first_part, "")
@@ -139,10 +124,13 @@ impl OnTradeEvent {
                     .to_string();
                 self.current_trade.player_name = remove_special_characters(&player_name);
 
-                add_to_zip(format!(
-                    "Player Identified: '{}', Switching to Receiving Items",
-                    self.current_trade.player_name
-                ));
+                log(
+                    format!(
+                        "Player Identified: '{}', Switching to Receiving Items",
+                        self.current_trade.player_name
+                    ),
+                    None,
+                );
 
                 is_offering = false;
                 continue;
@@ -150,26 +138,32 @@ impl OnTradeEvent {
                 let (status, item) = TradeItem::from_string(&line, &next_line, &self.detection);
 
                 if status.is_combined() {
-                    add_to_zip(format!(
-                        "Combined Line Detected (Status: {:?}) | Advancing Index",
-                        status
-                    ));
+                    log(
+                        format!(
+                            "Combined Line Detected (Status: {:?}) | Advancing Index",
+                            status
+                        ),
+                        None,
+                    );
                     i += 1;
                 }
 
                 if !item.is_valid() {
-                    add_to_zip(format!(
-                        "Invalid Item | Line: '{}', Next: '{}', Status: {:?}",
-                        line, next_line, status
-                    ));
+                    log(
+                        format!("Invalid Item Detected: '{}' | Status: {:?}", line, status),
+                        None,
+                    );
                     i += 1;
                     continue;
                 }
 
-                add_to_zip(format!(
-                    "Valid Item Parsed: {} | Status: {:?} | Offering? {}",
-                    item, status, is_offering
-                ));
+                log(
+                    format!(
+                        "Valid Item Parsed: {} | Status: {:?} | Offering? {}",
+                        item, status, is_offering
+                    ),
+                    None,
+                );
 
                 let mut items = if is_offering {
                     self.current_trade.offered_items.iter_mut()
@@ -183,15 +177,18 @@ impl OnTradeEvent {
                         && p.sub_type == item.sub_type
                 }) {
                     trade.quantity += 1;
-                    add_to_zip(format!(
-                        "Incremented Quantity for Item: {} | New Qty: {}",
-                        trade.unique_name, trade.quantity
-                    ));
+                    log(
+                        format!(
+                            "Incremented Quantity for Item: {} | New Qty: {}",
+                            trade.unique_name, trade.quantity
+                        ),
+                        None,
+                    );
                 } else if is_offering {
-                    add_to_zip(format!("Adding New Offered Item: {}", item));
+                    log(format!("Adding New Offered Item: {}", item), None);
                     self.current_trade.offered_items.push(item);
                 } else {
-                    add_to_zip(format!("Adding New Received Item: {}", item));
+                    log(format!("Adding New Received Item: {}", item), None);
                     self.current_trade.received_items.push(item);
                 }
             }
@@ -200,24 +197,28 @@ impl OnTradeEvent {
 
         self.current_trade.trade_time =
             chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
-        add_to_zip(format!("Trade Time Set: {}", self.current_trade.trade_time));
+        log(
+            format!("Trade Time Set: {}", self.current_trade.trade_time),
+            None,
+        );
 
         self.current_trade.calculate();
-        add_to_zip("Trade Calculation Complete".to_string());
+        log("Trade Calculation Complete".to_string(), None);
     }
 
     pub fn trade_cancelled(&mut self) {
-        add_to_zip("Cancelled");
+        log("Cancelled".to_string(), None);
         self.reset();
         add_metric!("on_trade_event", "trade_cancelled");
     }
     pub fn trade_failed(&mut self) {
-        add_to_zip("Failed");
+        log("Failed".to_string(), None);
         self.reset();
         add_metric!("on_trade_event", "trade_failed");
     }
     pub fn trade_accepted(&mut self) -> Result<(), Error> {
-        add_to_zip("Trade Was Successful");
+        log("Trade Was Successful".to_string(), None);
+
         let trade = self.current_trade.clone();
         let settings = states::get_settings()?.clone();
         let order_type = match trade.trade_type {
@@ -238,7 +239,9 @@ impl OnTradeEvent {
                 if let Some(zip) = LOGGER.lock().unwrap().as_ref() {
                     match zip.add_log_file("trade.json", "trade.json") {
                         Ok(_) => {}
-                        Err(e) => add_error(&e.with_location(get_location!())),
+                        Err(e) => {
+                            e.log("creating_trade_json.log");
+                        }
                     }
                 }
             }
@@ -251,6 +254,10 @@ impl OnTradeEvent {
                 &trade.to_string(),
                 &LoggerOptions::default(),
             );
+            log(
+                "Trade is a simple trade, no further processing.".to_string(),
+                None,
+            );
             return Ok(());
         }
         tauri::async_runtime::spawn({
@@ -261,7 +268,7 @@ impl OnTradeEvent {
                 if settings.live_scraper.auto_trade {
                     operations.add("AutoTrade");
                 }
-                add_to_zip(format!("Found {} valid items", items.len()));
+                log(format!("Found {} valid items", items.len()), None);
                 if item.is_none() {
                     warning(
                         "OnTradeEvent",
@@ -284,18 +291,17 @@ impl OnTradeEvent {
                     Ok((is_set, set_name)) => (is_set, set_name),
                     Err(mut e) => {
                         e = e.with_location(get_location!());
-                        e.log("");
-                        add_error(&e);
+                        log(e.to_string(), None);
                         return;
                     }
                 };
 
                 if is_set {
-                    add_to_zip(format!("Trade is a set: {}", set_name));
+                    log(format!("Trade is a set: {}", set_name), None);
                     item.unique_name = set_name;
                     item.sub_type = None;
                     item.quantity = 1;
-                    operations.add("Found");
+                    operations.add("SetFound");
                 } else if items.len() > 1 {
                     operations.add("MultipleItems");
                 } else if !set_name.is_empty() {
@@ -304,22 +310,21 @@ impl OnTradeEvent {
                     operations.add("Found");
                 }
 
-                if operations.has("Found") && operations.has("AutoTrade") {
+                if operations.any(&["Found", "SetFound"]) && operations.has("AutoTrade") {
                     match process_trade_item(item, trade.platinum, &trade.player_name, order_type)
                         .await
                     {
                         Ok(op) => operations.merge(&op),
                         Err(mut e) => {
                             e = e.with_location(get_location!());
-                            e.log("");
-                            return add_error(&e);
+                            log(e.to_string(), None);
+                            return;
                         }
                     }
                 }
                 let msg = format!("Trade Processed: {}", operations.operations.join(", "));
-                add_to_zip(&msg);
+                log(msg, None);
                 process_operations(&trade, operations);
-                write_zip();
             }
         });
         self.reset();
@@ -347,7 +352,10 @@ impl LineHandler for OnTradeEvent {
                 self.getting_trade_message_multiline = false;
                 self.start_line_processing();
                 self.waiting_confirmation = true;
-                add_to_zip("Waiting For Confirmation/Trade Failed/Trade Cancelled");
+                log(
+                    "Waiting For Confirmation/Trade Failed/Trade Cancelled",
+                    None,
+                );
             } else if !is_start_of_log(line) {
                 self.add_trade_message(line);
                 return Ok((false, false));
@@ -366,8 +374,6 @@ impl LineHandler for OnTradeEvent {
             .is_beginning_of_trade(line, prev_line, true, ignore_combined)
             .is_found()
         {
-            write_zip();
-            new_zip();
             self.trade_started(line, prev_line);
             self.getting_trade_message_multiline = true;
             return Ok((false, true));
@@ -394,14 +400,12 @@ impl LineHandler for OnTradeEvent {
                 .is_found()
             {
                 self.trade_failed();
-                write_zip();
             } else if self
                 .detection
                 .was_trade_cancelled(line, prev_line, true, ignore_combined)
                 .is_found()
             {
                 self.trade_cancelled();
-                write_zip();
             }
             self.reset();
         }
@@ -483,7 +487,7 @@ async fn process_trade_item(
     order_type: OrderType,
 ) -> Result<OperationSet, Error> {
     let mut operations = OperationSet::new();
-    operations.add(format!("Quantity:{}", item.quantity));
+    operations.add(format!("Quantity: {}", item.quantity));
     // Handle Rivens
     if item.item_type == TradeItemType::RivenUnVeiled {
         let (op, model) = handle_riven_by_name(
@@ -500,7 +504,7 @@ async fn process_trade_item(
         operations.merge(&op);
         if !operations.has("StockRiven_NotFound") {
             if let Some(model) = model {
-                operations.add(format!("Name:{} {}", model.weapon_name, model.mod_name));
+                operations.add(format!("Name: {} {}", model.weapon_name, model.mod_name));
             }
         }
         return Ok(operations);
@@ -520,7 +524,7 @@ async fn process_trade_item(
     .map_err(|e| e.with_location(get_location!()))?;
     operations.merge(&op);
     if !op.has("WishListItemBought_NotFound") {
-        operations.add(format!("Name:{}", model.item_name));
+        operations.add(format!("Name: {}", model.item_name));
         return Ok(operations);
     }
 
@@ -538,7 +542,7 @@ async fn process_trade_item(
     .map_err(|e| e.with_location(get_location!()))?;
     operations.merge(&op);
     if !op.ends_with("_NotFound") {
-        operations.add(format!("Name:{}", model.item_name));
+        operations.add(format!("Name: {}", model.item_name));
     }
 
     Ok(operations)
