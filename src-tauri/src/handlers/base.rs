@@ -146,14 +146,13 @@ pub async fn handle_transaction(
         )
         .await?;
         if let Some(purchase_transaction) = existing_transaction.results.first() {
-            let purchase_price_per_unit = purchase_transaction.price / purchase_transaction.quantity;
-            println!("Purchase: Price {} | Quantity {} | Per unit: {}", purchase_transaction.price, purchase_transaction.quantity, purchase_price_per_unit);
+            let purchase_price_per_unit =
+                purchase_transaction.price / purchase_transaction.quantity;
 
             let sold_price_per_unit = transaction.price / transaction.quantity;
-            println!("Sold: Price {} | Quantity {} | Per unit: {}", transaction.price, transaction.quantity, sold_price_per_unit);
 
-            let total_profit = (sold_price_per_unit - purchase_price_per_unit) * transaction.quantity;
-            println!("Total Profit: {}", total_profit);
+            let total_profit =
+                (sold_price_per_unit - purchase_price_per_unit) * transaction.quantity;
 
             transaction.set_profit(total_profit);
         }
