@@ -1,7 +1,7 @@
 import { TauriTypes } from "$types";
 import { defaultTheme } from "@contexts/static";
 import { useTheme } from "@contexts/theme.context";
-import { Box, Flex, Title } from "@mantine/core";
+import { Box, Flex, Group, Title, Text } from "@mantine/core";
 import { ThemePreview } from "@components/DataDisplay/ThemePreview";
 import { LiveThemeEditor } from "@components/ThemeEditor/LiveThemeEditor";
 import api from "@api/index";
@@ -21,9 +21,12 @@ export const ThemesPanel = ({}: ThemesPanelProps) => {
   const { data, refetch } = api.cache.getThemePresets();
   return (
     <Box p={"md"}>
-      <Title order={4} mb="md">
-        {useTranslateEditor("community_themes")}
-      </Title>
+      <Group mb="md" align="center" justify="space-between">
+        <Title order={4}>{useTranslateEditor("community_themes")}</Title>
+        <Text component="a" href="https://quantframe.app/features/themes" target="_blank" rel="noreferrer">
+          {useTranslateEditor("get_more_out_of_themes")}
+        </Text>
+      </Group>
       <Flex p={"md"} gap="sm" justify="flex-start" align="flex-start" direction="row" wrap="wrap">
         <ThemePreview
           icon={defaultTheme.iconBase64}
