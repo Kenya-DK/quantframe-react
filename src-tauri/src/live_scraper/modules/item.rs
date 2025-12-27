@@ -22,7 +22,7 @@ use crate::{
     utils::SubTypeExt, DATABASE,
 };
 
-static COMPONENT: &str = "LiveScraper:ItemModule:";
+static COMPONENT: &str = "LiveScraper:Item:";
 static LOG_FILE: &str = "live_scraper_item.log";
 
 #[derive(Debug)]
@@ -310,7 +310,7 @@ impl ItemModule {
             .set_file("progress_buying.log")
             .set_show_component(false)
             .set_show_time(false);
-        let component = format!("{}ProgressBuying:", COMPONENT);
+        let component = format!("{}Buying:", COMPONENT);
         info(
             &component,
             &format!("Starting buying process for item: {}", item_info.name),
@@ -515,18 +515,15 @@ impl ItemModule {
         live_orders: &OrderList<OrderWithUser>,
     ) -> Result<(), Error> {
         let conn = DATABASE.get().unwrap();
-        let log_options = &LoggerOptions::default()
-            .set_file("progress_selling.log")
-            .set_show_component(false)
-            .set_show_time(false);
-        let component = format!("{}ProgressSelling:", COMPONENT);
+        let log_options = &LoggerOptions::default();
+        let component = format!("{}Selling:", COMPONENT);
         info(
             &component,
             &format!("Starting selling process for item: {}", item_info.name),
             &log_options
                 .set_centered(true)
                 .set_width(180)
-                .set_enable(true),
+                .set_enable(false),
         );
         // Get Settings.
         let settings = states::get_settings()?.live_scraper.stock_item;
@@ -565,7 +562,7 @@ impl ItemModule {
                     "Item {} is marked as hidden and inactive. Skipping.",
                     item_info.name
                 ),
-                &log_options,
+                &log_options.set_enable(false),
             );
             return Ok(());
         } else if stock_item.is_hidden && stock_item.status != StockStatus::InActive {
@@ -721,18 +718,15 @@ impl ItemModule {
         live_orders: &OrderList<OrderWithUser>,
     ) -> Result<(), Error> {
         let conn = DATABASE.get().unwrap();
-        let log_options = &LoggerOptions::default()
-            .set_file("progress_wish_list.log")
-            .set_show_component(false)
-            .set_show_time(false);
-        let component = format!("{}ProgressWishList:", COMPONENT);
+        let log_options = &LoggerOptions::default();
+        let component = format!("{}WishList:", COMPONENT);
         info(
             &component,
             &format!("Starting wishlist process for item: {}", item_info.name),
             &log_options
                 .set_centered(true)
                 .set_width(180)
-                .set_enable(true),
+                .set_enable(false),
         );
         let settings = states::get_settings()?.live_scraper.stock_item;
         // Check if item is blacklisted for wishlist
@@ -743,7 +737,7 @@ impl ItemModule {
                     "Item {} is blacklisted for wishlist. Skipping.",
                     item_info.name
                 ),
-                &log_options,
+                &log_options.set_enable(false),
             );
             return Ok(());
         }
@@ -840,7 +834,7 @@ impl ItemModule {
             match WishListMutation::update_by_id(conn, wishlist_item.to_update()).await {
                 Ok(_) => {
                     info(
-                        format!("{}WishListUpdate", component),
+                        format!("{}Update", component),
                         &format!("Updated wishlist item: {:?}", entry.wish_list_id),
                         &log_options,
                     );
