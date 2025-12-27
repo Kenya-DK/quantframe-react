@@ -131,6 +131,8 @@ export namespace TauriTypes {
     enabled: boolean;
     title: string;
     content: string;
+    sound_file: string;
+    volume: number;
   }
   export interface DiscordNotify {
     enabled: boolean;

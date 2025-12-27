@@ -72,7 +72,7 @@ fn update_user(mut cu_user: User, user: &WFUserPrivate, qf_user: &QFUserPrivate)
 fn send_ws_state(event: UIEvent, cause: &str, data: &WsMessage) -> Error {
     let mut payload = data.payload.clone().unwrap_or(json!({}));
     payload["route"] = json!(data.route.clone());
-    payload["version"] = json!(data.version.api_url());
+    payload["version"] = json!(data.version.websocket_url());
 
     let err = Error::new("WebSocket", "Connection state", get_location!())
         .with_context(payload)

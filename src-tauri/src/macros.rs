@@ -119,3 +119,15 @@ macro_rules! add_metric {
         app.qf_client.analytics().add_metric($key, $value);
     }};
 }
+
+#[macro_export]
+macro_rules! play_sound {
+    ($file_name:expr, $volume:expr) => {{
+        use crate::emit_event;
+        emit_event!(
+            "play_sound",
+            serde_json::json!({"file_name": $file_name, "volume": $volume}),
+            "PlaySound"
+        );
+    }};
+}

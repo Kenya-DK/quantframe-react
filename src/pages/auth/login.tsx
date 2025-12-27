@@ -7,6 +7,7 @@ import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { TextTranslate } from "@components/Shared/TextTranslate";
 import { ResponseError, TauriTypes } from "$types";
 import { useState } from "react";
+import { PlaySound } from "@utils/helper";
 
 export default function LoginPage() {
   // States
@@ -47,6 +48,7 @@ export default function LoginPage() {
         color: "green.7",
       });
       SendTauriDataEvent(TauriTypes.Events.UpdateUser, TauriTypes.EventOperations.SET, u);
+      await PlaySound("windows_xp_startup.mp3", 1.0);
     },
     onError: (err: ResponseError) => {
       console.error(err);

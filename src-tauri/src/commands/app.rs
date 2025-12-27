@@ -27,7 +27,7 @@ pub async fn app_get_app_info(app: tauri::State<'_, Mutex<AppState>>) -> Result<
         "use_temp_db": app.use_temp_db,
         "tos_uuid": app.settings.tos_uuid.clone(),
         "is_pre_release": app.is_pre_release,
-        "patreon_usernames": vec!["Willjsnider s", "Hmh", "Jessie"],
+        "patreon_usernames": vec!["Willjsnider s", "DAn IguEss"],
     }))
 }
 

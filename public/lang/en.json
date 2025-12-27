@@ -723,6 +723,23 @@
             "content": {
               "label": "Content",
               "placeholder": "Enter notification content"
+            },
+            "sound": {
+              "label": "Sound",
+              "placeholder": "Select notification sound",
+              "play_tooltip": "Play Sound",
+              "options": {
+                "none": "None",
+                "cat_meow": "Cat Meow",
+                "windows_xp_error": "Windows XP Error",
+                "windows_xp_startup": "Windows XP Startup",
+                "iphone_notification": "Shit Phone Notification",
+                "windows_notification": "Windows Notification"
+              }
+            },
+            "volume": {
+              "label": "Volume",
+              "placeholder": "Set volume level"
             }
           }
         },

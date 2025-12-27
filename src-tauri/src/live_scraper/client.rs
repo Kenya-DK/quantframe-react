@@ -2,7 +2,7 @@ use crate::{
     emit_error,
     enums::*,
     live_scraper::modules::*,
-    send_event,
+    play_sound, send_event,
     types::UIEvent,
     utils::{modules::states, OrderListExt},
 };
@@ -94,6 +94,7 @@ impl LiveScraperState {
                                         LogLevel::Critical | LogLevel::Error => {
                                             // Stop the live scraper
                                             is_running.store(false, Ordering::SeqCst);
+                                            play_sound!("windows_xp_error.mp3", 1.0);
                                             emit_error!(e);
                                         }
                                         _ => {}
@@ -122,6 +123,7 @@ impl LiveScraperState {
                                     LogLevel::Critical | LogLevel::Error => {
                                         // Stop the live scraper
                                         is_running.store(false, Ordering::SeqCst);
+                                        play_sound!("windows_xp_error.mp3", 1.0);
                                         emit_error!(e);
                                     }
                                     _ => {}

@@ -1,6 +1,8 @@
 import { upperFirst } from "@mantine/hooks";
 import { ItemWithMeta, ItemWithSubType, TauriTypes } from "$types";
 import api from "@api/index";
+import { resolveResource } from "@tauri-apps/api/path";
+import { convertFileSrc } from "@tauri-apps/api/core";
 
 export interface GroupByDateSettings {
   labels?: string[];
@@ -19,6 +21,18 @@ export interface TimeSpan {
   minutes: number;
   seconds: number;
 }
+export const PlaySound = async (fileName: string, volume: number = 1.0) => {
+  try {
+    const resourcePath = await resolveResource(`resources/sounds/${fileName}`);
+    const assetUrl = convertFileSrc(resourcePath);
+    const audio = new Audio(assetUrl);
+    audio.volume = volume;
+    audio.play();
+  } catch (error) {
+    console.error(`Error playing sound ${fileName}:`, error);
+  }
+};
+(window as any).PlaySound = PlaySound;
 export const calculateTimeLeft = (endDate: Date): TimeSpan => {
   const now = new Date();
   const difference = endDate.getTime() - now.getTime();

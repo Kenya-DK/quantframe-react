@@ -1,4 +1,4 @@
-import { Collapse, Group, TextInput, Title, Divider, Textarea, ScrollAreaAutosize, Button, Box, Stack } from "@mantine/core";
+import { Collapse, Group, TextInput, Title, Divider, Textarea, ScrollAreaAutosize, Button, Box, Stack, Select, NumberInput } from "@mantine/core";
 // import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { useForm } from "@mantine/form";
 import { TauriTypes } from "$types";
@@ -9,6 +9,7 @@ import { faDiscord } from "@fortawesome/free-brands-svg-icons";
 import { TooltipIcon } from "../../Shared/TooltipIcon";
 import api from "@api/index";
 import { faWebHook } from "@icons";
+import { PlaySound } from "../../../utils/helper";
 export type EditNotificationSettingProps = {
   title: string;
   id: string;
@@ -89,6 +90,46 @@ export function EditNotificationSetting({ id, value, onChange }: EditNotificatio
               rows={3}
               maxRows={3}
             />
+            <Group gap="xs" mt="sm">
+              <Select
+                w={250}
+                label={useTranslateFormSystemFields("sound.label")}
+                placeholder={useTranslateFormSystemFields("sound.placeholder")}
+                radius="md"
+                value={form.values.system_notify.sound_file || "none"}
+                onChange={(value) => form.setFieldValue("system_notify.sound_file", value || "none")}
+                rightSectionPointerEvents="inherit"
+                data={[
+                  { value: "none", label: useTranslateFormSystemFields("sound.options.none") },
+                  { value: "cat_meow.mp3", label: useTranslateFormSystemFields("sound.options.cat_meow") },
+                  { value: "iphone_notification.mp3", label: useTranslateFormSystemFields("sound.options.iphone_notification") },
+                  { value: "windows_notification.mp3", label: useTranslateFormSystemFields("sound.options.windows_notification") },
+                  { value: "windows_xp_error.mp3", label: useTranslateFormSystemFields("sound.options.windows_xp_error") },
+                  { value: "windows_xp_startup.mp3", label: useTranslateFormSystemFields("sound.options.windows_xp_startup") },
+                ]}
+                rightSection={
+                  <ActionWithTooltip
+                    tooltip={useTranslateFormSystemFields("sound.play_tooltip")}
+                    icon={faBell}
+                    onClick={() => {
+                      if (!form.values.system_notify.enabled || form.values.system_notify.sound_file === "none") return;
+                      PlaySound(form.values.system_notify.sound_file || "none", form.values.system_notify.volume || 1.0);
+                    }}
+                  />
+                }
+              />
+              <NumberInput
+                w={100}
+                label={useTranslateFormSystemFields("volume.label")}
+                placeholder={useTranslateFormSystemFields("volume.placeholder")}
+                radius="md"
+                min={0}
+                max={1}
+                step={0.1}
+                value={form.values.system_notify.volume || 1.0}
+                onChange={(value) => form.setFieldValue("system_notify.volume", Number(value) || 1.0)}
+              />
+            </Group>
             <Divider my="sm" />
           </Collapse>
           <Collapse in={form.values.discord_notify.enabled}>

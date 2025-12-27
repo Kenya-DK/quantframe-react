@@ -15,12 +15,13 @@ import { resolveResource } from "@tauri-apps/api/path";
 import { readTextFile } from "@tauri-apps/plugin-fs";
 import { LiveScraperContextProvider } from "./liveScraper.context";
 import { notifications } from "@mantine/notifications";
-import { TextTranslate } from "../components/Shared/TextTranslate";
-import { useTauriEvent } from "../hooks/useTauriEvent.hook";
+import { TextTranslate } from "@components/Shared/TextTranslate";
+import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 import { useTranslation } from "react-i18next";
 import i18n from "i18next";
 import { useLocalStorage } from "@mantine/hooks";
 import { listen } from "@tauri-apps/api/event";
+import { PlaySound } from "@utils/helper";
 export async function loadLanguage(lang: string) {
   try {
     const response = await fetch(`/lang/${lang}.json`);
@@ -196,6 +197,11 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
       .then((wasInitialized) => (wasInitialized ? InitializeApp() : console.log("App was not initialized")))
       .catch((e) => console.error("Error checking initialization:", e));
     listen("app:ready", () => InitializeApp());
+    listen<{ file_name: string; volume: number }>("play_sound", ({ payload }) => {
+      PlaySound(payload.file_name, payload.volume).catch((error) => {
+        console.error("Error playing sound:", error);
+      });
+    });
     return () => {};
   }, []);
   return (

@@ -2,7 +2,9 @@
   "identifier": "migrated",
   "description": "permissions that were migrated from v1",
   "local": true,
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
     "fs:allow-write-file",
@@ -12,7 +14,11 @@
     "fs:allow-exists",
     {
       "identifier": "fs:scope",
-      "allow": ["$APPDATA/**", "$DESKTOP/**", "$RESOURCE/**"]
+      "allow": [
+        "$APPDATA/**",
+        "$DESKTOP/**",
+        "$RESOURCE/**"
+      ]
     },
     "core:window:allow-create",
     "shell:allow-open",

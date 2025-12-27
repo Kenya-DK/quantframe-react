@@ -18,7 +18,8 @@
     ],
     "createUpdaterArtifacts": "v1Compatible",
     "resources": {
-      "resources/*": "resources/"
+      "resources/*": "resources/",
+      "resources/sounds/*": "resources/sounds/"
     }
   },
   "productName": "Quantframe",
