@@ -369,7 +369,10 @@ impl Client {
                     }
                 }
             }
-            Err(_) => Err(ApiError::RequestError(error)),
+            Err(e) => {
+                error.set_content(e.to_string());
+                Err(ApiError::RequestError(error))
+            }
         }
     }
 

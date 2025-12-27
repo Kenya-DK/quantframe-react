@@ -367,7 +367,9 @@ impl AppState {
             }
             Err(e) => {
                 e.log("user_validation.log");
-                state.user = User::default();
+                if e.log_level != LogLevel::Warning {
+                    state.user = User::default();
+                }
             }
         }
 
@@ -467,12 +469,17 @@ impl AppState {
                     .await?
             }
             Err(e) => {
+                let level = match e {
+                    QFApiError::RequestError(_) => LogLevel::Warning,
+                    _ => LogLevel::Critical,
+                };
                 return Err(Error::from_qf(
                     "AppState:Validate",
                     "Failed to get QF user",
                     e,
                     get_location!(),
-                ))
+                )
+                .set_log_level(level));
             }
         };
         if !qf_user.token.is_none() {
