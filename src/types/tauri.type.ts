@@ -737,6 +737,7 @@ export namespace TauriTypes {
     wfm_url: string;
     quantity: number;
     maximum_price?: number;
+    minimum_price?: number;
     is_hidden: boolean;
   }
   export interface WishListItemDetails extends BaseItemDetails {
@@ -748,6 +749,7 @@ export namespace TauriTypes {
   export interface UpdateWishListItem {
     id: number;
     quantity?: number;
+    minimum_price?: number;
     maximum_price?: number;
     list_price?: number;
     status?: StockStatus;

@@ -18,6 +18,9 @@ pub struct UpdateWishList {
     pub maximum_price: FieldChange<i64>,
 
     #[serde(default)]
+    pub minimum_price: FieldChange<i64>,
+
+    #[serde(default)]
     pub list_price: FieldChange<i64>,
 
     #[serde(default)]
@@ -36,6 +39,11 @@ impl UpdateWishList {
 
         match self.quantity {
             Value(v) => item.quantity = Set(v),
+            _ => {}
+        }
+        match self.minimum_price {
+            Value(v) => item.minimum_price = Set(Some(v)),
+            Null => item.minimum_price = Set(None),
             _ => {}
         }
         match self.maximum_price {
@@ -68,6 +76,7 @@ impl UpdateWishList {
             id,
             quantity: FieldChange::Ignore,
             maximum_price: FieldChange::Ignore,
+            minimum_price: FieldChange::Ignore,
             list_price: FieldChange::Ignore,
             is_hidden: FieldChange::Ignore,
             status: FieldChange::Ignore,

@@ -1328,7 +1328,8 @@
         "title": "Update {{count}} Wish List Items",
         "fields": {
           "listed": "Listed Prices History",
-          "quantity_label": "Quantity"
+          "quantity_label": "Quantity",
+          "minimum_price_label": "Minimum Price"
         }
       },
       "trade_entry_update": {

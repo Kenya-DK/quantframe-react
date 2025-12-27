@@ -46,6 +46,12 @@ export function WishListItemUpdate({ values, onUpdate }: WishListItemUpdateProps
           value={form.values.quantity}
           onChange={(value) => form.setFieldValue("quantity", Number(value))}
         />
+        <NumberInput
+          min={0}
+          label={useTranslateFields("minimum_price_label")}
+          value={form.values.minimum_price}
+          onChange={(value) => form.setFieldValue("minimum_price", Number(value))}
+        />
         <Group
           justify="flex-end"
           style={{

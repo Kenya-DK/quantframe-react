@@ -19,6 +19,8 @@ pub struct Model {
     pub sub_type: Option<SubType>,
     pub quantity: i64,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub minimum_price: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub maximum_price: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub list_price: Option<i64>,
@@ -68,6 +70,7 @@ impl Model {
             sub_type,
             quantity,
             list_price: None,
+            minimum_price: None,
             maximum_price,
             status: StockStatus::Pending,
             price_history: PriceHistoryVec(vec![]),
@@ -159,6 +162,9 @@ impl Model {
             maximum_price: self
                 .maximum_price
                 .map_or(FieldChange::Null, |v| FieldChange::Value(v)),
+            minimum_price: self
+                .minimum_price
+                .map_or(FieldChange::Null, |v| FieldChange::Value(v)),                
             list_price: self
                 .list_price
                 .map_or(FieldChange::Null, |v| FieldChange::Value(v)),

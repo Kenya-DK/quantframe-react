@@ -768,15 +768,16 @@ impl ItemModule {
         // Set the post price to the highest price.
         let mut post_price = highest_price;
 
-        // Get Maximum Price
+        // Get Maximum and Minimum Price from Wishlist Item
         let maximum_price = wishlist_item.maximum_price.unwrap_or(0);
+        let minimum_price = wishlist_item.minimum_price.unwrap_or(0);
+
         // Return if no buy orders are found.
         if live_orders.buy_orders.len() <= 0 {
             order_info.add_operation("NoBuyers");
             post_price = price.avg_price as i64;
             wishlist_item.set_status(StockStatus::NoBuyers);
             wishlist_item.set_list_price(Some(post_price));
-            wishlist_item.locked = true;
         }
         // Check if the price is higher than the max price
         if post_price > maximum_price && maximum_price > 0 {
@@ -784,6 +785,11 @@ impl ItemModule {
             order_info.add_operation("MaxPrice");
         }
         post_price = std::cmp::max(post_price, 1);
+
+        if post_price < minimum_price && minimum_price > 0 {
+            post_price = minimum_price;
+            order_info.add_operation("MinPrice");
+        }
 
         // Update Order Info
         order_info = order_info.set_highest_price(highest_price);
