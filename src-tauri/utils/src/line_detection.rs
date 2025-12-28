@@ -33,6 +33,36 @@ fn contains_match(line: &str, match_pattern: &str, is_exact_match: bool) -> bool
         line.contains(match_pattern)
     }
 }
+/// Checks if `line` matches the given `match_pattern`.
+pub fn strip_prefix(
+    prefix: impl Into<String>,
+    line: &str,
+    next_line: &str,
+    use_previous_line: bool,
+) -> (String, DetectionStatus) {
+    let prefix = prefix.into();
+    if let Some(part) = line.strip_prefix(&prefix) {
+        let name_part = part.trim();
+        return (name_part.to_string(), DetectionStatus::Line);
+    }
+
+    let combined = if use_previous_line {
+        next_line.to_owned() + line
+    } else {
+        line.to_owned() + next_line
+    };
+
+    if let Some(part) = combined.strip_prefix(&prefix) {
+        let name_part = part.trim();
+        return (name_part.to_string(), DetectionStatus::Combined);
+    }
+
+    if use_previous_line {
+        (next_line.to_string(), DetectionStatus::None)
+    } else {
+        (line.to_string(), DetectionStatus::None)
+    }
+}
 
 /// Detects if a line or a combined line contains Unicode characters.
 pub fn contains_unicode(
@@ -124,7 +154,7 @@ pub fn combine_and_detect_multiple_matches(
 }
 
 pub fn is_start_of_log(line: impl Into<String>) -> bool {
-    let re = Regex::new(r"\b(\d+\.\d+)\b").unwrap();
+    let re = Regex::new(r"^\d+\.\d+\s").unwrap();
     if let Some(_) = re.captures(line.into().as_str()) {
         return true;
     } else {

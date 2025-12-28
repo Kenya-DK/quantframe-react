@@ -14,5 +14,7 @@ pub enum TradeItemType {
     Mod,
     FusionCore,
     Fish,
+    Ayatan,
+    Imprint,
     Unknown,
 }

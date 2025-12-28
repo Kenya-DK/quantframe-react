@@ -28,7 +28,7 @@ impl<V: Clone> MultiKeyMap<V> {
         self.values.insert(id, value);
 
         for key in key_list {
-            self.keys.insert(key.into(), id);
+            self.keys.insert(key.into().to_lowercase(), id);
         }
 
         id
@@ -37,19 +37,19 @@ impl<V: Clone> MultiKeyMap<V> {
     /// Add additional keys to an existing value.
     pub fn add_keys<S: Into<String>>(&mut self, id: u64, key_list: impl IntoIterator<Item = S>) {
         for key in key_list {
-            self.keys.insert(key.into(), id);
+            self.keys.insert(key.into().to_lowercase(), id);
         }
     }
 
     /// Get value by any of its keys.
     pub fn get(&self, key: &str) -> Option<&V> {
-        let id = self.keys.get(key)?;
+        let id = self.keys.get(&key.to_lowercase())?;
         self.values.get(id)
     }
 
     /// Mutable access to value by any key.
     pub fn get_mut(&mut self, key: &str) -> Option<&mut V> {
-        let id = self.keys.get(key)?;
+        let id = self.keys.get(&key.to_lowercase())?;
         self.values.get_mut(id)
     }
     pub fn clear(&mut self) {

@@ -189,9 +189,10 @@ impl TradeItem {
                 self.sub_type = None; // Legendary Fusion Core is a special case
             } else if combine.contains("(RIVEN RANK ") {
                 if combine.contains(" Riven Mod")
-                    && self
-                        .is_trade_item(&format!("{name_part} (Veiled)"), next_line)?
-                        .is_found()
+                    || combine.contains(" RIVEN MOD")
+                        && self
+                            .is_trade_item(&format!("{name_part} (Veiled)"), next_line)?
+                            .is_found()
                 {
                     self.item_type = TradeItemType::RivenVeiled;
                 } else if let Some(pos) = name_part.rfind(' ') {
@@ -243,7 +244,36 @@ impl TradeItem {
         }
         return Ok(DetectionStatus::None);
     }
+    pub fn is_imprint(&mut self, line: &str, next_line: &str) -> Result<DetectionStatus, Error> {
+        // Imprint of |NAME|
+        let imprint_open = "Imprint of ";
+        let (stripped, status) = strip_prefix(imprint_open, line, next_line, false);
 
+        if !status.is_found() {
+            return Ok(DetectionStatus::None);
+        }
+
+        self.item_type = TradeItemType::Imprint;
+        self.unique_name = format!("WF_Special/Imprint/{}", stripped.replace(' ', "_"));
+        return Ok(status);
+    }
+
+    pub fn is_weapon(&mut self, line: &str, next_line: &str) -> Result<DetectionStatus, Error> {
+        let ch = states::cache_client().expect("Cache not found");
+
+        if let Ok(info) = ch.riven().get_weapon_by(line) {
+            self.unique_name = info.unique_name.clone();
+            self.item_type = TradeItemType::Weapon;
+            return Ok(DetectionStatus::Line);
+        }
+
+        if let Ok(info) = ch.riven().get_weapon_by(line.to_string() + next_line) {
+            self.unique_name = info.unique_name.clone();
+            self.item_type = TradeItemType::Weapon;
+            return Ok(DetectionStatus::Combined);
+        }
+        Ok(DetectionStatus::None)
+    }
     pub fn is_trade_item(&mut self, line: &str, next_line: &str) -> Result<DetectionStatus, Error> {
         let ch = states::cache_client().expect("Cache not found");
 
@@ -260,7 +290,13 @@ impl TradeItem {
     }
 
     pub fn validate(&mut self, next_line: &str) -> Result<DetectionStatus, Error> {
-        for check in [Self::is_trade_item, Self::is_variant_item, Self::is_arcane] {
+        for check in [
+            Self::is_trade_item,
+            Self::is_variant_item,
+            Self::is_arcane,
+            Self::is_weapon,
+            Self::is_imprint,
+        ] {
             let status = check(self, &self.raw.clone(), next_line)?;
             if status.is_found() {
                 return Ok(status);
@@ -324,6 +360,7 @@ impl Display for TradeItem {
 
 pub fn tags_to_type(tags: Vec<&str>) -> TradeItemType {
     match () {
+        _ if tags.contains(&"ayatan_sculpture") => TradeItemType::Ayatan,
         _ if tags.contains(&"main_part") => TradeItemType::MainBlueprint,
         _ if tags.contains(&"blueprint") && !tags.contains(&"component") => {
             TradeItemType::MainBlueprint
