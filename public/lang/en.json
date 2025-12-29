@@ -956,6 +956,9 @@
             "placeholder": "Select amber stars...",
             "description": "How many amber stars"
           }
+        },
+        "messages": {
+          "nothing_found": "No items found"
         }
       },
       "select_riven_weapon": {
