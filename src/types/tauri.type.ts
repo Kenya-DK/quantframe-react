@@ -220,18 +220,29 @@ export namespace TauriTypes {
     present_year: FinancialWithGraph;
   }
   export interface FinancialReport {
-    average_expense: number;
-    average_profit: number;
-    average_revenue: number;
-    average_transaction: number;
-    expenses: number;
-    profit_margin: number;
-    purchases_count: number;
-    revenue: number;
-    roi: number;
-    sale_count: number;
-    total_profit: number;
+    // General transaction metrics
     total_transactions: number;
+    average_transaction: number;
+
+    // Profit metrics
+    total_profit: number;
+    average_profit: number;
+    profit_margin: number;
+    roi: number; // Return on Investment percentage
+
+    // Revenue metrics
+    sale_count: number;
+    highest_revenue: number;
+    lowest_revenue: number;
+    average_revenue: number;
+    revenue: number;
+
+    // Expense metrics
+    purchases_count: number;
+    highest_expense: number;
+    lowest_expense: number;
+    average_expense: number;
+    expenses: number;
   }
   export interface FinancialItemProperties {
     item_name: string;

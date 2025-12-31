@@ -14,11 +14,15 @@ pub struct FinancialReport {
     pub roi: f64, // Return on Investment percentage
 
     // Revenue metrics
+    pub highest_revenue: f64,
+    pub lowest_revenue: f64,
     pub sale_count: usize,
     pub revenue: f64,
     pub average_revenue: f64,
 
     // Expense metrics
+    pub highest_expense: f64,
+    pub lowest_expense: f64,
     pub purchases_count: usize,
     pub expenses: f64,
     pub average_expense: f64,
@@ -31,8 +35,12 @@ impl FinancialReport {
     pub fn new(
         total_transactions: usize,
         sale_count: usize,
-        purchases_count: usize,
+        highest_revenue: f64,
+        lowest_revenue: f64,
         revenue: i64,
+        purchases_count: usize,
+        highest_expense: f64,
+        lowest_expense: f64,
         expenses: i64,
     ) -> Self {
         let total_value = (revenue + expenses) as f64;
@@ -82,9 +90,13 @@ impl FinancialReport {
             average_profit,
             profit_margin,
             roi,
+            highest_revenue,
+            lowest_revenue,
             sale_count,
             revenue: revenue as f64,
             average_revenue,
+            highest_expense,
+            lowest_expense,
             purchases_count,
             expenses: expenses as f64,
             average_expense,
@@ -106,9 +118,13 @@ impl Default for FinancialReport {
             average_profit: 0.0,
             profit_margin: 0.0,
             roi: 0.0,
+            highest_revenue: 0.0,
+            lowest_revenue: 0.0,
             sale_count: 0,
             revenue: 0.0,
             average_revenue: 0.0,
+            highest_expense: 0.0,
+            lowest_expense: 0.0,
             purchases_count: 0,
             expenses: 0.0,
             average_expense: 0.0,
@@ -126,18 +142,26 @@ impl From<&Vec<transaction::Model>> for FinancialReport {
             .filter(|t| t.transaction_type == TransactionType::Purchase)
             .collect();
         let expenses: i64 = purchases.iter().map(|t| t.price).sum();
+        let highest_expense = purchases.iter().map(|t| t.price).max().unwrap_or(0) as f64;
+        let lowest_expense = purchases.iter().map(|t| t.price).min().unwrap_or(0) as f64;
 
         let sales: Vec<&transaction::Model> = transactions
             .iter()
             .filter(|t| t.transaction_type == TransactionType::Sale)
             .collect();
         let revenue: i64 = sales.iter().map(|t| t.price).sum();
+        let highest_revenue = sales.iter().map(|t| t.price).max().unwrap_or(0) as f64;
+        let lowest_revenue = sales.iter().map(|t| t.price).min().unwrap_or(0) as f64;
 
         FinancialReport::new(
             total_transactions,
             sales.len(),
-            purchases.len(),
+            highest_revenue,
+            lowest_revenue,
             revenue,
+            purchases.len(),
+            highest_expense,
+            lowest_expense,
             expenses,
         )
     }
@@ -155,16 +179,40 @@ impl From<&Vec<stock_item::Model>> for FinancialReport {
             .iter()
             .filter(|item| item.list_price.unwrap_or(0) > 0)
             .collect();
+        let highest_revenue = sales
+            .iter()
+            .map(|item| item.list_price.unwrap_or(0) * item.owned)
+            .max()
+            .unwrap_or(0) as f64;
+        let lowest_revenue = sales
+            .iter()
+            .map(|item| item.list_price.unwrap_or(0) * item.owned)
+            .min()
+            .unwrap_or(0) as f64;
         let revenue: i64 = sales
             .iter()
             .map(|item| item.list_price.unwrap_or(0) * item.owned)
             .sum();
+        let lowest_expense = purchases
+            .iter()
+            .map(|item| item.bought * item.owned)
+            .min()
+            .unwrap_or(0) as f64;
+        let highest_expense = purchases
+            .iter()
+            .map(|item| item.bought * item.owned)
+            .max()
+            .unwrap_or(0) as f64;
 
         FinancialReport::new(
             total_transactions,
             sales.len(),
-            purchases.len(),
+            highest_revenue,
+            lowest_revenue,
             revenue,
+            purchases.len(),
+            highest_expense,
+            lowest_expense,
             expenses,
         )
     }
@@ -177,18 +225,33 @@ impl From<&Vec<stock_riven::Model>> for FinancialReport {
         let purchases: Vec<&stock_riven::Model> =
             items.iter().filter(|item| item.bought > 0).collect();
         let expenses: i64 = purchases.iter().map(|item| item.bought).sum();
+        let highest_expense = purchases.iter().map(|item| item.bought).max().unwrap_or(0) as f64;
+        let lowest_expense = purchases.iter().map(|item| item.bought).min().unwrap_or(0) as f64;
 
         let sales: Vec<&stock_riven::Model> = items
             .iter()
             .filter(|item| item.list_price.unwrap_or(0) > 0)
             .collect();
         let revenue: i64 = sales.iter().map(|item| item.list_price.unwrap_or(0)).sum();
-
+        let highest_revenue = sales
+            .iter()
+            .map(|item| item.list_price.unwrap_or(0))
+            .max()
+            .unwrap_or(0) as f64;
+        let lowest_revenue = sales
+            .iter()
+            .map(|item| item.list_price.unwrap_or(0))
+            .min()
+            .unwrap_or(0) as f64;
         FinancialReport::new(
             total_transactions,
             sales.len(),
-            purchases.len(),
+            highest_revenue,
+            lowest_revenue,
             revenue,
+            purchases.len(),
+            highest_expense,
+            lowest_expense,
             expenses,
         )
     }
@@ -206,18 +269,42 @@ impl From<&Vec<wish_list::wish_list::Model>> for FinancialReport {
             .iter()
             .map(|item| item.list_price.unwrap_or(0))
             .sum();
+        let highest_expense = purchases
+            .iter()
+            .map(|item| item.list_price.unwrap_or(0))
+            .max()
+            .unwrap_or(0) as f64;
+        let lowest_expense = purchases
+            .iter()
+            .map(|item| item.list_price.unwrap_or(0))
+            .min()
+            .unwrap_or(0) as f64;
 
         let sales: Vec<&wish_list::wish_list::Model> = items
             .iter()
             .filter(|item| item.list_price.unwrap_or(0) > 0)
             .collect();
         let revenue: i64 = sales.iter().map(|item| item.list_price.unwrap_or(0)).sum();
+        let highest_revenue = sales
+            .iter()
+            .map(|item| item.list_price.unwrap_or(0))
+            .max()
+            .unwrap_or(0) as f64;
+        let lowest_revenue = sales
+            .iter()
+            .map(|item| item.list_price.unwrap_or(0))
+            .min()
+            .unwrap_or(0) as f64;
 
         FinancialReport::new(
             total_transactions,
             sales.len(),
-            purchases.len(),
+            highest_revenue,
+            lowest_revenue,
             revenue,
+            purchases.len(),
+            highest_expense,
+            lowest_expense,
             expenses,
         )
     }
