@@ -1513,7 +1513,9 @@
           "average_profit_per_transaction": "Average Profit Per Transaction",
           "average_transaction_value": "Average Transaction Value",
           "average_revenue_per_transaction": "Average Revenue Per Transaction",
-          "average_expense_per_transaction": "Average Expense Per Transaction"
+          "average_expense_per_transaction": "Average Expense Per Transaction",
+          "lowest_expense": "Lowest Expense",
+          "lowest_revenue": "Lowest Revenue"
         },
         "labels": {
           "rank": "Rank:",
@@ -1539,7 +1541,9 @@
           "average_revenue_per_transaction": "Average Revenue Per Transaction",
           "purchases_count": "Purchases Count",
           "average_expense_per_transaction": "Average Expense Per Transaction",
-          "price_history": "Price History"
+          "price_history": "Price History",
+          "highest_revenue": "Highest Revenue",
+          "highest_expense": "Highest Expense"
         }
       },
       "update_available": {

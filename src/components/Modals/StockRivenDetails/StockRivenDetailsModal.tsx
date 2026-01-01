@@ -402,48 +402,73 @@ export function StockRivenDetailsModal({ value }: StockRivenDetailsModalProps) {
             showPercent
             percentSymbol="%"
             footer={
-              <StatsWithSegments
-                p={0}
-                hidePercentBar
-                segments={[
-                  {
-                    label: useTranslate("labels.total_transactions"),
-                    count: data.financial_summary.total_transactions,
-                    color: "orange",
-                    tooltip: useTranslate("tooltips.average_transaction_value"),
-                    part: data.financial_summary.average_transaction,
-                    decimalScale: 2,
-                  },
-                  {
-                    label: useTranslate("labels.profit_margin"),
-                    count: Math.round(data.financial_summary.profit_margin * 100) / 100,
-                    color: data.financial_summary.profit_margin >= 0 ? "var(--qf-positive-color)" : "var(--qf-negative-color)",
-                    tooltip: useTranslate("tooltips.average_profit_per_transaction"),
-                    part: data.financial_summary.average_profit,
-                    suffix: " P",
-                    decimalScale: 2,
-                  },
-                  {
-                    label: useTranslate("labels.sales_count"),
-                    count: data.financial_summary.sale_count,
-                    color: "green",
-                    tooltip: useTranslate("tooltips.average_revenue_per_transaction"),
-                    part: data.financial_summary.average_revenue,
-                    suffix: " P",
-                    decimalScale: 2,
-                  },
-                  {
-                    label: useTranslate("labels.purchases_count"),
-                    count: data.financial_summary.purchases_count,
-                    color: "red",
-                    tooltip: useTranslate("tooltips.average_expense_per_transaction"),
-                    part: data.financial_summary.average_expense,
-                    suffix: " P",
-                    decimalScale: 2,
-                  },
-                ]}
-                showPercent
-              />
+              <Stack>
+                <StatsWithSegments
+                  p={0}
+                  hidePercentBar
+                  segments={[
+                    {
+                      label: useTranslate("labels.total_transactions"),
+                      count: data.financial_summary.total_transactions,
+                      color: "orange",
+                      tooltip: useTranslate("tooltips.average_transaction_value"),
+                      part: data.financial_summary.average_transaction,
+                      decimalScale: 2,
+                    },
+                    {
+                      label: useTranslate("labels.profit_margin"),
+                      count: Math.round(data.financial_summary.profit_margin * 100) / 100,
+                      color: data.financial_summary.profit_margin >= 0 ? "var(--qf-positive-color)" : "var(--qf-negative-color)",
+                      tooltip: useTranslate("tooltips.average_profit_per_transaction"),
+                      part: data.financial_summary.average_profit,
+                      suffix: " P",
+                      decimalScale: 2,
+                    },
+                    {
+                      label: useTranslate("labels.sales_count"),
+                      count: data.financial_summary.sale_count,
+                      color: "green",
+                      tooltip: useTranslate("tooltips.average_revenue_per_transaction"),
+                      part: data.financial_summary.average_revenue,
+                      suffix: " P",
+                      decimalScale: 2,
+                    },
+                    {
+                      label: useTranslate("labels.purchases_count"),
+                      count: data.financial_summary.purchases_count,
+                      color: "red",
+                      tooltip: useTranslate("tooltips.average_expense_per_transaction"),
+                      part: data.financial_summary.average_expense,
+                      suffix: " P",
+                      decimalScale: 2,
+                    },
+                  ]}
+                  showPercent
+                />
+                <StatsWithSegments
+                  p={0}
+                  hidePercentBar
+                  segments={[
+                    {
+                      label: useTranslate("labels.highest_revenue"),
+                      count: data.financial_summary.highest_revenue,
+                      color: "green",
+                      tooltip: useTranslate("tooltips.lowest_revenue"),
+                      part: data.financial_summary.lowest_revenue,
+                      decimalScale: 2,
+                    },
+                    {
+                      label: useTranslate("labels.highest_expense"),
+                      count: data.financial_summary.highest_expense,
+                      color: "red",
+                      tooltip: useTranslate("tooltips.lowest_expense"),
+                      part: data.financial_summary.lowest_expense,
+                      decimalScale: 2,
+                    },
+                  ]}
+                  showPercent
+                />
+              </Stack>
             }
           />
         </Grid.Col>
