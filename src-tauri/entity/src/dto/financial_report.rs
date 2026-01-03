@@ -14,18 +14,18 @@ pub struct FinancialReport {
     pub roi: f64, // Return on Investment percentage
 
     // Revenue metrics
+    pub sale_count: usize,
     pub highest_revenue: f64,
     pub lowest_revenue: f64,
-    pub sale_count: usize,
-    pub revenue: f64,
     pub average_revenue: f64,
+    pub revenue: f64,
 
     // Expense metrics
+    pub purchases_count: usize,
     pub highest_expense: f64,
     pub lowest_expense: f64,
-    pub purchases_count: usize,
-    pub expenses: f64,
     pub average_expense: f64,
+    pub expenses: f64,
 
     // Extra properties
     #[serde(skip_serializing_if = "Option::is_none")]

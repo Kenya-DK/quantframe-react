@@ -1,6 +1,6 @@
 import { Tabs } from "@mantine/core";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
-import { TransactionPanel, ItemPanel, RivenPanel, UserPanel } from "./Tabs";
+import { TransactionPanel, ItemPanel, RivenPanel, UserPanel, WarframeGDPRParser } from "./Tabs";
 import { useLocalStorage } from "@mantine/hooks";
 import classes from "./TradingAnalytics.module.css";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
@@ -34,6 +34,12 @@ export default function TradingAnalyticsPage() {
       component: (isActive: boolean) => <UserPanel isActive={isActive} />,
       id: "user",
       isPremium: true,
+    },
+    {
+      label: useTranslateTabs("wfgdpr.title"),
+      component: () => <WarframeGDPRParser />,
+      id: "wfgdpr",
+      isPremium: false,
     },
   ];
 

@@ -2088,6 +2088,37 @@
               "placeholder": "Select date range"
             }
           }
+        },
+        "wfgdpr": {
+          "title": "Warframe GDPR Parser",
+          "trade": {
+            "title": "Trade",
+            "tooltips": {
+              "profit_margin": "Profit Margin",
+              "total_credits": "Total Credits Transacted"
+            },
+            "titles": {
+              "most_purchased_items": "Most Purchased Items",
+              "most_sold_items": "Most Sold Items"
+            },
+            "table_headers": {
+              "item_name": "Name",
+              "quantity": "Quantity"
+            },
+            "labels": {
+              "total_transactions": "Total Transactions",
+              "trade_count": "Trade Count",
+              "purchases_count": "Purchases Count",
+              "sales_count": "Sales Count",
+              "total_profit": "Total Profit"
+            }
+          },
+          "purchase": {
+            "title": "In Game Purchases"
+          },
+          "login": {
+            "title": "Login History"
+          }
         }
       }
     },

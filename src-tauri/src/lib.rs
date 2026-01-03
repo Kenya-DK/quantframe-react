@@ -299,6 +299,7 @@ pub fn run() {
             // Market commands
             commands::market::get_user_activity,
             // Trade Entry commands
+            // Trade Entry commands
             commands::trade_entry::get_trade_entry_pagination,
             commands::trade_entry::trade_entry_get_by_id,
             commands::trade_entry::trade_entry_create,
@@ -308,6 +309,12 @@ pub fn run() {
             commands::trade_entry::trade_entry_update,
             commands::trade_entry::trade_entry_update_multiple,
             commands::trade_entry::export_trade_entry_json,
+            // Warframe GDPR commands
+            commands::warframe_gdpr::wfgdpr_load,
+            commands::warframe_gdpr::wfgdpr_get_trades_pagination,
+            commands::warframe_gdpr::wfgdpr_get_trades_financial_report,
+            commands::warframe_gdpr::wfgdpr_get_purchases_pagination,
+            commands::warframe_gdpr::wfgdpr_get_logins_pagination,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

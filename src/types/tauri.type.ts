@@ -243,6 +243,9 @@ export namespace TauriTypes {
     lowest_expense: number;
     average_expense: number;
     expenses: number;
+
+    // Properties
+    properties?: Record<string, any>;
   }
   export interface FinancialItemProperties {
     item_name: string;
@@ -897,4 +900,58 @@ export namespace TauriTypes {
   export type TradeEntryControllerGetListData = PaginatedDto & {
     results?: TradeEntry[];
   };
+
+  export interface PlayerTrade {
+    credits: number;
+    offeredItems: TradeItem[];
+    platinum: number;
+    playerName: string;
+    receivedItems: TradeItem[];
+    tradeTime: Date;
+    type: string;
+  }
+
+  export interface TradeItem {
+    item_type: string;
+    quantity: number;
+    raw: string;
+    unique_name: string;
+    sub_type?: SubType;
+  }
+
+  export type WFGDPRTradeControllerGetListData = PaginatedDto & {
+    results?: PlayerTrade[];
+  };
+  export interface WFGDPRTradeControllerGetListParams {
+    page: number;
+    limit: number;
+    sort_by?: string;
+    sort_direction?: "asc" | "desc";
+    query?: string;
+    to_date?: string;
+    from_date?: string;
+    transaction_type?: TauriTypes.TransactionType;
+  }
+  export interface WFGDPRPurchase {}
+  export type WFGDPRPurchaseControllerGetListData = PaginatedDto & {
+    results?: WFGDPRPurchase[];
+  };
+  export interface WFGDPRPurchaseControllerGetListParams {
+    page: number;
+    limit: number;
+    sort_by?: string;
+    sort_direction?: "asc" | "desc";
+    query?: string;
+  }
+  export interface WFGDPRLogin {}
+  export type WFGDPRLoginControllerGetListData = PaginatedDto & {
+    results?: WFGDPRLogin[];
+  };
+  export interface WFGDPRLoginControllerGetListParams {
+    page: number;
+    limit: number;
+    sort_by?: string;
+    sort_direction?: "asc" | "desc";
+    query?: string;
+  }
 }

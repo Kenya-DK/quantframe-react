@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, os::raw};
 
 use entity::dto::SubType;
 use serde::{Deserialize, Serialize};
@@ -35,8 +35,29 @@ pub struct TradeItem {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "error")]
     pub error: Option<(String, Value)>,
+
+    // Extra properties
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub properties: Option<serde_json::Value>,
 }
 impl TradeItem {
+    pub fn new(
+        unique_name: impl Into<String>,
+        quantity: i64,
+        item_type: TradeItemType,
+        sub_type: Option<SubType>,
+    ) -> TradeItem {
+        let unique_name = unique_name.into();
+        TradeItem {
+            raw: unique_name.clone(),
+            quantity,
+            unique_name,
+            item_type,
+            sub_type,
+            error: None,
+            properties: None,
+        }
+    }
     pub fn from_string(
         line: &str,
         next_line: &str,
@@ -47,11 +68,11 @@ impl TradeItem {
         let mut raw = line.to_owned();
 
         // Check if the item is platinum
-        let (is_platinum_combined, is_platinum_status) =
-            detection.is_platinum(&line, &next_line, false, false);
+        let (is_currency_combined, is_currency_status, is_currency_type) =
+            detection.is_currency(&line, &next_line, false, false);
 
-        if is_platinum_status.is_combined() {
-            line = is_platinum_combined.clone();
+        if is_currency_status.is_combined() {
+            line = is_currency_combined.clone();
             raw = line.clone();
             next_line = "".to_string();
         }
@@ -71,9 +92,9 @@ impl TradeItem {
             raw = line.clone();
         }
 
-        let status = if last_item_status.is_combined() || is_platinum_status.is_combined() {
+        let status = if last_item_status.is_combined() || is_currency_status.is_combined() {
             DetectionStatus::Combined
-        } else if last_item_status.is_found() || is_platinum_status.is_found() {
+        } else if last_item_status.is_found() || is_currency_status.is_found() {
             DetectionStatus::Line
         } else {
             DetectionStatus::None
@@ -86,15 +107,15 @@ impl TradeItem {
             raw,
             quantity,
             unique_name: "".to_string(),
-            item_type: if is_platinum_status.is_found() {
-                TradeItemType::Platinum
-            } else {
-                TradeItemType::Unknown
-            },
+            item_type: is_currency_type,
             sub_type: None,
             error: None,
+            properties: None,
         };
-        if item.item_type == TradeItemType::Platinum {
+        if matches!(
+            item.item_type,
+            TradeItemType::Platinum | TradeItemType::Credits
+        ) {
             return (status, item);
         }
         // Validate the item
@@ -246,15 +267,21 @@ impl TradeItem {
     }
     pub fn is_imprint(&mut self, line: &str, next_line: &str) -> Result<DetectionStatus, Error> {
         // Imprint of |NAME|
-        let imprint_open = "Imprint of ";
-        let (stripped, status) = strip_prefix(imprint_open, line, next_line, false);
+        let imprint_open = "imprint of ";
+        let (stripped, status) = strip_prefix(
+            imprint_open,
+            &line.to_lowercase(),
+            &next_line.to_lowercase(),
+            false,
+        );
 
         if !status.is_found() {
             return Ok(DetectionStatus::None);
         }
 
         self.item_type = TradeItemType::Imprint;
-        self.unique_name = format!("WF_Special/Imprint/{}", stripped.replace(' ', "_"));
+        self.unique_name = String::from("/WF_Special/CreaturePet/Imprint");
+        self.sub_type = Some(SubType::variant(&stripped));
         return Ok(status);
     }
 
@@ -315,6 +342,32 @@ impl TradeItem {
     pub fn is_valid(&self) -> bool {
         !self.raw.is_empty()
     }
+    pub fn get_property_value<T>(&self, key: impl Into<String>, default: T) -> T
+    where
+        T: Default + serde::de::DeserializeOwned,
+    {
+        let key = key.into();
+        if let Some(props) = &self.properties {
+            if let Some(value) = props.get(&key) {
+                return serde_json::from_value(value.clone()).unwrap();
+            }
+        }
+        default
+    }
+    pub fn set_property_value<T>(&mut self, key: impl Into<String>, value: T)
+    where
+        T: serde::Serialize,
+    {
+        let key = key.into();
+        let value = serde_json::to_value(value).unwrap();
+        if let Some(props) = &mut self.properties {
+            props.as_object_mut().unwrap().insert(key, value);
+        } else {
+            let mut map = serde_json::Map::new();
+            map.insert(key, value);
+            self.properties = Some(serde_json::Value::Object(map));
+        }
+    }
 }
 
 impl Default for TradeItem {
@@ -326,6 +379,7 @@ impl Default for TradeItem {
             item_type: TradeItemType::Unknown,
             sub_type: None,
             error: None,
+            properties: None,
         }
     }
 }

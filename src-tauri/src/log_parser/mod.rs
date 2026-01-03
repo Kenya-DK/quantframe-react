@@ -9,3 +9,6 @@ pub use events::*;
 
 pub mod types;
 pub use types::*;
+
+pub mod modules;
+pub use modules::*;

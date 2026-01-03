@@ -2,19 +2,21 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Debug)]
 pub enum TradeItemType {
+    Ayatan,
     Platinum,
-    RivenVeiled,
-    RivenUnVeiled,
+    Credits,
+    MainBlueprint,
     Weapon,
     Relic,
-    MainBlueprint,
     Component,
-    Lens,
     Arcane,
+    Lens,
     Mod,
-    FusionCore,
     Fish,
-    Ayatan,
+    FusionCore,
+    RivenVeiled,
+    RivenUnVeiled,
     Imprint,
+    Set,
     Unknown,
 }

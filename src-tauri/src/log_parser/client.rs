@@ -1,9 +1,15 @@
 use crate::{app::AdvancedSettings, helper, log_parser::*};
-use std::{path::PathBuf, sync::Arc, thread};
+use std::{
+    path::PathBuf,
+    sync::{Arc, OnceLock},
+    thread,
+};
 use utils::*;
 
 pub struct LogParserState {
     watcher: FileWatcher,
+    // Modules's'
+    warframe_gdpr_module: OnceLock<Arc<WarframeGDPRModule>>,
 }
 
 impl LogParserState {
@@ -14,6 +20,7 @@ impl LogParserState {
         }
         let this = Arc::new(Self {
             watcher: FileWatcher::new(path.to_str().unwrap()),
+            warframe_gdpr_module: OnceLock::new(),
         });
         this.watcher
             .add_handler(Box::new(OnTradeEvent::new("LogParserState")));
@@ -52,5 +59,10 @@ impl LogParserState {
         }
         self.watcher.set_path(path);
         Ok(())
+    }
+    pub fn warframe_gdpr(&self) -> Arc<WarframeGDPRModule> {
+        self.warframe_gdpr_module
+            .get_or_init(|| WarframeGDPRModule::new())
+            .clone()
     }
 }

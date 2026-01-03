@@ -57,15 +57,18 @@
   --color: var(--qf-user-status-ingame);
 }
 
-[data-transaction-type="purchase"] {
+[data-transaction-type="purchase"],
+[data-transaction-type="Purchase"] {
   --color: var(--qf-transaction-type-purchase);
 }
 
-[data-transaction-type="sale"] {
+[data-transaction-type="sale"],
+[data-transaction-type="Sale"] {
   --color: var(--qf-transaction-type-sale);
 }
 
-[data-transaction-type="trade"] {
+[data-transaction-type="trade"],
+[data-transaction-type="Trade"] {
   --color: var(--qf-transaction-type-trade);
 }
 

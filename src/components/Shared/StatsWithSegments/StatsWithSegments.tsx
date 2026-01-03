@@ -7,7 +7,7 @@ export type Segment = {
   count: number;
   color: string;
   decimalScale?: number;
-  part?: number;
+  part?: number | null;
   tooltip?: string;
   hideInProgress?: boolean;
   prefix?: string;
@@ -65,7 +65,7 @@ export function StatsWithSegments({
         <Text fw={700}>
           <NumberFormatter value={stat.count} thousandSeparator />
         </Text>
-        {showPercent && (
+        {showPercent && stat.part !== null && (
           <Tooltip label={stat.tooltip} withArrow disabled={!stat.tooltip}>
             <span>
               <NumberFormatter
@@ -75,6 +75,8 @@ export function StatsWithSegments({
                 style={{ color: stat.color }}
                 prefix={stat.prefix}
                 suffix={stat.suffix ?? percentSymbol}
+                thousandSeparator=","
+                thousandsGroupStyle="thousand"
               />
             </span>
           </Tooltip>

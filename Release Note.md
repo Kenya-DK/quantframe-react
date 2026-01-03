@@ -3,7 +3,9 @@
 - ✨ Add a notification sound's
 - ✨ Add a sound or a discord message if the live scraper dies
 - ✨ Add Riven ranking
+- ✨ Add Minimum price for wishlist items
 - ✨ Add https://remoraid.dev link to as a way to create a new design and to the settings page
+- ✨ Add Warframe GDPR Parse tab to the trading analytics page (WIP)
 
 ## Fix's
 
@@ -18,7 +20,8 @@
 ## TODO's
 
 - ⏱️ Fix so the knapsack algorithm doesn't delete akk items after a cycle.
-- ⏱️ Add Minimum price for wishlist items
+- ⏱️ The Log file path sometimes f\* \* \* up
+- ⏱️ The Generate message still have the item if it was deleted by the backend
 
 ## Feature's
 
