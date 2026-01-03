@@ -739,8 +739,11 @@ export namespace TauriTypes {
   }
   export interface UpdateTransaction {
     id: number;
-    price: number;
-    quantity: number;
+    price?: number;
+    quantity?: number;
+    user_name?: string;
+    properties?: Record<string, any>;
+    created_at?: string;
   }
   export interface WishListItem extends Omit<StockEntryBase, "minimum_price"> {
     id: number;

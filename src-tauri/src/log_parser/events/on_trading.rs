@@ -2,19 +2,20 @@ use std::sync::{LazyLock, Mutex};
 
 use crate::{
     add_metric,
-    handlers::{handle_item, handle_riven_by_name, handle_wish_list},
+    handlers::{handle_item, handle_riven_by_name, handle_transaction, handle_wish_list},
     log_parser::*,
     notify_gui, send_event,
     types::*,
     utils::modules::states,
 };
+use entity::enums::TransactionType;
 use serde_json::json;
 use utils::*;
 use wf_market::enums::OrderType;
 
 pub static LOGGER: Mutex<Option<ZipLogger>> = Mutex::new(None);
 pub static COMPONENT: Mutex<String> = Mutex::new(String::new());
-
+pub static ENABLED_LOGGING: Mutex<bool> = Mutex::new(true);
 static BASE_LOG_OPTIONS: LazyLock<LoggerOptions> = LazyLock::new(|| {
     LoggerOptions::default()
         .set_file("trade.log")
@@ -25,6 +26,9 @@ static BASE_LOG_OPTIONS: LazyLock<LoggerOptions> = LazyLock::new(|| {
 });
 
 pub fn log(content: impl Into<String>, options: Option<&LoggerOptions>) {
+    if !*ENABLED_LOGGING.lock().unwrap() {
+        return;
+    }
     let content = content.into();
     let options = if let Some(opts) = options {
         opts
@@ -32,6 +36,9 @@ pub fn log(content: impl Into<String>, options: Option<&LoggerOptions>) {
         &BASE_LOG_OPTIONS
     };
     trace("OnTradeEvent", &content, options);
+}
+pub fn enable_logging(state: bool) {
+    *ENABLED_LOGGING.lock().unwrap() = state;
 }
 fn get_component(component: &str) -> String {
     format!("{}:{}", COMPONENT.lock().unwrap().as_str(), component)
@@ -116,12 +123,12 @@ impl OnTradeEvent {
                     None,
                 );
 
+                // The - wil be cut off in -satumori- Fix it
                 let player_name = full_line
-                    .replace(&self.detection.receive_line_first_part, "")
-                    .replace(&self.detection.receive_line_second_part, "")
-                    .replace("\u{e000}", "")
-                    .trim()
-                    .to_string();
+                    .strip_prefix(&self.detection.receive_line_first_part)
+                    .and_then(|s| s.strip_suffix(&self.detection.receive_line_second_part))
+                    .map(|s| s.replace('\u{e000}', "").trim().to_string())
+                    .unwrap_or("Unknown".to_string());
                 self.current_trade.player_name = remove_special_characters(&player_name);
 
                 log(
@@ -195,8 +202,7 @@ impl OnTradeEvent {
             i += 1;
         }
 
-        self.current_trade.trade_time =
-            chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+        self.current_trade.trade_time = chrono::Local::now().with_timezone(&chrono::Utc);
         log(
             format!("Trade Time Set: {}", self.current_trade.trade_time),
             None,
@@ -219,7 +225,7 @@ impl OnTradeEvent {
     pub fn trade_accepted(&mut self) -> Result<(), Error> {
         log("Trade Was Successful".to_string(), None);
 
-        let trade = self.current_trade.clone();
+        let mut trade = self.current_trade.clone();
         let settings = states::get_settings()?.clone();
         let order_type = match trade.trade_type {
             TradeClassification::Sale => OrderType::Sell,
@@ -262,7 +268,8 @@ impl OnTradeEvent {
         }
         tauri::async_runtime::spawn({
             async move {
-                let items = trade.get_valid_items(&trade_type);
+                trade.calculate_items();
+                let items = trade.get_valid_items(&trade_type, vec![]);
                 let mut operations = OperationSet::new();
                 let item = items.first();
                 if settings.live_scraper.auto_trade {
@@ -285,27 +292,9 @@ impl OnTradeEvent {
                     );
                     return;
                 }
-                let mut item = item.unwrap().clone();
-                // Check if the trade is a set
-                let (is_set, set_name) = match trade.is_set() {
-                    Ok((is_set, set_name)) => (is_set, set_name),
-                    Err(mut e) => {
-                        e = e.with_location(get_location!());
-                        log(e.to_string(), None);
-                        return;
-                    }
-                };
-
-                if is_set {
-                    log(format!("Trade is a set: {}", set_name), None);
-                    item.unique_name = set_name;
-                    item.sub_type = None;
-                    item.quantity = 1;
-                    operations.add("SetFound");
-                } else if items.len() > 1 {
+                let item = item.unwrap().clone();
+                if items.len() > 1 {
                     operations.add("MultipleItems");
-                } else if !set_name.is_empty() {
-                    operations.add("SetNotValid");
                 } else {
                     operations.add("Found");
                 }
@@ -488,6 +477,38 @@ async fn process_trade_item(
 ) -> Result<OperationSet, Error> {
     let mut operations = OperationSet::new();
     operations.add(format!("Quantity: {}", item.quantity));
+    // Handle Imprints
+    if item.item_type == TradeItemType::Imprint {
+        let model = handle_transaction(entity::transaction::Model::new(
+            "manual_imprint",
+            "manual_imprint",
+            "Imprint",
+            entity::enums::TransactionItemType::Item,
+            "/WF_Special/CreaturePet/Imprint",
+            item.sub_type.clone(),
+            vec![
+                "imprint".to_string(),
+                "creature".to_string(),
+                "custom".to_string(),
+            ],
+            if order_type == OrderType::Buy {
+                TransactionType::Purchase
+            } else {
+                TransactionType::Sale
+            },
+            item.quantity,
+            player_name,
+            platinum,
+            Some(json!({
+                "pet_name": item.sub_type.unwrap().variant.unwrap_or("Unknown".to_string())
+            })),
+        ))
+        .await
+        .map_err(|e| e.with_location(get_location!()))?;
+        operations.add(format!("Name: {}", model.item_name));
+        return Ok(operations);
+    }
+
     // Handle Rivens
     if item.item_type == TradeItemType::RivenUnVeiled {
         let (op, model) = handle_riven_by_name(
