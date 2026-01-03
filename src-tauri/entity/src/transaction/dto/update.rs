@@ -1,5 +1,6 @@
 use sea_orm::Set;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 use crate::{enums::*, transaction::*};
 
@@ -8,6 +9,9 @@ pub struct UpdateTransaction {
     pub id: i64,
     pub price: FieldChange<i64>,
     pub quantity: FieldChange<i64>,
+    pub created_at: FieldChange<String>,
+    pub user_name: FieldChange<String>,
+    pub properties: FieldChange<Value>,
 }
 
 impl UpdateTransaction {
@@ -21,6 +25,19 @@ impl UpdateTransaction {
             Value(v) => item.quantity = Set(v),
             _ => {}
         }
+        match self.user_name {
+            Value(v) => item.user_name = Set(v),
+            _ => {}
+        }
+        match self.created_at {
+            Value(v) => item.created_at = Set(v.parse().unwrap()),
+            _ => {}
+        }
+        match self.properties {
+            Value(v) => item.properties = Set(Some(v)),
+            Null => item.properties = Set(None),
+            _ => {}
+        }
 
         item
     }
@@ -29,6 +46,9 @@ impl UpdateTransaction {
             id,
             price: FieldChange::Ignore,
             quantity: FieldChange::Ignore,
+            user_name: FieldChange::Ignore,
+            created_at: FieldChange::Ignore,
+            properties: FieldChange::Ignore,
         }
     }
 }

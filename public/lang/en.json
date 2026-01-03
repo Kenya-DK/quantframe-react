@@ -304,6 +304,16 @@
           "title": "Delete Template Success",
           "message": "The trade message template has been successfully deleted."
         }
+      },
+      "update_transaction": {
+        "error": {
+          "title": "Update Transaction Error",
+          "message": "An error occurred while trying to update the transaction."
+        },
+        "success": {
+          "title": "Update Transaction Success",
+          "message": "The transaction has been successfully updated."
+        }
       }
     },
     "datatable_columns": {
@@ -675,6 +685,14 @@
     },
     "forms": {
       "update_transaction": {
+        "buttons": {
+          "hide_properties": {
+            "label": "Hide Properties"
+          },
+          "show_properties": {
+            "label": "Show Properties"
+          }
+        },
         "fields": {
           "price": {
             "label": "Price",
@@ -685,6 +703,21 @@
             "label": "Quantity",
             "placeholder": "Enter quantity",
             "description": "The quantity of the item being traded."
+          },
+          "user_name": {
+            "label": "User Name",
+            "placeholder": "Enter user name",
+            "description": "The user name associated with the transaction."
+          },
+          "created_at": {
+            "label": "Creation Date",
+            "placeholder": "Select date",
+            "description": "The date of the transaction."
+          },
+          "properties": {
+            "label": "Properties",
+            "placeholder": "Enter properties",
+            "description": "Additional properties of the transaction."
           }
         }
       },
