@@ -40,15 +40,15 @@ export function SelectTradableItem({ hide_sub_type, value, onChange, description
 
   useEffect(() => {
     if (!data) return;
-    setItems(
-      data.map((item) => ({
-        ...item,
-        label: item.name,
-        value: item.wfm_url_name,
-        available_sub_types: item.sub_type,
-        sub_type: undefined,
-      }))
-    );
+    const mappedItems = data.map((item) => ({
+      ...item,
+      label: item.name,
+      value: item.wfm_url_name,
+      available_sub_types: item.sub_type,
+      sub_type: undefined,
+    }));
+    setItems(mappedItems);
+    setFilteredItems(mappedItems);
   }, [data]);
 
   const handleSelect = (item: SelectCacheTradableItem) => {
@@ -80,6 +80,7 @@ export function SelectTradableItem({ hide_sub_type, value, onChange, description
         searchable
         limit={10}
         required
+        nothingFoundMessage={useTranslate("messages.nothing_found")}
         maxDropdownHeight={400}
         value={value}
         onKeyDown={(event) => {
@@ -87,7 +88,13 @@ export function SelectTradableItem({ hide_sub_type, value, onChange, description
         }}
         onSearchChange={(searchValue) => {
           setFilteredItems(() => {
-            const sortedItems = items.filter((item) => item.label.toLowerCase().startsWith(searchValue.toLowerCase()));
+            const normalizedSearch = searchValue.trim().toLowerCase();
+            const tokens = normalizedSearch.length > 0 ? normalizedSearch.split(/\s+/) : [];
+            const sortedItems = items.filter((item) => {
+              if (tokens.length === 0) return true;
+              const normalizedLabel = item.label.toLowerCase();
+              return tokens.every((token) => normalizedLabel.includes(token));
+            });
             return sortedItems.sort((a, b) => a.label.localeCompare(b.label));
           });
         }}
