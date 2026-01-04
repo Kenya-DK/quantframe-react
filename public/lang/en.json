@@ -1660,22 +1660,22 @@
           "quantity": "Quantity"
         }
       }
+    },
+    "bar_chart_financial_summary": {
+      "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+      "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>",
+      "tooltips": {
+        "expense": "Total expenses",
+        "revenue": "Total revenue",
+        "profit": "Total profit",
+        "trades": "Number of trades",
+        "sales": "Number of sales",
+        "purchases": "Number of purchases"
+      }
     }
   },
   "pages": {
     "home": {
-      "tooltips": {
-        "bar_chart": {
-          "footer": {
-            "expense": "Total expenses",
-            "revenue": "Total revenue",
-            "profit": "Total profit",
-            "trades": "Number of trades",
-            "sales": "Number of sales",
-            "purchases": "Number of purchases"
-          }
-        }
-      },
       "cards": {
         "total": {
           "title": "Total Profit",
@@ -1685,10 +1685,6 @@
             "datasets": {
               "this_year": "This Year",
               "last_year": "Last Year"
-            },
-            "footers": {
-              "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
-              "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>"
             }
           }
         },

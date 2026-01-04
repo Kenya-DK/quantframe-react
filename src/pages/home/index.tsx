@@ -1,16 +1,7 @@
-import { Container, Text, Divider, Grid, Group, Paper, ScrollArea, useMantineTheme, Tooltip, Stack } from "@mantine/core";
+import { Container, Text, Divider, Grid, Group, Paper, ScrollArea, useMantineTheme } from "@mantine/core";
 import api from "@api/index";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faBoxOpen,
-  faCalendarAlt,
-  faCartShopping,
-  faHandHoldingDollar,
-  faHandshake,
-  faMoneyBill,
-  faMoneyBillTrendUp,
-  faSackDollar,
-} from "@fortawesome/free-solid-svg-icons";
+import { faBoxOpen, faCalendarAlt, faMoneyBill } from "@fortawesome/free-solid-svg-icons";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { TextTranslate } from "@components/Shared/TextTranslate";
 import i18next from "i18next";
@@ -18,70 +9,12 @@ import { TauriTypes } from "$types";
 import classes from "./Home.module.css";
 import { StatsWithIcon } from "@components/Shared/StatsWithIcon";
 import { BarCardChart } from "@components/Shared/BarCardChart";
-import { faMoneyBillTrendDown } from "@icons";
 import { ColorInfo } from "@components/Shared/ColorInfo";
 import { TransactionListItem } from "@components/DataDisplay/TransactionListItem";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 import { BestByCategoryTable } from "@components/DataDisplay/BestByCategoryTable";
-
-const BarChartFooter = ({ i18nKey, statistics }: { i18nKey: string; statistics: TauriTypes.FinancialReport }) => {
-  const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`home.${key}`, { ...context }, i18Key);
-  const useTranslateTooltips = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslate(`tooltips.bar_chart.footer.${key}`, { ...context }, i18Key);
-  const ExtraComponents = {
-    expenseIco: (
-      <Tooltip label={useTranslateTooltips("expense")}>
-        <FontAwesomeIcon icon={faMoneyBillTrendDown} />
-      </Tooltip>
-    ),
-    revenueIco: (
-      <Tooltip label={useTranslateTooltips("revenue")}>
-        <FontAwesomeIcon icon={faMoneyBillTrendUp} />
-      </Tooltip>
-    ),
-    profitIco: (
-      <Tooltip label={useTranslateTooltips("profit")}>
-        <FontAwesomeIcon icon={faSackDollar} />
-      </Tooltip>
-    ),
-    tradeIco: (
-      <Tooltip label={useTranslateTooltips("trades")}>
-        <FontAwesomeIcon icon={faHandshake} />
-      </Tooltip>
-    ),
-    purchaseIco: (
-      <Tooltip label={useTranslateTooltips("purchases")}>
-        <FontAwesomeIcon icon={faCartShopping} />
-      </Tooltip>
-    ),
-    saleIco: (
-      <Tooltip label={useTranslateTooltips("sales")}>
-        <FontAwesomeIcon icon={faHandHoldingDollar} />
-      </Tooltip>
-    ),
-  };
-
-  return (
-    <Stack gap={"xs"}>
-      <TextTranslate
-        style={{ display: "flex", gap: "4px", alignItems: "center" }}
-        i18nKey={`${i18nKey}.profit`}
-        values={{ expense: statistics?.expenses || 0, revenue: statistics?.revenue || 0, profit: statistics?.total_profit || 0 }}
-        components={ExtraComponents}
-      />
-      <TextTranslate
-        i18nKey={`${i18nKey}.trades`}
-        values={{
-          purchases: statistics?.purchases_count || 0,
-          sales: statistics?.sale_count || 0,
-          trades: (statistics?.sale_count || 0) + (statistics?.purchases_count || 0),
-        }}
-        components={ExtraComponents}
-      />
-    </Stack>
-  );
-};
+import { BarChartFinancialSummary } from "../../components/DataDisplay/BarChartFinancialSummary";
 
 export default function HomePage() {
   const theme = useMantineTheme();
@@ -176,12 +109,7 @@ export default function HomePage() {
                 backgroundColor: theme.other.chartStyles.total.lastYearLineColor,
               },
             ]}
-            context={
-              <BarChartFooter
-                i18nKey={useTranslateCards("total.bar_chart.footers", undefined, true)}
-                statistics={summary?.total as TauriTypes.FinancialReport}
-              />
-            }
+            context={<BarChartFinancialSummary statistics={summary?.total as TauriTypes.FinancialReport} />}
           />
         </Grid.Col>
         <Grid.Col span={4}>
@@ -196,12 +124,7 @@ export default function HomePage() {
                 backgroundColor: theme.other.chartStyles.today.lineColor,
               },
             ]}
-            context={
-              <BarChartFooter
-                i18nKey={useTranslateCards("today.bar_chart.footers", undefined, true)}
-                statistics={summary?.today.summary as TauriTypes.FinancialReport}
-              />
-            }
+            context={<BarChartFinancialSummary statistics={summary?.today.summary as TauriTypes.FinancialReport} />}
           />
         </Grid.Col>
         <Grid.Col span={4}>
@@ -216,12 +139,7 @@ export default function HomePage() {
                 backgroundColor: theme.other.chartStyles.lastDays.lineColor,
               },
             ]}
-            context={
-              <BarChartFooter
-                i18nKey={useTranslateCards("recent_days.bar_chart.footers", undefined, true)}
-                statistics={summary?.recent_days.summary as TauriTypes.FinancialReport}
-              />
-            }
+            context={<BarChartFinancialSummary statistics={summary?.recent_days.summary as TauriTypes.FinancialReport} />}
           />
         </Grid.Col>
       </Grid>
