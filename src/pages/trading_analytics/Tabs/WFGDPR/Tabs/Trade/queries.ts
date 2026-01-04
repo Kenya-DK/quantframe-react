@@ -32,51 +32,33 @@ export interface Values {
   total_trades: number[];
 }
 
-export const useQueries = ({ queryData }: QueriesHooks) => {
-  const getPaginationQuery = useQuery({
-    queryKey: [
-      "get_wfgdpr_trade_pagination",
-      queryData.from_date,
-      queryData.to_date,
-      queryData.page,
-      queryData.limit,
-      queryData.query,
-      queryData.sort_by,
-      queryData.sort_direction,
-    ],
-    queryFn: () => api.sendInvoke<TauriTypes.WFGDPRTradeControllerGetListData>(`wfgdpr_get_trades_pagination`, { query: queryData }),
-    retry: false,
-    throwOnError(error: ResponseError, query) {
-      console.error("Error in query:", query.queryKey, error);
-      return false;
-    },
-  });
+export const useQueries = ({ queryData, isActive }: QueriesHooks) => {
   const getFinancialReportQuery = useQuery({
     queryKey: [
       "get_wfgdpr_trade_financial_report",
       queryData.from_date,
       queryData.to_date,
+      queryData.year,
       queryData.page,
       queryData.limit,
       queryData.query,
       queryData.sort_by,
       queryData.sort_direction,
     ],
-    queryFn: () => api.sendInvoke<FinancialReport>(`wfgdpr_get_trades_financial_report`, { query: queryData }),
+    queryFn: () => api.log_parser.getTradeFinancialReport(queryData),
     retry: false,
+    enabled: isActive === true,
     throwOnError(error: ResponseError, query) {
       console.error("Error in query:", query.queryKey, error);
       return false;
     },
   });
   const refetchQueries = () => {
-    getPaginationQuery.refetch();
     getFinancialReportQuery.refetch();
   };
 
   // Return the queries
   return {
-    paginationQuery: getPaginationQuery,
     financialReportQuery: getFinancialReportQuery,
     refetchQueries,
   };

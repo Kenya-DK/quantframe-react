@@ -1,7 +1,10 @@
 import { Box } from "@mantine/core";
 
-interface PurchasePanelProps {}
+interface PurchasePanelProps {
+  isActive?: boolean;
+  wasInitialized?: boolean;
+}
 
 export const PurchasePanel = ({}: PurchasePanelProps = {}) => {
-  return <Box></Box>;
+  return <Box h={"85vh"}></Box>;
 };

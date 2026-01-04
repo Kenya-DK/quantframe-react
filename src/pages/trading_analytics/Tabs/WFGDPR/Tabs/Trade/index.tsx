@@ -1,35 +1,36 @@
-import { Box, Grid, Table, Title } from "@mantine/core";
+import { Box, Grid, Group, Select, Table, Title, useMantineTheme } from "@mantine/core";
 import { TauriTypes } from "$types";
 import { useForm } from "@mantine/form";
-import { SearchField } from "@components/Forms/SearchField";
 import { useQueries } from "./queries";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { StatsWithSegments } from "@components/Shared/StatsWithSegments";
+import { BarCardChart } from "@components/Shared/BarCardChart";
+import i18next from "i18next";
+import { BestByCategoryTable } from "@components/DataDisplay/BestByCategoryTable";
+import { BarChartFinancialSummary } from "../../../../../../components/DataDisplay/BarChartFinancialSummary";
 
-interface TradePanelProps {}
+interface TradePanelProps {
+  isActive?: boolean;
+  year_list?: string[];
+}
 
-export const TradePanel = ({}: TradePanelProps = {}) => {
+export const TradePanel = ({ isActive, year_list }: TradePanelProps) => {
+  console.log("TradePanel isActive:", isActive);
+  const theme = useMantineTheme();
   // States For DataGrid
   const queryData = useForm({
-    initialValues: { page: 1, limit: 10, query: "" } as TauriTypes.WFGDPRTradeControllerGetListParams,
+    initialValues: { page: 1, limit: 10, query: "", year: new Date().getFullYear() } as TauriTypes.WFGDPRTradeControllerGetListParams,
   });
 
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslatePages(`trading_analytics.tabs.wfgdpr.trade.${key}`, { ...context }, i18Key);
+  const useTranslateCards = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`cards.${key}`, { ...context }, i18Key);
 
   // Queries
-  const { paginationQuery, financialReportQuery } = useQueries({ queryData: queryData.values });
+  const { financialReportQuery } = useQueries({ queryData: queryData.values, isActive });
   return (
-    <Box p={"md"}>
-      <SearchField
-        value={queryData.values.query || ""}
-        onSearch={() => {
-          queryData.validate();
-        }}
-        searchDisabled={paginationQuery.isLoading}
-        onChange={(text) => queryData.setFieldValue("query", text)}
-      />
+    <Box p={"md"} h={"85vh"}>
       <Grid>
         <Grid.Col span={6}>
           <StatsWithSegments
@@ -120,6 +121,58 @@ export const TradePanel = ({}: TradePanelProps = {}) => {
               )) || null}
             </Table.Tbody>
           </Table>
+        </Grid.Col>
+      </Grid>
+      <Grid>
+        <Grid.Col span={6}>
+          <BarCardChart
+            title={useTranslateCards("yearly_trade_overview.title", { year: queryData.values.year })}
+            boxHeight={400}
+            showDatasetLabels
+            labels={i18next.t("months", { returnObjects: true }) as string[]}
+            chartStyle={{ background: theme.colors.dark[7], height: "200px" }}
+            datasets={[
+              {
+                label: useTranslateCards("yearly_trade_overview.total_trades"),
+                data: financialReportQuery.data?.properties.graph.values.total_trades || [],
+                backgroundColor: theme.other.transactionType.trade,
+              },
+              {
+                label: useTranslateCards("yearly_trade_overview.total_purchase"),
+                data: financialReportQuery.data?.properties.graph.values.total_purchase || [],
+                backgroundColor: theme.other.transactionType.purchase,
+              },
+              {
+                label: useTranslateCards("yearly_trade_overview.total_sales"),
+                data: financialReportQuery.data?.properties.graph.values.total_sales || [],
+                backgroundColor: theme.other.transactionType.sale,
+              },
+            ]}
+            context={
+              <Group>
+                <Group flex={1}>
+                  <BarChartFinancialSummary statistics={financialReportQuery.data?.properties.year} />
+                </Group>
+                <Group flex={"1 auto"} justify={"flex-end"}>
+                  <Select
+                    w={100}
+                    data={[
+                      ...(year_list || []).map((year) => ({ value: year, label: year })),
+                      { value: new Date().getFullYear().toString(), label: new Date().getFullYear().toString() },
+                    ]}
+                    value={queryData.values.year?.toString()}
+                    onChange={(value) => {
+                      if (!value) return;
+                      queryData.setFieldValue("year", Number(value));
+                    }}
+                  />
+                </Group>
+              </Group>
+            }
+          />
+        </Grid.Col>
+        <Grid.Col span={6}>
+          <BestByCategoryTable records={financialReportQuery.data?.properties.categories || []} />
         </Grid.Col>
       </Grid>
     </Box>

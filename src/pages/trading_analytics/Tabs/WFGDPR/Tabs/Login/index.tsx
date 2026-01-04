@@ -1,7 +1,10 @@
 import { Box } from "@mantine/core";
 
-interface LoginPanelProps {}
+interface LoginPanelProps {
+  isActive?: boolean;
+  wasInitialized?: boolean;
+}
 
 export const LoginPanel = ({}: LoginPanelProps = {}) => {
-  return <Box></Box>;
+  return <Box h={"85vh"}></Box>;
 };
