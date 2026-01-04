@@ -1,0 +1,27 @@
+.root {
+  &[data-selected="true"] {
+    border-right: 4px solid var(--mantine-color-blue-7);
+  }
+
+  &:hover {
+    box-shadow: inset 4px 0 0 var(--mantine-color-blue-7);
+  }
+}
+
+.userIndicator {
+  &[data-user-status="ingame"] {
+    --indicator-color: var(--user-status-ingame);
+  }
+
+  &[data-user-status="online"] {
+    --indicator-color: var(--qf-user-status-online);
+  }
+
+  &[data-user-status="invisible"] {
+    --indicator-color: var(--qf-user-status-invisible);
+  }
+
+  &[data-user-status="offline"] {
+    --indicator-color: var(--qf-user-status-invisible);
+  }
+}

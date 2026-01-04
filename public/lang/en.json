@@ -1648,6 +1648,18 @@
           "delete": "Why are you here?"
         }
       }
+    },
+    "best_by_category_table": {
+      "datatable": {
+        "columns": {
+          "name": "Name",
+          "revenue": "Revenue",
+          "expense": "Expense",
+          "profit": "Profit",
+          "profit_margin": "Profit Margin",
+          "quantity": "Quantity"
+        }
+      }
     }
   },
   "pages": {
@@ -1708,18 +1720,7 @@
         },
         "best_seller": {
           "title": "Best Seller Profit",
-          "footer": "Name: <blue>{{name}}</blue> | S: <blue>{{sales}}</blue> | P: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | PM: <blue>{{profit_margin}}</blue>%",
-          "by_category": {
-            "datatable": {
-              "columns": {
-                "name": "Name",
-                "revenue": "Revenue",
-                "expense": "Expense",
-                "profit": "Profit",
-                "profit_margin": "Profit Margin"
-              }
-            }
-          }
+          "footer": "Name: <blue>{{name}}</blue> | S: <blue>{{sales}}</blue> | P: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | PM: <blue>{{profit_margin}}</blue>%"
         },
         "last_transaction": {
           "title": "Last Transaction",
@@ -2094,6 +2095,7 @@
         },
         "wfgdpr": {
           "title": "Warframe GDPR Parser",
+          "drag_and_drop_message": "Drag and drop your GDPR Text files here Read more about this feature on the website.",
           "trade": {
             "title": "Trade",
             "tooltips": {
@@ -2114,6 +2116,14 @@
               "purchases_count": "Purchases Count",
               "sales_count": "Sales Count",
               "total_profit": "Total Profit"
+            },
+            "cards": {
+              "yearly_trade_overview": {
+                "title": "Yearly Trade Overview {{year}}",
+                "total_trades": "Trades",
+                "total_purchase": "Purchases",
+                "total_sales": "Sales"
+              }
             }
           },
           "purchase": {

@@ -1,18 +1,4 @@
-import {
-  Box,
-  Container,
-  Text,
-  Image,
-  Divider,
-  Grid,
-  Group,
-  Paper,
-  ScrollArea,
-  useMantineTheme,
-  NumberFormatter,
-  Tooltip,
-  Stack,
-} from "@mantine/core";
+import { Container, Text, Divider, Grid, Group, Paper, ScrollArea, useMantineTheme, Tooltip, Stack } from "@mantine/core";
 import api from "@api/index";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -29,7 +15,6 @@ import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { TextTranslate } from "@components/Shared/TextTranslate";
 import i18next from "i18next";
 import { TauriTypes } from "$types";
-import { DataTable } from "mantine-datatable";
 import classes from "./Home.module.css";
 import { StatsWithIcon } from "@components/Shared/StatsWithIcon";
 import { BarCardChart } from "@components/Shared/BarCardChart";
@@ -38,6 +23,7 @@ import { ColorInfo } from "@components/Shared/ColorInfo";
 import { TransactionListItem } from "@components/DataDisplay/TransactionListItem";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
+import { BestByCategoryTable } from "@components/DataDisplay/BestByCategoryTable";
 
 const BarChartFooter = ({ i18nKey, statistics }: { i18nKey: string; statistics: TauriTypes.FinancialReport }) => {
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`home.${key}`, { ...context }, i18Key);
@@ -270,51 +256,7 @@ export default function HomePage() {
           </Paper>
         </Grid.Col>
         <Grid.Col span={6}>
-          <DataTable
-            records={summary?.categories || []}
-            idAccessor={"properties.name"}
-            // define columns
-            columns={[
-              {
-                accessor: "name",
-                title: useTranslateCards("best_seller.by_category.datatable.columns.name"),
-                width: "150px",
-                render: ({ properties }) => (
-                  <Box style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <Image src={properties.icon} fallbackSrc="/question.png" radius="md" h={32} w={28} fit="contain" />
-                    <Text>{properties.name}</Text>
-                  </Box>
-                ),
-              },
-              {
-                accessor: "revenue",
-                title: useTranslateCards("best_seller.by_category.datatable.columns.revenue"),
-                render: ({ revenue }) => <NumberFormatter thousandSeparator="." decimalSeparator="," value={revenue} />,
-              },
-              {
-                accessor: "expense",
-                title: useTranslateCards("best_seller.by_category.datatable.columns.expense"),
-                render: ({ expenses }) => <NumberFormatter thousandSeparator="." decimalSeparator="," value={expenses} />,
-              },
-              {
-                accessor: "profit",
-                title: useTranslateCards("best_seller.by_category.datatable.columns.profit"),
-                render: ({ total_profit }) => (
-                  <NumberFormatter
-                    style={{ color: total_profit > 0 ? theme.other.positiveColor : theme.other.negativeColor } as React.CSSProperties}
-                    thousandSeparator="."
-                    decimalSeparator=","
-                    value={total_profit}
-                  />
-                ),
-              },
-              {
-                accessor: "profit_margin",
-                title: useTranslateCards("best_seller.by_category.datatable.columns.profit_margin"),
-                render: ({ profit_margin }) => <NumberFormatter decimalScale={2} suffix=" %" value={profit_margin} />,
-              },
-            ]}
-          />
+          <BestByCategoryTable records={summary?.categories || []} />
         </Grid.Col>
       </Grid>
     </Container>
