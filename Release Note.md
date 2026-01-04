@@ -33,6 +33,9 @@
 - ⏱️ Fix so the knapsack algorithm doesn't delete akk items after a cycle.
 - ⏱️ The Log file path sometimes f\* \* \* up
 - ⏱️ The Generate message still have the item if it was deleted by the backend
+- ⏱️ Fix no attack speed on some melee weapon stats
+- ⏱️ Fix Generate message not cursing error
+- ⏱️ Add notification when Warfame gdpr log parser is done
 
 ## Feature's
 

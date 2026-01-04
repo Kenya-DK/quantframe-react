@@ -120,11 +120,17 @@ impl LiveScraperState {
                                     .with_location(get_location!())
                                     .log("live_scraper_item.log");
                                 match e.log_level {
-                                    LogLevel::Critical | LogLevel::Error => {
+                                    LogLevel::Critical => {
                                         // Stop the live scraper
                                         is_running.store(false, Ordering::SeqCst);
                                         play_sound!("windows_xp_error.mp3", 1.0);
                                         emit_error!(e);
+                                    }
+                                    LogLevel::Error => {
+                                        if !just_started.load(Ordering::SeqCst) {
+                                            play_sound!("windows_xp_error.mp3", 1.0);
+                                            emit_error!(e);
+                                        }
                                     }
                                     _ => {}
                                 }

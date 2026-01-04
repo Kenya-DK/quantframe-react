@@ -9,6 +9,7 @@ use service::{StockItemMutation, WishListMutation};
 use utils::*;
 use wf_market::{
     enums::{OrderType, StatusType},
+    errors::ApiError,
     types::{Order, OrderList, OrderWithUser},
 };
 
@@ -205,12 +206,16 @@ impl ItemModule {
             {
                 Ok(o) => o,
                 Err(e) => {
+                    let log_level = match e {
+                        ApiError::RequestError(_) => LogLevel::Error,
+                        _ => LogLevel::Critical,
+                    };
                     return Err(Error::from_wfm(
                         format!("{}ProcessItem", COMPONENT),
                         &format!("Failed to get live orders for item {}", item_entry.wfm_url),
                         e,
                         get_location!(),
-                    ))
+                    ));
                 }
             };
 
