@@ -38,6 +38,7 @@ pub struct WarframeGDPRModule {
     pub trades: Mutex<Vec<PlayerTrade>>,
     pub logins: Mutex<Vec<Login>>,
     pub purchases: Mutex<Vec<Purchase>>,
+    pub transactions: Mutex<Vec<Transaction>>,
 }
 impl WarframeGDPRModule {
     pub fn new() -> Arc<Self> {
@@ -47,6 +48,7 @@ impl WarframeGDPRModule {
             trades: Mutex::new(Vec::new()),
             logins: Mutex::new(Vec::new()),
             purchases: Mutex::new(Vec::new()),
+            transactions: Mutex::new(Vec::new()),
         })
     }
 
@@ -70,6 +72,7 @@ impl WarframeGDPRModule {
         let mut current_trade: Option<PlayerTrade> = None;
         let mut current_login: Option<Login> = None;
         let mut current_purchase: Option<Purchase> = None;
+        let mut current_transaction: Option<Transaction> = None;
         let mut log_section: Option<LogSection> = None;
         let mut section: Option<&str> = None;
         let mut awaiting_purchase_shop_id = false;
@@ -80,11 +83,13 @@ impl WarframeGDPRModule {
         let date_re = Regex::new(r"^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\s+UTC$").unwrap();
         let item_re = Regex::new(r"^(.+?)(?:\s*:\s*(-?\d+))?$").unwrap();
         let platinum_re = Regex::new(r"^PLATINUM\s*:\s*(\d+)").unwrap();
+        let transaction_index_re = Regex::new(r"^(\d+)\s*:\s*$").unwrap();
 
         let mut trades = self.trades.lock().unwrap();
         let mut years = self.trades_years.lock().unwrap();
         let mut logins = self.logins.lock().unwrap();
         let mut purchases = self.purchases.lock().unwrap();
+        let mut transactions = self.transactions.lock().unwrap();
         let mut was_initialized = self.was_initialized.lock().unwrap();
         *was_initialized = true;
         // Start Time
@@ -111,6 +116,12 @@ impl WarframeGDPRModule {
                 // result.metadata.purchases = caps[1].parse().unwrap_or(0);
                 section = Some("purchases");
                 purchases.clear();
+                continue;
+            }
+
+            if line.eq("Transactions") {
+                section = Some("transactions");
+                transactions.clear();
                 continue;
             }
 
@@ -159,6 +170,21 @@ impl WarframeGDPRModule {
 
                         awaiting_purchase_shop_id = true;
                         log_section = None;
+                    }
+
+                    Some("transactions") => {
+                        if let Some(transaction) = current_transaction.take() {
+                            transactions.push(transaction);
+                        }
+
+                        current_transaction = Some(Transaction {
+                            date: to_date(&line),
+                            sku: String::new(),
+                            price: 0,
+                            currency: String::new(),
+                            vendor: String::new(),
+                            account: String::new(),
+                        });
                     }
                     _ => {}
                 }
@@ -346,6 +372,60 @@ impl WarframeGDPRModule {
                     }
                 }
             }
+
+            /* =======================
+               TRANSACTION DETAILS
+            ======================= */
+            if section == Some("transactions") {
+                // Check for transaction index (e.g., "0 :", "1 :")
+                if transaction_index_re.is_match(&line) {
+                    if let Some(transaction) = current_transaction.take() {
+                        transactions.push(transaction);
+                    }
+                    current_transaction = Some(Transaction {
+                        sku: String::new(),
+                        price: 0,
+                        currency: String::new(),
+                        vendor: String::new(),
+                        date: Utc::now(),
+                        account: String::new(),
+                    });
+                    continue;
+                }
+
+                if let Some(transaction) = current_transaction.as_mut() {
+                    if line.starts_with("SKU :") {
+                        transaction.sku = line.replace("SKU :", "").trim().to_string();
+                        continue;
+                    }
+
+                    if line.starts_with("PRICE :") {
+                        transaction.price = line.replace("PRICE :", "").trim().parse().unwrap_or(0);
+                        continue;
+                    }
+
+                    if line.starts_with("CURRENCY :") {
+                        transaction.currency = line.replace("CURRENCY :", "").trim().to_string();
+                        continue;
+                    }
+
+                    if line.starts_with("VENDOR :") {
+                        transaction.vendor = line.replace("VENDOR :", "").trim().to_string();
+                        continue;
+                    }
+
+                    if line.starts_with("DATE :") {
+                        let date_str = line.replace("DATE :", "").trim().to_string();
+                        transaction.date = to_date(&format!("{} UTC", date_str));
+                        continue;
+                    }
+
+                    if line.starts_with("ACCOUNT :") {
+                        transaction.account = line.replace("ACCOUNT :", "").trim().to_string();
+                        continue;
+                    }
+                }
+            }
         }
         if let Some(mut trade) = current_trade {
             trade.calculate();
@@ -361,14 +441,19 @@ impl WarframeGDPRModule {
             purchases.push(purchase);
         }
 
+        if let Some(transaction) = current_transaction {
+            transactions.push(transaction);
+        }
+
         info(
             format!("{}:Load", COMPONENT),
             format!(
-                "Finished loading Warframe GDPR data in: {:.2?} | Trades: {} | Logins: {} | Purchases: {}",
+                "Finished loading Warframe GDPR data in: {:.2?} | Trades: {} | Logins: {} | Purchases: {} | Transactions: {}",
                 start.elapsed(),
                 trades.len(),
                 logins.len(),
-                purchases.len()
+                purchases.len(),
+                transactions.len()
             ),
             &LoggerOptions::default(),
         );
@@ -597,6 +682,14 @@ impl WarframeGDPRModule {
     pub fn purchases(&self, query: PurchasePaginationQueryDto) -> PaginatedResult<Purchase> {
         let purchases = self.purchases.lock().unwrap().clone();
         let paginate = paginate(&purchases, query.pagination.page, query.pagination.limit);
+        paginate
+    }
+    pub fn transactions(
+        &self,
+        query: TransactionPaginationQueryDto,
+    ) -> PaginatedResult<Transaction> {
+        let transactions = self.transactions.lock().unwrap().clone();
+        let paginate = paginate(&transactions, query.pagination.page, query.pagination.limit);
         paginate
     }
 }

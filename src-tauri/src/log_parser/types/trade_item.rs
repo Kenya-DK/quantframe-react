@@ -1,4 +1,4 @@
-use std::{fmt::Display, os::raw};
+use std::fmt::Display;
 
 use entity::dto::SubType;
 use serde::{Deserialize, Serialize};

@@ -2,9 +2,8 @@ use std::{collections::HashMap, fmt::Display, vec};
 
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
-use utils::Error;
 
-use crate::{log_parser::*, types::OperationSet, utils::modules::states};
+use crate::{log_parser::*, utils::modules::states};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct PlayerTrade {
