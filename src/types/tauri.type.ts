@@ -931,6 +931,7 @@ export namespace TauriTypes {
     to_date?: string;
     from_date?: string;
     transaction_type?: TauriTypes.TransactionType;
+    year: number;
   }
   export interface WFGDPRPurchase {}
   export type WFGDPRPurchaseControllerGetListData = PaginatedDto & {
@@ -951,6 +952,8 @@ export namespace TauriTypes {
     page: number;
     limit: number;
     sort_by?: string;
+    from_date?: string;
+    to_date?: string;
     sort_direction?: "asc" | "desc";
     query?: string;
   }

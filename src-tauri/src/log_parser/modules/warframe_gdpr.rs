@@ -1,16 +1,18 @@
-use chrono::{DateTime, Utc};
-use entity::dto::{FinancialGraph, FinancialGraphMap, FinancialReport, PaginatedResult, SubType};
+use chrono::{DateTime, Datelike, TimeZone, Utc};
+use entity::{
+    dto::{FinancialGraphMap, FinancialReport, PaginatedResult, SubType},
+    enums::FieldChange,
+};
 use regex::Regex;
 use serde_json::json;
 use std::{
     collections::HashMap,
-    path::PathBuf,
     sync::{Arc, Mutex},
     time::Instant,
 };
 use utils::{
-    get_location, group_by, group_by_date, info, read_json_file_optional, Error, GroupByDate,
-    LoggerOptions,
+    fill_missing_date_keys, filters_by, get_start_end_of, group_by, group_by_date, info, Error,
+    GroupByDate, LoggerOptions,
 };
 
 use crate::{
@@ -31,6 +33,8 @@ fn to_date(text: &str) -> DateTime<Utc> {
 static COMPONENT: &str = "WarframeGDPRModule";
 #[derive(Debug)]
 pub struct WarframeGDPRModule {
+    pub was_initialized: Mutex<bool>,
+    pub trades_years: Mutex<Vec<String>>,
     pub trades: Mutex<Vec<PlayerTrade>>,
     pub logins: Mutex<Vec<Login>>,
     pub purchases: Mutex<Vec<Purchase>>,
@@ -38,6 +42,8 @@ pub struct WarframeGDPRModule {
 impl WarframeGDPRModule {
     pub fn new() -> Arc<Self> {
         Arc::new(Self {
+            was_initialized: Mutex::new(false),
+            trades_years: Mutex::new(Vec::new()),
             trades: Mutex::new(Vec::new()),
             logins: Mutex::new(Vec::new()),
             purchases: Mutex::new(Vec::new()),
@@ -76,9 +82,11 @@ impl WarframeGDPRModule {
         let platinum_re = Regex::new(r"^PLATINUM\s*:\s*(\d+)").unwrap();
 
         let mut trades = self.trades.lock().unwrap();
+        let mut years = self.trades_years.lock().unwrap();
         let mut logins = self.logins.lock().unwrap();
         let mut purchases = self.purchases.lock().unwrap();
-
+        let mut was_initialized = self.was_initialized.lock().unwrap();
+        *was_initialized = true;
         // Start Time
         let start = Instant::now();
         for line in lines {
@@ -117,7 +125,12 @@ impl WarframeGDPRModule {
                             trade.calculate_items();
                             trades.push(trade);
                         }
-                        current_trade = Some(PlayerTrade::default().set_time(to_date(&line)));
+                        let date = to_date(&line);
+                        let year_str = date.year().to_string();
+                        if !years.contains(&year_str) {
+                            years.push(year_str);
+                        }
+                        current_trade = Some(PlayerTrade::default().set_time(date));
                     }
 
                     Some("logins") => {
@@ -256,6 +269,7 @@ impl WarframeGDPRModule {
                 match cache.tradable_item().get_by(&item.unique_name) {
                     Ok(cached_item) => {
                         item.set_property_value("item_name", cached_item.name.clone());
+                        item.set_property_value("tags", cached_item.tags.clone());
                     }
                     Err(_) => {}
                 }
@@ -361,16 +375,10 @@ impl WarframeGDPRModule {
         enable_logging(true);
         Ok(())
     }
-
-    pub fn trades(&self, query: TradePaginationQueryDto) -> PaginatedResult<PlayerTrade> {
-        let trades = self.trades.lock().unwrap().clone();
-        let paginate = paginate(&trades, query.pagination.page, query.pagination.limit);
-        paginate
-    }
-    pub fn trade_financial_report(&self, mut query: TradePaginationQueryDto) -> FinancialReport {
-        query.pagination.limit = -1; // get all trades
-        let trades = self.trades(query).results;
-
+    /* =======================
+        HELPER METHODS
+    ======================= */
+    fn generate_trade_financial_report(&self, trades: &Vec<PlayerTrade>) -> FinancialReport {
         let total_transactions = trades.len();
 
         let purchases: Vec<&PlayerTrade> = trades
@@ -400,6 +408,7 @@ impl WarframeGDPRModule {
         let sale_items = sales
             .iter()
             .flat_map(|t| t.offered_items.iter())
+            .filter(|item| item.item_type != TradeItemType::Credits)
             .collect::<Vec<&TradeItem>>();
         let mut sale_quantities_by_item = group_by(&sale_items, |item| {
             item.get_property_value("item_name".to_string(), item.raw.clone())
@@ -420,8 +429,7 @@ impl WarframeGDPRModule {
         let lowest_revenue = sales.iter().map(|t| t.platinum).min().unwrap_or(0) as f64;
 
         let total_credits: i64 = trades.iter().map(|t| t.credits).sum();
-
-        let mut fi = FinancialReport::new(
+        let report = FinancialReport::new(
             total_transactions,
             sales.len(),
             highest_revenue,
@@ -431,50 +439,155 @@ impl WarframeGDPRModule {
             highest_expense,
             lowest_expense,
             expenses,
-        );
+        ).with_properties(json!({
+            "total_credits": total_credits,
+            "total_trades": trade_list.len(),
+            "most_purchased_items": purchase_quantities_by_item.into_iter().take(7).collect::<Vec<(String, i64)>>(),
+            "most_sold_items": sale_quantities_by_item.into_iter().take(7).collect::<Vec<(String, i64)>>(),
+        }));
+        report
+    }
+    fn generate_trade_financial_graph(
+        &self,
+        trades: &Vec<PlayerTrade>,
+        date: DateTime<Utc>,
+        group_by1: GroupByDate,
+        group_by2: &[GroupByDate],
+    ) -> (FinancialReport, FinancialGraphMap<i64>) {
+        let (start, end) = get_start_end_of(date, group_by1);
+        let trades = filters_by(trades, |t| t.trade_time >= start && t.trade_time <= end);
 
-        let sdf = group_by_date(&trades, |t| t.trade_time, &[GroupByDate::Year]);
-        let graph_payload = FinancialGraphMap::<i64>::from(&sdf, |group| {
+        let mut grouped = group_by_date(&trades, |t| t.trade_time, group_by2);
+
+        fill_missing_date_keys(&mut grouped, start, end, group_by2);
+        let graph: FinancialGraphMap<i64> = FinancialGraphMap::<i64>::from(&grouped, |group| {
             HashMap::from([
-                ("total", group.len() as i64),
+                (
+                    "total_purchase",
+                    group
+                        .iter()
+                        .filter(|t| t.trade_type == TradeClassification::Purchase)
+                        .count() as i64,
+                ),
                 (
                     "total_sales",
                     group
                         .iter()
                         .filter(|t| t.trade_type == TradeClassification::Sale)
-                        .collect::<Vec<_>>()
-                        .len() as i64,
-                ),
-                (
-                    "total_purchases",
-                    group
-                        .iter()
-                        .filter(|t| t.trade_type == TradeClassification::Purchase)
-                        .collect::<Vec<_>>()
-                        .len() as i64,
+                        .count() as i64,
                 ),
                 (
                     "total_trades",
                     group
                         .iter()
                         .filter(|t| t.trade_type == TradeClassification::Trade)
-                        .collect::<Vec<_>>()
-                        .len() as i64,
+                        .count() as i64,
                 ),
             ])
         });
-        fi.properties = Some(json!({
-           "total_credits": total_credits,
-           "total_trades": trades
-            .iter()
-            .filter(|t| t.trade_type == TradeClassification::Trade)
-            .collect::<Vec<_>>().len(),
-           "most_purchased_items": purchase_quantities_by_item.into_iter().take(5).collect::<Vec<(String, i64)>>(),
-           "most_sold_items": sale_quantities_by_item.into_iter().take(5).collect::<Vec<(String, i64)>>(),
-           "financial_graph": graph_payload,
-        }));
+        (self.generate_trade_financial_report(&trades), graph)
+    }
 
-        fi
+    pub fn was_initialized(&self) -> bool {
+        let was_initialized = self.was_initialized.lock().unwrap();
+        *was_initialized
+    }
+    pub fn get_trade_years(&self) -> Vec<String> {
+        let trades = self.trades.lock().unwrap();
+        let mut years = trades
+            .iter()
+            .map(|t| t.trade_time.year().to_string())
+            .collect::<Vec<String>>();
+        years.sort();
+        years.dedup();
+        years
+    }
+    pub fn trades(&self, query: TradePaginationQueryDto) -> PaginatedResult<PlayerTrade> {
+        let trades = self.trades.lock().unwrap().clone();
+
+        let filtered_auctions = filters_by(&trades, |o| {
+            match &query.from_date {
+                FieldChange::Value(q) => {
+                    if o.trade_time <= *q {
+                        return false;
+                    }
+                }
+                _ => {}
+            }
+            match &query.to_date {
+                FieldChange::Value(q) => {
+                    if o.trade_time > *q {
+                        return false;
+                    }
+                }
+                _ => {}
+            }
+            true
+        });
+
+        let paginate = paginate(
+            &filtered_auctions,
+            query.pagination.page,
+            query.pagination.limit,
+        );
+        paginate
+    }
+    pub fn trade_financial_report(&self, mut query: TradePaginationQueryDto) -> FinancialReport {
+        let settings = states::app_state().unwrap().settings;
+        query.pagination.limit = -1; // get all trades
+        let trades = self.trades(query.clone()).results;
+
+        let mut report = self.generate_trade_financial_report(&trades);
+
+        let year = query.year.get_or_default(Utc::now().year());
+        let (year_report, year_graph) = self.generate_trade_financial_graph(
+            &trades,
+            Utc.ymd(year.to_string().parse().unwrap(), 1, 1)
+                .and_hms(0, 0, 0),
+            GroupByDate::Year,
+            &[GroupByDate::Year, GroupByDate::Month],
+        );
+
+        let mut items = vec![];
+        for category in settings.summary_settings.categories {
+            let tags = &category.tags;
+            let types = &category.types;
+            let filtered_transactions = filters_by(&trades, |t| {
+                let items2 = t
+                    .offered_items
+                    .iter()
+                    .chain(t.received_items.iter())
+                    .collect::<Vec<_>>();
+
+                let tag_matches = items2
+                    .iter()
+                    .map(|item| item.get_property_value::<Vec<String>>("tags".to_string(), vec![]))
+                    .flatten()
+                    .any(|tag| tags.contains(&tag.trim().to_string()));
+
+                let type_matches = items2
+                    .iter()
+                    .map(|item| item.item_type.to_string())
+                    .any(|tag| types.contains(&tag.trim().to_string()));
+
+                tag_matches || type_matches
+            });
+            let re = self
+                .generate_trade_financial_report(&filtered_transactions)
+                .with_properties(json!({
+                    "icon": category.icon,
+                    "name": category.name,
+                }));
+            items.push(re);
+        }
+
+        if let Some(ref mut properties) = report.properties {
+            properties["graph"] = json!(year_graph);
+            properties["categories"] = json!(items);
+            properties["year"] = json!(year_report);
+        }
+
+        report
     }
     pub fn logins(&self, query: LoginPaginationQueryDto) -> PaginatedResult<Login> {
         let logins = self.logins.lock().unwrap().clone();

@@ -1,3 +1,14 @@
+# How to use parser
+
+1. Get your data from DE
+   - Go to [zendesk](https://digitalextremes.zendesk.com/hc/en-us)
+   - Submit new request in category "My Account"
+   - Select subcategory "CCPA or GDPR - General Data Protection Regulation"
+   - Write something in Subject and Description fields
+   - Wait 1+ days
+2. Unpack archive in some new folder.
+3. After you get your .txt files, Drag and drop one file at a time here.
+
 ## Add Feature's
 
 - ✨ Add a notification sound's

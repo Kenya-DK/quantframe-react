@@ -9,6 +9,17 @@ use crate::log_parser::{
 };
 
 #[tauri::command]
+pub async fn wfgdpr_get_state(
+    log_parser: tauri::State<'_, Mutex<Arc<LogParserState>>>,
+) -> Result<Value, Error> {
+    // Read the file content
+    let log_parser = log_parser.lock()?;
+    Ok(json!({
+        "was_initialized": log_parser.warframe_gdpr().was_initialized(),
+        "trade_years": log_parser.warframe_gdpr().get_trade_years(),
+    }))
+}
+#[tauri::command]
 pub async fn wfgdpr_get_trades_pagination(
     query: TradePaginationQueryDto,
     log_parser: tauri::State<'_, Mutex<Arc<LogParserState>>>,
@@ -16,7 +27,6 @@ pub async fn wfgdpr_get_trades_pagination(
     // Read the file content
     let log_parser = log_parser.lock()?;
     let trades = log_parser.warframe_gdpr().trades(query.clone());
-    log_parser.warframe_gdpr().trade_financial_report(query);
     Ok(json!(trades))
 }
 #[tauri::command]

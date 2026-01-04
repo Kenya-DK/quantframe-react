@@ -310,6 +310,7 @@ pub fn run() {
             commands::trade_entry::trade_entry_update_multiple,
             commands::trade_entry::export_trade_entry_json,
             // Warframe GDPR commands
+            commands::warframe_gdpr::wfgdpr_get_state,
             commands::warframe_gdpr::wfgdpr_load,
             commands::warframe_gdpr::wfgdpr_get_trades_pagination,
             commands::warframe_gdpr::wfgdpr_get_trades_financial_report,
