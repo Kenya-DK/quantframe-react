@@ -36,6 +36,8 @@
 - ⏱️ Fix no attack speed on some melee weapon stats
 - ⏱️ Fix Generate message not cursing error
 - ⏱️ Add notification when Warfame gdpr log parser is done
+- ⏱️ Add confirmation when user logs out
+- ⏱️ Fix so y cant save a message template with the same name
 
 ## Feature's
 

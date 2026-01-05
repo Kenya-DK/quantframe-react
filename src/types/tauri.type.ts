@@ -933,7 +933,12 @@ export namespace TauriTypes {
     transaction_type?: TauriTypes.TransactionType;
     year: number;
   }
-  export interface WFGDPRPurchase {}
+  export interface WFGDPRPurchase {
+    date: string;
+    items_received: [string, number][];
+    price: number;
+    shop_id: string;
+  }
   export type WFGDPRPurchaseControllerGetListData = PaginatedDto & {
     results?: WFGDPRPurchase[];
   };
@@ -944,21 +949,32 @@ export namespace TauriTypes {
     sort_direction?: "asc" | "desc";
     query?: string;
   }
-  export interface WFGDPRLogin {}
+  export interface WFGDPRLogin {
+    date: string;
+    ip: string;
+    client_type: string;
+  }
   export type WFGDPRLoginControllerGetListData = PaginatedDto & {
     results?: WFGDPRLogin[];
   };
   export interface WFGDPRLoginControllerGetListParams {
     page: number;
     limit: number;
-    sort_by?: string;
     from_date?: string;
     to_date?: string;
+    sort_by?: string;
     sort_direction?: "asc" | "desc";
     query?: string;
   }
 
-  export interface WFGDPRTransaction {}
+  export interface WFGDPRTransaction {
+    account: string;
+    currency: string;
+    date: string;
+    price: number;
+    sku: string;
+    vendor: string;
+  }
   export type WFGDPRTransactionControllerGetListData = PaginatedDto & {
     results?: WFGDPRTransaction[];
   };

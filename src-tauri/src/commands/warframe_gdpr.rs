@@ -6,6 +6,7 @@ use utils::Error;
 
 use crate::log_parser::{
     LogParserState, LoginPaginationQueryDto, PurchasePaginationQueryDto, TradePaginationQueryDto,
+    TransactionPaginationQueryDto,
 };
 
 #[tauri::command]
