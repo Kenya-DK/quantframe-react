@@ -215,7 +215,8 @@ impl ItemModule {
                         &format!("Failed to get live orders for item {}", item_entry.wfm_url),
                         e,
                         get_location!(),
-                    ));
+                    )
+                    .set_log_level(log_level));
                 }
             };
 
