@@ -7,7 +7,7 @@ import { StatsWithSegments } from "@components/Shared/StatsWithSegments";
 import { BarCardChart } from "@components/Shared/BarCardChart";
 import i18next from "i18next";
 import { BestByCategoryTable } from "@components/DataDisplay/BestByCategoryTable";
-import { BarChartFinancialSummary } from "../../../../../../components/DataDisplay/BarChartFinancialSummary";
+import { BarChartFinancialSummary } from "@components/DataDisplay/BarChartFinancialSummary";
 
 interface TradePanelProps {
   isActive?: boolean;

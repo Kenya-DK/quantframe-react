@@ -2123,13 +2123,37 @@
             }
           },
           "purchase": {
-            "title": "Purchases"
+            "title": "Purchases",
+            "datatable": {
+              "columns": {
+                "shop_id": "Shop ID",
+                "price": "Price",
+                "date": "Purchase Date"
+              }
+            }
           },
           "login": {
-            "title": "Login History"
+            "title": "Login History",
+            "datatable": {
+              "columns": {
+                "client_type": "Client Type",
+                "ip": "IP Address",
+                "date": "Login Date"
+              }
+            }
           },
           "transaction": {
-            "title": "Transactions"
+            "title": "Transactions",
+            "datatable": {
+              "columns": {
+                "account": "Shop ID",
+                "currency": "Currency",
+                "price": "Price",
+                "sku": "SKU",
+                "vendor": "Vendor",
+                "date": "Purchase Date"
+              }
+            }
           }
         }
       }

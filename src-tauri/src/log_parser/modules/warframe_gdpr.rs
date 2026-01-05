@@ -180,7 +180,7 @@ impl WarframeGDPRModule {
                         current_transaction = Some(Transaction {
                             date: to_date(&line),
                             sku: String::new(),
-                            price: 0,
+                            price: 0.0,
                             currency: String::new(),
                             vendor: String::new(),
                             account: String::new(),
@@ -307,7 +307,6 @@ impl WarframeGDPRModule {
                     _ => {}
                 }
             }
-
             /* =======================
                LOGIN DETAILS
             ======================= */
@@ -372,7 +371,6 @@ impl WarframeGDPRModule {
                     }
                 }
             }
-
             /* =======================
                TRANSACTION DETAILS
             ======================= */
@@ -384,7 +382,7 @@ impl WarframeGDPRModule {
                     }
                     current_transaction = Some(Transaction {
                         sku: String::new(),
-                        price: 0,
+                        price: 0.0,
                         currency: String::new(),
                         vendor: String::new(),
                         date: Utc::now(),
@@ -400,7 +398,8 @@ impl WarframeGDPRModule {
                     }
 
                     if line.starts_with("PRICE :") {
-                        transaction.price = line.replace("PRICE :", "").trim().parse().unwrap_or(0);
+                        transaction.price =
+                            line.replace("PRICE :", "").trim().parse().unwrap_or(0.0);
                         continue;
                     }
 
@@ -590,25 +589,7 @@ impl WarframeGDPRModule {
     pub fn trades(&self, query: TradePaginationQueryDto) -> PaginatedResult<PlayerTrade> {
         let trades = self.trades.lock().unwrap().clone();
 
-        let filtered_auctions = filters_by(&trades, |o| {
-            match &query.from_date {
-                FieldChange::Value(q) => {
-                    if o.trade_time <= *q {
-                        return false;
-                    }
-                }
-                _ => {}
-            }
-            match &query.to_date {
-                FieldChange::Value(q) => {
-                    if o.trade_time > *q {
-                        return false;
-                    }
-                }
-                _ => {}
-            }
-            true
-        });
+        let filtered_auctions = query.apply_query(&trades);
 
         let paginate = paginate(
             &filtered_auctions,
@@ -624,7 +605,10 @@ impl WarframeGDPRModule {
 
         let mut report = self.generate_trade_financial_report(&trades);
 
-        let year = query.year.get_or_default(Utc::now().year());
+        let year = match query.year {
+            FieldChange::Value(y) => y,
+            _ => Utc::now().year(),
+        };
         let (year_report, year_graph) = self.generate_trade_financial_graph(
             &trades,
             Utc.ymd(year.to_string().parse().unwrap(), 1, 1)
@@ -676,12 +660,22 @@ impl WarframeGDPRModule {
     }
     pub fn logins(&self, query: LoginPaginationQueryDto) -> PaginatedResult<Login> {
         let logins = self.logins.lock().unwrap().clone();
-        let paginate = paginate(&logins, query.pagination.page, query.pagination.limit);
+        let filtered_paginate = query.apply_query(&logins);
+        let paginate = paginate(
+            &filtered_paginate,
+            query.pagination.page,
+            query.pagination.limit,
+        );
         paginate
     }
     pub fn purchases(&self, query: PurchasePaginationQueryDto) -> PaginatedResult<Purchase> {
         let purchases = self.purchases.lock().unwrap().clone();
-        let paginate = paginate(&purchases, query.pagination.page, query.pagination.limit);
+        let filtered_paginate = query.apply_query(&purchases);
+        let paginate = paginate(
+            &filtered_paginate,
+            query.pagination.page,
+            query.pagination.limit,
+        );
         paginate
     }
     pub fn transactions(
@@ -689,7 +683,12 @@ impl WarframeGDPRModule {
         query: TransactionPaginationQueryDto,
     ) -> PaginatedResult<Transaction> {
         let transactions = self.transactions.lock().unwrap().clone();
-        let paginate = paginate(&transactions, query.pagination.page, query.pagination.limit);
+        let filtered_paginate = query.apply_query(&transactions);
+        let paginate = paginate(
+            &filtered_paginate,
+            query.pagination.page,
+            query.pagination.limit,
+        );
         paginate
     }
 }

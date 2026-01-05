@@ -1,10 +1,101 @@
-import { Box } from "@mantine/core";
+import { Box, Text } from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { TauriTypes } from "$types";
+import { useQueries } from "./queries";
+import { SearchField } from "@components/Forms/SearchField";
+import { DataTable } from "mantine-datatable";
+import { getSafePage } from "@utils/helper";
+import { Loading } from "@components/Shared/Loading";
+import dayjs from "dayjs";
+import { useTranslatePages } from "@hooks/useTranslate.hook";
 
 interface TransactionPanelProps {
   isActive?: boolean;
-  wasInitialized?: boolean;
 }
 
-export const TransactionPanel = ({}: TransactionPanelProps = {}) => {
-  return <Box h={"85vh"}></Box>;
+export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
+  // States For DataGrid
+  const queryData = useForm({
+    initialValues: { page: 1, limit: 10, query: "" } as TauriTypes.WFGDPRTransactionControllerGetListParams,
+  });
+
+  // Translate general
+  const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslatePages(`trading_analytics.tabs.wfgdpr.transaction.${key}`, { ...context }, i18Key);
+  const useTranslateColumns = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslate(`datatable.columns.${key}`, { ...context }, i18Key);
+  // Queries
+  const { paginationQuery, refetchQueries } = useQueries({ queryData: queryData.values, isActive });
+
+  return (
+    <Box h={"85vh"} p={"md"}>
+      <SearchField
+        value={queryData.values.query || ""}
+        onSearch={() => {
+          queryData.validate();
+          if (queryData.isValid()) refetchQueries();
+        }}
+        onChange={(text) => queryData.setFieldValue("query", text)}
+      />
+      <DataTable
+        mt={"md"}
+        height={"75vh"}
+        fetching={paginationQuery.isFetching}
+        records={paginationQuery.data?.results || []}
+        page={getSafePage(queryData.values.page, paginationQuery.data?.total_pages)}
+        onPageChange={(page) => queryData.setFieldValue("page", page)}
+        totalRecords={paginationQuery.data?.total || 0}
+        recordsPerPage={queryData.values.limit || 10}
+        recordsPerPageOptions={[5, 10, 15, 20, 25, 50, 100]}
+        onRecordsPerPageChange={(limit) => queryData.setFieldValue("limit", limit)}
+        customLoader={<Loading />}
+        sortStatus={{
+          columnAccessor: queryData.values.sort_by || "name",
+          direction: queryData.values.sort_direction || "desc",
+        }}
+        onSortStatusChange={(sort) => {
+          if (!sort || !sort.columnAccessor) return;
+          queryData.setFieldValue("sort_by", sort.columnAccessor as any);
+          queryData.setFieldValue("sort_direction", sort.direction);
+        }}
+        idAccessor={(record) => record.date}
+        // define columns
+        columns={[
+          {
+            accessor: "account",
+            title: useTranslateColumns("account"),
+            sortable: true,
+          },
+          {
+            accessor: "currency",
+            title: useTranslateColumns("currency"),
+            sortable: true,
+          },
+          {
+            accessor: "price",
+            title: useTranslateColumns("price"),
+            sortable: true,
+          },
+          {
+            accessor: "sku",
+            title: useTranslateColumns("sku"),
+            sortable: true,
+          },
+          {
+            accessor: "vendor",
+            title: useTranslateColumns("vendor"),
+            sortable: true,
+          },
+          {
+            accessor: "date",
+            title: useTranslateColumns("date"),
+            sortable: true,
+            render: ({ date }) => {
+              return <Text>{dayjs(date).format("DD.MM.YYYY HH:mm")}</Text>;
+            },
+          },
+        ]}
+      />
+    </Box>
+  );
 };
