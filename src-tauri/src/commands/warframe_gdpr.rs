@@ -62,6 +62,17 @@ pub async fn wfgdpr_get_logins_pagination(
 }
 
 #[tauri::command]
+pub async fn wfgdpr_get_transactions_pagination(
+    query: TransactionPaginationQueryDto,
+    log_parser: tauri::State<'_, Mutex<Arc<LogParserState>>>,
+) -> Result<Value, Error> {
+    // Read the file content
+    let log_parser = log_parser.lock()?;
+    let transactions = log_parser.warframe_gdpr().transactions(query);
+    Ok(json!(transactions))
+}
+
+#[tauri::command]
 pub async fn wfgdpr_load(
     file_path: String,
     log_parser: tauri::State<'_, Mutex<Arc<LogParserState>>>,

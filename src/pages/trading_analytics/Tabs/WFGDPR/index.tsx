@@ -1,5 +1,5 @@
 import { Center, Container, Overlay, Tabs, Text } from "@mantine/core";
-import { TradePanel, LoginPanel, PurchasePanel } from "./Tabs";
+import { TradePanel, LoginPanel, PurchasePanel, TransactionPanel } from "./Tabs";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { invoke } from "@tauri-apps/api/core";
 import { Loading } from "@components/Shared/Loading";
@@ -42,6 +42,11 @@ export const WarframeGDPRParser = ({ isActive }: WarframeGDPRParserProps = {}) =
       label: useTranslateTabs("login.title"),
       component: (isActive: boolean) => <LoginPanel isActive={isActive && activeTab === "login" && data?.was_initialized} />,
       id: "login",
+    },
+    {
+      label: useTranslateTabs("transaction.title"),
+      component: (isActive: boolean) => <TransactionPanel isActive={isActive && activeTab === "transaction" && data?.was_initialized} />,
+      id: "transaction",
     },
   ];
 

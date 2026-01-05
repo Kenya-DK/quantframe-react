@@ -957,4 +957,18 @@ export namespace TauriTypes {
     sort_direction?: "asc" | "desc";
     query?: string;
   }
+
+  export interface WFGDPRTransaction {}
+  export type WFGDPRTransactionControllerGetListData = PaginatedDto & {
+    results?: WFGDPRTransaction[];
+  };
+  export interface WFGDPRTransactionControllerGetListParams {
+    page: number;
+    limit: number;
+    sort_by?: string;
+    from_date?: string;
+    to_date?: string;
+    sort_direction?: "asc" | "desc";
+    query?: string;
+  }
 }

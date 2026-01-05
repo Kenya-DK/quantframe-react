@@ -60,4 +60,12 @@ export class LogParserModule {
       query: this.client.convertToTauriQuery(query),
     });
   }
+
+  async getTransactionPagination(
+    query: TauriTypes.WFGDPRTransactionControllerGetListParams
+  ): Promise<TauriTypes.WFGDPRTransactionControllerGetListData> {
+    return await this.client.sendInvoke<TauriTypes.WFGDPRTransactionControllerGetListData>("wfgdpr_get_transactions_pagination", {
+      query: this.client.convertToTauriQuery(query),
+    });
+  }
 }

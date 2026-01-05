@@ -2123,10 +2123,13 @@
             }
           },
           "purchase": {
-            "title": "In Game Purchases"
+            "title": "Purchases"
           },
           "login": {
             "title": "Login History"
+          },
+          "transaction": {
+            "title": "Transactions"
           }
         }
       }
