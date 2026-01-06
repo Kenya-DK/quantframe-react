@@ -106,7 +106,10 @@ impl WarframeGDPRModule {
                 continue;
             }
 
-            if let Some(_) = logins_re.captures(&line) && !previous_line.eq("Stats") {
+            if let Some(_) = logins_re.captures(&line) {
+                if previous_line.eq("Stats") {
+                    continue;
+                }
                 // result.metadata.logins = caps[1].parse().unwrap_or(0);
                 section = Some("logins");
                 logins.clear();
