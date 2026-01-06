@@ -581,12 +581,14 @@ impl ItemModule {
         // Get the lowest sell order price from the DataFrame of live sell orders
         let lowest_price = if live_orders.sell_orders.len() > 2 {
             live_orders.lowest_price(OrderType::Sell)
-        } else {
+        } else if stock_item.minimum_price.is_none() {
             order_info.add_operation("Delete");
             order_info.add_operation("NoSellers");
             stock_item.set_status(StockStatus::NoSellers);
             stock_item.set_list_price(None);
             stock_item.locked = true;
+            0
+        } else {
             0
         };
 
