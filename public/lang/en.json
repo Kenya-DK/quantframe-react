@@ -601,6 +601,14 @@
           "title": "Logout Success",
           "message": "You have successfully logged out."
         }
+      },
+      "prompts": {
+        "logout": {
+          "title": "Confirm logout",
+          "message": "Are you sure you want to log out?",
+          "confirm": "Yes",
+          "cancel": "No"
+        }
       }
     },
     "clock": {

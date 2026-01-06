@@ -26,6 +26,8 @@ export function UserMenu() {
     useTranslateUserMenu(`errors.${key}`, { ...context }, i18Key);
   const useTranslateSuccess = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateUserMenu(`success.${key}`, { ...context }, i18Key);
+  const useTranslatePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateUserMenu(`prompts.${key}`, { ...context }, i18Key);
 
   // Mutations
   const logOutMutation = useMutation({
@@ -172,8 +174,14 @@ export function UserMenu() {
         <Menu.Item
           disabled={!IsAuthenticated()}
           leftSection={<FontAwesomeIcon icon={faRightFromBracket} />}
-          onClick={async () => {
-            await logOutMutation.mutateAsync();
+          onClick={() => {
+            if (!IsAuthenticated()) return;
+            modals.openConfirmModal({
+              title: useTranslatePrompt("logout.title"),
+              children: <Text size="sm">{useTranslatePrompt("logout.message")}</Text>,
+              labels: { confirm: useTranslatePrompt("logout.confirm"), cancel: useTranslatePrompt("logout.cancel") },
+              onConfirm: async () => logOutMutation.mutateAsync(),
+            });
           }}
         >
           {useTranslateUserMenu("items.logout")}
