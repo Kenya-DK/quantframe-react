@@ -94,6 +94,7 @@ impl WarframeGDPRModule {
         *was_initialized = true;
         // Start Time
         let start = Instant::now();
+        let mut previous_line = String::new();
         for line in lines {
             /* =======================
                METADATA
@@ -105,7 +106,7 @@ impl WarframeGDPRModule {
                 continue;
             }
 
-            if let Some(_) = logins_re.captures(&line) {
+            if let Some(_) = logins_re.captures(&line) && !previous_line.eq("Stats") {
                 // result.metadata.logins = caps[1].parse().unwrap_or(0);
                 section = Some("logins");
                 logins.clear();
@@ -425,6 +426,7 @@ impl WarframeGDPRModule {
                     }
                 }
             }
+            previous_line = line.clone();
         }
         if let Some(mut trade) = current_trade {
             trade.calculate();
