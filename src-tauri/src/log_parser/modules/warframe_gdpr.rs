@@ -19,6 +19,7 @@ use crate::{
     enums::LogSection,
     helper::paginate,
     log_parser::{enable_logging, types::*, TradeClassification, TradeItemType},
+    notify_gui,
     utils::modules::states,
 };
 fn to_date(text: &str) -> DateTime<Utc> {
