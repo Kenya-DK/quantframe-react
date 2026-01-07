@@ -40,7 +40,7 @@
 - ⏱️ (Need Testing) - Add notification when Warframe gdpr log parser is done
 - ⏱️ Add confirmation when user logs out
 - ⏱️ Fix so y cant save a message template with the same name
-- ⏱️ Fix Types errors in StockRiven
+- ⏱️ Fix Types errors in StockRiven Update
 
 ## Feature's
 
