@@ -41,6 +41,12 @@
           "message": "<blue>{{item_name}}</blue> X<blue>{{quantity}}</blue> <blue>{{trade_type}}</blue> For {{platinum}}p"
         }
       },
+      "warframe_gdpr_data_loaded": {
+        "success": {
+          "title": "Warframe GDPR Data Loaded",
+          "message": "Trades: {{trades}}, Logins: {{logins}}, Purchases: {{purchases}}, Transactions: {{transactions}}"
+        }
+      },
       "log_export": {
         "error": {
           "title": "Log Export Error",
