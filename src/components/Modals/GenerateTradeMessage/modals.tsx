@@ -29,6 +29,7 @@ export const useModals = ({ createMutation, deleteMutation }: ModalHooks) => {
         onConfirm: async (data: { name: string }) => {
           if (!input.template) return;
           const { name } = data;
+          if (input.settings?.generate_trade_message.templates.find((t) => t.name === name)) return;
           await createMutation.mutateAsync({ settings: input.settings, template: { ...input.template, name } });
         },
         onCancel: (id: string) => modals.close(id),

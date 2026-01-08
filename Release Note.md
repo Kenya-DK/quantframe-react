@@ -23,6 +23,8 @@
 
 - ⏱️ Fix a bug if y have buy quantity set to more the 1 and but it from then wfm tab it wut have the price
 - ⏱️ Fix user can type in the chat box
+- ⏱️ Fix Types errors in StockRiven Update
+- ⏱️ Fix so y cant save a message template with the same name
 
 ## Dev Notes
 
@@ -39,8 +41,6 @@
 - ⏱️ Fix Generate message not cursing error
 - ⏱️ (Need Testing) - Add notification when Warframe gdpr log parser is done
 - ⏱️ Add confirmation when user logs out
-- ⏱️ Fix so y cant save a message template with the same name
-- ⏱️ Fix Types errors in StockRiven Update
 
 ## Feature's
 

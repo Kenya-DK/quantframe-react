@@ -341,7 +341,6 @@ export function GenerateTradeMessageModal({ prefix, template, suffix, displaySet
                     iconProps={{ size: "xs" }}
                     onClick={() => {
                       if (!selectedTemplate) return;
-                      console.log("Loading template:", selectedTemplate);
                       form.setValues({ ...form.values, ...selectedTemplate });
                     }}
                   />
