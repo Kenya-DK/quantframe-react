@@ -3,36 +3,37 @@ import { useForm } from "@mantine/form";
 import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
 import { useEffect } from "react";
+import { Box, Button, Divider, Group, NumberInput, Text } from "@mantine/core";
+import { useTranslateCommon, useTranslateForms } from "@hooks/useTranslate.hook";
 
 export type StockRivenUpdateProps = {
   values?: number[];
   onUpdate?: (data: TauriTypes.UpdateStockRiven) => void;
 };
-export function StockRivenUpdate({ values }: StockRivenUpdateProps) {
+export function StockRivenUpdate({ values, onUpdate }: StockRivenUpdateProps) {
   // Translate general
-  // const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-  //   useTranslateForms(`stock_riven_update.${key}`, { ...context }, i18Key);
-
+  const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateForms(`stock_riven_update.${key}`, { ...context }, i18Key);
+  const useTranslateFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslate(`fields.${key}`, { ...context }, i18Key);
   const { data } = useQuery({
     queryKey: ["stock_riven", values && values.length === 1 ? values[0] : null],
-    queryFn: () => api.stock_riven.getById(values![0]),
+    queryFn: () => api.stock_riven.getById(values![0], "edit"),
     enabled: !!values && values.length === 1,
   });
 
   const form = useForm({
-    initialValues: {},
-    // initialValues: data?.stock as TauriTypes.UpdateStockRiven,
+    initialValues: {} as TauriTypes.UpdateStockRiven,
   });
 
   useEffect(() => {
-    // if (data) form.setValues(data.stock as TauriTypes.UpdateStockRiven);
+    if (data) form.setValues(data);
   }, [data]);
 
   return (
-    <form onSubmit={form.onSubmit(async () => {})}>
-      {/* <Group justify="space-between" mb={"md"}>
-        {data && <ItemName value={data.stock} />}
-        {!data && <Text>{useTranslate("title", { count: values?.length || 0 })}</Text>}
+    <form onSubmit={form.onSubmit(async () => onUpdate?.(form.values))}>
+      <Group justify="space-between" mb={"md"}>
+        <Text>{useTranslate("title", { count: values?.length || 0 })}</Text>
       </Group>
       <Divider />
       <Box h={"50vh"}>
@@ -73,7 +74,7 @@ export function StockRivenUpdate({ values }: StockRivenUpdateProps) {
             {useTranslateCommon("buttons.save.label")}
           </Button>
         </Group>
-      </Box> */}
+      </Box>
     </form>
   );
 }

@@ -1,6 +1,7 @@
 use std::{collections::HashMap, sync::Mutex};
 
 use entity::{dto::*, stock_riven::*};
+use serde_json::{json, Value};
 use service::{StockRivenMutation, StockRivenQuery};
 use tauri_plugin_dialog::DialogExt;
 use utils::{get_location, group_by, info, Error, LoggerOptions};
@@ -191,7 +192,7 @@ pub async fn stock_riven_update_multiple(
     Ok(updated_items)
 }
 #[tauri::command]
-pub async fn stock_riven_get_by_id(id: i64) -> Result<RivenSummary, Error> {
+pub async fn stock_riven_get_by_id(id: i64, mode: String) -> Result<Value, Error> {
     let conn = DATABASE.get().unwrap();
     let item = match StockRivenQuery::get_by_id(conn, id).await {
         Ok(stock_riven) => {
@@ -207,8 +208,17 @@ pub async fn stock_riven_get_by_id(id: i64) -> Result<RivenSummary, Error> {
         }
         Err(e) => return Err(e.with_location(get_location!())),
     };
-    let summary = RivenSummary::try_from_model(&item).await?;
-    Ok(summary)
+    match mode.as_str() {
+        "summary" => Ok(json!(RivenSummary::try_from_model(&item).await?)),
+        "edit" => Ok(json!(item)),
+        _ => {
+            return Err(Error::new(
+                "Command::StockRivenGetById",
+                "Invalid mode. Must be 'summary' or 'edit'",
+                get_location!(),
+            ));
+        }
+    }
 }
 
 #[tauri::command]

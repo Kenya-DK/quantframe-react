@@ -80,7 +80,7 @@ export function StockRivenDetailsModal({ value }: StockRivenDetailsModalProps) {
   const [opened, { close, open }] = useDisclosure(false);
   const { data, isLoading } = useQuery({
     queryKey: ["stock_riven", value],
-    queryFn: () => api.stock_riven.getById(value),
+    queryFn: () => api.stock_riven.getById(value, "summary"),
   });
   const [selectedWeapon, setSelectedWeapon] = useState<TauriTypes.StatWithWeapon | null>(null);
   const [rank, setRank] = useState<number>(0);

@@ -40,8 +40,8 @@ export class StockRivenModule {
   async sell(entry: TauriTypes.SellStockRiven): Promise<TauriTypes.StockRiven> {
     return await this.client.sendInvoke<TauriTypes.StockRiven>("stock_riven_sell", { ...entry });
   }
-  async getById(id: number): Promise<TauriTypes.StockRivenDetails> {
-    return await this.client.sendInvoke<TauriTypes.StockRivenDetails>("stock_riven_get_by_id", { id });
+  async getById(id: number, mode: "summary" | "edit"): Promise<TauriTypes.StockRivenDetails> {
+    return await this.client.sendInvoke<TauriTypes.StockRivenDetails>("stock_riven_get_by_id", { id, mode });
   }
   exportJson = async (query: TauriTypes.StockRivenControllerGetListParams): Promise<string> => {
     return await this.client.sendInvoke<string>("export_stock_riven_json", {
