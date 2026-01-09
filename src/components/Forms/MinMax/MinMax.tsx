@@ -2,29 +2,38 @@ import { Group, NumberInput } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLeftRight, faInfinity } from "@fortawesome/free-solid-svg-icons";
 import styles from "./MinMax.module.css";
+import { useEffect, useState } from "react";
 
 export type MinMaxProps = {
-  value: [number | undefined, number | null | undefined] | undefined;
+  value: { min?: number | undefined; max?: number | undefined } | undefined;
   minAllowed?: number;
   maxAllowed?: number;
   label: string;
   description?: string;
-  onChange: (value: [number | undefined, number | null | undefined] | undefined) => void;
+  onChange: (value: { min?: number | undefined; max?: number | undefined } | undefined) => void;
 };
 
 export function MinMax({ value, label, description, minAllowed, maxAllowed, onChange }: MinMaxProps) {
+  const [minMax, setMinMax] = useState<{ min?: number; max?: number }>({
+    min: value?.min,
+    max: value?.max,
+  });
+  useEffect(() => {
+    if (minMax.max == null) minMax.max = undefined;
+    if (minMax.min == null) minMax.min = undefined;
+    if (minMax?.min == undefined && minMax?.max == undefined) return onChange(undefined);
+    onChange(minMax);
+  }, [minMax]);
   return (
     <Group gap={"sm"}>
       <NumberInput
-        value={value?.[0]}
+        value={minMax.min}
         w={"100px"}
-        min={minAllowed ?? -999999999}
-        max={maxAllowed ?? 999999999}
+        min={minAllowed}
+        max={maxAllowed}
         onChange={(n) => {
-          const max = value?.[1] ?? undefined;
-          if (n === "") onChange([undefined, max]);
-          const min = Number(n);
-          onChange([min, max]);
+          if (n === "") setMinMax({ ...minMax, min: undefined });
+          else setMinMax({ ...minMax, min: Number(n) });
         }}
         label={label}
         description={description}
@@ -34,17 +43,15 @@ export function MinMax({ value, label, description, minAllowed, maxAllowed, onCh
       <NumberInput
         mt={23}
         w={"100px"}
-        value={value?.[1] ?? ""}
-        min={minAllowed ?? 0}
-        max={maxAllowed ?? 999999999}
+        value={minMax.max}
+        min={minAllowed}
+        max={maxAllowed}
         onChange={(n) => {
-          const min = value?.[0] ?? undefined;
-          if (n === "") onChange([min, undefined]);
-          const max = Number(n);
-          onChange([min, max]);
+          if (n === "") setMinMax({ ...minMax, max: undefined });
+          else setMinMax({ ...minMax, max: Number(n) });
         }}
         placeholder="No limit"
-        rightSection={!value?.[1] && value?.[1] !== 0 ? <FontAwesomeIcon icon={faInfinity} className={styles.infinityIcon} /> : undefined}
+        rightSection={!value?.max && value?.max !== 0 ? <FontAwesomeIcon icon={faInfinity} className={styles.infinityIcon} /> : undefined}
       />
     </Group>
   );

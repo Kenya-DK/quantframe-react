@@ -33,6 +33,7 @@
 - ✏️ Remove some logging that was only for testing
 - ✏️ Refactor trade processing to be more modular and easier to read when debugging
 - ✏️ If i item have no sellers y can set a minimum price for it to list
+- ✏️ Add some form validation to the riven filter form
 
 ## TODO's
 

@@ -39,7 +39,7 @@ export enum UserStatus {
   Ingame = "ingame",
 }
 export interface MinMaxDto {
-  min: number;
+  min?: number;
   max?: number;
 }
 export interface Paginated<T> {

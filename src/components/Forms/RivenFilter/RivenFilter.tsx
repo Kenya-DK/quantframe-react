@@ -31,6 +31,7 @@ export function RivenFilter({ value, onSubmit }: RivenFilterProps) {
     <Box w={"100%"} p={"sm"}>
       <form
         onSubmit={form.onSubmit((data) => {
+          console.log("RivenFilter onSubmit", data);
           onSubmit(data);
         })}
       >
@@ -46,24 +47,16 @@ export function RivenFilter({ value, onSubmit }: RivenFilterProps) {
             <Grid.Col span={6}>
               <MinMax
                 label={useTranslateFormFields("re_rolls.label")}
-                value={[form.values.re_rolls?.min || 0, form.values.re_rolls?.max || 0]}
-                onChange={(re_rolls) => {
-                  form.setFieldValue("re_rolls", { min: re_rolls?.[0] || 0, max: re_rolls?.[1] || 0 });
-                }}
+                value={form.values.re_rolls}
+                onChange={(re_rolls) => form.setFieldValue("re_rolls", re_rolls)}
               />
-              <MinMax
-                label={useTranslateFormFields("rank.label")}
-                value={[form.values.rank?.min || 0, form.values.rank?.max || 0]}
-                onChange={(rank) => {
-                  form.setFieldValue("rank", { min: rank?.[0] || 0, max: rank?.[1] || 0 });
-                }}
-              />
+              <MinMax label={useTranslateFormFields("rank.label")} value={form.values.rank} onChange={(rank) => form.setFieldValue("rank", rank)} />
               <MinMax
                 label={useTranslateFormFields("mastery_rank.label")}
-                value={[form.values.mastery_rank?.min || 0, form.values.mastery_rank?.max || 0]}
-                onChange={(mastery_rank) => {
-                  form.setFieldValue("mastery_rank", { min: mastery_rank?.[0] || 0, max: mastery_rank?.[1] || 0 });
-                }}
+                maxAllowed={16}
+                minAllowed={7}
+                value={form.values.mastery_rank}
+                onChange={(mastery_rank) => form.setFieldValue("mastery_rank", mastery_rank)}
               />
             </Grid.Col>
             <Grid.Col span={6}>

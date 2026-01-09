@@ -116,47 +116,42 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
                 <SimpleGrid cols={3} spacing={"sm"}>
                   <MinMax
                     label={useTranslateTabItem("volume_label")}
-                    value={[queryData.values.volume_gt, queryData.values.volume_lt]}
+                    value={{ min: queryData.values.volume_gt, max: queryData.values.volume_lt }}
                     onChange={(value) => {
-                      if (!value) return;
-                      queryData.setFieldValue("volume_gt", value[0]);
-                      queryData.setFieldValue("volume_lt", value[1] || undefined);
+                      queryData.setFieldValue("volume_gt", value?.min);
+                      queryData.setFieldValue("volume_lt", value?.max);
                     }}
                   />
                   <MinMax
                     label={useTranslateTabItem("supply_label")}
-                    value={[queryData.values.supply_gt, queryData.values.supply_lt]}
+                    value={{ min: queryData.values.supply_gt, max: queryData.values.supply_lt }}
                     onChange={(value) => {
-                      if (!value) return;
-                      queryData.setFieldValue("supply_gt", value[0]);
-                      queryData.setFieldValue("supply_lt", value[1] || undefined);
+                      queryData.setFieldValue("supply_gt", value?.min);
+                      queryData.setFieldValue("supply_lt", value?.max);
                     }}
                   />
                   <MinMax
                     label={useTranslateTabItem("demand_label")}
-                    value={[queryData.values.demand_gt, queryData.values.demand_lt]}
+                    value={{ min: queryData.values.demand_gt, max: queryData.values.demand_lt }}
                     onChange={(value) => {
-                      if (!value) return;
-                      queryData.setFieldValue("demand_gt", value[0]);
-                      queryData.setFieldValue("demand_lt", value[1] || undefined);
+                      queryData.setFieldValue("demand_gt", value?.min);
+                      queryData.setFieldValue("demand_lt", value?.max);
                     }}
                   />
                   <MinMax
                     label={useTranslateTabItem("min_price_label")}
-                    value={[queryData.values.min_price_gt, queryData.values.min_price_lt]}
+                    value={{ min: queryData.values.min_price_gt, max: queryData.values.min_price_lt }}
                     onChange={(value) => {
-                      if (!value) return;
-                      queryData.setFieldValue("min_price_gt", value[0]);
-                      queryData.setFieldValue("min_price_lt", value[1] || undefined);
+                      queryData.setFieldValue("min_price_gt", value?.min);
+                      queryData.setFieldValue("min_price_lt", value?.max);
                     }}
                   />
                   <MinMax
                     label={useTranslateTabItem("max_price_label")}
-                    value={[queryData.values.max_price_gt, queryData.values.max_price_lt]}
+                    value={{ min: queryData.values.max_price_gt, max: queryData.values.max_price_lt }}
                     onChange={(value) => {
-                      if (!value) return;
-                      queryData.setFieldValue("max_price_gt", value[0]);
-                      queryData.setFieldValue("max_price_lt", value[1] || undefined);
+                      queryData.setFieldValue("max_price_gt", value?.min);
+                      queryData.setFieldValue("max_price_lt", value?.max);
                     }}
                   />
                 </SimpleGrid>
