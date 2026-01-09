@@ -62,7 +62,7 @@ export function CreateRivenAttribute({
 
   // Helper functions
   const getAvailableAttributes = () => {
-    return availableAttributes.map((item) => ({ label: item.short, value: item.url_name }));
+    return availableAttributes.map((item) => ({ label: item.name, value: item.url_name }));
   };
 
   const GetUnitSymbol = () => {

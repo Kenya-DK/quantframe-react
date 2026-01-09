@@ -18,6 +18,7 @@
 - ✨ Add a logout prompt to confirm user wants to logout (Yurii-IvoryFace)
 - ✨ Add https://remoraid.dev link to as a way to create a new design and to the settings page
 - ✨ Add Warframe GDPR Parse tab to the trading analytics page (WIP)
+- ✨ Add notification when Warframe gdpr log parser is done
 
 ## Fix's
 
@@ -25,6 +26,7 @@
 - ⏱️ Fix user can type in the chat box
 - ⏱️ Fix Types errors in StockRiven Update
 - ⏱️ Fix so y cant save a message template with the same name
+- ⏱️ Fix no attack speed on some melee weapon stats
 
 ## Dev Notes
 
@@ -37,10 +39,6 @@
 - ⏱️ Fix so the knapsack algorithm doesn't delete all items after a cycle, Cursing a buy is deleted when it was ppl is texting you
 - ⏱️ The Log file path sometimes f\* \* \* up
 - ⏱️ The Generate message still have the item if it was deleted by the backend
-- ⏱️ Fix no attack speed on some melee weapon stats
-- ⏱️ Fix Generate message not cursing error
-- ⏱️ (Need Testing) - Add notification when Warframe gdpr log parser is done
-- ⏱️ Add confirmation when user logs out
 
 ## Feature's
 
