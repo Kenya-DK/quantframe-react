@@ -355,7 +355,7 @@ impl WarframeGDPRModule {
                                 .and_then(|m| m.as_str().parse::<i64>().ok())
                                 .unwrap_or(1);
 
-                            purchase.items_received.push((name, qty));
+                            purchase.items_received.push(PurchaseItem::new(name, qty));
                         }
                     }
                 }
