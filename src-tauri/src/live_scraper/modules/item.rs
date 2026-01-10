@@ -313,7 +313,6 @@ impl ItemModule {
         live_orders: &OrderList<OrderWithUser>,
     ) -> Result<(), Error> {
         let log_options = &LoggerOptions::default()
-            .set_file("progress_buying.log")
             .set_show_component(false)
             .set_show_time(false);
         let component = format!("{}Buying:", COMPONENT);
