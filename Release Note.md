@@ -1,14 +1,3 @@
-# How to use parser
-
-1. Get your data from DE
-   - Go to [zendesk](https://digitalextremes.zendesk.com/hc/en-us)
-   - Submit new request in category "My Account"
-   - Select subcategory "CCPA or GDPR - General Data Protection Regulation"
-   - Write something in Subject and Description fields
-   - Wait 1+ days
-2. Unpack archive in some new folder.
-3. After you get your .txt files, Drag and drop one file at a time here.
-
 ## Add Feature's
 
 - ✨ Add a notification sound's
@@ -27,6 +16,7 @@
 - ⏱️ Fix Types errors in StockRiven Update
 - ⏱️ Fix so y cant save a message template with the same name
 - ⏱️ Fix no attack speed on some melee weapon stats
+- ⏱️ The Generate message still have the item if it was deleted by the backend
 
 ## Dev Notes
 
@@ -39,7 +29,6 @@
 
 - ⏱️ Fix so the knapsack algorithm doesn't delete all items after a cycle, Cursing a buy is deleted when it was ppl is texting you
 - ⏱️ The Log file path sometimes f\* \* \* up
-- ⏱️ The Generate message still have the item if it was deleted by the backend
 
 ## Feature's
 

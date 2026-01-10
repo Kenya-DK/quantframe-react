@@ -76,7 +76,8 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
       deleteMutation,
       deleteMultipleMutation,
     });
-  const handleRefresh = (_data: any) => {
+  const handleRefresh = (data: { id: string }) => {
+    if (data.id) setSelectedRecords((prev) => prev.filter((record) => record.id !== Number(data.id)));
     refetchQueries(true);
   };
 
@@ -89,9 +90,7 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
     const resultsById = new Map(results.map((record) => [record.id, record]));
     setSelectedRecords((prev) => {
       if (prev.length === 0) return prev;
-      const next = prev
-        .map((record) => resultsById.get(record.id))
-        .filter((record): record is TauriTypes.StockItem => Boolean(record));
+      const next = prev.map((record) => resultsById.get(record.id)).filter((record): record is TauriTypes.StockItem => Boolean(record));
       if (next.length === prev.length && next.every((record, index) => record === prev[index])) return prev;
       return next;
     });

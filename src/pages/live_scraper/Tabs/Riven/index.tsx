@@ -63,7 +63,8 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
     useTranslate(`prompts.${key}`, { ...context }, i18Key);
   // Queries
   const { paginationQuery, financialReportQuery, statusCountsQuery, refetchQueries } = useStockQueries({ queryData, isActive });
-  const handleRefresh = (_data: any) => {
+  const handleRefresh = (data: { id: string }) => {
+    if (data.id) setSelectedRecords((prev) => prev.filter((record) => record.id !== Number(data.id)));
     refetchQueries(true);
   };
   // Mutations

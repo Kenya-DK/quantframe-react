@@ -72,7 +72,8 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
       deleteMutation,
       deleteMultipleMutation,
     });
-  const handleRefresh = (_data: any) => {
+  const handleRefresh = (data: { id: string }) => {
+    if (data.id) setSelectedRecords((prev) => prev.filter((record) => record.id !== Number(data.id)));
     refetchQueries(true);
   };
   useEffect(() => {
