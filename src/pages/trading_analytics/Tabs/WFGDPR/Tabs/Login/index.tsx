@@ -8,6 +8,7 @@ import { getSafePage } from "@utils/helper";
 import { Loading } from "@components/Shared/Loading";
 import dayjs from "dayjs";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
+import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 
 interface LoginPanelProps {
   isActive?: boolean;
@@ -26,7 +27,11 @@ export const LoginPanel = ({ isActive }: LoginPanelProps = {}) => {
     useTranslate(`datatable.columns.${key}`, { ...context }, i18Key);
   // Queries
   const { paginationQuery, refetchQueries } = useQueries({ queryData: queryData.values, isActive });
-
+  const handleRefresh = () => {
+    refetchQueries();
+  };
+  // Use the custom hook for Tauri events
+  useTauriEvent(TauriTypes.Events.RefreshWFGDPRAll, handleRefresh, []);
   return (
     <Box h={"85vh"} p={"md"}>
       <SearchField

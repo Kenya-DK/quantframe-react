@@ -6,7 +6,7 @@ interface QueriesHooks {
   queryData: TauriTypes.WFGDPRTransactionControllerGetListParams;
   isActive?: boolean;
 }
-export const useQueries = ({ queryData }: QueriesHooks) => {
+export const useQueries = ({ queryData, isActive }: QueriesHooks) => {
   const getPaginationQuery = useQuery({
     queryKey: [
       "get_wfgdpr_transaction_pagination",
@@ -20,6 +20,7 @@ export const useQueries = ({ queryData }: QueriesHooks) => {
     ],
     queryFn: () => api.log_parser.getTransactionPagination(queryData),
     retry: false,
+    enabled: isActive === true,
     throwOnError(error: ResponseError, query) {
       console.error("Error in query:", query.queryKey, error);
       return false;

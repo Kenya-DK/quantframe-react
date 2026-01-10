@@ -43,6 +43,8 @@ export namespace TauriTypes {
     OnDeleteWfmAuctions = "Wfm:OnDeleteAuctions",
     OnNotify = "App:OnNotify",
     OnChatMessage = "Wfm:OnChatMessage",
+    // Warframe GDPR
+    RefreshWFGDPRAll = "WFGDPR:RefreshAll",
   }
   export enum EventOperations {
     CREATE_OR_UPDATE = "CREATE_OR_UPDATE",

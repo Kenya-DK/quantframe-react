@@ -9,6 +9,7 @@ import { Loading } from "@components/Shared/Loading";
 import dayjs from "dayjs";
 import { modals } from "@mantine/modals";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
+import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 
 interface PurchasePanelProps {
   isActive?: boolean;
@@ -27,7 +28,11 @@ export const PurchasePanel = ({ isActive }: PurchasePanelProps = {}) => {
     useTranslate(`datatable.columns.${key}`, { ...context }, i18Key);
   // Queries
   const { paginationQuery, refetchQueries } = useQueries({ queryData: queryData.values, isActive });
-
+  const handleRefresh = () => {
+    refetchQueries();
+  };
+  // Use the custom hook for Tauri events
+  useTauriEvent(TauriTypes.Events.RefreshWFGDPRAll, handleRefresh, []);
   return (
     <Box h={"85vh"} p={"md"}>
       <SearchField

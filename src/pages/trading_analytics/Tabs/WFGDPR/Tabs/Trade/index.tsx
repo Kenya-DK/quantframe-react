@@ -8,6 +8,7 @@ import { BarCardChart } from "@components/Shared/BarCardChart";
 import i18next from "i18next";
 import { BestByCategoryTable } from "@components/DataDisplay/BestByCategoryTable";
 import { BarChartFinancialSummary } from "@components/DataDisplay/BarChartFinancialSummary";
+import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 
 interface TradePanelProps {
   isActive?: boolean;
@@ -15,7 +16,6 @@ interface TradePanelProps {
 }
 
 export const TradePanel = ({ isActive, year_list }: TradePanelProps) => {
-  console.log("TradePanel isActive:", isActive);
   const theme = useMantineTheme();
   // States For DataGrid
   const queryData = useForm({
@@ -28,7 +28,12 @@ export const TradePanel = ({ isActive, year_list }: TradePanelProps) => {
   const useTranslateCards = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`cards.${key}`, { ...context }, i18Key);
 
   // Queries
-  const { financialReportQuery } = useQueries({ queryData: queryData.values, isActive });
+  const { financialReportQuery, refetchQueries } = useQueries({ queryData: queryData.values, isActive });
+  const handleRefresh = () => {
+    refetchQueries();
+  };
+  // Use the custom hook for Tauri events
+  useTauriEvent(TauriTypes.Events.RefreshWFGDPRAll, handleRefresh, []);
   return (
     <Box p={"md"} h={"85vh"}>
       <Grid>

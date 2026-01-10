@@ -6,7 +6,8 @@ import { Loading } from "@components/Shared/Loading";
 import { useTauriDragDrop } from "@hooks/useTauriDragDrop.hook";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import api from "@api/index";
+import api, { SendTauriEvent } from "@api/index";
+import { TauriTypes } from "$types";
 
 interface WarframeGDPRParserProps {
   isActive?: boolean;
@@ -59,6 +60,7 @@ export const WarframeGDPRParser = ({ isActive }: WarframeGDPRParserProps = {}) =
         setLoading(true);
         await invoke("wfgdpr_load", { filePath: path });
         await refetch();
+        if (data && data.was_initialized) SendTauriEvent(TauriTypes.Events.RefreshWFGDPRAll, undefined);
       } catch (err) {
         console.error("Error parsing WFGDPR data:", err);
       } finally {
