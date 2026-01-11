@@ -9,7 +9,7 @@ pub async fn handle_item_by_entity(
     mut item: CreateStockItem,
     user_name: impl Into<String>,
     operation: OrderType,
-    operation_flags: &[&str],
+    operation_flags: OperationSet,
 ) -> Result<(OperationSet, Model), Error> {
     let conn = DATABASE.get().unwrap();
     let component = "HandleItem";
@@ -45,7 +45,7 @@ pub async fn handle_item_by_entity(
                             item.wfm_url, s_operation
                         ),
                         &utils::LoggerOptions::default()
-                            .set_enable(!operation_flags.contains(&"DisableNotFoundLog")),
+                            .set_enable(!operation_flags.has("DisableNotFoundLog")),
                     );
                 } else if let Some(item) = updated_item {
                     info(
@@ -55,7 +55,7 @@ pub async fn handle_item_by_entity(
                             item.item_name, item.owned, s_operation
                         ),
                         &utils::LoggerOptions::default()
-                            .set_enable(!operation_flags.contains(&"DisableUpdatedLog")),
+                            .set_enable(!operation_flags.has("DisableUpdatedLog")),
                     );
                     model = item;
                 } else if s_operation == "Deleted" {
@@ -66,7 +66,7 @@ pub async fn handle_item_by_entity(
                             item.item_name, item.quantity, s_operation
                         ),
                         &utils::LoggerOptions::default()
-                            .set_enable(!operation_flags.contains(&"DisableDeletedLog")),
+                            .set_enable(!operation_flags.has("DisableDeletedLog")),
                     );
                 } else if s_operation == "Updated" {
                     info(
@@ -76,7 +76,7 @@ pub async fn handle_item_by_entity(
                             item.item_name, item.quantity, s_operation
                         ),
                         &utils::LoggerOptions::default()
-                            .set_enable(!operation_flags.contains(&"DisableUpdatedLog")),
+                            .set_enable(!operation_flags.has("DisableUpdatedLog")),
                     );
                 }
                 operations.add(format!("ItemSell_{}", s_operation));
@@ -92,14 +92,14 @@ pub async fn handle_item_by_entity(
                         format!("{}:AddItem", component),
                         &format!("Created stock item: {}", created_item.item_name),
                         &utils::LoggerOptions::default()
-                            .set_enable(!operation_flags.contains(&"DisableCreatedLog")),
+                            .set_enable(!operation_flags.has("DisableCreatedLog")),
                     );
                 } else if s_operation == "Updated" {
                     info(
                         "HandleItem:AddItem",
                         &format!("Updated stock item: {}", created_item.item_name),
                         &utils::LoggerOptions::default()
-                            .set_enable(!operation_flags.contains(&"DisableUpdatedLog")),
+                            .set_enable(!operation_flags.has("DisableUpdatedLog")),
                     );
                 }
                 model = created_item;
@@ -109,34 +109,28 @@ pub async fn handle_item_by_entity(
         }
     }
 
-    if operation_flags.iter().any(|op| op.starts_with("ReturnOn:")) {
-        let return_on = operation_flags
-            .iter()
-            .filter(|op| op.starts_with("ReturnOn:"))
-            .cloned()
-            .collect::<Vec<_>>();
-        if return_on.len() > 0 {
-            let return_on = return_on[0].replace("ReturnOn:", "");
-            if operations.ends_with(&return_on) {
-                return Ok((operations, model));
-            }
-        }
-    }
+    let skip_wfm_check = if let Some(value) = operation_flags.get_value_after("SkipWFMCheck") {
+        operations.has("NotFound")
+    } else {
+        false
+    };
 
-    match handle_wfm_item(
-        &item.wfm_id,
-        &item.sub_type,
-        item.quantity,
-        operation,
-        false,
-    )
-    .await
-    {
-        Ok(operation_status) => {
-            operations.add(format!("WFMItem_{}", operation_status));
-        }
-        Err(e) => {
-            return Err(e.with_location(get_location!()).log(file));
+    if skip_wfm_check {
+        match handle_wfm_item(
+            &item.wfm_id,
+            &item.sub_type,
+            item.quantity,
+            operation,
+            false,
+        )
+        .await
+        {
+            Ok(operation_status) => {
+                operations.add(format!("WFMItem_{}", operation_status));
+            }
+            Err(e) => {
+                return Err(e.with_location(get_location!()).log(file));
+            }
         }
     }
 
@@ -178,7 +172,7 @@ pub async fn handle_item(
     price: i64,
     user_name: impl Into<String>,
     operation: OrderType,
-    operation_flags: &[&str],
+    operation_flags: OperationSet,
 ) -> Result<(OperationSet, Model), Error> {
     handle_item_by_entity(
         CreateStockItem::new(wfm_url, sub_type.clone(), quantity).set_bought(price),

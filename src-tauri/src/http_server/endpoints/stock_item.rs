@@ -6,6 +6,7 @@ use wf_market::enums::OrderType;
 use crate::{
     handlers::handle_item_by_entity,
     http_server::{respond_json, respond_text},
+    types::OperationSet,
 };
 #[derive(Debug)]
 pub struct StockItemRoute {}
@@ -29,21 +30,23 @@ impl StockItemRoute {
 
     async fn handle_post(&self, body: &str, stream: &mut TcpStream) {
         match serde_json::from_str::<CreateStockItem>(body) {
-            Ok(input) => match handle_item_by_entity(input, "", OrderType::Buy, &[]).await {
-                Ok((_, updated_item)) => {
-                    respond_json(stream, 200, &serde_json::to_string(&updated_item).unwrap());
+            Ok(input) => {
+                match handle_item_by_entity(input, "", OrderType::Buy, OperationSet::new()).await {
+                    Ok((_, updated_item)) => {
+                        respond_json(stream, 200, &serde_json::to_string(&updated_item).unwrap());
+                    }
+                    Err(e) => {
+                        respond_text(
+                            stream,
+                            400,
+                            &format!(
+                                "Error processing item: {}",
+                                e.with_location(get_location!())
+                            ),
+                        );
+                    }
                 }
-                Err(e) => {
-                    respond_text(
-                        stream,
-                        400,
-                        &format!(
-                            "Error processing item: {}",
-                            e.with_location(get_location!())
-                        ),
-                    );
-                }
-            },
+            }
             Err(e) => respond_text(stream, 400, &format!("Invalid JSON: {}", e)),
         }
     }

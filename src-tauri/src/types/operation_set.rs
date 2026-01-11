@@ -66,3 +66,13 @@ impl std::fmt::Display for OperationSet {
         write!(f, "{:?}", self.operations)
     }
 }
+
+impl From<Vec<&str>> for OperationSet {
+    fn from(operations: Vec<&str>) -> Self {
+        let mut op_set = OperationSet::new();
+        for op in operations {
+            op_set.add(op.to_string());
+        }
+        op_set
+    }
+}

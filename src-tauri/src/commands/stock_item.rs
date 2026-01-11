@@ -12,7 +12,7 @@ use crate::{
     app::client::AppState,
     handlers::{handle_item_by_entity, handle_wfm_item, stock_item::handle_item},
     helper::{self},
-    types::PermissionsFlags,
+    types::{OperationSet, PermissionsFlags},
     APP, DATABASE,
 };
 
@@ -48,7 +48,7 @@ pub async fn get_stock_item_status_counts(
 
 #[tauri::command]
 pub async fn stock_item_create(input: CreateStockItem) -> Result<stock_item::Model, Error> {
-    match handle_item_by_entity(input, "", OrderType::Buy, &[]).await {
+    match handle_item_by_entity(input, "", OrderType::Buy, OperationSet::new()).await {
         Ok((_, updated_item)) => return Ok(updated_item),
         Err(e) => {
             return Err(e
@@ -65,7 +65,17 @@ pub async fn stock_item_sell(
     quantity: i64,
     price: i64,
 ) -> Result<stock_item::Model, Error> {
-    match handle_item(wfm_url, sub_type, quantity, price, "", OrderType::Sell, &[]).await {
+    match handle_item(
+        wfm_url,
+        sub_type,
+        quantity,
+        price,
+        "",
+        OrderType::Sell,
+        OperationSet::new(),
+    )
+    .await
+    {
         Ok((_, updated_item)) => return Ok(updated_item),
         Err(e) => {
             return Err(e.with_location(get_location!()).log("stock_item_sell.log"));

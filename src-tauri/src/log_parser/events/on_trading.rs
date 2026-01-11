@@ -557,7 +557,7 @@ async fn process_trade_item(
         platinum,
         player_name,
         order_type,
-        &["ReturnOn:NotFound", ""],
+        OperationSet::from(vec!["SkipWFMCheck:NotFound"]),
     )
     .await
     .map_err(|e| e.with_location(get_location!()))?;
@@ -565,6 +565,5 @@ async fn process_trade_item(
     if !op.ends_with("_NotFound") {
         operations.add(format!("Name: {}", model.item_name));
     }
-
     Ok(operations)
 }
