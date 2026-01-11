@@ -3,13 +3,13 @@ import { TauriTypes } from "$types";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { useState } from "react";
 import { GeneralPanel } from "./Tabs/General";
+import { UseFormReturnType } from "@mantine/form";
 
 export type HttpServerPanelProps = {
-  value: TauriTypes.HttpServerSettings;
-  onSubmit: (value: TauriTypes.HttpServerSettings) => void;
+  form: UseFormReturnType<TauriTypes.Settings>;
 };
 
-export const HttpServerPanel = ({ onSubmit, value }: HttpServerPanelProps) => {
+export const HttpServerPanel = ({ form }: HttpServerPanelProps) => {
   const [hideTab, setHideTab] = useState<boolean>(false);
 
   // Translate general
@@ -21,15 +21,7 @@ export const HttpServerPanel = ({ onSubmit, value }: HttpServerPanelProps) => {
   const tabs = [
     {
       label: useTranslateTabs("http_server.general.title"),
-      component: (
-        <GeneralPanel
-          value={value}
-          setHideTab={(v) => setHideTab(v)}
-          onSubmit={(v) => {
-            onSubmit({ ...value, ...v });
-          }}
-        />
-      ),
+      component: <GeneralPanel form={form} setHideTab={(v) => setHideTab(v)} />,
       id: "general",
     },
   ];

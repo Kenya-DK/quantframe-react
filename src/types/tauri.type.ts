@@ -88,7 +88,6 @@ export namespace TauriTypes {
     debug: string[];
     cross_play: boolean;
     dev_mode: boolean;
-    wf_log_path: string;
     live_scraper: SettingsLiveScraper;
     debugging: SettingsDebugging;
     advanced_settings: SettingsAdvanced;
@@ -405,7 +404,6 @@ export namespace TauriTypes {
     tos_uuid: string;
     cross_play: boolean;
     dev_mode: boolean;
-    wf_log_path: string;
     live_scraper: SettingsLiveScraper;
     notifications: SettingsNotifications;
     analytics: SettingsAnalytics;

@@ -1087,7 +1087,9 @@
               "wf_log_path": {
                 "label": "Warframe Log Path",
                 "placeholder": "Default Warframe log path",
-                "error": "Invalid Warframe log path",
+                "errors": {
+                  "not_exists": "The specified path does not exist."
+                },
                 "tooltip": "The path to the Warframe log file. leave empty for default path."
               }
             },

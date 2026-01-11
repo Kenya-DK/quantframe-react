@@ -45,7 +45,7 @@ pub async fn app_update_settings(
 ) -> Result<Settings, Error> {
     let mut app = app.lock()?;
     let log_parser = log_parser.lock()?;
-    log_parser.set_path(&app.settings.advanced_settings.wf_log_path)?;
+    log_parser.set_path(&settings.advanced_settings.wf_log_path)?;
     if settings.http_server.uuid() != app.settings.http_server.uuid() {
         let operation = app
             .http_server

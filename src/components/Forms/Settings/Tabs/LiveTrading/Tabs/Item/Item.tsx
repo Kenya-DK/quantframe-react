@@ -4,36 +4,33 @@ import { Accordion } from "@mantine/core";
 import { WTBItemAccordion } from "./Accordion/WTB";
 import { WTSItemAccordion } from "./Accordion/WTS";
 import { SummaryAccordion } from "./Accordion/Summary";
-import { useState } from "react";
+import { UseFormReturnType } from "@mantine/form";
 
 export type ItemPanelProps = {
-  value: TauriTypes.SettingsStockItem;
-  onSubmit: (value: TauriTypes.SettingsStockItem) => void;
+  form: UseFormReturnType<TauriTypes.Settings>;
 };
 
-export const ItemPanel = ({ value, onSubmit }: ItemPanelProps) => {
+export const ItemPanel = ({ form }: ItemPanelProps) => {
   // Translate general
   const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForms(`settings.${key}`, { ...context }, i18Key);
   const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForm(`tabs.${key}`, { ...context }, i18Key);
 
-  const [updateData, setUpdateData] = useState<TauriTypes.SettingsStockItem>(value);
-
   const tabs = [
     {
       label: useTranslateTabs("live_scraper.item.wtb.title"),
-      component: <WTBItemAccordion value={value} onSubmit={(v) => onSubmit(v)} onChange={(v) => setUpdateData(v)} />,
+      component: <WTBItemAccordion form={form} />,
       id: "wtb",
     },
     {
       label: useTranslateTabs("live_scraper.item.wts.title"),
-      component: <WTSItemAccordion value={value} onSubmit={(v) => onSubmit(v)} onChange={(v) => setUpdateData(v)} />,
+      component: <WTSItemAccordion form={form} />,
       id: "wts",
     },
     {
       label: useTranslateTabs("live_scraper.item.summary.title"),
-      component: <SummaryAccordion value={updateData} />,
+      component: <SummaryAccordion value={form.values.live_scraper.stock_item} />,
       id: "summary",
     },
   ];

@@ -1,15 +1,17 @@
 import { TauriTypes } from "$types";
-import { useForm } from "@mantine/form";
-import { useTranslateCommon, useTranslateForms } from "@hooks/useTranslate.hook";
+import { UseFormReturnType } from "@mantine/form";
+import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { Box, Button, Grid, Group, TextInput } from "@mantine/core";
 import { TooltipIcon } from "@components/Shared/TooltipIcon";
+import { exists } from "@tauri-apps/plugin-fs";
 import api from "@api/index";
 export type AdvancedPanelProps = {
-  value: TauriTypes.SettingsAdvanced;
-  onSubmit: (value: TauriTypes.SettingsAdvanced) => void;
+  form: UseFormReturnType<TauriTypes.Settings>;
 };
 
-export const AdvancedPanel = ({ value, onSubmit }: AdvancedPanelProps) => {
+const getFieldPath = (field: string) => `advanced_settings.${field}`;
+
+export const AdvancedPanel = ({ form }: AdvancedPanelProps) => {
   // Translate general
   const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForms(`settings.tabs.advanced.${key}`, { ...context }, i18Key);
@@ -18,53 +20,44 @@ export const AdvancedPanel = ({ value, onSubmit }: AdvancedPanelProps) => {
 
   const exportLogsMutation = api.log.export_logs();
 
-  // User form
-  const form = useForm({
-    initialValues: value,
-    validate: {},
-  });
+  const handleBlurValidation = async () => {
+    try {
+      if (form.values.advanced_settings.wf_log_path.length > 0) {
+        const fileExists = await exists(form.values.advanced_settings.wf_log_path);
+        console.log("File exists:", fileExists);
+        if (!fileExists) {
+          form.setFieldValue("has_error", true);
+          form.setFieldError(getFieldPath("wf_log_path"), useTranslateFormFields("wf_log_path.errors.not_exists"));
+        } else {
+          form.setFieldValue("has_error", false);
+          form.clearFieldError(getFieldPath("wf_log_path"));
+        }
+      }
+    } catch (error) {
+      form.setFieldValue("has_error", true);
+      form.setFieldError(getFieldPath("wf_log_path"), useTranslateFormFields("wf_log_path.errors.not_exists"));
+    }
+  };
   return (
     <Box p={"md"}>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (onSubmit) onSubmit(form.values);
-        }}
-      >
-        <Grid>
-          <Grid.Col span={4}>
-            <Group gap="xs" grow>
-              <TextInput
-                w={350}
-                label={useTranslateFormFields("wf_log_path.label")}
-                placeholder={useTranslateFormFields("wf_log_path.placeholder")}
-                rightSection={<TooltipIcon label={useTranslateFormFields("wf_log_path.tooltip")} />}
-                value={form.values.wf_log_path}
-                onChange={(event) => form.setFieldValue("wf_log_path", event.currentTarget.value)}
-                radius="md"
-              />
-            </Group>
-            <Button mt="md" onClick={() => exportLogsMutation.mutate()} color="blue">
-              {useTranslateForm("button_export_logs")}
-            </Button>
-          </Grid.Col>
-          <Grid.Col span={8}>
-            <Group></Group>
-          </Grid.Col>
-        </Grid>
-        <Group
-          justify="flex-end"
-          style={{
-            position: "absolute",
-            bottom: 25,
-            right: 25,
-          }}
-        >
-          <Button type="submit" variant="light" color="blue">
-            {useTranslateCommon("buttons.save.label")}
+      <Grid>
+        <Grid.Col span={4}>
+          <Group gap="xs" grow>
+            <TextInput
+              w={350}
+              label={useTranslateFormFields("wf_log_path.label")}
+              placeholder={useTranslateFormFields("wf_log_path.placeholder")}
+              rightSection={<TooltipIcon label={useTranslateFormFields("wf_log_path.tooltip")} />}
+              onBlur={handleBlurValidation}
+              radius="md"
+              {...form.getInputProps(getFieldPath("wf_log_path"))}
+            />
+          </Group>
+          <Button mt="md" onClick={() => exportLogsMutation.mutate()} color="blue">
+            {useTranslateForm("button_export_logs")}
           </Button>
-        </Group>
-      </form>
+        </Grid.Col>
+      </Grid>
     </Box>
   );
 };

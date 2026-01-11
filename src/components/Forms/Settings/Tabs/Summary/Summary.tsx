@@ -1,7 +1,7 @@
 import { TauriTypes } from "$types";
 import { useState } from "react";
 import { useTranslateCommon, useTranslateForms } from "@hooks/useTranslate.hook";
-import { useForm } from "@mantine/form";
+import { UseFormReturnType } from "@mantine/form";
 import { Box, Button, Grid, Group, NumberInput, Text, Image } from "@mantine/core";
 import { TooltipIcon } from "@components/Shared/TooltipIcon";
 import { SearchField } from "@components/Forms/SearchField";
@@ -16,11 +16,10 @@ enum Mode {
 }
 
 export type SummaryPanelProps = {
-  value: TauriTypes.SettingsSummary;
-  onSubmit?: (value: TauriTypes.SettingsSummary) => void;
+  form: UseFormReturnType<TauriTypes.Settings>;
 };
-
-export const SummaryPanel = ({ value, onSubmit }: SummaryPanelProps) => {
+const getFieldPath = (field: string) => `summary_settings.${field}`;
+export const SummaryPanel = ({ form }: SummaryPanelProps) => {
   // State
   const [mode, setMode] = useState<Mode>(Mode.None);
   const [selectedCategory, setSelectedCategory] = useState<TauriTypes.SettingsCategorySummary | undefined>(undefined);
@@ -31,11 +30,6 @@ export const SummaryPanel = ({ value, onSubmit }: SummaryPanelProps) => {
     useTranslateForm(`fields.${key}`, { ...context }, i18Key);
   const useTranslateDataGridBaseColumns = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForm(`datatable.columns.${key}`, { ...context }, i18Key);
-  // User form
-  const form = useForm({
-    initialValues: value,
-    validate: {},
-  });
 
   return (
     <Box p={"md"}>
@@ -45,20 +39,15 @@ export const SummaryPanel = ({ value, onSubmit }: SummaryPanelProps) => {
           onSubmit={async (data) => {
             setMode(Mode.None);
             if (selectedCategory) {
-              const categories = form.values.categories.map((cat) => (cat.name === selectedCategory.name ? data : cat));
-              form.setFieldValue("categories", categories);
-            } else form.setFieldValue("categories", [...form.values.categories, data]);
+              const categories = form.values.summary_settings.categories.map((cat) => (cat.name === selectedCategory.name ? data : cat));
+              form.setFieldValue(getFieldPath("categories"), categories);
+            } else form.setFieldValue(getFieldPath("categories"), [...form.values.summary_settings.categories, data]);
 
             setSelectedCategory(undefined);
           }}
         />
       ) : (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (onSubmit) onSubmit(form.values);
-          }}
-        >
+        <>
           <Grid>
             <Grid.Col span={4}>
               <Group gap="xs" grow>
@@ -67,22 +56,18 @@ export const SummaryPanel = ({ value, onSubmit }: SummaryPanelProps) => {
                   min={1}
                   max={999}
                   placeholder={useTranslateFormFields("recent_days.placeholder")}
-                  value={form.values.recent_days}
-                  onChange={(event) => form.setFieldValue("recent_days", Number(event))}
-                  error={form.errors.recent_days && useTranslateFormFields("recent_days.error")}
                   rightSection={<TooltipIcon label={useTranslateFormFields("recent_days.tooltip")} />}
                   radius="md"
+                  {...form.getInputProps(getFieldPath("recent_days"))}
                 />
                 <NumberInput
                   label={useTranslateFormFields("recent_transactions.label")}
                   min={1}
                   max={999}
                   placeholder={useTranslateFormFields("recent_transactions.placeholder")}
-                  value={form.values.recent_transactions}
-                  onChange={(event) => form.setFieldValue("recent_transactions", Number(event))}
-                  error={form.errors.recent_transactions && useTranslateFormFields("recent_transactions.error")}
                   rightSection={<TooltipIcon label={useTranslateFormFields("recent_transactions.tooltip")} />}
                   radius="md"
+                  {...form.getInputProps(getFieldPath("recent_transactions"))}
                 />
               </Group>
             </Grid.Col>
@@ -94,7 +79,7 @@ export const SummaryPanel = ({ value, onSubmit }: SummaryPanelProps) => {
                 striped
                 idAccessor={"name"}
                 highlightOnHover
-                records={form.values.categories}
+                records={form.values.summary_settings.categories}
                 columns={[
                   {
                     accessor: "icon",
@@ -142,8 +127,8 @@ export const SummaryPanel = ({ value, onSubmit }: SummaryPanelProps) => {
                           iconProps={{ size: "xs" }}
                           onClick={async (e) => {
                             e.stopPropagation();
-                            const categories = form.values.categories.filter((cat) => cat.name !== record.name);
-                            form.setFieldValue("categories", categories);
+                            const categories = form.values.summary_settings.categories.filter((cat) => cat.name !== record.name);
+                            form.setFieldValue(getFieldPath("categories"), categories);
                           }}
                         />
                       </Group>
@@ -153,19 +138,7 @@ export const SummaryPanel = ({ value, onSubmit }: SummaryPanelProps) => {
               />
             </Grid.Col>
           </Grid>
-          <Group
-            justify="flex-end"
-            style={{
-              position: "absolute",
-              bottom: 25,
-              right: 25,
-            }}
-          >
-            <Button type="submit" variant="light" color="blue">
-              {useTranslateCommon("buttons.save.label")}
-            </Button>
-          </Group>
-        </form>
+        </>
       )}
     </Box>
   );

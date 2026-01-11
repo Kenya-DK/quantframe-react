@@ -5,13 +5,13 @@ import { RivenPanel } from "./Tabs/Riven";
 import { ItemPanel } from "./Tabs/Item";
 import { useState } from "react";
 import { GeneralPanel } from "./Tabs/General";
+import { UseFormReturnType } from "@mantine/form";
 
 export type LiveTradingPanelProps = {
-  value: TauriTypes.SettingsLiveScraper;
-  onSubmit: (value: TauriTypes.SettingsLiveScraper) => void;
+  form: UseFormReturnType<TauriTypes.Settings>;
 };
 
-export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => {
+export const LiveTradingPanel = ({ form }: LiveTradingPanelProps) => {
   const [hideTab, setHideTab] = useState<boolean>(false);
 
   // Translate general
@@ -23,39 +23,17 @@ export const LiveTradingPanel = ({ onSubmit, value }: LiveTradingPanelProps) => 
   const tabs = [
     {
       label: useTranslateTabs("live_scraper.general.title"),
-      component: (
-        <GeneralPanel
-          value={value}
-          setHideTab={(v) => setHideTab(v)}
-          onSubmit={(v) => {
-            onSubmit({ ...value, ...v });
-          }}
-        />
-      ),
+      component: <GeneralPanel form={form} setHideTab={(v) => setHideTab(v)} />,
       id: "general",
     },
     {
       label: useTranslateTabs("live_scraper.item.title"),
-      component: (
-        <ItemPanel
-          value={value.stock_item}
-          onSubmit={(v) => {
-            onSubmit({ ...value, stock_item: v });
-          }}
-        />
-      ),
+      component: <ItemPanel form={form} />,
       id: "item",
     },
     {
       label: useTranslateTabs("live_scraper.riven.title"),
-      component: (
-        <RivenPanel
-          value={value.stock_riven}
-          onSubmit={(v) => {
-            onSubmit({ ...value, stock_riven: v });
-          }}
-        />
-      ),
+      component: <RivenPanel form={form} />,
       id: "riven",
     },
   ];
