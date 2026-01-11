@@ -16,7 +16,7 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "createUpdaterArtifacts": "v1Compatible",
+    "createUpdaterArtifacts": true,
     "resources": {
       "resources/*": "resources/",
       "resources/sounds/*": "resources/sounds/"
