@@ -101,10 +101,6 @@ impl RivenModule {
                     "Loaded Riven items from cache",
                     &LoggerOptions::default(),
                 );
-                println!(
-                    "{:?} Riven weapons loaded.",
-                    attribute_lookup.get_all_keys()
-                );
             }
             Err(e) => return Err(e.with_location(get_location!())),
         }

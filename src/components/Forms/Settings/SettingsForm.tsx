@@ -27,7 +27,7 @@ export function SettingsForm({ onSubmit, value }: SettingsFormProps) {
   const form = useForm({
     initialValues: value,
     validate: {
-      has_error: (value) => {
+      has_error: (value: boolean | undefined) => {
         if (value == undefined) return null;
         return value ? "Form has errors" : null;
       },

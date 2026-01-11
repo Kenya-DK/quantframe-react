@@ -29,7 +29,7 @@
 
 ## TODO's
 
-- ⏱️ Fix so the knapsack algorithm doesn't delete all items after a cycle, Cursing a buy is deleted when it was ppl is texting you
+
 
 ## Feature's
 
