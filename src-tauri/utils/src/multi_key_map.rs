@@ -28,7 +28,11 @@ impl<V: Clone> MultiKeyMap<V> {
         self.values.insert(id, value);
 
         for key in key_list {
-            self.keys.insert(key.into().to_lowercase(), id);
+            let key = key.into().to_lowercase();
+            if self.keys.contains_key(&key) {
+                continue;
+            }
+            self.keys.insert(key, id);
         }
 
         id
@@ -37,7 +41,11 @@ impl<V: Clone> MultiKeyMap<V> {
     /// Add additional keys to an existing value.
     pub fn add_keys<S: Into<String>>(&mut self, id: u64, key_list: impl IntoIterator<Item = S>) {
         for key in key_list {
-            self.keys.insert(key.into().to_lowercase(), id);
+            let key = key.into().to_lowercase();
+            if self.keys.contains_key(&key) {
+                continue;
+            }
+            self.keys.insert(key, id);
         }
     }
 
@@ -62,5 +70,8 @@ impl<V: Clone> MultiKeyMap<V> {
     }
     pub fn get_all_values(&self) -> Vec<V> {
         self.values.values().cloned().collect()
+    }
+    pub fn get_all_keys(&self) -> Vec<String> {
+        self.keys.keys().cloned().collect()
     }
 }

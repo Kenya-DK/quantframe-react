@@ -1,5 +1,5 @@
 use std::{
-    collections::HashSet,
+    collections::{HashMap, HashSet},
     path::PathBuf,
     sync::{Arc, Mutex},
 };
@@ -57,6 +57,7 @@ impl RivenModule {
 
                 // Create lookup maps
                 let mut upgrade_lookup = self.upgrade_lookup.lock().unwrap();
+                let mut attributes_map: HashMap<String, Vec<String>> = HashMap::new();
                 for (key, val) in data.upgrade_types.iter() {
                     for a in val.iter() {
                         upgrade_lookup.insert_value(
@@ -66,6 +67,10 @@ impl RivenModule {
                                 format!("{}|{}", key, a.modifier_tag),
                             ],
                         );
+                        attributes_map
+                            .entry(a.wfm_url.clone())
+                            .or_insert_with(Vec::new)
+                            .push(a.short_string.clone());
                     }
                 }
                 let mut weapon_lookup = self.weapon_lookup.lock().unwrap();
@@ -82,20 +87,23 @@ impl RivenModule {
                 }
                 let mut attribute_lookup = self.attribute_lookup.lock().unwrap();
                 for item in data.attributes.iter() {
-                    attribute_lookup.insert_value(
-                        item.clone(),
-                        vec![
-                            item.name.clone(),
-                            item.url_name.clone(),
-                            item.unique_name.clone(),
-                        ],
-                    );
+                    let mut attr_keys = attributes_map
+                        .get(&item.url_name)
+                        .unwrap_or(&vec![])
+                        .clone();
+                    attr_keys.push(item.name.clone());
+                    attr_keys.push(item.url_name.clone());
+                    attr_keys.push(item.unique_name.clone());
+                    attribute_lookup.insert_value(item.clone(), attr_keys);
                 }
-
                 info(
                     "Cache:Riven:load",
                     "Loaded Riven items from cache",
                     &LoggerOptions::default(),
+                );
+                println!(
+                    "{:?} Riven weapons loaded.",
+                    attribute_lookup.get_all_keys()
                 );
             }
             Err(e) => return Err(e.with_location(get_location!())),

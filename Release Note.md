@@ -18,6 +18,7 @@
 - ⏱️ Fix no attack speed on some melee weapon stats
 - ⏱️ The Generate message still have the item if it was deleted by the backend
 - ⏱️ Fix a type error in the chat rust types
+- ⏱️ Fix log path issue when saving settings
 
 ## Dev Notes
 
@@ -29,7 +30,6 @@
 ## TODO's
 
 - ⏱️ Fix so the knapsack algorithm doesn't delete all items after a cycle, Cursing a buy is deleted when it was ppl is texting you
-- ⏱️ The Log file path sometimes f\* \* \* up
 
 ## Feature's
 
