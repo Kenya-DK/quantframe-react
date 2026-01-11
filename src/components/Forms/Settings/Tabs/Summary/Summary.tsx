@@ -1,8 +1,8 @@
 import { TauriTypes } from "$types";
 import { useState } from "react";
-import { useTranslateCommon, useTranslateForms } from "@hooks/useTranslate.hook";
+import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { UseFormReturnType } from "@mantine/form";
-import { Box, Button, Grid, Group, NumberInput, Text, Image } from "@mantine/core";
+import { Box, Grid, Group, NumberInput, Text, Image } from "@mantine/core";
 import { TooltipIcon } from "@components/Shared/TooltipIcon";
 import { SearchField } from "@components/Forms/SearchField";
 import { DataTable } from "mantine-datatable";

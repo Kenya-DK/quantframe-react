@@ -17,6 +17,7 @@
 - ⏱️ Fix so y cant save a message template with the same name
 - ⏱️ Fix no attack speed on some melee weapon stats
 - ⏱️ The Generate message still have the item if it was deleted by the backend
+- ⏱️ Fix a type error in the chat rust types
 
 ## Dev Notes
 

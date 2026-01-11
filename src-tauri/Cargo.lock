@@ -7302,6 +7302,7 @@ checksum = "a751b3277700db47d3e574514de2eced5e54dc8a5436a3bf7a0b248b2cee16f3"
 [[package]]
 name = "wf-market"
 version = "0.1.11"
+source = "git+https://github.com/KibbeWater/wf-market?rev=022d3f5d856d1e4b6bd0aa90feac993583b3afd2#022d3f5d856d1e4b6bd0aa90feac993583b3afd2"
 dependencies = [
  "chrono",
  "futures-util",
