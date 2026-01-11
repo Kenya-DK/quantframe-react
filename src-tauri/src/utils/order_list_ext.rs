@@ -29,13 +29,15 @@ impl OrderListExt for OrderList<Order> {
                 .item_price()
                 .find_by_id(&order.item_id, order.subtype.to_entity())?
             {
-                order.update_details(
-                    order
-                        .get_details()
-                        .set_closed_avg(price.avg_price)
-                        .set_profit(price.profit)
-                        .set_order_id(order.id.clone()),
-                );
+                let mut details = order.get_details();
+                if details.closed_avg == 0.0 {
+                    details.closed_avg = price.avg_price;
+                }
+                if details.profit == 0.0 {
+                    details.profit = price.profit;
+                }
+                details.order_id = price.wfm_id.clone();
+                order.update_details(details);
             }
         }
 

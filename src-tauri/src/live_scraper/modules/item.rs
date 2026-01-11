@@ -411,6 +411,7 @@ impl ItemModule {
             && price_range >= profit_threshold
             && order_info.has_operation("Create")
             && !wfm_client.order().cache_orders().buy_orders.is_empty()
+            && !is_disabled(max_total_price_cap)
         {
             let buy_orders_list = {
                 let mut list = wfm_client
@@ -472,10 +473,10 @@ impl ItemModule {
                 order_info.add_operation("Skip");
                 order_info.add_operation("Delete");
             }
-        } else if closed_avg_metric < 0 {
+        } else if closed_avg_metric < 0 && !is_disabled(max_total_price_cap) {
             order_info.add_operation("Delete");
             order_info.add_operation("Overpriced");
-        } else if price_range < profit_threshold {
+        } else if price_range < profit_threshold && !is_disabled(max_total_price_cap) {
             order_info.add_operation("Delete");
             order_info.add_operation("Underpriced");
         }

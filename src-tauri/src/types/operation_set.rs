@@ -1,3 +1,6 @@
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct OperationSet {
     pub operations: Vec<String>,
 }
@@ -31,6 +34,9 @@ impl OperationSet {
             self.add(op.clone());
         }
     }
+    pub fn set(&mut self, operations: &[&str]) {
+        self.operations = operations.iter().map(|&s| s.to_string()).collect();
+    }
     pub fn get_value_after(&self, prefix: impl Into<String>) -> Option<String> {
         let prefix = prefix.into();
         let prefix_with_colon = format!("{}:", prefix);
@@ -43,5 +49,20 @@ impl OperationSet {
                     .map(|value| value.trim().to_string())
             })
             .filter(|value| !value.is_empty())
+    }
+    pub fn is_empty(&self) -> bool {
+        self.operations.is_empty()
+    }
+}
+
+impl Default for OperationSet {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl std::fmt::Display for OperationSet {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.operations)
     }
 }

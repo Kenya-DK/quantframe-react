@@ -5,7 +5,13 @@ use serde::{Deserialize, Serialize};
 use utils::{warning, Error, LoggerOptions};
 use wf_market::types::{Order, OrderLike, OrderWithUser};
 
-use crate::cache::{client::CacheState, types::CacheTradableItem, types::SubType as CacheSubType};
+use crate::{
+    cache::{
+        client::CacheState,
+        types::{CacheTradableItem, SubType as CacheSubType},
+    },
+    types::OperationSet,
+};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct OrderDetails {
@@ -36,7 +42,7 @@ pub struct OrderDetails {
     // Default implementation for string
     #[serde(rename = "operation")]
     #[serde(default)]
-    pub operations: Vec<String>,
+    pub operations: OperationSet,
 
     #[serde(rename = "orders")]
     #[serde(default)]
@@ -61,15 +67,15 @@ impl OrderDetails {
         self
     }
     pub fn set_operation(mut self, operation: &[&str]) -> Self {
-        self.operations = operation.iter().map(|&s| s.to_string()).collect();
+        self.operations.set(operation);
         self
     }
     pub fn add_operation(&mut self, operation: impl Into<String>) {
-        self.operations.push(operation.into());
+        self.operations.add(operation);
     }
     pub fn has_operation(&self, operation: impl Into<String>) -> bool {
         let operation = operation.into();
-        self.operations.iter().any(|op| op == &operation)
+        self.operations.has(operation)
     }
     pub fn set_order_id(mut self, order_id: impl Into<String>) -> Self {
         self.order_id = order_id.into();
@@ -128,6 +134,8 @@ impl OrderDetails {
 // Default implementation for OrderDetails
 impl Default for OrderDetails {
     fn default() -> Self {
+        let mut operations = OperationSet::new();
+        operations.add("Create");
         OrderDetails {
             order_id: String::from("N/A"),
             item_id: String::from("N/A"),
@@ -139,7 +147,7 @@ impl Default for OrderDetails {
             profit: 0.0,
             lowest_price: -1,
             highest_price: -1,
-            operations: vec!["Create".to_string()],
+            operations: operations,
             update_string: String::new(),
             orders: vec![],
             price_history: vec![],
@@ -171,7 +179,7 @@ impl Display for OrderDetails {
         if self.operations.is_empty() {
             write!(f, "Operations: None")
         } else {
-            write!(f, "Operations: {}", self.operations.join(", "))
+            write!(f, "Operations: {}", self.operations)
         }
     }
 }

@@ -1226,7 +1226,7 @@
                     "label": "Max Total Price Cap",
                     "placeholder": "Max Total Price Cap",
                     "error": "Invalid max total price cap",
-                    "tooltip": "Maximum total price to consider for trading",
+                    "tooltip": "Maximum total price to consider for trading -1 for no limit",
                     "link": "https://quantframe.app/features/live-trading/settings/item/wtb#max-total-price-cap"
                   },
                   "price_shift_threshold": {
