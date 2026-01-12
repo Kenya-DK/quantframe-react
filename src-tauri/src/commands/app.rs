@@ -39,11 +39,12 @@ pub async fn app_get_settings(app: tauri::State<'_, Mutex<AppState>>) -> Result<
 
 #[tauri::command]
 pub async fn app_update_settings(
-    settings: Settings,
+    mut settings: Settings,
     app: tauri::State<'_, Mutex<AppState>>,
     log_parser: tauri::State<'_, Mutex<Arc<LogParserState>>>,
 ) -> Result<Settings, Error> {
     let mut app = app.lock()?;
+    settings.custom_sounds = app.settings.custom_sounds.clone();
     let log_parser = log_parser.lock()?;
     log_parser.set_path(&settings.advanced_settings.wf_log_path)?;
     if settings.http_server.uuid() != app.settings.http_server.uuid() {

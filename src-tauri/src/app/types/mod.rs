@@ -36,3 +36,6 @@ pub use http_server_settings::*;
 
 pub mod generate_trade_message_setting;
 pub use generate_trade_message_setting::*;
+
+pub mod custom_sound;
+pub use custom_sound::*;

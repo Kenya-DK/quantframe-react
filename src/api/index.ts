@@ -23,6 +23,7 @@ import { RivenModule } from "./riven";
 import { MarketModule } from "./market";
 import { TradeEntryModule } from "./trade_entry";
 import { LogParserModule } from "./log_parser";
+import { SoundModule } from "./sound";
 
 export class TauriClient {
   _logging: string[] = [];
@@ -53,6 +54,7 @@ export class TauriClient {
     this.market = new MarketModule(this);
     this.trade_entry = new TradeEntryModule(this);
     this.log_parser = new LogParserModule(this);
+    this.sound = new SoundModule(this);
     this._logging = localStorage.getItem("tauri_logs") ? JSON.parse(localStorage.getItem("tauri_logs")!) : ["*"];
   }
 
@@ -194,6 +196,7 @@ export class TauriClient {
   market: MarketModule;
   trade_entry: TradeEntryModule;
   log_parser: LogParserModule;
+  sound: SoundModule;
 }
 
 declare global {

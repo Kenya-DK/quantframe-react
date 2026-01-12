@@ -799,6 +799,44 @@
               "placeholder": "Enter webhook URL"
             }
           }
+        },
+        "manage_sounds": {
+          "title": "Add Custom Sound",
+          "buttons": {
+            "manage": "Manage Sounds",
+            "back": "Go Back"
+          },
+          "fields": {
+            "name": {
+              "placeholder": "Sound Name"
+            },
+            "file": {
+              "placeholder": "Select a file"
+            }
+          },
+          "tooltips": {
+            "add_sound": "Add Sound",
+            "play": "Play",
+            "delete": "Delete"
+          },
+          "table": {
+            "columns": {
+              "name": "Name",
+              "file_name": "File Name",
+              "actions": "Actions"
+            }
+          },
+          "dialog": {
+            "delete": {
+              "title": "Delete {{name}}",
+              "message": "Are you sure you want to delete this sound? This action cannot be undone.",
+              "confirm": "Delete",
+              "cancel": "Cancel"
+            }
+          },
+          "file_picker": {
+            "filter_name": "Audio"
+          }
         }
       },
       "riven_filter_attribute": {

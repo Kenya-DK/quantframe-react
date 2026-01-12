@@ -23,13 +23,33 @@ export interface TimeSpan {
 }
 export const PlaySound = async (fileName: string, volume: number = 1.0) => {
   try {
-    const resourcePath = await resolveResource(`resources/sounds/${fileName}`);
-    const assetUrl = convertFileSrc(resourcePath);
+    let assetUrl: string;
+
+    if (fileName.startsWith('custom:')) {
+      const { appLocalDataDir, join } = await import('@tauri-apps/api/path');
+      const localDataDir = await appLocalDataDir();
+      const soundPath = await join(localDataDir, 'sounds', fileName.replace('custom:', ''));
+      assetUrl = convertFileSrc(soundPath);
+    } else {
+      const resourcePath = await resolveResource(`resources/sounds/${fileName}`);
+      assetUrl = convertFileSrc(resourcePath);
+    }
+
     const audio = new Audio(assetUrl);
     audio.volume = volume;
-    audio.play();
+    await audio.play();
   } catch (error) {
     console.error(`Error playing sound ${fileName}:`, error);
+    // Fallback logic
+    try {
+      const resourcePath = await resolveResource(`resources/sounds/cat_meow.mp3`);
+      const assetUrl = convertFileSrc(resourcePath);
+      const audio = new Audio(assetUrl);
+      audio.volume = volume;
+      audio.play();
+    } catch (fallbackError) {
+      console.error("Error playing fallback sound:", fallbackError);
+    }
   }
 };
 (window as any).PlaySound = PlaySound;
