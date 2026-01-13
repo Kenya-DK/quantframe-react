@@ -13,7 +13,6 @@ import {
 } from "@mantine/core";
 import { UseFormReturnType } from "@mantine/form";
 import { TauriTypes } from "$types";
-import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { faBell } from "@fortawesome/free-solid-svg-icons";
 import { faDiscord } from "@fortawesome/free-brands-svg-icons";
@@ -21,6 +20,26 @@ import { TooltipIcon } from "@components/Shared/TooltipIcon";
 import api from "@api/index";
 import { faWebHook } from "@icons";
 import { PlaySound } from "@utils/helper";
+import { toCustomSoundValue } from "@utils/sound";
+import { createEditNotificationSettingTranslations } from "../translations";
+
+const DEFAULT_SOUND_OPTIONS = [
+  { value: "cat_meow.mp3", labelKey: "sound.options.cat_meow" },
+  { value: "iphone_notification.mp3", labelKey: "sound.options.iphone_notification" },
+  { value: "windows_notification.mp3", labelKey: "sound.options.windows_notification" },
+  { value: "windows_xp_error.mp3", labelKey: "sound.options.windows_xp_error" },
+  { value: "windows_xp_startup.mp3", labelKey: "sound.options.windows_xp_startup" },
+];
+
+const buildSystemSoundOptions = (
+  translateSystemFields: (key: string, context?: { [key: string]: any }, i18Key?: boolean) => string
+) => [
+  { value: "none", label: translateSystemFields("sound.options.none") },
+  ...DEFAULT_SOUND_OPTIONS.map((option) => ({
+    value: option.value,
+    label: translateSystemFields(option.labelKey),
+  })),
+];
 
 export type NotificationsViewProps = {
   id: string;
@@ -30,16 +49,12 @@ export type NotificationsViewProps = {
 };
 
 export const NotificationsView = ({ id, form, customSounds, onManageSounds }: NotificationsViewProps) => {
-  const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateForms(`edit_notification_setting.${key}`, { ...context }, i18Key);
-  const useTranslateFormSystemFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateForm(`system.fields.${key}`, { ...context }, i18Key);
-  const useTranslateFormDiscordFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateForm(`discord.fields.${key}`, { ...context }, i18Key);
-  const useTranslateFormWebhookFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateForm(`webhook.fields.${key}`, { ...context }, i18Key);
-  const useTranslateFormManageSounds = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateForm(`manage_sounds.${key}`, { ...context }, i18Key);
+  const t = createEditNotificationSettingTranslations();
+  const systemSoundOptions = buildSystemSoundOptions(t.systemFields);
+  const customSoundOptions = customSounds.map((sound) => ({
+    value: toCustomSoundValue(sound.file_name),
+    label: sound.name,
+  }));
 
   const handleContentReset = async () => {
     const defaultNotification = await api.app.notify_reset(id);
@@ -50,7 +65,7 @@ export const NotificationsView = ({ id, form, customSounds, onManageSounds }: No
     <>
       <Group m="xs" gap={5}>
         <ActionWithTooltip
-          tooltip={useTranslateForm("system.tooltip")}
+          tooltip={t.form("system.tooltip")}
           color={form.values.system_notify.enabled ? "green.7" : "blue.7"}
           icon={faBell}
           onClick={() => {
@@ -58,7 +73,7 @@ export const NotificationsView = ({ id, form, customSounds, onManageSounds }: No
           }}
         />
         <ActionWithTooltip
-          tooltip={useTranslateForm("discord.tooltip")}
+          tooltip={t.form("discord.tooltip")}
           icon={faDiscord}
           color={form.values.discord_notify.enabled ? "green.7" : "blue.7"}
           onClick={() => {
@@ -66,7 +81,7 @@ export const NotificationsView = ({ id, form, customSounds, onManageSounds }: No
           }}
         />
         <ActionWithTooltip
-          tooltip={useTranslateForm("webhook.tooltip")}
+          tooltip={t.form("webhook.tooltip")}
           icon={faWebHook}
           color={form.values.webhook_notify.enabled ? "green.7" : "blue.7"}
           onClick={() => {
@@ -79,18 +94,18 @@ export const NotificationsView = ({ id, form, customSounds, onManageSounds }: No
         <Stack gap={5}>
           <Collapse in={form.values.system_notify.enabled}>
             <Title order={4} mb="xs" mt="sm">
-              {useTranslateForm("system.title")}
+              {t.form("system.title")}
             </Title>
             <TextInput
-              label={useTranslateFormSystemFields("title.label")}
-              placeholder={useTranslateFormSystemFields("title.placeholder")}
+              label={t.systemFields("title.label")}
+              placeholder={t.systemFields("title.placeholder")}
               value={form.values.system_notify.title}
               onChange={(event) => form.setFieldValue("system_notify.title", event.currentTarget.value)}
               radius="md"
             />
             <Textarea
-              label={useTranslateFormSystemFields("content.label")}
-              placeholder={useTranslateFormSystemFields("content.placeholder")}
+              label={t.systemFields("content.label")}
+              placeholder={t.systemFields("content.placeholder")}
               value={form.values.system_notify.content}
               onChange={(event) => form.setFieldValue("system_notify.content", event.currentTarget.value)}
               radius="md"
@@ -100,27 +115,16 @@ export const NotificationsView = ({ id, form, customSounds, onManageSounds }: No
             <Group gap="xs" mt="sm" align="flex-end">
               <Select
                 w={250}
-                label={useTranslateFormSystemFields("sound.label")}
-                placeholder={useTranslateFormSystemFields("sound.placeholder")}
+                label={t.systemFields("sound.label")}
+                placeholder={t.systemFields("sound.placeholder")}
                 radius="md"
                 value={form.values.system_notify.sound_file || "none"}
                 onChange={(value) => form.setFieldValue("system_notify.sound_file", value || "none")}
                 rightSectionPointerEvents="inherit"
-                data={[
-                  { value: "none", label: useTranslateFormSystemFields("sound.options.none") },
-                  { value: "cat_meow.mp3", label: useTranslateFormSystemFields("sound.options.cat_meow") },
-                  { value: "iphone_notification.mp3", label: useTranslateFormSystemFields("sound.options.iphone_notification") },
-                  { value: "windows_notification.mp3", label: useTranslateFormSystemFields("sound.options.windows_notification") },
-                  { value: "windows_xp_error.mp3", label: useTranslateFormSystemFields("sound.options.windows_xp_error") },
-                  { value: "windows_xp_startup.mp3", label: useTranslateFormSystemFields("sound.options.windows_xp_startup") },
-                  ...customSounds.map((sound) => ({
-                    value: `custom:${sound.file_name}`,
-                    label: sound.name,
-                  })),
-                ]}
+                data={[...systemSoundOptions, ...customSoundOptions]}
                 rightSection={
                   <ActionWithTooltip
-                    tooltip={useTranslateFormSystemFields("sound.play_tooltip")}
+                    tooltip={t.systemFields("sound.play_tooltip")}
                     icon={faBell}
                     onClick={() => {
                       if (!form.values.system_notify.enabled || form.values.system_notify.sound_file === "none") return;
@@ -131,8 +135,8 @@ export const NotificationsView = ({ id, form, customSounds, onManageSounds }: No
               />
               <NumberInput
                 w={100}
-                label={useTranslateFormSystemFields("volume.label")}
-                placeholder={useTranslateFormSystemFields("volume.placeholder")}
+                label={t.systemFields("volume.label")}
+                placeholder={t.systemFields("volume.placeholder")}
                 radius="md"
                 min={0}
                 max={1}
@@ -144,25 +148,25 @@ export const NotificationsView = ({ id, form, customSounds, onManageSounds }: No
                 size="sm"
                 onClick={onManageSounds}
               >
-                {useTranslateFormManageSounds("buttons.manage")}
+                {t.manageSounds("buttons.manage")}
               </Button>
             </Group>
             <Divider my="sm" />
           </Collapse>
           <Collapse in={form.values.discord_notify.enabled}>
             <Title order={4} mb="xs" mt="sm">
-              {useTranslateForm("discord.title")}
+              {t.form("discord.title")}
             </Title>
             <TextInput
-              label={useTranslateFormDiscordFields("webhook.label")}
-              placeholder={useTranslateFormDiscordFields("webhook.placeholder")}
+              label={t.discordFields("webhook.label")}
+              placeholder={t.discordFields("webhook.placeholder")}
               value={form.values.discord_notify.webhook}
               onChange={(event) => form.setFieldValue("discord_notify.webhook", event.currentTarget.value)}
               radius="md"
             />
             <Textarea
-              label={useTranslateFormDiscordFields("content.label")}
-              placeholder={useTranslateFormDiscordFields("content.placeholder")}
+              label={t.discordFields("content.label")}
+              placeholder={t.discordFields("content.placeholder")}
               value={form.values.discord_notify.content}
               onChange={(event) => form.setFieldValue("discord_notify.content", event.currentTarget.value)}
               radius="md"
@@ -171,13 +175,13 @@ export const NotificationsView = ({ id, form, customSounds, onManageSounds }: No
             />
 
             <Button mt={5} onClick={handleContentReset}>
-              {useTranslateFormDiscordFields("content.reset_button")}
+              {t.discordFields("content.reset_button")}
             </Button>
             <TextInput
-              label={useTranslateFormDiscordFields("user_ids.label")}
-              placeholder={useTranslateFormDiscordFields("user_ids.placeholder")}
+              label={t.discordFields("user_ids.label")}
+              placeholder={t.discordFields("user_ids.placeholder")}
               value={form.values.discord_notify.user_ids.join(", ")}
-              rightSection={<TooltipIcon label={useTranslateFormDiscordFields("user_ids.description")} />}
+              rightSection={<TooltipIcon label={t.discordFields("user_ids.description")} />}
               onChange={(event) =>
                 form.setFieldValue(
                   "discord_notify.user_ids",
@@ -190,11 +194,11 @@ export const NotificationsView = ({ id, form, customSounds, onManageSounds }: No
           </Collapse>
           <Collapse in={form.values.webhook_notify.enabled}>
             <Title order={4} mb="xs" mt="sm">
-              {useTranslateForm("webhook.title")}
+              {t.form("webhook.title")}
             </Title>
             <TextInput
-              label={useTranslateFormWebhookFields("url.label")}
-              placeholder={useTranslateFormWebhookFields("url.placeholder")}
+              label={t.webhookFields("url.label")}
+              placeholder={t.webhookFields("url.placeholder")}
               value={form.values.webhook_notify.url}
               onChange={(event) => form.setFieldValue("webhook_notify.url", event.currentTarget.value)}
               radius="md"

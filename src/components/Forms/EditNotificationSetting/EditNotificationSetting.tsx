@@ -1,6 +1,7 @@
 import { Box } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useLocalStorage } from "@mantine/hooks";
+import { useEffect } from "react";
 import { TauriTypes } from "$types";
 import { useCustomSoundsTable } from "./queries";
 import { ManageSoundsView, NotificationsView } from "./views";
@@ -29,6 +30,13 @@ export function EditNotificationSetting({ id, value, onChange }: EditNotificatio
     validate: {},
   });
 
+  useEffect(() => {
+    if (!value) return;
+    if (JSON.stringify(form.values) === JSON.stringify(value)) return;
+    form.setValues(value);
+    form.resetDirty(value);
+  }, [value]);
+
   const {
     customSounds,
     query,
@@ -42,7 +50,7 @@ export function EditNotificationSetting({ id, value, onChange }: EditNotificatio
     totalRecords,
     safePage,
     isFetching,
-    invalidateSettings,
+    invalidateSounds,
   } = useCustomSoundsTable();
 
   return (
@@ -67,7 +75,7 @@ export function EditNotificationSetting({ id, value, onChange }: EditNotificatio
           records={paginatedSounds}
           totalRecords={totalRecords}
           isFetching={isFetching}
-          invalidateSettings={invalidateSettings}
+          invalidateSounds={invalidateSounds}
           selectedSoundFile={form.values.system_notify.sound_file}
           onClearSelectedSound={() => form.setFieldValue("system_notify.sound_file", "none")}
           onBack={() => setViewMode(ViewMode.Notifications)}

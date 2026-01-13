@@ -3,6 +3,7 @@ import { ItemWithMeta, ItemWithSubType, TauriTypes } from "$types";
 import api from "@api/index";
 import { resolveResource } from "@tauri-apps/api/path";
 import { convertFileSrc } from "@tauri-apps/api/core";
+import { isCustomSound, stripCustomSoundPrefix } from "@utils/sound";
 
 export interface GroupByDateSettings {
   labels?: string[];
@@ -21,14 +22,17 @@ export interface TimeSpan {
   minutes: number;
   seconds: number;
 }
+let cachedCustomSoundsPath: string | undefined;
 export const PlaySound = async (fileName: string, volume: number = 1.0) => {
   try {
     let assetUrl: string;
 
-    if (fileName.startsWith('custom:')) {
-      const { appLocalDataDir, join } = await import('@tauri-apps/api/path');
-      const localDataDir = await appLocalDataDir();
-      const soundPath = await join(localDataDir, 'sounds', fileName.replace('custom:', ''));
+    if (isCustomSound(fileName)) {
+      const { join } = await import('@tauri-apps/api/path');
+      if (!cachedCustomSoundsPath) {
+        cachedCustomSoundsPath = await api.sound.getCustomSoundsPath();
+      }
+      const soundPath = await join(cachedCustomSoundsPath, stripCustomSoundPrefix(fileName));
       assetUrl = convertFileSrc(soundPath);
     } else {
       const resourcePath = await resolveResource(`resources/sounds/${fileName}`);

@@ -6,6 +6,7 @@ import api from "@api/index";
 import { getSafePage } from "@utils/helper";
 
 const settingsQueryKey = ["app_get_settings"];
+const customSoundsQueryKey = ["sound_get_custom_sounds"];
 
 export const useCustomSoundsTable = () => {
   const queryClient = useQueryClient();
@@ -17,13 +18,13 @@ export const useCustomSoundsTable = () => {
     direction: "asc",
   });
 
-  const settingsQuery = useQuery<TauriTypes.Settings>({
-    queryKey: settingsQueryKey,
-    queryFn: () => api.sendInvoke<TauriTypes.Settings>("app_get_settings"),
+  const customSoundsQuery = useQuery<TauriTypes.CustomSound[]>({
+    queryKey: customSoundsQueryKey,
+    queryFn: () => api.sound.getCustomSounds(),
     staleTime: Infinity,
   });
 
-  const customSounds = settingsQuery.data?.custom_sounds || [];
+  const customSounds = customSoundsQuery.data || [];
 
   const filteredSounds = useMemo(() => {
     const loweredQuery = query.toLowerCase();
@@ -45,7 +46,10 @@ export const useCustomSoundsTable = () => {
     return filteredSounds.slice(startIndex, startIndex + pageSize);
   }, [filteredSounds, pageSize, safePage]);
 
-  const invalidateSettings = () => queryClient.invalidateQueries({ queryKey: settingsQueryKey });
+  const invalidateSounds = () => {
+    queryClient.invalidateQueries({ queryKey: customSoundsQueryKey });
+    queryClient.invalidateQueries({ queryKey: settingsQueryKey });
+  };
 
   return {
     customSounds,
@@ -66,7 +70,7 @@ export const useCustomSoundsTable = () => {
     paginatedSounds,
     totalRecords,
     safePage,
-    isFetching: settingsQuery.isFetching,
-    invalidateSettings,
+    isFetching: customSoundsQuery.isFetching,
+    invalidateSounds,
   };
 };

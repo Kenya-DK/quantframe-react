@@ -2,14 +2,16 @@ import { Box, Button, Group, Stack, Text, TextInput } from "@mantine/core";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { SearchField } from "@components/Forms/SearchField";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { faPlus, faTrash, faVolumeHigh } from "@fortawesome/free-solid-svg-icons";
 import { modals } from "@mantine/modals";
+import { notifications } from "@mantine/notifications";
 import { open as openFile } from "@tauri-apps/plugin-dialog";
 import { useState } from "react";
 import { TauriTypes } from "$types";
 import api from "@api/index";
 import { PlaySound } from "@utils/helper";
+import { toCustomSoundValue } from "@utils/sound";
+import { createEditNotificationSettingTranslations } from "../translations";
 
 export type ManageSoundsViewProps = {
   query: string;
@@ -23,7 +25,7 @@ export type ManageSoundsViewProps = {
   records: TauriTypes.CustomSound[];
   totalRecords: number;
   isFetching: boolean;
-  invalidateSettings: () => void;
+  invalidateSounds: () => void;
   selectedSoundFile?: string;
   onClearSelectedSound: () => void;
   onBack: () => void;
@@ -41,43 +43,58 @@ export const ManageSoundsView = ({
   records,
   totalRecords,
   isFetching,
-  invalidateSettings,
+  invalidateSounds,
   selectedSoundFile,
   onClearSelectedSound,
   onBack,
 }: ManageSoundsViewProps) => {
-  const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateForms(`edit_notification_setting.${key}`, { ...context }, i18Key);
-  const useTranslateFormManageSounds = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateForm(`manage_sounds.${key}`, { ...context }, i18Key);
+  const t = createEditNotificationSettingTranslations();
 
-  const labels = {
-    namePlaceholder: useTranslateFormManageSounds("fields.name.placeholder"),
-    filePlaceholder: useTranslateFormManageSounds("fields.file.placeholder"),
-    addTooltip: useTranslateFormManageSounds("tooltips.add_sound"),
-    fileFilterName: useTranslateFormManageSounds("file_picker.filter_name"),
+  const copy = {
+    namePlaceholder: t.manageSounds("fields.name.placeholder"),
+    filePlaceholder: t.manageSounds("fields.file.placeholder"),
+    addTooltip: t.manageSounds("tooltips.add_sound"),
+    fileFilterName: t.manageSounds("file_picker.filter_name"),
   };
 
   const handleAddSound = async (name: string, filePath: string) => {
-    await api.sound.addCustomSound(name, filePath);
-    invalidateSettings();
+    try {
+      await api.sound.addCustomSound(name, filePath);
+      invalidateSounds();
+    } catch (error) {
+      console.error(error);
+      notifications.show({
+        title: t.manageSounds("notifications.add_error.title"),
+        message: t.manageSounds("notifications.add_error.message"),
+        color: "red.7",
+      });
+    }
   };
 
   const handleDeleteSound = async (sound: TauriTypes.CustomSound) => {
-    await api.sound.deleteCustomSound(sound.file_name);
-    invalidateSettings();
-    if (selectedSoundFile === `custom:${sound.file_name}`) onClearSelectedSound();
+    try {
+      await api.sound.deleteCustomSound(sound.file_name);
+      invalidateSounds();
+      if (selectedSoundFile === toCustomSoundValue(sound.file_name)) onClearSelectedSound();
+    } catch (error) {
+      console.error(error);
+      notifications.show({
+        title: t.manageSounds("notifications.delete_error.title"),
+        message: t.manageSounds("notifications.delete_error.message"),
+        color: "red.7",
+      });
+    }
   };
 
   return (
     <Stack h={"calc(80vh - 100px)"} gap="xs">
       <Box>
         <Text size="sm" fw={500}>
-          {useTranslateFormManageSounds("title")}
+          {t.manageSounds("title")}
         </Text>
         <CreateSoundForm
           onConfirm={handleAddSound}
-          labels={labels}
+          copy={copy}
         />
       </Box>
 
@@ -108,45 +125,45 @@ export const ManageSoundsView = ({
           columns={[
             {
               accessor: "name",
-              title: useTranslateFormManageSounds("table.columns.name"),
+              title: t.manageSounds("table.columns.name"),
               sortable: true,
             },
             {
               accessor: "file_name",
-              title: useTranslateFormManageSounds("table.columns.file_name"),
+              title: t.manageSounds("table.columns.file_name"),
               sortable: true,
             },
             {
               accessor: "actions",
-              title: useTranslateFormManageSounds("table.columns.actions"),
+              title: t.manageSounds("table.columns.actions"),
               textAlign: "right",
               render: (sound) => (
                 <Group gap={4} justify="right" wrap="nowrap">
                   <ActionWithTooltip
-                    tooltip={useTranslateFormManageSounds("tooltips.play")}
+                    tooltip={t.manageSounds("tooltips.play")}
                     icon={faVolumeHigh}
                     color="blue"
                     iconProps={{ size: "xs" }}
                     actionProps={{ variant: "transparent", size: "sm" }}
-                    onClick={() => PlaySound(`custom:${sound.file_name}`, 1.0)}
+                    onClick={() => PlaySound(toCustomSoundValue(sound.file_name), 1.0)}
                   />
                   <ActionWithTooltip
-                    tooltip={useTranslateFormManageSounds("tooltips.delete")}
+                    tooltip={t.manageSounds("tooltips.delete")}
                     icon={faTrash}
                     color="red"
                     iconProps={{ size: "xs" }}
                     actionProps={{ variant: "transparent", size: "sm" }}
                     onClick={() => {
                       modals.openConfirmModal({
-                        title: useTranslateFormManageSounds("dialog.delete.title", { name: sound.name }),
+                        title: t.manageSounds("dialog.delete.title", { name: sound.name }),
                         children: (
                           <Text size="sm">
-                            {useTranslateFormManageSounds("dialog.delete.message")}
+                            {t.manageSounds("dialog.delete.message")}
                           </Text>
                         ),
                         labels: {
-                          confirm: useTranslateFormManageSounds("dialog.delete.confirm"),
-                          cancel: useTranslateFormManageSounds("dialog.delete.cancel"),
+                          confirm: t.manageSounds("dialog.delete.confirm"),
+                          cancel: t.manageSounds("dialog.delete.cancel"),
                         },
                         confirmProps: { color: "red" },
                         onConfirm: async () => {
@@ -166,7 +183,7 @@ export const ManageSoundsView = ({
           variant="light"
           onClick={onBack}
         >
-          {useTranslateFormManageSounds("buttons.back")}
+          {t.manageSounds("buttons.back")}
         </Button>
     </Stack>
   );
@@ -174,7 +191,7 @@ export const ManageSoundsView = ({
 
 type CreateSoundFormProps = {
   onConfirm: (name: string, filePath: string) => void;
-  labels: {
+  copy: {
     namePlaceholder: string;
     filePlaceholder: string;
     addTooltip: string;
@@ -182,7 +199,7 @@ type CreateSoundFormProps = {
   };
 };
 
-const CreateSoundForm = ({ onConfirm, labels }: CreateSoundFormProps) => {
+const CreateSoundForm = ({ onConfirm, copy }: CreateSoundFormProps) => {
   const [name, setName] = useState("");
   const [filePath, setFilePath] = useState("");
 
@@ -192,7 +209,7 @@ const CreateSoundForm = ({ onConfirm, labels }: CreateSoundFormProps) => {
         multiple: false,
         filters: [
           {
-            name: labels.fileFilterName,
+            name: copy.fileFilterName,
             extensions: ["mp3", "wav", "ogg"],
           },
         ],
@@ -208,7 +225,7 @@ const CreateSoundForm = ({ onConfirm, labels }: CreateSoundFormProps) => {
   return (
     <Group gap="md" align="flex-start">
       <TextInput
-        placeholder={labels.namePlaceholder}
+        placeholder={copy.namePlaceholder}
         value={name}
         onChange={(e) => setName(e.currentTarget.value)}
         required
@@ -216,12 +233,12 @@ const CreateSoundForm = ({ onConfirm, labels }: CreateSoundFormProps) => {
       />
 
       <TextInput
-        placeholder={labels.filePlaceholder}
+        placeholder={copy.filePlaceholder}
         value={filePath}
         readOnly
         rightSection={
           <ActionWithTooltip
-            tooltip={labels.addTooltip}
+            tooltip={copy.addTooltip}
             icon={faPlus}
             color="green.7"
             onClick={() => {

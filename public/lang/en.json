@@ -819,6 +819,16 @@
             "play": "Play",
             "delete": "Delete"
           },
+          "notifications": {
+            "add_error": {
+              "title": "Add Sound Error",
+              "message": "An error occurred while trying to add the sound."
+            },
+            "delete_error": {
+              "title": "Delete Sound Error",
+              "message": "An error occurred while trying to delete the sound."
+            }
+          },
           "table": {
             "columns": {
               "name": "Name",
