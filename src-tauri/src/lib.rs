@@ -321,6 +321,7 @@ pub fn run() {
             commands::sound::sound_get_custom_sounds,
             commands::sound::sound_add_custom_sound,
             commands::sound::sound_delete_custom_sound,
+            commands::sound::sound_get_custom_sounds_path,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -15,4 +15,8 @@ export class SoundModule {
     deleteCustomSound(fileName: string): Promise<TauriTypes.CustomSound[]> {
         return this.client.sendInvoke<TauriTypes.CustomSound[]>("sound_delete_custom_sound", { fileName });
     }
+
+    getCustomSoundsPath(): Promise<string> {
+        return this.client.sendInvoke<string>("sound_get_custom_sounds_path");
+    }
 }
