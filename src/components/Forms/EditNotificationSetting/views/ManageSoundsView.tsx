@@ -51,7 +51,9 @@ export const ManageSoundsView = ({
   const t = createEditNotificationSettingTranslations();
 
   const copy = {
+    nameLabel: t.manageSounds("fields.name.label"),
     namePlaceholder: t.manageSounds("fields.name.placeholder"),
+    fileLabel: t.manageSounds("fields.file.label"),
     filePlaceholder: t.manageSounds("fields.file.placeholder"),
     addTooltip: t.manageSounds("tooltips.add_sound"),
     fileFilterName: t.manageSounds("file_picker.filter_name"),
@@ -89,9 +91,6 @@ export const ManageSoundsView = ({
   return (
     <Stack h={"calc(80vh - 100px)"} gap="xs">
       <Box>
-        <Text size="sm" fw={500}>
-          {t.manageSounds("title")}
-        </Text>
         <CreateSoundForm
           onConfirm={handleAddSound}
           copy={copy}
@@ -193,7 +192,9 @@ type CreateSoundFormProps = {
   onConfirm: (name: string, filePath: string) => void;
   copy: {
     namePlaceholder: string;
+    nameLabel: string;
     filePlaceholder: string;
+    fileLabel: string;
     addTooltip: string;
     fileFilterName: string;
   };
@@ -225,6 +226,7 @@ const CreateSoundForm = ({ onConfirm, copy }: CreateSoundFormProps) => {
   return (
     <Group gap="md" align="flex-start">
       <TextInput
+        label={copy.nameLabel}
         placeholder={copy.namePlaceholder}
         value={name}
         onChange={(e) => setName(e.currentTarget.value)}
@@ -233,9 +235,11 @@ const CreateSoundForm = ({ onConfirm, copy }: CreateSoundFormProps) => {
       />
 
       <TextInput
+        label={copy.fileLabel}
         placeholder={copy.filePlaceholder}
         value={filePath}
         readOnly
+        required
         rightSection={
           <ActionWithTooltip
             tooltip={copy.addTooltip}

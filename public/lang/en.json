@@ -808,9 +808,11 @@
           },
           "fields": {
             "name": {
+              "label": "Sound Name",
               "placeholder": "Sound Name"
             },
             "file": {
+              "label": "Sound File",
               "placeholder": "Select a file"
             }
           },
