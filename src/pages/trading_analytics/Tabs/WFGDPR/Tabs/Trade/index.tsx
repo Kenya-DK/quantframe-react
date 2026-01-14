@@ -9,6 +9,7 @@ import i18next from "i18next";
 import { BestByCategoryTable } from "@components/DataDisplay/BestByCategoryTable";
 import { BarChartFinancialSummary } from "@components/DataDisplay/BarChartFinancialSummary";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
+import { useEffect, useState } from "react";
 
 interface TradePanelProps {
   isActive?: boolean;
@@ -22,6 +23,8 @@ export const TradePanel = ({ isActive, year_list }: TradePanelProps) => {
     initialValues: { page: 1, limit: 10, query: "", year: new Date().getFullYear() } as TauriTypes.WFGDPRTradeControllerGetListParams,
   });
 
+  const [availableYears, setAvailableYears] = useState<{ label: string; value: string }[]>([]);
+
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslatePages(`trading_analytics.tabs.wfgdpr.trade.${key}`, { ...context }, i18Key);
@@ -32,6 +35,16 @@ export const TradePanel = ({ isActive, year_list }: TradePanelProps) => {
   const handleRefresh = () => {
     refetchQueries();
   };
+
+  useEffect(() => {
+    let years = year_list || [];
+    if (!years.includes(new Date().getFullYear().toString())) {
+      years = [...years, new Date().getFullYear().toString()];
+    }
+    const yearOptions = years.sort((a, b) => Number(b) - Number(a)).map((year) => ({ label: year, value: year }));
+    setAvailableYears(yearOptions);
+  }, [year_list]);
+
   // Use the custom hook for Tauri events
   useTauriEvent(TauriTypes.Events.RefreshWFGDPRAll, handleRefresh, []);
   return (
@@ -161,10 +174,7 @@ export const TradePanel = ({ isActive, year_list }: TradePanelProps) => {
                 <Group flex={"1 auto"} justify={"flex-end"}>
                   <Select
                     w={100}
-                    data={[
-                      ...(year_list || []).map((year) => ({ value: year, label: year })),
-                      { value: new Date().getFullYear().toString(), label: new Date().getFullYear().toString() },
-                    ]}
+                    data={availableYears}
                     value={queryData.values.year?.toString()}
                     onChange={(value) => {
                       if (!value) return;
