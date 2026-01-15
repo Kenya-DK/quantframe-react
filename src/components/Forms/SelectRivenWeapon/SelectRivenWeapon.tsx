@@ -1,9 +1,10 @@
-import { Group, Select } from "@mantine/core";
+import { Group } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
 import { TauriTypes } from "$types";
 import { useEffect, useState } from "react";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
+import { TokenSearchSelect } from "@components/Forms/TokenSearchSelect";
 
 export type SelectRivenWeaponProps = {
   value: string;
@@ -18,7 +19,7 @@ export interface SelectCacheRivenWeapon extends Omit<TauriTypes.CacheRivenWeapon
 export function SelectRivenWeapon({ value, onChange, description }: SelectRivenWeaponProps) {
   // State
   const [items, setItems] = useState<SelectCacheRivenWeapon[]>([]);
-  const [filteredItems, setFilteredItems] = useState(items);
+  const [filteredItems, setFilteredItems] = useState<SelectCacheRivenWeapon[]>([]);
   const [lastKeyPressed, setLastKeyPressed] = useState<string | null>(null);
   const [_selectedItem, setSelectedItem] = useState<SelectCacheRivenWeapon | null>(null);
 
@@ -54,25 +55,20 @@ export function SelectRivenWeapon({ value, onChange, description }: SelectRivenW
 
   return (
     <Group>
-      <Select
+      <TokenSearchSelect
         w={250}
         label={useTranslateFormFields("weapon.label")}
         placeholder={useTranslateFormFields("weapon.placeholder")}
         description={description}
-        data={filteredItems}
-        searchable
+        data={items}
+        searchKeys={["label"]}
+        onFilteredDataChange={(data) => setFilteredItems(data as SelectCacheRivenWeapon[])}
         limit={10}
         required
         maxDropdownHeight={400}
         value={value}
         onKeyDown={(event) => {
           setLastKeyPressed(event.key);
-        }}
-        onSearchChange={(searchValue) => {
-          setFilteredItems(() => {
-            const sortedItems = items.filter((item) => item.label.toLowerCase().startsWith(searchValue.toLowerCase()));
-            return sortedItems.sort((a, b) => a.label.localeCompare(b.label));
-          });
         }}
         onBlur={() => {
           if (lastKeyPressed === "Tab" && filteredItems.length > 0) {

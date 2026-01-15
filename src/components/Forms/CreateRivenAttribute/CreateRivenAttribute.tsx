@@ -1,10 +1,11 @@
-import { Flex, NumberInput, Select } from "@mantine/core";
+import { Flex, NumberInput } from "@mantine/core";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { useForm } from "@mantine/form";
 import { RivenAttribute, TauriTypes } from "$types";
 import { useEffect, useState } from "react";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
+import { TokenSearchSelect } from "@components/Forms/TokenSearchSelect";
 
 export type CreateRivenAttributeProps = {
   availableAttributes: TauriTypes.CacheRivenAttribute[];
@@ -100,7 +101,7 @@ export function CreateRivenAttribute({
 
   return (
     <Flex gap={"xs"} align="center">
-      <Select
+      <TokenSearchSelect
         searchable
         clearable
         w={"100%"}

@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { SelectRivenWeapon } from "../SelectRivenWeapon";
 import { getPolarityIcon } from "@icons";
+import { TokenSearchSelect } from "@components/Forms/TokenSearchSelect";
 
 export type CreateRivenProps = {
   value?: TauriTypes.StockRiven;
@@ -146,7 +147,7 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
             </Group>
             {form.errors.attributes && <Text c="red">{form.errors.attributes}</Text>}
             <Group grow>
-              <Select
+              <TokenSearchSelect
                 size="sm"
                 required
                 allowDeselect={false}
@@ -155,6 +156,7 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
                 onChange={(event) => form.setFieldValue("mod_name", event || "")}
                 error={form.errors.mod_name && useTranslateFormFields("mod_name.error")}
                 data={modNames}
+                limit={10}
                 renderOption={renderSelectOption}
               />
             </Group>
