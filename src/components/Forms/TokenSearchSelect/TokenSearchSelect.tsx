@@ -1,133 +1,90 @@
-import { Select, type ComboboxData, type ComboboxItem, type SelectProps } from "@mantine/core";
-import { useUncontrolled } from "@mantine/hooks";
-import { useMemo, useState, type FocusEvent, type KeyboardEvent } from "react";
-import { useFuzzySearch } from "@hooks/useFuzzySearch.hook";
+import { Select, type ComboboxData, type ComboboxItem, type ComboboxParsedItem, type SelectProps, isOptionsGroup } from "@mantine/core";
+import { fuzzySearch } from "@utils/fuzzySearch";
 
 type SelectDataItem = string | (ComboboxItem & Record<string, any>);
 
 export type TokenSearchSelectProps<Item extends SelectDataItem = SelectDataItem> = Omit<
   SelectProps,
-  "ref" | "data" | "onChange" | "filter"
+  "ref" | "data" | "filter"
 > & {
   data: Item[];
   searchKeys?: string[];
-  selectFirstOnTab?: boolean;
   onItemSelect?: (item: Item | null) => void;
-  onChange?: SelectProps["onChange"];
-  filter?: SelectProps["filter"];
 };
 
-// some helpers
-const passThroughFilter: NonNullable<SelectProps["filter"]> = ({ options, limit }) =>
-  typeof limit === "number" ? options.slice(0, limit) : options;
+const DEFAULT_SEARCH_KEYS = ["label"];
 
-const getItemValue = (item: SelectDataItem | null): string | null => {
+const getItemValue = (item: SelectDataItem | null | undefined): string | null => {
   if (!item) return null;
   return typeof item === "string" ? item : item.value;
 };
 
-const toComboboxItem = (item: SelectDataItem | null, fallback: string | null): ComboboxItem => {
-  if (item && typeof item !== "string") {
-    return { ...item, label: item.label ?? item.value };
-  }
-  const val = (item as string) ?? fallback ?? "";
-  return { value: val, label: val };
-};
-
-// tab key handling hook
-function useSelectFirstOnTab<Item extends SelectDataItem>(
-  enabled: boolean,
-  filteredData: Item[],
-  handleSelect: (value: string | null, item: ComboboxItem) => void
-) {
-  const [lastKeyPressed, setLastKeyPressed] = useState<string | null>(null);
-
-  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    setLastKeyPressed(event.key);
-  };
-
-  const handleBlur = (_event: FocusEvent<HTMLInputElement>) => {
-    if (enabled && lastKeyPressed === "Tab" && filteredData.length > 0) {
-      const firstItem = filteredData[0];
-      const value = getItemValue(firstItem);
-      if (value !== null) {
-        handleSelect(value, toComboboxItem(firstItem, value));
-      }
-    }
-    setLastKeyPressed(null);
-  };
-
-  return { handleKeyDown, handleBlur };
-}
-
-// maun component
 export function TokenSearchSelect<Item extends SelectDataItem = SelectDataItem>({
   data = [],
   searchKeys, //  when your data items are objects this array determines which fields get fuzzy-searched (["label", "value"])
-  searchValue, // allows you to control the search input from outside
-  onSearchChange,
   onChange,
   onItemSelect, // Instead of just getting value this receives the full matched item from data (so you can access the other fields like type, sub_type)
-  onBlur,
-  onKeyDown,
-  selectFirstOnTab = false, //  when true - presing Tab after filtering auto-selects the first visible option
   searchable = true,
-  filter, // by default overrides mantine default filter
-  limit = 10,
+  autoSelectOnBlur,
+  selectFirstOptionOnChange,
   ...props
 }: TokenSearchSelectProps<Item>) {
-  const [search, setSearch] = useUncontrolled({
-    value: searchValue,
-    defaultValue: "",
-    finalValue: "",
-    onChange: onSearchChange,
-  });
+  const resolvedSearchKeys = searchKeys && searchKeys.length > 0 ? searchKeys : DEFAULT_SEARCH_KEYS;
 
-  const searchOptions = useMemo(
-    () => ({
-      keys: searchKeys ?? (data.length > 0 && typeof data[0] === "object" ? ["label"] : undefined),
-      multiToken: true,
-    }),
-    [data, searchKeys]
-  );
-
-  const filteredData = useFuzzySearch(data, search, searchOptions);
-
-  const handleSelection: SelectProps["onChange"] = (val, option) => {
-    const originalItem = data.find((i) => getItemValue(i) === val) ?? null;
-    const comboboxItem = option ?? toComboboxItem(originalItem, val);
-    if (searchValue === undefined) {
-      setSearch(comboboxItem.label ?? val ?? "");
+  const filter: SelectProps["filter"] = ({ options, search, limit }) => {
+    const query = search.trim();
+    if (query.length === 0) {
+      return typeof limit === "number" ? options.slice(0, limit) : options;
     }
 
-    onChange?.(val, comboboxItem);
-    onItemSelect?.(originalItem as Item | null);
+    const max = typeof limit === "number" ? limit : Infinity;
+    const filterItems = (items: ComboboxItem[], maxItems: number) => {
+      const results = fuzzySearch(items, query, { keys: resolvedSearchKeys });
+      const filtered = results.map((result) => result.item);
+      return maxItems === Infinity ? filtered : filtered.slice(0, maxItems);
+    };
+
+    const hasGroups = options.some((option) => isOptionsGroup(option));
+    if (!hasGroups) {
+      return filterItems(options as ComboboxItem[], max);
+    }
+
+    const filtered: ComboboxParsedItem[] = [];
+    for (const option of options) {
+      if (filtered.length >= max) break;
+      if (isOptionsGroup(option)) {
+        const groupItems = filterItems(option.items, max - filtered.length);
+        if (groupItems.length > 0) {
+          filtered.push({ group: option.group, items: groupItems });
+        }
+        continue;
+      }
+
+      const match = filterItems([option], 1);
+      if (match.length > 0) {
+        filtered.push(option);
+      }
+    }
+
+    return filtered;
   };
 
-  const { handleBlur: handleTabBlur, handleKeyDown: handleTabKey } = useSelectFirstOnTab(
-    selectFirstOnTab,
-    filteredData,
-    handleSelection
-  );
+  const handleSelection: SelectProps["onChange"] = (val, option) => {
+    onChange?.(val, option);
+    if (!onItemSelect) return;
+    const selectedItem = val === null ? null : (data.find((item) => getItemValue(item) === val) ?? null);
+    onItemSelect(selectedItem as Item | null);
+  };
 
   return (
     <Select
       {...props}
-      data={filteredData as unknown as ComboboxData}
+      data={data as unknown as ComboboxData}
       searchable={searchable}
-      searchValue={search}
-      onSearchChange={setSearch}
+      filter={filter}
       onChange={handleSelection}
-      filter={filter ?? passThroughFilter}
-      limit={limit}
-      onKeyDown={(e) => {
-        handleTabKey(e);
-        onKeyDown?.(e);
-      }}
-      onBlur={(e) => {
-        handleTabBlur(e);
-        onBlur?.(e);
-      }}
+      autoSelectOnBlur={autoSelectOnBlur}
+      selectFirstOptionOnChange={selectFirstOptionOnChange}
     />
   );
 }

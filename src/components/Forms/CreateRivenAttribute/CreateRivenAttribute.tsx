@@ -104,7 +104,8 @@ export function CreateRivenAttribute({
       <TokenSearchSelect
         searchable
         clearable
-        selectFirstOnTab
+        autoSelectOnBlur
+        selectFirstOptionOnChange
         w={"100%"}
         limit={5}
         value={form.values.url_name || ""}

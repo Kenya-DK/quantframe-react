@@ -149,15 +149,15 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
             <Group grow>
               <TokenSearchSelect
                 size="sm"
+                autoSelectOnBlur
+                selectFirstOptionOnChange
                 required
-                selectFirstOnTab
                 allowDeselect={false}
                 label={useTranslateFormFields("mod_name.label")}
                 value={form.values.mod_name}
                 onChange={(event) => form.setFieldValue("mod_name", event || "")}
                 error={form.errors.mod_name && useTranslateFormFields("mod_name.error")}
                 data={modNames}
-                limit={10}
                 renderOption={renderSelectOption}
               />
             </Group>

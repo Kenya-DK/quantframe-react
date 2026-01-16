@@ -71,17 +71,19 @@ export function SelectTradableItem({ hide_sub_type, value, onChange, description
     <Group>
       <TokenSearchSelect
         w={250}
+        autoSelectOnBlur
+        selectFirstOptionOnChange
+        required
+        searchable
         label={useTranslateFormFields("item.label")}
         placeholder={useTranslateFormFields("item.placeholder")}
         description={description}
         data={items}
-        searchKeys={["label"]}
         limit={10}
-        required
+        searchKeys={["label"]}
         nothingFoundMessage={useTranslate("messages.nothing_found")}
         maxDropdownHeight={400}
         value={value}
-        selectFirstOnTab
         onItemSelect={(item) => {
           if (!item) return;
           handleSelect(item);

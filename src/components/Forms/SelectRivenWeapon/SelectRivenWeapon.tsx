@@ -53,16 +53,17 @@ export function SelectRivenWeapon({ value, onChange, description }: SelectRivenW
     <Group>
       <TokenSearchSelect
         w={250}
+        autoSelectOnBlur
+        selectFirstOptionOnChange
+        required
         label={useTranslateFormFields("weapon.label")}
         placeholder={useTranslateFormFields("weapon.placeholder")}
         description={description}
         data={items}
         searchKeys={["label"]}
         limit={10}
-        required
         maxDropdownHeight={400}
         value={value}
-        selectFirstOnTab
         onItemSelect={(item) => {
           if (!item) return;
           handleSelect(item);
