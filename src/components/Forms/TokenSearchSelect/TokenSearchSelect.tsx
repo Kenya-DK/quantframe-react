@@ -1,80 +1,133 @@
-import { Select, type SelectProps } from "@mantine/core";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Select, type ComboboxData, type ComboboxItem, type SelectProps } from "@mantine/core";
+import { useUncontrolled } from "@mantine/hooks";
+import { useMemo, useState, type FocusEvent, type KeyboardEvent } from "react";
 import { useFuzzySearch } from "@hooks/useFuzzySearch.hook";
-const passThroughOptionsFilter: NonNullable<SelectProps["filter"]> = ({ options, limit }) =>
-  typeof limit === "number" ? options.slice(0, limit) : options;
 
-export type TokenSearchSelectProps = SelectProps & {
+type SelectDataItem = string | (ComboboxItem & Record<string, any>);
+
+export type TokenSearchSelectProps<Item extends SelectDataItem = SelectDataItem> = Omit<
+  SelectProps,
+  "ref" | "data" | "onChange" | "filter"
+> & {
+  data: Item[];
   searchKeys?: string[];
-  onFilteredDataChange?: (data: SelectProps["data"]) => void;
+  selectFirstOnTab?: boolean;
+  onItemSelect?: (item: Item | null) => void;
+  onChange?: SelectProps["onChange"];
+  filter?: SelectProps["filter"];
 };
 
-// Micro guide:
-// - Use `data` with objects (default search uses `label`) or strings
-// - Set `searchKeys` to search multiple fields, e.g. ["label", "value"] or ["weapon.name"]
-// TODO: (refactor) - Use `onFilteredDataChange` only if you need the filtered list outside (e.g. Tab-to-select first item) but it looks shit, and mb causes +40ms lag time
-// without it everything fine, but can't select first item with TAB
-export function TokenSearchSelect({
-  data,
-  searchKeys,
-  onFilteredDataChange,
-  searchValue: controlledSearchValue,
-  onSearchChange,
-  filter,
-  searchable = true,
-  limit = 10,
-  ...props
-}: TokenSearchSelectProps) {
-  const [internalSearchValue, setInternalSearchValue] = useState("");
-  const isSearchControlled = controlledSearchValue !== undefined;
-  const searchValue = isSearchControlled ? controlledSearchValue : internalSearchValue;
+// some helpers
+const passThroughFilter: NonNullable<SelectProps["filter"]> = ({ options, limit }) =>
+  typeof limit === "number" ? options.slice(0, limit) : options;
 
-  const handleSearchChange = (value: string) => {
-    onSearchChange?.(value);
-    if (!isSearchControlled) setInternalSearchValue(value);
+const getItemValue = (item: SelectDataItem | null): string | null => {
+  if (!item) return null;
+  return typeof item === "string" ? item : item.value;
+};
+
+const toComboboxItem = (item: SelectDataItem | null, fallback: string | null): ComboboxItem => {
+  if (item && typeof item !== "string") {
+    return { ...item, label: item.label ?? item.value };
+  }
+  const val = (item as string) ?? fallback ?? "";
+  return { value: val, label: val };
+};
+
+// tab key handling hook
+function useSelectFirstOnTab<Item extends SelectDataItem>(
+  enabled: boolean,
+  filteredData: Item[],
+  handleSelect: (value: string | null, item: ComboboxItem) => void
+) {
+  const [lastKeyPressed, setLastKeyPressed] = useState<string | null>(null);
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    setLastKeyPressed(event.key);
   };
 
-  const dataArray = Array.isArray(data) ? data : [];
-  const resolvedKeys = useMemo(() => {
-    if (searchKeys && searchKeys.length > 0) return searchKeys;
-    if (dataArray.length === 0) return undefined;
-    return typeof dataArray[0] === "object" ? ["label"] : undefined;
-  }, [dataArray, searchKeys]);
-  const filteredRef = useRef<any[] | null>(null);
+  const handleBlur = (_event: FocusEvent<HTMLInputElement>) => {
+    if (enabled && lastKeyPressed === "Tab" && filteredData.length > 0) {
+      const firstItem = filteredData[0];
+      const value = getItemValue(firstItem);
+      if (value !== null) {
+        handleSelect(value, toComboboxItem(firstItem, value));
+      }
+    }
+    setLastKeyPressed(null);
+  };
 
-  const filteredData = useFuzzySearch(dataArray as any[], searchValue, {
-    keys: resolvedKeys,
-    multiToken: true,
+  return { handleKeyDown, handleBlur };
+}
+
+// maun component
+export function TokenSearchSelect<Item extends SelectDataItem = SelectDataItem>({
+  data = [],
+  searchKeys, //  when your data items are objects this array determines which fields get fuzzy-searched (["label", "value"])
+  searchValue, // allows you to control the search input from outside
+  onSearchChange,
+  onChange,
+  onItemSelect, // Instead of just getting value this receives the full matched item from data (so you can access the other fields like type, sub_type)
+  onBlur,
+  onKeyDown,
+  selectFirstOnTab = false, //  when true - presing Tab after filtering auto-selects the first visible option
+  searchable = true,
+  filter, // by default overrides mantine default filter
+  limit = 10,
+  ...props
+}: TokenSearchSelectProps<Item>) {
+  const [search, setSearch] = useUncontrolled({
+    value: searchValue,
+    defaultValue: "",
+    finalValue: "",
+    onChange: onSearchChange,
   });
 
-  useEffect(() => {
-    if (!onFilteredDataChange) return;
-    if (!Array.isArray(filteredData)) {
-      onFilteredDataChange(filteredData as SelectProps["data"]);
-      return;
+  const searchOptions = useMemo(
+    () => ({
+      keys: searchKeys ?? (data.length > 0 && typeof data[0] === "object" ? ["label"] : undefined),
+      multiToken: true,
+    }),
+    [data, searchKeys]
+  );
+
+  const filteredData = useFuzzySearch(data, search, searchOptions);
+
+  const handleSelection: SelectProps["onChange"] = (val, option) => {
+    const originalItem = data.find((i) => getItemValue(i) === val) ?? null;
+    const comboboxItem = option ?? toComboboxItem(originalItem, val);
+    if (searchValue === undefined) {
+      setSearch(comboboxItem.label ?? val ?? "");
     }
 
-    const prev = filteredRef.current;
-    const same =
-      prev &&
-      prev.length === filteredData.length &&
-      prev.every((item, index) => item === filteredData[index]);
+    onChange?.(val, comboboxItem);
+    onItemSelect?.(originalItem as Item | null);
+  };
 
-    if (!same) {
-      filteredRef.current = filteredData;
-      onFilteredDataChange(filteredData as SelectProps["data"]);
-    }
-  }, [filteredData, onFilteredDataChange]);
+  const { handleBlur: handleTabBlur, handleKeyDown: handleTabKey } = useSelectFirstOnTab(
+    selectFirstOnTab,
+    filteredData,
+    handleSelection
+  );
 
   return (
     <Select
       {...props}
-      data={filteredData}
+      data={filteredData as unknown as ComboboxData}
       searchable={searchable}
-      onSearchChange={handleSearchChange}
-      {...(isSearchControlled ? { searchValue: controlledSearchValue } : {})}
-      filter={filter ?? passThroughOptionsFilter}
+      searchValue={search}
+      onSearchChange={setSearch}
+      onChange={handleSelection}
+      filter={filter ?? passThroughFilter}
       limit={limit}
+      onKeyDown={(e) => {
+        handleTabKey(e);
+        onKeyDown?.(e);
+      }}
+      onBlur={(e) => {
+        handleTabBlur(e);
+        onBlur?.(e);
+      }}
     />
   );
 }

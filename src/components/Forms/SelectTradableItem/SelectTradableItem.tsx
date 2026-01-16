@@ -23,8 +23,6 @@ export interface SelectCacheTradableItem extends Omit<TauriTypes.CacheTradableIt
 export function SelectTradableItem({ hide_sub_type, value, onChange, description }: SelectTradableItemProps) {
   // State
   const [items, setItems] = useState<SelectCacheTradableItem[]>([]);
-  const [filteredItems, setFilteredItems] = useState<SelectCacheTradableItem[]>([]);
-  const [lastKeyPressed, setLastKeyPressed] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<SelectCacheTradableItem | null>(null);
 
   // Translate general
@@ -78,27 +76,15 @@ export function SelectTradableItem({ hide_sub_type, value, onChange, description
         description={description}
         data={items}
         searchKeys={["label"]}
-        onFilteredDataChange={(data) => setFilteredItems(data as SelectCacheTradableItem[])}
         limit={10}
         required
         nothingFoundMessage={useTranslate("messages.nothing_found")}
         maxDropdownHeight={400}
         value={value}
-        onKeyDown={(event) => {
-          setLastKeyPressed(event.key);
-        }}
-        onBlur={() => {
-          if (lastKeyPressed === "Tab" && filteredItems.length > 0) {
-            const firstItem = filteredItems[0];
-            handleSelect(firstItem);
-          }
-          setLastKeyPressed(null);
-        }}
-        onChange={async (item) => {
+        selectFirstOnTab
+        onItemSelect={(item) => {
           if (!item) return;
-          let tItem = items.find((i) => i.wfm_url_name === item);
-          if (!tItem) return;
-          handleSelect(tItem);
+          handleSelect(item);
         }}
       />
       {selectedItem && selectedItem.available_sub_types && !hide_sub_type && (

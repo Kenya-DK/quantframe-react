@@ -150,6 +150,7 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
               <TokenSearchSelect
                 size="sm"
                 required
+                selectFirstOnTab
                 allowDeselect={false}
                 label={useTranslateFormFields("mod_name.label")}
                 value={form.values.mod_name}

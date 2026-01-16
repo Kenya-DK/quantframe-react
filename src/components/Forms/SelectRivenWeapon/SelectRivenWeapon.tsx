@@ -19,9 +19,6 @@ export interface SelectCacheRivenWeapon extends Omit<TauriTypes.CacheRivenWeapon
 export function SelectRivenWeapon({ value, onChange, description }: SelectRivenWeaponProps) {
   // State
   const [items, setItems] = useState<SelectCacheRivenWeapon[]>([]);
-  const [filteredItems, setFilteredItems] = useState<SelectCacheRivenWeapon[]>([]);
-  const [lastKeyPressed, setLastKeyPressed] = useState<string | null>(null);
-  const [_selectedItem, setSelectedItem] = useState<SelectCacheRivenWeapon | null>(null);
 
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -50,7 +47,6 @@ export function SelectRivenWeapon({ value, onChange, description }: SelectRivenW
   const handleSelect = (item: SelectCacheRivenWeapon) => {
     const new_item = { ...item };
     onChange(new_item);
-    setSelectedItem(new_item);
   };
 
   return (
@@ -62,26 +58,14 @@ export function SelectRivenWeapon({ value, onChange, description }: SelectRivenW
         description={description}
         data={items}
         searchKeys={["label"]}
-        onFilteredDataChange={(data) => setFilteredItems(data as SelectCacheRivenWeapon[])}
         limit={10}
         required
         maxDropdownHeight={400}
         value={value}
-        onKeyDown={(event) => {
-          setLastKeyPressed(event.key);
-        }}
-        onBlur={() => {
-          if (lastKeyPressed === "Tab" && filteredItems.length > 0) {
-            const firstItem = filteredItems[0];
-            handleSelect(firstItem);
-          }
-          setLastKeyPressed(null);
-        }}
-        onChange={async (item) => {
+        selectFirstOnTab
+        onItemSelect={(item) => {
           if (!item) return;
-          let tItem = items.find((i) => i.wfm_url_name === item);
-          if (!tItem) return;
-          handleSelect(tItem);
+          handleSelect(item);
         }}
       />
     </Group>
