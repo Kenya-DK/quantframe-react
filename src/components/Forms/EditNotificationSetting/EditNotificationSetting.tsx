@@ -23,6 +23,7 @@ export function EditNotificationSetting({ id, value, onChange }: EditNotificatio
     key: `edit_notification_setting.view_mode.${id}`,
     defaultValue: ViewMode.Notifications,
   });
+  const showNotifications = viewMode === ViewMode.Notifications;
 
   const form = useForm({
     initialValues: value,
@@ -37,48 +38,38 @@ export function EditNotificationSetting({ id, value, onChange }: EditNotificatio
     form.resetDirty(value);
   }, [value]);
 
-  const {
-    customSounds,
-    query,
-    setQuery,
-    setPage,
-    pageSize,
-    setPageSize,
-    sortStatus,
-    setSortStatus,
-    paginatedSounds,
-    totalRecords,
-    safePage,
-    isFetching,
-    invalidateSounds,
-  } = useCustomSoundsTable();
+  const soundsTable = useCustomSoundsTable();
+  const selectedSoundFile = form.values.system_notify.sound_file;
+  const handleManageSounds = () => setViewMode(ViewMode.ManageSounds);
+  const handleBack = () => setViewMode(ViewMode.Notifications);
+  const handleClearSelectedSound = () => form.setFieldValue("system_notify.sound_file", "none");
 
   return (
     <Box p="md" pb={0}>
-      {viewMode === ViewMode.Notifications ? (
+      {showNotifications ? (
         <NotificationsView
           id={id}
           form={form}
-          customSounds={customSounds}
-          onManageSounds={() => setViewMode(ViewMode.ManageSounds)}
+          customSounds={soundsTable.customSounds}
+          onManageSounds={handleManageSounds}
         />
       ) : (
         <ManageSoundsView
-          query={query}
-          onQueryChange={setQuery}
-          page={safePage}
-          onPageChange={setPage}
-          pageSize={pageSize}
-          onPageSizeChange={setPageSize}
-          sortStatus={sortStatus}
-          onSortStatusChange={setSortStatus}
-          records={paginatedSounds}
-          totalRecords={totalRecords}
-          isFetching={isFetching}
-          invalidateSounds={invalidateSounds}
-          selectedSoundFile={form.values.system_notify.sound_file}
-          onClearSelectedSound={() => form.setFieldValue("system_notify.sound_file", "none")}
-          onBack={() => setViewMode(ViewMode.Notifications)}
+          query={soundsTable.query}
+          onQueryChange={soundsTable.setQuery}
+          page={soundsTable.safePage}
+          onPageChange={soundsTable.setPage}
+          pageSize={soundsTable.pageSize}
+          onPageSizeChange={soundsTable.setPageSize}
+          sortStatus={soundsTable.sortStatus}
+          onSortStatusChange={soundsTable.setSortStatus}
+          records={soundsTable.paginatedSounds}
+          totalRecords={soundsTable.totalRecords}
+          isFetching={soundsTable.isFetching}
+          invalidateSounds={soundsTable.invalidateSounds}
+          selectedSoundFile={selectedSoundFile}
+          onClearSelectedSound={handleClearSelectedSound}
+          onBack={handleBack}
         />
       )}
     </Box>

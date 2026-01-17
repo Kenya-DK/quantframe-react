@@ -1,5 +1,5 @@
 import { Box, Button, Group, Stack, Text, TextInput } from "@mantine/core";
-import { DataTable, DataTableSortStatus } from "mantine-datatable";
+import { DataTable, DataTableSortStatus, type DataTableColumn } from "mantine-datatable";
 import { SearchField } from "@components/Forms/SearchField";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { faPlus, faTrash, faVolumeHigh } from "@fortawesome/free-solid-svg-icons";
@@ -59,17 +59,20 @@ export const ManageSoundsView = ({
     fileFilterName: t.manageSounds("file_picker.filter_name"),
   };
 
+  const showError = (title: string, message: string) => {
+    notifications.show({ title, message, color: "red.7" });
+  };
+
   const handleAddSound = async (name: string, filePath: string) => {
     try {
       await api.sound.addCustomSound(name, filePath);
       invalidateSounds();
     } catch (error) {
       console.error(error);
-      notifications.show({
-        title: t.manageSounds("notifications.add_error.title"),
-        message: t.manageSounds("notifications.add_error.message"),
-        color: "red.7",
-      });
+      showError(
+        t.manageSounds("notifications.add_error.title"),
+        t.manageSounds("notifications.add_error.message")
+      );
     }
   };
 
@@ -80,13 +83,67 @@ export const ManageSoundsView = ({
       if (selectedSoundFile === toCustomSoundValue(sound.file_name)) onClearSelectedSound();
     } catch (error) {
       console.error(error);
-      notifications.show({
-        title: t.manageSounds("notifications.delete_error.title"),
-        message: t.manageSounds("notifications.delete_error.message"),
-        color: "red.7",
-      });
+      showError(
+        t.manageSounds("notifications.delete_error.title"),
+        t.manageSounds("notifications.delete_error.message")
+      );
     }
   };
+
+  const handlePlaySound = (sound: TauriTypes.CustomSound) => {
+    PlaySound(toCustomSoundValue(sound.file_name), 1.0);
+  };
+
+  const handleDeleteConfirm = (sound: TauriTypes.CustomSound) => {
+    modals.openConfirmModal({
+      title: t.manageSounds("dialog.delete.title", { name: sound.name }),
+      children: <Text size="sm">{t.manageSounds("dialog.delete.message")}</Text>,
+      labels: {
+        confirm: t.manageSounds("dialog.delete.confirm"),
+        cancel: t.manageSounds("dialog.delete.cancel"),
+      },
+      confirmProps: { color: "red" },
+      onConfirm: () => handleDeleteSound(sound),
+    });
+  };
+
+  const columns: DataTableColumn<TauriTypes.CustomSound>[] = [
+    {
+      accessor: "name",
+      title: t.manageSounds("table.columns.name"),
+      sortable: true,
+    },
+    {
+      accessor: "file_name",
+      title: t.manageSounds("table.columns.file_name"),
+      sortable: true,
+    },
+    {
+      accessor: "actions",
+      title: t.manageSounds("table.columns.actions"),
+      textAlign: "right",
+      render: (sound: TauriTypes.CustomSound) => (
+        <Group gap={4} justify="right" wrap="nowrap">
+          <ActionWithTooltip
+            tooltip={t.manageSounds("tooltips.play")}
+            icon={faVolumeHigh}
+            color="blue"
+            iconProps={{ size: "xs" }}
+            actionProps={{ variant: "transparent", size: "sm" }}
+            onClick={() => handlePlaySound(sound)}
+          />
+          <ActionWithTooltip
+            tooltip={t.manageSounds("tooltips.delete")}
+            icon={faTrash}
+            color="red"
+            iconProps={{ size: "xs" }}
+            actionProps={{ variant: "transparent", size: "sm" }}
+            onClick={() => handleDeleteConfirm(sound)}
+          />
+        </Group>
+      ),
+    },
+  ];
 
   return (
     <Stack h={"calc(80vh - 100px)"} gap="xs">
@@ -121,69 +178,12 @@ export const ManageSoundsView = ({
           sortStatus={sortStatus}
           onSortStatusChange={onSortStatusChange}
           idAccessor="file_name"
-          columns={[
-            {
-              accessor: "name",
-              title: t.manageSounds("table.columns.name"),
-              sortable: true,
-            },
-            {
-              accessor: "file_name",
-              title: t.manageSounds("table.columns.file_name"),
-              sortable: true,
-            },
-            {
-              accessor: "actions",
-              title: t.manageSounds("table.columns.actions"),
-              textAlign: "right",
-              render: (sound) => (
-                <Group gap={4} justify="right" wrap="nowrap">
-                  <ActionWithTooltip
-                    tooltip={t.manageSounds("tooltips.play")}
-                    icon={faVolumeHigh}
-                    color="blue"
-                    iconProps={{ size: "xs" }}
-                    actionProps={{ variant: "transparent", size: "sm" }}
-                    onClick={() => PlaySound(toCustomSoundValue(sound.file_name), 1.0)}
-                  />
-                  <ActionWithTooltip
-                    tooltip={t.manageSounds("tooltips.delete")}
-                    icon={faTrash}
-                    color="red"
-                    iconProps={{ size: "xs" }}
-                    actionProps={{ variant: "transparent", size: "sm" }}
-                    onClick={() => {
-                      modals.openConfirmModal({
-                        title: t.manageSounds("dialog.delete.title", { name: sound.name }),
-                        children: (
-                          <Text size="sm">
-                            {t.manageSounds("dialog.delete.message")}
-                          </Text>
-                        ),
-                        labels: {
-                          confirm: t.manageSounds("dialog.delete.confirm"),
-                          cancel: t.manageSounds("dialog.delete.cancel"),
-                        },
-                        confirmProps: { color: "red" },
-                        onConfirm: async () => {
-                          await handleDeleteSound(sound);
-                        },
-                      });
-                    }}
-                  />
-                </Group>
-              ),
-            },
-          ]}
+          columns={columns}
         />
       </Box>
-      <Button
-          mt="lg"
-          variant="light"
-          onClick={onBack}
-        >
-          {t.manageSounds("buttons.back")}
-        </Button>
+      <Button mt="lg" variant="light" onClick={onBack}>
+        {t.manageSounds("buttons.back")}
+      </Button>
     </Stack>
   );
 };
@@ -203,6 +203,7 @@ type CreateSoundFormProps = {
 const CreateSoundForm = ({ onConfirm, copy }: CreateSoundFormProps) => {
   const [name, setName] = useState("");
   const [filePath, setFilePath] = useState("");
+  const canConfirm = Boolean(name && filePath);
 
   const handleBrowse = async () => {
     try {
@@ -221,6 +222,13 @@ const CreateSoundForm = ({ onConfirm, copy }: CreateSoundFormProps) => {
     } catch (e) {
       console.error(e);
     }
+  };
+
+  const handleConfirm = () => {
+    if (!canConfirm) return;
+    onConfirm(name, filePath);
+    setName("");
+    setFilePath("");
   };
 
   return (
@@ -245,15 +253,9 @@ const CreateSoundForm = ({ onConfirm, copy }: CreateSoundFormProps) => {
             tooltip={copy.addTooltip}
             icon={faPlus}
             color="green.7"
-            onClick={() => {
-              if (name && filePath) {
-                onConfirm(name, filePath);
-                setName("");
-                setFilePath("");
-              }
-            }}
+            onClick={handleConfirm}
             actionProps={{
-              disabled: !name || !filePath,
+              disabled: !canConfirm,
             }}
           />
         }

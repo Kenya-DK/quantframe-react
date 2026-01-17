@@ -8,69 +8,54 @@ export type NotificationsPanelProps = {
 };
 
 export const NotificationsPanel = ({ form }: NotificationsPanelProps) => {
-  const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+  const t = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForms(`settings.tabs.notifications.${key}`, { ...context }, i18Key);
   type NotificationKey = keyof TauriTypes.SettingsNotifications;
+  const notificationValues = form.values.notifications;
 
-  const isEnabled = (da: TauriTypes.NotificationSetting) => {
-    return da.system_notify.enabled || da.discord_notify.enabled || da.webhook_notify.enabled;
+  const isEnabled = (setting: TauriTypes.NotificationSetting) =>
+    setting.system_notify.enabled || setting.discord_notify.enabled || setting.webhook_notify.enabled;
+
+  const updateNotification = (key: NotificationKey, next: TauriTypes.NotificationSetting) => {
+    form.setFieldValue(`notifications.${key}`, next);
   };
-  const tabs: {
-    label: string;
-    component: JSX.Element;
-    id: NotificationKey;
-  }[] = [
-    {
-      label: useTranslateForm("on_new_conversation_title"),
+
+  const tabs = [
+    { id: "on_new_conversation", labelKey: "on_new_conversation_title" },
+    { id: "on_new_trade", labelKey: "on_new_trade_title" },
+    { id: "on_wfm_chat_message", labelKey: "on_wfm_chat_message_title" },
+  ] as const satisfies Array<{ id: NotificationKey; labelKey: string }>;
+
+  const panels = tabs.map(({ id, labelKey }) => {
+    const label = t(labelKey);
+    return {
+      id,
+      label,
       component: (
         <EditNotificationSetting
-          id="on_new_conversation"
-          title={useTranslateForm("on_new_conversation_title")}
-          value={form.values.notifications.on_new_conversation}
-          onChange={(newValue) => form.setFieldValue("notifications.on_new_conversation", newValue)}
+          id={id}
+          title={label}
+          value={notificationValues[id]}
+          onChange={(newValue) => updateNotification(id, newValue)}
         />
       ),
-      id: "on_new_conversation",
-    },
-    {
-      label: useTranslateForm("on_new_trade_title"),
-      component: (
-        <EditNotificationSetting
-          id="on_new_trade"
-          title={useTranslateForm("on_new_trade_title")}
-          value={form.values.notifications.on_new_trade}
-          onChange={(newValue) => form.setFieldValue("notifications.on_new_trade", newValue)}
-        />
-      ),
-      id: "on_new_trade",
-    },
-    {
-      label: useTranslateForm("on_wfm_chat_message_title"),
-      component: (
-        <EditNotificationSetting
-          id="on_wfm_chat_message"
-          title={useTranslateForm("on_wfm_chat_message_title")}
-          value={form.values.notifications.on_wfm_chat_message}
-          onChange={(newValue) => form.setFieldValue("on_wfm_chat_message", newValue)}
-        />
-      ),
-      id: "on_wfm_chat_message",
-    },
-  ];
+    };
+  });
+
   return (
-    <Tabs orientation="vertical" defaultValue={tabs[0].id}>
+    <Tabs orientation="vertical" defaultValue={panels[0].id}>
       <Tabs.List>
-        {tabs.map((tab) => (
-          <Tabs.Tab value={tab.id} key={tab.id}>
-            <Text size="sm" c={isEnabled(form.values.notifications[tab.id]) ? "green.7" : "red.7"}>
-              {tab.label}
+        {panels.map((panel) => (
+          <Tabs.Tab value={panel.id} key={panel.id}>
+            <Text size="sm" c={isEnabled(notificationValues[panel.id]) ? "green.7" : "red.7"}>
+              {panel.label}
             </Text>
           </Tabs.Tab>
         ))}
       </Tabs.List>
-      {tabs.map((tab) => (
-        <Tabs.Panel value={tab.id} key={tab.id}>
-          {tab.component}
+      {panels.map((panel) => (
+        <Tabs.Panel value={panel.id} key={panel.id}>
+          {panel.component}
         </Tabs.Panel>
       ))}
     </Tabs>
