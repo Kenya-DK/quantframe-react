@@ -1,16 +1,13 @@
 ## Add Feature's
 
-- ✨ Add a notification sound's
-
 ## Fix's
 
-- 🔧
+- 🛠️ Fix a bug where warframe gdpr parse
+- 🛠️ Fix a bug where stock item weighted average calculation was incorrect when adding new stock items
 
 ## Dev Notes
 
 ## TODO's
-
-- 📝 Fix a error in the wfm tab if y have a aution there isent a riven
 
 ## Feature's
 

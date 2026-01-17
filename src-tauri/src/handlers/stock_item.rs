@@ -109,7 +109,7 @@ pub async fn handle_item_by_entity(
         }
     }
 
-    let skip_wfm_check = if let Some(value) = operation_flags.get_value_after("SkipWFMCheck") {
+    let skip_wfm_check = if let Some(_) = operation_flags.get_value_after("SkipWFMCheck") {
         operations.has("NotFound")
     } else {
         false

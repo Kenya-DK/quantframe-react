@@ -143,10 +143,10 @@ impl StockItemMutation {
 
         // Calculate new owned and bought values
         let total_owned = item.owned + stock.owned;
-        let total_bought = item.bought * item.owned + stock.bought * stock.owned;
-        
-        let weighted_average = if item.bought > 0 {
-            total_bought / total_owned
+        let total_cost = (item.bought * item.owned) + stock.bought;
+
+        let weighted_average = if stock.bought > 0 {
+            total_cost / total_owned
         } else {
             item.bought
         };
