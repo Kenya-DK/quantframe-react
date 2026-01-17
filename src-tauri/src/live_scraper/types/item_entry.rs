@@ -1,12 +1,7 @@
 use std::hash::{Hash, Hasher};
 
-use entity::dto::SubType;
-use entity::stock_item::Model as StockItemModel;
+use entity::sub_type::SubType;
 use serde::{Deserialize, Serialize};
-use service::{sea_orm::DatabaseConnection, StockItemQuery, WishListQuery};
-use utils::{get_location, Error};
-
-use crate::cache::types::ItemPriceInfo;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ItemEntry {
@@ -89,115 +84,5 @@ impl ItemEntry {
             uuid.push_str(&format!("-{}", sub_type.shot_display()));
         }
         uuid
-    }
-    pub fn set_buy_quantity(mut self, quantity: i64) -> Self {
-        self.buy_quantity = quantity;
-        self
-    }
-    pub fn set_sell_quantity(mut self, quantity: i64) -> Self {
-        self.sell_quantity = quantity;
-        self
-    }
-    pub async fn get_stock_item(&self, conn: &DatabaseConnection) -> Result<StockItemModel, Error> {
-        if let Some(stock_id) = self.stock_id {
-            match StockItemQuery::find_by_id(conn, stock_id).await {
-                Ok(stock_item) => {
-                    if let Some(item) = stock_item {
-                        Ok(item)
-                    } else {
-                        Err(Error::new(
-                            "ItemEntry:GetStockItem",
-                            "Stock item not found",
-                            get_location!(),
-                        )
-                        .set_log_level(utils::LogLevel::Warning))
-                    }
-                }
-                Err(e) => return Err(e.with_location(get_location!())),
-            }
-        } else {
-            Err(Error::new(
-                "ItemEntry:GetStockItem",
-                "Stock ID is None",
-                get_location!(),
-            ))
-        }
-    }
-    pub async fn get_wish_list_item(
-        &self,
-        conn: &DatabaseConnection,
-    ) -> Result<entity::wish_list::wish_list::Model, Error> {
-        if let Some(wish_list_id) = self.wish_list_id {
-            match WishListQuery::get_by_id(conn, wish_list_id).await {
-                Ok(item) => {
-                    if let Some(item) = item {
-                        Ok(item)
-                    } else {
-                        Err(Error::new(
-                            "ItemEntry:GetWishListItem",
-                            "Wish list item not found",
-                            get_location!(),
-                        )
-                        .set_log_level(utils::LogLevel::Warning))
-                    }
-                }
-                Err(e) => return Err(e.with_location(get_location!())),
-            }
-        } else {
-            Err(Error::new(
-                "ItemEntry:GetWishListItem",
-                "Wish List ID is None",
-                get_location!(),
-            ))
-        }
-    }
-
-    pub fn to_json(&self) -> serde_json::Value {
-        serde_json::to_value(self).unwrap_or_default()
-    }
-}
-impl From<&ItemPriceInfo> for ItemEntry {
-    fn from(item: &ItemPriceInfo) -> Self {
-        ItemEntry::new(
-            None,
-            None,
-            item.wfm_url.clone(),
-            item.sub_type.clone(),
-            0,
-            1,
-            0,
-            vec!["Buy".to_string()],
-            "closed",
-        )
-    }
-}
-impl From<&StockItemModel> for ItemEntry {
-    fn from(item: &StockItemModel) -> Self {
-        ItemEntry::new(
-            Some(item.id),
-            None,
-            item.wfm_url.clone(),
-            item.sub_type.clone(),
-            1,
-            0,
-            item.owned,
-            vec!["Sell".to_string()],
-            "closed",
-        )
-    }
-}
-impl From<&entity::wish_list::wish_list::Model> for ItemEntry {
-    fn from(item: &entity::wish_list::wish_list::Model) -> Self {
-        ItemEntry::new(
-            None,
-            Some(item.id),
-            item.wfm_url.clone(),
-            item.sub_type.clone(),
-            2,
-            item.quantity,
-            0,
-            vec!["WishList".to_string()],
-            "buy",
-        )
     }
 }

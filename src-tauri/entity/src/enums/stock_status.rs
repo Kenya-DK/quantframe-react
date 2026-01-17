@@ -113,9 +113,3 @@ impl<'de> Deserialize<'de> for StockStatus {
         })
     }
 }
-
-impl std::hash::Hash for StockStatus {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.to_string().hash(state);
-    }
-}

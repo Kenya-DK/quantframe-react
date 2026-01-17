@@ -2,20 +2,25 @@ import { AppShell, Box, Indicator } from "@mantine/core";
 import classes from "./LogInLayout.module.css";
 import { Outlet, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBug, faEnvelope, faGlobe, faHome, faInfoCircle, faMessage } from "@fortawesome/free-solid-svg-icons";
+import { faBug, faDesktop, faEnvelope, faGlobe, faHome, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
+import { useAppContext } from "@contexts/app.context";
 import { useEffect, useState } from "react";
-import { NavbarLinkProps, NavbarMinimalColored } from "@components/Layouts/Shared/NavbarMinimalColored";
-import { Header } from "@components/Layouts/Shared/Header";
+import { NavbarLinkProps, NavbarMinimalColored } from "@components/NavbarMinimalColored";
+import { Header } from "@components/Header";
+import api from "@api/index";
 import { useAuthContext } from "@contexts/auth.context";
+import { Ticker } from "@components/Ticker";
+import { QuantframeApiTypes } from "$types";
 import { open } from "@tauri-apps/plugin-shell";
-import { AddMetric } from "@api/index";
-import { faWarframeMarket, facTradingAnalytics } from "@icons";
+import facTradingAnalytics from "@icons/faTradingAnalytics";
+import faWarframeMarket from "@icons/facWarframeMarket";
 
 export function LogInLayout() {
   // States
   const [lastPage, setLastPage] = useState<string>("");
   // Contexts
+  const { app_error, alerts } = useAppContext();
   const { user } = useAuthContext();
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -35,24 +40,16 @@ export function LogInLayout() {
     },
     {
       align: "top",
-      id: "live_scraper",
-      link: "live_scraper",
+      id: "live-trading",
+      link: "live-trading",
       icon: <FontAwesomeIcon size={"lg"} icon={faGlobe} />,
-      label: useTranslateNavBar("live_scraper"),
+      label: useTranslateNavBar("live_trading"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
     },
     {
       align: "top",
-      id: "warframe_market",
-      link: "warframe-market",
-      icon: <FontAwesomeIcon size={"xl"} icon={faWarframeMarket} />,
-      label: useTranslateNavBar("warframe_market"),
-      onClick: (e: NavbarLinkProps) => handleNavigate(e),
-    },
-    {
-      align: "top",
-      id: "chat",
-      link: "chat",
+      id: "chats",
+      link: "chats",
       icon: (
         <Indicator
           disabled={(user?.unread_messages || 0) <= 0}
@@ -65,7 +62,15 @@ export function LogInLayout() {
         </Indicator>
       ),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
-      label: useTranslateNavBar("chat"),
+      label: useTranslateNavBar("chats"),
+    },
+    {
+      align: "top",
+      id: "warframe_market",
+      link: "warframe-market",
+      icon: <FontAwesomeIcon size={"lg"} icon={faWarframeMarket} />,
+      label: useTranslateNavBar("warframe_market"),
+      onClick: (e: NavbarLinkProps) => handleNavigate(e),
     },
     {
       align: "top",
@@ -77,19 +82,19 @@ export function LogInLayout() {
     },
     {
       align: "top",
-      id: "trade_messages",
-      link: "trade_messages",
-      icon: <FontAwesomeIcon size={"lg"} icon={faMessage} />,
-      label: useTranslateNavBar("trade_messages"),
+      id: "debug",
+      link: "debug",
+      icon: <FontAwesomeIcon size={"lg"} icon={faDesktop} />,
+      label: useTranslateNavBar("debug"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
     },
     {
       align: "top",
-      id: "debug",
-      link: "debug",
+      id: "test",
+      link: "test",
       hide: !import.meta.env.DEV,
       icon: <FontAwesomeIcon size={"lg"} icon={faBug} color="red" />,
-      label: useTranslateNavBar("debug"),
+      label: useTranslateNavBar("test"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
     },
     {
@@ -103,15 +108,37 @@ export function LogInLayout() {
   ];
   // Effects
   useEffect(() => {
+    if (app_error) navigate("/error");
+  }, [app_error]);
+  useEffect(() => {
     if (user?.qf_banned || user?.wfm_banned) navigate("/error/banned");
   }, [user]);
   const handleNavigate = (link: NavbarLinkProps) => {
+    console.log("Navigate to: ", link);
     if (link.web) open(link.link, "_blank");
     else navigate(link.link);
 
     if (link.id == lastPage || !link.id) return;
     setLastPage(link.id || "");
-    AddMetric("active_page", link.id);
+    switch (link.id) {
+      default:
+        api.analytics.sendMetric("Active_Page", link.id);
+        break;
+    }
+  };
+  const handleAlertClick = (alert: QuantframeApiTypes.AlertDto) => {
+    console.log("Alert clicked: ", alert);
+    if (!alert.properties) return;
+    const { event, payload } = alert.properties as { event: string; payload: any };
+    if (!event) return;
+    switch (event) {
+      case "open_url":
+        if (payload) open(payload);
+        break;
+      default:
+        break;
+    }
+    console.log("Alert clicked: ", alert);
   };
   return (
     <AppShell
@@ -124,7 +151,6 @@ export function LogInLayout() {
     >
       <AppShell.Header withBorder={false}>
         <Header />
-<<<<<<< HEAD
         {alerts.length > 0 && (
           <Ticker
             loop
@@ -138,8 +164,6 @@ export function LogInLayout() {
             }))}
           />
         )}
-=======
->>>>>>> better-backend
       </AppShell.Header>
 
       <AppShell.Navbar withBorder={false}>
@@ -147,7 +171,7 @@ export function LogInLayout() {
       </AppShell.Navbar>
 
       <AppShell.Main>
-        <Box>
+        <Box mt={alerts.length > 0 ? 30 : 0}>
           <Outlet />
         </Box>
       </AppShell.Main>

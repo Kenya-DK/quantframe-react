@@ -22,7 +22,7 @@ impl CacheFish {
             wfm_item_url: self.wfm_item_url.clone(),
             part_of_set: None,
             category: self.category.clone(),
-            components: vec![],
+            components: None,
         }
     }
 }

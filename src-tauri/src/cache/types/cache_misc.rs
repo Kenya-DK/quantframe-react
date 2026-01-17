@@ -12,8 +12,8 @@ pub struct CacheMisc {
     pub wfm_item_url: Option<String>,
     #[serde(rename = "category")]
     pub category: String,
-    #[serde(rename = "components", default)]
-    pub components: Vec<CacheItemComponent>,
+    #[serde(rename = "components")]
+    pub components: Option<Vec<CacheItemComponent>>,
 }
 
 impl CacheMisc {

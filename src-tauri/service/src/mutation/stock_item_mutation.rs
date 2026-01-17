@@ -1,20 +1,20 @@
-use std::collections::HashMap;
-
-use ::entity::{dto::*, enums::*, stock_item::*};
+use ::entity::{
+    enums::stock_status::StockStatus,
+    stock::item::stock_item::{self, Entity as StockItem},
+    sub_type::SubType,
+};
+use prelude::Expr;
 use sea_orm::*;
-use utils::*;
 
-use crate::{ErrorFromExt, StockItemQuery};
+use crate::StockItemQuery;
 
 pub struct StockItemMutation;
-
-static COMPONENT: &str = "StockItemMutation";
 
 impl StockItemMutation {
     pub async fn create(
         db: &DbConn,
         form_data: stock_item::Model,
-    ) -> Result<stock_item::Model, Error> {
+    ) -> Result<stock_item::Model, DbErr> {
         stock_item::ActiveModel {
             wfm_id: Set(form_data.wfm_id.to_owned()),
             wfm_url: Set(form_data.wfm_url.to_owned()),
@@ -34,30 +34,15 @@ impl StockItemMutation {
         }
         .insert(db)
         .await
-        .map_err(|e| {
-            Error::from_db(
-                format!("{}:Create", COMPONENT),
-                "Failed to create Stock Item",
-                e,
-                get_location!(),
-            )
-        })
     }
 
     pub async fn sold_by_id(
         db: &DbConn,
         id: i64,
         mut quantity: i64,
-    ) -> Result<(String, Option<stock_item::Model>), Error> {
+    ) -> Result<(String, Option<stock_item::Model>), DbErr> {
         // Find the item by id
-        let item = Entity::find_by_id(id).one(db).await.map_err(|e| {
-            Error::from_db(
-                format!("{}:SoldById", COMPONENT),
-                "Failed to find Stock Item by ID",
-                e,
-                get_location!(),
-            )
-        })?;
+        let item = StockItem::find_by_id(id).one(db).await?;
         if item.is_none() {
             return Ok(("NotFound".to_string(), None));
         }
@@ -68,9 +53,9 @@ impl StockItemMutation {
         }
 
         // Update the item
-        let item = item.unwrap();
-        let owned = item.owned - quantity;
-        if owned <= 0 {
+        let mut item = item.unwrap();
+        item.owned = item.owned - quantity;
+        if item.owned <= 0 {
             match StockItemMutation::delete_by_id(db, id).await {
                 Ok(_) => {
                     return Ok(("Deleted".to_string(), Some(item)));
@@ -80,12 +65,7 @@ impl StockItemMutation {
                 }
             }
         } else {
-            match StockItemMutation::update_by_id(
-                db,
-                UpdateStockItem::new(item.id).with_owned(owned),
-            )
-            .await
-            {
+            match StockItemMutation::update_by_id(db, id, item.clone()).await {
                 Ok(_) => {
                     return Ok(("Updated".to_string(), Some(item)));
                 }
@@ -101,10 +81,8 @@ impl StockItemMutation {
         url: &str,
         sub_type: Option<SubType>,
         quantity: i64,
-    ) -> Result<(String, Option<stock_item::Model>), Error> {
-        let items = StockItemQuery::find_by_url_name(db, url)
-            .await
-            .map_err(|e| e.with_location(get_location!()))?;
+    ) -> Result<(String, Option<stock_item::Model>), DbErr> {
+        let items = StockItemQuery::find_by_url_name(db, url).await?;
         for item in items {
             if item.sub_type == sub_type {
                 return StockItemMutation::sold_by_id(db, item.id, quantity).await;
@@ -115,23 +93,19 @@ impl StockItemMutation {
 
     pub async fn add_item(
         db: &DbConn,
-        mut stock: stock_item::Model,
-    ) -> Result<(String, stock_item::Model), Error> {
+        stock: stock_item::Model,
+    ) -> Result<stock_item::Model, DbErr> {
         // Find the item by id
         let item = StockItemQuery::find_by_url_name_and_sub_type(
             db,
             &stock.wfm_url,
             stock.sub_type.clone(),
         )
-        .await
-        .map_err(|e| e.with_location(get_location!()))?;
+        .await?;
         if item.is_none() {
-            if stock.owned > 1 {
-                stock.bought = stock.bought / stock.owned;
-            }
             match StockItemMutation::create(db, stock.clone()).await {
                 Ok(insert) => {
-                    return Ok(("Created".to_string(), insert));
+                    return Ok(insert);
                 }
                 Err(e) => {
                     return Err(e);
@@ -139,27 +113,18 @@ impl StockItemMutation {
             }
         }
         // Update the item
-        let item = item.unwrap();
-
-        // Calculate new owned and bought values
+        let mut item = item.unwrap();
         let total_owned = item.owned + stock.owned;
-        let total_cost = (item.bought * item.owned) + stock.bought;
 
-        let weighted_average = if stock.bought > 0 {
-            total_cost / total_owned
-        } else {
-            item.bought
-        };
-        match StockItemMutation::update_by_id(
-            db,
-            UpdateStockItem::new(item.id)
-                .with_bought(weighted_average)
-                .with_owned(total_owned),
-        )
-        .await
-        {
+        // Get Price Per Unit
+        let total_bought = (item.bought * item.owned) + stock.bought;
+        let weighted_average = total_bought / total_owned;
+        item.owned = total_owned;
+        item.bought = weighted_average;
+        item.updated_at = chrono::Utc::now();
+        match StockItemMutation::update_by_id(db, item.id, item.clone()).await {
             Ok(up_item) => {
-                return Ok(("Updated".to_string(), up_item));
+                return Ok(up_item);
             }
             Err(e) => {
                 return Err(e);
@@ -169,134 +134,81 @@ impl StockItemMutation {
 
     pub async fn update_by_id(
         db: &DbConn,
-        input: UpdateStockItem,
-    ) -> Result<stock_item::Model, Error> {
-        let item = Entity::find_by_id(input.id)
+        id: i64,
+        form_data: stock_item::Model,
+    ) -> Result<stock_item::Model, DbErr> {
+        let post: stock_item::ActiveModel = StockItem::find_by_id(id)
             .one(db)
-            .await
-            .map_err(|e| {
-                Error::from_db(
-                    format!("{}:UpdateById", COMPONENT),
-                    "Failed to find Stock Item by ID",
-                    e,
-                    get_location!(),
-                )
-            })?
-            .ok_or(Error::new(
-                format!("{}:UpdateById", COMPONENT),
-                "Stock Item not found",
-                get_location!(),
-            ))?;
+            .await?
+            .ok_or(DbErr::Custom("Cannot find post.".to_owned()))
+            .map(Into::into)?;
 
-        let mut active: stock_item::ActiveModel = input.apply_to(item.into());
-        active.updated_at = Set(chrono::Utc::now());
-        active.update(db).await.map_err(|e| {
-            Error::from_db(
-                format!("{}:UpdateById", COMPONENT),
-                "Failed to update Stock Item",
-                e,
-                get_location!(),
-            )
-        })
+        stock_item::ActiveModel {
+            id: post.id,
+            wfm_id: Set(form_data.wfm_id.to_owned()),
+            wfm_url: Set(form_data.wfm_url.to_owned()),
+            item_name: Set(form_data.item_name.to_owned()),
+            item_unique_name: Set(form_data.item_unique_name.to_owned()),
+            sub_type: Set(form_data.sub_type.to_owned()),
+            bought: Set(form_data.bought.to_owned()),
+            minimum_price: Set(form_data.minimum_price.to_owned()),
+            list_price: Set(form_data.list_price.to_owned()),
+            owned: Set(form_data.owned.to_owned()),
+            is_hidden: Set(form_data.is_hidden.to_owned()),
+            status: Set(form_data.status.to_owned()),
+            price_history: Set(form_data.price_history.to_owned()),
+            created_at: post.created_at.clone(),
+            updated_at: Set(chrono::Utc::now()),
+        }
+        .update(db)
+        .await
     }
 
-    pub async fn delete_by_id(db: &DbConn, id: i64) -> Result<DeleteResult, Error> {
-        let post: stock_item::ActiveModel = Entity::find_by_id(id)
+    pub async fn delete_by_id(db: &DbConn, id: i64) -> Result<DeleteResult, DbErr> {
+        let post: stock_item::ActiveModel = StockItem::find_by_id(id)
             .one(db)
-            .await
-            .map_err(|e| {
-                Error::from_db(
-                    format!("{}:DeleteById", COMPONENT),
-                    "Failed to find Stock Item by ID",
-                    e,
-                    get_location!(),
-                )
-            })?
-            .ok_or(Error::new(
-                format!("{}:DeleteById", COMPONENT),
-                "Stock Item not found",
-                get_location!(),
-            ))?
-            .into();
+            .await?
+            .ok_or(DbErr::Custom("Cannot find Item.".to_owned()))
+            .map(Into::into)?;
 
-        post.delete(db).await.map_err(|e| {
-            Error::from_db(
-                format!("{}:DeleteById", COMPONENT),
-                "Failed to delete Stock Item",
-                e,
-                get_location!(),
-            )
-        })
+        post.delete(db).await
+    }
+
+    pub async fn update_bulk(
+        db: &DbConn,
+        ids: Vec<i64>,
+        minimum_price: Option<i64>,
+        is_hidden: Option<bool>,
+    ) -> Result<Vec<stock_item::Model>, DbErr> {
+        let mut query = StockItem::update_many();
+
+        if let Some(minimum_price) = minimum_price {
+            query = query.col_expr(stock_item::Column::MinimumPrice, minimum_price.into());
+        }
+        if let Some(is_hidden) = is_hidden {
+            query = query.col_expr(stock_item::Column::IsHidden, is_hidden.into());
+        }
+        query = query.filter(Expr::col(stock_item::Column::Id).is_in(ids));
+
+        query.exec(db).await?;
+        StockItem::find().all(db).await
     }
 
     pub async fn update_all(
         db: &DbConn,
         status: StockStatus,
         list_price: Option<i64>,
-    ) -> Result<Vec<stock_item::Model>, Error> {
-        Entity::update_many()
+    ) -> Result<Vec<stock_item::Model>, DbErr> {
+        StockItem::update_many()
             .col_expr(stock_item::Column::Status, status.into())
             .col_expr(stock_item::Column::ListPrice, list_price.into())
             .exec(db)
-            .await
-            .map_err(|e| {
-                Error::from_db(
-                    format!("{}:UpdateAll", COMPONENT),
-                    "Failed to update all Stock Items",
-                    e,
-                    get_location!(),
-                )
-            })?;
+            .await?;
 
-        Entity::find().all(db).await.map_err(|e| {
-            Error::from_db(
-                format!("{}:UpdateAll", COMPONENT),
-                "Failed to retrieve all Stock Items after update",
-                e,
-                get_location!(),
-            )
-        })
+        StockItem::find().all(db).await
     }
 
-    pub async fn update_names(db: &DbConn, mapper: &HashMap<String, String>) -> Result<(), Error> {
-        let items = Entity::find().all(db).await.map_err(|e| {
-            Error::from_db(
-                format!("{}:UpdateNames", COMPONENT),
-                "Failed to retrieve all Stock Items",
-                e,
-                get_location!(),
-            )
-        })?;
-
-        for item in items {
-            let updated_name = match mapper.get(&item.item_unique_name) {
-                Some(name) => name.to_string(),
-                None => continue,
-            };
-            let mut active: stock_item::ActiveModel = item.into();
-            active.item_name = Set(updated_name);
-            active.updated_at = Set(chrono::Utc::now());
-            active.update(db).await.map_err(|e| {
-                Error::from_db(
-                    format!("{}:UpdateNames", COMPONENT),
-                    "Failed to update Stock Item name",
-                    e,
-                    get_location!(),
-                )
-            })?;
-        }
-
-        Ok(())
-    }
-
-    pub async fn delete_all(db: &DbConn) -> Result<DeleteResult, Error> {
-        Entity::delete_many().exec(db).await.map_err(|e| {
-            Error::from_db(
-                format!("{}:DeleteAll", COMPONENT),
-                "Failed to delete all Stock Items",
-                e,
-                get_location!(),
-            )
-        })
+    pub async fn delete_all(db: &DbConn) -> Result<DeleteResult, DbErr> {
+        StockItem::delete_many().exec(db).await
     }
 }

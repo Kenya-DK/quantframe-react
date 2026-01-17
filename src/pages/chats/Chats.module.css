@@ -1,0 +1,6 @@
+.list {
+  height: calc(100vh - 156px);
+  &[data-has-alert="true"] {
+    height: calc(100vh - 192px);
+  }
+}

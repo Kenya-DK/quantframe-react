@@ -1,103 +1,360 @@
-use std::{collections::HashMap, sync::Mutex};
+use std::sync::{Arc, Mutex};
 
-use entity::{dto::*, stock_riven::*};
-use serde_json::{json, Value};
+use create::CreateStockRiven;
+use entity::dto::StockEntryOverview;
+use entity::stock::riven::*;
+use entity::{enums::stock_status::StockStatus, sub_type::SubType};
+
+use eyre::eyre;
+use serde_json::json;
 use service::{StockRivenMutation, StockRivenQuery};
-use tauri_plugin_dialog::DialogExt;
-use utils::{get_location, group_by, info, Error, LoggerOptions};
-use wf_market::enums::OrderType;
 
+use crate::cache::client::CacheClient;
+use crate::utils::modules::error;
+use crate::utils::modules::logger::LoggerOptions;
+use crate::wfm_client::enums::order_type::OrderType;
+use crate::{helper, DATABASE};
 use crate::{
-    add_metric,
-    app::client::AppState,
-    cache::types::RivenSummary,
-    handlers::{handle_riven, handle_riven_by_entity},
-    types::PermissionsFlags,
-    utils::ErrorFromExt,
-    APP, DATABASE,
+    notification::client::NotifyClient,
+    utils::{
+        enums::ui_events::{UIEvent, UIOperationEvent},
+        modules::{error::AppError, logger},
+    },
+    wfm_client::client::WFMClient,
 };
-
 #[tauri::command]
-pub async fn get_stock_riven_pagination(
-    query: StockRivenPaginationQueryDto,
-) -> Result<PaginatedResult<stock_riven::Model>, Error> {
+pub async fn get_stock_riven_overview() -> Result<Vec<StockEntryOverview>, AppError> {
     let conn = DATABASE.get().unwrap();
-    match StockRivenQuery::get_all(conn, query).await {
+    match StockRivenQuery::get_overview(conn).await {
         Ok(data) => return Ok(data),
-        Err(e) => return Err(e.with_location(get_location!())),
+        Err(e) => {
+            let error: AppError = AppError::new_db("StockRivenQuery::get_overview", e);
+            error::create_log_file("command_stock_riven_overview.log", &error);
+            return Err(error);
+        }
+    };
+}
+#[tauri::command]
+pub async fn get_stock_rivens(
+    query: entity::stock::riven::dto::StockRivenPaginationQueryDto,
+    cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
+) -> Result<entity::dto::pagination::PaginatedDto<stock_riven::Model>, AppError> {
+    let cache = cache.lock()?.clone();
+    let conn = DATABASE.get().unwrap();
+    match StockRivenQuery::get_all_v2(conn, query).await {
+        Ok(mut items) => {
+            // Apply additional information from the cache
+            for item in items.results.iter_mut() {
+                for attr in item.attributes.0.iter_mut() {
+                    let matched = cache.riven().find_wfm_riven_attribute_by(
+                        &attr.url_name,
+                        "--attribute_by url_name --attribute_lang en",
+                    )?;
+                    if let Some(c_attr) = matched {
+                        attr.effect = Some(c_attr.effect.clone());
+                    }
+                }
+            }
+            return Ok(items);
+        }
+        Err(e) => {
+            let error: AppError = AppError::new_db("StockItemQuery::reload", e);
+            error::create_log_file("command_stock_item_reload.log", &error);
+            return Err(error);
+        }
     };
 }
 
 #[tauri::command]
-pub async fn get_stock_riven_financial_report(
-    query: StockRivenPaginationQueryDto,
-) -> Result<FinancialReport, Error> {
-    let items = get_stock_riven_pagination(query).await?;
-    Ok(FinancialReport::from(&items.results))
-}
+pub async fn stock_riven_update(
+    id: i64,
+    minimum_price: Option<i64>,
+    sub_type: Option<SubType>,
+    is_hidden: Option<bool>,
+    filter: Option<match_riven::MatchRivenStruct>,
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+) -> Result<stock_riven::Model, AppError> {
+    let conn = DATABASE.get().unwrap();
+    let notify = notify.lock()?.clone();
+    let wfm = wfm.lock()?.clone();
 
-#[tauri::command]
-pub async fn get_stock_riven_status_counts(
-    query: StockRivenPaginationQueryDto,
-) -> Result<HashMap<String, usize>, Error> {
-    let items = get_stock_riven_pagination(query).await?;
-    Ok(group_by(&items.results, |item| item.status.to_string())
-        .iter()
-        .map(|(status, items)| (status.clone(), items.len()))
-        .collect::<HashMap<_, _>>())
-}
+    let stock = match StockRivenMutation::find_by_id(conn, id).await {
+        Ok(stock) => stock,
+        Err(e) => return Err(AppError::new("StockRivenUpdate", eyre!(e))),
+    };
 
-#[tauri::command]
-pub async fn stock_riven_create(input: CreateStockRiven) -> Result<stock_riven::Model, Error> {
-    match handle_riven_by_entity(input, "", OrderType::Buy, &[]).await {
-        Ok((operations, updated_item)) => {
-            info(
-                "Command::StockRivenCreate",
-                &format!("Operations: {:?}", operations.operations),
-                &utils::LoggerOptions::default(),
-            );
-            add_metric!("stock_riven_create", "success");
-            return Ok(updated_item);
-        }
-        Err(e) => {
-            return Err(e
-                .with_location(get_location!())
-                .log("stock_riven_create.log"));
+    if stock.is_none() {
+        return Err(AppError::new(
+            "StockRivenUpdate",
+            eyre!(format!("Stock Riven not found: {}", id)),
+        ));
+    }
+
+    let mut stock = stock.unwrap();
+
+    if let Some(minimum_price) = minimum_price {
+        stock.minimum_price = Some(minimum_price);
+    }
+
+    if let Some(sub_type) = sub_type {
+        stock.sub_type = Some(sub_type);
+    }
+
+    if let Some(filter) = filter {
+        stock.filter = filter;
+    }
+
+    if let Some(is_hidden) = is_hidden {
+        stock.is_hidden = is_hidden;
+    }
+    stock.updated_at = chrono::Utc::now();
+
+    if stock.wfm_order_id.is_some()
+        && stock.status == StockStatus::Live
+        && stock.list_price.unwrap_or(0) < stock.minimum_price.unwrap_or(0)
+    {
+        let post_price = stock.minimum_price.unwrap();
+
+        match wfm
+            .auction()
+            .update(
+                stock.wfm_order_id.clone().unwrap().as_str(),
+                post_price,
+                0,
+                &stock.comment.clone(),
+                post_price,
+                true,
+            )
+            .await
+        {
+            Ok(updated) => {
+                helper::add_metric("WFM_RivenUpdate", "stock_riven");
+                notify.gui().send_event_update(
+                    UIEvent::UpdateAuction,
+                    UIOperationEvent::CreateOrUpdate,
+                    Some(json!(updated)),
+                );
+            }
+            Err(e) => {
+                error::create_log_file("command_stock_riven_update.log", &e);
+                return Err(e);
+            }
         }
     }
+
+    match StockRivenMutation::update_by_id(conn, stock.id, stock.clone()).await {
+        Ok(_) => helper::add_metric("Stock_RivenUpdate", "manual"),
+        Err(e) => return Err(AppError::new_db("StockItemUpdate", e)),
+    }
+
+    Ok(stock)
 }
 
 #[tauri::command]
-pub async fn stock_riven_sell(
+pub async fn stock_riven_update_bulk(
+    ids: Vec<i64>,
+    minimum_price: Option<i64>,
+    is_hidden: Option<bool>,
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+) -> Result<i64, AppError> {
+    let conn = DATABASE.get().unwrap();
+    let wfm = wfm.lock()?.clone();
+
+    let mut total: i64 = 0;
+
+    let items =
+        match StockRivenMutation::update_bulk(conn, ids.clone(), minimum_price, is_hidden).await {
+            Ok(updated) => {
+                helper::add_metric("Stock_RivenUpdateBulk", "manual");
+                updated
+                    .into_iter()
+                    .filter(|x| {
+                        ids.contains(&x.id)
+                            && x.wfm_order_id.is_some()
+                            && x.status == StockStatus::Live
+                            && x.list_price.unwrap_or(0) < x.minimum_price.unwrap_or(0)
+                    })
+                    .collect::<Vec<stock_riven::Model>>()
+            }
+            Err(e) => {
+                let error: AppError = AppError::new_db("StockRivenUpdateBulk", e);
+                return Err(error);
+            }
+        };
+
+    for stock in items {
+        let post_price = stock.minimum_price.unwrap();
+
+        match wfm
+            .auction()
+            .update(
+                stock.wfm_order_id.clone().unwrap().as_str(),
+                post_price,
+                0,
+                &stock.comment.clone(),
+                post_price,
+                true,
+            )
+            .await
+        {
+            Ok(_) => helper::add_metric("WFM_RivenUpdate", "stock_riven"),
+            Err(e) => {
+                error::create_log_file("command_stock_riven_update_bulk.log", &e);
+                return Err(e);
+            }
+        }
+        total += 1;
+    }
+    Ok(total)
+}
+#[tauri::command]
+pub async fn stock_riven_delete_bulk(
+    ids: Vec<i64>,
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+) -> Result<i64, AppError> {
+    let wfm = wfm.lock()?.clone();
+    let conn = DATABASE.get().unwrap();
+    let notify = notify.lock()?.clone();
+    helper::add_metric("Stock_RivenDeleteBulk", "manual");
+
+    let stocks = match StockRivenQuery::find_by_ids(conn, ids.clone()).await {
+        Ok(stocks) => stocks,
+        Err(e) => {
+            let error: AppError = AppError::new_db("StockRivenDeleteBulk", e);
+            error::create_log_file("command_stock_riven_delete_bulk.log", &error);
+            return Err(error);
+        }
+    };
+
+    let total = stocks.clone().len() as i64;
+
+    for stock in stocks {
+        match StockRivenMutation::delete(conn, stock.id).await {
+            Ok(_) => {}
+            Err(e) => {
+                let error: AppError = AppError::new_db("StockRivenDeleteBulk", e);
+                error::create_log_file("command_stock_riven_delete_bulk.log", &error);
+                return Err(error);
+            }
+        }
+
+        if stock.wfm_order_id.is_some() {
+            match wfm
+                .auction()
+                .delete(&stock.wfm_order_id.clone().unwrap())
+                .await
+            {
+                Ok(_) => {}
+                Err(e) => {
+                    if e.cause().contains("app.form.not_exist") {
+                        logger::warning(
+                            "StockRivenSell",
+                            format!("Error deleting auction: {}", e.cause()).as_str(),
+                            LoggerOptions::default(),
+                        );
+                    } else {
+                        error::create_log_file("command_stock_riven_delete_bulk.log", &e);
+                        return Err(e);
+                    }
+                }
+            }
+        }
+    }
+    match wfm.auction().get_my_auctions().await {
+        Ok(auctions) => {
+            notify.gui().send_event_update(
+                UIEvent::UpdateAuction,
+                UIOperationEvent::Set,
+                Some(json!(auctions)),
+            );
+        }
+        Err(e) => {
+            error::create_log_file("command_stock_riven_delete_bulk.log", &e);
+            return Err(e);
+        }
+    }
+
+    Ok(total)
+}
+
+#[tauri::command]
+pub async fn stock_riven_create(
     wfm_url: String,
     mod_name: String,
     mastery_rank: i64,
     rank: i64,
     re_rolls: i64,
     polarity: String,
-    attributes: Vec<RivenAttribute>,
+    attributes: Vec<entity::stock::riven::attribute::RivenAttribute>,
     bought: i64,
-) -> Result<stock_riven::Model, Error> {
-    match handle_riven(
+) -> Result<entity::stock::riven::stock_riven::Model, AppError> {
+    let mut riven_entry = CreateStockRiven::new(
         wfm_url,
         mod_name,
         mastery_rank,
-        rank,
         re_rolls,
         polarity,
         attributes,
-        bought,
+        rank,
+        Some(bought),
+        None, // rank
+        None, // stock_id
+    );
+
+    match helper::progress_stock_riven(
+        &mut riven_entry,
+        "--weapon_by url_name --weapon_lang en --attribute_by url_name",
         "",
-        OrderType::Sell,
-        &[],
+        OrderType::Buy,
+        "manual",
     )
     .await
     {
-        Ok((_, updated_item)) => return Ok(updated_item),
+        Ok((stock, _)) => {
+            return Ok(stock);
+        }
         Err(e) => {
-            return Err(e
-                .with_location(get_location!())
-                .log("stock_riven_create.log"));
+            error::create_log_file("command_stock_riven_create.log", &e);
+            return Err(e);
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn stock_riven_sell(id: i64, price: i64) -> Result<stock_riven::Model, AppError> {
+    let conn = DATABASE.get().unwrap();
+    let stock = match StockRivenMutation::find_by_id(conn, id).await {
+        Ok(stock) => stock,
+        Err(e) => return Err(AppError::new("StockRivenSell", eyre!(e))),
+    };
+
+    if stock.is_none() {
+        return Err(AppError::new(
+            "StockRivenSell",
+            eyre!(format!("Stock Riven not found: {}", id)),
+        ));
+    }
+    let stock = stock.unwrap();
+
+    let mut entry = stock.to_create(price);
+
+    match helper::progress_stock_riven(
+        &mut entry,
+        "--weapon_by url_name --weapon_lang en --attribute_by url_name",
+        "",
+        OrderType::Sell,
+        "manual",
+    )
+    .await
+    {
+        Ok((stock, _)) => {
+            return Ok(stock);
+        }
+        Err(e) => {
+            error::create_log_file("command_stock_riven_sell.log", &e);
+            return Err(e);
         }
     }
 }
@@ -105,168 +362,60 @@ pub async fn stock_riven_sell(
 #[tauri::command]
 pub async fn stock_riven_delete(
     id: i64,
-    app: tauri::State<'_, Mutex<AppState>>,
-) -> Result<stock_riven::Model, Error> {
-    let app = app.lock()?.clone();
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+) -> Result<(), AppError> {
     let conn = DATABASE.get().unwrap();
+    let notify = notify.lock()?.clone();
+    let wfm = wfm.lock()?.clone();
 
-    let item = StockRivenQuery::get_by_id(conn, id)
-        .await
-        .map_err(|e| e.with_location(get_location!()))?;
-    if item.is_none() {
-        return Err(Error::new(
-            "Command::StockRivenDelete",
-            format!("Stock riven with ID {} not found", id),
-            get_location!(),
+    let stock_item = match StockRivenMutation::find_by_id(conn, id).await {
+        Ok(stock) => stock,
+        Err(e) => return Err(AppError::new("StockRivenDelete", eyre!(e))),
+    };
+
+    if stock_item.is_none() {
+        return Err(AppError::new(
+            "StockRivenDelete",
+            eyre!(format!("Stock Riven not found: {}", id)),
         ));
     }
-    let item = item.unwrap();
+    let stock_item = stock_item.unwrap();
 
-    match app
-        .wfm_client
-        .auction()
-        .cache_auctions()
-        .get_by_uuid(&item.uuid)
-    {
-        Some(auction) => {
-            app.wfm_client
-                .auction()
-                .delete(&auction.id)
-                .await
-                .map_err(|e| {
-                    Error::from_wfm(
-                        "Command::StockRivenDelete",
-                        "Failed to delete auction associated with stock riven",
-                        e,
-                        get_location!(),
-                    )
-                })?;
-        }
-        None => {}
-    }
-    add_metric!("stock_riven_delete", "manual");
-    match StockRivenMutation::delete(conn, id).await {
-        Ok(_) => {}
-        Err(e) => return Err(e.with_location(get_location!())),
-    }
-
-    Ok(item)
-}
-#[tauri::command]
-pub async fn stock_riven_update(input: UpdateStockRiven) -> Result<stock_riven::Model, Error> {
-    let conn = DATABASE.get().unwrap();
-
-    match StockRivenMutation::update_by_id(conn, input).await {
-        Ok(stock_riven) => Ok(stock_riven),
-        Err(e) => return Err(e.with_location(get_location!())),
-    }
-}
-#[tauri::command]
-pub async fn stock_riven_delete_multiple(ids: Vec<i64>) -> Result<i64, Error> {
-    let conn = DATABASE.get().unwrap();
-    let mut deleted_count = 0;
-    for id in ids {
-        match StockRivenMutation::delete(conn, id).await {
-            Ok(_) => deleted_count += 1,
-            Err(e) => return Err(e.with_location(get_location!())),
-        }
-    }
-    Ok(deleted_count)
-}
-#[tauri::command]
-pub async fn stock_riven_update_multiple(
-    ids: Vec<i64>,
-    input: UpdateStockRiven,
-) -> Result<Vec<stock_riven::Model>, Error> {
-    let conn = DATABASE.get().unwrap();
-    let mut updated_items = Vec::new();
-
-    for id in ids {
-        let mut update_input = input.clone();
-        update_input.id = id;
-        match StockRivenMutation::update_by_id(conn, update_input).await {
-            Ok(stock_riven) => updated_items.push(stock_riven),
-            Err(e) => return Err(e.with_location(get_location!())),
-        }
-    }
-    Ok(updated_items)
-}
-#[tauri::command]
-pub async fn stock_riven_get_by_id(id: i64, mode: String) -> Result<Value, Error> {
-    let conn = DATABASE.get().unwrap();
-    let item = match StockRivenQuery::get_by_id(conn, id).await {
-        Ok(stock_riven) => {
-            if let Some(item) = stock_riven {
-                item
-            } else {
-                return Err(Error::new(
-                    "Command::StockRivenGetById",
-                    "Stock riven not found",
-                    get_location!(),
-                ));
+    // Delete the auction from WFM
+    if stock_item.wfm_order_id.is_some() {
+        match wfm
+            .auction()
+            .delete(&stock_item.wfm_order_id.clone().unwrap())
+            .await
+        {
+            Ok(auction) => {
+                if auction.is_some() {
+                    helper::add_metric("WFM_RivenDeleted", "stock_riven");
+                    notify.gui().send_event_update(
+                        UIEvent::UpdateAuction,
+                        UIOperationEvent::Delete,
+                        Some(json!({ "id": id })),
+                    );
+                }
+            }
+            Err(e) => {
+                if e.cause().contains("app.form.not_exist") {
+                    logger::info(
+                        "StockRivenSell",
+                        format!("Error deleting auction: {}", e.cause()).as_str(),
+                        LoggerOptions::default(),
+                    );
+                } else {
+                    error::create_log_file("command_stock_riven_delete.log", &e);
+                    return Err(e);
+                }
             }
         }
-        Err(e) => return Err(e.with_location(get_location!())),
-    };
-    match mode.as_str() {
-        "summary" => Ok(json!(RivenSummary::try_from_model(&item).await?)),
-        "edit" => Ok(json!(item)),
-        _ => {
-            return Err(Error::new(
-                "Command::StockRivenGetById",
-                "Invalid mode. Must be 'summary' or 'edit'",
-                get_location!(),
-            ));
-        }
     }
-}
-
-#[tauri::command]
-pub async fn export_stock_riven_json(
-    app_state: tauri::State<'_, Mutex<AppState>>,
-    mut query: StockRivenPaginationQueryDto,
-) -> Result<String, Error> {
-    let app_state = app_state.lock()?.clone();
-    let app = APP.get().unwrap();
-    if let Err(e) = app_state.user.has_permission(PermissionsFlags::ExportData) {
-        e.log("export_stock_riven_json.log");
-        return Err(e);
+    match StockRivenMutation::delete(conn, stock_item.id).await {
+        Ok(_) => helper::add_metric("Stock_RivenDelete", "manual"),
+        Err(e) => return Err(AppError::new("StockRivenDelete", eyre!(e))),
     }
-    let conn = DATABASE.get().unwrap();
-    query.pagination.limit = -1; // fetch all
-    match StockRivenQuery::get_all(conn, query).await {
-        Ok(stock_riven) => {
-            let file_path = app
-                .dialog()
-                .file()
-                .add_filter("Quantframe_Stock_Riven", &["json"])
-                .blocking_save_file();
-            if let Some(file_path) = file_path {
-                let json = serde_json::to_string_pretty(&stock_riven.results).map_err(|e| {
-                    Error::new(
-                        "Command::ExportStockRivenJson",
-                        format!("Failed to serialize stock riven to JSON: {}", e),
-                        get_location!(),
-                    )
-                })?;
-                std::fs::write(file_path.as_path().unwrap(), json).map_err(|e| {
-                    Error::new(
-                        "Command::ExportStockRivenJson",
-                        format!("Failed to write stock riven to file: {}", e),
-                        get_location!(),
-                    )
-                })?;
-                info(
-                    "Command::ExportStockRivenJson",
-                    format!("Exported stock riven to JSON file: {}", file_path),
-                    &LoggerOptions::default(),
-                );
-                return Ok(file_path.to_string());
-            }
-            // do something with the optional file path here
-            // the file path is `None` if the user closed the dialog
-            return Ok("".to_string());
-        }
-        Err(e) => return Err(e.with_location(get_location!())),
-    }
+    Ok(())
 }

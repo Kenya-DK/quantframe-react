@@ -38,7 +38,7 @@ export enum Operator {
 
 // A mapping of each Operator to a corresponding FilterCriteria or supported data types
 export type OperatorConditionMap = Partial<{
-  [key in Operator]: string | number | boolean | Date | Array<string | number | boolean | Date | null | undefined>;
+  [key in Operator]: string | number | boolean | Date | Array<string | number | boolean | Date>;
 }> & {
   type?: OperatorType; // Specifies the type of the field (e.g., string, number)
   isCaseSensitive?: boolean; // Optional case-sensitivity
@@ -67,7 +67,7 @@ const ConvertToType = (value: any, type: OperatorType | undefined): any => {
     case OperatorType.STRING:
       return value.toString();
     case OperatorType.NUMBER:
-      return value ? Number(value) : 0;
+      return Number(value);
     case OperatorType.BOOLEAN:
       return Boolean(value);
     case OperatorType.DATE:
@@ -110,8 +110,6 @@ const CompareValue = (value: any, filterValue: any, operation: Operator): boolea
     case Operator.IS_NOT_EMPTY:
       return value != "";
     case Operator.CONTAINS_VALUE:
-      if (Array.isArray(value) && Array.isArray(filterValue)) return filterValue.some((val) => value.includes(val));
-      if (Array.isArray(value)) return value.includes(filterValue);
       return value.includes(filterValue);
     case Operator.DOES_NOT_CONTAIN:
       return !value.includes(filterValue);
@@ -168,7 +166,6 @@ const GetNestedValue = (item: any, propertyName: string): any => {
   return value;
 };
 export const ApplyFilter = <T>(items: T[], filter: ComplexFilter): T[] => {
-  console.log("Applying filter:", filter);
   return items.filter((item) => {
     if (!filter) return true;
     const andFlag = ProcessANDFilter(item, filter);
@@ -195,7 +192,7 @@ const ProcessFilterConditions = <T>(item: T, filterValue: FieldFilter): boolean 
   return Object.entries(filterValue).every(([filterName, filterValue]) => {
     let propertyValue = GetNestedValue(item, filterName);
     if (filterValue.combineFields) propertyValue = CombineFields(item, filterValue.combineFields, filterValue.combineWith || "");
-    if (propertyValue === null || propertyValue === undefined) return false;
+    if (!propertyValue) return false;
     propertyValue = ConvertToType(propertyValue, filterValue.type);
 
     return CompareValues(propertyValue, filterValue);

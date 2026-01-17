@@ -1,8 +1,29 @@
 use std::{collections::HashMap, sync::OnceLock};
 
-use utils::{combine_and_detect_match, DetectionStatus};
+use crate::utils::modules::trading_helper::combine_and_detect_match;
 
-use crate::log_parser::TradeItemType;
+#[derive(Debug, PartialEq)]
+pub enum DetectionStatus {
+    None,
+    Line,
+    NextLine,
+    Combined,
+}
+
+impl DetectionStatus {
+    pub fn is_found(&self) -> bool {
+        match self {
+            DetectionStatus::None => false,
+            _ => true,
+        }
+    }
+    pub fn is_combined(&self) -> bool {
+        match self {
+            DetectionStatus::Combined => true,
+            _ => false,
+        }
+    }
+}
 
 #[derive(Clone, Debug)]
 pub struct TradeDetection {
@@ -13,7 +34,6 @@ pub struct TradeDetection {
     pub receive_line_first_part: String,
     pub receive_line_second_part: String,
     pub platinum_name: String,
-    pub credits_name: String,
 }
 
 impl TradeDetection {
@@ -25,7 +45,6 @@ impl TradeDetection {
         receive_line_first_part: String,
         receive_line_second_part: String,
         platinum_name: String,
-        credits_name: String,
     ) -> Self {
         TradeDetection {
             start,
@@ -35,7 +54,6 @@ impl TradeDetection {
             receive_line_first_part,
             receive_line_second_part,
             platinum_name,
-            credits_name,
         }
     }
 
@@ -159,58 +177,29 @@ impl TradeDetection {
             false,
         )
     }
-
-    pub fn is_currency(
+    pub fn is_platinum(
         &self,
         line: &str,
         next_line: &str,
         is_previous: bool,
         ignore_combined: bool,
-    ) -> (String, DetectionStatus, TradeItemType) {
-        let detect = |name: &str, ty| {
-            if line.contains(name) && next_line.trim().starts_with("x") {
-                return Some((
-                    format!("{} {}", name, next_line.trim()),
-                    DetectionStatus::Combined,
-                    ty,
-                ));
-            }
-            if line.contains(name) {
-                return Some((line.to_string(), DetectionStatus::Line, ty));
-            }
-            None
-        };
-
-        if let Some(res) = detect(&self.platinum_name, TradeItemType::Platinum)
-            .or_else(|| detect(&self.credits_name, TradeItemType::Credits))
-        {
-            return res;
-        }
-
-        if ignore_combined {
+    ) -> (String, DetectionStatus) {
+        if line.contains(&self.platinum_name) && next_line.trim().starts_with("x") {
             return (
-                line.to_string(),
-                DetectionStatus::None,
-                TradeItemType::Unknown,
+                format!("{} {}", self.platinum_name, next_line.trim()),
+                DetectionStatus::Combined,
             );
         }
 
-        for (name, ty) in [
-            (&self.credits_name, TradeItemType::Credits),
-            (&self.platinum_name, TradeItemType::Platinum),
-        ] {
-            let (combined, status) =
-                combine_and_detect_match(line, next_line, name, is_previous, false);
-            if status.is_found() {
-                return (combined, status, ty);
-            }
+        if line.contains(&self.platinum_name) {
+            return (line.to_string(), DetectionStatus::Line);
         }
 
-        (
-            line.to_string(),
-            DetectionStatus::None,
-            TradeItemType::Unknown,
-        )
+        if ignore_combined {
+            return (line.to_string().to_string(), DetectionStatus::None);
+        }
+
+        combine_and_detect_match(&line, next_line, &self.platinum_name, is_previous, false)
     }
     pub fn is_offer_line(&self, line: &str, next_line: &str) -> (String, DetectionStatus) {
         let (_, first_status) = self.is_first_part(line, next_line, false, false);
@@ -389,7 +378,6 @@ pub fn init_detections() {
                 "and will receive from ".to_string(),
                 " the following:".to_string(),
                 "Platinum".to_string(),
-                "Credits".to_string(),
             ),
         );
         detections

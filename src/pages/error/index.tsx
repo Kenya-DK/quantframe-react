@@ -2,7 +2,7 @@ import { Center } from "@mantine/core";
 import { useEffect } from "react";
 import { useAppContext } from "@contexts/app.context";
 import { useNavigate } from "react-router-dom";
-import { ErrorModal } from "@components/Modals/Error";
+import { AlertError } from "../../components/AlertError";
 
 export default function ErrorPage() {
   const { app_error, app_info } = useAppContext();
@@ -13,7 +13,7 @@ export default function ErrorPage() {
 
   return (
     <Center w={"100%"} h={"92vh"}>
-      <ErrorModal app_info={app_info} error={app_error?.error} />
+      <AlertError version={app_info?.version} error={app_error} />
     </Center>
   );
 }

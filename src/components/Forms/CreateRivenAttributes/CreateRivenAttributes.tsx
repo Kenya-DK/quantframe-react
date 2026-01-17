@@ -54,7 +54,7 @@ export function CreateRivenAttributes({ maxPositive, maxNegative, attributes, on
 
   return (
     <Stack w={"100%"} gap={"sm"}>
-      <Title order={5} c={"var(--qf-positive-color)"}>
+      <Title order={5} c={"green.7"}>
         {useTranslateFormFields("positive.title")}
       </Title>
       {form.values.positive_attributes.slice(0, showPositiveCount).map((item, index) => {
@@ -88,7 +88,7 @@ export function CreateRivenAttributes({ maxPositive, maxNegative, attributes, on
           </Button>
         </Group>
       )}
-      <Title order={5} c={"var(--qf-negative-color)"}>
+      <Title order={5} c={"red.7"}>
         {useTranslateFormFields("negative.title")}
       </Title>
       {form.values.negative_attributes.map((item, index) => {

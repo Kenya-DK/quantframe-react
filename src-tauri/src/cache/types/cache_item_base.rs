@@ -8,22 +8,26 @@ pub struct CacheItemBase {
     pub unique_name: String,
     #[serde(rename = "name")]
     pub name: String,
-    #[serde(default, rename = "category")]
+    #[serde(rename = "category")]
     pub category: String,
-    #[serde(default, rename = "wfm_item_url")]
+    #[serde(rename = "wfm_item_url")]
     pub wfm_item_url: Option<String>,
     #[serde(rename = "part_of_set")]
     pub part_of_set: Option<String>,
-    #[serde(rename = "components", default)]
-    pub components: Vec<CacheItemComponent>,
+    #[serde(rename = "components")]
+    pub components: Option<Vec<CacheItemComponent>>,
 }
 impl CacheItemBase {
     pub fn get_tradable_components(&self) -> Vec<CacheItemComponent> {
-        self.components
-            .iter()
-            .filter(|component| component.tradable)
-            .cloned()
-            .collect()
+        if let Some(components) = &self.components {
+            components
+                .iter()
+                .filter(|component| component.tradable)
+                .cloned()
+                .collect()
+        } else {
+            vec![]
+        }
     }
     pub fn display(&self) -> String {
         format!(
@@ -31,7 +35,7 @@ impl CacheItemBase {
             self.name,
             self.unique_name,
             self.category,
-            self.components.len(),
+            self.components.clone().unwrap_or_default().len()
         )
     }
 }

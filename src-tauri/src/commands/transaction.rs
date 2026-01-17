@@ -1,130 +1,107 @@
-use std::sync::Mutex;
-
-use entity::{dto::*, transaction::dto::TransactionPaginationQueryDto, transaction::*};
+use crate::{
+    notification::client::NotifyClient,
+    qf_client::client::QFClient,
+    utils::{
+        enums::ui_events::UIEvent,
+        modules::error::{self, AppError},
+    },
+    DATABASE,
+};
+use entity::transaction::transaction::{self};
+use eyre::eyre;
 use service::{TransactionMutation, TransactionQuery};
-use tauri_plugin_dialog::DialogExt;
-use utils::{get_location, info, Error, LoggerOptions};
-
-use crate::{add_metric, app::client::AppState, types::PermissionsFlags, APP, DATABASE};
+use std::sync::{Arc, Mutex};
 
 #[tauri::command]
-pub async fn get_transaction_pagination(
-    query: TransactionPaginationQueryDto,
-) -> Result<PaginatedResult<transaction::Model>, Error> {
+pub async fn transaction_get_all(
+    query: entity::transaction::dto::TransactionPaginationQueryDto,
+) -> Result<entity::dto::pagination::PaginatedDto<transaction::Model>, AppError> {
     let conn = DATABASE.get().unwrap();
+
     match TransactionQuery::get_all(conn, query).await {
-        Ok(data) => return Ok(data),
-        Err(e) => return Err(e.with_location(get_location!())),
+        Ok(transactions) => {
+            return Ok(transactions);
+        }
+        Err(e) => {
+            let error: AppError = AppError::new_db("TransactionQuery::get_all", e);
+            error::create_log_file("transaction_get_all.log", &error);
+            return Err(error);
+        }
     };
 }
 
 #[tauri::command]
-pub async fn get_transaction_financial_report(
-    query: TransactionPaginationQueryDto,
-) -> Result<FinancialReport, Error> {
-    let items = get_transaction_pagination(query).await?;
-    Ok(FinancialReport::from(&items.results))
-}
-
-#[tauri::command]
-pub async fn transaction_delete(id: i64) -> Result<transaction::Model, Error> {
+pub async fn transaction_update(
+    id: i64,
+    price: Option<i64>,
+    quantity: Option<i64>,
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
+) -> Result<transaction::Model, AppError> {
     let conn = DATABASE.get().unwrap();
+    let notify = notify.lock()?.clone();
+    let qf = qf.lock()?.clone();
 
-    let item = TransactionQuery::find_by_id(conn, id)
-        .await
-        .map_err(|e| e.with_location(get_location!()))?;
-    if item.is_none() {
-        return Err(Error::new(
-            "Command::TransactionDelete",
-            format!("Transaction with ID {} not found", id),
-            get_location!(),
+    // Find the transaction by id
+    let transaction = match TransactionQuery::find_by_id(conn, id).await {
+        Ok(transaction) => transaction,
+        Err(e) => {
+            let error: AppError = AppError::new_db("TransactionQuery::get_by_id", e);
+            error::create_log_file("command.log", &error);
+            return Err(error);
+        }
+    };
+
+    if transaction.is_none() {
+        return Err(AppError::new(
+            "TransactionUpdate",
+            eyre!(format!("Transaction with id {} not found", id)),
         ));
     }
-    let item = item.unwrap();
 
+    let mut new_item = transaction.unwrap();
+
+    if let Some(price) = price {
+        new_item.price = price;
+    }
+
+    if let Some(quantity) = quantity {
+        new_item.quantity = quantity;
+    }
+
+    match TransactionMutation::update_by_id(conn, id, new_item.clone()).await {
+        Ok(_) => qf.analytics().add_metric("Transaction_Update", "manual"),
+        Err(e) => {
+            let error: AppError = AppError::new_db("TransactionQuery::get_all", e);
+            error::create_log_file("transaction_update.log", &error);
+            return Err(error);
+        }
+    };
+    notify.gui().send_event(UIEvent::RefreshTransactions, None);
+    Ok(new_item)
+}
+
+#[tauri::command]
+pub async fn transaction_delete(
+    id: i64,
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
+) -> Result<(), AppError> {
+    let conn = DATABASE.get().unwrap();
+    let notify = notify.lock()?.clone();
+    let qf: QFClient = qf.lock()?.clone();
     match TransactionMutation::delete_by_id(conn, id).await {
-        Ok(_) => {}
-        Err(e) => return Err(e.with_location(get_location!())),
-    }
-
-    Ok(item)
-}
-#[tauri::command]
-pub async fn transaction_delete_bulk(ids: Vec<i64>) -> Result<u64, Error> {
-    let conn = DATABASE.get().unwrap();
-    let mut deleted_count = 0;
-    for id in ids {
-        match TransactionMutation::delete_by_id(conn, id).await {
-            Ok(e) => {
-                info(
-                    "Command::TransactionDeleteBulk",
-                    format!("Deleted transaction with ID: {}", id),
-                    &LoggerOptions::default(),
-                );
-                deleted_count += e.rows_affected;
+        Ok(deleted) => {
+            if deleted.rows_affected > 0 {
+                qf.analytics().add_metric("Transaction_Delete", "manual");
             }
-            Err(e) => return Err(e.with_location(get_location!())),
         }
-    }
-
-    Ok(deleted_count)
-}
-
-#[tauri::command]
-pub async fn transaction_update(input: UpdateTransaction) -> Result<transaction::Model, Error> {
-    let conn = DATABASE.get().unwrap();
-    match TransactionMutation::update_by_id(conn, input).await {
-        Ok(transaction) => Ok(transaction),
-        Err(e) => return Err(e.with_location(get_location!())),
-    }
-}
-#[tauri::command]
-pub async fn export_transaction_json(
-    app_state: tauri::State<'_, Mutex<AppState>>,
-    mut query: TransactionPaginationQueryDto,
-) -> Result<String, Error> {
-    let app_state = app_state.lock()?.clone();
-    let app = APP.get().unwrap();
-    if let Err(e) = app_state.user.has_permission(PermissionsFlags::ExportData) {
-        e.log("export_transaction_json.log");
-        return Err(e);
-    }
-    let conn = DATABASE.get().unwrap();
-    query.pagination.limit = -1; // fetch all
-    match TransactionQuery::get_all(conn, query).await {
-        Ok(transaction) => {
-            let file_path = app
-                .dialog()
-                .file()
-                .add_filter("Quantframe_Transactions", &["json"])
-                .blocking_save_file();
-            if let Some(file_path) = file_path {
-                let json = serde_json::to_string_pretty(&transaction.results).map_err(|e| {
-                    Error::new(
-                        "Command::ExportTransactionJson",
-                        format!("Failed to serialize transactions to JSON: {}", e),
-                        get_location!(),
-                    )
-                })?;
-                std::fs::write(file_path.as_path().unwrap(), json).map_err(|e| {
-                    Error::new(
-                        "Command::ExportTransactionJson",
-                        format!("Failed to write transactions to file: {}", e),
-                        get_location!(),
-                    )
-                })?;
-                info(
-                    "Command::ExportTransactionJson",
-                    format!("Exported transactions to JSON file: {}", file_path),
-                    &LoggerOptions::default(),
-                );
-                add_metric!("export_transaction_json", "success");
-                return Ok(file_path.to_string());
-            }
-            // do something with the optional file path here
-            // the file path is `None` if the user closed the dialog
-            return Ok("".to_string());
+        Err(e) => {
+            let error: AppError = AppError::new_db("TransactionMutation::delete", e);
+            error::create_log_file("transaction_delete.log", &error);
+            return Err(error);
         }
-        Err(e) => return Err(e.with_location(get_location!())),
-    }
+    };
+    notify.gui().send_event(UIEvent::RefreshTransactions, None);
+    Ok(())
 }

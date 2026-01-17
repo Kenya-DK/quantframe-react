@@ -1,26 +1,58 @@
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
-use serde_json::{json, Value};
-use utils::Error;
+use service::{StockItemMutation, StockRivenMutation, TransactionMutation};
 
-use crate::app::client::AppState;
+use crate::{
+    helper,
+    notification::client::NotifyClient,
+    utils::{enums::ui_events::UIEvent, modules::error::AppError},
+    DATABASE,
+};
 
 #[tauri::command]
-pub fn debug_get_wfm_state(app: tauri::State<'_, Mutex<AppState>>) -> Result<Value, Error> {
-    let app = app.lock()?.clone();
-    let orders = app.wfm_client.order().cache_orders();
-    let user_auctions = app.wfm_client.auction().cache_auctions();
-    let tracking = app.wfm_client.get_tracking().clone();
-    let mut payload = json!({
-      "user_orders": json!(orders),
-      "user_auctions": json!(user_auctions),
-      "order_limit": app.wfm_client.order().get_order_limit(),
-      "tracking": json!(tracking),
-      "limiters": {}
-    });
-    let per_rate_limit = app.wfm_client.get_per_route_limiter().clone();
-    for (key, route) in per_rate_limit.lock()?.iter() {
-        payload["limiters"][key] = json!({"limit": route.quota_type.current_limit(), "wait_time_sec": route.wait_time_sec, "quota_type": route.quota_type.quota_type()});
+pub async fn debug_db_reset(
+    target: String,
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+) -> Result<bool, AppError> {
+    let conn = DATABASE.get().unwrap();
+    let notify = notify.lock()?.clone();
+    match target.as_str() {
+        "all" => {
+            StockItemMutation::delete_all(conn)
+                .await
+                .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
+            StockRivenMutation::delete_all(conn)
+                .await
+                .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
+            TransactionMutation::delete_all(conn)
+                .await
+                .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
+            helper::add_metric("Debug_DbReset", "all");
+            notify.gui().send_event(UIEvent::RefreshTransactions, None);
+        }
+        "stock_item" => {
+            StockItemMutation::delete_all(conn)
+                .await
+                .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
+            helper::add_metric("Debug_DbReset", "stock_item");
+        }
+        "stock_riven" => {
+            StockRivenMutation::delete_all(conn)
+                .await
+                .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
+            helper::add_metric("Debug_DbReset", "stock_riven");
+        }
+        "transaction" => {
+            TransactionMutation::delete_all(conn)
+                .await
+                .map_err(|e| AppError::new("DebugDbReset", eyre::eyre!(e)))?;
+            helper::add_metric("Debug_DbReset", "transaction");
+            notify.gui().send_event(UIEvent::RefreshTransactions, None);
+        }
+        _ => {
+            return Err(AppError::new("DebugDbReset", eyre::eyre!("Invalid target")));
+        }
     }
-    Ok(payload)
+    // let debug_client = debug_client.lock().unwrap();
+    Ok(true)
 }

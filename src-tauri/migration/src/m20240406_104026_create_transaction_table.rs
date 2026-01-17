@@ -79,7 +79,7 @@ impl MigrationTrait for Migration {
 }
 
 #[derive(DeriveIden)]
-pub enum Transaction {
+enum Transaction {
     Table,
     Id,
     WFMId,
@@ -93,7 +93,6 @@ pub enum Transaction {
     Price,
     Quantity,
     UserName,
-    Profit,
     CreatedAt,
     UpdatedAt,
     Properties,

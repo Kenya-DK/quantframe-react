@@ -3,7 +3,7 @@ import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { useForm } from "@mantine/form";
 import { RivenAttribute, TauriTypes } from "$types";
 import { useEffect, useState } from "react";
-import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
+import { ActionWithTooltip } from "../../ActionWithTooltip";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 
 export type CreateRivenAttributeProps = {
@@ -62,7 +62,7 @@ export function CreateRivenAttribute({
 
   // Helper functions
   const getAvailableAttributes = () => {
-    return availableAttributes.map((item) => ({ label: item.name, value: item.url_name }));
+    return availableAttributes.map((item) => ({ label: item.effect, value: item.url_name }));
   };
 
   const GetUnitSymbol = () => {

@@ -1,29 +1,81 @@
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
+
+use tauri::Manager;
 
 use crate::{
-    app::{client::AppState, Settings},
-    cache::client::CacheState,
-    APP,
+    app::client::AppState, auth::AuthState, cache::client::CacheClient,
+    notification::client::NotifyClient, qf_client::client::QFClient, settings::SettingsState,
+    wfm_client::client::WFMClient, APP,
 };
-use tauri::Manager;
-use utils::Error;
 
-pub fn app_state() -> Result<AppState, Error> {
-    let app = APP.get().expect("APP not initialized");
-    let state = app.state::<Mutex<AppState>>();
-    let guard = state.lock()?;
-    Ok(guard.clone())
+use super::error::AppError;
+
+pub fn qf_client() -> Result<QFClient, AppError> {
+    let app = APP.get().expect("App not initialized");
+    let state = app.state::<Arc<Mutex<QFClient>>>();
+    let state_lock = state
+        .lock()
+        .map_err(|_| AppError::new("States:QFClient", eyre::eyre!("Failed to lock state")))?;
+    let state = state_lock.clone();
+    Ok(state)
 }
 
-pub fn get_settings() -> Result<Settings, Error> {
-    let app = app_state()?;
-    let settings = app.settings.clone();
-    Ok(settings)
+pub fn settings() -> Result<SettingsState, AppError> {
+    let app = APP.get().expect("App not initialized");
+    let state = app.state::<Arc<Mutex<SettingsState>>>();
+    let state_lock = state
+        .lock()
+        .map_err(|_| AppError::new("States:SettingsState", eyre::eyre!("Failed to lock state")))?;
+    let state = state_lock.clone();
+    Ok(state)
 }
 
-pub fn cache_client() -> Result<CacheState, Error> {
-    let app = APP.get().expect("APP not initialized");
-    let state = app.state::<Mutex<CacheState>>();
-    let guard = state.lock()?;
-    Ok(guard.clone())
+pub fn app_state() -> Result<AppState, AppError> {
+    let app = APP.get().expect("App not initialized");
+    let state = app.state::<Arc<Mutex<AppState>>>();
+    let state_lock = state
+        .lock()
+        .map_err(|_| AppError::new("States:AppState", eyre::eyre!("Failed to lock state")))?;
+    let state = state_lock.clone();
+    Ok(state)
+}
+
+pub fn notify_client() -> Result<NotifyClient, AppError> {
+    let app = APP.get().expect("App not initialized");
+    let state = app.state::<Arc<Mutex<NotifyClient>>>();
+    let state_lock = state
+        .lock()
+        .map_err(|_| AppError::new("States:NotifyClient", eyre::eyre!("Failed to lock state")))?;
+    let state = state_lock.clone();
+    Ok(state)
+}
+
+pub fn wfm_client() -> Result<WFMClient, AppError> {
+    let app = APP.get().expect("App not initialized");
+    let state = app.state::<Arc<Mutex<WFMClient>>>();
+    let state_lock = state
+        .lock()
+        .map_err(|_| AppError::new("States:WFMClient", eyre::eyre!("Failed to lock state")))?;
+    let state = state_lock.clone();
+    Ok(state)
+}
+
+pub fn auth() -> Result<AuthState, AppError> {
+    let app = APP.get().expect("App not initialized");
+    let state = app.state::<Arc<Mutex<AuthState>>>();
+    let state_lock = state
+        .lock()
+        .map_err(|_| AppError::new("States:AuthState", eyre::eyre!("Failed to lock state")))?;
+    let state = state_lock.clone();
+    Ok(state)
+}
+
+pub fn cache() -> Result<CacheClient, AppError> {
+    let app = APP.get().expect("App not initialized");
+    let state = app.state::<Arc<Mutex<CacheClient>>>();
+    let state_lock = state
+        .lock()
+        .map_err(|_| AppError::new("States:CacheClient", eyre::eyre!("Failed to lock state")))?;
+    let state = state_lock.clone();
+    Ok(state)
 }

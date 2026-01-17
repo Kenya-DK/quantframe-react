@@ -1,17 +1,13 @@
-use std::collections::HashMap;
-
-use crate::ErrorFromExt;
-use ::entity::transaction::*;
+use ::entity::transaction::{transaction, transaction::Entity as Transaction};
 use sea_orm::*;
-use utils::*;
+
 pub struct TransactionMutation;
 
-static COMPONENT: &str = "TransactionMutation";
 impl TransactionMutation {
-    pub async fn create(
+    pub async fn create_from_old(
         db: &DbConn,
-        form_data: &transaction::Model,
-    ) -> Result<transaction::Model, Error> {
+        form_data: transaction::Model,
+    ) -> Result<transaction::Model, DbErr> {
         transaction::ActiveModel {
             wfm_id: Set(form_data.wfm_id.to_owned()),
             wfm_url: Set(form_data.wfm_url.to_owned()),
@@ -24,7 +20,30 @@ impl TransactionMutation {
             quantity: Set(form_data.quantity.to_owned()),
             user_name: Set(form_data.user_name.to_owned()),
             price: Set(form_data.price.to_owned()),
-            profit: Set(form_data.profit.to_owned()),
+            properties: Set(form_data.properties.to_owned()),
+            created_at: Set(form_data.created_at.to_owned()),
+            updated_at: Set(form_data.updated_at.to_owned()),
+            ..Default::default()
+        }
+        .insert(db)
+        .await
+    }
+    pub async fn create(
+        db: &DbConn,
+        form_data: &transaction::Model,
+    ) -> Result<transaction::Model, DbErr> {
+        transaction::ActiveModel {
+            wfm_id: Set(form_data.wfm_id.to_owned()),
+            wfm_url: Set(form_data.wfm_url.to_owned()),
+            item_name: Set(form_data.item_name.to_owned()),
+            item_type: Set(form_data.item_type.to_owned()),
+            item_unique_name: Set(form_data.item_unique_name.to_owned()),
+            sub_type: Set(form_data.sub_type.to_owned()),
+            tags: Set(form_data.tags.to_owned()),
+            transaction_type: Set(form_data.transaction_type.to_owned()),
+            quantity: Set(form_data.quantity.to_owned()),
+            user_name: Set(form_data.user_name.to_owned()),
+            price: Set(form_data.price.to_owned()),
             properties: Set(form_data.properties.to_owned()),
             created_at: Set(chrono::Utc::now()),
             updated_at: Set(chrono::Utc::now()),
@@ -32,114 +51,51 @@ impl TransactionMutation {
         }
         .insert(db)
         .await
-        .map_err(|e| {
-            Error::from_db(
-                format!("{}:Create", COMPONENT),
-                "Failed to create Transaction",
-                e,
-                get_location!(),
-            )
-        })
     }
 
     pub async fn update_by_id(
         db: &DbConn,
-        input: UpdateTransaction,
-    ) -> Result<transaction::Model, Error> {
-        let item = Entity::find_by_id(input.id)
+        id: i64,
+        form_data: transaction::Model,
+    ) -> Result<transaction::Model, DbErr> {
+        let post: transaction::ActiveModel = Transaction::find_by_id(id)
             .one(db)
-            .await
-            .map_err(|e| {
-                Error::from_db(
-                    format!("{}:UpdateById", COMPONENT),
-                    "Failed to find Transaction by ID",
-                    e,
-                    get_location!(),
-                )
-            })?
-            .ok_or(Error::new(
-                format!("{}:UpdateById", COMPONENT),
-                "Transaction not found",
-                get_location!(),
-            ))?;
+            .await?
+            .ok_or(DbErr::Custom("Cannot find post.".to_owned()))
+            .map(Into::into)?;
 
-        let mut active: transaction::ActiveModel = input.apply_to(item.into());
-        active.updated_at = Set(chrono::Utc::now());
-        active.update(db).await.map_err(|e| {
-            Error::from_db(
-                format!("{}:UpdateById", COMPONENT),
-                "Failed to update Transaction",
-                e,
-                get_location!(),
-            )
-        })
-    }
-
-    pub async fn delete_by_id(db: &DbConn, id: i64) -> Result<DeleteResult, Error> {
-        let post: transaction::ActiveModel = Entity::find_by_id(id)
-            .one(db)
-            .await
-            .map_err(|e| {
-                Error::from_db(
-                    format!("{}:DeleteById", COMPONENT),
-                    "Failed to find Transaction by ID",
-                    e,
-                    get_location!(),
-                )
-            })?
-            .ok_or(Error::new(
-                format!("{}:DeleteById", COMPONENT),
-                "Transaction not found",
-                get_location!(),
-            ))?
-            .into();
-
-        post.delete(db).await.map_err(|e| {
-            Error::from_db(
-                format!("{}:DeleteById", COMPONENT),
-                "Failed to delete Transaction",
-                e,
-                get_location!(),
-            )
-        })
-    }
-    pub async fn update_names(db: &DbConn, mapper: &HashMap<String, String>) -> Result<(), Error> {
-        let items = Entity::find().all(db).await.map_err(|e| {
-            Error::from_db(
-                format!("{}:UpdateNames", COMPONENT),
-                "Failed to retrieve all Transactions",
-                e,
-                get_location!(),
-            )
-        })?;
-        for item in items {
-            let updated_name = match mapper.get(&item.item_unique_name) {
-                Some(name) => name.to_string(),
-                None => continue,
-            };
-            let mut active: transaction::ActiveModel = item.into();
-            active.item_name = Set(updated_name);
-            active.updated_at = Set(chrono::Utc::now());
-            active.update(db).await.map_err(|e| {
-                Error::from_db(
-                    format!("{}:UpdateNames", COMPONENT),
-                    "Failed to update Transaction name",
-                    e,
-                    get_location!(),
-                )
-            })?;
+        transaction::ActiveModel {
+            id: post.id,
+            wfm_id: Set(form_data.wfm_id.to_owned()),
+            wfm_url: Set(form_data.wfm_url.to_owned()),
+            item_name: Set(form_data.item_name.to_owned()),
+            item_type: Set(form_data.item_type.to_owned()),
+            item_unique_name: post.item_unique_name.clone(),
+            sub_type: Set(form_data.sub_type.to_owned()),
+            tags: Set(form_data.tags.to_owned()),
+            transaction_type: Set(form_data.transaction_type.to_owned()),
+            quantity: Set(form_data.quantity.to_owned()),
+            user_name: post.user_name.clone(),
+            price: Set(form_data.price.to_owned()),
+            properties: Set(form_data.properties.to_owned()),
+            created_at: post.created_at.clone(),
+            updated_at: Set(chrono::Utc::now()),
         }
-
-        Ok(())
+        .update(db)
+        .await
     }
-    pub async fn delete_all(db: &DbConn) -> Result<DeleteResult, Error> {
-        Entity::delete_many().exec(db).await.map_err(|e| {
-            Error::from_db(
-                format!("{}:DeleteAll", COMPONENT),
-                "Failed to delete all Transactions",
-                e,
-                get_location!(),
-            )
-        })
+
+    pub async fn delete_by_id(db: &DbConn, id: i64) -> Result<DeleteResult, DbErr> {
+        let post: transaction::ActiveModel = Transaction::find_by_id(id)
+            .one(db)
+            .await?
+            .ok_or(DbErr::Custom("Cannot find post.".to_owned()))
+            .map(Into::into)?;
+
+        post.delete(db).await
+    }
+
+    pub async fn delete_all(db: &DbConn) -> Result<DeleteResult, DbErr> {
+        Transaction::delete_many().exec(db).await
     }
 }

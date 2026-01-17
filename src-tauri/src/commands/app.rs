@@ -1,38 +1,33 @@
 use std::sync::{Arc, Mutex};
 
+use serde_json::json;
+use service::WishListQuery;
+
 use crate::{
-    app::{client::AppState, Settings},
-    log_parser::LogParserState,
-    APP, HAS_STARTED,
+    app::client::AppState,
+    auth::AuthState,
+    cache::client::CacheClient,
+    log_parser,
+    notification::client::NotifyClient,
+    qf_client::client::QFClient,
+    settings::SettingsState,
+    utils::{
+        enums::ui_events::{UIEvent, UIOperationEvent},
+        modules::{
+            error::{self, AppError},
+            states,
+        },
+    },
+    DATABASE,
 };
-use serde_json::{json, Value};
-use utils::Error;
 
-#[tauri::command]
-pub async fn initialized() -> Result<bool, Error> {
-    let started = HAS_STARTED.get().cloned().unwrap_or(false);
-    return Ok(started);
-}
-#[tauri::command]
-pub async fn app_get_app_info(app: tauri::State<'_, Mutex<AppState>>) -> Result<Value, Error> {
-    let app = app.lock()?;
-    let tauri_app = APP.get().expect("App handle not found");
-    let info = tauri_app.package_info().clone();
-    Ok(json!({
-        "version": info.version,
-        "name": info.name,
-        "description": info.description,
-        "authors": info.authors,
-        "is_dev": app.is_development,
-        "use_temp_db": app.use_temp_db,
-        "tos_uuid": app.settings.tos_uuid.clone(),
-        "is_pre_release": app.is_pre_release,
-        "patreon_usernames": vec!["Willjsnider s", "DAn IguEss"],
-    }))
+pub fn save_auth_state(auth: tauri::State<'_, Arc<Mutex<AuthState>>>, auth_state: AuthState) {
+    let arced_mutex = Arc::clone(&auth);
+    let mut my_lock = arced_mutex.lock().expect("Could not lock auth");
+    *my_lock = auth_state.clone();
 }
 
 #[tauri::command]
-<<<<<<< HEAD
 pub async fn app_init(
     auth: tauri::State<'_, Arc<Mutex<AuthState>>>,
     settings: tauri::State<'_, Arc<Mutex<SettingsState>>>,
@@ -264,59 +259,56 @@ pub async fn app_init(
     // Save AuthState
     auth_state.save_to_file()?;
     Ok(false)
-=======
-pub async fn app_get_settings(app: tauri::State<'_, Mutex<AppState>>) -> Result<Settings, Error> {
-    let app = app.lock()?;
-    Ok(app.settings.clone())
->>>>>>> better-backend
 }
 
 #[tauri::command]
 pub async fn app_update_settings(
-    mut settings: Settings,
-    app: tauri::State<'_, Mutex<AppState>>,
-    log_parser: tauri::State<'_, Mutex<Arc<LogParserState>>>,
-) -> Result<Settings, Error> {
-    let mut app = app.lock()?;
-    settings.custom_sounds = app.settings.custom_sounds.clone();
-    let log_parser = log_parser.lock()?;
-    log_parser.set_path(&settings.advanced_settings.wf_log_path)?;
-    if settings.http_server.uuid() != app.settings.http_server.uuid() {
-        let operation = app
-            .http_server
-            .set_host(&settings.http_server.host, settings.http_server.port);
-        match (settings.http_server.enable, operation.as_str()) {
-            (true, "NO_CHANGE") => app.http_server.start(),
-            (false, "NO_CHANGE") => app.http_server.stop(),
-            (true, "CHANGED") => app.http_server.restart(),
-            (false, "CHANGED") => app.http_server.stop(),
-            _ => {}
+    settings: SettingsState,
+    settings_state: tauri::State<'_, Arc<Mutex<SettingsState>>>,
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+) -> Result<bool, AppError> {
+    let notify = notify.lock()?.clone();
+    let arced_mutex = Arc::clone(&settings_state);
+    let mut my_lock: std::sync::MutexGuard<'_, SettingsState> = arced_mutex.lock()?;
+
+    // Check if Warframe EE.log path exists
+    match settings.is_wf_log_valid() {
+        Ok(_) => {
+            my_lock.wf_log_path = settings.wf_log_path;
+        }
+        Err(e) => {
+            return Err(e);
         }
     }
-    app.update_settings(settings.clone())?;
-    Ok(settings.clone())
+
+    // Set Logging Settings
+    my_lock.debug = settings.debug;
+    my_lock.tos_uuid = settings.tos_uuid;
+
+    // Set Live Scraper Settings
+    my_lock.live_scraper = settings.live_scraper;
+
+    // Set Whisper Scraper Settings
+    my_lock.notifications = settings.notifications;
+
+    // Set Analytics Settings
+    my_lock.analytics = settings.analytics;
+
+    // Set Summary Settings
+    my_lock.summary_settings = settings.summary_settings;
+
+    my_lock.save_to_file().expect("Could not save settings");
+
+    notify.gui().send_event_update(
+        UIEvent::UpdateSettings,
+        UIOperationEvent::Set,
+        Some(json!(my_lock.clone())),
+    );
+
+    Ok(true)
 }
 
 #[tauri::command]
-pub async fn app_exit() -> Result<Settings, Error> {
+pub async fn app_exit() {
     std::process::exit(0);
-}
-#[tauri::command]
-pub async fn app_accept_tos(
-    id: String,
-    app: tauri::State<'_, Mutex<AppState>>,
-) -> Result<(), Error> {
-    let mut app = app.lock()?;
-    let mut settings = app.settings.clone();
-    settings.tos_uuid = id.clone();
-    app.update_settings(settings)?;
-    Ok(())
-}
-#[tauri::command]
-pub async fn app_notify_reset(id: String) -> Result<Value, Error> {
-    let value = json!(crate::app::NotificationsSetting::default());
-    if value[id.clone()].is_object() {
-        return Ok(value[id.clone()].clone());
-    }
-    Ok(json!({}))
 }

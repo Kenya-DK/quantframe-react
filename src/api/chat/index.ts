@@ -5,29 +5,44 @@ export class ChatModule {
   constructor(private readonly client: TauriClient) {}
 
   async refresh(): Promise<WFMarketTypes.ChatData[]> {
-    return await this.client.sendInvoke<WFMarketTypes.ChatData[]>("chat_refresh");
-  }
-
-  async getPagination(query: WFMarketTypes.WfmChatDataControllerGetListParams): Promise<WFMarketTypes.WfmChatDataControllerGetListData> {
-    return await this.client.sendInvoke<WFMarketTypes.WfmChatDataControllerGetListData>("get_chat_pagination", { query });
+    const [err, res] = await this.client.sendInvoke<WFMarketTypes.ChatData[]>("chat_refresh");
+    if (err) throw err;
+    return res;
   }
 
   async delete(id: string): Promise<void> {
-    return await this.client.sendInvoke<void>("chat_delete", { id });
+    const [err, res] = await this.client.sendInvoke<void>("chat_delete", { id });
+    if (err) throw err;
+    return res;
+  }
+
+  async deleteAll(): Promise<void> {
+    const [err, res] = await this.client.sendInvoke<void>("chat_delete_all");
+    if (err) throw err;
+    return res;
   }
 
   async getChatMessages(id: string): Promise<WFMarketTypes.ChatMessage[]> {
-    return await this.client.sendInvoke<WFMarketTypes.ChatMessage[]>("chat_get_messages_by_id", { id });
+    const [err, res] = await this.client.sendInvoke<WFMarketTypes.ChatMessage[]>("chat_get_messages", { id });
+    if (err) throw err;
+    return res;
   }
 
-  async set_active(id: string | undefined): Promise<void> {
-    return await this.client.sendInvoke<void>("chat_set_active", { id });
+  async on_message(msg: WFMarketTypes.ChatMessage) {
+    const [err, res] = await this.client.sendInvoke<WFMarketTypes.ChatMessage[]>("chat_on_message", { msg });
+    if (err) throw err;
+    return res;
+  }
+
+  async set_active(id: string, unread: number): Promise<void> {
+    const [err, res] = await this.client.sendInvoke<void>("chat_set_active", { id, unread });
+    if (err) throw err;
+    return res;
   }
 
   async send_message(id: string, msg: string): Promise<void> {
-    return await this.client.sendInvoke<void>("chat_send_message", { id, msg });
-  }
-  async chat_set_active_chat(id: string): Promise<void> {
-    return await this.client.sendInvoke<void>("chat_set_active_chat", { id });
+    const [err, res] = await this.client.sendInvoke<void>("chat_send_message", { id, msg });
+    if (err) throw err;
+    return res;
   }
 }

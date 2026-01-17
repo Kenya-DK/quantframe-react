@@ -1,26 +1,66 @@
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Datelike, NaiveDate, Timelike, Utc};
 use entity::{
-    dto::{FinancialGraph, FinancialReport, PaginatedResult, SubType},
-    transaction::TransactionPaginationQueryDto,
+    stock::{
+        item::{create::CreateStockItem, stock_item},
+        riven::{create::CreateStockRiven, stock_riven},
+    },
+    sub_type::SubType,
+    transaction::transaction::TransactionType,
+    wish_list::{create::CreateWishListItem, wish_list},
 };
-use serde_json::json;
-use service::TransactionQuery;
+use eyre::eyre;
+use regex::Regex;
+use serde_json::{json, Map, Value};
+use service::{StockItemMutation, StockRivenMutation, TransactionMutation, WishListMutation};
 use std::{
-    fs::{self},
-    path::PathBuf,
+    collections::HashMap,
+    fs::{self, File},
+    io::{self, Read, Write},
+    path::{Path, PathBuf},
+    sync::{Arc, Mutex},
 };
-use tauri::Manager;
-use utils::*;
-use wf_market::{enums::OrderType, types::Order};
+use tauri::{Manager, State};
+use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 
 use crate::{
-    cache::CacheTradableItem,
-    utils::{modules::states, OrderExt, SubTypeExt},
+    qf_client::client::QFClient,
+    utils::{
+        enums::ui_events::{UIEvent, UIOperationEvent},
+        modules::{error::AppError, states},
+    },
+    wfm_client::{enums::order_type::OrderType, types::order::Order},
     APP, DATABASE,
 };
 
 pub static APP_PATH: &str = "dev.kenya.quantframe";
 
+#[derive(Clone, Debug)]
+pub struct ZipEntry {
+    pub file_path: PathBuf,
+    pub sub_path: Option<String>,
+    pub content: Option<String>,
+    pub include_dir: bool,
+}
+#[derive(Debug, PartialEq, Eq)]
+pub enum GroupBy {
+    Hour,
+    Day,
+    Month,
+    Year,
+}
+pub fn add_metric(key: &str, value: &str) {
+    let key = key.to_string();
+    let value = value.to_string();
+    tauri::async_runtime::spawn({
+        async move {
+            // Create a new instance of the QFClient and store it in the app state
+            let qf_handle = APP.get().expect("failed to get app handle");
+            let qf_state: State<Arc<Mutex<QFClient>>> = qf_handle.state();
+            let qf = qf_state.lock().expect("failed to lock app state").clone();
+            qf.analytics().add_metric(&key, &value);
+        }
+    });
+}
 pub fn get_device_id() -> String {
     let app = APP.get().unwrap();
     let home_dir = match app.path().home_dir() {
@@ -32,6 +72,19 @@ pub fn get_device_id() -> String {
     let device_name = home_dir.file_name().unwrap().to_str().unwrap();
     device_name.to_string()
 }
+
+pub fn dose_app_exist() -> bool {
+    let app = APP.get().unwrap();
+    let local_path = match app.path().local_data_dir() {
+        Ok(val) => val,
+        Err(_) => {
+            return false;
+        }
+    };
+    let app_path = local_path.join(APP_PATH);
+    app_path.exists()
+}
+
 pub fn get_app_storage_path() -> PathBuf {
     let app = APP.get().unwrap();
     let local_path = match app.path().local_data_dir() {
@@ -48,75 +101,14 @@ pub fn get_app_storage_path() -> PathBuf {
     app_path
 }
 
-pub fn get_sounds_path() -> PathBuf {
-    let sounds_path = get_app_storage_path().join("sounds");
-    if !sounds_path.exists() {
-        fs::create_dir_all(&sounds_path).unwrap()
-    }
-    sounds_path
-}
+pub fn remove_special_characters(input: &str) -> String {
+    // Define the pattern for special characters except _ and space
+    let pattern = Regex::new("[^a-zA-Z0-9_ ]").unwrap();
 
-pub fn get_desktop_path() -> PathBuf {
-    let app = APP.get().unwrap();
-    let desktop_path = match app.path().desktop_dir() {
-        Ok(val) => val,
-        Err(_) => {
-            panic!("Could not find desktop path");
-        }
-    };
-    desktop_path
-}
-pub fn generate_transaction_summary(
-    transactions: &Vec<entity::transaction::Model>,
-    date: DateTime<Utc>,
-    group_by1: GroupByDate,
-    group_by2: &[GroupByDate],
-    _previous: bool,
-) -> (FinancialReport, FinancialGraph<i64>) {
-    let (start, end) = get_start_end_of(date, group_by1);
-    let transactions = filters_by(transactions, |t| {
-        t.created_at >= start && t.created_at <= end
-    });
+    // Replace special characters with empty string
+    let result = pattern.replace_all(input, "");
 
-    let mut grouped = group_by_date(&transactions, |t| t.created_at, group_by2);
-
-    fill_missing_date_keys(&mut grouped, start, end, group_by2);
-
-    let graph = FinancialGraph::<i64>::from(&grouped, |group| {
-        FinancialReport::from(&group.to_vec()).total_profit
-    });
-    (FinancialReport::from(&transactions), graph)
-}
-
-/// Paginate a vector of items
-pub fn paginate<T: Clone>(items: &[T], page: i64, per_page: i64) -> PaginatedResult<T> {
-    let total_items = items.len() as i64;
-
-    let start = (page.saturating_sub(1)) * per_page;
-    let end = (start + per_page).min(total_items);
-
-    let start_usize = start as usize;
-    let end_usize = end as usize;
-
-    let page_items = if start < total_items && end > 0 {
-        items[start_usize..end_usize].to_vec()
-    } else if per_page == -1 {
-        items.to_vec()
-    } else {
-        Vec::new()
-    };
-    let total_pages = if per_page == -1 {
-        1
-    } else {
-        (total_items as f64 / per_page as f64).ceil() as i64
-    };
-    PaginatedResult {
-        results: page_items,
-        page,
-        limit: per_page,
-        total: total_items,
-        total_pages,
-    }
+    result.into_owned()
 }
 
 pub fn get_local_data_path() -> PathBuf {
@@ -129,7 +121,310 @@ pub fn get_local_data_path() -> PathBuf {
     };
     local_path
 }
-<<<<<<< HEAD
+
+pub fn get_desktop_path() -> PathBuf {
+    let app = APP.get().unwrap();
+    let desktop_path = match app.path().desktop_dir() {
+        Ok(val) => val,
+        Err(_) => {
+            panic!("Could not find desktop path");
+        }
+    };
+    desktop_path
+}
+
+pub fn match_pattern(
+    input: &str,
+    regex: Vec<String>,
+) -> Result<(bool, Vec<Option<String>>), regex::Error> {
+    for regex in regex {
+        let re: Regex = Regex::new(&regex)?;
+        if let Some(captures) = re.captures(input) {
+            let mut result: Vec<Option<String>> = vec![];
+            for i in 1..captures.len() {
+                let group = captures.get(i).map(|m| m.as_str().to_string());
+                let group: Option<String> =
+                    group.map(|s| s.chars().filter(|c| c.is_ascii()).collect());
+                result.push(group);
+            }
+            return Ok((true, result));
+        }
+    }
+    Ok((false, vec![]))
+}
+
+pub fn read_zip_entries(
+    path: PathBuf,
+    include_subfolders: bool,
+) -> Result<Vec<ZipEntry>, AppError> {
+    let mut files: Vec<ZipEntry> = Vec::new();
+    for path in fs::read_dir(path).unwrap() {
+        let path = path.unwrap().path();
+        if path.is_dir() {
+            let dir_name = path.file_name().unwrap().to_str().unwrap();
+            let file_entries = read_zip_entries(path.to_owned(), include_subfolders)?;
+            for mut archive_entry in file_entries {
+                let sub_path = archive_entry.sub_path.clone().unwrap_or("".to_string());
+                // Remove the first slash if it exists
+                let full_path = format!("{}/{}", dir_name, sub_path);
+                archive_entry.sub_path = Some(full_path);
+                files.push(archive_entry);
+            }
+        }
+        if path.is_file() {
+            files.push(ZipEntry {
+                file_path: path.clone(),
+                sub_path: None,
+                content: None,
+                include_dir: false,
+            });
+        }
+    }
+    Ok(files)
+}
+
+pub fn create_zip_file(mut files: Vec<ZipEntry>, zip_path: &str) -> Result<(), AppError> {
+    let zip_file_path = Path::new(&zip_path);
+    let zip_file =
+        File::create(&zip_file_path).map_err(|e| AppError::new("Zip", eyre!(e.to_string())))?;
+    let mut zip = ZipWriter::new(zip_file);
+
+    // Get all files that are directories and add them to the files list
+    let mut files_to_compress: Vec<ZipEntry> = Vec::new();
+
+    for file_entry in &files {
+        if file_entry.include_dir {
+            let sub_file_entries = read_zip_entries(file_entry.file_path.clone(), true)?;
+            for mut sub_file_entry in sub_file_entries {
+                if sub_file_entry.sub_path.is_some() {
+                    sub_file_entry.sub_path = Some(format!(
+                        "{}/{}",
+                        file_entry.sub_path.clone().unwrap_or("".to_string()),
+                        sub_file_entry.sub_path.clone().unwrap_or("".to_string())
+                    ));
+                }
+                files_to_compress.push(sub_file_entry);
+            }
+        }
+    }
+    files.append(&mut files_to_compress);
+
+    // Set compression options (e.g., compression method)
+    let options = FileOptions::default().compression_method(CompressionMethod::DEFLATE);
+
+    for file_entry in &files {
+        if file_entry.include_dir {
+            continue;
+        }
+
+        let file_path = Path::new(&file_entry.file_path)
+            .canonicalize()
+            .map_err(|e| AppError::new("Zip", eyre!(e.to_string())))?;
+
+        if !file_path.exists() || !file_path.is_file() {
+            continue;
+        }
+
+        let file = File::open(&file_path).map_err(|e| {
+            AppError::new(
+                "Zip:Open",
+                eyre!(format!(
+                    "Path: {:?}, Error: {}",
+                    file_entry.file_path.clone(),
+                    e.to_string()
+                )),
+            )
+        })?;
+        let file_name = file_path.file_name().unwrap().to_str().unwrap();
+        // Adding the file to the ZIP archive.
+        if file_entry.sub_path.is_some() && file_entry.sub_path.clone().unwrap() != "" {
+            let mut sub_path = file_entry.sub_path.clone().unwrap();
+            if sub_path.starts_with("/") {
+                sub_path = sub_path[1..].to_string();
+            }
+            if sub_path.ends_with("/") {
+                sub_path = sub_path[..sub_path.len() - 1].to_string();
+            }
+            zip.start_file(format!("{}/{}", sub_path, file_name), options)
+                .map_err(|e| {
+                    AppError::new(
+                        "Zip:StartSub",
+                        eyre!(format!(
+                            "Path: {:?}, ZipPath: {:?}, Error: {}",
+                            file_entry.file_path.clone(),
+                            file_entry.sub_path.clone(),
+                            e.to_string()
+                        )),
+                    )
+                })?;
+        } else {
+            zip.start_file(file_name, options).map_err(|e| {
+                AppError::new(
+                    "Zip:Start",
+                    eyre!(format!(
+                        "Path: {:?}, Error: {}",
+                        file_entry.file_path,
+                        e.to_string()
+                    )),
+                )
+            })?;
+        }
+
+        let mut buffer = Vec::new();
+        if file_entry.content.is_some() {
+            buffer
+                .write_all(file_entry.content.clone().unwrap().as_bytes())
+                .map_err(|e| {
+                    AppError::new(
+                        "Zip:Write",
+                        eyre!(format!(
+                            "Path: {:?}, Error: {}",
+                            file_entry.file_path,
+                            e.to_string()
+                        )),
+                    )
+                })?;
+        } else {
+            io::copy(&mut file.take(u64::MAX), &mut buffer).map_err(|e| {
+                AppError::new(
+                    "Zip:Copy",
+                    eyre!(format!(
+                        "Path: {:?}, Error: {}",
+                        file_entry.file_path,
+                        e.to_string()
+                    )),
+                )
+            })?;
+        }
+
+        zip.write_all(&buffer).map_err(|e| {
+            AppError::new(
+                "Zip:Write",
+                eyre!(format!(
+                    "Path: {:?}, Error: {}",
+                    file_entry.file_path,
+                    e.to_string()
+                )),
+            )
+        })?;
+    }
+    zip.finish()
+        .map_err(|e| AppError::new("Zip:Done", eyre!(format!("Error: {}", e.to_string()))))?;
+    Ok(())
+}
+
+pub fn parse_args_from_string(args: &str) -> HashMap<String, String> {
+    let mut args_map = HashMap::new();
+    let mut parts = args.split_whitespace().peekable();
+
+    while let Some(part) = parts.next() {
+        if part.starts_with("--") {
+            if let Some(value) = parts.peek() {
+                if !value.starts_with("--") {
+                    args_map.insert(part.to_string(), value.to_string());
+                    parts.next();
+                }
+            } else {
+                args_map.insert(part.to_string(), "".to_string());
+            }
+        }
+    }
+
+    args_map
+}
+
+pub fn validate_args(
+    args: &str,
+    requirements: Vec<&str>,
+) -> Result<HashMap<String, String>, AppError> {
+    let args_map = parse_args_from_string(args);
+
+    for req in requirements {
+        // Split the requirement to check for conditional requirements
+        let parts: Vec<&str> = req.split(':').collect();
+        if parts.len() == 1 {
+            // Simple required argument
+            let arg = parts[0];
+            if !args_map.contains_key(arg) {
+                return Err(AppError::new(
+                    "ValidateArgs",
+                    eyre!(format!("Missing required argument: {}", arg)),
+                ));
+            }
+        } else if parts.len() == 2 {
+            // Conditional required arguments
+            let conditional_parts: Vec<&str> = parts[1].split('|').collect();
+            if conditional_parts.len() == 2 {
+                let (value, additional_args_str) = (conditional_parts[0], conditional_parts[1]);
+                let additional_args: Vec<&str> = additional_args_str.split_whitespace().collect();
+
+                if let Some(arg_value) = args_map.get(parts[0]) {
+                    if arg_value == value {
+                        for additional_arg in additional_args {
+                            if !args_map.contains_key(additional_arg) {
+                                return Err(AppError::new(
+                                    "ValidateArgs",
+                                    eyre!(format!(
+                                        "Missing required argument due to {}={}: {}",
+                                        parts[0], value, additional_arg
+                                    )),
+                                ));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(args_map)
+}
+
+pub fn is_match(
+    input: &str,
+    to_match: &str,
+    ignore_case: bool,
+    remove_string: Option<&String>,
+) -> bool {
+    let mut input = input.to_string();
+    if let Some(remove_string) = remove_string {
+        input = input.replace(remove_string, "");
+    }
+    if ignore_case {
+        input.to_lowercase() == to_match.to_lowercase()
+    } else {
+        input == to_match
+    }
+}
+
+pub fn validate_json(json: &Value, required: &Value, path: &str) -> (Value, Vec<String>) {
+    let mut modified_json = json.clone();
+    let mut missing_properties = Vec::new();
+
+    if let Some(required_obj) = required.as_object() {
+        for (key, value) in required_obj {
+            let full_path = if path.is_empty() {
+                key.clone()
+            } else {
+                format!("{}.{}", path, key)
+            };
+
+            if !json.as_object().unwrap().contains_key(key) {
+                missing_properties.push(full_path.clone());
+                modified_json[key] = required_obj[key].clone();
+            } else if value.is_object() {
+                let sub_json = json.get(key).unwrap();
+                let (modified_sub_json, sub_missing) = validate_json(sub_json, value, &full_path);
+                if !sub_missing.is_empty() {
+                    modified_json[key] = modified_sub_json;
+                    missing_properties.extend(sub_missing);
+                }
+            }
+        }
+    }
+
+    (modified_json, missing_properties)
+}
 
 pub fn loop_through_properties(data: &mut Map<String, Value>, properties: Vec<String>) {
     // Iterate over each key-value pair in the JSON object
@@ -196,73 +491,77 @@ pub async fn progress_wfm_order(
                     UIOperationEvent::CreateOrUpdate,
                     Some(json!(order)),
                 );
-=======
-pub async fn get_item_details(
-    raw: impl Into<String>,
-    sub_type: Option<SubType>,
-    order_type: OrderType,
-) -> Result<(serde_json::Value, Option<CacheTradableItem>, Option<Order>), Error> {
-    let item_id = raw.into();
-    let app = states::app_state()?.clone();
-    let cache = states::cache_client()?.clone();
+            }
+            return Ok((operation, order));
+        }
+        Err(e) => {
+            return Err(e);
+        }
+    }
+}
+
+pub async fn progress_transaction(
+    transaction: &mut entity::transaction::transaction::Model,
+    from: &str,
+) -> Result<entity::transaction::transaction::Model, AppError> {
     let conn = DATABASE.get().unwrap();
-
-    let mut payload = json!({});
-    // Get item details from cache
-    let item_info = cache
-        .tradable_item()
-        .get_by(&item_id)
-        .map_err(|e| e.with_location(get_location!()))?;
-
-    payload["item_info"] = json!(item_info);
-    match cache.all_items().get_by(&item_info.unique_name) {
-        Ok(mut full_item) => {
-            for component in full_item.components.iter_mut() {
-                component.name = format!("{} {}", full_item.name, component.name);
->>>>>>> better-backend
-            }
-            payload["item_info"]["components"] = json!(full_item.components);
+    let notify = states::notify_client()?;
+    match TransactionMutation::create(conn, &transaction).await {
+        Ok(inserted) => {
+            add_metric("Transaction_Create", from);
+            transaction.id = inserted.id;
         }
-        Err(_) => {
-            warning(
-                "Command::GetItemDetails",
-                &format!(
-                    "Full item not found for unique name: {}",
-                    item_info.unique_name
-                ),
-                &LoggerOptions::default(),
-            );
+        Err(e) => {
+            return Err(AppError::new_db("TransactionCreate", e));
         }
+    };
+    notify.gui().send_event(UIEvent::RefreshTransactions, None);
+
+    Ok(transaction.clone())
+}
+
+pub async fn progress_wish_item(
+    entity: &mut CreateWishListItem,
+    validate_by: &str,
+    user_name: &str,
+    operation: OrderType,
+    options: Vec<String>,
+    from: &str,
+) -> Result<(wish_list::Model, Vec<String>), AppError> {
+    let conn = DATABASE.get().unwrap();
+    let mut response = vec![];
+    let cache = states::cache()?;
+    let notify = states::notify_client()?;
+    if operation == OrderType::Sell {
+        return Err(AppError::new(
+            "ProgressWishItem",
+            eyre!("Invalid operation"),
+        ));
     }
 
-    // Get Order Info from WFM
-    let order = app.wfm_client.order().cache_orders().find_order(
-        &item_info.wfm_id,
-        &SubTypeExt::from_entity(sub_type.clone()),
-        order_type,
-    );
-    if let Some(mut order_info) = order.clone() {
-        let mut details = order_info.get_details();
-        let mut orders = details.orders;
-        if !orders.is_empty() {
-            for ord in orders.iter_mut() {
-                ord.order.apply_item_info(&cache)?;
-            }
-            details.orders = orders;
-            order_info.update_details(details);
+    // Validate the stock item
+    match cache
+        .tradable_items()
+        .validate_create_wish_item(entity, validate_by)
+    {
+        Ok(_) => {}
+        Err(e) => {
+            return Err(e);
         }
-        payload["order_info"] = json!(order_info);
-    }
+    };
 
-    // Get Transaction Summary
-    let transaction_paginate = TransactionQuery::get_all(
+    //Get stock item from the entity
+    let wish_item = entity.to_model();
+
+    // Progress the stock item based on the operation
+
+    match WishListMutation::bought_by_url_and_sub_type(
         conn,
-        TransactionPaginationQueryDto::new(1, -1)
-            .set_wfm_id(&item_info.wfm_id)
-            .set_sub_type(sub_type.clone()),
+        wish_item.wfm_url.as_str(),
+        wish_item.sub_type.clone(),
+        wish_item.quantity,
     )
     .await
-<<<<<<< HEAD
     {
         Ok((operation, _)) => {
             response.push(format!("WishItem_{}", operation));
@@ -746,10 +1045,4 @@ pub fn get_end_of(group_by: GroupBy) -> DateTime<Utc> {
             .unwrap(),
     };
     DateTime::<Utc>::from_utc(date, Utc)
-=======
-    .map_err(|e| e.with_location(get_location!()))?;
-    payload["report"] = json!(FinancialReport::from(&transaction_paginate.results));
-    payload["last_transactions"] = json!(transaction_paginate.take_top(5));
-    Ok((payload, Some(item_info), order))
->>>>>>> better-backend
 }

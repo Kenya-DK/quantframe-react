@@ -7,12 +7,10 @@
   box-shadow: 0 0 10px var(--mantine-color-blue-0);
   border-radius: 5px;
   cursor: pointer;
-
   &:hover {
     box-shadow: 0 0 10px var(--mantine-color-blue-6);
   }
 }
-
 .icon {
-  padding: 0.5rem;
+  padding: 0.5rem ;
 }
