@@ -87,6 +87,14 @@ pub async fn get_wfm_auctions_pagination(
                 }
                 _ => {}
             }
+            match &query.auction_type {
+                FieldChange::Value(auction_type) => {
+                    if &o.item.item_type != auction_type {
+                        return false;
+                    }
+                }
+                _ => {}
+            }
 
             true
         });

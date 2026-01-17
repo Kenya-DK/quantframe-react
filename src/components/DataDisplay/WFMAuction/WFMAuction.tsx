@@ -45,17 +45,18 @@ export function WFMAuction({ header, auction, overlayFooter, hideFooter }: WFMAu
         )}
       </Card.Section>
       <Card.Section className={classes.attributesSection}>
-        {auction.item.attributes.map((attr) => (
-          <RivenAttribute
-            i18nKey="full"
-            key={attr.url_name}
-            groupProps={{ p: 1 }}
-            value={attr}
-            hideDetails
-            centered
-            textDecoration={attr.properties?.matched ? "line-through" : undefined}
-          />
-        ))}
+        {auction.item.type == "riven" &&
+          auction.item.attributes.map((attr) => (
+            <RivenAttribute
+              i18nKey="full"
+              key={attr.url_name}
+              groupProps={{ p: 1 }}
+              value={attr}
+              hideDetails
+              centered
+              textDecoration={attr.properties?.matched ? "line-through" : undefined}
+            />
+          ))}
       </Card.Section>
       <Card.Section bg={alpha("var(--mantine-color-dark-7)", 0.7)} p={3} className={classes.footerSection} display={hideFooter ? "none" : "grid"}>
         <Grid p={"3px"}>

@@ -13,8 +13,8 @@ import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 import { Loading } from "@components/Shared/Loading";
 import { useStockModals } from "./modals";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { TextTranslate } from "../../../../components/Shared/TextTranslate";
-import { WFMAuction } from "../../../../components/DataDisplay/WFMAuction";
+import { TextTranslate } from "@components/Shared/TextTranslate";
+import { WFMAuction } from "@components/DataDisplay/WFMAuction";
 interface AuctionPanelProps {
   isActive?: boolean;
 }
@@ -24,6 +24,7 @@ export const AuctionPanel = ({ isActive }: AuctionPanelProps) => {
     limit: 12,
     sort_by: "created_at",
     sort_direction: "desc",
+    auction_type: "riven",
   });
   const [loadingRows, setLoadingRows] = useState<string[]>([]);
   const [deletingOrders, setDeletingOrders] = useState<{ current: number; total: number }>({ current: 0, total: 0 });

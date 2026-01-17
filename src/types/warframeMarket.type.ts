@@ -126,7 +126,7 @@ export namespace WFMarketTypes {
     limit: number;
     sort_by?: string;
     sort_direction?: "asc" | "desc";
-    order_type?: WFMarketTypes.OrderType;
+    auction_type?: string;
     query?: string;
   }
   export interface WfmChatDataControllerGetListParams {
@@ -134,7 +134,6 @@ export namespace WFMarketTypes {
     limit: number;
     sort_by?: string;
     sort_direction?: "asc" | "desc";
-    order_type?: WFMarketTypes.OrderType;
     query?: string;
   }
   export type WfmChatDataControllerGetListData = PaginatedDto & {

@@ -1,7 +1,7 @@
-
 use entity::{dto::*, enums::*};
 
 use serde::{Deserialize, Serialize};
+use wf_market::enums::AuctionType;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WfmAuctionPaginationQueryDto {
@@ -10,6 +10,9 @@ pub struct WfmAuctionPaginationQueryDto {
 
     #[serde(default)]
     pub query: FieldChange<String>,
+
+    #[serde(default)]
+    pub auction_type: FieldChange<AuctionType>,
 
     #[serde(default)]
     pub sort_by: FieldChange<String>,
