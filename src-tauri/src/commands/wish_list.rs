@@ -1,118 +1,203 @@
-use std::{collections::HashMap, sync::Mutex};
+use std::sync::{Arc, Mutex};
 
-use entity::{dto::*, wish_list::*};
-use serde_json::{json, Value};
-use service::{WishListMutation, WishListQuery};
-use tauri_plugin_dialog::DialogExt;
-use utils::{get_location, group_by, info, Error, LoggerOptions};
-use wf_market::enums::OrderType;
+use create::CreateWishListItem;
+use entity::wish_list::*;
+use entity::{enums::stock_status::StockStatus, sub_type::SubType};
 
+use eyre::eyre;
+use migration::Iden;
+use serde_json::json;
+use service::{StockRivenMutation, StockRivenQuery, WishListMutation, WishListQuery};
+
+use crate::cache::client::CacheClient;
+use crate::helper::{self, add_metric};
+use crate::live_scraper::modules::item;
+use crate::qf_client::client::QFClient;
+use crate::utils::modules::error;
+use crate::wfm_client::enums::order_type::OrderType;
 use crate::{
-    add_metric,
     app::client::AppState,
-    handlers::{handle_wfm_item, handle_wish_list, handle_wish_list_by_entity},
-    helper,
-    types::PermissionsFlags,
-    APP, DATABASE,
+    notification::client::NotifyClient,
+    utils::{
+        enums::ui_events::{UIEvent, UIOperationEvent},
+        modules::{error::AppError, logger},
+    },
+    wfm_client::client::WFMClient,
 };
 
 #[tauri::command]
-pub async fn get_wish_list_pagination(
-    query: WishListPaginationQueryDto,
-) -> Result<PaginatedResult<Model>, Error> {
-    let conn = DATABASE.get().unwrap();
-    match WishListQuery::get_all(conn, query).await {
-        Ok(data) => return Ok(data),
-        Err(e) => return Err(e.with_location(get_location!())),
-    };
-}
+pub async fn wish_list_reload(
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    app: tauri::State<'_, Arc<Mutex<AppState>>>,
+) -> Result<(), AppError> {
+    let app = app.lock()?.clone();
+    let notify = notify.lock()?.clone();
 
-#[tauri::command]
-pub async fn get_wish_list_financial_report(
-    query: WishListPaginationQueryDto,
-) -> Result<FinancialReport, Error> {
-    let items = get_wish_list_pagination(query).await?;
-    Ok(FinancialReport::from(&items.results))
-}
-
-#[tauri::command]
-pub async fn get_wish_list_status_counts(
-    query: WishListPaginationQueryDto,
-) -> Result<HashMap<String, usize>, Error> {
-    let items = get_wish_list_pagination(query).await?;
-    Ok(group_by(&items.results, |item| item.status.to_string())
-        .iter()
-        .map(|(status, items)| (status.clone(), items.len()))
-        .collect::<HashMap<_, _>>())
-}
-
-#[tauri::command]
-pub async fn wish_list_create(input: CreateWishListItem) -> Result<Model, Error> {
-    match handle_wish_list_by_entity(input, "", OrderType::Sell, &[]).await {
-        Ok((_, item)) => return Ok(item),
-        Err(e) => {
-            return Err(e.with_location(get_location!()).log("wish_list_buy.log"));
+    match WishListQuery::get_all(&app.conn).await {
+        Ok(items) => {
+            add_metric("WishList_Reload", "manual");
+            notify.gui().send_event_update(
+                UIEvent::UpdateWishList,
+                UIOperationEvent::Set,
+                Some(json!(items)),
+            );
         }
-    }
+        Err(e) => {
+            let error: AppError = AppError::new_db("WishListQuery::reload", e);
+            error::create_log_file("command.log".to_string(), &error);
+            return Err(error);
+        }
+    };
+    Ok(())
 }
 
 #[tauri::command]
-pub async fn wish_list_bought(
+pub async fn wish_list_create(
     wfm_url: String,
+    maximum_price: Option<i64>,
     sub_type: Option<SubType>,
     quantity: i64,
-    price: i64,
-) -> Result<Model, Error> {
-    match handle_wish_list(wfm_url, &sub_type, quantity, price, "", OrderType::Buy, &[]).await {
-        Ok((_, updated_item)) => return Ok(updated_item),
+    app: tauri::State<'_, Arc<Mutex<AppState>>>,
+    cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+) -> Result<wish_list::Model, AppError> {
+    let app = app.lock()?.clone();
+    let cache = cache.lock()?.clone();
+    let notify = notify.lock()?.clone();
+
+    let mut created_item =
+        CreateWishListItem::new(wfm_url, sub_type.clone(), maximum_price, quantity);
+    match cache
+        .tradable_items()
+        .validate_create_wish_item(&mut created_item, "--item_by url_name --item_lang en")
+    {
+        Ok(_) => {}
         Err(e) => {
-            return Err(e.with_location(get_location!()).log("wish_list_buy.log"));
+            return Err(e);
+        }
+    };
+
+    match WishListMutation::add_item(&app.conn, created_item.to_model()).await {
+        Ok(inserted) => {
+            notify.gui().send_event_update(
+                UIEvent::UpdateWishList,
+                UIOperationEvent::CreateOrUpdate,
+                Some(json!(inserted)),
+            );
+            add_metric("WishList_ItemCreated", "manual");
+        }
+        Err(e) => {
+            return Err(AppError::new("StockItemCreate", eyre!(e)));
         }
     }
+    Ok(created_item.to_model())
 }
 
 #[tauri::command]
-pub async fn wish_list_delete(id: i64) -> Result<Model, Error> {
-    let conn = DATABASE.get().unwrap();
+pub async fn wish_list_update(
+    id: i64,
+    maximum_price: Option<i64>,
+    sub_type: Option<SubType>,
+    quantity: Option<i64>,
+    app: tauri::State<'_, Arc<Mutex<AppState>>>,
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+) -> Result<wish_list::Model, AppError> {
+    let app = app.lock()?.clone();
+    let notify = notify.lock()?.clone();
 
-    let item = WishListQuery::get_by_id(conn, id)
-        .await
-        .map_err(|e| e.with_location(get_location!()))?;
+    let item = match WishListQuery::find_by_id(&app.conn, id).await {
+        Ok(foundItem) => foundItem,
+        Err(e) => return Err(AppError::new("WishListItemUpdate", eyre!(e))),
+    };
+
     if item.is_none() {
-        return Err(Error::new(
-            "Command::WishListDelete",
-            format!("Wish list item with ID {} not found", id),
-            get_location!(),
+        return Err(AppError::new(
+            "WishListItemUpdate",
+            eyre!(format!("Item with id {} not found", id)),
+        ));
+    }
+
+    let mut new_item = item.unwrap();
+
+    if let Some(maximum_price) = maximum_price {
+        new_item.maximum_price = Some(maximum_price);
+    }
+
+    if let Some(sub_type) = sub_type {
+        new_item.sub_type = Some(sub_type);
+    }
+
+    if let Some(quantity) = quantity {
+        new_item.quantity = quantity;
+    }
+    new_item.updated_at = chrono::Utc::now();
+
+    match WishListMutation::update_by_id(&app.conn, new_item.id, new_item.clone()).await {
+        Ok(updated) => {
+            helper::add_metric("WishList_ItemUpdated", "manual");
+            notify.gui().send_event_update(
+                UIEvent::UpdateWishList,
+                UIOperationEvent::CreateOrUpdate,
+                Some(json!(updated)),
+            );
+        }
+        Err(e) => {
+            let error: AppError = AppError::new_db("WishListMutation::UpdateById", e);
+            error::create_log_file("wish_list_update.log".to_string(), &error);
+            return Err(error);
+        }
+    }
+
+    Ok(new_item)
+}
+
+#[tauri::command]
+pub async fn wish_list_delete(
+    id: i64,
+    app: tauri::State<'_, Arc<Mutex<AppState>>>,
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+) -> Result<(), AppError> {
+    let app = app.lock()?.clone();
+    let notify = notify.lock()?.clone();
+    let wfm = wfm.lock()?.clone();
+
+    let item = match WishListQuery::get_by_id(&app.conn, id).await {
+        Ok(item) => item,
+        Err(e) => {
+            return Err(AppError::new("WishListQuery::get_by_id", eyre!(e)));
+        }
+    };
+
+    if item.is_none() {
+        return Err(AppError::new(
+            "WishItemDelete",
+            eyre!(format!("Item with id {} not found", id)),
         ));
     }
     let item = item.unwrap();
 
-    handle_wfm_item(&item.wfm_id, &item.sub_type, 1, OrderType::Buy, true)
-        .await
-        .map_err(|e| e.with_location(get_location!()).log("wish_list_delete.log"))?;
-    add_metric!("wish_list_delete", "manual");
-    match WishListMutation::delete_by_id(conn, id).await {
-        Ok(_) => {}
-        Err(e) => return Err(e.with_location(get_location!())),
-    }
-
-    Ok(item)
-}
-#[tauri::command]
-pub async fn wish_list_delete_multiple(ids: Vec<i64>) -> Result<i64, Error> {
-    let conn = DATABASE.get().unwrap();
-    let mut deleted_count = 0;
-
-    for id in ids {
-        match WishListMutation::delete_by_id(conn, id).await {
-            Ok(_) => deleted_count += 1,
-            Err(e) => return Err(e.with_location(get_location!())),
+    match WishListMutation::delete_by_id(&app.conn, id).await {
+        Ok(_) => {
+            notify.gui().send_event_update(
+                UIEvent::UpdateWishList,
+                UIOperationEvent::Delete,
+                Some(json!({ "id": id })),
+            );
+            add_metric("WishList_ItemDeleted", "manual");
+        }
+        Err(e) => {
+            let error: AppError = AppError::new_db("WishListMutation::DeleteById", e);
+            error::create_log_file("wish_list_delete.log".to_string(), &error);
+            return Err(error);
         }
     }
-<<<<<<< HEAD
     let my_orders = wfm.orders().get_my_orders().await?;
-    let order =
-        my_orders.find_order_by_url_sub_type(&item.wfm_id, OrderType::Sell, item.sub_type.as_ref());
+    let order = my_orders.find_order_by_url_sub_type(
+        &item.wfm_url,
+        OrderType::Sell,
+        item.sub_type.as_ref(),
+    );
     if order.is_none() {
         return Ok(());
     }
@@ -124,109 +209,71 @@ pub async fn wish_list_delete_multiple(ids: Vec<i64>) -> Result<i64, Error> {
         Some(json!({ "id": order.clone().unwrap().id })),
     );
     Ok(())
-=======
-    Ok(deleted_count)
->>>>>>> better-backend
 }
-#[tauri::command]
-pub async fn wish_list_update(input: UpdateWishList) -> Result<Model, Error> {
-    let conn = DATABASE.get().unwrap();
 
-    match WishListMutation::update_by_id(conn, input).await {
-        Ok(item) => Ok(item),
-        Err(e) => return Err(e.with_location(get_location!())),
-    }
-}
 #[tauri::command]
-pub async fn wish_list_update_multiple(
-    ids: Vec<i64>,
-    input: UpdateWishList,
-) -> Result<Vec<Model>, Error> {
-    let conn = DATABASE.get().unwrap();
-    let mut updated_items = Vec::new();
+pub async fn wish_list_bought(
+    id: i64,
+    price: i64,
+    app: tauri::State<'_, Arc<Mutex<AppState>>>,
+    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+    cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
+) -> Result<wish_list::Model, AppError> {
+    let app = app.lock()?.clone();
+    let notify = notify.lock()?.clone();
+    let wfm = wfm.lock()?.clone();
+    let cache = cache.lock()?.clone();
+    let qf = qf.lock()?.clone();
 
-    for id in ids {
-        let mut update_input = input.clone();
-        update_input.id = id;
-        match WishListMutation::update_by_id(conn, update_input).await {
-            Ok(wish_list) => updated_items.push(wish_list),
-            Err(e) => return Err(e.with_location(get_location!())),
+    let item = match WishListQuery::get_by_id(&app.conn, id).await {
+        Ok(item) => item,
+        Err(e) => {
+            return Err(AppError::new("WishListQuery::get_by_id", eyre!(e)));
         }
-    }
-    Ok(updated_items)
-}
-#[tauri::command]
-pub async fn wish_list_get_by_id(id: i64) -> Result<Value, Error> {
-    let conn = DATABASE.get().unwrap();
-    let item = match WishListQuery::find_by_id(conn, id).await {
-        Ok(wish_list_item) => {
-            if let Some(item) = wish_list_item {
-                item
-            } else {
-                return Err(Error::new(
-                    "Command::WishListGetById",
-                    "Wish list item not found",
-                    get_location!(),
-                ));
-            }
-        }
-        Err(e) => return Err(e.with_location(get_location!())),
     };
 
-    let (mut payload, _, _) =
-        helper::get_item_details(&item.wfm_id, item.sub_type.clone(), OrderType::Buy).await?;
-
-    payload["stock"] = json!(item);
-
-    Ok(payload)
-}
-#[tauri::command]
-pub async fn export_wish_list_json(
-    app_state: tauri::State<'_, Mutex<AppState>>,
-    mut query: WishListPaginationQueryDto,
-) -> Result<String, Error> {
-    let app_state = app_state.lock()?.clone();
-    let app = APP.get().unwrap();
-    if let Err(e) = app_state.user.has_permission(PermissionsFlags::ExportData) {
-        e.log("export_wish_list_json.log");
-        return Err(e);
+    if item.is_none() {
+        return Err(AppError::new(
+            "WishItemBought",
+            eyre!(format!("Item with id {} not found", id)),
+        ));
     }
-    let conn = DATABASE.get().unwrap();
-    query.pagination.limit = -1; // fetch all
-    match WishListQuery::get_all(conn, query).await {
-        Ok(wish_list) => {
-            let file_path = app
-                .dialog()
-                .file()
-                .add_filter("Quantframe_Wish_List", &["json"])
-                .blocking_save_file();
-            if let Some(file_path) = file_path {
-                let json = serde_json::to_string_pretty(&wish_list.results).map_err(|e| {
-                    Error::new(
-                        "Command::ExportWishListJson",
-                        format!("Failed to serialize wish list to JSON: {}", e),
-                        get_location!(),
-                    )
-                })?;
-                std::fs::write(file_path.as_path().unwrap(), json).map_err(|e| {
-                    Error::new(
-                        "Command::ExportWishListJson",
-                        format!("Failed to write wish list to file: {}", e),
-                        get_location!(),
-                    )
-                })?;
-                info(
-                    "Command::ExportWishListJson",
-                    format!("Exported wish list to JSON file: {}", file_path),
-                    &LoggerOptions::default(),
-                );
-                add_metric!("export_wish_list_json", "success");
-                return Ok(file_path.to_string());
-            }
-            // do something with the optional file path here
-            // the file path is `None` if the user closed the dialog
-            return Ok("".to_string());
+    let item = item.unwrap();
+
+    let mut created_stock = CreateWishListItem::new_valid(
+        item.wfm_id.clone(),
+        item.wfm_url.clone(),
+        item.item_name.clone(),
+        item.item_unique_name.clone(),
+        vec![],
+        item.sub_type.clone(),
+        item.maximum_price,
+        1,
+        Some(price),
+    );
+
+    match helper::progress_wish_item(
+        &mut created_stock,
+        "--item_by url_name --item_lang en",
+        "",
+        OrderType::Buy,
+        vec![],
+        "manual",
+        &app,
+        &cache,
+        &notify,
+        &wfm,
+        &qf,
+    )
+    .await
+    {
+        Ok((_, _)) => {
+            return Ok(item);
         }
-        Err(e) => return Err(e.with_location(get_location!())),
+        Err(e) => {
+            return Err(e);
+        }
     }
 }

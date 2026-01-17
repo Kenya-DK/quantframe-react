@@ -1,30 +1,37 @@
 use serde::{Deserialize, Serialize};
 
-use super::{cache_item_base::CacheItemBase, cache_item_component::CacheItemComponent};
+use super::cache_item_component::CacheItemComponent;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CacheArcane {
     #[serde(rename = "category")]
     pub category: String,
+    #[serde(rename = "imageName")]
+    pub image_name: String,
+    #[serde(rename = "masterable")]
+    pub masterable: bool,
     #[serde(rename = "name")]
     pub name: String,
-    #[serde(rename = "wfm_item_url")]
-    pub wfm_item_url: Option<String>,
+    #[serde(rename = "rarity")]
+    pub rarity: Option<String>,
+    #[serde(rename = "tradable")]
+    pub tradable: bool,
+    #[serde(rename = "type")]
+    pub arcane_type: String,
     #[serde(rename = "uniqueName")]
     pub unique_name: String,
-    #[serde(rename = "components", default)]
-    pub components: Vec<CacheItemComponent>,
-}
-
-impl CacheArcane {
-    pub fn convert_to_base_item(&self) -> CacheItemBase {
-        CacheItemBase {
-            unique_name: self.unique_name.clone(),
-            name: self.name.clone(),
-            category: self.category.clone(),
-            wfm_item_url: self.wfm_item_url.clone(),
-            part_of_set: None,
-            components: self.components.clone(),
-        }
-    }
+    #[serde(rename = "excludeFromCodex")]
+    pub exclude_from_codex: Option<bool>,
+    #[serde(rename = "buildPrice")]
+    pub build_price: Option<i32>,
+    #[serde(rename = "buildQuantity")]
+    pub build_quantity: Option<i32>,
+    #[serde(rename = "buildTime")]
+    pub build_time: Option<i32>,
+    #[serde(rename = "components")]
+    pub components: Option<Vec<CacheItemComponent>>,
+    #[serde(rename = "consumeOnBuild")]
+    pub consume_on_build: Option<bool>,
+    #[serde(rename = "skipBuildTimePrice")]
+    pub skip_build_time_price: Option<i32>,
 }

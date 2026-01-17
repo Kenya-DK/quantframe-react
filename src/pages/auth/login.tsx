@@ -4,10 +4,10 @@ import api, { SendTauriDataEvent } from "@api/index";
 import { useMutation } from "@tanstack/react-query";
 import { notifications } from "@mantine/notifications";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
-import { TextTranslate } from "@components/Shared/TextTranslate";
-import { ResponseError, TauriTypes } from "$types";
+import { TextTranslate } from "@components/TextTranslate";
+import { QfSocketEvent, QfSocketEventOperation, ResponseError } from "@api/types";
 import { useState } from "react";
-import { PlaySound } from "@utils/helper";
+import wfmSocket from "@models/wfmSocket";
 
 export default function LoginPage() {
   // States
@@ -39,25 +39,57 @@ export default function LoginPage() {
       setIsBanned(u.qf_banned);
       if (u.qf_banned)
         return notifications.show({ title: useTranslateErrors("login.title"), message: useTranslateErrors("login.banned"), color: "red.7" });
-      if (!u.verification)
-        return notifications.show({ title: useTranslateErrors("login.title"), message: useTranslateErrors("login.verification"), color: "red.7" });
+
       setBannedReason(u.qf_banned_reason);
       notifications.show({
         title: useTranslateSuccess("login.title"),
-        message: useTranslateSuccess("login.message", { name: u.wfm_username }),
+        message: useTranslateSuccess("login.message", { name: u.ingame_name }),
         color: "green.7",
       });
-      SendTauriDataEvent(TauriTypes.Events.UpdateUser, TauriTypes.EventOperations.SET, u);
-      await PlaySound("windows_xp_startup.mp3", 1.0);
+      setInterval(1);
+      setProgressText(useTranslateProgress("refreshing_orders"));
+      await api.order.refresh();
+
+      setProgressText(useTranslateProgress("refreshing_auctions"));
+      setInterval(2);
+      await api.auction.refresh();
+
+      setProgressText(useTranslateProgress("refreshing_chat"));
+      setInterval(3);
+      await api.chat.refresh();
+
+      setProgressText(useTranslateProgress("refreshing_cache"));
+      setInterval(4);
+      await api.cache.reload();
+
+      setProgressText(useTranslateProgress("refreshing_transaction"));
+      setInterval(5);
+      await api.transaction.reload();
+      setProgressText(useTranslateProgress("refreshing_stock_items"));
+      setInterval(6);
+      await api.stock.item.reload();
+      setProgressText(useTranslateProgress("refreshing_stock_riven"));
+      setInterval(7);
+      await api.stock.riven.reload();
+
+      setProgressText(useTranslateProgress("login.progress_text_4"));
+      setInterval(8);
+      SendTauriDataEvent(QfSocketEvent.UpdateUser, QfSocketEventOperation.SET, u);
+      if (u.wfm_access_token) wfmSocket.updateToken(u.wfm_access_token);
     },
     onError: (err: ResponseError) => {
       console.error(err);
-      const { type } = err.context as any;
-      return notifications.show({
-        title: useTranslateErrors("login.title"),
-        message: useTranslateErrors(`login.${type}`),
-        color: "red.7",
-      });
+      const { ApiError }: { ApiError: { messages: string[] } } = err.extra_data as any;
+      if (ApiError.messages.some((m) => m.includes("app.account.email_not_exist")))
+        return notifications.show({ title: useTranslateErrors("login.title"), message: useTranslateErrors("login.email_not_exist"), color: "red.7" });
+      if (ApiError.messages.some((m) => m.includes("app.account.password_invalid")))
+        return notifications.show({
+          title: useTranslateErrors("login.title"),
+          message: useTranslateErrors("login.password_invalid"),
+          color: "red.7",
+        });
+
+      return notifications.show({ title: useTranslateErrors("login.title"), message: useTranslateErrors("login.message"), color: "red.7" });
     },
   });
 
@@ -71,7 +103,7 @@ export default function LoginPage() {
           <>
             {logInMutation.isPending && (
               <Progress.Root size="xl">
-                <Progress.Section value={(interval / 6) * 100}>
+                <Progress.Section value={(interval / 8) * 100}>
                   <Progress.Label>{progressText}</Progress.Label>
                 </Progress.Section>
               </Progress.Root>

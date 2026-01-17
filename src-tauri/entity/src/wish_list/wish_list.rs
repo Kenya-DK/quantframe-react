@@ -3,7 +3,10 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::{dto::*, enums::*, transaction::Model as TransactionModel, wish_list::dto::*};
+use crate::{
+    enums::stock_status::StockStatus, price_history::PriceHistoryVec, sub_type::SubType,
+    transaction,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize)]
 #[sea_orm(table_name = "wish_list")]
@@ -19,8 +22,6 @@ pub struct Model {
     pub sub_type: Option<SubType>,
     pub quantity: i64,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub minimum_price: Option<i64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub maximum_price: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub list_price: Option<i64>,
@@ -31,7 +32,7 @@ pub struct Model {
     pub updated_at: DateTimeUtc,
     #[sea_orm(created_at)]
     pub created_at: DateTimeUtc,
-    pub is_hidden: bool,
+
     #[sea_orm(ignore)]
     #[serde(rename = "is_dirty", default)]
     pub is_dirty: bool,
@@ -70,7 +71,6 @@ impl Model {
             sub_type,
             quantity,
             list_price: None,
-            minimum_price: None,
             maximum_price,
             status: StockStatus::Pending,
             price_history: PriceHistoryVec(vec![]),
@@ -78,7 +78,6 @@ impl Model {
             created_at: Default::default(),
             is_dirty: true,
             locked: false,
-            is_hidden: false,
             changes: None,
         }
     }
@@ -88,13 +87,13 @@ impl Model {
         tags: Vec<String>,
         quantity: i64,
         price: i64,
-        transaction_type: TransactionType,
-    ) -> TransactionModel {
-        TransactionModel::new(
+        transaction_type: transaction::transaction::TransactionType,
+    ) -> transaction::transaction::Model {
+        transaction::transaction::Model::new(
             self.wfm_id.clone(),
             self.wfm_url.clone(),
             self.item_name.clone(),
-            TransactionItemType::Item,
+            transaction::transaction::TransactionItemType::Item,
             self.item_unique_name.clone(),
             self.sub_type.clone(),
             tags,
@@ -129,48 +128,6 @@ impl Model {
         }
         if Self::set_if_changed(&mut self.status, status, &mut self.is_dirty) {
             self.changes = Some("status".to_string());
-        }
-    }
-    pub fn uuid(&self) -> String {
-        let mut uuid = self.wfm_url.clone();
-        if let Some(sub_type) = self.sub_type.clone() {
-            uuid.push_str(&format!("-{}", sub_type.shot_display()));
-        }
-        uuid
-    }
-    pub fn add_price_history(&mut self, price_history: PriceHistory) {
-        let mut items = self.price_history.0.clone();
-
-        if items
-            .last()
-            .map_or(true, |last| last.price != price_history.price)
-        {
-            // Limit to 5 elements
-            if items.len() >= 5 {
-                items.remove(0);
-            }
-            items.push(price_history);
-            self.is_dirty = true;
-            self.changes = Some("price_history".to_string());
-            self.price_history = PriceHistoryVec(items);
-        }
-    }
-    pub fn to_update(&self) -> UpdateWishList {
-        UpdateWishList {
-            id: self.id,
-            quantity: FieldChange::Value(self.quantity),
-            maximum_price: self
-                .maximum_price
-                .map_or(FieldChange::Null, |v| FieldChange::Value(v)),
-            minimum_price: self
-                .minimum_price
-                .map_or(FieldChange::Null, |v| FieldChange::Value(v)),                
-            list_price: self
-                .list_price
-                .map_or(FieldChange::Null, |v| FieldChange::Value(v)),
-            is_hidden: FieldChange::Value(self.is_hidden),
-            price_history: FieldChange::Value(self.price_history.0.clone()),
-            status: FieldChange::Value(self.status.clone()),
         }
     }
 }

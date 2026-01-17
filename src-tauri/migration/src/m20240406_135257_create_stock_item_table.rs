@@ -77,7 +77,7 @@ impl MigrationTrait for Migration {
 }
 
 #[derive(DeriveIden)]
-pub enum StockItem {
+enum StockItem {
     Table,
     Id,
     WFMId,
@@ -90,8 +90,6 @@ pub enum StockItem {
     ListPrice,
     Owned,
     IsHidden,
-    MinimumProfit,
-    MinimumSMA,
     CreatedAt,
     UpdatedAt,
     Status,

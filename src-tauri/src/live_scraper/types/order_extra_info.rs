@@ -7,8 +7,9 @@ use crate::wfm_client::types::order::Order;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct OrderDetails {
-    #[serde(rename = "wfm_url")]
-    pub wfm_url: String,
+    #[serde(rename = "cache_id")]
+    #[serde(default)]
+    pub cache_id: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "total_buyers")]
@@ -20,19 +21,11 @@ pub struct OrderDetails {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "profit")]
-    pub profit: Option<f64>,
+    pub profit: Option<i64>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "range")]
     pub range: Option<i64>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "name")]
-    pub name: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "image")]
-    pub image: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "lowest_price")]
@@ -41,6 +34,10 @@ pub struct OrderDetails {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "highest_price")]
     pub highest_price: Option<i64>,
+
+    #[serde(default)]
+    #[serde(rename = "quantity")]
+    pub quantity: i64,
 
     #[serde(rename = "orders")]
     pub orders: Vec<Order>,
@@ -52,52 +49,64 @@ pub struct OrderDetails {
     #[serde(rename = "moving_avg")]
     pub moving_avg: Option<i64>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "closed_avg")]
-    pub closed_avg: Option<f64>,
-
-    // Ignore this field
-    #[serde(skip_serializing)]
-    #[serde(default)]
-    pub tags: Vec<String>,
-
     #[serde(rename = "is_dirty")]
     pub is_dirty: bool,
 
-    // Default value for changes
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "changes")]
-    #[serde(default)]
-    pub changes: Vec<String>,
+    pub changes: Option<String>,
 }
 
 // Default implementation for OrderDetails
 impl Default for OrderDetails {
     fn default() -> Self {
         OrderDetails {
+            cache_id: "".to_string(),
             is_dirty: true,
-            wfm_url: String::new(),
             total_buyers: None,
             total_sellers: None,
-            closed_avg: None,
             lowest_price: None,
             range: None,
             highest_price: None,
             profit: None,
-            name: None,
-            image: None,
+            quantity: 1,
             moving_avg: None,
             orders: Vec::new(),
-            tags: Vec::new(),
             price_history: VecDeque::new(),
-            changes: Vec::new(),
+            changes: None,
         }
     }
 }
 
 impl OrderDetails {
-    pub fn reset_changes(&mut self) {
-        self.changes = Vec::new();
-        self.is_dirty = false;
+    pub fn new(
+        cache_id: String,
+        total_buyers: i64,
+        total_sellers: i64,
+        profit: i64,
+        lowest_price: i64,
+        highest_price: i64,
+        moving_avg: i64,
+        orders: Vec<Order>,
+        quantity: i64,
+        range: i64,
+        price_history: Vec<PriceHistory>,
+    ) -> OrderDetails {
+        OrderDetails {
+            cache_id,
+            total_buyers: Some(total_buyers),
+            total_sellers: Some(total_sellers),
+            lowest_price: Some(lowest_price),
+            profit: Some(profit),
+            highest_price: Some(highest_price),
+            moving_avg: Some(moving_avg),
+            range: Some(range),
+            orders,
+            price_history: price_history.into_iter().collect(),
+            is_dirty: true,
+            quantity,
+            changes: None,
+        }
     }
     // Helper to set dirty flag when values are changed
     fn set_if_changed<T: PartialEq>(current: &mut T, new_value: T, is_dirty: &mut bool) -> bool {
@@ -118,14 +127,17 @@ impl OrderDetails {
             Some(lowest_price),
             &mut self.is_dirty,
         ) {
-            self.changes.push("lowest_price".to_string());
+            self.changes = Some("lowest_price".to_string());
         }
     }
 
     pub fn set_highest_price(&mut self, highest_price: i64) {
-        let highest_price = Some(highest_price);
-        if Self::set_if_changed(&mut self.highest_price, highest_price, &mut self.is_dirty) {
-            self.changes.push("highest_price".to_string());
+        if Self::set_if_changed(
+            &mut self.highest_price,
+            Some(highest_price),
+            &mut self.is_dirty,
+        ) {
+            self.changes = Some("highest_price".to_string());
         }
     }
 
@@ -137,10 +149,21 @@ impl OrderDetails {
         self.moving_avg = Some(moving_avg);
     }
 
+    pub fn set_profit(&mut self, profit: i64) {
+        if Self::set_if_changed(&mut self.profit, Some(profit), &mut self.is_dirty) {
+            self.changes = Some("profit".to_string());
+        }
+    }
+
+    pub fn set_quantity(&mut self, quantity: i64) {
+        if Self::set_if_changed(&mut self.quantity, quantity, &mut self.is_dirty) {
+            self.changes = Some("quantity".to_string());
+        }
+    }
+
     pub fn set_range(&mut self, range: i64) {
-        let range = Some(range);
-        if Self::set_if_changed(&mut self.range, range, &mut self.is_dirty) {
-            self.changes.push("range".to_string());
+        if Self::set_if_changed(&mut self.range, Some(range), &mut self.is_dirty) {
+            self.changes = Some("range".to_string());
         }
     }
 
@@ -160,36 +183,7 @@ impl OrderDetails {
             }
             self.price_history.push_back(price_history);
             self.is_dirty = true;
-            self.changes.push("price_history".to_string());
-        }
-    }
-    pub fn set_closed_avg(&mut self, closed_avg: f64) {
-        let closed_avg = Some(closed_avg);
-        if Self::set_if_changed(&mut self.closed_avg, closed_avg, &mut self.is_dirty) {
-            self.changes.push("closed_avg".to_string());
-        }
-    }
-    pub fn set_profit(&mut self, profit: f64) {
-        let profit = Some(profit);
-        if Self::set_if_changed(&mut self.profit, profit, &mut self.is_dirty) {
-            self.changes.push("profit".to_string());
-        }
-    }
-    pub fn set_wfm_url(&mut self, wfm_url: String) {
-        if Self::set_if_changed(&mut self.wfm_url, wfm_url, &mut self.is_dirty) {
-            self.changes.push("wfm_url".to_string());
-        }
-    }
-    pub fn set_name(&mut self, name: String) {
-        let name = Some(name);
-        if Self::set_if_changed(&mut self.name, name, &mut self.is_dirty) {
-            self.changes.push("name".to_string());
-        }
-    }
-    pub fn set_image(&mut self, image: String) {
-        let image = Some(image);
-        if Self::set_if_changed(&mut self.image, image, &mut self.is_dirty) {
-            self.changes.push("image".to_string());
+            self.changes = Some("price_history".to_string());
         }
     }
 }

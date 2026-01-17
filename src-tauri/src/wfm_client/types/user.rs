@@ -13,7 +13,7 @@ pub struct User {
 
     // #[serde(rename = "last_seen")]
     // pub last_seen: String,
-    #[serde(rename = "ingameName")]
+    #[serde(rename = "ingame_name")]
     pub ingame_name: String,
 
     #[serde(rename = "id")]

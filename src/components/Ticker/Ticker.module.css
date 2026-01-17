@@ -1,0 +1,82 @@
+.newsTicker {
+  margin: 0px 0;
+  display: flex;
+  overflow: hidden;
+}
+
+@keyframes slide {
+  0% {
+    transform: translateX(100vw);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.tickerContent {
+  width: fit-content;
+  display: flex;
+  transform: translateX(100vw);
+  animation: slide 60s linear infinite;
+  /* animation-delay: 10s; */
+}
+
+.newsTicker:hover .tickerContent {
+  animation-play-state: paused;
+}
+
+.tickerItem {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+}
+
+.tickerText {
+  padding: 0 16px;
+  font-size: 16px;
+  line-height: 1.5;
+  white-space: nowrap;
+  animation: rainbow 2.5s linear;
+  animation-iteration-count: infinite;
+  color: #fff;
+}
+@keyframes rainbow {
+  100%,
+  0% {
+    color: rgb(255, 0, 0);
+  }
+  8% {
+    color: rgb(255, 127, 0);
+  }
+  16% {
+    color: rgb(255, 255, 0);
+  }
+  25% {
+    color: rgb(127, 255, 0);
+  }
+  33% {
+    color: rgb(0, 255, 0);
+  }
+  41% {
+    color: rgb(0, 255, 127);
+  }
+  50% {
+    color: rgb(0, 255, 255);
+  }
+  58% {
+    color: rgb(0, 127, 255);
+  }
+  66% {
+    color: rgb(0, 0, 255);
+  }
+  75% {
+    color: rgb(127, 0, 255);
+  }
+  83% {
+    color: rgb(255, 0, 255);
+  }
+  91% {
+    color: rgb(255, 0, 127);
+  }
+}

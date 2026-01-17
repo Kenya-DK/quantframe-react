@@ -1,61 +1,57 @@
 import { listen } from "@tauri-apps/api/event";
 import { ComposedListener } from "@utils/listener/Composed.listener";
-import { TauriClient } from "..";
+import { QfSocketEvent } from "../types";
 
 export class EventModule {
-  public listener = new ComposedListener();
-  constructor(private client: TauriClient) {
+  private listener = new ComposedListener();
+  // private debug_filter: string[] = ["*"];
+  private debug_filter: string[] = [QfSocketEvent.All];
+  private _colors = ["color: #000", "color: #000"];
+  constructor() {
     this.Initializer();
   }
-  private logEvent(event: string, operation: string | undefined, response: any) {
-    this.client._loggingCount[event] = (this.client._loggingCount[event] || 0) + 1;
-    if (this.client._logging.includes("*")) this.client._loggingCount["*"] = (this.client._loggingCount["*"] || 0) + 1;
-
-    if (!this.client._logging.includes(event) && !this.client._logging.includes("*")) return;
-    // Enhanced console theming
-    let groupStyleBackground = "#257bebff";
-
-    const groupStyle = `color: #ffffff; background: ${groupStyleBackground}; padding: 2px 8px; border-radius: 3px; font-weight: bold;`;
-    const dataStyle = "color: #059669; font-weight: 600;";
-    const responseStyle = "color: #0891b2; font-weight: 600;";
-    const successStyle = "color: #16a34a; font-weight: bold; background: #f0fdf4; padding: 2px 4px; border-radius: 3px;";
-    const timeStyle = "color: #6b7280; ";
-
-    const time = new Date().toLocaleTimeString("da-DK", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
-    console.group(`%cTauri Event - ${event}`, groupStyle);
-    console.log(`%cTime:`, timeStyle, time);
-    if (operation) console.log(`%cOperation: %c${operation}`, dataStyle, "color: #fff");
-    if (response) console.log(`%cReceived:`, responseStyle, response);
-    else console.log(`%cSuccess`, successStyle);
-    console.groupEnd();
-  }
   private async Initializer() {
-    console.log("Event Module Initialized");
-
-    listen("message_update", (eventIn: { payload: { event: string; operation: string; data: any } }) => {
-      const { event, operation, data } = eventIn.payload;
-      if (event && operation) this.listener.fire(event, { operation, data });
-      this.logEvent(event, operation, data);
-    });
     listen("message", (eventIn: { payload: { event: string; data: any } }) => {
       const { event, data } = eventIn.payload;
       if (event) this.listener.fire(event, data);
-      this.logEvent(event, undefined, data);
+      if (!this.debug_filter.includes(event) && !this.debug_filter.includes("*")) return;
+      console.group("%cTauri Event", this._colors[0]);
+      console.log(`%cEvent: %c${event}`, this._colors[0], "color: #000");
+      console.log(`%cPayload:`, this._colors[0], data);
+      console.groupEnd();
+    });
+    listen("message_update", (eventIn: { payload: { event: string; operation: string; data: any } }) => {
+      const { event, operation, data } = eventIn.payload;
+      if (event && operation) this.listener.fire(event, { operation, data });
+      if (!this.debug_filter.includes(event) && !this.debug_filter.includes("*")) return;
+      console.group("%cTauri Event Data", this._colors[1]);
+      console.log(`%cEvent: %c${event}`, this._colors[1], "color: #000");
+      console.log(`%cOperation: %c${operation}`, this._colors[1], "color: #000");
+      console.log(`%cPayload:`, this._colors[1], data);
+      console.groupEnd();
     });
   }
+
+  AddDebugFilter(filter: string) {
+    if (this.debug_filter.includes(filter)) return;
+    this.debug_filter.push(filter);
+  }
+
+  RemoveDebugFilter(filter: string) {
+    this.debug_filter = this.debug_filter.filter((f) => f !== filter);
+  }
+
+  ClearDebugFilter() {
+    this.debug_filter = [""];
+  }
+
   OnEvent<T>(event: string, callback: (data: T) => void) {
     this.listener.add(event, callback);
   }
 
   OffEvent<T>(event: string, callback: (data: T) => void) {
     this.listener.remove(event, callback);
+    this.listener.clean();
   }
 
   FireEvent<T>(event: string, data: T) {

@@ -1,13 +1,6 @@
-.wrapper {
-  &[data-has-alert="true"] {
-    margin-top: 30px;
-  }
-}
-
 .transactions {
   height: calc(100vh - 620px);
-
   &[data-has-alert="true"] {
-    height: calc(100vh - 640px);
+    height: calc(100vh - 645px);
   }
 }

@@ -7,10 +7,7 @@ use crate::{
             log_level::LogLevel,
             ui_events::{UIEvent, UIOperationEvent},
         },
-        modules::{
-            error::{ApiResult, AppError},
-            states,
-        },
+        modules::error::{ApiResult, AppError},
     },
     wfm_client::{
         client::WFMClient,
@@ -46,7 +43,7 @@ impl ChatModule {
         self.client.auth().is_logged_in()?;
         match self
             .client
-            .get::<Vec<ChatData>>("v1", "im/chats", Some("chats"))
+            .get::<Vec<ChatData>>("im/chats", Some("chats"))
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {
@@ -79,7 +76,7 @@ impl ChatModule {
         self.client.auth().is_logged_in()?;
         match self
             .client
-            .get::<Vec<ChatMessage>>("v1", &url, Some("messages"))
+            .get::<Vec<ChatMessage>>(&url, Some("messages"))
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {
@@ -108,7 +105,7 @@ impl ChatModule {
     pub async fn delete(&mut self, id: String) -> Result<String, AppError> {
         let url = format!("im/chats/{}", id);
         self.client.auth().is_logged_in()?;
-        match self.client.delete("v1", &url, Some("chat_id")).await {
+        match self.client.delete(&url, Some("chat_id")).await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.chats.retain(|chat| chat.id != id);
                 self.update_state();
@@ -134,8 +131,8 @@ impl ChatModule {
         };
     }
     pub async fn receive_message(&mut self, msg: ChatMessage) -> Result<(), AppError> {
-        let mut auth = states::auth()?;
-        let notify = states::notify_client()?;
+        let mut auth = self.client.auth.lock()?;
+        let notify = self.client.notify.lock()?;
 
         let mut chat_payload = json!({
             "id": msg.chat_id,
@@ -169,9 +166,9 @@ impl ChatModule {
         id: Option<String>,
         unread: i64,
     ) -> Result<(), AppError> {
-        let mut auth = states::auth()?;
+        let mut auth = self.client.auth.lock()?;
 
-        let notify = states::notify_client()?;
+        let notify = self.client.notify.lock()?;
         self.active_chat = id.clone().unwrap_or("".to_string());
         self.update_state();
         if let Some(id) = id {

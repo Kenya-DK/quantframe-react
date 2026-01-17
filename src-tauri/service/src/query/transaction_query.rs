@@ -1,39 +1,27 @@
-use crate::{paginate_query, ErrorFromExt};
-use ::entity::transaction::dto::TransactionPaginationQueryDto;
+use ::entity::transaction::transaction_wat;
 use ::entity::transaction::{transaction, transaction::Entity as Transaction};
+use ::entity::transaction::{
+    transaction_old, transaction_old::Entity as TransactionOld,
+    transaction_wat::Entity as TransactionWat,
+};
+
 use sea_orm::*;
-use utils::*;
+
 pub struct TransactionQuery;
 
 impl TransactionQuery {
-    pub async fn get_all(
-        db: &DbConn,
-        query: TransactionPaginationQueryDto,
-    ) -> Result<::entity::dto::pagination::PaginatedResult<transaction::Model>, Error> {
-        let stmt = query.get_query();
-
-        // Print the generated SQL for debugging
-        // println!(
-        //     "Generating SQL for StockItemQuery::get_all_v2: {}",
-        //     stmt.clone().build(db.get_database_backend()).to_string()
-        // );
-
-        // Pagination
-        let paginated_result =
-            paginate_query(stmt, db, query.pagination.page, query.pagination.limit)
-                .await
-                .map_err(|e| e.with_location(get_location!()))?;
-        Ok(paginated_result)
+    pub async fn get_all(db: &DbConn) -> Result<Vec<transaction::Model>, DbErr> {
+        Transaction::find().all(db).await
     }
 
-    pub async fn find_by_id(db: &DbConn, id: i64) -> Result<Option<transaction::Model>, Error> {
-        Transaction::find_by_id(id).one(db).await.map_err(|e| {
-            Error::from_db(
-                "TransactionQuery:FindById".to_string(),
-                "Failed to find Transaction by ID",
-                e,
-                get_location!(),
-            )
-        })
+    pub async fn get_wat_transactions(db: &DbConn) -> Result<Vec<transaction_wat::Model>, DbErr> {
+        TransactionWat::find().all(db).await
+    }
+    pub async fn get_old_transactions(db: &DbConn) -> Result<Vec<transaction_old::Model>, DbErr> {
+        TransactionOld::find().all(db).await
+    }
+
+    pub async fn find_by_id(db: &DbConn, id: i64) -> Result<Option<transaction::Model>, DbErr> {
+        Transaction::find_by_id(id).one(db).await
     }
 }

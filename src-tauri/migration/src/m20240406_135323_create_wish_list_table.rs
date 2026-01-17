@@ -63,7 +63,7 @@ impl MigrationTrait for Migration {
 }
 
 #[derive(DeriveIden)]
-pub enum WishList {
+enum WishList {
     Table,
     Id,
     CreatedAt,
@@ -74,10 +74,8 @@ pub enum WishList {
     ItemUniqueName,
     SubType,
     Quantity,
-    MinimumPrice,
     MaximumPrice,
     ListPrice,
     PriceHistory,
     Status,
-    IsHidden,
 }

@@ -1,42 +1,89 @@
-use chrono::{DateTime, Utc};
 use entity::{
-    dto::{FinancialGraph, FinancialReport, PaginatedResult, SubType},
-    transaction::TransactionPaginationQueryDto,
+    stock::{
+        item::{create::CreateStockItem, stock_item},
+        riven::{create::CreateStockRiven, stock_riven},
+    },
+    sub_type::SubType,
+    transaction::transaction::TransactionType,
+    wish_list::{create::CreateWishListItem, wish_list},
 };
-use serde_json::json;
-use service::TransactionQuery;
+use eyre::eyre;
+use regex::Regex;
+use serde_json::{json, Map, Value};
+use service::{StockItemMutation, StockRivenMutation, TransactionMutation, WishListMutation};
 use std::{
-    fs::{self},
-    path::PathBuf,
+    collections::HashMap,
+    fs::{self, File},
+    io::{self, Read, Write},
+    path::{Path, PathBuf},
+    sync::{Arc, Mutex},
 };
-use tauri::Manager;
-use utils::*;
-use wf_market::{enums::OrderType, types::Order};
+use tauri::{Manager, State};
+
+use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 
 use crate::{
-    cache::CacheTradableItem,
-    utils::{modules::states, OrderExt, SubTypeExt},
-    APP, DATABASE,
+    app::client::AppState,
+    cache::client::CacheClient,
+    notification::client::NotifyClient,
+    qf_client::client::QFClient,
+    utils::{
+        enums::ui_events::{UIEvent, UIOperationEvent},
+        modules::error::AppError,
+    },
+    wfm_client::{client::WFMClient, enums::order_type::OrderType, types::order::Order},
+    APP,
 };
 
 pub static APP_PATH: &str = "dev.kenya.quantframe";
 
+#[derive(Clone, Debug)]
+pub struct ZipEntry {
+    pub file_path: PathBuf,
+    pub sub_path: Option<String>,
+    pub content: Option<String>,
+    pub include_dir: bool,
+}
+
+pub fn add_metric(key: &str, value: &str) {
+    let key = key.to_string();
+    let value = value.to_string();
+    tauri::async_runtime::spawn({
+        async move {
+            // Create a new instance of the QFClient and store it in the app state
+            let qf_handle = APP.get().expect("failed to get app handle");
+            let qf_state: State<Arc<Mutex<QFClient>>> = qf_handle.state();
+            let qf = qf_state.lock().expect("failed to lock app state").clone();
+            qf.analytics().add_metric(&key, &value);
+        }
+    });
+}
 pub fn get_device_id() -> String {
-    let app = APP.get().unwrap();
-    let home_dir = match app.path().home_dir() {
-        Ok(val) => val,
-        Err(_) => {
-            panic!("Could not find home directory");
+    let home_dir = match tauri::api::path::home_dir() {
+        Some(val) => val,
+        None => {
+            panic!("Could not find app path");
         }
     };
     let device_name = home_dir.file_name().unwrap().to_str().unwrap();
     device_name.to_string()
 }
+
+pub fn dose_app_exist() -> bool {
+    let local_path = match tauri::api::path::local_data_dir() {
+        Some(val) => val,
+        None => {
+            panic!("Could not find app path");
+        }
+    };
+    let app_path = local_path.join(APP_PATH);
+    app_path.exists()
+}
+
 pub fn get_app_storage_path() -> PathBuf {
-    let app = APP.get().unwrap();
-    let local_path = match app.path().local_data_dir() {
-        Ok(val) => val,
-        Err(_) => {
+    let local_path = match tauri::api::path::local_data_dir() {
+        Some(val) => val,
+        None => {
             panic!("Could not find app path");
         }
     };
@@ -48,88 +95,328 @@ pub fn get_app_storage_path() -> PathBuf {
     app_path
 }
 
-pub fn get_sounds_path() -> PathBuf {
-    let sounds_path = get_app_storage_path().join("sounds");
-    if !sounds_path.exists() {
-        fs::create_dir_all(&sounds_path).unwrap()
-    }
-    sounds_path
+pub fn remove_special_characters(input: &str) -> String {
+    // Define the pattern for special characters except _ and space
+    let pattern = Regex::new("[^a-zA-Z0-9_ ]").unwrap();
+
+    // Replace special characters with empty string
+    let result = pattern.replace_all(input, "");
+
+    result.into_owned()
+}
+
+pub fn get_local_data_path() -> PathBuf {
+    let local_path = match tauri::api::path::local_data_dir() {
+        Some(val) => val,
+        None => {
+            panic!("Could not find app path");
+        }
+    };
+    local_path
 }
 
 pub fn get_desktop_path() -> PathBuf {
-    let app = APP.get().unwrap();
-    let desktop_path = match app.path().desktop_dir() {
-        Ok(val) => val,
-        Err(_) => {
+    let desktop_path = match tauri::api::path::desktop_dir() {
+        Some(val) => val,
+        None => {
             panic!("Could not find desktop path");
         }
     };
     desktop_path
 }
-pub fn generate_transaction_summary(
-    transactions: &Vec<entity::transaction::Model>,
-    date: DateTime<Utc>,
-    group_by1: GroupByDate,
-    group_by2: &[GroupByDate],
-    _previous: bool,
-) -> (FinancialReport, FinancialGraph<i64>) {
-    let (start, end) = get_start_end_of(date, group_by1);
-    let transactions = filters_by(transactions, |t| {
-        t.created_at >= start && t.created_at <= end
-    });
 
-    let mut grouped = group_by_date(&transactions, |t| t.created_at, group_by2);
-
-    fill_missing_date_keys(&mut grouped, start, end, group_by2);
-
-    let graph = FinancialGraph::<i64>::from(&grouped, |group| {
-        FinancialReport::from(&group.to_vec()).total_profit
-    });
-    (FinancialReport::from(&transactions), graph)
+pub fn match_pattern(
+    input: &str,
+    regex: Vec<String>,
+) -> Result<(bool, Vec<Option<String>>), regex::Error> {
+    for regex in regex {
+        let re: Regex = Regex::new(&regex)?;
+        if let Some(captures) = re.captures(input) {
+            let mut result: Vec<Option<String>> = vec![];
+            for i in 1..captures.len() {
+                let group = captures.get(i).map(|m| m.as_str().to_string());
+                let group: Option<String> =
+                    group.map(|s| s.chars().filter(|c| c.is_ascii()).collect());
+                result.push(group);
+            }
+            return Ok((true, result));
+        }
+    }
+    Ok((false, vec![]))
 }
 
-/// Paginate a vector of items
-pub fn paginate<T: Clone>(items: &[T], page: i64, per_page: i64) -> PaginatedResult<T> {
-    let total_items = items.len() as i64;
+pub fn read_zip_entries(
+    path: PathBuf,
+    include_subfolders: bool,
+) -> Result<Vec<ZipEntry>, AppError> {
+    let mut files: Vec<ZipEntry> = Vec::new();
+    for path in fs::read_dir(path).unwrap() {
+        let path = path.unwrap().path();
+        if path.is_dir() {
+            let dir_name = path.file_name().unwrap().to_str().unwrap();
+            let file_entries = read_zip_entries(path.to_owned(), include_subfolders)?;
+            for mut archive_entry in file_entries {
+                let sub_path = archive_entry.sub_path.clone().unwrap_or("".to_string());
+                // Remove the first slash if it exists
+                let full_path = format!("{}/{}", dir_name, sub_path);
+                archive_entry.sub_path = Some(full_path);
+                files.push(archive_entry);
+            }
+        }
+        if path.is_file() {
+            files.push(ZipEntry {
+                file_path: path.clone(),
+                sub_path: None,
+                content: None,
+                include_dir: false,
+            });
+        }
+    }
+    Ok(files)
+}
 
-    let start = (page.saturating_sub(1)) * per_page;
-    let end = (start + per_page).min(total_items);
+pub fn create_zip_file(mut files: Vec<ZipEntry>, zip_path: &str) -> Result<(), AppError> {
+    let zip_file_path = Path::new(&zip_path);
+    let zip_file =
+        File::create(&zip_file_path).map_err(|e| AppError::new("Zip", eyre!(e.to_string())))?;
+    let mut zip = ZipWriter::new(zip_file);
 
-    let start_usize = start as usize;
-    let end_usize = end as usize;
+    // Get all files that are directories and add them to the files list
+    let mut files_to_compress: Vec<ZipEntry> = Vec::new();
 
-    let page_items = if start < total_items && end > 0 {
-        items[start_usize..end_usize].to_vec()
-    } else if per_page == -1 {
-        items.to_vec()
+    for file_entry in &files {
+        if file_entry.include_dir {
+            let sub_file_entries = read_zip_entries(file_entry.file_path.clone(), true)?;
+            for mut sub_file_entry in sub_file_entries {
+                if sub_file_entry.sub_path.is_some() {
+                    sub_file_entry.sub_path = Some(format!(
+                        "{}/{}",
+                        file_entry.sub_path.clone().unwrap_or("".to_string()),
+                        sub_file_entry.sub_path.clone().unwrap_or("".to_string())
+                    ));
+                }
+                files_to_compress.push(sub_file_entry);
+            }
+        }
+    }
+    files.append(&mut files_to_compress);
+
+    // Set compression options (e.g., compression method)
+    let options = FileOptions::default().compression_method(CompressionMethod::DEFLATE);
+
+    for file_entry in &files {
+        if file_entry.include_dir {
+            continue;
+        }
+
+        let file_path = Path::new(&file_entry.file_path)
+            .canonicalize()
+            .map_err(|e| AppError::new("Zip", eyre!(e.to_string())))?;
+
+        if !file_path.exists() || !file_path.is_file() {
+            continue;
+        }
+
+        let file = File::open(&file_path).map_err(|e| {
+            AppError::new(
+                "Zip:Open",
+                eyre!(format!(
+                    "Path: {:?}, Error: {}",
+                    file_entry.file_path.clone(),
+                    e.to_string()
+                )),
+            )
+        })?;
+        let file_name = file_path.file_name().unwrap().to_str().unwrap();
+        // Adding the file to the ZIP archive.
+        if file_entry.sub_path.is_some() && file_entry.sub_path.clone().unwrap() != "" {
+            let mut sub_path = file_entry.sub_path.clone().unwrap();
+            if sub_path.starts_with("/") {
+                sub_path = sub_path[1..].to_string();
+            }
+            if sub_path.ends_with("/") {
+                sub_path = sub_path[..sub_path.len() - 1].to_string();
+            }
+            zip.start_file(format!("{}/{}", sub_path, file_name), options)
+                .map_err(|e| {
+                    AppError::new(
+                        "Zip:StartSub",
+                        eyre!(format!(
+                            "Path: {:?}, ZipPath: {:?}, Error: {}",
+                            file_entry.file_path.clone(),
+                            file_entry.sub_path.clone(),
+                            e.to_string()
+                        )),
+                    )
+                })?;
+        } else {
+            zip.start_file(file_name, options).map_err(|e| {
+                AppError::new(
+                    "Zip:Start",
+                    eyre!(format!(
+                        "Path: {:?}, Error: {}",
+                        file_entry.file_path,
+                        e.to_string()
+                    )),
+                )
+            })?;
+        }
+
+        let mut buffer = Vec::new();
+        if file_entry.content.is_some() {
+            buffer
+                .write_all(file_entry.content.clone().unwrap().as_bytes())
+                .map_err(|e| {
+                    AppError::new(
+                        "Zip:Write",
+                        eyre!(format!(
+                            "Path: {:?}, Error: {}",
+                            file_entry.file_path,
+                            e.to_string()
+                        )),
+                    )
+                })?;
+        } else {
+            io::copy(&mut file.take(u64::MAX), &mut buffer).map_err(|e| {
+                AppError::new(
+                    "Zip:Copy",
+                    eyre!(format!(
+                        "Path: {:?}, Error: {}",
+                        file_entry.file_path,
+                        e.to_string()
+                    )),
+                )
+            })?;
+        }
+
+        zip.write_all(&buffer).map_err(|e| {
+            AppError::new(
+                "Zip:Write",
+                eyre!(format!(
+                    "Path: {:?}, Error: {}",
+                    file_entry.file_path,
+                    e.to_string()
+                )),
+            )
+        })?;
+    }
+    zip.finish()
+        .map_err(|e| AppError::new("Zip:Done", eyre!(format!("Error: {}", e.to_string()))))?;
+    Ok(())
+}
+
+pub fn parse_args_from_string(args: &str) -> HashMap<String, String> {
+    let mut args_map = HashMap::new();
+    let mut parts = args.split_whitespace().peekable();
+
+    while let Some(part) = parts.next() {
+        if part.starts_with("--") {
+            if let Some(value) = parts.peek() {
+                if !value.starts_with("--") {
+                    args_map.insert(part.to_string(), value.to_string());
+                    parts.next();
+                }
+            } else {
+                args_map.insert(part.to_string(), "".to_string());
+            }
+        }
+    }
+
+    args_map
+}
+
+pub fn validate_args(
+    args: &str,
+    requirements: Vec<&str>,
+) -> Result<HashMap<String, String>, AppError> {
+    let args_map = parse_args_from_string(args);
+
+    for req in requirements {
+        // Split the requirement to check for conditional requirements
+        let parts: Vec<&str> = req.split(':').collect();
+        if parts.len() == 1 {
+            // Simple required argument
+            let arg = parts[0];
+            if !args_map.contains_key(arg) {
+                return Err(AppError::new(
+                    "ValidateArgs",
+                    eyre!(format!("Missing required argument: {}", arg)),
+                ));
+            }
+        } else if parts.len() == 2 {
+            // Conditional required arguments
+            let conditional_parts: Vec<&str> = parts[1].split('|').collect();
+            if conditional_parts.len() == 2 {
+                let (value, additional_args_str) = (conditional_parts[0], conditional_parts[1]);
+                let additional_args: Vec<&str> = additional_args_str.split_whitespace().collect();
+
+                if let Some(arg_value) = args_map.get(parts[0]) {
+                    if arg_value == value {
+                        for additional_arg in additional_args {
+                            if !args_map.contains_key(additional_arg) {
+                                return Err(AppError::new(
+                                    "ValidateArgs",
+                                    eyre!(format!(
+                                        "Missing required argument due to {}={}: {}",
+                                        parts[0], value, additional_arg
+                                    )),
+                                ));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(args_map)
+}
+
+pub fn is_match(
+    input: &str,
+    to_match: &str,
+    ignore_case: bool,
+    remove_string: Option<&String>,
+) -> bool {
+    let mut input = input.to_string();
+    if let Some(remove_string) = remove_string {
+        input = input.replace(remove_string, "");
+    }
+    if ignore_case {
+        input.to_lowercase() == to_match.to_lowercase()
     } else {
-        Vec::new()
-    };
-    let total_pages = if per_page == -1 {
-        1
-    } else {
-        (total_items as f64 / per_page as f64).ceil() as i64
-    };
-    PaginatedResult {
-        results: page_items,
-        page,
-        limit: per_page,
-        total: total_items,
-        total_pages,
+        input == to_match
     }
 }
 
-pub fn get_local_data_path() -> PathBuf {
-    let app = APP.get().unwrap();
-    let local_path = match app.path().local_data_dir() {
-        Ok(val) => val,
-        Err(_) => {
-            panic!("Could not find local data path");
+pub fn validate_json(json: &Value, required: &Value, path: &str) -> (Value, Vec<String>) {
+    let mut modified_json = json.clone();
+    let mut missing_properties = Vec::new();
+
+    if let Some(required_obj) = required.as_object() {
+        for (key, value) in required_obj {
+            let full_path = if path.is_empty() {
+                key.clone()
+            } else {
+                format!("{}.{}", path, key)
+            };
+
+            if !json.as_object().unwrap().contains_key(key) {
+                missing_properties.push(full_path.clone());
+                modified_json[key] = required_obj[key].clone();
+            } else if value.is_object() {
+                let sub_json = json.get(key).unwrap();
+                let (modified_sub_json, sub_missing) = validate_json(sub_json, value, &full_path);
+                if !sub_missing.is_empty() {
+                    modified_json[key] = modified_sub_json;
+                    missing_properties.extend(sub_missing);
+                }
+            }
         }
-    };
-    local_path
+    }
+
+    (modified_json, missing_properties)
 }
-<<<<<<< HEAD
 
 pub fn loop_through_properties(data: &mut Map<String, Value>, properties: Vec<String>) {
     // Iterate over each key-value pair in the JSON object
@@ -167,18 +454,25 @@ pub fn open_json_and_replace(path: &str, properties: Vec<String>) -> Result<Valu
 }
 
 pub async fn progress_wfm_order(
-    wfm_id: &str,
+    notify: &NotifyClient,
+    wfm: &WFMClient,
+    url: &str,
     sub_type: Option<SubType>,
     quantity: i64,
     operation: OrderType,
+    need_update: bool,
     from: &str,
 ) -> Result<(String, Option<Order>), AppError> {
-    let wfm = states::wfm_client()?;
-    let notify = states::notify_client()?;
     // Process the order on WFM
     match wfm
         .orders()
-        .progress_order(&wfm_id, sub_type.clone(), quantity, operation.clone())
+        .progress_order(
+            &url,
+            sub_type.clone(),
+            quantity,
+            operation.clone(),
+            need_update,
+        )
         .await
     {
         Ok((operation, order)) => {
@@ -196,75 +490,94 @@ pub async fn progress_wfm_order(
                     UIOperationEvent::CreateOrUpdate,
                     Some(json!(order)),
                 );
-=======
-pub async fn get_item_details(
-    raw: impl Into<String>,
-    sub_type: Option<SubType>,
-    order_type: OrderType,
-) -> Result<(serde_json::Value, Option<CacheTradableItem>, Option<Order>), Error> {
-    let item_id = raw.into();
-    let app = states::app_state()?.clone();
-    let cache = states::cache_client()?.clone();
-    let conn = DATABASE.get().unwrap();
-
-    let mut payload = json!({});
-    // Get item details from cache
-    let item_info = cache
-        .tradable_item()
-        .get_by(&item_id)
-        .map_err(|e| e.with_location(get_location!()))?;
-
-    payload["item_info"] = json!(item_info);
-    match cache.all_items().get_by(&item_info.unique_name) {
-        Ok(mut full_item) => {
-            for component in full_item.components.iter_mut() {
-                component.name = format!("{} {}", full_item.name, component.name);
->>>>>>> better-backend
             }
-            payload["item_info"]["components"] = json!(full_item.components);
+            return Ok((operation, order));
         }
-        Err(_) => {
-            warning(
-                "Command::GetItemDetails",
-                &format!(
-                    "Full item not found for unique name: {}",
-                    item_info.unique_name
-                ),
-                &LoggerOptions::default(),
+        Err(e) => {
+            return Err(e);
+        }
+    }
+}
+
+pub async fn progress_transaction(
+    app: &AppState,
+    notify: &NotifyClient,
+    qf: &QFClient,
+    transaction: &mut entity::transaction::transaction::Model,
+    from: &str,
+) -> Result<entity::transaction::transaction::Model, AppError> {
+    match TransactionMutation::create(&app.conn, &transaction).await {
+        Ok(inserted) => {
+            add_metric("Transaction_Create", from);
+            notify.gui().send_event_update(
+                UIEvent::UpdateTransaction,
+                UIOperationEvent::CreateOrUpdate,
+                Some(json!(inserted)),
             );
+            transaction.id = inserted.id;
+        }
+        Err(e) => {
+            return Err(AppError::new_db("TransactionCreate", e));
+        }
+    };
+
+    // Add the transaction to the QuantFrame analytics stars
+    match qf.transaction().create_transaction(&transaction).await {
+        Ok(_) => {}
+        Err(e) => {
+            return Err(e);
         }
     }
+    Ok(transaction.clone())
+}
 
-    // Get Order Info from WFM
-    let order = app.wfm_client.order().cache_orders().find_order(
-        &item_info.wfm_id,
-        &SubTypeExt::from_entity(sub_type.clone()),
-        order_type,
-    );
-    if let Some(mut order_info) = order.clone() {
-        let mut details = order_info.get_details();
-        let mut orders = details.orders;
-        if !orders.is_empty() {
-            for ord in orders.iter_mut() {
-                ord.order.apply_item_info(&cache)?;
-            }
-            details.orders = orders;
-            order_info.update_details(details);
-        }
-        payload["order_info"] = json!(order_info);
+pub async fn progress_wish_item(
+    entity: &mut CreateWishListItem,
+    validate_by: &str,
+    user_name: &str,
+    operation: OrderType,
+    options: Vec<String>,
+    from: &str,
+    app: &AppState,
+    cache: &CacheClient,
+    notify: &NotifyClient,
+    wfm: &WFMClient,
+    qf: &QFClient,
+) -> Result<(wish_list::Model, Vec<String>), AppError> {
+    let mut response = vec![];
+
+    if operation == OrderType::Sell {
+        return Err(AppError::new(
+            "ProgressWishItem",
+            eyre!("Invalid operation"),
+        ));
     }
 
-    // Get Transaction Summary
-    let transaction_paginate = TransactionQuery::get_all(
-        conn,
-        TransactionPaginationQueryDto::new(1, -1)
-            .set_wfm_id(&item_info.wfm_id)
-            .set_sub_type(sub_type.clone()),
+    // Validate the stock item
+    match cache
+        .tradable_items()
+        .validate_create_wish_item(entity, validate_by)
+    {
+        Ok(_) => {}
+        Err(e) => {
+            return Err(e);
+        }
+    };
+
+    //Get stock item from the entity
+    let wish_item = entity.to_model();
+
+    // Progress the stock item based on the operation
+
+    match WishListMutation::bought_by_url_and_sub_type(
+        &app.conn,
+        wish_item.wfm_url.as_str(),
+        wish_item.sub_type.clone(),
+        wish_item.quantity,
     )
     .await
-<<<<<<< HEAD
     {
-        Ok((operation, _)) => {
+        Ok((operation, item)) => {
             response.push(format!("WishItem_{}", operation));
             if operation == "NotFound" {
                 if !options.contains(&"WishContinueOnError".to_string()) {
@@ -276,6 +589,18 @@ pub async fn get_item_details(
                         )),
                     ));
                 }
+            } else if operation == "Deleted" {
+                notify.gui().send_event_update(
+                    UIEvent::UpdateWishList,
+                    UIOperationEvent::Delete,
+                    Some(json!({ "id": item.unwrap().id })),
+                );
+            } else if operation == "Updated" {
+                notify.gui().send_event_update(
+                    UIEvent::UpdateWishList,
+                    UIOperationEvent::CreateOrUpdate,
+                    Some(json!(item)),
+                );
             }
             add_metric("Wish_ItemBought", from);
             response.push("WishItem_Bought".to_string());
@@ -285,14 +610,16 @@ pub async fn get_item_details(
             return Err(AppError::new("WishItemCreate", eyre!(e)));
         }
     }
-    // Send Refresh Event to GUI
-    notify.gui().send_event(UIEvent::RefreshWishListItems, None);
+
     // Process the order on WFM
     match progress_wfm_order(
-        &entity.wfm_id.as_str(),
+        notify,
+        wfm,
+        entity.wfm_url.as_str(),
         entity.sub_type.clone(),
         entity.quantity,
         OrderType::Buy,
+        true,
         from,
     )
     .await
@@ -321,7 +648,7 @@ pub async fn get_item_details(
         TransactionType::Purchase,
     );
 
-    match progress_transaction(&mut transaction, from).await {
+    match progress_transaction(app, notify, qf, &mut transaction, from).await {
         Ok(_) => {}
         Err(e) => {
             response.push("TransactionDbError".to_string());
@@ -337,13 +664,14 @@ pub async fn progress_stock_item(
     user_name: &str,
     operation: OrderType,
     options: Vec<String>,
-    progress_wfm: bool,
     from: &str,
+    app: &AppState,
+    cache: &CacheClient,
+    notify: &NotifyClient,
+    wfm: &WFMClient,
+    qf: &QFClient,
 ) -> Result<(stock_item::Model, Vec<String>), AppError> {
-    let conn = DATABASE.get().unwrap();
     let mut response = vec![];
-    let cache = states::cache()?;
-    let notify = states::notify_client()?;
     // Validate the stock item
     match cache
         .tradable_items()
@@ -361,14 +689,14 @@ pub async fn progress_stock_item(
     // Progress the stock item based on the operation
     if operation == OrderType::Sell {
         match StockItemMutation::sold_by_url_and_sub_type(
-            conn,
+            &app.conn,
             &entity.wfm_url,
             entity.sub_type.clone(),
             entity.quantity,
         )
         .await
         {
-            Ok((operation, _)) => {
+            Ok((operation, item)) => {
                 response.push(format!("StockItem_{}", operation));
                 if operation == "NotFound" {
                     if !options.contains(&"StockContinueOnError".to_string()) {
@@ -380,6 +708,18 @@ pub async fn progress_stock_item(
                             )),
                         ));
                     }
+                } else if operation == "Deleted" {
+                    notify.gui().send_event_update(
+                        UIEvent::UpdateStockItems,
+                        UIOperationEvent::Delete,
+                        Some(json!({ "id": item.unwrap().id })),
+                    );
+                } else if operation == "Updated" {
+                    notify.gui().send_event_update(
+                        UIEvent::UpdateStockItems,
+                        UIOperationEvent::CreateOrUpdate,
+                        Some(json!(item)),
+                    );
                 }
                 add_metric(format!("StockItem_{}", operation).as_str(), from);
             }
@@ -389,10 +729,15 @@ pub async fn progress_stock_item(
             }
         }
     } else if operation == OrderType::Buy {
-        match StockItemMutation::add_item(conn, stock.clone()).await {
-            Ok(_) => {
+        match StockItemMutation::add_item(&app.conn, stock.clone()).await {
+            Ok(inserted) => {
                 let rep = "StockItem_Created".to_string();
                 response.push(rep.clone());
+                notify.gui().send_event_update(
+                    UIEvent::UpdateStockItems,
+                    UIOperationEvent::CreateOrUpdate,
+                    Some(json!(inserted)),
+                );
                 add_metric(rep.as_str(), from);
             }
             Err(e) => {
@@ -406,28 +751,27 @@ pub async fn progress_stock_item(
             eyre!("Invalid operation"),
         ));
     }
-    // Send Refresh Event to GUI
-    notify.gui().send_event(UIEvent::RefreshStockItems, None);
 
     // Process the order on WFM
-    if progress_wfm {
-        match progress_wfm_order(
-            &entity.wfm_id.as_str(),
-            entity.sub_type.clone(),
-            entity.quantity,
-            operation.clone(),
-            from,
-        )
-        .await
-        {
-            Ok((operation, _)) => {
-                response.push(format!("WFM_{}", operation));
-            }
-            Err(e) => {
-                response.push("WFM_Error".to_string());
-                if !options.contains(&"WFMContinueOnError".to_string()) {
-                    return Err(e);
-                }
+    match progress_wfm_order(
+        notify,
+        wfm,
+        entity.wfm_url.as_str(),
+        entity.sub_type.clone(),
+        entity.quantity,
+        operation.clone(),
+        operation == OrderType::Sell,
+        from,
+    )
+    .await
+    {
+        Ok((operation, _)) => {
+            response.push(format!("WFM_{}", operation));
+        }
+        Err(e) => {
+            response.push("WFM_Error".to_string());
+            if !options.contains(&"WFMContinueOnError".to_string()) {
+                return Err(e);
             }
         }
     }
@@ -450,7 +794,7 @@ pub async fn progress_stock_item(
         transaction_type,
     );
 
-    match progress_transaction(&mut transaction, from).await {
+    match progress_transaction(app, notify, qf, &mut transaction, from).await {
         Ok(_) => {}
         Err(e) => {
             response.push("Transaction_DbError".to_string());
@@ -466,12 +810,13 @@ pub async fn progress_stock_riven(
     user_name: &str,
     operation: OrderType,
     from: &str,
+    app: &AppState,
+    cache: &CacheClient,
+    notify: &NotifyClient,
+    wfm: &WFMClient,
+    qf: &QFClient,
 ) -> Result<(stock_riven::Model, Vec<String>), AppError> {
-    let conn = DATABASE.get().unwrap();
     let mut response = vec![];
-    let cache = states::cache()?;
-    let notify = states::notify_client()?;
-    let wfm = states::wfm_client()?;
     // Validate the stock item
     match cache.riven().validate_create_riven(entity, validate_by) {
         Ok(_) => {}
@@ -486,18 +831,28 @@ pub async fn progress_stock_riven(
     // Progress the stock riven based on the operation
     if operation == OrderType::Sell && entity.stock_id.is_some() {
         // Delete the stock from the database
-        match StockRivenMutation::delete(conn, entity.stock_id.unwrap()).await {
+        match StockRivenMutation::delete(&app.conn, entity.stock_id.unwrap()).await {
             Ok(_) => {
                 response.push("StockRiven_Deleted".to_string());
                 add_metric("StockRiven_Deleted", from);
+                notify.gui().send_event_update(
+                    UIEvent::UpdateStockRivens,
+                    UIOperationEvent::Delete,
+                    Some(json!({ "id": entity.stock_id })),
+                );
             }
             Err(e) => return Err(AppError::new("StockItemSell", eyre!(e))),
         }
     } else if operation == OrderType::Buy {
-        match StockRivenMutation::create(conn, stock.clone()).await {
-            Ok(_) => {
+        match StockRivenMutation::create(&app.conn, stock.clone()).await {
+            Ok(inserted) => {
                 add_metric("StockRiven_Create", from);
                 response.push("StockRivenAdd".to_string());
+                notify.gui().send_event_update(
+                    UIEvent::UpdateStockRivens,
+                    UIOperationEvent::CreateOrUpdate,
+                    Some(json!(inserted)),
+                );
             }
             Err(e) => {
                 response.push("StockDbError".to_string());
@@ -511,7 +866,7 @@ pub async fn progress_stock_riven(
             eyre!("Invalid operation"),
         ));
     }
-    notify.gui().send_event(UIEvent::RefreshStockRivens, None);
+
     // Process the action on WFM
     if operation == OrderType::Sell && entity.wfm_order_id.is_some() {
         let id = entity.wfm_order_id.clone().unwrap();
@@ -547,10 +902,15 @@ pub async fn progress_stock_riven(
     let mut transaction =
         stock.to_transaction(user_name, entity.bought.unwrap_or(0), transaction_type);
 
-    match TransactionMutation::create(conn, &transaction).await {
+    match TransactionMutation::create(&app.conn, &transaction).await {
         Ok(inserted) => {
             add_metric("Transaction_RivenCreate", from);
             response.push("TransactionCreated".to_string());
+            notify.gui().send_event_update(
+                UIEvent::UpdateTransaction,
+                UIOperationEvent::CreateOrUpdate,
+                Some(json!(inserted)),
+            );
             transaction.id = inserted.id;
         }
         Err(e) => {
@@ -558,11 +918,18 @@ pub async fn progress_stock_riven(
             return Err(AppError::new_db("StockItemCreate", e));
         }
     };
-    notify.gui().send_event(UIEvent::RefreshTransactions, None);
+    // Add the transaction to the QuantFrame analytics stars
+    match qf.transaction().create_transaction(&transaction).await {
+        Ok(_) => {}
+        Err(e) => {
+            response.push("TransactionAnalyticsError".to_string());
+            return Err(e);
+        }
+    }
     return Ok((stock, response));
 }
 
-// pub fn read_json_file<T: serde::de::DeserializeOwned>(path: &PathBuf) -> Result<T, AppError> {
+// pub fn read_json_file<T: DeserializeOwned>(path: &PathBuf) -> Result<T, AppError> {
 //     // Check if the file exists
 //     if !path.exists() {
 //         return Err(AppError::new(
@@ -595,161 +962,36 @@ pub async fn progress_stock_riven(
 //     }
 // }
 pub fn calculate_average_of_top_lowest_prices(
-    prices: Vec<i64>, // The list of prices to consider (assumed to be sorted by buyout_price ascending)
-    limit_to: i64,    // Limit the number of auctions to consider
+    prices: Vec<i64>,          // The list of prices to consider
+    limit_to: i64,             // Limit the number of auctions to consider
     threshold_percentage: f64, // The threshold percentage to filter prices
 ) -> i64 {
     if prices.is_empty() {
         return -1;
     }
 
-    // Get the top `limit_to` lowest starting prices directly, as prices is sorted
-    let mut top_price: Vec<i64> = prices.into_iter().take(limit_to as usize).collect();
+    // Returning an Option<i64> in case there are no valid prices
+    // Get the top `limit_to` lowest starting prices
+    let mut top_price: Vec<i64> = prices.iter().cloned().take(limit_to as usize).collect();
 
-    // Ensure we have some prices after taking the limit
+    // Find the maximum price in the top lowest prices
+    let max_price = *top_price.iter().max().unwrap_or(&0);
+
+    // Find the minimum price in the top lowest prices
+    let min_price = *top_price.iter().min().unwrap_or(&0);
+
+    // Calculate `threshold_percentage` of the maximum price
+    let threshold = max_price as f64 * (1.0 - threshold_percentage);
+
+    // Remove the minimum price if it is less than the threshold
+    if min_price < threshold as i64 {
+        top_price.retain(|&price| price != min_price);
+    }
+
+    // Ensure we have valid prices before calculating the average
     if top_price.is_empty() {
         return -1;
     }
-
-    // Find the minimum price in the top lowest prices.
-    // Since top_price is created from a sorted list and takes the lowest,
-    // the first element will be the minimum.
-    let min_price = *top_price.first().unwrap_or(&0);
-
-    // Calculate the threshold based on the minimum price.
-    // Prices should not deviate by more than threshold_percentage from the min_price.
-    // For example, if min_price is 100 and threshold_percentage is 0.10 (10%),
-    // the threshold will be 100 * (1.0 + 0.10) = 110.
-    // Any price above 110 will be filtered out.
-    let threshold = min_price as f64 * (1.0 + threshold_percentage);
-
-    // Retain prices that are less than or equal to the calculated threshold.
-    top_price.retain(|&price| price <= threshold as i64);
-
-    // Ensure we have valid prices after filtering.
-    if top_price.is_empty() {
-        return -1;
-    }
-
-    // Calculate and return the average price.
+    // Calculate and return the average price
     top_price.iter().sum::<i64>() / top_price.len() as i64
-}
-
-pub fn group_by_date<T: Clone, F>(
-    items: &[T],
-    date_extractor: F,
-    group_by: Vec<GroupBy>,
-) -> HashMap<String, Vec<T>>
-where
-    F: Fn(&T) -> DateTime<Utc>,
-{
-    let mut map: HashMap<String, Vec<T>> = HashMap::new();
-
-    for item in items {
-        // Convert UTC to local time for grouping
-        let dt_local = date_extractor(item)
-            .with_timezone(&chrono::Local)
-            .naive_local();
-
-        let mut key = String::new();
-        // If group_by has day
-        if group_by.contains(&GroupBy::Year) {
-            if !key.is_empty() {
-                key.push(' ');
-            }
-            key.push_str(&format!("{}", dt_local.year()));
-        }
-        if group_by.contains(&GroupBy::Month) {
-            if !key.is_empty() {
-                key.push(' ');
-            }
-            key.push_str(&format!("{:02}", dt_local.month()));
-        }
-        if group_by.contains(&GroupBy::Day) {
-            if !key.is_empty() {
-                key.push(' ');
-            }
-            key.push_str(&format!("{:02}", dt_local.day()));
-        }
-        if group_by.contains(&GroupBy::Hour) {
-            if !key.is_empty() {
-                key.push(' ');
-            }
-            key.push_str(&format!("{:02}:00", dt_local.hour()));
-        }
-        map.entry(key).or_insert_with(Vec::new).push(item.clone());
-    }
-
-    map
-}
-pub fn get_start_of(group_by: GroupBy) -> DateTime<Utc> {
-    let now = Utc::now().naive_utc();
-    let date = match group_by {
-        GroupBy::Hour => now
-            .with_hour(0)
-            .unwrap()
-            .with_minute(0)
-            .unwrap()
-            .with_second(0)
-            .unwrap(),
-        GroupBy::Day => now
-            .with_hour(0)
-            .unwrap()
-            .with_minute(0)
-            .unwrap()
-            .with_second(0)
-            .unwrap(),
-        GroupBy::Month => now
-            .with_day(1)
-            .unwrap()
-            .with_hour(0)
-            .unwrap()
-            .with_minute(0)
-            .unwrap()
-            .with_second(0)
-            .unwrap(),
-        GroupBy::Year => NaiveDate::from_ymd_opt(now.year(), 1, 1)
-            .unwrap()
-            .and_hms_opt(0, 0, 0)
-            .unwrap(),
-    };
-    DateTime::<Utc>::from_utc(date, Utc)
-}
-
-pub fn get_end_of(group_by: GroupBy) -> DateTime<Utc> {
-    let now = Utc::now().naive_utc();
-    let date = match group_by {
-        GroupBy::Hour => now
-            .with_hour(23)
-            .unwrap()
-            .with_minute(59)
-            .unwrap()
-            .with_second(59)
-            .unwrap(),
-        GroupBy::Day => now
-            .with_hour(23)
-            .unwrap()
-            .with_minute(59)
-            .unwrap()
-            .with_second(59)
-            .unwrap(),
-        GroupBy::Month => {
-            let last_day = NaiveDate::from_ymd_opt(now.year(), now.month(), 1)
-                .unwrap()
-                .with_day(0)
-                .unwrap();
-            last_day.and_hms_opt(23, 59, 59).unwrap()
-        }
-        GroupBy::Year => NaiveDate::from_ymd_opt(now.year(), 12, 31)
-            .unwrap()
-            .and_hms_opt(23, 59, 59)
-            .unwrap(),
-    };
-    DateTime::<Utc>::from_utc(date, Utc)
-=======
-    .map_err(|e| e.with_location(get_location!()))?;
-    payload["report"] = json!(FinancialReport::from(&transaction_paginate.results));
-    payload["last_transactions"] = json!(transaction_paginate.take_top(5));
-    Ok((payload, Some(item_info), order))
->>>>>>> better-backend
 }

@@ -2,20 +2,21 @@ import { AppShell, Box, Indicator } from "@mantine/core";
 import classes from "./LogInLayout.module.css";
 import { Outlet, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBug, faEnvelope, faGlobe, faHome, faInfoCircle, faMessage } from "@fortawesome/free-solid-svg-icons";
+import { faBug, faDesktop, faEnvelope, faGlobe, faHome, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
+import { useAppContext } from "@contexts/app.context";
 import { useEffect, useState } from "react";
-import { NavbarLinkProps, NavbarMinimalColored } from "@components/Layouts/Shared/NavbarMinimalColored";
-import { Header } from "@components/Layouts/Shared/Header";
+import { NavbarLinkProps, NavbarMinimalColored } from "@components/NavbarMinimalColored";
+import { SvgIcon, SvgType } from "@components/SvgIcon";
+import { Header } from "@components/Header";
+import api from "@api/index";
 import { useAuthContext } from "@contexts/auth.context";
-import { open } from "@tauri-apps/plugin-shell";
-import { AddMetric } from "@api/index";
-import { faWarframeMarket, facTradingAnalytics } from "@icons";
-
+import { Ticker } from "../../Ticker";
 export function LogInLayout() {
   // States
   const [lastPage, setLastPage] = useState<string>("");
   // Contexts
+  const { app_error, alerts } = useAppContext();
   const { user } = useAuthContext();
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -29,30 +30,22 @@ export function LogInLayout() {
       align: "top",
       id: "home",
       link: "/",
-      icon: <FontAwesomeIcon size={"lg"} icon={faHome} />,
+      icon: <FontAwesomeIcon icon={faHome} />,
       label: useTranslateNavBar("home"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
     },
     {
       align: "top",
-      id: "live_scraper",
-      link: "live_scraper",
-      icon: <FontAwesomeIcon size={"lg"} icon={faGlobe} />,
-      label: useTranslateNavBar("live_scraper"),
+      id: "live-trading",
+      link: "live-trading",
+      icon: <FontAwesomeIcon icon={faGlobe} />,
+      label: useTranslateNavBar("live_trading"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
     },
     {
       align: "top",
-      id: "warframe_market",
-      link: "warframe-market",
-      icon: <FontAwesomeIcon size={"xl"} icon={faWarframeMarket} />,
-      label: useTranslateNavBar("warframe_market"),
-      onClick: (e: NavbarLinkProps) => handleNavigate(e),
-    },
-    {
-      align: "top",
-      id: "chat",
-      link: "chat",
+      id: "chats",
+      link: "chats",
       icon: (
         <Indicator
           disabled={(user?.unread_messages || 0) <= 0}
@@ -61,57 +54,66 @@ export function LogInLayout() {
           size={16}
           position="top-start"
         >
-          <FontAwesomeIcon size={"lg"} icon={faEnvelope} />
+          <FontAwesomeIcon icon={faEnvelope} />
         </Indicator>
       ),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
-      label: useTranslateNavBar("chat"),
+      label: useTranslateNavBar("chats"),
     },
+    // { link: "statistics", icon: <FontAwesomeIcon icon={faChartSimple} />, label: useTranslate("statistics") },
     {
       align: "top",
-      id: "trading_analytics",
-      link: "trading_analytics",
-      icon: <FontAwesomeIcon size={"lg"} icon={facTradingAnalytics} />,
-      label: useTranslateNavBar("trading_analytics"),
-      onClick: (e: NavbarLinkProps) => handleNavigate(e),
-    },
-    {
-      align: "top",
-      id: "trade_messages",
-      link: "trade_messages",
-      icon: <FontAwesomeIcon size={"lg"} icon={faMessage} />,
-      label: useTranslateNavBar("trade_messages"),
+      id: "warframe_market",
+      link: "warframe-market",
+      icon: <SvgIcon svgProp={{ width: 32, height: 32, fill: "#d5d7e0" }} iconType={SvgType.Default} iconName={"wfm_logo"} />,
+      label: useTranslateNavBar("warframe_market"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
     },
     {
       align: "top",
       id: "debug",
       link: "debug",
-      hide: !import.meta.env.DEV,
-      icon: <FontAwesomeIcon size={"lg"} icon={faBug} color="red" />,
+      icon: <FontAwesomeIcon icon={faDesktop} />,
       label: useTranslateNavBar("debug"),
+      onClick: (e: NavbarLinkProps) => handleNavigate(e),
+    },
+    {
+      align: "top",
+      id: "test",
+      link: "test",
+      hide: !import.meta.env.DEV,
+      icon: <FontAwesomeIcon icon={faBug} color="red" />,
+      label: useTranslateNavBar("test"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
     },
     {
       align: "bottom",
       id: "nav_about",
       link: "about",
-      icon: <FontAwesomeIcon size={"lg"} icon={faInfoCircle} />,
+      icon: <FontAwesomeIcon icon={faInfoCircle} />,
       label: useTranslateNavBar("about"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
     },
   ];
   // Effects
   useEffect(() => {
+    if (app_error) navigate("/error");
+  }, [app_error]);
+  useEffect(() => {
     if (user?.qf_banned || user?.wfm_banned) navigate("/error/banned");
   }, [user]);
   const handleNavigate = (link: NavbarLinkProps) => {
-    if (link.web) open(link.link, "_blank");
+    console.log("Navigate to: ", link);
+    if (link.web) window.open(link.link, "_blank");
     else navigate(link.link);
 
     if (link.id == lastPage || !link.id) return;
     setLastPage(link.id || "");
-    AddMetric("active_page", link.id);
+    switch (link.id) {
+      default:
+        api.analytics.sendMetric("Active_Page", link.id);
+        break;
+    }
   };
   return (
     <AppShell
@@ -124,22 +126,7 @@ export function LogInLayout() {
     >
       <AppShell.Header withBorder={false}>
         <Header />
-<<<<<<< HEAD
-        {alerts.length > 0 && (
-          <Ticker
-            loop
-            data={alerts.map((alert) => ({
-              label: alert.context,
-              props: {
-                "data-alert-type": alert.type,
-                "data-color-mode": "text",
-              },
-              onClick: alert.properties ? () => handleAlertClick(alert) : undefined,
-            }))}
-          />
-        )}
-=======
->>>>>>> better-backend
+        {alerts.length > 0 && <Ticker data={alerts.map((alert) => ({ label: alert.context }))} />}
       </AppShell.Header>
 
       <AppShell.Navbar withBorder={false}>
@@ -147,7 +134,7 @@ export function LogInLayout() {
       </AppShell.Navbar>
 
       <AppShell.Main>
-        <Box>
+        <Box mt={alerts.length > 0 ? 30 : 0}>
           <Outlet />
         </Box>
       </AppShell.Main>

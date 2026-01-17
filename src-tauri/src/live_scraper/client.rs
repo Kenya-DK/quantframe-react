@@ -1,213 +1,102 @@
-use crate::{
-    emit_error,
-    enums::*,
-    live_scraper::modules::*,
-    play_sound, send_event,
-    types::UIEvent,
-    utils::{modules::states, OrderListExt},
-};
 use std::{
     sync::{
         atomic::{AtomicBool, Ordering},
-        Arc, OnceLock,
+        Arc, Mutex, RwLock,
     },
     time::{Duration, Instant},
 };
-use utils::{get_location, warning, LogLevel, LoggerOptions};
 
-<<<<<<< HEAD
 use serde_json::json;
 
 use crate::{
+    app::client::AppState,
+    auth::AuthState,
+    cache::client::CacheClient,
     enums::{stock_mode::StockMode, trade_mode::TradeMode},
-    helper::add_metric,
     logger,
+    notification::client::NotifyClient,
+    settings::SettingsState,
     utils::{
         enums::{log_level::LogLevel, ui_events::UIEvent},
-        modules::{error::AppError, logger::LoggerOptions, states},
+        modules::error::AppError,
     },
+    wfm_client::client::WFMClient,
 };
 
 use super::modules::{item::ItemModule, riven::RivenModule};
 
 #[derive(Clone)]
 pub struct LiveScraperClient {
-    pub log_file: &'static str,
+    pub log_file: String,
     pub component: String,
     riven_module: Arc<RwLock<Option<RivenModule>>>,
     item_module: Arc<RwLock<Option<ItemModule>>>,
-=======
-#[derive(Debug)]
-pub struct LiveScraperState {
->>>>>>> better-backend
     pub is_running: Arc<AtomicBool>,
-    pub just_started: Arc<AtomicBool>,
-    item_module: OnceLock<Arc<ItemModule>>,
-    riven_module: OnceLock<Arc<RivenModule>>,
+    pub settings: Arc<Mutex<SettingsState>>,
+    pub wfm: Arc<Mutex<WFMClient>>,
+    pub auth: Arc<Mutex<AuthState>>,
+    pub cache: Arc<Mutex<CacheClient>>,
+    pub notify: Arc<Mutex<NotifyClient>>,
+    pub app: Arc<Mutex<AppState>>,
 }
 
-impl LiveScraperState {
-    pub fn new() -> Arc<Self> {
-        Arc::new(Self {
+impl LiveScraperClient {
+    pub fn new(
+        app: Arc<Mutex<AppState>>,
+        settings: Arc<Mutex<SettingsState>>,
+        wfm: Arc<Mutex<WFMClient>>,
+        auth: Arc<Mutex<AuthState>>,
+        cache: Arc<Mutex<CacheClient>>,
+        notify: Arc<Mutex<NotifyClient>>,
+    ) -> Self {
+        LiveScraperClient {
+            log_file: "live_scraper.log".to_string(),
+            component: "LiveScraper".to_string(),
+            settings,
             is_running: Arc::new(AtomicBool::new(false)),
-<<<<<<< HEAD
+            app,
+            wfm,
+            auth,
+            cache,
+            notify,
             riven_module: Arc::new(RwLock::new(None)),
             item_module: Arc::new(RwLock::new(None)),
         }
     }
     pub fn report_error(&self, error: &AppError) {
-        let notify = states::notify_client().unwrap();
+        let notify = self.notify.lock().unwrap().clone();
         let component = error.component();
+        let cause = error.cause();
+        let backtrace = error.backtrace();
         let log_level = error.log_level();
+        let extra = error.extra_data();
         if log_level == LogLevel::Critical || log_level == LogLevel::Error {
-            add_metric("LiveScraper_Error", log_level.as_str());
-            // self.is_running.store(false, Ordering::SeqCst);
-            notify.gui().send_event(
-                crate::utils::enums::ui_events::UIEvent::OnLiveTradingError,
-                Some(json!(error)),
-            );
+            self.is_running.store(false, Ordering::SeqCst);
         }
         crate::logger::dolog(
             log_level.clone(),
             format!("{}:{}", self.component, component).as_str(),
-            &error.to_string(),
-            LoggerOptions::default()
-                .set_console(true)
-                .set_file(self.log_file),
+            format!("{}, {}, {}", backtrace, cause, extra.to_string()).as_str(),
+            true,
+            Some(self.log_file.as_str()),
         );
-=======
-            just_started: Arc::new(AtomicBool::new(true)),
-            item_module: OnceLock::new(),
-            riven_module: OnceLock::new(),
-        })
->>>>>>> better-backend
+        notify.gui().send_event(
+            crate::utils::enums::ui_events::UIEvent::OnLiveTradingError,
+            Some(json!(error)),
+        );
     }
 
-    fn init_modules(self: &Arc<Self>) {
-        self.item_module
-            .get_or_init(|| ItemModule::new(self.clone()));
-        self.riven_module
-            .get_or_init(|| RivenModule::new(self.clone()));
-    }
-
-    pub fn start(self: &Arc<Self>) {
-        let settings = states::get_settings().expect("Settings not initialized");
-        let app = states::app_state().expect("App state not initialized");
-
-        if self.is_running.swap(true, Ordering::SeqCst) {
-            warning(
-                "LiveScraper:Start",
-                "Live Scraper is already running",
-                &LoggerOptions::default(),
-            );
-            return;
-        }
-        self.just_started.store(true, Ordering::SeqCst);
-        if settings.live_scraper.stock_mode == StockMode::All
-            || settings.live_scraper.stock_mode == StockMode::Item
-        {
-            match app.wfm_client.order().cache_orders_mut().apply_trade_info() {
-                Ok(_) => {}
-                Err(e) => {
-                    e.with_location(get_location!()).log("live_scraper.log");
-                }
-            }
-        }
-        self.init_modules();
-        let is_running = Arc::clone(&self.is_running);
-        let just_started = Arc::clone(&self.just_started);
-        let this = self.clone();
-        tauri::async_runtime::spawn({
-            async move {
-                // Start Riven last update timer
-                let riven_interval = settings.live_scraper.stock_riven.update_interval as u64;
-                let mut last_riven_update =
-                    Instant::now() - Duration::from_secs(riven_interval * 2);
-
-                while is_running.load(Ordering::SeqCst) {
-                    let app = states::app_state().expect("App state not initialized");
-                    if matches!(
-                        app.settings.live_scraper.stock_mode,
-                        StockMode::Riven | StockMode::All
-                    ) {
-                        // Check Time
-                        let time_elapsed = last_riven_update.elapsed();
-                        if time_elapsed > Duration::from_secs(riven_interval) {
-                            last_riven_update = Instant::now();
-                            match this.riven().check().await {
-                                Ok(_) => {}
-                                Err(e) => {
-                                    e.clone()
-                                        .with_location(get_location!())
-                                        .log("live_scraper_riven.log");
-                                    match e.log_level {
-                                        LogLevel::Critical | LogLevel::Error => {
-                                            // Stop the live scraper
-                                            is_running.store(false, Ordering::SeqCst);
-                                            play_sound!("windows_xp_error.mp3", 1.0);
-                                            emit_error!(e);
-                                        }
-                                        _ => {}
-                                    }
-                                }
-                            }
-                        } else {
-                            send_event!(
-                                UIEvent::SendLiveScraperMessage,
-                                json!({"i18nKey": "riven.cooldown", "values": json!({"seconds": (riven_interval - time_elapsed.as_secs())})})
-                            );
-                        }
-                    }
-
-                    if matches!(
-                        app.settings.live_scraper.stock_mode,
-                        StockMode::Item | StockMode::All
-                    ) {
-                        match this.item().check().await {
-                            Ok(_) => {}
-                            Err(e) => {
-                                e.clone()
-                                    .with_location(get_location!())
-                                    .log("live_scraper_item.log");
-                                match e.log_level {
-                                    LogLevel::Critical => {
-                                        // Stop the live scraper
-                                        is_running.store(false, Ordering::SeqCst);
-                                        play_sound!("windows_xp_error.mp3", 1.0);
-                                        emit_error!(e);
-                                    }
-                                    LogLevel::Error => {
-                                        if !just_started.load(Ordering::SeqCst) {
-                                            play_sound!("windows_xp_error.mp3", 1.0);
-                                            emit_error!(e);
-                                        }
-                                    }
-                                    _ => {}
-                                }
-                            }
-                        }
-                    }
-                    tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
-                    just_started.store(false, Ordering::SeqCst);
-                }
-            }
-        });
-    }
-
-    pub fn stop(&self) {
+    pub fn stop_loop(&self) {
+        self.send_gui_update("idle", None);
         self.is_running.store(false, Ordering::SeqCst);
     }
 
-    pub fn item(&self) -> Arc<ItemModule> {
-        self.item_module
-            .get()
-            .expect("Item module not initialized")
-            .clone()
+    pub fn is_running(&self) -> bool {
+        self.is_running.load(Ordering::SeqCst)
     }
 
-<<<<<<< HEAD
     pub fn set_can_run(&self, can_run: bool) {
-        let notify = states::notify_client().unwrap();
+        let notify = self.notify.lock().unwrap().clone();
         notify.gui().send_event(
             UIEvent::OnToggleControl,
             Some(json!({"id": "live_trading", "state": can_run})),
@@ -217,20 +106,14 @@ impl LiveScraperState {
     pub fn start_loop(&mut self) -> Result<(), AppError> {
         self.is_running.store(true, Ordering::SeqCst);
         let is_running = Arc::clone(&self.is_running);
+        let forced_stop = Arc::clone(&self.is_running);
         let scraper = self.clone();
         // Reset riven stocks on start
         tauri::async_runtime::spawn(async move {
-            logger::info(
-                &scraper.component,
-                "Loop live scraper is started",
-                LoggerOptions::default(),
-            );
+            logger::info_con(&scraper.component, "Loop live scraper is started");
 
-            let mut settings = states::settings().unwrap().clone();
-            let wfm = states::wfm_client().unwrap();
-            // Get My Orders from Warframe Market.
-            let mut my_orders = wfm.orders().get_my_orders().await.unwrap();
-            my_orders.apply_trade_info().unwrap();
+            let mut settings = scraper.settings.lock().unwrap().clone();
+
             // Check if StockMode is set to Riven or All
             if settings.live_scraper.stock_mode == StockMode::Riven
                 || settings.live_scraper.stock_mode == StockMode::All
@@ -244,18 +127,18 @@ impl LiveScraperState {
                 if settings.live_scraper.stock_item.auto_delete {
                     scraper
                         .item()
-                        .delete_all_orders(vec![TradeMode::Buy, TradeMode::Sell])
+                        .delete_all_orders(TradeMode::All)
                         .await
                         .unwrap();
                 }
             }
 
             // Start Riven last update timer
-            let riven_interval = settings.live_scraper.stock_riven.update_interval as u64;
-            let mut last_riven_update = Instant::now() - Duration::from_secs(riven_interval * 2);
+            let riven_interval = 1; // 5 min
+            let mut last_riven_update = Instant::now() - Duration::from_secs(riven_interval + 20);
 
-            while is_running.load(Ordering::SeqCst) {
-                settings = states::settings().unwrap().clone();
+            while is_running.load(Ordering::SeqCst) && forced_stop.load(Ordering::SeqCst) {
+                settings = scraper.settings.lock().unwrap().clone();
 
                 if (settings.live_scraper.stock_mode == StockMode::Riven
                     || settings.live_scraper.stock_mode == StockMode::All)
@@ -266,30 +149,20 @@ impl LiveScraperState {
                         Ok(_) => {}
                         Err(e) => scraper.report_error(&e),
                     }
-                } else if settings.live_scraper.stock_mode == StockMode::Riven {
-                    scraper.send_gui_update(
-                        "riven.cooldown",
-                        Some(json!({"seconds": riven_interval - last_riven_update.elapsed().as_secs()})),
-                    );
                 }
 
                 if settings.live_scraper.stock_mode == StockMode::Item
                     || settings.live_scraper.stock_mode == StockMode::All
                 {
-                    match scraper.item().check_stock(&mut my_orders).await {
+                    match scraper.item().check_stock().await {
                         Ok(_) => {}
                         Err(e) => scraper.report_error(&e),
                     }
                 }
-                // scraper.stop_loop();
                 tokio::time::sleep(Duration::from_secs(1)).await;
             }
-            logger::info(
-                &scraper.component,
-                "Loop live scraper is stopped",
-                LoggerOptions::default(),
-            );
-            states::notify_client().unwrap().gui().send_event(
+            logger::info_con(&scraper.component, "Loop live scraper is stopped");
+            scraper.notify.lock().unwrap().gui().send_event(
                 crate::utils::enums::ui_events::UIEvent::UpdateLiveTradingRunningState,
                 Some(json!(false)),
             );
@@ -324,19 +197,12 @@ impl LiveScraperState {
     }
 
     pub fn send_gui_update(&self, i18n_key: &str, values: Option<serde_json::Value>) {
-        let notify = states::notify_client().unwrap();
+        let notify = self.notify.lock().unwrap().clone();
         if self.is_running() {
             notify.gui().send_event(
                 crate::utils::enums::ui_events::UIEvent::OnLiveTradingMessage,
                 Some(json!({ "i18nKey": i18n_key, "values": values })),
             );
         }
-=======
-    pub fn riven(&self) -> Arc<RivenModule> {
-        self.riven_module
-            .get()
-            .expect("Riven module not initialized")
-            .clone()
->>>>>>> better-backend
     }
 }

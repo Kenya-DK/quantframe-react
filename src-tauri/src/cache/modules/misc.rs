@@ -1,78 +1,70 @@
-use std::{
-    path::PathBuf,
-    sync::{Arc, Mutex},
+use std::path::PathBuf;
+
+use eyre::eyre;
+
+use crate::{
+    cache::{client::CacheClient, types::cache_misc::CacheMisc}, helper, utils::modules::error::AppError
 };
 
-use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions};
-
-use crate::cache::{modules::LanguageModule, *};
-
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct MiscModule {
+    pub client: CacheClient,
+    // debug_id: String,
+    component: String,
     path: PathBuf,
-    items: Mutex<Vec<CacheMisc>>,
-    components: Mutex<Vec<CacheItemComponent>>,
+    pub items: Vec<CacheMisc>,
 }
 
 impl MiscModule {
-    pub fn new(client: Arc<CacheState>) -> Arc<Self> {
-        Arc::new(Self {
-            path: client.base_path.join("items/Misc.json"),
-            items: Mutex::new(Vec::new()),
-            components: Mutex::new(Vec::new()),
-        })
-    }
-    pub fn load(&self, language: &LanguageModule) -> Result<(), Error> {
-        match read_json_file_optional::<Vec<CacheMisc>>(&self.path) {
-            Ok(mut items) => {
-                for item in items.iter_mut() {
-                    item.name = language
-                        .translate(&item.unique_name, crate::cache::modules::LanguageKey::Name)
-                        .unwrap_or(item.name.clone());
-                }
-                let mut items_lock = self.items.lock().unwrap();
-                let mut components_lock = self.components.lock().unwrap();
-                info(
-                    "Cache:Misc:load",
-                    format!("Loaded {} Misc items", items.len()),
-                    &LoggerOptions::default(),
-                );
-                *items_lock = items.clone();
-                for mut item in items {
-                    components_lock.append(&mut item.components);
-                }
-            }
-            Err(e) => return Err(e.with_location(get_location!())),
+    pub fn new(client: CacheClient) -> Self {
+        MiscModule {
+            client,
+            // debug_id: "ch_client_auction".to_string(),
+            component: "Misc".to_string(),
+            path: PathBuf::from("items/Misc.json"),
+            items: Vec::new(),
         }
+    }
+    fn get_component(&self, component: &str) -> String {
+        format!("{}:{}", self.component, component)
+    }
+    fn update_state(&self) {
+        self.client.update_misc_module(self.clone());
+    }
+
+    pub fn load(&mut self) -> Result<(), AppError> {
+        let content = self.client.read_text_from_file(&self.path)?;
+        let items: Vec<CacheMisc> = serde_json::from_str(&content).map_err(|e| {
+            AppError::new(
+                self.get_component("Load").as_str(),
+                eyre!(format!("Failed to parse MiscModule from file: {}", e)),
+            )
+        })?;
+        self.items = items;
+        self.update_state();
         Ok(())
     }
-    pub fn collect_all_items(&self) -> Vec<CacheItemBase> {
-        let items_lock = self.items.lock().unwrap();
-        let components_lock = self.components.lock().unwrap();
-        let mut items: Vec<CacheItemBase> = Vec::new();
-        items.append(
-            &mut items_lock
-                .iter()
-                .map(|item| item.convert_to_base_item())
-                .collect(),
-        );
-        items.append(
-            &mut components_lock
-                .iter()
-                .map(|item| item.convert_to_base_item())
-                .collect(),
-        );
-        items
+    pub fn get_items(&self) -> Vec<CacheMisc> {
+        self.items.clone()
     }
-    /**
-     * Creates a new `MiscModule` from an existing one, sharing the client.
-     * This is useful for cloning modules when the client state changes.
-     */
-    pub fn from_existing(old: &MiscModule) -> Arc<Self> {
-        Arc::new(Self {
-            path: old.path.clone(),
-            items: Mutex::new(old.items.lock().unwrap().clone()),
-            components: Mutex::new(old.components.lock().unwrap().clone()),
-        })
+    pub fn get_by(&self, input: &str, by: &str) -> Result<Option<CacheMisc>, AppError> {
+        let items = self.items.clone();
+        let args = match helper::validate_args(by, vec!["--item_by"]) {
+            Ok(args) => args,
+            Err(e) => return Err(e),            
+        };
+        let mode = args.get("--item_by").unwrap();
+        let case_insensitive = args.get("--ignore_case").is_some();
+        // let lang = args.get("--item_lang").unwrap_or(&"en".to_string());
+        let remove_string = args.get("--remove_string");
+
+        let item = if mode == "name" {            
+            items.iter().find(|x| helper::is_match(&x.name,input, case_insensitive, remove_string)).cloned()
+        } else if mode == "unique_name" {
+            items.iter().find(|x| helper::is_match(&x.unique_name,input, case_insensitive, remove_string)).cloned()
+        } else {
+            return Err(AppError::new(&self.get_component("GetBy"), eyre!("Invalid by value: {}", by)));
+        };
+        Ok(item)
     }
 }

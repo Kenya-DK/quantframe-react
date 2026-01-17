@@ -30,7 +30,7 @@ pub async fn order_refresh(
             orders
         }
         Err(e) => {
-            error::create_log_file("command_order_refresh.log", &e);
+            error::create_log_file("command_order_refresh.log".to_string(), &e);
             return Err(e);
         }
     };
@@ -63,12 +63,13 @@ pub async fn order_delete(
             );
         }
         Err(e) => {
-            error::create_log_file("command_order_delete.log", &e);
+            error::create_log_file("command_order_delete.log".to_string(), &e);
             return Err(e);
         }
     }
     Ok(())
 }
+
 #[tauri::command]
 pub async fn order_delete_all(
     wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
@@ -89,12 +90,13 @@ pub async fn order_delete_all(
     let current_orders = match wfm.orders().get_my_orders().await {
         Ok(mut auctions) => {
             qf.analytics().add_metric("Order_DeleteAll", "manual");
+            live_scraper.item().reset();
             let mut orders = auctions.buy_orders;
             orders.append(&mut auctions.sell_orders);
             orders
         }
         Err(e) => {
-            error::create_log_file("command_order_delete_all.log", &e);
+            error::create_log_file("command_order_delete_all.log".to_string(), &e);
             live_scraper.set_can_run(true);
             return Err(e);
         }
@@ -105,13 +107,13 @@ pub async fn order_delete_all(
             .live_scraper
             .stock_item
             .blacklist
-            .contains(&order.info.wfm_url)
+            .contains(&order.item.clone().unwrap().url_name)
         {
             continue;
         }
         if let Err(e) = wfm.orders().delete(&order.id).await {
             live_scraper.set_can_run(true);
-            error::create_log_file("command_order_delete_all.log", &e);
+            error::create_log_file("command_order_delete_all.log".to_string(), &e);
             return Err(e);
         }
         total += 1;

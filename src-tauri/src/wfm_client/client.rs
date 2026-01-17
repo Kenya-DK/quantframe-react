@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    sync::{Arc, RwLock},
+    sync::{Arc, Mutex, RwLock},
     time::Duration,
 };
 
@@ -8,10 +8,12 @@ use eyre::eyre;
 use reqwest::{Client, Method, Url};
 use serde::de::DeserializeOwned;
 use serde_json::{json, Value};
-use tauri::http::version;
 
 use crate::{
+    app::client::AppState,
+    auth::AuthState,
     logger,
+    notification::client::NotifyClient,
     utils::{
         enums::{
             log_level::LogLevel,
@@ -19,9 +21,7 @@ use crate::{
         },
         modules::{
             error::{ApiResult, AppError, ErrorApiResponse},
-            logger::LoggerOptions,
             rate_limiter::RateLimiter,
-            states,
         },
     },
 };
@@ -33,27 +33,38 @@ use super::modules::{
 #[derive(Clone, Debug)]
 pub struct WFMClient {
     endpoint: String,
-    endpoint_v2: String,
     pub component: String,
     limiter: Arc<tokio::sync::Mutex<RateLimiter>>,
     order_module: Arc<RwLock<Option<OrderModule>>>,
     chat_module: Arc<RwLock<Option<ChatModule>>>,
     auction_module: Arc<RwLock<Option<AuctionModule>>>,
     auth_module: Arc<RwLock<Option<AuthModule>>>,
-    pub log_file: &'static str,
+    pub log_file: String,
+    pub auth: Arc<Mutex<AuthState>>,
+    pub settings: Arc<Mutex<crate::settings::SettingsState>>,
+    pub app: Arc<Mutex<AppState>>,
+    pub notify: Arc<Mutex<NotifyClient>>,
 }
 
 impl WFMClient {
-    pub fn new() -> Self {
+    pub fn new(
+        auth: Arc<Mutex<AuthState>>,
+        settings: Arc<Mutex<crate::settings::SettingsState>>,
+        app: Arc<Mutex<AppState>>,
+        notify: Arc<Mutex<NotifyClient>>,
+    ) -> Self {
         WFMClient {
+            app,
             endpoint: "https://api.warframe.market/v1/".to_string(),
-            endpoint_v2: "https://api.warframe.market/v2/".to_string(),
             component: "WarframeMarket".to_string(),
             limiter: Arc::new(tokio::sync::Mutex::new(RateLimiter::new(
                 1.0,
                 Duration::new(1, 0),
             ))),
-            log_file: "wfmAPICalls.log",
+            log_file: "wfmAPICalls.log".to_string(),
+            auth,
+            settings,
+            notify,
             order_module: Arc::new(RwLock::new(None)),
             chat_module: Arc::new(RwLock::new(None)),
             auction_module: Arc::new(RwLock::new(None)),
@@ -62,7 +73,7 @@ impl WFMClient {
     }
 
     pub fn debug(&self, id: &str, component: &str, msg: &str, file: Option<bool>) {
-        let settings = states::settings().expect("Could not get settings");
+        let settings = self.settings.lock().unwrap().clone();
         if !settings.debug.contains(&"*".to_owned()) && !settings.debug.contains(&id.to_owned()) {
             return;
         }
@@ -71,14 +82,16 @@ impl WFMClient {
             logger::debug(
                 format!("{}:{}", self.component, component).as_str(),
                 msg,
-                LoggerOptions::default(),
+                true,
+                None,
             );
             return;
         }
         logger::debug(
             format!("{}:{}", self.component, component).as_str(),
             msg,
-            LoggerOptions::default().set_file(self.log_file),
+            true,
+            Some(&self.log_file),
         );
     }
 
@@ -98,8 +111,8 @@ impl WFMClient {
     }
 
     fn handle_error(&self, errors: Vec<String>) {
-        let mut auth = states::auth().expect("Could not get auth state");
-        let notify = states::notify_client().expect("Could not get notify client");
+        let mut auth = self.auth.lock().unwrap();
+        let notify = self.notify.lock().unwrap();
         if errors.contains(&"app.errors.unauthorized".to_string()) {
             auth.reset();
             notify.gui().send_event_update(
@@ -119,21 +132,14 @@ impl WFMClient {
 
     async fn send_request<T: DeserializeOwned>(
         &self,
-        version: &str,
         method: Method,
         url: &str,
         payload_key: Option<&str>,
         body: Option<Value>,
     ) -> Result<ApiResult<T>, AppError> {
-<<<<<<< HEAD
         let auth = self.auth.lock()?.clone();
         let app = self.app.lock()?.clone();
         let settings = self.settings.lock()?.clone();
-=======
-        let auth = states::auth()?;
-        let settings = states::settings()?;
-        let app = states::app_state()?;
->>>>>>> development
         let mut rate_limiter = self.limiter.lock().await;
 
         rate_limiter.wait_for_token().await;
@@ -141,23 +147,14 @@ impl WFMClient {
         let packageinfo = app.get_app_info();
 
         let client = Client::new();
-        let new_url = match version {
-            "v1" => format!("{}{}", self.endpoint, url),
-            "v2" => format!("{}{}", self.endpoint_v2, url),
-            _ => format!("{}{}", self.endpoint, url),
-        };
-
-        let prefix = if let "v1" = version { "JWT" } else { "Bearer" };
-
-        println!("Calling URL: {}", new_url);
+        let new_url = format!("{}{}", self.endpoint, url);
 
         let request = client
             .request(method.clone(), Url::parse(&new_url).unwrap())
             .header(
                 "Authorization",
                 format!(
-                    "{} {}",
-                    prefix,
+                    "JWT {}",
                     auth.wfm_access_token.clone().unwrap_or("".to_string())
                 ),
             )
@@ -227,7 +224,7 @@ impl WFMClient {
         };
 
         // Check if the response is an error
-        if response.get("error").is_some() && response["error"] != Value::Null {
+        if response.get("error").is_some() {
             error_def.error = "ApiError".to_string();
 
             let error: Value = response["error"].clone();
@@ -275,23 +272,12 @@ impl WFMClient {
 
         // Get the payload from the response if it exists
         let mut data = response.clone();
+        if response.get("payload").is_some() {
+            data = response["payload"].clone();
+        }
 
-        match version {
-            "v1" => {
-                if response.get("payload").is_some() {
-                    data = response["payload"].clone();
-                }
-
-                if let Some(payload_key) = payload_key {
-                    data = data[payload_key].clone();
-                }
-            }
-            "v2" => {
-                if response.get("data").is_some() {
-                    data = response["data"].clone();
-                }
-            }
-            _ => {}
+        if let Some(payload_key) = payload_key {
+            data = data[payload_key].clone();
         }
 
         // Convert the response to a T object
@@ -312,65 +298,50 @@ impl WFMClient {
 
     pub async fn get<T: DeserializeOwned>(
         &self,
-        version: &str,
         url: &str,
         payload_key: Option<&str>,
     ) -> Result<ApiResult<T>, AppError> {
         let payload: ApiResult<T> = self
-            .send_request(version, Method::GET, url, payload_key, None)
+            .send_request(Method::GET, url, payload_key, None)
             .await?;
         Ok(payload)
     }
 
     pub async fn post<T: DeserializeOwned>(
         &self,
-        version: &str,
         url: &str,
         payload_key: Option<&str>,
         body: Value,
     ) -> Result<ApiResult<T>, AppError> {
         let payload: ApiResult<T> = self
-            .send_request(version, Method::POST, url, payload_key, Some(body))
+            .send_request(Method::POST, url, payload_key, Some(body))
             .await?;
         Ok(payload)
     }
 
     pub async fn delete<T: DeserializeOwned>(
         &self,
-        version: &str,
         url: &str,
         payload_key: Option<&str>,
     ) -> Result<ApiResult<T>, AppError> {
         let payload: ApiResult<T> = self
-            .send_request(version, Method::DELETE, url, payload_key, None)
+            .send_request(Method::DELETE, url, payload_key, None)
             .await?;
         Ok(payload)
     }
 
     pub async fn put<T: DeserializeOwned>(
         &self,
-        version: &str,
         url: &str,
         payload_key: Option<&str>,
         body: Option<Value>,
     ) -> Result<ApiResult<T>, AppError> {
         let payload: ApiResult<T> = self
-            .send_request(version, Method::PUT, url, payload_key, body)
+            .send_request(Method::PUT, url, payload_key, body)
             .await?;
         Ok(payload)
     }
-    pub async fn patch<T: DeserializeOwned>(
-        &self,
-        version: &str,
-        url: &str,
-        payload_key: Option<&str>,
-        body: Option<Value>,
-    ) -> Result<ApiResult<T>, AppError> {
-        let payload: ApiResult<T> = self
-            .send_request(version, Method::PATCH, url, payload_key, body)
-            .await?;
-        Ok(payload)
-    }
+
     pub fn auth(&self) -> AuthModule {
         // Lazily initialize ItemModule if not already initialized
         if self.auth_module.read().unwrap().is_none() {
@@ -380,10 +351,7 @@ impl WFMClient {
         // Unwrapping is safe here because we ensured the item_module is initialized
         self.auth_module.read().unwrap().as_ref().unwrap().clone()
     }
-    pub fn update_auth_module(&self, module: AuthModule) {
-        // Update the stored AuthModule
-        *self.auth_module.write().unwrap() = Some(module);
-    }
+
     pub fn orders(&self) -> OrderModule {
         // Lazily initialize ItemModule if not already initialized
         if self.order_module.read().unwrap().is_none() {

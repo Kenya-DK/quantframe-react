@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@tauri-apps/api";
 
 export interface LogSettings {
   console?: boolean;
@@ -15,7 +15,7 @@ export enum LogLevel {
 }
 
 export const doLog = async (component: string, msg: string, level: LogLevel, settings: LogSettings = { console: true }) => {
-  await invoke("log_send", {
+  await invoke("log", {
     component,
     msg: msg,
     level: level,

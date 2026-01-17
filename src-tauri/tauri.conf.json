@@ -1,82 +1,85 @@
 {
-  "$schema": "https://schema.tauri.app/config/2",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "beforeBuildCommand": "pnpm build",
-    "frontendDist": "../dist",
-    "devUrl": "http://localhost:1420"
+    "devPath": "http://localhost:1420",
+    "distDir": "../dist",
+    "withGlobalTauri": false
   },
-<<<<<<< HEAD
   "package": {
     "productName": "Quantframe",
     "version": "1.3.4"
-=======
-  "bundle": {
-    "active": true,
-    "targets": "all",
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
-    ],
-<<<<<<< HEAD
-    "createUpdaterArtifacts": "v1Compatible",
-=======
-    "createUpdaterArtifacts": true,
->>>>>>> better-backend
-    "resources": {
-      "resources/*": "resources/",
-      "resources/sounds/*": "resources/sounds/"
-    }
->>>>>>> development
   },
-  "productName": "Quantframe",
-  "mainBinaryName": "Quantframe",
-<<<<<<< HEAD
-  "version": "1.5.10",
-=======
-  "version": "1.6.12",
->>>>>>> better-backend
-  "identifier": "dev.kenya.quantframe",
-  "plugins": {
+  "tauri": {
+    "systemTray": {
+      "iconPath": "icons/icon.png",
+      "iconAsTemplate": true
+    },
+    "allowlist": {
+      "all": false,
+      "dialog": {
+        "all": false,
+        "ask": false,
+        "confirm": false,
+        "message": false,
+        "open": true,
+        "save": false
+      },
+      "shell": {
+        "all": false,
+        "open": true
+      },
+      "window": {
+        "create": true
+      },
+      "protocol": {
+        "all": true,
+        "asset": true,
+        "assetScope": ["**"]
+      },
+      "notification": {
+        "all": true
+      },
+      "path": {
+        "all": true
+      },
+      "fs": {
+        "writeFile": true,
+        "exists": true,
+        "readDir": true,
+        "copyFile": true,
+        "removeFile": true,
+        "scope": ["$APPDATA/**", "$DESKTOP/**"]
+      },
+      "http": {
+        "all": true,
+        "scope": []
+      }
+    },
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQ3NEIwMTI1MzA3Q0E1OEYKUldTUHBYd3dKUUZMMTczQ2pIYTR0bklLQXlaMkxvK0V0a0RMQytNMTdqZzBCWitQRnNIWDhxYnAK",
-      "endpoints": [
-        "https://api.quantframe.app/release/{{target}}/{{arch}}/{{current_version}}"
-      ]
-    }
-  },
-  "app": {
+      "active": true,
+      "endpoints": ["https://api.quantframe.app/release/{{target}}/{{arch}}/{{current_version}}"],
+      "dialog": false,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQ3NEIwMTI1MzA3Q0E1OEYKUldTUHBYd3dKUUZMMTczQ2pIYTR0bklLQXlaMkxvK0V0a0RMQytNMTdqZzBCWitQRnNIWDhxYnAK"
+    },
+    "bundle": {
+      "active": true,
+      "targets": "all",
+      "identifier": "dev.kenya.quantframe",
+      "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"]
+    },
+    "security": {
+      "csp": null
+    },
     "windows": [
       {
         "fullscreen": false,
         "userAgent": "Quantframe",
         "resizable": true,
-<<<<<<< HEAD
         "title": "Quantframe v1.3.4 - Pre-release By Kenya-DK",
-=======
-<<<<<<< HEAD
-        "title": "Quantframe v1.5.10 - By Kenya-DK",
-=======
-        "title": "Quantframe v1.6.12 - By Kenya-DK",
->>>>>>> better-backend
->>>>>>> development
         "width": 1455,
-        "height": 912,
-        "useHttpsScheme": true
+        "height": 912
       }
-    ],
-    "withGlobalTauri": false,
-    "security": {
-      "assetProtocol": {
-        "scope": [
-          "**"
-        ],
-        "enable": true
-      },
-      "csp": null
-    }
+    ]
   }
 }

@@ -20,6 +20,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(ColumnDef::new(StockRiven::WFMWeaponId).uuid().not_null())
                     .col(ColumnDef::new(StockRiven::WFMWeaponUrl).string().not_null())
+                    .col(ColumnDef::new(StockRiven::WFMOrderId).uuid())
                     .col(ColumnDef::new(StockRiven::WeaponName).string().not_null())
                     .col(ColumnDef::new(StockRiven::WeaponType).string().not_null())
                     .col(
@@ -92,11 +93,12 @@ impl MigrationTrait for Migration {
 }
 
 #[derive(DeriveIden)]
-pub enum StockRiven {
+enum StockRiven {
     Table,
     Id,
     WFMWeaponId,
     WFMWeaponUrl,
+    WFMOrderId,
     WeaponName,
     WeaponType,
     WeaponUniqueName,
@@ -114,7 +116,6 @@ pub enum StockRiven {
     Comment,
     Status,
     PriceHistory,
-    UUID,
     CreatedAt,
     UpdatedAt,
 }

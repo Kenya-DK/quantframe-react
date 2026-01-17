@@ -38,7 +38,7 @@ impl StockStatus {
             StockStatus::SMALimit => "sma_limit",
             StockStatus::OrderLimit => "order_limit",
             StockStatus::Overpriced => "overpriced",
-            StockStatus::Underpriced => "underpriced",
+            StockStatus::Underpriced => "underpriced"
         }
     }
     pub fn to_string(&self) -> String {
@@ -52,7 +52,7 @@ impl StockStatus {
             StockStatus::SMALimit => StockStatus::SMALimit.as_str().to_string(),
             StockStatus::OrderLimit => StockStatus::OrderLimit.as_str().to_string(),
             StockStatus::Overpriced => StockStatus::Overpriced.as_str().to_string(),
-            StockStatus::Underpriced => StockStatus::Underpriced.as_str().to_string(),
+            StockStatus::Underpriced => StockStatus::Underpriced.as_str().to_string()
         }
     }
     pub fn from_string(s: &str) -> StockStatus {
@@ -67,7 +67,7 @@ impl StockStatus {
             "order_limit" => StockStatus::OrderLimit,
             "overpriced" => StockStatus::Overpriced,
             "underpriced" => StockStatus::Underpriced,
-            _ => StockStatus::Pending,
+            _ => StockStatus::Pending
         }
     }
 }
@@ -86,7 +86,7 @@ impl Serialize for StockStatus {
             StockStatus::SMALimit => StockStatus::SMALimit.as_str(),
             StockStatus::OrderLimit => StockStatus::OrderLimit.as_str(),
             StockStatus::Overpriced => StockStatus::Overpriced.as_str(),
-            StockStatus::Underpriced => StockStatus::Underpriced.as_str(),
+            StockStatus::Underpriced => StockStatus::Underpriced.as_str()
         };
         serializer.serialize_str(value)
     }
@@ -109,13 +109,7 @@ impl<'de> Deserialize<'de> for StockStatus {
             "order_limit" => StockStatus::OrderLimit,
             "overpriced" => StockStatus::Overpriced,
             "underpriced" => StockStatus::Underpriced,
-            _ => StockStatus::Pending,
+            _ => StockStatus::Pending
         })
-    }
-}
-
-impl std::hash::Hash for StockStatus {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.to_string().hash(state);
     }
 }

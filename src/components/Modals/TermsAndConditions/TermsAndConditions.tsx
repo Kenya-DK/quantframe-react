@@ -6,20 +6,21 @@ import { useTranslateModals } from "@hooks/useTranslate.hook";
 import { Button, Container, Group } from "@mantine/core";
 import classes from "./TermsAndConditions.module.css";
 export type TermsAndConditionsProps = {
-  content?: string;
   onAccept?: () => void;
   onDecline?: () => void;
 };
-export function TermsAndConditions({ content, onAccept, onDecline }: TermsAndConditionsProps) {
+export function TermsAndConditions({ onAccept, onDecline }: TermsAndConditionsProps) {
   // Translate general
   const useTranslateTOS = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateModals(`tos.${key}`, { ...context }, i18Key);
+  // const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateTOS(`tabs.${key}`, { ...context }, i18Key)
+  // const useTranslateFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslateTOS(`fields.${key}`, { ...context }, i18Key)
   const useTranslateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTOS(`buttons.${key}`, { ...context }, i18Key);
   const editor = useEditor({
     extensions: [StarterKit, Markdown],
     editable: false,
-    content: content,
+    content: useTranslateTOS("content"),
   });
   return (
     <Container p={0} m={0} size={"100%"}>

@@ -1,667 +1,615 @@
 use std::{
     fs::File,
+    io::{Read, Write},
     path::PathBuf,
-    sync::{Arc, Mutex, OnceLock},
+    sync::{Arc, Mutex, RwLock},
 };
 
-use ::utils::*;
-use qf_api::Client as QFClient;
-use service::{
-    SettingMutation, SettingQuery, StockItemMutation, StockRivenMutation, TransactionMutation,
-    WishListMutation,
-};
-use tauri::Manager;
+use eyre::eyre;
 
-use crate::{
-    app::{client::AppState, User},
-    cache::types::CacheVersion,
-    emit_startup, helper,
-    utils::{AuctionListExt, ErrorFromExt, OrderListExt},
-    APP, DATABASE,
-};
+use crate::{helper, logger, settings::SettingsState, utils::modules::error::AppError};
 
-use super::modules::*;
+use super::modules::{
+    arcane::ArcaneModule, arch_gun::ArchGunModule, arch_melee::ArchMeleeModule,
+    archwing::ArchwingModule, fish::FishModule, item_price::ItemPriceModule, melee::MeleeModule,
+    misc::MiscModule, mods::ModModule, parts::PartModule, pet::PetModule, primary::PrimaryModule,
+    relics::RelicsModule, resource::ResourceModule, riven::RivenModule, secondary::SecondaryModule,
+    sentinel::SentinelModule, skin::SkinModule, tradable_items::TradableItemModule,
+    warframe::WarframeModule,
+};
 
 #[derive(Clone, Debug)]
-pub struct CacheState {
-    self_arc: OnceLock<Arc<CacheState>>,
-    pub base_path: PathBuf,
-    pub version: CacheVersion,
-    // Modules
-    all_items_module: OnceLock<Arc<AllItemsModule>>,
-    arcane_module: OnceLock<Arc<ArcaneModule>>,
-    archgun_module: OnceLock<Arc<ArchGunModule>>,
-    archmelee_module: OnceLock<Arc<ArchMeleeModule>>,
-    archwing_module: OnceLock<Arc<ArchwingModule>>,
-    fish_module: OnceLock<Arc<FishModule>>,
-    melee_module: OnceLock<Arc<MeleeModule>>,
-    misc_module: OnceLock<Arc<MiscModule>>,
-    mod_module: OnceLock<Arc<ModModule>>,
-    pet_module: OnceLock<Arc<PetModule>>,
-    primary_module: OnceLock<Arc<PrimaryModule>>,
-    relics_module: OnceLock<Arc<RelicsModule>>,
-    resource_module: OnceLock<Arc<ResourceModule>>,
-    riven_module: OnceLock<Arc<RivenModule>>,
-    secondary_module: OnceLock<Arc<SecondaryModule>>,
-    sentinel_module: OnceLock<Arc<SentinelModule>>,
-    sentinel_weapon_module: OnceLock<Arc<SentinelWeaponModule>>,
-    skin_module: OnceLock<Arc<SkinModule>>,
-    tradable_item_module: OnceLock<Arc<TradableItemModule>>,
-    warframe_module: OnceLock<Arc<WarframeModule>>,
-    item_price_module: OnceLock<Arc<ItemPriceModule>>,
-    chat_icon_module: OnceLock<Arc<ChatIconModule>>,
-    theme_module: OnceLock<Arc<ThemeModule>>,
-    language_module: OnceLock<Arc<LanguageModule>>,
+pub struct CacheClient {
+    pub qf: Arc<Mutex<crate::qf_client::client::QFClient>>,
+    pub settings: Arc<Mutex<SettingsState>>,
+    item_price_module: Arc<RwLock<Option<ItemPriceModule>>>,
+    relics_module: Arc<RwLock<Option<RelicsModule>>>,
+    riven_module: Arc<RwLock<Option<RivenModule>>>,
+    arcane_module: Arc<RwLock<Option<ArcaneModule>>>,
+    warframe_module: Arc<RwLock<Option<WarframeModule>>>,
+    arch_gun_module: Arc<RwLock<Option<ArchGunModule>>>,
+    arch_melee_module: Arc<RwLock<Option<ArchMeleeModule>>>,
+    archwing_module: Arc<RwLock<Option<ArchwingModule>>>,
+    melee_module: Arc<RwLock<Option<MeleeModule>>>,
+    mods_module: Arc<RwLock<Option<ModModule>>>,
+    primary_module: Arc<RwLock<Option<PrimaryModule>>>,
+    secondary_module: Arc<RwLock<Option<SecondaryModule>>>,
+    sentinel_module: Arc<RwLock<Option<SentinelModule>>>,
+    tradable_items_module: Arc<RwLock<Option<TradableItemModule>>>,
+    skin_module: Arc<RwLock<Option<SkinModule>>>,
+    misc_module: Arc<RwLock<Option<MiscModule>>>,
+    pet_module: Arc<RwLock<Option<PetModule>>>,
+    resource_module: Arc<RwLock<Option<ResourceModule>>>,
+    part_module: Arc<RwLock<Option<PartModule>>>,
+    fish_module: Arc<RwLock<Option<FishModule>>>,
+    pub component: String,
+    pub cache_path: PathBuf,
+    md5_file: String,
 }
 
-impl CacheState {
-    fn arc(&self) -> Arc<Self> {
-        self.self_arc
-            .get_or_init(|| {
-                Arc::new(Self {
-                    self_arc: OnceLock::new(),
-                    base_path: self.base_path.clone(),
-                    version: self.version.clone(),
-                    // Initialize modules
-                    all_items_module: self.all_items_module.clone(),
-                    arcane_module: self.arcane_module.clone(),
-                    archgun_module: self.archgun_module.clone(),
-                    archmelee_module: self.archmelee_module.clone(),
-                    archwing_module: self.archwing_module.clone(),
-                    fish_module: self.fish_module.clone(),
-                    melee_module: self.melee_module.clone(),
-                    misc_module: self.misc_module.clone(),
-                    mod_module: self.mod_module.clone(),
-                    pet_module: self.pet_module.clone(),
-                    primary_module: self.primary_module.clone(),
-                    relics_module: self.relics_module.clone(),
-                    resource_module: self.resource_module.clone(),
-                    riven_module: self.riven_module.clone(),
-                    secondary_module: self.secondary_module.clone(),
-                    sentinel_module: self.sentinel_module.clone(),
-                    sentinel_weapon_module: self.sentinel_weapon_module.clone(),
-                    skin_module: self.skin_module.clone(),
-                    tradable_item_module: self.tradable_item_module.clone(),
-                    warframe_module: self.warframe_module.clone(),
-                    item_price_module: self.item_price_module.clone(),
-                    chat_icon_module: self.chat_icon_module.clone(),
-                    theme_module: self.theme_module.clone(),
-                    language_module: self.language_module.clone(),
-                })
-            })
-            .clone()
-    }
-
-    pub async fn new(
-        qf_client: &QFClient,
-        user: &User,
-        lang: impl Into<String>,
-    ) -> Result<Self, Error> {
-        let lang = lang.into();
-        let version =
-            CacheVersion::load().expect("Failed to load cache version from cache_version.json");
-
-        let mut client = CacheState {
-            self_arc: OnceLock::new(),
-            base_path: helper::get_app_storage_path().join("cache"),
-            version,
-            all_items_module: OnceLock::new(),
-            arcane_module: OnceLock::new(),
-            archgun_module: OnceLock::new(),
-            archmelee_module: OnceLock::new(),
-            archwing_module: OnceLock::new(),
-            fish_module: OnceLock::new(),
-            melee_module: OnceLock::new(),
-            misc_module: OnceLock::new(),
-            mod_module: OnceLock::new(),
-            pet_module: OnceLock::new(),
-            primary_module: OnceLock::new(),
-            relics_module: OnceLock::new(),
-            resource_module: OnceLock::new(),
-            riven_module: OnceLock::new(),
-            secondary_module: OnceLock::new(),
-            sentinel_module: OnceLock::new(),
-            sentinel_weapon_module: OnceLock::new(),
-            skin_module: OnceLock::new(),
-            tradable_item_module: OnceLock::new(),
-            warframe_module: OnceLock::new(),
-            item_price_module: OnceLock::new(),
-            chat_icon_module: OnceLock::new(),
-            theme_module: OnceLock::new(),
-            language_module: OnceLock::new(),
-        };
-        if !user.verification || user.qf_banned || user.wfm_banned {
-            warning(
-                "Cache:Client",
-                "User is not verified or banned",
-                &LoggerOptions::default(),
-            );
-            return Ok(client);
-        }
-        match client.load(qf_client, &lang).await {
-            Ok((cache_version_id, price_version_id)) => {
-                client.version.id = cache_version_id;
-                client.version.id_price = price_version_id;
-                client.version.save()?;
-                info(
-                    "Cache:Version",
-                    "Cache loaded successfully.",
-                    &LoggerOptions::default(),
-                );
-                let app = APP.get().expect("APP not initialized");
-                let state = app.state::<Mutex<AppState>>();
-                let guard = state.lock()?;
-                guard
-                    .wfm_client
-                    .order()
-                    .cache_orders_mut()
-                    .apply_item_info(&client)?;
-                guard
-                    .wfm_client
-                    .auction()
-                    .cache_auctions_mut()
-                    .apply_item_info(&client)?;
-            }
-            Err(e) => return Err(e.with_location(get_location!())),
-        }
-        match client.update_da_names(&lang).await {
-            Ok(_) => {}
-            Err(e) => return Err(e.with_location(get_location!())),
-        }
-        Ok(client)
-    }
-
-    async fn check_update(&self, qf_client: &QFClient) -> Result<(bool, String), Error> {
-        let current_version = self.version.id.clone();
-        let remote_version = match qf_client.cache().get_cache_id().await {
-            Ok(id) => id,
-            Err(e) => {
-                let err = Error::from_qf(
-                    "Cache:CheckUpdate",
-                    "Failed to get cache ID",
-                    e,
-                    get_location!(),
-                );
-                return Err(err);
-            }
-        };
-        if !self.base_path.exists() {
-            Ok((true, remote_version))
-        } else {
-            Ok((current_version != remote_version, remote_version))
+impl CacheClient {
+    pub fn new(
+        qf: Arc<Mutex<crate::qf_client::client::QFClient>>,
+        settings: Arc<Mutex<SettingsState>>,
+    ) -> Self {
+        CacheClient {
+            qf,
+            settings,
+            component: "Cache".to_string(),
+            md5_file: "cache_id.txt".to_string(),
+            item_price_module: Arc::new(RwLock::new(None)),
+            riven_module: Arc::new(RwLock::new(None)),
+            relics_module: Arc::new(RwLock::new(None)),
+            arcane_module: Arc::new(RwLock::new(None)),
+            warframe_module: Arc::new(RwLock::new(None)),
+            arch_gun_module: Arc::new(RwLock::new(None)),
+            arch_melee_module: Arc::new(RwLock::new(None)),
+            archwing_module: Arc::new(RwLock::new(None)),
+            melee_module: Arc::new(RwLock::new(None)),
+            mods_module: Arc::new(RwLock::new(None)),
+            primary_module: Arc::new(RwLock::new(None)),
+            secondary_module: Arc::new(RwLock::new(None)),
+            sentinel_module: Arc::new(RwLock::new(None)),
+            tradable_items_module: Arc::new(RwLock::new(None)),
+            skin_module: Arc::new(RwLock::new(None)),
+            misc_module: Arc::new(RwLock::new(None)),
+            pet_module: Arc::new(RwLock::new(None)),
+            resource_module: Arc::new(RwLock::new(None)),
+            part_module: Arc::new(RwLock::new(None)),
+            fish_module: Arc::new(RwLock::new(None)),
+            cache_path: helper::get_app_storage_path().join("cache"),
         }
     }
 
-    pub async fn load(
-        &mut self,
-        qf_client: &QFClient,
-        lang: impl Into<String>,
-    ) -> Result<(String, String), Error> {
-        emit_startup!("cache.initializing", json!({}));
-        let lang = lang.into();
-        let (cache_require_update, cache_version_id) = self.check_update(qf_client).await?;
-        let (price_require_update, price_version_id) =
-            self.item_price().check_update(qf_client).await?;
+    pub fn update_current_cache_id(&self, cache_id: String) -> Result<(), AppError> {
+        let cache_path = self.cache_path.join(self.md5_file.clone());
+        let mut file = File::create(cache_path)
+            .map_err(|e| AppError::new(&self.component, eyre!(e.to_string())))?;
 
-        if cache_require_update {
-            info(
-                "Cache:Load",
-                "Cache update required. Downloading new cache...",
-                &LoggerOptions::default(),
-            );
-            emit_startup!("cache.updating", json!({}));
-            match self.extract(qf_client).await {
-                Ok(()) => {
-                    info(
-                        "Cache:Load",
-                        "Cache updated successfully.",
-                        &LoggerOptions::default(),
-                    );
-                }
-                Err(e) => {
-                    e.log("cache_update.log");
-                    return Err(e.with_location(get_location!()));
-                }
-            }
-        } else {
-            info(
-                "Cache:Load",
-                "Cache is up to date. No update required.",
-                &LoggerOptions::default(),
-            );
-        }
+        file.write_all(cache_id.as_bytes())
+            .map_err(|e| AppError::new(&self.component, eyre!(e.to_string())))?;
 
-        // Update Item Prices if user is verified
-        self.language().load(&lang)?;
-        let language_module = self.language();
-        let language = language_module.as_ref();
-        self.item_price()
-            .load(qf_client, price_require_update)
-            .await?;
-        self.tradable_item().load(language)?;
-        self.arcane().load(language)?;
-        self.archgun().load(language)?;
-        self.archmelee().load(language)?;
-        self.archwing().load(language)?;
-        self.fish().load(language)?;
-        self.melee().load(language)?;
-        self.misc().load(language)?;
-        self.mods().load(language)?;
-        self.pet().load(language)?;
-        self.primary().load(language)?;
-        self.relics().load(language)?;
-        self.resource().load(language)?;
-        self.riven().load(language)?;
-        self.secondary().load(language)?;
-        self.sentinel().load(language)?;
-        self.sentinel_weapon().load(language)?;
-        self.skin().load(language)?;
-        self.warframe().load(language)?;
-        self.theme().load()?;
-        self.chat_icon().load()?;
-        self.update_routes_client();
-        self.all_items().load()?;
-        Ok((cache_version_id, price_version_id))
+        Ok(())
     }
 
-    async fn extract(&self, qf_client: &QFClient) -> Result<(), Error> {
-        let zip_data =
-            qf_client.cache().download_cache().await.map_err(|e| {
-                Error::from_qf("Cache", "Failed to download cache", e, get_location!())
-            })?;
+    fn get_current_cache_id(&self) -> Result<String, AppError> {
+        let cache_path = self.cache_path.join(self.md5_file.clone());
+        if !cache_path.exists() {
+            return Ok("N/A".to_string());
+        }
+        let mut file = File::open(cache_path)
+            .map_err(|e| AppError::new(&self.component, eyre!(e.to_string())))?;
+
+        let mut content = String::new();
+        file.read_to_string(&mut content)
+            .map_err(|e| AppError::new(&self.component, eyre!(e.to_string())))?;
+        Ok(content)
+    }
+
+    pub async fn download_cache_data(&self) -> Result<(), AppError> {
+        let qf = self.qf.lock()?.clone();
+        let zip_data = qf.cache().get_zip().await?;
 
         let reader = std::io::Cursor::new(zip_data);
-        let mut archive = zip::ZipArchive::new(reader).map_err(|e| {
-            Error::from_zip(
-                "Cache",
-                "cache.zip",
-                "Failed to read cache zip",
-                e,
-                get_location!(),
-            )
-        })?;
+        let mut archive = zip::ZipArchive::new(reader)
+            .map_err(|e| AppError::new(&self.component, eyre!(e.to_string())))?;
 
-        let extract_to = self.base_path.clone();
+        let extract_to = helper::get_app_storage_path().join(self.cache_path.clone());
 
-        // Clear existing cache
-        if extract_to.exists() {
-            std::fs::remove_dir_all(&extract_to).map_err(|e| {
-                Error::from_io(
-                    "Cache",
-                    &extract_to,
-                    "Failed to clear existing cache directory",
-                    e,
-                    get_location!(),
-                )
-            })?;
-        }
-
-        let mut total_size = 0u64;
         for i in 0..archive.len() {
-            let mut file = archive.by_index(i).map_err(|e| {
-                Error::from_zip(
-                    "Cache:Extract",
-                    &format!("cache.zip[{}]", i),
-                    "Failed to read file from cache zip",
-                    e,
-                    get_location!(),
-                )
-            })?;
+            let mut file = archive
+                .by_index(i)
+                .map_err(|e| AppError::new(&self.component, eyre!(e.to_string())))?;
             let output_path = extract_to.join(file.mangled_name());
 
             if file.is_dir() {
-                std::fs::create_dir_all(&output_path).map_err(|e| {
-                    Error::from_io(
-                        "Cache",
-                        &output_path,
-                        "Failed to create directory for cache file",
-                        e,
-                        get_location!(),
-                    )
-                })?;
+                std::fs::create_dir_all(&output_path)
+                    .map_err(|e| AppError::new(&self.component, eyre!(e.to_string())))?;
             } else {
                 if let Some(parent) = output_path.parent() {
                     if !parent.exists() {
-                        std::fs::create_dir_all(parent).map_err(|e| {
-                            Error::from_io(
-                                "Cache",
-                                &parent.to_path_buf(),
-                                "Failed to create parent directory for cache file",
-                                e,
-                                get_location!(),
-                            )
-                        })?;
+                        std::fs::create_dir_all(parent)
+                            .map_err(|e| AppError::new(&self.component, eyre!(e.to_string())))?;
                     }
                 }
 
-                let mut output_file = File::create(&output_path).map_err(|e| {
-                    Error::from_io(
-                        "Cache",
-                        &output_path,
-                        "Failed to create cache file",
-                        e,
-                        get_location!(),
-                    )
-                })?;
-                total_size += file.size();
-                std::io::copy(&mut file, &mut output_file).map_err(|e| {
-                    Error::from_io(
-                        "Cache",
-                        &output_path,
-                        "Failed to write cache file",
-                        e,
-                        get_location!(),
-                    )
-                })?;
+                let mut output_file = File::create(&output_path)
+                    .map_err(|e| AppError::new(&self.component, eyre!(e.to_string())))?;
+
+                std::io::copy(&mut file, &mut output_file)
+                    .map_err(|e| AppError::new(&self.component, eyre!(e.to_string())))?;
             }
         }
+        logger::info_con(&self.component, "Cache data downloaded and extracted");
+        Ok(())
+    }
 
-        // Implement the logic to extract the cache
-        info(
-            "Cache:Extract",
-            format!("Extracting cache... ({} bytes)", total_size),
-            &LoggerOptions::default(),
+    pub async fn load(&self) -> Result<(), AppError> {
+        let qf = self.qf.lock()?.clone();
+        let current_cache_id = self.get_current_cache_id()?;
+        logger::info_con(
+            &self.component,
+            format!("Current cache id: {}", current_cache_id).as_str(),
         );
-        Ok(())
-    }
-
-    pub async fn update_da_names(&self, lang: impl Into<String>) -> Result<(), Error> {
-        let mut wa = StopWatch::new();
-        fn log_info(wa: &StopWatch, step: &str) {
-            let hms = wa.elapsed_hms();
-            info(
-                "DataBase:UpdateNames",
-                &format!(
-                    "{} completed in {:02}:{:02}:{:02}",
-                    step, hms.0, hms.1, hms.2
-                ),
-                &LoggerOptions::default(),
-            );
-        }
-        wa.start();
-        let conn = DATABASE.get().unwrap();
-        let lang = lang.into();
-        let db_lang = match SettingQuery::get(conn, "lang", "en").await {
-            Ok(value) => value,
-            Err(e) => return Err(e.with_location(get_location!())),
+        let remote_cache_id = match qf.cache().get_cache_id().await {
+            Ok(id) => id,
+            Err(e) => {
+                logger::error_con(
+                    &self.component,
+                    format!(
+                        "There was an error downloading the cache from the server: {:?}",
+                        e
+                    )
+                    .as_str(),
+                );
+                logger::info_con(&self.component, "Using the current cache data");
+                current_cache_id.clone()
+            }
         };
-        if db_lang == lang {
-            info(
-                "DataBase:UpdateNames",
-                "Language has not changed, skipping DA names update.",
-                &LoggerOptions::default(),
+        logger::info_con(
+            &self.component,
+            format!("Remote cache id: {}", remote_cache_id).as_str(),
+        );
+        if current_cache_id != remote_cache_id {
+            logger::info_con(
+                &self.component,
+                "Cache id mismatch, downloading new cache data",
             );
-            return Ok(());
+            self.download_cache_data().await?;
+            self.update_current_cache_id(remote_cache_id)?;
         }
-        emit_startup!("database.updating_names", json!({}));
-
-        let wfm_name_mapper = self.language().get_mapper(LanguageKey::WfmName);
-        let name_mapper = self.language().get_mapper(LanguageKey::Name);
-
-        StockItemMutation::update_names(conn, &wfm_name_mapper).await?;
-        log_info(&wa, "StockItems");
-        TransactionMutation::update_names(conn, &wfm_name_mapper).await?;
-        log_info(&wa, "Transactions");
-
-        StockRivenMutation::update_names(conn, &name_mapper).await?;
-        log_info(&wa, "StockRivens");
-
-        WishListMutation::update_names(conn, &name_mapper).await?;
-        log_info(&wa, "WishLists");
-
-        SettingMutation::update_create(conn, "lang", &lang).await?;
-        log_info(&wa, "Update Names");
-        Ok(())
+        self.arcane().load()?;
+        logger::info_con(&self.component, "Arcane data loaded");
+        self.warframe().load()?;
+        logger::info_con(&self.component, "Warframe data loaded");
+        self.arch_gun().load()?;
+        logger::info_con(&self.component, "ArchGun data loaded");
+        self.arch_melee().load()?;
+        logger::info_con(&self.component, "ArchMelee data loaded");
+        self.archwing().load()?;
+        logger::info_con(&self.component, "Archwing data loaded");
+        self.melee().load()?;
+        logger::info_con(&self.component, "Melee data loaded");
+        self.mods().load()?;
+        logger::info_con(&self.component, "Mods data loaded");
+        self.primary().load()?;
+        logger::info_con(&self.component, "Primary data loaded");
+        self.secondary().load()?;
+        logger::info_con(&self.component, "Secondary data loaded");
+        self.sentinel().load()?;
+        logger::info_con(&self.component, "Sentinel data loaded");
+        self.tradable_items().load()?;
+        logger::info_con(&self.component, "Tradable items data loaded");
+        self.skin().load()?;
+        logger::info_con(&self.component, "Skin data loaded");
+        self.misc().load()?;
+        logger::info_con(&self.component, "Misc data loaded");
+        self.pet().load()?;
+        logger::info_con(&self.component, "Pet data loaded");
+        self.fish().load()?;
+        logger::info_con(&self.component, "Fish data loaded");
+        self.resource().load()?;
+        logger::info_con(&self.component, "Resource data loaded");
+        self.riven().load()?;
+        logger::info_con(&self.component, "Riven data loaded");
+        self.parts().load()?;
+        logger::info_con(&self.component, "Parts data loaded");
+        self.item_price().load().await?;
+        logger::info_con(&self.component, "Item price data loaded");
+        self.relics().load()?;
+        logger::info_con(&self.component, "Relics data loaded");
+        return Ok(());
     }
 
-    // Modules
-    pub fn item_price(&self) -> Arc<ItemPriceModule> {
+    pub fn item_price(&self) -> ItemPriceModule {
+        // Lazily initialize ItemModule if not already initialized
+        if self.item_price_module.read().unwrap().is_none() {
+            *self.item_price_module.write().unwrap() =
+                Some(ItemPriceModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the order_module is initialized
         self.item_price_module
-            .get_or_init(|| ItemPriceModule::new(self.arc()))
+            .read()
+            .unwrap()
+            .as_ref()
+            .unwrap()
             .clone()
     }
-    pub fn all_items(&self) -> Arc<AllItemsModule> {
-        self.all_items_module
-            .get_or_init(|| AllItemsModule::new(self.arc()))
+    pub fn update_item_price_module(&self, module: ItemPriceModule) {
+        // Update the stored ItemModule
+        *self.item_price_module.write().unwrap() = Some(module);
+    }
+
+    pub fn riven(&self) -> RivenModule {
+        // Lazily initialize ItemModule if not already initialized
+        if self.riven_module.read().unwrap().is_none() {
+            *self.riven_module.write().unwrap() = Some(RivenModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the order_module is initialized
+        self.riven_module.read().unwrap().as_ref().unwrap().clone()
+    }
+    pub fn update_riven_module(&self, module: RivenModule) {
+        // Update the stored ItemModule
+        *self.riven_module.write().unwrap() = Some(module);
+    }
+
+    pub fn relics(&self) -> RelicsModule {
+        // Lazily initialize RelicsModule if not already initialized
+        if self.relics_module.read().unwrap().is_none() {
+            *self.relics_module.write().unwrap() = Some(RelicsModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the relics_module is initialized
+        self.relics_module.read().unwrap().as_ref().unwrap().clone()
+    }
+
+    pub fn update_relics_module(&self, module: RelicsModule) {
+        // Update the stored RelicsModule
+        *self.relics_module.write().unwrap() = Some(module);
+    }
+
+    pub fn arcane(&self) -> ArcaneModule {
+        // Lazily initialize ArcaneModule if not already initialized
+        if self.arcane_module.read().unwrap().is_none() {
+            *self.arcane_module.write().unwrap() = Some(ArcaneModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the arcane_module is initialized
+        self.arcane_module.read().unwrap().as_ref().unwrap().clone()
+    }
+    pub fn update_arcane_module(&self, module: ArcaneModule) {
+        // Update the stored ArcaneModule
+        *self.arcane_module.write().unwrap() = Some(module);
+    }
+
+    pub fn arch_gun(&self) -> ArchGunModule {
+        // Lazily initialize ArchGunModule if not already initialized
+        if self.arch_gun_module.read().unwrap().is_none() {
+            *self.arch_gun_module.write().unwrap() = Some(ArchGunModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the arch_gun_module is initialized
+        self.arch_gun_module
+            .read()
+            .unwrap()
+            .as_ref()
+            .unwrap()
             .clone()
     }
-    pub fn arcane(&self) -> Arc<ArcaneModule> {
-        self.arcane_module
-            .get_or_init(|| ArcaneModule::new(self.arc()))
+    pub fn update_arch_gun_module(&self, module: ArchGunModule) {
+        // Update the stored ArchGunModule
+        *self.arch_gun_module.write().unwrap() = Some(module);
+    }
+
+    pub fn arch_melee(&self) -> ArchMeleeModule {
+        // Lazily initialize ArchMeleeModule if not already initialized
+        if self.arch_melee_module.read().unwrap().is_none() {
+            *self.arch_melee_module.write().unwrap() =
+                Some(ArchMeleeModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the arch_melee_module is initialized
+        self.arch_melee_module
+            .read()
+            .unwrap()
+            .as_ref()
+            .unwrap()
             .clone()
     }
-    pub fn archgun(&self) -> Arc<ArchGunModule> {
-        self.archgun_module
-            .get_or_init(|| ArchGunModule::new(self.arc()))
-            .clone()
+    pub fn update_arch_melee_module(&self, module: ArchMeleeModule) {
+        // Update the stored ArchMeleeModule
+        *self.arch_melee_module.write().unwrap() = Some(module);
     }
-    pub fn archmelee(&self) -> Arc<ArchMeleeModule> {
-        self.archmelee_module
-            .get_or_init(|| ArchMeleeModule::new(self.arc()))
-            .clone()
-    }
-    pub fn archwing(&self) -> Arc<ArchwingModule> {
+
+    pub fn archwing(&self) -> ArchwingModule {
+        // Lazily initialize ArchwingModule if not already initialized
+        if self.archwing_module.read().unwrap().is_none() {
+            *self.archwing_module.write().unwrap() =
+                Some(ArchwingModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the archwing_module is initialized
         self.archwing_module
-            .get_or_init(|| ArchwingModule::new(self.arc()))
+            .read()
+            .unwrap()
+            .as_ref()
+            .unwrap()
             .clone()
     }
-    pub fn fish(&self) -> Arc<FishModule> {
-        self.fish_module
-            .get_or_init(|| FishModule::new(self.arc()))
-            .clone()
+    pub fn update_archwing_module(&self, module: ArchwingModule) {
+        // Update the stored ArchwingModule
+        *self.archwing_module.write().unwrap() = Some(module);
     }
-    pub fn melee(&self) -> Arc<MeleeModule> {
-        self.melee_module
-            .get_or_init(|| MeleeModule::new(self.arc()))
-            .clone()
+
+    pub fn melee(&self) -> MeleeModule {
+        // Lazily initialize MeleeModule if not already initialized
+        if self.melee_module.read().unwrap().is_none() {
+            *self.melee_module.write().unwrap() = Some(MeleeModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the melee_module is initialized
+        self.melee_module.read().unwrap().as_ref().unwrap().clone()
     }
-    pub fn misc(&self) -> Arc<MiscModule> {
-        self.misc_module
-            .get_or_init(|| MiscModule::new(self.arc()))
-            .clone()
+    pub fn update_melee_module(&self, module: MeleeModule) {
+        // Update the stored MeleeModule
+        *self.melee_module.write().unwrap() = Some(module);
     }
-    pub fn mods(&self) -> Arc<ModModule> {
-        self.mod_module
-            .get_or_init(|| ModModule::new(self.arc()))
-            .clone()
+
+    pub fn mods(&self) -> ModModule {
+        // Lazily initialize ModModule if not already initialized
+        if self.mods_module.read().unwrap().is_none() {
+            *self.mods_module.write().unwrap() = Some(ModModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the mods_module is initialized
+        self.mods_module.read().unwrap().as_ref().unwrap().clone()
     }
-    pub fn pet(&self) -> Arc<PetModule> {
-        self.pet_module
-            .get_or_init(|| PetModule::new(self.arc()))
-            .clone()
+    pub fn update_mods_module(&self, module: ModModule) {
+        // Update the stored ModModule
+        *self.mods_module.write().unwrap() = Some(module);
     }
-    pub fn primary(&self) -> Arc<PrimaryModule> {
+
+    pub fn primary(&self) -> PrimaryModule {
+        // Lazily initialize PrimaryModule if not already initialized
+        if self.primary_module.read().unwrap().is_none() {
+            *self.primary_module.write().unwrap() = Some(PrimaryModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the primary_module is initialized
         self.primary_module
-            .get_or_init(|| PrimaryModule::new(self.arc()))
+            .read()
+            .unwrap()
+            .as_ref()
+            .unwrap()
             .clone()
     }
-    pub fn relics(&self) -> Arc<RelicsModule> {
-        self.relics_module
-            .get_or_init(|| RelicsModule::new(self.arc()))
-            .clone()
+    pub fn update_primary_module(&self, module: PrimaryModule) {
+        // Update the stored PrimaryModule
+        *self.primary_module.write().unwrap() = Some(module);
     }
-    pub fn resource(&self) -> Arc<ResourceModule> {
-        self.resource_module
-            .get_or_init(|| ResourceModule::new(self.arc()))
-            .clone()
-    }
-    pub fn riven(&self) -> Arc<RivenModule> {
-        self.riven_module
-            .get_or_init(|| RivenModule::new(self.arc()))
-            .clone()
-    }
-    pub fn secondary(&self) -> Arc<SecondaryModule> {
+
+    pub fn secondary(&self) -> SecondaryModule {
+        // Lazily initialize SecondaryModule if not already initialized
+        if self.secondary_module.read().unwrap().is_none() {
+            *self.secondary_module.write().unwrap() =
+                Some(SecondaryModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the secondary_module is initialized
         self.secondary_module
-            .get_or_init(|| SecondaryModule::new(self.arc()))
+            .read()
+            .unwrap()
+            .as_ref()
+            .unwrap()
             .clone()
     }
-    pub fn sentinel(&self) -> Arc<SentinelModule> {
+    pub fn update_secondary_module(&self, module: SecondaryModule) {
+        // Update the stored SecondaryModule
+        *self.secondary_module.write().unwrap() = Some(module);
+    }
+
+    pub fn sentinel(&self) -> SentinelModule {
+        // Lazily initialize SentinelModule if not already initialized
+        if self.sentinel_module.read().unwrap().is_none() {
+            *self.sentinel_module.write().unwrap() =
+                Some(SentinelModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the sentinel_module is initialized
         self.sentinel_module
-            .get_or_init(|| SentinelModule::new(self.arc()))
+            .read()
+            .unwrap()
+            .as_ref()
+            .unwrap()
             .clone()
     }
-    pub fn sentinel_weapon(&self) -> Arc<SentinelWeaponModule> {
-        self.sentinel_weapon_module
-            .get_or_init(|| SentinelWeaponModule::new(self.arc()))
-            .clone()
+    pub fn update_sentinel_module(&self, module: SentinelModule) {
+        // Update the stored SentinelModule
+        *self.sentinel_module.write().unwrap() = Some(module);
     }
-    pub fn skin(&self) -> Arc<SkinModule> {
-        self.skin_module
-            .get_or_init(|| SkinModule::new(self.arc()))
-            .clone()
-    }
-    pub fn tradable_item(&self) -> Arc<TradableItemModule> {
-        self.tradable_item_module
-            .get_or_init(|| TradableItemModule::new(self.arc()))
-            .clone()
-    }
-    pub fn warframe(&self) -> Arc<WarframeModule> {
+
+    pub fn warframe(&self) -> WarframeModule {
+        // Lazily initialize ArcaneModule if not already initialized
+        if self.warframe_module.read().unwrap().is_none() {
+            *self.warframe_module.write().unwrap() =
+                Some(WarframeModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the warframe_module is initialized
         self.warframe_module
-            .get_or_init(|| WarframeModule::new(self.arc()))
+            .read()
+            .unwrap()
+            .as_ref()
+            .unwrap()
             .clone()
     }
-    pub fn chat_icon(&self) -> Arc<ChatIconModule> {
-        self.chat_icon_module
-            .get_or_init(|| ChatIconModule::new(self.arc()))
+    pub fn update_warframe_module(&self, module: WarframeModule) {
+        // Update the stored WarframeModule
+        *self.warframe_module.write().unwrap() = Some(module);
+    }
+
+    pub fn tradable_items(&self) -> TradableItemModule {
+        // Lazily initialize ArcaneModule if not already initialized
+        if self.tradable_items_module.read().unwrap().is_none() {
+            *self.tradable_items_module.write().unwrap() =
+                Some(TradableItemModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the tradable_items_module is initialized
+        self.tradable_items_module
+            .read()
+            .unwrap()
+            .as_ref()
+            .unwrap()
             .clone()
     }
-    pub fn theme(&self) -> Arc<ThemeModule> {
-        self.theme_module
-            .get_or_init(|| ThemeModule::new(self.arc()))
+    pub fn update_tradable_items_module(&self, module: TradableItemModule) {
+        // Update the stored Warframe
+        *self.tradable_items_module.write().unwrap() = Some(module);
+    }
+
+    pub fn resource(&self) -> ResourceModule {
+        // Lazily initialize ResourceModule if not already initialized
+        if self.resource_module.read().unwrap().is_none() {
+            *self.resource_module.write().unwrap() =
+                Some(ResourceModule::new(self.clone()).clone());
+        }
+
+        // Unwrapping is safe here because we ensured the order_module is initialized
+        self.resource_module
+            .read()
+            .unwrap()
+            .as_ref()
+            .unwrap()
             .clone()
     }
-    pub fn language(&self) -> Arc<LanguageModule> {
-        self.language_module
-            .get_or_init(|| LanguageModule::new(self.arc()))
-            .clone()
+    pub fn update_resource_module(&self, module: ResourceModule) {
+        // Update the stored ResourceModule
+        *self.resource_module.write().unwrap() = Some(module);
     }
-    /**
-     * Updates the client reference in the modules.
-     * This is useful for cloning routes when the client state changes.
-     * This method resets the `self_arc` to force creation of a new Arc with updated data.
-     */
-    fn update_routes_client(&mut self) {
-        // Reset the self_arc to force creation of new Arc with updated data
-        self.self_arc = OnceLock::new();
-        if let Some(old) = self.all_items_module.get().cloned() {
-            let new = AllItemsModule::from_existing(&old, self.arc());
-            self.all_items_module = OnceLock::new();
-            let _ = self.all_items_module.set(new);
+
+    pub fn misc(&self) -> MiscModule {
+        // Lazily initialize MiscModule if not already initialized
+        if self.misc_module.read().unwrap().is_none() {
+            *self.misc_module.write().unwrap() = Some(MiscModule::new(self.clone()).clone());
         }
-        if let Some(old) = self.arcane_module.get().cloned() {
-            let new = ArcaneModule::from_existing(&old);
-            self.arcane_module = OnceLock::new();
-            let _ = self.arcane_module.set(new);
+
+        // Unwrapping is safe here because we ensured the order_module is initialized
+        self.misc_module.read().unwrap().as_ref().unwrap().clone()
+    }
+    pub fn update_misc_module(&self, module: MiscModule) {
+        // Update the stored MiscModule
+        *self.misc_module.write().unwrap() = Some(module);
+    }
+
+    pub fn pet(&self) -> PetModule {
+        // Lazily initialize PetModule if not already initialized
+        if self.pet_module.read().unwrap().is_none() {
+            *self.pet_module.write().unwrap() = Some(PetModule::new(self.clone()).clone());
         }
-        if let Some(old) = self.archgun_module.get().cloned() {
-            let new = ArchGunModule::from_existing(&old);
-            self.archgun_module = OnceLock::new();
-            let _ = self.archgun_module.set(new);
+
+        // Unwrapping is safe here because we ensured the order_module is initialized
+        self.pet_module.read().unwrap().as_ref().unwrap().clone()
+    }
+    pub fn update_pet_module(&self, module: PetModule) {
+        // Update the stored PetModule
+        *self.pet_module.write().unwrap() = Some(module);
+    }
+
+    pub fn fish(&self) -> FishModule {
+        // Lazily initialize FishModule if not already initialized
+        if self.fish_module.read().unwrap().is_none() {
+            *self.fish_module.write().unwrap() = Some(FishModule::new(self.clone()).clone());
         }
-        if let Some(old) = self.archmelee_module.get().cloned() {
-            let new = ArchMeleeModule::from_existing(&old);
-            self.archmelee_module = OnceLock::new();
-            let _ = self.archmelee_module.set(new);
+
+        // Unwrapping is safe here because we ensured the order_module is initialized
+        self.fish_module.read().unwrap().as_ref().unwrap().clone()
+    }
+    pub fn update_fish_module(&self, module: FishModule) {
+        // Update the stored FishModule
+        *self.fish_module.write().unwrap() = Some(module);
+    }
+
+    pub fn skin(&self) -> SkinModule {
+        // Lazily initialize SkinModule if not already initialized
+        if self.skin_module.read().unwrap().is_none() {
+            *self.skin_module.write().unwrap() = Some(SkinModule::new(self.clone()).clone());
         }
-        if let Some(old) = self.archwing_module.get().cloned() {
-            let new = ArchwingModule::from_existing(&old);
-            self.archwing_module = OnceLock::new();
-            let _ = self.archwing_module.set(new);
+
+        // Unwrapping is safe here because we ensured the order_module is initialized
+        self.skin_module.read().unwrap().as_ref().unwrap().clone()
+    }
+    pub fn update_skin_module(&self, module: SkinModule) {
+        // Update the stored SkinModule
+        *self.skin_module.write().unwrap() = Some(module);
+    }
+
+    pub fn parts(&self) -> PartModule {
+        // Lazily initialize PartModule if not already initialized
+        if self.part_module.read().unwrap().is_none() {
+            *self.part_module.write().unwrap() = Some(PartModule::new(self.clone()).clone());
         }
-        if let Some(old) = self.fish_module.get().cloned() {
-            let new = FishModule::from_existing(&old);
-            self.fish_module = OnceLock::new();
-            let _ = self.fish_module.set(new);
-        }
-        if let Some(old) = self.melee_module.get().cloned() {
-            let new = MeleeModule::from_existing(&old);
-            self.melee_module = OnceLock::new();
-            let _ = self.melee_module.set(new);
-        }
-        if let Some(old) = self.misc_module.get().cloned() {
-            let new = MiscModule::from_existing(&old);
-            self.misc_module = OnceLock::new();
-            let _ = self.misc_module.set(new);
-        }
-        if let Some(old) = self.mod_module.get().cloned() {
-            let new = ModModule::from_existing(&old);
-            self.mod_module = OnceLock::new();
-            let _ = self.mod_module.set(new);
-        }
-        if let Some(old) = self.pet_module.get().cloned() {
-            let new = PetModule::from_existing(&old);
-            self.pet_module = OnceLock::new();
-            let _ = self.pet_module.set(new);
-        }
-        if let Some(old) = self.primary_module.get().cloned() {
-            let new = PrimaryModule::from_existing(&old);
-            self.primary_module = OnceLock::new();
-            let _ = self.primary_module.set(new);
-        }
-        if let Some(old) = self.relics_module.get().cloned() {
-            let new = RelicsModule::from_existing(&old);
-            self.relics_module = OnceLock::new();
-            let _ = self.relics_module.set(new);
-        }
-        if let Some(old) = self.resource_module.get().cloned() {
-            let new = ResourceModule::from_existing(&old);
-            self.resource_module = OnceLock::new();
-            let _ = self.resource_module.set(new);
-        }
-        if let Some(old) = self.riven_module.get().cloned() {
-            let new = RivenModule::from_existing(&old);
-            self.riven_module = OnceLock::new();
-            let _ = self.riven_module.set(new);
-        }
-        if let Some(old) = self.secondary_module.get().cloned() {
-            let new = SecondaryModule::from_existing(&old);
-            self.secondary_module = OnceLock::new();
-            let _ = self.secondary_module.set(new);
-        }
-        if let Some(old) = self.sentinel_module.get().cloned() {
-            let new = SentinelModule::from_existing(&old);
-            self.sentinel_module = OnceLock::new();
-            let _ = self.sentinel_module.set(new);
-        }
-        if let Some(old) = self.sentinel_weapon_module.get().cloned() {
-            let new = SentinelWeaponModule::from_existing(&old);
-            self.sentinel_weapon_module = OnceLock::new();
-            let _ = self.sentinel_weapon_module.set(new);
-        }
-        if let Some(old) = self.skin_module.get().cloned() {
-            let new = SkinModule::from_existing(&old);
-            self.skin_module = OnceLock::new();
-            let _ = self.skin_module.set(new);
-        }
-        if let Some(old) = self.tradable_item_module.get().cloned() {
-            let new = TradableItemModule::from_existing(&old);
-            self.tradable_item_module = OnceLock::new();
-            let _ = self.tradable_item_module.set(new);
-        }
-        if let Some(old) = self.warframe_module.get().cloned() {
-            let new = WarframeModule::from_existing(&old);
-            self.warframe_module = OnceLock::new();
-            let _ = self.warframe_module.set(new);
-        }
-        if let Some(old) = self.item_price_module.get().cloned() {
-            let new = ItemPriceModule::from_existing(&old, self.arc());
-            self.item_price_module = OnceLock::new();
-            let _ = self.item_price_module.set(new);
-        }
-        if let Some(old) = self.chat_icon_module.get().cloned() {
-            let new = ChatIconModule::from_existing(&old);
-            self.chat_icon_module = OnceLock::new();
-            let _ = self.chat_icon_module.set(new);
-        }
-        if let Some(old) = self.theme_module.get().cloned() {
-            let new = ThemeModule::from_existing(&old, self.arc());
-            self.theme_module = OnceLock::new();
-            let _ = self.theme_module.set(new);
-        }
-        if let Some(old) = self.language_module.get().cloned() {
-            let new = LanguageModule::from_existing(&old);
-            self.language_module = OnceLock::new();
-            let _ = self.language_module.set(new);
-        }
+
+        // Unwrapping is safe here because we ensured the order_module is initialized
+        self.part_module.read().unwrap().as_ref().unwrap().clone()
+    }
+    pub fn update_part_module(&self, module: PartModule) {
+        // Update the stored PartModule
+        *self.part_module.write().unwrap() = Some(module);
+    }
+
+    pub fn read_text_from_file(&self, path: &PathBuf) -> Result<String, AppError> {
+        let mut file = File::open(self.cache_path.join(path)).map_err(|e| {
+            AppError::new(
+                &self.component,
+                eyre!(format!(
+                    "Failed to open file: {}, error: {}",
+                    path.to_str().unwrap(),
+                    e.to_string()
+                )),
+            )
+        })?;
+        let mut content = String::new();
+        file.read_to_string(&mut content).map_err(|e| {
+            AppError::new(
+                &self.component,
+                eyre!(format!(
+                    "Failed to read file: {}, error: {}",
+                    path.to_str().unwrap(),
+                    e.to_string()
+                )),
+            )
+        })?;
+
+        Ok(content)
+    }
+
+    pub fn write_text_to_file(&self, path: &PathBuf, content: Vec<u8>) -> Result<(), AppError> {
+        let full_path = self.cache_path.join(path);
+        let mut file = File::create(full_path.clone()).map_err(|e| {
+            AppError::new(
+                &self.component,
+                eyre!(format!(
+                    "Failed to create file: {}, error: {}",
+                    full_path.to_str().unwrap(),
+                    e.to_string()
+                )),
+            )
+        })?;
+
+        file.write_all(&content).map_err(|e| {
+            AppError::new(
+                &self.component,
+                eyre!(format!(
+                    "Failed to write to file: {}, error: {}",
+                    path.to_str().unwrap(),
+                    e.to_string()
+                )),
+            )
+        })?;
+
+        Ok(())
     }
 }

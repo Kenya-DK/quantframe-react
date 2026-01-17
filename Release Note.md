@@ -1,26 +1,60 @@
-## Add Feature's
+# Quantframe v1.2.6
+
+## Overview
+
+Remove the whitelist for a new wishlist system.
+How To migrate:
+[Read More](https://quantframe.app/upgrading/1.2.X)
+
+## Features
+
+- ✅ Add Wishlist: You can now add items to your wishlist.
+- ✅ Add Alert if soothing in wrong
+- ✅ Add Chats: You can now chat with other users.
+- ✅ Add Team of service (TOS) popup on start
 
 ## Fix's
 
-<<<<<<< HEAD
-- 🛠️ Add supply & demand to the trading analytics
-- 🛠️ Fix search in the Warframe Market orders tab. If you can't find the item please hit refresh.
-- 🛠️ Fix item title in the Warframe Market order details modal and wfm link
-=======
-- 🛠️ Fix a bug where warframe gdpr parse
-- 🛠️ Fix a bug where stock item weighted average calculation was incorrect when adding new stock items
-- 🛠️ Fix a bug where operations were not being parsed correctly in the warframe market tab
-- 🛠️ Fix a bug where auction pagination was not working correctly
+- 🛠️ Fix a issue where the bot wut ignore the price range of a item
 
-## Dev Notes
+# Quantframe v1.2.3 (Release Date)
 
-## TODO's
+## Overview
 
-## Feature's
-
-## Dev Notes
-
-- 🛠️ Look into this https://github.com/knoellle/wfinfo-ng
+Total rewrite of the UI and the backend
+Note: The database was upgrade to V2
+So all your data needs to be migrated, this be be done in the Debug Tab and under the migrate tab.
 
 ## Fix's
->>>>>>> better-backend
+
+- 🛠️ Order limit not updating.
+- 🛠️ A bug in migrate dataBase.
+- 🛠️ Fix a bug in export logs.
+- 🛠️ Fix some items not sowing in select item.
+- 🛠️ Fix min profit.
+
+## Features
+
+- ✅ Add Import Riven from wfm auctions
+- ✅ Add Create Riven
+- ✅ Add Better Update box
+- ✅ Add Cat!!
+
+# Quantframe v1.2.0 (Release Date)
+
+## Overview
+
+Total rewrite of the UI and the backend.
+Note: The database was upgrade to V2
+So all your data needs to be migrated, this be be done in the Debug Tab and under the migrate tab.
+
+## Features
+
+- Add Rest: Your can now reset all transaction.
+- Add minium profit in settings.
+- Add minium sma.
+- Remove the price scraper (It is now server).
+- Add listed price history.
+- Add mass edit on stock Rivens.
+- Add Trading Tax Cap.
+- Add Auto Trade: Note this can be buggy so use it at y own risk...

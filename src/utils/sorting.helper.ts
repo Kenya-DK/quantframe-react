@@ -1,50 +1,75 @@
-export enum SortDirection {
-  ASC = "asc",
-  DESC = "desc",
+import { SortingField } from "$types/index";
+
+export const validateSortParameter = (searchParams: SortingField[]): string | null => {
+  if (!Array.isArray(searchParams))
+    return "Sorting is not an array";
+
+  for (let index = 0; index < searchParams.length; index++) {
+    const element = searchParams[index];
+    if (!element.field)
+      return `Sorting[${index}].field is not defined`;
+    if (element.direction && element.direction !== 'asc' && element.direction !== 'desc')
+      return `Sorting[${index}].direction is not valid (asc or desc)`;
+  }
+  return null;
 }
 
-export type Sort = {
-  field: string;
-  direction: SortDirection | "asc" | "desc";
-};
-
-const GetNestedValue = (item: any, propertyName: string): any => {
-  if (!propertyName.includes(".")) return item[propertyName];
-
-  const properties = propertyName.split(".");
-  let value = item;
-  for (const property of properties) {
-    value = value[property];
-    if (!value) break;
-    if (Array.isArray(value)) {
-      return value.map((v) => GetNestedValue(v, properties.slice(1).join(".")));
-    } else if (typeof value === "object") {
-      return GetNestedValue(value, properties.slice(1).join("."));
+export const convertSortingToParams = (params: URLSearchParams, sorting: SortingField[]): URLSearchParams => {
+  if (sorting) {
+    for (let index = 0; index < sorting.length; index++) {
+      const element = sorting[index];
+      params.append(`sort[${index}][field]`, element.field);
+      params.append(`sort[${index}][direction]`, element.direction || "asc");
     }
   }
-  return value;
+  return params;
 };
 
-const SortValue = (valueA: any, valueB: any, direction: "asc" | "desc"): number => {
-  if (valueA == undefined && valueB == undefined) return -1;
+export const sortArray = <T extends any[]>(fields: Array<SortingField>, array: T): T => {
+  if (!Array.isArray(fields))
+    throw new Error("Sorting is not an array.");
 
-  if (Array.isArray(valueA) && Array.isArray(valueB)) {
-    if (valueA.length === 0 && valueB.length === 0) return 0;
-    if (valueA.length === 0) return -1;
-    if (valueB.length === 0) return 1;
-    return SortValue(valueA[0], valueB[0], direction);
-  }
+  if (fields.length === 0)
+    return array;
+  const sortedArray = array.sort((a: any, b: any) => {
+    let result = 0;
+    for (let i = 0; i < fields.length; i++) {
+      const sorting = fields[i];
+      let propertyA = a[sorting.field];
+      let propertyB = b[sorting.field];
+      if (sorting.field.includes(".")) {
+        const properties = sorting.field.split(".");
+        propertyA = a[properties[0]];
+        propertyB = b[properties[0]];
+        for (let i = 1; i < properties.length; i++) {
+          if (Array.isArray(propertyA) || propertyA.length === 0) {
+            propertyA = propertyA.map((item: any) => item[properties[i]]);
+            propertyB = propertyB.map((item: any) => item[properties[i]]);
+          }
+          else {
+            propertyA = propertyA[properties[i]];
+            propertyB = propertyB[properties[i]];
+          }
+          if (propertyA === undefined || propertyB === undefined) return 0;
+        }
+      }
+      if (propertyA == undefined || propertyB == undefined)
+        return -1;
 
-  if (valueA === valueB) return 0;
-  if (direction === "asc") return valueA < valueB ? -1 : 1;
-  return valueA < valueB ? 1 : -1;
-};
-
-export const SortItems = <T>(items: T[], sort: Sort): T[] => {
-  if (!sort) return items;
-  return items.sort((a, b) => {
-    let valueA = GetNestedValue(a, sort.field);
-    let valueB = GetNestedValue(b, sort.field);
-    return SortValue(valueA, valueB, sort.direction);
+      if (Array.isArray(propertyA) && Array.isArray(propertyB)) {
+        propertyA = propertyA.length;
+        propertyB = propertyB.length;
+      }
+      if (sorting.direction === 'asc' ? propertyA > propertyB : propertyA < propertyB) {
+        result = 1;
+        break;
+      }
+      if (sorting.direction === 'asc' ? propertyA < propertyB : propertyA > propertyB) {
+        result = -1;
+        break;
+      }
+    }
+    return result;
   });
-};
+  return sortedArray;
+}

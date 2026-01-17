@@ -1,77 +1,26 @@
 use eyre::eyre;
 use reqwest::header::HeaderMap;
-use serde::Deserialize;
 use serde_json::json;
 
 use crate::{
     utils::{
-        enums::{log_level::LogLevel, ui_events::UIEvent},
+        enums::log_level::LogLevel,
         modules::{
             error::{self, ApiResult, AppError},
-            logger::{self, LoggerOptions},
-            states,
+            logger,
         },
     },
-    wfm_client::{
-        client::WFMClient,
-        enums::ApiVersion,
-        types::user_profile::UserPrivate,
-        websocket::{WsClient, WsClientBuilder},
-    },
+    wfm_client::{client::WFMClient, types::user_profile::UserProfile},
 };
-// TODO: Use for Api version 1
-#[derive(Deserialize)]
-pub struct SigninResponse {
-    pub avatar: Option<String>,
-    pub linked_accounts: SigninLinkedAccounts,
-    pub role: String,
-    pub locale: String,
-    pub background: Option<String>,
-    pub crossplay: bool,
-    pub platform: String,
-    pub reputation: i64,
-    pub has_mail: bool,
-    pub region: String,
-    pub written_reviews: i64,
-    pub id: String,
-    pub ingame_name: String,
-    pub slug: String,
-    pub unread_messages: i64,
-    pub banned: bool,
-    pub check_code: String,
-    pub verification: bool,
-    pub anonymous: bool,
-}
-
-// TODO: Use for Api version 1
-#[derive(Deserialize)]
-pub struct SigninLinkedAccounts {
-    pub steam_profile: bool,
-    pub patreon_profile: bool,
-    pub xbox_profile: bool,
-    pub discord_profile: bool,
-    pub github_profile: bool,
-}
 #[derive(Clone, Debug)]
 pub struct AuthModule {
     pub client: WFMClient,
-    is_init: bool,
-    pub ws_client: Option<WsClient>,
-    pub ws_client_old: Option<WsClient>,
     component: String,
 }
-pub fn update_user_status(status: String) {
-    let notify = states::notify_client().unwrap();
-    notify
-        .gui()
-        .send_event(UIEvent::UpdateUserStatus, Some(json!(status)));
-}
+
 impl AuthModule {
     pub fn new(client: WFMClient) -> Self {
         AuthModule {
-            is_init: false,
-            ws_client: None,
-            ws_client_old: None,
             client,
             component: "Auth".to_string(),
         }
@@ -81,7 +30,7 @@ impl AuthModule {
     }
 
     pub fn is_logged_in(&self) -> Result<(), AppError> {
-        let auth = states::auth()?;
+        let auth = self.client.auth.lock()?;
         if !auth.is_logged_in() {
             return Err(AppError::new_with_level(
                 &self.get_component("IsLoggedIn"),
@@ -92,12 +41,16 @@ impl AuthModule {
         Ok(())
     }
 
-    pub async fn me(&self) -> Result<UserPrivate, AppError> {
-        match self.client.get::<UserPrivate>("v2", "me", None).await {
+    pub async fn me(&self) -> Result<UserProfile, AppError> {
+        match self
+            .client
+            .get::<UserProfile>("/profile", Some("profile"))
+            .await
+        {
             Ok(ApiResult::Success(user, _)) => {
                 return Ok(user);
             }
-            Ok(ApiResult::Error(mut e, _headers)) => {
+            Ok(ApiResult::Error(e, _headers)) => {
                 return Err(self.client.create_api_error(
                     &self.get_component("Login"),
                     e,
@@ -108,133 +61,28 @@ impl AuthModule {
             Err(e) => return Err(e),
         };
     }
-    pub fn stop_websocket(&mut self) {
-        if let Some(ws_client) = &self.ws_client {
-            ws_client.disconnect().unwrap_or_else(|e| {
-                logger::error(
-                    &self.get_component("StopWebsocket"),
-                    &format!("Failed to disconnect WebSocket: {:?}", e),
-                    LoggerOptions::default(),
-                );
-            });
-            self.ws_client = None;
-            self.is_init = false;
-        } else {
-            logger::warning(
-                &self.get_component("StopWebsocket"),
-                "WebSocket client is not initialized, cannot stop WebSocket",
-                LoggerOptions::default(),
-            );
-        }
-    }
-    pub async fn setup_websocket(&mut self, token: &str) -> Result<(), AppError> {
-        if self.is_init {
-            return Ok(());
-        }
-        self.is_init = true;
-        let build = WsClientBuilder::new(ApiVersion::V2, token.to_string(), "QF".to_string());
-        let client = build
-            .register_callback("cmd/status/set:ok", move |msg, _, _| {
-                match msg.payload.as_ref() {
-                    Some(payload) => update_user_status(
-                        payload["status"]
-                            .as_str()
-                            .unwrap_or("invisible")
-                            .to_string(),
-                    ),
-                    None => {}
-                }
-                Ok(())
-            })
-            .unwrap()
-            .register_callback("event/status/set", move |msg, _, _| {
-                match msg.payload.as_ref() {
-                    Some(payload) => update_user_status(
-                        payload["status"]
-                            .as_str()
-                            .unwrap_or("invisible")
-                            .to_string(),
-                    ),
-
-                    None => {}
-                }
-                Ok(())
-            })
-            .unwrap()
-            .register_callback("MESSAGE/ONLINE_COUNT", move |_, _, _| Ok(()))
-            .unwrap()
-            .register_callback("internal/disconnected", move |_, _, _| Ok(()))
-            .unwrap()
-            .build()
-            .await
-            .unwrap();
-        let build2 = WsClientBuilder::new(ApiVersion::V1, token.to_string(), "QF".to_string());
-        let client2 = build2
-            .register_callback("chats/NEW_MESSAGE", move |msg, _, _| {
-                let notify = states::notify_client().unwrap();
-                notify
-                    .gui()
-                    .send_event(UIEvent::ReceiveMessage, msg.payload.clone());
-                Ok(())
-            })
-            .unwrap()
-            .register_callback("chats/MESSAGE_SENT", move |msg, _, _| {
-                let notify = states::notify_client().unwrap();
-                notify
-                    .gui()
-                    .send_event(UIEvent::ChatMessageSent, msg.payload.clone());
-                Ok(())
-            })
-            .unwrap()
-            .build()
-            .await
-            .unwrap();
-        self.ws_client = Some(client);
-        self.ws_client_old = Some(client2);
-        self.client.update_auth_module(self.clone());
-        Ok(())
-    }
-    pub fn set_user_status(&self, status: String) -> Result<(), AppError> {
-        if let Some(ws_client) = &self.ws_client {
-            // match ws_client.send_request("@WS/USER/SET_STATUS", json!(status)) {
-            //     Ok(_) => {}
-            //     Err(e) => panic!("{:?}", e),
-            // }
-
-            match ws_client.send_request(
-                "@wfm|cmd/status/set",
-                json!({
-                    "status": status
-                }),
-            ) {
-                Ok(_) => {}
-                Err(e) => panic!("{:?}", e),
-            }
-        } else {
-            println!("WS client is not initialized, cannot set user status");
-        }
-        Ok(())
-    }
     pub async fn login(
         &self,
         email: &str,
         password: &str,
-    ) -> Result<(SigninResponse, Option<String>), AppError> {
+    ) -> Result<(UserProfile, Option<String>), AppError> {
         let body = json!({
             "email": email,
             "password": password
         });
 
-        let (user, headers): (SigninResponse, HeaderMap) = match self
+        let (user, headers): (UserProfile, HeaderMap) = match self
             .client
-            .post::<SigninResponse>("v1", "/auth/signin", Some("user"), body)
+            .post::<UserProfile>("/auth/signin", Some("user"), body)
             .await
         {
             Ok(ApiResult::Success(user, headers)) => {
-                logger::info(
+                logger::info_con(
                     &self.get_component("Login"),
-                    &format!("User logged in: {}", user.ingame_name.clone()),
-                    LoggerOptions::default(),
+                    &format!(
+                        "User logged in: {}",
+                        user.ingame_name.clone().unwrap_or("".to_string())
+                    ),
                 );
                 (user, headers)
             }
@@ -266,26 +114,24 @@ impl AuthModule {
         Ok((user, token))
     }
 
-    pub async fn validate(&self) -> Result<UserPrivate, AppError> {
+    pub async fn validate(&self) -> Result<UserProfile, AppError> {
         // Validate Auth
         let user = match self.me().await {
             Ok(user) => user,
             Err(e) => {
-                error::create_log_file("command.log", &e);
+                error::create_log_file("command.log".to_string(), &e);
                 return Err(e);
             }
         };
-        if !user.verification {
-            logger::warning(
+        if user.anonymous || !user.verification {
+            logger::warning_con(
                 &self.get_component("Validate"),
                 "Validation failed for user, user is anonymous or not verified",
-                LoggerOptions::default(),
             );
         } else {
-            logger::info(
+            logger::info_con(
                 &self.get_component("Validate"),
                 "User validated successfully",
-                LoggerOptions::default(),
             );
         }
         return Ok(user);

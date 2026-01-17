@@ -1,76 +1,58 @@
-use ::entity::stock_item::*;
+use ::entity::stock::item::stock_item_wat;
+use ::entity::stock::item::{stock_item, stock_item::Entity as StockItem};
+use ::entity::stock::item::{stock_item_old, stock_item_old::Entity as StockItemOld, stock_item_wat::Entity as StockItemWat};
 
-use ::entity::dto::SubType;
+use ::entity::sub_type::SubType;
 use sea_orm::{sea_query::Expr, *};
-
-use crate::{paginate_query, ErrorFromExt};
-use utils::*;
 
 pub struct StockItemQuery;
 
-static COMPONENT: &str = "StockItemQuery";
 impl StockItemQuery {
-    pub async fn get_all(
-        db: &DbConn,
-        query: StockItemPaginationQueryDto,
-    ) -> Result<::entity::dto::pagination::PaginatedResult<Model>, Error> {
-        let stmt = query.get_query();
+    pub async fn find_all_transactions(db: &DbConn) -> Result<Vec<stock_item::Model>, DbErr> {
+        StockItem::find().all(db).await
+    }
 
-        // Pagination
-        let paginated_result =
-            paginate_query(stmt, db, query.pagination.page, query.pagination.limit)
-                .await
-                .map_err(|e| e.with_location(get_location!()))?;
-        Ok(paginated_result)
+    pub async fn get_all(db: &DbConn) -> Result<Vec<stock_item::Model>, DbErr> {
+        StockItem::find().all(db).await
+    }
+
+    pub async fn get_all_stock_items(
+        db: &DbConn,
+        minimum_owned: i32,
+    ) -> Result<Vec<stock_item::Model>, DbErr> {
+        StockItem::find()
+            .filter(Expr::col(stock_item::Column::Owned).gt(minimum_owned))
+            .all(db)
+            .await
+    }
+    pub async fn get_by_id(db: &DbConn, id: i64) -> Result<Option<stock_item::Model>, DbErr> {
+        StockItem::find_by_id(id).one(db).await
     }
     pub async fn find_by_url_name(
         db: &DbConn,
         url_name: &str,
-    ) -> Result<Vec<stock_item::Model>, Error> {
-        Entity::find()
+    ) -> Result<Vec<stock_item::Model>, DbErr> {
+        StockItem::find()
             .filter(stock_item::Column::WfmUrl.contains(url_name))
             .all(db)
             .await
-            .map_err(|e| {
-                Error::from_db(
-                    format!("{}:FindByUrlName", COMPONENT),
-                    "Failed to find Stock Items by URL name",
-                    e,
-                    get_location!(),
-                )
-            })
     }
 
-    pub async fn find_by_id(db: &DbConn, id: i64) -> Result<Option<stock_item::Model>, Error> {
-        Entity::find_by_id(id).one(db).await.map_err(|e| {
-            Error::from_db(
-                format!("{}:FindById", COMPONENT),
-                "Failed to find Stock Item by ID",
-                e,
-                get_location!(),
-            )
-        })
+    pub async fn find_by_id(db: &DbConn, id: i64) -> Result<Option<stock_item::Model>, DbErr> {
+        StockItem::find_by_id(id).one(db).await
     }
-    pub async fn find_by_ids(db: &DbConn, ids: Vec<i64>) -> Result<Vec<stock_item::Model>, Error> {
-        Entity::find()
+    pub async fn find_by_ids(db: &DbConn, ids: Vec<i64>) -> Result<Vec<stock_item::Model>, DbErr> {
+        StockItem::find()
             .filter(Expr::col(stock_item::Column::Id).is_in(ids))
             .all(db)
             .await
-            .map_err(|e| {
-                Error::from_db(
-                    format!("{}:FindByIds", COMPONENT),
-                    "Failed to find Stock Items by IDs",
-                    e,
-                    get_location!(),
-                )
-            })
     }
 
     pub async fn find_by_url_name_and_sub_type(
         db: &DbConn,
         url_name: &str,
         sub_type: Option<SubType>,
-    ) -> Result<Option<stock_item::Model>, Error> {
+    ) -> Result<Option<stock_item::Model>, DbErr> {
         let items = StockItemQuery::find_by_url_name(db, url_name).await?;
         for item in items {
             if item.sub_type == sub_type {
@@ -78,5 +60,11 @@ impl StockItemQuery {
             }
         }
         Ok(None)
+    }
+    pub async fn get_old_stock_items(db: &DbConn) -> Result<Vec<stock_item_old::Model>, DbErr> {
+        StockItemOld::find().all(db).await
+    }
+    pub async fn get_wat_stock_items(db: &DbConn) -> Result<Vec<stock_item_wat::Model>, DbErr> {
+        StockItemWat::find().all(db).await
     }
 }

@@ -1,15 +1,22 @@
 import { TauriClient } from "..";
-import { TauriTypes } from "$types";
-export class LiveScraperModule {
-  constructor(private readonly client: TauriClient) {}
 
-  async toggle(): Promise<void> {
-    this.client.sendInvoke("live_scraper_toggle");
+export class LiveScraperModule {
+  constructor(private readonly client: TauriClient) { }
+
+  async start() {
+    const rep = await this.runningState(true)
+    return rep;
   }
-  async get_interesting_wtb_items(settings: TauriTypes.SettingsStockItem): Promise<TauriTypes.ItemPriceInfo[]> {
-    return await this.client.sendInvoke("live_scraper_get_interesting_wtb_items", { settings });
+
+  async stop() {
+    const rep = await this.runningState(false)
+    return rep;
   }
-  async get_state(): Promise<{ is_running: boolean }> {
-    return await this.client.sendInvoke("live_scraper_get_state");
+
+  private async runningState(enable: boolean) {
+    const [err, res] = await this.client.sendInvoke('live_scraper_set_running_state', { enable })
+    if (err)
+      throw err;
+    return res;
   }
 }

@@ -1,25 +1,23 @@
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
-use utils::Error;
-
-use crate::app::client::AppState;
+use crate::{
+    helper, qf_client::client::QFClient, utils::modules::error::AppError
+};
 
 #[tauri::command]
 pub fn analytics_set_last_user_activity(
-    app: tauri::State<'_, Mutex<AppState>>,
-) -> Result<(), Error> {
-    let app = app.lock()?;
-    app.qf_client.analytics().set_last_user_activity();
+    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
+) -> Result<(), AppError> {
+    let qf = qf.lock()?;
+    qf.analytics().set_last_user_activity();
     Ok(())
 }
 
 #[tauri::command]
-pub fn analytics_add_metric(
+pub fn analytics_send_metric(
     key: String,
     value: String,
-    app: tauri::State<'_, Mutex<AppState>>,
-) -> Result<(), Error> {
-    let app = app.lock()?.clone();
-    app.qf_client.analytics().add_metric(&key, &value);
+) -> Result<(), AppError> {
+    helper::add_metric(&key, &value);
     Ok(())
 }
