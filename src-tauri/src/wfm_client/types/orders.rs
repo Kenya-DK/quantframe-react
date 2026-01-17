@@ -2,7 +2,8 @@ use entity::sub_type::SubType;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    cache::client::CacheClient, utils::modules::error::AppError,
+    live_scraper::types::order_extra_info::OrderDetails,
+    utils::modules::{error::AppError, states},
     wfm_client::enums::order_type::OrderType,
 };
 
@@ -16,7 +17,13 @@ pub struct Orders {
     pub buy_orders: Vec<Order>,
 }
 impl Orders {
-    pub fn get_all_orders(&mut self) -> Vec<Order> {
+    pub fn new(sell_orders: Vec<Order>, buy_orders: Vec<Order>) -> Self {
+        Orders {
+            sell_orders,
+            buy_orders,
+        }
+    }
+    pub fn get_all_orders(&self) -> Vec<Order> {
         let mut orders = self.sell_orders.clone();
         orders.append(&mut self.buy_orders.clone());
         orders
@@ -171,20 +178,43 @@ impl Orders {
         };
     }
 
-    pub fn update_order(&mut self, order: Order) {
-        let orders = match order.order_type {
+    pub fn update_order(
+        &mut self,
+        order_type: OrderType,
+        id: &str,
+        platinum: Option<i64>,
+        quantity: Option<i64>,
+        visible: Option<bool>,
+        info: Option<OrderDetails>,
+    ) {
+        let orders = match order_type {
             OrderType::Sell => &mut self.sell_orders,
             OrderType::Buy => &mut self.buy_orders,
             _ => return,
         };
-        let index = orders.iter().position(|x| x.id == order.id);
+        let index = orders.iter().position(|x| x.id == id);
         if index.is_none() {
             return;
         }
-        orders[index.unwrap()] = order;
+        let index = index.unwrap();
+        if platinum.is_none() && quantity.is_none() && visible.is_none() {
+            return;
+        }
+        if let Some(platinum) = platinum {
+            orders[index].platinum = platinum;
+        }
+        if let Some(quantity) = quantity {
+            orders[index].quantity = quantity;
+        }
+        if let Some(visible) = visible {
+            orders[index].visible = visible;
+        }
+        if let Some(info) = info {
+            orders[index].info = info;
+        }
     }
 
-    pub fn get_orders_by_url(&self, wfm_url: &str, order_type: OrderType) -> Vec<Order> {
+    pub fn get_orders_by_id(&self, wfm_id: &str, order_type: OrderType) -> Vec<Order> {
         let orders = match order_type {
             OrderType::Sell => &self.sell_orders,
             OrderType::Buy => &self.buy_orders,
@@ -192,15 +222,17 @@ impl Orders {
         };
         let filtered_orders = orders
             .iter()
-            .filter(|order| {
-                order.item.is_some() && order.item.as_ref().unwrap().url_name == wfm_url
-            })
+            .filter(|order| order.item_id == wfm_id)
             .cloned()
             .collect::<Vec<Order>>();
         filtered_orders
     }
 
-    pub fn get_orders_ids(&self, order_type: OrderType, exclude_items: Vec<String>) -> Vec<String> {
+    pub fn get_orders_ids2(
+        &self,
+        order_type: OrderType,
+        exclude_items: Vec<String>,
+    ) -> Vec<String> {
         let mut ids = vec![];
         let orders = match order_type {
             OrderType::Sell => &self.sell_orders,
@@ -209,43 +241,46 @@ impl Orders {
         };
 
         for order in orders.iter() {
-            if !exclude_items.contains(&order.item.as_ref().unwrap().url_name) {
+            if !exclude_items.contains(&order.info.wfm_url) {
                 ids.push(order.id.clone());
             }
         }
         ids
     }
 
-    pub fn apply_trade_info(&mut self, cache: &CacheClient) -> Result<(), AppError> {
-        for order in self.buy_orders.iter_mut() {
-            match cache.item_price().get_item_price(
-                &order.item.as_ref().unwrap().url_name,
-                order.get_subtype(),
-                "closed",
-            ) {
-                Ok(info) => {
-                    order.closed_avg = Some(info.avg_price);
-                    order.profit = Some(info.avg_price - order.platinum as f64);
-                }
-                Err(_) => {
-                    order.closed_avg = Some(0.0);
-                    order.profit = Some(0.0);
-                }
+    pub fn apply_trade_info(&mut self) -> Result<(), AppError> {
+        let cache = states::cache().expect("Cache should always be available");
+        for order in self
+            .buy_orders
+            .iter_mut()
+            .chain(self.sell_orders.iter_mut())
+        {
+            let item_info = cache
+                .tradable_items()
+                .get_by(&order.item_id, "--item_by id")?;
+
+            if let Some(item_info) = item_info {
+                order.info.set_wfm_url(item_info.wfm_url_name.clone());
+                order.info.set_name(item_info.name.clone());
+                order.info.set_image(item_info.image_url.clone());
+            } else {
+                order.info.set_name("Unknown Item".to_string());
+                order.info.set_image("".to_string());
             }
-        }
-        for order in self.sell_orders.iter_mut() {
-            match cache.item_price().get_item_price(
-                &order.item.as_ref().unwrap().url_name,
-                order.get_subtype(),
-                "closed",
-            ) {
+
+            match cache
+                .item_price()
+                .get_item_price2(&order.item_id, order.get_subtype())
+            {
                 Ok(info) => {
-                    order.closed_avg = Some(info.avg_price);
-                    order.profit = Some(order.platinum as f64 - info.avg_price);
+                    order.info.set_closed_avg(info.avg_price);
+                    order
+                        .info
+                        .set_profit(order.platinum as f64 - info.min_price);
                 }
                 Err(_) => {
-                    order.closed_avg = Some(0.0);
-                    order.profit = Some(0.0);
+                    order.info.set_closed_avg(0.0);
+                    order.info.set_profit(0.0);
                 }
             }
         }
@@ -254,11 +289,11 @@ impl Orders {
 
     pub fn find_order_by_url_sub_type(
         &self,
-        wfm_url: &str,
+        wfm_id: &str,
         order_type: OrderType,
         sub_type: Option<&SubType>,
     ) -> Option<Order> {
-        let orders = self.get_orders_by_url(wfm_url, order_type);
+        let orders = self.get_orders_by_id(wfm_id, order_type);
         for order in orders {
             let type_sub_type = order.get_subtype();
             if type_sub_type.as_ref() == sub_type {
@@ -266,5 +301,12 @@ impl Orders {
             }
         }
         return None;
+    }
+    pub fn add_order(&mut self, order_type: OrderType, order: Order) {
+        match order_type {
+            OrderType::Sell => self.sell_orders.push(order),
+            OrderType::Buy => self.buy_orders.push(order),
+            _ => {}
+        }
     }
 }

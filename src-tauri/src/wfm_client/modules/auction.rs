@@ -5,7 +5,11 @@ use crate::{
     logger,
     utils::{
         enums::log_level::LogLevel,
-        modules::error::{ApiResult, AppError},
+        modules::{
+            error::{ApiResult, AppError},
+            logger::LoggerOptions,
+            states,
+        },
     },
     wfm_client::{
         client::WFMClient,
@@ -71,7 +75,7 @@ impl AuctionModule {
         self.client.auth().is_logged_in()?;
         match self
             .client
-            .get::<Vec<Auction<String>>>(&url, Some("auctions"))
+            .get::<Vec<Auction<String>>>("v1", &url, Some("auctions"))
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {
@@ -103,7 +107,7 @@ impl AuctionModule {
 
     pub async fn get_my_auctions(&mut self) -> Result<AuctionCollection<String>, AppError> {
         self.client.auth().is_logged_in()?;
-        let auth = self.client.auth.lock()?.clone();
+        let auth = states::auth()?;
         let auctions = self.get_user_auctions(auth.ingame_name.as_str()).await?;
         Ok(auctions)
     }
@@ -115,7 +119,7 @@ impl AuctionModule {
         let url = format!("auctions/entry/{}", auction_id);
         match self
             .client
-            .get::<Auction<AuctionOwner>>(&url, Some("auction"))
+            .get::<Auction<AuctionOwner>>("v1", &url, Some("auction"))
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {
@@ -165,14 +169,15 @@ impl AuctionModule {
             });
             body["item"] = item_riven;
         } else if auction_type == "item" {
-            logger::warning_con(
+            logger::warning(
                 "WarframeMarket:Auction:Create",
                 "Item auctions are not yet supported",
+                LoggerOptions::default(),
             );
         }
         match self
             .client
-            .post("auctions/create", Some("auction"), body)
+            .post("v1", "auctions/create", Some("auction"), body)
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {
@@ -224,7 +229,11 @@ impl AuctionModule {
         });
         let url = format!("auctions/entry/{}", auction_id);
 
-        match self.client.put(&url, Some("auction"), Some(body)).await {
+        match self
+            .client
+            .put("v1", &url, Some("auction"), Some(body))
+            .await
+        {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.client.debug(
                     &self.debug_id,
@@ -305,7 +314,7 @@ impl AuctionModule {
 
         match self
             .client
-            .get::<Vec<Auction<AuctionOwner>>>(&url, Some("auctions"))
+            .get::<Vec<Auction<AuctionOwner>>>("v1", &url, Some("auctions"))
             .await
         {
             Ok(ApiResult::Success(payload, _headers)) => {
@@ -344,7 +353,7 @@ impl AuctionModule {
         let url = format!("auctions/entry/{}/close", auction_id);
 
         self.client.auth().is_logged_in()?;
-        match self.client.put(&url, Some("auction_id"), None).await {
+        match self.client.put("v1", &url, Some("auction_id"), None).await {
             Ok(ApiResult::Success(payload, _headers)) => {
                 self.subtract_auction_count(1)?;
                 self.client.debug(

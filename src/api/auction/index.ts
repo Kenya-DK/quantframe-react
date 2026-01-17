@@ -1,36 +1,26 @@
 import { TauriClient } from "..";
-import { Wfm } from "../../types";
-import { StockRiven } from "../types";
-
+import { WFMarketTypes } from "$types";
 export class AuctionModule {
-  constructor(private readonly client: TauriClient) { }
-
-  async delete(id: string): Promise<Wfm.Auction<string>> {
-    const [err, auction] = await this.client.sendInvoke<Wfm.Auction<string>>('auction_delete', { id: id });
-    if (err)
-      throw err;
-    return auction;
+  constructor(private readonly client: TauriClient) {}
+  async getPagination(query: WFMarketTypes.WfmAuctionControllerGetListParams): Promise<WFMarketTypes.WfmAuctionControllerGetListData> {
+    return await this.client.sendInvoke<WFMarketTypes.WfmAuctionControllerGetListData>("get_wfm_auctions_pagination", { query });
+  }
+  async getOverview(query: WFMarketTypes.WfmAuctionControllerGetListParams): Promise<number[]> {
+    return await this.client.sendInvoke<number[]>("get_wfm_auctions_overview", { query });
   }
 
-  async refresh(): Promise<number> {
-    const [err, res] = await this.client.sendInvoke<number>('auction_refresh');
-    if (err)
-      throw err;
-
-    return res;
+  async refreshAuctions(): Promise<any> {
+    return await this.client.sendInvoke<any>("auction_refresh");
   }
 
-  async deleteAll(): Promise<void> {
-    const [err, res] = await this.client.sendInvoke<void>('auction_delete_all');
-    if (err)
-      throw err;
-    return res;
+  async deleteAllAuctions(): Promise<any> {
+    return await this.client.sendInvoke<any>("auction_delete_all");
+  }
+  async deleteById(id: string): Promise<any> {
+    return await this.client.sendInvoke<any>("auction_delete_by_id", { id });
   }
 
-  async import_auction(auction: Wfm.Auction<string>, bought: number): Promise<StockRiven> {
-    const [err, res] = await this.client.sendInvoke<StockRiven>('auction_import', { auction, bought });
-    if (err)
-      throw err;
-    return res;
+  async importById(id: string, bought: number): Promise<any> {
+    return await this.client.sendInvoke<any>("auction_import_by_id", { id, bought });
   }
 }

@@ -1,10 +1,10 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import api, { OnTauriDataEvent } from "@api/index";
-import { QfSocketEvent, QfSocketEventOperation, User, UserStatus } from "@api/types";
-import wfmSocket from "@models/wfmSocket";
-import { Wfm } from "../types";
+import { OffTauriDataEvent, OnTauriDataEvent } from "@api/index";
+import { TauriTypes } from "$types";
+import api from "@api/index";
+import { useQuery } from "@tanstack/react-query";
 export type AuthContextProps = {
-  user: User | undefined;
+  user: TauriTypes.User | undefined;
 };
 export type TauriContextProviderProps = {
   children: React.ReactNode;
@@ -18,39 +18,35 @@ export const useAuthContext = () => useContext(AuthContext);
 
 export function AuthContextProvider({ children }: TauriContextProviderProps) {
   // States
-  const [user, setUser] = useState<User | undefined>(undefined);
+  const [user, setUser] = useState<TauriTypes.User | undefined>(undefined);
 
-  // Handle update, create, delete transaction
-  const handleUpdateUser = (operation: string, data: User) => {
-    window.data = data;
+  // Fetch data from rust side
+  const { data } = useQuery({
+    queryKey: ["auth_me"],
+    queryFn: () => api.auth.me(),
+    retry: 0,
+  });
+  useEffect(() => setUser(data), [data]);
+
+  const handleUpdateUser = (operation: string, data: TauriTypes.User) => {
     switch (operation) {
-      case QfSocketEventOperation.CREATE_OR_UPDATE:
+      case TauriTypes.EventOperations.CREATE_OR_UPDATE:
         setUser((user) => ({ ...user, ...data }));
         break;
-      case QfSocketEventOperation.DELETE:
+      case TauriTypes.EventOperations.DELETE:
         setUser(undefined);
         break;
-      case QfSocketEventOperation.SET:
+      case TauriTypes.EventOperations.SET:
         setUser(data);
         break;
     }
   };
 
-  const OnUserStatusChange = async (status: UserStatus) => {
-    // Update user status in backend
-    await api.auth.set_status(status);
-    setUser((user) => {
-      if (!user) return user;
-      return { ...user, status };
-    });
-  };
-
   // Hook on tauri events from rust side
   useEffect(() => {
-    wfmSocket.on(Wfm.SocketEvent.OnUserStatusChange, OnUserStatusChange);
-    OnTauriDataEvent<User>(QfSocketEvent.UpdateUser, ({ data, operation }) => handleUpdateUser(operation, data));
+    OnTauriDataEvent<TauriTypes.User>(TauriTypes.Events.UpdateUser, ({ data, operation }) => handleUpdateUser(operation, data));
     return () => {
-      wfmSocket.off(Wfm.SocketEvent.OnUserStatusChange, OnUserStatusChange);
+      OffTauriDataEvent<TauriTypes.User>(TauriTypes.Events.UpdateUser, ({ data, operation }) => handleUpdateUser(operation, data));
     };
   }, []);
 

@@ -1,38 +1,47 @@
-use std::sync::{Arc, Mutex};
+use std::sync::{atomic::Ordering, Arc};
 
+use serde_json::{json, Value};
+use utils::Error;
 
-use serde_json::json;
-
-use crate::{live_scraper::client::LiveScraperClient, notification::client::NotifyClient, qf_client::client::QFClient, utils::{enums::ui_events::UIEvent, modules::error::{self, AppError}}};
+use crate::{
+    add_metric,
+    app::StockItemSettings,
+    cache::ItemPriceInfo,
+    live_scraper::{self, LiveScraperState},
+    send_event,
+    types::*,
+};
 
 #[tauri::command]
-pub fn live_scraper_set_running_state(
-    enable: bool,
-    live_scraper: tauri::State<'_, Arc<std::sync::Mutex<LiveScraperClient>>>,
-    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
-) -> Result<(), AppError> {
-    let notify = notify.lock()?.clone();
-    let qf = qf.lock()?.clone();
-    
-    let mut live_scraper = live_scraper.lock()?;
-    if enable  && !live_scraper.is_running() {
-        qf.analytics()
-            .add_metric("LiveScraper_Started", "manual");
-        match live_scraper.start_loop() {
-            Ok(_) => {}
-            Err(e) => {
-                qf.analytics()
-                    .add_metric("LiveScraper_Stopped", "error");
-                error::create_log_file("command.log".to_string(), &e);
-            }
-        }
+pub async fn live_scraper_toggle(
+    live_scraper: tauri::State<'_, Arc<LiveScraperState>>,
+) -> Result<(), Error> {
+    if live_scraper.is_running.load(Ordering::SeqCst) {
+        live_scraper.stop();
+        add_metric!("live_scraper_toggle", "stopped");
     } else {
-        qf.analytics()
-            .add_metric("LiveScraper_Stopped", "manual");
-        live_scraper.stop_loop();
+        live_scraper.start();
+        add_metric!("live_scraper_toggle", "started");
     }
-    notify.gui().send_event(UIEvent::UpdateLiveTradingRunningState, Some(json!(live_scraper.is_running())));
+    send_event!(
+        UIEvent::UpdateLiveScraperRunningState,
+        json!(live_scraper.is_running.load(Ordering::SeqCst))
+    );
     Ok(())
+}
+#[tauri::command]
+pub async fn live_scraper_get_state(
+    live_scraper: tauri::State<'_, Arc<LiveScraperState>>,
+) -> Result<Value, Error> {
+    Ok(json!({
+        "is_running": live_scraper.is_running.load(Ordering::SeqCst)
+    }))
+}
 
+#[tauri::command]
+pub async fn live_scraper_get_interesting_wtb_items(
+    settings: StockItemSettings,
+) -> Result<Vec<ItemPriceInfo>, Error> {
+    let items = live_scraper::helpers::get_interesting_items(&settings);
+    Ok(items)
 }

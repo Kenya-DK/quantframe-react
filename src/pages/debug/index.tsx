@@ -1,21 +1,22 @@
 import { Container, Tabs } from "@mantine/core";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
-// import { StatisticProfitBase, TransactionType } from "@api/types";
-import { TransactionPanel } from "./tabs/transactions";
-import { DataBasePanel } from "./tabs/database";
-
-
+import { LoggingPanel } from "./tabs/logging";
+import { StatesPanel } from "./tabs/states";
+import classes from "./Debug.module.css";
+import { useHasAlert } from "@hooks/useHasAlert.hook";
+import { DebuggingPanel } from "./tabs/debugging";
 export default function DebugPage() {
   // Translate general
-  const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`debug.${key}`, { ...context }, i18Key)
-  const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`tabs.${key}`, { ...context }, i18Key)
+  const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslatePages(`debug.${key}`, { ...context }, i18Key);
+  const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`tabs.${key}`, { ...context }, i18Key);
 
   const tabs = [
-    { label: useTranslateTabs("transaction.title"), component: <TransactionPanel />, id: "tr", icon: <div>Stocks</div> },
-    { label: useTranslateTabs("database.title"), component: <DataBasePanel />, id: "db" },
+    { label: useTranslateTabs("logging.title"), component: <LoggingPanel />, id: "tr", icon: <div>Stocks</div> },
+    { label: useTranslateTabs("states.title"), component: <StatesPanel />, id: "states", icon: <div>States</div> },
+    { label: useTranslateTabs("debugging.title"), component: <DebuggingPanel />, id: "debugging", icon: <div>Debugging</div> },
   ];
   return (
-    <Container p={20} size={"100%"}>
+    <Container p={20} size={"900%"} className={`${classes.container} ${useHasAlert() ? classes.alert : ""}`}>
       <Tabs defaultValue={tabs[0].id}>
         <Tabs.List>
           {tabs.map((tab) => (
@@ -30,6 +31,6 @@ export default function DebugPage() {
           </Tabs.Panel>
         ))}
       </Tabs>
-    </Container >
+    </Container>
   );
 }

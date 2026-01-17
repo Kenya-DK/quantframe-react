@@ -1,2 +1,2 @@
-export { UpdateTransaction } from './UpdateTransaction';
-export type { UpdateTransactionProps } from './UpdateTransaction';
+export { UpdateTransaction } from "./UpdateTransactionForm";
+export type { UpdateTransactionProps } from "./UpdateTransactionForm";

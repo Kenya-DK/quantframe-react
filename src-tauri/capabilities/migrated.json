@@ -1,0 +1,31 @@
+{
+  "identifier": "migrated",
+  "description": "permissions that were migrated from v1",
+  "local": true,
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "fs:allow-write-file",
+    "fs:allow-read-dir",
+    "fs:allow-copy-file",
+    "fs:allow-remove",
+    "fs:allow-exists",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        "$APPDATA/**",
+        "$DESKTOP/**",
+        "$RESOURCE/**"
+      ]
+    },
+    "core:window:allow-create",
+    "shell:allow-open",
+    "dialog:allow-open",
+    "http:default",
+    "notification:default",
+    "fs:allow-read-text-file",
+    "fs:allow-resource-read-recursive"
+  ]
+}

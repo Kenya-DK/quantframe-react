@@ -3,7 +3,8 @@
 use sea_orm::{entity::prelude::*, FromJsonQueryResult};
 use serde::{Deserialize, Serialize};
 
-use crate::sub_type::SubType;
+use crate::dto::*;
+use crate::enums::*;
 
 #[derive(
     Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize, FromJsonQueryResult,
@@ -25,101 +26,12 @@ pub struct Model {
     pub quantity: i64,
     pub user_name: String,
     pub price: i64,
+    pub profit: Option<i64>,
     #[sea_orm(updated_at)]
     pub updated_at: DateTimeUtc,
     #[sea_orm(created_at)]
     pub created_at: DateTimeUtc,
     pub properties: Option<serde_json::Value>,
-}
-#[derive(Debug, Clone, PartialEq, sea_orm::EnumIter, sea_orm::DeriveActiveEnum)]
-#[sea_orm(rs_type = "String", db_type = "String(Some(15))")]
-#[derive(Eq)]
-pub enum TransactionItemType {
-    #[sea_orm(string_value = "item")]
-    Item,
-    #[sea_orm(string_value = "riven")]
-    Riven,
-}
-
-impl TransactionItemType {
-    pub fn from_str(s: &str) -> Self {
-        match s {
-            "item" => Self::Item,
-            "riven" => Self::Riven,
-            _ => panic!("Invalid transaction type"),
-        }
-    }
-}
-impl Serialize for TransactionItemType {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let value = match self {
-            TransactionItemType::Item => "item",
-            TransactionItemType::Riven => "riven",
-        };
-        serializer.serialize_str(value)
-    }
-}
-
-impl<'de> Deserialize<'de> for TransactionItemType {
-    fn deserialize<D>(deserializer: D) -> Result<TransactionItemType, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let s: String = String::deserialize(deserializer)?;
-        Ok(match s.as_str() {
-            "item" => TransactionItemType::Item,
-            "riven" => TransactionItemType::Riven,
-            _ => panic!("Invalid transaction type"),
-        })
-    }
-}
-#[derive(Debug, Clone, PartialEq, sea_orm::EnumIter, sea_orm::DeriveActiveEnum)]
-#[sea_orm(rs_type = "String", db_type = "String(Some(15))")]
-#[derive(Eq)]
-pub enum TransactionType {
-    #[sea_orm(string_value = "sale")]
-    Sale,
-    #[sea_orm(string_value = "purchase")]
-    Purchase,
-}
-
-impl TransactionType {
-    pub fn from_str(s: &str) -> Self {
-        match s {
-            "sale" => Self::Sale,
-            "purchase" => Self::Purchase,
-            _ => panic!("Invalid transaction type"),
-        }
-    }
-}
-impl Serialize for TransactionType {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let value = match self {
-            TransactionType::Purchase => "purchase",
-            TransactionType::Sale => "sale",
-        };
-        serializer.serialize_str(value)
-    }
-}
-
-impl<'de> Deserialize<'de> for TransactionType {
-    fn deserialize<D>(deserializer: D) -> Result<TransactionType, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let s: String = String::deserialize(deserializer)?;
-        Ok(match s.as_str() {
-            "purchase" => TransactionType::Purchase,
-            "sale" => TransactionType::Sale,
-            _ => panic!("Invalid transaction type"),
-        })
-    }
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -129,35 +41,39 @@ impl ActiveModelBehavior for ActiveModel {}
 
 impl Model {
     pub fn new(
-        wfm_id: String,
-        wfm_url: String,
-        item_name: String,
+        wfm_id: impl Into<String>,
+        wfm_url: impl Into<String>,
+        item_name: impl Into<String>,
         item_type: TransactionItemType,
-        item_unique_name: String,
+        item_unique_name: impl Into<String>,
         sub_type: Option<SubType>,
         tags: Vec<String>,
         transaction_type: TransactionType,
         quantity: i64,
-        user_name: String,
+        user_name: impl Into<String>,
         price: i64,
         properties: Option<serde_json::Value>,
     ) -> Self {
         Self {
             id: Default::default(),
-            wfm_id,
-            wfm_url,
-            item_name,
+            wfm_id: wfm_id.into(),
+            wfm_url: wfm_url.into(),
+            item_name: item_name.into(),
             item_type,
-            item_unique_name,
+            item_unique_name: item_unique_name.into(),
             sub_type,
             tags: tags.join(","),
             transaction_type,
             quantity,
-            user_name,
+            user_name: user_name.into(),
             price,
             properties,
+            profit: None,
             updated_at: Default::default(),
             created_at: Default::default(),
         }
+    }
+    pub fn set_profit(&mut self, profit: i64) {
+        self.profit = Some(profit);
     }
 }

@@ -1,15 +1,15 @@
 import { Box, Divider, Group, Pagination, ScrollArea, Text, SimpleGrid } from "@mantine/core";
 import { useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { useEffect, useState } from "react";
-import { Wfm } from "$types/index";
+import { WFMarketTypes } from "$types/index";
 import { useWarframeMarketContextContext } from "@contexts/warframeMarket.context";
 import { paginate } from "@utils/helper";
 import { faCartShopping, faInfoCircle, faPen, faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
-import { CreateStockItem, SellStockItem } from "@api/types";
+import { TauriTypes } from "$types";
 import api from "@api/index";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { ActionWithTooltip } from "@components/ActionWithTooltip";
 import { ColorInfo } from "@components/ColorInfo";
 import { Loading } from "@components/Loading";
@@ -27,10 +27,19 @@ export const OrderPanel = ({}: OrderPanelProps) => {
   const pageSizes = [1, 5, 10, 15, 20, 25, 30, 50, 100];
   const [pageSize, _setPageSize] = useState(pageSizes[4]);
   const [totalPages, setTotalPages] = useState(0);
-  const [rows, setRows] = useState<Wfm.OrderDto[]>([]);
+  const [rows, setRows] = useState<WFMarketTypes.OrderDto[]>([]);
   const { orders } = useWarframeMarketContextContext();
-  const [filterOrderType, setFilterOrderType] = useState<Wfm.OrderType | undefined>(undefined);
+  const [filterOrderType, setFilterOrderType] = useState<WFMarketTypes.OrderType | undefined>(undefined);
 
+  // Fetch data from rust side
+  const { data } = useQuery({
+    queryKey: ["cache_items"],
+    queryFn: () => api.cache.getTradableItems(),
+  });
+  const GetItemInfo = (wfm_id: string) => {
+    if (!data) return null;
+    return data.find((item) => item.wfm_id === wfm_id) || null;
+  };
   // Translate general
   const useTranslateTabOrder = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslatePages(`warframe_market.tabs.orders.${key}`, { ...context }, i18Key);
@@ -47,7 +56,7 @@ export const OrderPanel = ({}: OrderPanelProps) => {
 
   // Mutations
   const createStockMutation = useMutation({
-    mutationFn: (data: CreateStockItem) => api.stock.item.create(data),
+    mutationFn: (data: TauriTypes.CreateStockItem) => api.stock.item.create(data),
     onSuccess: async (u) => {
       notifications.show({
         title: useTranslateSuccess("create_stock.title"),
@@ -61,7 +70,7 @@ export const OrderPanel = ({}: OrderPanelProps) => {
     },
   });
   const sellStockMutation = useMutation({
-    mutationFn: (data: SellStockItem) => api.stock.item.sell(data),
+    mutationFn: (data: TauriTypes.SellStockItem) => api.stock.item.sell(data),
     onSuccess: async (u) => {
       notifications.show({
         title: useTranslateSuccess("sell_stock.title"),
@@ -119,8 +128,8 @@ export const OrderPanel = ({}: OrderPanelProps) => {
     setStatusCount(() => {
       let items: { [key: string]: string } = {};
       // Create a transaction type count
-      Object.values(Wfm.OrderType).forEach((type) => {
-        let fOrders = orders.filter((item) => item.order_type === type);
+      Object.values(WFMarketTypes.OrderType).forEach((type) => {
+        let fOrders = orders.filter((item) => item.type === type);
         let total_platinum = fOrders.reduce((acc, item) => acc + item.platinum * item.quantity, 0);
         items[type] = `${fOrders.length} (${total_platinum})`;
       });
@@ -128,18 +137,18 @@ export const OrderPanel = ({}: OrderPanelProps) => {
     });
 
     // Filter by type
-    if (filterOrderType) ordersF = ordersF.filter((order) => order.order_type === filterOrderType);
+    if (filterOrderType) ordersF = ordersF.filter((order) => order.type === filterOrderType);
 
     // Filter by query
-    if (query) ordersF = ordersF.filter((order) => order.item?.en?.item_name.toLowerCase().includes(query.toLowerCase()));
+    if (query) ordersF = ordersF.filter((order) => order.info.name.toLowerCase().includes(query.toLowerCase()));
 
     // Update total pages
     setTotalPages(Math.ceil(ordersF.length / pageSize));
 
     // Sort by order_type
     ordersF = ordersF.sort((a, b) => {
-      if (a.order_type == Wfm.OrderType.Buy && b.order_type == Wfm.OrderType.Sell) return 1;
-      if (a.order_type == Wfm.OrderType.Sell && b.order_type == Wfm.OrderType.Buy) return -1;
+      if (a.type == WFMarketTypes.OrderType.Buy && b.type == WFMarketTypes.OrderType.Sell) return 1;
+      if (a.type == WFMarketTypes.OrderType.Sell && b.type == WFMarketTypes.OrderType.Buy) return -1;
       return 0;
     });
 
@@ -147,9 +156,9 @@ export const OrderPanel = ({}: OrderPanelProps) => {
   }, [orders, filterOrderType, query, pageSize, page]);
 
   // Functions
-  const HandleSellOrBuy = async (order: Wfm.OrderDto, price: number) => {
+  const HandleSellOrBuy = async (order: WFMarketTypes.OrderDto, price: number) => {
     if (!price) return;
-    if (!order || !order.item) return;
+    if (!order) return;
 
     let sub_type = undefined;
     if (order.amber_stars || order.cyan_stars) {
@@ -163,38 +172,37 @@ export const OrderPanel = ({}: OrderPanelProps) => {
       sub_type = { rank: order.mod_rank };
     }
 
-    switch (order.order_type) {
-      case Wfm.OrderType.Buy:
+    switch (order.type) {
+      case WFMarketTypes.OrderType.Buy:
         await createStockMutation.mutateAsync({
-          wfm_url: order.item?.url_name || "",
+          wfm_url: GetItemInfo(order.itemId)?.wfm_url_name || "",
           bought: price,
           quantity: order.quantity,
           minimum_price: 0,
           sub_type: sub_type,
-          is_from_order: true,
         });
         break;
-      case Wfm.OrderType.Sell:
+      case WFMarketTypes.OrderType.Sell:
         await sellStockMutation.mutateAsync({
-          url: order.item?.url_name || "",
+          id: 0,
+          wfm_url: GetItemInfo(order.itemId)?.wfm_url_name || "",
           sub_type: sub_type,
           quantity: 1,
           price: price,
-          is_from_order: true,
         });
         break;
     }
   };
 
-  const OpenSellOrBuyModal = (order: Wfm.OrderDto) => {
+  const OpenSellOrBuyModal = (order: WFMarketTypes.OrderDto) => {
     modals.openContextModal({
       modal: "prompt",
-      title: useTranslatePrompt(`${order.order_type}.title`),
+      title: useTranslatePrompt(`${order.type}.title`),
       innerProps: {
         fields: [
           {
             name: "price",
-            label: useTranslatePrompt(`${order.order_type}.field.label`),
+            label: useTranslatePrompt(`${order.type}.field.label`),
             attributes: {
               min: 0,
             },
@@ -212,10 +220,10 @@ export const OrderPanel = ({}: OrderPanelProps) => {
   };
 
   // Models
-  const OpenInfoModal = (order: Wfm.OrderDto) => {
+  const OpenInfoModal = (order: WFMarketTypes.OrderDto) => {
     modals.open({
       size: "100%",
-      title: order.item?.en?.item_name,
+      title: order.info.name,
       children: <OrderDetails value={order} />,
     });
   };
@@ -272,7 +280,7 @@ export const OrderPanel = ({}: OrderPanelProps) => {
         }
       />
       <Group gap={"sm"} mt={"md"}>
-        {Object.values(Wfm.OrderType).map((type) => (
+        {Object.values([WFMarketTypes.OrderType.Buy, WFMarketTypes.OrderType.Sell]).map((type) => (
           <ColorInfo
             active={type == filterOrderType}
             key={type}
@@ -304,7 +312,7 @@ export const OrderPanel = ({}: OrderPanelProps) => {
               footer={
                 <>
                   <ActionWithTooltip
-                    tooltip={useTranslateButtons("sell_manual." + (order.order_type == Wfm.OrderType.Buy ? "buy.tooltip" : "sell.tooltip"))}
+                    tooltip={useTranslateButtons("sell_manual." + (order.type == WFMarketTypes.OrderType.Buy ? "buy.tooltip" : "sell.tooltip"))}
                     icon={faPen}
                     color={"blue.7"}
                     actionProps={{ size: "sm" }}
@@ -315,7 +323,7 @@ export const OrderPanel = ({}: OrderPanelProps) => {
                     }}
                   />
                   <ActionWithTooltip
-                    tooltip={useTranslateButtons("sell_auto." + (order.order_type == Wfm.OrderType.Buy ? "buy.tooltip" : "sell.tooltip"))}
+                    tooltip={useTranslateButtons("sell_auto." + (order.type == WFMarketTypes.OrderType.Buy ? "buy.tooltip" : "sell.tooltip"))}
                     icon={faCartShopping}
                     color={"green.7"}
                     actionProps={{ size: "sm" }}

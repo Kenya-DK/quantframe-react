@@ -8,14 +8,14 @@ export const en = {
       },
       error: {
         title: "Riven Add Error",
-        message: "An error occurred in {{component}} at {{backtrace}} see logs for more information.",
+        message: "An error occurred in {{component}} at {{backtrace}}. See logs for more information.",
       },
     },
     created_stock: {
       warning: {
         not_found: {
           title: "Item Not Found",
-          message: "Item {{item}} was not found.",
+          message: "The item {{item}} was not found.",
         },
       },
     },
@@ -23,6 +23,9 @@ export const en = {
       title: "Trade with {{player_name}} complete",
       message:
         "<blue>{{item_name}}</blue> X<blue>{{quantity}}</blue> {{trade_type}} For {{platinum}}p WFM: <blue>{{wfm_operation}}</blue> Stock: <blue>{{stock_operation}}</blue>",
+      multiple_items_found: "Multiple items found Skipping...",
+      no_valid_items_found: "No valid items found Skipping...",
+      set_not_valid: "Set not valid Skipping...",
     },
   },
   enums: {
@@ -44,12 +47,13 @@ export const en = {
     },
     user_status: {
       online: "Online",
-      ingame: "Ingame",
+      ingame: "In game",
       invisible: "Offline",
     },
     order_type: {
       buy: "Buy Order",
       sell: "Sell Order",
+      closed: "Closed Orders",
       details: {
         buy: "Buy",
         sell: "Sell",
@@ -63,13 +67,12 @@ export const en = {
     trade_mode: {
       buy: "Buy",
       sell: "Sell",
-      all: "All",
       wishlist: "Wishlist",
     },
     stock_status: {
       pending: "Pending",
       live: "Live",
-      to_low_profit: "To Low Profit",
+      to_low_profit: "Low Profit",
       no_sellers: "No Sellers",
       no_buyers: "No Buyers",
       inactive: "Inactive",
@@ -78,7 +81,7 @@ export const en = {
       overpriced: "Overpriced",
       underpriced: "Underpriced",
       details: {
-        pending: "Waiting for to be processed",
+        pending: "Waiting to be processed",
         live: "Live on Warframe Market",
         to_low_profit: "Was not processed due to low profit based on settings",
         no_sellers: "No sellers found for this item",
@@ -94,45 +97,25 @@ export const en = {
   components: {
     modals: {
       base: {
+        titles: {
+          premium: "Support me on Patreon!",
+        },
         buttons: {
           confirm: "Confirm",
           cancel: "Cancel",
         },
       },
+      premium_modal: {
+        title: "Unlock More Features and Support the Development!",
+        text: "1. Join the Quantframe Patreon",
+        text2: "2. Link your Patreon account",
+        buttons: {
+          info: "Patreon",
+          link: "Link your account",
+        },
+      },
       tos: {
         title: "Terms and Conditions",
-        content:
-          "# Quantframe Data Protection Policy\n" +
-          "By using Quantframe, you agree to the collection and use of information in accordance with this policy.\n" +
-          "## Information Collection and Use\n" +
-          "We collect several different types of information for various purposes to provide and improve our Service \n" +
-          "to you.\n" +
-          "## Types of Data Collected\n" +
-          "### Personal Data\n" +
-          'While using our Service, we may ask you to provide us with certain personally identifiable information that can be used to contact or identify you ("Personal Data"). Personally identifiable information may include, but is not limited to:\n' +
-          "- Warframe Market Username\n" +
-          "- Warframe Market User ID\n" +
-          "- Device ID (collected in a fully anonymous way used for tracking/securing purposes)\n" +
-          "- Quantframe Version\n" +
-          "- Metrics\n" +
-          "- Transaction details relevant to the user's activity (e.g., adding/deleting/updating a transaction)\n" +
-          "- Stock item/riven details relevant to the user's activity (e.g., adding/deleting/updating a stock item/\n" +
-          "riven)\n" +
-          "### Transaction And Stock Data\n" +
-          "We may collect information on the transactions and stock items/rivens you add, delete, or update. This \n" +
-          "includes tracking the specific details of the transactions and stock items/rivens you interact with while \n" +
-          "using our Service.\n" +
-          "You can turn off the collection of this data by disabling the Analytics tag in the settings.\n" +
-          "### Metrics Data\n" +
-          "We may also collect information on how the Service is accessed and used. This includes tracking user \n" +
-          "interactions, such as the specific links or buttons you click on while using our Service.\n" +
-          "example:\n" +
-          "```\n" +
-          "{\n" +
-          '  "active_page": "warframe_market",\n' +
-          "}\n" +
-          "```\n" +
-          "This can't be turned off.",
         buttons: {
           accept: "Accept",
           decline: "Decline",
@@ -144,6 +127,19 @@ export const en = {
         tabs: {
           general: {
             title: "General",
+            fields: {
+              wf_log_path: {
+                label: "Warframe Log Path",
+                placeholder: "Default Warframe log path",
+                error: "Invalid Warframe log path",
+                tooltip: "The path to the Warframe log file. leave empty for default path.",
+              },
+            },
+            buttons: {
+              save: {
+                label: "Save",
+              },
+            },
           },
           live_trading: {
             title: "Live Trading",
@@ -152,31 +148,37 @@ export const en = {
                 label: "Volume Threshold",
                 placeholder: "Volume Threshold",
                 error: "Invalid volume threshold",
-                tooltip: "The minimum volume per trade.",
+                tooltip: "The minimum volume required per trade. Use -1 to disable this feature.",
               },
               range_threshold: {
-                label: "Range Threshold",
-                placeholder: "Range Threshold",
-                error: "Invalid range threshold",
-                tooltip: "The minimum range between the highest price and the lowest price.",
+                label: "Profit Range Threshold",
+                placeholder: "Profit Range Threshold",
+                error: "Invalid profit range threshold",
+                tooltip: "The minimum profit range threshold for buy orders. Use -1 to disable this feature.",
               },
               avg_price_cap: {
                 label: "Average Price",
                 placeholder: "Average Price",
                 error: "Invalid average price",
-                tooltip: "The maximum price cap per buy order.",
+                tooltip: "The maximum average price cap per buy order. Use -1 to disable.",
               },
               trading_tax_cap: {
                 label: "Trading Tax Cap",
                 placeholder: "Trading Tax Cap",
                 error: "Invalid trading tax cap",
-                tooltip: "The maximum credit tax per buy order use -1 for unlimited.",
+                tooltip: "The maximum credit tax per buy order. Use -1 to disable.",
               },
               max_total_price_cap: {
                 label: "Max Total Price Cap",
                 placeholder: "Max Total Price Cap",
                 error: "Invalid max total price cap",
-                tooltip: "This parameter specifies the maximum platinum total price cap for the all buy orders.",
+                tooltip: "This parameter specifies the maximum platinum total price cap for all buy orders.",
+              },
+              min_wtb_profit_margin: {
+                label: "Minimum Profit Margin",
+                placeholder: "Minimum Profit Margin",
+                error: "Invalid minimum WTB profit margin",
+                tooltip: "The minimum profit margin for WTB orders. Use -1 to disable.",
               },
               buy_quantity: {
                 label: "Quantity of goods",
@@ -188,7 +190,7 @@ export const en = {
                 label: "Price Shift Threshold",
                 placeholder: "Price Shift Threshold",
                 error: "Invalid price shift threshold",
-                tooltip: "The minimum price shift threshold for the last 7 days.",
+                tooltip: "The minimum price shift threshold over the last 7 days.",
               },
               min_sma: {
                 label: "Min SMA",
@@ -217,15 +219,15 @@ export const en = {
                 placeholder: "Stock Mode",
                 error: "Invalid stock mode",
               },
-              trade_mode: {
+              update_interval: {
+                label: "Update Interval (seconds)",
+                placeholder: "Update Interval (seconds)",
+                error: "Invalid update interval",
+                tooltip: "The interval in seconds to update the stock. Default is 120 seconds.",
+              },
+              trade_modes: {
                 label: "Trade Mode",
-                description: {
-                  all: "Will buy and sell wishlist",
-                  buy: "Will only buy",
-                  sell: "Will only sell",
-                  wishlist: "Will only buy your wishlist",
-                },
-                placeholder: "Trade Mode",
+                description: "How the bot will trade",
                 error: "Invalid trade mode",
               },
               report_to_wfm: {
@@ -245,7 +247,7 @@ export const en = {
                   "Will delete other trade types if true example: if buy is enabled will delete sell/wishlist items if they are not blacklisted",
               },
               blacklist: {
-                description: "The blacklist is a list of items that will not be ignored by the bot. (Sell/Buy)",
+                description: "The blacklist is a list of items that will be ignored by the bot. (Buy/Sell)",
                 left_title: "Available Items",
                 right_title: "Blacklisted Items",
               },
@@ -259,13 +261,13 @@ export const en = {
                 label: "Limit To",
                 placeholder: "5",
                 error: "Invalid limit to",
-                tooltip: "Will use use the first {{count}} rivens to calculate the average price",
+                tooltip: "Will use the first {{count}} rivens to calculate the average price",
               },
               threshold_percentage: {
                 label: "Minimum Price Shift",
                 placeholder: "0",
                 error: "Invalid threshold percentage",
-                tooltip: "Ignore rivens that have less than {{value}}% price shift from the most expensive riven",
+                tooltip: "Ignore rivens that have more than {{value}}% price shift from the least expensive riven",
               },
             },
             tabs: {
@@ -304,17 +306,49 @@ export const en = {
           analytics: {
             title: "Analytics",
             fields: {
-              transaction: {
-                label: "Transaction",
-                tooltip: "If enabled will send transaction events to QF Api",
-              },
               stock_item: {
                 label: "Stock Item",
-                tooltip: "if enabled will send stock item to QF Api",
+                tooltip: "If enabled will send stock item to QF Api",
               },
               stock_riven: {
                 label: "Stock Riven",
-                tooltip: "if enabled will send stock riven to QF Api",
+                tooltip: "If enabled will send stock riven to QF Api",
+              },
+            },
+            buttons: {
+              save: {
+                label: "Save",
+              },
+            },
+          },
+          summary: {
+            title: "Summary",
+            fields: {
+              resent_days: {
+                label: "Resent Days",
+                tooltip: "How many days of data to show",
+              },
+              resent_transactions: {
+                label: "Resent Transactions",
+                tooltip: "How many transactions to show",
+              },
+            },
+            datatable: {
+              columns: {
+                name: "Name",
+                tags: "Tags",
+                types: "Types",
+                actions: {
+                  title: "Actions",
+                  buttons: {
+                    edit: {
+                      tooltip: "Edit Item",
+                    },
+                    delete: {
+                      tooltip: "Delete Item",
+                    },
+                  },
+                },
               },
             },
             buttons: {
@@ -325,12 +359,39 @@ export const en = {
           },
         },
       },
+      create_category_summary: {
+        fields: {
+          icon: {
+            label: "Icon",
+            placeholder: "Icon",
+            description: "The icon of the category",
+            tooltip: "The icon of the category",
+            error: "Invalid icon",
+          },
+          name: {
+            label: "Name",
+            placeholder: "Name",
+            description: "The name of the category",
+            tooltip: "The name of the category",
+            error: "Invalid name",
+          },
+          types: {
+            label: "Types",
+            description: "Types for the category",
+          },
+        },
+        buttons: {
+          submit: {
+            label: "Create/Save Category",
+          },
+        },
+      },
       update_stock_riven: {
         fields: {
           minimum_price: {
             label: "Minimum Price",
             placeholder: "Minimum Price",
-            description: "Set 0 for auto price",
+            description: "Set to 0 for automatic pricing",
             error: "Invalid minimum price",
           },
           use_hidden: {
@@ -349,7 +410,7 @@ export const en = {
           minimum_price: {
             label: "Minimum Price",
             placeholder: "Minimum Price",
-            description: "Set 0 for auto price",
+            description: "Set to 0 for automatic pricing",
             error: "Invalid minimum price",
           },
           use_hidden: {
@@ -452,7 +513,7 @@ export const en = {
           user_ids: {
             label: "User IDs",
             placeholder: "User IDs",
-            description: "Discord user's (Numbers) separated by comma",
+            description: "Discord user IDs (numbers) separated by commas",
             error: "Invalid user IDs",
           },
         },
@@ -480,7 +541,7 @@ export const en = {
           password: {
             label: "Password",
             placeholder: "Password",
-            error: "Password should include at least 6 characters",
+            error: "Password must include at least 6 characters",
           },
         },
         buttons: {
@@ -496,6 +557,19 @@ export const en = {
           negative: {
             title: "Negative Attributes",
           },
+        },
+        buttons: {
+          add: "+ Add",
+        },
+      },
+      create_riven_attribute: {
+        fields: {
+          value: {
+            error: "Invalid value",
+          },
+        },
+        buttons: {
+          remove: "Remove",
         },
       },
       create_riven: {
@@ -546,6 +620,13 @@ export const en = {
         },
       },
     },
+    alert_error: {
+      title: "Error in {{component}} component",
+      version: "Version: {{version}}",
+      backtrace: "Location: {{backtrace}}",
+      cause: "Cause: {{cause}}",
+      footer: "If you think this is a bug, please report it to the developer. Thank you!",
+    },
     chat_rome: {
       fields: {
         message: {
@@ -576,6 +657,12 @@ export const en = {
       minutes: "{{minutes}} minutes ago",
       seconds: "{{seconds}} seconds ago",
     },
+    select_item_tags: {
+      tags: {
+        label: "Tags",
+        description: "Select tags to filter items",
+      },
+    },
     auction_list_item: {
       weapon_name: "<blue>{{weapon}} {{mod_name}}<blue>",
       selling_price: "Selling Price: <blue>{{price}}</blue> <plat/>",
@@ -583,7 +670,7 @@ export const en = {
       buyout_price: "Buyout Price: <blue>{{price}}</blue> <plat/>",
       top_bid: "Top Bid: <blue>{{bid}}</blue> <plat/>",
       no_bids: "No Bids",
-      footer: "Mr: <blue>{{mastery_level}}</blue> Ranks: <blue>{{mod_rank}}</blue> Re-rolls: <blue>{{re_rolls}}</blue> Polarity: <polarity/>",
+      footer: "MR: <blue>{{mastery_level}}</blue> Ranks: <blue>{{mod_rank}}</blue> Re-rolls: <blue>{{re_rolls}}</blue> Polarity: <polarity/>",
     },
     stock_item_info: {
       tabs: {
@@ -608,7 +695,7 @@ export const en = {
         bought: "Bought",
         owned: "Owned",
         listed: "Listed Prices History",
-        no_orders: "No orders was found for this item.",
+        no_orders: "No orders were found for this item.",
         no_listed: "No previous listed prices",
       },
       buttons: {
@@ -636,7 +723,7 @@ export const en = {
         status: "Status",
         quantity: "Quantity of goods",
         listed: "Listed Prices History",
-        no_orders: "No orders was found for this item.",
+        no_orders: "No orders were found for this item.",
         no_listed: "No previous listed prices",
       },
       buttons: {
@@ -710,14 +797,14 @@ export const en = {
         highest_price: "Highest Price",
         lowest_price: "Lowest Price",
         listed: "Listed Prices History",
-        no_auctions: "No auctions was found for this riven.",
+        no_auctions: "No auctions were found for this riven.",
         no_listed: "No previous listed prices",
         mastery_rank: "Master Rank",
         rank: "Rank",
       },
     },
     riven_attribute: {
-      effect: "{{value}} {{name}}",
+      effect: "<num_color_tag>{{value}}</num_color_tag> {{name}}",
     },
     tradableItem_list: {
       pagination: "{{start}} - {{end}} / {{totalRecords}}",
@@ -779,18 +866,22 @@ export const en = {
         variant: {
           label: "Variant",
           placeholder: "Select variant...",
+          description: "Please select a variant",
         },
         rank: {
           label: "Rank",
           placeholder: "Select rank...",
+          description: "Please select a rank",
         },
         cyan_stars: {
           label: "Cyan Stars",
           placeholder: "Select cyan stars...",
+          description: "How many cyan stars",
         },
         amber_stars: {
           label: "Amber Stars",
           placeholder: "Select amber stars...",
+          description: "How many amber stars",
         },
       },
     },
@@ -803,17 +894,18 @@ export const en = {
       errors: {
         logout: {
           title: "Logout Error",
-          message: "An error occurred while trying to logout.",
+          message: "An error occurred while trying to log out.",
         },
         update_settings: {
           title: "Update Settings Error",
           message: "An error occurred while trying to update settings.",
+          wf_log_path_not_exist: "Warframe log path does not exist",
         },
       },
       success: {
         logout: {
           title: "Logout Success",
-          message: "You have been successfully logged out.",
+          message: "You have successfully logged out.",
         },
         update_settings: {
           title: "Update Settings Success",
@@ -823,7 +915,7 @@ export const en = {
     },
     clock: {
       gmt: "GMT: <blue>{{time}}</blue>",
-      time_until_midnight: "Time until midnight GMT: <blue>{{time}}</blue>",
+      time_until_midnight: "Time until midnight (GMT): <blue>{{time}}</blue>",
     },
     layout: {
       log_in: {
@@ -834,6 +926,7 @@ export const en = {
           statistics: "Statistics",
           warframe_market: "Warframe Market",
           debug: "Debug",
+          trading_analytics: "Trading Analytics",
           about: "About",
           test: "Test",
         },
@@ -847,29 +940,30 @@ export const en = {
       prompts: {
         start: {
           title: "Warning",
-          message: "Are you sure you want to start live trading this action will delete all orders on wfm there are not blacklisted.",
+          message: "Are you sure you want to start live trading? This action will delete all non-blacklisted orders on WFM.",
           confirm: "Start",
           cancel: "Cancel",
         },
       },
       item: {
         stating: "Starting Item Trading",
-        deleting_orders: "Deleting Orders {{current}}/{{total}}",
+        deleting_orders: "Deleting Orders: {{current}}/{{total}}",
         is_hidden: "Item <red>{{name}}</red> is hidden",
         low_profit_delete: "Deleting Item <red>{{name}}</red> low profit",
         order_limit_reached: "Order limit reached for <red>{{name}}</red>",
         knapsack_delete: "Delete Item <red>{{name}}</red>",
         underpriced_delete: "Delete Underpriced Item <red>{{name}}</red>",
-        created: "Created Buy Order for <blue>{{name}}</blue> at <blue>{{price}}</blue> platinum potential profit <blue>{{profit}}</blue> ",
-        checking_item: "Checking Item <blue>{{name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        created: "Created buy order: <blue>{{name}}</blue> for <blue>{{price}}</blue> platinum | Profit: <blue>{{profit}}</blue>",
+        checking_item: "Checking Item: <blue>{{name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
         no_data: "<dark_red>No data found for item {{name}} {{current}}/{{total}}</dark_red>",
       },
       riven: {
         stating: "Starting Riven Trading",
+        cooldown: "Riven Update Cooldown: <blue>{{seconds}}</blue> seconds",
         riven_hidden: "Riven <red>{{weapon_name}}</red> <red>{{mod_name}}</red> is hidden",
         searching_riven: "Searching Riven <blue>{{weapon_name}} {{mod_name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
         riven_created:
-          "Created Riven <blue>{{weapon_name}} {{mod_name}}</blue> at <blue>{{price}}</blue> platinum potential profit <blue>{{profit}}</blue>",
+          "Created Riven: <blue>{{weapon_name}} {{mod_name}}</blue> at <blue>{{price}}</blue> platinum | Potential profit: <blue>{{profit}}</blue>",
       },
     },
     riven_filter_attribute: {
@@ -877,6 +971,13 @@ export const en = {
         is_required: {
           tooltip: "Is Required",
         },
+      },
+    },
+    premium_overlay: {
+      title: "This feature is only available for premium users <blue>{{tier}}</blue> supports.",
+      buttons: {
+        info: "Info",
+        subscribe: "Subscribe",
       },
     },
   },
@@ -893,8 +994,6 @@ export const en = {
       loading_events: {
         cache: "Loading cache...",
         validation: "Validating cache...",
-        stock_items: "Loading stock items...",
-        stock_rivens: "Loading stock rivens...",
         transactions: "Loading transactions...",
         user_orders: "Loading warframe market orders...",
         user_auctions: "Loading warframe market auctions...",
@@ -908,7 +1007,7 @@ export const en = {
       errors: {
         run: {
           title: "Live Scraper Error",
-          message: "An error occurred in component {{component}} at {{backtrace}} see logs for more information.",
+          message: "An error occurred in component {{component}} at {{backtrace}}. See logs for more information.",
         },
       },
     },
@@ -1001,6 +1100,9 @@ export const en = {
         coffee: {
           title: "Buy me a coffee",
         },
+        patreon: {
+          title: "Support me on Patreon",
+        },
         discord: {
           title: "Discord",
         },
@@ -1013,7 +1115,7 @@ export const en = {
       },
       text: {
         version: "Version: <blue>{{version}}</blue>",
-        disclaimer: "Quantframe is a third party app and is not affiliated with Digital Extremes.",
+        disclaimer: "Quantframe is a third-party app and is not affiliated with Digital Extremes.",
       },
     },
     liveTrading: {
@@ -1048,7 +1150,7 @@ export const en = {
                 tooltip: "Sell manually",
               },
               sell_auto: {
-                tooltip: "Sell as listed price",
+                tooltip: "Sell at listed price",
               },
               hide: {
                 enabled_tooltip: "Hide",
@@ -1070,7 +1172,7 @@ export const en = {
           fields: {
             minimum_price: {
               label: "Minimum Price",
-              description: "Set 0 for auto price",
+              description: "Set to 0 for automatic pricing",
             },
           },
         },
@@ -1079,7 +1181,7 @@ export const en = {
           fields: {
             maximum_price: {
               label: "Maximum Price",
-              description: "Set 0 for auto price",
+              description: "Set to 0 for automatic pricing",
             },
           },
         },
@@ -1224,12 +1326,6 @@ export const en = {
             delete_bulk: {
               tooltip: "Delete Bulk",
             },
-            wts: {
-              tooltip: "Create WTS Message",
-            },
-            selection: {
-              tooltip: "Create Selection Message",
-            },
             create_riven: {
               tooltip: "Create Riven",
             },
@@ -1323,7 +1419,7 @@ export const en = {
             },
             delete_item: {
               title: "Delete Item Error",
-              message: "An error occurred while trying to delete item.",
+              message: "An error occurred while trying to delete the item.",
             },
           },
           success: {
@@ -1350,7 +1446,7 @@ export const en = {
           prompts: {
             delete: {
               title: "Delete Transaction",
-              message: "Are you sure you want to delete transaction {{name}}, this action cannot be undone.",
+              message: "Are you sure you want to delete the transaction {{name}}? This action cannot be undone.",
               confirm: "Yes, delete",
               cancel: "No, cancel",
             },
@@ -1436,56 +1532,10 @@ export const en = {
                 },
               },
             },
-            migrate: {
-              title: "Migrate From 1.0.4",
-              buttons: {
-                migrate: {
-                  title: "Migrate",
-                },
-              },
-              errors: {
-                migrate: {
-                  title: "Migrate Error",
-                  message: "An error occurred while trying to migrate.",
-                },
-              },
-              success: {
-                migrate: {
-                  title: "Migrate Success",
-                  message: "Migrate has been successfully completed.",
-                },
-              },
-            },
-            import_algo_trader: {
-              title: "Import Algo Trader",
-              fields: {
-                db_path: {
-                  label: "File",
-                  placeholder: "Select file...",
-                },
-              },
-              buttons: {
-                import: {
-                  title: "Import",
-                },
-                open_file: {
-                  tooltip: "Open File",
-                },
-              },
-              errors: {
-                import: {
-                  title: "Import Error",
-                  message: "An error occurred while trying to import.",
-                },
-              },
-              success: {
-                import: {
-                  title: "Import Success",
-                  message: "Import has been successfully completed.",
-                },
-              },
-            },
           },
+        },
+        log_parser: {
+          title: "Log Parser",
         },
       },
     },
@@ -1497,17 +1547,17 @@ export const en = {
         refreshing_chat: "Refreshing Chat",
         refreshing_cache: "Refreshing Cache",
         refreshing_transaction: "Refreshing Transaction",
-        refreshing_stock_items: "Refreshing Stock Items",
         refreshing_stock_riven: "Refreshing Stock Rivens",
       },
       errors: {
         login: {
           title: "Login Error",
-          email_not_exist: "Email not exist",
+          email_not_exist: "Email does not exist",
           password_invalid: "Password invalid",
-          message: "An error occurred while trying to login.",
+          message: "An error occurred while trying to log in.",
           banned: "You are banned",
           ban_reason: "<red>Reason: {{reason}}</red>",
+          verification: "You need to verify your account Do this on Warframe Market website",
         },
       },
       success: {
@@ -1517,11 +1567,131 @@ export const en = {
         },
       },
     },
-    error: {
-      title: "Error in {{component}} component",
-      backtrace: "Location: {{backtrace}}",
-      cause: "Cause: {{cause}}",
-      footer: "If you think this is a bug, please report it to the developer. Thank you.",
+    trading_analytics: {
+      tabs: {
+        overview: {
+          title: "Overview",
+          fields: {
+            chart: {
+              label: "Chart Type",
+              placeholder: "Select chart type",
+              most_traded: "Most Traded",
+              profit_margin: "Profit Margin",
+              return_on_investment: "Return on Investment",
+            },
+          },
+          charts: {
+            supply_and_demand: {
+              title: "Supply and Demand Last 15 Days",
+              datasets: {
+                supply: "Supply",
+                demand: "Demand",
+              },
+            },
+            most_traded: {
+              title: "Most Traded Items Last 15 Days",
+            },
+            profit_margin: {
+              title: "Profit Margin Last 15 Days",
+            },
+            return_on_investment: {
+              title: "Return on Investment Last 15 Days",
+            },
+          },
+        },
+        item: {
+          title: "Item",
+          fields: {
+            order_type: {
+              label: "Order Type",
+              description: "Select order type",
+            },
+            tags: {
+              label: "Item Tags",
+              description: "Select tags",
+            },
+            date_range: {
+              placeholder: "Please select date range",
+            },
+          },
+          datatable: {
+            columns: {
+              name: {
+                title: "Name",
+                value: "{{name}} <blue>{{sub_type}}</blue>",
+              },
+              order_type: "Order Type",
+              volume: "Volume",
+              min_price: "Min Price",
+              max_price: "Max Price",
+              avg_price: "Avg Price",
+              moving_avg: "Moving Avg",
+              supply: "Supply",
+              demand: "Demand",
+            },
+          },
+        },
+        user: {
+          title: "User",
+          chart: {
+            title: "User Activity On Warframe Market",
+            datasets: {
+              registered_users: "Registered Users",
+              active_users: "Active Users",
+            },
+          },
+          fields: {
+            group_by: {
+              label: "Group By",
+              placeholder: "Select group by",
+              options: {
+                day: "Day",
+                hour: "Hour",
+              },
+            },
+            date_range: {
+              label: "Date Range",
+              placeholder: "Please select date range",
+            },
+          },
+        },
+        riven: {
+          title: "Riven",
+          fields: {
+            rolled: {
+              label: "Rolled",
+              description: "If the riven is rolled or not",
+              options: {
+                any: "Any",
+                yes: "Yes",
+                no: "No",
+              },
+            },
+            tags: {
+              label: "Item Tags",
+              description: "Select tags",
+            },
+            date_range: {
+              placeholder: "Please select date range",
+            },
+          },
+          datatable: {
+            columns: {
+              name: "Name",
+              volume: "Volume",
+              rolled: {
+                label: "Rolled",
+                yes: "Yes",
+                no: "No",
+              },
+              min_price: "Min Price",
+              max_price: "Max Price",
+              avg_price: "Avg Price",
+              avg_re_rolls: "Avg Re Rolls",
+            },
+          },
+        },
+      },
     },
     banned: {
       wfm: {
@@ -1572,13 +1742,13 @@ export const en = {
           prompts: {
             delete: {
               title: "Delete Order",
-              message: "Are you sure you want to delete order {{name}}, this action cannot be undone.",
+              message: "Are you sure you want to delete the order {{name}}? This action cannot be undone.",
               confirm: "Yes, delete",
               cancel: "No, cancel",
             },
             delete_all: {
               title: "Delete All Orders",
-              message: "Are you sure you want to delete all orders, this action cannot be undone.",
+              message: "Are you sure you want to delete all orders? This action cannot be undone.",
               confirm: "Yes, delete",
               cancel: "No, cancel",
             },
@@ -1665,13 +1835,13 @@ export const en = {
             },
             delete: {
               title: "Delete Auction",
-              message: "Are you sure you want to delete auction, this action cannot be undone.",
+              message: "Are you sure you want to delete the auction? This action cannot be undone.",
               confirm: "Yes, delete",
               cancel: "No, cancel",
             },
             delete_all: {
               title: "Delete All Auctions",
-              message: "Are you sure you want to delete all auctions, this action cannot be undone.",
+              message: "Are you sure you want to delete all auctions? This action cannot be undone.",
               confirm: "Yes, delete",
               cancel: "No, cancel",
             },
@@ -1708,7 +1878,7 @@ export const en = {
               message: "An error occurred while trying to delete auction.",
             },
             delete_all: {
-              title: "Delete All Success",
+              title: "Delete All Error",
               message: "An error occurred while trying to delete all auctions.",
             },
           },
@@ -1730,13 +1900,13 @@ export const en = {
       prompts: {
         delete_all: {
           title: "Delete All chats",
-          message: "Are you sure you want to delete all chats, this action cannot be undone.",
+          message: "Are you sure you want to delete all chats? This action cannot be undone.",
           confirm: "Yes, delete",
           cancel: "No, cancel",
         },
         delete: {
           title: "Delete chat",
-          message: "Are you sure you want to {{name}} chat, this action cannot be undone.",
+          message: "Are you sure you want to delete the chat {{name}}? This action cannot be undone.",
           confirm: "Yes, delete",
           cancel: "No, cancel",
         },

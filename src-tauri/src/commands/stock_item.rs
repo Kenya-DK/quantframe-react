@@ -1,108 +1,102 @@
-use std::sync::{Arc, Mutex};
+use std::{collections::HashMap, sync::Mutex};
 
-use create::CreateStockItem;
-use entity::stock::item::*;
-use entity::sub_type::SubType;
-use eyre::eyre;
-use serde_json::json;
+use entity::{dto::*, stock_item::*};
+use serde_json::{json, Value};
 use service::{StockItemMutation, StockItemQuery};
+use tauri_plugin_dialog::DialogExt;
+use utils::{get_location, group_by, info, Error, LoggerOptions};
+use wf_market::enums::OrderType;
 
-use crate::helper;
-use crate::qf_client::client::QFClient;
-use crate::utils::modules::error;
 use crate::{
+    add_metric,
     app::client::AppState,
-    cache::client::CacheClient,
-    notification::client::NotifyClient,
-    utils::{
-        enums::ui_events::{UIEvent, UIOperationEvent},
-        modules::error::AppError,
-    },
-    wfm_client::{client::WFMClient, enums::order_type::OrderType},
+    handlers::{handle_item_by_entity, handle_wfm_item, stock_item::handle_item},
+    helper::{self},
+    types::{OperationSet, PermissionsFlags},
+    APP, DATABASE,
 };
 
 #[tauri::command]
-pub async fn stock_item_reload(
-    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
-) -> Result<(), AppError> {
-    let app = app.lock()?.clone();
-    let notify = notify.lock()?.clone();
+pub async fn get_stock_item_pagination(
+    query: StockItemPaginationQueryDto,
+) -> Result<PaginatedResult<stock_item::Model>, Error> {
+    let conn = DATABASE.get().unwrap();
+    match StockItemQuery::get_all(conn, query).await {
+        Ok(data) => return Ok(data),
+        Err(e) => return Err(e.with_location(get_location!())),
+    };
+}
 
-    match StockItemQuery::get_all(&app.conn).await {
-        Ok(rivens) => {
-            helper::add_metric("Stock_ItemReload", "manual");
-            notify.gui().send_event_update(
-                UIEvent::UpdateStockItems,
-                UIOperationEvent::Set,
-                Some(json!(rivens)),
-            );
+#[tauri::command]
+<<<<<<< HEAD
+pub async fn get_stock_items(
+    query: entity::stock::item::dto::StockItemPaginationQueryDto,
+    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
+) -> Result<entity::dto::pagination::PaginatedDto<stock_item::Model>, AppError> {
+    let conn = DATABASE.get().unwrap();
+    let wfm = wfm.lock()?.clone();
+
+    match StockItemQuery::get_all_v2(conn, query).await {
+        Ok(mut data) => {
+            helper::add_metric("Stock_ItemGetAll", "manual");
+            for item in data.results.iter_mut() {}
+            return Ok(data);
         }
         Err(e) => {
             let error: AppError = AppError::new_db("StockItemQuery::reload", e);
-            error::create_log_file("command_stock_item_reload.log".to_string(), &error);
+            error::create_log_file("command_stock_item_reload.log", &error);
             return Err(error);
         }
     };
-    Ok(())
+=======
+pub async fn get_stock_item_financial_report(
+    query: StockItemPaginationQueryDto,
+) -> Result<FinancialReport, Error> {
+    let items = get_stock_item_pagination(query).await?;
+    Ok(FinancialReport::from(&items.results))
+>>>>>>> better-backend
 }
+
 #[tauri::command]
-pub async fn stock_item_create(
-    wfm_url: String,
-    bought: i64,
-    minimum_price: Option<i64>,
-    sub_type: Option<SubType>,
-    quantity: i64,
-    is_from_order: bool,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
-    cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
-    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
-) -> Result<stock_item::Model, AppError> {
-    let app = app.lock()?.clone();
-    let cache = cache.lock()?.clone();
-    let notify = notify.lock()?.clone();
-    let wfm = wfm.lock()?.clone();
-    let qf = qf.lock()?.clone();
+pub async fn get_stock_item_status_counts(
+    query: StockItemPaginationQueryDto,
+) -> Result<HashMap<String, usize>, Error> {
+    let items = get_stock_item_pagination(query).await?;
+    Ok(group_by(&items.results, |item| item.status.to_string())
+        .iter()
+        .map(|(status, items)| (status.clone(), items.len()))
+        .collect::<HashMap<_, _>>())
+}
 
-    let from = if is_from_order {
-        "manual_wfm"
-    } else {
-        "manual"
-    };
-
-    let mut created_stock = CreateStockItem::new(
-        wfm_url,
-        sub_type.clone(),
-        Some(bought),
-        minimum_price,
-        quantity,
-        false,
-    );
-    match helper::progress_stock_item(
-        &mut created_stock,
-        "--item_by url_name --item_lang en",
-        "",
-        OrderType::Buy,
-        vec![],
-        from,
-        &app,
-        &cache,
-        &notify,
-        &wfm,
-        &qf,
-    )
-    .await
-    {
-        Ok((stock, _)) => {
-            return Ok(stock);
-        }
+#[tauri::command]
+pub async fn stock_item_create(input: CreateStockItem) -> Result<stock_item::Model, Error> {
+    match handle_item_by_entity(input, "", OrderType::Buy, OperationSet::new()).await {
+        Ok((_, updated_item)) => return Ok(updated_item),
         Err(e) => {
-            error::create_log_file("command_stock_item_create.log".to_string(), &e);
-            return Err(e);
+            return Err(e
+                .with_location(get_location!())
+                .log("stock_item_create.log"));
         }
     }
+<<<<<<< HEAD
+
+    let my_orders = wfm.orders().get_my_orders().await?;
+    let order = my_orders.find_order_by_url_sub_type(
+        &stock_item.wfm_id,
+        OrderType::Sell,
+        stock_item.sub_type.as_ref(),
+    );
+    if order.is_none() {
+        return Ok(stock_item);
+    }
+    // Delete the order on WFM
+    wfm.orders().delete(&order.clone().unwrap().id).await?;
+    notify.gui().send_event_update(
+        UIEvent::UpdateOrders,
+        UIOperationEvent::Delete,
+        Some(json!({ "id": order.clone().unwrap().id })),
+    );
+    Ok(stock_item)
 }
 
 #[tauri::command]
@@ -113,13 +107,10 @@ pub async fn stock_item_update(
     minimum_price: Option<i64>,
     sub_type: Option<SubType>,
     is_hidden: Option<bool>,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
-    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
 ) -> Result<stock_item::Model, AppError> {
-    let app = app.lock()?.clone();
-    let notify = notify.lock()?.clone();
+    let conn = DATABASE.get().unwrap();
 
-    let stock = match StockItemQuery::find_by_id(&app.conn, id).await {
+    let stock = match StockItemQuery::find_by_id(conn, id).await {
         Ok(stock) => stock,
         Err(e) => return Err(AppError::new("StockItemUpdate", eyre!(e))),
     };
@@ -158,241 +149,221 @@ pub async fn stock_item_update(
     }
     new_item.updated_at = chrono::Utc::now();
 
-    match StockItemMutation::update_by_id(&app.conn, new_item.id, new_item.clone()).await {
-        Ok(updated) => {
+    match StockItemMutation::update_by_id(conn, new_item.id, new_item.clone()).await {
+        Ok(_) => {
             helper::add_metric("Stock_ItemUpdate", "manual");
-            notify.gui().send_event_update(
-                UIEvent::UpdateStockItems,
-                UIOperationEvent::CreateOrUpdate,
-                Some(json!(updated)),
-            );
         }
         Err(e) => {
             let error: AppError = AppError::new_db("StockItemMutation::UpdateById", e);
-            error::create_log_file("command_stock_item_update.log".to_string(), &error);
+            error::create_log_file("command_stock_item_update.log", &error);
             return Err(error);
         }
     }
 
     Ok(new_item)
+=======
+>>>>>>> better-backend
 }
+
 #[tauri::command]
-pub async fn stock_item_update_bulk(
-    ids: Vec<i64>,
-    minimum_price: Option<i64>,
-    is_hidden: Option<bool>,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
-    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-) -> Result<i64, AppError> {
-    let app = app.lock()?.clone();
-    let notify = notify.lock()?.clone();
-
-    let total: i64 = ids.len() as i64;
-
-    match StockItemMutation::update_bulk(&app.conn, ids, minimum_price, is_hidden).await {
-        Ok(items) => {
-            helper::add_metric("Stock_ItemUpdateBulk", "manual");
-            notify.gui().send_event_update(
-                UIEvent::UpdateStockItems,
-                UIOperationEvent::Set,
-                Some(json!(items)),
-            );
-        }
+pub async fn stock_item_sell(
+    wfm_url: String,
+    sub_type: Option<SubType>,
+    quantity: i64,
+    price: i64,
+) -> Result<stock_item::Model, Error> {
+    match handle_item(
+        wfm_url,
+        sub_type,
+        quantity,
+        price,
+        "",
+        OrderType::Sell,
+        OperationSet::new(),
+    )
+    .await
+    {
+        Ok((_, updated_item)) => return Ok(updated_item),
         Err(e) => {
-            let error: AppError = AppError::new_db("StockItemMutation::UpdateBulk", e);
-            error::create_log_file("command_stock_item_update_bulk.log".to_string(), &error);
-            return Err(error);
+            return Err(e.with_location(get_location!()).log("stock_item_sell.log"));
         }
     }
-
-    Ok(total)
 }
 
 #[tauri::command]
-pub async fn stock_item_delete_bulk(
-    ids: Vec<i64>,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
-    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-) -> Result<i64, AppError> {
-    let wfm = wfm.lock()?.clone();
-    let app = app.lock()?.clone();
-    let notify = notify.lock()?.clone();
-    helper::add_metric("Stock_ItemDeleteBulk", "manual");
+pub async fn stock_item_delete(id: i64) -> Result<stock_item::Model, Error> {
+    let conn = DATABASE.get().unwrap();
 
-    let mut my_orders = wfm.orders().get_my_orders().await?;
-    let stocks = match StockItemQuery::find_by_ids(&app.conn, ids.clone()).await {
-        Ok(stocks) => stocks,
-        Err(e) => {
-            let error: AppError = AppError::new_db("StockItemQuery::DeleteBulk", e);
-            error::create_log_file("command_stock_item_delete_bulk.log".to_string(), &error);
-            return Err(error);
+    let item = StockItemQuery::find_by_id(conn, id)
+        .await
+        .map_err(|e| e.with_location(get_location!()))?;
+    if item.is_none() {
+        return Err(Error::new(
+            "Command::StockItemDelete",
+            format!("Stock item with ID {} not found", id),
+            get_location!(),
+        ));
+    }
+    let item = item.unwrap();
+
+    handle_wfm_item(&item.wfm_id, &item.sub_type, 1, OrderType::Sell, true)
+        .await
+        .map_err(|e| {
+            e.with_location(get_location!())
+                .log("stock_item_delete.log")
+        })?;
+    add_metric!("stock_item_delete", "manual");
+    match StockItemMutation::delete_by_id(conn, id).await {
+        Ok(_) => {}
+        Err(e) => return Err(e.with_location(get_location!())),
+    }
+
+    Ok(item)
+}
+
+#[tauri::command]
+pub async fn stock_item_delete_multiple(ids: Vec<i64>) -> Result<i64, Error> {
+    let conn = DATABASE.get().unwrap();
+    let mut deleted_count = 0;
+
+    for id in ids {
+        match StockItemMutation::delete_by_id(conn, id).await {
+            Ok(_) => deleted_count += 1,
+            Err(e) => return Err(e.with_location(get_location!())),
         }
+    }
+    Ok(deleted_count)
+}
+
+#[tauri::command]
+pub async fn stock_item_update(input: UpdateStockItem) -> Result<stock_item::Model, Error> {
+    let conn = DATABASE.get().unwrap();
+    match StockItemMutation::update_by_id(conn, input).await {
+        Ok(stock_item) => Ok(stock_item),
+        Err(e) => return Err(e.with_location(get_location!())),
+    }
+}
+
+#[tauri::command]
+pub async fn stock_item_update_multiple(
+    ids: Vec<i64>,
+    input: UpdateStockItem,
+) -> Result<Vec<stock_item::Model>, Error> {
+    let conn = DATABASE.get().unwrap();
+    let mut updated_items = Vec::new();
+
+    for id in ids {
+        let mut update_input = input.clone();
+        update_input.id = id;
+        match StockItemMutation::update_by_id(conn, update_input).await {
+            Ok(stock_item) => updated_items.push(stock_item),
+            Err(e) => return Err(e.with_location(get_location!())),
+        }
+    }
+    Ok(updated_items)
+}
+
+#[tauri::command]
+pub async fn stock_item_get_by_id(id: i64) -> Result<Value, Error> {
+    let conn = DATABASE.get().unwrap();
+    let item = match StockItemQuery::find_by_id(conn, id).await {
+        Ok(stock_item) => {
+            if let Some(item) = stock_item {
+                item
+            } else {
+                return Err(Error::new(
+                    "Command::StockItemGetById",
+                    "Stock item not found",
+                    get_location!(),
+                ));
+            }
+        }
+        Err(e) => return Err(e.with_location(get_location!())),
     };
 
-    let total = stocks.clone().len() as i64;
+    let (mut payload, _, order) =
+        helper::get_item_details(&item.wfm_id, item.sub_type.clone(), OrderType::Sell).await?;
 
+<<<<<<< HEAD
     for stock in stocks {
-        match StockItemMutation::delete_by_id(&app.conn, stock.id).await {
+        match StockItemMutation::delete_by_id(conn, stock.id).await {
             Ok(_) => {}
             Err(e) => {
                 let error: AppError = AppError::new_db("StockItemMutation::DeleteById", e);
-                error::create_log_file("command_stock_item_delete_bulk.log".to_string(), &error);
+                error::create_log_file("command_stock_item_delete_bulk.log", &error);
                 return Err(error);
             }
         }
         // Delete the order on WFM
+        let my_orders = wfm.orders().get_my_orders().await?;
         match my_orders.find_order_by_url_sub_type(
-            &stock.wfm_url,
+            &stock.wfm_id,
             OrderType::Sell,
             stock.sub_type.as_ref(),
         ) {
             Some(order) => {
                 wfm.orders().delete(&order.id).await?;
-                my_orders.delete_order_by_id(OrderType::Sell, &order.id);
             }
             None => {}
         }
+=======
+    if let Some(order) = order {
+        payload["potential_profit"] = json!(order.platinum - item.bought as u32);
+>>>>>>> better-backend
     }
 
-    // Update the UI
-    match StockItemQuery::get_all(&app.conn).await {
-        Ok(rivens) => {
-            notify.gui().send_event_update(
-                UIEvent::UpdateStockItems,
-                UIOperationEvent::Set,
-                Some(json!(rivens)),
-            );
-        }
-        Err(e) => {
-            let error: AppError = AppError::new_db("StockItemQuery::DeleteBulk", e);
-            error::create_log_file("command_stock_item_delete_bulk.log".to_string(), &error);
-            return Err(error);
-        }
-    }
+    payload["stock"] = json!(item);
 
-    notify.gui().send_event_update(
-        UIEvent::UpdateOrders,
-        UIOperationEvent::Set,
-        Some(json!(my_orders.get_all_orders())),
-    );
-    Ok(total)
+    Ok(payload)
 }
-
 #[tauri::command]
-pub async fn stock_item_sell(
-    url: String,
-    sub_type: Option<SubType>,
-    quantity: i64,
-    price: i64,
-    is_from_order: bool,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
-    cache: tauri::State<'_, Arc<Mutex<CacheClient>>>,
-    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-    qf: tauri::State<'_, Arc<Mutex<QFClient>>>,
-) -> Result<stock_item::Model, AppError> {
-    let app = app.lock()?.clone();
-    let notify = notify.lock()?.clone();
-    let cache = cache.lock()?.clone();
-    let wfm = wfm.lock()?.clone();
-    let qf = qf.lock()?.clone();
-
-    let from = if is_from_order {
-        "manual_wfm"
-    } else {
-        "manual"
-    };
-
-    let mut created_stock = CreateStockItem::new(url, sub_type, Some(price), None, quantity, false);
-    match helper::progress_stock_item(
-        &mut created_stock,
-        "--item_by url_name --item_lang en",
-        "",
-        OrderType::Sell,
-        vec![
-            "StockContinueOnError".to_string(),
-            "WFMContinueOnError".to_string(),
-        ],
-        from,
-        &app,
-        &cache,
-        &notify,
-        &wfm,
-        &qf,
-    )
-    .await
-    {
-        Ok((stock, _)) => {
-            return Ok(stock);
-        }
-        Err(e) => {
-            error::create_log_file("command_stock_item_sell.log".to_string(), &e);
-            return Err(e);
-        }
+pub async fn export_stock_item_json(
+    app_state: tauri::State<'_, Mutex<AppState>>,
+    mut query: StockItemPaginationQueryDto,
+) -> Result<String, Error> {
+    let app_state = app_state.lock()?.clone();
+    let app = APP.get().unwrap();
+    if let Err(e) = app_state.user.has_permission(PermissionsFlags::ExportData) {
+        e.log("export_stock_item_json.log");
+        return Err(e);
     }
-}
 
-#[tauri::command]
-pub async fn stock_item_delete(
-    id: i64,
-    app: tauri::State<'_, Arc<Mutex<AppState>>>,
-    notify: tauri::State<'_, Arc<Mutex<NotifyClient>>>,
-    wfm: tauri::State<'_, Arc<Mutex<WFMClient>>>,
-) -> Result<(), AppError> {
-    let app = app.lock()?.clone();
-    let notify = notify.lock()?.clone();
-    let wfm = wfm.lock()?.clone();
-    let stock_item = match StockItemQuery::find_by_id(&app.conn, id).await {
-        Ok(stock) => stock,
-        Err(e) => {
-            let error: AppError = AppError::new_db("StockItemMutation::UpdateById", e);
-            error::create_log_file("command_stock_item_delete.log".to_string(), &error);
-            return Err(error);
-        }
-    };
-
-    if stock_item.is_none() {
-        return Err(AppError::new(
-            "StockItemDelete",
-            eyre!(format!("Stock Item not found: {}", id)),
-        ));
-    }
-    let stock_item = stock_item.unwrap();
-
-    match StockItemMutation::delete_by_id(&app.conn, id).await {
-        Ok(deleted) => {
-            if deleted.rows_affected > 0 {
-                helper::add_metric("Stock_ItemDelete", "manual");
-                notify.gui().send_event_update(
-                    UIEvent::UpdateStockItems,
-                    UIOperationEvent::Delete,
-                    Some(json!({ "id": id })),
+    let conn = DATABASE.get().unwrap();
+    query.pagination.limit = -1; // fetch all
+    match StockItemQuery::get_all(conn, query).await {
+        Ok(stock_items) => {
+            let file_path = app
+                .dialog()
+                .file()
+                .add_filter("Quantframe_Stock_Item", &["json"])
+                .blocking_save_file();
+            if let Some(file_path) = file_path {
+                let json = serde_json::to_string_pretty(&stock_items.results).map_err(|e| {
+                    Error::new(
+                        "Command::ExportStockItemJson",
+                        format!("Failed to serialize stock item to JSON: {}", e),
+                        get_location!(),
+                    )
+                })?;
+                std::fs::write(file_path.as_path().unwrap(), json).map_err(|e| {
+                    Error::new(
+                        "Command::ExportStockItemJson",
+                        format!("Failed to write stock item to file: {}", e),
+                        get_location!(),
+                    )
+                })?;
+                info(
+                    "Command::ExportStockItemJson",
+                    format!("Exported stock item to JSON file: {}", file_path),
+                    &LoggerOptions::default(),
                 );
+                add_metric!("export_stock_item_json", "success");
+                return Ok(file_path.to_string());
             }
+            // do something with the optional file path here
+            // the file path is `None` if the user closed the dialog
+            return Ok("".to_string());
         }
-        Err(e) => {
-            let error: AppError = AppError::new_db("StockItemMutation::DeleteById", e);
-            error::create_log_file("command_stock_item_delete.log".to_string(), &error);
-            return Err(error);
-        }
+        Err(e) => return Err(e.with_location(get_location!())),
     }
-
-    let my_orders = wfm.orders().get_my_orders().await?;
-    let order = my_orders.find_order_by_url_sub_type(
-        &stock_item.wfm_url,
-        OrderType::Sell,
-        stock_item.sub_type.as_ref(),
-    );
-    if order.is_none() {
-        return Ok(());
-    }
-    // Delete the order on WFM
-    wfm.orders().delete(&order.clone().unwrap().id).await?;
-    notify.gui().send_event_update(
-        UIEvent::UpdateOrders,
-        UIOperationEvent::Delete,
-        Some(json!({ "id": order.clone().unwrap().id })),
-    );
-    Ok(())
 }

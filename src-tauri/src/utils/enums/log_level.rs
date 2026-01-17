@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::utils::modules::logger;
+use crate::utils::modules::logger::{self, LoggerOptions};
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum LogLevel {
@@ -13,18 +13,17 @@ pub enum LogLevel {
     Unknown(String),
 }
 impl LogLevel {
-    // Create method to convert `OrderType` to a `&str`
-    // pub fn as_str(&self) -> &str {
-    //     match *self {
-    //         LogLevel::Info => "info",
-    //         LogLevel::Warning => "warning",
-    //         LogLevel::Error => "error",
-    //         LogLevel::Debug => "debug",
-    //         LogLevel::Trace => "trace",
-    //         LogLevel::Critical => "critical",
-    //         LogLevel::Unknown(ref i) => i,
-    //     }
-    // }
+    pub fn as_str(&self) -> &str {
+        match *self {
+            LogLevel::Info => "info",
+            LogLevel::Warning => "warning",
+            LogLevel::Error => "error",
+            LogLevel::Debug => "debug",
+            LogLevel::Trace => "trace",
+            LogLevel::Critical => "critical",
+            LogLevel::Unknown(ref i) => i,
+        }
+    }
 }
 impl Serialize for LogLevel {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -39,10 +38,10 @@ impl Serialize for LogLevel {
             LogLevel::Trace => "trace",
             LogLevel::Critical => "critical",
             LogLevel::Unknown(i) => {
-                logger::critical_file(
+                logger::critical(
                     "OrderMode",
                     format!("Unknown OrderMode: {}", i).as_str(),
-                    Some("enums.log"),
+                    LoggerOptions::default().set_file("enums.log"),
                 );
                 "unknown"
             }

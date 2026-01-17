@@ -1,78 +1,64 @@
-use std::path::PathBuf;
-
-use eyre::eyre;
-
-use crate::{
-    cache::{client::CacheClient, types::cache_pet::CachePet},
-    helper,
-    utils::modules::error::AppError,
+use std::{
+    path::PathBuf,
+    sync::{Arc, Mutex},
 };
 
-#[derive(Clone, Debug)]
+use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions};
+
+use crate::cache::{modules::LanguageModule, *};
+
+#[derive(Debug)]
 pub struct PetModule {
-    pub client: CacheClient,
-    // debug_id: String,
-    component: String,
     path: PathBuf,
-    pub items: Vec<CachePet>,
+    items: Mutex<Vec<CachePet>>,
 }
 
 impl PetModule {
-    pub fn new(client: CacheClient) -> Self {
-        PetModule {
-            client,
-            // debug_id: "ch_client_auction".to_string(),
-            component: "Pet".to_string(),
-            path: PathBuf::from("items/Pets.json"),
-            items: Vec::new(),
+    pub fn new(client: Arc<CacheState>) -> Arc<Self> {
+        Arc::new(Self {
+            path: client.base_path.join("items/Pets.json"),
+            items: Mutex::new(Vec::new()),
+        })
+    }
+    pub fn load(&self, language: &LanguageModule) -> Result<(), Error> {
+        match read_json_file_optional::<Vec<CachePet>>(&self.path) {
+            Ok(mut items) => {
+                for item in items.iter_mut() {
+                    item.name = language
+                        .translate(&item.unique_name, crate::cache::modules::LanguageKey::Name)
+                        .unwrap_or(item.name.clone());
+                }
+                let mut items_lock = self.items.lock().unwrap();
+                *items_lock = items;
+                info(
+                    "Cache:Pet:load",
+                    format!("Loaded {} Pet items", items_lock.len()),
+                    &LoggerOptions::default(),
+                );
+            }
+            Err(e) => return Err(e.with_location(get_location!())),
         }
-    }
-    fn get_component(&self, component: &str) -> String {
-        format!("{}:{}", self.component, component)
-    }
-    fn update_state(&self) {
-        self.client.update_pet_module(self.clone());
-    }
-
-    pub fn load(&mut self) -> Result<(), AppError> {
-        let content = self.client.read_text_from_file(&self.path)?;
-        let items: Vec<CachePet> = serde_json::from_str(&content).map_err(|e| {
-            AppError::new(
-                self.get_component("Load").as_str(),
-                eyre!(format!("Failed to parse PetModule from file: {}", e)),
-            )
-        })?;
-        self.items = items;
-        self.update_state();
         Ok(())
     }
-    pub fn get_by(&self, input: &str, by: &str) -> Result<Option<CachePet>, AppError> {
-        let items = self.items.clone();
-        let args = match helper::validate_args(by, vec!["--item_by"]) {
-            Ok(args) => args,
-            Err(e) => return Err(e),
-        };
-        let mode = args.get("--item_by").unwrap();
-        let case_insensitive = args.get("--ignore_case").is_some();
-        // let lang = args.get("--item_lang").unwrap_or(&"en".to_string());
-        let remove_string = args.get("--remove_string");
-
-        let item = if mode == "name" {
-            items
+    pub fn collect_all_items(&self) -> Vec<CacheItemBase> {
+        let items_lock = self.items.lock().unwrap();
+        let mut items: Vec<CacheItemBase> = Vec::new();
+        items.append(
+            &mut items_lock
                 .iter()
-                .find(|x| helper::is_match(&x.name, input, case_insensitive, remove_string))
-                .cloned()
-        } else if mode == "unique_name" {
-            items
-                .iter()
-                .find(|x| helper::is_match(&x.unique_name, input, case_insensitive, remove_string))
-                .cloned()
-        } else {
-            return Err(AppError::new(
-                &self.get_component("GetBy"),
-                eyre!("Invalid by value: {}", by),
-            ));
-        };
-        Ok(item)
+                .map(|item| item.convert_to_base_item())
+                .collect(),
+        );
+        items
+    }
+    /**
+     * Creates a new `PetModule` from an existing one, sharing the client.
+     * This is useful for cloning modules when the client state changes.
+     */
+    pub fn from_existing(old: &PetModule) -> Arc<Self> {
+        Arc::new(Self {
+            path: old.path.clone(),
+            items: Mutex::new(old.items.lock().unwrap().clone()),
+        })
     }
 }

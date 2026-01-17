@@ -1,0 +1,55 @@
+use std::sync::{Arc, Weak};
+
+use reqwest::Method;
+
+use crate::{
+    client::Client,
+    enums::{ApiResponse, ResponseFormat},
+    errors::ApiError,
+    types::*,
+};
+
+#[derive(Debug)]
+pub struct AlertRoute {
+    client: Weak<Client>,
+}
+
+impl AlertRoute {
+    /**
+     * Creates a new `AlertRoute` with an empty Authentication list.
+     * The `client` parameter is an `Arc<Client<State>>` that allows the route
+     */
+    pub fn new(client: Arc<Client>) -> Arc<Self> {
+        Arc::new(Self {
+            client: Arc::downgrade(&client),
+        })
+    }
+    pub async fn get_alerts(&self) -> Result<Paginated<Alert>, ApiError> {
+        let client = self.client.upgrade().expect("Client should not be dropped");
+
+        match client
+            .as_ref()
+            .call_api::<Paginated<Alert>>(
+                Method::GET,
+                "/alert?page=1&limit=25&enabled=true",
+                None,
+                None,
+                ResponseFormat::Json,
+            )
+            .await
+        {
+            Ok((ApiResponse::Json(alerts), _, _)) => Ok(alerts),
+            Err(e) => return Err(e),
+            _ => Err(ApiError::Unknown("Unexpected response format".to_string())),
+        }
+    }
+    /**
+     * Creates a new `AlertRoute` from an existing one, sharing the client.
+     * This is useful for cloning routes when the client state changes.
+     */
+    pub fn from_existing(_old: &AlertRoute, client: Arc<Client>) -> Arc<Self> {
+        Arc::new(Self {
+            client: Arc::downgrade(&client),
+        })
+    }
+}

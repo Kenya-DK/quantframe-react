@@ -1,0 +1,14 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Rust Project",
+      "type": "shell",
+      "command": "cargo",
+      "args": ["build"],
+      "group": "build",
+      "problemMatcher": ["$rustc"],
+      "isBackground": false
+    }
+  ]
+}
