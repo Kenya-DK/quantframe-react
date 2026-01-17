@@ -40,7 +40,7 @@ export namespace WFMarketTypes {
     item_name: string;
     image_url: string;
     lowest_price: number;
-    operation: string[];
+    operations: string[];
     order_id: string;
     orders: Order[];
     profit: number;

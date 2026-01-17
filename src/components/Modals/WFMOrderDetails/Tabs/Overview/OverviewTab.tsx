@@ -36,7 +36,7 @@ export function OverviewTab({ value }: OverviewTabProps) {
             value={useTranslateStockStatus(order_info?.type || "")}
             readOnly
           />
-          <TextInput label={useTranslateFields("operations")} value={order_info?.properties?.operation.join(", ") || "N/A"} readOnly />
+          <TextInput label={useTranslateFields("operations")} value={order_info?.properties?.operations.join(", ") || "N/A"} readOnly />
         </Group>
         <Group grow>
           <TextInput label={useTranslateFields("platinum")} value={order_info?.platinum || "N/A"} readOnly />

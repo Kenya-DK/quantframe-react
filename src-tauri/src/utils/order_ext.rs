@@ -41,6 +41,7 @@ pub struct OrderDetails {
 
     // Default implementation for string
     #[serde(rename = "operation")]
+    #[serde(flatten)]
     #[serde(default)]
     pub operations: OperationSet,
 
