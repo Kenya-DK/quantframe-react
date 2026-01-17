@@ -1,0 +1,197 @@
+.modalContainer {
+  position: relative;
+  overflow: hidden;
+}
+
+.backgroundPattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(255, 66, 77, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 123, 84, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(255, 66, 77, 0.05) 0%, transparent 50%);
+  animation: float 6s ease-in-out infinite;
+}
+
+.contentStack {
+  position: relative;
+  z-index: 1;
+}
+
+.headerGroup {
+  animation: slideInFromTop 0.8s ease-out;
+}
+
+.patreonIcon {
+  animation: pulse 2s ease-in-out infinite;
+  box-shadow: 0 0 20px rgba(255, 66, 77, 0.4);
+}
+
+.mainTitle {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ff424d, #ff7b54, #ffaa6b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  animation: slideInFromTop 0.8s ease-out 0.2s both;
+}
+
+.premiumBadge {
+  animation: slideInFromTop 0.8s ease-out 0.4s both;
+  box-shadow: 0 4px 12px rgba(255, 66, 77, 0.3);
+}
+
+.descriptionCard {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 66, 77, 0.2);
+  animation: slideInFromBottom 0.8s ease-out 0.6s both;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 66, 77, 0.1);
+}
+
+.description {
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.gradientDivider {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #ff424d, #ff7b54, transparent);
+  border: none;
+}
+
+.primaryButton {
+  background: linear-gradient(135deg, #ff424d, #ff7b54);
+  border: none;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 12px 32px;
+  border-radius: 12px;
+  box-shadow:
+    0 4px 15px rgba(255, 66, 77, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  animation: slideInFromLeft 0.8s ease-out 0.8s both;
+
+  &:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow:
+      0 8px 25px rgba(255, 66, 77, 0.6),
+      0 0 0 1px rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, #ff324d, #ff6b54);
+  }
+
+  &:active {
+    transform: translateY(0) scale(1.01);
+  }
+}
+
+.linkText {
+  transition: all 0.2s ease;
+  animation: slideInFromRight 0.8s ease-out 1s both;
+}
+
+.secondaryButton {
+  color: #ff7b54;
+  transition: all 0.2s ease;
+  animation: slideInFromRight 0.8s ease-out 1s both;
+
+  &:hover {
+    background: rgba(255, 123, 84, 0.1);
+    transform: translateX(3px);
+  }
+}
+
+/* Animations */
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(255, 66, 77, 0.4);
+  }
+
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(255, 66, 77, 0.6);
+  }
+}
+
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Legacy support */
+.patreonButton {
+  background: linear-gradient(90deg, #ff424d, #ff7b54);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+  box-shadow: 0 0 10px rgba(255, 66, 77, 0.6);
+
+  &:hover {
+    transform: scale(1.01);
+    box-shadow: 0 0 15px rgba(238, 28, 39, 0.8);
+  }
+}

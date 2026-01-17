@@ -1,89 +1,64 @@
-use std::path::PathBuf;
-
-use eyre::eyre;
-
-use crate::{
-    cache::{
-        client::CacheClient,
-        types::{cache_item_base::CacheItemBase, cache_relics::CacheRelics},
-    },
-    helper,
-    utils::modules::error::AppError,
+use std::{
+    path::PathBuf,
+    sync::{Arc, Mutex},
 };
-#[derive(Clone, Debug)]
+
+use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions};
+
+use crate::cache::{modules::LanguageModule, *};
+
+#[derive(Debug)]
 pub struct RelicsModule {
-    pub client: CacheClient,
-    component: String,
     path: PathBuf,
-    pub relics: Vec<CacheRelics>,
+    items: Mutex<Vec<CacheRelics>>,
 }
 
 impl RelicsModule {
-    pub fn new(client: CacheClient) -> Self {
-        RelicsModule {
-            client,
-            component: "RelicsModule".to_string(),
-            path: PathBuf::from("items/Relics.json"),
-            relics: Vec::new(),
+    pub fn new(client: Arc<CacheState>) -> Arc<Self> {
+        Arc::new(Self {
+            path: client.base_path.join("items/Relics.json"),
+            items: Mutex::new(Vec::new()),
+        })
+    }
+    pub fn load(&self, language: &LanguageModule) -> Result<(), Error> {
+        match read_json_file_optional::<Vec<CacheRelics>>(&self.path) {
+            Ok(mut items) => {
+                for item in items.iter_mut() {
+                    item.name = language
+                        .translate(&item.unique_name, crate::cache::modules::LanguageKey::Name)
+                        .unwrap_or(item.name.clone());
+                }
+                let mut items_lock = self.items.lock().unwrap();
+                *items_lock = items;
+                info(
+                    "Cache:Relics:load",
+                    format!("Loaded {} Relic items", items_lock.len()),
+                    &LoggerOptions::default(),
+                );
+            }
+            Err(e) => return Err(e.with_location(get_location!())),
         }
+        Ok(())
     }
-    fn get_component(&self, component: &str) -> String {
-        format!("{}:{}", self.component, component)
-    }
-    fn update_state(&self) {
-        self.client.update_relics_module(self.clone());
-    }
-    pub fn get_all(&self) -> Vec<CacheItemBase> {
+    pub fn collect_all_items(&self) -> Vec<CacheItemBase> {
+        let items_lock = self.items.lock().unwrap();
         let mut items: Vec<CacheItemBase> = Vec::new();
         items.append(
-            &mut self
-                .relics
+            &mut items_lock
                 .iter()
                 .map(|item| item.convert_to_base_item())
                 .collect(),
         );
         items
     }
-    pub fn load(&mut self) -> Result<(), AppError> {
-        let content = self.client.read_text_from_file(&self.path)?;
-        let relics: Vec<CacheRelics> = serde_json::from_str(&content).map_err(|e| {
-            AppError::new(
-                self.get_component("Load").as_str(),
-                eyre!(format!("Failed to parse ArcaneModule from file: {}", e)),
-            )
-        })?;
-        self.relics = relics;
-        self.update_state();
-        Ok(())
-    }
-
-    pub fn get_by(&self, input: &str, by: &str) -> Result<Option<CacheRelics>, AppError> {
-        let items = self.relics.clone();
-        let args = match helper::validate_args(by, vec!["--item_by"]) {
-            Ok(args) => args,
-            Err(e) => return Err(e),
-        };
-        let mode = args.get("--item_by").unwrap();
-        let case_insensitive = args.get("--ignore_case").is_some();
-        // let lang = args.get("--item_lang").unwrap_or(&"en".to_string());
-        let remove_string = args.get("--remove_string");
-
-        let item = if mode == "name" {
-            items
-                .iter()
-                .find(|x| helper::is_match(&x.name, input, case_insensitive, remove_string))
-                .cloned()
-        } else if mode == "unique_name" {
-            items
-                .iter()
-                .find(|x| helper::is_match(&x.unique_name, input, case_insensitive, remove_string))
-                .cloned()
-        } else {
-            return Err(AppError::new(
-                &self.get_component("GetBy"),
-                eyre!("Invalid by value: {}", by),
-            ));
-        };
-        Ok(item)
+    /**
+     * Creates a new `RelicsModule` from an existing one, sharing the client.
+     * This is useful for cloning modules when the client state changes.
+     */
+    pub fn from_existing(old: &RelicsModule) -> Arc<Self> {
+        Arc::new(Self {
+            path: old.path.clone(),
+            items: Mutex::new(old.items.lock().unwrap().clone()),
+        })
     }
 }

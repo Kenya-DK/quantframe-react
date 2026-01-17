@@ -1,21 +1,24 @@
 import { TauriClient } from "..";
-import { UserStatus, TauriTypes } from "$types";
+import { TauriTypes } from "$types";
 export class AuthModule {
+  private permissionsCache: { [key in TauriTypes.PermissionsFlags]?: boolean } = {};
   constructor(private readonly client: TauriClient) {}
 
-  async login(email: string, password: string): Promise<TauriTypes.User> {
-    const [err, rep] = await this.client.sendInvoke<TauriTypes.User>("auth_login", { email, password });
-    if (err) throw err;
-    return rep;
+  async me(): Promise<TauriTypes.User> {
+    return await this.client.sendInvoke<TauriTypes.User>("auth_me");
   }
 
-  async set_status(status: UserStatus) {
-    const [err] = await this.client.sendInvoke("auth_set_status", { status });
-    if (err) throw err;
+  async login(email: string, password: string): Promise<TauriTypes.User | undefined> {
+    return await this.client.sendInvoke<TauriTypes.User>("auth_login", { email, password });
   }
+  async logout(): Promise<TauriTypes.User> {
+    return await this.client.sendInvoke<TauriTypes.User>("auth_logout");
+  }
+  async hasPermission(flag: TauriTypes.PermissionsFlags): Promise<boolean> {
+    if (this.permissionsCache[flag] !== undefined) return this.permissionsCache[flag]!;
 
-  async logout() {
-    const [err] = await this.client.sendInvoke("auth_logout");
-    if (err) throw err;
+    const result = await this.client.sendInvoke<boolean>("auth_has_permission", { flag });
+    this.permissionsCache[flag] = result;
+    return result;
   }
 }

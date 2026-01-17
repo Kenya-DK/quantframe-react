@@ -22,7 +22,7 @@
       "@utils/*": ["src/utils/*"],
       "@api/*": ["src/api/*"],
       "$types*": ["src/types/index.ts"],
-      "@icons/*": ["src/icons/*"]
+      "@icons": ["src/icons/index.ts"]
     },
     /* Linting */
     "strict": true,

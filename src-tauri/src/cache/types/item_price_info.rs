@@ -1,4 +1,4 @@
-use entity::sub_type::SubType;
+use entity::dto::SubType;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -9,6 +9,12 @@ pub struct ItemPriceInfo {
     #[serde(rename = "wfm_id")]
     pub wfm_id: String,
 
+<<<<<<< HEAD
+=======
+    #[serde(rename = "uuid")]
+    pub uuid: String,
+
+>>>>>>> better-backend
     #[serde(rename = "volume")]
     pub volume: f64,
 
@@ -49,6 +55,10 @@ impl Default for ItemPriceInfo {
         ItemPriceInfo {
             wfm_url: "".to_string(),
             wfm_id: "".to_string(),
+<<<<<<< HEAD
+=======
+            uuid: "".to_string(),
+>>>>>>> better-backend
             volume: 0.0,
             max_price: 0.0,
             min_price: 0.0,

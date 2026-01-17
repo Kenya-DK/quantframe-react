@@ -1,5 +1,14 @@
 pub mod client;
+pub use client::*;
+
 pub mod enums;
-pub mod modules;
-pub mod structs;
+pub use enums::*;
+
+pub mod events;
+pub use events::*;
+
 pub mod types;
+pub use types::*;
+
+pub mod modules;
+pub use modules::*;

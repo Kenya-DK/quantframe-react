@@ -4,30 +4,21 @@ import { useForm } from "@mantine/form";
 import { TauriTypes } from "$types";
 import api from "@api/index";
 import { useQuery } from "@tanstack/react-query";
-import { groupBy } from "@utils/helper";
-import { upperFirst } from "@mantine/hooks";
-import { RivenPreview } from "@components/RivenPreview";
+import { RivenPreview } from "@components/DataDisplay/RivenPreview";
 import { CreateRivenAttributes } from "../CreateRivenAttributes";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import faPolarityMadurai from "@icons/faPolarityMadurai";
-import faPolarityNaramon from "@icons/faPolarityNaramon";
-import faPolarityVazarin from "@icons/faPolarityVazarin";
+import { SelectRivenWeapon } from "../SelectRivenWeapon";
+import { getPolarityIcon } from "@icons";
 
 export type CreateRivenProps = {
   value?: TauriTypes.StockRiven;
   onSubmit: (values: TauriTypes.StockRiven) => void;
 };
 
-const icons: Record<string, React.ReactNode> = {
-  madurai: <FontAwesomeIcon icon={faPolarityMadurai} />,
-  naramon: <FontAwesomeIcon icon={faPolarityNaramon} />,
-  vazarin: <FontAwesomeIcon icon={faPolarityVazarin} />,
-};
-
 const renderSelectOption: SelectProps["renderOption"] = ({ option, checked }) => (
   <Group flex="1" gap="xs" style={{ fontWeight: checked ? 700 : 400 }}>
-    {icons[option.value]}
+    {<FontAwesomeIcon icon={getPolarityIcon(option.value)} />}
     {option.label}
   </Group>
 );
@@ -54,19 +45,6 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
     queryKey: ["cache_riven_attributes"],
     queryFn: () => api.cache.getRivenAttributes(),
   });
-
-  // Helper functions
-  const getAvailableWeapons = () => {
-    if (!weapons) return [];
-
-    const group = groupBy("wfm_group", weapons);
-    return Object.entries(group).map(([key, value]) => {
-      return {
-        group: upperFirst(key),
-        items: value.map((item) => ({ label: item.name, value: item.wfm_url_name })),
-      };
-    });
-  };
 
   // User form
   const form = useForm({
@@ -152,6 +130,7 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
           </Grid.Col>
           <Grid.Col span={8}>
             <Group gap="md" grow>
+<<<<<<< HEAD
               <Select
                 searchable
                 required
@@ -160,6 +139,11 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
                 value={form.values.wfm_weapon_url}
                 onChange={(event) => form.setFieldValue("wfm_weapon_url", event || "")}
                 data={getAvailableWeapons()}
+=======
+              <SelectRivenWeapon
+                value={form.values.wfm_weapon_url || ""}
+                onChange={(item) => form.setFieldValue("wfm_weapon_url", item.wfm_url_name)}
+>>>>>>> better-backend
               />
             </Group>
             <Group>
@@ -241,7 +225,7 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
                 label={useTranslateFormFields("polarity.label")}
                 value={form.values.polarity}
                 onChange={(event) => form.setFieldValue("polarity", event || "")}
-                leftSection={icons[form.values.polarity]}
+                leftSection={<FontAwesomeIcon icon={getPolarityIcon(form.values.polarity)} />}
                 data={[
                   { value: "madurai", label: "Madurai" },
                   { value: "naramon", label: "Naramon" },

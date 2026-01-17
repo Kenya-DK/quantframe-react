@@ -6,8 +6,8 @@ use super::{cache_item_base::CacheItemBase, cache_item_component::CacheItemCompo
 pub struct CacheWarframe {
     #[serde(rename = "category")]
     pub category: String,
-    #[serde(rename = "components")]
-    pub components: Option<Vec<CacheItemComponent>>,
+    #[serde(rename = "components", default)]
+    pub components: Vec<CacheItemComponent>,
     #[serde(rename = "name")]
     pub name: String,
     #[serde(rename = "wfm_item_url")]

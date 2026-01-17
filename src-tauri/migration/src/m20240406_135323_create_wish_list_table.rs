@@ -74,6 +74,7 @@ pub enum WishList {
     ItemUniqueName,
     SubType,
     Quantity,
+    MinimumPrice,
     MaximumPrice,
     ListPrice,
     PriceHistory,

@@ -1,0 +1,28 @@
+[package]
+name = "qf_api"
+version = "0.1.11"
+edition = "2024"
+description = "A small Rust library to interact with Warframe Market APIs"
+repository = "https://github.com/KibbeWater/wf-market"
+license = "GPL-3.0-only"
+homepage = "https://github.com/KibbeWater/wf-market"
+readme = "README.md"
+authors = ["KibbeWater <35224538+KibbeWater@users.noreply.github.com>"]
+keywords = ["warframe", "market"]
+
+[dependencies]
+tokio = {version =  "1.45.1", features = ["full", "rt-multi-thread"] }
+serde = {version =  "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+serde_urlencoded = "0.7.1"
+reqwest = { version = "0.12.19", features = ["json"] }
+rand = "0.9.1"
+tokio-tungstenite = { version = "0.26.2", features = ["native-tls"] }
+futures-util = "0.3.31"
+uuid = {version = "1.17.0", features = ["v4"] }
+chrono = { version = "0.4.41", features = ["serde"] }
+zip = "0.6"
+governor = { version = "0.10.0", features = ["std"] }
+
+[dev-dependencies]
+dotenv = "0.15"

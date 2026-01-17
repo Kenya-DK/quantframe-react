@@ -4,7 +4,7 @@ import { TauriTypes } from "$types";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
-import { useTranslateComponent } from "@hooks/useTranslate.hook";
+import { useTranslateForms } from "@hooks/useTranslate.hook";
 
 export type RivenFilterAttributeProps = {
   value: TauriTypes.StockRivenFilterAttribute;
@@ -24,14 +24,14 @@ export function RivenFilterAttribute({ value, onChange: onChanges }: RivenFilter
     if (data) {
       const map: { [key: string]: string } = {};
       data.forEach((item) => {
-        map[item.url_name] = item.effect;
+        map[item.url_name] = item.short;
       });
       setNameMap(map);
     }
   }, [data]);
   // Translate general
   const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateComponent(`riven_filter_attribute.${key}`, { ...context }, i18Key);
+    useTranslateForms(`riven_filter_attribute.${key}`, { ...context }, i18Key);
   const useTranslateFormFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForm(`fields.${key}`, { ...context }, i18Key);
   return (

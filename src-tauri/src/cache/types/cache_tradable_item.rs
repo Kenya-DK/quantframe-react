@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CacheTradableItem {
     #[serde(rename = "name")]
@@ -36,6 +37,10 @@ pub struct CacheTradableItem {
     #[serde(rename = "max_rank")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_rank: Option<i64>,
+
+    #[serde(rename = "bulk_tradable")]
+    #[serde(default)]
+    pub bulk_tradable: bool,
 
     #[serde(rename = "sub_type")]
     #[serde(skip_serializing_if = "Option::is_none")]

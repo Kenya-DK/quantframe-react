@@ -28,9 +28,10 @@ export function RivenFilter({ value, onSubmit }: RivenFilterProps) {
     validate: {},
   });
   return (
-    <Box w={"100%"}>
+    <Box w={"100%"} p={"sm"}>
       <form
         onSubmit={form.onSubmit((data) => {
+          console.log("RivenFilter onSubmit", data);
           onSubmit(data);
         })}
       >
@@ -47,23 +48,15 @@ export function RivenFilter({ value, onSubmit }: RivenFilterProps) {
               <MinMax
                 label={useTranslateFormFields("re_rolls.label")}
                 value={form.values.re_rolls}
-                onChange={(re_rolls) => {
-                  form.setFieldValue("re_rolls", re_rolls);
-                }}
+                onChange={(re_rolls) => form.setFieldValue("re_rolls", re_rolls)}
               />
-              <MinMax
-                label={useTranslateFormFields("rank.label")}
-                value={form.values.rank}
-                onChange={(rank) => {
-                  form.setFieldValue("rank", rank);
-                }}
-              />
+              <MinMax label={useTranslateFormFields("rank.label")} value={form.values.rank} onChange={(rank) => form.setFieldValue("rank", rank)} />
               <MinMax
                 label={useTranslateFormFields("mastery_rank.label")}
+                maxAllowed={16}
+                minAllowed={7}
                 value={form.values.mastery_rank}
-                onChange={(mastery_rank) => {
-                  form.setFieldValue("mastery_rank", mastery_rank);
-                }}
+                onChange={(mastery_rank) => form.setFieldValue("mastery_rank", mastery_rank)}
               />
             </Grid.Col>
             <Grid.Col span={6}>

@@ -1,21 +1,17 @@
-use entity::sub_type::SubType;
+use std::fmt::Display;
+
+use entity::dto::SubType;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use utils::*;
 
 use crate::{
-    cache::types::cache_tradable_item::CacheTradableItem,
-    log_parser::enums::trade_item_type::TradeItemType,
-    utils::modules::{
-        error::AppError,
-        states,
-        trading_helper::{
-            combine_and_detect_match, combine_and_detect_multiple_matches, contains_at_least,
-            contains_unicode, parse_quantity, tags_to_type,
-        },
-    },
+    cache::types::CacheTradableItem,
+    log_parser::{log, TradeItemType},
+    utils::modules::states,
 };
 
-use super::trade_detection::{DetectionStatus, TradeDetection};
+use super::trade_detection::*;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct TradeItem {
@@ -39,8 +35,29 @@ pub struct TradeItem {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "error")]
     pub error: Option<(String, Value)>,
+
+    // Extra properties
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub properties: Option<serde_json::Value>,
 }
 impl TradeItem {
+    pub fn new(
+        unique_name: impl Into<String>,
+        quantity: i64,
+        item_type: TradeItemType,
+        sub_type: Option<SubType>,
+    ) -> TradeItem {
+        let unique_name = unique_name.into();
+        TradeItem {
+            raw: unique_name.clone(),
+            quantity,
+            unique_name,
+            item_type,
+            sub_type,
+            error: None,
+            properties: None,
+        }
+    }
     pub fn from_string(
         line: &str,
         next_line: &str,
@@ -51,11 +68,11 @@ impl TradeItem {
         let mut raw = line.to_owned();
 
         // Check if the item is platinum
-        let (is_platinum_combined, is_platinum_status) =
-            detection.is_platinum(&line, &next_line, false, false);
+        let (is_currency_combined, is_currency_status, is_currency_type) =
+            detection.is_currency(&line, &next_line, false, false);
 
-        if is_platinum_status.is_combined() {
-            line = is_platinum_combined.clone();
+        if is_currency_status.is_combined() {
+            line = is_currency_combined.clone();
             raw = line.clone();
             next_line = "".to_string();
         }
@@ -75,9 +92,9 @@ impl TradeItem {
             raw = line.clone();
         }
 
-        let status = if last_item_status.is_combined() || is_platinum_status.is_combined() {
+        let status = if last_item_status.is_combined() || is_currency_status.is_combined() {
             DetectionStatus::Combined
-        } else if last_item_status.is_found() || is_platinum_status.is_found() {
+        } else if last_item_status.is_found() || is_currency_status.is_found() {
             DetectionStatus::Line
         } else {
             DetectionStatus::None
@@ -90,15 +107,15 @@ impl TradeItem {
             raw,
             quantity,
             unique_name: "".to_string(),
-            item_type: if is_platinum_status.is_found() {
-                TradeItemType::Platinum
-            } else {
-                TradeItemType::Unknown
-            },
+            item_type: is_currency_type,
             sub_type: None,
             error: None,
+            properties: None,
         };
-        if item.item_type == TradeItemType::Platinum {
+        if matches!(
+            item.item_type,
+            TradeItemType::Platinum | TradeItemType::Credits
+        ) {
             return (status, item);
         }
         // Validate the item
@@ -163,7 +180,7 @@ impl TradeItem {
         &mut self,
         line: &str,
         next_line: &str,
-    ) -> Result<DetectionStatus, AppError> {
+    ) -> Result<DetectionStatus, Error> {
         // Check if the item is a mod eg. "Serration (RIVEN RANK 0)"
         if let Some((combine, status)) = self.detect_variant_or_rank(line, next_line, "(", ")") {
             let (name_part, rank_str) = Self::split_name_and_enclosed(&combine, '(', ')');
@@ -189,21 +206,33 @@ impl TradeItem {
             }
             if combine.starts_with("Legendary Core") {
                 self.is_trade_item("Legendary Fusion Core", next_line)?;
-                println!("Detected Legendary Fusion Core: {}", combine);
                 self.item_type = TradeItemType::FusionCore;
                 self.sub_type = None; // Legendary Fusion Core is a special case
             } else if combine.contains("(RIVEN RANK ") {
                 if combine.contains(" Riven Mod")
-                    && self
-                        .is_trade_item(&format!("{name_part} (Veiled)"), next_line)?
-                        .is_found()
+                    || combine.contains(" RIVEN MOD")
+                        && self
+                            .is_trade_item(&format!("{name_part} (Veiled)"), next_line)?
+                            .is_found()
                 {
                     self.item_type = TradeItemType::RivenVeiled;
                 } else if let Some(pos) = name_part.rfind(' ') {
+                    let ch = states::cache_client().expect("Cache not found");
                     let (weapon, att) = name_part.split_at(pos);
-                    self.item_type = TradeItemType::RivenUnVeiled;
-                    self.unique_name =
-                        format!("/WF_Special/Other/Riven/{}/{}", weapon.trim(), att.trim());
+
+                    match ch.riven().get_weapon_by(weapon) {
+                        Ok(info) => {
+                            self.raw = info.wfm_url_name;
+                            self.item_type = TradeItemType::RivenUnVeiled;
+                        }
+                        Err(e) => {
+                            let msg = e.to_string();
+                            log(&msg, None);
+                            self.error = Some((msg.clone(), Value::Null));
+                            return Ok(DetectionStatus::None);
+                        }
+                    }
+                    self.unique_name = att.trim().to_string();
                 }
             } else {
                 self.is_trade_item(&name_part, next_line)?;
@@ -223,7 +252,7 @@ impl TradeItem {
         Ok(DetectionStatus::None)
     }
 
-    pub fn is_arcane(&mut self, line: &str, next_line: &str) -> Result<DetectionStatus, AppError> {
+    pub fn is_arcane(&mut self, line: &str, next_line: &str) -> Result<DetectionStatus, Error> {
         let (combine, status) = contains_unicode(&line, next_line, false);
 
         if !status.is_found() {
@@ -236,34 +265,65 @@ impl TradeItem {
         }
         return Ok(DetectionStatus::None);
     }
+    pub fn is_imprint(&mut self, line: &str, next_line: &str) -> Result<DetectionStatus, Error> {
+        // Imprint of |NAME|
+        let imprint_open = "imprint of ";
+        let (stripped, status) = strip_prefix(
+            imprint_open,
+            &line.to_lowercase(),
+            &next_line.to_lowercase(),
+            false,
+        );
 
-    pub fn is_trade_item(
-        &mut self,
-        line: &str,
-        next_line: &str,
-    ) -> Result<DetectionStatus, AppError> {
-        let ch = states::cache().expect("Cache not found");
-        let machs = ch.tradable_items().get_item_dict("--item_by name")?;
+        if !status.is_found() {
+            return Ok(DetectionStatus::None);
+        }
 
-        if machs.iter().any(|mach| line == mach.0) {
-            let found = machs.get(line).unwrap();
-            self.apply_item_info(found);
+        self.item_type = TradeItemType::Imprint;
+        self.unique_name = String::from("/WF_Special/CreaturePet/Imprint");
+        self.sub_type = Some(SubType::variant(&stripped));
+        return Ok(status);
+    }
+
+    pub fn is_weapon(&mut self, line: &str, next_line: &str) -> Result<DetectionStatus, Error> {
+        let ch = states::cache_client().expect("Cache not found");
+
+        if let Ok(info) = ch.riven().get_weapon_by(line) {
+            self.unique_name = info.unique_name.clone();
+            self.item_type = TradeItemType::Weapon;
             return Ok(DetectionStatus::Line);
         }
 
-        for mach in machs.iter() {
-            let (combine, status) = combine_and_detect_match(line, next_line, mach.0, false, true);
-            if status.is_found() {
-                let found = machs.get(combine.as_str()).unwrap();
-                self.apply_item_info(found);
-                return Ok(status);
-            }
+        if let Ok(info) = ch.riven().get_weapon_by(line.to_string() + next_line) {
+            self.unique_name = info.unique_name.clone();
+            self.item_type = TradeItemType::Weapon;
+            return Ok(DetectionStatus::Combined);
+        }
+        Ok(DetectionStatus::None)
+    }
+    pub fn is_trade_item(&mut self, line: &str, next_line: &str) -> Result<DetectionStatus, Error> {
+        let ch = states::cache_client().expect("Cache not found");
+
+        if let Ok(info) = ch.tradable_item().get_by(line) {
+            self.apply_item_info(&info);
+            return Ok(DetectionStatus::Line);
+        }
+
+        if let Ok(info) = ch.tradable_item().get_by(line.to_string() + next_line) {
+            self.apply_item_info(&info);
+            return Ok(DetectionStatus::Combined);
         }
         Ok(DetectionStatus::None)
     }
 
-    pub fn validate(&mut self, next_line: &str) -> Result<DetectionStatus, AppError> {
-        for check in [Self::is_trade_item, Self::is_variant_item, Self::is_arcane] {
+    pub fn validate(&mut self, next_line: &str) -> Result<DetectionStatus, Error> {
+        for check in [
+            Self::is_trade_item,
+            Self::is_variant_item,
+            Self::is_arcane,
+            Self::is_weapon,
+            Self::is_imprint,
+        ] {
             let status = check(self, &self.raw.clone(), next_line)?;
             if status.is_found() {
                 return Ok(status);
@@ -271,40 +331,42 @@ impl TradeItem {
         }
         Ok(DetectionStatus::None)
     }
-    pub fn is_valid(&self) -> bool {
-        !self.raw.is_empty()
-    }
-
-    pub fn display(&self) -> String {
-        let mut name = format!("Raw: {} | Quantity: {}", self.raw, self.quantity);
-        if !self.unique_name.is_empty() {
-            name.push_str(&format!(" | Unique Name: {}", self.unique_name));
-        }
-        if let Some(sub_type) = &self.sub_type {
-            name.push_str(&format!(" | Sub Type: {}", sub_type.display()));
-        }
-        if let Some((error, _)) = &self.error {
-            name.push_str(&format!(" | Error: {}", error));
-        }
-        name
-    }
-
     pub fn item_name(&self) -> String {
-        let ch = states::cache().expect("Cache not found");
-        let name = match ch
-            .tradable_items()
-            .get_by(&self.unique_name, "--item_by unique_name")
-        {
-            Ok(mach) => {
-                if mach.is_some() {
-                    mach.unwrap().name.clone()
-                } else {
-                    self.raw.clone()
-                }
-            }
+        let ch = states::cache_client().expect("Cache not found");
+        let name = match ch.tradable_item().get_by(&self.unique_name) {
+            Ok(mach) => mach.name.clone(),
             Err(_) => self.raw.clone(),
         };
         name
+    }
+    pub fn is_valid(&self) -> bool {
+        !self.raw.is_empty()
+    }
+    pub fn get_property_value<T>(&self, key: impl Into<String>, default: T) -> T
+    where
+        T: Default + serde::de::DeserializeOwned,
+    {
+        let key = key.into();
+        if let Some(props) = &self.properties {
+            if let Some(value) = props.get(&key) {
+                return serde_json::from_value(value.clone()).unwrap();
+            }
+        }
+        default
+    }
+    pub fn set_property_value<T>(&mut self, key: impl Into<String>, value: T)
+    where
+        T: serde::Serialize,
+    {
+        let key = key.into();
+        let value = serde_json::to_value(value).unwrap();
+        if let Some(props) = &mut self.properties {
+            props.as_object_mut().unwrap().insert(key, value);
+        } else {
+            let mut map = serde_json::Map::new();
+            map.insert(key, value);
+            self.properties = Some(serde_json::Value::Object(map));
+        }
     }
 }
 
@@ -317,6 +379,62 @@ impl Default for TradeItem {
             item_type: TradeItemType::Unknown,
             sub_type: None,
             error: None,
+            properties: None,
         }
+    }
+}
+
+impl Display for TradeItem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "TradeItem ")?;
+        if self.raw.is_empty() {
+            write!(f, "Raw: Not provided | ")?;
+        } else {
+            write!(f, "Raw: {} | ", self.raw)?;
+        }
+        write!(f, "Quantity: {} | ", self.quantity)?;
+        if self.unique_name.is_empty() {
+            write!(f, "Unique Name: Not provided | ")?;
+        } else {
+            write!(f, "Unique Name: {} | ", self.unique_name)?;
+        }
+        if let Some(sub_type) = &self.sub_type {
+            write!(f, "Sub Type: {} | ", sub_type.display())?;
+        } else {
+            write!(f, "Sub Type: Not provided | ")?;
+        }
+        if let Some((error, _)) = &self.error {
+            write!(f, "Error: {}", error)?;
+        } else {
+            write!(f, "Error: None")?;
+        }
+        Ok(())
+    }
+}
+
+pub fn tags_to_type(tags: Vec<&str>) -> TradeItemType {
+    match () {
+        _ if tags.contains(&"ayatan_sculpture") => TradeItemType::Ayatan,
+        _ if tags.contains(&"main_part") => TradeItemType::MainBlueprint,
+        _ if tags.contains(&"blueprint") && !tags.contains(&"component") => {
+            TradeItemType::MainBlueprint
+        }
+        _ if tags.contains(&"weapon") => TradeItemType::Weapon,
+        _ if tags.contains(&"relic") => TradeItemType::Relic,
+        _ if tags.contains(&"component") => TradeItemType::Component,
+        _ if tags.contains(&"lens") => TradeItemType::Lens,
+        _ if tags.contains(&"arcane_enhancement") => TradeItemType::Arcane,
+        _ if tags.contains(&"mod") => TradeItemType::Mod,
+        _ if tags.contains(&"fish") => TradeItemType::Fish,
+        _ => TradeItemType::Unknown,
+    }
+}
+
+pub fn parse_quantity(raw: &str) -> (String, i64) {
+    if let Some((name, qty)) = raw.split_once(" x ") {
+        let quantity = qty.trim().parse().unwrap_or(1);
+        (name.to_string(), quantity)
+    } else {
+        (raw.to_string(), 1)
     }
 }

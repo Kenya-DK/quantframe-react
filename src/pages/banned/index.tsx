@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { useAuthContext } from "@contexts/auth.context";
-import { Countdown } from "@components/Countdown";
+import { Countdown } from "@components/Shared/Countdown";
 
 export default function BannedPage() {
   const { user } = useAuthContext();

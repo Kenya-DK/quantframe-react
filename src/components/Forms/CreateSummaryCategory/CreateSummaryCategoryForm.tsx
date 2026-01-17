@@ -2,8 +2,8 @@ import { Box, Button, Group, TagsInput, TextInput } from "@mantine/core";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { useForm } from "@mantine/form";
 import { TauriTypes } from "$types";
-import { TooltipIcon } from "../../TooltipIcon";
-import { SelectItemTags } from "../../SelectItemTags";
+import { TooltipIcon } from "@components/Shared/TooltipIcon";
+import { SelectItemTags } from "../SelectItemTags";
 
 export type CreateCategorySummaryProps = {
   value?: TauriTypes.SettingsCategorySummary;

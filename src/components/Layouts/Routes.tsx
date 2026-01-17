@@ -1,4 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { useAppContext } from "@contexts/app.context";
+import { useAuthContext } from "@contexts/auth.context";
 
 // Layouts
 import { LogInLayout } from "./LogIn";
@@ -13,12 +15,6 @@ import PHome from "@pages/home";
 // Auth Routes
 import PLogin from "@pages/auth/login";
 
-// Live Trading routes
-import PLiveTrading from "@pages/liveTrading";
-
-// Live Trading routes
-import PWarframeMarket from "@pages/warframeMarket";
-
 // Debug Routes
 import PDebug from "@pages/debug";
 
@@ -28,64 +24,76 @@ import PError from "@pages/error";
 // Banned Routes
 import PBanned from "@pages/banned";
 
-// Banned Routes
-import PAbout from "@pages/about";
+// Live Scraper
+import PLiveScraper from "@pages/live_scraper";
 
-// Chats Routes
-import PChats from "@pages/chats";
+// Trading Analytics
+import TradingAnalyticsPage from "@pages/trading_analytics";
 
-// Banned Routes
-import PTest from "@pages/test";
+// Warframe Market
+import PWarframeMarket from "@pages/warframe_market";
+import PWarframeMarketChat from "@pages/chat";
 
-// Trading Analytics Routes
-import PTradingAnalytics from "@pages/tradingAnalytics";
+// Trade messages
+import PTradeMessages from "@pages/trade_messages";
 
-// Control Routes
-import { LiveTradingControl } from "../LiveTradingControl";
+// About Page
+import AboutPage from "@pages/about";
 
 export function AppRoutes() {
+  const { app_error } = useAppContext();
+  const { user } = useAuthContext();
+
+  const ShowErrorPage = () => {
+    if (!app_error) return false;
+    if (app_error.isWebSocket()) return false; // Show error page only for non-WebSocket errors
+    return true;
+  };
+
+  const IsUserBanned = () => {
+    if (!user) return false;
+    if (user.anonymous) return false;
+    if (user.qf_banned || user.wfm_banned) return true;
+    return false;
+  };
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route element={<AuthenticatedGate exclude goTo="/" />}>
-          <Route path="/auth" element={<LogOutLayout />}>
-            <Route path="login" element={<PLogin />} />
+        {!ShowErrorPage() && !IsUserBanned() && (
+          <>
+            <Route element={<AuthenticatedGate exclude goTo="/" />}>
+              <Route path="/auth" element={<LogOutLayout />}>
+                <Route path="login" element={<PLogin />} />
+              </Route>
+            </Route>
+            <Route path="/" element={<LogInLayout />}>
+              <Route element={<AuthenticatedGate goTo="/auth/login" />}>
+                <Route path="/" element={<PHome />} />
+                <Route path="debug">
+                  <Route index element={<PDebug />} />
+                </Route>
+                <Route path="live_scraper" element={<PLiveScraper />} />
+                <Route path="warframe-market" element={<PWarframeMarket />} />
+                <Route path="chat" element={<PWarframeMarketChat />} />
+                <Route path="trading_analytics" element={<TradingAnalyticsPage />} />
+                <Route path="trade_messages" element={<PTradeMessages />} />
+                <Route path="about" element={<AboutPage />} />
+              </Route>
+              <Route path="*" element={<PHome />} />
+            </Route>
+          </>
+        )}
+        {ShowErrorPage() && (
+          <Route path="*" element={<LogOutLayout />}>
+            <Route path="*" element={<PError />} />
           </Route>
-        </Route>
-        <Route path="/" element={<LogInLayout />}>
-          <Route element={<AuthenticatedGate goTo="/auth/login" />}>
-            <Route index element={<PHome />} />
-            <Route path="live-trading">
-              <Route index element={<PLiveTrading />} />
-            </Route>
-            <Route path="chats">
-              <Route index element={<PChats />} />
-            </Route>
-            <Route path="debug">
-              <Route index element={<PDebug />} />
-            </Route>
-            <Route path="warframe-market">
-              <Route index element={<PWarframeMarket />} />
-            </Route>
-            <Route path="about">
-              <Route index element={<PAbout />} />
-            </Route>
-            <Route path="trading_analytics">
-              <Route index element={<PTradingAnalytics />} />
-            </Route>
-            <Route path="test">
-              <Route index element={<PTest />} />
-            </Route>
+        )}
+        {IsUserBanned() && (
+          <Route path="*" element={<LogOutLayout />}>
+            <Route path="*" element={<PBanned />} />
           </Route>
-        </Route>
-        <Route path="controls">
-          <Route path="live-trading" element={<LiveTradingControl />} />
-        </Route>
-        <Route path="/error" element={<LogOutLayout />}>
-          <Route index element={<PError />} />
-          <Route path="banned" element={<PBanned />} />
-        </Route>
-        <Route path="*" element={<PHome />} />
+        )}
       </Routes>
     </BrowserRouter>
   );

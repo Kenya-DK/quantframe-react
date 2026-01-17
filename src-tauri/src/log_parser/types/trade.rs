@@ -1,37 +1,28 @@
-use entity::enums::stock_type::StockType;
+use std::{collections::HashMap, fmt::Display, vec};
+
+use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    log_parser::enums::{
-        trade_classification::TradeClassification, trade_item_type::TradeItemType,
-    },
-    utils::{
-        enums::log_level::LogLevel,
-        modules::{error::AppError, states, trading_helper::trace},
-    },
-    DATABASE,
-};
-
-use super::{create_stock_entity::CreateStockEntity, trade_item::TradeItem};
+use crate::{log_parser::*, utils::modules::states};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct PlayerTrade {
     #[serde(rename = "playerName")]
     pub player_name: String,
     #[serde(rename = "tradeTime")]
-    pub trade_time: String,
+    pub trade_time: DateTime<chrono::Utc>,
     #[serde(rename = "type")]
     pub trade_type: TradeClassification,
     #[serde(rename = "platinum")]
     pub platinum: i64,
+    #[serde(rename = "credits")]
+    pub credits: i64,
     #[serde(rename = "offeredItems")]
     pub offered_items: Vec<TradeItem>,
     #[serde(rename = "receivedItems")]
     pub received_items: Vec<TradeItem>,
 
     // Used for debugging
-    #[serde(rename = "file_logs")]
-    pub file_logs: Vec<String>,
     #[serde(rename = "logs")]
     pub logs: Vec<String>,
 }
@@ -40,12 +31,12 @@ impl Default for PlayerTrade {
     fn default() -> Self {
         PlayerTrade {
             player_name: "".to_string(),
-            trade_time: "".to_string(),
+            trade_time: chrono::Utc::now(),
             trade_type: TradeClassification::Unknown,
             platinum: 0,
+            credits: 0,
             offered_items: vec![],
             received_items: vec![],
-            file_logs: vec![],
             logs: vec![],
         }
     }
@@ -66,7 +57,12 @@ impl PlayerTrade {
             .map(|p| p.quantity)
             .sum::<i64>()
     }
-    pub fn get_valid_items(&self, trade_type: &TradeClassification) -> Vec<TradeItem> {
+    pub fn get_valid_items(
+        &self,
+        trade_type: &TradeClassification,
+        mut exclude_types: Vec<TradeItemType>,
+    ) -> Vec<TradeItem> {
+        exclude_types.push(TradeItemType::Unknown);
         let items = match trade_type.clone() {
             TradeClassification::Purchase => &self.offered_items,
             TradeClassification::Sale => &self.received_items,
@@ -74,7 +70,7 @@ impl PlayerTrade {
         };
         items
             .iter()
-            .filter(|p| p.item_type != TradeItemType::Unknown)
+            .filter(|p| !exclude_types.contains(&p.item_type))
             .cloned()
             .collect()
     }
@@ -84,7 +80,7 @@ impl PlayerTrade {
         unique_name: &str,
         quantity: i64,
     ) -> bool {
-        let items = self.get_valid_items(trade_type);
+        let items = self.get_valid_items(trade_type, vec![]);
         items
             .iter()
             .any(|p| p.unique_name == unique_name && p.quantity == quantity)
@@ -92,24 +88,84 @@ impl PlayerTrade {
     pub fn calculate(&mut self) {
         let offer_plat = self.get_offered_plat();
         let receive_plat = self.get_received_plat();
+
+        log(
+            format!(
+                "Calculating Trade | Offered Plat: {} | Received Plat: {}",
+                offer_plat, receive_plat
+            ),
+            None,
+        );
+        self.credits = self
+            .offered_items
+            .iter()
+            .filter(|p| p.item_type == TradeItemType::Credits)
+            .map(|p| p.quantity)
+            .sum::<i64>();
         if offer_plat > 0 {
             self.platinum = offer_plat;
+            log(format!("Platinum set from Offer: {}", self.platinum), None);
         }
         if receive_plat > 0 {
             self.platinum = receive_plat;
+            log(
+                format!("Platinum set from Receive: {}", self.platinum),
+                None,
+            );
         }
 
         // Filter out unknown items
-        let offered_items = self.get_valid_items(&TradeClassification::Purchase);
-        let received_items = self.get_valid_items(&TradeClassification::Sale);
+        let offered_items = self
+            .get_valid_items(&TradeClassification::Purchase, vec![])
+            .iter()
+            .filter(|p| p.item_type != TradeItemType::Credits)
+            .cloned()
+            .collect::<Vec<TradeItem>>();
+        let received_items = self
+            .get_valid_items(&TradeClassification::Sale, vec![])
+            .iter()
+            .filter(|p| p.item_type != TradeItemType::Credits)
+            .cloned()
+            .collect::<Vec<TradeItem>>();
+
+        log(
+            format!(
+                "Filtered Items | Offered: {} | Received: {}",
+                offered_items.len(),
+                received_items.len()
+            ),
+            None,
+        );
 
         if offer_plat > 1 && offered_items.len() == 1 {
             self.trade_type = TradeClassification::Purchase;
+            log(
+                format!(
+                    "Classified Trade as Purchase | Item: {:?}",
+                    offered_items.first()
+                ),
+                None,
+            );
         } else if receive_plat > 1 && received_items.len() == 1 {
             self.trade_type = TradeClassification::Sale;
+            log(
+                format!(
+                    "Classified Trade as Sale | Item: {:?}",
+                    received_items.first()
+                ),
+                None,
+            );
         } else {
             self.trade_type = TradeClassification::Trade;
+            log(
+                "Classified Trade as Regular Item-for-Item Trade".to_string(),
+                None,
+            );
         }
+    }
+    pub fn calculate_items(&mut self) {
+        self.is_set(TradeClassification::Purchase);
+        self.is_set(TradeClassification::Sale);
     }
 
     pub fn get_item_by_type(
@@ -117,189 +173,169 @@ impl PlayerTrade {
         trade_type: &TradeClassification,
         item_type: &TradeItemType,
     ) -> Option<TradeItem> {
-        let items = self.get_valid_items(trade_type);
+        let items = self.get_valid_items(trade_type, vec![]);
         items.iter().find(|p| &p.item_type == item_type).cloned()
     }
-
-    pub fn is_set(&self) -> Result<(bool, String), AppError> {
-        let trade_type = match self.trade_type {
-            TradeClassification::Sale => TradeClassification::Purchase,
-            TradeClassification::Purchase => TradeClassification::Sale,
-            _ => {
-                return Ok((false, "".to_string()));
-            }
+    pub fn is_set(&mut self, trade_type: TradeClassification) {
+        let main_item = match self.get_item_by_type(&trade_type, &TradeItemType::MainBlueprint) {
+            Some(item) => item,
+            None => return,
         };
 
-        let main_part = self.get_item_by_type(&trade_type, &TradeItemType::MainBlueprint);
-        if main_part.is_none() || self.get_valid_items(&self.trade_type).len() < 1 {
-            return Ok((false, "".to_string()));
+        if self.get_valid_items(&self.trade_type, vec![]).is_empty() {
+            return;
         }
-        let main_part = main_part.unwrap();
-        let cache = states::cache()?;
-        // Get the set for the main part
-        let main_part = match cache.all_items().get_by(
-            &main_part.unique_name,
-            "--item_by unique_name --category Component",
-        )? {
-            Some(set_part) => set_part,
-            None => {
-                trace(&format!(
-                    "Main part not found for by: {}",
-                    main_part.unique_name
-                ));
-                return Ok((false, "".to_string()));
-            }
-        };
-        trace(&format!("Found main part {} for set", main_part.display()));
 
-        // Get the set unique name if it exists
-        let set_unique_name = match main_part.part_of_set {
-            Some(set) => set,
-            None => {
-                trace(&format!(
-                    "Part of set not found for by: {:?}",
-                    main_part.part_of_set
-                ));
-                return Ok((false, "".to_string()));
+        let cache = match states::cache_client() {
+            Ok(c) => c,
+            Err(_) => {
+                log("Cache client not initialized".to_string(), None);
+                return;
             }
         };
-        trace(&format!("Set unique name: {}", set_unique_name));
-        // Get the set for the main part
-        let set = match cache
-            .all_items()
-            .get_by(&set_unique_name, "--item_by unique_name")?
-        {
-            Some(set) => set,
-            None => {
-                trace(&format!("Set not found for by: {}", set_unique_name));
-                return Ok((false, "".to_string()));
-            }
-        };
-        trace(&format!("Found set {} for main part", set.display()));
 
-        // Get the components for the set
+        let component_key = format!("Component|{}", main_item.unique_name);
+        let component = match cache.all_items().get_by(&component_key) {
+            Ok(c) => c,
+            Err(_) => {
+                log(format!("Main part not found: {}", component_key), None);
+                return;
+            }
+        };
+
+        log(
+            format!("Found main part {} for set", component.display()),
+            None,
+        );
+
+        let set_name = match &component.part_of_set {
+            Some(name) => name,
+            None => {
+                log(
+                    format!("Part-of-set missing for {}", component.display()),
+                    None,
+                );
+                return;
+            }
+        };
+
+        log(format!("Set unique name: {}", set_name), None);
+
+        let set = match cache.all_items().get_by(set_name) {
+            Ok(s) => s,
+            Err(_) => {
+                log(format!("Set not found: {}", set_name), None);
+                return;
+            }
+        };
+
+        log(format!("Found set {}", set.display()), None);
+
         let components = set.get_tradable_components();
         if components.is_empty() {
-            trace(&format!("Components not found for set: {}", set.display()));
-            return Ok((false, "".to_string()));
+            log(format!("No components for set {}", set.display()), None);
+            return;
         }
 
-        for component in components {
+        for component in components.iter() {
             let found =
                 self.is_item_in_trade(&trade_type, &component.unique_name, component.item_count);
-            trace(&format!(
-                "Component: {} | Found: {}",
-                component.display(),
-                found
-            ));
+
+            log(
+                format!(
+                    "Checking component <{}>: Found={}",
+                    component.display(),
+                    found
+                ),
+                None,
+            );
+
             if !found {
-                return Ok((false, "".to_string()));
+                return;
             }
         }
-        trace(&format!("Full set found: {}", set.display()));
-        return Ok((true, set.unique_name));
-    }
 
-    pub async fn to_stock(&self) -> Result<CreateStockEntity, AppError> {
-        let db = DATABASE.get().unwrap();
-        let trade_type = match self.trade_type {
-            TradeClassification::Sale => TradeClassification::Purchase,
-            TradeClassification::Purchase => TradeClassification::Sale,
-            _ => {
-                return Err(AppError::new_with_level(
-                    "PlayerTrade:ToStock",
-                    eyre::eyre!("Wrong Trade Type: {:?}", self.trade_type),
-                    LogLevel::Warning,
-                ))
-            }
+        log(format!("Full set found: {}", set.display()), None);
+
+        let target_items = match trade_type {
+            TradeClassification::Purchase => &mut self.offered_items,
+            TradeClassification::Sale => &mut self.received_items,
+            _ => return,
         };
-        let mut stock = CreateStockEntity::new("", self.platinum);
-        let items = self.get_valid_items(&trade_type);
-        // Check if the trade is a set
-        let (is_set, set_name) = self.is_set()?;
-        if is_set {
-            stock.raw = set_name.to_string();
-            stock.entity_type = StockType::Item;
-        } else if items.len() == 1 {
-            let item = items.first().unwrap();
-            stock.raw = item.unique_name.clone();
-            stock.quantity = item.quantity;
-            stock.sub_type = item.sub_type.clone();
-            // Set Stock Type
-            stock.entity_type = match item.item_type {
-                TradeItemType::RivenUnVeiled => StockType::Riven,
-                _ => StockType::Item,
-            };
-
-            if stock.entity_type == StockType::Item
-                && self.trade_type == TradeClassification::Purchase
-            {
-                stock.bought = Some(self.platinum / item.quantity);
-            }
-            if stock.entity_type == StockType::Riven {
-                // Split by '/' and collect into a Vec
-                let parts: Vec<&str> = item.unique_name.trim_matches('/').split('/').collect();
-                // Get the last two elements
-                match parts.get(parts.len() - 2) {
-                    Some(riven_type) => {
-                        stock.raw = riven_type.to_string();
-                    }
-                    None => {
-                        return Err(AppError::new_with_level(
-                            "PlayerTrade:ToStock",
-                            eyre::eyre!("Riven type not found: {}", item.unique_name),
-                            LogLevel::Warning,
-                        ));
-                    }
-                }
-                match parts.get(parts.len() - 1) {
-                    Some(mod_name) => {
-                        stock.mod_name = mod_name.to_string();
-                    }
-                    None => {
-                        return Err(AppError::new_with_level(
-                            "PlayerTrade:ToStock",
-                            eyre::eyre!("Riven mod name not found: {}", item.unique_name),
-                            LogLevel::Warning,
-                        ));
-                    }
-                }
-            }
-        } else {
-            let msg;
-            if items.len() == 0 {
-                msg = "No valid items found".to_string();
-            } else if !set_name.is_empty() {
-                msg = format!("Set Not valid: {}", set_name);
-            } else {
-                msg = format!("Multiple items found: {}, Skipping", items.len());
-            }
-            trace(&msg);
-            return Err(AppError::new_with_level(
-                "PlayerTrade:ToStock",
-                eyre::eyre!("{} | Trade Type: {:?}", msg, trade_type),
-                LogLevel::Warning,
-            ));
+        for component in components {
+            target_items.retain(|p| p.unique_name != component.unique_name);
+            log(
+                format!("Removed component from trade: {}", component.display()),
+                None,
+            );
         }
-        stock.validate_entity(
-            "--item_by unique_name --weapon_by name --weapon_lang en --ignore_attributes",
-        )?;
-        // Check if the stock is a wishlist item
-        if stock.is_wish_list_item(db).await? {
-            stock.entity_type = StockType::WishList;
-        }
-        return Ok(stock);
+        target_items.push(TradeItem::new(
+            &set.unique_name,
+            1,
+            TradeItemType::Set,
+            None,
+        ));
     }
 
-    pub fn display(&self) -> String {
-        format!(
-            "Player: {} | Time: {} | Type: {:?} | Platinum: {} | Offered: {} | Received: {}",
-            self.player_name,
-            self.trade_time,
-            self.trade_type,
-            self.platinum,
-            self.offered_items.len(),
-            self.received_items.len()
-        )
+    pub fn get_notify_variables(&self) -> HashMap<String, String> {
+        let offered_items = self
+            .get_valid_items(&TradeClassification::Purchase, vec![])
+            .iter()
+            .map(|x| format!("{} X{}", x.item_name(), x.quantity))
+            .collect::<Vec<String>>()
+            .join("\n");
+
+        let received_items = self
+            .get_valid_items(&TradeClassification::Sale, vec![])
+            .iter()
+            .map(|x| format!("{} X{}", x.item_name(), x.quantity))
+            .collect::<Vec<String>>()
+            .join("\n");
+
+        return HashMap::from([
+            ("<TR_TYPE>".to_string(), self.trade_type.to_string()),
+            ("<PLAYER_NAME>".to_string(), self.player_name.clone()),
+            (
+                "<OF_COUNT>".to_string(),
+                self.offered_items.len().to_string(),
+            ),
+            ("<OF_ITEMS>".to_string(), offered_items),
+            (
+                "<RE_COUNT>".to_string(),
+                self.received_items.len().to_string(),
+            ),
+            (
+                "<TIME>".to_string(),
+                self.trade_time
+                    .with_timezone(&Local)
+                    .format("%Y-%m-%d %H:%M:%S")
+                    .to_string(),
+            ),
+            ("<RE_ITEMS>".to_string(), received_items),
+            ("<LOGS>".to_string(), self.logs.join("\n")),
+            ("<TOTAL_PLAT>".to_string(), self.platinum.to_string()),
+        ]);
+    }
+
+    pub fn set_time(&mut self, time: DateTime<chrono::Utc>) -> PlayerTrade {
+        self.trade_time = time;
+        self.clone()
+    }
+}
+impl Display for PlayerTrade {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "PlayerTrade ")?;
+        if self.player_name.is_empty() {
+            write!(f, "Player Name: Not provided | ")?;
+        } else {
+            write!(f, "Player Name: {} | ", self.player_name)?;
+        }
+        write!(f, "Trade Time: {} | ", self.trade_time)?;
+        write!(f, "Type: {:?} | ", self.trade_type)?;
+        write!(f, "Platinum: {} | ", self.platinum)?;
+        write!(f, "Offered Items: {} | ", self.offered_items.len())?;
+        write!(f, "Received Items: {} | ", self.received_items.len())?;
+        write!(f, "Logs: {} entries", self.logs.len())?;
+        Ok(())
     }
 }

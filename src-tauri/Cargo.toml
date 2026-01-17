@@ -1,6 +1,6 @@
 [package]
 name = "Quantframe"
-version = "1.4.1"
+version = "1.6.12"
 description = "Quantframe"
 authors = ["Kenya-DK"]
 license = ""
@@ -33,26 +33,26 @@ tauri-plugin-dialog = "2"
 tauri-plugin-http = "2"
 tauri-plugin-process = "2"
 tauri-plugin-shell = "2"
-tauri-plugin-notification = "2"
+tauri-plugin-notification = "2.0.0"
 tauri-plugin-os = "2"
+tauri-plugin-clipboard-manager = "2.3.0"
 # Other dependencies
-futures-util = "0.3.31"
-tokio = { version = "1.29.0", features = ["full"] }
-tokio-tungstenite = { version = "0.26.2", features = ["native-tls"] }
-uuid = {version = "1.17.0", features = ["v4"] }
+reqwest = { version = "0.12.19", features = ["json"] }
+tokio = {version =  "1.45.1", features = ["full"] }
 regex = "1.9.1"
 chrono = "0.4"
-reqwest = { version = "0.11", features = ["json"] }
-eyre = "0.6.8"
 zip = "0.6"
-actix-web = "4"
-actix-cors = "0.7.0"
 sha256 = "1.5.0"
+uuid = { version = "1.19.0",features = ["v4"] }
+# wf-market = { path = "C:/Users/Kenya/Desktop/Andet/Coding/Warframe/wf-market" }
+wf-market = { git = "https://github.com/KibbeWater/wf-market", rev = "022d3f5d856d1e4b6bd0aa90feac993583b3afd2" }
 
 # Database dependencies
 migration = { path = "./migration" }
 service = { path = "./service" }
 entity = { path = "./entity" }
+qf_api = { path = "./qf_api" }
+utils = { path = "./utils" }
 
 [workspace]
-members = [".", "service", "entity", "migration"]
+members = [".", "qf_api", "service", "entity", "migration", "utils"]

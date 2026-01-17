@@ -1,0 +1,43 @@
+.tabs {
+  margin-top: 25px;
+
+  &[data-has-alert="true"] {
+    margin-top: 45px;
+  }
+}
+
+.databaseTransactions {
+  --offset: 267px;
+  height: calc(100vh - var(--offset)) !important;
+  transition: height 0.2s ease;
+
+  &.alert {
+    --offset: 295px;
+  }
+
+  &.filterOpened {
+    --offset: 391px;
+  }
+
+  &.alert.filterOpened {
+    --offset: 410px;
+  }
+}
+
+.databaseItem {
+  --offset: 230px;
+  height: calc(100vh - var(--offset)) !important;
+  transition: height 0.2s ease;
+
+  &.alert {
+    --offset: 250px;
+  }
+
+  &.filterOpened {
+    --offset: 397px;
+  }
+
+  &.alert.filterOpened {
+    --offset: 416px;
+  }
+}

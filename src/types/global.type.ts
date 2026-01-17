@@ -1,19 +1,45 @@
-export type DeepPartial<T> = T extends object
-  ? {
-      [P in keyof T]?: DeepPartial<T[P]>;
-    }
-  : T;
-export type ErrOrResult<RES> = [ResponseError, null] | [null, RES] | [ResponseError, undefined] | [undefined, RES];
+// export type DeepPartial<T> = T extends object
+//   ? {
+//       [P in keyof T]?: DeepPartial<T[P]>;
+//     }
+//   : T;
+// export type ErrOrResult<RES> = [ResponseError, null] | [null, RES] | [ResponseError, undefined] | [undefined, RES];
+
+import { QuantframeApiTypes } from "./quantframe.type";
+import { TauriTypes } from "./tauri.type";
+import { WFMarketTypes } from "./warframeMarket.type";
 
 export interface ResponseError extends Error {
-  backtrace: string;
-  cause: string;
   component: string;
-  extra_data: Record<string, any>;
+  message: string;
+  location: string;
+  cause?: string;
+  context: Record<string, any>;
   log_level: string;
 }
+export interface SubType {
+  rank?: number;
+  variant?: string;
+  amber_stars?: number;
+  cyan_stars?: number;
+}
+export interface PaginatedDto {
+  /** The total number of items in the database */
+  total: number;
+  /** The number of items returned in this request */
+  limit: number;
+  /** The current page */
+  page: number;
+  /** The total number of pages */
+  total_pages: number;
+}
+export enum UserStatus {
+  Online = "online",
+  Invisible = "invisible",
+  Ingame = "ingame",
+}
 export interface MinMaxDto {
-  min: number;
+  min?: number;
   max?: number;
 }
 export interface Paginated<T> {
@@ -22,18 +48,7 @@ export interface Paginated<T> {
   page: number;
   results: T[];
 }
-export interface PaginatedWithInclude<T, I> {
-  total: number;
-  limit: number;
-  page: number;
-  results: T[];
-  include: I;
-}
-export enum UserStatus {
-  Online = "online",
-  Invisible = "invisible",
-  Ingame = "ingame",
-}
+
 export interface PriceHistory {
   created_at: Date;
   name: string;
@@ -44,5 +59,28 @@ export interface RivenAttribute {
   positive: boolean;
   url_name: string;
   value: number;
-  effect?: string;
+  letterGrade?: string;
+  grade?: string;
+  minValue?: number;
+  maxValue?: number;
 }
+
+export interface ItemMeta {
+  wfm_id?: string;
+  wfm_url?: string;
+  quantity?: number;
+  type?: string;
+}
+
+export type ItemWithMeta =
+  | (WFMarketTypes.Order & ItemMeta)
+  | (TauriTypes.StockItem & ItemMeta)
+  | (TauriTypes.StockRiven & ItemMeta)
+  | (TauriTypes.WishListItem & ItemMeta)
+  | (TauriTypes.TransactionDto & ItemMeta)
+  | (TauriTypes.ItemPriceInfo & ItemMeta)
+  | (QuantframeApiTypes.ItemPriceDto & ItemMeta)
+  | (TauriTypes.DebuggingLiveItemEntry & ItemMeta)
+  | (TauriTypes.TradeEntry & ItemMeta)
+  | null;
+export type ItemWithSubType = TauriTypes.SubType | WFMarketTypes.Order | undefined;
