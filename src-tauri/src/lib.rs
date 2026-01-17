@@ -317,6 +317,11 @@ pub fn run() {
             commands::warframe_gdpr::wfgdpr_get_purchases_pagination,
             commands::warframe_gdpr::wfgdpr_get_logins_pagination,
             commands::warframe_gdpr::wfgdpr_get_transactions_pagination,
+            // Sound commands
+            commands::sound::sound_get_custom_sounds,
+            commands::sound::sound_add_custom_sound,
+            commands::sound::sound_delete_custom_sound,
+            commands::sound::sound_get_custom_sounds_path,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

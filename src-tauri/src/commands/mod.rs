@@ -27,3 +27,4 @@ pub mod trade_entry;
 pub mod transaction;
 pub mod warframe_gdpr;
 pub mod wish_list;
+pub mod sound;

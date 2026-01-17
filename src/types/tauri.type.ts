@@ -94,6 +94,7 @@ export namespace TauriTypes {
     notifications: SettingsNotifications;
     http_server: HttpServerSettings;
     generate_trade_message: GenerateTradeMessageSettings;
+    custom_sounds: CustomSound[];
   }
   export interface SettingsAdvanced {
     wf_log_path: string;
@@ -182,6 +183,11 @@ export namespace TauriTypes {
     suffix: string;
     template: string;
     displaySettings: Record<string, DisplaySettings>;
+  }
+
+  export interface CustomSound {
+    name: string;
+    file_name: string;
   }
   export interface User {
     anonymous: boolean;
@@ -408,6 +414,7 @@ export namespace TauriTypes {
     notifications: SettingsNotifications;
     analytics: SettingsAnalytics;
     summary_settings: SettingsSummary;
+    custom_sounds: CustomSound[];
   }
   export interface SettingsSummary {
     categories: SettingsCategorySummary[];

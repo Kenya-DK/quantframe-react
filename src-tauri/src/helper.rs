@@ -47,6 +47,15 @@ pub fn get_app_storage_path() -> PathBuf {
     }
     app_path
 }
+
+pub fn get_sounds_path() -> PathBuf {
+    let sounds_path = get_app_storage_path().join("sounds");
+    if !sounds_path.exists() {
+        fs::create_dir_all(&sounds_path).unwrap()
+    }
+    sounds_path
+}
+
 pub fn get_desktop_path() -> PathBuf {
     let app = APP.get().unwrap();
     let desktop_path = match app.path().desktop_dir() {

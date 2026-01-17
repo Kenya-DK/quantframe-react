@@ -20,6 +20,7 @@ pub struct Settings {
     pub notifications: NotificationsSetting,
     pub http_server: HttpServerSettings,
     pub generate_trade_message: GenerateTradeMessageSetting,
+    pub custom_sounds: Vec<CustomSound>,
     pub tos_uuid: String,
 }
 impl Default for Settings {
@@ -33,6 +34,7 @@ impl Default for Settings {
             debugging: DebuggingSettings::default(),
             http_server: HttpServerSettings::default(),
             generate_trade_message: GenerateTradeMessageSetting::default(),
+            custom_sounds: Vec::new(),
             tos_uuid: String::new(),
         }
     }
