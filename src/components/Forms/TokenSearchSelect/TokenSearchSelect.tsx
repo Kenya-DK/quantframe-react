@@ -1,4 +1,5 @@
 import { Select, type ComboboxData, type ComboboxItem, type ComboboxParsedItem, type SelectProps, isOptionsGroup } from "@mantine/core";
+import { useEffect, useRef } from "react";
 import { fuzzySearch } from "@utils/fuzzySearch";
 
 type SelectDataItem = string | (ComboboxItem & Record<string, any>);
@@ -19,6 +20,18 @@ const getItemValue = (item: SelectDataItem | null | undefined): string | null =>
   return typeof item === "string" ? item : item.value;
 };
 
+const getItemLabel = (item: SelectDataItem | null | undefined): string => {
+  if (!item) return "";
+  return typeof item === "string" ? item : item.label ?? item.value;
+};
+
+const toComboboxItem = (item: SelectDataItem): ComboboxItem => {
+  if (typeof item === "string") {
+    return { value: item, label: item };
+  }
+  return { ...item, label: item.label ?? item.value };
+};
+
 export function TokenSearchSelect<Item extends SelectDataItem = SelectDataItem>({
   data = [],
   searchKeys, //  when your data items are objects this array determines which fields get fuzzy-searched (["label", "value"])
@@ -27,9 +40,19 @@ export function TokenSearchSelect<Item extends SelectDataItem = SelectDataItem>(
   searchable = true,
   autoSelectOnBlur,
   selectFirstOptionOnChange,
+  onBlur,
+  onBlurCapture,
   ...props
 }: TokenSearchSelectProps<Item>) {
   const resolvedSearchKeys = searchKeys && searchKeys.length > 0 ? searchKeys : DEFAULT_SEARCH_KEYS;
+  const blurQueryRef = useRef<string>("");
+  const selectedValueRef = useRef<string | null>(props.value ?? props.defaultValue ?? null);
+
+  useEffect(() => {
+    if (props.value !== undefined) {
+      selectedValueRef.current = props.value;
+    }
+  }, [props.value]);
 
   const filter: SelectProps["filter"] = ({ options, search, limit }) => {
     const query = search.trim();
@@ -70,10 +93,35 @@ export function TokenSearchSelect<Item extends SelectDataItem = SelectDataItem>(
   };
 
   const handleSelection: SelectProps["onChange"] = (val, option) => {
+    selectedValueRef.current = val;
     onChange?.(val, option);
     if (!onItemSelect) return;
     const selectedItem = val === null ? null : (data.find((item) => getItemValue(item) === val) ?? null);
     onItemSelect(selectedItem as Item | null);
+  };
+
+  const handleBlurCapture: SelectProps["onBlurCapture"] = (event) => {
+    blurQueryRef.current = event.currentTarget.value;
+    onBlurCapture?.(event);
+  };
+
+  const handleBlur: SelectProps["onBlur"] = (event) => {
+    if (autoSelectOnBlur) {
+      const query = blurQueryRef.current.trim();
+      if (query.length > 0) {
+        const currentValue = props.value !== undefined ? props.value : selectedValueRef.current;
+        const selectedLabel = getItemLabel(data.find((item) => getItemValue(item) === currentValue) ?? currentValue);
+        if (selectedLabel.trim().toLowerCase() !== query.toLowerCase()) {
+          const searchableItems = data.map((item) => toComboboxItem(item));
+          const matches = fuzzySearch(searchableItems, query, { keys: resolvedSearchKeys });
+          const firstMatch = matches[0]?.item;
+          if (firstMatch && firstMatch.value !== currentValue) {
+            handleSelection(firstMatch.value, firstMatch);
+          }
+        }
+      }
+    }
+    onBlur?.(event);
   };
 
   return (
@@ -83,8 +131,10 @@ export function TokenSearchSelect<Item extends SelectDataItem = SelectDataItem>(
       searchable={searchable}
       filter={filter}
       onChange={handleSelection}
-      autoSelectOnBlur={autoSelectOnBlur}
+      autoSelectOnBlur={false}
       selectFirstOptionOnChange={selectFirstOptionOnChange}
+      onBlurCapture={handleBlurCapture}
+      onBlur={handleBlur}
     />
   );
 }
