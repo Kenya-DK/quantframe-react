@@ -176,10 +176,30 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
   }, [app_info]);
 
   const InitializeApp = async () => {
-    await refetchAppInfo();
-    await refetchAlerts();
-    await refetchSettings();
-    setLoading(false);
+    try {
+      // Use Promise.allSettled so all calls are attempted even if some fail
+      const results = await Promise.allSettled([
+        refetchAppInfo(),
+        refetchAlerts(),
+        refetchSettings(),
+      ]);
+      
+      // Check if any failed
+      const failed = results.some((result) => result.status === "rejected");
+      if (failed) {
+        console.warn("Some initialization calls failed, but continuing anyway");
+        results.forEach((result, index) => {
+          if (result.status === "rejected") {
+            console.error(`Initialization call ${index} failed:`, result.reason);
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error during app initialization:", error);
+    } finally {
+      // Always set loading to false, even if there were errors
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -193,16 +213,50 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
   useTauriEvent(TauriTypes.Events.OnStartingUp, setStartingUp, []);
 
   useEffect(() => {
+    let appReadyReceived = false;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const handleAppReady = () => {
+      if (!appReadyReceived) {
+        appReadyReceived = true;
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        InitializeApp();
+      }
+    };
+
     invoke("initialized")
-      .then((wasInitialized) => (wasInitialized ? InitializeApp() : console.log("App was not initialized")))
+      .then((wasInitialized) => {
+        if (wasInitialized) {
+          handleAppReady();
+        } else {
+          console.log("App was not initialized");
+        }
+      })
       .catch((e) => console.error("Error checking initialization:", e));
-    listen("app:ready", () => InitializeApp());
+
+    listen("app:ready", handleAppReady);
+    
+    // Fallback: Initialize after 120 seconds even if app:ready never arrives
+    timeoutId = setTimeout(() => {
+      if (!appReadyReceived) {
+        console.warn("app:ready event not received after 120s, initializing anyway");
+        handleAppReady();
+      }
+    }, 120000);
+
     listen<{ file_name: string; volume: number }>("play_sound", ({ payload }) => {
       PlaySound(payload.file_name, payload.volume).catch((error) => {
         console.error("Error playing sound:", error);
       });
     });
-    return () => {};
+    
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, []);
   return (
     <AppContext.Provider value={{ settings, alerts: alerts?.results || [], app_info: app_info, app_error: error, checkForUpdates, loading, setLang }}>
