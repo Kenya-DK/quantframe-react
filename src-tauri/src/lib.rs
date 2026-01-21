@@ -167,15 +167,44 @@ pub fn run() {
                     err = Some(e.clone());
                     e.log("init_database_error.log");
                 }
-                if let Err(e) = setup_manages(app_handle.clone(), use_temp_db).await {
-                    err = Some(e.clone());
-                    e.log("setup_error.log");
+                // Setup manages with timeout - don't block app startup forever
+                match tokio::time::timeout(
+                    tokio::time::Duration::from_secs(90), // 90 seconds total timeout
+                    setup_manages(app_handle.clone(), use_temp_db),
+                )
+                .await
+                {
+                    Ok(Ok(())) => {}
+                    Ok(Err(e)) => {
+                        err = Some(e.clone());
+                        e.log("setup_error.log");
+                        warning(
+                            "Setup",
+                            "Setup completed with errors, but continuing app startup",
+                            &LoggerOptions::default(),
+                        );
+                    }
+                    Err(_) => {
+                        warning(
+                            "Setup",
+                            "Setup timed out after 90 seconds, continuing app startup anyway",
+                            &LoggerOptions::default().set_file("setup_timeout.log"),
+                        );
+                    }
                 }
+
+                // Always emit app:ready even if there were errors
                 if let Err(e) = app_handle.emit("app:ready", ()) {
                     error(
                         "Emit",
                         &format!("Failed to emit app:ready event: {:?}", e),
                         &LoggerOptions::default().set_file("emit_error.log"),
+                    );
+                } else {
+                    info(
+                        "Setup",
+                        "App ready event emitted successfully",
+                        &LoggerOptions::default(),
                     );
                 }
                 HAS_STARTED.set(true).unwrap();

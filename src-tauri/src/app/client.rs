@@ -14,7 +14,7 @@ use qf_api::Client as QFClient;
 use serde_json::json;
 use sha256::digest;
 use tauri::{AppHandle, Manager};
-use utils::{get_location, info, Error, LogLevel, LoggerOptions};
+use utils::{get_location, info, warning, Error, LogLevel, LoggerOptions};
 use wf_market::client::Authenticated as WFAuthenticated;
 use wf_market::enums::ApiVersion;
 use wf_market::types::websocket::{WsClient, WsMessage};
@@ -215,7 +215,7 @@ async fn setup_socket(
         ));
     }
 
-    let ws_client = wfm_client
+    let ws_client_builder = wfm_client
         .create_websocket(ApiVersion::V2)
         .set_log_unhandled(true)
         .register_callback("internal/connected", move |msg, _, _| {
@@ -281,10 +281,22 @@ async fn setup_socket(
             Ok(())
         })
         .unwrap()
-        .build()
-        .await
-        .unwrap();
-    let ws_client_chat = wfm_client
+        .build();
+
+    // Add timeout for WebSocket connection (30 seconds)
+    let ws_client =
+        match tokio::time::timeout(tokio::time::Duration::from_secs(30), ws_client_builder).await {
+            Ok(client) => client.unwrap(),
+            Err(_) => {
+                return Err(Error::new(
+                    "AppState:SetupSocket",
+                    "Timeout establishing main WebSocket connection",
+                    get_location!(),
+                ));
+            }
+        };
+
+    let ws_client_chat_builder = wfm_client
         .create_websocket(ApiVersion::V1)
         .register_callback("internal/connected", move |msg, _, _| {
             send_ws_state(UIEvent::OnError, "connected", msg);
@@ -309,9 +321,23 @@ async fn setup_socket(
             Ok(())
         })
         .unwrap()
-        .build()
-        .await
-        .unwrap();
+        .build();
+
+    // Add timeout for chat WebSocket connection (30 seconds)
+    let ws_client_chat =
+        match tokio::time::timeout(tokio::time::Duration::from_secs(30), ws_client_chat_builder)
+            .await
+        {
+            Ok(client) => client.unwrap(),
+            Err(_) => {
+                return Err(Error::new(
+                    "AppState:SetupSocket",
+                    "Timeout establishing chat WebSocket connection",
+                    get_location!(),
+                ));
+            }
+        };
+
     Ok((ws_client, ws_client_chat))
 }
 
@@ -361,15 +387,29 @@ impl AppState {
                 "qf_banned_until": data["banned_until"].as_str().unwrap_or("").to_string()
             }));
         });
-        match state.validate().await {
-            Ok((wfu, qfu)) => {
+        // Add timeout for user validation (60 seconds)
+        match tokio::time::timeout(tokio::time::Duration::from_secs(60), state.validate()).await {
+            Ok(Ok((wfu, qfu))) => {
                 state.user = update_user(state.user, &wfu, &qfu);
             }
-            Err(e) => {
+            Ok(Err(e)) => {
                 e.log("user_validation.log");
                 if e.log_level != LogLevel::Warning {
                     state.user = User::default();
                 }
+                warning(
+                    "AppState:New",
+                    "User validation failed, continuing with default user",
+                    &LoggerOptions::default(),
+                );
+            }
+            Err(_) => {
+                warning(
+                    "AppState:New",
+                    "User validation timed out, continuing with existing user data",
+                    &LoggerOptions::default(),
+                );
+                // Continue with existing user data
             }
         }
 
@@ -443,16 +483,27 @@ impl AppState {
                 get_location!(),
             ));
         }
-        let wfm_client = match WFClient::new()
-            .login_with_token(&self.user.wfm_token, &self.wfm_client.get_device_id())
-            .await
+        // Add timeout for WFM login (30 seconds)
+        let wfm_client = match tokio::time::timeout(
+            tokio::time::Duration::from_secs(30),
+            WFClient::new()
+                .login_with_token(&self.user.wfm_token, &self.wfm_client.get_device_id()),
+        )
+        .await
         {
-            Ok(client) => client,
-            Err(e) => {
+            Ok(Ok(client)) => client,
+            Ok(Err(e)) => {
                 return Err(Error::from_wfm(
                     "AppState:Validate",
                     "Failed to login with WFM token",
                     e,
+                    get_location!(),
+                ));
+            }
+            Err(_) => {
+                return Err(Error::new(
+                    "AppState:Validate",
+                    "Timeout logging in with WFM token",
                     get_location!(),
                 ));
             }
@@ -462,32 +513,79 @@ impl AppState {
         self.qf_client.set_wfm_id(&wfm_user.id);
         self.qf_client.set_wfm_username(&wfm_user.ingame_name);
         self.qf_client.set_wfm_platform(&wfm_user.platform);
-        let qf_user = match self.qf_client.authentication().me().await {
-            Ok(u) => u,
-            Err(QFApiError::Unauthorized(err)) if err.error.message.contains("Unauthorized") => {
-                self.authenticate_qf_user(&self.qf_client, &wfm_user)
-                    .await?
-            }
-            Err(e) => {
-                let level = match e {
-                    QFApiError::RequestError(_) => LogLevel::Warning,
-                    _ => LogLevel::Critical,
-                };
-                return Err(Error::from_qf(
+        // Add timeout for QF user authentication (30 seconds)
+        let qf_user = match tokio::time::timeout(
+            tokio::time::Duration::from_secs(30),
+            self.qf_client.authentication().me(),
+        )
+        .await
+        {
+            Ok(result) => match result {
+                Ok(u) => u,
+                Err(QFApiError::Unauthorized(err))
+                    if err.error.message.contains("Unauthorized") =>
+                {
+                    // Add timeout for QF authentication (30 seconds)
+                    match tokio::time::timeout(
+                        tokio::time::Duration::from_secs(30),
+                        self.authenticate_qf_user(&self.qf_client, &wfm_user),
+                    )
+                    .await
+                    {
+                        Ok(Ok(user)) => user,
+                        Ok(Err(e)) => return Err(e),
+                        Err(_) => {
+                            return Err(Error::new(
+                                "AppState:Validate",
+                                "Timeout authenticating QF user",
+                                get_location!(),
+                            ));
+                        }
+                    }
+                }
+                Err(e) => {
+                    let level = match e {
+                        QFApiError::RequestError(_) => LogLevel::Warning,
+                        _ => LogLevel::Critical,
+                    };
+                    return Err(Error::from_qf(
+                        "AppState:Validate",
+                        "Failed to get QF user",
+                        e,
+                        get_location!(),
+                    )
+                    .set_log_level(level));
+                }
+            },
+            Err(_) => {
+                return Err(Error::new(
                     "AppState:Validate",
-                    "Failed to get QF user",
-                    e,
+                    "Timeout getting QF user",
                     get_location!(),
-                )
-                .set_log_level(level));
+                ));
             }
         };
         if !qf_user.token.is_none() {
             self.qf_client.set_token(qf_user.token.as_ref().unwrap());
         }
-        let (ws, ws_chat) = setup_socket(wfm_client.clone()).await?;
-        self.wfm_socket = Some(ws);
-        self.wfm_chat_socket = Some(ws_chat);
+        // Try to setup WebSocket connections, but don't fail if they don't work
+        match setup_socket(wfm_client.clone()).await {
+            Ok((ws, ws_chat)) => {
+                self.wfm_socket = Some(ws);
+                self.wfm_chat_socket = Some(ws_chat);
+            }
+            Err(e) => {
+                warning(
+                    "AppState:Validate",
+                    "Failed to setup WebSocket connections, continuing without real-time updates",
+                    &LoggerOptions::default(),
+                );
+                e.log("websocket_setup_error.log");
+                // Continue without WebSocket connections
+                self.wfm_socket = None;
+                self.wfm_chat_socket = None;
+            }
+        }
         if !qf_user.banned {
             match self.qf_client.analytics().start() {
                 Ok(_) => {}

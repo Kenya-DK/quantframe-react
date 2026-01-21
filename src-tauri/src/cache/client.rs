@@ -11,6 +11,7 @@ use service::{
     WishListMutation,
 };
 use tauri::Manager;
+use tokio::time;
 
 use crate::{
     app::{client::AppState, User},
@@ -162,27 +163,83 @@ impl CacheState {
                     .cache_auctions_mut()
                     .apply_item_info(&client)?;
             }
-            Err(e) => return Err(e.with_location(get_location!())),
+            Err(e) => {
+                // If cache load fails but we have existing cache directory, continue
+                if client.base_path.exists() {
+                    warning(
+                        "Cache:Client",
+                        "Cache load failed, but existing cache found. Continuing with existing cache.",
+                        &LoggerOptions::default(),
+                    );
+                    e.log("cache_load_error.log");
+                    // Try to load existing cache modules
+                    let _ = client.language().load(&lang);
+                    let language_module = client.language();
+                    let language = language_module.as_ref();
+                    // Try to load essential cache modules, but don't fail if they don't work
+                    let _ = client.tradable_item().load(language);
+                    let _ = client.riven().load(language);
+                } else {
+                    // No existing cache, this is a critical error
+                    return Err(e.with_location(get_location!()));
+                }
+            }
         }
-        match client.update_da_names(&lang).await {
-            Ok(_) => {}
-            Err(e) => return Err(e.with_location(get_location!())),
+        // Try to update DA names, but don't fail if it doesn't work
+        if let Err(e) = client.update_da_names(&lang).await {
+            warning(
+                "Cache:Client",
+                "Failed to update DA names, continuing anyway",
+                &LoggerOptions::default(),
+            );
+            e.log("cache_da_names_error.log");
         }
         Ok(client)
     }
 
     async fn check_update(&self, qf_client: &QFClient) -> Result<(bool, String), Error> {
         let current_version = self.version.id.clone();
-        let remote_version = match qf_client.cache().get_cache_id().await {
-            Ok(id) => id,
-            Err(e) => {
+        // Add timeout for API call (30 seconds)
+        let remote_version = match tokio::time::timeout(
+            tokio::time::Duration::from_secs(30),
+            qf_client.cache().get_cache_id(),
+        )
+        .await
+        {
+            Ok(Ok(id)) => id,
+            Ok(Err(e)) => {
+                warning(
+                    "Cache:CheckUpdate",
+                    "Failed to get cache ID, using existing cache if available",
+                    &LoggerOptions::default(),
+                );
+                // If API call fails, check if we have existing cache
+                if self.base_path.exists() {
+                    return Ok((false, current_version));
+                }
                 let err = Error::from_qf(
                     "Cache:CheckUpdate",
-                    "Failed to get cache ID",
+                    "Failed to get cache ID and no existing cache available",
                     e,
                     get_location!(),
                 );
                 return Err(err);
+            }
+            Err(_) => {
+                warning(
+                    "Cache:CheckUpdate",
+                    "Timeout getting cache ID, using existing cache if available",
+                    &LoggerOptions::default(),
+                );
+                // If timeout, check if we have existing cache
+                if self.base_path.exists() {
+                    return Ok((false, current_version));
+                }
+                return Err(Error::new(
+                    "Cache:CheckUpdate",
+                    "Timeout getting cache ID and no existing cache available",
+                    get_location!(),
+                ));
             }
         };
         if !self.base_path.exists() {
@@ -210,17 +267,56 @@ impl CacheState {
                 &LoggerOptions::default(),
             );
             emit_startup!("cache.updating", json!({}));
-            match self.extract(qf_client).await {
-                Ok(()) => {
+            // Add timeout for cache download (5 minutes)
+            match tokio::time::timeout(
+                tokio::time::Duration::from_secs(300),
+                self.extract(qf_client),
+            )
+            .await
+            {
+                Ok(Ok(())) => {
                     info(
                         "Cache:Load",
                         "Cache updated successfully.",
                         &LoggerOptions::default(),
                     );
                 }
-                Err(e) => {
+                Ok(Err(e)) => {
+                    warning(
+                        "Cache:Load",
+                        "Failed to download cache, using existing cache if available",
+                        &LoggerOptions::default(),
+                    );
                     e.log("cache_update.log");
-                    return Err(e.with_location(get_location!()));
+                    // If download fails but we have existing cache, continue
+                    if !self.base_path.exists() {
+                        return Err(e.with_location(get_location!()));
+                    }
+                    warning(
+                        "Cache:Load",
+                        "Continuing with existing cache despite download failure",
+                        &LoggerOptions::default(),
+                    );
+                }
+                Err(_) => {
+                    warning(
+                        "Cache:Load",
+                        "Timeout downloading cache, using existing cache if available",
+                        &LoggerOptions::default(),
+                    );
+                    // If timeout and no existing cache, return error
+                    if !self.base_path.exists() {
+                        return Err(Error::new(
+                            "Cache:Load",
+                            "Timeout downloading cache and no existing cache available",
+                            get_location!(),
+                        ));
+                    }
+                    warning(
+                        "Cache:Load",
+                        "Continuing with existing cache despite timeout",
+                        &LoggerOptions::default(),
+                    );
                 }
             }
         } else {
@@ -235,9 +331,32 @@ impl CacheState {
         self.language().load(&lang)?;
         let language_module = self.language();
         let language = language_module.as_ref();
-        self.item_price()
-            .load(qf_client, price_require_update)
-            .await?;
+        // Add timeout for item price loading (60 seconds)
+        match tokio::time::timeout(
+            tokio::time::Duration::from_secs(60),
+            self.item_price().load(qf_client, price_require_update),
+        )
+        .await
+        {
+            Ok(Ok(())) => {}
+            Ok(Err(e)) => {
+                warning(
+                    "Cache:Load",
+                    "Failed to load item prices, continuing anyway",
+                    &LoggerOptions::default(),
+                );
+                e.log("cache_item_price.log");
+                // Continue even if item prices fail to load
+            }
+            Err(_) => {
+                warning(
+                    "Cache:Load",
+                    "Timeout loading item prices, continuing anyway",
+                    &LoggerOptions::default(),
+                );
+                // Continue even if timeout
+            }
+        }
         self.tradable_item().load(language)?;
         self.arcane().load(language)?;
         self.archgun().load(language)?;
