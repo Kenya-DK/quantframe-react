@@ -203,7 +203,8 @@ type CreateSoundFormProps = {
 const CreateSoundForm = ({ onConfirm, copy }: CreateSoundFormProps) => {
   const [name, setName] = useState("");
   const [filePath, setFilePath] = useState("");
-  const canConfirm = Boolean(name && filePath);
+  const trimmedName = name.trim();
+  const canConfirm = Boolean(trimmedName && filePath);
 
   const handleBrowse = async () => {
     try {
@@ -226,7 +227,7 @@ const CreateSoundForm = ({ onConfirm, copy }: CreateSoundFormProps) => {
 
   const handleConfirm = () => {
     if (!canConfirm) return;
-    onConfirm(name, filePath);
+    onConfirm(trimmedName, filePath);
     setName("");
     setFilePath("");
   };

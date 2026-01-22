@@ -4,6 +4,7 @@ use crate::{
 };
 use std::{
     fs,
+    io,
     path::{Component, Path},
     sync::Mutex,
 };
@@ -11,6 +12,25 @@ use utils::Error;
 
 const MAX_SOUND_FILE_SIZE_BYTES: u64 = 10 * 1024 * 1024;
 const ALLOWED_SOUND_EXTENSIONS: [&str; 3] = ["mp3", "wav", "ogg"];
+
+fn normalize_sound_name(name: &str) -> Result<String, Error> {
+    let trimmed = name.trim();
+    if trimmed.is_empty() {
+        return Err(Error::new(
+            "Sound",
+            "Sound name is required.",
+            utils::get_location!(),
+        ));
+    }
+    if trimmed.chars().any(|ch| ch.is_control()) {
+        return Err(Error::new(
+            "Sound",
+            "Sound name contains invalid characters.",
+            utils::get_location!(),
+        ));
+    }
+    Ok(trimmed.to_string())
+}
 
 fn validate_sound_file(file_path: &str) -> Result<String, Error> {
     let path = Path::new(file_path);
@@ -88,6 +108,21 @@ pub async fn sound_add_custom_sound(
 ) -> Result<Vec<CustomSound>, Error> {
     let mut app = app.lock()?;
 
+    let normalized_name = normalize_sound_name(&name)?;
+    let normalized_name_key = normalized_name.to_lowercase();
+    if app
+        .settings
+        .custom_sounds
+        .iter()
+        .any(|sound| sound.name.trim().to_lowercase() == normalized_name_key)
+    {
+        return Err(Error::new(
+            "Sound",
+            "Sound name already exists.",
+            utils::get_location!(),
+        ));
+    }
+
     let extension = validate_sound_file(&file_path)?;
 
     // Add file to sound dir
@@ -104,7 +139,7 @@ pub async fn sound_add_custom_sound(
     })?;
     
     // Add to settings
-    let new_sound = CustomSound::new(name, file_name);
+    let new_sound = CustomSound::new(normalized_name, file_name);
     app.settings.custom_sounds.push(new_sound);
     app.settings.save()?;
     
@@ -123,15 +158,15 @@ pub async fn sound_delete_custom_sound(
     // Remove file from sounds dir
     let sounds_path = helper::get_sounds_path();
     let file_path = sounds_path.join(&file_name);
-    
-    if file_path.exists() {
-        fs::remove_file(&file_path).map_err(|e| {
-            Error::new(
+
+    if let Err(error) = fs::remove_file(&file_path) {
+        if error.kind() != io::ErrorKind::NotFound {
+            return Err(Error::new(
                 "Sound",
-                &format!("Failed to delete sound file: {}", e),
+                &format!("Failed to delete sound file: {}", error),
                 utils::get_location!(),
-            )
-        })?;
+            ));
+        }
     }
     
     // Rem from settings
