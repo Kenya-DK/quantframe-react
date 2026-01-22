@@ -3,6 +3,7 @@ import { useForm } from "@mantine/form";
 import { useLocalStorage } from "@mantine/hooks";
 import { useEffect } from "react";
 import { TauriTypes } from "$types";
+import { FALLBACK_SOUND, isCustomSound, stripCustomSoundPrefix } from "@utils/sound";
 import { useCustomSoundsTable } from "./queries";
 import { ManageSoundsView, NotificationsView } from "./views";
 
@@ -40,9 +41,19 @@ export function EditNotificationSetting({ id, value, onChange }: EditNotificatio
 
   const soundsTable = useCustomSoundsTable();
   const selectedSoundFile = form.values.system_notify.sound_file;
+
+  useEffect(() => {
+    if (!soundsTable.isLoaded) return;
+    if (!selectedSoundFile || !isCustomSound(selectedSoundFile)) return;
+    const selectedFileName = stripCustomSoundPrefix(selectedSoundFile);
+    const exists = soundsTable.customSounds.some((sound) => sound.file_name === selectedFileName);
+    if (!exists) {
+      form.setFieldValue("system_notify.sound_file", FALLBACK_SOUND);
+    }
+  }, [form, selectedSoundFile, soundsTable.customSounds, soundsTable.isLoaded]);
   const handleManageSounds = () => setViewMode(ViewMode.ManageSounds);
   const handleBack = () => setViewMode(ViewMode.Notifications);
-  const handleClearSelectedSound = () => form.setFieldValue("system_notify.sound_file", "none");
+  const handleClearSelectedSound = () => form.setFieldValue("system_notify.sound_file", FALLBACK_SOUND);
 
   return (
     <Box p="md" pb={0}>

@@ -71,6 +71,7 @@ export const useCustomSoundsTable = () => {
     totalRecords,
     safePage,
     isFetching: customSoundsQuery.isFetching,
+    isLoaded: customSoundsQuery.isSuccess,
     invalidateSounds,
   };
 };

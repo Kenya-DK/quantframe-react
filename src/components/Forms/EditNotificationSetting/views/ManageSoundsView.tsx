@@ -50,6 +50,11 @@ export const ManageSoundsView = ({
 }: ManageSoundsViewProps) => {
   const t = createEditNotificationSettingTranslations();
 
+  // TODO: find a solution for better long text ellipsis
+  // handmade text-overflow: ellipsis becouse of it being not stable in mantine (especially in modal becouse there is no width lim)
+  const ellipsize = (value: string, maxLength: number = 40) =>
+    value.length > maxLength ? `${value.slice(0, Math.max(0, maxLength - 3))}...` : value;
+
   const copy = {
     nameLabel: t.manageSounds("fields.name.label"),
     namePlaceholder: t.manageSounds("fields.name.placeholder"),
@@ -62,6 +67,12 @@ export const ManageSoundsView = ({
   const showError = (title: string, message: string) => {
     notifications.show({ title, message, color: "red.7" });
   };
+
+  const renderEllipsisValue = (value: string) => (
+    <Text lineClamp={1} title={value} style={{ maxWidth: 240 }}>
+      {value}
+    </Text>
+  );
 
   const handleAddSound = async (name: string, filePath: string) => {
     try {
@@ -95,8 +106,9 @@ export const ManageSoundsView = ({
   };
 
   const handleDeleteConfirm = (sound: TauriTypes.CustomSound) => {
+    const deleteTitle = t.manageSounds("dialog.delete.title", { name: ellipsize(sound.name) });
     modals.openConfirmModal({
-      title: t.manageSounds("dialog.delete.title", { name: sound.name }),
+      title: deleteTitle,
       children: <Text size="sm">{t.manageSounds("dialog.delete.message")}</Text>,
       labels: {
         confirm: t.manageSounds("dialog.delete.confirm"),
@@ -112,6 +124,7 @@ export const ManageSoundsView = ({
       accessor: "name",
       title: t.manageSounds("table.columns.name"),
       sortable: true,
+      render: (sound: TauriTypes.CustomSound) => renderEllipsisValue(sound.name),
     },
     {
       accessor: "file_name",

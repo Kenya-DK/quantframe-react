@@ -20,7 +20,7 @@ import { TooltipIcon } from "@components/Shared/TooltipIcon";
 import api from "@api/index";
 import { faWebHook } from "@icons";
 import { PlaySound } from "@utils/helper";
-import { toCustomSoundValue } from "@utils/sound";
+import { FALLBACK_SOUND, isCustomSound, toCustomSoundValue } from "@utils/sound";
 import { createEditNotificationSettingTranslations } from "../translations";
 
 const DEFAULT_SOUND_OPTIONS = [
@@ -107,7 +107,16 @@ const SystemNotificationSection = ({
 
   const handlePlaySound = () => {
     if (!form.values.system_notify.enabled || form.values.system_notify.sound_file === "none") return;
-    PlaySound(form.values.system_notify.sound_file || "none", volumeValue);
+    const soundFile = form.values.system_notify.sound_file || "none";
+    if (isCustomSound(soundFile)) {
+      const exists = customSoundOptions.some((option) => option.value === soundFile);
+      if (!exists) {
+        form.setFieldValue("system_notify.sound_file", FALLBACK_SOUND);
+        PlaySound(FALLBACK_SOUND, volumeValue);
+        return;
+      }
+    }
+    PlaySound(soundFile, volumeValue);
   };
 
   return (
