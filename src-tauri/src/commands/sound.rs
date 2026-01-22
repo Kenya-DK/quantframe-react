@@ -22,6 +22,13 @@ fn normalize_sound_name(name: &str) -> Result<String, Error> {
             utils::get_location!(),
         ));
     }
+    if trimmed.len() > 100 {
+        return Err(Error::new(
+            "Sound",
+            "Sound name is too long (max 100 characters).",
+            utils::get_location!(),
+        ));
+    }
     if trimmed.chars().any(|ch| ch.is_control()) {
         return Err(Error::new(
             "Sound",
@@ -114,7 +121,7 @@ pub async fn sound_add_custom_sound(
         .settings
         .custom_sounds
         .iter()
-        .any(|sound| sound.name.trim().to_lowercase() == normalized_name_key)
+        .any(|sound| sound.name_key == normalized_name_key)
     {
         return Err(Error::new(
             "Sound",
