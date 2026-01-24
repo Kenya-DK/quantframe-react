@@ -35,17 +35,61 @@ export function CreateRivenAttribute({
   const useTranslateFormButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForm(`buttons.${key}`, { ...context }, i18Key);
 
+  const getExpectedSign = (isPositiveAttribute?: boolean) => {
+    if (!currentValue) return undefined;
+    if (currentValue.unit == "multiply") return undefined;
+    const isPositive =
+      typeof isPositiveAttribute == "boolean"
+        ? isPositiveAttribute
+        : positiveNumberOnly === true
+          ? true
+          : negativeNumberOnly === true
+            ? false
+            : undefined;
+    if (typeof isPositive != "boolean") return undefined;
+    const positiveIsNegative = currentValue.positiveIsNegative === true;
+    if (isPositive) return positiveIsNegative ? "negative" : "positive";
+    return positiveIsNegative ? "positive" : "negative";
+  };
+
+  const normalizeValue = (value: number, expectedSign: "positive" | "negative" | undefined) => {
+    if (!expectedSign || value == 0) return value;
+    if (expectedSign == "positive" && value < 0) return Math.abs(value);
+    if (expectedSign == "negative" && value > 0) return -Math.abs(value);
+    return value;
+  };
+
+  const getSignError = (value: number, expectedSign: "positive" | "negative" | undefined) => {
+    if (!expectedSign) return null;
+    if (expectedSign == "positive" && value < 0) return useTranslateFormFields("value.error.positive");
+    if (expectedSign == "negative" && value > 0) return useTranslateFormFields("value.error.negative");
+    return null;
+  };
+
+  const isSignMismatched = (value: number, expectedSign: "positive" | "negative" | undefined) => {
+    if (!expectedSign) return false;
+    return expectedSign == "positive" ? value < 0 : value > 0;
+  };
+
   // User form
   const form = useForm({
     initialValues: {
       ...value,
     },
     validate: {
-      value: (value: number) => {
-        if (positiveNumberOnly && value < 0) return useTranslateFormFields("value.error.positive");
-        if (negativeNumberOnly && value > 0) return useTranslateFormFields("value.error.negative");
-        if (currentValue?.positiveOnly && value < 0) return useTranslateFormFields("value.error.positive");
-        if (currentValue?.negativeOnly && value > 0) return useTranslateFormFields("value.error.negative");
+      value: (value: number, values: RivenAttribute) => {
+        if (currentValue?.unit == "multiply" && value < 0) return useTranslateFormFields("value.error.positive");
+        const expectedSign = getExpectedSign(values.positive);
+        const signError = getSignError(value, expectedSign);
+        if (signError) return signError;
+        if (currentValue?.positiveOnly) {
+          const positiveOnlyError = getSignError(value, getExpectedSign(true));
+          if (positiveOnlyError) return positiveOnlyError;
+        }
+        if (currentValue?.negativeOnly) {
+          const negativeOnlyError = getSignError(value, getExpectedSign(false));
+          if (negativeOnlyError) return negativeOnlyError;
+        }
         return null;
       },
     },
@@ -67,36 +111,36 @@ export function CreateRivenAttribute({
   };
 
   const GetUnitSymbol = () => {
-    if (currentValue?.unit == "multiply") return "+";
+    if (currentValue?.unit == "multiply") return form.values.positive ? "+" : "-";
     if (currentValue?.unit == "percent") return "%";
     if (currentValue?.unit == "seconds") return "sec";
     return undefined;
   };
 
   const GetMaxValue = () => {
-    if ((positiveNumberOnly && form.values.value < 0) || (negativeNumberOnly && form.values.value > 0)) return undefined;
-    if (positiveNumberOnly && currentValue?.unit != "multiply") return 400;
-    if (positiveNumberOnly && currentValue?.unit == "multiply") return 4;
-
-    if (negativeNumberOnly && currentValue?.unit == "multiply") return 1;
-    if (negativeNumberOnly && currentValue?.unit != "multiply") return 0;
+    if (!currentValue) return undefined;
+    if (currentValue.unit == "multiply") return form.values.positive ? 4 : 1;
+    const expectedSign = getExpectedSign(form.values.positive);
+    if (isSignMismatched(form.values.value, expectedSign)) return undefined;
+    if (expectedSign == "positive") return 400;
+    if (expectedSign == "negative") return 0;
     return undefined;
   };
 
   const GetMinValue = () => {
-    if ((positiveNumberOnly && form.values.value < 0) || (negativeNumberOnly && form.values.value > 0)) return undefined;
-    if (positiveNumberOnly) return 0;
-    if (negativeNumberOnly && currentValue?.unit != "multiply") return -400;
-    if (negativeNumberOnly && currentValue?.unit == "multiply") return 0;
+    if (!currentValue) return undefined;
+    if (currentValue.unit == "multiply") return 0;
+    const expectedSign = getExpectedSign(form.values.positive);
+    if (isSignMismatched(form.values.value, expectedSign)) return undefined;
+    if (expectedSign == "positive") return 0;
+    if (expectedSign == "negative") return -400;
     return undefined;
   };
 
   const ValidateValue = () => {
-    // TODO: Validate value based on positiveNumberOnly and negativeNumberOnly
-    // console.log("ValidateValue", form.values.value);
-    // const isNegative = negativeNumberOnly == undefined ? false : negativeNumberOnly;
-    // if ((positiveNumberOnly && form.values.value < 0) || ((isNegative && form.values.value > 0) != currentValue?.unit) == "multiply")
-    //   form.setFieldValue("value", -form.values.value);
+    const expectedSign = getExpectedSign(form.values.positive);
+    const normalizedValue = normalizeValue(form.values.value, expectedSign);
+    if (normalizedValue != form.values.value) form.setFieldValue("value", normalizedValue);
   };
 
   return (
