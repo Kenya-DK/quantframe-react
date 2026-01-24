@@ -1,9 +1,10 @@
-import { Group, Select } from "@mantine/core";
+import { Group } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
 import { TauriTypes } from "$types";
 import { useEffect, useState } from "react";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
+import { TokenSearchSelect } from "@components/Forms/TokenSearchSelect";
 
 export type SelectRivenWeaponProps = {
   value: string;
@@ -18,9 +19,6 @@ export interface SelectCacheRivenWeapon extends Omit<TauriTypes.CacheRivenWeapon
 export function SelectRivenWeapon({ value, onChange, description }: SelectRivenWeaponProps) {
   // State
   const [items, setItems] = useState<SelectCacheRivenWeapon[]>([]);
-  const [filteredItems, setFilteredItems] = useState(items);
-  const [lastKeyPressed, setLastKeyPressed] = useState<string | null>(null);
-  const [_selectedItem, setSelectedItem] = useState<SelectCacheRivenWeapon | null>(null);
 
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -49,43 +47,26 @@ export function SelectRivenWeapon({ value, onChange, description }: SelectRivenW
   const handleSelect = (item: SelectCacheRivenWeapon) => {
     const new_item = { ...item };
     onChange(new_item);
-    setSelectedItem(new_item);
   };
 
   return (
     <Group>
-      <Select
+      <TokenSearchSelect
         w={250}
+        autoSelectOnBlur
+        selectFirstOptionOnChange
+        required
         label={useTranslateFormFields("weapon.label")}
         placeholder={useTranslateFormFields("weapon.placeholder")}
         description={description}
-        data={filteredItems}
-        searchable
+        data={items}
+        searchKeys={["label"]}
         limit={10}
-        required
         maxDropdownHeight={400}
         value={value}
-        onKeyDown={(event) => {
-          setLastKeyPressed(event.key);
-        }}
-        onSearchChange={(searchValue) => {
-          setFilteredItems(() => {
-            const sortedItems = items.filter((item) => item.label.toLowerCase().startsWith(searchValue.toLowerCase()));
-            return sortedItems.sort((a, b) => a.label.localeCompare(b.label));
-          });
-        }}
-        onBlur={() => {
-          if (lastKeyPressed === "Tab" && filteredItems.length > 0) {
-            const firstItem = filteredItems[0];
-            handleSelect(firstItem);
-          }
-          setLastKeyPressed(null);
-        }}
-        onChange={async (item) => {
+        onItemSelect={(item) => {
           if (!item) return;
-          let tItem = items.find((i) => i.wfm_url_name === item);
-          if (!tItem) return;
-          handleSelect(tItem);
+          handleSelect(item);
         }}
       />
     </Group>

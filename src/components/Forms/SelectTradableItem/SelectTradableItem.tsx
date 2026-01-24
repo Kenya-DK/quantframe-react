@@ -5,6 +5,7 @@ import { TauriTypes } from "$types";
 import { useEffect, useState } from "react";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { upperFirst } from "@mantine/hooks";
+import { TokenSearchSelect } from "@components/Forms/TokenSearchSelect";
 
 export type SelectTradableItemProps = {
   value: string;
@@ -22,8 +23,6 @@ export interface SelectCacheTradableItem extends Omit<TauriTypes.CacheTradableIt
 export function SelectTradableItem({ hide_sub_type, value, onChange, description }: SelectTradableItemProps) {
   // State
   const [items, setItems] = useState<SelectCacheTradableItem[]>([]);
-  const [filteredItems, setFilteredItems] = useState(items);
-  const [lastKeyPressed, setLastKeyPressed] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<SelectCacheTradableItem | null>(null);
 
   // Translate general
@@ -48,7 +47,6 @@ export function SelectTradableItem({ hide_sub_type, value, onChange, description
       sub_type: undefined,
     }));
     setItems(mappedItems);
-    setFilteredItems(mappedItems);
   }, [data]);
 
   const handleSelect = (item: SelectCacheTradableItem) => {
@@ -71,45 +69,24 @@ export function SelectTradableItem({ hide_sub_type, value, onChange, description
 
   return (
     <Group>
-      <Select
+      <TokenSearchSelect
         w={250}
+        autoSelectOnBlur
+        selectFirstOptionOnChange
+        required
+        searchable
         label={useTranslateFormFields("item.label")}
         placeholder={useTranslateFormFields("item.placeholder")}
         description={description}
-        data={filteredItems}
-        searchable
+        data={items}
         limit={10}
-        required
+        searchKeys={["label"]}
         nothingFoundMessage={useTranslate("messages.nothing_found")}
         maxDropdownHeight={400}
         value={value}
-        onKeyDown={(event) => {
-          setLastKeyPressed(event.key);
-        }}
-        onSearchChange={(searchValue) => {
-          setFilteredItems(() => {
-            const normalizedSearch = searchValue.trim().toLowerCase();
-            const tokens = normalizedSearch.length > 0 ? normalizedSearch.split(/\s+/) : [];
-            const sortedItems = items.filter((item) => {
-              if (tokens.length === 0) return true;
-              const normalizedLabel = item.label.toLowerCase();
-              return tokens.every((token) => normalizedLabel.includes(token));
-            });
-            return sortedItems.sort((a, b) => a.label.localeCompare(b.label));
-          });
-        }}
-        onBlur={() => {
-          if (lastKeyPressed === "Tab" && filteredItems.length > 0) {
-            const firstItem = filteredItems[0];
-            handleSelect(firstItem);
-          }
-          setLastKeyPressed(null);
-        }}
-        onChange={async (item) => {
+        onItemSelect={(item) => {
           if (!item) return;
-          let tItem = items.find((i) => i.wfm_url_name === item);
-          if (!tItem) return;
-          handleSelect(tItem);
+          handleSelect(item);
         }}
       />
       {selectedItem && selectedItem.available_sub_types && !hide_sub_type && (
