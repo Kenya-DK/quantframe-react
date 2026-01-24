@@ -63,6 +63,12 @@ export const ManageSoundsView = ({
     notifications.show({ title, message, color: "red.7" });
   };
 
+  const renderEllipsisValue = (value: string) => (
+    <Text lineClamp={1} title={value} style={{ maxWidth: 240 }}>
+      {value}
+    </Text>
+  );
+
   const handleAddSound = async (name: string, filePath: string) => {
     try {
       await api.sound.addCustomSound(name, filePath);
@@ -95,8 +101,17 @@ export const ManageSoundsView = ({
   };
 
   const handleDeleteConfirm = (sound: TauriTypes.CustomSound) => {
+    const deleteTitle = t.manageSounds("dialog.delete.title", { name: sound.name });
     modals.openConfirmModal({
-      title: t.manageSounds("dialog.delete.title", { name: sound.name }),
+      title: (
+        <Text truncate="end" title={deleteTitle} w="100%" style={{ minWidth: 0 }}>
+          {deleteTitle}
+        </Text>
+      ),
+      styles: {
+        header: { alignItems: "center" },
+        title: { flex: 1, minWidth: 0 },
+      },
       children: <Text size="sm">{t.manageSounds("dialog.delete.message")}</Text>,
       labels: {
         confirm: t.manageSounds("dialog.delete.confirm"),
@@ -112,6 +127,7 @@ export const ManageSoundsView = ({
       accessor: "name",
       title: t.manageSounds("table.columns.name"),
       sortable: true,
+      render: (sound: TauriTypes.CustomSound) => renderEllipsisValue(sound.name),
     },
     {
       accessor: "file_name",
@@ -203,7 +219,8 @@ type CreateSoundFormProps = {
 const CreateSoundForm = ({ onConfirm, copy }: CreateSoundFormProps) => {
   const [name, setName] = useState("");
   const [filePath, setFilePath] = useState("");
-  const canConfirm = Boolean(name && filePath);
+  const trimmedName = name.trim();
+  const canConfirm = Boolean(trimmedName && filePath);
 
   const handleBrowse = async () => {
     try {
@@ -226,7 +243,7 @@ const CreateSoundForm = ({ onConfirm, copy }: CreateSoundFormProps) => {
 
   const handleConfirm = () => {
     if (!canConfirm) return;
-    onConfirm(name, filePath);
+    onConfirm(trimmedName, filePath);
     setName("");
     setFilePath("");
   };
