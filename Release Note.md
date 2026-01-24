@@ -1,5 +1,8 @@
 ## Add Feature's
 
+✨ Add custom sounds for notifications (Yurii-IvoryFace)
+✨ Overhaul search functionality with advanced filters (Yurii-IvoryFace)
+
 ## Fix's
 
 - 🛠️ Fix a bug where warframe gdpr parse
