@@ -165,7 +165,6 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
                 onChange={(event) => form.setFieldValue("mod_name", event || "")}
                 error={form.errors.mod_name && useTranslateFormFields("mod_name.error")}
                 data={modNames}
-                renderOption={renderSelectOption}
               />
             </Group>
             <Flex gap="md">
