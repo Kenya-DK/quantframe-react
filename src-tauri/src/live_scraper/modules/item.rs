@@ -339,6 +339,24 @@ impl ItemModule {
             return Ok(());
         }
 
+        // Check if we already have enough stock of this item
+        if !is_disabled(settings.max_stock_quantity) {
+            let conn = DATABASE.get().unwrap();
+            if let Ok(existing_item) = entry.get_stock_item(conn).await {
+                if existing_item.owned >= settings.max_stock_quantity {
+                    info(
+                        format!("{}MaxStockReached", COMPONENT),
+                        &format!(
+                            "Item {} already has {} units in stock (max: {}). Skipping WTB order creation.",
+                            item_info.name, existing_item.owned, settings.max_stock_quantity
+                        ),
+                        &log_options,
+                    );
+                    return Ok(());
+                }
+            }
+        }
+
         let wfm_client = states::app_state()?.wfm_client;
         // Skip if no relevant market activity
         let (should_skip, _operation) = skip_if_no_market_activity(live_orders);
