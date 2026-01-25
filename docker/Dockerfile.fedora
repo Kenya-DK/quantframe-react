@@ -1,0 +1,90 @@
+FROM fedora:43
+
+# Install system dependencies for Tauri v2
+RUN dnf update -y && \
+    dnf install -y \
+    gcc \
+    gcc-c++ \
+    make \
+    pkg-config \
+    openssl-devel \
+    webkit2gtk4.1-devel \
+    javascriptcoregtk4.1-devel \
+    libsoup3-devel \
+    librsvg2-devel \
+    curl \
+    wget \
+    git \
+    rpm-build \
+    rpmdevtools \
+    && dnf clean all
+
+# Install Node.js (LTS version)
+RUN dnf install -y nodejs npm && dnf clean all
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Install Rust toolchain
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+COPY tsconfig.json tsconfig.node.json ./
+COPY vite.config.ts ./
+COPY postcss.config.cjs ./
+COPY index.html ./
+
+# Copy source files
+COPY src ./src
+COPY public ./public
+
+# Copy Tauri configuration
+COPY src-tauri ./src-tauri
+
+# Install frontend dependencies
+RUN pnpm install --frozen-lockfile
+
+# Build the application (RPM package for Fedora)
+# Try release build first, fall back to debug if needed
+RUN pnpm tauri build --bundles rpm 2>&1 || (echo "Release build failed, trying debug build..." && pnpm tauri build --debug --bundles rpm 2>&1)
+
+# Create output directory
+RUN mkdir -p /app/build-output
+
+# Copy built artifacts to output directory
+# 1. Copy executable binary (release or debug) - check both naming conventions
+RUN if [ -f "src-tauri/target/release/quantframe" ]; then \
+    cp src-tauri/target/release/quantframe /app/build-output/quantframe && \
+    chmod +x /app/build-output/quantframe; \
+    elif [ -f "src-tauri/target/release/Quantframe" ]; then \
+    cp src-tauri/target/release/Quantframe /app/build-output/quantframe && \
+    chmod +x /app/build-output/quantframe; \
+    elif [ -f "src-tauri/target/debug/quantframe" ]; then \
+    cp src-tauri/target/debug/quantframe /app/build-output/quantframe && \
+    chmod +x /app/build-output/quantframe; \
+    elif [ -f "src-tauri/target/debug/Quantframe" ]; then \
+    cp src-tauri/target/debug/Quantframe /app/build-output/quantframe && \
+    chmod +x /app/build-output/quantframe; \
+    fi
+
+# 2. Copy RPM packages
+RUN find src-tauri/target -name "*.rpm" -type f -exec cp {} /app/build-output/ \; 2>/dev/null || true
+
+# 3. Copy any bundle directories (DEB, RPM, etc.)
+RUN if [ -d "src-tauri/target/release/bundle" ]; then \
+    cp -r src-tauri/target/release/bundle /app/build-output/; \
+    elif [ -d "src-tauri/target/debug/bundle" ]; then \
+    cp -r src-tauri/target/debug/bundle /app/build-output/; \
+    fi
+
+# List what was copied
+RUN echo "=== Build artifacts ===" && \
+    ls -lhR /app/build-output/ 2>/dev/null || ls -lh /app/build-output/ && \
+    echo "======================"
+
+# The output will be in /app/build-output/
