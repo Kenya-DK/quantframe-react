@@ -60,7 +60,14 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
       },
       polarity: value?.polarity || "madurai",
     },
-    validate: {},
+    validate: {
+      attributes: (value?: TauriTypes.StockRiven["attributes"]) => {
+        if (!value || value.length === 0) return null;
+        const hasZeroValue = value.some((item) => item && item.url_name && item.url_name !== "N/A" && item.value === 0);
+        if (hasZeroValue) return useTranslateFormFields("attribute.error");
+        return null;
+      },
+    },
   });
 
   // Effects

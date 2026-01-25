@@ -8,10 +8,7 @@ import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { TokenSearchSelect } from "@components/Forms/TokenSearchSelect";
 
 // warframe.market riven form limits (change if needed, or control from outside)
-const RIVEN_PERCENT_ABS_MIN = 0.1;
 const RIVEN_PERCENT_ABS_MAX = 699;
-
-const RIVEN_MULTIPLY_MIN = 0.01;
 const RIVEN_MULTIPLY_MAX_POSITIVE = 2.99;
 const RIVEN_MULTIPLY_MAX_NEGATIVE = 0.99;
 
@@ -130,12 +127,12 @@ export function CreateRivenAttribute({
     if (!currentValue) return { min: undefined, max: undefined };
     if (currentValue.unit == "multiply")
       return {
-        min: RIVEN_MULTIPLY_MIN,
+        min: 0,
         max: form.values.positive ? RIVEN_MULTIPLY_MAX_POSITIVE : RIVEN_MULTIPLY_MAX_NEGATIVE,
       };
     if (isSignMismatched(value, expectedSign)) return { min: undefined, max: undefined };
-    if (expectedSign == "positive") return { min: RIVEN_PERCENT_ABS_MIN, max: RIVEN_PERCENT_ABS_MAX };
-    if (expectedSign == "negative") return { min: -RIVEN_PERCENT_ABS_MAX, max: RIVEN_PERCENT_ABS_MIN };
+    if (expectedSign == "positive") return { min: 0, max: RIVEN_PERCENT_ABS_MAX };
+    if (expectedSign == "negative") return { min: -RIVEN_PERCENT_ABS_MAX, max: 0 };
     return { min: undefined, max: undefined };
   };
 
