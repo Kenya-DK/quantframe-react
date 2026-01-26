@@ -29,3 +29,6 @@ __trace/
 # Added by cargo
 
 **/target
+
+build/
+.pnpm-store

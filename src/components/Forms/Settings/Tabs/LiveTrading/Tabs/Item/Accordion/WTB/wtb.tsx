@@ -120,6 +120,17 @@ export const WTBItemAccordion = ({ form }: WTBItemAccordionProps) => {
           radius="md"
           {...form.getInputProps(getFieldPath("quantity_per_trade"))}
         />
+        <NumberInput
+          label={useTranslateFormFields("max_stock_quantity.label")}
+          min={-1}
+          max={999}
+          placeholder={useTranslateFormFields("max_stock_quantity.placeholder")}
+          rightSection={
+            <TooltipIcon label={useTranslateFormFields("max_stock_quantity.tooltip")} link={useTranslateFormFields("max_stock_quantity.link")} />
+          }
+          radius="md"
+          {...form.getInputProps(getFieldPath("max_stock_quantity"))}
+        />
       </Group>
     </Box>
   );

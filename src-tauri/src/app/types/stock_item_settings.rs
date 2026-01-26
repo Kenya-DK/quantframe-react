@@ -38,6 +38,7 @@ pub struct StockItemSettings {
     pub buy_quantity: i64,
     pub min_wtb_profit_margin: i64,
     pub quantity_per_trade: i64,
+    pub max_stock_quantity: i64,
 
     // WTS Settings
     pub min_sma: i64,
@@ -60,6 +61,7 @@ impl Default for StockItemSettings {
             price_shift_threshold: -1,
             min_wtb_profit_margin: -1,
             quantity_per_trade: 1,
+            max_stock_quantity: -1,
         }
     }
 }

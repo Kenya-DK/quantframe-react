@@ -1307,6 +1307,13 @@
                     "tooltip": "The quantity of goods to trade per transaction: NOTE this is only valid for some items like arcanes",
                     "link": "https://quantframe.app/features/live-trading/settings/item/wtb#quantity-per-trade"
                   },
+                  "max_stock_quantity": {
+                    "label": "Max Stock Quantity",
+                    "placeholder": "Max Stock Quantity",
+                    "error": "Invalid max stock quantity",
+                    "tooltip": "Maximum quantity of an item to have in stock before stopping WTB order creation. Set to -1 to disable this feature.",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#max-stock-quantity"
+                  },
                   "wts": {
                     "title": "WTS",
                     "fields": {}
