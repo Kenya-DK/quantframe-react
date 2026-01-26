@@ -16,10 +16,9 @@ export default function WarframeMarketPage() {
     {
       label: useTranslateTabs("orders.title"),
       component: (isActive: boolean) => <OrderPanel isActive={isActive} />,
-      id: "or",
-      icon: <div>Stocks</div>,
+      id: "orders",
     },
-    { label: useTranslateTabs("auctions.title"), component: (isActive: boolean) => <AuctionPanel isActive={isActive} />, id: "au" },
+    { label: useTranslateTabs("auctions.title"), component: (isActive: boolean) => <AuctionPanel isActive={isActive} />, id: "auctions" },
   ];
   const [activeTab, setActiveTab] = useLocalStorage<string>({
     key: "warframe_market.active_tab",
