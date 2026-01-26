@@ -1,6 +1,7 @@
 ## Add Feature's
 
 ✨ Add custom sounds for notifications (Yurii-IvoryFace)
+✨ Add Max Stock Quantity (Katze719)
 ✨ Overhaul search functionality with advanced filters (Yurii-IvoryFace)
 
 ## Fix's
