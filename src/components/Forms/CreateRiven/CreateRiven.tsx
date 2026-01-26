@@ -70,6 +70,12 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
     },
   });
 
+  const resetFormForWeapon = (weaponUrl: string) => {
+    form.reset();
+    form.setFieldValue("wfm_weapon_url", weaponUrl);
+    setModNames([]);
+  };
+
   // Effects
   useEffect(() => {
     if (!attributes) return;
@@ -140,11 +146,15 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
             <Group gap="md" grow>
               <SelectRivenWeapon
                 value={form.values.wfm_weapon_url || ""}
-                onChange={(item) => form.setFieldValue("wfm_weapon_url", item.wfm_url_name)}
+                onChange={(item) => {
+                  if (item.wfm_url_name === form.values.wfm_weapon_url) return;
+                  resetFormForWeapon(item.wfm_url_name);
+                }}
               />
             </Group>
             <Group>
               <CreateRivenAttributes
+                key={form.values.wfm_weapon_url || "no-weapon"}
                 maxNegative={1}
                 maxPositive={3}
                 attributes={availableAttributes}
@@ -155,6 +165,7 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
             {form.errors.attributes && <Text c="red">{form.errors.attributes}</Text>}
             <Group grow>
               <TokenSearchSelect
+                key={`mod-name-${form.values.wfm_weapon_url || "no-weapon"}`}
                 size="sm"
                 autoSelectOnBlur
                 selectFirstOptionOnChange
