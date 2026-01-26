@@ -31,3 +31,4 @@ __trace/
 **/target
 
 build/
+.pnpm-store
