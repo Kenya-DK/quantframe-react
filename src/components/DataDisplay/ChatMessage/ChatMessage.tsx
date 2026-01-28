@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import calendar from "dayjs/plugin/calendar";
 dayjs.extend(calendar);
+import { decodeHtmlEntities } from "@utils/helper";
 
 export type ChatMessageProps = {
   user: WFMarketTypes.User | undefined;
@@ -42,7 +43,7 @@ export const ChatMessage = ({ user, msg, sender }: ChatMessageProps) => {
                   setOpen((o) => !o);
                 }}
               >
-                {msg.raw_message}
+                {decodeHtmlEntities(msg.raw_message)}
               </Alert>
             </Group>
           </Stack>
