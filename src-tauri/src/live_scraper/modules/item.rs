@@ -425,10 +425,44 @@ impl ItemModule {
             post_price,
         ));
 
+        let mut knapsack_skip_reasons = Vec::new();
+        if closed_avg_metric < 0 {
+            knapsack_skip_reasons.push("ClosedAvgMetric<0");
+        }
+
+        if price_range < profit_threshold {
+            knapsack_skip_reasons.push("PriceRangeBelowProfitThreshold");
+        }
+
+        if !order_info.has_operation("Create") {
+            knapsack_skip_reasons.push("NoCreateOperation");
+        }
+
+        let has_buy_orders = !wfm_client.order().cache_orders().buy_orders.is_empty();
+        if !has_buy_orders {
+            knapsack_skip_reasons.push("NoExistingBuyOrders");
+        }
+
+        if is_disabled(max_total_price_cap) {
+            knapsack_skip_reasons.push("MaxTotalPriceCapDisabled");
+        }
+
+        if !knapsack_skip_reasons.is_empty() {
+            info(
+                format!("{}KnapsackSkip", component),
+                &format!(
+                    "Knapsack skipped for item {}: {}",
+                    item_info.name,
+                    knapsack_skip_reasons.join(", ")
+                ),
+                &log_options,
+            );
+        }
+
         if closed_avg_metric >= 0
             && price_range >= profit_threshold
             && order_info.has_operation("Create")
-            && !wfm_client.order().cache_orders().buy_orders.is_empty()
+            && has_buy_orders
             && !is_disabled(max_total_price_cap)
         {
             let buy_orders_list = {
@@ -491,10 +525,10 @@ impl ItemModule {
                 order_info.add_operation("Skip");
                 order_info.add_operation("Delete");
             }
-        } else if closed_avg_metric < 0 && !is_disabled(max_total_price_cap) {
+        } else if closed_avg_metric < 0 {
             order_info.add_operation("Delete");
             order_info.add_operation("Overpriced");
-        } else if price_range < profit_threshold && !is_disabled(max_total_price_cap) {
+        } else if price_range < profit_threshold {
             order_info.add_operation("Delete");
             order_info.add_operation("Underpriced");
         }
