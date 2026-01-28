@@ -60,8 +60,21 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
       },
       polarity: value?.polarity || "madurai",
     },
-    validate: {},
+    validate: {
+      attributes: (value?: TauriTypes.StockRiven["attributes"]) => {
+        if (!value || value.length === 0) return null;
+        const hasZeroValue = value.some((item) => item && item.url_name && item.url_name !== "N/A" && item.value === 0);
+        if (hasZeroValue) return useTranslateFormFields("attribute.error");
+        return null;
+      },
+    },
   });
+
+  const resetFormForWeapon = (weaponUrl: string) => {
+    form.reset();
+    form.setFieldValue("wfm_weapon_url", weaponUrl);
+    setModNames([]);
+  };
 
   // Effects
   useEffect(() => {
@@ -133,11 +146,15 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
             <Group gap="md" grow>
               <SelectRivenWeapon
                 value={form.values.wfm_weapon_url || ""}
-                onChange={(item) => form.setFieldValue("wfm_weapon_url", item.wfm_url_name)}
+                onChange={(item) => {
+                  if (item.wfm_url_name === form.values.wfm_weapon_url) return;
+                  resetFormForWeapon(item.wfm_url_name);
+                }}
               />
             </Group>
             <Group>
               <CreateRivenAttributes
+                key={form.values.wfm_weapon_url || "no-weapon"}
                 maxNegative={1}
                 maxPositive={3}
                 attributes={availableAttributes}
@@ -148,6 +165,7 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
             {form.errors.attributes && <Text c="red">{form.errors.attributes}</Text>}
             <Group grow>
               <TokenSearchSelect
+                key={`mod-name-${form.values.wfm_weapon_url || "no-weapon"}`}
                 size="sm"
                 autoSelectOnBlur
                 selectFirstOptionOnChange
@@ -158,7 +176,6 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
                 onChange={(event) => form.setFieldValue("mod_name", event || "")}
                 error={form.errors.mod_name && useTranslateFormFields("mod_name.error")}
                 data={modNames}
-                renderOption={renderSelectOption}
               />
             </Group>
             <Flex gap="md">

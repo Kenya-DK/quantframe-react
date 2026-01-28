@@ -949,6 +949,10 @@
             "label": "Attributes",
             "error": "Riven must have at least 2 positive attributes"
           },
+          "attribute": {
+            "label": "Attribute",
+            "error": "Attribute values cannot be 0"
+          },
           "mod_name": {
             "label": "Mod Name",
             "placeholder": "Mod Name",
