@@ -285,6 +285,16 @@ export const GetItemDisplay = (
   if ("mod_name" in value) fullName += ` ${value.mod_name}`;
   return fullName || "Unknown Item";
 };
+
+export const decodeHtmlEntities = (input: string): string => {
+  try {
+    const doc = new DOMParser().parseFromString(input, "text/html");
+    return doc.documentElement.textContent || "";
+  } catch {
+    return input;
+  }
+};
+
 // At the top of your component or in a separate utils file
 export const getSafePage = (requestedPage: number | undefined, totalPages: number | undefined): number => {
   const page = requestedPage ?? 1;
