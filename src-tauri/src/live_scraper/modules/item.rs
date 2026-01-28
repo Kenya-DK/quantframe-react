@@ -1,5 +1,6 @@
 use std::{
     collections::HashSet,
+    path::PathBuf,
     sync::{atomic::Ordering, Arc, Weak},
 };
 
@@ -152,6 +153,7 @@ impl ItemModule {
     ) -> Result<(), Error> {
         let cache = states::cache_client()?;
         let client = self.client.upgrade().expect("Client should not be dropped");
+        let use_fake = app.settings.debugging.live_scraper.fake_orders;
         let mut current_index = 1;
 
         // Sort by priority (highest first)
@@ -197,27 +199,50 @@ impl ItemModule {
                 })),
             );
 
-            // Fetch live orders from API
-            let mut orders = match app
-                .wfm_client
-                .order()
-                .get_orders_by_item(&item_entry.wfm_url)
-                .await
-            {
-                Ok(o) => o,
-                Err(e) => {
-                    let log_level = match e {
-                        ApiError::RequestError(_) => LogLevel::Error,
-                        _ => LogLevel::Critical,
-                    };
-                    return Err(Error::from_wfm(
-                        format!("{}ProcessItem", COMPONENT),
-                        &format!("Failed to get live orders for item {}", item_entry.wfm_url),
-                        e,
-                        get_location!(),
-                    )
-                    .set_log_level(log_level));
+            let order_path = PathBuf::from(utils::get_base_path())
+                .join("fake_orders")
+                .join(format!("order_{}.json", item_info.wfm_url_name));
+
+            let mut orders = if use_fake && order_path.exists() {
+                match utils::read_json_file::<OrderList<OrderWithUser>>(&order_path) {
+                    Ok(cached) => {
+                        info(
+                            format!("{}ProcessItem", COMPONENT),
+                            &format!(
+                                "Using cached fake orders for item {} from {}",
+                                item_entry.wfm_url,
+                                order_path.display()
+                            ),
+                            &&LoggerOptions::default(),
+                        );
+                        cached
+                    }
+                    Err(e) => {
+                        warning(
+                            format!("{}ProcessItem", COMPONENT),
+                            &format!(
+                                "Failed to read fake orders for item {} ({}), falling back to API",
+                                item_entry.wfm_url, e
+                            ),
+                            &&LoggerOptions::default(),
+                        );
+                        fetch_and_cache_orders(
+                            &format!("{}ProcessItem", COMPONENT),
+                            &app.wfm_client,
+                            &item_entry.wfm_url,
+                            use_fake.then_some(&order_path),
+                        )
+                        .await?
+                    }
                 }
+            } else {
+                fetch_and_cache_orders(
+                    &format!("{}ProcessItem", COMPONENT),
+                    &app.wfm_client,
+                    &item_entry.wfm_url,
+                    use_fake.then_some(&order_path),
+                )
+                .await?
             };
 
             // Apply filters to orders

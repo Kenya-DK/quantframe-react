@@ -102,6 +102,7 @@ export namespace TauriTypes {
   export interface SettingsDebugging {
     live_scraper: {
       entries: DebuggingLiveItemEntry[];
+      fake_orders: boolean;
     };
   }
   export interface ManualUpdate {
@@ -490,8 +491,8 @@ export namespace TauriTypes {
   export interface ChartWithLabelsDto {
     labels: Array<string>;
   }
-  export interface ChartDto extends ChartWithValuesDto, ChartWithLabelsDto { }
-  export interface ChartMultipleDto extends ChartWithMultipleValuesDto, ChartWithLabelsDto { }
+  export interface ChartDto extends ChartWithValuesDto, ChartWithLabelsDto {}
+  export interface ChartMultipleDto extends ChartWithMultipleValuesDto, ChartWithLabelsDto {}
   export interface TradingSummaryDto {
     best_selling_items: TransactionItemSummaryDto[];
     category_summary: TransactionCategorySummaryDto[];
@@ -723,7 +724,7 @@ export namespace TauriTypes {
     name: string;
   }
 
-  export interface StockRivenDetails extends RivenSummary { }
+  export interface StockRivenDetails extends RivenSummary {}
   export interface SubType {
     rank?: number;
     variant?: string;
@@ -828,7 +829,7 @@ export namespace TauriTypes {
     created_at: string;
     properties: Record<string, any>;
   }
-  export interface TradeEntryDetails extends TradeEntry { }
+  export interface TradeEntryDetails extends TradeEntry {}
 
   export interface CreateTradeEntry {
     raw: string;

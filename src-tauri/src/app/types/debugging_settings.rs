@@ -18,12 +18,14 @@ impl Default for DebuggingSettings {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct DebuggingLiveScraperSettings {
     pub entries: Vec<ItemEntry>,
+    pub fake_orders: bool,
 }
 
 impl Default for DebuggingLiveScraperSettings {
     fn default() -> Self {
         DebuggingLiveScraperSettings {
             entries: Vec::new(),
+            fake_orders: false,
         }
     }
 }

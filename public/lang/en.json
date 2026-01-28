@@ -1867,6 +1867,8 @@
         },
         "debugging": {
           "title": "Debugging",
+          "fake_orders_tooltip": "Toggle Fake Orders for Live Trading (For Testing Purposes Only) will be stored in dev.kenya.quantframe\\fake_orders",
+          "fake_orders_label": "Use Fake Orders Live orders",
           "datatable": {
             "columns": {
               "wfm_url": {
