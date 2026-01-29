@@ -1,7 +1,6 @@
 use std::{collections::HashMap, path::Path, sync::OnceLock};
 
 use entity::{stock_item::*, wish_list::*};
-use qf_api::errors::ApiError;
 use serde_json::json;
 use service::*;
 use utils::*;
@@ -11,6 +10,7 @@ use wf_market::{
 };
 
 use crate::{
+    DATABASE,
     app::{Settings, StockItemSettings},
     cache::types::{CacheTradableItem, ItemPriceInfo},
     enums::*,
@@ -18,9 +18,8 @@ use crate::{
     send_event,
     types::*,
     utils::{
-        modules::states, order_ext::OrderDetails, ErrorFromExt, OrderExt, OrderListExt, SubTypeExt,
+        ErrorFromExt, OrderExt, OrderListExt, SubTypeExt, modules::states, order_ext::OrderDetails,
     },
-    DATABASE,
 };
 
 pub static INTERESTING_ITEMS: OnceLock<HashMap<String, Vec<ItemPriceInfo>>> = OnceLock::new();

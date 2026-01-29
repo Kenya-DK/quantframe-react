@@ -1,7 +1,7 @@
 use std::{
     collections::HashSet,
     path::PathBuf,
-    sync::{atomic::Ordering, Arc, Weak},
+    sync::{Arc, Weak, atomic::Ordering},
 };
 
 use entity::{dto::PriceHistory, enums::stock_status::StockStatus};
@@ -10,18 +10,17 @@ use service::{StockItemMutation, WishListMutation};
 use utils::*;
 use wf_market::{
     enums::{OrderType, StatusType},
-    errors::ApiError,
     types::{Order, OrderList, OrderWithUser},
 };
 
 use crate::{
-    app::{client::AppState, Settings},
-    cache::types::{CacheTradableItem, ItemPriceInfo},
-    utils::{ErrorFromExt, OrderListExt},
+    DATABASE, enums::TradeMode, live_scraper::*, send_event, types::*, utils::SubTypeExt,
+    utils::modules::states,
 };
 use crate::{
-    enums::TradeMode, live_scraper::*, send_event, types::*, utils::modules::states,
-    utils::SubTypeExt, DATABASE,
+    app::{Settings, client::AppState},
+    cache::types::{CacheTradableItem, ItemPriceInfo},
+    utils::OrderListExt,
 };
 
 static COMPONENT: &str = "LiveScraper:Item:";
@@ -563,7 +562,15 @@ impl ItemModule {
             format!("{}Summary", component),
             format!(
                 "Item {}: PostPrice: {} | ClosedAvg: {} | PriceRange: {} | PotentialProfit: {} | ClosedAvgMetric: {} | ProfitThreshold: {} | HighestPrice: {} | {}",
-                item_info.name, post_price, closed_avg, price_range, potential_profit, closed_avg_metric, profit_threshold, highest_price, order_info
+                item_info.name,
+                post_price,
+                closed_avg,
+                price_range,
+                potential_profit,
+                closed_avg_metric,
+                profit_threshold,
+                highest_price,
+                order_info
             ),
             &log_options,
         );
@@ -584,7 +591,7 @@ impl ItemModule {
             Err(e) => {
                 return Err(e
                     .with_location(get_location!())
-                    .with_context(entry.to_json()))
+                    .with_context(entry.to_json()));
             }
         }
         Ok(())
@@ -746,12 +753,20 @@ impl ItemModule {
 
         // Summary log
         info(
-        format!("{}Summary", component),
-        format!(
-            "Item {}: PostPrice: {} | ClosedAvg: {} | Profit: {} | IsStockDirty: {} | StockStatus: {:?} | StockListPrice: {:?} | StockChanges: {} | {}",
-            item_info.name, post_price, closed_avg, profit, stock_item.is_dirty, stock_item.status, stock_item.list_price, stock_item.changes.join(", "), order_info,
-        ),
-        &log_options,
+            format!("{}Summary", component),
+            format!(
+                "Item {}: PostPrice: {} | ClosedAvg: {} | Profit: {} | IsStockDirty: {} | StockStatus: {:?} | StockListPrice: {:?} | StockChanges: {} | {}",
+                item_info.name,
+                post_price,
+                closed_avg,
+                profit,
+                stock_item.is_dirty,
+                stock_item.status,
+                stock_item.list_price,
+                stock_item.changes.join(", "),
+                order_info,
+            ),
+            &log_options,
         );
 
         // Create/Update/Delete
@@ -770,7 +785,7 @@ impl ItemModule {
             Err(e) => {
                 return Err(e
                     .with_location(get_location!())
-                    .with_context(entry.to_json()))
+                    .with_context(entry.to_json()));
             }
         }
 
@@ -886,12 +901,17 @@ impl ItemModule {
         ));
         // Summary log
         info(
-        format!("{}Summary", component),
-        format!(
-            "Item {}: PostPrice: {} | IsWishlistDirty: {} | WishlistStatus: {:?} | WishlistListPrice: {:?} | {}",
-            item_info.name, post_price, wishlist_item.is_dirty, wishlist_item.status, wishlist_item.list_price, order_info
-        ),
-        &log_options,
+            format!("{}Summary", component),
+            format!(
+                "Item {}: PostPrice: {} | IsWishlistDirty: {} | WishlistStatus: {:?} | WishlistListPrice: {:?} | {}",
+                item_info.name,
+                post_price,
+                wishlist_item.is_dirty,
+                wishlist_item.status,
+                wishlist_item.list_price,
+                order_info
+            ),
+            &log_options,
         );
 
         // Create/Update/Delete
@@ -910,7 +930,7 @@ impl ItemModule {
             Err(e) => {
                 return Err(e
                     .with_location(get_location!())
-                    .with_context(entry.to_json()))
+                    .with_context(entry.to_json()));
             }
         }
         wishlist_item.set_list_price(Some(post_price));
@@ -937,7 +957,7 @@ impl ItemModule {
                 Err(e) => {
                     return Err(e
                         .with_location(get_location!())
-                        .with_context(entry.to_json()))
+                        .with_context(entry.to_json()));
                 }
             }
         }
