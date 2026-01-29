@@ -10,6 +10,7 @@
 - 🛠️ Fix a bug where stock item weighted average calculation was incorrect when adding new stock items
 - 🛠️ Fix a bug where operations were not being parsed correctly in the warframe market tab
 - 🛠️ Fix a bug where auction pagination was not working correctly
+- 🛠️ Fix Max Total Price Cap logic (Bigrand)
 
 ## Dev Notes
 
