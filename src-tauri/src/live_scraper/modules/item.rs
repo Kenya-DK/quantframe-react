@@ -325,6 +325,7 @@ impl ItemModule {
                 .set_enable(true),
         );
         let settings = states::get_settings()?.live_scraper.stock_item;
+        let wfm_client = states::app_state()?.wfm_client;
 
         // Check if item is blacklisted for buying
         if settings.is_item_blacklisted(&item_info.wfm_id, &TradeMode::Buy) {
@@ -352,12 +353,30 @@ impl ItemModule {
                         ),
                         &log_options,
                     );
+                    // Delete existing WTB order if present (e.g. stock just reached max after a purchase)
+                    let mut order_info = get_order_info(item_info, entry, &wfm_client, OrderType::Buy);
+                    if order_info.has_operation("Update") {
+                        order_info.add_operation("Delete");
+                        if let Err(e) = progress_order(
+                            &component,
+                            &wfm_client,
+                            &order_info,
+                            OrderType::Buy,
+                            1,
+                            None,
+                            log_options,
+                        )
+                        .await
+                        {
+                            return Err(e
+                                .with_location(get_location!())
+                                .with_context(entry.to_json()));
+                        }
+                    }
                     return Ok(());
                 }
             }
         }
-
-        let wfm_client = states::app_state()?.wfm_client;
         // Skip if no relevant market activity
         let (should_skip, _operation) = skip_if_no_market_activity(live_orders);
         if should_skip {
