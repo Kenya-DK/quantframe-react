@@ -115,7 +115,7 @@ pub async fn handle_item_by_entity(
         false
     };
 
-    if skip_wfm_check {
+    if !skip_wfm_check {
         match handle_wfm_item(
             &item.wfm_id,
             &item.sub_type,
