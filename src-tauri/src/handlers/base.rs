@@ -1,11 +1,11 @@
 use entity::{dto::SubType, enums::TransactionType, transaction::TransactionPaginationQueryDto};
 use service::{TransactionMutation, TransactionQuery};
-use utils::{get_location, info, Error};
+use utils::{Error, get_location, info};
 use wf_market::{enums::OrderType, types::UpdateOrderParams};
 
 use crate::{
-    utils::{modules::states, ErrorFromExt, SubTypeExt},
     DATABASE,
+    utils::{ErrorFromExt, SubTypeExt, modules::states},
 };
 
 // Handles Warframe Market order operations (close/delete/update)
@@ -18,7 +18,6 @@ pub async fn handle_wfm_item(
 ) -> Result<String, Error> {
     let wfm_id = wfm_id.into();
     let app = states::app_state()?;
-    let settings = &app.settings.live_scraper;
     let component = "HandleWFMItem";
     let file = "handle_wfm_item.log";
     let mut operation_status = "NoOrder".to_string();

@@ -1,7 +1,7 @@
 import { upperFirst } from "@mantine/hooks";
 import { ItemWithMeta, ItemWithSubType, TauriTypes } from "$types";
 import api from "@api/index";
-import { resolveResource } from "@tauri-apps/api/path";
+import { resolveResource, join } from "@tauri-apps/api/path";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { isCustomSound, stripCustomSoundPrefix } from "@utils/sound";
 
@@ -28,7 +28,6 @@ export const PlaySound = async (fileName: string, volume: number = 1.0) => {
     let assetUrl: string;
 
     if (isCustomSound(fileName)) {
-      const { join } = await import('@tauri-apps/api/path');
       if (!cachedCustomSoundsPath) {
         cachedCustomSoundsPath = await api.sound.getCustomSoundsPath();
       }
@@ -225,7 +224,7 @@ export const GetSubTypeDisplayObject = (value: ItemWithMeta, settings: Record<st
 
 export const GetChatLinkName = async (
   value: ItemWithMeta,
-  settings: Record<string, DisplaySettings> = {}
+  settings: Record<string, DisplaySettings> = {},
 ): Promise<Record<string, DisplaySettings>> => {
   if (!value) return { link: { value: "<Unknown Item>" } };
 
@@ -261,7 +260,7 @@ export const GetChatLinkName = async (
 
 export const GetChatLinkNameMultiple = async (
   value: ItemWithMeta[],
-  settings?: Record<string, DisplaySettings>
+  settings?: Record<string, DisplaySettings>,
 ): Promise<Record<string, DisplaySettings>[]> => {
   let results: Record<string, DisplaySettings>[] = [];
   for (let item of value) results.push(await GetChatLinkName(item, settings));
@@ -270,7 +269,7 @@ export const GetChatLinkNameMultiple = async (
 export const GetItemDisplay = (
   value: ItemWithMeta,
   tradableItems: TauriTypes.CacheTradableItem[] = [],
-  weapons: TauriTypes.CacheRivenWeapon[] = []
+  weapons: TauriTypes.CacheRivenWeapon[] = [],
 ) => {
   if (!value) return "Unknown Item";
   let fullName = undefined;
