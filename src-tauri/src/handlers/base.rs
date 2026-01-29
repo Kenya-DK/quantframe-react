@@ -18,6 +18,7 @@ pub async fn handle_wfm_item(
 ) -> Result<String, Error> {
     let wfm_id = wfm_id.into();
     let app = states::app_state()?;
+    let settings = &app.settings.live_scraper;
     let component = "HandleWFMItem";
     let file = "handle_wfm_item.log";
     let mut operation_status = "NoOrder".to_string();

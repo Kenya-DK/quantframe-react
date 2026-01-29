@@ -1,5 +1,6 @@
 use std::{
     collections::HashSet,
+    path::PathBuf,
     sync::{atomic::Ordering, Arc, Weak},
 };
 
@@ -152,6 +153,7 @@ impl ItemModule {
     ) -> Result<(), Error> {
         let cache = states::cache_client()?;
         let client = self.client.upgrade().expect("Client should not be dropped");
+        let use_fake = app.settings.debugging.live_scraper.fake_orders;
         let mut current_index = 1;
 
         // Sort by priority (highest first)
@@ -197,27 +199,50 @@ impl ItemModule {
                 })),
             );
 
-            // Fetch live orders from API
-            let mut orders = match app
-                .wfm_client
-                .order()
-                .get_orders_by_item(&item_entry.wfm_url)
-                .await
-            {
-                Ok(o) => o,
-                Err(e) => {
-                    let log_level = match e {
-                        ApiError::RequestError(_) => LogLevel::Error,
-                        _ => LogLevel::Critical,
-                    };
-                    return Err(Error::from_wfm(
-                        format!("{}ProcessItem", COMPONENT),
-                        &format!("Failed to get live orders for item {}", item_entry.wfm_url),
-                        e,
-                        get_location!(),
-                    )
-                    .set_log_level(log_level));
+            let order_path = PathBuf::from(utils::get_base_path())
+                .join("fake_orders")
+                .join(format!("order_{}.json", item_info.wfm_url_name));
+
+            let mut orders = if use_fake && order_path.exists() {
+                match utils::read_json_file::<OrderList<OrderWithUser>>(&order_path) {
+                    Ok(cached) => {
+                        info(
+                            format!("{}ProcessItem", COMPONENT),
+                            &format!(
+                                "Using cached fake orders for item {} from {}",
+                                item_entry.wfm_url,
+                                order_path.display()
+                            ),
+                            &&LoggerOptions::default(),
+                        );
+                        cached
+                    }
+                    Err(e) => {
+                        warning(
+                            format!("{}ProcessItem", COMPONENT),
+                            &format!(
+                                "Failed to read fake orders for item {} ({}), falling back to API",
+                                item_entry.wfm_url, e
+                            ),
+                            &&LoggerOptions::default(),
+                        );
+                        fetch_and_cache_orders(
+                            &format!("{}ProcessItem", COMPONENT),
+                            &app.wfm_client,
+                            &item_entry.wfm_url,
+                            use_fake.then_some(&order_path),
+                        )
+                        .await?
+                    }
                 }
+            } else {
+                fetch_and_cache_orders(
+                    &format!("{}ProcessItem", COMPONENT),
+                    &app.wfm_client,
+                    &item_entry.wfm_url,
+                    use_fake.then_some(&order_path),
+                )
+                .await?
             };
 
             // Apply filters to orders
@@ -425,10 +450,44 @@ impl ItemModule {
             post_price,
         ));
 
+        let mut knapsack_skip_reasons = Vec::new();
+        if closed_avg_metric < 0 {
+            knapsack_skip_reasons.push("ClosedAvgMetric<0");
+        }
+
+        if price_range < profit_threshold {
+            knapsack_skip_reasons.push("PriceRangeBelowProfitThreshold");
+        }
+
+        if !order_info.has_operation("Create") {
+            knapsack_skip_reasons.push("NoCreateOperation");
+        }
+
+        let has_buy_orders = !wfm_client.order().cache_orders().buy_orders.is_empty();
+        if !has_buy_orders {
+            knapsack_skip_reasons.push("NoExistingBuyOrders");
+        }
+
+        if is_disabled(max_total_price_cap) {
+            knapsack_skip_reasons.push("MaxTotalPriceCapDisabled");
+        }
+
+        if !knapsack_skip_reasons.is_empty() {
+            info(
+                format!("{}KnapsackSkip", component),
+                &format!(
+                    "Knapsack skipped for item {}: {}",
+                    item_info.name,
+                    knapsack_skip_reasons.join(", ")
+                ),
+                &log_options,
+            );
+        }
+
         if closed_avg_metric >= 0
             && price_range >= profit_threshold
             && order_info.has_operation("Create")
-            && !wfm_client.order().cache_orders().buy_orders.is_empty()
+            && has_buy_orders
             && !is_disabled(max_total_price_cap)
         {
             let buy_orders_list = {
@@ -491,10 +550,10 @@ impl ItemModule {
                 order_info.add_operation("Skip");
                 order_info.add_operation("Delete");
             }
-        } else if closed_avg_metric < 0 && !is_disabled(max_total_price_cap) {
+        } else if closed_avg_metric < 0 {
             order_info.add_operation("Delete");
             order_info.add_operation("Overpriced");
-        } else if price_range < profit_threshold && !is_disabled(max_total_price_cap) {
+        } else if price_range < profit_threshold {
             order_info.add_operation("Delete");
             order_info.add_operation("Underpriced");
         }

@@ -1,4 +1,4 @@
-import { Box, Group } from "@mantine/core";
+import { Box, Checkbox, Group, Tooltip } from "@mantine/core";
 import { DataTable } from "mantine-datatable";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
@@ -23,17 +23,34 @@ export const DebuggingPanel = ({}: DebuggingPanelProps) => {
 
   return (
     <Box>
-      <DebuggingLiveItemEntryForm
-        onSubmit={async (values) => {
-          if (!settings) return;
-          let items = [...(settings?.debugging.live_scraper.entries || []), values];
-          await api.app.updateSettings({
-            ...settings,
-            debugging: { ...settings.debugging, live_scraper: { ...settings.debugging.live_scraper, entries: items } },
-          });
-          SendTauriEvent(TauriTypes.Events.RefreshSettings);
-        }}
-      />
+      <Group align="center">
+        <DebuggingLiveItemEntryForm
+          onSubmit={async (values) => {
+            if (!settings) return;
+            let items = [...(settings?.debugging.live_scraper.entries || []), values];
+            await api.app.updateSettings({
+              ...settings,
+              debugging: { ...settings.debugging, live_scraper: { ...settings.debugging.live_scraper, entries: items } },
+            });
+            SendTauriEvent(TauriTypes.Events.RefreshSettings);
+          }}
+        />
+        <Tooltip label={useTranslateTabDebugging("fake_orders_tooltip")}>
+          <Checkbox
+            label={useTranslateTabDebugging("fake_orders_label")}
+            checked={settings?.debugging.live_scraper.fake_orders || false}
+            size="sm"
+            onChange={async (e) => {
+              if (!settings) return;
+              await api.app.updateSettings({
+                ...settings,
+                debugging: { ...settings.debugging, live_scraper: { ...settings.debugging.live_scraper, fake_orders: e.currentTarget.checked } },
+              });
+              SendTauriEvent(TauriTypes.Events.RefreshSettings);
+            }}
+          />
+        </Tooltip>
+      </Group>
       <DataTable
         height={400}
         className={`${classes.dataTableLogging}`}

@@ -116,6 +116,27 @@ pub fn read_json_file<T: serde::de::DeserializeOwned>(path: &PathBuf) -> Result<
         )),
     }
 }
+
+/**
+ * Writes a serializable object to a JSON file at the specified path.
+ * Creates parent directories if they do not exist.
+ * # Arguments
+ * * `path` - The file path to write the JSON data to
+ * * `data` - The serializable object to write
+ */
+pub fn write_json_file<T: serde::Serialize>(
+    path: impl AsRef<std::path::Path>,
+    data: &T,
+) -> std::io::Result<()> {
+    let path_ref = path.as_ref();
+    // Check if the folder exists
+    if let Some(parent) = path_ref.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    let file = std::fs::File::create(path_ref)?;
+    serde_json::to_writer(file, data)?;
+    Ok(())
+}
 /// Find an object in a Vec<T> by multiple criteria using a predicate function
 ///
 /// # Arguments
