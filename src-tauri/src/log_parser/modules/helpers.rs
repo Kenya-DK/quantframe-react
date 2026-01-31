@@ -5,7 +5,7 @@ use entity::dto::*;
 use serde_json::json;
 use utils::*;
 
-use crate::log_parser::*;
+use crate::{enums::TradeItemType, log_parser::*};
 
 /* =======================
     HELPER METHODS

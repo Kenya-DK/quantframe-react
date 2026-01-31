@@ -94,6 +94,7 @@ pub enum Transaction {
     Quantity,
     UserName,
     Profit,
+    Credits,
     CreatedAt,
     UpdatedAt,
     Properties,

@@ -38,6 +38,10 @@ pub struct CreateStockRiven {
     #[serde(default = "String::default")]
     pub wfm_url: String,
 
+    #[serde(default)]
+    #[serde(rename = "credits")]
+    pub credits: i64,
+
     #[serde(default = "String::default")]
     #[serde(rename = "weapon_name")]
     pub weapon_name: String,
@@ -73,6 +77,7 @@ impl CreateStockRiven {
             raw: raw.into(),
             wfm_id: "".to_string(),
             wfm_url: "".to_string(),
+            credits: 0,
             mod_name: mod_name.into(),
             weapon_name: "".to_string(),
             weapon_unique_name: "".to_string(),

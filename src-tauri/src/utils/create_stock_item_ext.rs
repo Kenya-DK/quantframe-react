@@ -22,6 +22,7 @@ impl CreateStockItemExt for CreateStockItem {
         self.item_name = item.name.clone();
         self.item_unique_name = item.unique_name.clone();
         self.tags = item.tags.clone();
+        self.credits = item.trade_tax * self.quantity;
         self.is_validated = true;
         Ok(())
     }

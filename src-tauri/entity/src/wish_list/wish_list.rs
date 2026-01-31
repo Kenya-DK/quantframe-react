@@ -102,6 +102,7 @@ impl Model {
             quantity,
             user_name.to_string(),
             price,
+            0,
             None,
         )
     }
@@ -164,7 +165,7 @@ impl Model {
                 .map_or(FieldChange::Null, |v| FieldChange::Value(v)),
             minimum_price: self
                 .minimum_price
-                .map_or(FieldChange::Null, |v| FieldChange::Value(v)),                
+                .map_or(FieldChange::Null, |v| FieldChange::Value(v)),
             list_price: self
                 .list_price
                 .map_or(FieldChange::Null, |v| FieldChange::Value(v)),

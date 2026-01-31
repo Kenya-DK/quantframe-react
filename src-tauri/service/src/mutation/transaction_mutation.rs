@@ -25,6 +25,7 @@ impl TransactionMutation {
             user_name: Set(form_data.user_name.to_owned()),
             price: Set(form_data.price.to_owned()),
             profit: Set(form_data.profit.to_owned()),
+            credits: Set(form_data.credits.to_owned()),
             properties: Set(form_data.properties.to_owned()),
             created_at: Set(chrono::Utc::now()),
             updated_at: Set(chrono::Utc::now()),

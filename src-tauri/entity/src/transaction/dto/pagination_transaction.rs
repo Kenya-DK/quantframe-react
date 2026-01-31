@@ -152,6 +152,7 @@ impl TransactionPaginationQueryDto {
                     "item_name" => stmt = stmt.order_by(transaction::Column::ItemName, order),
                     "user_name" => stmt = stmt.order_by(transaction::Column::UserName, order),
                     "profit" => stmt = stmt.order_by(transaction::Column::Profit, order),
+                    "credits" => stmt = stmt.order_by(transaction::Column::Credits, order),
                     _ => {}
                 }
             }

@@ -1,16 +1,8 @@
 ## Add Feature's
 
-✨ Add custom sounds for notifications (Yurii-IvoryFace)
-✨ Add Max Stock Quantity (Katze719)
-✨ Overhaul search functionality with advanced filters (Yurii-IvoryFace)
+✨ Implement Trading Tax Calculation for Transactions
 
 ## Fix's
-
-- 🛠️ Fix a bug where warframe gdpr parse
-- 🛠️ Fix a bug where stock item weighted average calculation was incorrect when adding new stock items
-- 🛠️ Fix a bug where operations were not being parsed correctly in the warframe market tab
-- 🛠️ Fix a bug where auction pagination was not working correctly
-- 🛠️ Fix Max Total Price Cap logic (Bigrand)
 
 ## Dev Notes
 

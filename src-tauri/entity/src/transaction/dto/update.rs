@@ -11,6 +11,7 @@ pub struct UpdateTransaction {
     pub quantity: FieldChange<i64>,
     pub created_at: FieldChange<String>,
     pub user_name: FieldChange<String>,
+    pub credits: FieldChange<i64>,
     pub properties: FieldChange<Value>,
 }
 
@@ -38,6 +39,10 @@ impl UpdateTransaction {
             Null => item.properties = Set(None),
             _ => {}
         }
+        match self.credits {
+            Value(v) => item.credits = Set(v),
+            _ => {}
+        }
 
         item
     }
@@ -49,6 +54,7 @@ impl UpdateTransaction {
             user_name: FieldChange::Ignore,
             created_at: FieldChange::Ignore,
             properties: FieldChange::Ignore,
+            credits: FieldChange::Ignore,
         }
     }
 }

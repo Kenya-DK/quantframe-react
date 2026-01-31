@@ -320,6 +320,16 @@
           "title": "Update Transaction Success",
           "message": "The transaction has been successfully updated."
         }
+      },
+      "calculate_tax_transaction": {
+        "error": {
+          "title": "Calculate Tax Error",
+          "message": "An error occurred while trying to calculate tax for transactions."
+        },
+        "success": {
+          "title": "Calculate Tax Success",
+          "message": "Tax has been successfully calculated for transactions."
+        }
       }
     },
     "datatable_columns": {
@@ -2086,7 +2096,8 @@
           "buttons": {
             "export_transactions_tooltip": "Export transactions to JSON  (Patreon T1+)",
             "show_financial_report_tooltip": "Show report",
-            "delete_all_tooltip": "Delete all transactions {{count}}"
+            "delete_all_tooltip": "Delete all transactions {{count}}",
+            "calculate_tax_tooltip": "Calculate Trading Tax for all transactions"
           },
           "datatable": {
             "columns": {
@@ -2094,7 +2105,8 @@
               "price": "Price",
               "created_at": "Created At",
               "user_name": "User Name",
-              "profit": "Profit"
+              "profit": "Profit",
+              "credits": "Credits"
             }
           }
         },

@@ -2,6 +2,7 @@ use std::sync::{LazyLock, Mutex};
 
 use crate::{
     add_metric,
+    enums::TradeItemType,
     handlers::{handle_item, handle_riven_by_name, handle_transaction, handle_wish_list},
     log_parser::*,
     notify_gui, send_event,
@@ -499,6 +500,7 @@ async fn process_trade_item(
             item.quantity,
             player_name,
             platinum,
+            2000 * item.quantity,
             Some(json!({
                 "pet_name": item.sub_type.unwrap().variant.unwrap_or("Unknown".to_string())
             })),

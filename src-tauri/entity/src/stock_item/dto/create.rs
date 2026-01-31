@@ -36,6 +36,10 @@ pub struct CreateStockItem {
     #[serde(rename = "wfm_url")]
     pub wfm_url: String,
 
+    #[serde(default)]
+    #[serde(rename = "credits")]
+    pub credits: i64,
+
     #[serde(default = "String::default")]
     #[serde(rename = "item_name")]
     pub item_name: String,
@@ -59,6 +63,7 @@ impl CreateStockItem {
             raw: raw.into(),
             wfm_id: "".to_string(),
             wfm_url: "".to_string(),
+            credits: 0,
             item_name: "".to_string(),
             item_unique_name: "".to_string(),
             tags: vec![],
@@ -109,6 +114,7 @@ impl CreateStockItem {
             self.quantity,
             user_name.into(),
             self.bought.unwrap_or(0),
+            self.credits,
             None,
         );
         Ok(transaction)

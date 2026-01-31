@@ -1,9 +1,13 @@
 use std::sync::Mutex;
 
-use entity::{dto::*, transaction::dto::TransactionPaginationQueryDto, transaction::*};
+use entity::{
+    dto::*,
+    enums::TransactionItemType,
+    transaction::{dto::TransactionPaginationQueryDto, *},
+};
 use service::{TransactionMutation, TransactionQuery};
 use tauri_plugin_dialog::DialogExt;
-use utils::{get_location, info, Error, LoggerOptions};
+use utils::{get_location, info, warning, Error, LoggerOptions};
 
 use crate::{add_metric, app::client::AppState, types::PermissionsFlags, APP, DATABASE};
 
@@ -127,4 +131,57 @@ pub async fn export_transaction_json(
         }
         Err(e) => return Err(e.with_location(get_location!())),
     }
+}
+
+#[tauri::command]
+pub async fn transaction_calculate_tax(
+    cache: tauri::State<'_, Mutex<crate::cache::CacheState>>,
+) -> Result<(), Error> {
+    let conn = DATABASE.get().unwrap();
+    let cache = cache.lock()?.clone();
+    let items = get_transaction_pagination(TransactionPaginationQueryDto::new(1, -1))
+        .await?
+        .results;
+    for item in items {
+        let mut update_data = UpdateTransaction::new(item.id);
+        match item.transaction_type {
+            entity::enums::TransactionType::Sale => {
+                update_data.credits = entity::enums::FieldChange::Value(
+                    item.price * crate::enums::TradeItemType::Platinum.to_tax(),
+                );
+            }
+            entity::enums::TransactionType::Purchase => {
+                if item.item_type == TransactionItemType::Riven {
+                    update_data.credits = entity::enums::FieldChange::Value(
+                        item.quantity * crate::enums::TradeItemType::RivenVeiled.to_tax(),
+                    );
+                } else {
+                    match cache.tradable_item().get_by(&item.wfm_id) {
+                        Ok(tradable_item) => {
+                            update_data.credits =
+                                entity::enums::FieldChange::Value(tradable_item.trade_tax);
+                        }
+                        Err(e) => {
+                            warning(
+                                "Command::TransactionCalculateTax",
+                                format!(
+                                    "Failed to get tradable item for WFM ID {}: {}",
+                                    item.wfm_id, e
+                                ),
+                                &LoggerOptions::default(),
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        if let Err(e) = TransactionMutation::update_by_id(conn, update_data).await {
+            warning(
+                "Command::TransactionCalculateTax",
+                format!("Failed to update transaction {}: {}", item.item_name, e),
+                &LoggerOptions::default(),
+            );
+        }
+    }
+    Ok(())
 }

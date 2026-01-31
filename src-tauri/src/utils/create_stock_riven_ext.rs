@@ -23,6 +23,7 @@ impl CreateStockRivenExt for CreateStockRiven {
         self.weapon_type = weapon.wfm_group.clone();
         self.weapon_unique_name = weapon.unique_name.clone();
         self.weapon_name = weapon.name.clone();
+        self.credits = crate::enums::TradeItemType::RivenVeiled.to_tax();
         for att in self.attributes.iter_mut() {
             match cache.riven().get_attribute_by(&att.url_name) {
                 Ok(attribute) => {

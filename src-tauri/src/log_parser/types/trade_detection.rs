@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::OnceLock};
 
 use utils::{combine_and_detect_match, DetectionStatus};
 
-use crate::log_parser::TradeItemType;
+use crate::enums::TradeItemType;
 
 #[derive(Clone, Debug)]
 pub struct TradeDetection {

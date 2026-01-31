@@ -27,6 +27,8 @@ pub struct Model {
     pub user_name: String,
     pub price: i64,
     pub profit: Option<i64>,
+    #[serde(default)]
+    pub credits: i64,
     #[sea_orm(updated_at)]
     pub updated_at: DateTimeUtc,
     #[sea_orm(created_at)]
@@ -52,6 +54,7 @@ impl Model {
         quantity: i64,
         user_name: impl Into<String>,
         price: i64,
+        credits: i64,
         properties: Option<serde_json::Value>,
     ) -> Self {
         Self {
@@ -69,11 +72,15 @@ impl Model {
             price,
             properties,
             profit: None,
+            credits,
             updated_at: Default::default(),
             created_at: Default::default(),
         }
     }
     pub fn set_profit(&mut self, profit: i64) {
         self.profit = Some(profit);
+    }
+    pub fn set_credits(&mut self, credits: i64) {
+        self.credits = credits;
     }
 }

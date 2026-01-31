@@ -37,4 +37,7 @@ export class TransactionModule {
       query: this.client.convertToTauriQuery(query),
     });
   };
+  calculateTax = async (): Promise<void> => {
+    return await this.client.sendInvoke<void>("transaction_calculate_tax");
+  };
 }

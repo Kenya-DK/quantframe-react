@@ -5,11 +5,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use utils::*;
 
-use crate::{
-    cache::types::CacheTradableItem,
-    log_parser::{log, TradeItemType},
-    utils::modules::states,
-};
+use crate::enums::TradeItemType;
+use crate::{cache::types::CacheTradableItem, log_parser::log, utils::modules::states};
 
 use super::trade_detection::*;
 

@@ -1,4 +1,4 @@
-import { Box, Grid, Group, Paper, Text } from "@mantine/core";
+import { Box, Grid, Group, NumberFormatter, Paper, Text } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
 import { useEffect, useState } from "react";
 import { TauriTypes } from "$types";
@@ -14,7 +14,7 @@ import { ColorInfo } from "@components/Shared/ColorInfo";
 import { SelectItemTags } from "@components/Forms/SelectItemTags";
 import { FinancialReportCard } from "@components/Shared/FinancialReportCard";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faCoins, faDownload, faHammer, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faCalculator, faCoins, faDownload, faHammer, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useMutations } from "./mutations";
 import { useModals } from "./modals";
 import { HasPermission } from "@api/index";
@@ -71,7 +71,7 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
   };
 
   // Mutations
-  const { exportMutation, updateMutation, deleteMutation, deleteMultipleMutation } = useMutations({
+  const { exportMutation, updateMutation, deleteMutation, deleteMultipleMutation, calculateTaxMutation } = useMutations({
     refetchQueries,
     setLoadingRows,
   });
@@ -124,7 +124,7 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
                 </Group>
               </Paper>
             }
-            rightSectionWidth={140}
+            rightSectionWidth={35 * 5}
             rightSection={
               <Group gap={3}>
                 <ActionWithTooltip
@@ -141,6 +141,13 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
                   iconProps={{ size: "xs" }}
                   actionProps={{ size: "sm" }}
                   onClick={() => setShowReport((prev) => !prev)}
+                />
+                <ActionWithTooltip
+                  tooltip={useTranslateButtons("calculate_tax_tooltip")}
+                  icon={faCalculator}
+                  iconProps={{ size: "xs" }}
+                  actionProps={{ size: "sm" }}
+                  onClick={() => calculateTaxMutation.mutate(undefined)}
                 />
                 <ActionWithTooltip
                   tooltip={useTranslateButtons("delete_all_tooltip", { count: selectedRecords.length })}
@@ -192,7 +199,7 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
             className={`${classes.databaseTransactions} ${useHasAlert() ? classes.alert : ""} ${filterOpened ? classes.filterOpened : ""}`}
             mt={"md"}
             striped
-            fetching={paginationQuery.isLoading}
+            fetching={paginationQuery.isLoading || calculateTaxMutation.isPending}
             records={paginationQuery.data?.results || []}
             page={getSafePage(queryData.page, paginationQuery.data?.total_pages)}
             onPageChange={(page) => setQueryData((prev) => ({ ...prev, page }))}
@@ -255,6 +262,12 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
                 title: useTranslateDataGridColumns("profit"),
                 sortable: true,
                 render: ({ profit }) => (profit ? <Text c={profit >= 0 ? "green.7" : "red.7"}>{profit.toFixed(2)}</Text> : <Text>N/A</Text>),
+              },
+              {
+                accessor: "credits",
+                title: useTranslateDataGridColumns("credits"),
+                sortable: true,
+                render: ({ credits }) => <NumberFormatter value={credits} thousandSeparator="," thousandsGroupStyle="thousand" />,
               },
               {
                 accessor: "created_at",

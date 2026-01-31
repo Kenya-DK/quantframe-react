@@ -12,7 +12,11 @@ use std::{
 use utils::*;
 
 use crate::{
-    enums::LogSection, helper::paginate, log_parser::*, notify_gui, utils::modules::states,
+    enums::{LogSection, TradeItemType},
+    helper::paginate,
+    log_parser::*,
+    notify_gui,
+    utils::modules::states,
 };
 
 static COMPONENT: &str = "WarframeGDPRModule";

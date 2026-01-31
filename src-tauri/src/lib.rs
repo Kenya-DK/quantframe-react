@@ -132,7 +132,7 @@ async fn setup_manages(app: tauri::AppHandle, use_temp_db: bool) -> Result<(), E
 }
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let use_temp_db = false;
+    let use_temp_db = true;
 
     // Initialize the logger for elapsed time tracking
 
@@ -290,6 +290,7 @@ pub fn run() {
             commands::transaction::transaction_delete,
             commands::transaction::transaction_delete_bulk,
             commands::transaction::export_transaction_json,
+            commands::transaction::transaction_calculate_tax,
             // Item commands
             commands::item::item_prices_lookup,
             commands::item::export_item_price_data,

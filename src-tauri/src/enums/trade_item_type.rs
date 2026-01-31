@@ -42,4 +42,11 @@ impl TradeItemType {
             TradeItemType::Unknown => "Unknown".to_string(),
         }
     }
+    pub fn to_tax(&self) -> i64 {
+        match self {
+            TradeItemType::RivenVeiled | TradeItemType::RivenUnVeiled => 8000,
+            TradeItemType::Platinum => 500,
+            _ => 2000,
+        }
+    }
 }

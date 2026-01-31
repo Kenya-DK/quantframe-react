@@ -12,7 +12,7 @@ export const useMutations = ({ refetchQueries, setLoadingRows }: MutationHooks) 
       errorKey: "export_data",
       getSuccessMessage: (data: any) => ({ path: data }),
     },
-    hooks
+    hooks,
   );
 
   const updateMutation = createGenericMutation(
@@ -23,7 +23,7 @@ export const useMutations = ({ refetchQueries, setLoadingRows }: MutationHooks) 
       getLoadingId: (variables: TauriTypes.UpdateTransaction) => `${variables.id}`,
       getSuccessMessage: (data: any) => ({ name: data.item_name }),
     },
-    hooks
+    hooks,
   );
 
   const deleteMutation = createGenericMutation(
@@ -34,7 +34,7 @@ export const useMutations = ({ refetchQueries, setLoadingRows }: MutationHooks) 
       getLoadingId: (variables: number) => `${variables}`,
       getSuccessMessage: (data: any) => ({ name: data.item_name }),
     },
-    hooks
+    hooks,
   );
 
   const deleteMultipleMutation = createGenericMutation(
@@ -46,7 +46,17 @@ export const useMutations = ({ refetchQueries, setLoadingRows }: MutationHooks) 
       getLoadingId: (variables: number[]) => variables.map((id) => `${id}`),
       getSuccessMessage: (data: any) => ({ count: data }),
     },
-    hooks
+    hooks,
+  );
+
+  const calculateTaxMutation = createGenericMutation(
+    {
+      mutationFn: () => api.transaction.calculateTax(),
+      successKey: "calculate_tax_transaction",
+      errorKey: "calculate_tax_transaction",
+      getSuccessMessage: () => ({}),
+    },
+    hooks,
   );
 
   return {
@@ -54,5 +64,6 @@ export const useMutations = ({ refetchQueries, setLoadingRows }: MutationHooks) 
     updateMutation,
     deleteMutation,
     deleteMultipleMutation,
+    calculateTaxMutation,
   };
 };

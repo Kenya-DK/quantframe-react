@@ -129,6 +129,7 @@ impl Model {
             1,
             user_name.into(),
             price,
+            0,
             Some(json!({
              "mod_name": self.mod_name,
              "mastery_rank": self.mastery_rank,

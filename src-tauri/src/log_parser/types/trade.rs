@@ -1,9 +1,9 @@
 use std::{collections::HashMap, fmt::Display, vec};
 
+use crate::enums::TradeItemType;
+use crate::{log_parser::*, utils::modules::states};
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
-
-use crate::{log_parser::*, utils::modules::states};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct PlayerTrade {

@@ -1,11 +1,11 @@
 use entity::{dto::SubType, enums::TransactionType, transaction::TransactionPaginationQueryDto};
 use service::{TransactionMutation, TransactionQuery};
-use utils::{Error, get_location, info};
+use utils::{get_location, info, Error};
 use wf_market::{enums::OrderType, types::UpdateOrderParams};
 
 use crate::{
+    utils::{modules::states, ErrorFromExt, SubTypeExt},
     DATABASE,
-    utils::{ErrorFromExt, SubTypeExt, modules::states},
 };
 
 // Handles Warframe Market order operations (close/delete/update)
@@ -156,6 +156,8 @@ pub async fn handle_transaction(
 
             transaction.set_profit(total_profit);
         }
+        // Overall credits calculation
+        transaction.set_credits(transaction.price * crate::enums::TradeItemType::Platinum.to_tax());
     }
 
     match TransactionMutation::create(conn, &transaction).await {
