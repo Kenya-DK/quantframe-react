@@ -23,7 +23,7 @@ interface ModalHooks {
 export const useModals = ({ updateMutation, updateMultipleMutation, deleteMutation, deleteMultipleMutation }: ModalHooks) => {
   const OpenPriceModal = (id: number, price: number) => {
     modals.openContextModal({
-      modalKey: "prompt",
+      modal: "prompt",
       title: useTranslateCommon("prompts.price.title"),
       innerProps: {
         fields: [

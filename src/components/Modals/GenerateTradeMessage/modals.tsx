@@ -15,7 +15,7 @@ interface ModalHooks {
 export const useModals = ({ createMutation, deleteMutation }: ModalHooks) => {
   const OpenSaveModal = (input: { settings: TauriTypes.Settings; template: Omit<TauriTypes.SaveTemplateSetting, "name"> }) => {
     modals.openContextModal({
-      modalKey: "prompt",
+      modal: "prompt",
       title: useTranslateCommon("prompts.save.title"),
       innerProps: {
         fields: [

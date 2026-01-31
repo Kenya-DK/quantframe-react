@@ -40,7 +40,7 @@ export const useStockModals = ({
 }: ModalHooks) => {
   const OpenMinimumPriceModal = (id: number, minimum_price: number) => {
     modals.openContextModal({
-      modalKey: "prompt",
+      modal: "prompt",
       title: useTranslateCommon("prompts.minimum_price.title"),
       innerProps: {
         fields: [
@@ -67,7 +67,7 @@ export const useStockModals = ({
 
   const OpenSellModal = (stock: TauriTypes.SellStockRiven) => {
     modals.openContextModal({
-      modalKey: "prompt",
+      modal: "prompt",
       title: useTranslateCommon("prompts.sell_manual.title"),
       innerProps: {
         fields: [

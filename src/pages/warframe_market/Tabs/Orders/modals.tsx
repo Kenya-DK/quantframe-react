@@ -20,7 +20,7 @@ interface ModalHooks {
 export const useStockModals = ({ deleteStockMutation, createStockMutation, sellStockMutation }: ModalHooks) => {
   const OpenSellModal = (order: WFMarketTypes.Order) => {
     modals.openContextModal({
-      modalKey: "prompt",
+      modal: "prompt",
       title: useTranslateCommon("prompts.sell_manual.title"),
       innerProps: {
         fields: [
@@ -55,7 +55,7 @@ export const useStockModals = ({ deleteStockMutation, createStockMutation, sellS
   };
   const OpenBoughtModal = (order: WFMarketTypes.Order) => {
     modals.openContextModal({
-      modalKey: "prompt",
+      modal: "prompt",
       title: useTranslateCommon("prompts.bought_manual.title"),
       innerProps: {
         fields: [

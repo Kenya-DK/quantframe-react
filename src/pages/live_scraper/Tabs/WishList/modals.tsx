@@ -27,7 +27,7 @@ interface ModalHooks {
 export const useStockModals = ({ updateMutation, deleteMutation, boughtMutation, updateMultipleMutation, deleteMultipleMutation }: ModalHooks) => {
   const OpenMinimumPriceModal = (id: number, maximum_price: number) => {
     modals.openContextModal({
-      modalKey: "prompt",
+      modal: "prompt",
       title: useTranslateCommon("prompts.maximum_price.title"),
       innerProps: {
         fields: [
@@ -105,7 +105,7 @@ export const useStockModals = ({ updateMutation, deleteMutation, boughtMutation,
   };
   const OpenBoughtModal = (stock: TauriTypes.WishListItem) => {
     modals.openContextModal({
-      modalKey: "prompt",
+      modal: "prompt",
       title: useTranslateCommon("prompts.bought_manual.title"),
       innerProps: {
         fields: [
