@@ -5,6 +5,7 @@ use sea_orm::sea_query::Func;
 use sea_orm::*;
 use sea_query::Expr;
 use serde::{Deserialize, Serialize};
+use utils::sorting::SortDirection;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WishListPaginationQueryDto {

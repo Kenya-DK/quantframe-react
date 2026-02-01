@@ -1,4 +1,4 @@
-import { Box, Grid, Group, NumberFormatter, Paper, Text } from "@mantine/core";
+import { Box, Grid, Group, NumberFormatter, Paper, Table, Text, Title } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
 import { useEffect, useState } from "react";
 import { TauriTypes } from "$types";
@@ -12,7 +12,6 @@ import { getSafePage } from "@utils/helper";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { ColorInfo } from "@components/Shared/ColorInfo";
 import { SelectItemTags } from "@components/Forms/SelectItemTags";
-import { FinancialReportCard } from "@components/Shared/FinancialReportCard";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { faCalculator, faCoins, faDownload, faHammer, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useMutations } from "./mutations";
@@ -21,6 +20,7 @@ import { HasPermission } from "@api/index";
 import { DatePickerInput } from "@mantine/dates";
 import dayjs from "dayjs";
 import { ItemName } from "@components/DataDisplay/ItemName";
+import { FinancialReportCard } from "../../../../components/Shared/FinancialReportCard";
 interface TransactionPanelProps {
   isActive?: boolean;
 }
@@ -96,73 +96,74 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
 
   return (
     <Box p={"md"}>
-      <Grid>
-        <Grid.Col span={showReport ? 7 : 12}>
-          <SearchField
-            value={queryData.query || ""}
-            onChange={(value) => setQueryData((prev) => ({ ...prev, query: value }))}
-            onSearch={() => refetchQueries()}
-            onFilterToggle={(s) => setFilterOpened(s)}
-            filter={
-              <Paper p={"sm"} mt={"md"}>
-                <Group>
-                  <SelectItemTags value={queryData.tags || []} onChange={(value) => setQueryData((prev) => ({ ...prev, tags: value }))} />
-                  <DatePickerInput
-                    clearable
-                    label={useTranslateTabItem("date_range_label")}
-                    description={useTranslateTabItem("date_range_description")}
-                    placeholder={useTranslateTabItem("date_range_placeholder")}
-                    w={200}
-                    type="range"
-                    valueFormat="YYYY MMM DD"
-                    value={[queryData.from_date ? new Date(queryData.from_date) : null, queryData.to_date ? new Date(queryData.to_date) : null]}
-                    onChange={(value) => {
-                      let [start, end] = value || [undefined, undefined];
-                      setQueryData((prev) => ({ ...prev, from_date: start || undefined, to_date: end || undefined }));
-                    }}
-                  />
-                </Group>
-              </Paper>
-            }
-            rightSectionWidth={35 * 5}
-            rightSection={
-              <Group gap={3}>
-                <ActionWithTooltip
-                  tooltip={useTranslateButtons("export_transactions_tooltip")}
-                  icon={faDownload}
-                  iconProps={{ size: "xs" }}
-                  actionProps={{ size: "sm", disabled: !canExport }}
-                  onClick={() => exportMutation.mutate(queryData)}
-                />
-                <ActionWithTooltip
-                  tooltip={useTranslateButtons("show_financial_report_tooltip")}
-                  color={showReport ? "blue" : "gray"}
-                  icon={faCoins}
-                  iconProps={{ size: "xs" }}
-                  actionProps={{ size: "sm" }}
-                  onClick={() => setShowReport((prev) => !prev)}
-                />
-                <ActionWithTooltip
-                  tooltip={useTranslateButtons("calculate_tax_tooltip")}
-                  icon={faCalculator}
-                  iconProps={{ size: "xs" }}
-                  actionProps={{ size: "sm" }}
-                  onClick={() => calculateTaxMutation.mutate(undefined)}
-                />
-                <ActionWithTooltip
-                  tooltip={useTranslateButtons("delete_all_tooltip", { count: selectedRecords.length })}
-                  color={"red.7"}
-                  icon={faTrash}
-                  iconProps={{ size: "xs" }}
-                  actionProps={{
-                    size: "sm",
-                    disabled: selectedRecords.length == 0 || deleteMutation.isPending,
-                  }}
-                  onClick={() => OpenDeleteBulkModal(selectedRecords.map((record) => record.id))}
-                />
-              </Group>
-            }
-          />
+      {" "}
+      <SearchField
+        value={queryData.query || ""}
+        onChange={(value) => setQueryData((prev) => ({ ...prev, query: value }))}
+        onSearch={() => refetchQueries()}
+        onFilterToggle={(s) => setFilterOpened(s)}
+        filter={
+          <Paper p={"sm"} mt={"md"}>
+            <Group>
+              <SelectItemTags value={queryData.tags || []} onChange={(value) => setQueryData((prev) => ({ ...prev, tags: value }))} />
+              <DatePickerInput
+                clearable
+                label={useTranslateTabItem("date_range_label")}
+                description={useTranslateTabItem("date_range_description")}
+                placeholder={useTranslateTabItem("date_range_placeholder")}
+                w={200}
+                type="range"
+                valueFormat="YYYY MMM DD"
+                value={[queryData.from_date ? new Date(queryData.from_date) : null, queryData.to_date ? new Date(queryData.to_date) : null]}
+                onChange={(value) => {
+                  let [start, end] = value || [undefined, undefined];
+                  setQueryData((prev) => ({ ...prev, from_date: start || undefined, to_date: end || undefined }));
+                }}
+              />
+            </Group>
+          </Paper>
+        }
+        rightSectionWidth={35 * 5}
+        rightSection={
+          <Group gap={3}>
+            <ActionWithTooltip
+              tooltip={useTranslateButtons("export_transactions_tooltip")}
+              icon={faDownload}
+              iconProps={{ size: "xs" }}
+              actionProps={{ size: "sm", disabled: !canExport }}
+              onClick={() => exportMutation.mutate(queryData)}
+            />
+            <ActionWithTooltip
+              tooltip={useTranslateButtons("show_financial_report_tooltip")}
+              color={showReport ? "blue" : "gray"}
+              icon={faCoins}
+              iconProps={{ size: "xs" }}
+              actionProps={{ size: "sm" }}
+              onClick={() => setShowReport((prev) => !prev)}
+            />
+            <ActionWithTooltip
+              tooltip={useTranslateButtons("calculate_tax_tooltip")}
+              icon={faCalculator}
+              iconProps={{ size: "xs" }}
+              actionProps={{ size: "sm" }}
+              onClick={() => calculateTaxMutation.mutate(undefined)}
+            />
+            <ActionWithTooltip
+              tooltip={useTranslateButtons("delete_all_tooltip", { count: selectedRecords.length })}
+              color={"red.7"}
+              icon={faTrash}
+              iconProps={{ size: "xs" }}
+              actionProps={{
+                size: "sm",
+                disabled: selectedRecords.length == 0 || deleteMutation.isPending,
+              }}
+              onClick={() => OpenDeleteBulkModal(selectedRecords.map((record) => record.id))}
+            />
+          </Group>
+        }
+      />
+      {!showReport && (
+        <Box>
           <Group gap={"md"} mt={"md"} grow>
             <Group>
               {Object.values([TauriTypes.TransactionType.Purchase, TauriTypes.TransactionType.Sale]).map((status) => (
@@ -311,13 +312,95 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
               },
             ]}
           />
-        </Grid.Col>
-        {showReport && (
-          <Grid.Col span={5}>
-            <FinancialReportCard data={financialReportQuery.data || null} loading={financialReportQuery.isLoading} />
-          </Grid.Col>
-        )}
-      </Grid>
+        </Box>
+      )}
+      {showReport && (
+        <Box mt={"md"}>
+          <Grid>
+            <Grid.Col span={6}>
+              <FinancialReportCard data={financialReportQuery.data} loading={financialReportQuery.isLoading} hideTradeCount />
+            </Grid.Col>
+            <Grid.Col span={3}>
+              <Title order={4} mb={"sm"}>
+                {useTranslateTabItem("titles.most_purchased_items")}
+              </Title>
+              <Table>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>{useTranslateTabItem("table_headers.item_name")}</Table.Th>
+                    <Table.Th>{useTranslateTabItem("table_headers.quantity")}</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {financialReportQuery.data?.properties.most_purchased_items.map((item) => (
+                    <Table.Tr key={item[0]}>
+                      <Table.Td>{item[0]}</Table.Td>
+                      <Table.Td>{item[1]}</Table.Td>
+                    </Table.Tr>
+                  )) || null}
+                </Table.Tbody>
+              </Table>
+            </Grid.Col>
+            <Grid.Col span={3}>
+              <Title order={4} mb={"sm"}>
+                {useTranslateTabItem("titles.most_sold_items")}
+              </Title>
+              <Table>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>{useTranslateTabItem("table_headers.item_name")}</Table.Th>
+                    <Table.Th>{useTranslateTabItem("table_headers.quantity")}</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {financialReportQuery.data?.properties.most_sold_items.map((item) => (
+                    <Table.Tr key={item[0]}>
+                      <Table.Td>{item[0]}</Table.Td>
+                      <Table.Td>{item[1]}</Table.Td>
+                    </Table.Tr>
+                  )) || null}
+                </Table.Tbody>
+              </Table>
+            </Grid.Col>
+          </Grid>
+          <DataTable
+            className={`${classes.databaseTradingPartners} ${useHasAlert() ? classes.alert : ""} ${filterOpened ? classes.filterOpened : ""}`}
+            mt={"md"}
+            striped
+            fetching={paginationQuery.isLoading || calculateTaxMutation.isPending}
+            records={financialReportQuery.data?.properties.trading_partners || []}
+            idAccessor={"properties.user"}
+            // define columns
+            columns={[
+              {
+                accessor: "user_name",
+                title: useTranslateDataGridColumns("user_name"),
+                render: ({ properties }) => properties.user,
+              },
+              {
+                accessor: "sale_count",
+                title: useTranslateDataGridColumns("sale_count"),
+              },
+              {
+                accessor: "revenue",
+                title: useTranslateDataGridColumns("revenue"),
+              },
+              {
+                accessor: "purchases_count",
+                title: useTranslateDataGridColumns("purchases_count"),
+              },
+              {
+                accessor: "expenses",
+                title: useTranslateDataGridColumns("expenses"),
+              },
+              {
+                accessor: "total_transactions",
+                title: useTranslateDataGridColumns("total_transactions"),
+              },
+            ]}
+          />
+        </Box>
+      )}
     </Box>
   );
 };

@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use entity::{dto::*, enums::FieldChange};
 use serde::{Deserialize, Serialize};
-use utils::filters_by;
+use utils::{filters_by, sorting::SortDirection};
 
 use crate::log_parser::Transaction;
 

@@ -1,162 +1,64 @@
-import { Card, Grid, Stack, Text } from "@mantine/core";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { TauriTypes } from "$types";
-import {
-  faArrowTrendUp,
-  faArrowTrendDown,
-  faCoins,
-  faChartLine,
-  faShoppingCart,
-  faReceipt,
-  faCalculator,
-  faPercent,
-} from "@fortawesome/free-solid-svg-icons";
-import { MetricCard } from "../MetricCard";
+import { useTranslateComponent } from "@hooks/useTranslate.hook";
+import { StatsWithSegments } from "../StatsWithSegments";
 
 export interface FinancialReportCardProps {
-  data: TauriTypes.FinancialReport | null;
+  data: TauriTypes.FinancialReport | undefined;
+  hideTradeCount?: boolean;
   loading?: boolean;
 }
 
-export const FinancialReportCard = ({ data, loading = false }: FinancialReportCardProps) => {
-  if (loading) {
-    return (
-      <Card p="lg" withBorder>
-        <Text ta="center" c="dimmed">
-          Loading financial report...
-        </Text>
-      </Card>
-    );
-  }
-
-  if (!data) {
-    return (
-      <Card p="lg" withBorder>
-        <Text ta="center" c="dimmed">
-          No financial data available
-        </Text>
-      </Card>
-    );
-  }
-
-  const profitTrend = data.total_profit > 0 ? "up" : data.total_profit < 0 ? "down" : "neutral";
-  const roiTrend = data.roi > 0 ? "up" : data.roi < 0 ? "down" : "neutral";
+export const FinancialReportCard = ({ data, hideTradeCount }: FinancialReportCardProps) => {
+  const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateComponent(`financial_report_card.${key}`, { ...context }, i18Key);
 
   return (
-    <Stack gap="sm">
-      {/* Key Metrics Row - Most Important */}
-      <Grid gutter={{ base: "xs", sm: "md" }}>
-        <Grid.Col span={{ base: 12, xs: 6, sm: 6, md: 3, lg: 3 }}>
-          <MetricCard
-            icon={<FontAwesomeIcon icon={faCoins} />}
-            title="Total Profit"
-            value={data.total_profit}
-            color="green"
-            isCurrency
-            trend={profitTrend}
-          />
-        </Grid.Col>
-
-        <Grid.Col span={{ base: 12, xs: 6, sm: 6, md: 3, lg: 3 }}>
-          <MetricCard icon={<FontAwesomeIcon icon={faPercent} />} title="ROI" value={data.roi} isPercentage trend={roiTrend} />
-        </Grid.Col>
-
-        <Grid.Col span={{ base: 12, xs: 6, sm: 6, md: 3, lg: 3 }}>
-          <MetricCard
-            icon={<FontAwesomeIcon icon={faCalculator} />}
-            title="Profit Margin"
-            value={data.profit_margin}
-            color="var(--qf-profit)"
-            isPercentage
-          />
-        </Grid.Col>
-
-        <Grid.Col span={{ base: 12, xs: 6, sm: 6, md: 3, lg: 3 }}>
-          <MetricCard icon={<FontAwesomeIcon icon={faReceipt} />} title="Total Transactions" value={data.total_transactions} color="orange" />
-        </Grid.Col>
-      </Grid>
-
-      {/* Revenue & Sales */}
-      <Grid gutter={{ base: "xs", sm: "md" }}>
-        <Grid.Col span={{ base: 12, sm: 6, md: 4, lg: 4 }}>
-          <MetricCard
-            icon={<FontAwesomeIcon icon={faArrowTrendUp} />}
-            title="Total Revenue"
-            value={data.revenue}
-            color="var(--qf-positive-color)"
-            isCurrency
-          />
-        </Grid.Col>
-
-        <Grid.Col span={{ base: 12, sm: 6, md: 4, lg: 4 }}>
-          <MetricCard icon={<FontAwesomeIcon icon={faShoppingCart} />} title="Sales Count" value={data.sale_count} color="var(--qf-positive-color)" />
-        </Grid.Col>
-
-        <Grid.Col span={{ base: 12, sm: 12, md: 4, lg: 4 }}>
-          <MetricCard
-            icon={<FontAwesomeIcon icon={faCalculator} />}
-            title="Average Revenue"
-            value={data.average_revenue}
-            color="var(--qf-positive-color)"
-            isCurrency
-          />
-        </Grid.Col>
-      </Grid>
-
-      {/* Expenses & Purchases */}
-      <Grid gutter={{ base: "xs", sm: "md" }}>
-        <Grid.Col span={{ base: 12, sm: 6, md: 4, lg: 4 }}>
-          <MetricCard
-            icon={<FontAwesomeIcon icon={faArrowTrendDown} />}
-            title="Total Expenses"
-            value={data.expenses}
-            color="var(--qf-negative-color)"
-            isCurrency
-          />
-        </Grid.Col>
-
-        <Grid.Col span={{ base: 12, sm: 6, md: 4, lg: 4 }}>
-          <MetricCard
-            icon={<FontAwesomeIcon icon={faShoppingCart} />}
-            title="Purchases Count"
-            value={data.purchases_count}
-            color="var(--qf-negative-color)"
-          />
-        </Grid.Col>
-
-        <Grid.Col span={{ base: 12, sm: 12, md: 4, lg: 4 }}>
-          <MetricCard
-            icon={<FontAwesomeIcon icon={faCalculator} />}
-            title="Average Expense"
-            value={data.average_expense}
-            color="var(--qf-negative-color)"
-            isCurrency
-          />
-        </Grid.Col>
-      </Grid>
-
-      {/* Averages */}
-      <Grid gutter={{ base: "xs", sm: "md" }}>
-        <Grid.Col span={{ base: 12, sm: 6, md: 6, lg: 6 }}>
-          <MetricCard
-            icon={<FontAwesomeIcon icon={faChartLine} />}
-            title="Average Transaction"
-            value={data.average_transaction}
-            color="blue"
-            isCurrency
-          />
-        </Grid.Col>
-
-        <Grid.Col span={{ base: 12, sm: 6, md: 6, lg: 6 }}>
-          <MetricCard
-            icon={<FontAwesomeIcon icon={faCoins} />}
-            title="Average Profit"
-            value={data.average_profit}
-            color="var(--qf-positive-color)"
-            isCurrency
-          />
-        </Grid.Col>
-      </Grid>
-    </Stack>
+    <StatsWithSegments
+      p={0}
+      orientation="vertical"
+      hidePercentBar
+      segments={[
+        {
+          label: useTranslate("labels.total_transactions"),
+          count: data?.total_transactions || 0,
+          color: "orange",
+          tooltip: useTranslate("tooltips.total_credits"),
+          part: data?.properties?.total_credits || 0,
+          suffix: " C",
+          decimalScale: 2,
+        },
+        {
+          label: useTranslate("labels.trade_count"),
+          count: data?.properties?.total_trades || 0,
+          color: "var(--qf-transaction-type-trade)",
+          hide: hideTradeCount,
+          part: null,
+        },
+        {
+          label: useTranslate("labels.purchases_count"),
+          count: data?.purchases_count || 0,
+          color: "var(--qf-transaction-type-purchase)",
+          part: data?.expenses || 0,
+          suffix: " P",
+        },
+        {
+          label: useTranslate("labels.sales_count"),
+          count: data?.sale_count || 0,
+          color: "var(--qf-transaction-type-sale)",
+          part: data?.revenue || 0,
+          suffix: " P",
+        },
+        {
+          label: useTranslate("labels.total_profit"),
+          count: data?.total_profit || 0,
+          color: "teal",
+          tooltip: useTranslate("tooltips.profit_margin"),
+          part: data?.profit_margin || 0,
+          decimalScale: 2,
+        },
+      ]}
+      showPercent
+      percentSymbol="%"
+    />
   );
 };

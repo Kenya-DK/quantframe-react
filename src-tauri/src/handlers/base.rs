@@ -1,6 +1,6 @@
 use entity::{dto::SubType, enums::TransactionType, transaction::TransactionPaginationQueryDto};
 use service::{TransactionMutation, TransactionQuery};
-use utils::{get_location, info, Error};
+use utils::{get_location, info, Error, SortDirection};
 use wf_market::{enums::OrderType, types::UpdateOrderParams};
 
 use crate::{
@@ -142,7 +142,7 @@ pub async fn handle_transaction(
                 .set_wfm_id(transaction.wfm_id.clone())
                 .set_sub_type(transaction.sub_type.clone())
                 .set_sort_by("created_at")
-                .set_sort_direction(entity::dto::SortDirection::Desc),
+                .set_sort_direction(SortDirection::Desc),
         )
         .await?;
         if let Some(purchase_transaction) = existing_transaction.results.first() {

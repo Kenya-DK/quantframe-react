@@ -1,6 +1,7 @@
 use entity::{dto::*, enums::*};
 
 use serde::{Deserialize, Serialize};
+use utils::SortDirection;
 use wf_market::enums::AuctionType;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

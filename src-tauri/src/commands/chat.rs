@@ -1,11 +1,8 @@
 use std::sync::Mutex;
 
-use entity::{
-    dto::{PaginatedResult, SortDirection},
-    enums::FieldChange,
-};
+use entity::{dto::PaginatedResult, enums::FieldChange};
 use serde_json::json;
-use utils::{filters_by, get_location, info, Error, LoggerOptions};
+use utils::{filters_by, get_location, info, sorting::SortDirection, Error, LoggerOptions};
 use wf_market::types::{Chat, ChatMessage};
 
 use crate::{

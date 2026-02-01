@@ -1759,6 +1759,19 @@
         "sales": "Number of sales",
         "purchases": "Number of purchases"
       }
+    },
+    "financial_report_card": {
+      "tooltips": {
+        "profit_margin": "Profit Margin",
+        "total_credits": "Total Credits Transacted"
+      },
+      "labels": {
+        "total_transactions": "Total Transactions",
+        "trade_count": "Trade Count",
+        "purchases_count": "Purchases Count",
+        "sales_count": "Sales Count",
+        "total_profit": "Total Profit"
+      }
     }
   },
   "pages": {
@@ -2106,8 +2119,21 @@
               "created_at": "Created At",
               "user_name": "User Name",
               "profit": "Profit",
-              "credits": "Credits"
+              "credits": "Credits",
+              "sale_count": "Sales Count",
+              "revenue": "Revenue",
+              "purchases_count": "Purchases Count",
+              "expenses": "Expenses",
+              "total_transactions": "Total Transactions"
             }
+          },
+          "titles": {
+            "most_purchased_items": "Most Purchased Items",
+            "most_sold_items": "Most Sold Items"
+          },
+          "table_headers": {
+            "item_name": "Name",
+            "quantity": "Quantity"
           }
         },
         "item": {
@@ -2185,10 +2211,6 @@
           "drag_and_drop_message": "Drag and drop your GDPR Text files here Read more about this feature on the website.",
           "trade": {
             "title": "Trade",
-            "tooltips": {
-              "profit_margin": "Profit Margin",
-              "total_credits": "Total Credits Transacted"
-            },
             "titles": {
               "most_purchased_items": "Most Purchased Items",
               "most_sold_items": "Most Sold Items"
@@ -2196,13 +2218,6 @@
             "table_headers": {
               "item_name": "Name",
               "quantity": "Quantity"
-            },
-            "labels": {
-              "total_transactions": "Total Transactions",
-              "trade_count": "Trade Count",
-              "purchases_count": "Purchases Count",
-              "sales_count": "Sales Count",
-              "total_profit": "Total Profit"
             },
             "cards": {
               "yearly_trade_overview": {

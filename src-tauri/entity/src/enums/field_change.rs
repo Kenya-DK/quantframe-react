@@ -13,3 +13,14 @@ impl<T> Default for FieldChange<T> {
         FieldChange::Ignore
     }
 }
+impl<T> FieldChange<T> {
+    pub fn get_value(&self, default: T) -> T
+    where
+        T: Clone,
+    {
+        match self {
+            FieldChange::Value(v) => v.clone(),
+            _ => default,
+        }
+    }
+}

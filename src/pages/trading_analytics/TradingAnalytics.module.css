@@ -41,3 +41,21 @@
     --offset: 416px;
   }
 }
+
+.databaseTradingPartners {
+  --offset: 500px;
+  height: calc(100vh - var(--offset)) !important;
+  transition: height 0.2s ease;
+
+  &.alert {
+    --offset: 520px;
+  }
+
+  &.filterOpened {
+    --offset: 618px;
+  }
+
+  &.alert.filterOpened {
+    --offset: 636px;
+  }
+}

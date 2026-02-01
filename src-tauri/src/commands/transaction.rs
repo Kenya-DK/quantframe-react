@@ -2,12 +2,13 @@ use std::sync::Mutex;
 
 use entity::{
     dto::*,
-    enums::TransactionItemType,
+    enums::{FieldChange, TransactionItemType},
     transaction::{dto::TransactionPaginationQueryDto, *},
 };
+use serde_json::json;
 use service::{TransactionMutation, TransactionQuery};
 use tauri_plugin_dialog::DialogExt;
-use utils::{get_location, info, warning, Error, LoggerOptions};
+use utils::{get_location, group_by, info, sorting::SortDirection, warning, Error, LoggerOptions};
 
 use crate::{add_metric, app::client::AppState, types::PermissionsFlags, APP, DATABASE};
 
@@ -26,8 +27,34 @@ pub async fn get_transaction_pagination(
 pub async fn get_transaction_financial_report(
     query: TransactionPaginationQueryDto,
 ) -> Result<FinancialReport, Error> {
-    let items = get_transaction_pagination(query).await?;
-    Ok(FinancialReport::from(&items.results))
+    let items = get_transaction_pagination(query.clone()).await?.results;
+
+    let mut trading_partners = group_by(&items, |item| {
+        if item.user_name == "" {
+            "Unknown".to_string()
+        } else {
+            item.user_name.clone()
+        }
+    });
+    // Remove Unknown trading partners
+    trading_partners.remove("Unknown");
+    let mut trading_partners = trading_partners
+        .iter()
+        .map(|(name, items)| {
+            FinancialReport::from(items).with_properties(json!({
+                "user": name,
+            }))
+        })
+        .collect::<Vec<FinancialReport>>();
+    trading_partners.sort_by(|a, b| b.total_transactions.cmp(&a.total_transactions));
+
+    let mut report = FinancialReport::from(&items);
+    if let Some(properties) = &mut report.properties {
+        properties["trading_partners"] =
+            serde_json::to_value(trading_partners.into_iter().take(10).collect::<Vec<_>>())
+                .unwrap();
+    }
+    Ok(report)
 }
 
 #[tauri::command]

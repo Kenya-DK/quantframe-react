@@ -3,6 +3,17 @@ import { TauriTypes } from "../../types";
 import utc from "dayjs/plugin/utc";
 import dayjs from "dayjs";
 dayjs.extend(utc);
+
+export interface FinancialReport extends Omit<TauriTypes.FinancialReport, "properties"> {
+  properties: {
+    most_purchased_items: Array<Array<number | string>>;
+    most_sold_items: Array<Array<number | string>>;
+    total_credits: number;
+    user?: string;
+    trading_partners: FinancialReport[];
+  };
+}
+
 export class TransactionModule {
   constructor(private readonly client: TauriClient) {}
 
@@ -14,10 +25,10 @@ export class TransactionModule {
     });
   }
 
-  async getFinancialReport(query: TauriTypes.TransactionControllerGetListParams): Promise<TauriTypes.FinancialReport> {
+  async getFinancialReport(query: TauriTypes.TransactionControllerGetListParams): Promise<FinancialReport> {
     if (query.from_date) query.from_date = dayjs(query.from_date).utc().toISOString();
     if (query.to_date) query.to_date = dayjs(query.to_date).utc().toISOString();
-    return await this.client.sendInvoke<TauriTypes.FinancialReport>("get_transaction_financial_report", {
+    return await this.client.sendInvoke<FinancialReport>("get_transaction_financial_report", {
       query: this.client.convertToTauriQuery(query),
     });
   }

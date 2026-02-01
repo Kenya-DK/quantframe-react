@@ -6,6 +6,7 @@ export type Segment = {
   label: string;
   count: number;
   color: string;
+  hide?: boolean;
   decimalScale?: number;
   part?: number | null;
   tooltip?: string;
@@ -36,12 +37,12 @@ export function StatsWithSegments({
   h,
   orientation = "horizontal",
 }: StatsWithSegmentsProps) {
-  const total = segmentsIn.filter((segment) => !segment.hideInProgress).reduce((sum, segment) => sum + Math.abs(segment.count), 0);
+  const total = segmentsIn.filter((segment) => !segment.hideInProgress && !segment.hide).reduce((sum, segment) => sum + Math.abs(segment.count), 0);
 
   const getPercentage = (segment: Segment) => (segment.part ? segment.part : total ? Math.round((Math.abs(segment.count) / total) * 100) : 0);
 
   const progressSegments = segmentsIn
-    .filter((segment) => !segment.hideInProgress)
+    .filter((segment) => !segment.hideInProgress && !segment.hide)
     .map((segment) => {
       const percentage = getPercentage(segment);
       return (
@@ -55,35 +56,37 @@ export function StatsWithSegments({
       );
     });
 
-  const descriptions = segmentsIn.map((stat) => (
-    <Box key={stat.label} style={{ borderBottomColor: stat.color }} className={classes.stat}>
-      <Text tt="uppercase" fz="xs" c="dimmed" fw={700}>
-        {stat.label}
-      </Text>
-
-      <Group justify="space-between" align="flex-end" gap={0}>
-        <Text fw={700}>
-          <NumberFormatter value={stat.count} thousandSeparator />
+  const descriptions = segmentsIn
+    .filter((segment) => !segment.hide)
+    .map((stat) => (
+      <Box key={stat.label} style={{ borderBottomColor: stat.color }} className={classes.stat}>
+        <Text tt="uppercase" fz="xs" c="dimmed" fw={700}>
+          {stat.label}
         </Text>
-        {showPercent && stat.part !== null && (
-          <Tooltip label={stat.tooltip} withArrow disabled={!stat.tooltip}>
-            <span>
-              <NumberFormatter
-                value={getPercentage(stat)}
-                className={classes.statCount}
-                decimalScale={stat.decimalScale ?? 0}
-                style={{ color: stat.color }}
-                prefix={stat.prefix}
-                suffix={stat.suffix ?? percentSymbol}
-                thousandSeparator=","
-                thousandsGroupStyle="thousand"
-              />
-            </span>
-          </Tooltip>
-        )}
-      </Group>
-    </Box>
-  ));
+
+        <Group justify="space-between" align="flex-end" gap={0}>
+          <Text fw={700}>
+            <NumberFormatter value={stat.count} thousandSeparator />
+          </Text>
+          {showPercent && stat.part !== null && (
+            <Tooltip label={stat.tooltip} withArrow disabled={!stat.tooltip}>
+              <span>
+                <NumberFormatter
+                  value={getPercentage(stat)}
+                  className={classes.statCount}
+                  decimalScale={stat.decimalScale ?? 0}
+                  style={{ color: stat.color }}
+                  prefix={stat.prefix}
+                  suffix={stat.suffix ?? percentSymbol}
+                  thousandSeparator=","
+                  thousandsGroupStyle="thousand"
+                />
+              </span>
+            </Tooltip>
+          )}
+        </Group>
+      </Box>
+    ));
 
   const IsEmpty = () => segmentsIn.filter((segment) => segment.hideInProgress !== false).length === 0;
 

@@ -3,13 +3,13 @@ import { TauriTypes } from "$types";
 import { useForm } from "@mantine/form";
 import { useQueries } from "./queries";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
-import { StatsWithSegments } from "@components/Shared/StatsWithSegments";
 import { BarCardChart } from "@components/Shared/BarCardChart";
 import i18next from "i18next";
 import { BestByCategoryTable } from "@components/DataDisplay/BestByCategoryTable";
 import { BarChartFinancialSummary } from "@components/DataDisplay/BarChartFinancialSummary";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 import { useEffect, useState } from "react";
+import { FinancialReportCard } from "@components/Shared/FinancialReportCard";
 
 interface TradePanelProps {
   isActive?: boolean;
@@ -51,52 +51,7 @@ export const TradePanel = ({ isActive, year_list }: TradePanelProps) => {
     <Box p={"md"} h={"85vh"}>
       <Grid>
         <Grid.Col span={6}>
-          <StatsWithSegments
-            p={0}
-            orientation="vertical"
-            hidePercentBar
-            segments={[
-              {
-                label: useTranslate("labels.total_transactions"),
-                count: financialReportQuery.data?.total_transactions || 0,
-                color: "orange",
-                tooltip: useTranslate("tooltips.total_credits"),
-                part: financialReportQuery.data?.properties.total_credits || 0,
-                suffix: " C",
-                decimalScale: 2,
-              },
-              {
-                label: useTranslate("labels.trade_count"),
-                count: financialReportQuery.data?.properties.total_trades || 0,
-                color: "var(--qf-transaction-type-trade)",
-                part: null,
-              },
-              {
-                label: useTranslate("labels.purchases_count"),
-                count: financialReportQuery.data?.purchases_count || 0,
-                color: "var(--qf-transaction-type-purchase)",
-                part: financialReportQuery.data?.expenses || 0,
-                suffix: " P",
-              },
-              {
-                label: useTranslate("labels.sales_count"),
-                count: financialReportQuery.data?.sale_count || 0,
-                color: "var(--qf-transaction-type-sale)",
-                part: financialReportQuery.data?.revenue || 0,
-                suffix: " P",
-              },
-              {
-                label: useTranslate("labels.total_profit"),
-                count: financialReportQuery.data?.total_profit || 0,
-                color: "teal",
-                tooltip: useTranslate("tooltips.profit_margin"),
-                part: financialReportQuery.data?.profit_margin || 0,
-                decimalScale: 2,
-              },
-            ]}
-            showPercent
-            percentSymbol="%"
-          />
+          <FinancialReportCard data={financialReportQuery.data} loading={financialReportQuery.isLoading} />
         </Grid.Col>
         <Grid.Col span={3}>
           <Title order={4} mb={"sm"}>

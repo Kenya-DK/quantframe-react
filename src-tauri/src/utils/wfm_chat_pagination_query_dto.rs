@@ -1,7 +1,7 @@
-
 use entity::{dto::*, enums::*};
 
 use serde::{Deserialize, Serialize};
+use utils::SortDirection;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WfmChatPaginationQueryDto {

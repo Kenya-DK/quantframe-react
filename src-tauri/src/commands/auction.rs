@@ -6,7 +6,7 @@ use entity::{
     stock_riven::{self, StockRivenPaginationQueryDto},
 };
 use service::StockRivenQuery;
-use utils::{filters_by, get_location, Error};
+use utils::{filters_by, get_location, sorting::SortDirection, Error};
 use wf_market::{enums::OrderType, types::Auction};
 
 use crate::{
