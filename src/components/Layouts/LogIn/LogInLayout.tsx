@@ -11,6 +11,7 @@ import { useAuthContext } from "@contexts/auth.context";
 import { open } from "@tauri-apps/plugin-shell";
 import { AddMetric } from "@api/index";
 import { faWarframeMarket, facTradingAnalytics } from "@icons";
+import { prefetchRoute } from "../routeLoaders";
 
 export function LogInLayout() {
   // States
@@ -32,6 +33,7 @@ export function LogInLayout() {
       icon: <FontAwesomeIcon size={"lg"} icon={faHome} />,
       label: useTranslateNavBar("home"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
+      onPrefetch: () => prefetchRoute("home"),
     },
     {
       align: "top",
@@ -40,6 +42,7 @@ export function LogInLayout() {
       icon: <FontAwesomeIcon size={"lg"} icon={faGlobe} />,
       label: useTranslateNavBar("live_scraper"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
+      onPrefetch: () => prefetchRoute("liveScraper"),
     },
     {
       align: "top",
@@ -48,6 +51,7 @@ export function LogInLayout() {
       icon: <FontAwesomeIcon size={"xl"} icon={faWarframeMarket} />,
       label: useTranslateNavBar("warframe_market"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
+      onPrefetch: () => prefetchRoute("warframeMarket"),
     },
     {
       align: "top",
@@ -66,6 +70,7 @@ export function LogInLayout() {
       ),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
       label: useTranslateNavBar("chat"),
+      onPrefetch: () => prefetchRoute("chat"),
     },
     {
       align: "top",
@@ -74,6 +79,7 @@ export function LogInLayout() {
       icon: <FontAwesomeIcon size={"lg"} icon={facTradingAnalytics} />,
       label: useTranslateNavBar("trading_analytics"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
+      onPrefetch: () => prefetchRoute("tradingAnalytics"),
     },
     {
       align: "top",
@@ -82,6 +88,7 @@ export function LogInLayout() {
       icon: <FontAwesomeIcon size={"lg"} icon={faMessage} />,
       label: useTranslateNavBar("trade_messages"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
+      onPrefetch: () => prefetchRoute("tradeMessages"),
     },
     {
       align: "top",
@@ -99,6 +106,7 @@ export function LogInLayout() {
       icon: <FontAwesomeIcon size={"lg"} icon={faInfoCircle} />,
       label: useTranslateNavBar("about"),
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
+      onPrefetch: () => prefetchRoute("about"),
     },
   ];
   // Effects
