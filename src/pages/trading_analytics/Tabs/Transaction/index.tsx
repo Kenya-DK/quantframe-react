@@ -30,7 +30,7 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
   const [queryData, setQueryData] = useLocalStorage<TauriTypes.TransactionControllerGetListParams>({
     key: "transaction_query_key",
     getInitialValueInEffect: false,
-    defaultValue: { page: 1, limit: 50, sort_by: "created_at", sort_direction: "desc" },
+    defaultValue: { page: 1, limit: 20, sort_by: "created_at", sort_direction: "desc" },
   });
 
   // Translate general
@@ -64,7 +64,7 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
   }, []);
 
   // Queries
-  const { paginationQuery, financialReportQuery, refetchQueries } = useQueries({ queryData, isActive });
+  const { paginationQuery, financialReportQuery, refetchQueries } = useQueries({ queryData, isActive, loadFinancialReport: showReport });
   const handleRefresh = () => {
     console.log("Refreshing transactions due to Tauri event");
     refetchQueries();

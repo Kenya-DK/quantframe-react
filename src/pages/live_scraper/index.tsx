@@ -51,7 +51,7 @@ export default function LiveScraperPage() {
         </Tabs.List>
         {tabs.map((tab) => (
           <Tabs.Panel value={tab.id} key={tab.id}>
-            {tab.component(activeTab === tab.id)}
+            {activeTab === tab.id && tab.component(true)}
           </Tabs.Panel>
         ))}
       </Tabs>
