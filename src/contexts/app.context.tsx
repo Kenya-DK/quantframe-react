@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import api from "@api/index";
 import { QuantframeApiTypes, ResponseError, TauriTypes } from "$types";
 import { AuthContextProvider } from "./auth.context";
@@ -202,10 +202,20 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
         console.error("Error playing sound:", error);
       });
     });
-    return () => {};
+    return () => { };
   }, []);
+  const contextValue = useMemo(() => ({
+    settings,
+    alerts: alerts?.results || [],
+    app_info,
+    app_error: error,
+    checkForUpdates,
+    loading,
+    setLang
+  }), [settings, alerts?.results, app_info, error, checkForUpdates, loading, setLang]);
+
   return (
-    <AppContext.Provider value={{ settings, alerts: alerts?.results || [], app_info: app_info, app_error: error, checkForUpdates, loading, setLang }}>
+    <AppContext.Provider value={contextValue}>
       <SplashScreen opened={loading} text={useTranslateContexts(`app.${startingUp.i18n_key}`, startingUp.values)} />
       {!loading && (
         <AuthContextProvider>

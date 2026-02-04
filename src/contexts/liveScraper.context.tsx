@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { TauriTypes } from "$types";
 import api from "../api";
 import { invoke } from "@tauri-apps/api/core";
@@ -53,5 +53,7 @@ export function LiveScraperContextProvider({ children }: LiveScraperContextProvi
       .catch((e) => console.error("Error checking initialization:", e));
   }, []);
 
-  return <LiveScraperContext.Provider value={{ is_running, message }}>{children}</LiveScraperContext.Provider>;
+  const contextValue = useMemo(() => ({ is_running, message }), [is_running, message]);
+
+  return <LiveScraperContext.Provider value={contextValue}>{children}</LiveScraperContext.Provider>;
 }
