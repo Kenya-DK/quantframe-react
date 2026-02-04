@@ -3,8 +3,7 @@ import { ItemWithMeta } from "$types";
 import { TextTranslate } from "../../Shared/TextTranslate";
 import { useTranslateCommon } from "@hooks/useTranslate.hook";
 import { DisplaySettings, GetItemDisplay, GetSubTypeDisplay } from "@utils/helper";
-import { useQuery } from "@tanstack/react-query";
-import api from "@api/index";
+import { useCacheContext } from "@contexts/cache.context";
 import { memo } from "react";
 import { faAmberStar, faCyanStar } from "@icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -27,15 +26,8 @@ export type ItemNameProps = {
 
 export const ItemName = memo(function ItemName({ color, size, hideQuantity, value, displaySettings }: ItemNameProps) {
   const theme = useMantineTheme();
-  // Fetch data from rust side
-  const { data: tradableItems } = useQuery({
-    queryKey: ["cache_items"],
-    queryFn: () => api.cache.getTradableItems(),
-  });
-  const { data: weapons } = useQuery({
-    queryKey: ["cache_riven_weapons"],
-    queryFn: () => api.cache.getRivenWeapons(),
-  });
+  // Fetch data from cache context
+  const { tradableItems, weapons } = useCacheContext();
   const GetQuantity = (): string | number => {
     if (!value) return "";
     let quantity = 0;
