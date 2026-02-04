@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Grid, Card, alpha, Group, Collapse } from "@mantine/core";
 import { WFMarketTypes } from "$types/index";
 import { useTranslateCommon, useTranslateComponent } from "@hooks/useTranslate.hook";
@@ -17,7 +18,7 @@ export type WFMAuctionProps = {
   overlayFooter?: React.ReactNode;
 };
 
-export function WFMAuction({ header, auction, overlayFooter, hideFooter }: WFMAuctionProps) {
+export const WFMAuction = memo(function WFMAuction({ header, auction, overlayFooter, hideFooter }: WFMAuctionProps) {
   // State
   const { hovered, ref } = useHover();
   // Translate general
@@ -103,4 +104,4 @@ export function WFMAuction({ header, auction, overlayFooter, hideFooter }: WFMAu
       </Card.Section>
     </Card>
   );
-}
+});

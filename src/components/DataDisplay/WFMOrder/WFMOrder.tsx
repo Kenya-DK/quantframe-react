@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Paper, Stack, PaperProps, Group, Divider, Box, Avatar, Text, Image, Grid, Rating, useMantineTheme } from "@mantine/core";
 import classes from "./WFMOrder.module.css";
 import { WFMarketTypes } from "$types/index";
@@ -20,7 +21,7 @@ export type WFMOrderProps = {
   paperProps?: PaperProps;
 };
 
-export function WFMOrder({ show_border, paperProps, order, footer, show_user, display_style }: WFMOrderProps) {
+export const WFMOrder = memo(function WFMOrder({ show_border, paperProps, order, footer, show_user, display_style }: WFMOrderProps) {
   const theme = useMantineTheme();
 
   // Translate general
@@ -156,9 +157,8 @@ export function WFMOrder({ show_border, paperProps, order, footer, show_user, di
               className={classes.userName}
               truncate
               style={{
-                borderBottomColor: `var(--qf-user-status-${
-                  (order.user?.status.toString() || "offline") == "in_game" ? "ingame" : order.user?.status
-                })`,
+                borderBottomColor: `var(--qf-user-status-${(order.user?.status.toString() || "offline") == "in_game" ? "ingame" : order.user?.status
+                  })`,
                 borderBottom: "rem(3px) solid",
               }}
             >
@@ -175,4 +175,4 @@ export function WFMOrder({ show_border, paperProps, order, footer, show_user, di
       )}
     </Paper>
   );
-}
+});

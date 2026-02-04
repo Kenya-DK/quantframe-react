@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Tabs } from "@mantine/core";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { ItemPanel, RivenPanel, CustomPanel } from "./Tabs";
@@ -12,7 +13,7 @@ export default function TradeMessagesPage() {
   const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForm(`tabs.${key}`, { ...context }, i18Key);
 
-  const tabs = [
+  const tabs = useMemo(() => [
     {
       label: useTranslateTabs("item.title"),
       component: (isActive: boolean) => <ItemPanel isActive={isActive} />,
@@ -29,7 +30,7 @@ export default function TradeMessagesPage() {
       id: "riven",
       isPremium: true,
     },
-  ];
+  ], []);
 
   const [activeTab, setActiveTab] = useLocalStorage<string>({
     key: "trade_messages_active_tab",

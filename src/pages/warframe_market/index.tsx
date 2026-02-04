@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Container, Tabs } from "@mantine/core";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { OrderPanel } from "./Tabs/Orders";
@@ -12,14 +13,14 @@ export default function WarframeMarketPage() {
     useTranslatePages(`warframe_market.${key}`, { ...context }, i18Key);
   const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`tabs.${key}`, { ...context }, i18Key);
 
-  const tabs = [
+  const tabs = useMemo(() => [
     {
       label: useTranslateTabs("orders.title"),
       component: (isActive: boolean) => <OrderPanel isActive={isActive} />,
       id: "orders",
     },
     { label: useTranslateTabs("auctions.title"), component: (isActive: boolean) => <AuctionPanel isActive={isActive} />, id: "auctions" },
-  ];
+  ], []);
   const [activeTab, setActiveTab] = useLocalStorage<string>({
     key: "warframe_market.active_tab",
     defaultValue: tabs[0].id,

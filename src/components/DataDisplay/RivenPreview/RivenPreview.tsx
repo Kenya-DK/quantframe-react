@@ -1,14 +1,15 @@
+import { memo, useEffect, useState } from "react";
 import { Box, Collapse, PaperProps, Text } from "@mantine/core";
 import classes from "./RivenPreview.module.css";
 import { RivenAttribute, WFMarketTypes } from "$types/index";
 import { TauriTypes } from "$types";
-import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import { useHover } from "@mantine/hooks";
 import { getPolarityIcon } from "@icons";
+import { useCacheContext } from "@contexts/cache.context";
 
 export type RivenPreviewProps = {
   riven: WFMarketTypes.Auction | TauriTypes.StockRiven;
@@ -21,7 +22,7 @@ interface RivenAttributeWithUnits extends RivenAttribute {
   symbol: string;
 }
 
-export function RivenPreview({ paperProps, riven }: RivenPreviewProps) {
+export const RivenPreview = memo(function RivenPreview({ paperProps, riven }: RivenPreviewProps) {
   // State
   const { hovered, ref } = useHover();
   const [weapon, setWeapon] = useState<TauriTypes.CacheRivenWeapon | undefined>(undefined);
@@ -31,11 +32,8 @@ export function RivenPreview({ paperProps, riven }: RivenPreviewProps) {
   const [mastery, setMastery] = useState<number>(0);
   const [reRolls, setReRolls] = useState<number>(0);
   const [rank, setRank] = useState<number>(0);
-  // Fetch data from rust side
-  const { data: weapons } = useQuery<TauriTypes.CacheRivenWeapon[], Error>({
-    queryKey: ["cache_riven_weapons"],
-    queryFn: () => api.cache.getRivenWeapons(),
-  });
+  // Fetch data from cache context
+  const { weapons } = useCacheContext();
   const { data: allAttributes } = useQuery<TauriTypes.CacheRivenAttribute[], Error>({
     queryKey: ["cache_riven_attributes"],
     queryFn: () => api.cache.getRivenAttributes(),
@@ -150,4 +148,4 @@ export function RivenPreview({ paperProps, riven }: RivenPreviewProps) {
       </Collapse>
     </Box>
   );
-}
+});

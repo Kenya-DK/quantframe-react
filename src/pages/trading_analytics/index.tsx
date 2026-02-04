@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Tabs } from "@mantine/core";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { TransactionPanel, ItemPanel, RivenPanel, UserPanel, WarframeGDPRParser } from "./Tabs";
@@ -12,7 +13,7 @@ export default function TradingAnalyticsPage() {
   const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForm(`tabs.${key}`, { ...context }, i18Key);
 
-  const tabs = [
+  const tabs = useMemo(() => [
     {
       label: useTranslateTabs("transaction.title"),
       component: (isActive: boolean) => <TransactionPanel isActive={isActive} />,
@@ -41,7 +42,7 @@ export default function TradingAnalyticsPage() {
       id: "wfgdpr",
       isPremium: false,
     },
-  ];
+  ], []);
 
   const [activeTab, setActiveTab] = useLocalStorage<string>({
     key: "trading_analytics_active_tab",
