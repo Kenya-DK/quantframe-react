@@ -4,7 +4,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBug, faEnvelope, faGlobe, faHome, faInfoCircle, faMessage } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { NavbarLinkProps, NavbarMinimalColored } from "@components/Layouts/Shared/NavbarMinimalColored";
 import { Header } from "@components/Layouts/Shared/Header";
 import { useAuthContext } from "@contexts/auth.context";
@@ -25,7 +25,16 @@ export function LogInLayout() {
     useTranslate(`navbar.${key}`, { ...context }, i18Key);
   // States
   const navigate = useNavigate();
-  const links = [
+  const handleNavigate = useCallback((link: NavbarLinkProps) => {
+    if (link.web) open(link.link, "_blank");
+    else navigate(link.link);
+
+    if (link.id == lastPage || !link.id) return;
+    setLastPage(link.id || "");
+    AddMetric("active_page", link.id);
+  }, [navigate, lastPage]);
+
+  const links = useMemo(() => [
     {
       align: "top",
       id: "home",
@@ -108,19 +117,12 @@ export function LogInLayout() {
       onClick: (e: NavbarLinkProps) => handleNavigate(e),
       onPrefetch: () => prefetchRoute("about"),
     },
-  ];
+  ], [user?.unread_messages, handleNavigate]);
+
   // Effects
   useEffect(() => {
     if (user?.qf_banned || user?.wfm_banned) navigate("/error/banned");
-  }, [user]);
-  const handleNavigate = (link: NavbarLinkProps) => {
-    if (link.web) open(link.link, "_blank");
-    else navigate(link.link);
-
-    if (link.id == lastPage || !link.id) return;
-    setLastPage(link.id || "");
-    AddMetric("active_page", link.id);
-  };
+  }, [user, navigate]);
   return (
     <AppShell
       classNames={classes}
