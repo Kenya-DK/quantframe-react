@@ -7,6 +7,9 @@ pub use analytics::*;
 pub mod alert;
 pub use alert::*;
 
+pub mod alecaframe;
+pub use alecaframe::*;
+
 pub mod cache;
 pub use cache::*;
 
