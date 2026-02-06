@@ -1,8 +1,8 @@
-import { memo, useEffect, useState } from "react";
 import { Alert, Avatar, Collapse, Group, Stack, Text, Tooltip } from "@mantine/core";
 import { WFMarketTypes } from "$types/index";
 import { WFMThumbnail } from "@api/index";
 import classes from "./ChatMessage.module.css";
+import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import calendar from "dayjs/plugin/calendar";
 dayjs.extend(calendar);
@@ -14,7 +14,7 @@ export type ChatMessageProps = {
   msg: WFMarketTypes.ChatMessage;
 };
 
-export const ChatMessage = memo(function ChatMessage({ user, msg, sender }: ChatMessageProps) {
+export const ChatMessage = ({ user, msg, sender }: ChatMessageProps) => {
   const position = sender ? "right" : "left";
   const [msgDate, setMsgDate] = useState("");
   const [opened, setOpen] = useState(false);
@@ -24,7 +24,7 @@ export const ChatMessage = memo(function ChatMessage({ user, msg, sender }: Chat
     if (dayjs().diff(date, "h") > 48) setMsgDate(dayjs(date).format("MMMM D, YYYY h:mm A"));
     else setMsgDate(dayjs(date).calendar());
 
-    return () => { };
+    return () => {};
   }, [msg.send_date]);
   return (
     <Group align="flex-end" style={{ width: "100%" }} data-position={position} classNames={classes}>
@@ -56,4 +56,4 @@ export const ChatMessage = memo(function ChatMessage({ user, msg, sender }: Chat
       </Stack>
     </Group>
   );
-});
+};

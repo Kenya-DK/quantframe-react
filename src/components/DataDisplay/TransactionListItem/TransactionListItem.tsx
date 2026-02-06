@@ -1,4 +1,3 @@
-import { memo } from "react";
 import { Group, Paper, Stack, Text } from "@mantine/core";
 import { TauriTypes } from "$types";
 import dayjs from "dayjs";
@@ -9,7 +8,7 @@ export type TransactionListItemProps = {
   orientation?: "horizontal" | "vertical";
 };
 
-export const TransactionListItem = memo(function TransactionListItem({ transaction, orientation = "horizontal" }: TransactionListItemProps) {
+export function TransactionListItem({ transaction, orientation = "horizontal" }: TransactionListItemProps) {
   return (
     <Paper mt={5} classNames={classes} p={5} data-transaction-type={transaction.transaction_type} data-color-mode="box-shadow">
       {orientation === "horizontal" && (
@@ -38,4 +37,4 @@ export const TransactionListItem = memo(function TransactionListItem({ transacti
       )}
     </Paper>
   );
-});
+}
