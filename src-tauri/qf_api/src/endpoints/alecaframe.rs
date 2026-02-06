@@ -24,6 +24,30 @@ impl AlecaframeRoute {
             client: Arc::downgrade(&client),
         })
     }
+    /// Retrieves the decryption keys for Alecaframe.
+    /// This method makes a GET request to the `/alecaframe/decrypt-keys` endpoint and returns the keys in a `DecryptKeys` struct.
+     /// 
+     /// # Errors
+     /// Returns an `ApiError` if the request fails or if the response format is unexpected.
+    pub async fn get_decrypt_keys(&self) -> Result<DecryptKeys, ApiError> {
+        let client = self.client.upgrade().expect("Client should not be dropped");
+
+        match client
+            .as_ref()
+            .call_api::<DecryptKeys>(
+                Method::GET,
+                "/alecaframe/decrypt-keys",
+                None,
+                None,
+                ResponseFormat::Json,
+            )
+            .await
+        {
+            Ok((ApiResponse::Json(decrypt_keys), _, _)) => Ok(decrypt_keys),
+            Err(e) => return Err(e),
+            _ => Err(ApiError::Unknown("Unexpected response format".to_string())),
+        }
+    }
     
     /**
      * Creates a new `AlecaframeRoute` from an existing one, sharing the client.

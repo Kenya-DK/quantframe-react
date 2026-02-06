@@ -4,6 +4,9 @@ pub use user_private::*;
 pub mod alert;
 pub use alert::*;
 
+pub mod decrypt_keys;
+pub use decrypt_keys::*;
+
 pub mod paginated;
 pub use paginated::*;
 
