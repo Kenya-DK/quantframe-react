@@ -30,7 +30,7 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
   const [queryData, setQueryData] = useLocalStorage<TauriTypes.TransactionControllerGetListParams>({
     key: "transaction_query_key",
     getInitialValueInEffect: false,
-    defaultValue: { page: 1, limit: 20, sort_by: "created_at", sort_direction: "desc" },
+    defaultValue: { page: 1, limit: 50, sort_by: "created_at", sort_direction: "desc" },
   });
 
   // Translate general
@@ -200,8 +200,8 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
             className={`${classes.databaseTransactions} ${useHasAlert() ? classes.alert : ""} ${filterOpened ? classes.filterOpened : ""}`}
             mt={"md"}
             striped
-            fetching={paginationQuery.isLoading || calculateTaxMutation.isPending}
-            records={paginationQuery.data?.results || []}
+            fetching={paginationQuery.isFetching || calculateTaxMutation.isPending}
+            records={paginationQuery.isFetching ? [] : (paginationQuery.data?.results || [])}
             page={getSafePage(queryData.page, paginationQuery.data?.total_pages)}
             onPageChange={(page) => setQueryData((prev) => ({ ...prev, page }))}
             totalRecords={paginationQuery.data?.total || 0}
@@ -367,7 +367,7 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
             className={`${classes.databaseTradingPartners} ${useHasAlert() ? classes.alert : ""} ${filterOpened ? classes.filterOpened : ""}`}
             mt={"md"}
             striped
-            fetching={paginationQuery.isLoading || calculateTaxMutation.isPending}
+            fetching={paginationQuery.isFetching || calculateTaxMutation.isPending}
             records={financialReportQuery.data?.properties.trading_partners || []}
             idAccessor={"properties.user"}
             // define columns

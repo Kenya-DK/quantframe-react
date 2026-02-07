@@ -166,7 +166,7 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
         striped
         customLoader={<Loading />}
         fetching={IsLoading()}
-        records={paginationQuery.data?.results || []}
+        records={IsLoading() ? [] : (paginationQuery.data?.results || [])}
         page={getSafePage(queryData.values.page, paginationQuery.data?.total_pages)}
         onPageChange={(page) => queryData.setFieldValue("page", page)}
         totalRecords={paginationQuery.data?.total || 0}
