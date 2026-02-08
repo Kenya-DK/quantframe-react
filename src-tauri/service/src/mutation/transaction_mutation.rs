@@ -11,6 +11,7 @@ impl TransactionMutation {
     pub async fn create(
         db: &DbConn,
         form_data: &transaction::Model,
+        use_current_date: bool,
     ) -> Result<transaction::Model, Error> {
         transaction::ActiveModel {
             wfm_id: Set(form_data.wfm_id.to_owned()),
@@ -27,8 +28,16 @@ impl TransactionMutation {
             profit: Set(form_data.profit.to_owned()),
             credits: Set(form_data.credits.to_owned()),
             properties: Set(form_data.properties.to_owned()),
-            created_at: Set(form_data.created_at.to_owned()),
-            updated_at: Set(form_data.updated_at.to_owned()),
+            created_at: Set(if use_current_date {
+                chrono::Utc::now()
+            } else {
+                form_data.created_at.to_owned()
+            }),
+            updated_at: Set(if use_current_date {
+                chrono::Utc::now()
+            } else {
+                form_data.created_at.to_owned()
+            }),
             ..Default::default()
         }
         .insert(db)

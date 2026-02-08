@@ -587,31 +587,34 @@ async fn process_trade_item(
     operations.add(format!("Quantity: {}", item.quantity));
     // Handle Imprints
     if item.item_type == TradeItemType::Imprint {
-        let model = handle_transaction(entity::transaction::Model::new(
-            "manual_imprint",
-            "manual_imprint",
-            "Imprint",
-            entity::enums::TransactionItemType::Item,
-            "/WF_Special/CreaturePet/Imprint",
-            item.sub_type.clone(),
-            vec![
-                "imprint".to_string(),
-                "creature".to_string(),
-                "custom".to_string(),
-            ],
-            if order_type == OrderType::Buy {
-                TransactionType::Purchase
-            } else {
-                TransactionType::Sale
-            },
-            item.quantity,
-            player_name,
-            platinum,
-            2000 * item.quantity,
-            Some(json!({
-                "pet_name": item.sub_type.unwrap().variant.unwrap_or("Unknown".to_string())
-            })),
-        ))
+        let model = handle_transaction(
+            entity::transaction::Model::new(
+                "manual_imprint",
+                "manual_imprint",
+                "Imprint",
+                entity::enums::TransactionItemType::Item,
+                "/WF_Special/CreaturePet/Imprint",
+                item.sub_type.clone(),
+                vec![
+                    "imprint".to_string(),
+                    "creature".to_string(),
+                    "custom".to_string(),
+                ],
+                if order_type == OrderType::Buy {
+                    TransactionType::Purchase
+                } else {
+                    TransactionType::Sale
+                },
+                item.quantity,
+                player_name,
+                platinum,
+                2000 * item.quantity,
+                Some(json!({
+                    "pet_name": item.sub_type.unwrap().variant.unwrap_or("Unknown".to_string())
+                })),
+            ),
+            true,
+        )
         .await
         .map_err(|e| e.with_location(get_location!()))?;
         operations.add(format!("Name: {}", model.item_name));

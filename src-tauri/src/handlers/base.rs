@@ -134,6 +134,7 @@ pub async fn handle_wfm_item(
 /// Handles transaction creation and database persistence
 pub async fn handle_transaction(
     mut transaction: entity::transaction::Model,
+    use_current_date: bool,
 ) -> Result<entity::transaction::Model, Error> {
     let conn = DATABASE.get().unwrap();
 
@@ -164,7 +165,7 @@ pub async fn handle_transaction(
         transaction.set_credits(transaction.price * crate::enums::TradeItemType::Platinum.to_tax());
     }
 
-    match TransactionMutation::create(conn, &transaction).await {
+    match TransactionMutation::create(conn, &transaction, use_current_date).await {
         Ok(updated_item) => Ok(updated_item),
         Err(e) => return Err(e.with_location(get_location!())),
     }

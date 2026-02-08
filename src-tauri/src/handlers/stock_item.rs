@@ -168,7 +168,6 @@ pub async fn handle_item_by_entity(
     if operation == OrderType::Sell {
         transaction.transaction_type = TransactionType::Sale;
     }
-
     if let Some(date) = operation_flags.get_value_after("SetDate") {
         transaction.created_at = chrono::DateTime::parse_from_rfc3339(&date)
             .map_err(|e| {
@@ -182,7 +181,7 @@ pub async fn handle_item_by_entity(
             .with_timezone(&chrono::Utc);
     }
 
-    handle_transaction(transaction)
+    handle_transaction(transaction, !operation_flags.has("SetDate"))
         .await
         .map_err(|e| e.with_location(get_location!()).log(file))?;
 
