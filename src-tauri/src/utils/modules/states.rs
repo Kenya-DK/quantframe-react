@@ -5,6 +5,7 @@ use crate::{
     cache::client::CacheState,
     APP,
 };
+use service::sea_orm::DatabaseConnection;
 use tauri::Manager;
 use utils::Error;
 

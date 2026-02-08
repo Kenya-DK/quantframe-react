@@ -7,6 +7,7 @@ import { routeLoaders } from "./routeLoaders";
 // Layouts
 import { LogInLayout } from "./LogIn";
 import { LogOutLayout } from "./LogOut";
+import { CleanLayout } from "./Clean";
 
 // Permissions Gate
 import AuthenticatedGate from "../AuthenticatedGate";
@@ -44,61 +45,76 @@ const PTradeMessages = lazy(routeLoaders.tradeMessages);
 // About Page
 const AboutPage = lazy(routeLoaders.about);
 
+// Clean Pages
+const CleanPage = lazy(routeLoaders.clean);
+
 export function AppRoutes() {
   const { app_error } = useAppContext();
   const { user } = useAuthContext();
 
   const ShowErrorPage = () => {
+    if (!window.location.href.includes("clean")) return false;
     if (!app_error) return false;
     if (app_error.isWebSocket()) return false; // Show error page only for non-WebSocket errors
     return true;
   };
 
   const IsUserBanned = () => {
+    if (!window.location.href.includes("clean")) return false;
     if (!user) return false;
     if (user.anonymous) return false;
     if (user.qf_banned || user.wfm_banned) return true;
     return false;
   };
 
+  const ShowCleanLayout = () => {
+    if (window.location.href.includes("clean")) return true;
+    return false;
+  };
+
   return (
     <BrowserRouter>
-        <Routes>
-          {!ShowErrorPage() && !IsUserBanned() && (
-            <>
-              <Route element={<AuthenticatedGate exclude goTo="/" />}>
-                <Route path="/auth" element={<LogOutLayout />}>
-                  <Route path="login" element={<PLogin />} />
-                </Route>
+      <Routes>
+        {ShowCleanLayout() && (
+          <Route path="clean" element={<CleanLayout />}>
+            <Route index element={<CleanPage />} />
+          </Route>
+        )}
+        {!ShowErrorPage() && !IsUserBanned() && !ShowCleanLayout() && (
+          <>
+            <Route element={<AuthenticatedGate exclude goTo="/" />}>
+              <Route path="/auth" element={<LogOutLayout />}>
+                <Route path="login" element={<PLogin />} />
               </Route>
-              <Route path="/" element={<LogInLayout />}>
-                <Route element={<AuthenticatedGate goTo="/auth/login" />}>
-                  <Route path="/" element={<PHome />} />
-                  <Route path="debug">
-                    <Route index element={<PDebug />} />
-                  </Route>
-                  <Route path="live_scraper" element={<PLiveScraper />} />
-                  <Route path="warframe-market" element={<PWarframeMarket />} />
-                  <Route path="chat" element={<PWarframeMarketChat />} />
-                  <Route path="trading_analytics" element={<TradingAnalyticsPage />} />
-                  <Route path="trade_messages" element={<PTradeMessages />} />
-                  <Route path="about" element={<AboutPage />} />
+            </Route>
+            <Route path="/" element={<LogInLayout />}>
+              <Route element={<AuthenticatedGate goTo="/auth/login" />}>
+                <Route path="/" element={<PHome />} />
+                <Route path="debug">
+                  <Route index element={<PDebug />} />
                 </Route>
-                <Route path="*" element={<PHome />} />
+                <Route path="live_scraper" element={<PLiveScraper />} />
+                <Route path="warframe-market" element={<PWarframeMarket />} />
+                <Route path="chat" element={<PWarframeMarketChat />} />
+                <Route path="trading_analytics" element={<TradingAnalyticsPage />} />
+                <Route path="trade_messages" element={<PTradeMessages />} />
+                <Route path="about" element={<AboutPage />} />
               </Route>
-            </>
-          )}
-          {ShowErrorPage() && (
-            <Route path="*" element={<LogOutLayout />}>
-              <Route path="*" element={<PError />} />
+              <Route path="*" element={<PHome />} />
             </Route>
-          )}
-          {IsUserBanned() && (
-            <Route path="*" element={<LogOutLayout />}>
-              <Route path="*" element={<PBanned />} />
-            </Route>
-          )}
-        </Routes>
+          </>
+        )}
+        {ShowErrorPage() && !ShowCleanLayout() && (
+          <Route path="*" element={<LogOutLayout />}>
+            <Route path="*" element={<PError />} />
+          </Route>
+        )}
+        {IsUserBanned() && !ShowCleanLayout() && (
+          <Route path="*" element={<LogOutLayout />}>
+            <Route path="*" element={<PBanned />} />
+          </Route>
+        )}
+      </Routes>
     </BrowserRouter>
   );
 }

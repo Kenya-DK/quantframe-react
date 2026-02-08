@@ -328,14 +328,18 @@ impl TradeItem {
         }
         Ok(DetectionStatus::None)
     }
-    pub fn item_name(&self) -> String {
+    pub fn get_trade_item_info(&self) -> Result<CacheTradableItem, Error> {
         let ch = states::cache_client().expect("Cache not found");
-        let name = match ch.tradable_item().get_by(&self.unique_name) {
-            Ok(mach) => mach.name.clone(),
-            Err(_) => self.raw.clone(),
-        };
-        name
+        let info = ch.tradable_item().get_by(&self.unique_name)?;
+        Ok(info)
     }
+    pub fn item_name(&self) -> String {
+        match self.get_trade_item_info() {
+            Ok(info) => info.name.clone(),
+            Err(_) => self.raw.clone(),
+        }
+    }
+
     pub fn is_valid(&self) -> bool {
         !self.raw.is_empty()
     }

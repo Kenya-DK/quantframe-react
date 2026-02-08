@@ -18,7 +18,6 @@ import { CacheContextProvider } from "./cache.context";
 import { notifications } from "@mantine/notifications";
 import { TextTranslate } from "@components/Shared/TextTranslate";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
-import { useTranslation } from "react-i18next";
 import i18n from "i18next";
 import { useLocalStorage } from "@mantine/hooks";
 import { listen } from "@tauri-apps/api/event";
@@ -68,8 +67,10 @@ export const useAppError = () => {
 };
 
 export function AppContextProvider({ children }: AppContextProviderProps) {
-  useTranslation();
   const [error, setError] = useState<AppError | undefined>(undefined);
+
+  if (window.location.href.includes("clean"))
+    return <AppContext.Provider value={{ settings: undefined, alerts: [], app_info: undefined, app_error: error }}>{children}</AppContext.Provider>;
 
   const { data: settings, refetch: refetchSettings } = api.app.get_settings();
   const { data: app_info, refetch: refetchAppInfo } = api.app.get_app_info();
@@ -161,9 +162,12 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
 
   useEffect(() => {
     // 10 Minutes interval to keep the app alive
-    setInterval(async () => {
-      await refetchAlerts();
-    }, 10 * 60 * 1000);
+    setInterval(
+      async () => {
+        await refetchAlerts();
+      },
+      10 * 60 * 1000,
+    );
   }, []);
 
   useEffect(() => {

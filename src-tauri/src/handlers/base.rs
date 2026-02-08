@@ -34,7 +34,11 @@ pub async fn handle_wfm_item(
             .cache_orders()
             .find_order(&wfm_id, &wf_sub_type, operation)
     {
-        order.quantity -= quantity as u32;
+        order.quantity = if order.quantity as i64 > quantity {
+            order.quantity - quantity as u32
+        } else {
+            1
+        };
 
         if app.settings.live_scraper.report_to_wfm && !delete {
             match app

@@ -27,8 +27,8 @@ impl TransactionMutation {
             profit: Set(form_data.profit.to_owned()),
             credits: Set(form_data.credits.to_owned()),
             properties: Set(form_data.properties.to_owned()),
-            created_at: Set(chrono::Utc::now()),
-            updated_at: Set(chrono::Utc::now()),
+            created_at: Set(form_data.created_at.to_owned()),
+            updated_at: Set(form_data.updated_at.to_owned()),
             ..Default::default()
         }
         .insert(db)

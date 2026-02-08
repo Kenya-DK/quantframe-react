@@ -723,7 +723,15 @@ export namespace TauriTypes {
     disposition_rank: number;
     name: string;
   }
-
+  export interface HandleItem {
+    wfm_url: string;
+    quantity: number;
+    sub_type?: TauriTypes.SubType;
+    price: number;
+    user_name: string;
+    order_type: string;
+    operation_set: string[];
+  }
   export interface StockRivenDetails extends RivenSummary {}
   export interface SubType {
     rank?: number;

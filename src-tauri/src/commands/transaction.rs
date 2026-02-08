@@ -2,13 +2,13 @@ use std::sync::Mutex;
 
 use entity::{
     dto::*,
-    enums::{FieldChange, TransactionItemType},
+    enums::TransactionItemType,
     transaction::{dto::TransactionPaginationQueryDto, *},
 };
 use serde_json::json;
 use service::{TransactionMutation, TransactionQuery};
 use tauri_plugin_dialog::DialogExt;
-use utils::{get_location, group_by, info, sorting::SortDirection, warning, Error, LoggerOptions};
+use utils::{get_location, group_by, info, warning, Error, LoggerOptions};
 
 use crate::{add_metric, app::client::AppState, types::PermissionsFlags, APP, DATABASE};
 

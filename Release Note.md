@@ -1,6 +1,8 @@
 ## Add Feature's
 
 ✨ Implement Trading Tax Calculation for Transactions
+✨ Add Grouping of Transactions by Trading Partners and Display in Data Table
+✨ Add Handling of mutable items in a trade.
 
 ## Fix's
 

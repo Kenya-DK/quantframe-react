@@ -12,6 +12,7 @@ export const routeLoaders = {
   chat: () => import("@pages/chat"),
   tradeMessages: () => import("@pages/trade_messages"),
   about: () => import("@pages/about"),
+  clean: () => import("@pages/clean"),
 } as const satisfies Record<string, RouteLoader>;
 
 export type RouteLoaderKey = keyof typeof routeLoaders;
@@ -42,5 +43,6 @@ export const prefetchLoggedInRoutes = () => {
     "login",
     "error",
     "banned",
+    "clean",
   ]);
 };

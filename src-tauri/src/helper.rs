@@ -9,7 +9,7 @@ use std::{
     fs::{self},
     path::PathBuf,
 };
-use tauri::Manager;
+use tauri::{Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 use utils::*;
 use wf_market::{enums::OrderType, types::Order};
 
@@ -197,4 +197,48 @@ pub async fn get_item_details(
     payload["report"] = json!(FinancialReport::from(&transaction_paginate.results));
     payload["last_transactions"] = json!(transaction_paginate.take_top(5));
     Ok((payload, Some(item_info), order))
+}
+
+pub fn get_or_create_window(
+    label: &str,
+    url: &str,
+    title: &str,
+    size: Option<(f64, f64)>,
+    resizable: bool,
+) -> Result<(bool, WebviewWindow), Error> {
+    let t_app = match APP.get() {
+        Some(app) => app,
+        None => {
+            return Err(Error::new(
+                "Helper::GetOrCreateWindow",
+                "App state not found.",
+                get_location!(),
+            ));
+        }
+    };
+
+    let app_handle = t_app.app_handle();
+
+    // Return existing window
+    if let Some(window) = app_handle.get_webview_window(label) {
+        return Ok((true, window));
+    }
+
+    // Build new window
+    let mut builder = WebviewWindowBuilder::new(app_handle, label, WebviewUrl::App(url.into()))
+        .title(title)
+        .resizable(resizable);
+
+    if let Some((w, h)) = size {
+        builder = builder.inner_size(w, h);
+    }
+
+    let window = builder.build().map_err(|e| {
+        Error::new(
+            "Helper::GetOrCreateWindow",
+            &format!("Failed to build window: {}", e),
+            get_location!(),
+        )
+    })?;
+    Ok((false, window))
 }

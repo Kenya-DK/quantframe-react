@@ -4,11 +4,11 @@ import React from "react";
 
 export type Segment = {
   label: string;
-  count: number;
+  count: number | string;
   color: string;
   hide?: boolean;
   decimalScale?: number;
-  part?: number | null;
+  part?: number | string | null;
   tooltip?: string;
   hideInProgress?: boolean;
   prefix?: string;
@@ -37,9 +37,20 @@ export function StatsWithSegments({
   h,
   orientation = "horizontal",
 }: StatsWithSegmentsProps) {
-  const total = segmentsIn.filter((segment) => !segment.hideInProgress && !segment.hide).reduce((sum, segment) => sum + Math.abs(segment.count), 0);
+  const total = segmentsIn
+    .filter((segment) => !segment.hideInProgress && !segment.hide)
+    .reduce((sum, segment) => sum + Math.abs(Number(segment.count) || 0), 0);
 
-  const getPercentage = (segment: Segment) => (segment.part ? segment.part : total ? Math.round((Math.abs(segment.count) / total) * 100) : 0);
+  // const getPercentage = (segment: Segment) => (segment.part ? segment.part : total ? Math.round((Math.abs(segment.count ) / total) * 100) : 0);
+
+  const getPercentage = (segment: Segment) => {
+    if (typeof segment.part === "number" || segment.part == null || segment.part === undefined)
+      return segment.part ? segment.part : total ? Math.round((Math.abs(Number(segment.count) || 0) / total) * 100) : 0;
+    else if (typeof segment.part === "string") {
+      const partValue = Number(segment.part) || 0;
+      return partValue ? partValue : total ? Math.round((Math.abs(Number(segment.count) || 0) / total) * 100) : 0;
+    } else return 0;
+  };
 
   const progressSegments = segmentsIn
     .filter((segment) => !segment.hideInProgress && !segment.hide)
@@ -65,22 +76,26 @@ export function StatsWithSegments({
         </Text>
 
         <Group justify="space-between" align="flex-end" gap={0}>
-          <Text fw={700}>
-            <NumberFormatter value={stat.count} thousandSeparator />
-          </Text>
+          <Text fw={700}>{typeof stat.count === "number" ? <NumberFormatter value={stat.count} thousandSeparator /> : stat.count}</Text>
           {showPercent && stat.part !== null && (
             <Tooltip label={stat.tooltip} withArrow disabled={!stat.tooltip}>
               <span>
-                <NumberFormatter
-                  value={getPercentage(stat)}
-                  className={classes.statCount}
-                  decimalScale={stat.decimalScale ?? 0}
-                  style={{ color: stat.color }}
-                  prefix={stat.prefix}
-                  suffix={stat.suffix ?? percentSymbol}
-                  thousandSeparator=","
-                  thousandsGroupStyle="thousand"
-                />
+                {typeof stat.part === "number" ? (
+                  <NumberFormatter
+                    value={getPercentage(stat)}
+                    className={classes.statCount}
+                    decimalScale={stat.decimalScale ?? 0}
+                    style={{ color: stat.color }}
+                    prefix={stat.prefix}
+                    suffix={stat.suffix ?? percentSymbol}
+                    thousandSeparator=","
+                    thousandsGroupStyle="thousand"
+                  />
+                ) : (
+                  <Text className={classes.statCount} c={stat.color}>
+                    {stat.part}
+                  </Text>
+                )}
               </span>
             </Tooltip>
           )}

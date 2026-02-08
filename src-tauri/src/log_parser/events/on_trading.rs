@@ -4,15 +4,19 @@ use crate::{
     add_metric,
     enums::TradeItemType,
     handlers::{handle_item, handle_riven_by_name, handle_transaction, handle_wish_list},
+    helper::get_or_create_window,
     log_parser::*,
     notify_gui, send_event,
     types::*,
-    utils::modules::states,
+    utils::{modules::states, SubTypeExt},
+    APP, DATABASE,
 };
 use entity::enums::TransactionType;
 use serde_json::json;
+use service::StockItemQuery;
+use tauri::{Emitter, Listener, Manager, WebviewUrl, WebviewWindowBuilder};
 use utils::*;
-use wf_market::enums::OrderType;
+use wf_market::{endpoints::order, enums::OrderType};
 
 pub static LOGGER: Mutex<Option<ZipLogger>> = Mutex::new(None);
 pub static COMPONENT: Mutex<String> = Mutex::new(String::new());
@@ -296,6 +300,13 @@ impl OnTradeEvent {
                 let item = item.unwrap().clone();
                 if items.len() > 1 {
                     operations.add("MultipleItems");
+                    match process_mutable_items(&trade, trade_type, order_type).await {
+                        Ok(op) => operations.merge(&op),
+                        Err(mut e) => {
+                            e = e.with_location(get_location!());
+                            log(e.to_string(), None);
+                        }
+                    }
                 } else {
                     operations.add("Found");
                 }
@@ -401,6 +412,102 @@ impl LineHandler for OnTradeEvent {
         }
         Ok((false, false))
     }
+}
+
+async fn process_mutable_items(
+    trade: &PlayerTrade,
+    trade_type: TradeClassification,
+    order_type: OrderType,
+) -> Result<OperationSet, Error> {
+    let mut operations = OperationSet::new();
+    log(
+        format!("Starting to process mutable items for {}", trade),
+        None,
+    );
+    let (is_open, window) = get_or_create_window(
+        "processing-trades",
+        "clean?type=process_trade",
+        "Processing Trades",
+        Some((800.0, 600.0)),
+        true,
+    )?;
+
+    let app = states::app_state()?.clone();
+
+    let mut items = match trade_type {
+        TradeClassification::Purchase => trade.offered_items.clone(),
+        TradeClassification::Sale => trade.received_items.clone(),
+        _ => return Ok(operations),
+    };
+    for item in &mut items {
+        if !item.is_valid() {
+            log(format!("Skipping invalid item {}", item), None);
+            continue;
+        }
+
+        let info = match item.get_trade_item_info() {
+            Ok(info) => info,
+            Err(_) => {
+                log(
+                    format!("Skipping item {} due to missing trade item info", item),
+                    None,
+                );
+                continue;
+            }
+        };
+
+        item.set_property_value("wfm_url", json!(info.wfm_url_name));
+
+        let price = app
+            .wfm_client
+            .order()
+            .cache_orders()
+            .find_order(
+                &info.wfm_id,
+                &SubTypeExt::from_entity(item.sub_type.clone()),
+                order_type,
+            )
+            .map(|order| order.platinum)
+            .unwrap_or(0);
+        log(
+            format!("Price for item {} | Price: {}", info.name, price),
+            None,
+        );
+        item.set_property_value("price", json!(price));
+    }
+
+    let mut payload = json!(trade);
+    if let Some(obj) = payload.as_object_mut() {
+        obj.remove("offeredItems");
+        obj.remove("receivedItems");
+        obj.remove("logs");
+    }
+    payload["items"] = json!(items
+        .iter()
+        .map(|item| {
+            json!({
+                "wfm_url": json!(item.get_property_value("wfm_url","N/A".to_string())),
+                "quantity": item.quantity,
+                "sub_type": item.sub_type,
+                "price": item.get_property_value("price", 0),
+            })
+        })
+        .collect::<Vec<_>>());
+
+    let window_clone = window.clone();
+    let payload_clone = payload.clone();
+
+    window.once("initialize", move |_| {
+        let _ = window_clone.emit("add_trade", payload_clone);
+        log("Opened processing-trades window", None);
+    });
+
+    if is_open {
+        let _ = window.emit("add_trade", payload);
+        log("Emitted add_trade to processing-trades window", None);
+    }
+    operations.add(format!("Items:{}", items.len()));
+    Ok(operations)
 }
 
 fn process_operations(trade: &PlayerTrade, operations: OperationSet) {

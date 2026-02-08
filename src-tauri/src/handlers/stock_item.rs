@@ -1,17 +1,27 @@
 use entity::{dto::*, enums::*, stock_item::*};
-use service::StockItemMutation;
+use serde::{Deserialize, Serialize};
+use service::{sea_orm::DatabaseConnection, StockItemMutation};
 use utils::{get_location, info, Error};
 use wf_market::enums::OrderType;
 
 use crate::{handlers::*, types::OperationSet, utils::CreateStockItemExt, DATABASE};
-
+#[derive(Serialize, Deserialize)]
+pub struct ItemEntity {
+    pub wfm_url: String,
+    pub sub_type: Option<SubType>,
+    pub quantity: i64,
+    pub price: i64,
+    pub user_name: String,
+    pub order_type: OrderType,
+    pub operation_set: Vec<String>,
+}
 pub async fn handle_item_by_entity(
     mut item: CreateStockItem,
     user_name: impl Into<String>,
     operation: OrderType,
     operation_flags: OperationSet,
 ) -> Result<(OperationSet, Model), Error> {
-    let conn = DATABASE.get().unwrap();
+    let con = DATABASE.get().unwrap();
     let component = "HandleItem";
     let file = "handle_item.log";
     let mut operations = OperationSet::new();
@@ -29,7 +39,7 @@ pub async fn handle_item_by_entity(
     if operation == OrderType::Sell {
         // Handle sell operation
         match StockItemMutation::sold_by_url_and_sub_type(
-            conn,
+            con,
             &item.wfm_url,
             item.sub_type.clone(),
             item.quantity,
@@ -85,7 +95,7 @@ pub async fn handle_item_by_entity(
         }
     } else if operation == OrderType::Buy {
         // Handle buy operation
-        match StockItemMutation::add_item(conn, model).await {
+        match StockItemMutation::add_item(con, model).await {
             Ok((s_operation, created_item)) => {
                 if s_operation == "Created" {
                     info(
@@ -158,6 +168,20 @@ pub async fn handle_item_by_entity(
     if operation == OrderType::Sell {
         transaction.transaction_type = TransactionType::Sale;
     }
+
+    if let Some(date) = operation_flags.get_value_after("SetDate") {
+        transaction.created_at = chrono::DateTime::parse_from_rfc3339(&date)
+            .map_err(|e| {
+                Error::new(
+                    format!("{}:ParseDate", component),
+                    format!("Failed to parse date: {}", e),
+                    get_location!(),
+                )
+                .log(file)
+            })?
+            .with_timezone(&chrono::Utc);
+    }
+
     handle_transaction(transaction)
         .await
         .map_err(|e| e.with_location(get_location!()).log(file))?;
@@ -182,4 +206,33 @@ pub async fn handle_item(
     )
     .await
     .map_err(|e| e.with_location(get_location!()))
+}
+
+pub async fn handle_items(
+    items: Vec<ItemEntity>,
+) -> Result<(i32, Vec<(OperationSet, String)>), Error> {
+    let mut total = 0;
+    let mut processed_items = Vec::new();
+    for item in items {
+        match handle_item(
+            item.wfm_url,
+            item.sub_type,
+            item.quantity,
+            item.price,
+            item.user_name,
+            item.order_type,
+            OperationSet::from(item.operation_set.clone()),
+        )
+        .await
+        {
+            Ok((o, updated_item)) => {
+                total += 1;
+                processed_items.push((o, updated_item.item_name));
+            }
+            Err(e) => {
+                return Err(e.with_location(get_location!()));
+            }
+        }
+    }
+    Ok((total, processed_items))
 }

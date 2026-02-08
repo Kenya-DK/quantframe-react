@@ -14,6 +14,7 @@
     "December"
   ],
   "common": {
+    "not_found": "Not found",
     "buttons": {
       "save": {
         "label": "Save"
@@ -321,7 +322,17 @@
           "message": "The transaction has been successfully updated."
         }
       },
-      "calculate_tax_transaction": {
+      "processed_multiple_items": {
+        "error": {
+          "title": "Processed Multiple Items Error",
+          "message": "An error occurred while trying to process multiple items."
+        },
+        "success": {
+          "title": "Processed Multiple Items Success",
+          "message": "{{count}} items have been successfully processed."
+        }
+      },
+      "calculate_tax_all_transactions": {
         "error": {
           "title": "Calculate Tax Error",
           "message": "An error occurred while trying to calculate tax for transactions."
@@ -2326,6 +2337,31 @@
         },
         "custom": {
           "title": "Custom"
+        }
+      }
+    },
+    "process_trade": {
+      "stats": {
+        "user_name": "User Name",
+        "trade_type": "Trade Type",
+        "trade_price": "Trade Price",
+        "price": "Price",
+        "difference": "Difference"
+      },
+      "buttons": {
+        "process_trade_tooltip": "Start processing trades",
+        "confirm_trade": "Confirm Trade",
+        "back_to_list": "Back to List"
+      },
+      "datatable": {
+        "columns": {
+          "item_name": "Platinum",
+          "quantity": "Platinum",
+          "price": "Platinum",
+          "total": "Platinum",
+          "platinum": "Platinum",
+          "user_name": "User Name",
+          "date": "Date"
         }
       }
     }

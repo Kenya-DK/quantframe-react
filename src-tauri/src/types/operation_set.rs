@@ -76,3 +76,12 @@ impl From<Vec<&str>> for OperationSet {
         op_set
     }
 }
+impl From<Vec<String>> for OperationSet {
+    fn from(operations: Vec<String>) -> Self {
+        let mut op_set = OperationSet::new();
+        for op in operations {
+            op_set.add(op);
+        }
+        op_set
+    }
+}

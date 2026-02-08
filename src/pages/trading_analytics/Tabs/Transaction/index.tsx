@@ -20,7 +20,7 @@ import { HasPermission } from "@api/index";
 import { DatePickerInput } from "@mantine/dates";
 import dayjs from "dayjs";
 import { ItemName } from "@components/DataDisplay/ItemName";
-import { FinancialReportCard } from "../../../../components/Shared/FinancialReportCard";
+import { FinancialReportCard } from "@components/Shared/FinancialReportCard";
 interface TransactionPanelProps {
   isActive?: boolean;
 }
@@ -111,7 +111,6 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
 
   return (
     <Box p={"md"}>
-      {" "}
       <SearchField
         value={queryData.query || ""}
         onChange={(value) => setQueryData((prev) => ({ ...prev, query: value }))}
