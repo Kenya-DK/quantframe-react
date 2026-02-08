@@ -12,14 +12,7 @@ use wf_market::{
     },
 };
 static COMPONENT: &str = "LiveScraper:RivenModule";
-use crate::{
-    cache::types::CacheRivenWeapon,
-    live_scraper::{is_disabled, AlecaframeState},
-    send_event,
-    types::*,
-    utils::{auction_ext::AuctionDetails, modules::states, AuctionExt, ErrorFromExt},
-    DATABASE,
-};
+use crate::alecaframe::AlecaframeState;
 
 #[derive(Debug)]
 pub struct RivenModule {

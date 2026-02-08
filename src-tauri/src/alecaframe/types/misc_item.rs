@@ -1,9 +1,14 @@
-
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct LastAdded {
     #[serde(rename = "oid", default)]
     pub id: String,
+}
+impl Default for LastAdded {
+    fn default() -> Self {
+        Self { id: String::new() }
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -12,6 +17,11 @@ pub struct MiscItemItemId {
     pub id: String,
 }
 
+impl Default for MiscItemItemId {
+    fn default() -> Self {
+        Self { id: String::new() }
+    }
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct MiscItem {
     #[serde(rename = "ItemId", default)]
@@ -31,10 +41,6 @@ pub struct MiscItem {
 
     #[serde(rename = "XP", default)]
     pub xp: i64,
-
-    #[serde(rename = "ItemCount", default)]
-    pub quantity: i64,
-
 }
 
 impl MiscItem {

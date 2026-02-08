@@ -14,6 +14,7 @@ use wf_market::{
 };
 
 use crate::{
+    alecaframe::AlecaframeState,
     app::{client::AppState, Settings},
     cache::types::{CacheTradableItem, ItemPriceInfo},
     utils::{ErrorFromExt, OrderListExt},
