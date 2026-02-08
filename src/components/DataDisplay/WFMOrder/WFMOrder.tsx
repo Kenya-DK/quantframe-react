@@ -156,9 +156,8 @@ export function WFMOrder({ show_border, paperProps, order, footer, show_user, di
               className={classes.userName}
               truncate
               style={{
-                borderBottomColor: `var(--qf-user-status-${
-                  (order.user?.status.toString() || "offline") == "in_game" ? "ingame" : order.user?.status
-                })`,
+                borderBottomColor: `var(--qf-user-status-${(order.user?.status.toString() || "offline") == "in_game" ? "ingame" : order.user?.status
+                  })`,
                 borderBottom: "rem(3px) solid",
               }}
             >

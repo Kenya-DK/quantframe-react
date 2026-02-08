@@ -12,13 +12,21 @@ export type NavbarLinkProps = {
   web?: boolean;
   hide?: boolean;
   onClick?(e: NavbarLinkProps): void;
+  onPrefetch?(): void;
 }
 
 function NavbarLink(props: NavbarLinkProps) {
-  const { icon: Icon, label, active, onClick } = props;
+  const { icon: Icon, label, active, onClick, onPrefetch } = props;
   return (
     <Tooltip label={label} position="right" transitionProps={{ duration: 0 }}>
-      <UnstyledButton onClick={() => { onClick && onClick(props); }} className={classes.link} data-active={active || undefined} data-rainbow-bg={true}>
+      <UnstyledButton
+        onClick={() => { onClick && onClick(props); }}
+        onMouseEnter={() => { onPrefetch && onPrefetch(); }}
+        onFocus={() => { onPrefetch && onPrefetch(); }}
+        className={classes.link}
+        data-active={active || undefined}
+        data-rainbow-bg={true}
+      >
         {Icon}
       </UnstyledButton>
     </Tooltip>

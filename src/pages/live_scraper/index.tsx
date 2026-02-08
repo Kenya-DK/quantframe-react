@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Box, Container, Tabs } from "@mantine/core";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { ItemPanel, RivenPanel, WishListPanel } from "./Tabs";
@@ -13,7 +14,7 @@ export default function LiveScraperPage() {
   const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForm(`tabs.${key}`, { ...context }, i18Key);
 
-  const tabs = [
+  const tabs = useMemo(() => [
     {
       label: useTranslateTabs("item.title"),
       component: (isActive: boolean) => <ItemPanel isActive={isActive} />,
@@ -29,7 +30,7 @@ export default function LiveScraperPage() {
       component: (isActive: boolean) => <WishListPanel isActive={isActive} />,
       id: "wish_list",
     },
-  ];
+  ], []);
 
   const [activeTab, setActiveTab] = useLocalStorage<string>({
     key: "live_scraper.active_tab",
@@ -51,7 +52,7 @@ export default function LiveScraperPage() {
         </Tabs.List>
         {tabs.map((tab) => (
           <Tabs.Panel value={tab.id} key={tab.id}>
-            {tab.component(activeTab === tab.id)}
+            {activeTab === tab.id && tab.component(true)}
           </Tabs.Panel>
         ))}
       </Tabs>

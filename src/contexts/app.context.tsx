@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import api from "@api/index";
 import { QuantframeApiTypes, ResponseError, TauriTypes } from "$types";
 import { AuthContextProvider } from "./auth.context";
@@ -14,6 +14,7 @@ import { useTranslateCommon, useTranslateComponent, useTranslateContexts } from 
 import { resolveResource } from "@tauri-apps/api/path";
 import { readTextFile } from "@tauri-apps/plugin-fs";
 import { LiveScraperContextProvider } from "./liveScraper.context";
+import { CacheContextProvider } from "./cache.context";
 import { notifications } from "@mantine/notifications";
 import { TextTranslate } from "@components/Shared/TextTranslate";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
@@ -202,14 +203,26 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
         console.error("Error playing sound:", error);
       });
     });
-    return () => {};
+    return () => { };
   }, []);
+  const contextValue = useMemo(() => ({
+    settings,
+    alerts: alerts?.results || [],
+    app_info,
+    app_error: error,
+    checkForUpdates,
+    loading,
+    setLang
+  }), [settings, alerts?.results, app_info, error, checkForUpdates, loading, setLang]);
+
   return (
-    <AppContext.Provider value={{ settings, alerts: alerts?.results || [], app_info: app_info, app_error: error, checkForUpdates, loading, setLang }}>
+    <AppContext.Provider value={contextValue}>
       <SplashScreen opened={loading} text={useTranslateContexts(`app.${startingUp.i18n_key}`, startingUp.values)} />
       {!loading && (
         <AuthContextProvider>
-          <LiveScraperContextProvider>{children}</LiveScraperContextProvider>
+          <LiveScraperContextProvider>
+            <CacheContextProvider>{children}</CacheContextProvider>
+          </LiveScraperContextProvider>
         </AuthContextProvider>
       )}
     </AppContext.Provider>

@@ -1,6 +1,6 @@
 import { Box, Grid, Group, NumberFormatter, Paper, Table, Text, Title } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { TauriTypes } from "$types";
 import { useQueries } from "./queries";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
@@ -58,13 +58,17 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
   const [filterOpened, setFilterOpened] = useState<boolean>(false);
   const [canExport, setCanExport] = useState<boolean>(false);
 
+  // Progressive rendering === allows navigation during table render (without it ui freezes until table loads)
+  const [isPending, startTransition] = useTransition();
+  const [displayedRecords, setDisplayedRecords] = useState<TauriTypes.TransactionDto[]>([]);
+
   // Check permissions for export on mount
   useEffect(() => {
     HasPermission(TauriTypes.PermissionsFlags.EXPORT_DATA).then((res) => setCanExport(res));
   }, []);
 
   // Queries
-  const { paginationQuery, financialReportQuery, refetchQueries } = useQueries({ queryData, isActive });
+  const { paginationQuery, financialReportQuery, refetchQueries } = useQueries({ queryData, isActive, loadFinancialReport: showReport });
   const handleRefresh = () => {
     console.log("Refreshing transactions due to Tauri event");
     refetchQueries();
@@ -93,6 +97,17 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
 
   // Use the custom hook for Tauri events
   useTauriEvent(TauriTypes.Events.RefreshTransactions, handleRefresh, []);
+
+  // Progressive rendering 
+  useEffect(() => {
+    if (paginationQuery.isFetching) {
+      setDisplayedRecords([]);
+    } else if (paginationQuery.data?.results) {
+      startTransition(() => {
+        setDisplayedRecords(paginationQuery.data?.results || []);
+      });
+    }
+  }, [paginationQuery.isFetching, paginationQuery.data?.results]);
 
   return (
     <Box p={"md"}>
@@ -200,8 +215,8 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
             className={`${classes.databaseTransactions} ${useHasAlert() ? classes.alert : ""} ${filterOpened ? classes.filterOpened : ""}`}
             mt={"md"}
             striped
-            fetching={paginationQuery.isLoading || calculateTaxMutation.isPending}
-            records={paginationQuery.data?.results || []}
+            fetching={paginationQuery.isFetching || isPending || calculateTaxMutation.isPending}
+            records={displayedRecords}
             page={getSafePage(queryData.page, paginationQuery.data?.total_pages)}
             onPageChange={(page) => setQueryData((prev) => ({ ...prev, page }))}
             totalRecords={paginationQuery.data?.total || 0}
@@ -367,7 +382,7 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
             className={`${classes.databaseTradingPartners} ${useHasAlert() ? classes.alert : ""} ${filterOpened ? classes.filterOpened : ""}`}
             mt={"md"}
             striped
-            fetching={paginationQuery.isLoading || calculateTaxMutation.isPending}
+            fetching={paginationQuery.isFetching || calculateTaxMutation.isPending}
             records={financialReportQuery.data?.properties.trading_partners || []}
             idAccessor={"properties.user"}
             // define columns

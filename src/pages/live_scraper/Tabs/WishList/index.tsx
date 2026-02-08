@@ -173,8 +173,8 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
         }}
         mt={"md"}
         striped
-        fetching={paginationQuery.isLoading}
-        records={paginationQuery.data?.results || []}
+        fetching={paginationQuery.isFetching}
+        records={paginationQuery.isFetching ? [] : (paginationQuery.data?.results || [])}
         page={getSafePage(queryData.page, paginationQuery.data?.total_pages)}
         onPageChange={(page) => setQueryData((prev) => ({ ...prev, page }))}
         totalRecords={paginationQuery.data?.total || 0}

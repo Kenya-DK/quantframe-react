@@ -5,9 +5,10 @@ import api from "@api/index";
 interface QueriesHooks {
   queryData: TauriTypes.TransactionControllerGetListParams;
   isActive?: boolean;
+  loadFinancialReport?: boolean;
 }
 
-export const useQueries = ({ queryData, isActive }: QueriesHooks) => {
+export const useQueries = ({ queryData, isActive, loadFinancialReport = false }: QueriesHooks) => {
   const getPaginationQuery = useQuery({
     queryKey: ["get_transaction_pagination", queryData],
     queryFn: () => api.transaction.getPagination(queryData),
@@ -18,7 +19,7 @@ export const useQueries = ({ queryData, isActive }: QueriesHooks) => {
     queryKey: ["get_transaction_financial_report", queryData],
     queryFn: () => api.transaction.getFinancialReport({ ...queryData, page: 1, limit: -1 }),
     retry: false,
-    enabled: isActive,
+    enabled: isActive && loadFinancialReport,
   });
   const refetchQueries = () => {
     getPaginationQuery.refetch();

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { OffTauriDataEvent, OnTauriDataEvent } from "@api/index";
 import { TauriTypes } from "$types";
 import api from "@api/index";
@@ -50,5 +50,7 @@ export function AuthContextProvider({ children }: TauriContextProviderProps) {
     };
   }, []);
 
-  return <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>;
+  const contextValue = useMemo(() => ({ user }), [user]);
+
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 }
