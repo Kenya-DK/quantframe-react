@@ -198,8 +198,8 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
         }}
         mt={"md"}
         striped
-        fetching={paginationQuery.isFetching}
-        records={paginationQuery.isFetching ? [] : (paginationQuery.data?.results || [])}
+        fetching={paginationQuery.isLoading}
+        records={paginationQuery.data?.results || []}
         page={getSafePage(queryData.page, paginationQuery.data?.total_pages)}
         onPageChange={(page) => setQueryData((prev) => ({ ...prev, page }))}
         totalRecords={paginationQuery.data?.total || 0}
