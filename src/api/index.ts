@@ -25,6 +25,7 @@ import { TradeEntryModule } from "./trade_entry";
 import { LogParserModule } from "./log_parser";
 import { SoundModule } from "./sound";
 import { HandlesModule } from "./handles";
+import { WfInventoryModule } from "./wf_inventory";
 
 export class TauriClient {
   _logging: string[] = [];
@@ -57,6 +58,7 @@ export class TauriClient {
     this.log_parser = new LogParserModule(this);
     this.sound = new SoundModule(this);
     this.handlers = new HandlesModule(this);
+    this.wf_inventory = new WfInventoryModule(this);
     this._logging = localStorage.getItem("tauri_logs") ? JSON.parse(localStorage.getItem("tauri_logs")!) : ["*"];
   }
 
@@ -200,6 +202,7 @@ export class TauriClient {
   log_parser: LogParserModule;
   sound: SoundModule;
   handlers: HandlesModule;
+  wf_inventory: WfInventoryModule;
 }
 
 declare global {

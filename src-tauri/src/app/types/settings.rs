@@ -22,6 +22,7 @@ pub struct Settings {
     pub generate_trade_message: GenerateTradeMessageSetting,
     pub custom_sounds: Vec<CustomSound>,
     pub tos_uuid: String,
+    pub wf_inventory_data_path: String,
 }
 impl Default for Settings {
     fn default() -> Self {
@@ -36,6 +37,7 @@ impl Default for Settings {
             generate_trade_message: GenerateTradeMessageSetting::default(),
             custom_sounds: Vec::new(),
             tos_uuid: String::new(),
+            wf_inventory_data_path: String::new(),
         }
     }
 }

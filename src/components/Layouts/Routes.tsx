@@ -48,6 +48,9 @@ const AboutPage = lazy(routeLoaders.about);
 // Clean Pages
 const CleanPage = lazy(routeLoaders.clean);
 
+// Inventory Pages
+const WfInventoryPage = lazy(routeLoaders.wfInventory);
+
 export function AppRoutes() {
   const { app_error } = useAppContext();
   const { user } = useAuthContext();
@@ -99,6 +102,7 @@ export function AppRoutes() {
                 <Route path="trading_analytics" element={<TradingAnalyticsPage />} />
                 <Route path="trade_messages" element={<PTradeMessages />} />
                 <Route path="about" element={<AboutPage />} />
+                <Route path="wf_inventory" element={<WfInventoryPage />} />
               </Route>
               <Route path="*" element={<PHome />} />
             </Route>

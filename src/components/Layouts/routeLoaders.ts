@@ -13,6 +13,7 @@ export const routeLoaders = {
   tradeMessages: () => import("@pages/trade_messages"),
   about: () => import("@pages/about"),
   clean: () => import("@pages/clean"),
+  wfInventory: () => import("@pages/wf_inventory"),
 } as const satisfies Record<string, RouteLoader>;
 
 export type RouteLoaderKey = keyof typeof routeLoaders;

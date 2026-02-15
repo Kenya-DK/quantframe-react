@@ -116,7 +116,10 @@ impl CacheRivenRolls {
             }
         }
     }
-    pub fn get_graded_riven(&self, grades: Vec<(bool, RivenAttributeGrade, String)>) -> RivenGrade {
+    pub fn get_graded_riven(
+        &self,
+        grades: &Vec<(bool, RivenAttributeGrade, String)>,
+    ) -> RivenGrade {
         let buffs_tags: HashSet<String> = grades
             .iter()
             .filter(|(positive, _, _)| *positive)

@@ -2,7 +2,7 @@ import { AppShell, Box, Indicator } from "@mantine/core";
 import classes from "./LogInLayout.module.css";
 import { Outlet, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBug, faEnvelope, faGlobe, faHome, faInfoCircle, faMessage } from "@fortawesome/free-solid-svg-icons";
+import { faBoxes, faBug, faEnvelope, faGlobe, faHome, faInfoCircle, faMessage } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { NavbarLinkProps, NavbarMinimalColored } from "@components/Layouts/Shared/NavbarMinimalColored";
@@ -23,101 +23,117 @@ export function LogInLayout() {
     useTranslateComponent(`layout.log_in.${key}`, { ...context }, i18Key);
   const useTranslateNavBar = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslate(`navbar.${key}`, { ...context }, i18Key);
+
   // States
   const navigate = useNavigate();
-  const handleNavigate = useCallback((link: NavbarLinkProps) => {
-    if (link.web) open(link.link, "_blank");
-    else navigate(link.link);
+  const handleNavigate = useCallback(
+    (link: NavbarLinkProps) => {
+      if (link.web) open(link.link, "_blank");
+      else navigate(link.link);
 
-    if (link.id == lastPage || !link.id) return;
-    setLastPage(link.id || "");
-    AddMetric("active_page", link.id);
-  }, [navigate, lastPage]);
+      if (link.id == lastPage || !link.id) return;
+      setLastPage(link.id || "");
+      AddMetric("active_page", link.id);
+    },
+    [navigate, lastPage],
+  );
 
-  const links = useMemo(() => [
-    {
-      align: "top",
-      id: "home",
-      link: "/",
-      icon: <FontAwesomeIcon size={"lg"} icon={faHome} />,
-      label: useTranslateNavBar("home"),
-      onClick: (e: NavbarLinkProps) => handleNavigate(e),
-      onPrefetch: () => prefetchRoute("home"),
-    },
-    {
-      align: "top",
-      id: "live_scraper",
-      link: "live_scraper",
-      icon: <FontAwesomeIcon size={"lg"} icon={faGlobe} />,
-      label: useTranslateNavBar("live_scraper"),
-      onClick: (e: NavbarLinkProps) => handleNavigate(e),
-      onPrefetch: () => prefetchRoute("liveScraper"),
-    },
-    {
-      align: "top",
-      id: "warframe_market",
-      link: "warframe-market",
-      icon: <FontAwesomeIcon size={"xl"} icon={faWarframeMarket} />,
-      label: useTranslateNavBar("warframe_market"),
-      onClick: (e: NavbarLinkProps) => handleNavigate(e),
-      onPrefetch: () => prefetchRoute("warframeMarket"),
-    },
-    {
-      align: "top",
-      id: "chat",
-      link: "chat",
-      icon: (
-        <Indicator
-          disabled={(user?.unread_messages || 0) <= 0}
-          label={(user?.unread_messages || 0) > 0 ? user?.unread_messages : undefined}
-          inline
-          size={16}
-          position="top-start"
-        >
-          <FontAwesomeIcon size={"lg"} icon={faEnvelope} />
-        </Indicator>
-      ),
-      onClick: (e: NavbarLinkProps) => handleNavigate(e),
-      label: useTranslateNavBar("chat"),
-      onPrefetch: () => prefetchRoute("chat"),
-    },
-    {
-      align: "top",
-      id: "trading_analytics",
-      link: "trading_analytics",
-      icon: <FontAwesomeIcon size={"lg"} icon={facTradingAnalytics} />,
-      label: useTranslateNavBar("trading_analytics"),
-      onClick: (e: NavbarLinkProps) => handleNavigate(e),
-      onPrefetch: () => prefetchRoute("tradingAnalytics"),
-    },
-    {
-      align: "top",
-      id: "trade_messages",
-      link: "trade_messages",
-      icon: <FontAwesomeIcon size={"lg"} icon={faMessage} />,
-      label: useTranslateNavBar("trade_messages"),
-      onClick: (e: NavbarLinkProps) => handleNavigate(e),
-      onPrefetch: () => prefetchRoute("tradeMessages"),
-    },
-    {
-      align: "top",
-      id: "debug",
-      link: "debug",
-      hide: !import.meta.env.DEV,
-      icon: <FontAwesomeIcon size={"lg"} icon={faBug} color="red" />,
-      label: useTranslateNavBar("debug"),
-      onClick: (e: NavbarLinkProps) => handleNavigate(e),
-    },
-    {
-      align: "bottom",
-      id: "nav_about",
-      link: "about",
-      icon: <FontAwesomeIcon size={"lg"} icon={faInfoCircle} />,
-      label: useTranslateNavBar("about"),
-      onClick: (e: NavbarLinkProps) => handleNavigate(e),
-      onPrefetch: () => prefetchRoute("about"),
-    },
-  ], [user?.unread_messages, handleNavigate]);
+  const links = useMemo(
+    () => [
+      {
+        align: "top",
+        id: "home",
+        link: "/",
+        icon: <FontAwesomeIcon size={"lg"} icon={faHome} />,
+        label: useTranslateNavBar("home"),
+        onClick: (e: NavbarLinkProps) => handleNavigate(e),
+        onPrefetch: () => prefetchRoute("home"),
+      },
+      {
+        align: "top",
+        id: "live_scraper",
+        link: "live_scraper",
+        icon: <FontAwesomeIcon size={"lg"} icon={faGlobe} />,
+        label: useTranslateNavBar("live_scraper"),
+        onClick: (e: NavbarLinkProps) => handleNavigate(e),
+        onPrefetch: () => prefetchRoute("liveScraper"),
+      },
+      {
+        align: "top",
+        id: "warframe_market",
+        link: "warframe-market",
+        icon: <FontAwesomeIcon size={"xl"} icon={faWarframeMarket} />,
+        label: useTranslateNavBar("warframe_market"),
+        onClick: (e: NavbarLinkProps) => handleNavigate(e),
+        onPrefetch: () => prefetchRoute("warframeMarket"),
+      },
+      {
+        align: "top",
+        id: "chat",
+        link: "chat",
+        icon: (
+          <Indicator
+            disabled={(user?.unread_messages || 0) <= 0}
+            label={(user?.unread_messages || 0) > 0 ? user?.unread_messages : undefined}
+            inline
+            size={16}
+            position="top-start"
+          >
+            <FontAwesomeIcon size={"lg"} icon={faEnvelope} />
+          </Indicator>
+        ),
+        onClick: (e: NavbarLinkProps) => handleNavigate(e),
+        label: useTranslateNavBar("chat"),
+        onPrefetch: () => prefetchRoute("chat"),
+      },
+      {
+        align: "top",
+        id: "trading_analytics",
+        link: "trading_analytics",
+        icon: <FontAwesomeIcon size={"lg"} icon={facTradingAnalytics} />,
+        label: useTranslateNavBar("trading_analytics"),
+        onClick: (e: NavbarLinkProps) => handleNavigate(e),
+        onPrefetch: () => prefetchRoute("tradingAnalytics"),
+      },
+      {
+        align: "top",
+        id: "wf_inventory",
+        link: "wf_inventory",
+        icon: <FontAwesomeIcon size={"lg"} icon={faBoxes} />,
+        label: useTranslateNavBar("wf_inventory"),
+        onClick: (e: NavbarLinkProps) => handleNavigate(e),
+      },
+      {
+        align: "top",
+        id: "trade_messages",
+        link: "trade_messages",
+        icon: <FontAwesomeIcon size={"lg"} icon={faMessage} />,
+        label: useTranslateNavBar("trade_messages"),
+        onClick: (e: NavbarLinkProps) => handleNavigate(e),
+        onPrefetch: () => prefetchRoute("tradeMessages"),
+      },
+      {
+        align: "top",
+        id: "debug",
+        link: "debug",
+        hide: !import.meta.env.DEV,
+        icon: <FontAwesomeIcon size={"lg"} icon={faBug} color="red" />,
+        label: useTranslateNavBar("debug"),
+        onClick: (e: NavbarLinkProps) => handleNavigate(e),
+      },
+
+      {
+        align: "bottom",
+        id: "nav_about",
+        link: "about",
+        icon: <FontAwesomeIcon size={"lg"} icon={faInfoCircle} />,
+        label: useTranslateNavBar("about"),
+        onClick: (e: NavbarLinkProps) => handleNavigate(e),
+        onPrefetch: () => prefetchRoute("about"),
+      },
+    ],
+    [user?.unread_messages, handleNavigate],
+  );
 
   // Effects
   useEffect(() => {

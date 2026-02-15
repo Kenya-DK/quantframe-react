@@ -1,12 +1,18 @@
 .root {
   width: 316px;
   height: 400px;
+
+  &[data-compact="true"] {
+    height: 285px;
+  }
+
   position: relative;
   display: flex;
   align-items: center;
   flex-direction: column;
   /* background-color: var(--mantine-color-gray-9); */
-  background-image: url(/riven_template.png);
+  /* background-image: url(/riven_template.png); */
+  background-image: url(/riven_template_compart.png);
   --riven-color: #c3aae5;
 }
 
@@ -14,12 +20,22 @@
   position: absolute;
   right: 15%;
   top: 10%;
+
+  &[data-compact="true"] {
+    top: 14%;
+  }
+
   fill: var(--riven-color);
 }
 
 .weapon {
   position: absolute;
   top: 50%;
+
+  &[data-compact="true"] {
+    top: 20%;
+  }
+
   font-size: 16;
   font-weight: 700;
   color: var(--riven-color);
@@ -28,25 +44,37 @@
 .mod_name {
   position: absolute;
   top: calc(50% + 1.2rem);
+
+  &[data-compact="true"] {
+    top: calc(20% + 1.2rem);
+  }
+
   font-size: 16;
   font-weight: 700;
   color: var(--riven-color);
 }
+
 .attributes {
   position: absolute;
-  top: calc(50% + 3rem);
+  top: calc(48% + 3rem);
+
+  &[data-compact="true"] {
+    top: calc(20% + 3rem);
+  }
+
   font-size: 15;
   color: var(--riven-color);
-}
-
-.attribute_text {
-  line-height: 1.2rem;
 }
 
 .mastery {
   position: absolute;
   left: 21%;
   bottom: 12%;
+
+  &[data-compact="true"] {
+    bottom: 17%;
+  }
+
   font-weight: 600;
   color: var(--riven-color);
 }
@@ -55,20 +83,51 @@
   position: absolute;
   right: 20%;
   bottom: 12%;
+
+  &[data-compact="true"] {
+    bottom: 17%;
+  }
+
   color: var(--riven-color);
 }
+
 .rank {
   position: absolute;
   left: 34.1%;
   bottom: 2.1%;
 }
+
 .circle {
   margin-left: 4.3px;
   color: #9bbbff;
   text-shadow: 0 0 7px #000000;
 }
+
 .hover {
   position: absolute;
   width: 100%;
   bottom: 0;
+}
+
+.footerSection {
+  background: blue;
+  border-top: 10px solid var(--mantine-color-dark-4);
+
+}
+
+/* WithoutBackground */
+.gradeImage {
+  position: absolute;
+  top: var(--mantine-spacing-xs);
+  right: var(--mantine-spacing-xs);
+}
+
+.attributesSection {
+  flex-grow: 1;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 2px;
 }

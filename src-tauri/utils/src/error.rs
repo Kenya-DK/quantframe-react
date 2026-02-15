@@ -10,6 +10,7 @@ use std::{
 // const MAX_CONTEXT_LENGTH: usize = 4048;
 const MAX_LOCATION_LENGTH: usize = 1024;
 const MAX_CONTEXT_LENGTH: usize = 1048;
+const MAX_CAUSE_LENGTH: usize = 1024;
 /// A comprehensive error type for the Uties logging library
 ///
 /// This error type captures detailed information about errors that occur
@@ -388,22 +389,24 @@ impl Error {
     ) -> Self {
         let mut content_str = content.into();
 
-        // Extract line and column information from serde_json::Error
         let line_info = err.line();
         let column_info = err.column();
 
         let position_info = format!(" at line {}, column {}", line_info, column_info);
-        let detailed_cause = format!("{}{}", err.to_string(), position_info);
+        let detailed_cause = format!("{}{}", err, position_info);
 
-        // Get error classification as string
         let error_type = match err.classify() {
             serde_json::error::Category::Io => "IO",
             serde_json::error::Category::Syntax => "Syntax",
             serde_json::error::Category::Data => "Data",
             serde_json::error::Category::Eof => "EOF",
         };
-        // Highlight the error position in the content (if possible)
+
+        // Highlight error
         content_str.insert_at(line_info, column_info, " <<< ERROR HERE <<< ");
+
+        // 🔒 truncate AFTER highlighting
+        let (content_str, _) = truncate_with_indicator(&content_str, 1000, None);
 
         Error {
             component: format!("ParseError:{}", component.into()),
@@ -415,7 +418,8 @@ impl Error {
                 "content": content_str,
                 "line": line_info,
                 "column": column_info,
-                "error_type": error_type
+                "error_type": error_type,
+                "truncated": content_str.len() == 1000
             })),
             location: Some(location.into()),
         }
@@ -455,27 +459,20 @@ impl Error {
     }
 }
 
-impl Display for Error {
+impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let (message, _) = truncate_with_indicator(&self.message, 1000, None);
+
         if let Some(location) = &self.location {
+            let (location, _) = truncate_with_indicator(location, 200, None);
+
             write!(
                 f,
                 "{}: {} | Cause: {} | Location: {}",
-                self.component,
-                self.message,
-                self.cause,
-                if location.len() > 200 {
-                    &location[..200]
-                } else {
-                    location
-                }
+                self.component, message, self.cause, location
             )
         } else {
-            write!(
-                f,
-                "{}: {} | Cause: {} | Context: {:?}",
-                self.component, self.message, self.cause, self.context
-            )
+            write!(f, "{}: {} | Cause: {}", self.component, message, self.cause)
         }
     }
 }
@@ -500,8 +497,10 @@ impl From<serde_json::Error> for Error {
     fn from(err: serde_json::Error) -> Self {
         let line_info = err.line();
         let column_info = err.column();
+
         let position_info = format!(" at line {}, column {}", line_info, column_info);
-        let detailed_cause = format!("{}{}", err.to_string(), position_info);
+        let (detailed_cause, _) =
+            truncate_with_indicator(&format!("{}{}", err, position_info), 1000, None);
 
         Error::new("JSON", "JSON parsing failed", "Unknown location")
             .with_cause(detailed_cause)

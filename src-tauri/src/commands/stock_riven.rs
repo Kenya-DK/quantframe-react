@@ -10,7 +10,7 @@ use wf_market::enums::OrderType;
 use crate::{
     add_metric,
     app::client::AppState,
-    cache::types::RivenSummary,
+    cache::{types::RivenSummary, CacheState},
     handlers::{handle_riven, handle_riven_by_entity},
     types::PermissionsFlags,
     utils::ErrorFromExt,
@@ -192,7 +192,12 @@ pub async fn stock_riven_update_multiple(
     Ok(updated_items)
 }
 #[tauri::command]
-pub async fn stock_riven_get_by_id(id: i64, mode: String) -> Result<Value, Error> {
+pub async fn stock_riven_get_by_id(
+    id: i64,
+    mode: String,
+    cache: tauri::State<'_, Mutex<CacheState>>,
+) -> Result<Value, Error> {
+    let cache = cache.lock()?.clone();
     let conn = DATABASE.get().unwrap();
     let item = match StockRivenQuery::get_by_id(conn, id).await {
         Ok(stock_riven) => {
@@ -209,7 +214,7 @@ pub async fn stock_riven_get_by_id(id: i64, mode: String) -> Result<Value, Error
         Err(e) => return Err(e.with_location(get_location!())),
     };
     match mode.as_str() {
-        "summary" => Ok(json!(RivenSummary::try_from_model(&item).await?)),
+        "summary" => Ok(json!(RivenSummary::try_from_model(&item, &cache).await?)),
         "edit" => Ok(json!(item)),
         _ => {
             return Err(Error::new(

@@ -700,8 +700,10 @@ export namespace TauriTypes {
   }
   export interface RivenSummary {
     weapon_name: string;
+    unique_name: string;
     stock_status?: StockStatus;
-    sub_name: string;
+    attributes: RivenAttribute[];
+    mod_name: string;
     endo: number;
     kuva: number;
     rank: number;
@@ -1002,6 +1004,29 @@ export namespace TauriTypes {
     sort_by?: string;
     from_date?: string;
     to_date?: string;
+    sort_direction?: "asc" | "desc";
+    query?: string;
+  }
+  export interface VeiledRiven {
+    weapon_name: string;
+    unique_name: string;
+    attributes: RivenAttribute[];
+    mod_name: string;
+    endo: number;
+    kuva: number;
+    rank: number;
+    mastery_rank: number;
+    polarity: string;
+    grade: string;
+    rerolls: number;
+  }
+  export type VeiledRivenControllerGetListData = PaginatedDto & {
+    results?: VeiledRiven[];
+  };
+  export interface VeiledRivenControllerGetListParams {
+    page: number;
+    limit: number;
+    sort_by?: string;
     sort_direction?: "asc" | "desc";
     query?: string;
   }

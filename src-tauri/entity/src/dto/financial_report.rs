@@ -3,7 +3,7 @@ use serde::Serialize;
 use serde_json::json;
 use utils::group_by;
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Clone)]
 pub struct FinancialReport {
     // General transaction metrics
     pub total_transactions: usize,

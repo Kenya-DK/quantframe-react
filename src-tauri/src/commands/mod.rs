@@ -28,4 +28,5 @@ pub mod stock_riven;
 pub mod trade_entry;
 pub mod transaction;
 pub mod warframe_gdpr;
+pub mod wf_inventory;
 pub mod wish_list;

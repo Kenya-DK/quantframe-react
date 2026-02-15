@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::wf_inventory::MiscItem;
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WarframeRootObject {
     #[serde(rename = "PlayerLevel", default)]
@@ -26,6 +28,7 @@ pub struct WarframeRootObject {
 impl Default for WarframeRootObject {
     fn default() -> Self {
         Self {
+            mastery_rank: 0,
             platinum: 0,
             credits: 0,
             trades_remaining: 0,

@@ -166,7 +166,7 @@ export function StockRivenDetailsModal({ value }: StockRivenDetailsModalProps) {
                     ))}
                 </Popover.Dropdown>
               </Popover>
-              {data.weapon_name} {upperFirst(data.sub_name)}
+              {data.weapon_name} {upperFirst(data.mod_name)}
             </Title>
             <Rating
               value={selectedWeapon?.disposition_rank || 0}

@@ -1,0 +1,9 @@
+.container {
+  &.alert {
+    margin-top: 30px;
+  }
+}
+
+.veiledRivens {
+  height: calc(100vh - 300px);
+}

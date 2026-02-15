@@ -652,6 +652,7 @@
           "trading_analytics": "Trading Analytics",
           "trade_messages": "Trade Messages",
           "chat": "Chat",
+          "wf_inventory": "WF Inventory",
           "about": "About"
         }
       }
@@ -1783,6 +1784,13 @@
         "sales_count": "Sales Count",
         "total_profit": "Total Profit"
       }
+    },
+    "riven_preview": {
+      "without_background": {
+        "riven_name": "{{name}} <blue>{{mod_name}}</blue>",
+        "footer_left": "R: {{rank}}/8",
+        "footer_right": "MR: {{mastery}}"
+      }
     }
   },
   "pages": {
@@ -2362,6 +2370,16 @@
           "platinum": "Platinum",
           "user_name": "User Name",
           "date": "Date"
+        }
+      }
+    },
+    "wf_inventory": {
+      "tabs": {
+        "riven": {
+          "title": "Rivens",
+          "riven_card": {
+            "footer_center": "<add/>"
+          }
         }
       }
     }

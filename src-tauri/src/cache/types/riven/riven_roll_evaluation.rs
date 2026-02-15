@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct AttributeMatch {
     pub label: String,
     pub matches: bool,
@@ -15,13 +15,13 @@ impl AttributeMatch {
     }
 }
 
-#[derive(Debug, Serialize, Default)]
+#[derive(Debug, Serialize, Default, Clone)]
 pub struct RollCriteria {
     pub required: Vec<AttributeMatch>,
     pub optional: Vec<AttributeMatch>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct RivenRollEvaluation {
     pub valid_rolls: Vec<RollCriteria>,
     pub tolerated_negative_attributes: Vec<AttributeMatch>,

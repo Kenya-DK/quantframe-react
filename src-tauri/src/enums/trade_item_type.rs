@@ -15,6 +15,7 @@ pub enum TradeItemType {
     Fish,
     FusionCore,
     RivenVeiled,
+    RivenPreVeiled,
     RivenUnVeiled,
     Imprint,
     Set,
@@ -36,6 +37,7 @@ impl TradeItemType {
             TradeItemType::Fish => "Fish".to_string(),
             TradeItemType::FusionCore => "FusionCore".to_string(),
             TradeItemType::RivenVeiled => "RivenVeiled".to_string(),
+            TradeItemType::RivenPreVeiled => "RivenPVeiled".to_string(),
             TradeItemType::RivenUnVeiled => "RivenUnVeiled".to_string(),
             TradeItemType::Imprint => "Imprint".to_string(),
             TradeItemType::Set => "Set".to_string(),
@@ -44,7 +46,9 @@ impl TradeItemType {
     }
     pub fn to_tax(&self) -> i64 {
         match self {
-            TradeItemType::RivenVeiled | TradeItemType::RivenUnVeiled => 8000,
+            TradeItemType::RivenVeiled
+            | TradeItemType::RivenPreVeiled
+            | TradeItemType::RivenUnVeiled => 8000,
             TradeItemType::Platinum => 500,
             _ => 2000,
         }

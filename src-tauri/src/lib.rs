@@ -24,6 +24,7 @@ use crate::cache::client::CacheState;
 use crate::live_scraper::LiveScraperState;
 use crate::log_parser::init_detections;
 use crate::log_parser::LogParserState;
+use crate::wf_inventory::WFInventoryState;
 
 mod app;
 mod cache;
@@ -32,6 +33,7 @@ mod handlers;
 mod http_server;
 mod macros;
 mod utils;
+mod wf_inventory;
 
 mod enums;
 mod helper;
@@ -128,6 +130,7 @@ async fn setup_manages(app: tauri::AppHandle, use_temp_db: bool) -> Result<(), E
     app.manage(live_scraper_state);
 
     app.manage(Mutex::new(LogParserState::new(&settings.advanced_settings)));
+    app.manage(Mutex::new(WFInventoryState::new(&settings)));
     Ok(())
 }
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -325,6 +328,9 @@ pub fn run() {
             commands::sound::sound_get_custom_sounds_path,
             // Handlers
             commands::handlers::handles_handle_items,
+            // WFInventory commands
+            commands::wf_inventory::wf_inventory_get_veiled_rivens,
+            commands::wf_inventory::wf_inventory_get_unveiled_rivens
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

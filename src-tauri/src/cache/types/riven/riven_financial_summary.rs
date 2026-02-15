@@ -4,7 +4,7 @@ use service::TransactionQuery;
 use utils::*;
 
 use crate::{utils::modules::states, DATABASE};
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct RivenFinancialSummary {
     #[serde(flatten)]
     report: FinancialReport,

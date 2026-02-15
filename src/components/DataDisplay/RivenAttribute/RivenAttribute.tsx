@@ -8,6 +8,7 @@ import { LocalizedDynamicMessage } from "@components/Shared/LocalizedDynamicMess
 export type RivenAttributeProps = {
   value: RivenAttribute;
   hideDetails?: boolean;
+  hideGrade?: boolean;
   compact?: boolean;
   groupProps?: GroupProps;
   centered?: boolean;
@@ -22,7 +23,7 @@ const grades: Record<string, React.ReactNode> = {
   bad: <Image src="/grades/gradeRed.png" h={IMAGE_SIZE} w="auto" fit="contain" />,
   unknown: <Image src="/question.png" h={IMAGE_SIZE} w="auto" fit="contain" />,
 };
-export function RivenAttribute({ value, groupProps, hideDetails, compact, centered, i18nKey, textDecoration }: RivenAttributeProps) {
+export function RivenAttribute({ value, groupProps, hideDetails, hideGrade, compact, centered, i18nKey, textDecoration }: RivenAttributeProps) {
   // Fetches detailed attribute metadata (like unit types) from the cache.
   // This query runs once and its data is cached by React Query.
   const { data: cacheAttributes } = useQuery<TauriTypes.CacheRivenAttribute[]>({
@@ -36,10 +37,13 @@ export function RivenAttribute({ value, groupProps, hideDetails, compact, center
   useEffect(() => {
     if (!cacheAttributes) return;
     setUrlMapper(() =>
-      cacheAttributes.reduce((acc, attr) => {
-        acc[attr.url_name] = attr;
-        return acc;
-      }, {} as { [key: string]: TauriTypes.CacheRivenAttribute })
+      cacheAttributes.reduce(
+        (acc, attr) => {
+          acc[attr.url_name] = attr;
+          return acc;
+        },
+        {} as { [key: string]: TauriTypes.CacheRivenAttribute },
+      ),
     );
   }, [cacheAttributes]);
 
@@ -59,14 +63,15 @@ export function RivenAttribute({ value, groupProps, hideDetails, compact, center
       p={compact ? "2" : "8px 12px"}
       {...groupProps}
     >
-      <Group gap="xs" flex={1} style={{ justifyContent: centered ? "center" : "flex-start" }}>
-        {value.grade && grades[value.grade]}
+      <Group flex={1} style={{ justifyContent: centered ? "center" : "flex-start" }}>
+        {!hideGrade && value.grade && grades[value.grade]}
         <LocalizedDynamicMessage
           data-hide-details={hideDetails ? "true" : "false"}
           textProps={{
             size: "md",
             fw: 600,
             td: textDecoration,
+            lh: "1.2rem",
             className: classes.attributeText,
             "data-hide-details": hideDetails ? "true" : "false",
           }}
