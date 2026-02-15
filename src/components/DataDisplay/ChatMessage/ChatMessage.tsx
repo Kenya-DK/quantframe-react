@@ -27,7 +27,7 @@ export const ChatMessage = ({ user, msg, sender }: ChatMessageProps) => {
     return () => {};
   }, [msg.send_date]);
   return (
-    <Group align="flex-end" style={{ width: "100%" }} data-position={position} classNames={classes}>
+    <Group align="flex-end" style={{ width: "100%" }} data-position={position} className={classes.root}>
       <Stack p={0} gap={2} style={{ maxWidth: "80%" }} align={position === "right" ? "flex-end" : "flex-start"}>
         <Group data-position={position} align="flex-end" gap="xs">
           <Tooltip label={user?.ingame_name} position="right">

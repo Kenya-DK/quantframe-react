@@ -33,7 +33,7 @@ export const ChatRome = ({ chat, goBack, disableChat }: ChatRomeProps) => {
   const viewport = useRef<HTMLDivElement>(null);
 
   // Fetch data from rust side
-  const { isFetching, data, isError, error } = useQuery({
+  const { isFetching, data } = useQuery({
     queryKey: ["chat_messages", chat.id],
     queryFn: () => api.chat.getChatMessages(chat.id),
   });
@@ -106,7 +106,6 @@ export const ChatRome = ({ chat, goBack, disableChat }: ChatRomeProps) => {
         </Collapse>
       </Group>
       <Stack gap={0}>
-        {isError && <Text c="red">Error: {JSON.stringify(error)}</Text>}
         {isFetching && <Loading />}
         <ScrollArea.Autosize
           p={10}
