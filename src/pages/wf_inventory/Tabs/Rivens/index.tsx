@@ -1,5 +1,6 @@
 import { ActionIcon, Box, Divider, Group, Pagination, ScrollArea, Select, SimpleGrid, Text } from "@mantine/core";
 import { useQueries } from "./queries";
+import { useMutations } from "./mutations";
 import { RivenPreview } from "@components/DataDisplay/RivenPreview";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import classes from "../../WFInventory.module.css";
@@ -24,9 +25,28 @@ export const RivenPanel = ({ isActive }: RivenPanelProps) => {
   // Queries
   const { veiledRivensQuery } = useQueries({ queryData, isActive });
 
+  // Mutations
+  const { createMutation } = useMutations({
+    refetchQueries: () => {},
+    setLoadingRows: () => {},
+  });
+
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslatePages(`wf_inventory.tabs.riven.${key}`, { ...context }, i18Key);
+
+  const AddRivenToStock = (riven: TauriTypes.VeiledRiven) => {
+    createMutation.mutate({
+      raw: riven.unique_name,
+      mod_name: riven.mod_name,
+      mastery_rank: riven.mastery_rank,
+      re_rolls: riven.rerolls,
+      polarity: riven.polarity,
+      attributes: riven.attributes,
+      rank: riven.rank,
+      bought: 0,
+    });
+  };
 
   return (
     <Box p={"md"}>
@@ -71,7 +91,7 @@ export const RivenPanel = ({ isActive }: RivenPanelProps) => {
                     <ActionWithTooltip
                       icon={faAdd}
                       tooltip="Add To stock"
-                      onClick={() => {}}
+                      onClick={() => AddRivenToStock(riven)}
                       actionProps={{ size: "sm" }}
                       iconProps={{ size: "xs" }}
                     />

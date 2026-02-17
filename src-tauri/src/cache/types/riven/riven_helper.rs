@@ -107,6 +107,7 @@ pub fn build_riven_attributes_from_fingerprint(
             attr.set_property_value("suffix", upgrade.suffix.unwrap_or_default());
             attr.set_property_value("prefix", upgrade.prefix.unwrap_or_default());
             attr.set_property_value("display", format_riven_stat_value(attr.value));
+            attr.set_property_value("wfm_url", upgrade.wfm_url.clone());
             out.push(attr);
         }
     }
