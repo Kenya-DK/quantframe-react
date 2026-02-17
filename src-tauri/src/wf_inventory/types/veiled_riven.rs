@@ -1,6 +1,7 @@
 use entity::enums::RivenGrade;
 use serde::{Deserialize, Serialize};
 use utils::*;
+use uuid::Uuid;
 
 use crate::{
     cache::{
@@ -25,7 +26,7 @@ pub struct VeiledRiven {
     endo: i64,
     kuva: i64,
     grade: RivenGrade,
-        // Default UUID
+    // Default UUID
     pub uuid: String,
 }
 
@@ -53,7 +54,7 @@ impl VeiledRiven {
                 return Err(e.with_location(get_location!()));
             }
         };
-        raw_uuid.push_str(&format!("weapon:{};", weapon.wfm_weapon_url));
+        raw_uuid.push_str(&format!("weapon:{};", weapon.wfm_url_name));
         let (buffs_total, curses_total) = fingerprint.riven_stat_totals();
         let multipliers = lookup_riven_multipliers(buffs_total, curses_total)?;
         let mut attributes = build_riven_attributes_from_fingerprint(
@@ -85,7 +86,6 @@ impl VeiledRiven {
 
         let polarity = normalize_polarity(fingerprint.polarity.clone());
 
-
         raw_uuid.push_str(&format!("mod_name:{};", mod_name));
         raw_uuid.push_str(&format!("re_rolls:{};", fingerprint.rerolls));
         raw_uuid.push_str(&format!("mastery:{};", fingerprint.mastery_rank));
@@ -94,7 +94,12 @@ impl VeiledRiven {
         let mut sorted_attrs = attributes.clone();
         sorted_attrs.sort_by_key(|a| a.url_name.clone());
         for a in sorted_attrs {
-            raw_uuid.push_str(&format!("attr:{}:{}:{};", a.get_property_value("wfm_url", String::new()), a.positive, a.value));
+            raw_uuid.push_str(&format!(
+                "attr:{}:{}:{};",
+                a.get_property_value("wfm_url", String::new()),
+                a.positive,
+                a.value
+            ));
         }
 
         Ok(VeiledRiven {
