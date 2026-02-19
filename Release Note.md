@@ -6,6 +6,8 @@
 
 ## Fix's
 
+⚒️ Fix Damage VS display to show 2 decimals instead of 1.
+
 ## Dev Notes
 
 ## TODO's
