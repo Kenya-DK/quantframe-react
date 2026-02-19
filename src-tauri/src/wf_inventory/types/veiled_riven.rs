@@ -121,4 +121,9 @@ impl VeiledRiven {
             uuid: Uuid::new_v5(&Uuid::NAMESPACE_OID, raw_uuid.as_bytes()).to_string(),
         })
     }
+    pub fn matches_query(&self, query: &str) -> bool {
+        let query = query.to_lowercase();
+        self.weapon_name.to_lowercase().contains(&query)
+            || self.mod_name.to_lowercase().contains(&query)
+    }
 }

@@ -1,6 +1,6 @@
 use std::sync::{atomic::Ordering, Arc, LazyLock, Weak};
 
-use entity::dto::PaginatedResult;
+use entity::{dto::PaginatedResult, enums::FieldChange};
 use utils::Error;
 static COMPONENT: &str = "WFInventory:RivenModule";
 
@@ -64,6 +64,14 @@ impl RivenModule {
                 rivens.push(riven);
             }
         }
+
+        match query.query {
+            FieldChange::Value(query) => {
+                rivens.retain(|riven| riven.matches_query(&query));
+            }
+            _ => {}
+        }
+
         let paginate = paginate(&rivens, query.pagination.page, query.pagination.limit);
         Ok(paginate)
     }
