@@ -667,7 +667,7 @@ async fn process_trade_item(
         platinum,
         player_name,
         order_type,
-        OperationSet::from(vec!["SkipWFMCheck:NotFound"]),
+        OperationSet::from(vec!["SkipWFMCheck:ItemSell_NotFound"]), // Will skip WFM check if the item is not found in Stock when selling.
     )
     .await
     .map_err(|e| e.with_location(get_location!()))?;

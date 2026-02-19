@@ -1,5 +1,5 @@
 use entity::{dto::*, enums::*, stock_riven::*};
-use service::{StockRivenMutation, StockRivenQuery};
+use service::{sea_orm::DatabaseConnection, StockRivenMutation, StockRivenQuery};
 use utils::{get_location, info, Error};
 use wf_market::enums::OrderType;
 
@@ -10,6 +10,92 @@ use crate::{
     DATABASE,
 };
 
+// --------------------------------------------------
+// Helper functions.
+// --------------------------------------------------
+
+async fn handle_stock_riven_delete(
+    conn: &DatabaseConnection,
+    model: &Model,
+    operations: &mut OperationSet,
+    component: &str,
+) -> Result<(), Error> {
+    match StockRivenMutation::delete_uuid(conn, &model.uuid).await {
+        Ok(_) => {
+            operations.add("StockRiven_Deleted".to_string());
+        }
+        Err(e) => {
+            if e.to_string().contains("NotFound") {
+                operations.add("StockRiven_NotFound".to_string());
+            } else {
+                return Err(Error::new(
+                    component,
+                    format!("Failed to delete StockRiven: {}", e),
+                    get_location!(),
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+async fn handle_stock_riven_create(
+    conn: &DatabaseConnection,
+    model: Model,
+    operations: &mut OperationSet,
+    flags: &[&str],
+    component: &str,
+    file: &str,
+) -> Result<Model, Error> {
+    let (op, created) = StockRivenMutation::create(conn, model).await.map_err(|e| {
+        Error::new(
+            component,
+            format!("Failed to create StockRiven: {e}"),
+            get_location!(),
+        )
+        .log(file)
+    })?;
+
+    operations.add(op);
+
+    info(
+        format!("{component}:Create"),
+        &format!("Created stock riven: {}", created.weapon_name),
+        &utils::LoggerOptions::default().set_enable(!flags.contains(&"DisableCreateLog")),
+    );
+
+    Ok(created)
+}
+async fn delete_existing_auction(
+    model: &Model,
+    operations: &mut OperationSet,
+    component: &str,
+) -> Result<(), Error> {
+    let app = states::app_state()?;
+
+    if let Some(auction) = app
+        .wfm_client
+        .auction()
+        .cache_auctions()
+        .get_by_uuid(&model.uuid)
+    {
+        app.wfm_client
+            .auction()
+            .delete(&auction.id)
+            .await
+            .map_err(|e| {
+                Error::new(
+                    component,
+                    format!("Failed to delete Auction: {e}"),
+                    get_location!(),
+                )
+            })?;
+
+        operations.add("Auction_Deleted");
+    }
+
+    Ok(())
+}
+
 pub async fn handle_riven_by_model(
     mut model: Model,
     user_name: impl Into<String>,
@@ -19,94 +105,63 @@ pub async fn handle_riven_by_model(
     let conn = DATABASE.get().unwrap();
     let component = "HandleRiven";
     let file = "handle_riven.log";
-    let mut operations: OperationSet = OperationSet::new();
-    // Handle StockItem creation, deletion, or update
-    if operation == OrderType::Sell {
-        match StockRivenMutation::delete_uuid(conn, &model.uuid).await {
-            Ok(_) => {
-                operations.add("StockRiven_Deleted".to_string());
-            }
-            Err(e) => {
-                if e.to_string().contains("NotFound") {
-                    operations.add("StockRiven_NotFound".to_string());
-                } else {
-                    return Err(Error::new(
-                        component,
-                        format!("Failed to delete StockRiven: {}", e),
-                        get_location!(),
-                    ));
-                }
-            }
+
+    let mut operations = OperationSet::new();
+
+    // --------------------------------------------------
+    // Stock mutation (buy / sell)
+    // --------------------------------------------------
+    match operation {
+        OrderType::Sell => {
+            handle_stock_riven_delete(conn, &model, &mut operations, component).await?;
         }
-    } else if operation == OrderType::Buy {
-        match StockRivenMutation::create(conn, model).await {
-            Ok((c_operation, created_item)) => {
-                operations.add(c_operation);
-                model = created_item;
-                info(
-                    format!("{}:Create", component),
-                    &format!("Created stock riven: {}", model.weapon_name),
-                    &utils::LoggerOptions::default()
-                        .set_enable(!operation_flags.contains(&"DisableCreateLog")),
-                );
-            }
-            Err(e) => {
-                return Err(Error::new(
-                    component,
-                    format!("Failed to create StockRiven: {}", e),
-                    get_location!(),
-                )
-                .log(file));
-            }
+
+        OrderType::Buy => {
+            model = handle_stock_riven_create(
+                conn,
+                model,
+                &mut operations,
+                operation_flags,
+                component,
+                file,
+            )
+            .await?;
         }
     }
 
-    // If the operation is a sale, we need to check if there's an existing order
+    // --------------------------------------------------
+    // Auction cleanup (sell only)
+    // --------------------------------------------------
     if operation == OrderType::Sell {
-        let app = states::app_state()?;
-        if let Some(auction) = app
-            .wfm_client
-            .auction()
-            .cache_auctions()
-            .get_by_uuid(&model.uuid)
-        {
-            match app.wfm_client.auction().delete(&auction.id).await {
-                Ok(_) => {
-                    operations.add("Auction_Deleted".to_string());
-                }
-                Err(e) => {
-                    return Err(Error::new(
-                        component,
-                        format!("Failed to delete Auction: {}", e),
-                        get_location!(),
-                    ))
-                }
-            }
-        }
-    }
-    if operation_flags.iter().any(|op| op.starts_with("ReturnOn:")) {
-        let return_on = operation_flags
-            .iter()
-            .filter(|op| op.starts_with("ReturnOn:"))
-            .cloned()
-            .collect::<Vec<_>>();
-        if return_on.len() > 0 {
-            let return_on = return_on[0].replace("ReturnOn:", "");
-            if operations.ends_with(&return_on) {
-                return Ok((operations, model));
-            }
-        }
+        delete_existing_auction(&model, &mut operations, component).await?;
     }
 
+    // --------------------------------------------------
+    // Early return condition from flags
+    // --------------------------------------------------
+    if operation_flags
+        .iter()
+        .find_map(|f| f.strip_prefix("ReturnOn:"))
+        .map(|suffix| operations.ends_with(suffix))
+        .unwrap_or(false)
+    {
+        return Ok((operations, model));
+    }
+
+    // --------------------------------------------------
+    // Transaction creation
+    // --------------------------------------------------
     if model.bought <= 0 {
         return Ok((operations, model));
     }
 
-    let mut transaction = model.to_transaction(user_name, model.bought, TransactionType::Purchase);
+    let mut tx = model.to_transaction(user_name, model.bought, TransactionType::Purchase);
+
     if operation == OrderType::Sell {
-        transaction.transaction_type = TransactionType::Sale;
+        tx.transaction_type = TransactionType::Sale;
     }
-    handle_transaction(transaction, true)
+
+    handle_transaction(tx, true)
         .await
         .map_err(|e| e.with_location(get_location!()).log(file))?;
 
