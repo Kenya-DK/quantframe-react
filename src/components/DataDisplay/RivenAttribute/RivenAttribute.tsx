@@ -47,8 +47,8 @@ export function RivenAttribute({ value, groupProps, hideDetails, hideGrade, comp
     );
   }, [cacheAttributes]);
 
-  const GetValueDisplay = (value: number) => {
-    return `${value > 0 ? "+" : ""}${value.toFixed(1).replace(/\.0$/, "")}`;
+  const GetValueDisplay = (v: number) => {
+    return `${v > 0 ? "+" : ""}${v.toFixed(value.url_name.includes("damage_vs") ? 2 : 1).replace(/\.0$/, "")}`;
   };
   const calculateProgress = (min: number, current: number, max: number) => {
     return ((current - min) / (max - min)) * 100;
