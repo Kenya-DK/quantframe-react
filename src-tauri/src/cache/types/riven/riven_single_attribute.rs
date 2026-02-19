@@ -92,7 +92,7 @@ impl RivenSingleAttribute {
         }
     }
     pub fn apply_rank_multiplier(&mut self, disposition: f64, rank: f64) {
-        let level_multiplier = disposition * ((rank + 1.0) / 9.0);
+        let level_multiplier = 1.0 * ((rank + 1.0) / 9.0);
         self.value *= level_multiplier;
         self.min_value *= level_multiplier;
         self.max_value *= level_multiplier;
