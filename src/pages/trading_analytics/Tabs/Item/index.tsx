@@ -60,9 +60,7 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
   const { paginationQuery, refetchQueries } = useQueries({ queryData: queryData.values, isActive });
 
   // Mutations
-  const { exportMutation } = useMutations({
-    refetchQueries,
-  });
+  const { exportMutation } = useMutations({ refetchQueries });
   useEffect(() => {
     if (dates[0] && dates[1] && dates[0] > dates[1]) return;
     if (dates[0]) queryData.setFieldValue("from_date", dates[0]);
@@ -166,7 +164,7 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
         striped
         customLoader={<Loading />}
         fetching={IsLoading()}
-        records={IsLoading() ? [] : (paginationQuery.data?.results || [])}
+        records={IsLoading() ? [] : paginationQuery.data?.results || []}
         page={getSafePage(queryData.values.page, paginationQuery.data?.total_pages)}
         onPageChange={(page) => queryData.setFieldValue("page", page)}
         totalRecords={paginationQuery.data?.total || 0}
