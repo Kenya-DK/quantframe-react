@@ -52,7 +52,6 @@ export const DebuggingPanel = ({}: DebuggingPanelProps) => {
         </Tooltip>
       </Group>
       <DataTable
-        height={400}
         className={`${classes.dataTableLogging}`}
         data-alert={useHasAlert()}
         mt={10}

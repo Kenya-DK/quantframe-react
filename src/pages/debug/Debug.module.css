@@ -8,7 +8,8 @@
   margin-top: 30px;
 }
 
-.databaseLogging {
+.databaseLogging,
+.dataTableEELog {
   --offset: 300px;
   height: calc(100vh - var(--offset)) !important;
 

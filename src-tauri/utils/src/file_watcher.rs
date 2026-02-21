@@ -16,14 +16,16 @@ pub trait LineHandler: Send {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct LineEntry {
+    pub index: usize,
     pub line: String,
     pub prev_line: String,
     pub ignore_combined: bool,
     pub date: i64,
 }
 impl LineEntry {
-    pub fn new(line: String, prev_line: String, ignore_combined: bool) -> Self {
+    pub fn new(index: usize, line: String, prev_line: String, ignore_combined: bool) -> Self {
         LineEntry {
+            index,
             line,
             prev_line,
             ignore_combined,
@@ -161,12 +163,17 @@ impl FileWatcher {
                 };
 
                 for line in lines {
+                    let mut cache = self.cache.lock().unwrap();
                     let mut prev = self.prev_line.lock().unwrap();
 
                     let prev_line_str = prev.as_deref().unwrap_or("");
 
-                    let entry =
-                        LineEntry::new(line.clone(), prev_line_str.to_string(), ignore_combined);
+                    let entry = LineEntry::new(
+                        cache.len() + 1,
+                        line.clone(),
+                        prev_line_str.to_string(),
+                        ignore_combined,
+                    );
 
                     let mut handlers = self.handlers.lock().unwrap();
                     for handler in handlers.iter_mut() {
@@ -183,7 +190,6 @@ impl FileWatcher {
                         }
                     }
                     // Add line to cache
-                    let mut cache = self.cache.lock().unwrap();
                     cache.push(entry.clone());
                     *prev = Some(line);
                 }
@@ -207,10 +213,13 @@ impl FileWatcher {
         if start >= 1 {
             start = 1;
         }
+        let cache = self.cache.lock().unwrap();
+        if end == 0 {
+            end = cache.len();
+        }
         if start > end {
             std::mem::swap(&mut start, &mut end);
         }
-        let cache = self.cache.lock().unwrap();
         cache[start..end.min(cache.len())].to_vec()
     }
     pub fn get_all_cached_lines(&self) -> Vec<LineEntry> {

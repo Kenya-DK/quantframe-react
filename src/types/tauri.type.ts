@@ -1030,4 +1030,22 @@ export namespace TauriTypes {
     sort_direction?: "asc" | "desc";
     query?: string;
   }
+  export interface EELog {
+    index: number;
+    date: number;
+    ignore_combined: boolean;
+    line: string;
+    prev_line: string;
+  }
+  export type EELogControllerGetListData = PaginatedDto & {
+    results?: EELog[];
+  };
+  export interface EELogControllerGetListParams {
+    page: number;
+    limit: number;
+    sort_by?: string;
+    sort_direction?: "asc" | "desc";
+    query?: string;
+    hide_empty?: boolean;
+  }
 }

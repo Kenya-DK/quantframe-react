@@ -135,7 +135,7 @@ async fn setup_manages(app: tauri::AppHandle, use_temp_db: bool) -> Result<(), E
 }
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let use_temp_db = true;
+    let use_temp_db: bool = true;
 
     // Initialize the logger for elapsed time tracking
 
@@ -253,6 +253,8 @@ pub fn run() {
             commands::stock_riven::stock_riven_delete_multiple,
             // Debug commands
             commands::debug::debug_get_wfm_state,
+            commands::debug::debug_get_ee_logs,
+            commands::debug::debug_export_ee_logs,
             // Order commands
             commands::order::get_wfm_orders_pagination,
             commands::order::get_wfm_orders_status_counts,
@@ -302,7 +304,6 @@ pub fn run() {
             commands::riven::export_riven_price_data,
             // Market commands
             commands::market::get_user_activity,
-            // Trade Entry commands
             // Trade Entry commands
             commands::trade_entry::get_trade_entry_pagination,
             commands::trade_entry::trade_entry_get_by_id,
