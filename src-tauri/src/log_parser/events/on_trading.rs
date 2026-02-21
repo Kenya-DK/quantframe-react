@@ -336,16 +336,11 @@ impl OnTradeEvent {
 }
 
 impl LineHandler for OnTradeEvent {
-    fn process_line(
-        &mut self,
-        line: &str,
-        prev_line: &str,
-        ignore_combined: bool,
-    ) -> Result<(bool, bool), Error> {
+    fn process_line(&mut self, entry: &LineEntry) -> Result<(bool, bool), Error> {
         while self.getting_trade_message_multiline {
             if self
                 .detection
-                .is_end_of_trade(line, prev_line, true, ignore_combined)
+                .is_end_of_trade(&entry.line, &entry.prev_line, true, entry.ignore_combined)
                 .is_found()
             {
                 self.getting_trade_message_multiline = false;
@@ -355,25 +350,31 @@ impl LineHandler for OnTradeEvent {
                     "Waiting For Confirmation/Trade Failed/Trade Cancelled",
                     None,
                 );
-            } else if !is_start_of_log(line) {
-                self.add_trade_message(line);
+            } else if !is_start_of_log(&entry.line) {
+                self.add_trade_message(&entry.line);
                 return Ok((false, false));
             } else {
                 return Ok((false, false));
             }
         }
 
-        if line.contains("UUID:") {
-            self.uuid = line.split("UUID:").nth(1).unwrap_or("").trim().to_string();
+        if entry.line.contains("UUID:") {
+            self.uuid = entry
+                .line
+                .split("UUID:")
+                .nth(1)
+                .unwrap_or("")
+                .trim()
+                .to_string();
         }
 
         // Start of a Trade
         if self
             .detection
-            .is_beginning_of_trade(line, prev_line, true, ignore_combined)
+            .is_beginning_of_trade(&entry.line, &entry.prev_line, true, entry.ignore_combined)
             .is_found()
         {
-            self.trade_started(line, prev_line);
+            self.trade_started(&entry.line, &entry.prev_line);
             self.getting_trade_message_multiline = true;
             return Ok((false, true));
         }
@@ -381,12 +382,12 @@ impl LineHandler for OnTradeEvent {
         else if self.waiting_confirmation
             && self
                 .detection
-                .is_trade_finished(line, prev_line, true)
+                .is_trade_finished(&entry.line, &entry.prev_line, true)
                 .is_found()
         {
             if self
                 .detection
-                .was_trade_successful(line, prev_line, true, ignore_combined)
+                .was_trade_successful(&entry.line, &entry.prev_line, true, entry.ignore_combined)
                 .is_found()
             {
                 match self.trade_accepted() {
@@ -395,13 +396,13 @@ impl LineHandler for OnTradeEvent {
                 }
             } else if self
                 .detection
-                .was_trade_failed(line, prev_line, true, ignore_combined)
+                .was_trade_failed(&entry.line, &entry.prev_line, true, entry.ignore_combined)
                 .is_found()
             {
                 self.trade_failed();
             } else if self
                 .detection
-                .was_trade_cancelled(line, prev_line, true, ignore_combined)
+                .was_trade_cancelled(&entry.line, &entry.prev_line, true, entry.ignore_combined)
                 .is_found()
             {
                 self.trade_cancelled();

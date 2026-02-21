@@ -65,4 +65,10 @@ impl LogParserState {
             .get_or_init(|| WarframeGDPRModule::new())
             .clone()
     }
+    pub fn get_all_cached_lines(&self) -> Vec<LineEntry> {
+        self.watcher.get_all_cached_lines()
+    }
+    pub fn get_cached_lines_between(&self, start: usize, end: usize) -> Vec<LineEntry> {
+        self.watcher.get_cached_lines_between(start, end)
+    }
 }

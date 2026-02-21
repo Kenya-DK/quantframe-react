@@ -6,22 +6,37 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 
+use serde::{Deserialize, Serialize};
+
 use crate::{Error, LoggerOptions, get_location, info, trace, warning};
 
 pub trait LineHandler: Send {
-    fn process_line(
-        &mut self,
-        line: &str,
-        prev_line: &str,
-        ignore_combined: bool,
-    ) -> Result<(bool, bool), Error>;
+    fn process_line(&mut self, entry: &LineEntry) -> Result<(bool, bool), Error>;
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct LineEntry {
+    pub line: String,
+    pub prev_line: String,
+    pub ignore_combined: bool,
+    pub date: i64,
+}
+impl LineEntry {
+    pub fn new(line: String, prev_line: String, ignore_combined: bool) -> Self {
+        LineEntry {
+            line,
+            prev_line,
+            ignore_combined,
+            date: chrono::Utc::now().timestamp_millis(),
+        }
+    }
 }
 
 pub struct FileWatcher {
     path: Arc<Mutex<String>>,
     last_pos: Arc<Mutex<u64>>,
     prev_line: Arc<Mutex<Option<String>>>,
-    cache: Arc<Mutex<Vec<String>>>, // store cached lines
+    cache: Arc<Mutex<Vec<LineEntry>>>, // store cached lines
     handlers: Arc<Mutex<Vec<Box<dyn LineHandler + Send>>>>,
 }
 
@@ -150,9 +165,12 @@ impl FileWatcher {
 
                     let prev_line_str = prev.as_deref().unwrap_or("");
 
+                    let entry =
+                        LineEntry::new(line.clone(), prev_line_str.to_string(), ignore_combined);
+
                     let mut handlers = self.handlers.lock().unwrap();
                     for handler in handlers.iter_mut() {
-                        match handler.process_line(&line, prev_line_str, ignore_combined) {
+                        match handler.process_line(&entry) {
                             Ok((break_loop, combined)) => {
                                 if break_loop {
                                     println!("Processing loop broken by handler");
@@ -165,8 +183,8 @@ impl FileWatcher {
                         }
                     }
                     // Add line to cache
-                    // let mut cache = self.cache.lock().unwrap();
-                    // cache.push(line.clone());
+                    let mut cache = self.cache.lock().unwrap();
+                    cache.push(entry.clone());
                     *prev = Some(line);
                 }
                 if current_file_size != 0 {
@@ -185,7 +203,7 @@ impl FileWatcher {
             thread::sleep(Duration::from_millis(1));
         }
     }
-    pub fn get_cached_lines_between(&self, mut start: usize, mut end: usize) -> Vec<String> {
+    pub fn get_cached_lines_between(&self, mut start: usize, mut end: usize) -> Vec<LineEntry> {
         if start >= 1 {
             start = 1;
         }
@@ -195,7 +213,10 @@ impl FileWatcher {
         let cache = self.cache.lock().unwrap();
         cache[start..end.min(cache.len())].to_vec()
     }
-
+    pub fn get_all_cached_lines(&self) -> Vec<LineEntry> {
+        let cache = self.cache.lock().unwrap();
+        cache.clone()
+    }
     /// Read lines from a BufReader, handling invalid UTF-8 gracefully
     fn read_lines_lossy(&self, mut reader: BufReader<File>) -> Result<Vec<String>, Error> {
         use std::io::Read;

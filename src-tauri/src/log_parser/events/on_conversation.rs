@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use serde_json::json;
-use utils::{info, Error, LineHandler, LoggerOptions};
+use utils::{info, Error, LineEntry, LineHandler, LoggerOptions};
 
 use crate::{add_metric, utils::modules::states};
 
@@ -15,11 +15,14 @@ impl OnConversationEvent {
 }
 
 impl LineHandler for OnConversationEvent {
-    fn process_line(&mut self, line: &str, _: &str, _: bool) -> Result<(bool, bool), Error> {
-        if line.contains("ChatRedux::AddTab: Adding tab with channel name") {
+    fn process_line(&mut self, entry: &LineEntry) -> Result<(bool, bool), Error> {
+        if entry
+            .line
+            .contains("ChatRedux::AddTab: Adding tab with channel name")
+        {
             // Extract channel name from the line
-            if let Some(start_pos) = line.find("channel name: ") {
-                let parsedLineContent = &line[start_pos + 14..]; // Skip "channel name: "
+            if let Some(start_pos) = entry.line.find("channel name: ") {
+                let parsedLineContent = &entry.line[start_pos + 14..]; // Skip "channel name: "
 
                 if let Some(end_pos) = parsedLineContent.find(" to index") {
                     let mut player_name = parsedLineContent[..end_pos].to_string();
