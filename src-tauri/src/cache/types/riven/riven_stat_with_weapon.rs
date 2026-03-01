@@ -1,8 +1,7 @@
 use std::collections::HashMap;
 
+use entity::stock_riven::RivenAttribute;
 use serde::{Deserialize, Serialize};
-
-use crate::cache::*;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RivenStatWithWeapon {
@@ -10,7 +9,7 @@ pub struct RivenStatWithWeapon {
     pub disposition: f64,
     pub disposition_rank: i64,
     pub unique_name: String,
-    pub by_level: HashMap<i64, Vec<RivenSingleAttribute>>,
+    pub by_level: HashMap<i64, Vec<RivenAttribute>>,
 }
 
 impl RivenStatWithWeapon {
@@ -28,7 +27,7 @@ impl RivenStatWithWeapon {
             by_level: HashMap::new(),
         }
     }
-    pub fn add_level_attributes(&mut self, level: i64, attributes: Vec<RivenSingleAttribute>) {
+    pub fn add_level_attributes(&mut self, level: i64, attributes: Vec<RivenAttribute>) {
         self.by_level.insert(level, attributes);
     }
 }

@@ -72,18 +72,9 @@ pub async fn get_wfm_auctions_pagination(
         filters_by(&app.wfm_client.auction().cache_auctions().to_vec(), |o| {
             match &query.query {
                 FieldChange::Value(q) => {
-                    let q = q.to_lowercase();
-                    let details = o.get_details();
-                    let item_name = details.item_name.to_lowercase();
-                    let mod_name = o
-                        .item
-                        .mod_name
-                        .clone()
-                        .unwrap_or("".to_string())
-                        .to_lowercase();
-                    if !item_name.contains(&q) && !mod_name.contains(&q) {
-                        return false;
-                    }
+                    let riven =
+                        o.get_property_value::<ItemRivenBase>("riven", ItemRivenBase::default());
+                    return riven.matches_query(q);
                 }
                 _ => {}
             }
@@ -132,7 +123,7 @@ pub async fn get_wfm_auctions_pagination(
     );
     for auction in paginate.results.iter_mut() {
         if auction.is_direct_sell && !ids.contains(&auction.uuid) {
-            auction.update_details(auction.get_details().set_can_import(true));
+            auction.set_property_value("can_import", true);
         }
     }
     Ok(paginate)
@@ -154,10 +145,7 @@ pub async fn get_wfm_auctions_overview(
     let profit = items
         .iter()
         .filter(|a| a.is_direct_sell)
-        .map(|a| {
-            let details = a.get_details();
-            details.profit
-        })
+        .map(|a| a.get_property_value("estimated_profit", 0))
         .sum::<i64>();
     Ok((total, revenue, profit))
 }

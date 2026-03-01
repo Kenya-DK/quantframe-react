@@ -49,11 +49,10 @@ pub async fn get_transaction_financial_report(
     trading_partners.sort_by(|a, b| b.total_transactions.cmp(&a.total_transactions));
 
     let mut report = FinancialReport::from(&items);
-    if let Some(properties) = &mut report.properties {
-        properties["trading_partners"] =
-            serde_json::to_value(trading_partners.into_iter().take(10).collect::<Vec<_>>())
-                .unwrap();
-    }
+    report.properties.set_property_value(
+        "trading_partners",
+        trading_partners.into_iter().take(10).collect::<Vec<_>>(),
+    );
     Ok(report)
 }
 

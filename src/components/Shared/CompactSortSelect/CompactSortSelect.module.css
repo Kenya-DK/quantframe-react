@@ -1,0 +1,26 @@
+.root {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+  background: var(--mantine-color-dark-7);
+  border: 1px solid var(--mantine-color-dark-5);
+  border-radius: var(--mantine-radius-xl);
+  padding: 4px;
+}
+
+.leftIcon {
+  border-radius: var(--mantine-radius-xl);
+  background: var(--mantine-color-dark-6);
+}
+
+.selectInput {
+  border: 0;
+  border-radius: var(--mantine-radius-xl);
+}
+
+.directionIcon {
+  cursor: pointer;
+  margin-left: var(--mantine-spacing-xs);
+  border-radius: var(--mantine-radius-xl);
+  background: var(--mantine-color-dark-6);
+}

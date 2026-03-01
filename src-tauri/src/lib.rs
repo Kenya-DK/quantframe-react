@@ -135,7 +135,7 @@ async fn setup_manages(app: tauri::AppHandle, use_temp_db: bool) -> Result<(), E
 }
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let use_temp_db: bool = true;
+    let use_temp_db: bool = false;
 
     // Initialize the logger for elapsed time tracking
 
@@ -330,8 +330,7 @@ pub fn run() {
             // Handlers
             commands::handlers::handles_handle_items,
             // WFInventory commands
-            commands::wf_inventory::wf_inventory_get_veiled_rivens,
-            commands::wf_inventory::wf_inventory_get_unveiled_rivens
+            commands::wf_inventory::wf_inventory_get_rivens,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

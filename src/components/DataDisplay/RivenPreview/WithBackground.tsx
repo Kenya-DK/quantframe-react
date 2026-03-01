@@ -6,10 +6,10 @@ import { RivenAttribute } from "../RivenAttribute";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import { getPolarityIcon } from "@icons";
-import { RivenProps } from "./RivenPreview";
+import { ItemRiven } from "$types";
 
 export type RivenWithBackgroundProps = {
-  value: RivenProps;
+  value: ItemRiven;
   compact?: boolean;
   paperProps?: PaperProps;
 };
@@ -22,10 +22,10 @@ export const WithBackground = memo(function WithBackground({ paperProps, value: 
     <Box {...paperProps} data-compact={compact} className={classes.root} ref={ref}>
       <FontAwesomeIcon data-compact={compact} className={classes.polarity} icon={getPolarityIcon(riven.polarity)} />
       <Text data-compact={compact} className={classes.weapon}>
-        {riven?.weapon.name}
+        {riven?.name}
       </Text>
       <Text data-compact={compact} className={classes.mod_name}>
-        {riven.modName}
+        {riven.mod_name}
       </Text>
       <Stack gap={0} data-compact={compact} className={classes.attributes}>
         {riven.attributes.map((attr) => (
@@ -33,18 +33,18 @@ export const WithBackground = memo(function WithBackground({ paperProps, value: 
         ))}
       </Stack>
       <Text data-compact={compact} className={classes.mastery}>
-        MR {riven.mastery > 16 ? 16 : riven.mastery}
+        MR {riven.mastery_rank > 16 ? 16 : riven.mastery_rank}
       </Text>
-      {riven.reRolls > 0 && (
+      {riven.re_rolls > 0 && (
         <Text data-compact={compact} className={classes.reroll}>
           <FontAwesomeIcon icon={faArrowsRotate} />
           <Text component="span" ml={5}>
-            {riven.reRolls}
+            {riven.re_rolls}
           </Text>
         </Text>
       )}
       <Box data-compact={compact} className={classes.rank}>
-        {Array.from(Array(Math.min(riven.rank, 8))).map((_, i) => {
+        {Array.from(Array(Math.min(riven.sub_type?.rank ?? 0, 8))).map((_, i) => {
           return (
             <Text key={i} className={classes.circle} size="sm" component="span">
               ●

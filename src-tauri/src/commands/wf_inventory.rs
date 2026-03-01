@@ -1,66 +1,28 @@
-use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
-
-use entity::enums::FieldChange;
-use migration::query;
-use qf_api::types::*;
+use entity::stock_riven::StockRivenPaginationQueryDto;
 use serde_json::{json, Value};
-use utils::{get_location, Error};
+use service::StockRivenQuery;
+use std::sync::{Arc, Mutex};
+use utils::Error;
 
-use crate::wf_inventory::VeiledRivensPaginationDto;
-use crate::{
-    app::client::AppState, cache::CacheState, utils::ErrorFromExt, wf_inventory::WFInventoryState,
-};
+use crate::wf_inventory::WFInventoryState;
+use crate::wf_inventory::WFItemPaginationDto;
+use crate::DATABASE;
 
 #[tauri::command]
-pub async fn wf_inventory_get_veiled_rivens(
-    query: VeiledRivensPaginationDto,
+pub async fn wf_inventory_get_rivens(
+    query: WFItemPaginationDto,
     wf_inventory: tauri::State<'_, Mutex<Arc<WFInventoryState>>>,
 ) -> Result<Value, Error> {
-    let wf_inventory = wf_inventory.lock()?;
-    Ok(json!(wf_inventory.riven().get_veiled(query)?))
-}
-#[tauri::command]
-pub async fn wf_inventory_get_unveiled_rivens(
-    wf_inventory: tauri::State<'_, Mutex<Arc<WFInventoryState>>>,
-) -> Result<Value, Error> {
-    let wf_inventory = wf_inventory.lock()?;
-    Ok(json!(wf_inventory.riven().get_unveiled()?))
-}
-
-#[tauri::command]
-pub async fn wf_inventory_get_path(
-    wf_inventory: tauri::State<'_, Mutex<Arc<WFInventoryState>>>,
-) -> Result<String, Error> {
-    let wf_inventory = wf_inventory.lock()?;
-    Ok(wf_inventory.get_path().to_string_lossy().to_string())
-}
-
-#[tauri::command]
-pub async fn wf_inventory_update_path(
-    path: String,
-    wf_inventory: tauri::State<'_, Mutex<Arc<WFInventoryState>>>,
-) -> Result<(), Error> {
-    let mut wf_inventory = wf_inventory.lock()?;
-    let new_path = PathBuf::from(path);
-
-    if !new_path.exists() {
-        return Err(Error::new(
-            "WFInventoryUpdatePath",
-            format!("File does not exist: {}", new_path.display()),
-            get_location!(),
-        ));
+    let wf_inventory = wf_inventory.lock()?.clone();
+    let conn = DATABASE.get().unwrap();
+    let rivens = StockRivenQuery::get_all(conn, StockRivenPaginationQueryDto::new(1, -1)).await?;
+    let uuids: Vec<String> = rivens.results.iter().map(|r| r.uuid.clone()).collect();
+    let mut veiled = wf_inventory.riven().get_rivens(query)?;
+    for item in veiled.results.iter_mut() {
+        item.base
+            .properties
+            .set_property_value("is_in_stock", uuids.contains(&item.base.uuid));
     }
 
-    Arc::get_mut(&mut wf_inventory)
-        .ok_or_else(|| {
-            Error::new(
-                "AlecaframeUpdatePath",
-                "Cannot update path while other references exist",
-                get_location!(),
-            )
-        })?
-        .update_path(new_path);
-
-    Ok(())
+    Ok(json!(veiled))
 }

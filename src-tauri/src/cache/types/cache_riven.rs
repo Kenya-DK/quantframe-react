@@ -7,7 +7,7 @@ pub struct CacheRiven {
     #[serde(rename = "weapons")]
     pub weapons: Vec<CacheRivenWeapon>,
     #[serde(rename = "upgrade_types_dict")]
-    pub upgrade_types: HashMap<String, Vec<CacheRivenUpgrade>>,
+    pub upgrade_types: HashMap<String, CacheRivenUpgrade>,
     #[serde(rename = "attributes")]
     pub attributes: Vec<CacheRivenWFMAttribute>,
 }
@@ -213,7 +213,22 @@ impl CacheRivenRolls {
     }
 }
 #[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct CacheRivenChallenge {
+    #[serde(rename = "unique_name")]
+    pub unique_name: String,
+    #[serde(rename = "description")]
+    pub description: String,
+}
+#[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CacheRivenUpgrade {
+    #[serde(rename = "stats")]
+    pub stats: Vec<CacheRivenStats>,
+
+    #[serde(rename = "challenges")]
+    pub challenges: HashMap<String, CacheRivenChallenge>,
+}
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct CacheRivenStats {
     #[serde(rename = "wfm_url")]
     pub wfm_url: String,
     #[serde(rename = "modifier_tag")]

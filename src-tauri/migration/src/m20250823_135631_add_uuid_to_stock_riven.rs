@@ -32,10 +32,9 @@ impl MigrationTrait for Migration {
         let items = Entity::find().all(db).await?;
         // Update each row with deterministic v5 UUID
         for item in items {
-            let uuid = item.uuid(); // Compute the UUID using the method from the entity
+            let (uuid, _) = item.uuid(); // Compute the UUID using the method from the entity
             let mut active: ActiveModel = item.into();
-            active.uuid = Set(uuid.to_string());
-
+            active.uuid = Set(uuid);
             active.update(db).await?;
         }
         // Remove WFMOrderId column

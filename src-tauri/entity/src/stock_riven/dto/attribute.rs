@@ -1,20 +1,26 @@
 use sea_orm::FromJsonQueryResult;
 use serde::{Deserialize, Serialize};
+use utils::Properties;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct RivenAttribute {
+    pub url_name: String,
     pub positive: bool,
     pub value: f64,
-    pub effect: Option<String>,
-    pub url_name: String,
+    #[serde(default)]
+    pub localized_text: String,
+    // Extra properties
+    #[serde(flatten)]
+    pub properties: Properties,
 }
 impl RivenAttribute {
-    pub fn new(positive: bool, value: f64, url_name: String) -> Self {
+    pub fn new(positive: bool, value: f64, url_name: String, localized_text: String) -> Self {
         Self {
-            effect: None,
+            localized_text,
             url_name,
             positive,
             value,
+            properties: Properties::default(),
         }
     }
 }

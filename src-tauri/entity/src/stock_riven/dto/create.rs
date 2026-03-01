@@ -23,6 +23,7 @@ pub struct CreateStockRiven {
 
     #[serde(rename = "attributes")]
     pub attributes: Vec<RivenAttribute>,
+
     #[serde(rename = "rank")]
     pub rank: i64,
 

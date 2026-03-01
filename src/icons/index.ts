@@ -4,6 +4,7 @@ export * from "./facWarframeMarket";
 export * from "./faCyanStar";
 export * from "./faInfinity";
 export * from "./faMoneyBillTrendDown";
+export * from "./faStockFound";
 export * from "./faPlat";
 export * from "./faTradingAnalytics";
 export * from "./faWebHook";

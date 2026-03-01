@@ -1,4 +1,4 @@
-import { MinMaxDto, PriceHistory, RivenAttribute, UserStatus, WFMarketTypes } from ".";
+import { ItemRiven, MinMaxDto, PriceHistory, RivenAttribute, UserStatus, WFMarketTypes } from ".";
 import { DisplaySettings } from "../utils/helper";
 
 export namespace TauriTypes {
@@ -1007,29 +1007,36 @@ export namespace TauriTypes {
     sort_direction?: "asc" | "desc";
     query?: string;
   }
-  export interface VeiledRiven {
-    weapon_name: string;
+
+  // Warframe Inventory Types
+  export interface WFInvItemBase<T = any> {
+    id: string;
+    name: string;
     unique_name: string;
-    attributes: RivenAttribute[];
-    mod_name: string;
-    endo: number;
-    kuva: number;
-    rank: number;
-    mastery_rank: number;
-    polarity: string;
-    grade: string;
-    rerolls: number;
+    wfm_url: string;
+    quantity: number;
+    sub_type?: SubType;
+    properties?: Record<string, T>;
   }
-  export type VeiledRivenControllerGetListData = PaginatedDto & {
-    results?: VeiledRiven[];
-  };
-  export interface VeiledRivenControllerGetListParams {
+  export interface WFItemControllerGetListParams {
     page: number;
     limit: number;
     sort_by?: string;
     sort_direction?: "asc" | "desc";
     query?: string;
+    item_types?: string[];
   }
+
+  export type WFInvRivenControllerGetListData = PaginatedDto & {
+    results?: ItemRiven<{
+      is_in_stock: boolean;
+      challenge_description: string;
+
+      challenge_description_with_complication: string;
+      grade: string;
+    }>[];
+  };
+
   export interface EELog {
     index: number;
     date: number;

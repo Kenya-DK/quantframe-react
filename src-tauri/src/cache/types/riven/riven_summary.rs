@@ -1,19 +1,15 @@
 use entity::{
     dto::PriceHistory,
     enums::{RivenGrade, StockStatus},
-    stock_riven,
+    stock_riven::{self, RivenAttribute},
 };
 use serde::Serialize;
-use serde_json::json;
 use utils::*;
 use wf_market::types::AuctionLike;
 
-static COMPONENT: &str = "RivenHelper";
-
 use crate::{
     cache::*,
-    utils::{modules::states, ErrorFromExt},
-    wf_inventory::UpgradeFingerprint,
+    utils::{auction_list_ext::AuctionWithOwnerListExt, modules::states, ErrorFromExt},
 };
 #[derive(Debug, Serialize, Clone)]
 pub struct RivenSummary {
@@ -25,7 +21,7 @@ pub struct RivenSummary {
     rank: i32,
     rerolls: i64,
     polarity: String,
-    attributes: Vec<RivenSingleAttribute>,
+    attributes: Vec<RivenAttribute>,
     // Extra Info
     stock_status: Option<StockStatus>,
     stat_with_weapons: Vec<RivenStatWithWeapon>,
@@ -111,13 +107,32 @@ impl RivenSummary {
                 wea.disposition_rank,
             );
             for i in 0..=8 {
-                let new_stats: Vec<RivenSingleAttribute> = self
+                let new_stats: Vec<RivenAttribute> = self
                     .attributes
                     .iter()
                     .map(|attr| {
                         let mut new_attr = attr.clone();
-                        new_attr
-                            .apply_rank_multiplier(wea.disposition / weapon.disposition, i as f64);
+                        new_attr.value = apply_rank_multiplier(
+                            attr.value,
+                            wea.disposition / weapon.disposition,
+                            i as f64,
+                        );
+                        new_attr.properties.set_property_value(
+                            "min",
+                            apply_rank_multiplier(
+                                attr.properties.get_property_value("min", 0.0),
+                                wea.disposition / weapon.disposition,
+                                i as f64,
+                            ),
+                        );
+                        new_attr.properties.set_property_value(
+                            "max",
+                            apply_rank_multiplier(
+                                attr.properties.get_property_value("max", 0.0),
+                                wea.disposition / weapon.disposition,
+                                i as f64,
+                            ),
+                        );
                         new_attr
                     })
                     .collect();
@@ -155,13 +170,14 @@ impl RivenSummary {
             weapon.god_roll.clone()
         };
         if let Some(rolls) = god_roll {
-            let (grade, grads) = grade_riven(&rolls, &self.attributes);
+            let (grade, grads) = grade_riven(&rolls, &self.attributes, "tag");
 
             for wea in self.stat_with_weapons.iter_mut() {
                 for by_level in wea.by_level.iter_mut() {
                     let mut index = 0;
                     for attr in by_level.1.iter_mut() {
-                        attr.grade = grads[index].1.clone();
+                        attr.properties
+                            .set_property_value("grade", grads[index].1.clone());
                         index += 1;
                     }
                 }
@@ -220,13 +236,13 @@ impl RivenSummary {
                 )
             })?;
         auctions.sort_by_similarity(false);
+        auctions.apply_item_info(&cache)?;
         let mut auctions = auctions.to_vec();
         for auction in auctions.iter_mut().map(|auction| auction.to_auction_mut()) {
             let similarity = auction.item.similarity.clone();
             if let Some(attrs) = &mut auction.item.attributes {
                 for attr in attrs.iter_mut() {
-                    attr.properties =
-                        Some(json!({"matched": similarity.has_attribute(&attr.url_name)}));
+                    attr.set_property_value("matched", similarity.has_attribute(&attr.url_name));
                 }
             }
         }

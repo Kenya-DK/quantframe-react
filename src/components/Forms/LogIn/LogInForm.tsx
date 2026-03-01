@@ -1,4 +1,4 @@
-import { Anchor, PaperProps, Button, Divider, Group, Paper, PasswordInput, Stack, TextInput, Text } from "@mantine/core";
+import { Anchor, PaperProps, Button, Divider, Group, Paper, PasswordInput, Stack, TextInput, Text, Image } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
 

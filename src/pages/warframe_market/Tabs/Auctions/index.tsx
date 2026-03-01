@@ -14,7 +14,7 @@ import { Loading } from "@components/Shared/Loading";
 import { useStockModals } from "./modals";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { TextTranslate } from "@components/Shared/TextTranslate";
-import { WFMAuction } from "@components/DataDisplay/WFMAuction";
+import { RivenPreview } from "@components/DataDisplay/RivenPreview";
 interface AuctionPanelProps {
   isActive?: boolean;
 }
@@ -142,12 +142,36 @@ export const AuctionPanel = ({ isActive }: AuctionPanelProps) => {
         {deleteAllAuctionsMutation.isPending && <Loading text={`${deletingOrders.current} / ${deletingOrders.total}`} />}
         <SimpleGrid cols={{ base: 2, xl: 3 }} spacing="sm">
           {paginationQuery.data?.results?.map((order) => (
-            <WFMAuction
+            <RivenPreview
               key={order.id}
-              auction={order}
-              overlayFooter={
-                <Group gap={"xs"} p={3} justify="flex-end">
-                  {order.properties?.can_import && (
+              value={order.properties.riven as any}
+              type="withoutBackground"
+              setDefaultHeaderCenterAs="headerLeft"
+              headerRight={{
+                i18nKey: useTranslateTabOrder("auction_card.header_right", undefined, true),
+                values: {
+                  price: order.buyout_price || 0,
+                },
+              }}
+              footerRight={{
+                i18nKey: useTranslateTabOrder("auction_card.footer_left", undefined, true),
+                values: {},
+                components: {
+                  delete: (
+                    <ActionWithTooltip
+                      tooltip={useTranslateButtons("delete_tooltip")}
+                      icon={faTrashCan}
+                      loading={loadingRows.includes(`${order.id}`)}
+                      color={"red.7"}
+                      actionProps={{ size: "sm" }}
+                      iconProps={{ size: "xs" }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        OpenDeleteModal(order.id);
+                      }}
+                    />
+                  ),
+                  import: order.properties?.can_import ? (
                     <ActionWithTooltip
                       tooltip={useTranslateButtons("import_tooltip")}
                       icon={faFileImport}
@@ -160,21 +184,11 @@ export const AuctionPanel = ({ isActive }: AuctionPanelProps) => {
                         OpenImportModal(order.id);
                       }}
                     />
-                  )}
-                  <ActionWithTooltip
-                    tooltip={useTranslateButtons("delete_tooltip")}
-                    icon={faTrashCan}
-                    loading={loadingRows.includes(`${order.id}`)}
-                    color={"red.7"}
-                    actionProps={{ size: "sm" }}
-                    iconProps={{ size: "xs" }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      OpenDeleteModal(order.id);
-                    }}
-                  />
-                </Group>
-              }
+                  ) : (
+                    <></>
+                  ),
+                },
+              }}
             />
           ))}
         </SimpleGrid>

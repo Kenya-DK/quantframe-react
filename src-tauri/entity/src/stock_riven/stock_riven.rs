@@ -2,7 +2,7 @@ use crate::{dto::*, enums::*, stock_riven::dto::*, transaction::Model as Transac
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use uuid::Uuid;
+use utils::{generate_uuid_from_list, Properties};
 
 use super::{attribute::RivenAttributeVec, match_riven::MatchRivenStruct};
 
@@ -55,6 +55,11 @@ pub struct Model {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "changes")]
     pub changes: Option<String>,
+
+    // Extra properties
+    #[sea_orm(ignore)]
+    #[serde(flatten)]
+    pub properties: Properties,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -107,8 +112,10 @@ impl Model {
             locked: false,
             changes: None,
             uuid: "".to_string(),
+            properties: Properties::default(),
         };
-        item.uuid = item.uuid().to_string();
+        let (uuid, _) = item.uuid();
+        item.uuid = uuid;
         item
     }
     pub fn to_transaction(
@@ -180,7 +187,7 @@ impl Model {
         }
     }
 
-    pub fn uuid(&self) -> Uuid {
+    pub fn uuid(&self) -> (String, String) {
         let mut input = String::new();
 
         input.push_str(&format!("type:{};", "0"));
@@ -199,7 +206,7 @@ impl Model {
         for a in sorted_attrs {
             input.push_str(&format!("attr:{}:{}:{};", a.url_name, a.positive, a.value));
         }
-        Uuid::new_v5(&Uuid::NAMESPACE_OID, input.as_bytes())
+        generate_uuid_from_list(&[input])
     }
     pub fn to_update(&self) -> UpdateStockRiven {
         UpdateStockRiven {

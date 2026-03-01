@@ -9,7 +9,8 @@ use crate::cache::{
     client::CacheState,
     modules::LanguageModule,
     types::{CacheRiven, CacheRivenWFMAttribute, CacheRivenWeapon},
-    AttributeMatch, CacheRivenUpgrade, RivenRollEvaluation, RollCriteria,
+    AttributeMatch, CacheRivenChallenge, CacheRivenStats, CacheRivenUpgrade, RivenRollEvaluation,
+    RollCriteria,
 };
 
 #[derive(Debug)]
@@ -17,18 +18,22 @@ pub struct RivenModule {
     path: PathBuf,
 
     // Lookup maps
-    upgrade_lookup: Mutex<MultiKeyMap<CacheRivenUpgrade>>,
+    upgrade_lookup: Mutex<HashMap<String, CacheRivenUpgrade>>,
+    stats_lookup: Mutex<MultiKeyMap<CacheRivenStats>>,
     weapon_lookup: Mutex<MultiKeyMap<CacheRivenWeapon>>,
     attribute_lookup: Mutex<MultiKeyMap<CacheRivenWFMAttribute>>,
+    challenge_lookup: Mutex<MultiKeyMap<CacheRivenChallenge>>,
 }
 
 impl RivenModule {
     pub fn new(client: Arc<CacheState>) -> Arc<Self> {
         Arc::new(Self {
             path: client.base_path.join("items/Riven.json"),
-            upgrade_lookup: Mutex::new(MultiKeyMap::new()),
+            upgrade_lookup: Mutex::new(HashMap::new()),
+            stats_lookup: Mutex::new(MultiKeyMap::new()),
             weapon_lookup: Mutex::new(MultiKeyMap::new()),
             attribute_lookup: Mutex::new(MultiKeyMap::new()),
+            challenge_lookup: Mutex::new(MultiKeyMap::new()),
         })
     }
 
@@ -57,10 +62,14 @@ impl RivenModule {
 
                 // Create lookup maps
                 let mut upgrade_lookup = self.upgrade_lookup.lock().unwrap();
+                let mut stats_lookup = self.stats_lookup.lock().unwrap();
                 let mut attributes_map: HashMap<String, Vec<String>> = HashMap::new();
+                let mut challenge_lookup = self.challenge_lookup.lock().unwrap();
+                *upgrade_lookup = data.upgrade_types.clone();
+
                 for (key, val) in data.upgrade_types.iter() {
-                    for a in val.iter() {
-                        upgrade_lookup.insert_value(
+                    for a in val.stats.iter() {
+                        stats_lookup.insert_value(
                             a.clone(),
                             vec![
                                 format!("{}|{}", key, a.wfm_url),
@@ -71,6 +80,9 @@ impl RivenModule {
                             .entry(a.wfm_url.clone())
                             .or_insert_with(Vec::new)
                             .push(a.short_string.clone());
+                    }
+                    for (c, v) in val.challenges.iter() {
+                        challenge_lookup.insert_value(v.clone(), vec![format!("{}", c)]);
                     }
                 }
                 let mut weapon_lookup = self.weapon_lookup.lock().unwrap();
@@ -110,24 +122,24 @@ impl RivenModule {
         Lookup Functions
     ------------------------------------------------------------- */
 
-    /// Get Riven Upgrade by Riven Type and Tag  
+    /// Get Riven Stat Tag by Riven Type and Tag
     ///  # Arguments
     /// - `riven_type`: The type of the Riven (e.g., "/Lotus/Upgrades/Mods/Randomized/LotusPistolRandomModRare")
     /// - `tag`: The tag of the upgrade possibly wfm_url or modifier_tag
     ///
-    pub fn get_upgrade_by(
+    pub fn get_stat_tag_by(
         &self,
         riven_type: impl Into<String>,
         tag: impl Into<String>,
-    ) -> Result<CacheRivenUpgrade, Error> {
+    ) -> Result<CacheRivenStats, Error> {
         let riven_type: String = riven_type.into();
         let tag = tag.into();
-        let upgrade_lookup = self.upgrade_lookup.lock().unwrap();
-        if let Some(upgrade) = upgrade_lookup.get(&format!("{}|{}", riven_type, tag)) {
+        let stats_lookup = self.stats_lookup.lock().unwrap();
+        if let Some(upgrade) = stats_lookup.get(&format!("{}|{}", riven_type, tag)) {
             Ok(upgrade.clone())
         } else {
             Err(Error::new(
-                "Cache:Riven:GetUpgradeBy",
+                "Cache:Riven:GetStatTagBy",
                 format!(
                     "Riven upgrade not found for type '{}' and tag '{}'",
                     riven_type, tag
@@ -176,6 +188,27 @@ impl RivenModule {
         }
     }
 
+    /// Get Challenge
+    /// # Arguments
+    /// - `challenge_id`: The challenge id to lookup by (name, unique_name)
+    ///
+    /// Returns the `CacheRivenChallenge` matching the provided `challenge_id`.
+    pub fn get_challenge_by(
+        &self,
+        challenge_id: impl Into<String>,
+    ) -> Result<CacheRivenChallenge, Error> {
+        let challenge_id: String = challenge_id.into();
+        let challenge_lookup = self.challenge_lookup.lock().unwrap();
+        if let Some(challenge) = challenge_lookup.get(&challenge_id) {
+            Ok(challenge.clone())
+        } else {
+            Err(Error::new(
+                "Cache:Riven:GetChallengeBy",
+                format!("Riven challenge not found for id '{}'", challenge_id),
+                get_location!(),
+            ))
+        }
+    }
     /* -------------------------------------------------------------
         Vector Functions
     ------------------------------------------------------------- */
@@ -199,7 +232,6 @@ impl RivenModule {
             .expect("Failed to lock attribute lookup mutex");
         Ok(attribute_lookup.get_all_values())
     }
-
     /* -------------------------------------------------------------
         Helper Functions
     ------------------------------------------------------------- */
@@ -224,7 +256,7 @@ impl RivenModule {
             |name: &str, positive: bool| -> bool { stat_lookup.contains(&(name, positive)) };
 
         let resolve_attr = |attr: &str, positive: bool| -> AttributeMatch {
-            match self.get_upgrade_by(&weapon.upgrade_type, attr) {
+            match self.get_stat_tag_by(&weapon.upgrade_type, attr) {
                 Ok(att) => AttributeMatch::new(&att.short_string, has_stat(&att.wfm_url, positive)),
                 Err(e) => AttributeMatch::new(e.to_string(), false),
             }
@@ -266,8 +298,10 @@ impl RivenModule {
         Arc::new(Self {
             path: old.path.clone(),
             upgrade_lookup: Mutex::new(old.upgrade_lookup.lock().unwrap().clone()),
+            stats_lookup: Mutex::new(old.stats_lookup.lock().unwrap().clone()),
             weapon_lookup: Mutex::new(old.weapon_lookup.lock().unwrap().clone()),
             attribute_lookup: Mutex::new(old.attribute_lookup.lock().unwrap().clone()),
+            challenge_lookup: Mutex::new(old.challenge_lookup.lock().unwrap().clone()),
         })
     }
 }

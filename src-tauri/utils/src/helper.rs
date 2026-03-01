@@ -481,7 +481,24 @@ pub fn generate_uuid_from_object(
         key,
     )
 }
-
+// Generates a UUID v5 for a list of strings by concatenating them and using the result as the name
+// # Arguments
+// * `list` - A list of strings to generate the UUID from
+// # Returns
+// A tuple containing the generated UUID as a string and the concatenated key used for generation
+// # Example
+// ```
+// let list = vec!["item1".to_string(), "item2".to_string(), "item3".to_string()];
+// let (uuid, key) = generate_uuid_from_list(&list);
+// println!("UUID: {}, Key: {}", uuid, key);
+// ```
+pub fn generate_uuid_from_list(list: &[String]) -> (String, String) {
+    let key = list.join(";");
+    (
+        Uuid::new_v5(&Uuid::NAMESPACE_OID, key.as_bytes()).to_string(),
+        key,
+    )
+}
 /// Trait for inserting text at a specific line and column position in a String
 pub trait InsertAt {
     /// Insert text at the specified line and column position

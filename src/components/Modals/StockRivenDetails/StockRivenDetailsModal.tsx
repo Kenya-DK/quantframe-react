@@ -27,9 +27,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle, faGlobe } from "@fortawesome/free-solid-svg-icons";
 import { PriceHistoryListItem } from "../../DataDisplay/PriceHistoryListItem";
 import { RivenAttribute as RivenAttributeCon } from "../../DataDisplay/RivenAttribute";
-import { WFMAuction } from "../../DataDisplay/WFMAuction";
-import { DisplayPlatinum } from "../../DataDisplay/DisplayPlatinum";
-import { ActionWithTooltip } from "../../Shared/ActionWithTooltip";
 import { TransactionListItem } from "../../DataDisplay/TransactionListItem";
 import { StatsWithSegments } from "../../Shared/StatsWithSegments";
 import { faWarframeMarket } from "@icons";
@@ -38,6 +35,8 @@ import { RivenAttribute, TauriTypes } from "../../../types";
 import { getPolarityIcon } from "@icons";
 import { useState, useEffect } from "react";
 import { useTranslateEnums, useTranslateModals } from "@hooks/useTranslate.hook";
+import { RivenPreview } from "../../DataDisplay/RivenPreview";
+import { ActionWithTooltip } from "../../Shared/ActionWithTooltip";
 
 const colors = {
   mandatory: alpha("var(--mantine-color-grape-7)", 0.55),
@@ -284,27 +283,38 @@ export function StockRivenDetailsModal({ value }: StockRivenDetailsModalProps) {
         <ScrollArea.Autosize mah={"60vh"} style={{ width: "100%" }} scrollbarSize={3}>
           <SimpleGrid cols={{ base: 4, xl: 5 }} spacing="md">
             {data.similarly_auctions.map((auction) => (
-              <WFMAuction
-                hideFooter
+              <RivenPreview
                 key={auction.id}
-                auction={auction}
-                header={
-                  <Group justify="space-between" align="center">
-                    <Text>{(auction.item.similarity.score * 100).toFixed(0) || 0}%</Text>
-                    <DisplayPlatinum value={auction.starting_price} />
-                  </Group>
-                }
-                overlayFooter={
-                  <Group gap={"xs"} p={3} justify="space-between">
-                    <ActionWithTooltip
-                      icon={faGlobe}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // open(`https://warframe.market/auction/${auction.id}`);
-                      }}
-                    />
-                  </Group>
-                }
+                value={auction.properties.riven as any}
+                type="withoutBackground"
+                setDefaultHeaderCenterAs="disable"
+                headerRight={{
+                  i18nKey: useTranslate("auction_card.header_right", undefined, true),
+                  values: {
+                    price: auction.buyout_price || 0,
+                  },
+                }}
+                headerLeft={{
+                  i18nKey: useTranslate("auction_card.header_left", undefined, true),
+                  values: {
+                    similarity: ((auction.item.similarity.score || 0) * 100).toFixed(0),
+                  },
+                }}
+                footerRight={{
+                  i18nKey: useTranslate("auction_card.footer_right", undefined, true),
+                  values: {},
+                  components: {
+                    open: (
+                      <ActionWithTooltip
+                        icon={faGlobe}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // open(`https://warframe.market/auction/${auction.id}`);
+                        }}
+                      />
+                    ),
+                  },
+                }}
               />
             ))}
           </SimpleGrid>

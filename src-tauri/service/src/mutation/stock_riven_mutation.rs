@@ -17,7 +17,7 @@ impl StockRivenMutation {
         let model = stock_riven::ActiveModel {
             wfm_weapon_id: Set(form_data.wfm_weapon_id.to_owned()),
             wfm_weapon_url: Set(form_data.wfm_weapon_url.to_owned()),
-            uuid: Set(form_data.uuid().to_string()),
+            uuid: Set(form_data.uuid().0),
             weapon_name: Set(form_data.weapon_name.to_owned()),
             weapon_type: Set(form_data.weapon_type.to_owned()),
             weapon_unique_name: Set(form_data.weapon_unique_name.to_owned()),
@@ -137,7 +137,11 @@ impl StockRivenMutation {
             ))
         }
     }
-    pub async fn update_names(db: &DbConn, mapper: &HashMap<String, String>) -> Result<(), Error> {
+    pub async fn update_names(
+        db: &DbConn,
+        mapper: &HashMap<String, String>,
+        attribute_mapper: &HashMap<String, String>,
+    ) -> Result<(), Error> {
         let items = Entity::find().all(db).await.map_err(|e| {
             Error::from_db(
                 format!("{}:UpdateNames", COMPONENT),
@@ -154,6 +158,15 @@ impl StockRivenMutation {
             let mut active: stock_riven::ActiveModel = item.into();
             active.weapon_name = Set(updated_name);
             active.updated_at = Set(chrono::Utc::now());
+
+            let mut attributes = active.attributes.clone().unwrap().0;
+            for att in attributes.iter_mut() {
+                if let Some(full) = attribute_mapper.get(&att.url_name) {
+                    att.localized_text = full.to_string();
+                }
+            }
+            active.attributes = Set(RivenAttributeVec(attributes));
+
             active.update(db).await.map_err(|e| {
                 Error::from_db(
                     format!("{}:UpdateNames", COMPONENT),

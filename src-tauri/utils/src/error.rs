@@ -2,7 +2,6 @@ use crate::*;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::{
-    fmt::Display,
     path::PathBuf,
     sync::{Arc, MutexGuard, PoisonError},
 };
@@ -10,7 +9,6 @@ use std::{
 // const MAX_CONTEXT_LENGTH: usize = 4048;
 const MAX_LOCATION_LENGTH: usize = 1024;
 const MAX_CONTEXT_LENGTH: usize = 1048;
-const MAX_CAUSE_LENGTH: usize = 1024;
 /// A comprehensive error type for the Uties logging library
 ///
 /// This error type captures detailed information about errors that occur

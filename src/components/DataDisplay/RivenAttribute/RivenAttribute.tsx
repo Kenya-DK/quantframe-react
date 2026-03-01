@@ -53,6 +53,11 @@ export function RivenAttribute({ value, groupProps, hideDetails, hideGrade, comp
   const calculateProgress = (min: number, current: number, max: number) => {
     return ((current - min) / (max - min)) * 100;
   };
+  const getLocalizedText = () => {
+    if (value.localized_text) return value.localized_text + " LOC";
+    if (!urlMapper[value.url_name]) return value.url_name;
+    return urlMapper[value.url_name][i18nKey || "full"];
+  };
   return (
     <Group
       className={classes.root}
@@ -64,7 +69,7 @@ export function RivenAttribute({ value, groupProps, hideDetails, hideGrade, comp
       {...groupProps}
     >
       <Group flex={1} style={{ justifyContent: centered ? "center" : "flex-start" }}>
-        {!hideGrade && value.grade && grades[value.grade]}
+        {!hideGrade && value.properties?.grade && grades[value.properties.grade]}
         <LocalizedDynamicMessage
           data-hide-details={hideDetails ? "true" : "false"}
           textProps={{
@@ -89,35 +94,35 @@ export function RivenAttribute({ value, groupProps, hideDetails, hideGrade, comp
               render: (m) => <Image src={`/damageTypes/${m[1]}.png`} h={16} w="auto" fit="contain" mr={2} />,
             },
           ]}
-          message={urlMapper[value.url_name]?.[i18nKey || "full"] || value.url_name}
+          message={getLocalizedText()}
         />
       </Group>
       {!hideDetails && (
         <Group gap="md" style={{ flex: "0 0 auto" }}>
           <Group gap={0}>
             <Text size="md" fw={700} w={10} ta="center">
-              {value.letterGrade}
+              {value.properties?.letter_grade}
             </Text>
 
             <Text size="sm" fw={500} w={50} ta="right">
-              {value.minValue?.toFixed(1).replace(/\.0$/, "")}
+              {value.properties?.min?.toFixed(1).replace(/\.0$/, "")}
             </Text>
           </Group>
 
-          {value.minValue !== undefined && value.value !== undefined && value.maxValue !== undefined && (
+          {value.properties?.min !== undefined && value.value !== undefined && value.properties?.max !== undefined && (
             <Progress
               classNames={{
                 root: classes.progressRoot,
                 section: classes.progressSection,
               }}
               w={200}
-              value={calculateProgress(value.minValue, value.value, value.maxValue)}
+              value={calculateProgress(value.properties.min, value.value, value.properties.max)}
               size="lg"
               radius="md"
             />
           )}
           <Text size="sm" fw={500} w={40} ta="left">
-            {value.maxValue?.toFixed(1).replace(/\.0$/, "")}
+            {value.properties?.max?.toFixed(1).replace(/\.0$/, "")}
           </Text>
         </Group>
       )}

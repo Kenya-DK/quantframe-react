@@ -9,11 +9,25 @@ pub struct UpgradeStat {
     #[serde(rename = "Value", default)]
     pub value: i64,
 }
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct UpgradeChallenge {
+    #[serde(rename = "Type", default)]
+    pub challenge_type: String,
+
+    #[serde(rename = "Progress", default)]
+    pub progress: i64,
+
+    #[serde(rename = "Required", default)]
+    pub required: i64,
+
+    #[serde(rename = "Complication", default)]
+    pub complication: String,
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct UpgradeFingerprint {
     #[serde(rename = "challenge", skip_serializing_if = "Option::is_none")]
-    pub challenge: Option<Value>,
+    pub challenge: Option<UpgradeChallenge>,
 
     #[serde(rename = "lvlReq", default)]
     pub mastery_rank: i64,

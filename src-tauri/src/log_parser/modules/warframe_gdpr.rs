@@ -542,12 +542,9 @@ impl WarframeGDPRModule {
             items.push(re);
         }
 
-        if let Some(ref mut properties) = report.properties {
-            properties["graph"] = json!(year_graph);
-            properties["categories"] = json!(items);
-            properties["year"] = json!(year_report);
-        }
-
+        report.properties.set_property_value("graph", year_graph);
+        report.properties.set_property_value("categories", items);
+        report.properties.set_property_value("year", year_report);
         report
     }
     pub fn logins(&self, query: LoginPaginationQueryDto) -> PaginatedResult<Login> {

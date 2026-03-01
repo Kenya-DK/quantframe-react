@@ -13,12 +13,14 @@ fn get_path() -> PathBuf {
 pub struct CacheVersion {
     pub id: String,
     pub id_price: String,
+    pub db_version: String,
 }
 impl Default for CacheVersion {
     fn default() -> Self {
         CacheVersion {
             id: "N/A".to_string(),
             id_price: "N/A".to_string(),
+            db_version: "1".to_string(),
         }
     }
 }

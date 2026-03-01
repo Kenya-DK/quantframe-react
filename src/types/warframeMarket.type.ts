@@ -49,18 +49,8 @@ export namespace WFMarketTypes {
     trade_sub_type?: TauriTypes.CacheTradableItemSubType;
     price_history: PriceHistory[];
   }
-  export interface AuctionProperties {
-    auction_id: string;
-    auctions: Auction[];
-    highest_price: number;
-    lowest_price: number;
-    operation: string[];
-    item_name: string;
-    image_url: string;
-    can_import: boolean;
-  }
 
-  export interface Auction {
+  export interface Auction<T = any> {
     buyout_price: number;
     closed: boolean;
     created: string;
@@ -74,7 +64,7 @@ export namespace WFMarketTypes {
     note_raw: string;
     platform: string;
     private: boolean;
-    properties: AuctionProperties | null;
+    properties?: T;
     starting_price: number;
     top_bid: unknown | null;
     updated: string;

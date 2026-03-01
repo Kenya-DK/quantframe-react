@@ -55,14 +55,12 @@ export interface PriceHistory {
   price: number;
   user_id: string;
 }
-export interface RivenAttribute {
-  positive: boolean;
+export interface RivenAttribute<T = any> {
   url_name: string;
+  positive: boolean;
   value: number;
-  letterGrade?: string;
-  grade?: string;
-  minValue?: number;
-  maxValue?: number;
+  localized_text: string;
+  properties?: T;
 }
 
 export interface ItemMeta {
@@ -84,3 +82,18 @@ export type ItemWithMeta =
   | (TauriTypes.TradeEntry & ItemMeta)
   | null;
 export type ItemWithSubType = TauriTypes.SubType | WFMarketTypes.Order | undefined;
+
+export interface ItemRiven<P = any, A = any> {
+  attributes: RivenAttribute<A>[];
+  mastery_rank: number;
+  mod_name: string;
+  name: string;
+  polarity: string;
+  properties?: Record<string, P>;
+  re_rolls: number;
+  riven_type: string;
+  sub_type?: SubType;
+  unique_name: string;
+  uuid: string;
+  wfm_url: string;
+}

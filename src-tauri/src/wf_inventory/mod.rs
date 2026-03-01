@@ -2,6 +2,7 @@ pub mod client;
 pub use client::*;
 
 pub mod enums;
+pub use enums::*;
 
 pub mod modules;
 pub use modules::*;

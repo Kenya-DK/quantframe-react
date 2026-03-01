@@ -13,7 +13,7 @@ impl OnConversationEvent {
 }
 
 impl LineHandler for OnConversationEvent {
-    fn process_line(&mut self, entry: &LineEntry) -> Result<(bool, bool), Error> {
+    fn process_line(&mut self, _entry: &LineEntry) -> Result<(bool, bool), Error> {
         Ok((false, false)) // no match → process normally
     }
 }

@@ -1,7 +1,7 @@
 use crate::{enums::*, stock_item, stock_riven, transaction::*, wish_list};
 use serde::Serialize;
 use serde_json::json;
-use utils::group_by;
+use utils::{group_by, Properties};
 
 #[derive(Serialize, Debug, Clone)]
 pub struct FinancialReport {
@@ -30,8 +30,8 @@ pub struct FinancialReport {
     pub expenses: f64,
 
     // Extra properties
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub properties: Option<serde_json::Value>,
+    #[serde(flatten)]
+    pub properties: Properties,
 }
 impl FinancialReport {
     pub fn new(
@@ -102,11 +102,11 @@ impl FinancialReport {
             purchases_count,
             expenses: expenses as f64,
             average_expense,
-            properties: None,
+            properties: Properties::default(),
         }
     }
     pub fn with_properties(mut self, properties: serde_json::Value) -> Self {
-        self.properties = Some(properties);
+        self.properties = Properties::from(properties);
         self
     }
 }
@@ -130,7 +130,7 @@ impl Default for FinancialReport {
             purchases_count: 0,
             expenses: 0.0,
             average_expense: 0.0,
-            properties: None,
+            properties: Properties::default(),
         }
     }
 }

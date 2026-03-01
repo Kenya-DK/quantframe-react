@@ -14,10 +14,10 @@ use wf_market::{
 static COMPONENT: &str = "LiveScraper:RivenModule";
 use crate::{
     cache::types::CacheRivenWeapon,
-    live_scraper::{is_disabled, LiveScraperState},
+    live_scraper::{is_disabled, LiveScraperState, TradeDetails},
     send_event,
     types::*,
-    utils::{auction_ext::AuctionDetails, modules::states, AuctionExt, ErrorFromExt},
+    utils::{modules::states, ErrorFromExt},
     DATABASE,
 };
 
@@ -128,7 +128,7 @@ impl RivenModule {
                 stock_riven.set_status(StockStatus::InActive);
                 stock_riven.set_list_price(None);
                 stock_riven.locked = true;
-                auction_info.add_operation("Delete");
+                auction_info.operations.add("Delete");
             }
 
             let mut live_auctions = if stock_riven.is_hidden {
@@ -193,7 +193,7 @@ impl RivenModule {
                 let capped_price = post_price.max(minimum_price);
                 if capped_price != post_price {
                     post_price = capped_price;
-                    auction_info.add_operation("MinimumPrice");
+                    auction_info.operations.add("MinimumPrice");
                 }
             }
 
@@ -206,7 +206,7 @@ impl RivenModule {
                 stock_riven.set_status(StockStatus::ToLowProfit);
                 stock_riven.set_list_price(Some(post_price));
                 stock_riven.locked = true;
-                auction_info.add_operation("LowProfit");
+                auction_info.operations.add("LowProfit");
                 profit = post_price - stock_riven.bought;
             }
 
@@ -215,21 +215,25 @@ impl RivenModule {
             format!("{}Summary", COMPONENT),
             format!(
                 "Auction {}: PostPrice: {} | Profit: {} | IsStockDirty: {} | StockStatus: {:?} | StockListPrice: {:?} | {}",
-                stock_riven.weapon_name, post_price, profit, stock_riven.is_dirty, stock_riven.status, stock_riven.list_price, auction_info
+                stock_riven.weapon_name, post_price, profit, stock_riven.is_dirty, stock_riven.status, stock_riven.list_price, auction_info.operations.to_string()
             ),
             &log_options,
             );
 
-            auction_info = auction_info.set_highest_price(live_auctions.highest_price());
-            auction_info = auction_info.set_lowest_price(live_auctions.lowest_price());
-            auction_info = auction_info.set_profit(profit);
-            auction_info = auction_info.set_auctions(live_auctions.take_top(5));
+            auction_info.highest_price = live_auctions.highest_price();
+            auction_info.lowest_price = live_auctions.lowest_price();
+            auction_info.profit = profit;
+            auction_info.trades = json!(live_auctions.take_top(5));
 
             let can_create = wfm_client.auction().can_create_auction();
-            if auction_info.has_operation("Create")
-                && !auction_info.has_operation("Delete")
+            if auction_info.operations.has("Create")
+                && !auction_info.operations.has("Delete")
                 && can_create
             {
+                auction_info.properties.set_property_value(
+                    "riven",
+                    json!(ItemRivenBase::try_from_stock_riven(&stock_riven)?),
+                );
                 match wfm_client
                     .auction()
                     .create(
@@ -287,12 +291,13 @@ impl RivenModule {
                         ));
                     }
                 }
-            } else if auction_info.has_operation("Update") && !auction_info.has_operation("Delete")
+            } else if auction_info.operations.has("Update")
+                && !auction_info.operations.has("Delete")
             {
                 match wfm_client
                     .auction()
                     .update(
-                        &auction_info.auction_id,
+                        &auction_info.id,
                         UpdateAuctionParams::new()
                             .with_buyout_price(Some(post_price as u32))
                             .with_starting_price(post_price as u32)
@@ -322,15 +327,16 @@ impl RivenModule {
                         ));
                     }
                 }
-            } else if auction_info.has_operation("Update") && auction_info.has_operation("Delete") {
-                match wfm_client.auction().delete(&auction_info.auction_id).await {
+            } else if auction_info.operations.has("Update") && auction_info.operations.has("Delete")
+            {
+                match wfm_client.auction().delete(&auction_info.id).await {
                     Ok(_) => {
                         send_event!(UIEvent::RefreshWfmAuctions, json!({"source": COMPONENT}));
                         info(
                             format!("{}DeleteSuccess", COMPONENT),
                             &format!(
                                 "Deleted auction for weapon {}: {}",
-                                stock_riven.weapon_name, auction_info.auction_id
+                                stock_riven.weapon_name, auction_info.id
                             ),
                             &log_options,
                         );
@@ -347,7 +353,7 @@ impl RivenModule {
                         ));
                     }
                 }
-            } else if auction_info.has_operation("Delete") {
+            } else if auction_info.operations.has("Delete") {
                 info(
                     format!("{}Skip", COMPONENT),
                     &format!(
@@ -409,19 +415,24 @@ pub fn get_auction_details(
     uuid: impl Into<String>,
     item_info: &CacheRivenWeapon,
     wfm_client: &wf_market::Client<wf_market::Authenticated>,
-) -> AuctionDetails {
-    wfm_client
+) -> TradeDetails {
+    let mut details = wfm_client
         .auction()
         .cache_auctions()
         .get_by_uuid(uuid)
         .map(|auction| {
-            auction
-                .get_details()
-                .set_operation(&["Update"])
-                .set_auction_id(auction.id.clone())
+            let mut details = auction.get_properties(TradeDetails::default());
+            details.operations.set(&["Update"]);
+            details.id = auction.id.clone();
+            details
+                .properties
+                .set_property_value("riven", auction.get_property_value("riven", json!({})));
+            details
         })
-        .unwrap_or_default()
-        .set_info(item_info)
+        .unwrap_or_default();
+    details.name = item_info.name.clone();
+    details.image = item_info.wfm_icon.clone();
+    details
 }
 
 fn get_filter(entity: &Model) -> AuctionFilter {

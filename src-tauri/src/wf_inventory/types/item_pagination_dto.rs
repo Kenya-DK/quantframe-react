@@ -2,10 +2,9 @@ use entity::{dto::*, enums::*};
 
 use serde::{Deserialize, Serialize};
 use utils::SortDirection;
-use wf_market::enums::AuctionType;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct VeiledRivensPaginationDto {
+pub struct WFItemPaginationDto {
     #[serde(flatten)]
     pub pagination: PaginationQueryDto,
 
@@ -13,7 +12,7 @@ pub struct VeiledRivensPaginationDto {
     pub query: FieldChange<String>,
 
     #[serde(default)]
-    pub auction_type: FieldChange<AuctionType>,
+    pub item_types: FieldChange<Vec<String>>,
 
     #[serde(default)]
     pub sort_by: FieldChange<String>,

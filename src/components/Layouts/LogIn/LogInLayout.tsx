@@ -102,6 +102,7 @@ export function LogInLayout() {
         icon: <FontAwesomeIcon size={"lg"} icon={faBoxes} />,
         label: useTranslateNavBar("wf_inventory"),
         onClick: (e: NavbarLinkProps) => handleNavigate(e),
+        onPrefetch: () => prefetchRoute("wfInventory"),
       },
       {
         align: "top",

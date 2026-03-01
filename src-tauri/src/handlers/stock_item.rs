@@ -217,7 +217,7 @@ pub async fn handle_item_by_entity(
         return Ok((operations, model));
     }
 
-    let mut transaction = create_transaction(
+    let transaction = create_transaction(
         &item,
         user_name,
         operation,

@@ -28,6 +28,7 @@ impl CreateStockRivenExt for CreateStockRiven {
             match cache.riven().get_attribute_by(&att.url_name) {
                 Ok(attribute) => {
                     att.url_name = attribute.url_name.clone();
+                    att.localized_text = attribute.full.clone();
                 }
                 Err(e) => {
                     return Err(e);

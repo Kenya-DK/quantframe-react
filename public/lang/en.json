@@ -450,7 +450,10 @@
       "created_at": "Created At",
       "platinum": "Platinum",
       "updated_at": "Updated At",
-      "order_type": "Order Type"
+      "order_type": "Order Type",
+      "disposition": "Disposition",
+      "endo": "Endo",
+      "riven_grade": "Riven Grade"
     }
   },
   "enums": {
@@ -1640,6 +1643,11 @@
           "last_transactions": "Last Transactions",
           "financial_summary": "Financial Summary"
         },
+        "auction_card": {
+          "header_right": "{{price}} <plat/>",
+          "header_left": "{{similarity}}%",
+          "footer_right": "<open/>"
+        },
         "tooltips": {
           "roi": "Return on Investment",
           "average_profit_per_transaction": "Average Profit Per Transaction",
@@ -2081,6 +2089,10 @@
             "delete_tooltip": "Delete this auction",
             "import_tooltip": "Import this auction"
           },
+          "auction_card": {
+            "header_right": "{{price}} <plat/>",
+            "footer_left": "<delete/> <import/>"
+          },
           "errors": {
             "refresh_auctions": {
               "title": "Refresh Auctions Error",
@@ -2389,7 +2401,13 @@
         "riven": {
           "title": "Rivens",
           "riven_card": {
-            "footer_center": "<add/>"
+            "footer_left": "{{rank}}/8  <polarity/>",
+            "footer_right": "MR: {{mastery}}",
+            "footer_center": "<stock/>",
+            "stock_status": {
+              "found": "Found in inventory",
+              "not_found": "Not found in inventory"
+            }
           }
         }
       }
