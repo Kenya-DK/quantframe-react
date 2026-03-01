@@ -101,6 +101,7 @@ export function LogInLayout() {
         link: "wf_inventory",
         icon: <FontAwesomeIcon size={"lg"} icon={faBoxes} />,
         label: useTranslateNavBar("wf_inventory"),
+        hide: !import.meta.env.DEV,
         onClick: (e: NavbarLinkProps) => handleNavigate(e),
         onPrefetch: () => prefetchRoute("wfInventory"),
       },
