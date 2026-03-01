@@ -14,7 +14,7 @@ export type CreateRivenAttributesProps = {
 };
 export function CreateRivenAttributes({ maxPositive, maxNegative, attributes, onSubmit }: CreateRivenAttributesProps) {
   // State
-  const defaultAttribute = { positive: true, url_name: "N/A", value: 0 };
+  const defaultAttribute = { positive: true, url_name: "N/A", value: 0, localized_text: "N/A" } as RivenAttribute;
   const [showPositiveCount, setShowPositiveCount] = useState(2);
   // Translate general
   const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -29,7 +29,7 @@ export function CreateRivenAttributes({ maxPositive, maxNegative, attributes, on
   const form = useForm({
     initialValues: {
       positive_attributes: Array.from({ length: maxPositive }, () => defaultAttribute as RivenAttribute),
-      negative_attributes: Array.from({ length: maxNegative }, () => ({ ...defaultAttribute, positive: false } as RivenAttribute)),
+      negative_attributes: Array.from({ length: maxNegative }, () => ({ ...defaultAttribute, positive: false }) as RivenAttribute),
     },
     onValuesChange: (values) => {
       const items = [...values.positive_attributes, ...values.negative_attributes];

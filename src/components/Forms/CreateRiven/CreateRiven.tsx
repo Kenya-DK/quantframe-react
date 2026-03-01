@@ -4,7 +4,6 @@ import { useForm } from "@mantine/form";
 import { TauriTypes } from "$types";
 import api from "@api/index";
 import { useQuery } from "@tanstack/react-query";
-import { RivenPreview } from "@components/DataDisplay/RivenPreview";
 import { CreateRivenAttributes } from "../CreateRivenAttributes";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -139,9 +138,7 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
         })}
       >
         <Grid mb={75}>
-          <Grid.Col span={4} p={0}>
-            <RivenPreview riven={form.values as TauriTypes.StockRiven} />
-          </Grid.Col>
+          <Grid.Col span={4} p={0}></Grid.Col>
           <Grid.Col span={8}>
             <Group gap="md" grow>
               <SelectRivenWeapon
