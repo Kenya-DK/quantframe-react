@@ -398,7 +398,6 @@ impl CacheState {
             );
             return Ok(());
         }
-        emit_startup!("database.updating_names", json!({}));
 
         let wfm_name_mapper = self.language().get_mapper(LanguageKey::WfmName);
         let name_mapper = self.language().get_mapper(LanguageKey::Name);
@@ -410,21 +409,42 @@ impl CacheState {
             .map(|att| (att.url_name.clone(), att.full.clone()))
             .collect::<HashMap<String, String>>();
 
-        StockItemMutation::update_names(conn, &wfm_name_mapper).await?;
+        fn send_progress(component: &str, progress: f64) {
+            emit_startup!(
+                format!("database.updating_names_{}", component.to_lowercase()),
+                json!({
+                    "progress": progress as i64,
+                })
+            );
+        }
+        StockItemMutation::update_names(conn, &wfm_name_mapper, |progress| {
+            send_progress("stock_items", progress);
+        })
+        .await?;
         log_info(&wa, "StockItems");
 
-        TransactionMutation::update_names(conn, &wfm_name_mapper).await?;
+        TransactionMutation::update_names(conn, &wfm_name_mapper, |progress| {
+            send_progress("transactions", progress);
+        })
+        .await?;
         log_info(&wa, "Transactions");
 
-        StockRivenMutation::update_names(conn, &name_mapper, &attribute_mapper).await?;
+        StockRivenMutation::update_names(conn, &name_mapper, &attribute_mapper, |progress| {
+            send_progress("stock_rivens", progress);
+        })
+        .await?;
         log_info(&wa, "StockRivens");
 
-        WishListMutation::update_names(conn, &name_mapper).await?;
+        WishListMutation::update_names(conn, &name_mapper, |progress| {
+            send_progress("wish_lists", progress);
+        })
+        .await?;
         log_info(&wa, "WishLists");
 
         SettingMutation::update_create(conn, "lang", &lang).await?;
         SettingMutation::update_create(conn, "db_version", &self.version.db_version).await?;
         log_info(&wa, "Update Names");
+        emit_startup!("database.update_names_completed", json!({}));
         Ok(())
     }
 

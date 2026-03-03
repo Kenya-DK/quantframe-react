@@ -535,7 +535,11 @@
     "app": {
       "starting_up": "Starting up...",
       "database": {
-        "updating_names": "Updating names in database please be patient..."
+        "updating_names_transactions": "Updating transaction item names {{progress}}%",
+        "updating_names_stock_items": "Updating stock item names {{progress}}%",
+        "updating_names_stock_rivens": "Updating stock riven names {{progress}}%",
+        "updating_names_wish_lists": "Updating wish list names {{progress}}%",
+        "update_names_completed": "All item names have been updated"
       },
       "cache": {
         "initializing": "Initializing cache...",

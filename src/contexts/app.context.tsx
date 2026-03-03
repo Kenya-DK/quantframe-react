@@ -74,10 +74,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
 
   const { data: settings, refetch: refetchSettings } = api.app.get_settings();
   const { data: app_info, refetch: refetchAppInfo } = api.app.get_app_info();
-  const [startingUp, setStartingUp] = useState<{ i18n_key: string; values: {} }>({
-    i18n_key: "starting_up",
-    values: {},
-  });
+  const [startingUp, setStartingUp] = useState<{ i18n_key: string; values: {} }>({ i18n_key: "starting_up", values: {} });
   const [loading, setLoading] = useState(true);
   const [lang, setLang] = useLocalStorage<string>({ key: "app_language", defaultValue: "en" });
 
@@ -207,17 +204,20 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
         console.error("Error playing sound:", error);
       });
     });
-    return () => { };
+    return () => {};
   }, []);
-  const contextValue = useMemo(() => ({
-    settings,
-    alerts: alerts?.results || [],
-    app_info,
-    app_error: error,
-    checkForUpdates,
-    loading,
-    setLang
-  }), [settings, alerts?.results, app_info, error, checkForUpdates, loading, setLang]);
+  const contextValue = useMemo(
+    () => ({
+      settings,
+      alerts: alerts?.results || [],
+      app_info,
+      app_error: error,
+      checkForUpdates,
+      loading,
+      setLang,
+    }),
+    [settings, alerts?.results, app_info, error, checkForUpdates, loading, setLang],
+  );
 
   return (
     <AppContext.Provider value={contextValue}>

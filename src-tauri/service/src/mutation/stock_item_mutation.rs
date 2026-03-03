@@ -258,7 +258,11 @@ impl StockItemMutation {
         })
     }
 
-    pub async fn update_names(db: &DbConn, mapper: &HashMap<String, String>) -> Result<(), Error> {
+    pub async fn update_names(
+        db: &DbConn,
+        mapper: &HashMap<String, String>,
+        callback: impl Fn(f64) + Send + 'static,
+    ) -> Result<(), Error> {
         let items = Entity::find().all(db).await.map_err(|e| {
             Error::from_db(
                 format!("{}:UpdateNames", COMPONENT),
@@ -267,8 +271,9 @@ impl StockItemMutation {
                 get_location!(),
             )
         })?;
-
-        for item in items {
+        let total = items.len();
+        let mut last_progress = 0.0;
+        for (i, item) in items.into_iter().enumerate() {
             let updated_name = match mapper.get(&item.item_unique_name) {
                 Some(name) => name.to_string(),
                 None => continue,
@@ -284,6 +289,11 @@ impl StockItemMutation {
                     get_location!(),
                 )
             })?;
+            let progress = ((i + 1) as f64 / total as f64) * 100.0;
+            if (progress - last_progress).abs() >= 1.0 {
+                callback(progress);
+                last_progress = progress;
+            }
         }
 
         Ok(())
