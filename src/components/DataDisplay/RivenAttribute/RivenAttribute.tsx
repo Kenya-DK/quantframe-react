@@ -54,7 +54,7 @@ export function RivenAttribute({ value, groupProps, hideDetails, hideGrade, comp
     return ((current - min) / (max - min)) * 100;
   };
   const getLocalizedText = () => {
-    if (value.localized_text) return value.localized_text + " LOC";
+    if (value.localized_text) return value.localized_text;
     if (!urlMapper[value.url_name]) return value.url_name;
     return urlMapper[value.url_name][i18nKey || "full"];
   };
