@@ -5,6 +5,18 @@ use chrono::{Duration, Local};
 use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::path::Path;
+use std::sync::{LazyLock, Mutex};
+
+const MAX_CACHED_LOGS: usize = 10_000;
+
+#[derive(Clone, Debug)]
+struct CachedLogEntry {
+    level: LogLevel,
+    message: String,
+}
+
+static CACHED_LOGS: LazyLock<Mutex<Vec<CachedLogEntry>>> =
+    LazyLock::new(|| Mutex::new(Vec::new()));
 
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum LogLevel {
@@ -14,6 +26,30 @@ pub enum LogLevel {
     Debug,
     Trace,
     Critical,
+}
+
+impl LogLevel {
+    pub fn file_name(&self) -> &'static str {
+        match self {
+            LogLevel::Info => "info.log",
+            LogLevel::Warning => "warning.log",
+            LogLevel::Error => "error.log",
+            LogLevel::Debug => "debug.log",
+            LogLevel::Trace => "trace.log",
+            LogLevel::Critical => "critical.log",
+        }
+    }
+}
+
+fn cache_log_entry(level: LogLevel, message: String) {
+    if let Ok(mut entries) = CACHED_LOGS.lock() {
+        if entries.len() >= MAX_CACHED_LOGS {
+            let overflow = entries.len() + 1 - MAX_CACHED_LOGS;
+            entries.drain(0..overflow);
+        }
+
+        entries.push(CachedLogEntry { level, message });
+    }
 }
 
 impl LogLevel {
@@ -144,6 +180,9 @@ pub fn dolog(
 
     let message = format!("{}{}", prefix, msg);
 
+    let clean_message = remove_ansi_codes(message.clone());
+    cache_log_entry(level.clone(), clean_message.clone());
+
     if options.console {
         println!("{}", message.trim());
     }
@@ -157,7 +196,7 @@ pub fn dolog(
             .create(true)
             .open(&file_path)
             .unwrap();
-        writeln!(file, "{}", remove_ansi_codes(message)).ok();
+        writeln!(file, "{}", clean_message).ok();
     }
 }
 
@@ -280,6 +319,68 @@ pub fn log_json_formatted(
             get_location!(),
         )
     })?;
+
+    Ok(())
+}
+
+pub fn export_cached_logs(export_root: impl AsRef<Path>) -> Result<(), Error> {
+    let component = "Utility:ExportCachedLogs";
+    let export_path = export_root.as_ref().join("cached_logs");
+
+    fs::create_dir_all(&export_path).map_err(|e| {
+        Error::from_io(
+            component,
+            &export_path,
+            "creating cached logs export directory",
+            e,
+            get_location!(),
+        )
+    })?;
+
+    let cached = CACHED_LOGS.lock()?;
+
+    let mut info_logs = String::new();
+    let mut warning_logs = String::new();
+    let mut error_logs = String::new();
+    let mut debug_logs = String::new();
+    let mut trace_logs = String::new();
+    let mut critical_logs = String::new();
+
+    for entry in cached.iter() {
+        let target = match entry.level {
+            LogLevel::Info => &mut info_logs,
+            LogLevel::Warning => &mut warning_logs,
+            LogLevel::Error => &mut error_logs,
+            LogLevel::Debug => &mut debug_logs,
+            LogLevel::Trace => &mut trace_logs,
+            LogLevel::Critical => &mut critical_logs,
+        };
+
+        target.push_str(&entry.message);
+        target.push('\n');
+    }
+
+    let files = [
+        (LogLevel::Info.file_name(), info_logs),
+        (LogLevel::Warning.file_name(), warning_logs),
+        (LogLevel::Error.file_name(), error_logs),
+        (LogLevel::Debug.file_name(), debug_logs),
+        (LogLevel::Trace.file_name(), trace_logs),
+        (LogLevel::Critical.file_name(), critical_logs),
+    ];
+
+    for (file_name, content) in files {
+        let file_path = export_path.join(file_name);
+        fs::write(&file_path, content).map_err(|e| {
+            Error::from_io(
+                component,
+                &file_path,
+                "writing cached log export file",
+                e,
+                get_location!(),
+            )
+        })?;
+    }
 
     Ok(())
 }

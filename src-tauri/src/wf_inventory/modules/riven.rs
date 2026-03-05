@@ -69,6 +69,33 @@ impl RivenModule {
         let paginate = paginate(&rivens, query.pagination.page, query.pagination.limit);
         Ok(paginate)
     }
+
+    pub fn get_veiled_rivens(
+        &self,
+        mut query: WFItemPaginationDto,
+    ) -> Result<PaginatedResult<WFInvItemRiven>, Error> {
+        let limit = query.pagination.limit;
+        query.pagination.limit = -1;
+        let mut items = self.get_rivens(query.clone())?;
+
+        items.retain(|riven| riven.riven_type == RivenState::Veiled);
+
+        query.pagination.limit = limit;
+        let paginate = paginate(&items, query.pagination.page, query.pagination.limit);
+        Ok(paginate)
+    }
+
+    pub fn get_unveiled_rivens(
+        &self,
+        query: WFItemPaginationDto,
+    ) -> Result<PaginatedResult<WFInvItemRiven>, Error> {
+        let mut items = self.get_rivens(query.clone())?;
+        items.retain(|riven| riven.riven_type == RivenState::Unveiled || riven.riven_type == RivenState::PreVeiled);
+
+        let paginate = paginate(&items, query.pagination.page, query.pagination.limit);
+        Ok(paginate)
+    }
+
     pub fn new(client: Arc<WFInventoryState>) -> Arc<Self> {
         Arc::new(Self {
             client: Arc::downgrade(&client),

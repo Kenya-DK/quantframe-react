@@ -14,6 +14,8 @@ pub async fn log_export() -> Result<String, Error> {
     let version = info.version.to_string();
     let app_path = helper::get_app_storage_path();
 
+    utils::export_cached_logs(&app_path)?;
+
     let zip_path =
         helper::get_desktop_path().join(format!("{} v{} {} Logs.zip", info.name, version, date));
     let path = ZipOptions::new()
