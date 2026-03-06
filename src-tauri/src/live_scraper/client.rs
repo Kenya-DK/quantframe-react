@@ -72,7 +72,7 @@ impl LiveScraperState {
                 // Start Riven last update timer
                 let riven_interval = settings.live_scraper.stock_riven.update_interval as u64;
                 let mut last_riven_update =
-                    Instant::now() - Duration::from_secs(riven_interval * 2);
+                    Instant::now().checked_sub(Duration::from_secs(riven_interval * 2)).unwrap_or(Instant::now());
 
                 while is_running.load(Ordering::SeqCst) {
                     let app = states::app_state().expect("App state not initialized");
