@@ -34,7 +34,7 @@ impl WFInventoryState {
         }
         let state = Arc::new(Self {
             root: Mutex::new(WarframeRootObject::default()),
-            last_update: Mutex::new(Instant::now() - Duration::from_secs(1000)),
+            last_update: Mutex::new(Instant::now().checked_sub(Duration::from_secs(1000)).unwrap_or(Instant::now())),
             path,
             item_module: OnceLock::new(),
             riven_module: OnceLock::new(),
