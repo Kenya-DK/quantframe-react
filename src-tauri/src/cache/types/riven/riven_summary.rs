@@ -242,7 +242,8 @@ impl RivenSummary {
             let similarity = auction.item.similarity.clone();
             if let Some(attrs) = &mut auction.item.attributes {
                 for attr in attrs.iter_mut() {
-                    attr.set_property_value("matched", similarity.has_attribute(&attr.url_name));
+                    attr.properties
+                        .set_property_value("matched", similarity.has_attribute(&attr.url_name));
                 }
             }
         }

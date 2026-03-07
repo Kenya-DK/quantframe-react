@@ -23,6 +23,7 @@ export const RivenPreview = memo(function RivenPreview(props: RivenPreviewProps)
   // State
   return (
     <>
+      {!props.value && <>...</>}
       {props.type == "withBackground" && <WithBackground {...props} />}
       {props.type == "withoutBackground" && <WithoutBackground {...props} />}
     </>

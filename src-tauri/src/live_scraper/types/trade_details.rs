@@ -1,9 +1,15 @@
 use entity::dto::{PriceHistory, SubType};
+use reqwest::header::TRANSFER_ENCODING;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde_json::{json, Value};
 use utils::Properties;
+use wf_market::types::{Auction, Order};
 
-use crate::types::OperationSet;
+use crate::{
+    cache::{CacheState, CacheTradableItem},
+    types::OperationSet,
+    utils::OrderExt,
+};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct TradeDetails {
@@ -52,7 +58,32 @@ pub struct TradeDetails {
     #[serde(flatten)]
     pub properties: Properties,
 }
-impl TradeDetails {}
+impl TradeDetails {
+    pub fn add_price_history(&mut self, price_history: PriceHistory) {
+        let mut items = self.price_history.clone();
+
+        let last_item = items.last().cloned();
+        if last_item.is_none() || last_item.unwrap().price != price_history.price {
+            // Limit to 5 elements
+            if items.len() >= 5 {
+                items.remove(0);
+            }
+            items.push(price_history);
+            self.price_history = items;
+        }
+    }
+    pub fn apply_trade_item_info(&mut self, info: &CacheTradableItem) {
+        self.wfm_id = info.wfm_id.clone();
+        self.name = info.name.clone();
+        self.image = info.image_url.clone();
+        self.properties
+            .set_property_value("t_type", json!(info.sub_type));
+    }
+
+    pub fn try_from_auction(order: &Auction, cache: &CacheState) -> Self {
+        TradeDetails::default()
+    }
+}
 
 impl Default for TradeDetails {
     fn default() -> Self {

@@ -144,7 +144,7 @@ export const AuctionPanel = ({ isActive }: AuctionPanelProps) => {
           {paginationQuery.data?.results?.map((order) => (
             <RivenPreview
               key={order.id}
-              value={order.properties.riven as any}
+              value={{ ...order.properties, attributes: order.item.attributes.map((attr) => ({ ...attr, ...attr.properties })) } as any}
               type="withoutBackground"
               setDefaultHeaderCenterAs="headerLeft"
               headerRight={{

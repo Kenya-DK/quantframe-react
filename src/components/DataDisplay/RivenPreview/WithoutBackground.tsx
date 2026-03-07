@@ -53,6 +53,9 @@ export const WithoutBackground = memo(function WithoutBackground({
     />
   );
 
+  if (!value)
+    return <>...</>;
+
   return (
     <Card radius="md" ref={ref} pos={"relative"}>
       <Card.Section bg={alpha("var(--mantine-color-dark-7)", 0.7)} p={3} className={classes.headerSection}>

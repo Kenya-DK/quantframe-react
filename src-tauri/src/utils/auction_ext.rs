@@ -1,7 +1,11 @@
 use entity::stock_riven::{CreateStockRiven, RivenAttribute};
+use qf_api::endpoints::riven;
 use serde_json::json;
 use utils::{get_location, Error};
-use wf_market::{enums::AuctionType, types::Auction};
+use wf_market::{
+    enums::AuctionType,
+    types::{Auction, ItemAttribute},
+};
 
 use crate::{cache::client::CacheState, types::ItemRivenBase, utils::modules::states};
 // Extension trait for auction
@@ -14,10 +18,21 @@ impl AuctionExt for Auction {
     fn apply_item_info(&mut self, cache: &CacheState) -> Result<(), Error> {
         match self.item.item_type {
             AuctionType::Riven => {
-                self.set_property_value(
-                    "riven",
-                    json!(ItemRivenBase::try_from_auction(&self, cache)?),
-                );
+                self.apply_uuid();
+                let riven = ItemRivenBase::try_from_auction(&self, cache)?;
+                self.properties
+                    .set_property_value("name", json!(riven.name));
+                self.properties
+                    .set_property_value("mod_name", json!(riven.mod_name));
+                self.item.attributes = Some(vec![]);
+                for attr in riven.attributes {
+                    let mut wf_attr =
+                        ItemAttribute::new(attr.url_name.clone(), attr.positive, attr.value);
+                    wf_attr
+                        .properties
+                        .set_property_value("localized_text", json!(attr.localized_text));
+                    self.item.attributes.as_mut().unwrap().push(wf_attr);
+                }
             }
             _ => {}
         }
