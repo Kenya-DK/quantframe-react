@@ -1,5 +1,6 @@
 use entity::dto::SubType;
 use serde::{Deserialize, Serialize};
+use utils::Properties;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct ItemPriceInfo {
@@ -45,6 +46,10 @@ pub struct ItemPriceInfo {
     #[serde(rename = "sub_type")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sub_type: Option<SubType>,
+
+    // Extra properties that may be needed for specific item types, stored as a JSON object
+    #[serde(default, flatten)]
+    pub properties: Properties,
 }
 // Add default values for ItemPriceInfo
 impl Default for ItemPriceInfo {
@@ -64,6 +69,7 @@ impl Default for ItemPriceInfo {
             trading_tax: 0,
             week_price_shift: 0.0,
             sub_type: None,
+            properties: Properties::default(),
         }
     }
 }
