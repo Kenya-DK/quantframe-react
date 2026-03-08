@@ -1,12 +1,31 @@
 import { Button, Center, Divider, Grid, Group, TextInput, Title } from "@mantine/core";
-import { WFMarketTypes } from "$types";
+import { PriceHistory, SubType, TauriTypes, WFMarketTypes } from "$types";
 import { useTranslateEnums, useTranslateModals } from "@hooks/useTranslate.hook";
 import dayjs from "dayjs";
 import { ItemComponents } from "@components/DataDisplay/ItemComponents";
 import { PriceHistoryListItem } from "@components/DataDisplay/PriceHistoryListItem";
 
+interface ItemProperties {
+  closed_avg: number;
+  highest_price: number;
+  wfm_url: string;
+  item_id: string;
+  name: string;
+  image: string;
+  lowest_price: number;
+  operations: string[];
+  order_id: string;
+  orders: WFMarketTypes.Order<any>[];
+  profit: number;
+  quantity: number;
+  sub_type: SubType;
+  t_type?: TauriTypes.CacheTradableItemSubType;
+  price_history: PriceHistory[];
+  components?: TauriTypes.ItemComponent[];
+}
+
 export type OverviewTabProps = {
-  value: WFMarketTypes.OrderDetails | undefined;
+  value: WFMarketTypes.Order<ItemProperties> | undefined;
 };
 
 export function OverviewTab({ value }: OverviewTabProps) {
@@ -20,40 +39,39 @@ export function OverviewTab({ value }: OverviewTabProps) {
   const useTranslateStockStatus = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateEnums(`order_type.${key}`, { ...context }, i18Key);
   if (!value) return <></>;
-  const { order_info, item_info } = value;
+  const { properties } = value;
   return (
     <Grid>
       <Grid.Col span={6}>
         <Group grow>
-          <TextInput label={useTranslateFields("created_at")} value={dayjs(order_info?.createdAt).format("DD/MM/YYYY HH:mm:ss")} readOnly />
-          <TextInput label={useTranslateFields("updated_at")} value={dayjs(order_info?.updatedAt).format("DD/MM/YYYY HH:mm:ss")} readOnly />
+          <TextInput label={useTranslateFields("created_at")} value={dayjs(value?.createdAt).format("DD/MM/YYYY HH:mm:ss")} readOnly />
+          <TextInput label={useTranslateFields("updated_at")} value={dayjs(value?.updatedAt).format("DD/MM/YYYY HH:mm:ss")} readOnly />
         </Group>
         <Group grow>
           <TextInput
             label={useTranslateFields("order_type")}
-            data-order-type={order_info?.type}
+            data-order-type={value?.type}
             data-color-mode="text"
-            value={useTranslateStockStatus(order_info?.type || "")}
+            value={useTranslateStockStatus(value?.type || "")}
             readOnly
           />
-          <TextInput label={useTranslateFields("operations")} value={order_info?.properties?.operations.join(", ") || "N/A"} readOnly />
         </Group>
         <Group grow>
-          <TextInput label={useTranslateFields("platinum")} value={order_info?.platinum || "N/A"} readOnly />
-          <TextInput label={useTranslateFields("quantity")} value={order_info?.quantity || "N/A"} readOnly />
-          <TextInput label={useTranslateFields("per_trade")} value={order_info?.perTrade || "N/A"} readOnly />
+          <TextInput label={useTranslateFields("platinum")} value={value?.platinum || "N/A"} readOnly />
+          <TextInput label={useTranslateFields("quantity")} value={value?.quantity || "N/A"} readOnly />
+          <TextInput label={useTranslateFields("per_trade")} value={value?.perTrade || "N/A"} readOnly />
         </Group>
         <Divider mt={"md"} />
         <Group grow>
-          <TextInput label={useTranslateFields("closed_avg")} value={order_info?.properties?.closed_avg || "N/A"} readOnly />
-          <TextInput label={useTranslateFields("profit")} value={order_info?.properties?.profit || "N/A"} readOnly />
-          <TextInput label={useTranslateFields("highest_price")} value={order_info?.properties?.highest_price || "N/A"} readOnly />
-          <TextInput label={useTranslateFields("lowest_price")} value={order_info?.properties?.lowest_price || "N/A"} readOnly />
+          <TextInput label={useTranslateFields("closed_avg")} value={properties?.closed_avg || "N/A"} readOnly />
+          <TextInput label={useTranslateFields("profit")} value={properties?.profit || "N/A"} readOnly />
+          <TextInput label={useTranslateFields("highest_price")} value={properties?.highest_price || "N/A"} readOnly />
+          <TextInput label={useTranslateFields("lowest_price")} value={properties?.lowest_price || "N/A"} readOnly />
         </Group>
-        {item_info?.components && item_info.components.length > 0 && (
+        {properties?.components && properties.components.length > 0 && (
           <>
             <Divider mt={"md"} />
-            <ItemComponents components={item_info.components} />
+            <ItemComponents components={properties.components} />
           </>
         )}
         <Divider mt={"md"} />
@@ -62,7 +80,7 @@ export function OverviewTab({ value }: OverviewTabProps) {
           color="blue"
           variant="outline"
           onClick={() => {
-            open(`https://warframe.market/items/${item_info?.wfm_url_name}`);
+            open(`https://warframe.market/items/${properties?.wfm_url}`);
           }}
         >
           {useTranslateButtons("wfm")}
@@ -70,14 +88,15 @@ export function OverviewTab({ value }: OverviewTabProps) {
       </Grid.Col>
       <Grid.Col span={6}>
         <Title order={3}>{useTranslateFields("listed")}</Title>
-        {order_info?.properties && order_info?.properties?.price_history.length <= 0 && (
+        {properties && properties?.price_history && properties?.price_history?.length <= 0 && (
           <Center h={"90%"}>
             <Title order={3}>{useTranslateFields("no_listed")}</Title>
           </Center>
         )}
-        {order_info?.properties &&
-          order_info?.properties?.price_history.length > 0 &&
-          order_info?.properties?.price_history
+        {properties &&
+          properties?.price_history &&
+          properties?.price_history.length > 0 &&
+          properties?.price_history
             .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
             .slice(0, 5)
             .map((price, index) => <PriceHistoryListItem key={index} history={price} />)}

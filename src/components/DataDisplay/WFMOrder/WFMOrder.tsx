@@ -40,7 +40,7 @@ export function WFMOrder({ show_border, paperProps, order, footer, show_user, di
               <Text
                 style={{ cursor: "copy" }}
                 onClick={() => {
-                  let name = order?.properties?.item_name || "Unknown Item";
+                  let name = order?.properties?.name || "Unknown Item";
                   navigator.clipboard.writeText(name);
                   notifications.show({
                     title: useTranslateCommon("notifications.copy_to_clipboard.title"),
@@ -51,7 +51,7 @@ export function WFMOrder({ show_border, paperProps, order, footer, show_user, di
                 size="lg"
                 fw={700}
               >
-                {order?.properties?.item_name || "Unknown Item"}
+                {order?.properties?.name || "Unknown Item"}
               </Text>
             </Group>
             <Group>
@@ -67,7 +67,7 @@ export function WFMOrder({ show_border, paperProps, order, footer, show_user, di
                 width={64}
                 height={64}
                 fit="contain"
-                src={order?.properties?.image_url ? WFMThumbnail(order.properties.image_url) : undefined}
+                src={order?.properties?.image ? WFMThumbnail(order.properties.image) : undefined}
               />
             </Group>
             <Group justify="flex-end">
@@ -76,7 +76,7 @@ export function WFMOrder({ show_border, paperProps, order, footer, show_user, di
                   <TextTranslate
                     size="lg"
                     i18nKey={useTranslateFields("mod_rank", undefined, true)}
-                    values={{ mod_rank: order.rank, mod_max_rank: order.properties?.trade_sub_type?.max_rank || "?" }}
+                    values={{ mod_rank: order.rank, mod_max_rank: order.properties?.t_type?.max_rank || "?" }}
                   />
                 )}
                 {order.amberStars != undefined && (
@@ -156,8 +156,9 @@ export function WFMOrder({ show_border, paperProps, order, footer, show_user, di
               className={classes.userName}
               truncate
               style={{
-                borderBottomColor: `var(--qf-user-status-${(order.user?.status.toString() || "offline") == "in_game" ? "ingame" : order.user?.status
-                  })`,
+                borderBottomColor: `var(--qf-user-status-${
+                  (order.user?.status.toString() || "offline") == "in_game" ? "ingame" : order.user?.status
+                })`,
                 borderBottom: "rem(3px) solid",
               }}
             >

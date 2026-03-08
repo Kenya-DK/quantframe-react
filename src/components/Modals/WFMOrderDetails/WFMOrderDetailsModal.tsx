@@ -31,7 +31,7 @@ export function WFMOrderDetailsModal({ value }: WFMOrderDetailsModalProps) {
       {data && (
         <>
           <Group justify="space-between" mb={"md"}>
-            <ItemName value={data.order_info} />
+            <ItemName value={data} />
           </Group>
           <Divider />
           <Tabs defaultValue={tabs[0].id}>

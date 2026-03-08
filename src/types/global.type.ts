@@ -71,7 +71,7 @@ export interface ItemMeta {
 }
 
 export type ItemWithMeta =
-  | (WFMarketTypes.Order & ItemMeta)
+  | (WFMarketTypes.Order<{ name?: string }> & ItemMeta)
   | (TauriTypes.StockItem & ItemMeta)
   | (TauriTypes.StockRiven & ItemMeta)
   | (TauriTypes.WishListItem & ItemMeta)
@@ -81,7 +81,7 @@ export type ItemWithMeta =
   | (TauriTypes.DebuggingLiveItemEntry & ItemMeta)
   | (TauriTypes.TradeEntry & ItemMeta)
   | null;
-export type ItemWithSubType = TauriTypes.SubType | WFMarketTypes.Order | undefined;
+export type ItemWithSubType = TauriTypes.SubType | WFMarketTypes.Order<{ name?: string }> | undefined;
 
 export interface ItemRiven<P = any, A = any> {
   attributes: RivenAttribute<A>[];

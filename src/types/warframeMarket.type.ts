@@ -1,5 +1,4 @@
-import { PaginatedDto, PriceHistory, SubType, UserStatus } from "./global.type";
-import { TauriTypes } from "./tauri.type";
+import { PaginatedDto, UserStatus } from "./global.type";
 
 export namespace WFMarketTypes {
   export enum OrderType {
@@ -7,13 +6,13 @@ export namespace WFMarketTypes {
     Sell = "sell",
     Closed = "closed",
   }
-  export interface Order {
+  export interface Order<T = any> {
     createdAt: Date;
     id: string;
     itemId: string;
     perTrade?: number;
     platinum: number;
-    properties: ItemProperties | null;
+    properties?: T;
     quantity: number;
     rank: number;
     cyanStars?: number;
@@ -24,7 +23,6 @@ export namespace WFMarketTypes {
     visible: boolean;
     user?: User;
   }
-  export interface OrderDetails extends TauriTypes.BaseItemDetails {}
 
   export interface User {
     id: string;
@@ -32,22 +30,6 @@ export namespace WFMarketTypes {
     reputation: number;
     avatar?: string;
     status: UserStatus;
-  }
-  export interface ItemProperties {
-    closed_avg: number;
-    highest_price: number;
-    item_id: string;
-    item_name: string;
-    image_url: string;
-    lowest_price: number;
-    operations: string[];
-    order_id: string;
-    orders: Order[];
-    profit: number;
-    quantity: number;
-    sub_type: SubType;
-    trade_sub_type?: TauriTypes.CacheTradableItemSubType;
-    price_history: PriceHistory[];
   }
 
   export interface Auction<T = any> {

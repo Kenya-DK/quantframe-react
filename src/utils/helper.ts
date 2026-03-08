@@ -273,6 +273,7 @@ export const GetItemDisplay = (
 ) => {
   if (!value) return "Unknown Item";
   let fullName = undefined;
+  if ("properties" in value && value.properties && "name" in value.properties) fullName = value.properties.name;
   if ("weapon_name" in value && !fullName) fullName = value.weapon_name;
   if ("item_name" in value && !fullName) fullName = value.item_name;
   if ("wfm_id" in value && !fullName) fullName = tradableItems?.find((i) => i.wfm_id === value.wfm_id)?.name;

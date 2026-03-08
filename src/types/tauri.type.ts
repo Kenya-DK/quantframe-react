@@ -151,7 +151,7 @@ export namespace TauriTypes {
     priority: number;
     buy_quantity: number;
     sell_quantity: number;
-    operation: string[];
+    operations: string[];
     order_type: string;
   }
   export interface SettingsLiveScraper {
@@ -572,17 +572,6 @@ export namespace TauriTypes {
     updated_at: string;
     wfm_id: string;
     wfm_url: string;
-    info?: StockItemDetails;
-  }
-  export interface BaseItemDetails {
-    item_info: CacheTradableItem;
-    last_transactions: TransactionDto[];
-    order_info: WFMarketTypes.Order | null;
-    report: FinancialReport;
-  }
-  export interface StockItemDetails extends BaseItemDetails {
-    stock: StockItem;
-    potential_profit: number;
   }
   export interface CreateStockItem {
     raw: string;
@@ -777,9 +766,6 @@ export namespace TauriTypes {
     minimum_price?: number;
     is_hidden: boolean;
   }
-  export interface WishListItemDetails extends BaseItemDetails {
-    stock: WishListItem;
-  }
   export interface CreateWishListItem extends Omit<CreateStockItem, "bought" | "minimum_price"> {
     maximum_price?: number;
   }
@@ -820,7 +806,6 @@ export namespace TauriTypes {
     updated_at: string;
     wfm_id: string;
     wfm_url: string;
-    info?: StockItemDetails;
   }
   export interface ChatLink {
     prefix: string;
