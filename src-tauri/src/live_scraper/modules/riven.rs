@@ -15,7 +15,7 @@ use wf_market::{
 static COMPONENT: &str = "LiveScraper:RivenModule";
 use crate::{
     cache::types::CacheRivenWeapon,
-    live_scraper::{is_disabled, LiveScraperState, TradeDetails},
+    live_scraper::{is_disabled, LiveScraperState},
     send_event,
     types::*,
     utils::{modules::states, ErrorFromExt},

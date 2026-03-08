@@ -1,4 +1,4 @@
-use std::sync::{atomic::Ordering, Arc};
+use std::sync::{atomic::Ordering, Arc, Mutex};
 
 use serde_json::{json, Value};
 use utils::Error;
@@ -6,7 +6,7 @@ use utils::Error;
 use crate::{
     add_metric,
     app::StockItemSettings,
-    cache::ItemPriceInfo,
+    cache::{CacheState, ItemPriceInfo},
     live_scraper::{self, LiveScraperState},
     send_event,
     types::*,
@@ -37,11 +37,17 @@ pub async fn live_scraper_get_state(
         "is_running": live_scraper.is_running.load(Ordering::SeqCst)
     }))
 }
-
 #[tauri::command]
 pub async fn live_scraper_get_interesting_wtb_items(
     settings: StockItemSettings,
+    cache: tauri::State<'_, Mutex<CacheState>>,
 ) -> Result<Vec<ItemPriceInfo>, Error> {
-    let items = live_scraper::helpers::get_interesting_items(&settings);
+    let mut items = live_scraper::helpers::get_interesting_items(&settings);
+    let cache = cache.lock()?;
+    for item in &mut items {
+        if let Ok(info) = cache.tradable_item().get_by(&item.wfm_id) {
+            item.properties.set_property_value("name", info.name);
+        }
+    }
     Ok(items)
 }

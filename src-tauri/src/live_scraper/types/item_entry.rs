@@ -5,8 +5,9 @@ use entity::stock_item::Model as StockItemModel;
 use serde::{Deserialize, Serialize};
 use service::{sea_orm::DatabaseConnection, StockItemQuery, WishListQuery};
 use utils::{get_location, Error};
+use wf_market::{enums::OrderType, types::Order};
 
-use crate::cache::types::ItemPriceInfo;
+use crate::{cache::types::ItemPriceInfo, types::OperationSet};
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ItemEntry {
@@ -20,6 +21,9 @@ pub struct ItemEntry {
 
     #[serde(rename = "wfm_url")]
     pub wfm_url: String,
+
+    #[serde(rename = "wfm_id")]
+    pub wfm_id: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "sub_type")]
@@ -39,8 +43,8 @@ pub struct ItemEntry {
     pub sell_quantity: i64,
 
     #[serde(rename = "operation")]
-    #[serde(default)]
-    pub operation: Vec<String>,
+    #[serde(default, flatten)]
+    pub operation: OperationSet,
 
     #[serde(rename = "order_type")]
     #[serde(default)]
@@ -59,6 +63,7 @@ impl ItemEntry {
         stock_id: Option<i64>,
         wish_list_id: Option<i64>,
         wfm_url: String,
+        wfm_id: String,
         sub_type: Option<SubType>,
         priority: i64,
         buy_quantity: i64,
@@ -70,11 +75,12 @@ impl ItemEntry {
             stock_id,
             wish_list_id,
             wfm_url,
+            wfm_id,
             sub_type,
             priority,
             buy_quantity,
             sell_quantity,
-            operation,
+            operation: OperationSet::from(operation),
             order_type: order_type.to_string(),
         }
     }
@@ -92,6 +98,12 @@ impl ItemEntry {
     pub fn set_sell_quantity(mut self, quantity: i64) -> Self {
         self.sell_quantity = quantity;
         self
+    }
+    pub fn get_quantity(&self, order_type: OrderType) -> i64 {
+        match order_type {
+            OrderType::Buy => self.buy_quantity,
+            OrderType::Sell => self.sell_quantity,
+        }
     }
     pub async fn get_stock_item(&self, conn: &DatabaseConnection) -> Result<StockItemModel, Error> {
         if let Some(stock_id) = self.stock_id {
@@ -157,6 +169,7 @@ impl From<&ItemPriceInfo> for ItemEntry {
             None,
             None,
             item.wfm_url.clone(),
+            item.wfm_id.clone(),
             item.sub_type.clone(),
             0,
             1,
@@ -172,6 +185,7 @@ impl From<&StockItemModel> for ItemEntry {
             Some(item.id),
             None,
             item.wfm_url.clone(),
+            item.wfm_id.clone(),
             item.sub_type.clone(),
             1,
             0,
@@ -187,6 +201,7 @@ impl From<&entity::wish_list::wish_list::Model> for ItemEntry {
             None,
             Some(item.id),
             item.wfm_url.clone(),
+            item.wfm_id.clone(),
             item.sub_type.clone(),
             2,
             item.quantity,

@@ -1,3 +1,4 @@
+use serde_json::json;
 use utils::Error;
 use wf_market::{
     enums::OrderType,
@@ -29,15 +30,12 @@ impl OrderListExt for OrderList<Order> {
                 .item_price()
                 .find_by_id(&order.item_id, order.subtype.to_entity())?
             {
-                let mut details = order.get_details();
-                if details.closed_avg == 0.0 {
-                    details.closed_avg = price.avg_price;
-                }
-                if details.profit == 0.0 {
-                    details.profit = price.profit;
-                }
-                details.order_id = price.wfm_id.clone();
-                order.update_details(details);
+                order
+                    .properties
+                    .set_property_value("closed_avg", price.avg_price);
+                order
+                    .properties
+                    .set_property_value("profit", price.profit as i64);
             }
         }
 
@@ -52,10 +50,10 @@ impl OrderListExt for OrderList<Order> {
             .iter()
             .map(|order| {
                 let platinum = order.platinum as i64;
-                let profit = order.get_details().profit;
+                let profit = order.properties.get_property_value("profit", 0);
                 let wfm_id = order.item_id.clone();
                 let id = order.id.clone();
-                (platinum, profit, wfm_id, id)
+                (platinum, profit as f64, wfm_id, id)
             })
             .collect::<Vec<(i64, f64, String, String)>>()
     }
@@ -65,7 +63,7 @@ impl OrderListExt for OrderList<Order> {
             .iter_mut()
             .chain(self.sell_orders.iter_mut())
         {
-            order.apply_item_info(cache)?;
+            order.apply_info(cache)?;
         }
 
         Ok(())

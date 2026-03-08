@@ -1,25 +1,31 @@
-use std::{collections::HashMap, path::Path, sync::OnceLock};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    sync::{atomic::Ordering, OnceLock},
+};
 
-use entity::{stock_item::*, wish_list::*};
+use entity::{
+    dto::{add_price_history, PriceHistory},
+    stock_item::*,
+    wish_list::*,
+};
 use serde_json::json;
 use service::*;
 use utils::*;
 use wf_market::{
     enums::OrderType,
-    types::{CreateOrderParams, OrderList, OrderWithUser, UpdateOrderParams},
+    types::{CreateOrderParams, Order, OrderList, OrderWithUser, UpdateOrderParams},
 };
 
 use crate::{
-    DATABASE,
     app::{Settings, StockItemSettings},
     cache::types::{CacheTradableItem, ItemPriceInfo},
     enums::*,
     live_scraper::*,
     send_event,
     types::*,
-    utils::{
-        ErrorFromExt, OrderExt, OrderListExt, SubTypeExt, modules::states, order_ext::OrderDetails,
-    },
+    utils::{modules::states, ErrorFromExt, OrderExt, OrderListExt, SubTypeExt},
+    DATABASE,
 };
 
 pub static INTERESTING_ITEMS: OnceLock<HashMap<String, Vec<ItemPriceInfo>>> = OnceLock::new();
@@ -197,7 +203,7 @@ pub async fn collect_interesting_items(
                         entry.priority = 1;
                         entry.sell_quantity = item.owned;
                         entry.stock_id = Some(item.id);
-                        entry.operation.push("Sell".to_string());
+                        entry.operation.add("Sell".to_string());
                     })
                     .or_insert_with(|| ItemEntry::from(&item).set_sell_quantity(item.owned));
             }
@@ -217,7 +223,7 @@ pub async fn collect_interesting_items(
                         entry.priority = 2;
                         entry.buy_quantity = item.quantity;
                         entry.wish_list_id = Some(item.id);
-                        entry.operation.push("WishList".to_string());
+                        entry.operation.add("WishList".to_string());
                     })
                     .or_insert_with(|| ItemEntry::from(&item));
             }
@@ -227,38 +233,109 @@ pub async fn collect_interesting_items(
 }
 
 pub fn get_order_info(
-    item_info: &CacheTradableItem,
     entry: &ItemEntry,
-    wfm_client: &wf_market::Client<wf_market::Authenticated>,
     order_type: OrderType,
-) -> OrderDetails {
-    let quantity = if order_type == OrderType::Buy {
-        entry.buy_quantity
-    } else {
-        entry.sell_quantity
-    };
+    wfm_client: &wf_market::Client<wf_market::Authenticated>,
+) -> wf_market::types::Properties {
     wfm_client
         .order()
         .cache_orders()
         .find_order(
-            &item_info.wfm_id,
+            &entry.wfm_id,
             &SubTypeExt::from_entity(entry.sub_type.clone()),
             order_type,
         )
         .map(|order| {
-            order
-                .get_details()
-                .set_operation(&["Update"])
-                .set_order_id(&order.id)
-                .set_update_string(&order.update_string())
+            let mut properties = order.properties;
+            properties.set_property_value("id", order.id.clone());
+            properties
+                .set_property_value("original_update_string", format!("p:{}", order.platinum));
+            properties.set_property_value("operations", OperationSet::from(vec!["Update"]));
+            properties
         })
         .unwrap_or_default()
-        .set_item_id(&item_info.wfm_id)
-        .set_quantity(quantity as u32)
-        .set_sub_type(entry.sub_type.clone())
-        .set_info(item_info)
 }
+pub fn populate_order_properties(
+    properties: &mut wf_market::types::Properties,
+    item: &CacheTradableItem,
+    entry: &ItemEntry,
+) -> (String, OperationSet) {
+    properties.set_property_value("wfm_id", item.wfm_id.clone());
+    properties.set_property_value("wfm_url", item.wfm_url_name.clone());
+    properties.set_property_value("name", item.name.clone());
+    properties.set_property_value("sub_type", entry.sub_type.clone());
+    properties.set_property_value("image", item.image_url.clone());
+    properties.set_property_value("t_type", item.sub_type.clone());
+    let order_id = properties.get_property_value("id", String::new());
+    let operations =
+        properties.get_property_value("operations", OperationSet::from(vec!["Create"]));
+    (order_id, operations)
+}
+pub fn set_order_market_metrics(
+    properties: &mut wf_market::types::Properties,
+    post_price: i64,
+    profit: i64,
+    item_price_info: &ItemPriceInfo,
+    live_orders: &OrderList<OrderWithUser>,
+    order_type: OrderType,
+) {
+    properties.set_property_value("update_string", format!("p:{}", post_price));
+    properties.set_property_value("closed_avg", item_price_info.avg_price);
+    properties.set_property_value("profit", profit);
+    properties.set_property_value("lowest_price", live_orders.lowest_price(order_type));
+    properties.set_property_value("highest_price", live_orders.highest_price(order_type));
+    properties.set_property_value("orders", json!(live_orders.take_top(5, order_type)));
+    push_price_history(properties, post_price);
+}
+pub fn push_price_history(properties: &mut wf_market::types::Properties, price: i64) {
+    let mut history = properties.get_property_value::<Vec<PriceHistory>>("price_history", vec![]);
 
+    add_price_history(
+        &mut history,
+        PriceHistory::new(chrono::Local::now().naive_local().to_string(), price),
+    );
+
+    properties.set_property_value("price_history", history);
+}
+pub fn orders_to_delete(
+    settings: &Settings,
+    client: &LiveScraperState,
+    my_orders: &OrderList<Order>,
+) -> Vec<String> {
+    if settings.live_scraper.auto_delete && client.just_started.load(Ordering::SeqCst) {
+        return my_orders
+            .order_ids(OrderType::Buy)
+            .into_iter()
+            .chain(my_orders.order_ids(OrderType::Sell))
+            .collect();
+    }
+
+    match (
+        settings.live_scraper.has_trade_mode(TradeMode::Buy),
+        settings.live_scraper.has_trade_mode(TradeMode::Sell),
+        settings.live_scraper.has_trade_mode(TradeMode::WishList),
+    ) {
+        (true, false, true) => my_orders.order_ids(OrderType::Sell),
+        (false, true, false) => my_orders.order_ids(OrderType::Buy),
+        _ => vec![],
+    }
+}
+pub async fn load_orders(
+    component: &str,
+    client: &wf_market::Client<wf_market::Authenticated>,
+    item_url: &str,
+    fake_path: Option<&Path>,
+) -> Result<OrderList<OrderWithUser>, Error> {
+    if let Some(path) = fake_path {
+        if path.exists() {
+            if let Ok(cached) = utils::read_json_file(&path.to_path_buf()) {
+                return Ok(cached);
+            }
+        }
+    }
+
+    fetch_and_cache_orders(component, client, item_url, fake_path).await
+}
 async fn handler_wfm_error(
     wfm_client: &wf_market::Client<wf_market::Authenticated>,
     component: &str,
@@ -299,40 +376,46 @@ async fn handler_wfm_error(
 
 pub async fn progress_order(
     component: &str,
+    entry: &ItemEntry,
+    operations: &OperationSet,
     wfm_client: &wf_market::Client<wf_market::Authenticated>,
-    order_info: &OrderDetails,
     order_type: OrderType,
     post_price: u32,
     per_trade: Option<u32>,
     log_options: &LoggerOptions,
+    properties: &wf_market::types::Properties,
 ) -> Result<(), Error> {
     let can_create_order = wfm_client.order().can_create_order();
     let file_name = "progress_order.log";
-    if order_info.has_operation("Create") && !order_info.has_operation("Delete") && can_create_order
-    {
+
+    // Fetch properties data
+    let order_id = properties.get_property_value("id", String::new());
+    let name = properties.get_property_value("name", String::new());
+    let update_string = properties.get_property_value("update_string", String::new());
+    let original_update_string =
+        properties.get_property_value("original_update_string", String::new());
+
+    if operations.has("Create") && !operations.has("Delete") && can_create_order {
         match wfm_client
             .order()
             .create(
                 CreateOrderParams::new_with_subtype(
-                    &order_info.item_id,
+                    &entry.wfm_id,
                     order_type,
                     post_price,
-                    order_info.quantity,
+                    entry.get_quantity(order_type) as u32,
                     true,
                     per_trade,
-                    SubTypeExt::from_entity(order_info.sub_type.clone()),
+                    SubTypeExt::from_entity(entry.sub_type.clone()),
                 )
-                .with_properties(json!(order_info)),
+                .with_properties(json!(properties.properties)),
             )
             .await
         {
             Ok(order) => {
                 info(
                     format!("{}CreateSuccess", component),
-                    &format!(
-                        "Created order for item {}: {}",
-                        order_info.item_name, order.id
-                    ),
+                    &format!("Created order for item {}: {}", name, order.id),
                     &log_options,
                 );
                 send_event!(UIEvent::RefreshWfmOrders, json!({"source": component}));
@@ -342,7 +425,7 @@ pub async fn progress_order(
                     wfm_client,
                     component,
                     "Create",
-                    &format!("Failed to create order for item {}", order_info.item_name),
+                    &format!("Failed to create order for item {}", name),
                     log_options,
                     e,
                 )
@@ -352,29 +435,26 @@ pub async fn progress_order(
                 return Err(err);
             }
         }
-    } else if order_info.has_operation("Update") && !order_info.has_operation("Delete") {
+    } else if operations.has("Update") && !operations.has("Delete") {
         match wfm_client
             .order()
             .update(
-                &order_info.order_id,
+                &order_id,
                 UpdateOrderParams::new()
                     .with_platinum(post_price)
-                    .with_quantity(order_info.quantity)
+                    .with_quantity(entry.get_quantity(order_type) as u32)
                     .with_per_trade(per_trade)
-                    .with_properties(json!(order_info)),
+                    .with_properties(json!(properties.properties)),
             )
             .await
         {
             Ok(order) => {
                 info(
                     format!("{}UpdateSuccess", component),
-                    &format!(
-                        "Updated order for item {}: {}",
-                        order_info.item_name, order_info.order_id
-                    ),
+                    &format!("Updated order for item {}: {}", name, order_id),
                     &log_options,
                 );
-                if order.update_string() != order_info.update_string {
+                if original_update_string != update_string {
                     send_event!(UIEvent::RefreshWfmOrders, json!({"source": component}));
                 }
             }
@@ -383,7 +463,7 @@ pub async fn progress_order(
                     wfm_client,
                     component,
                     "Update",
-                    &format!("Failed to update order for item {}", order_info.item_name),
+                    &format!("Failed to update order for item {}", name),
                     log_options,
                     e,
                 )
@@ -393,15 +473,12 @@ pub async fn progress_order(
                 return Err(err);
             }
         }
-    } else if order_info.has_operation("Update") && order_info.has_operation("Delete") {
-        match wfm_client.order().delete(&order_info.order_id).await {
+    } else if operations.has("Update") && operations.has("Delete") {
+        match wfm_client.order().delete(&order_id).await {
             Ok(_) => {
                 info(
                     format!("{}DeleteSuccess", component),
-                    &format!(
-                        "Deleted order for item {}: {}",
-                        order_info.item_name, order_info.order_id
-                    ),
+                    &format!("Deleted order for item {}: {}", name, order_id),
                     &log_options,
                 );
                 send_event!(UIEvent::RefreshWfmOrders, json!({"source": component}));
@@ -411,7 +488,7 @@ pub async fn progress_order(
                     wfm_client,
                     component,
                     "Delete",
-                    &format!("Failed to delete order for item {}", order_info.item_name),
+                    &format!("Failed to delete order for item {}", name),
                     log_options,
                     e,
                 )
@@ -424,25 +501,21 @@ pub async fn progress_order(
     } else if !can_create_order {
         warning(
             format!("{}Skip", component),
-            &format!(
-                "Item {} has reached the order limit. Skipping.",
-                order_info.item_name
-            ),
+            &format!("Item {} has reached the order limit. Skipping.", name),
             &log_options,
         );
     } else {
         warning(
             format!("{}Skip", component),
-            &format!(
-                "Item {} is not optimal for buying. Skipping.",
-                order_info.item_name
-            ),
+            &format!("Item {} is not optimal for buying. Skipping.", name),
             &log_options,
         );
     }
     Ok(())
 }
-
+pub fn log_summary(component: &str, message: impl AsRef<str>, options: &LoggerOptions) {
+    info(format!("{}Summary", component), message.as_ref(), options);
+}
 pub async fn fetch_and_cache_orders(
     component: &str,
     wfm_client: &wf_market::Client<wf_market::Authenticated>,

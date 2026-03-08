@@ -1,7 +1,7 @@
 use std::{
     collections::HashSet,
     path::PathBuf,
-    sync::{Arc, Weak, atomic::Ordering},
+    sync::{atomic::Ordering, Arc, Weak},
 };
 
 use entity::{dto::PriceHistory, enums::stock_status::StockStatus};
@@ -14,13 +14,13 @@ use wf_market::{
 };
 
 use crate::{
-    DATABASE, enums::TradeMode, live_scraper::*, send_event, types::*, utils::SubTypeExt,
-    utils::modules::states,
-};
-use crate::{
-    app::{Settings, client::AppState},
+    app::{client::AppState, Settings},
     cache::types::{CacheTradableItem, ItemPriceInfo},
     utils::OrderListExt,
+};
+use crate::{
+    enums::TradeMode, live_scraper::*, send_event, types::*, utils::modules::states,
+    utils::SubTypeExt, DATABASE,
 };
 
 static COMPONENT: &str = "LiveScraper:Item:";
@@ -61,35 +61,16 @@ impl ItemModule {
         }
 
         // Determine which order IDs to delete
-        let order_ids = match (
-            settings.live_scraper.has_trade_mode(TradeMode::Buy),
-            settings.live_scraper.has_trade_mode(TradeMode::Sell),
-            settings.live_scraper.has_trade_mode(TradeMode::WishList),
-            settings.live_scraper.auto_delete,
-            client.just_started.load(Ordering::SeqCst),
-        ) {
-            // If auto delete is enabled → delete all orders if just started
-            (_, _, _, true, true) => my_orders
-                .order_ids(OrderType::Buy)
-                .into_iter()
-                .chain(my_orders.order_ids(OrderType::Sell))
-                .collect(),
-            // Buy + Wishlist mode → delete Sell orders
-            (true, false, true, false, _) => my_orders.order_ids(OrderType::Sell),
-            // Sell only mode → delete Buy orders
-            (false, true, false, false, _) => my_orders.order_ids(OrderType::Buy),
-            // Everything else → delete nothing
-            _ => vec![],
-        };
+        let order_ids = orders_to_delete(settings, &client, my_orders);
 
         // Delete each unwanted order
         let mut current_index = order_ids.len();
         let total = order_ids.len();
         for id in order_ids.iter() {
             // Stop if client stopped running or user is banned
-            if !client.is_running.load(Ordering::SeqCst) || app.user.is_banned() {
+            if Self::should_stop(&client, app) {
                 warning(
-                    format!("{}Delete", COMPONENT),
+                    comp("Delete"),
                     "Live Scraper is not running or user is banned, stopping deletion.",
                     &&LoggerOptions::default(),
                 );
@@ -98,7 +79,7 @@ impl ItemModule {
             match app.wfm_client.order().delete(id).await {
                 Ok(_) => {
                     info(
-                        format!("{}Delete", COMPONENT),
+                        comp("Delete"),
                         &format!("Deleted order with ID: {} {}/{}", id, current_index, total),
                         &&LoggerOptions::default(),
                     );
@@ -112,7 +93,7 @@ impl ItemModule {
                     );
                 }
                 Err(e) => error(
-                    format!("{}Delete", COMPONENT),
+                    comp("Delete"),
                     &format!("Failed to delete order with ID {}: {}", id, e),
                     &&LoggerOptions::default().set_file(LOG_FILE),
                 ),
@@ -126,7 +107,7 @@ impl ItemModule {
     pub async fn check(&self) -> Result<(), Error> {
         let app = states::app_state()?;
         info(
-            COMPONENT,
+            comp("Check"),
             "Checking Item items...",
             &&LoggerOptions::default(),
         );
@@ -145,6 +126,9 @@ impl ItemModule {
         self.process_items(interesting_items, &app).await?;
         Ok(())
     }
+    fn should_stop(client: &LiveScraperState, app: &AppState) -> bool {
+        !client.is_running.load(Ordering::SeqCst) || app.user.is_banned()
+    }
     async fn process_items(
         &self,
         mut interesting_items: Vec<ItemEntry>,
@@ -161,9 +145,9 @@ impl ItemModule {
 
         for item_entry in interesting_items {
             // Stop if client stopped running or user is banned
-            if !client.is_running.load(Ordering::SeqCst) || app.user.is_banned() {
+            if Self::should_stop(&client, &app) {
                 warning(
-                    format!("{}ProcessItem", COMPONENT),
+                    comp("ProcessItem"),
                     "Live Scraper is not running or user is banned, stopping processing.",
                     &&LoggerOptions::default(),
                 );
@@ -174,8 +158,7 @@ impl ItemModule {
             let item_info = match cache.tradable_item().get_by(&item_entry.wfm_url) {
                 Ok(item) => item,
                 Err(e) => {
-                    e.set_component(format!("{}ProcessItem", COMPONENT))
-                        .log(LOG_FILE);
+                    e.set_component(comp("ProcessItem")).log(LOG_FILE);
                     continue;
                 }
             };
@@ -202,47 +185,13 @@ impl ItemModule {
                 .join("fake_orders")
                 .join(format!("order_{}.json", item_info.wfm_url_name));
 
-            let mut orders = if use_fake && order_path.exists() {
-                match utils::read_json_file::<OrderList<OrderWithUser>>(&order_path) {
-                    Ok(cached) => {
-                        info(
-                            format!("{}ProcessItem", COMPONENT),
-                            &format!(
-                                "Using cached fake orders for item {} from {}",
-                                item_entry.wfm_url,
-                                order_path.display()
-                            ),
-                            &&LoggerOptions::default(),
-                        );
-                        cached
-                    }
-                    Err(e) => {
-                        warning(
-                            format!("{}ProcessItem", COMPONENT),
-                            &format!(
-                                "Failed to read fake orders for item {} ({}), falling back to API",
-                                item_entry.wfm_url, e
-                            ),
-                            &&LoggerOptions::default(),
-                        );
-                        fetch_and_cache_orders(
-                            &format!("{}ProcessItem", COMPONENT),
-                            &app.wfm_client,
-                            &item_entry.wfm_url,
-                            use_fake.then_some(&order_path),
-                        )
-                        .await?
-                    }
-                }
-            } else {
-                fetch_and_cache_orders(
-                    &format!("{}ProcessItem", COMPONENT),
-                    &app.wfm_client,
-                    &item_entry.wfm_url,
-                    use_fake.then_some(&order_path),
-                )
-                .await?
-            };
+            let mut orders = load_orders(
+                &comp("ProcessItem:LoadOrders:"),
+                &app.wfm_client,
+                &item_entry.wfm_url,
+                use_fake.then_some(&order_path),
+            )
+            .await?;
 
             // Apply filters to orders
             orders.filter_by_sub_type(
@@ -254,20 +203,20 @@ impl ItemModule {
             orders.sort_by_platinum();
 
             info(
-                format!("{}ProcessItem", COMPONENT),
+                &comp("ProcessItem"),
                 &format!(
-                    "Processing {}: {} buy orders, {} sell orders",
-                    item_entry.uuid(),
+                    "Processing Item: {} | Buy Orders: {} | Sell Orders: {} | Operations: {:?} | Progress: {}/{}",
+                    item_info.name,
                     orders.buy_orders.len(),
-                    orders.sell_orders.len()
+                    orders.sell_orders.len(),
+                    item_entry.operation.operations,
+                    current_index,
+                    total
                 ),
                 &&LoggerOptions::default(),
             );
 
-            // Process buying logic
-            if item_entry.operation.contains(&"Buy".to_string())
-                && !item_entry.operation.contains(&"WishList".to_string())
-            {
+            if item_entry.operation.has("Buy") && !item_entry.operation.has("WishList") {
                 if let Err(e) = self
                     .progress_buying(&item_info, &item_entry, &item_price, &orders)
                     .await
@@ -276,7 +225,7 @@ impl ItemModule {
                 }
 
                 info(
-                    format!("{}ProgressBuying", COMPONENT),
+                    &comp("ProgressBuying"),
                     &format!(
                         "Successfully processed buying for item: {}",
                         item_entry.wfm_url
@@ -286,7 +235,7 @@ impl ItemModule {
             }
 
             // Process wishlist logic (future expansion)
-            if item_entry.operation.contains(&"WishList".to_string()) {
+            if item_entry.operation.has(&"WishList".to_string()) {
                 if let Err(e) = self
                     .progress_wish_list(&item_info, &item_entry, &item_price, &orders)
                     .await
@@ -295,7 +244,7 @@ impl ItemModule {
                 }
 
                 info(
-                    format!("{}ProgressWishList", COMPONENT),
+                    &comp("ProgressWishList"),
                     &format!(
                         "Successfully processed wishlist for item: {}",
                         item_entry.wfm_url
@@ -305,7 +254,7 @@ impl ItemModule {
             }
 
             // Process selling logic (future expansion)
-            if item_entry.operation.contains(&"Sell".to_string()) && item_entry.stock_id.is_some() {
+            if item_entry.operation.has("Sell") && item_entry.stock_id.is_some() {
                 if let Err(e) = self
                     .progress_selling(&item_info, &item_entry, &item_price, &orders)
                     .await
@@ -314,7 +263,7 @@ impl ItemModule {
                 }
 
                 info(
-                    format!("{}ProgressBuying", COMPONENT),
+                    &comp("ProgressBuying"),
                     &format!(
                         "Successfully processed buying for item: {}",
                         item_entry.wfm_url
@@ -339,7 +288,7 @@ impl ItemModule {
         let log_options = &LoggerOptions::default()
             .set_show_component(false)
             .set_show_time(false);
-        let component = format!("{}Buying:", COMPONENT);
+        let component = comp("Buying:");
         info(
             &component,
             &format!("Starting buying process for item: {}", item_info.name),
@@ -354,7 +303,7 @@ impl ItemModule {
         // Check if item is blacklisted for buying
         if settings.is_item_blacklisted(&item_info.wfm_id, &TradeMode::Buy) {
             info(
-                format!("{}Blacklisted", COMPONENT),
+                &comp("Blacklisted"),
                 &format!(
                     "Item {} is blacklisted for buying. Skipping.",
                     item_info.name
@@ -363,6 +312,12 @@ impl ItemModule {
             );
             return Ok(());
         }
+        // Get existing order properties or initialize new ones
+        let mut properties = get_order_info(&entry, OrderType::Buy, &wfm_client);
+
+        // Set initial properties for order and get operations
+        let (order_id, mut operations) =
+            populate_order_properties(&mut properties, &item_info, &entry);
 
         // Check if we already have enough stock of this item
         if !is_disabled(settings.max_stock_quantity) {
@@ -370,7 +325,7 @@ impl ItemModule {
             if let Ok(existing_item) = entry.get_stock_item(conn).await {
                 if existing_item.owned >= settings.max_stock_quantity {
                     info(
-                        format!("{}MaxStockReached", COMPONENT),
+                        &comp("MaxStockReached"),
                         &format!(
                             "Item {} already has {} units in stock (max: {}). Skipping WTB order creation.",
                             item_info.name, existing_item.owned, settings.max_stock_quantity
@@ -378,17 +333,18 @@ impl ItemModule {
                         &log_options,
                     );
                     // Delete existing WTB order if present (e.g. stock just reached max after a purchase)
-                    let mut order_info = get_order_info(item_info, entry, &wfm_client, OrderType::Buy);
-                    if order_info.has_operation("Update") {
-                        order_info.add_operation("Delete");
+                    if operations.has("Update") {
+                        operations.add("Delete");
                         if let Err(e) = progress_order(
                             &component,
+                            entry,
+                            &OperationSet::default(),
                             &wfm_client,
-                            &order_info,
                             OrderType::Buy,
                             1,
                             None,
                             log_options,
+                            &wf_market::types::Properties::default(),
                         )
                         .await
                         {
@@ -401,6 +357,7 @@ impl ItemModule {
                 }
             }
         }
+
         // Skip if no relevant market activity
         let (should_skip, _operation) = skip_if_no_market_activity(live_orders);
         if should_skip {
@@ -416,8 +373,6 @@ impl ItemModule {
         } else {
             None
         };
-
-        let mut order_info = get_order_info(item_info, entry, &wfm_client, OrderType::Buy);
 
         let highest_price = live_orders.highest_price(OrderType::Buy);
         let price_range = live_orders.price_range(OrderType::Buy);
@@ -435,7 +390,7 @@ impl ItemModule {
         // Check Max Buy Price for Item
         let item_max_price = settings.get_item_max_price(&item_info.wfm_id);
         if post_price as i64 > item_max_price && item_max_price > 0 {
-            order_info.add_operation("AboveMaxBuyPrice");
+            operations.add("AboveMaxBuyPrice");
             post_price = item_max_price;
             warning(
                 format!("{}AboveMaxBuyPrice", component),
@@ -449,24 +404,14 @@ impl ItemModule {
 
         // Log overpriced warning
         if !is_disabled(avg_price_cap) && (post_price as i64) > avg_price_cap {
-            order_info.add_operation("AboveAvgPrice");
-            order_info.add_operation("Delete");
+            operations.add("AboveAvgPrice");
+            operations.add("Delete");
             warning(
                 format!("{}OverpricedCheck", component),
                 &format!("Item {} is above average price cap.", item_info.name),
                 &log_options,
             );
         }
-
-        // Update Order Info
-        order_info = order_info.set_profit(price_range as f64);
-        order_info = order_info.set_closed_avg(closed_avg);
-        order_info = order_info.set_highest_price(highest_price);
-        order_info = order_info.set_lowest_price(live_orders.lowest_price(OrderType::Buy));
-        order_info.add_price_history(PriceHistory::new(
-            chrono::Local::now().naive_local().to_string(),
-            post_price,
-        ));
 
         let mut knapsack_skip_reasons = Vec::new();
         if closed_avg_metric < 0 {
@@ -477,7 +422,7 @@ impl ItemModule {
             knapsack_skip_reasons.push("PriceRangeBelowProfitThreshold");
         }
 
-        if !order_info.has_operation("Create") {
+        if !operations.has("Create") {
             knapsack_skip_reasons.push("NoCreateOperation");
         }
 
@@ -504,7 +449,7 @@ impl ItemModule {
 
         if closed_avg_metric >= 0
             && price_range >= profit_threshold
-            && order_info.has_operation("Create")
+            && operations.has("Create")
             && has_buy_orders
             && !is_disabled(max_total_price_cap)
         {
@@ -555,8 +500,8 @@ impl ItemModule {
                         &log_options,
                     );
 
-                    if order_info.order_id == un_item.3 {
-                        order_info.add_operation("Skip");
+                    if order_id == un_item.3 {
+                        operations.add("Skip");
                     }
                 }
             } else {
@@ -565,22 +510,22 @@ impl ItemModule {
                     &format!("Item {} not selected for buying.", item_info.name),
                     &log_options,
                 );
-                order_info.add_operation("Skip");
-                order_info.add_operation("Delete");
+                operations.add("Skip");
+                operations.add("Delete");
             }
         } else if closed_avg_metric < 0 {
-            order_info.add_operation("Delete");
-            order_info.add_operation("Overpriced");
+            operations.add("Delete");
+            operations.add("Overpriced");
         } else if price_range < profit_threshold {
-            order_info.add_operation("Delete");
-            order_info.add_operation("Underpriced");
+            operations.add("Delete");
+            operations.add("Underpriced");
         }
 
         // Summary log
-        info(
-            format!("{}Summary", component),
+        log_summary(
+            &component,
             format!(
-                "Item {}: PostPrice: {} | ClosedAvg: {} | PriceRange: {} | PotentialProfit: {} | ClosedAvgMetric: {} | ProfitThreshold: {} | HighestPrice: {} | {}",
+                "Item {}: PostPrice: {} | ClosedAvg: {} | PriceRange: {} | PotentialProfit: {} | ClosedAvgMetric: {} | ProfitThreshold: {} | HighestPrice: {} | Operations: {:?}",
                 item_info.name,
                 post_price,
                 closed_avg,
@@ -589,20 +534,32 @@ impl ItemModule {
                 closed_avg_metric,
                 profit_threshold,
                 highest_price,
-                order_info
+                operations.operations
             ),
             &log_options,
+        );
+
+        // Set last properties for event
+        set_order_market_metrics(
+            &mut properties,
+            post_price,
+            potential_profit,
+            price,
+            live_orders,
+            OrderType::Sell,
         );
 
         // Create/Update/Delete
         match progress_order(
             &component,
+            entry,
+            &operations,
             &wfm_client,
-            &order_info,
             OrderType::Buy,
             post_price as u32,
             per_trade,
             log_options,
+            &properties,
         )
         .await
         {
@@ -625,7 +582,7 @@ impl ItemModule {
     ) -> Result<(), Error> {
         let conn = DATABASE.get().unwrap();
         let log_options = &LoggerOptions::default();
-        let component = format!("{}Selling:", COMPONENT);
+        let component = comp("Selling:");
         info(
             &component,
             &format!("Starting selling process for item: {}", item_info.name),
@@ -640,7 +597,7 @@ impl ItemModule {
         // Check if item is blacklisted for selling
         if settings.is_item_blacklisted(&item_info.wfm_id, &TradeMode::Sell) {
             info(
-                format!("{}Blacklisted", COMPONENT),
+                &comp("Blacklisted"),
                 &format!(
                     "Item {} is blacklisted for selling. Skipping.",
                     item_info.name
@@ -663,10 +620,15 @@ impl ItemModule {
                 .with_context(entry.to_json())
         })?;
 
-        let mut order_info = get_order_info(item_info, entry, &wfm_client, OrderType::Sell);
+        // Get existing order properties or initialize new ones
+        let mut properties = get_order_info(&entry, OrderType::Sell, &wfm_client);
+
+        // Set initial properties for order and get operations
+        let (_, mut operations) = populate_order_properties(&mut properties, &item_info, &entry);
+
         if stock_item.is_hidden && stock_item.status == StockStatus::InActive {
             info(
-                format!("{}Skip", COMPONENT),
+                &comp("Skip"),
                 &format!(
                     "Item {} is marked as hidden and inactive. Skipping.",
                     item_info.name
@@ -678,15 +640,15 @@ impl ItemModule {
             stock_item.set_status(StockStatus::InActive);
             stock_item.set_list_price(None);
             stock_item.locked = true;
-            order_info.add_operation("Delete");
+            operations.add("Delete");
         }
 
         // Get the lowest sell order price from the DataFrame of live sell orders
         let lowest_price = if live_orders.sell_orders.len() > 2 {
             live_orders.lowest_price(OrderType::Sell)
         } else if stock_item.minimum_price.is_none() {
-            order_info.add_operation("Delete");
-            order_info.add_operation("NoSellers");
+            operations.add("Delete");
+            operations.add("NoSellers");
             stock_item.set_status(StockStatus::NoSellers);
             stock_item.set_list_price(None);
             stock_item.locked = true;
@@ -706,7 +668,7 @@ impl ItemModule {
             let capped_price = post_price.max(minimum_price);
             if capped_price != post_price {
                 post_price = capped_price;
-                order_info.add_operation("MinimumPrice");
+                operations.add("MinimumPrice");
             }
         }
 
@@ -723,7 +685,7 @@ impl ItemModule {
             && lowest_price > bought_price
         {
             post_price = closed_avg;
-            order_info.add_operation("SMALimit");
+            operations.add("SMALimit");
             stock_item.set_list_price(Some(post_price));
             stock_item.set_status(StockStatus::SMALimit);
             stock_item.locked = true;
@@ -744,20 +706,20 @@ impl ItemModule {
             stock_item.set_status(StockStatus::ToLowProfit);
             stock_item.set_list_price(Some(post_price));
             stock_item.locked = true;
-            order_info.add_operation("LowProfit");
+            operations.add("LowProfit");
             profit = post_price - bought_price;
         }
 
         // Update Order Info & Stock Item
-        order_info = order_info.set_profit(profit as f64);
-        order_info = order_info.set_closed_avg(closed_avg as f64);
-        order_info = order_info.set_highest_price(live_orders.highest_price(OrderType::Sell));
-        order_info = order_info.set_lowest_price(live_orders.lowest_price(OrderType::Sell));
-        order_info = order_info.set_orders(live_orders.take_top(5, OrderType::Sell));
-        order_info.add_price_history(PriceHistory::new(
-            chrono::Local::now().naive_local().to_string(),
+        set_order_market_metrics(
+            &mut properties,
             post_price,
-        ));
+            profit,
+            price,
+            live_orders,
+            OrderType::Sell,
+        );
+
         stock_item.set_list_price(Some(post_price));
         stock_item.set_status(StockStatus::Live);
         if stock_item.status == StockStatus::Live {
@@ -774,7 +736,7 @@ impl ItemModule {
         info(
             format!("{}Summary", component),
             format!(
-                "Item {}: PostPrice: {} | ClosedAvg: {} | Profit: {} | IsStockDirty: {} | StockStatus: {:?} | StockListPrice: {:?} | StockChanges: {} | {}",
+                "Item {}: PostPrice: {} | ClosedAvg: {} | Profit: {} | IsStockDirty: {} | StockStatus: {:?} | StockListPrice: {:?} | StockChanges: {} | Operations: {:?}",
                 item_info.name,
                 post_price,
                 closed_avg,
@@ -783,7 +745,7 @@ impl ItemModule {
                 stock_item.status,
                 stock_item.list_price,
                 stock_item.changes.join(", "),
-                order_info,
+                operations,
             ),
             &log_options,
         );
@@ -791,12 +753,14 @@ impl ItemModule {
         // Create/Update/Delete
         match progress_order(
             &component,
+            entry,
+            &operations,
             &wfm_client,
-            &order_info,
             OrderType::Sell,
             post_price as u32,
             per_trade,
             log_options,
+            &properties,
         )
         .await
         {
@@ -838,7 +802,7 @@ impl ItemModule {
     ) -> Result<(), Error> {
         let conn = DATABASE.get().unwrap();
         let log_options = &LoggerOptions::default();
-        let component = format!("{}WishList:", COMPONENT);
+        let component = comp("WishList:");
         info(
             &component,
             &format!("Starting wishlist process for item: {}", item_info.name),
@@ -851,7 +815,7 @@ impl ItemModule {
         // Check if item is blacklisted for wishlist
         if settings.is_item_blacklisted(&item_info.wfm_id, &TradeMode::WishList) {
             info(
-                format!("{}Blacklisted", COMPONENT),
+                &comp("Blacklisted"),
                 &format!(
                     "Item {} is blacklisted for wishlist. Skipping.",
                     item_info.name
@@ -872,14 +836,19 @@ impl ItemModule {
                 .with_context(entry.to_json())
         })?;
 
-        let mut order_info = get_order_info(item_info, entry, &wfm_client, OrderType::Buy);
+        // Get existing order properties or initialize new ones
+        let mut properties = get_order_info(&entry, OrderType::Buy, &wfm_client);
+
+        // Set initial properties for order and get operations
+        let (_, mut operations) = populate_order_properties(&mut properties, &item_info, &entry);
+
         if wishlist_item.is_hidden && wishlist_item.status == StockStatus::InActive {
             return Ok(());
         } else if wishlist_item.is_hidden && wishlist_item.status != StockStatus::InActive {
             wishlist_item.set_status(StockStatus::InActive);
             wishlist_item.set_list_price(None);
             wishlist_item.locked = true;
-            order_info.add_operation("Delete");
+            operations.add("Delete");
         }
         // Get The highest buy order returns 0 if there are no buy orders.
         let highest_price = live_orders.highest_price(OrderType::Buy);
@@ -893,7 +862,7 @@ impl ItemModule {
 
         // Return if no buy orders are found.
         if live_orders.buy_orders.len() <= 0 {
-            order_info.add_operation("NoBuyers");
+            operations.add("NoBuyers");
             post_price = price.avg_price as i64;
             wishlist_item.set_status(StockStatus::NoBuyers);
             wishlist_item.set_list_price(Some(post_price));
@@ -901,34 +870,34 @@ impl ItemModule {
         // Check if the price is higher than the max price
         if post_price > maximum_price && maximum_price > 0 {
             post_price = maximum_price;
-            order_info.add_operation("MaxPrice");
+            operations.add("MaxPrice");
         }
         post_price = std::cmp::max(post_price, 1);
 
         if post_price < minimum_price && minimum_price > 0 {
             post_price = minimum_price;
-            order_info.add_operation("MinPrice");
+            operations.add("MinPrice");
         }
 
-        // Update Order Info
-        order_info = order_info.set_highest_price(highest_price);
-        order_info = order_info.set_lowest_price(live_orders.lowest_price(OrderType::Buy));
-        order_info = order_info.set_orders(live_orders.take_top(10, OrderType::Buy));
-        order_info.add_price_history(PriceHistory::new(
-            chrono::Local::now().naive_local().to_string(),
+        set_order_market_metrics(
+            &mut properties,
             post_price,
-        ));
+            0,
+            price,
+            live_orders,
+            OrderType::Buy,
+        );
         // Summary log
-        info(
-            format!("{}Summary", component),
+        log_summary(
+            &component,
             format!(
-                "Item {}: PostPrice: {} | IsWishlistDirty: {} | WishlistStatus: {:?} | WishlistListPrice: {:?} | {}",
+                "Item {}: PostPrice: {} | IsWishlistDirty: {} | WishlistStatus: {:?} | WishlistListPrice: {:?} | Operations: {:?}",
                 item_info.name,
                 post_price,
                 wishlist_item.is_dirty,
                 wishlist_item.status,
                 wishlist_item.list_price,
-                order_info
+                operations,
             ),
             &log_options,
         );
@@ -936,12 +905,14 @@ impl ItemModule {
         // Create/Update/Delete
         match progress_order(
             &component,
+            entry,
+            &operations,
             &wfm_client,
-            &order_info,
             OrderType::Buy,
             post_price as u32,
             per_trade,
             log_options,
+            &properties,
         )
         .await
         {
@@ -982,4 +953,7 @@ impl ItemModule {
         }
         Ok(())
     }
+}
+fn comp(suffix: &str) -> String {
+    format!("{}{}", COMPONENT, suffix)
 }
