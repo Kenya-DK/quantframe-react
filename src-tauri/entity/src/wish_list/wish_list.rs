@@ -2,6 +2,7 @@
 
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
+use utils::Properties;
 
 use crate::{dto::*, enums::*, transaction::Model as TransactionModel, wish_list::dto::*};
 
@@ -44,6 +45,10 @@ pub struct Model {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "changes")]
     pub changes: Option<String>,
+    // Extra properties
+    #[sea_orm(ignore)]
+    #[serde(default, flatten)]
+    pub properties: Properties,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -80,6 +85,7 @@ impl Model {
             locked: false,
             is_hidden: false,
             changes: None,
+            properties: Properties::default(),
         }
     }
     pub fn to_transaction(
@@ -141,20 +147,8 @@ impl Model {
     }
     pub fn add_price_history(&mut self, price_history: PriceHistory) {
         let mut items = self.price_history.0.clone();
-
-        if items
-            .last()
-            .map_or(true, |last| last.price != price_history.price)
-        {
-            // Limit to 5 elements
-            if items.len() >= 5 {
-                items.remove(0);
-            }
-            items.push(price_history);
-            self.is_dirty = true;
-            self.changes = Some("price_history".to_string());
-            self.price_history = PriceHistoryVec(items);
-        }
+        add_price_history(&mut items, price_history);
+        self.price_history = PriceHistoryVec(items);
     }
     pub fn to_update(&self) -> UpdateWishList {
         UpdateWishList {

@@ -2,6 +2,7 @@
 
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
+use utils::Properties;
 
 use crate::{dto::*, enums::*, stock_item::dto::UpdateStockItem};
 
@@ -48,10 +49,10 @@ pub struct Model {
     #[serde(rename = "changes")]
     pub changes: Vec<String>,
 
+    // Extra properties
     #[sea_orm(ignore)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "info")]
-    pub info: Option<serde_json::Value>,
+    #[serde(default, flatten)]
+    pub properties: Properties,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -92,7 +93,7 @@ impl Model {
             is_dirty: true,
             locked: false,
             changes: vec![],
-            info: None,
+            properties: Properties::default(),
         }
     }
     fn set_if_changed<T: PartialEq>(current: &mut T, new_value: T, is_dirty: &mut bool) -> bool {
@@ -131,18 +132,8 @@ impl Model {
     }
     pub fn add_price_history(&mut self, price_history: PriceHistory) {
         let mut items = self.price_history.0.clone();
-
-        let last_item = items.last().cloned();
-        if last_item.is_none() || last_item.unwrap().price != price_history.price {
-            // Limit to 5 elements
-            if items.len() >= 5 {
-                items.remove(0);
-            }
-            items.push(price_history);
-            self.is_dirty = true;
-            self.add_change("price_history");
-            self.price_history = PriceHistoryVec(items);
-        }
+        add_price_history(&mut items, price_history);
+        self.price_history = PriceHistoryVec(items);
     }
     pub fn uuid(&self) -> String {
         let mut uuid = self.wfm_url.clone();

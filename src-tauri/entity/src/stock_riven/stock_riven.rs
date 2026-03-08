@@ -166,17 +166,8 @@ impl Model {
     }
     pub fn add_price_history(&mut self, price_history: PriceHistory) {
         let mut items = self.price_history.0.clone();
-        let last_item = items.last().cloned();
-        if last_item.is_none() || last_item.unwrap().price != price_history.price {
-            // Limit to 5 elements
-            if items.len() >= 5 {
-                items.remove(0);
-            }
-            items.push(price_history);
-            self.is_dirty = true;
-            self.changes = Some("price_history".to_string());
-            self.price_history = PriceHistoryVec(items);
-        }
+        add_price_history(&mut items, price_history);
+        self.price_history = PriceHistoryVec(items);
     }
     pub fn set_status(&mut self, status: StockStatus) {
         if self.locked {

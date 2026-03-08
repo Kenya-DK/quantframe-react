@@ -17,3 +17,12 @@ impl PriceHistory {
         Self { created_at, price }
     }
 }
+
+pub fn add_price_history(items: &mut Vec<PriceHistory>, price_history: PriceHistory) {
+    if items.last().map(|p| p.price) != Some(price_history.price) {
+        if items.len() >= 5 {
+            items.remove(0);
+        }
+        items.push(price_history);
+    }
+}
