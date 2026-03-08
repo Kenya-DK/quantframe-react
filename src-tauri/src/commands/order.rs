@@ -59,7 +59,12 @@ pub fn get_wfm_orders_pagination(
         match &query.query {
             FieldChange::Value(q) => {
                 let q = q.to_lowercase();
-                if !o.get_details().item_name.to_lowercase().contains(&q) {
+                if !o
+                    .properties
+                    .get_property_value("name", String::new())
+                    .to_lowercase()
+                    .contains(&q)
+                {
                     return false;
                 }
             }
@@ -134,7 +139,10 @@ pub async fn get_wfm_orders_status_counts(
                         .sum(),
                     items
                         .iter()
-                        .map(|item| (item.get_details().profit * item.quantity as f64) as f64)
+                        .map(|item| {
+                            (item.properties.get_property_value("profit", 0) * item.quantity as i64)
+                                as f64
+                        })
                         .sum(),
                 ),
             )
@@ -149,14 +157,6 @@ pub async fn get_wfm_orders_status_counts(
     }
     Ok(grouped)
 }
-
-// #[tauri::command]
-// pub async fn get_stock_item_financial_report(
-//     query: StockItemPaginationQueryDto,
-// ) -> Result<FinancialReport, Error> {
-//     let items = get_stock_item_pagination(query).await?;
-//     Ok(FinancialReport::from(&items.results))
-// }
 
 #[tauri::command]
 pub async fn order_delete_all(
@@ -230,7 +230,7 @@ pub async fn order_delete_by_id(
 pub async fn get_wfm_order_by_id(
     id: String,
     app: tauri::State<'_, Mutex<AppState>>,
-) -> Result<Value, Error> {
+) -> Result<Order, Error> {
     let app = app.lock()?.clone();
     let order = app.wfm_client.order().cache_orders().get_by_id(&id);
     if order.is_none() {
@@ -241,12 +241,6 @@ pub async fn get_wfm_order_by_id(
         ));
     }
     let order = order.unwrap();
-    let (payload, _, _) = helper::get_item_details(
-        &order.item_id,
-        order.subtype.to_entity(),
-        order.order_type.clone(),
-    )
-    .await?;
 
-    Ok(payload)
+    Ok(order)
 }
