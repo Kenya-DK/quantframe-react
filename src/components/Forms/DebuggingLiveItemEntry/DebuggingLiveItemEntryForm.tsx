@@ -38,7 +38,7 @@ export function DebuggingLiveItemEntryForm({ disabled, boxProps, onSubmit, initi
       priority: initialValues?.priority || 0,
       buy_quantity: initialValues?.buy_quantity || 0,
       sell_quantity: initialValues?.sell_quantity || 0,
-      operation: initialValues?.operation || [],
+      operations: initialValues?.operations || [],
       order_type: initialValues?.order_type || "closed",
     },
     validate: {
@@ -46,7 +46,7 @@ export function DebuggingLiveItemEntryForm({ disabled, boxProps, onSubmit, initi
       priority: (value) => (value < 0 ? useTranslateFormFields("priority.error") : null),
       buy_quantity: (value) => (value < 0 ? useTranslateFormFields("buy_quantity.error") : null),
       sell_quantity: (value) => (value < 0 ? useTranslateFormFields("sell_quantity.error") : null),
-      operation: (value) => (value.length === 0 ? useTranslateFormFields("operation.error") : null),
+      operations: (value) => (value.length === 0 ? useTranslateFormFields("operation.error") : null),
     },
   });
 
@@ -63,9 +63,10 @@ export function DebuggingLiveItemEntryForm({ disabled, boxProps, onSubmit, initi
             value={form.values.wfm_url}
             onChange={(item) => {
               form.setFieldValue("wfm_url", item.wfm_url_name);
+              form.setFieldValue("wfm_id", item.wfm_id);
               form.setFieldValue("sub_type", item.sub_type);
             }}
-          />{" "}
+          />
           {/* Stock ID */}
           <NumberInput
             label={useTranslateFormFields("stock_id.label")}
@@ -127,9 +128,9 @@ export function DebuggingLiveItemEntryForm({ disabled, boxProps, onSubmit, initi
             label={useTranslateFormFields("operation.label")}
             placeholder={useTranslateFormFields("operation.placeholder")}
             data={OPERATION_OPTIONS}
-            value={form.values.operation}
-            onChange={(value) => form.setFieldValue("operation", value)}
-            error={form.errors.operation}
+            value={form.values.operations}
+            onChange={(value) => form.setFieldValue("operations", value)}
+            error={form.errors.operations}
             radius="md"
           />
 
