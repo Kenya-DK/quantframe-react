@@ -42,12 +42,27 @@ impl Properties {
         let value = serde_json::to_value(value).unwrap();
 
         if let Some(props) = &mut self.properties {
-            props.as_object_mut().unwrap().insert(key.into(), value);
+            if let Some(map) = props.as_object_mut() {
+                map.insert(key.into(), value);
+            }
         } else {
             let mut map = serde_json::Map::new();
             map.insert(key.into(), value);
             self.properties = Some(serde_json::Value::Object(map));
         }
+    }
+    pub fn update_property<T, F>(&mut self, key: impl Into<String>, mut f: F)
+    where
+        T: Default + serde::de::DeserializeOwned + serde::Serialize,
+        F: FnMut(&mut T),
+    {
+        let key = key.into();
+
+        let mut value: T = self.get_property_value(&key, T::default());
+
+        f(&mut value);
+
+        self.set_property_value(key, value);
     }
 }
 

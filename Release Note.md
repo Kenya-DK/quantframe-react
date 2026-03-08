@@ -1,12 +1,9 @@
 ## Add Feature's
 
-✨ Implement Trading Tax Calculation for Transactions
-✨ Add Grouping of Transactions by Trading Partners and Display in Data Table
-✨ Add Handling of mutable items in a trade.
-
 ## Fix's
 
-⚒️ Fix Damage VS display to show 2 decimals instead of 1.
+⚒️ - Gray wfm tab
+⚒️ - Fix Instant time underflow for windows (SpaceMoehre)
 
 ## Dev Notes
 
@@ -18,6 +15,7 @@
 ⏰ - Fix the chat message generate
 ⏰ - Add a riven preview image to the riven mod details page.
 ⏰ - Dump all logs to the folder of the app when the app is carshing, so that users can easily send the logs to us for debugging.
+⏰ - Fix buttons in the about page to open the correct links.
 
 ## Icon's
 

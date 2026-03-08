@@ -15,8 +15,7 @@ struct CachedLogEntry {
     message: String,
 }
 
-static CACHED_LOGS: LazyLock<Mutex<Vec<CachedLogEntry>>> =
-    LazyLock::new(|| Mutex::new(Vec::new()));
+static CACHED_LOGS: LazyLock<Mutex<Vec<CachedLogEntry>>> = LazyLock::new(|| Mutex::new(Vec::new()));
 
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum LogLevel {
