@@ -135,7 +135,7 @@ async fn setup_manages(app: tauri::AppHandle, use_temp_db: bool) -> Result<(), E
 }
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let use_temp_db: bool = false;
+    let use_temp_db: bool = true;
 
     // Initialize the logger for elapsed time tracking
 
@@ -146,6 +146,11 @@ pub fn run() {
             format!("Panic: {:?}", panic_info).as_str(),
             &LoggerOptions::default().set_file("panic.log"),
         );
+        emit_error!(Error::new(
+            "Panic",
+            format!("Panic: {:?}", panic_info),
+            get_location!(),
+        ));
     }));
 
     tauri::Builder::default()
