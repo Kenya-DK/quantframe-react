@@ -1,6 +1,7 @@
 import { TauriTypes } from "$types";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
 import { StatsWithSegments } from "../StatsWithSegments";
+import { Stack } from "@mantine/core";
 
 export interface FinancialReportCardProps {
   data: TauriTypes.FinancialReport | undefined;
@@ -16,7 +17,8 @@ export const FinancialReportCard = ({ data, hideTradeCount }: FinancialReportCar
     <StatsWithSegments
       p={0}
       orientation="vertical"
-      hidePercentBar
+      h={320}
+      // hidePercentBar
       segments={[
         {
           label: useTranslate("labels.total_transactions"),
@@ -24,6 +26,7 @@ export const FinancialReportCard = ({ data, hideTradeCount }: FinancialReportCar
           color: "orange",
           tooltip: useTranslate("tooltips.total_credits"),
           part: data?.properties?.total_credits || 0,
+          hideInProgress: true,
           suffix: " C",
           decimalScale: 2,
         },
@@ -32,33 +35,64 @@ export const FinancialReportCard = ({ data, hideTradeCount }: FinancialReportCar
           count: data?.properties?.total_trades || 0,
           color: "var(--qf-transaction-type-trade)",
           hide: hideTradeCount,
-          part: null,
         },
         {
-          label: useTranslate("labels.purchases_count"),
-          count: data?.purchases_count || 0,
-          color: "var(--qf-transaction-type-purchase)",
-          part: data?.expenses || 0,
+          label: useTranslate("labels.revenue"),
+          count: data?.sale_count || 0,
+          color: "green",
+          part: data?.revenue || 0,
+          usePartForPercentage: true,
+          tooltip: useTranslate("tooltips.total_revenue"),
           suffix: " P",
         },
         {
-          label: useTranslate("labels.sales_count"),
-          count: data?.sale_count || 0,
-          color: "var(--qf-transaction-type-sale)",
-          part: data?.revenue || 0,
+          label: useTranslate("labels.expenses"),
+          count: data?.purchases_count || 0,
+          color: "red",
+          part: data?.expenses || 0,
+          usePartForPercentage: true,
+          tooltip: useTranslate("tooltips.total_expenses"),
           suffix: " P",
         },
         {
           label: useTranslate("labels.total_profit"),
           count: data?.total_profit || 0,
           color: "teal",
-          tooltip: useTranslate("tooltips.profit_margin"),
-          part: data?.profit_margin || 0,
+          hideInProgress: true,
+          tooltip: useTranslate("tooltips.average_profit"),
+          part: data?.average_profit || 0,
+          suffix: " P",
           decimalScale: 2,
         },
       ]}
       showPercent
-      percentSymbol="%"
+      footer={
+        <Stack>
+          <StatsWithSegments
+            p={0}
+            hidePercentBar
+            segments={[
+              {
+                label: useTranslate("labels.highest_revenue"),
+                count: data?.highest_revenue || 0,
+                color: "green",
+                tooltip: useTranslate("tooltips.lowest_revenue"),
+                part: data?.lowest_revenue || 0,
+                decimalScale: 2,
+              },
+              {
+                label: useTranslate("labels.highest_expense"),
+                count: data?.highest_expense || 0,
+                color: "red",
+                tooltip: useTranslate("tooltips.lowest_expense"),
+                part: data?.lowest_expense || 0,
+                decimalScale: 2,
+              },
+            ]}
+            showPercent
+          />
+        </Stack>
+      }
     />
   );
 };

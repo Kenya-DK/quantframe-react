@@ -11,6 +11,7 @@ export type Segment = {
   part?: number | string | null;
   tooltip?: string;
   hideInProgress?: boolean;
+  usePartForPercentage?: boolean;
   prefix?: string;
   suffix?: string;
 };
@@ -39,23 +40,38 @@ export function StatsWithSegments({
 }: StatsWithSegmentsProps) {
   const total = segmentsIn
     .filter((segment) => !segment.hideInProgress && !segment.hide)
-    .reduce((sum, segment) => sum + Math.abs(Number(segment.count) || 0), 0);
+    .reduce((sum, segment) => {
+      const count = Math.abs(Number(segment.count) || 0);
+      const part = Number(segment.part);
+
+      const value = segment.usePartForPercentage && !Number.isNaN(part) ? Math.abs(part) : count;
+
+      return sum + value;
+    }, 0);
 
   // const getPercentage = (segment: Segment) => (segment.part ? segment.part : total ? Math.round((Math.abs(segment.count ) / total) * 100) : 0);
 
-  const getPercentage = (segment: Segment) => {
-    if (typeof segment.part === "number" || segment.part == null || segment.part === undefined)
-      return segment.part ? segment.part : total ? Math.round((Math.abs(Number(segment.count) || 0) / total) * 100) : 0;
-    else if (typeof segment.part === "string") {
-      const partValue = Number(segment.part) || 0;
-      return partValue ? partValue : total ? Math.round((Math.abs(Number(segment.count) || 0) / total) * 100) : 0;
-    } else return 0;
+  const getPercentage = (segment: Segment, usePercent = false): number => {
+    const count = Math.abs(Number(segment.count) || 0);
+    const part = Number(segment.part);
+
+    const value = segment.usePartForPercentage && !Number.isNaN(part) ? Math.abs(part) : count;
+
+    const calculatePercent = (v: number) => (total ? Math.round((v / total) * 100) : 0);
+
+    if (usePercent) return calculatePercent(value);
+
+    if (!segment.usePartForPercentage && !Number.isNaN(part) && segment.part !== null && segment.part !== undefined) {
+      return part;
+    }
+    if (!usePercent && segment.usePartForPercentage) return value;
+    return calculatePercent(value);
   };
 
   const progressSegments = segmentsIn
     .filter((segment) => !segment.hideInProgress && !segment.hide)
     .map((segment) => {
-      const percentage = getPercentage(segment);
+      const percentage = getPercentage(segment, true);
       return (
         <Progress.Section value={percentage} color={segment.color} key={segment.label}>
           {percentage > 10 && (
@@ -82,7 +98,7 @@ export function StatsWithSegments({
               <span>
                 {typeof stat.part === "number" ? (
                   <NumberFormatter
-                    value={getPercentage(stat)}
+                    value={getPercentage(stat, false)}
                     className={classes.statCount}
                     decimalScale={stat.decimalScale ?? 0}
                     style={{ color: stat.color }}
