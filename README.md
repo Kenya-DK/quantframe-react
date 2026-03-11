@@ -48,6 +48,8 @@ I would strongly recommend installing [git](https://git-scm.com/) or [Github Des
 
 delete the `pubkey` filed in `tauri/src-tauri/tauri.conf.json`.
 
+##### Step 2.2 Copy the 'PRODUCTION_URL' to 'DEVELOPMENT_URL' field in `tauri/src-tauri/qf_api/src/client.rs`.
+
 #### Step 3. Build the project
 
 Open a terminal at the project root and run:
