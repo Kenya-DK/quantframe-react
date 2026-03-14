@@ -24,7 +24,7 @@
     "@mantine/modals": "8.3.13",
     "@mantine/notifications": "8.3.13",
     "@mantine/tiptap": "8.3.13",
-    "@tanstack/react-query": "^5.64.1",
+    "@tanstack/react-query": "^5.90.21",
     "@tauri-apps/api": "2.9.1",
     "@tauri-apps/plugin-clipboard-manager": "^2.3.0",
     "@tauri-apps/plugin-dialog": "2.6.0",
@@ -63,7 +63,7 @@
     "postcss-preset-mantine": "^1.14.4",
     "postcss-simple-vars": "^7.0.1",
     "typescript": "^5.4.5",
-    "vite": "^4.5.14",
+    "vite": "^5.4.21",
     "vite-plugin-svgr": "^2.4.0"
   }
 }
