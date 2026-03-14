@@ -4,6 +4,7 @@
 
 ⚒️ - Gray wfm tab
 ⚒️ - Fix Instant time underflow for windows (SpaceMoehre)
+⚒️ - Fix buttons in the about page to open the correct links.
 
 ## Dev Notes
 
@@ -15,7 +16,7 @@
 ⏰ - Fix the chat message generate
 ⏰ - Add a riven preview image to the riven mod details page.
 ⏰ - Dump all logs to the folder of the app when the app is carshing, so that users can easily send the logs to us for debugging.
-⏰ - Fix buttons in the about page to open the correct links.
+⏰ - Fix Similar Auctions to show the correct items and not just ,,.
 ⏰ - Test MultipleItems with:
 
 - Primed Flow (LEGENDARY RANK 10) X2 180.
