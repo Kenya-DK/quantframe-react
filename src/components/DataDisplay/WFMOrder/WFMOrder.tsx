@@ -108,14 +108,7 @@ export function WFMOrder({ show_border, paperProps, order, footer, show_user, di
           <Divider />
           <Group align="center" grow p={3}>
             <Group>
-              <TextTranslate
-                textProps={{
-                  span: true,
-                }}
-                size="lg"
-                i18nKey={useTranslateFields("platinum", undefined, true)}
-                values={{ platinum: order.platinum }}
-              />
+              <TextTranslate size="lg" i18nKey={useTranslateFields("platinum", undefined, true)} values={{ platinum: order.platinum }} />
             </Group>
             <Group gap={"sm"} justify="flex-end">
               {footer}
@@ -139,14 +132,7 @@ export function WFMOrder({ show_border, paperProps, order, footer, show_user, di
           <Grid.Col span={6}>
             <ItemName value={order} />
             <Group>
-              <TextTranslate
-                textProps={{
-                  span: true,
-                }}
-                size="lg"
-                i18nKey={useTranslateFields("platinum", undefined, true)}
-                values={{ platinum: order.platinum }}
-              />
+              <TextTranslate size="lg" i18nKey={useTranslateFields("platinum", undefined, true)} values={{ platinum: order.platinum }} />
             </Group>
           </Grid.Col>
           <Grid.Col span={3}>

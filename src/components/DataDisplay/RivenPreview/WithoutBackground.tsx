@@ -49,27 +49,25 @@ export const WithoutBackground = memo(function WithoutBackground({
         name: value.name,
         mod_name: upperFirst(value.mod_name),
       }}
-      textProps={{ ta: "center", fz: "lg", fw: 700, truncate: "end" }}
     />
   );
 
-  if (!value)
-    return <>...</>;
+  if (!value) return <>...</>;
 
   return (
     <Card radius="md" ref={ref} pos={"relative"}>
       <Card.Section bg={alpha("var(--mantine-color-dark-7)", 0.7)} p={3} className={classes.headerSection}>
         <Group justify="space-between" align="center" wrap="nowrap" style={{ overflow: "hidden" }}>
           <div style={{ flex: "0 1 auto", display: "flex", justifyContent: "flex-start", minWidth: 0 }}>
-            {headerLeft && <TextTranslate {...headerLeft} textProps={{ fz: "lg", fw: 700, truncate: "end" }} />}
+            {headerLeft && <TextTranslate {...headerLeft} />}
             {setDefaultHeaderCenterAs === "headerLeft" && !headerLeft && <RenderDefaultHeaderCenter />}
           </div>
           <div style={{ flex: "1 1 auto", display: "flex", justifyContent: "center", minWidth: 0 }}>
             {!setDefaultHeaderCenterAs && !headerCenter && <RenderDefaultHeaderCenter />}
-            {headerCenter && <TextTranslate {...headerCenter} textProps={{ fz: "lg", fw: 700, truncate: "end" }} />}
+            {headerCenter && <TextTranslate {...headerCenter} />}
           </div>
           <div style={{ flex: "0 1 auto", display: "flex", justifyContent: "flex-end", minWidth: 0 }}>
-            {headerRight && <TextTranslate {...headerRight} textProps={{ fz: "lg", fw: 700, truncate: "end" }} />}
+            {headerRight && <TextTranslate {...headerRight} />}
             {setDefaultHeaderCenterAs === "headerRight" && !headerRight && <RenderDefaultHeaderCenter />}
           </div>
         </Group>
@@ -83,19 +81,15 @@ export const WithoutBackground = memo(function WithoutBackground({
       <Card.Section bg={alpha("var(--mantine-color-dark-7)", 0.7)} p={3} className={classes.footerSection}>
         <Group justify="space-between" align="center" wrap="nowrap">
           <div style={{ flex: 1, display: "flex", justifyContent: "flex-start" }}>
-            {footerLeft && (
-              <TextTranslate {...footerLeft} textProps={{ fz: "lg", fw: 700 }} values={{ ...footerLeft?.values, rank: value.sub_type?.rank || 0 }} />
-            )}
+            {footerLeft && <TextTranslate {...footerLeft} values={{ ...footerLeft?.values, rank: value.sub_type?.rank || 0 }} />}
             {setDefaultHeaderCenterAs === "footerLeft" && !footerLeft && <RenderDefaultHeaderCenter />}
           </div>
           <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-            {footerCenter && <TextTranslate {...footerCenter} textProps={{ fz: "lg", fw: 700 }} />}
+            {footerCenter && <TextTranslate {...footerCenter} />}
             {setDefaultHeaderCenterAs === "footerCenter" && !footerCenter && <RenderDefaultHeaderCenter />}
           </div>
           <div style={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
-            {footerRight && (
-              <TextTranslate {...footerRight} textProps={{ fz: "lg", fw: 700 }} values={{ ...footerRight?.values, mastery: value.mastery_rank }} />
-            )}
+            {footerRight && <TextTranslate {...footerRight} values={{ ...footerRight?.values, mastery: value.mastery_rank }} />}
             {setDefaultHeaderCenterAs === "footerRight" && !footerRight && <RenderDefaultHeaderCenter />}
           </div>
         </Group>

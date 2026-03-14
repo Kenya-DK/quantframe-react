@@ -34,11 +34,7 @@ export function PatreonOverlay({ permission, tier }: PatreonOverlayProps) {
             </Text>
           </Group>
 
-          <TextTranslate
-            textProps={{ size: "sm", c: "dimmed", mb: "md" }}
-            i18nKey={useTranslateForm("description", undefined, true)}
-            values={{ tier: tier || "T1+" }}
-          />
+          <TextTranslate i18nKey={useTranslateForm("description", undefined, true)} values={{ tier: tier || "T1+" }} />
           <Text size="sm" c="dimmed" mb="md">
             You need to be a <b>Patreon {tier || "T1+"}</b> to access this content.
           </Text>

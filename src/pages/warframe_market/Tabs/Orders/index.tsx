@@ -132,7 +132,7 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
                       platinum: count[1],
                       profit: count[2].toFixed(2),
                     }}
-                    textProps={{ td: key == queryData.order_type ? "line-through" : "" }}
+                    td={key == queryData.order_type ? "line-through" : ""}
                     components={{
                       profitIco: (
                         <Tooltip label={useTranslateTabOrder("tooltip_profit")}>
