@@ -16,6 +16,10 @@
 ⏰ - Add a riven preview image to the riven mod details page.
 ⏰ - Dump all logs to the folder of the app when the app is carshing, so that users can easily send the logs to us for debugging.
 ⏰ - Fix buttons in the about page to open the correct links.
+⏰ - Test MultipleItems with:
+
+- Primed Flow (LEGENDARY RANK 10) X2 180.
+- Primed Convulsion (LEGENDARY RANK 10) 138
 
 ## Icon's
 
