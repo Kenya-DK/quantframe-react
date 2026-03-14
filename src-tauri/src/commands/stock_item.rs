@@ -1,18 +1,20 @@
 use std::{collections::HashMap, sync::Mutex};
 
-use entity::{dto::*, stock_item::*};
+use entity::{dto::*, stock_item::*, transaction::TransactionPaginationQueryDto};
 use serde_json::{json, Value};
-use service::{StockItemMutation, StockItemQuery};
+use service::{StockItemMutation, StockItemQuery, TransactionQuery};
 use tauri_plugin_dialog::DialogExt;
-use utils::{get_location, group_by, info, Error, LoggerOptions};
-use wf_market::enums::OrderType;
+use utils::{get_location, group_by, info, Error, LoggerOptions, Properties};
+use wf_market::{enums::OrderType, types::OrderList, Authenticated};
 
 use crate::{
     add_metric,
     app::client::AppState,
+    cache::CacheState,
     handlers::{handle_item_by_entity, handle_wfm_item, stock_item::handle_item},
     helper::{self},
-    types::{OperationSet, PermissionsFlags},
+    types::{operation_set, OperationSet, PermissionsFlags},
+    utils::{ErrorFromExt, OrderListExt, SubTypeExt},
     APP, DATABASE,
 };
 
@@ -157,9 +159,16 @@ pub async fn stock_item_update_multiple(
 }
 
 #[tauri::command]
-pub async fn stock_item_get_by_id(id: i64) -> Result<Value, Error> {
+pub async fn stock_item_get_by_id(
+    id: i64,
+    operations: Option<Vec<String>>,
+    cache: tauri::State<'_, Mutex<CacheState>>,
+    app: tauri::State<'_, Mutex<AppState>>,
+) -> Result<stock_item::Model, Error> {
+    let cache = cache.lock()?.clone();
+    let app = app.lock()?.clone();
     let conn = DATABASE.get().unwrap();
-    let item = match StockItemQuery::find_by_id(conn, id).await {
+    let mut item = match StockItemQuery::find_by_id(conn, id).await {
         Ok(stock_item) => {
             if let Some(item) = stock_item {
                 item
@@ -174,16 +183,27 @@ pub async fn stock_item_get_by_id(id: i64) -> Result<Value, Error> {
         Err(e) => return Err(e.with_location(get_location!())),
     };
 
-    let (mut payload, _, order) =
-        helper::get_item_details(&item.wfm_id, item.sub_type.clone(), OrderType::Sell).await?;
+    helper::populate_item_market_properties(
+        &mut item.properties,
+        &item.wfm_url,
+        item.sub_type.clone(),
+        item.bought,
+        item.list_price,
+        OperationSet::from(
+            operations.unwrap_or(
+                vec!["MarketInfo", "TransactionInfo", "ProfitabilityInfo"]
+                    .into_iter()
+                    .map(|s| s.to_string())
+                    .collect(),
+            ),
+        ),
+        OrderType::Sell,
+        &cache,
+        &app.wfm_client,
+    )
+    .await?;
 
-    if let Some(order) = order {
-        payload["potential_profit"] = json!(order.platinum - item.bought as u32);
-    }
-
-    payload["stock"] = json!(item);
-
-    Ok(payload)
+    Ok(item)
 }
 #[tauri::command]
 pub async fn export_stock_item_json(

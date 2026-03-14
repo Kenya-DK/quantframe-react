@@ -64,6 +64,22 @@ impl Properties {
 
         self.set_property_value(key, value);
     }
+
+    pub fn merge_properties(&mut self, new_props: Option<serde_json::Value>, overwrite: bool) {
+        if let Some(new_props) = new_props {
+            if let Some(props) = &mut self.properties {
+                if let (Some(map), Some(new_map)) = (props.as_object_mut(), new_props.as_object()) {
+                    for (k, v) in new_map {
+                        if overwrite || !map.contains_key(k) {
+                            map.insert(k.clone(), v.clone());
+                        }
+                    }
+                }
+            } else {
+                self.properties = Some(new_props);
+            }
+        }
+    }
 }
 
 impl From<serde_json::Value> for Properties {

@@ -1,11 +1,9 @@
 import { modals } from "@mantine/modals";
 import { Text } from "@mantine/core";
 import { TauriTypes } from "$types";
-import { WishListItemDetailsModal } from "@components/Modals/WishListItemDetails";
+import { ItemDetailsModal, Operations } from "@components/Modals/ItemDetails";
 import { useTranslateCommon, useTranslateModals } from "@hooks/useTranslate.hook";
-import { WishListItemUpdate } from "@components/Forms/WishListItemUpdate";
 import { GenerateTradeMessageModal, GenerateTradeMessageModalProps } from "@components/Modals/GenerateTradeMessage";
-
 interface ModalHooks {
   updateMutation: {
     mutateAsync: (data: TauriTypes.UpdateWishListItem) => Promise<any>;
@@ -56,7 +54,7 @@ export const useStockModals = ({ updateMutation, deleteMutation, boughtMutation,
     modals.open({
       size: "100%",
       withCloseButton: false,
-      children: <WishListItemDetailsModal value={item.id} />,
+      children: <ItemDetailsModal value={item.id} lookup="wish_list_item" operations={[Operations.MarketInfo]} />,
     });
   };
 
@@ -65,9 +63,11 @@ export const useStockModals = ({ updateMutation, deleteMutation, boughtMutation,
       size: "100%",
       withCloseButton: false,
       children: (
-        <WishListItemUpdate
-          values={ids}
-          onUpdate={async (input) => {
+        <ItemDetailsModal
+          value={ids[0]}
+          lookup="wish_list_item"
+          operations={[Operations.EditForm]}
+          onSave={async (input: TauriTypes.UpdateWishListItem) => {
             if (ids.length == 1) await updateMutation.mutateAsync(input);
             else await updateMultipleMutation.mutateAsync({ ids, input: { ...input, id: -1 } });
             modals.close(id);

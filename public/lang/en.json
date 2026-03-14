@@ -1442,20 +1442,6 @@
           }
         }
       },
-      "stock_item_update": {
-        "title": "Update {{count}} Stock Items",
-        "fields": {
-          "listed": "Listed Prices History",
-          "bought_label": "Bought",
-          "minimum_price_label": "Minimum Price",
-          "minimum_price_tooltip": "0 = Disabled",
-          "owned_label": "Owned",
-          "minimum_sma_label": "Minimum SMA",
-          "minimum_sma_tooltip": "0 = Disabled (Use Global Setting), -1 = Ignore SMA",
-          "minimum_profit_label": "Minimum Profit",
-          "minimum_profit_tooltip": "0 = Disabled (Use Global Setting), -1 = Ignore Profit"
-        }
-      },
       "stock_riven_update": {
         "title": "Update {{count}} Stock Rivens",
         "fields": {
@@ -1464,14 +1450,6 @@
           "minimum_price_label": "Minimum Price",
           "mastery_rank_label": "Mastery Rank",
           "re_rolls_label": "Re Rolls"
-        }
-      },
-      "wish_list_item_update": {
-        "title": "Update {{count}} Wish List Items",
-        "fields": {
-          "listed": "Listed Prices History",
-          "quantity_label": "Quantity",
-          "minimum_price_label": "Minimum Price"
         }
       },
       "trade_entry_update": {
@@ -1558,84 +1536,66 @@
           "link": "Link your account"
         }
       },
-      "stock_item_details": {
+      "item_details": {
         "tabs": {
           "overview": {
             "title": "Overview",
-            "buttons": {
-              "wiki": "Wiki"
-            },
-            "fields": {
-              "created_at": "Created At",
-              "updated_at": "Updated At",
-              "status": "Status",
-              "minimum_price": "Minimum Price",
-              "owned": "Owned",
-              "bought": "Average Bought Price",
-              "list_price": "List Price",
-              "profit": "Profit",
-              "highest_price": "Highest Price",
-              "lowest_price": "Lowest Price",
-              "listed": "Listed Prices History",
-              "no_listed": "No previous listed prices"
-            },
-            "components": "Components"
+            "tooltips": {},
+            "labels": {
+              "created_at": "Created At: <date/>",
+              "updated_at": "Updated At: <date/>",
+              "bought": "Bought Price: {{price}} <plat/>",
+              "list_price": "Listed Price: {{price}} <plat/>",
+              "potential_profit": "Potential Profit: {{price}} <plat/>",
+              "minimum_profit": "Minimum Profit: {{price}}",
+              "minimum_sma": "Minimum SMA: {{price}}",
+              "quantity": "Quantity: {{quantity}}",
+              "is_hidden": "Hidden: <hidden/>"
+            }
           },
           "analytics": {
             "title": "Analytics",
-            "last_transactions": {
-              "title": "Last Transactions",
-              "info_box": {
-                "purchase": "{{count}} purchases",
-                "sale": "{{count}} sales"
-              }
+            "tooltips": {},
+            "labels": {},
+            "titles": {
+              "last_transactions": "Last Transactions",
+              "financial_summary": "Financial Summary"
             }
           },
           "wfm": {
-            "title": "WFM",
-            "fields": {
-              "created_at": "Created At",
-              "updated_at": "Updated At",
-              "order_list": "Current Live Orders",
-              "no_listed": "No current live orders"
-            },
-            "buttons": {
-              "wfm": "Warframe Market"
-            }
-          }
-        }
-      },
-      "wish_list_details": {
-        "tabs": {
-          "overview": {
             "title": "Overview",
+            "tooltips": {
+              "buy_highest_price": "Buy Highest",
+              "sell_highest_price": "Sell Highest",
+              "spread_percent": "Spread Percent",
+              "supply": "Supply"
+            },
+            "labels": {
+              "buy_lowest": "Buy Lowest",
+              "sell_lowest": "Sell Lowest",
+              "spread": "Spread",
+              "demand": "Demand",
+              "roi_percent": "ROI Percent"
+            },
             "buttons": {
-              "wiki": "Wiki"
-            },
-            "fields": {
-              "created_at": "Created At",
-              "updated_at": "Updated At",
-              "status": "Status",
-              "maximum_price": "Maximum Price",
-              "quantity": "Quantity",
-              "list_price": "List Price",
-              "highest_price": "Highest Price",
-              "lowest_price": "Lowest Price",
-              "listed": "Listed Prices History",
-              "no_listed": "No previous listed prices"
-            },
-            "components": "Components"
+              "view_on_wfm": "View on Warframe Market"
+            }
           },
-          "wfm": {
-            "title": "WFM",
+          "edit": {
+            "title": "Edit",
             "fields": {
-              "created_at": "Created At",
-              "updated_at": "Updated At",
-              "order_list": "Current Live Orders",
-              "no_listed": "No current live orders"
+              "bought": "Bought For",
+              "minimum_price": "Minimum Price",
+              "maximum_price": "Maximum Price",
+              "owned": "Currently Owned",
+              "minimum_sma": "Minimum SMA",
+              "minimum_profit": "Minimum Profit"
             },
-            "buttons": {
-              "wfm": "Warframe Market"
+            "tooltips": {
+              "minimum_price": "The minimum price you are willing to sell this item for. Set to 0 to disable.",
+              "minimum_profit": "The minimum profit you want to make when selling this item. Set to 0 to disable",
+              "minimum_sma": "The minimum simple moving average to consider for selling this item. Set to 0 to disable",
+              "maximum_price": "The maximum price you are willing to buy this item for. Set to 0 to disable."
             }
           }
         }
@@ -1652,15 +1612,6 @@
           "header_left": "{{similarity}}%",
           "footer_right": "<open/>"
         },
-        "tooltips": {
-          "roi": "Return on Investment",
-          "average_profit_per_transaction": "Average Profit Per Transaction",
-          "average_transaction_value": "Average Transaction Value",
-          "average_revenue_per_transaction": "Average Revenue Per Transaction",
-          "average_expense_per_transaction": "Average Expense Per Transaction",
-          "lowest_expense": "Lowest Expense",
-          "lowest_revenue": "Lowest Revenue"
-        },
         "labels": {
           "rank": "Rank:",
           "rerolls": "Rerolls:",
@@ -1674,20 +1625,7 @@
           "best_attributes": "Best Attributes",
           "mandatory": "Mandatory",
           "optional": "Optional",
-          "best_bad_attributes": "Best Bad Attributes",
-          "total_profit": "Total Profit",
-          "expenses": "Expenses",
-          "revenue": "Revenue",
-          "total_transactions": "Total Transactions",
-          "average_transaction_value": "Average Transaction Value",
-          "profit_margin": "Profit Margin",
-          "sales_count": "Sales Count",
-          "average_revenue_per_transaction": "Average Revenue Per Transaction",
-          "purchases_count": "Purchases Count",
-          "average_expense_per_transaction": "Average Expense Per Transaction",
-          "price_history": "Price History",
-          "highest_revenue": "Highest Revenue",
-          "highest_expense": "Highest Expense"
+          "best_bad_attributes": "Best Bad Attributes"
         }
       },
       "update_available": {
@@ -1713,30 +1651,6 @@
         "location": "Location: {{location}}",
         "footer": "Please report this error to the developers,\nBy exporting the log file just click the button below this wil create a file in on your desktop",
         "export_log": "Export Log"
-      },
-      "wfm_order_details": {
-        "tabs": {
-          "overview": {
-            "title": "Overview",
-            "fields": {
-              "created_at": "Created At",
-              "updated_at": "Updated At",
-              "quantity": "Quantity",
-              "order_type": "Order Type",
-              "platinum": "Platinum",
-              "closed_avg": "Closed Average Price",
-              "profit": "Profit",
-              "highest_price": "Highest Price",
-              "lowest_price": "Lowest Price",
-              "listed": "Listed Prices History",
-              "no_listed": "No previous listed prices",
-              "per_trade": "Per Trade"
-            },
-            "buttons": {
-              "wfm": "Warframe Market"
-            }
-          }
-        }
       }
     },
     "chat_item": {
@@ -1785,14 +1699,21 @@
     },
     "financial_report_card": {
       "tooltips": {
-        "profit_margin": "Profit Margin",
-        "total_credits": "Total Credits Transacted"
+        "total_expenses": "Total Expenses",
+        "total_revenue": "Total Revenue",
+        "average_profit": "Average Profit",
+        "total_credits": "Total Credits",
+        "lowest_revenue": "Lowest Revenue",
+        "lowest_expense": "Lowest Expense",
+        "highest_revenue": "Highest Revenue"
       },
       "labels": {
-        "total_transactions": "Total Transactions",
         "trade_count": "Trade Count",
-        "purchases_count": "Purchases Count",
-        "sales_count": "Sales Count",
+        "highest_revenue": "Highest Revenue",
+        "highest_expense": "Highest Expense",
+        "total_transactions": "Total Transactions",
+        "revenue": "Revenue",
+        "expenses": "Expenses",
         "total_profit": "Total Profit"
       }
     },
@@ -1801,6 +1722,11 @@
         "riven_name": "{{name}} <blue>{{mod_name}}</blue>",
         "footer_left": "R: {{rank}}/8",
         "footer_right": "MR: {{mastery}}"
+      }
+    },
+    "price_history_popover": {
+      "labels": {
+        "price_history": "Price History"
       }
     }
   },

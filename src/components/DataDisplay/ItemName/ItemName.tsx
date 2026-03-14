@@ -1,4 +1,4 @@
-import { Group, MantineSize, useMantineTheme } from "@mantine/core";
+import { Group, MantineSize, TextProps, useMantineTheme } from "@mantine/core";
 import { ItemWithMeta } from "$types";
 import { TextTranslate } from "../../Shared/TextTranslate";
 import { useTranslateCommon } from "@hooks/useTranslate.hook";
@@ -16,15 +16,17 @@ const DEFAULT_SETTINGS: Record<string, DisplaySettings> = {
   cyan_stars: { prefix: "<cyan_stars/> ", suffix: "" },
 };
 
-export type ItemNameProps = {
+export type ItemNameProps = TextProps & {
   color?: string;
+  textProps?: TextProps;
   size?: MantineSize | (string & {});
   hideQuantity?: boolean;
   value: ItemWithMeta;
   displaySettings?: Record<string, DisplaySettings>;
+  children?: React.ReactNode;
 };
 
-export const ItemName = memo(function ItemName({ color, size, hideQuantity, value, displaySettings }: ItemNameProps) {
+export const ItemName = memo(function ItemName({ color, size, hideQuantity, value, displaySettings, children, ...props }: ItemNameProps) {
   const theme = useMantineTheme();
   // Fetch data from cache context
   const { tradableItems, weapons } = useCacheContext();
@@ -37,6 +39,7 @@ export const ItemName = memo(function ItemName({ color, size, hideQuantity, valu
   };
   return (
     <Group align="center">
+      {children}
       <TextTranslate
         color={color}
         size={size}
@@ -50,6 +53,7 @@ export const ItemName = memo(function ItemName({ color, size, hideQuantity, valu
           amber_stars: <FontAwesomeIcon color={theme.colors.yellow[5]} icon={faAmberStar} />,
           cyan_stars: <FontAwesomeIcon color={theme.colors.blue[5]} icon={faCyanStar} />,
         }}
+        {...props}
       />
     </Group>
   );

@@ -1,8 +1,7 @@
 import { modals } from "@mantine/modals";
 import { Text } from "@mantine/core";
 import { TauriTypes } from "$types";
-import { StockItemDetailsModal } from "@components/Modals/StockItemDetails";
-import { StockItemUpdate } from "@components/Forms/StockItemUpdate";
+import { ItemDetailsModal, Operations } from "@components/Modals/ItemDetails";
 import { useTranslateCommon, useTranslateModals } from "@hooks/useTranslate.hook";
 import { GenerateTradeMessageModal, GenerateTradeMessageModalProps } from "@components/Modals/GenerateTradeMessage";
 
@@ -101,7 +100,7 @@ export const useModals = ({ updateMutation, updateMultipleMutation, sellStockMut
     modals.open({
       size: "100%",
       withCloseButton: false,
-      children: <StockItemDetailsModal value={item.id} />,
+      children: <ItemDetailsModal value={item.id} lookup="stock_item" operations={[Operations.MarketInfo, Operations.TransactionInfo]} />,
     });
   };
 
@@ -110,9 +109,11 @@ export const useModals = ({ updateMutation, updateMultipleMutation, sellStockMut
       size: "100%",
       withCloseButton: false,
       children: (
-        <StockItemUpdate
-          values={ids}
-          onUpdate={async (input) => {
+        <ItemDetailsModal
+          value={ids[0]}
+          lookup="stock_item"
+          operations={[Operations.EditForm]}
+          onSave={async (input: TauriTypes.UpdateStockItem) => {
             if (ids.length == 1) await updateMutation.mutateAsync(input);
             else await updateMultipleMutation.mutateAsync({ ids, input: { ...input, id: -1 } });
             modals.close(id);

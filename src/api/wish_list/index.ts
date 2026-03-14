@@ -39,8 +39,8 @@ export class WishListModule {
     return await this.client.sendInvoke<TauriTypes.WishListItem>("wish_list_bought", { ...entry });
   }
 
-  async getById(id: number): Promise<TauriTypes.WishListItemDetails> {
-    return await this.client.sendInvoke<TauriTypes.WishListItemDetails>("wish_list_get_by_id", { id });
+  async getById<T>(id: number, operations?: string[]): Promise<TauriTypes.WishListItem<T>> {
+    return await this.client.sendInvoke<TauriTypes.WishListItem<T>>("wish_list_get_by_id", { id, operations });
   }
   exportJson = async (query: TauriTypes.WishListControllerGetListParams): Promise<string> => {
     return await this.client.sendInvoke<string>("export_wish_list_json", {

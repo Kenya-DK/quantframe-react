@@ -279,12 +279,36 @@ pub fn set_order_market_metrics(
     live_orders: &OrderList<OrderWithUser>,
     order_type: OrderType,
 ) {
+    // Metrics for Highest, Lowest Sell and Buy Prices
+    let sell_highest = live_orders.highest_price(OrderType::Sell);
+    let sell_lowest = live_orders.lowest_price(OrderType::Sell);
+    let buy_highest = live_orders.highest_price(OrderType::Buy);
+    let buy_lowest = live_orders.lowest_price(OrderType::Buy);
     properties.set_property_value("update_string", format!("p:{}", post_price));
     properties.set_property_value("closed_avg", item_price_info.avg_price);
-    properties.set_property_value("profit", profit);
-    properties.set_property_value("lowest_price", live_orders.lowest_price(order_type));
-    properties.set_property_value("highest_price", live_orders.highest_price(order_type));
-    properties.set_property_value("orders", json!(live_orders.take_top(5, order_type)));
+
+    // Use by Items Details Modal
+    properties.set_property_value("potential_profit", profit);
+    properties.set_property_value("sell_highest_price", sell_highest);
+    properties.set_property_value("sell_lowest_price", sell_lowest);
+    properties.set_property_value("buy_highest_price", buy_highest);
+    properties.set_property_value("buy_lowest_price", buy_lowest);
+    properties.set_property_value("supply", live_orders.sell_orders.len());
+    properties.set_property_value("demand", live_orders.buy_orders.len());
+    let spread = sell_lowest - buy_highest;
+    properties.set_property_value("spread", spread);
+    let spread_pct = if sell_lowest > 0 {
+        spread as f64 / sell_lowest as f64 * 100.0
+    } else {
+        0.0
+    };
+
+    properties.set_property_value("spread_percent", spread_pct);
+    properties.set_property_value("orders", live_orders.take_top(5, order_type));
+
+    let mut operations = properties.get_property_value("operations", OperationSet::default());
+    operations.add("MarketPopulated");
+    properties.set_property_value("operations", operations);
     push_price_history(properties, post_price);
 }
 pub fn push_price_history(properties: &mut wf_market::types::Properties, price: i64) {

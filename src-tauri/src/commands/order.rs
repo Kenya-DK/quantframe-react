@@ -5,7 +5,7 @@ use std::{
 
 use entity::{dto::*, enums::*};
 use serde_json::Value;
-use utils::{filters_by, get_location, group_by, sorting::SortDirection, Error};
+use utils::{filters_by, get_location, group_by, sorting::SortDirection, Error, Properties};
 use wf_market::types::Order;
 
 use crate::{
@@ -140,8 +140,8 @@ pub async fn get_wfm_orders_status_counts(
                     items
                         .iter()
                         .map(|item| {
-                            (item.properties.get_property_value("profit", 0) * item.quantity as i64)
-                                as f64
+                            (item.properties.get_property_value("potential_profit", 0)
+                                * item.quantity as i64) as f64
                         })
                         .sum(),
                 ),
@@ -229,8 +229,11 @@ pub async fn order_delete_by_id(
 #[tauri::command]
 pub async fn get_wfm_order_by_id(
     id: String,
+    operations: Option<Vec<String>>,
+    cache: tauri::State<'_, Mutex<CacheState>>,
     app: tauri::State<'_, Mutex<AppState>>,
 ) -> Result<Order, Error> {
+    let cache = cache.lock()?.clone();
     let app = app.lock()?.clone();
     let order = app.wfm_client.order().cache_orders().get_by_id(&id);
     if order.is_none() {
@@ -240,7 +243,29 @@ pub async fn get_wfm_order_by_id(
             get_location!(),
         ));
     }
-    let order = order.unwrap();
+    let mut order = order.unwrap();
+    let mut properties = Properties::default();
+    helper::populate_item_market_properties(
+        &mut properties,
+        &order.item_id,
+        order.subtype.to_entity(),
+        0,
+        Some(order.platinum as i64),
+        OperationSet::from(
+            operations.unwrap_or(
+                vec!["MarketInfo", "TransactionInfo", "ProfitabilityInfo"]
+                    .into_iter()
+                    .map(|s| s.to_string())
+                    .collect(),
+            ),
+        ),
+        order.order_type,
+        &cache,
+        &app.wfm_client,
+    )
+    .await?;
+
+    order.properties.set_properties(properties.properties);
 
     Ok(order)
 }

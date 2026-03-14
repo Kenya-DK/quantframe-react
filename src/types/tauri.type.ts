@@ -548,7 +548,7 @@ export namespace TauriTypes {
     profit_margin: number;
     revenue: number;
   }
-  export interface StockEntryBase {
+  export interface StockEntryBase<T = any> {
     id: number;
     bought: number;
     minimum_price?: number;
@@ -559,8 +559,9 @@ export namespace TauriTypes {
     created_at: string;
     updated_at: string;
     price_history: PriceHistory[];
+    properties: T;
   }
-  export interface StockItem extends StockEntryBase {
+  export interface StockItem<T = any> extends StockEntryBase<T> {
     created_at: string;
     id: number;
     is_hidden: boolean;
@@ -757,7 +758,7 @@ export namespace TauriTypes {
     properties?: Record<string, any>;
     created_at?: string;
   }
-  export interface WishListItem extends Omit<StockEntryBase, "minimum_price"> {
+  export interface WishListItem<T = any> extends Omit<StockEntryBase<T>, "minimum_price"> {
     id: number;
     item_name: string;
     wfm_url: string;
@@ -795,17 +796,6 @@ export namespace TauriTypes {
     created_at: string;
     updated_at: string;
     price_history: PriceHistory[];
-  }
-  export interface StockItemDto extends StockEntryBaseDto {
-    created_at: string;
-    id: number;
-    is_hidden: boolean;
-    item_name: string;
-    item_unique_name: string;
-    owned: number;
-    updated_at: string;
-    wfm_id: string;
-    wfm_url: string;
   }
   export interface ChatLink {
     prefix: string;
@@ -854,7 +844,7 @@ export namespace TauriTypes {
     status?: TauriTypes.StockStatus;
   }
   export type StockItemControllerGetListData = PaginatedDto & {
-    results?: StockItemDto[];
+    results?: StockItem[];
   };
   export interface StockRivenControllerGetListParams {
     page: number;

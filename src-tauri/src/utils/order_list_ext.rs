@@ -2,7 +2,7 @@ use serde_json::json;
 use utils::Error;
 use wf_market::{
     enums::OrderType,
-    types::{Order, OrderList},
+    types::{Order, OrderLike, OrderList, OrderWithUser, UpdateOrderParams},
 };
 
 use crate::{
@@ -35,7 +35,7 @@ impl OrderListExt for OrderList<Order> {
                     .set_property_value("closed_avg", price.avg_price);
                 order
                     .properties
-                    .set_property_value("profit", price.profit as i64);
+                    .set_property_value("potential_profit", price.profit as i64);
             }
         }
 
@@ -50,7 +50,7 @@ impl OrderListExt for OrderList<Order> {
             .iter()
             .map(|order| {
                 let platinum = order.platinum as i64;
-                let profit = order.properties.get_property_value("profit", 0);
+                let profit = order.properties.get_property_value("potential_profit", 0);
                 let wfm_id = order.item_id.clone();
                 let id = order.id.clone();
                 (platinum, profit as f64, wfm_id, id)
@@ -64,6 +64,25 @@ impl OrderListExt for OrderList<Order> {
             .chain(self.sell_orders.iter_mut())
         {
             order.apply_info(cache)?;
+        }
+
+        Ok(())
+    }
+}
+impl OrderListExt for OrderList<OrderWithUser> {
+    fn apply_trade_info(&mut self) -> Result<(), Error> {
+        Ok(())
+    }
+    fn extract_order_summary(&self, _: OrderType) -> Vec<(i64, f64, String, String)> {
+        vec![]
+    }
+    fn apply_item_info(&mut self, cache: &CacheState) -> Result<(), Error> {
+        for order in self
+            .buy_orders
+            .iter_mut()
+            .chain(self.sell_orders.iter_mut())
+        {
+            order.order.apply_info(cache)?;
         }
 
         Ok(())

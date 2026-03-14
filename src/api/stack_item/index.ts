@@ -42,8 +42,8 @@ export class StockItemModule {
     return await this.client.sendInvoke<TauriTypes.StockItem>("stock_item_sell", { ...entry, by });
   }
 
-  async getById(id: number): Promise<TauriTypes.StockItemDetails> {
-    return await this.client.sendInvoke<TauriTypes.StockItemDetails>("stock_item_get_by_id", { id });
+  async getById<T = any>(id: number, operations?: string[]): Promise<TauriTypes.StockItem<T>> {
+    return await this.client.sendInvoke<TauriTypes.StockItem<T>>("stock_item_get_by_id", { id, operations });
   }
   exportJson = async (query: TauriTypes.StockItemControllerGetListParams): Promise<string> => {
     return await this.client.sendInvoke<string>("export_stock_item_json", {

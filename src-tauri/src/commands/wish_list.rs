@@ -10,9 +10,10 @@ use wf_market::enums::OrderType;
 use crate::{
     add_metric,
     app::client::AppState,
+    cache::CacheState,
     handlers::{handle_wfm_item, handle_wish_list, handle_wish_list_by_entity},
     helper,
-    types::PermissionsFlags,
+    types::{OperationSet, PermissionsFlags},
     APP, DATABASE,
 };
 
@@ -139,9 +140,17 @@ pub async fn wish_list_update_multiple(
     Ok(updated_items)
 }
 #[tauri::command]
-pub async fn wish_list_get_by_id(id: i64) -> Result<Value, Error> {
+
+pub async fn wish_list_get_by_id(
+    id: i64,
+    operations: Option<Vec<String>>,
+    cache: tauri::State<'_, Mutex<CacheState>>,
+    app: tauri::State<'_, Mutex<AppState>>,
+) -> Result<wish_list::Model, Error> {
+    let cache = cache.lock()?.clone();
+    let app = app.lock()?.clone();
     let conn = DATABASE.get().unwrap();
-    let item = match WishListQuery::find_by_id(conn, id).await {
+    let mut item = match WishListQuery::find_by_id(conn, id).await {
         Ok(wish_list_item) => {
             if let Some(item) = wish_list_item {
                 item
@@ -156,12 +165,27 @@ pub async fn wish_list_get_by_id(id: i64) -> Result<Value, Error> {
         Err(e) => return Err(e.with_location(get_location!())),
     };
 
-    let (mut payload, _, _) =
-        helper::get_item_details(&item.wfm_id, item.sub_type.clone(), OrderType::Buy).await?;
+    helper::populate_item_market_properties(
+        &mut item.properties,
+        &item.wfm_url,
+        item.sub_type.clone(),
+        0,
+        item.list_price,
+        OperationSet::from(
+            operations.unwrap_or(
+                vec!["MarketInfo"]
+                    .into_iter()
+                    .map(|s| s.to_string())
+                    .collect(),
+            ),
+        ),
+        OrderType::Buy,
+        &cache,
+        &app.wfm_client,
+    )
+    .await?;
 
-    payload["stock"] = json!(item);
-
-    Ok(payload)
+    Ok(item)
 }
 #[tauri::command]
 pub async fn export_wish_list_json(
