@@ -17,26 +17,24 @@ import {
   ScrollArea,
   Grid,
   Divider,
-  Popover,
 } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import api, { WFMThumbnail } from "@api/index";
 import { Loading } from "@components/Shared/Loading";
-import { upperFirst, useDisclosure } from "@mantine/hooks";
+import { upperFirst } from "@mantine/hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle, faGlobe } from "@fortawesome/free-solid-svg-icons";
-import { PriceHistoryListItem } from "../../DataDisplay/PriceHistoryListItem";
 import { RivenAttribute as RivenAttributeCon } from "../../DataDisplay/RivenAttribute";
 import { TransactionListItem } from "../../DataDisplay/TransactionListItem";
-import { StatsWithSegments } from "../../Shared/StatsWithSegments";
-import { faWarframeMarket } from "@icons";
 import { LocalizedDynamicMessage } from "../../Shared/LocalizedDynamicMessage";
 import { RivenAttribute, TauriTypes } from "../../../types";
 import { getPolarityIcon } from "@icons";
 import { useState, useEffect } from "react";
-import { useTranslateEnums, useTranslateModals } from "@hooks/useTranslate.hook";
+import { useTranslateModals } from "@hooks/useTranslate.hook";
 import { RivenPreview } from "../../DataDisplay/RivenPreview";
 import { ActionWithTooltip } from "../../Shared/ActionWithTooltip";
+import { FinancialReportCard } from "../../Shared/FinancialReportCard";
+import { PriceHistoryPopover } from "../../DataDisplay/PriceHistoryPopover";
 
 const colors = {
   mandatory: alpha("var(--mantine-color-grape-7)", 0.55),
@@ -76,7 +74,6 @@ export type StockRivenDetailsModalProps = {
 };
 
 export function StockRivenDetailsModal({ value }: StockRivenDetailsModalProps) {
-  const [opened, { close, open }] = useDisclosure(false);
   const { data, isLoading } = useQuery({
     queryKey: ["stock_riven", value],
     queryFn: () => api.stock_riven.getById(value, "summary"),
@@ -136,35 +133,7 @@ export function StockRivenDetailsModal({ value }: StockRivenDetailsModalProps) {
           />
           <Flex direction="column">
             <Title order={2}>
-              <Popover position="bottom" opened={opened}>
-                <Popover.Target>
-                  <FontAwesomeIcon
-                    onMouseEnter={open}
-                    onMouseLeave={close}
-                    size={"sm"}
-                    icon={faWarframeMarket}
-                    data-stock-status={data.stock_status || "live"}
-                    data-color-mode="text"
-                    style={{ marginRight: "3px" }}
-                  />
-                </Popover.Target>
-                <Popover.Dropdown style={{ pointerEvents: "none" }}>
-                  <Group justify="space-between" mb="sm">
-                    <Title order={4} mb="sm">
-                      {useTranslate("labels.price_history")}
-                    </Title>
-                    <Title order={4} mb="sm" data-stock-status={data.stock_status || "live"} data-color-mode="text">
-                      {useTranslateEnums(`stock_status.${data.stock_status || "live"}`)}
-                    </Title>
-                  </Group>
-                  {data.price_history
-                    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                    .slice(0, 5)
-                    .map((price, index) => (
-                      <PriceHistoryListItem key={index} history={price} />
-                    ))}
-                </Popover.Dropdown>
-              </Popover>
+              <PriceHistoryPopover histories={data.price_history} status={data.stock_status} size="sm" />
               {data.weapon_name} {upperFirst(data.mod_name)}
             </Title>
             <Rating
@@ -391,96 +360,7 @@ export function StockRivenDetailsModal({ value }: StockRivenDetailsModalProps) {
           <Title order={3} mb="md">
             {useTranslate("titles.financial_summary")}
           </Title>
-          <StatsWithSegments
-            p={0}
-            orientation="vertical"
-            h={330}
-            segments={[
-              {
-                label: useTranslate("labels.total_profit"),
-                count: data.financial_summary.total_profit,
-                color: "teal",
-                hideInProgress: true,
-                tooltip: useTranslate("tooltips.roi"),
-                part: data.financial_summary.roi,
-                suffix: " $",
-                decimalScale: 2,
-              },
-              { label: useTranslate("labels.expenses"), count: data.financial_summary.expenses, color: "red" },
-              { label: useTranslate("labels.revenue"), count: data.financial_summary.revenue, color: "green" },
-            ]}
-            showPercent
-            percentSymbol="%"
-            footer={
-              <Stack>
-                <StatsWithSegments
-                  p={0}
-                  hidePercentBar
-                  segments={[
-                    {
-                      label: useTranslate("labels.total_transactions"),
-                      count: data.financial_summary.total_transactions,
-                      color: "orange",
-                      tooltip: useTranslate("tooltips.average_transaction_value"),
-                      part: data.financial_summary.average_transaction,
-                      decimalScale: 2,
-                    },
-                    {
-                      label: useTranslate("labels.profit_margin"),
-                      count: Math.round(data.financial_summary.profit_margin * 100) / 100,
-                      color: data.financial_summary.profit_margin >= 0 ? "var(--qf-positive-color)" : "var(--qf-negative-color)",
-                      tooltip: useTranslate("tooltips.average_profit_per_transaction"),
-                      part: data.financial_summary.average_profit,
-                      suffix: " P",
-                      decimalScale: 2,
-                    },
-                    {
-                      label: useTranslate("labels.sales_count"),
-                      count: data.financial_summary.sale_count,
-                      color: "green",
-                      tooltip: useTranslate("tooltips.average_revenue_per_transaction"),
-                      part: data.financial_summary.average_revenue,
-                      suffix: " P",
-                      decimalScale: 2,
-                    },
-                    {
-                      label: useTranslate("labels.purchases_count"),
-                      count: data.financial_summary.purchases_count,
-                      color: "red",
-                      tooltip: useTranslate("tooltips.average_expense_per_transaction"),
-                      part: data.financial_summary.average_expense,
-                      suffix: " P",
-                      decimalScale: 2,
-                    },
-                  ]}
-                  showPercent
-                />
-                <StatsWithSegments
-                  p={0}
-                  hidePercentBar
-                  segments={[
-                    {
-                      label: useTranslate("labels.highest_revenue"),
-                      count: data.financial_summary.highest_revenue,
-                      color: "green",
-                      tooltip: useTranslate("tooltips.lowest_revenue"),
-                      part: data.financial_summary.lowest_revenue,
-                      decimalScale: 2,
-                    },
-                    {
-                      label: useTranslate("labels.highest_expense"),
-                      count: data.financial_summary.highest_expense,
-                      color: "red",
-                      tooltip: useTranslate("tooltips.lowest_expense"),
-                      part: data.financial_summary.lowest_expense,
-                      decimalScale: 2,
-                    },
-                  ]}
-                  showPercent
-                />
-              </Stack>
-            }
-          />
+          <FinancialReportCard hideTradeCount data={data.financial_summary} />
         </Grid.Col>
       </Grid>
     </Box>

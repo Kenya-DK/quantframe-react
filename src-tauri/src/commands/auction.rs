@@ -144,7 +144,7 @@ pub async fn get_wfm_auctions_overview(
     let profit = items
         .iter()
         .filter(|a| a.is_direct_sell)
-        .map(|a| a.properties.get_property_value("profit", 0) as i64)
+        .map(|a| a.properties.get_property_value("potential_profit", 0) as i64)
         .sum::<i64>();
     Ok((total, revenue, profit))
 }
