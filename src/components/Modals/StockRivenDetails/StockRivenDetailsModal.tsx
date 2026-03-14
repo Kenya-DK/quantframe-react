@@ -13,7 +13,6 @@ import {
   Card,
   Badge,
   alpha,
-  SimpleGrid,
   ScrollArea,
   Grid,
   Divider,
@@ -23,7 +22,7 @@ import api, { WFMThumbnail } from "@api/index";
 import { Loading } from "@components/Shared/Loading";
 import { upperFirst } from "@mantine/hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircle, faGlobe } from "@fortawesome/free-solid-svg-icons";
+import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { RivenAttribute as RivenAttributeCon } from "../../DataDisplay/RivenAttribute";
 import { TransactionListItem } from "../../DataDisplay/TransactionListItem";
 import { LocalizedDynamicMessage } from "../../Shared/LocalizedDynamicMessage";
@@ -31,8 +30,6 @@ import { RivenAttribute, TauriTypes } from "../../../types";
 import { getPolarityIcon } from "@icons";
 import { useState, useEffect } from "react";
 import { useTranslateModals } from "@hooks/useTranslate.hook";
-import { RivenPreview } from "../../DataDisplay/RivenPreview";
-import { ActionWithTooltip } from "../../Shared/ActionWithTooltip";
 import { FinancialReportCard } from "../../Shared/FinancialReportCard";
 import { PriceHistoryPopover } from "../../DataDisplay/PriceHistoryPopover";
 
@@ -242,7 +239,7 @@ export function StockRivenDetailsModal({ value }: StockRivenDetailsModalProps) {
           <RivenAttributeCon key={index} value={modifier} hideDetails={false} />
         ))}
       </Stack>
-      <Divider mt={"md"} />
+      {/* <Divider mt={"md"} />
       <Box mt="lg">
         <Group justify="space-between" align="flex-start" mb="md">
           <Text size="lg" fw={600}>
@@ -288,7 +285,7 @@ export function StockRivenDetailsModal({ value }: StockRivenDetailsModalProps) {
             ))}
           </SimpleGrid>
         </ScrollArea.Autosize>
-      </Box>
+      </Box> */}
       <Divider mt={"md"} />
       <Box mt="lg">
         <Group justify="space-between" align="flex-start" mb="md">
