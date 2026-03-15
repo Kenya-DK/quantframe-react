@@ -1,4 +1,4 @@
-import { ActionIcon, Box, Divider, Group, Pagination, ScrollArea, Select, SimpleGrid, Text, Tooltip } from "@mantine/core";
+import { ActionIcon, Box, Divider, Group, ScrollArea, Select, SimpleGrid, Tooltip } from "@mantine/core";
 import { SearchField } from "@components/Forms/SearchField";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { faArrowDown, faArrowUp, faCartShopping, faInfoCircle, faPen, faRefresh, faSackDollar, faTrashCan } from "@fortawesome/free-solid-svg-icons";
@@ -15,7 +15,8 @@ import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 import { Loading } from "@components/Shared/Loading";
 import { useStockModals } from "./modals";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { TextTranslate } from "../../../../components/Shared/TextTranslate";
+import { TextTranslate } from "@components/Shared/TextTranslate";
+import { PaginationFooter } from "@components/Shared/PaginationFooter";
 
 interface OrderPanelProps {
   isActive?: boolean;
@@ -238,22 +239,13 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
         </SimpleGrid>
       </ScrollArea>
       <Divider mt={"md"} />
-      <Group grow mt={"md"}>
-        <Text>
-          {useTranslateCommon("pagination_total_items", {
-            start: (queryData.page - 1) * queryData.limit + 1,
-            end: Math.min(queryData.page * queryData.limit, paginationQuery.data?.total || 0),
-            total: paginationQuery.data?.total || 0,
-          })}
-        </Text>
-        <Group justify="flex-end">
-          <Pagination
-            value={queryData.page}
-            onChange={(page) => setQueryData((prev) => ({ ...prev, page }))}
-            total={Math.ceil((paginationQuery.data?.total || 0) / queryData.limit)}
-          />
-        </Group>
-      </Group>
+      <PaginationFooter
+        page={queryData.page}
+        limit={queryData.limit || 50}
+        total={paginationQuery.data?.total || 0}
+        onPageChange={(page) => setQueryData((prev) => ({ ...prev, page }))}
+        onLimitChange={(limit) => setQueryData((prev) => ({ ...prev, page: 1, limit }))}
+      />
     </Box>
   );
 };

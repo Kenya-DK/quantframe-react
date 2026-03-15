@@ -1,4 +1,4 @@
-import { ActionIcon, Box, Divider, Group, Pagination, ScrollArea, Select, SimpleGrid, Tooltip } from "@mantine/core";
+import { ActionIcon, Box, Divider, Group, ScrollArea, Select, SimpleGrid, Tooltip } from "@mantine/core";
 import { SearchField } from "@components/Forms/SearchField";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { faArrowDown, faArrowUp, faFileImport, faRefresh, faSackDollar, faTrashCan } from "@fortawesome/free-solid-svg-icons";
@@ -15,6 +15,7 @@ import { useStockModals } from "./modals";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { TextTranslate } from "@components/Shared/TextTranslate";
 import { RivenPreview } from "@components/DataDisplay/RivenPreview";
+import { PaginationFooter } from "@components/Shared/PaginationFooter";
 interface AuctionPanelProps {
   isActive?: boolean;
 }
@@ -194,15 +195,13 @@ export const AuctionPanel = ({ isActive }: AuctionPanelProps) => {
         </SimpleGrid>
       </ScrollArea>
       <Divider mt={"md"} />
-      <Group grow mt={"md"}>
-        <Group justify="flex-end">
-          <Pagination
-            value={queryData.page}
-            onChange={(page) => setQueryData((prev) => ({ ...prev, page }))}
-            total={Math.ceil((paginationQuery.data?.total || 0) / queryData.limit)}
-          />
-        </Group>
-      </Group>
+      <PaginationFooter
+        page={queryData.page}
+        limit={queryData.limit || 50}
+        total={paginationQuery.data?.total || 0}
+        onPageChange={(page) => setQueryData((prev) => ({ ...prev, page }))}
+        onLimitChange={(limit) => setQueryData((prev) => ({ ...prev, page: 1, limit }))}
+      />
     </Box>
   );
 };
