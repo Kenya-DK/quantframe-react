@@ -24,6 +24,7 @@ pub struct WFInventoryState {
     path: PathBuf,
     item_module: OnceLock<Arc<ItemModule>>,
     riven_module: OnceLock<Arc<RivenModule>>,
+    syndicate_module: OnceLock<Arc<SyndicateModule>>,
 }
 
 impl WFInventoryState {
@@ -34,14 +35,19 @@ impl WFInventoryState {
         }
         let state = Arc::new(Self {
             root: Mutex::new(WarframeRootObject::default()),
-            last_update: Mutex::new(Instant::now().checked_sub(Duration::from_secs(1000)).unwrap_or(Instant::now())),
+            last_update: Mutex::new(
+                Instant::now()
+                    .checked_sub(Duration::from_secs(1000))
+                    .unwrap_or(Instant::now()),
+            ),
             path,
             item_module: OnceLock::new(),
             riven_module: OnceLock::new(),
+            syndicate_module: OnceLock::new(),
         });
 
         // Turn off watcher for now
-        // Self::start_watcher(state.clone());
+        Self::start_watcher(state.clone());
         state.init_modules();
         state
     }
@@ -120,6 +126,8 @@ impl WFInventoryState {
             .get_or_init(|| ItemModule::new(self.clone()));
         self.riven_module
             .get_or_init(|| RivenModule::new(self.clone()));
+        self.syndicate_module
+            .get_or_init(|| SyndicateModule::new(self.clone()));
     }
 
     // pub fn item(&self) -> Arc<ItemModule> {
@@ -133,6 +141,12 @@ impl WFInventoryState {
         self.riven_module
             .get()
             .expect("RivenModule not initialized")
+            .clone()
+    }
+    pub fn syndicate(&self) -> Arc<SyndicateModule> {
+        self.syndicate_module
+            .get()
+            .expect("SyndicateModule not initialized")
             .clone()
     }
     async fn on_data_file_modified(&self, path: &Path, _modified: SystemTime) -> Result<(), Error> {

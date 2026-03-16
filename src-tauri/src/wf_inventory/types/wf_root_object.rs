@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::wf_inventory::WFInvItemRaw;
+use crate::wf_inventory::*;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WarframeRootObject {
@@ -24,6 +24,9 @@ pub struct WarframeRootObject {
 
     #[serde(rename = "Recipes", default)]
     pub recipes: Vec<WFInvItemRaw>,
+
+    #[serde(rename = "Affiliations", default)]
+    pub affiliations: Vec<WFInvAffiliation>,
 }
 impl Default for WarframeRootObject {
     fn default() -> Self {
@@ -35,6 +38,7 @@ impl Default for WarframeRootObject {
             raw_upgrades: vec![],
             upgrades: vec![],
             recipes: vec![],
+            affiliations: vec![],
         }
     }
 }

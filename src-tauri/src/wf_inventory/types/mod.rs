@@ -18,3 +18,6 @@ pub use item_base::*;
 
 pub mod item_riven;
 pub use item_riven::*;
+
+pub mod affiliation;
+pub use affiliation::*;

@@ -2,7 +2,7 @@ use std::sync::{Arc, Weak};
 
 use entity::{dto::PaginatedResult, enums::FieldChange};
 use serde_json::json;
-use utils::{log_json_formatted, warning, Error, LoggerOptions};
+use utils::{log_json_formatted, warning, Error, LoggerOptions, SortDirection};
 static COMPONENT: &str = "WFInventory:RivenModule";
 
 use crate::{helper::paginate, utils::modules::states, wf_inventory::*};
@@ -65,7 +65,89 @@ impl RivenModule {
             }
             _ => {}
         }
-        log_json_formatted(json!(rivens), "RivenList.json", true)?;
+        match query.properties {
+            FieldChange::Value(properties) => {
+                let riven_type_filter = properties.get_property_value("riven_type", String::new());
+                match riven_type_filter.as_str() {
+                    "veiled" | "" => {
+                        rivens.retain(|riven| riven.riven_type == RivenState::Veiled);
+                    }
+                    "unveiled" => {
+                        rivens.retain(|riven| {
+                            riven.riven_type == RivenState::Unveiled
+                                || riven.riven_type == RivenState::PreVeiled
+                        });
+                    }
+                    _ => {}
+                }
+            }
+            _ => {}
+        }
+
+        match &query.sort_by {
+            FieldChange::Value(sort_by) => {
+                let dir = match &query.sort_direction {
+                    FieldChange::Value(dir) => dir,
+                    _ => &SortDirection::Asc,
+                };
+                // Only allow sorting by known columns for safety
+                match sort_by.as_str() {
+                    "disposition" => rivens.sort_by(|a, b| match dir {
+                        SortDirection::Asc => a
+                            .base
+                            .properties
+                            .get_property_value("disposition", 0.0f64)
+                            .partial_cmp(
+                                &b.base.properties.get_property_value("disposition", 0.0f64),
+                            )
+                            .unwrap_or(std::cmp::Ordering::Equal),
+                        SortDirection::Desc => b
+                            .base
+                            .properties
+                            .get_property_value("disposition", 0.0f64)
+                            .partial_cmp(
+                                &a.base.properties.get_property_value("disposition", 0.0f64),
+                            )
+                            .unwrap_or(std::cmp::Ordering::Equal),
+                    }),
+                    "endo" => rivens.sort_by(|a, b| match dir {
+                        SortDirection::Asc => a
+                            .base
+                            .properties
+                            .get_property_value("endo_cost", 0)
+                            .cmp(&b.base.properties.get_property_value("endo_cost", 0)),
+                        SortDirection::Desc => b
+                            .base
+                            .properties
+                            .get_property_value("endo_cost", 0)
+                            .cmp(&a.base.properties.get_property_value("endo_cost", 0)),
+                    }),
+                    "riven_grade" => rivens.sort_by(|a, b| match dir {
+                        SortDirection::Asc => a
+                            .base
+                            .properties
+                            .get_property_value("riven_grade", String::new())
+                            .cmp(
+                                &b.base
+                                    .properties
+                                    .get_property_value("riven_grade", String::new()),
+                            ),
+                        SortDirection::Desc => b
+                            .base
+                            .properties
+                            .get_property_value("riven_grade", String::new())
+                            .cmp(
+                                &a.base
+                                    .properties
+                                    .get_property_value("riven_grade", String::new()),
+                            ),
+                    }),
+                    _ => {}
+                }
+            }
+            _ => {}
+        }
+
         let paginate = paginate(&rivens, query.pagination.page, query.pagination.limit);
         Ok(paginate)
     }

@@ -89,11 +89,12 @@ export interface ItemRiven<P = any, A = any> {
   mod_name: string;
   name: string;
   polarity: string;
-  properties?: Record<string, P>;
   re_rolls: number;
   riven_type: string;
   sub_type?: SubType;
   unique_name: string;
   uuid: string;
   wfm_url: string;
+  quantity: number;
+  properties: P;
 }

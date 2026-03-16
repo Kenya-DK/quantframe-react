@@ -1718,10 +1718,19 @@
       }
     },
     "riven_preview": {
-      "without_background": {
-        "riven_name": "{{name}} <blue>{{mod_name}}</blue>",
-        "footer_left": "R: {{rank}}/8",
-        "footer_right": "MR: {{mastery}}"
+      "riven_name": "{{name}} <blue>{{mod_name}}</blue>",
+      "types": {
+        "unveiled": {
+          "footer_left": "{{progress}}/{{required}}"
+        },
+        "pre-veiled": {
+          "footer_left": "x{{quantity}}"
+        },
+        "veiled": {
+          "header_left": "{{price}} <plat/>",
+          "footer_left": "R: {{rank}}/8",
+          "footer_right": "MR: {{mastery}}"
+        }
       }
     },
     "price_history_popover": {
@@ -2337,6 +2346,17 @@
               "found": "Found in inventory",
               "not_found": "Not found in inventory"
             }
+          },
+          "filters": {
+            "all": "All",
+            "rifle": "Rifle",
+            "shotgun": "Shotgun",
+            "melee": "Melee",
+            "pistol": "Pistol",
+            "zaw": "Zaw",
+            "arch": "Archwing",
+            "veiled": "Veiled",
+            "unveiled": "Unveiled"
           }
         }
       }

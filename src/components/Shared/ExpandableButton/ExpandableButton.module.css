@@ -1,0 +1,41 @@
+.root {
+  width: var(--erb-collapsed-width, 44px);
+  min-width: var(--erb-collapsed-width, 44px);
+  padding-inline: 10px;
+  transition: width var(--erb-transition-ms, 220ms) ease;
+  overflow: hidden;
+  border-radius: 25px;
+}
+
+.root :global(.mantine-Button-inner) {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.root :global(.mantine-Button-section) {
+  margin: 0;
+}
+
+.root:hover,
+.root[data-selected="true"] {
+  width: var(--erb-expanded-width, 220px);
+}
+
+.content {
+  display: inline-flex;
+  align-items: center;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  margin-left: 8px;
+  transition:
+    max-width var(--erb-transition-ms, 220ms) ease,
+    opacity var(--erb-transition-ms, 220ms) ease;
+}
+
+.root:hover .content,
+.root[data-selected="true"] .content {
+  max-width: calc(var(--erb-expanded-width, 220px) - var(--erb-collapsed-width, 44px));
+  opacity: 1;
+}

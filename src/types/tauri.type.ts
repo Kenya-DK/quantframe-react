@@ -993,12 +993,13 @@ export namespace TauriTypes {
     sub_type?: SubType;
     properties?: Record<string, T>;
   }
-  export interface WFItemControllerGetListParams {
+  export interface WFItemControllerGetListParams<T = any> {
     page: number;
     limit: number;
     sort_by?: string;
     sort_direction?: "asc" | "desc";
     query?: string;
+    properties?: T;
     item_types?: string[];
   }
 
@@ -1009,6 +1010,9 @@ export namespace TauriTypes {
 
       challenge_description_with_complication: string;
       grade: string;
+      required?: number;
+      progress?: number;
+      price?: number;
     }>[];
   };
 

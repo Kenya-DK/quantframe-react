@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::{LoggerOptions, critical};
+
 #[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize, Default)]
 pub struct Properties {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -27,9 +29,21 @@ impl Properties {
     where
         T: Default + serde::de::DeserializeOwned,
     {
+        let key = key.into();
         if let Some(props) = &self.properties {
-            if let Some(value) = props.get(&key.into()) {
-                return serde_json::from_value(value.clone()).unwrap();
+            if let Some(value) = props.get(&key) {
+                if let Ok(value) = serde_json::from_value(value.clone()) {
+                    return value;
+                } else {
+                    critical(
+                        format!("{}:GetPropertyValue", "Properties"),
+                        format!(
+                            "Failed to deserialize property '{}' with value: {:?}",
+                            key, value
+                        ),
+                        &LoggerOptions::default(),
+                    );
+                }
             }
         }
         default

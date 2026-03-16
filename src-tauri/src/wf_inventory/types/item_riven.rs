@@ -21,7 +21,7 @@ pub struct WFInvItemRiven {
 
     pub riven_type: RivenState,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case")]
 pub enum RivenState {
     Unveiled,
@@ -53,9 +53,9 @@ impl WFInvItemRiven {
         let mut riven = Self::new_base(state.clone());
 
         match state {
-            RivenState::Unveiled => riven.populate_unveiled(raw, cache, &fingerprint)?,
+            RivenState::Unveiled => riven.populate_unveiled(raw, &fingerprint, cache)?,
             RivenState::PreVeiled => riven.populate_pre_veiled(raw, cache)?,
-            RivenState::Veiled => riven.populate_veiled(cache, &fingerprint)?,
+            RivenState::Veiled => riven.populate_veiled(raw, &fingerprint, cache)?,
             RivenState::Unknown => {
                 return Err(Error::new(
                     format!("{}:TryFromRaw", COMPONENT),
@@ -71,8 +71,8 @@ impl WFInvItemRiven {
     fn populate_unveiled(
         &mut self,
         raw: &WFInvItemRaw,
-        cache: &CacheState,
         fingerprint: &UpgradeFingerprint,
+        cache: &CacheState,
     ) -> Result<(), Error> {
         let challenge = fingerprint.challenge.clone().ok_or_else(|| {
             Error::new(
@@ -88,6 +88,8 @@ impl WFInvItemRiven {
             .get_challenge_by(challenge.challenge_type.clone())?;
 
         self.base.name = mod_data.name.clone();
+        self.base.unique_name = raw.unique_name.clone();
+        self.base.quantity = raw.quantity;
         self.base.sub_type = Some(SubType::variant("revealed"));
 
         self.base.properties.set_property_value(
@@ -100,6 +102,12 @@ impl WFInvItemRiven {
                 .description
                 .replace("|COUNT|", &challenge.required.to_string()),
         );
+        self.base
+            .properties
+            .set_property_value("required", challenge.required);
+        self.base
+            .properties
+            .set_property_value("progress", challenge.progress);
 
         Ok(())
     }
@@ -107,6 +115,8 @@ impl WFInvItemRiven {
         let mod_data = cache.mods().get(raw.unique_name.clone())?;
 
         self.base.name = mod_data.name.clone();
+        self.base.unique_name = raw.unique_name.clone();
+        self.base.quantity = raw.quantity;
         self.base.sub_type = Some(SubType::variant("unrevealed"));
 
         const MSG: &str = "Riven is pre-veiled and has not been unveiled yet.";
@@ -121,8 +131,9 @@ impl WFInvItemRiven {
     }
     fn populate_veiled(
         &mut self,
-        cache: &CacheState,
+        raw: &WFInvItemRaw,
         fingerprint: &UpgradeFingerprint,
+        cache: &CacheState,
     ) -> Result<(), Error> {
         let riven_cache = cache.riven();
 
@@ -134,6 +145,7 @@ impl WFInvItemRiven {
 
         self.base.name = weapon.name.clone();
         self.base.wfm_url = weapon.wfm_url_name.clone();
+        self.base.unique_name = raw.unique_name.clone();
         self.base.sub_type = Some(SubType::rank(fingerprint.mod_rank));
         self.base
             .properties

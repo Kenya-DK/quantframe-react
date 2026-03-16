@@ -37,6 +37,9 @@ pub struct ItemRivenBase {
     #[serde(rename = "uuid", default)]
     pub uuid: String,
 
+    #[serde(rename = "quantity", default)]
+    pub quantity: i64,
+
     // Extra properties that may be needed for specific item types, stored as a JSON object
     #[serde(flatten)]
     pub properties: Properties,
@@ -109,20 +112,6 @@ impl ItemRivenBase {
         }
         Ok(riven)
     }
-    pub fn try_from_stock_riven(item: &entity::stock_riven::Model) -> Result<Self, Error> {
-        let mut riven = Self::default();
-        riven.name = item.weapon_name.clone();
-        riven.unique_name = item.weapon_unique_name.clone();
-        riven.wfm_url = item.wfm_weapon_url.clone();
-        riven.sub_type = item.sub_type.clone();
-        riven.mod_name = item.mod_name.clone();
-        riven.mastery_rank = item.mastery_rank;
-        riven.re_rolls = item.re_rolls;
-        riven.polarity = item.polarity.clone();
-        riven.uuid = item.uuid.clone();
-        riven.attributes = item.attributes.0.clone();
-        Ok(riven)
-    }
 }
 
 impl Default for ItemRivenBase {
@@ -139,6 +128,7 @@ impl Default for ItemRivenBase {
             attributes: Vec::new(),
             properties: Properties::default(),
             uuid: String::new(),
+            quantity: 1,
         }
     }
 }

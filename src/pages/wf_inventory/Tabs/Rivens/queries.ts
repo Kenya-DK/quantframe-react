@@ -14,9 +14,13 @@ export const useQueries = ({ queryData, isActive }: QueriesHooks) => {
     retry: false,
     enabled: isActive,
   });
-
+  const refetchQueries = () => {
+    getVeiledRivensQuery.refetch();
+  };
   // Return the queries
   return {
     veiledRivensQuery: getVeiledRivensQuery,
+    refreshVeiledRivens: getVeiledRivensQuery.refetch,
+    refetchQueries,
   };
 };

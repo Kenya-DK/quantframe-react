@@ -1,7 +1,9 @@
+use std::collections::HashMap;
+
 use entity::{dto::*, enums::*};
 
 use serde::{Deserialize, Serialize};
-use utils::SortDirection;
+use utils::{Properties, SortDirection};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WFItemPaginationDto {
@@ -13,6 +15,9 @@ pub struct WFItemPaginationDto {
 
     #[serde(default)]
     pub item_types: FieldChange<Vec<String>>,
+
+    #[serde(default, flatten)]
+    pub properties: FieldChange<Properties>,
 
     #[serde(default)]
     pub sort_by: FieldChange<String>,
