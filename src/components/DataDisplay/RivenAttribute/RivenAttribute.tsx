@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
 import { useEffect, useState } from "react";
 import { LocalizedDynamicMessage } from "@components/Shared/LocalizedDynamicMessage";
+import { RivenGrade } from "../RivenGrade/RivenGrade";
 export type RivenAttributeProps = {
   value: RivenAttribute;
   hideDetails?: boolean;
@@ -14,14 +15,6 @@ export type RivenAttributeProps = {
   centered?: boolean;
   i18nKey?: "full" | "short" | "text";
   textDecoration?: React.CSSProperties["textDecoration"];
-};
-const IMAGE_SIZE = 25;
-const grades: Record<string, React.ReactNode> = {
-  decisive: <Image src="/grades/gradePerfect.png" h={IMAGE_SIZE} w="auto" fit="contain" />,
-  good: <Image src="/grades/gradeGreen.png" h={IMAGE_SIZE} w="auto" fit="contain" />,
-  not_helping: <Image src="/question.png" h={IMAGE_SIZE} w="auto" fit="contain" />,
-  bad: <Image src="/grades/gradeRed.png" h={IMAGE_SIZE} w="auto" fit="contain" />,
-  unknown: <Image src="/question.png" h={IMAGE_SIZE} w="auto" fit="contain" />,
 };
 export function RivenAttribute({ value, groupProps, hideDetails, hideGrade, compact, centered, i18nKey, textDecoration }: RivenAttributeProps) {
   // Fetches detailed attribute metadata (like unit types) from the cache.
@@ -69,7 +62,7 @@ export function RivenAttribute({ value, groupProps, hideDetails, hideGrade, comp
       {...groupProps}
     >
       <Group flex={1} style={{ justifyContent: centered ? "center" : "flex-start" }}>
-        {!hideGrade && value.properties?.grade && grades[value.properties.grade]}
+        {!hideGrade && value.properties?.grade && <RivenGrade value={value.properties.grade} size={25} />}
         <LocalizedDynamicMessage
           data-hide-details={hideDetails ? "true" : "false"}
           textProps={{

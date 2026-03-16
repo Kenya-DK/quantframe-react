@@ -32,6 +32,7 @@ import { useState, useEffect } from "react";
 import { useTranslateModals } from "@hooks/useTranslate.hook";
 import { FinancialReportCard } from "../../Shared/FinancialReportCard";
 import { PriceHistoryPopover } from "../../DataDisplay/PriceHistoryPopover";
+import { RivenGrade } from "../../DataDisplay/RivenGrade/RivenGrade";
 
 const colors = {
   mandatory: alpha("var(--mantine-color-grape-7)", 0.55),
@@ -57,13 +58,6 @@ const RenderAttribute = (key: React.Key, label: string, match: boolean) => {
       message={label}
     />
   );
-};
-const grades: Record<string, React.ReactNode> = {
-  perfect: <Image src="/grades/gradePerfect.png" h={64} w="auto" fit="contain" />,
-  good: <Image src="/grades/gradeGreen.png" h={64} w="auto" fit="contain" />,
-  has_potential: <Image src="/grades/gradeYellow.png" h={64} w="auto" fit="contain" />,
-  bad: <Image src="/grades/gradeRed.png" h={64} w="auto" fit="contain" />,
-  unknown: <Image src="/question.png" h={64} w="auto" fit="contain" />,
 };
 
 export type StockRivenDetailsModalProps = {
@@ -194,7 +188,7 @@ export function StockRivenDetailsModal({ value }: StockRivenDetailsModalProps) {
           </Flex>
         </Group>
         <Group gap="md" style={{ flex: "0 0 auto" }}>
-          {grades[data.grade || "unknown"]}
+          <RivenGrade value={data.grade || "unknown"} size={64} />
         </Group>
       </Group>
       <Divider mt={"md"} />

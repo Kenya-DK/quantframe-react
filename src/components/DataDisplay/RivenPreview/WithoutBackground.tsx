@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { alpha, Card, Image, Group } from "@mantine/core";
+import { alpha, Card, Image, Group, Text, Center } from "@mantine/core";
 import classes from "./RivenPreview.module.css";
 import { upperFirst, useHover } from "@mantine/hooks";
 import { RivenAttribute } from "../RivenAttribute";
@@ -7,8 +7,13 @@ import { ItemRiven } from "$types";
 import { TextTranslate, TextTranslateProps } from "@components/Shared/TextTranslate";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
 
+interface Properties {
+  grade?: string;
+  challenge_description_with_complication?: string;
+}
+
 export type RivenWithoutBackgroundProps = {
-  value: ItemRiven;
+  value: ItemRiven<Properties, {}>;
   setDefaultHeaderCenterAs?: "headerLeft" | "headerRight" | "footerLeft" | "footerCenter" | "footerRight" | "disable";
   headerLeft?: TextTranslateProps;
   headerCenter?: TextTranslateProps;
@@ -45,6 +50,8 @@ export const WithoutBackground = memo(function WithoutBackground({
   const RenderDefaultHeaderCenter = () => (
     <TextTranslate
       i18nKey={useTranslate("riven_name", undefined, true)}
+      fz={"lg"}
+      fw={700}
       values={{
         name: value.name,
         mod_name: upperFirst(value.mod_name),
@@ -53,9 +60,11 @@ export const WithoutBackground = memo(function WithoutBackground({
   );
 
   if (!value) return <>...</>;
-
+  const GetProperty = <T extends keyof Properties>(key: T) => {
+    return value[key as keyof typeof value] ?? value.properties?.[key];
+  };
   return (
-    <Card radius="md" ref={ref} pos={"relative"}>
+    <Card radius="md" ref={ref} pos={"relative"} h={165}>
       <Card.Section bg={alpha("var(--mantine-color-dark-7)", 0.7)} p={3} className={classes.headerSection}>
         <Group justify="space-between" align="center" wrap="nowrap" style={{ overflow: "hidden" }}>
           <div style={{ flex: "0 1 auto", display: "flex", justifyContent: "flex-start", minWidth: 0 }}>
@@ -71,9 +80,14 @@ export const WithoutBackground = memo(function WithoutBackground({
             {setDefaultHeaderCenterAs === "headerRight" && !headerRight && <RenderDefaultHeaderCenter />}
           </div>
         </Group>
-        {value.properties?.grade && grades[value.properties.grade]}
+        {GetProperty("grade") && grades[GetProperty("grade") as string]}
       </Card.Section>
       <Card.Section className={classes.attributesSection}>
+        {GetProperty("challenge_description_with_complication") && (
+          <Center>
+            <Text>{GetProperty("challenge_description_with_complication") as string}</Text>
+          </Center>
+        )}
         {value.attributes.map((attr) => (
           <RivenAttribute i18nKey="full" key={attr.url_name} groupProps={{ p: 1 }} value={attr} hideDetails centered hideGrade />
         ))}
