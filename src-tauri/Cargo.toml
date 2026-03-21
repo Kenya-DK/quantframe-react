@@ -1,6 +1,6 @@
 [package]
 name = "Quantframe"
-version = "1.6.16"
+version = "1.6.17"
 description = "Quantframe"
 authors = ["Kenya-DK"]
 license = ""
