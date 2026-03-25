@@ -1,5 +1,5 @@
 import { isValidElement, memo } from "react";
-import { alpha, Card, Group, CardProps } from "@mantine/core";
+import { alpha, Card, CardProps } from "@mantine/core";
 import { useHover } from "@mantine/hooks";
 import { TextTranslate, TextTranslateProps } from "@components/Shared/TextTranslate";
 type SlotKey = "headerLeft" | "headerCenter" | "headerRight" | "footerLeft" | "footerCenter" | "footerRight";
@@ -22,14 +22,14 @@ interface PreviewCardProps<T = any> extends CardProps {
   renderBody?: (value: T) => React.ReactNode;
 }
 
-const slotConfig: Record<SlotKey, { justify: "flex-start" | "center" | "flex-end"; flex: string }> = {
-  headerLeft: { justify: "flex-start", flex: "0 1 auto" },
-  headerCenter: { justify: "center", flex: "1 1 auto" },
-  headerRight: { justify: "flex-end", flex: "0 1 auto" },
+const slotConfig: Record<SlotKey, { justify: "flex-start" | "center" | "flex-end"; gridColumn: string }> = {
+  headerLeft: { justify: "flex-start", gridColumn: "1" },
+  headerCenter: { justify: "center", gridColumn: "2" },
+  headerRight: { justify: "flex-end", gridColumn: "3" },
 
-  footerLeft: { justify: "flex-start", flex: "1" },
-  footerCenter: { justify: "center", flex: "1" },
-  footerRight: { justify: "flex-end", flex: "1" },
+  footerLeft: { justify: "flex-start", gridColumn: "1" },
+  footerCenter: { justify: "center", gridColumn: "2" },
+  footerRight: { justify: "flex-end", gridColumn: "3" },
 };
 
 export const PreviewCard = memo(function PreviewCard<T>({
@@ -85,34 +85,69 @@ export const PreviewCard = memo(function PreviewCard<T>({
 
   const renderSection = (section: "header" | "footer") => {
     const keys = (["Left", "Center", "Right"] as const).map((pos) => `${section}${pos}` as SlotKey);
+    const renderedSlots = keys.map((slot) => ({
+      slot,
+      content: renderSlot(slot),
+    }));
+
+    const leftSlot = renderedSlots.find(({ slot }) => slot === `${section}Left`)!;
+    const centerSlot = renderedSlots.find(({ slot }) => slot === `${section}Center`)!;
+    const rightSlot = renderedSlots.find(({ slot }) => slot === `${section}Right`)!;
+
+    const hasLeft = leftSlot.content !== null && leftSlot.content !== false && leftSlot.content !== "";
+    const hasRight = rightSlot.content !== null && rightSlot.content !== false && rightSlot.content !== "";
+    const hasCenter = centerSlot.content !== null && centerSlot.content !== false && centerSlot.content !== "";
+    const isCenterOnly = hasCenter && !hasLeft && !hasRight;
 
     return (
-      <Group justify="space-between" align="center" wrap="nowrap">
-        {keys.map((slot) => {
+      <div
+        style={{
+          display: isCenterOnly ? "flex" : "grid",
+          gridTemplateColumns: isCenterOnly ? undefined : "minmax(0, 1fr) auto minmax(0, 1fr)",
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
+        {renderedSlots.map(({ slot, content }) => {
+          if (isCenterOnly && slot !== `${section}Center`) {
+            return null;
+          }
+
           const config = slotConfig[slot];
 
           return (
             <div
               key={slot}
               style={{
-                flex: config.flex,
+                gridColumn: isCenterOnly ? undefined : config.gridColumn,
                 display: "flex",
                 justifyContent: config.justify,
                 minWidth: 0,
+                overflow: "hidden",
+                width: isCenterOnly ? "100%" : undefined,
               }}
             >
-              {renderSlot(slot)}
+              {content}
             </div>
           );
         })}
-      </Group>
+      </div>
     );
+  };
+
+  const hasRenderableSlots = (section: "header" | "footer") => {
+    const keys = (["Left", "Center", "Right"] as const).map((pos) => `${section}${pos}` as SlotKey);
+
+    return keys.some((slot) => {
+      const content = renderSlot(slot);
+      return content !== null && content !== false && content !== "";
+    });
   };
 
   return (
     <Card radius="md" ref={ref} pos="relative" style={{ display: "flex", flexDirection: "column", ...style }} {...cardProps}>
       {/* Header */}
-      {slots.headerLeft || slots.headerCenter || slots.headerRight ? (
+      {hasRenderableSlots("header") ? (
         <Card.Section bg={alpha("var(--mantine-color-dark-7)", 0.7)} p={3}>
           {renderSection("header")}
         </Card.Section>
@@ -124,7 +159,7 @@ export const PreviewCard = memo(function PreviewCard<T>({
       </Card.Section>
 
       {/* Footer */}
-      {slots.footerLeft || slots.footerCenter || slots.footerRight ? (
+      {hasRenderableSlots("footer") ? (
         <Card.Section bg={alpha("var(--mantine-color-dark-7)", 0.7)} p={3}>
           {renderSection("footer")}
         </Card.Section>

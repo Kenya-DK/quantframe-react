@@ -22,6 +22,7 @@ pub struct WFInvItemBase {
     pub sub_type: Option<entity::dto::SubType>,
 
     // Extra properties that may be needed for specific item types, stored as a JSON object
+    #[serde(flatten)]
     pub properties: Properties,
 }
 

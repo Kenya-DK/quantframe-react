@@ -5,5 +5,6 @@ import "mantine-datatable/styles.layer.css";
 import "@mantine/tiptap/styles.css";
 import "@mantine/dates/styles.css";
 import "./global.css";
+import "./utils/chartjs";
 import App from "./App.tsx";
 ReactDOM.createRoot(document.getElementById("root")!).render(<App />);

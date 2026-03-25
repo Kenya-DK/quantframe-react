@@ -98,3 +98,12 @@ export interface ItemRiven<P = any, A = any> {
   quantity: number;
   properties: P;
 }
+export interface ItemBase<P = any> {
+  id: string;
+  name: string;
+  properties: P;
+  quantity: number;
+  sub_type?: SubType;
+  unique_name: string;
+  wfm_url: string;
+}

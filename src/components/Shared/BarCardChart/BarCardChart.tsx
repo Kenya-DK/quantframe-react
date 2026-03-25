@@ -1,8 +1,6 @@
 import { Box, Paper, Title, useMantineTheme } from "@mantine/core";
 import classes from "./BarCardChart.module.css";
-
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Legend, TooltipCallbacks } from "chart.js";
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
+import type { TooltipCallbacks } from "chart.js";
 
 import { Bar } from "react-chartjs-2";
 import GetDefaultOptions from "./default.options";
@@ -75,7 +73,7 @@ export function BarCardChart({
               data={cData}
             />
           ),
-          [datasets]
+          [datasets],
         )}
       </Box>
       <Title mt={5} order={4}>

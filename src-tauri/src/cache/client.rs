@@ -52,6 +52,7 @@ pub struct CacheState {
     item_price_module: OnceLock<Arc<ItemPriceModule>>,
     chat_icon_module: OnceLock<Arc<ChatIconModule>>,
     theme_module: OnceLock<Arc<ThemeModule>>,
+    syndicate_module: OnceLock<Arc<SyndicateModule>>,
     language_module: OnceLock<Arc<LanguageModule>>,
 }
 
@@ -87,6 +88,7 @@ impl CacheState {
                     item_price_module: self.item_price_module.clone(),
                     chat_icon_module: self.chat_icon_module.clone(),
                     theme_module: self.theme_module.clone(),
+                    syndicate_module: self.syndicate_module.clone(),
                     language_module: self.language_module.clone(),
                 })
             })
@@ -129,6 +131,7 @@ impl CacheState {
             item_price_module: OnceLock::new(),
             chat_icon_module: OnceLock::new(),
             theme_module: OnceLock::new(),
+            syndicate_module: OnceLock::new(),
             language_module: OnceLock::new(),
         };
         if !user.verification || user.qf_banned || user.wfm_banned {
@@ -258,6 +261,7 @@ impl CacheState {
         self.sentinel_weapon().load(language)?;
         self.skin().load(language)?;
         self.warframe().load(language)?;
+        self.syndicate().load(language)?;
         self.theme().load()?;
         self.chat_icon().load()?;
         self.update_routes_client();
@@ -564,6 +568,11 @@ impl CacheState {
             .get_or_init(|| ThemeModule::new(self.arc()))
             .clone()
     }
+    pub fn syndicate(&self) -> Arc<SyndicateModule> {
+        self.syndicate_module
+            .get_or_init(|| SyndicateModule::new(self.arc()))
+            .clone()
+    }
     pub fn language(&self) -> Arc<LanguageModule> {
         self.language_module
             .get_or_init(|| LanguageModule::new(self.arc()))
@@ -691,6 +700,11 @@ impl CacheState {
             let new = ThemeModule::from_existing(&old, self.arc());
             self.theme_module = OnceLock::new();
             let _ = self.theme_module.set(new);
+        }
+        if let Some(old) = self.syndicate_module.get().cloned() {
+            let new = SyndicateModule::from_existing(&old);
+            self.syndicate_module = OnceLock::new();
+            let _ = self.syndicate_module.set(new);
         }
         if let Some(old) = self.language_module.get().cloned() {
             let new = LanguageModule::from_existing(&old);
