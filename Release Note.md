@@ -2,9 +2,7 @@
 
 ## Fix's
 
-⚒️ - Gray wfm tab
-⚒️ - Fix Instant time underflow for windows (SpaceMoehre)
-⚒️ - Fix buttons in the about page to open the correct links.
+⚒️ - Fix Item detection in trades
 
 ## Dev Notes
 

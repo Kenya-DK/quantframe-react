@@ -79,12 +79,12 @@ impl TradeItem {
             detection.is_last_item(&line, &next_line, false, false);
 
         if last_item_status == DetectionStatus::NextLine {
-            next_line.truncate(next_line.find(", leftItem=/").unwrap());
+            next_line.truncate(next_line.find(", title= ").unwrap());
         } else if last_item_status == DetectionStatus::Line {
-            line.truncate(line.find(", leftItem=/").unwrap());
+            line.truncate(line.find(", title= ").unwrap());
             raw = line.clone();
         } else if last_item_status.is_combined() {
-            last_item_combined.truncate(last_item_combined.find(", leftItem=/").unwrap());
+            last_item_combined.truncate(last_item_combined.find(", title= ").unwrap());
             line = last_item_combined.clone();
             raw = line.clone();
         }

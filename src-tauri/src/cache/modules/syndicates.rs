@@ -23,6 +23,12 @@ impl SyndicateModule {
         })
     }
     pub fn load(&self, _: &LanguageModule) -> Result<(), Error> {
+        info(
+            "Cache:Syndicate:load",
+            "Loading Syndicates... (skipped, language-agnostic)",
+            &LoggerOptions::default(),
+        );
+        return Ok(()); // Syndicates are language-agnostic, so we can skip loading here
         match read_json_file_optional::<HashMap<String, CacheSyndicate>>(&self.path) {
             Ok(items) => {
                 let mut syndicate_lookup_lock = self.syndicate_lookup.lock().unwrap();
