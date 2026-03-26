@@ -38,6 +38,8 @@ export function LogInLayout() {
     [navigate, lastPage],
   );
 
+  const [devMode, setDevMode] = useState(false);
+
   const links = useMemo(
     () => [
       {
@@ -118,7 +120,8 @@ export function LogInLayout() {
         align: "top",
         id: "debug",
         link: "debug",
-        hide: !import.meta.env.DEV,
+        // hide: !import.meta.env.DEV || !devMode,
+        hide: !devMode,
         icon: <FontAwesomeIcon size={"lg"} icon={faBug} color="red" />,
         label: useTranslateNavBar("debug"),
         onClick: (e: NavbarLinkProps) => handleNavigate(e),
@@ -134,13 +137,25 @@ export function LogInLayout() {
         onPrefetch: () => prefetchRoute("about"),
       },
     ],
-    [user?.unread_messages, handleNavigate],
+    [user?.unread_messages, handleNavigate, devMode],
   );
 
   // Effects
   useEffect(() => {
     if (user?.qf_banned || user?.wfm_banned) navigate("/error/banned");
   }, [user, navigate]);
+
+  // Toggle dev mode when Shift is pressed.
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Shift" && !e.repeat) setDevMode((prev) => !prev);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
   return (
     <AppShell
       classNames={classes}
