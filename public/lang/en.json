@@ -2324,10 +2324,10 @@
       },
       "datatable": {
         "columns": {
-          "item_name": "Platinum",
-          "quantity": "Platinum",
-          "price": "Platinum",
-          "total": "Platinum",
+          "item_name": "Name",
+          "quantity": "Quantity",
+          "price": "Price",
+          "total": "Total",
           "platinum": "Platinum",
           "user_name": "User Name",
           "date": "Date"

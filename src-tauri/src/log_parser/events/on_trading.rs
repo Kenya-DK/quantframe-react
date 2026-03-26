@@ -455,6 +455,7 @@ async fn process_mutable_items(
             }
         };
 
+        item.set_property_value("name", json!(info.name));
         item.set_property_value("wfm_url", json!(info.wfm_url_name));
 
         let price = app
@@ -481,17 +482,7 @@ async fn process_mutable_items(
         obj.remove("receivedItems");
         obj.remove("logs");
     }
-    payload["items"] = json!(items
-        .iter()
-        .map(|item| {
-            json!({
-                "wfm_url": json!(item.get_property_value("wfm_url","N/A".to_string())),
-                "quantity": item.quantity,
-                "sub_type": item.sub_type,
-                "price": item.get_property_value("price", 0),
-            })
-        })
-        .collect::<Vec<_>>());
+    payload["items"] = json!(items);
 
     let window_clone = window.clone();
     let payload_clone = payload.clone();

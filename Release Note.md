@@ -3,6 +3,7 @@
 ## Fix's
 
 ⚒️ - Fix Item detection in trades
+⚒️ - Fix some names in the multiple items popup to show the right names and not just Platinum, Platinum, Platinum, Platinum
 
 ## Dev Notes
 

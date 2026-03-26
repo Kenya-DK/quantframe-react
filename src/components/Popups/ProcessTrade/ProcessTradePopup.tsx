@@ -17,20 +17,20 @@ enum TradeProcessingStep {
   Validate = "validate",
 }
 
-export interface PlayerTrade {
+export interface PlayerTrade<T = any> {
   credits: number;
-  items: TradeItem[];
+  items: TradeItem<T>[];
   platinum: number;
   playerName: string;
   tradeTime: string;
   type: string;
 }
 
-export interface TradeItem {
-  price: number;
+export interface TradeItem<T = any> {
   quantity: number;
   wfm_url: string;
   sub_type?: TauriTypes.SubType;
+  properties?: T;
 }
 
 export interface TradeItemProperties {
@@ -41,14 +41,14 @@ export interface TradeItemProperties {
 export function ProcessTradePopup() {
   // Stats
   const currentTradeForm = useForm({
-    initialValues: undefined as PlayerTrade | undefined,
+    initialValues: undefined as PlayerTrade<TradeItemProperties> | undefined,
     onValuesChange: (values) => {
       if (!values) return;
-      const itemsTotal = values.items.reduce((acc, item) => acc + (item.price || 0) * item.quantity, 0);
+      const itemsTotal = values.items.reduce((acc, item) => acc + (item.properties?.price || 0) * item.quantity, 0);
       setCalculatedPrice(itemsTotal);
     },
   });
-  const [trades, setTrades] = useState<PlayerTrade[]>([]);
+  const [trades, setTrades] = useState<PlayerTrade<TradeItemProperties>[]>([]);
   const [currentStep, setCurrentStep] = useState<TradeProcessingStep>(TradeProcessingStep.View);
   const [calculated_price, setCalculatedPrice] = useState<number>(0);
 
@@ -66,7 +66,10 @@ export function ProcessTradePopup() {
 
   // Handle New Trade
   useEffect(() => {
-    listen("add_trade", ({ payload }: { payload: PlayerTrade }) => setTrades((prevTrades) => [...prevTrades, payload]));
+    listen("add_trade", ({ payload }: { payload: PlayerTrade<TradeItemProperties> }) => {
+      console.log("Received new trade:", payload);
+      setTrades((prevTrades) => [...prevTrades, payload]);
+    });
     emit("initialize");
   }, []);
 
@@ -81,10 +84,12 @@ export function ProcessTradePopup() {
     let items = currentTradeForm.values?.items.map((item) => ({
       ...item,
       user_name: currentTradeForm.values?.playerName,
+      wfm_url: item.properties?.wfm_url,
+      price: item.properties?.price,
       order_type: currentTradeForm.values?.type === "purchase" ? "buy" : "sell",
       operation_set: [`SetDate:${currentTradeForm.values?.tradeTime}`],
     }));
-    await createMutation.mutateAsync(items || []);
+    await createMutation.mutateAsync((items as any) || []);
     setCurrentStep(TradeProcessingStep.View);
     setTrades((prevTrades) => prevTrades.filter((trade) => trade.tradeTime !== currentTradeForm.values?.tradeTime));
   };
@@ -149,7 +154,6 @@ export function ProcessTradePopup() {
                 label: useTranslateStats("user_name"),
                 count: currentTradeForm.values.playerName,
                 color: "orange",
-                tooltip: useTranslateStats("date_of_trade"),
                 part: dayjs(currentTradeForm.values.tradeTime).format("DD.MM.YYYY HH:mm"),
               },
               {
@@ -194,25 +198,25 @@ export function ProcessTradePopup() {
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {currentTradeForm.values.items.map((item: any, index: number) => (
+              {currentTradeForm.values.items.map((item, index: number) => (
                 <Table.Tr key={`${item.wfm_url}-${index}`}>
                   <Table.Td>
-                    <ItemName value={item} />
+                    <ItemName value={item as any} />
                   </Table.Td>
                   <Table.Td>{item.quantity}</Table.Td>
                   <Table.Td>
                     <NumberInput
                       size="xs"
-                      value={item.price}
+                      value={item.properties?.price || 0}
                       onChange={(value) => {
-                        currentTradeForm.setFieldValue(`items.${index}.price`, Number(value) || 0);
+                        currentTradeForm.setFieldValue(`items.${index}.properties.price`, Number(value) || 0);
                       }}
                       min={0}
                       w={100}
                     />
                   </Table.Td>
                   <Table.Td>
-                    <Text fw={600}>{item.price * item.quantity}</Text>
+                    <Text fw={600}>{(item.properties?.price || 0) * item.quantity}</Text>
                   </Table.Td>
                 </Table.Tr>
               ))}
