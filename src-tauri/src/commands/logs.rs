@@ -20,7 +20,7 @@ pub async fn log_export() -> Result<String, Error> {
         helper::get_desktop_path().join(format!("{} v{} {} Logs.zip", info.name, version, date));
     let path = ZipOptions::new()
         .exclude_patterns(&["EBWebView/"])
-        .mask_properties(&["check_code", "qf_token", "wfm_token"])
+        .mask_properties(&["check_code", "qf_token", "wfm_token", "webhook"])
         .create_zip(app_path, zip_path)?;
     Ok(path)
 }
