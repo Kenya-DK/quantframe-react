@@ -32,23 +32,21 @@ You can download the latest release from [here](https://github.com/Kenya-DK/quan
 
 If you prefer to build it locally for whatever reason, heres what you need:
 
-#### Step 1. Install Pre-Requisites
+#### Step 1. Install Prerequisites
 
-Follow the [Tauri Pre-requisites](https://tauri.app/v1/guides/getting-started/prerequisites) guide to get necessary dependencies.
+Follow the [Tauri V2 Prerequisites](https://v2.tauri.app/start/prerequisites) guide to get necessary dependencies.
 
-> If you're using **Windows**, you CANNOT use WSL for this project. You MUST install pre-requisites on windows, not WSL.
+> If you're using **Windows**, you CANNOT use WSL for this project. You MUST install prerequisites on windows, not WSL.
 
-You will also need to make sure you've got Nodejs installed.
+You will also need to make sure you've got [Nodejs](https://nodejs.org/) installed.
 
 #### Step 2. Download code
 
 I would strongly recommend installing [git](https://git-scm.com/) or [Github Desktop](https://desktop.github.com/) and use those to download the project source code from github. The reason is this will allow you to download new versions of the code much easier than clicking "download zip" every time.
 
-##### Step 2.1. Delete
+##### Step 2.1. Config changes
 
-delete the `pubkey` filed in `tauri/src-tauri/tauri.conf.json`.
-
-##### Step 2.2 Copy the 'PRODUCTION_URL' to 'DEVELOPMENT_URL' field in `tauri/src-tauri/qf_api/src/client.rs`.
+In `tauri/src-tauri/tauri.conf.json`, set `pubkey` to empty.
 
 #### Step 3. Build the project
 
@@ -70,8 +68,8 @@ Then type in `powershell` and hit enter
 </details>
 
 ```bash
-pnpm i # Install nodejs deps
-pnpm run tauri build
+pnpm install # Install nodejs deps
+pnpm tauri build
 ```
 
 > For developers, you can also use yarn or pnpm if you prefer. (pnpm is the fastest package manager)
