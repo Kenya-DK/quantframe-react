@@ -91,19 +91,18 @@ impl ItemEntry {
         }
         uuid
     }
-    pub fn set_buy_quantity(mut self, quantity: i64) -> Self {
-        self.buy_quantity = quantity;
-        self
-    }
-    pub fn set_sell_quantity(mut self, quantity: i64) -> Self {
-        self.sell_quantity = quantity;
-        self
-    }
     pub fn get_quantity(&self, order_type: OrderType) -> i64 {
         match order_type {
             OrderType::Buy => self.buy_quantity,
             OrderType::Sell => self.sell_quantity,
         }
+    }
+    pub fn set_quantity(&mut self, order_type: OrderType, quantity: i64) -> Self {
+        match order_type {
+            OrderType::Buy => self.buy_quantity = quantity,
+            OrderType::Sell => self.sell_quantity = quantity,
+        }
+        self.clone()
     }
     pub async fn get_stock_item(&self, conn: &DatabaseConnection) -> Result<StockItemModel, Error> {
         if let Some(stock_id) = self.stock_id {

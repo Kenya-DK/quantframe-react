@@ -369,7 +369,9 @@ impl ItemModule {
         let profit_threshold = settings.profit_threshold;
         let closed_avg = price.moving_avg.unwrap_or(0.0);
         let per_trade = if item_info.bulk_tradable {
-            Some(settings.quantity_per_trade as u32)
+            // Some(settings.quantity_per_trade)
+            // TODO: ADD THIS WHEN IT IS AVAILABLE IN THE WEBSITE.
+            Some(1)
         } else {
             None
         };

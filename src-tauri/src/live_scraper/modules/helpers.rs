@@ -182,8 +182,10 @@ pub async fn collect_interesting_items(
     if settings.live_scraper.has_trade_mode(TradeMode::Buy) {
         let buy_list = get_interesting_items(&settings.live_scraper.stock_item);
         for item in buy_list {
-            let item_entry = ItemEntry::from(&item)
-                .set_buy_quantity(settings.live_scraper.stock_item.buy_quantity);
+            let item_entry = ItemEntry::from(&item).set_quantity(
+                OrderType::Buy,
+                settings.live_scraper.stock_item.buy_quantity,
+            );
             if !stock_item_settings.is_item_blacklisted(&item.wfm_id, &TradeMode::Buy) {
                 interesting_items.insert(item_entry.uuid().clone(), item_entry);
             }
@@ -205,7 +207,9 @@ pub async fn collect_interesting_items(
                         entry.stock_id = Some(item.id);
                         entry.operation.add("Sell".to_string());
                     })
-                    .or_insert_with(|| ItemEntry::from(&item).set_sell_quantity(item.owned));
+                    .or_insert_with(|| {
+                        ItemEntry::from(&item).set_quantity(OrderType::Sell, item.owned)
+                    });
             }
         }
     }
@@ -405,13 +409,13 @@ pub async fn progress_order(
     wfm_client: &wf_market::Client<wf_market::Authenticated>,
     order_type: OrderType,
     post_price: u32,
-    per_trade: Option<u32>,
+    per_trade: Option<i64>,
     log_options: &LoggerOptions,
     properties: &wf_market::types::Properties,
-) -> Result<(), Error> {
+) -> Result<OperationSet, Error> {
     let can_create_order = wfm_client.order().can_create_order();
     let file_name = "progress_order.log";
-
+    let quantity = entry.get_quantity(order_type);
     // Fetch properties data
     let order_id = properties.get_property_value("id", String::new());
     let name = properties.get_property_value("name", String::new());
@@ -427,9 +431,9 @@ pub async fn progress_order(
                     &entry.wfm_id,
                     order_type,
                     post_price,
-                    entry.get_quantity(order_type) as u32,
+                    quantity as u32,
                     true,
-                    per_trade,
+                    per_trade.map(|pt| pt as u32),
                     SubTypeExt::from_entity(entry.sub_type.clone()),
                 )
                 .with_properties(json!(properties.properties)),
@@ -467,7 +471,7 @@ pub async fn progress_order(
                 UpdateOrderParams::new()
                     .with_platinum(post_price)
                     .with_quantity(entry.get_quantity(order_type) as u32)
-                    .with_per_trade(per_trade)
+                    .with_per_trade(per_trade.map(|pt| pt as u32))
                     .with_properties(json!(properties.properties)),
             )
             .await
@@ -535,7 +539,7 @@ pub async fn progress_order(
             &log_options,
         );
     }
-    Ok(())
+    Ok(operations.clone())
 }
 pub fn log_summary(component: &str, message: impl AsRef<str>, options: &LoggerOptions) {
     info(format!("{}Summary", component), message.as_ref(), options);

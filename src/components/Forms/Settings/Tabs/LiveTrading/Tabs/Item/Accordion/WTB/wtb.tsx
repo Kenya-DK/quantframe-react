@@ -110,6 +110,7 @@ export const WTBItemAccordion = ({ form }: WTBItemAccordionProps) => {
           {...form.getInputProps(getFieldPath("buy_quantity"))}
         />
         <NumberInput
+          display={"none"}
           label={useTranslateFormFields("quantity_per_trade.label")}
           min={1}
           max={999}

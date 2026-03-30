@@ -10,7 +10,7 @@ export namespace WFMarketTypes {
     createdAt: Date;
     id: string;
     itemId: string;
-    perTrade?: number;
+    per_trade?: number;
     platinum: number;
     properties?: T;
     quantity: number;
