@@ -59,7 +59,7 @@ export function OverviewTab({ value }: OverviewTabProps) {
         <Group grow>
           <TextInput label={useTranslateFields("platinum")} value={value?.platinum || "N/A"} readOnly />
           <TextInput label={useTranslateFields("quantity")} value={value?.quantity || "N/A"} readOnly />
-          <TextInput label={useTranslateFields("per_trade")} value={value?.perTrade || "N/A"} readOnly />
+          <TextInput label={useTranslateFields("per_trade")} value={value?.per_trade || "N/A"} readOnly />
         </Group>
         <Divider mt={"md"} />
         <Group grow>
