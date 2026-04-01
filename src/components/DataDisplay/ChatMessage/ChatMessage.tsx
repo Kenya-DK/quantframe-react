@@ -48,7 +48,7 @@ export const ChatMessage = ({ user, msg, sender }: ChatMessageProps) => {
             </Group>
           </Stack>
         </Group>
-        <Collapse in={opened} px="xs">
+        <Collapse expanded={opened} px="xs">
           <Text size="xs" c="dimmed">
             {msgDate}
           </Text>

@@ -42,7 +42,7 @@ export function RivenFilter({ value, onSubmit }: RivenFilterProps) {
             onChange={(event) => form.setFieldValue("enabled", event.currentTarget.checked)}
           />
         </Group>
-        <Collapse in={form.values.enabled}>
+        <Collapse expanded={form.values.enabled}>
           <Grid>
             <Grid.Col span={6}>
               <MinMax

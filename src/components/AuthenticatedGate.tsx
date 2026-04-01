@@ -1,11 +1,12 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useIsAuthenticated } from "@hooks/useIsAuthenticated.hook";
+import React from "react";
 
 type Props = {
   RenderError?: React.ComponentType;
   exclude?: boolean;
   goTo?: string;
-  children?: JSX.Element;
+  children?: React.ReactNode;
 };
 const AuthenticatedGate: React.FC<Props> = ({ children = undefined, exclude = false, RenderError = undefined, goTo }) => {
   const isAuthenticated: boolean = exclude ? !useIsAuthenticated() : useIsAuthenticated();

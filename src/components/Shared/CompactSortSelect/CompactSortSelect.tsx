@@ -24,9 +24,10 @@ export type CompactSortSelectFactory = Factory<{
 
 const defaultProps: Partial<CompactSortSelectProps> = {};
 
-export const CompactSortSelect = factory<CompactSortSelectFactory>((_props, ref) => {
+export const CompactSortSelect = factory<CompactSortSelectFactory>((_props) => {
   const props = useProps("CompactSortSelect", defaultProps, _props);
-  const { classNames, className, style, styles, unstyled, vars, attributes, value, data, direction, onChange, onDirectionChange, ...others } = props;
+  const { classNames, className, style, styles, unstyled, vars, attributes, value, data, direction, onChange, onDirectionChange, ref, ...others } =
+    props;
 
   const getStyles = useStyles<CompactSortSelectFactory>({
     name: "CompactSortSelect",

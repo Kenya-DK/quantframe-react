@@ -143,7 +143,7 @@ export default function HomePage() {
           />
         </Grid.Col>
       </Grid>
-      <Grid>
+      <Grid mt={"md"}>
         <Grid.Col span={6}>
           <Paper>
             <Group p={10} justify="space-between">

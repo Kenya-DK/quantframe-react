@@ -74,7 +74,7 @@ export const GeneralPanel = ({ form, setHideTab }: GeneralPanelProps) => {
           tags: item.tags,
           disabled_for: form.values.live_scraper.stock_item.blacklist?.find((bl) => bl.wfm_id === item.wfm_id)?.disabled_for || [],
         } as BlackList;
-      })
+      }),
     );
   }, [tradableItems]);
 
@@ -283,7 +283,7 @@ export const GeneralPanel = ({ form, setHideTab }: GeneralPanelProps) => {
                     <Flex direction="column">
                       <TextTranslate
                         i18nKey={useTranslateBlacklist("mr_requirement_label", undefined, true)}
-                        values={{ min: formLeft.values.mrRequirementRange?.at(0) || 0, max: formLeft.values.mrRequirementRange?.at(1) || 15 }}
+                        values={{ min: formLeft.values.mrRequirementRange?.[0] || 0, max: formLeft.values.mrRequirementRange?.[1] || 15 }}
                       />
                       <RangeSlider
                         w={"150px"}
@@ -298,7 +298,7 @@ export const GeneralPanel = ({ form, setHideTab }: GeneralPanelProps) => {
                     <Flex direction="column">
                       <TextTranslate
                         i18nKey={useTranslateBlacklist("trade_tax_label", undefined, true)}
-                        values={{ min: formLeft.values.tradeTaxRange?.at(0) || 0, max: formLeft.values.tradeTaxRange?.at(1) || 2100000 }}
+                        values={{ min: formLeft.values.tradeTaxRange?.[0] || 0, max: formLeft.values.tradeTaxRange?.[1] || 2100000 }}
                       />
                       <RangeSlider w={"150px"} color="blue" step={1000} min={0} max={2100000} {...formLeft.getInputProps("tradeTaxRange")} />
                     </Flex>

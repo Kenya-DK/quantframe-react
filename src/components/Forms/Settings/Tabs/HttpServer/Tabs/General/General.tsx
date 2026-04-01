@@ -26,7 +26,7 @@ export const GeneralPanel = ({ form }: GeneralPanelProps) => {
             error={form.errors.enable && useTranslateFormFields("enable.error")}
           />
         </Tooltip>
-        <Collapse in={form.values.http_server.enable}>
+        <Collapse expanded={form.values.http_server.enable}>
           <TextInput
             label={useTranslateFormFields("host.label")}
             rightSection={<TooltipIcon label={useTranslateFormFields("host.tooltip")} />}

@@ -99,7 +99,7 @@ export const ChatRome = ({ chat, goBack, disableChat }: ChatRomeProps) => {
         <Button leftSection={<FontAwesomeIcon icon={faEllipsis} />} onClick={() => setIsOptionsOpen((o) => !o)}>
           {useTranslateButtons("options.label")}
         </Button>
-        <Collapse in={isOptionsOpen} style={{ position: "absolute", top: 56, right: 0, width: "100%", zIndex: 100, background: "blue" }}>
+        <Collapse expanded={isOptionsOpen} style={{ position: "absolute", top: 56, right: 0, width: "100%", zIndex: 100, background: "blue" }}>
           <Paper p={10} radius={0} style={{ background: "blue" }}>
             <Text>{useTranslateButtons("options.delete")}</Text>
           </Paper>

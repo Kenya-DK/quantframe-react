@@ -1,16 +1,4 @@
-import {
-  Collapse,
-  Group,
-  TextInput,
-  Title,
-  Divider,
-  Textarea,
-  ScrollAreaAutosize,
-  Button,
-  Stack,
-  Select,
-  NumberInput,
-} from "@mantine/core";
+import { Collapse, Group, TextInput, Title, Divider, Textarea, ScrollAreaAutosize, Button, Stack, Select, NumberInput } from "@mantine/core";
 import { UseFormReturnType } from "@mantine/form";
 import { TauriTypes } from "$types";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
@@ -31,9 +19,7 @@ const DEFAULT_SOUND_OPTIONS = [
   { value: "windows_xp_startup.mp3", labelKey: "sound.options.windows_xp_startup" },
 ];
 
-const buildSystemSoundOptions = (
-  translateSystemFields: (key: string, context?: { [key: string]: any }, i18Key?: boolean) => string
-) => [
+const buildSystemSoundOptions = (translateSystemFields: (key: string, context?: { [key: string]: any }, i18Key?: boolean) => string) => [
   { value: "none", label: translateSystemFields("sound.options.none") },
   ...DEFAULT_SOUND_OPTIONS.map((option) => ({
     value: option.value,
@@ -41,8 +27,7 @@ const buildSystemSoundOptions = (
   })),
 ];
 
-const normalizeVolume = (value: number | string | null | undefined) =>
-  typeof value === "number" && !Number.isNaN(value) ? value : 1.0;
+const normalizeVolume = (value: number | string | null | undefined) => (typeof value === "number" && !Number.isNaN(value) ? value : 1.0);
 
 type EditNotificationSettingTranslations = ReturnType<typeof createEditNotificationSettingTranslations>;
 type NotificationSectionKey = "system_notify" | "discord_notify" | "webhook_notify";
@@ -54,13 +39,7 @@ export type NotificationsViewProps = {
   onManageSounds: () => void;
 };
 
-const NotificationToggles = ({
-  form,
-  t,
-}: {
-  form: UseFormReturnType<TauriTypes.NotificationSetting>;
-  t: EditNotificationSettingTranslations;
-}) => {
+const NotificationToggles = ({ form, t }: { form: UseFormReturnType<TauriTypes.NotificationSetting>; t: EditNotificationSettingTranslations }) => {
   const toggleConfig: Array<{
     key: NotificationSectionKey;
     icon: typeof faBell;
@@ -120,7 +99,7 @@ const SystemNotificationSection = ({
   };
 
   return (
-    <Collapse in={form.values.system_notify.enabled}>
+    <Collapse expanded={form.values.system_notify.enabled}>
       <Title order={4} mb="xs" mt="sm">
         {t.form("system.title")}
       </Title>
@@ -150,13 +129,7 @@ const SystemNotificationSection = ({
           onChange={(value) => form.setFieldValue("system_notify.sound_file", value || "none")}
           rightSectionPointerEvents="inherit"
           data={[...systemSoundOptions, ...customSoundOptions]}
-          rightSection={
-            <ActionWithTooltip
-              tooltip={t.systemFields("sound.play_tooltip")}
-              icon={faBell}
-              onClick={handlePlaySound}
-            />
-          }
+          rightSection={<ActionWithTooltip tooltip={t.systemFields("sound.play_tooltip")} icon={faBell} onClick={handlePlaySound} />}
         />
         <NumberInput
           w={100}
@@ -198,11 +171,11 @@ const DiscordNotificationSection = ({
       value
         .split(",")
         .map((entry) => entry.trim())
-        .filter(Boolean)
+        .filter(Boolean),
     );
 
   return (
-    <Collapse in={form.values.discord_notify.enabled}>
+    <Collapse expanded={form.values.discord_notify.enabled}>
       <Title order={4} mb="xs" mt="sm">
         {t.form("discord.title")}
       </Title>
@@ -245,7 +218,7 @@ const WebhookNotificationSection = ({
   form: UseFormReturnType<TauriTypes.NotificationSetting>;
   t: EditNotificationSettingTranslations;
 }) => (
-  <Collapse in={form.values.webhook_notify.enabled}>
+  <Collapse expanded={form.values.webhook_notify.enabled}>
     <Title order={4} mb="xs" mt="sm">
       {t.form("webhook.title")}
     </Title>
@@ -273,12 +246,7 @@ export const NotificationsView = ({ id, form, customSounds, onManageSounds }: No
       <Divider />
       <ScrollAreaAutosize mah={"calc(80vh - 100px)"} scrollbarSize={6}>
         <Stack gap={5}>
-          <SystemNotificationSection
-            form={form}
-            t={t}
-            customSoundOptions={customSoundOptions}
-            onManageSounds={onManageSounds}
-          />
+          <SystemNotificationSection form={form} t={t} customSoundOptions={customSoundOptions} onManageSounds={onManageSounds} />
           <DiscordNotificationSection id={id} form={form} t={t} />
           <WebhookNotificationSection form={form} t={t} />
         </Stack>

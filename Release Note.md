@@ -2,8 +2,6 @@
 
 ## Fix's
 
-⚒️ - Fix a bug when setting per trade. (WIP)
-
 ## Dev Notes
 
 ---

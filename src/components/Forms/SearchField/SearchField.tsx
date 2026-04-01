@@ -106,7 +106,7 @@ export function SearchField({
           </Group>
         }
       />
-      <Collapse in={openFilter}>{filter}</Collapse>
+      <Collapse expanded={openFilter}>{filter}</Collapse>
     </Box>
   );
 }

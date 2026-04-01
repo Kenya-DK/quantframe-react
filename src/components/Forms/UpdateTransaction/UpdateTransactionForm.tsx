@@ -80,7 +80,7 @@ export function UpdateTransaction({ value, onSubmit }: UpdateTransactionProps) {
         <Button mt="md" onClick={() => setShowProperties((prev) => !prev)}>
           {showProperties ? useTranslateForm("buttons.hide_properties.label") : useTranslateForm("buttons.show_properties.label")}
         </Button>
-        <Collapse in={showProperties}>
+        <Collapse expanded={showProperties}>
           <JsonInput
             label={useTranslateFormFields("properties.label")}
             description={useTranslateFormFields("properties.description")}
