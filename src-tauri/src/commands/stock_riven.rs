@@ -1,16 +1,15 @@
 use std::{collections::HashMap, sync::Mutex};
 
 use entity::{dto::*, stock_riven::*};
-use serde_json::{json, Value};
 use service::{StockRivenMutation, StockRivenQuery};
 use tauri_plugin_dialog::DialogExt;
-use utils::{get_location, group_by, info, log_json_formatted, Error, LoggerOptions};
+use utils::{get_location, group_by, info, Error, LoggerOptions};
 use wf_market::enums::OrderType;
 
 use crate::{
     add_metric,
     app::client::AppState,
-    cache::{types::RivenSummary, CacheState},
+    cache::CacheState,
     handlers::{handle_riven, handle_riven_by_entity},
     helper,
     types::{OperationSet, PermissionsFlags},
