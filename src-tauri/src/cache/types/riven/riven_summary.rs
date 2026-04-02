@@ -41,7 +41,7 @@ impl RivenSummary {
         unique_name: impl Into<String>,
         mastery_rank: i64,
         rerolls: i64,
-        mut rank: i32,
+        rank: i32,
         polarity: impl Into<String>,
         attributes: Vec<(String, f64, bool)>,
     ) -> Result<Self, Error> {
@@ -55,18 +55,12 @@ impl RivenSummary {
         // -----------------------------
         // Count buffs / curses
         // -----------------------------
-        let (total_buffs, total_curses) = count_riven_positive_and_negative_stats(&attributes);
-
-        // -----------------------------
-        // Multipliers
-        // -----------------------------
-        let multipliers = lookup_riven_multipliers(total_buffs, total_curses)?;
+        let (total_buffs, _) = count_riven_positive_and_negative_stats(&attributes);
 
         // -----------------------------
         // Build attributes
         // -----------------------------
-        let stats =
-            derive_riven_summary_attributes(&cache, &weapon, &attributes, multipliers, &mut rank)?;
+        let stats = derive_riven_summary_attributes(&cache, &weapon, &attributes, rank)?;
 
         // -----------------------------
         // Build summary
@@ -150,9 +144,9 @@ impl RivenSummary {
             .map(|a| (a.url_name.clone(), a.positive))
             .collect::<Vec<_>>();
 
-        self.roll_evaluation = cache
-            .riven()
-            .fill_roll_evaluation(&self.stat_with_weapons[0].unique_name, starts)?;
+        // self.roll_evaluation = cache
+        //     .riven()
+        //     .fill_roll_evaluation(&self.stat_with_weapons[0].unique_name, starts)?;
         Ok(())
     }
     pub fn grade_riven(&mut self, cache: &CacheState) -> Result<(), Error> {

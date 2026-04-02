@@ -23,6 +23,9 @@ impl RivenAttribute {
             properties: Properties::default(),
         }
     }
+    pub fn to_raw(&self) -> (String, f64, bool) {
+        (self.url_name.clone(), self.value, self.positive)
+    }
 }
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct RivenAttributeVec(pub Vec<RivenAttribute>);
@@ -39,5 +42,18 @@ impl RivenAttributeVec {
             }
         }
         (buff_count, curse_count)
+    }
+    pub fn to_raw(&self) -> Vec<(String, f64, bool)> {
+        self.0.iter().map(|att| att.to_raw()).collect()
+    }
+}
+
+pub trait IntoRawVec {
+    fn into_raw(self) -> Vec<(String, f64, bool)>;
+}
+
+impl IntoRawVec for Vec<RivenAttribute> {
+    fn into_raw(self) -> Vec<(String, f64, bool)> {
+        self.into_iter().map(|att| att.to_raw()).collect()
     }
 }

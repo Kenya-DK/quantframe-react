@@ -1,4 +1,4 @@
-import { ItemRiven, MinMaxDto, PriceHistory, RivenAttribute, UserStatus, WFMarketTypes } from ".";
+import { ItemRiven, MinMaxDto, PriceHistory, RivenAttribute, UserStatus } from ".";
 import { DisplaySettings } from "../utils/helper";
 
 export namespace TauriTypes {
@@ -599,7 +599,7 @@ export namespace TauriTypes {
     quantity: number;
     price: number;
   }
-  export interface StockRiven extends StockEntryBase {
+  export interface StockRiven<T = any> extends StockEntryBase<T> {
     attributes: RivenAttribute[];
     comment: string;
     filter: StockRivenFilter;
@@ -617,7 +617,6 @@ export namespace TauriTypes {
     wfm_order_id: string;
     wfm_weapon_id: string;
     wfm_weapon_url: string;
-    info?: StockRivenDetails;
   }
   export interface StockRivenFilter {
     attributes?: StockRivenFilterAttribute[];
@@ -668,53 +667,6 @@ export namespace TauriTypes {
     attributes: RivenAttribute[];
   }
 
-  export interface RollEvaluation {
-    tolerated_negative_attributes: ToleratedNegativeAttribute[];
-    valid_rolls: ValidRoll[];
-  }
-
-  export interface ToleratedNegativeAttribute {
-    label: string;
-    matches: boolean;
-  }
-
-  export interface ValidRoll {
-    optional: ToleratedNegativeAttribute[];
-    required: ToleratedNegativeAttribute[];
-  }
-
-  export interface RivenSummaryFinancialReport extends FinancialReport {
-    bought_price: number;
-    potential_profit: number;
-    last_transactions: TransactionDto[];
-  }
-  export interface RivenSummary {
-    weapon_name: string;
-    unique_name: string;
-    stock_status?: StockStatus;
-    attributes: RivenAttribute[];
-    mod_name: string;
-    endo: number;
-    kuva: number;
-    rank: number;
-    mastery_rank: number;
-    polarity: string;
-    grade: string;
-    image: string;
-    rerolls: number;
-    roll_evaluation?: RollEvaluation;
-    stat_with_weapons: StatWithWeapon[];
-    financial_summary: RivenSummaryFinancialReport;
-    similarly_auctions: WFMarketTypes.Auction[];
-    price_history: PriceHistory[];
-  }
-
-  export interface StatWithWeapon {
-    by_level: { [key: string]: RivenAttribute[] };
-    disposition: number;
-    disposition_rank: number;
-    name: string;
-  }
   export interface HandleItem {
     wfm_url: string;
     quantity: number;
@@ -724,7 +676,6 @@ export namespace TauriTypes {
     order_type: string;
     operation_set: string[];
   }
-  export interface StockRivenDetails extends RivenSummary {}
   export interface SubType {
     rank?: number;
     variant?: string;

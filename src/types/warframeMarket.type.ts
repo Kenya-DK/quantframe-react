@@ -1,4 +1,4 @@
-import { PaginatedDto, UserStatus } from "./global.type";
+import { PaginatedDto, RivenAttribute, UserStatus } from "./global.type";
 
 export namespace WFMarketTypes {
   export enum OrderType {
@@ -56,7 +56,7 @@ export namespace WFMarketTypes {
     winner: unknown | null;
   }
   export interface Item {
-    attributes: Attribute[];
+    attributes: RivenAttribute[];
     mastery_level: number;
     mod_rank: number;
     name: string;
@@ -65,13 +65,6 @@ export namespace WFMarketTypes {
     similarity: Similarity;
     type: string;
     weapon_url_name: string;
-  }
-  export interface Attribute {
-    positive: boolean;
-    url_name: string;
-    value: number;
-    effect?: string;
-    properties?: Record<string, any>;
   }
 
   export interface Similarity {

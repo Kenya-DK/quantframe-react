@@ -1,22 +1,37 @@
 use chrono::{DateTime, Utc};
 use entity::{
     dto::{FinancialGraph, FinancialReport, PaginatedResult, SubType},
+    enums::RivenGrade,
+    stock_riven::RivenAttribute,
     transaction::TransactionPaginationQueryDto,
 };
-use serde_json::json;
+use serde_json::{json, Value};
 use service::TransactionQuery;
 use std::{
+    collections::HashMap,
     fs::{self},
     path::PathBuf,
 };
 use tauri::{Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 use utils::*;
-use wf_market::{enums::OrderType, types::Order, Authenticated};
+use wf_market::{
+    enums::OrderType,
+    types::{AuctionLike, Order},
+    Authenticated,
+};
 
 use crate::{
-    cache::{CacheState, CacheTradableItem},
+    cache::{
+        apply_rank_multiplier, compute_riven_endo_cost, compute_riven_kuva_cost,
+        count_riven_positive_and_negative_stats, derive_riven_summary_attributes, grade_riven,
+        lookup_riven_multipliers, scale_attributes, CacheRivenWeapon, CacheState,
+        CacheTradableItem,
+    },
     types::OperationSet,
-    utils::{modules::states, ErrorFromExt, OrderExt, OrderListExt, SubTypeExt},
+    utils::{
+        auction_list_ext::AuctionWithOwnerListExt, modules::states, ErrorFromExt, OrderExt,
+        OrderListExt, SubTypeExt,
+    },
     APP, DATABASE,
 };
 
@@ -296,4 +311,217 @@ pub async fn populate_item_market_properties(
     }
     properties.set_property_value("ui_operations", operations.operations.clone());
     Ok(())
+}
+pub async fn populate_riven_market_properties(
+    properties: &mut Properties,
+    raw: impl Into<String>,
+    mastery_rank: i64,
+    rerolls: i64,
+    rank: i32,
+    raw_attributes: Vec<(String, f64, bool)>,
+    uuid: String,
+    bought: i64,
+    list_price: Option<i64>,
+    mut operations: OperationSet,
+    cache: &CacheState,
+    wfm: &wf_market::client::Client<Authenticated>,
+) -> Result<Vec<RivenAttribute>, Error> {
+    let conn = DATABASE.get().unwrap();
+    let raw = raw.into();
+
+    // ---------------- Item Info ----------------
+    let riven_info = cache
+        .riven()
+        .get_weapon_by(&raw)
+        .map_err(|e| e.with_location(get_location!()))?;
+
+    properties.set_property_value("name", riven_info.name.clone());
+    properties.set_property_value("image", riven_info.wfm_icon.clone());
+    properties.set_property_value("disposition_rank", riven_info.disposition_rank);
+
+    // ---------------- Attributes Info ----------------
+    let mut attributes =
+        derive_riven_summary_attributes(&cache, &riven_info, &raw_attributes, rank)?;
+    // ---------------- Auction Info ----------------
+    let auction = wfm.auction().cache_auctions().get_by_uuid(&uuid);
+
+    let (platinum, auction_properties) = if let Some(auction) = auction {
+        let auction_operations = auction
+            .properties
+            .get_property_value("operations", OperationSet::new());
+        operations.merge(&auction_operations);
+        (auction.starting_price as i64, auction.properties.clone())
+    } else {
+        (
+            list_price.unwrap_or(0),
+            wf_market::types::Properties::default(),
+        )
+    };
+
+    // ---------------- Profitability Info ----------------
+    if operations.has("ProfitabilityInfo") {
+        let potential_profit = platinum - bought;
+        let roi = if bought > 0 {
+            (potential_profit as f64 / bought as f64) * 100.0
+        } else {
+            0.0
+        };
+        properties.set_property_value("roi_percent", roi);
+        properties.set_property_value("potential_profit", potential_profit);
+    }
+
+    // ---------------- Grade Info ----------------
+    if operations.has("GradeInfo") {
+        let god_roll = &riven_info.god_roll;
+        if let Some(god_roll) = god_roll {
+            let (grade, grads) = grade_riven(&god_roll, &attributes, "tag");
+
+            for i in 0..grads.len() {
+                attributes[i]
+                    .properties
+                    .set_property_value("grade", grads[i].1.clone());
+            }
+
+            properties.set_property_value("grade", grade);
+        } else {
+            properties.set_property_value("grade", RivenGrade::Unknown);
+        }
+    }
+
+    // ---------------- Variant Info ----------------
+    if operations.has("VariantInfo") {
+        let mut weapons = Vec::new();
+
+        let collect_weapon = |weapon: &CacheRivenWeapon| {
+            Properties::from(json!({
+                "unique_name": weapon.unique_name,
+                "name": weapon.name,
+                "disposition": weapon.disposition,
+                "disposition_rank": weapon.disposition_rank
+            }))
+        };
+        weapons.push(collect_weapon(&riven_info));
+
+        for variant in &riven_info.variants {
+            let v = cache.riven().get_weapon_by(&variant.unique_name)?;
+            weapons.push(collect_weapon(&v));
+        }
+
+        for wea in &mut weapons {
+            let disposition = wea.get_property_value("disposition", 0.0);
+            let ratio = disposition / riven_info.disposition;
+
+            let ranks = (0..=8)
+                .map(|i| scale_attributes(&attributes, ratio, i))
+                .collect::<Vec<Vec<RivenAttribute>>>();
+
+            wea.set_property_value("ranks", ranks);
+        }
+
+        properties.set_property_value(
+            "variants",
+            weapons
+                .iter()
+                .map(|w| w.get_properties(Value::Null))
+                .collect::<Vec<Value>>(),
+        );
+    }
+
+    // ---------------- Roll Evaluation Info ----------------
+    if operations.has("RollEvaluation") {
+        let roll_evaluation = cache
+            .riven()
+            .fill_roll_evaluation(&riven_info.unique_name, raw_attributes)?;
+        properties.set_property_value("roll_evaluation", roll_evaluation);
+    }
+
+    // ---------------- Transaction Info ----------------
+    if operations.has("TransactionInfo") {
+        let transactions = TransactionQuery::get_all(
+            conn,
+            TransactionPaginationQueryDto::new(1, -1).set_wfm_id(&riven_info.wfm_id),
+        )
+        .await
+        .map_err(|e| e.with_location(get_location!()))?;
+
+        properties.set_property_value("report", FinancialReport::from(&transactions.results));
+        properties.set_property_value("last_transactions", transactions.take_top(5));
+    }
+
+    // ---------------- Market Info ----------------
+    if operations.has("MarketInfo") && !operations.has("MarketPopulated") {
+        let mut filter = wf_market::types::AuctionFilter::new(
+            wf_market::enums::AuctionType::Riven,
+            &riven_info.wfm_url_name,
+        );
+        filter.similarity_attributes = Some(
+            attributes
+                .iter()
+                .map(|att| {
+                    wf_market::types::ItemAttribute::new(
+                        att.url_name.clone(),
+                        att.positive,
+                        att.value,
+                    )
+                })
+                .collect(),
+        );
+        filter.similarity = Some(34);
+
+        let mut auctions = wfm.auction().search_auctions(filter).await.map_err(|e| {
+            Error::from_wfm(
+                "Command::StockRivenGetById",
+                "Failed to search auctions",
+                e,
+                get_location!(),
+            )
+        })?;
+        auctions.sort_by_similarity(false);
+        auctions.apply_item_info(&cache)?;
+
+        // Metrics for Lowest Sell
+        let sell_highest = auctions.highest_price();
+        let sell_lowest = auctions.lowest_price();
+
+        properties.set_property_value("sell_highest_price", sell_highest);
+        properties.set_property_value("sell_lowest_price", sell_lowest);
+        properties.set_property_value("supply", auctions.total_auctions());
+
+        let mut auctions = auctions.to_vec();
+        for auction in auctions.iter_mut().map(|auction| auction.to_auction_mut()) {
+            let similarity = auction.item.similarity.clone();
+            if let Some(attrs) = &mut auction.item.attributes {
+                for attr in attrs.iter_mut() {
+                    attr.properties
+                        .set_property_value("matched", similarity.has_attribute(&attr.url_name));
+                }
+            }
+        }
+        properties.set_property_value("auctions", auctions);
+    }
+
+    // ----------------- Endo Info -----------------
+    if operations.has("EndoInfo") {
+        let endo =
+            100 * (mastery_rank - 8) + (22.5 * 2_f64.powi(rank)).floor() as i64 + 200 * rerolls - 7;
+        properties.set_property_value("endo", endo);
+    }
+
+    // ----------------- Kuva Info -----------------
+    if operations.has("KuvaInfo") {
+        const COSTS: [i64; 9] = [900, 1000, 1200, 1400, 1700, 2000, 2350, 2750, 3150];
+
+        let kuva = (0..rerolls as usize)
+            .map(|i| COSTS.get(i).copied().unwrap_or(3500))
+            .sum::<i64>();
+        properties.set_property_value("kuva", kuva);
+    }
+
+    // ----------------- Market Populated Info -----------------
+    if operations.has("MarketPopulated") {
+        properties.merge_properties(auction_properties.properties, true);
+    }
+    properties.set_property_value("attributes", scale_attributes(&attributes, 1.0, rank));
+    properties.set_property_value("ui_operations", operations.operations.clone());
+    Ok(attributes)
 }

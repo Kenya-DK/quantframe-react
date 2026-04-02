@@ -188,6 +188,27 @@ pub fn apply_rank_multiplier(current_value: f64, disposition: f64, rank: f64) ->
     let level_multiplier = disposition * ((rank + 1.0) / 9.0);
     current_value * level_multiplier
 }
+
+pub fn scale_attributes(attrs: &Vec<RivenAttribute>, ratio: f64, rank: i32) -> Vec<RivenAttribute> {
+    attrs
+        .iter()
+        .map(|attr| scale_attribute(attr, ratio, rank))
+        .collect()
+}
+pub fn scale_attribute(attr: &RivenAttribute, ratio: f64, rank: i32) -> RivenAttribute {
+    let mut new_attr = attr.clone();
+
+    new_attr.value = apply_rank_multiplier(attr.value, ratio, rank as f64);
+
+    for key in ["min", "max"] {
+        let val = attr.properties.get_property_value(key, 0.0);
+        new_attr
+            .properties
+            .set_property_value(key, apply_rank_multiplier(val, ratio, rank as f64));
+    }
+    new_attr
+}
+
 // --------------------------------------------------
 // HELPERS
 // --------------------------------------------------
@@ -201,11 +222,13 @@ pub fn derive_riven_summary_attributes(
     cache: &CacheState,
     weapon: &CacheRivenWeapon,
     attributes: &[(String, f64, bool)],
-    multipliers: &Modifier,
-    rank: &mut i32,
+    mut rank: i32,
 ) -> Result<Vec<RivenAttribute>, Error> {
     let riven_cache = cache.riven();
     let mut out = Vec::with_capacity(attributes.len());
+
+    let (total_buffs, total_curses) = count_riven_positive_and_negative_stats(&attributes);
+    let multipliers = lookup_riven_multipliers(total_buffs, total_curses)?;
 
     for (tag, rolled, positive) in attributes {
         let upgrade = riven_cache
@@ -225,11 +248,11 @@ pub fn derive_riven_summary_attributes(
             base *= 100.0;
         }
 
-        if *rank == 0 && (rolled - base).abs() < 0.5 * rolled {
-            *rank = 8;
+        if rank == 0 && (rolled - base).abs() < 0.5 * rolled {
+            rank = 8;
         }
 
-        let scaled = rolled / (*rank as f64 + 1.0) * 9.0;
+        let scaled = rolled / (rank as f64 + 1.0) * 9.0;
 
         let mut factor = ((scaled - base * 0.9) / (base * 0.2)).clamp(0.0, 1.0);
 

@@ -4,7 +4,7 @@ use entity::{dto::*, stock_riven::*};
 use serde_json::{json, Value};
 use service::{StockRivenMutation, StockRivenQuery};
 use tauri_plugin_dialog::DialogExt;
-use utils::{get_location, group_by, info, Error, LoggerOptions};
+use utils::{get_location, group_by, info, log_json_formatted, Error, LoggerOptions};
 use wf_market::enums::OrderType;
 
 use crate::{
@@ -12,7 +12,8 @@ use crate::{
     app::client::AppState,
     cache::{types::RivenSummary, CacheState},
     handlers::{handle_riven, handle_riven_by_entity},
-    types::PermissionsFlags,
+    helper,
+    types::{OperationSet, PermissionsFlags},
     utils::ErrorFromExt,
     APP, DATABASE,
 };
@@ -194,12 +195,14 @@ pub async fn stock_riven_update_multiple(
 #[tauri::command]
 pub async fn stock_riven_get_by_id(
     id: i64,
-    mode: String,
+    operations: Option<Vec<String>>,
     cache: tauri::State<'_, Mutex<CacheState>>,
-) -> Result<Value, Error> {
+    app: tauri::State<'_, Mutex<AppState>>,
+) -> Result<stock_riven::Model, Error> {
     let cache = cache.lock()?.clone();
+    let app = app.lock()?.clone();
     let conn = DATABASE.get().unwrap();
-    let item = match StockRivenQuery::get_by_id(conn, id).await {
+    let mut item = match StockRivenQuery::get_by_id(conn, id).await {
         Ok(stock_riven) => {
             if let Some(item) = stock_riven {
                 item
@@ -213,17 +216,37 @@ pub async fn stock_riven_get_by_id(
         }
         Err(e) => return Err(e.with_location(get_location!())),
     };
-    match mode.as_str() {
-        "summary" => Ok(json!(RivenSummary::try_from_model(&item, &cache).await?)),
-        "edit" => Ok(json!(item)),
-        _ => {
-            return Err(Error::new(
-                "Command::StockRivenGetById",
-                "Invalid mode. Must be 'summary' or 'edit'",
-                get_location!(),
-            ));
-        }
-    }
+    helper::populate_riven_market_properties(
+        &mut item.properties,
+        &item.weapon_unique_name,
+        item.mastery_rank,
+        item.re_rolls,
+        item.sub_type.clone().unwrap_or_default().rank.unwrap_or(0) as i32,
+        item.attributes.to_raw(),
+        item.uuid.clone(),
+        item.bought,
+        item.list_price,
+        OperationSet::from(
+            operations.unwrap_or(
+                vec![
+                    "MarketInfo",
+                    "TransactionInfo",
+                    "GradeInfo",
+                    "EvaluateRolls",
+                    "VariantInfo",
+                    "EndoInfo",
+                    "KuvaInfo",
+                ]
+                .into_iter()
+                .map(|s| s.to_string())
+                .collect(),
+            ),
+        ),
+        &cache,
+        &app.wfm_client,
+    )
+    .await?;
+    Ok(item)
 }
 
 #[tauri::command]

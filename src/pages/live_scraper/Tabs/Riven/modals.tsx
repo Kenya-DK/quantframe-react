@@ -3,10 +3,9 @@ import { Text } from "@mantine/core";
 import { TauriTypes } from "$types";
 import { CreateRiven } from "@components/Forms/CreateRiven";
 import { RivenFilter } from "@components/Forms/RivenFilter";
-import { StockRivenDetailsModal } from "@components/Modals/StockRivenDetails";
 import { useTranslateCommon, useTranslateModals } from "@hooks/useTranslate.hook";
-import { StockRivenUpdate } from "@components/Forms/StockRivenUpdate";
 import { GenerateTradeMessageModal, GenerateTradeMessageModalProps } from "@components/Modals/GenerateTradeMessage";
+import { Operations, RivenDetailsModal } from "@components/Modals/RivenDetails/RivenDetailsModal";
 interface ModalHooks {
   useTranslateBasePrompt: (key: string, context?: { [key: string]: any }) => string;
   updateMutation: {
@@ -95,7 +94,23 @@ export const useStockModals = ({
     modals.open({
       size: "100%",
       withCloseButton: false,
-      children: <StockRivenDetailsModal value={item.id} />,
+      // children: <StockRivenDetailsModal value={item.id} />,
+      children: (
+        <RivenDetailsModal
+          value={item.id}
+          lookup="stock_riven"
+          operations={[
+            Operations.KuvaInfo,
+            Operations.EndoInfo,
+            Operations.RollEvaluation,
+            Operations.GradeInfo,
+            Operations.VariantInfo,
+            Operations.ProfitabilityInfo,
+            Operations.MarketInfo,
+            Operations.TransactionInfo,
+          ]}
+        />
+      ),
     });
   };
   const OpenWTSModal = (input: GenerateTradeMessageModalProps) => {
@@ -130,9 +145,11 @@ export const useStockModals = ({
       size: "100%",
       withCloseButton: false,
       children: (
-        <StockRivenUpdate
-          values={ids}
-          onUpdate={async (input) => {
+        <RivenDetailsModal
+          value={ids[0]}
+          lookup="stock_riven"
+          operations={[Operations.EditForm, Operations.GradeInfo, Operations.ProfitabilityInfo]}
+          onSave={async (input: TauriTypes.UpdateStockRiven) => {
             if (ids.length == 1) await updateMutation.mutateAsync(input);
             else await updateMultipleMutation.mutateAsync({ ids, input: { ...input, id: -1 } });
             modals.close(id);

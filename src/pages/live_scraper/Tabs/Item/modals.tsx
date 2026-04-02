@@ -100,7 +100,13 @@ export const useModals = ({ updateMutation, updateMultipleMutation, sellStockMut
     modals.open({
       size: "100%",
       withCloseButton: false,
-      children: <ItemDetailsModal value={item.id} lookup="stock_item" operations={[Operations.MarketInfo, Operations.TransactionInfo]} />,
+      children: (
+        <ItemDetailsModal
+          value={item.id}
+          lookup="stock_item"
+          operations={[Operations.ProfitabilityInfo, Operations.MarketInfo, Operations.TransactionInfo]}
+        />
+      ),
     });
   };
 

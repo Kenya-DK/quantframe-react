@@ -23,4 +23,8 @@ export class AuctionModule {
   async importById(id: string, bought: number): Promise<any> {
     return await this.client.sendInvoke<any>("auction_import_by_id", { id, bought });
   }
+
+  async getById<T = any>(id: string, operations?: string[]): Promise<WFMarketTypes.Auction<T>> {
+    return await this.client.sendInvoke<WFMarketTypes.Auction<T>>("get_wfm_auction_by_id", { id, operations });
+  }
 }

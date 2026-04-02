@@ -1442,16 +1442,6 @@
           }
         }
       },
-      "stock_riven_update": {
-        "title": "Update {{count}} Stock Rivens",
-        "fields": {
-          "listed": "Listed Prices History",
-          "bought_label": "Bought",
-          "minimum_price_label": "Minimum Price",
-          "mastery_rank_label": "Mastery Rank",
-          "re_rolls_label": "Re Rolls"
-        }
-      },
       "trade_entry_update": {
         "fields": {
           "price_label": "Price",
@@ -1600,32 +1590,80 @@
           }
         }
       },
-      "stock_riven_details": {
-        "titles": {
-          "modifiers": "Modifiers",
-          "similar_auctions": "Similar Auctions",
-          "last_transactions": "Last Transactions",
-          "financial_summary": "Financial Summary"
-        },
-        "auction_card": {
-          "header_right": "{{price}} <plat/>",
-          "header_left": "{{similarity}}%",
-          "footer_right": "<open/>"
-        },
-        "labels": {
-          "rank": "Rank:",
-          "rerolls": "Rerolls:",
-          "drain": "Drain:",
-          "mastery_rank": "Mastery Rank:",
-          "total_endo": "Total Endo:",
-          "spent_kuva": "Spent Kuva:",
-          "bought_price": "Bought Price:",
-          "potential_profit": "Potential Profit:",
-          "weapon": "Weapon",
-          "best_attributes": "Best Attributes",
-          "mandatory": "Mandatory",
-          "optional": "Optional",
-          "best_bad_attributes": "Best Bad Attributes"
+      "riven_details": {
+        "tabs": {
+          "overview": {
+            "title": "Overview",
+            "tooltips": {},
+            "labels": {
+              "created_at": "Created At: <date/>",
+              "updated_at": "Updated At: <date/>",
+              "bought": "Bought Price: {{price}} <plat/>",
+              "list_price": "Listed Price: {{price}} <plat/>",
+              "potential_profit": "Potential Profit: {{price}} <plat/>",
+              "minimum_profit": "Minimum Profit: {{price}}",
+              "minimum_sma": "Minimum SMA: {{price}}",
+              "kuva": "Kuva Spent: {{kuva}}",
+              "endo": "Endo: {{endo}}",
+              "is_hidden": "Hidden: <hidden/>"
+            }
+          },
+          "modifiers": {
+            "title": "Modifiers",
+            "tooltips": {},
+            "labels": {
+              "weapon": "Weapon",
+              "rank": "Rank"
+            },
+            "titles": {}
+          },
+          "roll_evaluation": {
+            "title": "Roll Evaluation",
+            "tooltips": {},
+            "labels": {
+              "best_attributes": "Best Attributes",
+              "mandatory": "Mandatory",
+              "optional": "Optional",
+              "best_bad_attributes": "Best Bad Attributes"
+            },
+            "titles": {}
+          },
+          "analytics": {
+            "title": "Analytics",
+            "tooltips": {},
+            "labels": {},
+            "titles": {
+              "last_transactions": "Last Transactions",
+              "financial_summary": "Financial Summary"
+            }
+          },
+          "wfm": {
+            "title": "Overview",
+            "tooltips": {},
+            "labels": {
+              "auction_header_left": "Similarity {{similarity}}%",
+              "auction_header_right": "Price {{price}} <plat/>"
+            },
+            "buttons": {
+              "view_on_wfm": "View on Warframe Market"
+            }
+          },
+          "edit": {
+            "title": "Edit",
+            "fields": {
+              "bought": "Bought For",
+              "minimum_price": "Minimum Price",
+              "mastery_rank": "Mastery Rank",
+              "re_rolls": "Re-Rolls",
+              "minimum_profit": "Minimum Profit"
+            },
+            "tooltips": {
+              "minimum_price": "The minimum price you are willing to sell this item for. Set to 0 to disable.",
+              "minimum_profit": "The minimum profit you want to make when selling this item. Set to 0 to disable",
+              "minimum_sma": "The minimum simple moving average to consider for selling this item. Set to 0 to disable",
+              "maximum_price": "The maximum price you are willing to buy this item for. Set to 0 to disable."
+            }
+          }
         }
       },
       "update_available": {

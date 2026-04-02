@@ -1,5 +1,5 @@
 import { isValidElement, memo } from "react";
-import { alpha, Card, CardProps } from "@mantine/core";
+import { alpha, Card, CardProps, Collapse } from "@mantine/core";
 import { useHover } from "@mantine/hooks";
 import { TextTranslate, TextTranslateProps } from "@components/Shared/TextTranslate";
 type SlotKey = "headerLeft" | "headerCenter" | "headerRight" | "footerLeft" | "footerCenter" | "footerRight";
@@ -18,6 +18,9 @@ interface PreviewCardProps<T = any> extends CardProps {
   footerLeft?: TextTranslatePropsExtended | React.ReactNode;
   footerCenter?: TextTranslatePropsExtended | React.ReactNode;
   footerRight?: TextTranslatePropsExtended | React.ReactNode;
+
+  headerShowOnHover?: boolean;
+  footerShowOnHover?: boolean;
 
   renderBody?: (value: T) => React.ReactNode;
 }
@@ -41,11 +44,14 @@ export const PreviewCard = memo(function PreviewCard<T>({
   footerLeft,
   footerCenter,
   footerRight,
+  headerShowOnHover = false,
+  footerShowOnHover = false,
 
   style,
   ...cardProps
 }: PreviewCardProps<T>) {
-  const { ref } = useHover();
+  const { hovered, ref } = useHover();
+  // const hoverTransition = "opacity 180ms ease, transform 180ms ease";
 
   if (!value) return <>...</>;
 
@@ -135,6 +141,24 @@ export const PreviewCard = memo(function PreviewCard<T>({
     );
   };
 
+  const renderHoverSection = (section: "header" | "footer") => {
+    return (
+      <Collapse
+        pos={"absolute"}
+        expanded={hovered}
+        transitionDuration={180}
+        top={section === "header" ? 0 : undefined}
+        bottom={section === "footer" ? 0 : undefined}
+        left={0}
+        right={0}
+        p={3}
+        bg={alpha("var(--mantine-color-dark-7)", 0.5)}
+      >
+        {renderSection(section)}
+      </Collapse>
+    );
+  };
+
   const hasRenderableSlots = (section: "header" | "footer") => {
     const keys = (["Left", "Center", "Right"] as const).map((pos) => `${section}${pos}` as SlotKey);
 
@@ -147,7 +171,7 @@ export const PreviewCard = memo(function PreviewCard<T>({
   return (
     <Card radius="md" ref={ref} pos="relative" style={{ display: "flex", flexDirection: "column", ...style }} {...cardProps}>
       {/* Header */}
-      {hasRenderableSlots("header") ? (
+      {hasRenderableSlots("header") && !headerShowOnHover ? (
         <Card.Section bg={alpha("var(--mantine-color-dark-7)", 0.7)} p={3}>
           {renderSection("header")}
         </Card.Section>
@@ -155,11 +179,13 @@ export const PreviewCard = memo(function PreviewCard<T>({
 
       {/* Body */}
       <Card.Section p="sm" style={{ flexGrow: 1 }}>
+        {headerShowOnHover && renderHoverSection("header")}
         {renderBody ? renderBody(value) : null}
+        {footerShowOnHover && renderHoverSection("footer")}
       </Card.Section>
 
       {/* Footer */}
-      {hasRenderableSlots("footer") ? (
+      {hasRenderableSlots("footer") && !footerShowOnHover ? (
         <Card.Section bg={alpha("var(--mantine-color-dark-7)", 0.7)} p={3}>
           {renderSection("footer")}
         </Card.Section>

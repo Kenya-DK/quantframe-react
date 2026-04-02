@@ -238,7 +238,7 @@ impl RivenModule {
     pub fn fill_roll_evaluation(
         &self,
         raw: impl Into<String>,
-        stats: Vec<(String, bool)>,
+        stats: Vec<(String, f64, bool)>,
     ) -> Result<RivenRollEvaluation, Error> {
         let weapon = self.get_weapon_by(raw.into())?;
 
@@ -250,7 +250,7 @@ impl RivenModule {
         let mut summary = RivenRollEvaluation::default();
 
         let stat_lookup: HashSet<(&str, bool)> =
-            stats.iter().map(|(s, p)| (s.as_str(), *p)).collect();
+            stats.iter().map(|(s, _, p)| (s.as_str(), *p)).collect();
 
         let has_stat =
             |name: &str, positive: bool| -> bool { stat_lookup.contains(&(name, positive)) };
