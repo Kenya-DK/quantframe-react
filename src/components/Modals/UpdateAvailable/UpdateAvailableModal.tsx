@@ -8,6 +8,7 @@ import { Markdown } from "tiptap-markdown";
 import { useState } from "react";
 import { Update } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
+import { open } from "@tauri-apps/plugin-shell";
 export interface UpdateAvailableModalProps {
   app_info: TauriTypes.AppInfo | undefined;
   context?: string;
@@ -17,7 +18,7 @@ export interface UpdateAvailableModalProps {
   updater?: Update;
 }
 
-export function UpdateAvailableModal({ is_manual, download_url, context, updater, new_version }: UpdateAvailableModalProps) {
+export function UpdateAvailableModal({ is_manual, download_url, updater, new_version, context }: UpdateAvailableModalProps) {
   const useTranslateModal = (key: string, ctx?: Record<string, any>, raw?: boolean) => useTranslateModals(`update_available.${key}`, ctx, raw);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -33,7 +34,7 @@ export function UpdateAvailableModal({ is_manual, download_url, context, updater
   };
 
   const editor = useEditor({
-    extensions: [StarterKit, Markdown],
+    extensions: [StarterKit, Markdown.configure({ breaks: true })],
     editable: false,
     content: context,
   });
@@ -41,13 +42,7 @@ export function UpdateAvailableModal({ is_manual, download_url, context, updater
   return (
     <Box>
       <RichTextEditor editor={editor} maw="100%" mah="60vh" style={{ border: "none" }}>
-        <RichTextEditor.Content
-          mah="55vh"
-          style={{
-            overflow: "auto",
-            maxWidth: "100%",
-          }}
-        />
+        <RichTextEditor.Content mah="55vh" />
       </RichTextEditor>
 
       {isDownloading && (
@@ -70,7 +65,8 @@ export function UpdateAvailableModal({ is_manual, download_url, context, updater
         <Button
           loading={isDownloading}
           onClick={async () => {
-            if (is_manual) return open(download_url);
+            if (is_manual) return;
+            if (is_manual && download_url) return open(download_url);
             if (!updater) return;
             if (isDownloading) return;
             setIsDownloading(true);
