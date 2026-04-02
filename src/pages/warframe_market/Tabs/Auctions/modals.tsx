@@ -1,6 +1,8 @@
 import { modals } from "@mantine/modals";
 import { Text } from "@mantine/core";
 import { useTranslateCommon } from "@hooks/useTranslate.hook";
+import { WFMarketTypes } from "$types";
+import { Operations, RivenDetailsModal } from "@components/Modals/RivenDetails";
 
 interface ModalHooks {
   useTranslateBasePrompt: (key: string, context?: { [key: string]: any }) => string;
@@ -46,8 +48,16 @@ export const useStockModals = ({ deleteStockMutation, importStockMutation }: Mod
       onConfirm: async () => await deleteStockMutation.mutateAsync(id),
     });
   };
+  const OpenInfoModal = (item: WFMarketTypes.Auction) => {
+    modals.open({
+      size: "100%",
+      withCloseButton: false,
+      children: <RivenDetailsModal value={item.id} lookup="auction" operations={[Operations.MarketInfo, Operations.TransactionInfo]} />,
+    });
+  };
 
   return {
+    OpenInfoModal,
     OpenImportModal,
     OpenDeleteModal,
   };

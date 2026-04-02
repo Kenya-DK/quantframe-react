@@ -91,20 +91,20 @@ export function OverviewTab({ value }: OverviewTabProps) {
                 {
                   i18nKey: "labels.created_at",
                   value: {},
-                  hidden: GetProperty("created_at") === undefined && GetProperty("createdAt") === undefined,
-                  components: { date: <TimerStamp date={new Date(GetProperty("created_at") ?? GetProperty("createdAt"))} /> },
+                  hidden: GetProperty("created_at") === undefined && GetProperty("created") === undefined,
+                  components: { date: <TimerStamp date={new Date(GetProperty("created_at") ?? GetProperty("created"))} /> },
                 },
                 {
                   i18nKey: "labels.updated_at",
                   value: {},
-                  hidden: GetProperty("updated_at") === undefined && GetProperty("updatedAt") === undefined,
-                  components: { date: <TimerStamp date={new Date(GetProperty("updated_at") ?? GetProperty("updatedAt"))} /> },
+                  hidden: GetProperty("updated_at") === undefined && GetProperty("updated") === undefined,
+                  components: { date: <TimerStamp date={new Date(GetProperty("updated_at") ?? GetProperty("updated"))} /> },
                 },
               ])}
               {GetCellValue([
                 {
                   i18nKey: "labels.list_price",
-                  value: { price: GetProperty("list_price") ?? GetProperty("platinum") },
+                  value: { price: GetProperty("list_price") ?? GetProperty("starting_price") },
                 },
                 {
                   i18nKey: "labels.bought",
@@ -149,10 +149,13 @@ export function OverviewTab({ value }: OverviewTabProps) {
                 },
                 {
                   i18nKey: "labels.is_hidden",
-                  hidden: GetProperty("is_hidden") === undefined,
+                  hidden: GetProperty("is_hidden") === undefined && GetProperty("visible") === undefined,
                   components: {
                     hidden: (
-                      <FontAwesomeIcon icon={GetProperty("is_hidden") ? faCheckCircle : faClose} color={GetProperty("is_hidden") ? "green" : "red"} />
+                      <FontAwesomeIcon
+                        icon={(GetProperty("is_hidden") ?? GetProperty("visible")) ? faCheckCircle : faClose}
+                        color={(GetProperty("is_hidden") ?? !GetProperty("visible")) ? "green" : "red"}
+                      />
                     ),
                   },
                 },

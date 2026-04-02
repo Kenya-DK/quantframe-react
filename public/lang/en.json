@@ -1638,11 +1638,11 @@
             }
           },
           "wfm": {
-            "title": "Overview",
+            "title": "Warframe Market",
             "tooltips": {},
             "labels": {
-              "auction_header_left": "Similarity {{similarity}}%",
-              "auction_header_right": "Price {{price}} <plat/>"
+              "auction_header_left": "{{similarity}}%",
+              "auction_header_right": "{{price}} <plat/>"
             },
             "buttons": {
               "view_on_wfm": "View on Warframe Market"
@@ -2063,11 +2063,11 @@
             "refresh_tooltip": "Refresh the auction list",
             "delete_all_tooltip": "Delete all auctions",
             "delete_tooltip": "Delete this auction",
-            "import_tooltip": "Import this auction"
+            "import_tooltip": "Import this auction",
+            "info_tooltip": "View auction details"
           },
           "auction_card": {
-            "header_right": "{{price}} <plat/>",
-            "footer_left": "<delete/> <import/>"
+            "header_right": "{{price}} <plat/>"
           },
           "errors": {
             "refresh_auctions": {

@@ -6,12 +6,20 @@ use entity::{
     stock_riven::{self, StockRivenPaginationQueryDto},
 };
 use service::StockRivenQuery;
-use utils::{filters_by, get_location, sorting::SortDirection, Error};
+use utils::{filters_by, get_location, sorting::SortDirection, Error, Properties};
 use wf_market::{enums::OrderType, types::Auction};
 
 use crate::{
-    add_metric, app::client::AppState, cache::client::CacheState, handlers::handle_riven_by_entity,
-    helper::paginate, live_scraper::LiveScraperState, send_event, types::*, utils::*, DATABASE,
+    add_metric,
+    app::client::AppState,
+    cache::client::CacheState,
+    handlers::handle_riven_by_entity,
+    helper::{self, paginate},
+    live_scraper::LiveScraperState,
+    send_event,
+    types::*,
+    utils::*,
+    DATABASE,
 };
 #[tauri::command]
 pub async fn auction_refresh(
@@ -147,6 +155,60 @@ pub async fn get_wfm_auctions_overview(
         .map(|a| a.properties.get_property_value("potential_profit", 0) as i64)
         .sum::<i64>();
     Ok((total, revenue, profit))
+}
+#[tauri::command]
+pub async fn get_wfm_auction_by_id(
+    id: String,
+    operations: Option<Vec<String>>,
+    cache: tauri::State<'_, Mutex<CacheState>>,
+    app: tauri::State<'_, Mutex<AppState>>,
+) -> Result<Auction, Error> {
+    let cache = cache.lock()?.clone();
+    let app = app.lock()?.clone();
+    let auction = app.wfm_client.auction().cache_auctions().get_by_id(&id);
+    if auction.is_none() {
+        return Err(Error::new(
+            "Command::GetWfmAuctionById",
+            "Auction not found",
+            get_location!(),
+        ));
+    }
+    let mut auction = auction.unwrap();
+    let mut properties = Properties::default();
+    helper::populate_riven_market_properties(
+        &mut properties,
+        &auction.item.weapon_url_name,
+        auction.item.mastery_level.unwrap_or(8) as i64,
+        auction.item.re_rolls.unwrap_or(0) as i64,
+        auction.item.mod_rank.unwrap_or(0) as i32,
+        auction.item.as_raw_attributes(),
+        auction.uuid.clone(),
+        0,
+        Some(auction.starting_price as i64),
+        OperationSet::from(
+            operations.unwrap_or(
+                vec![
+                    "MarketInfo",
+                    "TransactionInfo",
+                    "GradeInfo",
+                    "EvaluateRolls",
+                    "VariantInfo",
+                    "EndoInfo",
+                    "KuvaInfo",
+                ]
+                .into_iter()
+                .map(|s| s.to_string())
+                .collect(),
+            ),
+        ),
+        &cache,
+        &app.wfm_client,
+    )
+    .await?;
+
+    auction.properties.set_properties(properties.properties);
+
+    Ok(auction)
 }
 #[tauri::command]
 pub async fn auction_delete_all(

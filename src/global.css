@@ -193,3 +193,32 @@
     -webkit-background-clip: text
   }
 }
+
+/* Scrollbar Styling */
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--mantine-color-dark-8, #25262b);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--mantine-color-dark-5, #495057);
+  border-radius: 4px;
+  transition: background 200ms ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--mantine-color-dark-4, #5c636a);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--mantine-color-dark-5, #495057) var(--mantine-color-dark-8, #25262b);
+}

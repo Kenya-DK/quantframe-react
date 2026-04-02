@@ -1,4 +1,4 @@
-import { Box, ScrollArea, SimpleGrid } from "@mantine/core";
+import { Box, ScrollArea, SimpleGrid, Text } from "@mantine/core";
 import { TauriTypes, WFMarketTypes } from "$types";
 import { PreviewCard } from "@components/Shared/PreviewCard/PreviewCard";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
@@ -20,9 +20,12 @@ export function WFMTab({ value }: WFMTabProps) {
 
   return (
     <Box>
+      <Text size="lg" fw={600}>
+        {useTranslateTab("title")}
+      </Text>
       <ScrollArea mt={"md"} h={"35vh"}>
         <SimpleGrid cols={{ base: 4 }} spacing="sm">
-          {value.properties.auctions?.slice(0, 5).map((riven, i) => (
+          {value.properties.auctions?.map((riven, i) => (
             <PreviewCard
               key={i}
               pos={"relative"}

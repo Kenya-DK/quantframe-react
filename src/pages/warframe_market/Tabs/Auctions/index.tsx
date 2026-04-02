@@ -1,7 +1,7 @@
 import { ActionIcon, Box, Divider, Group, ScrollArea, Select, SimpleGrid, Tooltip } from "@mantine/core";
 import { SearchField } from "@components/Forms/SearchField";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faArrowDown, faArrowUp, faFileImport, faRefresh, faSackDollar, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faArrowDown, faArrowUp, faFileImport, faInfoCircle, faRefresh, faSackDollar, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateCommon, useTranslatePages } from "@hooks/useTranslate.hook";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import classes from "../../WarframeMarket.module.css";
@@ -14,8 +14,10 @@ import { Loading } from "@components/Shared/Loading";
 import { useStockModals } from "./modals";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { TextTranslate } from "@components/Shared/TextTranslate";
-import { RivenPreview } from "@components/DataDisplay/RivenPreview";
 import { PaginationFooter } from "@components/Shared/PaginationFooter";
+import { PreviewCard } from "@components/Shared/PreviewCard/PreviewCard";
+import { RivenAttribute } from "@components/DataDisplay/RivenAttribute";
+import { upperFirst } from "@mantine/hooks";
 interface AuctionPanelProps {
   isActive?: boolean;
 }
@@ -53,7 +55,7 @@ export const AuctionPanel = ({ isActive }: AuctionPanelProps) => {
   });
 
   // Modals
-  const { OpenDeleteModal, OpenImportModal } = useStockModals({
+  const { OpenDeleteModal, OpenImportModal, OpenInfoModal } = useStockModals({
     useTranslateBasePrompt,
     importStockMutation,
     deleteStockMutation,
@@ -142,54 +144,65 @@ export const AuctionPanel = ({ isActive }: AuctionPanelProps) => {
       <ScrollArea mt={"md"} className={classes.orders} data-has-alert={useHasAlert()}>
         {deleteAllAuctionsMutation.isPending && <Loading text={`${deletingOrders.current} / ${deletingOrders.total}`} />}
         <SimpleGrid cols={{ base: 2, xl: 3 }} spacing="sm">
-          {paginationQuery.data?.results?.map((order) => (
-            <RivenPreview
-              key={order.id}
-              value={{ ...order.properties, attributes: order.item.attributes.map((attr) => ({ ...attr, ...attr.properties })) } as any}
-              type="withoutBackground"
-              setDefaultHeaderCenterAs="headerLeft"
+          {paginationQuery.data?.results?.map((auction, i) => (
+            <PreviewCard
+              key={i}
+              value={auction}
               headerRight={{
+                fz: "lg",
                 i18nKey: useTranslateTabOrder("auction_card.header_right", undefined, true),
-                values: {
-                  price: order.buyout_price || 0,
-                },
+                values: { price: auction.starting_price || 0 },
               }}
-              footerRight={{
-                i18nKey: useTranslateTabOrder("auction_card.footer_left", undefined, true),
-                values: {},
-                components: {
-                  delete: (
-                    <ActionWithTooltip
-                      tooltip={useTranslateButtons("delete_tooltip")}
-                      icon={faTrashCan}
-                      loading={loadingRows.includes(`${order.id}`)}
-                      color={"red.7"}
-                      actionProps={{ size: "sm" }}
-                      iconProps={{ size: "xs" }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        OpenDeleteModal(order.id);
-                      }}
-                    />
-                  ),
-                  import: order.properties?.can_import ? (
-                    <ActionWithTooltip
-                      tooltip={useTranslateButtons("import_tooltip")}
-                      icon={faFileImport}
-                      loading={loadingRows.includes(`${order.id}`)}
-                      color={"blue.7"}
-                      actionProps={{ size: "sm" }}
-                      iconProps={{ size: "xs" }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        OpenImportModal(order.id);
-                      }}
-                    />
-                  ) : (
-                    <></>
-                  ),
-                },
+              headerCenter={{
+                fz: "lg",
+                i18nKey: "components.riven_preview.riven_name",
+                values: { name: auction.properties.name, mod_name: upperFirst(auction.item.name) },
               }}
+              renderBody={() =>
+                auction.item.attributes.map((attr) => (
+                  <RivenAttribute key={attr.url_name} i18nKey="full" groupProps={{ p: 1 }} value={attr} hideDetails centered hideGrade />
+                ))
+              }
+              footerCenter={
+                <Group gap={3}>
+                  <ActionWithTooltip
+                    tooltip={useTranslateButtons("delete_tooltip")}
+                    icon={faTrashCan}
+                    loading={loadingRows.includes(`${auction.id}`)}
+                    color={"red.7"}
+                    actionProps={{ size: "sm" }}
+                    iconProps={{ size: "xs" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      OpenDeleteModal(auction.id);
+                    }}
+                  />
+                  <ActionWithTooltip
+                    tooltip={useTranslateButtons("import_tooltip")}
+                    icon={faFileImport}
+                    loading={loadingRows.includes(`${auction.id}`)}
+                    color={"blue.7"}
+                    actionProps={{ size: "sm", display: auction.properties?.can_import ? "inline-flex" : "none" }}
+                    iconProps={{ size: "xs" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      OpenImportModal(auction.id);
+                    }}
+                  />
+                  <ActionWithTooltip
+                    tooltip={useTranslateButtons("info_tooltip")}
+                    icon={faInfoCircle}
+                    loading={loadingRows.includes(`${auction.id}`)}
+                    color={"blue.7"}
+                    actionProps={{ size: "sm" }}
+                    iconProps={{ size: "xs" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      OpenInfoModal(auction);
+                    }}
+                  />
+                </Group>
+              }
             />
           ))}
         </SimpleGrid>
