@@ -7,9 +7,10 @@ export interface FinancialReportCardProps {
   data: TauriTypes.FinancialReport | undefined;
   hideTradeCount?: boolean;
   loading?: boolean;
+  hidePercentBar?: boolean;
 }
 
-export const FinancialReportCard = ({ data, hideTradeCount }: FinancialReportCardProps) => {
+export const FinancialReportCard = ({ data, hideTradeCount, hidePercentBar }: FinancialReportCardProps) => {
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateComponent(`financial_report_card.${key}`, { ...context }, i18Key);
 
@@ -18,7 +19,7 @@ export const FinancialReportCard = ({ data, hideTradeCount }: FinancialReportCar
       p={0}
       orientation="vertical"
       h={320}
-      // hidePercentBar
+      hidePercentBar={hidePercentBar}
       segments={[
         {
           label: useTranslate("labels.total_transactions"),

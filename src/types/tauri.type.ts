@@ -43,8 +43,6 @@ export namespace TauriTypes {
     OnDeleteWfmAuctions = "Wfm:OnDeleteAuctions",
     OnNotify = "App:OnNotify",
     OnChatMessage = "Wfm:OnChatMessage",
-    // Warframe GDPR
-    RefreshWFGDPRAll = "WFGDPR:RefreshAll",
   }
   export enum EventOperations {
     CREATE_OR_UPDATE = "CREATE_OR_UPDATE",
@@ -857,62 +855,34 @@ export namespace TauriTypes {
     type: string;
   }
 
-  export interface TradeItem {
+  export interface TradeItem<T = any> {
     item_type: string;
     quantity: number;
     raw: string;
     unique_name: string;
     sub_type?: SubType;
+    properties?: T;
   }
 
-  export type WFGDPRTradeControllerGetListData = PaginatedDto & {
-    results?: PlayerTrade[];
-  };
-  export interface WFGDPRTradeControllerGetListParams {
-    page: number;
-    limit: number;
-    sort_by?: string;
-    sort_direction?: "asc" | "desc";
-    query?: string;
-    to_date?: string;
-    from_date?: string;
-    transaction_type?: TauriTypes.TransactionType;
-    year: number;
+  export interface WFGDPRAccount {
+    account_creation_date: Date;
+    activated: boolean;
+    country_code: string;
+    display_name: string;
+    email: string;
+    ips: string[];
+    language: string;
+    last_login_date: Date;
+    oid: string;
+    signup_country_code: string;
+    signup_language: string;
+    signup_page: string;
+    subscribed_to_emails: boolean;
+    logins: WFGDPRLogin[];
+    purchases: WFGDPRPurchase[];
+    trades: PlayerTrade[];
+    transactions: WFGDPRTransaction[];
   }
-  export interface WFGDPRPurchase {
-    date: string;
-    items_received: [string, number][];
-    price: number;
-    shop_id: string;
-  }
-  export type WFGDPRPurchaseControllerGetListData = PaginatedDto & {
-    results?: WFGDPRPurchase[];
-  };
-  export interface WFGDPRPurchaseControllerGetListParams {
-    page: number;
-    limit: number;
-    sort_by?: string;
-    sort_direction?: "asc" | "desc";
-    query?: string;
-  }
-  export interface WFGDPRLogin {
-    date: string;
-    ip: string;
-    client_type: string;
-  }
-  export type WFGDPRLoginControllerGetListData = PaginatedDto & {
-    results?: WFGDPRLogin[];
-  };
-  export interface WFGDPRLoginControllerGetListParams {
-    page: number;
-    limit: number;
-    from_date?: string;
-    to_date?: string;
-    sort_by?: string;
-    sort_direction?: "asc" | "desc";
-    query?: string;
-  }
-
   export interface WFGDPRTransaction {
     account: string;
     currency: string;
@@ -921,17 +891,16 @@ export namespace TauriTypes {
     sku: string;
     vendor: string;
   }
-  export type WFGDPRTransactionControllerGetListData = PaginatedDto & {
-    results?: WFGDPRTransaction[];
-  };
-  export interface WFGDPRTransactionControllerGetListParams {
-    page: number;
-    limit: number;
-    sort_by?: string;
-    from_date?: string;
-    to_date?: string;
-    sort_direction?: "asc" | "desc";
-    query?: string;
+  export interface WFGDPRLogin {
+    date: string;
+    ip: string;
+    client_type: string;
+  }
+  export interface WFGDPRPurchase {
+    date: string;
+    items_received: [string, number][];
+    price: number;
+    shop_id: string;
   }
 
   // Warframe Inventory Types

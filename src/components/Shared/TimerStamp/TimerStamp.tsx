@@ -14,12 +14,14 @@ export const TimerStamp = (props: TimerStampProps) => {
   const now = new Date();
   if (typeof date === "string") date = new Date(date);
   const difference = now.getTime() - date.getTime();
+  let years = Math.floor(difference / 1000 / 60 / 60 / 24 / 365);
   let months = Math.floor(difference / 1000 / 60 / 60 / 24 / 31);
   let days = Math.floor(difference / (1000 * 60 * 60 * 24));
   let hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
   let minutes = Math.floor((difference / 1000 / 60) % 60);
   let seconds = Math.floor((difference / 1000) % 60);
-  if (months > 0) tooText = useTranslateSearch("months", { months });
+  if (years > 0) tooText = useTranslateSearch("years", { years });
+  else if (months > 0) tooText = useTranslateSearch("months", { months });
   else if (days > 0) tooText = useTranslateSearch("days", { days });
   else if (hours > 0) tooText = useTranslateSearch("hours", { hours });
   else if (minutes > 0) tooText = useTranslateSearch("minutes", { minutes });

@@ -10,15 +10,5 @@ pub mod login;
 pub use login::*;
 pub mod transaction;
 pub use transaction::*;
-
-pub mod trade_pagination_query_dto;
-pub use trade_pagination_query_dto::*;
-
-pub mod purchase_pagination_query_dto;
-pub use purchase_pagination_query_dto::*;
-
-pub mod login_pagination_query_dto;
-pub use login_pagination_query_dto::*;
-
-pub mod transaction_pagination_query_dto;
-pub use transaction_pagination_query_dto::*;
+pub mod account;
+pub use account::*;

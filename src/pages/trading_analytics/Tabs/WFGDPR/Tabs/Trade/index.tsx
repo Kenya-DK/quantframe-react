@@ -1,104 +1,212 @@
-import { Box, Grid, Group, Select, Table, Title, useMantineTheme } from "@mantine/core";
+import { Box, Grid, Group, NumberFormatter, Paper, Table, Text, Title } from "@mantine/core";
 import { TauriTypes } from "$types";
-import { useForm } from "@mantine/form";
-import { useQueries } from "./queries";
-import { useTranslatePages } from "@hooks/useTranslate.hook";
-import { BarCardChart } from "@components/Shared/BarCardChart";
-import i18next from "i18next";
-import { BestByCategoryTable } from "@components/DataDisplay/BestByCategoryTable";
-import { BarChartFinancialSummary } from "@components/DataDisplay/BarChartFinancialSummary";
-import { useTauriEvent } from "@hooks/useTauriEvent.hook";
+import { useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
+import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { useEffect, useState } from "react";
+import { ApplyFilter, ComplexFilter, Operator, OperatorType } from "@utils/filter.helper";
+import { faCoins } from "@fortawesome/free-solid-svg-icons";
+import { ColorInfo } from "@components/Shared/ColorInfo";
+import dayjs from "dayjs";
+import { DataTableSearch } from "@components/Shared/DataTableSearch";
+import { SelectItemTags } from "@components/Forms/SelectItemTags";
 import { FinancialReportCard } from "@components/Shared/FinancialReportCard";
-
+import { useHasAlert } from "@hooks/useHasAlert.hook";
+import { GenerateReport } from "./helper";
+import classes from "../../WFGDPR.module.css";
+import { BestByCategoryTable } from "@components/DataDisplay/BestByCategoryTable";
+import { useAppContext } from "@contexts/app.context";
 interface TradePanelProps {
-  isActive?: boolean;
-  year_list?: string[];
+  value: TauriTypes.WFGDPRAccount | null;
+}
+interface QueryData {
+  query?: string;
+  page: number;
+  limit: number;
+  sort_by: string;
+  sort_direction: "asc" | "desc";
+  type?: string;
+  tags?: string[];
+  from_date?: string;
+  to_date?: string;
 }
 
-export const TradePanel = ({ isActive, year_list }: TradePanelProps) => {
-  const theme = useMantineTheme();
-  // States For DataGrid
-  const queryData = useForm({
-    initialValues: { page: 1, limit: 10, query: "", year: new Date().getFullYear() } as TauriTypes.WFGDPRTradeControllerGetListParams,
+export const TradePanel = ({ value }: TradePanelProps) => {
+  const { settings } = useAppContext();
+  const [queryData, setQueryData] = useState<QueryData>({
+    page: 1,
+    limit: 50,
+    sort_by: "created_at",
+    sort_direction: "desc",
+    type: undefined,
   });
-
-  const [availableYears, setAvailableYears] = useState<{ label: string; value: string }[]>([]);
-
+  const [showReport, setShowReport] = useState<boolean>(false);
+  const [financialReport, setFinancialReport] = useState<TauriTypes.FinancialReport | undefined>(undefined);
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslatePages(`trading_analytics.tabs.wfgdpr.trade.${key}`, { ...context }, i18Key);
-  const useTranslateCards = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`cards.${key}`, { ...context }, i18Key);
+  const useTranslateDataGridColumns = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslate(`columns.${key}`, { ...context }, i18Key);
+  const useTranslateTransactionType = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateEnums(`transaction_type.${key}`, { ...context }, i18Key);
+  const useTranslateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslate(`buttons.${key}`, { ...context }, i18Key);
 
-  // Queries
-  const { financialReportQuery, refetchQueries } = useQueries({ queryData: queryData.values, isActive });
-  const handleRefresh = () => {
-    refetchQueries();
+  const GenerateFilter = (): ComplexFilter => {
+    let filter: ComplexFilter = { AND: [], OR: [] };
+    if (queryData.type) filter.AND?.push({ type: { [Operator.EQUALS]: queryData.type } });
+    if (queryData.query) filter.OR?.push({ "properties.names": { isCaseSensitive: false, [Operator.MATCHES]: queryData.query } });
+    if (queryData.tags && queryData.tags.length > 0)
+      filter.AND?.push({ "properties.tags": { type: OperatorType.ARRAY, [Operator.CONTAINS_VALUE]: queryData.tags } });
+    return filter;
   };
 
   useEffect(() => {
-    let years = year_list || [];
-    if (!years.includes(new Date().getFullYear().toString())) {
-      years = [...years, new Date().getFullYear().toString()];
-    }
-    const yearOptions = years.sort((a, b) => Number(b) - Number(a)).map((year) => ({ label: year, value: year }));
-    setAvailableYears(yearOptions);
-  }, [year_list]);
+    if (!showReport) return;
+    let filteredTrades = ApplyFilter(value?.trades || [], GenerateFilter());
+    let report = GenerateReport(filteredTrades, settings?.summary_settings);
+    setFinancialReport(report);
+  }, [showReport]);
 
-  // Use the custom hook for Tauri events
-  useTauriEvent(TauriTypes.Events.RefreshWFGDPRAll, handleRefresh, []);
   return (
-    <Box p={"md"} h={"85vh"}>
-      <Grid>
-        <Grid.Col span={6}>
-          <FinancialReportCard data={financialReportQuery.data} loading={financialReportQuery.isLoading} />
-        </Grid.Col>
-        <Grid.Col span={3}>
-          <Title order={4} mb={"sm"}>
-            {useTranslate("titles.most_purchased_items")}
-          </Title>
-          <Table>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>{useTranslate("table_headers.item_name")}</Table.Th>
-                <Table.Th>{useTranslate("table_headers.quantity")}</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {financialReportQuery.data?.properties.most_purchased_items.map((item) => (
-                <Table.Tr key={item[0]}>
-                  <Table.Td>{item[0]}</Table.Td>
-                  <Table.Td>{item[1]}</Table.Td>
-                </Table.Tr>
-              )) || null}
-            </Table.Tbody>
-          </Table>
-        </Grid.Col>
-        <Grid.Col span={3}>
-          <Title order={4} mb={"sm"}>
-            {useTranslate("titles.most_sold_items")}
-          </Title>
-          <Table>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>{useTranslate("table_headers.item_name")}</Table.Th>
-                <Table.Th>{useTranslate("table_headers.quantity")}</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {financialReportQuery.data?.properties.most_sold_items.map((item) => (
-                <Table.Tr key={item[0]}>
-                  <Table.Td>{item[0]}</Table.Td>
-                  <Table.Td>{item[1]}</Table.Td>
-                </Table.Tr>
-              )) || null}
-            </Table.Tbody>
-          </Table>
-        </Grid.Col>
-      </Grid>
-      <Grid>
-        <Grid.Col span={6}>
-          <BarCardChart
+    <Box p={3}>
+      <DataTableSearch
+        className={`${classes.databaseTrades} ${useHasAlert() ? classes.alert : ""} `}
+        idAccessor={"tradeTime"}
+        query={queryData.query}
+        hideComponents={showReport ? ["context", "table"] : []}
+        onSearchChange={(query) => setQueryData((prev) => ({ ...prev, query }))}
+        rightSectionWidth={35 * 2}
+        rightSection={
+          <Group gap={3}>
+            <ActionWithTooltip
+              tooltip={useTranslateButtons("show_financial_report_tooltip")}
+              color={showReport ? "blue" : "gray"}
+              icon={faCoins}
+              iconProps={{ size: "xs" }}
+              actionProps={{ size: "sm" }}
+              onClick={() => setShowReport((prev) => !prev)}
+            />
+          </Group>
+        }
+        filter={
+          <Paper p={"sm"} mt={"md"}>
+            <Group>
+              <SelectItemTags value={queryData.tags || []} onChange={(value) => setQueryData((prev) => ({ ...prev, tags: value }))} />
+            </Group>
+          </Paper>
+        }
+        context={
+          <Group gap={"md"} mt={"md"} grow>
+            <Group>
+              {Object.values([TauriTypes.TransactionType.Purchase, TauriTypes.TransactionType.Sale, TauriTypes.TransactionType.Trade]).map(
+                (status) => (
+                  <ColorInfo
+                    active={status == queryData.type}
+                    key={status}
+                    onClick={() => setQueryData((prev) => ({ ...prev, type: status == prev.type ? undefined : status }))}
+                    infoProps={{
+                      "data-color-mode": "bg",
+                      "data-transaction-type": status,
+                    }}
+                    text={useTranslateTransactionType(`${status}`)}
+                    tooltip={useTranslateTransactionType(`details.${status}`)}
+                  />
+                ),
+              )}
+            </Group>
+          </Group>
+        }
+        records={value?.trades || []}
+        customRowAttributes={(record) => ({
+          "data-color-mode": "box-shadow",
+          "data-transaction-type": record.type,
+        })}
+        filters={GenerateFilter()}
+        sorting={{
+          field: queryData.sort_by,
+          direction: queryData.sort_direction,
+        }}
+        columns={[
+          {
+            accessor: "created_at",
+            title: useTranslateDataGridColumns("created_at"),
+            sortable: true,
+            render: ({ tradeTime }) => {
+              return <Text>{dayjs(tradeTime).format("DD.MM.YYYY HH:mm")}</Text>;
+            },
+          },
+          {
+            accessor: "offered_items",
+            title: useTranslateDataGridColumns("offered_items"),
+            sortable: true,
+            render: ({ offeredItems }) => <Text>{offeredItems.length}</Text>,
+          },
+          {
+            accessor: "received_items",
+            title: useTranslateDataGridColumns("received_items"),
+            sortable: true,
+            render: ({ receivedItems }) => <Text>{receivedItems.length}</Text>,
+          },
+          {
+            accessor: "credits",
+            title: useTranslateDataGridColumns("credits"),
+            sortable: true,
+            render: ({ credits }) => <NumberFormatter value={credits} thousandSeparator="," thousandsGroupStyle="thousand" />,
+          },
+        ]}
+      />
+      {showReport && (
+        <Box mt={"md"}>
+          <Grid>
+            <Grid.Col span={6}>
+              <FinancialReportCard data={financialReport} hidePercentBar />
+            </Grid.Col>
+            <Grid.Col span={3}>
+              <Title order={4} mb={"sm"}>
+                {useTranslate("titles.most_purchased_items")}
+              </Title>
+              <Table>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>{useTranslate("table_headers.item_name")}</Table.Th>
+                    <Table.Th>{useTranslate("table_headers.quantity")}</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {financialReport?.properties?.most_purchased_items.map((item: { name: string; quantity: number }) => (
+                    <Table.Tr key={item.name}>
+                      <Table.Td>{item.name}</Table.Td>
+                      <Table.Td>{item.quantity}</Table.Td>
+                    </Table.Tr>
+                  )) || null}
+                </Table.Tbody>
+              </Table>
+            </Grid.Col>
+            <Grid.Col span={3}>
+              <Title order={4} mb={"sm"}>
+                {useTranslate("titles.most_sold_items")}
+              </Title>
+              <Table>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>{useTranslate("table_headers.item_name")}</Table.Th>
+                    <Table.Th>{useTranslate("table_headers.quantity")}</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {financialReport?.properties?.most_sold_items.map((item: { name: string; quantity: number }) => (
+                    <Table.Tr key={item.name}>
+                      <Table.Td>{item.name}</Table.Td>
+                      <Table.Td>{item.quantity}</Table.Td>
+                    </Table.Tr>
+                  )) || null}
+                </Table.Tbody>
+              </Table>
+            </Grid.Col>
+          </Grid>
+          <Grid>
+            <Grid.Col span={6}>
+              {/* <BarCardChart
             title={useTranslateCards("yearly_trade_overview.title", { year: queryData.values.year })}
             boxHeight={400}
             showDatasetLabels
@@ -139,12 +247,14 @@ export const TradePanel = ({ isActive, year_list }: TradePanelProps) => {
                 </Group>
               </Group>
             }
-          />
-        </Grid.Col>
-        <Grid.Col span={6}>
-          <BestByCategoryTable records={financialReportQuery.data?.properties.categories || []} />
-        </Grid.Col>
-      </Grid>
+          /> */}
+            </Grid.Col>
+            <Grid.Col span={6}>
+              <BestByCategoryTable records={financialReport?.properties?.categories || []} />
+            </Grid.Col>
+          </Grid>
+        </Box>
+      )}
     </Box>
   );
 };

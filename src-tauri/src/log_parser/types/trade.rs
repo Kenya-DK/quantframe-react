@@ -4,6 +4,7 @@ use crate::enums::TradeItemType;
 use crate::{log_parser::*, utils::modules::states};
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
+use utils::Properties;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct PlayerTrade {
@@ -25,6 +26,9 @@ pub struct PlayerTrade {
     // Used for debugging
     #[serde(rename = "logs")]
     pub logs: Vec<String>,
+
+    #[serde(flatten)]
+    pub properties: Properties,
 }
 
 impl Default for PlayerTrade {
@@ -38,6 +42,7 @@ impl Default for PlayerTrade {
             offered_items: vec![],
             received_items: vec![],
             logs: vec![],
+            properties: Properties::default(),
         }
     }
 }
@@ -269,12 +274,14 @@ impl PlayerTrade {
                 None,
             );
         }
-        target_items.push(TradeItem::new(
-            &set.unique_name,
-            1,
-            TradeItemType::Set,
-            None,
-        ));
+        let mut set_item = TradeItem::new(&set.unique_name, 1, TradeItemType::Set, None);
+        set_item
+            .properties
+            .set_property_value("tags", vec!["set".to_string()]);
+        set_item
+            .properties
+            .set_property_value("item_name", set.name);
+        target_items.push(set_item);
     }
 
     pub fn get_notify_variables(&self) -> HashMap<String, String> {

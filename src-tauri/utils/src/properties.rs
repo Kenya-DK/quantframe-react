@@ -9,6 +9,16 @@ pub struct Properties {
 }
 
 impl Properties {
+    pub fn new(pairs: Vec<(String, impl Serialize)>) -> Self {
+        let mut map = serde_json::Map::new();
+        for (k, v) in pairs {
+            map.insert(k, serde_json::to_value(v).unwrap());
+        }
+        Self {
+            properties: Some(serde_json::Value::Object(map)),
+        }
+    }
+
     pub fn set_properties(&mut self, properties: Option<serde_json::Value>) {
         self.properties = properties;
     }

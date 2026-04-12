@@ -34,8 +34,8 @@ pub struct TradeItem {
     pub error: Option<(String, Value)>,
 
     // Extra properties
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub properties: Option<serde_json::Value>,
+    #[serde(flatten)]
+    pub properties: Properties,
 }
 impl TradeItem {
     pub fn new(
@@ -52,7 +52,7 @@ impl TradeItem {
             item_type,
             sub_type,
             error: None,
-            properties: None,
+            properties: Properties::default(),
         }
     }
     pub fn from_string(
@@ -107,7 +107,7 @@ impl TradeItem {
             item_type: is_currency_type,
             sub_type: None,
             error: None,
-            properties: None,
+            properties: Properties::default(),
         };
         if matches!(
             item.item_type,
@@ -343,32 +343,6 @@ impl TradeItem {
     pub fn is_valid(&self) -> bool {
         !self.raw.is_empty()
     }
-    pub fn get_property_value<T>(&self, key: impl Into<String>, default: T) -> T
-    where
-        T: Default + serde::de::DeserializeOwned,
-    {
-        let key = key.into();
-        if let Some(props) = &self.properties {
-            if let Some(value) = props.get(&key) {
-                return serde_json::from_value(value.clone()).unwrap();
-            }
-        }
-        default
-    }
-    pub fn set_property_value<T>(&mut self, key: impl Into<String>, value: T)
-    where
-        T: serde::Serialize,
-    {
-        let key = key.into();
-        let value = serde_json::to_value(value).unwrap();
-        if let Some(props) = &mut self.properties {
-            props.as_object_mut().unwrap().insert(key, value);
-        } else {
-            let mut map = serde_json::Map::new();
-            map.insert(key, value);
-            self.properties = Some(serde_json::Value::Object(map));
-        }
-    }
 }
 
 impl Default for TradeItem {
@@ -380,7 +354,7 @@ impl Default for TradeItem {
             item_type: TradeItemType::Unknown,
             sub_type: None,
             error: None,
-            properties: None,
+            properties: Properties::default(),
         }
     }
 }

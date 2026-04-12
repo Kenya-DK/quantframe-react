@@ -1,4 +1,4 @@
-use chrono::{Datelike, TimeZone, Utc};
+use chrono::{Datelike, NaiveDateTime, TimeZone, Utc};
 use entity::{
     dto::{FinancialReport, PaginatedResult, SubType},
     enums::FieldChange,
@@ -23,21 +23,13 @@ static COMPONENT: &str = "WarframeGDPRModule";
 #[derive(Debug)]
 pub struct WarframeGDPRModule {
     pub was_initialized: Mutex<bool>,
-    pub trades_years: Mutex<Vec<String>>,
-    pub trades: Mutex<Vec<PlayerTrade>>,
-    pub logins: Mutex<Vec<Login>>,
-    pub purchases: Mutex<Vec<Purchase>>,
-    pub transactions: Mutex<Vec<Transaction>>,
+    pub accounts: Mutex<Vec<Account>>,
 }
 impl WarframeGDPRModule {
     pub fn new() -> Arc<Self> {
         Arc::new(Self {
             was_initialized: Mutex::new(false),
-            trades_years: Mutex::new(Vec::new()),
-            trades: Mutex::new(Vec::new()),
-            logins: Mutex::new(Vec::new()),
-            purchases: Mutex::new(Vec::new()),
-            transactions: Mutex::new(Vec::new()),
+            accounts: Mutex::new(Vec::new()),
         })
     }
 
@@ -62,23 +54,22 @@ impl WarframeGDPRModule {
         let mut current_login: Option<Login> = None;
         let mut current_purchase: Option<Purchase> = None;
         let mut current_transaction: Option<Transaction> = None;
+        let mut current_account: Option<Account> = None;
         let mut log_section: Option<LogSection> = None;
         let mut section: Option<&str> = None;
         let mut awaiting_purchase_shop_id = false;
+        let mut awaiting_account_ips = false;
 
         let trades_re = Regex::new(r"^TRADES\s*:\s*(\d+)").unwrap();
         let logins_re = Regex::new(r"^LOGINS\s*:\s*(\d+)").unwrap();
         let purchases_re = Regex::new(r"^PURCHASES\s*:\s*(\d+)").unwrap();
         let date_re = Regex::new(r"^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\s+UTC$").unwrap();
         let item_re = Regex::new(r"^(.+?)(?:\s*:\s*(-?\d+))?$").unwrap();
-        let platinum_re = Regex::new(r"^PLATINUM\s*:\s*(\d+)").unwrap();
+        let platinum_re = Regex::new(r"^PREMIUM CREDITS\s*:\s*(\d+)").unwrap();
         let transaction_index_re = Regex::new(r"^(\d+)\s*:\s*$").unwrap();
 
-        let mut trades = self.trades.lock().unwrap();
-        let mut years = self.trades_years.lock().unwrap();
-        let mut logins = self.logins.lock().unwrap();
-        let mut purchases = self.purchases.lock().unwrap();
-        let mut transactions = self.transactions.lock().unwrap();
+        let mut accounts = self.accounts.lock().unwrap();
+        accounts.clear();
         let mut was_initialized = self.was_initialized.lock().unwrap();
         *was_initialized = true;
         // Start Time
@@ -88,10 +79,31 @@ impl WarframeGDPRModule {
             /* =======================
                METADATA
             ======================= */
+            if line.eq("ACCOUNT") {
+                if let Some(acc) = current_account.take() {
+                    accounts.push(acc);
+                }
+                section = Some("account");
+                current_account = Some(Account::default());
+                awaiting_account_ips = false;
+                continue;
+            }
+
+            // Separator line (e.g. "------...") — flush the current account
+            if section == Some("account") && !line.is_empty() && line.chars().all(|c| c == '-') {
+                if let Some(acc) = current_account.take() {
+                    accounts.push(acc);
+                }
+                section = None;
+                awaiting_account_ips = false;
+                continue;
+            }
+
             if let Some(_) = trades_re.captures(&line) {
-                // result.metadata.trades = caps[1].parse().unwrap_or(0);
                 section = Some("trades");
-                trades.clear();
+                if let Some(acc) = current_account.as_mut() {
+                    acc.trades.clear();
+                }
                 continue;
             }
 
@@ -99,91 +111,178 @@ impl WarframeGDPRModule {
                 if previous_line.eq("Stats") {
                     continue;
                 }
-                // result.metadata.logins = caps[1].parse().unwrap_or(0);
                 section = Some("logins");
-                logins.clear();
+                if let Some(acc) = current_account.as_mut() {
+                    acc.logins.clear();
+                }
                 continue;
             }
 
             if let Some(_) = purchases_re.captures(&line) {
-                // result.metadata.purchases = caps[1].parse().unwrap_or(0);
                 section = Some("purchases");
-                purchases.clear();
+                if let Some(acc) = current_account.as_mut() {
+                    acc.purchases.clear();
+                }
                 continue;
             }
 
             if line.eq("Transactions") {
                 section = Some("transactions");
-                transactions.clear();
+                if let Some(acc) = current_account.as_mut() {
+                    acc.transactions.clear();
+                }
                 continue;
             }
 
+            /* =======================
+               ACCOUNT DETAILS
+            ======================= */
+            if section == Some("account") {
+                if let Some(acc) = current_account.as_mut() {
+                    if line.starts_with("OID :") {
+                        acc.oid = line.replace("OID :", "").trim().to_string();
+                        continue;
+                    }
+                    if line.starts_with("EMAIL :") {
+                        acc.email = line.replace("EMAIL :", "").trim().to_string();
+                        continue;
+                    }
+                    if line.starts_with("DISPLAY NAME :") {
+                        acc.display_name = line.replace("DISPLAY NAME :", "").trim().to_string();
+                        continue;
+                    }
+                    if line.starts_with("ACTIVATED :") {
+                        acc.activated = line.replace("ACTIVATED :", "").trim() == "1";
+                        continue;
+                    }
+                    if line.starts_with("SUBSCRIBED TO EMAILS :") {
+                        acc.subscribed_to_emails =
+                            line.replace("SUBSCRIBED TO EMAILS :", "").trim() == "1";
+                        continue;
+                    }
+                    if line.starts_with("SIGNUP LANGUAGE :") {
+                        acc.signup_language =
+                            line.replace("SIGNUP LANGUAGE :", "").trim().to_string();
+                        continue;
+                    }
+                    if line.starts_with("SIGNUP COUNTRY CODE :") {
+                        acc.signup_country_code =
+                            line.replace("SIGNUP COUNTRY CODE :", "").trim().to_string();
+                        continue;
+                    }
+                    if line.starts_with("COUNTRY CODE :") {
+                        acc.country_code = line.replace("COUNTRY CODE :", "").trim().to_string();
+                        continue;
+                    }
+                    if line.starts_with("SIGNUP PAGE :") {
+                        acc.signup_page = line.replace("SIGNUP PAGE :", "").trim().to_string();
+                        continue;
+                    }
+                    if line.starts_with("IP :") {
+                        let inline = line.replace("IP :", "").trim().to_string();
+                        if !inline.is_empty() {
+                            acc.ips.push(inline);
+                        }
+                        awaiting_account_ips = true;
+                        continue;
+                    }
+                    if awaiting_account_ips {
+                        if line.is_empty() {
+                            awaiting_account_ips = false;
+                        } else {
+                            acc.ips.push(line.clone());
+                        }
+                        continue;
+                    }
+                    if line.starts_with("ACCOUNT CREATION DATE :") {
+                        let date_str = line
+                            .replace("ACCOUNT CREATION DATE :", "")
+                            .trim()
+                            .to_string();
+                        if let Ok(ndt) =
+                            NaiveDateTime::parse_from_str(&date_str, "%Y-%m-%d %H:%M:%S")
+                        {
+                            acc.account_creation_date = Some(ndt.and_utc());
+                        }
+                        continue;
+                    }
+                    if line.starts_with("LAST LOGIN DATE :") {
+                        let date_str = line.replace("LAST LOGIN DATE :", "").trim().to_string();
+                        if let Ok(ndt) =
+                            NaiveDateTime::parse_from_str(&date_str, "%Y-%m-%d %H:%M:%S")
+                        {
+                            acc.last_login_date = Some(ndt.and_utc());
+                        }
+                        continue;
+                    }
+                    if line.starts_with("LANGUAGE :") {
+                        acc.language = line.replace("LANGUAGE :", "").trim().to_string();
+                        continue;
+                    }
+                }
+            }
             /* =======================
                DATE LINE
             ======================= */
             if date_re.is_match(&line) {
                 match section {
                     Some("trades") => {
-                        if let Some(mut trade) = current_trade.take() {
-                            trade.calculate();
-                            trade.calculate_items();
-                            trades.push(trade);
+                        if let Some(acc) = current_account.as_mut() {
+                            if let Some(trade) = current_trade.take() {
+                                acc.add_trade(trade);
+                            }
+                            current_trade = Some(PlayerTrade::default().set_time(to_date(&line)));
                         }
-                        let date = to_date(&line);
-                        let year_str = date.year().to_string();
-                        if !years.contains(&year_str) {
-                            years.push(year_str);
-                        }
-                        current_trade = Some(PlayerTrade::default().set_time(date));
                     }
 
                     Some("logins") => {
-                        if let Some(login) = current_login.take() {
-                            logins.push(login);
+                        if let Some(acc) = current_account.as_mut() {
+                            if let Some(login) = current_login.take() {
+                                acc.logins.push(login);
+                            }
+                            current_login = Some(Login {
+                                date: to_date(&line),
+                                ip: None,
+                                client_type: None,
+                            });
                         }
-
-                        current_login = Some(Login {
-                            date: to_date(&line),
-                            ip: None,
-                            client_type: None,
-                        });
                     }
 
                     Some("purchases") => {
-                        if let Some(purchase) = current_purchase.take() {
-                            purchases.push(purchase);
+                        if let Some(acc) = current_account.as_mut() {
+                            if let Some(purchase) = current_purchase.take() {
+                                acc.purchases.push(purchase);
+                            }
+                            current_purchase = Some(Purchase {
+                                date: to_date(&line),
+                                shop_id: String::new(),
+                                price: 0,
+                                items_received: vec![],
+                            });
+                            awaiting_purchase_shop_id = true;
+                            log_section = None;
                         }
-
-                        current_purchase = Some(Purchase {
-                            date: to_date(&line),
-                            shop_id: String::new(),
-                            price: 0,
-                            items_received: vec![],
-                        });
-
-                        awaiting_purchase_shop_id = true;
-                        log_section = None;
                     }
 
                     Some("transactions") => {
-                        if let Some(transaction) = current_transaction.take() {
-                            transactions.push(transaction);
+                        if let Some(acc) = current_account.as_mut() {
+                            if let Some(transaction) = current_transaction.take() {
+                                acc.transactions.push(transaction);
+                            }
+                            current_transaction = Some(Transaction {
+                                date: to_date(&line),
+                                sku: String::new(),
+                                price: 0.0,
+                                currency: String::new(),
+                                vendor: String::new(),
+                                account: String::new(),
+                            });
                         }
-
-                        current_transaction = Some(Transaction {
-                            date: to_date(&line),
-                            sku: String::new(),
-                            price: 0.0,
-                            currency: String::new(),
-                            vendor: String::new(),
-                            account: String::new(),
-                        });
                     }
                     _ => {}
                 }
                 continue;
             }
-
             /* =======================
                TRADE DETAILS
             ======================= */
@@ -227,14 +326,14 @@ impl WarframeGDPRModule {
                     "LEGENDARY CORE" => {
                         raw = "Legendary Core (LEGENDARY RANK 0)".to_string();
                     }
-                    _ if raw.contains("RIVEN MOD") => {
+                    _ if raw.contains("RIVEN MOD") || raw.contains("Riven Mod") => {
                         raw.push_str(" (RIVEN RANK 0)");
                     }
-                    _ if raw.ends_with("PLATINUM") => {
+                    _ if raw.ends_with("PLATINUM") || raw.ends_with("PREMIUM CREDITS") => {
                         raw = "Platinum".to_string();
                         trade.platinum = quantity;
                     }
-                    _ if raw.ends_with("CREDITS") => {
+                    _ if raw.ends_with("CREDITS") || raw.ends_with("REGULAR CREDITS") => {
                         raw = "Credits".to_string();
                         trade.credits = quantity;
                     }
@@ -272,6 +371,7 @@ impl WarframeGDPRModule {
 
                     if item.item_type == TradeItemType::Unknown {
                         println!("Item not found in cache: {}", item.raw);
+                        item.properties.set_property_value("item_name", &item.raw);
                     }
                 }
 
@@ -287,8 +387,10 @@ impl WarframeGDPRModule {
                 /* ---------- Push results ---------- */
                 match cache.tradable_item().get_by(&item.unique_name) {
                     Ok(cached_item) => {
-                        item.set_property_value("item_name", cached_item.name.clone());
-                        item.set_property_value("tags", cached_item.tags.clone());
+                        item.properties
+                            .set_property_value("item_name", cached_item.name.clone());
+                        item.properties
+                            .set_property_value("tags", cached_item.tags.clone());
                     }
                     Err(_) => {}
                 }
@@ -370,8 +472,10 @@ impl WarframeGDPRModule {
             if section == Some("transactions") {
                 // Check for transaction index (e.g., "0 :", "1 :")
                 if transaction_index_re.is_match(&line) {
-                    if let Some(transaction) = current_transaction.take() {
-                        transactions.push(transaction);
+                    if let Some(acc) = current_account.as_mut() {
+                        if let Some(transaction) = current_transaction.take() {
+                            acc.transactions.push(transaction);
+                        }
                     }
                     current_transaction = Some(Transaction {
                         sku: String::new(),
@@ -420,33 +524,38 @@ impl WarframeGDPRModule {
             }
             previous_line = line.clone();
         }
-        if let Some(mut trade) = current_trade {
-            trade.calculate();
-            trade.calculate_items();
-            trades.push(trade);
+        if let Some(acc) = current_account.as_mut() {
+            if let Some(trade) = current_trade.take() {
+                acc.add_trade(trade);
+            }
+            if let Some(login) = current_login.take() {
+                acc.logins.push(login);
+            }
+            if let Some(purchase) = current_purchase.take() {
+                acc.purchases.push(purchase);
+            }
+            if let Some(transaction) = current_transaction.take() {
+                acc.transactions.push(transaction);
+            }
+        }
+        if let Some(acc) = current_account {
+            accounts.push(acc);
         }
 
-        if let Some(login) = current_login {
-            logins.push(login);
-        }
-
-        if let Some(purchase) = current_purchase {
-            purchases.push(purchase);
-        }
-
-        if let Some(transaction) = current_transaction {
-            transactions.push(transaction);
-        }
-
+        let total_trades: usize = accounts.iter().map(|a| a.trades.len()).sum();
+        let total_logins: usize = accounts.iter().map(|a| a.logins.len()).sum();
+        let total_purchases: usize = accounts.iter().map(|a| a.purchases.len()).sum();
+        let total_transactions: usize = accounts.iter().map(|a| a.transactions.len()).sum();
         info(
             format!("{}:Load", COMPONENT),
             format!(
-                "Finished loading Warframe GDPR data in: {:.2?} | Trades: {} | Logins: {} | Purchases: {} | Transactions: {}",
+                "Finished loading Warframe GDPR data in: {:.2?} | Accounts: {} | Trades: {} | Logins: {} | Purchases: {} | Transactions: {}",
                 start.elapsed(),
-                trades.len(),
-                logins.len(),
-                purchases.len(),
-                transactions.len()
+                accounts.len(),
+                total_trades,
+                total_logins,
+                total_purchases,
+                total_transactions,
             ),
             &LoggerOptions::default(),
         );
@@ -455,10 +564,11 @@ impl WarframeGDPRModule {
             "green",
             "success",
             json!({
-                "trades": trades.len(),
-                "logins": logins.len(),
-                "purchases": purchases.len(),
-                "transactions": transactions.len(),
+                "accounts": accounts.len(),
+                "trades": total_trades,
+                "logins": total_logins,
+                "purchases": total_purchases,
+                "transactions": total_transactions,
             })
         );
         enable_logging(true);
@@ -469,115 +579,7 @@ impl WarframeGDPRModule {
         let was_initialized = self.was_initialized.lock().unwrap();
         *was_initialized
     }
-    pub fn get_trade_years(&self) -> Vec<String> {
-        let trades = self.trades.lock().unwrap();
-        let mut years = trades
-            .iter()
-            .map(|t| t.trade_time.year().to_string())
-            .collect::<Vec<String>>();
-        years.sort();
-        years.dedup();
-        years
-    }
-    pub fn trades(&self, query: TradePaginationQueryDto) -> PaginatedResult<PlayerTrade> {
-        let trades = self.trades.lock().unwrap().clone();
-
-        let filtered_auctions = query.apply_query(&trades);
-
-        let paginate = paginate(
-            &filtered_auctions,
-            query.pagination.page,
-            query.pagination.limit,
-        );
-        paginate
-    }
-    pub fn trade_financial_report(&self, mut query: TradePaginationQueryDto) -> FinancialReport {
-        let settings = states::app_state().unwrap().settings;
-        query.pagination.limit = -1; // get all trades
-        let trades = self.trades(query.clone()).results;
-
-        let mut report = generate_trade_financial_report(&trades);
-
-        let year = match query.year {
-            FieldChange::Value(y) => y,
-            _ => Utc::now().year(),
-        };
-        let (year_report, year_graph) = generate_trade_financial_graph(
-            &trades,
-            Utc.ymd(year.to_string().parse().unwrap(), 1, 1)
-                .and_hms(0, 0, 0),
-            GroupByDate::Year,
-            &[GroupByDate::Year, GroupByDate::Month],
-        );
-
-        let mut items = vec![];
-        for category in settings.summary_settings.categories {
-            let tags = &category.tags;
-            let types = &category.types;
-            let filtered_transactions = filters_by(&trades, |t| {
-                let items2 = t
-                    .offered_items
-                    .iter()
-                    .chain(t.received_items.iter())
-                    .collect::<Vec<_>>();
-
-                let tag_matches = items2
-                    .iter()
-                    .map(|item| item.get_property_value::<Vec<String>>("tags".to_string(), vec![]))
-                    .flatten()
-                    .any(|tag| tags.contains(&tag.trim().to_string()));
-
-                let type_matches = items2
-                    .iter()
-                    .map(|item| item.item_type.to_string())
-                    .any(|tag| types.contains(&tag.trim().to_string()));
-
-                tag_matches || type_matches
-            });
-            let re =
-                generate_trade_financial_report(&filtered_transactions).with_properties(json!({
-                    "icon": category.icon,
-                    "name": category.name,
-                }));
-            items.push(re);
-        }
-
-        report.properties.set_property_value("graph", year_graph);
-        report.properties.set_property_value("categories", items);
-        report.properties.set_property_value("year", year_report);
-        report
-    }
-    pub fn logins(&self, query: LoginPaginationQueryDto) -> PaginatedResult<Login> {
-        let logins = self.logins.lock().unwrap().clone();
-        let filtered_paginate = query.apply_query(&logins);
-        let paginate = paginate(
-            &filtered_paginate,
-            query.pagination.page,
-            query.pagination.limit,
-        );
-        paginate
-    }
-    pub fn purchases(&self, query: PurchasePaginationQueryDto) -> PaginatedResult<Purchase> {
-        let purchases = self.purchases.lock().unwrap().clone();
-        let filtered_paginate = query.apply_query(&purchases);
-        let paginate = paginate(
-            &filtered_paginate,
-            query.pagination.page,
-            query.pagination.limit,
-        );
-        paginate
-    }
-    pub fn transactions(
-        &self,
-        query: TransactionPaginationQueryDto,
-    ) -> PaginatedResult<Transaction> {
-        let transactions = self.transactions.lock().unwrap().clone();
-        let filtered_paginate = query.apply_query(&transactions);
-        let paginate = paginate(
-            &filtered_paginate,
-            query.pagination.page,
-            query.pagination.limit,
-        );
-        paginate
+    pub fn accounts(&self) -> Vec<Account> {
+        self.accounts.lock().unwrap().clone()
     }
 }

@@ -559,6 +559,7 @@
       }
     },
     "timer_stamp": {
+      "years": "{{years}} years ago",
       "months": "{{months}} months ago",
       "days": "{{days}} days ago",
       "hours": "{{hours}} hours ago",
@@ -1578,6 +1579,7 @@
               "minimum_price": "Minimum Price",
               "maximum_price": "Maximum Price",
               "owned": "Currently Owned",
+              "quantity": "Quantity",
               "minimum_sma": "Minimum SMA",
               "minimum_profit": "Minimum Profit"
             },
@@ -2227,57 +2229,56 @@
         "wfgdpr": {
           "title": "Warframe GDPR Parser",
           "drag_and_drop_message": "Drag and drop your GDPR Text files here Read more about this feature on the website.",
+          "columns": {
+            "account": "Account Name",
+            "logins": "Logins Count",
+            "purchases": "Purchases Count",
+            "trades": "Trades Count",
+            "transactions": "Transactions Count",
+            "creation_date": "Creation Date"
+          },
+          "overview": {
+            "title": "Overview",
+            "labels": {
+              "member_since": "Member Since",
+              "subscribed": "Subscribed",
+              "trades": "Trades",
+              "platinum_traded": "Platinum Traded",
+              "purchases": "Purchases",
+              "total_spent": "Total Spent",
+              "transactions": "Transactions",
+              "unique_ips": "Unique IPs",
+              "total_logins": "Total Logins"
+            }
+          },
           "trade": {
             "title": "Trade",
-            "titles": {
-              "most_purchased_items": "Most Purchased Items",
-              "most_sold_items": "Most Sold Items"
+            "columns": {
+              "created_at": "Created At",
+              "offered_items": "Offered Items Count",
+              "received_items": "Received Items Count",
+              "credits": "Credits"
             },
             "table_headers": {
               "item_name": "Name",
               "quantity": "Quantity"
             },
-            "cards": {
-              "yearly_trade_overview": {
-                "title": "Yearly Trade Overview {{year}}",
-                "total_trades": "Trades",
-                "total_purchase": "Purchases",
-                "total_sales": "Sales"
-              }
+            "titles": {
+              "most_sold_items": "Most Sold Items",
+              "most_purchased_items": "Most Bought Items"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "Show report"
             }
           },
           "purchase": {
-            "title": "Purchases",
-            "datatable": {
-              "columns": {
-                "shop_id": "Shop ID",
-                "price": "Price",
-                "date": "Purchase Date"
-              }
-            }
+            "title": "Purchases"
           },
           "login": {
-            "title": "Login History",
-            "datatable": {
-              "columns": {
-                "client_type": "Client Type",
-                "ip": "IP Address",
-                "date": "Login Date"
-              }
-            }
+            "title": "Login History"
           },
           "transaction": {
-            "title": "Transactions",
-            "datatable": {
-              "columns": {
-                "account": "Shop ID",
-                "currency": "Currency",
-                "price": "Price",
-                "sku": "SKU",
-                "vendor": "Vendor",
-                "date": "Purchase Date"
-              }
-            }
+            "title": "Transactions"
           }
         }
       }
@@ -2396,6 +2397,9 @@
             "veiled": "Veiled",
             "unveiled": "Unveiled"
           }
+        },
+        "syndicate": {
+          "title": "Syndicate"
         }
       }
     }

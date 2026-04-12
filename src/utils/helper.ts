@@ -126,7 +126,7 @@ export const GroupByDate = <T>(key: string, items: Array<T>, settings: GroupByDa
 };
 
 type GroupBy<T> = Record<string, T[]>;
-export const GroupByKey = <T, K extends keyof T>(key: K, array: T[]): GroupBy<T> => {
+export const GroupByKey = <T, K extends keyof T>(key: K | string, array: T[]): GroupBy<T> => {
   // If the key contains a dot, it means it's a nested key
   if (key.toString().includes(".")) {
     return array.reduce((acc, cur) => {
@@ -138,7 +138,7 @@ export const GroupByKey = <T, K extends keyof T>(key: K, array: T[]): GroupBy<T>
     }, {} as GroupBy<T>);
   } else
     return array.reduce((acc, cur) => {
-      const groupByKey = cur[key] as unknown as string;
+      const groupByKey = (cur as any)[key] as unknown as string;
       (acc[groupByKey] = acc[groupByKey] || []).push(cur);
       return acc;
     }, {} as GroupBy<T>);

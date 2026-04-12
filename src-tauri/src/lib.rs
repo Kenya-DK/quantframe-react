@@ -135,7 +135,7 @@ async fn setup_manages(app: tauri::AppHandle, use_temp_db: bool) -> Result<(), E
 }
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let use_temp_db: bool = false;
+    let use_temp_db: bool = true;
 
     // Initialize the logger for elapsed time tracking
 
@@ -273,6 +273,7 @@ pub fn run() {
             commands::auction::get_wfm_auctions_overview,
             commands::auction::auction_delete_all,
             commands::auction::auction_delete_by_id,
+            commands::auction::get_wfm_auction_by_id,
             commands::auction::auction_import_by_id,
             // Wish List commands
             commands::wish_list::get_wish_list_pagination,
@@ -303,6 +304,7 @@ pub fn run() {
             commands::transaction::transaction_calculate_tax,
             // Item commands
             commands::item::item_prices_lookup,
+            commands::item::item_price_lookup,
             commands::item::export_item_price_data,
             // Riven commands
             commands::riven::riven_prices_lookup,
@@ -322,11 +324,7 @@ pub fn run() {
             // Warframe GDPR commands
             commands::warframe_gdpr::wfgdpr_get_state,
             commands::warframe_gdpr::wfgdpr_load,
-            commands::warframe_gdpr::wfgdpr_get_trades_pagination,
-            commands::warframe_gdpr::wfgdpr_get_trades_financial_report,
-            commands::warframe_gdpr::wfgdpr_get_purchases_pagination,
-            commands::warframe_gdpr::wfgdpr_get_logins_pagination,
-            commands::warframe_gdpr::wfgdpr_get_transactions_pagination,
+            commands::warframe_gdpr::wfgdpr_get_accounts,
             // Sound commands
             commands::sound::sound_get_custom_sounds,
             commands::sound::sound_add_custom_sound,

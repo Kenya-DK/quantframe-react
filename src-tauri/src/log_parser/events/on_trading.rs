@@ -455,8 +455,9 @@ async fn process_mutable_items(
             }
         };
 
-        item.set_property_value("name", json!(info.name));
-        item.set_property_value("wfm_url", json!(info.wfm_url_name));
+        item.properties.set_property_value("name", json!(info.name));
+        item.properties
+            .set_property_value("wfm_url", json!(info.wfm_url_name));
 
         let price = app
             .wfm_client
@@ -473,7 +474,7 @@ async fn process_mutable_items(
             format!("Price for item {} | Price: {}", info.name, price),
             None,
         );
-        item.set_property_value("price", json!(price));
+        item.properties.set_property_value("price", json!(price));
     }
 
     let mut payload = json!(trade);
