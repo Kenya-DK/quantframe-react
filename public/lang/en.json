@@ -2253,6 +2253,12 @@
           },
           "trade": {
             "title": "Trade",
+            "yearly_trade_overview": {
+              "title": "Yearly Trade Overview ({{year}})",
+              "total_trades": "Total Trades",
+              "total_purchases": "Total Purchases",
+              "total_sales": "Total Sales"
+            },
             "columns": {
               "created_at": "Created At",
               "offered_items": "Offered Items Count",

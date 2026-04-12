@@ -84,10 +84,65 @@ export const GenerateFinancialReport = (items: TauriTypes.PlayerTrade[]): TauriT
     },
   };
 };
+
 export const GenerateReport = (items: TauriTypes.PlayerTrade[], settings: TauriTypes.SettingsSummary | undefined): TauriTypes.FinancialReport => {
   let report = GenerateFinancialReport(items);
   let category_report = GenerateCategoryReport(items, settings);
   if (report.properties) report.properties["categories"] = category_report;
   // Here you can modify the report based on settings if needed
   return report;
+};
+
+export const GenerateYearlyReport = (
+  items: TauriTypes.PlayerTrade[],
+): Record<
+  string,
+  {
+    total_purchases: number[];
+    total_sales: number[];
+    total_trades: number[];
+    report: TauriTypes.FinancialReport;
+  }
+> => {
+  const result: Record<
+    string,
+    {
+      total_purchases: number[];
+      total_sales: number[];
+      total_trades: number[];
+      report: TauriTypes.FinancialReport;
+    }
+  > = {};
+
+  for (const trade of items) {
+    const tradeDate = new Date(trade.tradeTime);
+    if (isNaN(tradeDate.getTime())) continue;
+
+    const year = tradeDate.getFullYear().toString();
+    const month = tradeDate.getMonth(); // 0-11
+
+    if (!result[year]) {
+      result[year] = {
+        total_purchases: Array(12).fill(0),
+        total_sales: Array(12).fill(0),
+        total_trades: Array(12).fill(0),
+        report: GenerateFinancialReport([]),
+      };
+    }
+
+    if (trade.type === TauriTypes.TransactionType.Purchase) result[year].total_purchases[month] += trade.platinum || 0;
+    else if (trade.type === TauriTypes.TransactionType.Sale) result[year].total_sales[month] += trade.platinum || 0;
+    else if (trade.type === TauriTypes.TransactionType.Trade) result[year].total_trades[month] += 1;
+  }
+
+  // Generate yearly financial reports
+  for (const [year] of Object.entries(result)) {
+    const yearTrades = items.filter((trade) => {
+      const tradeDate = new Date(trade.tradeTime);
+      return !isNaN(tradeDate.getTime()) && tradeDate.getFullYear().toString() === year;
+    });
+    result[year].report = GenerateFinancialReport(yearTrades);
+  }
+
+  return result;
 };

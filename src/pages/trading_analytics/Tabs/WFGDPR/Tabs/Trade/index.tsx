@@ -1,4 +1,4 @@
-import { Box, Grid, Group, NumberFormatter, Paper, Table, Text, Title } from "@mantine/core";
+import { Box, Grid, Group, NumberFormatter, Paper, Select, Table, Text, Title, useMantineTheme } from "@mantine/core";
 import { TauriTypes } from "$types";
 import { useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
@@ -11,10 +11,13 @@ import { DataTableSearch } from "@components/Shared/DataTableSearch";
 import { SelectItemTags } from "@components/Forms/SelectItemTags";
 import { FinancialReportCard } from "@components/Shared/FinancialReportCard";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
-import { GenerateReport } from "./helper";
+import { GenerateReport, GenerateYearlyReport } from "./helper";
 import classes from "../../WFGDPR.module.css";
 import { BestByCategoryTable } from "@components/DataDisplay/BestByCategoryTable";
 import { useAppContext } from "@contexts/app.context";
+import { BarCardChart } from "@components/Shared/BarCardChart";
+import i18next from "i18next";
+import { BarChartFinancialSummary } from "../../../../../../components/DataDisplay/BarChartFinancialSummary";
 interface TradePanelProps {
   value: TauriTypes.WFGDPRAccount | null;
 }
@@ -32,6 +35,7 @@ interface QueryData {
 
 export const TradePanel = ({ value }: TradePanelProps) => {
   const { settings } = useAppContext();
+  const theme = useMantineTheme();
   const [queryData, setQueryData] = useState<QueryData>({
     page: 1,
     limit: 50,
@@ -41,6 +45,13 @@ export const TradePanel = ({ value }: TradePanelProps) => {
   });
   const [showReport, setShowReport] = useState<boolean>(false);
   const [financialReport, setFinancialReport] = useState<TauriTypes.FinancialReport | undefined>(undefined);
+  const [financialReportYears, setFinancialReportYears] = useState<
+    Record<string, { total_purchases: number[]; total_sales: number[]; total_trades: number[]; report: TauriTypes.FinancialReport }>
+  >({});
+  const [reportYear, setReportYear] = useState<string>(
+    financialReportYears ? Object.keys(financialReportYears)[0] : new Date().getFullYear().toString(),
+  );
+
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslatePages(`trading_analytics.tabs.wfgdpr.trade.${key}`, { ...context }, i18Key);
@@ -65,6 +76,8 @@ export const TradePanel = ({ value }: TradePanelProps) => {
     let filteredTrades = ApplyFilter(value?.trades || [], GenerateFilter());
     let report = GenerateReport(filteredTrades, settings?.summary_settings);
     setFinancialReport(report);
+    setFinancialReportYears(GenerateYearlyReport(filteredTrades));
+    console.log(GenerateYearlyReport(filteredTrades));
   }, [showReport]);
 
   return (
@@ -161,6 +174,12 @@ export const TradePanel = ({ value }: TradePanelProps) => {
             <Grid.Col span={6}>
               <FinancialReportCard data={financialReport} hidePercentBar />
             </Grid.Col>
+            <Grid.Col span={6}>
+              <BestByCategoryTable records={financialReport?.properties?.categories || []} />
+            </Grid.Col>
+          </Grid>
+
+          <Grid mt={3}>
             <Grid.Col span={3}>
               <Title order={4} mb={"sm"}>
                 {useTranslate("titles.most_purchased_items")}
@@ -203,54 +222,41 @@ export const TradePanel = ({ value }: TradePanelProps) => {
                 </Table.Tbody>
               </Table>
             </Grid.Col>
-          </Grid>
-          <Grid>
             <Grid.Col span={6}>
-              {/* <BarCardChart
-            title={useTranslateCards("yearly_trade_overview.title", { year: queryData.values.year })}
-            boxHeight={400}
-            showDatasetLabels
-            labels={i18next.t("months", { returnObjects: true }) as string[]}
-            chartStyle={{ background: theme.colors.dark[7], height: "200px" }}
-            datasets={[
-              {
-                label: useTranslateCards("yearly_trade_overview.total_trades"),
-                data: financialReportQuery.data?.properties.graph.values.total_trades || [],
-                backgroundColor: theme.other.transactionType.trade,
-              },
-              {
-                label: useTranslateCards("yearly_trade_overview.total_purchase"),
-                data: financialReportQuery.data?.properties.graph.values.total_purchase || [],
-                backgroundColor: theme.other.transactionType.purchase,
-              },
-              {
-                label: useTranslateCards("yearly_trade_overview.total_sales"),
-                data: financialReportQuery.data?.properties.graph.values.total_sales || [],
-                backgroundColor: theme.other.transactionType.sale,
-              },
-            ]}
-            context={
-              <Group>
-                <Group flex={1}>
-                  <BarChartFinancialSummary statistics={financialReportQuery.data?.properties.year} />
-                </Group>
-                <Group flex={"1 auto"} justify={"flex-end"}>
-                  <Select
-                    w={100}
-                    data={availableYears}
-                    value={queryData.values.year?.toString()}
-                    onChange={(value) => {
-                      if (!value) return;
-                      queryData.setFieldValue("year", Number(value));
-                    }}
-                  />
-                </Group>
-              </Group>
-            }
-          /> */}
-            </Grid.Col>
-            <Grid.Col span={6}>
-              <BestByCategoryTable records={financialReport?.properties?.categories || []} />
+              <BarCardChart
+                title={useTranslate("yearly_trade_overview.title", { year: reportYear })}
+                boxHeight={400}
+                showDatasetLabels
+                labels={i18next.t("months", { returnObjects: true }) as string[]}
+                chartStyle={{ background: theme.colors.dark[7], height: "200px" }}
+                datasets={[
+                  {
+                    label: useTranslate("yearly_trade_overview.total_trades"),
+                    data: financialReportYears[reportYear]?.total_trades || [],
+                    backgroundColor: theme.other.transactionType.trade,
+                  },
+                  {
+                    label: useTranslate("yearly_trade_overview.total_purchases"),
+                    data: financialReportYears[reportYear]?.total_purchases || [],
+                    backgroundColor: theme.other.transactionType.purchase,
+                  },
+                  {
+                    label: useTranslate("yearly_trade_overview.total_sales"),
+                    data: financialReportYears[reportYear]?.total_sales || [],
+                    backgroundColor: theme.other.transactionType.sale,
+                  },
+                ]}
+                context={
+                  <Group>
+                    <Group flex={1}>
+                      <BarChartFinancialSummary statistics={financialReportYears[reportYear]?.report} />
+                    </Group>
+                    <Group flex={"1 auto"} justify={"flex-end"}>
+                      <Select w={100} data={Object.keys(financialReportYears)} value={reportYear} onChange={(value) => setReportYear(value || "")} />
+                    </Group>
+                  </Group>
+                }
+              />
             </Grid.Col>
           </Grid>
         </Box>
