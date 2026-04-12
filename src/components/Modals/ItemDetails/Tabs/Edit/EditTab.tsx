@@ -45,6 +45,13 @@ export function EditTab({ lookup, value, onSave }: EditTabProps) {
           onChange={(value) => form.setFieldValue("owned", Number(value))}
         />
         <NumberInput
+          min={1}
+          display={ShowField(["wish_list_item"])}
+          label={useTranslateFields("quantity")}
+          value={GetProperty("quantity") ?? 0}
+          onChange={(value) => form.setFieldValue("quantity", Number(value))}
+        />
+        <NumberInput
           min={-1}
           display={ShowField(["stock_item"])}
           label={useTranslateFields("minimum_sma")}
