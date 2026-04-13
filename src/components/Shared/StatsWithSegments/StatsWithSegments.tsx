@@ -134,7 +134,10 @@ export function StatsWithSegments({
           </Box>
         )}
 
-        <SimpleGrid cols={isVertical ? 1 : { base: 3, md: segmentsIn.length }} style={{ flex: isVertical ? 1 : "auto" }}>
+        <SimpleGrid
+          cols={isVertical ? 1 : { base: 3, md: segmentsIn.filter((segment) => !segment.hide).length }}
+          style={{ flex: isVertical ? 1 : "auto" }}
+        >
           {header && <Box>{header}</Box>}
           {descriptions}
           {footer && <Box>{footer}</Box>}

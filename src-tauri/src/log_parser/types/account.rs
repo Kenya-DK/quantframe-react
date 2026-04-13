@@ -42,7 +42,6 @@ impl Account {
                 .properties
                 .get_property_value("item_name", String::new());
             if name.is_empty() {
-                println!("Item name not found for item: {}", item.raw);
                 item.properties.set_property_value("item_name", &item.raw);
             }
         }

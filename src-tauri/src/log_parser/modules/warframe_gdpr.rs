@@ -63,6 +63,7 @@ impl WarframeGDPRModule {
         let trades_re = Regex::new(r"^TRADES\s*:\s*(\d+)").unwrap();
         let logins_re = Regex::new(r"^LOGINS\s*:\s*(\d+)").unwrap();
         let purchases_re = Regex::new(r"^PURCHASES\s*:\s*(\d+)").unwrap();
+        let transactions_re = Regex::new(r"^TRANSACTIONS").unwrap();
         let date_re = Regex::new(r"^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\s+UTC$").unwrap();
         let item_re = Regex::new(r"^(.+?)(?:\s*:\s*(-?\d+))?$").unwrap();
         let platinum_re = Regex::new(r"^PREMIUM CREDITS\s*:\s*(\d+)").unwrap();
@@ -126,7 +127,7 @@ impl WarframeGDPRModule {
                 continue;
             }
 
-            if line.eq("Transactions") {
+            if let Some(_) = transactions_re.captures(&line) {
                 section = Some("transactions");
                 if let Some(acc) = current_account.as_mut() {
                     acc.transactions.clear();
@@ -321,20 +322,19 @@ impl WarframeGDPRModule {
                     .abs();
 
                 /* ---------- Normalize Raw Name ---------- */
-
                 match raw.as_str() {
-                    "LEGENDARY CORE" => {
+                    "LEGENDARY CORE" | "Legendary Core" => {
                         raw = "Legendary Core (LEGENDARY RANK 0)".to_string();
                     }
                     _ if raw.contains("RIVEN MOD") || raw.contains("Riven Mod") => {
                         raw.push_str(" (RIVEN RANK 0)");
                     }
                     _ if raw.ends_with("PLATINUM") || raw.ends_with("PREMIUM CREDITS") => {
-                        raw = "Platinum".to_string();
+                        raw = detection.platinum_name.clone();
                         trade.platinum = quantity;
                     }
                     _ if raw.ends_with("CREDITS") || raw.ends_with("REGULAR CREDITS") => {
-                        raw = "Credits".to_string();
+                        raw = detection.credits_name.clone();
                         trade.credits = quantity;
                     }
                     _ => {}
@@ -456,10 +456,19 @@ impl WarframeGDPRModule {
                                 .map(|m| m.as_str().trim().to_string())
                                 .unwrap_or_default();
 
-                            let qty = caps
+                            let mut qty = caps
                                 .get(2)
                                 .and_then(|m| m.as_str().parse::<i64>().ok())
                                 .unwrap_or(1);
+
+                            // If the name Contains "Booster", it's likely a "Booster Pack" where th quantity indicates the duration in seconds Edit the name to it wil be .. Booster 3 Days
+                            let name = if name.contains("Booster") && qty > 1 {
+                                let days = qty / 86400; // Convert seconds to days
+                                qty = 1; // Set quantity to 1 since it's a single booster pack
+                                format!("{} {} Days", name, days)
+                            } else {
+                                name
+                            };
 
                             purchase.items_received.push(PurchaseItem::new(name, qty));
                         }
@@ -512,7 +521,7 @@ impl WarframeGDPRModule {
 
                     if line.starts_with("DATE :") {
                         let date_str = line.replace("DATE :", "").trim().to_string();
-                        transaction.date = to_date(&format!("{} UTC", date_str));
+                        transaction.date = to_date(&date_str);
                         continue;
                     }
 

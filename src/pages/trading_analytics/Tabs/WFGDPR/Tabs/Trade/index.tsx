@@ -17,7 +17,7 @@ import { BestByCategoryTable } from "@components/DataDisplay/BestByCategoryTable
 import { useAppContext } from "@contexts/app.context";
 import { BarCardChart } from "@components/Shared/BarCardChart";
 import i18next from "i18next";
-import { BarChartFinancialSummary } from "../../../../../../components/DataDisplay/BarChartFinancialSummary";
+import { BarChartFinancialSummary } from "@components/DataDisplay/BarChartFinancialSummary";
 interface TradePanelProps {
   value: TauriTypes.WFGDPRAccount | null;
 }

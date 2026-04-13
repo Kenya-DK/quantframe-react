@@ -5,12 +5,13 @@ import { Stack } from "@mantine/core";
 
 export interface FinancialReportCardProps {
   data: TauriTypes.FinancialReport | undefined;
+  hideComponents?: ("total_transactions" | "trade_count" | "revenue" | "expenses" | "total_profit" | "highest_revenue" | "highest_expense")[];
   hideTradeCount?: boolean;
   loading?: boolean;
   hidePercentBar?: boolean;
 }
 
-export const FinancialReportCard = ({ data, hideTradeCount, hidePercentBar }: FinancialReportCardProps) => {
+export const FinancialReportCard = ({ data, hideComponents, hideTradeCount, hidePercentBar }: FinancialReportCardProps) => {
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateComponent(`financial_report_card.${key}`, { ...context }, i18Key);
 
@@ -28,6 +29,7 @@ export const FinancialReportCard = ({ data, hideTradeCount, hidePercentBar }: Fi
           tooltip: useTranslate("tooltips.total_credits"),
           part: data?.properties?.total_credits || 0,
           hideInProgress: true,
+          hide: hideComponents?.includes("total_transactions"),
           suffix: " C",
           decimalScale: 2,
         },
@@ -35,7 +37,7 @@ export const FinancialReportCard = ({ data, hideTradeCount, hidePercentBar }: Fi
           label: useTranslate("labels.trade_count"),
           count: data?.properties?.total_trades || 0,
           color: "var(--qf-transaction-type-trade)",
-          hide: hideTradeCount,
+          hide: hideComponents?.includes("trade_count") || hideTradeCount,
         },
         {
           label: useTranslate("labels.revenue"),
@@ -44,6 +46,7 @@ export const FinancialReportCard = ({ data, hideTradeCount, hidePercentBar }: Fi
           part: data?.revenue || 0,
           usePartForPercentage: true,
           tooltip: useTranslate("tooltips.total_revenue"),
+          hide: hideComponents?.includes("revenue"),
           suffix: " P",
         },
         {
@@ -53,6 +56,7 @@ export const FinancialReportCard = ({ data, hideTradeCount, hidePercentBar }: Fi
           part: data?.expenses || 0,
           usePartForPercentage: true,
           tooltip: useTranslate("tooltips.total_expenses"),
+          hide: hideComponents?.includes("expenses"),
           suffix: " P",
         },
         {
@@ -62,6 +66,7 @@ export const FinancialReportCard = ({ data, hideTradeCount, hidePercentBar }: Fi
           hideInProgress: true,
           tooltip: useTranslate("tooltips.average_profit"),
           part: data?.average_profit || 0,
+          hide: hideComponents?.includes("total_profit"),
           suffix: " P",
           decimalScale: 2,
         },
@@ -80,6 +85,7 @@ export const FinancialReportCard = ({ data, hideTradeCount, hidePercentBar }: Fi
                 tooltip: useTranslate("tooltips.lowest_revenue"),
                 part: data?.lowest_revenue || 0,
                 decimalScale: 2,
+                hide: hideComponents?.includes("highest_revenue"),
               },
               {
                 label: useTranslate("labels.highest_expense"),
@@ -88,6 +94,7 @@ export const FinancialReportCard = ({ data, hideTradeCount, hidePercentBar }: Fi
                 tooltip: useTranslate("tooltips.lowest_expense"),
                 part: data?.lowest_expense || 0,
                 decimalScale: 2,
+                hide: hideComponents?.includes("highest_expense"),
               },
             ]}
             showPercent
