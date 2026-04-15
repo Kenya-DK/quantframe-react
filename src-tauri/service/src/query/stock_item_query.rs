@@ -28,7 +28,7 @@ impl StockItemQuery {
         url_name: &str,
     ) -> Result<Vec<stock_item::Model>, Error> {
         Entity::find()
-            .filter(stock_item::Column::WfmUrl.contains(url_name))
+            .filter(stock_item::Column::WfmUrl.eq(url_name))
             .all(db)
             .await
             .map_err(|e| {

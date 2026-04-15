@@ -47,7 +47,7 @@ impl WishListQuery {
         url_name: &str,
     ) -> Result<Vec<wish_list::Model>, Error> {
         Entity::find()
-            .filter(wish_list::Column::WfmUrl.contains(url_name))
+            .filter(wish_list::Column::WfmUrl.eq(url_name))
             .all(db)
             .await
             .map_err(|e| {
