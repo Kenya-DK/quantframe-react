@@ -4,7 +4,7 @@
 
 ⚒️ - Fix the message in the update notification to show newlines and not just a long string.
 ⚒️ - Fix Similar Auctions to show the correct items and not just ,,.
-⚒️ - When adding Bo Prime Set to the wishlist with Limbo Prime Set already in the wishlist, I only get another Limbo set added to the quantity
+⚒️ - Fix when adding Bo Prime Set to the wishlist with Limbo Prime Set already in the wishlist, I only get another Limbo set added to the quantity
 
 ## Dev Notes
 
