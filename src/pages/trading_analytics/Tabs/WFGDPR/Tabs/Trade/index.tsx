@@ -77,7 +77,6 @@ export const TradePanel = ({ value }: TradePanelProps) => {
     let report = GenerateReport(filteredTrades, settings?.summary_settings);
     setFinancialReport(report);
     setFinancialReportYears(GenerateYearlyReport(filteredTrades));
-    console.log(GenerateYearlyReport(filteredTrades));
   }, [showReport]);
 
   return (

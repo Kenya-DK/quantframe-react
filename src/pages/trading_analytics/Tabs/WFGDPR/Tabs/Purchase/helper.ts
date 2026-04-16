@@ -8,7 +8,6 @@ export const GenerateFinancialReport = (purchases: TauriTypes.WFGDPRPurchase[]):
   // Can y Get the item with the highest price and lowest price
   let highest_expense = Math.max(...purchases.map((t) => t.price || 0));
   let lowest_expense = Math.min(...purchases.map((t) => t.price || 0));
-  console.log("Purchases Items with Prices:", GroupByKey("name", purchases_items));
   let purchase_quantities_by_item = Object.entries(GroupByKey("name", purchases_items)).map(([name, items]) => {
     let quantity = (items as any[]).reduce((acc, i) => acc + (i.quantity || 0), 0);
     let price = (items as any[]).reduce((acc, i) => acc + (i.price || 0), 0); // Average price per item

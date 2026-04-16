@@ -7,7 +7,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
 import { TauriTypes } from "$types";
-import { TradePanel, LoginPanel, PurchasePanel, TransactionPanel } from "./Tabs";
+import { TradePanel, PurchasePanel, TransactionPanel } from "./Tabs";
 import { TimerStamp } from "@components/Shared/TimerStamp";
 import { OverviewPanel } from "./Tabs/Overview";
 
@@ -56,11 +56,6 @@ export const WarframeGDPRParser = ({}: WarframeGDPRParserProps = {}) => {
       label: useTranslateTabs("purchase.title"),
       component: () => <PurchasePanel value={selectedAccount} />,
       id: "purchase",
-    },
-    {
-      label: useTranslateTabs("login.title"),
-      component: () => <LoginPanel value={selectedAccount} />,
-      id: "login",
     },
     {
       label: useTranslateTabs("transaction.title"),

@@ -65,7 +65,6 @@ export const PurchasePanel = ({ value }: PurchasePanelProps) => {
     let report = GenerateReport(filteredTrades);
     setFinancialReport(report);
     setFinancialReportYears(GenerateYearlyReport(filteredTrades));
-    console.log(GenerateYearlyReport(filteredTrades));
   }, [showReport]);
 
   return (
