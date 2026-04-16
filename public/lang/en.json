@@ -2278,13 +2278,53 @@
             }
           },
           "purchase": {
-            "title": "Purchases"
-          },
-          "login": {
-            "title": "Login History"
+            "title": "Purchases",
+            "titles": {
+              "most_purchased_items": "Most Bought Items"
+            },
+            "table_headers": {
+              "item_name": "Name",
+              "price": "Price",
+              "quantity": "Quantity"
+            },
+            "yearly_trade_overview": {
+              "title": "Yearly Trade Overview ({{year}})",
+              "total_purchases": "Total Purchases"
+            },
+            "columns": {
+              "date": "Purchase At",
+              "price": "Price",
+              "shop_id": "Shop ID",
+              "items_received": "Items Received"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "Show report"
+            }
           },
           "transaction": {
-            "title": "Transactions"
+            "title": "Transactions",
+            "titles": {
+              "most_purchased_items": "Most Bought Items"
+            },
+            "table_headers": {
+              "item_name": "Name",
+              "price": "Price",
+              "quantity": "Quantity"
+            },
+            "yearly_trade_overview": {
+              "title": "Yearly Trade Overview ({{year}})",
+              "total_purchases": "Total Purchases"
+            },
+            "columns": {
+              "date": "Purchase At",
+              "currency": "Currency",
+              "price": "Price",
+              "account": "Account",
+              "sku": "SKU"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "Show report"
+            }
           }
         }
       }
