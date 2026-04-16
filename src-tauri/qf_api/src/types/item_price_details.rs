@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::types::SubType;
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
-pub struct ItemPrice {
+pub struct ItemPriceDetails {
     #[serde(default)]
     pub wfm_url: String,
 

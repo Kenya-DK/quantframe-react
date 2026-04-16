@@ -26,6 +26,26 @@ pub async fn item_prices_lookup(
     };
 }
 #[tauri::command]
+pub async fn item_price_lookup(
+    id: String,
+    app: tauri::State<'_, Mutex<AppState>>,
+) -> Result<ItemPriceDetails, Error> {
+    let app_state = app.lock().unwrap().clone();
+    match app_state.qf_client.item().get_price_by_id(id).await {
+        Ok(data) => return Ok(data),
+        Err(e) => {
+            let error = Error::from_qf(
+                "ItemPriceLookup",
+                "Failed to lookup item price: {}",
+                e,
+                get_location!(),
+            )
+            .log("item_price_lookup.log");
+            return Err(error);
+        }
+    };
+}
+#[tauri::command]
 pub async fn export_item_price_data(
     mut query: ItemPricePaginationQueryDto,
     app: tauri::State<'_, Mutex<AppState>>,

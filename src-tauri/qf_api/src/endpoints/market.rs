@@ -1,6 +1,4 @@
-use std::
-    sync::{Arc, Weak}
-;
+use std::sync::{Arc, Weak};
 
 use reqwest::Method;
 use serde_json::Value;

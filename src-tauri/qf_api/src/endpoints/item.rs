@@ -46,6 +46,28 @@ impl ItemRoute {
             _ => Err(ApiError::Unknown("Unexpected response format".to_string())),
         }
     }
+    pub async fn get_price_by_id(
+        &self,
+        id: impl Into<String>,
+    ) -> Result<ItemPriceDetails, ApiError> {
+        let id = id.into();
+        let client = self.client.upgrade().expect("Client should not be dropped");
+        match client
+            .as_ref()
+            .call_api::<ItemPriceDetails>(
+                Method::GET,
+                &format!("/market/items/{}", id),
+                None,
+                None,
+                ResponseFormat::Json,
+            )
+            .await
+        {
+            Ok((ApiResponse::Json(alerts), _, _)) => Ok(alerts),
+            Err(e) => return Err(e),
+            _ => Err(ApiError::Unknown("Unexpected response format".to_string())),
+        }
+    }
     /**
      * Creates a new `ItemRoute` from an existing one, sharing the client.
      * This is useful for cloning routes when the client state changes.

@@ -16,6 +16,12 @@ pub use item_price::*;
 pub mod riven_price;
 pub use riven_price::*;
 
+pub mod item_price_details;
+pub use item_price_details::*;
+
+pub mod riven_price_details;
+pub use riven_price_details::*;
+
 pub mod sub_type;
 pub use sub_type::*;
 
