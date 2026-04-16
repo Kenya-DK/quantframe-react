@@ -334,7 +334,6 @@ pub fn run() {
             commands::handlers::handles_handle_items,
             // WFInventory commands
             commands::wf_inventory::wf_inventory_get_rivens,
-            commands::wf_inventory::wf_inventory_get_syndicates,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

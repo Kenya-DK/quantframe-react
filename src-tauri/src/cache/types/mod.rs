@@ -73,9 +73,6 @@ pub use cache_chat_Icon::*;
 pub mod cache_sentinel_weapon;
 pub use cache_sentinel_weapon::*;
 
-pub mod cache_syndicate;
-pub use cache_syndicate::*;
-
 pub mod pagination;
 
 pub mod riven;

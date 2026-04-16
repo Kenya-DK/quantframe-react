@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Tooltip, UnstyledButton, Stack } from '@mantine/core';
-import classes from './NavbarMinimalColored.module.css';
+import React, { useState } from "react";
+import { Tooltip, UnstyledButton, Stack } from "@mantine/core";
+import classes from "./NavbarMinimalColored.module.css";
 
 export type NavbarLinkProps = {
   icon: React.ReactNode;
@@ -13,16 +13,22 @@ export type NavbarLinkProps = {
   hide?: boolean;
   onClick?(e: NavbarLinkProps): void;
   onPrefetch?(): void;
-}
+};
 
 function NavbarLink(props: NavbarLinkProps) {
   const { icon: Icon, label, active, onClick, onPrefetch } = props;
   return (
     <Tooltip label={label} position="right" transitionProps={{ duration: 0 }}>
       <UnstyledButton
-        onClick={() => { onClick && onClick(props); }}
-        onMouseEnter={() => { onPrefetch && onPrefetch(); }}
-        onFocus={() => { onPrefetch && onPrefetch(); }}
+        onClick={() => {
+          onClick && onClick(props);
+        }}
+        onMouseEnter={() => {
+          onPrefetch && onPrefetch();
+        }}
+        onFocus={() => {
+          onPrefetch && onPrefetch();
+        }}
         className={classes.link}
         data-active={active || undefined}
         data-rainbow-bg={true}
@@ -40,34 +46,34 @@ export interface NavbarMinimalColoredProps {
 export function NavbarMinimalColored({ links }: NavbarMinimalColoredProps) {
   const [active, setActive] = useState("home");
 
-
-  const GetActiveLinkByAlign = (align: 'top' | 'bottom') => {
+  const GetActiveLinkByAlign = (align: "top" | "bottom") => {
     if (!links) return <></>;
 
-    return links.filter((link) => link.align == align && !link.hide).map((link) => (
-      <NavbarLink
-        {...link}
-        key={link.label}
-        active={link.id === active && !link.web}
-        onClick={() => {
-          setActive(link.id || "");
-          link.onClick && link.onClick(link);
-        }}
-      />
-    ));
-  }
-
+    return links
+      .filter((link) => link.align == align && !link.hide)
+      .map((link) => (
+        <NavbarLink
+          {...link}
+          key={link.label}
+          active={link.id === active && !link.web}
+          onClick={() => {
+            setActive(link.id || "");
+            link.onClick && link.onClick(link);
+          }}
+        />
+      ));
+  };
 
   return (
     <nav className={classes.navbar}>
       <div className={classes.navbarMain}>
         <Stack justify="center" gap={3}>
-          {GetActiveLinkByAlign('top')}
+          {GetActiveLinkByAlign("top")}
         </Stack>
       </div>
 
       <Stack justify="center" gap={0}>
-        {GetActiveLinkByAlign('bottom')}
+        {GetActiveLinkByAlign("bottom")}
       </Stack>
     </nav>
   );

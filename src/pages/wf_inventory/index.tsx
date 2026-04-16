@@ -4,17 +4,13 @@ import classes from "./WFInventory.module.css";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { RivenPanel } from "./Tabs/Rivens";
 import { useState } from "react";
-import { SyndicatePanel } from "./Tabs/Syndicate";
 export default function WfInventoryPage() {
   // Translate general
   const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslatePages(`wf_inventory.${key}`, { ...context }, i18Key);
   const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`tabs.${key}`, { ...context }, i18Key);
 
-  const tabs = [
-    { label: useTranslateTabs("riven.title"), component: (isActive: boolean) => <RivenPanel isActive={isActive} />, id: "riven" },
-    { label: useTranslateTabs("syndicate.title"), component: (isActive: boolean) => <SyndicatePanel isActive={isActive} />, id: "syndicate" },
-  ];
+  const tabs = [{ label: useTranslateTabs("riven.title"), component: (isActive: boolean) => <RivenPanel isActive={isActive} />, id: "riven" }];
   const [activeTab, setActiveTab] = useState(tabs[0].id);
   return (
     <Container p={0} fluid className={`${classes.container} ${useHasAlert() ? classes.alert : ""}`}>

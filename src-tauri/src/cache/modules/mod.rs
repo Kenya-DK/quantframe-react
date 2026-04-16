@@ -69,6 +69,3 @@ pub use sentinel_weapon::*;
 
 pub mod language;
 pub use language::*;
-
-pub mod syndicates;
-pub use syndicates::*;
