@@ -45,7 +45,7 @@ impl WFInventoryState {
         });
 
         // Turn off watcher for now
-        Self::start_watcher(state.clone());
+        // Self::start_watcher(state.clone());
         state.init_modules();
         state
     }
