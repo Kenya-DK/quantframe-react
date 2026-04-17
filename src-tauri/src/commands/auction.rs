@@ -80,8 +80,18 @@ pub async fn get_wfm_auctions_pagination(
         filters_by(&app.wfm_client.auction().cache_auctions().to_vec(), |o| {
             match &query.query {
                 FieldChange::Value(q) => {
-                    // let riven =
-                    //     o.get_property_value::<ItemRivenBase>("riven", ItemRivenBase::default());
+                    let q = q.to_lowercase();
+                    let name = o
+                        .properties
+                        .get_property_value("name", String::new())
+                        .to_lowercase();
+                    let mod_name = o
+                        .properties
+                        .get_property_value("mod_name", String::new())
+                        .to_lowercase();
+                    if !name.contains(&q) && !mod_name.contains(&q) {
+                        return false;
+                    }
                 }
                 _ => {}
             }
