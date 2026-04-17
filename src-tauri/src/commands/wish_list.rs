@@ -1,7 +1,6 @@
 use std::{collections::HashMap, sync::Mutex};
 
 use entity::{dto::*, wish_list::*};
-use serde_json::{json, Value};
 use service::{WishListMutation, WishListQuery};
 use tauri_plugin_dialog::DialogExt;
 use utils::{get_location, group_by, info, Error, LoggerOptions};

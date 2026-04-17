@@ -5,7 +5,6 @@ use serde_json::json;
 use service::{StockRivenMutation, StockRivenQuery};
 use utils::{average_filtered_lowest_prices, get_location, info, warning, Error, LoggerOptions};
 use wf_market::{
-    endpoints::auction,
     enums::{AuctionType, Polarity, StatusType},
     types::{
         AuctionFilter, AuctionList, AuctionWithOwner, CreateAuctionItem, CreateAuctionParams,
@@ -14,7 +13,6 @@ use wf_market::{
 };
 static COMPONENT: &str = "LiveScraper:RivenModule";
 use crate::{
-    cache::types::CacheRivenWeapon,
     live_scraper::{is_disabled, LiveScraperState},
     send_event,
     types::*,

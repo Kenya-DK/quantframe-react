@@ -5,7 +5,7 @@ use entity::stock_item::Model as StockItemModel;
 use serde::{Deserialize, Serialize};
 use service::{sea_orm::DatabaseConnection, StockItemQuery, WishListQuery};
 use utils::{get_location, Error};
-use wf_market::{enums::OrderType, types::Order};
+use wf_market::enums::OrderType;
 
 use crate::{cache::types::ItemPriceInfo, types::OperationSet};
 

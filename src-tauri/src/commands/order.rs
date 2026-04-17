@@ -4,7 +4,6 @@ use std::{
 };
 
 use entity::{dto::*, enums::*};
-use serde_json::Value;
 use utils::{filters_by, get_location, group_by, sorting::SortDirection, Error, Properties};
 use wf_market::{enums::OrderType, types::Order};
 

@@ -8,30 +8,20 @@ use entity::{
 use serde_json::{json, Value};
 use service::TransactionQuery;
 use std::{
-    collections::HashMap,
     fs::{self},
     path::PathBuf,
 };
 use tauri::{Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 use utils::*;
-use wf_market::{
-    enums::OrderType,
-    types::{AuctionLike, Order},
-    Authenticated,
-};
+use wf_market::{enums::OrderType, types::AuctionLike, Authenticated};
 
 use crate::{
     cache::{
-        apply_rank_multiplier, compute_riven_endo_cost, compute_riven_kuva_cost,
-        count_riven_positive_and_negative_stats, derive_riven_summary_attributes, grade_riven,
-        lookup_riven_multipliers, scale_attributes, CacheRivenWeapon, CacheState,
-        CacheTradableItem,
+        derive_riven_summary_attributes, grade_riven, scale_attributes, CacheRivenWeapon,
+        CacheState,
     },
     types::OperationSet,
-    utils::{
-        auction_list_ext::AuctionWithOwnerListExt, modules::states, ErrorFromExt, OrderExt,
-        OrderListExt, SubTypeExt,
-    },
+    utils::{auction_list_ext::AuctionWithOwnerListExt, ErrorFromExt, OrderListExt, SubTypeExt},
     APP, DATABASE,
 };
 
