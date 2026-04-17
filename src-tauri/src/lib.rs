@@ -15,7 +15,6 @@ use app::client::AppState;
 use migration::{Migrator, MigratorTrait};
 use service::sea_orm::{Database, DatabaseConnection};
 
-use std::env;
 use std::panic;
 use std::sync::{Mutex, OnceLock};
 use tauri::{Emitter, Manager};
@@ -135,10 +134,14 @@ async fn setup_manages(app: tauri::AppHandle, use_temp_db: bool) -> Result<(), E
 }
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let use_temp_db: bool = true;
+    let use_temp_db: bool = std::env::args().any(|a| a == "--use-temp-db");
+
+    println!(
+        "Starting Quantframe...{:?}",
+        std::env::args().collect::<Vec<String>>()
+    );
 
     // Initialize the logger for elapsed time tracking
-
     panic::set_hook(Box::new(|panic_info| {
         eprintln!("Panic: {:?}", panic_info);
         critical(
