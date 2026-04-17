@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    path::{Path, PathBuf},
+    path::Path,
     sync::{atomic::Ordering, OnceLock},
 };
 
@@ -24,7 +24,7 @@ use crate::{
     live_scraper::*,
     send_event,
     types::*,
-    utils::{modules::states, ErrorFromExt, OrderExt, OrderListExt, SubTypeExt},
+    utils::{modules::states, ErrorFromExt, OrderListExt, SubTypeExt},
     DATABASE,
 };
 
@@ -479,7 +479,7 @@ pub async fn progress_order(
             Ok(order) => {
                 info(
                     format!("{}UpdateSuccess", component),
-                    &format!("Updated order for item {}: {}", name, order_id),
+                    &format!("Updated order for item {}: {}", name, order.id),
                     &log_options,
                 );
                 if original_update_string != update_string {

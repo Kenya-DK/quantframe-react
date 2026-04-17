@@ -34,9 +34,6 @@ impl OperationSet {
             self.add(op.clone());
         }
     }
-    pub fn set(&mut self, operations: &[&str]) {
-        self.operations = operations.iter().map(|&s| s.to_string()).collect();
-    }
     pub fn get_value_after(&self, prefix: impl Into<String>) -> Option<String> {
         let prefix = prefix.into();
         let prefix_with_colon = format!("{}:", prefix);
@@ -49,9 +46,6 @@ impl OperationSet {
                     .map(|value| value.trim().to_string())
             })
             .filter(|value| !value.is_empty())
-    }
-    pub fn is_empty(&self) -> bool {
-        self.operations.is_empty()
     }
 }
 

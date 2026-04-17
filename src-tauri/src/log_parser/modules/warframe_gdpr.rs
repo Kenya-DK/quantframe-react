@@ -1,10 +1,6 @@
-use chrono::{Datelike, NaiveDateTime, TimeZone, Utc};
-use entity::{
-    dto::{FinancialReport, PaginatedResult, SubType},
-    enums::FieldChange,
-};
+use chrono::{NaiveDateTime, Utc};
+use entity::dto::SubType;
 use regex::Regex;
-use serde_json::json;
 use std::{
     sync::{Arc, Mutex},
     time::Instant,
@@ -13,7 +9,6 @@ use utils::*;
 
 use crate::{
     enums::{LogSection, TradeItemType},
-    helper::paginate,
     log_parser::*,
     notify_gui,
     utils::modules::states,

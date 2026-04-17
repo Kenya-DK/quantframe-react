@@ -1,8 +1,7 @@
-use serde_json::json;
 use utils::Error;
 use wf_market::{
     enums::OrderType,
-    types::{Order, OrderLike, OrderList, OrderWithUser, UpdateOrderParams},
+    types::{Order, OrderList, OrderWithUser},
 };
 
 use crate::{
