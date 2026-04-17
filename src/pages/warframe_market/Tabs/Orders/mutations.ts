@@ -21,7 +21,7 @@ const createGenericMutation = <TData, TVariables>(
     getLoadingId?: (variables: TVariables) => string | string[];
     getSuccessMessage?: (data: TData, variables: TVariables) => { [key: string]: any };
   },
-  hooks: MutationHooks
+  hooks: MutationHooks,
 ) => {
   return useMutation({
     mutationFn: config.mutationFn,
@@ -49,7 +49,7 @@ const createGenericMutation = <TData, TVariables>(
         message: config.translateCommon
           ? useTranslateCommon(
               `notifications.${config.successKey}.success.message`,
-              config.getSuccessMessage ? config.getSuccessMessage(data, variables) : {}
+              config.getSuccessMessage ? config.getSuccessMessage(data, variables) : {},
             )
           : hooks.useTranslateSuccess(`${config.successKey}.message`, config.getSuccessMessage ? config.getSuccessMessage(data, variables) : {}),
         color: "green.7",
@@ -79,16 +79,16 @@ export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, ref
       successKey: "refresh_orders",
       errorKey: "refresh_orders",
     },
-    hooks
+    hooks,
   );
 
   const deleteAllOrdersMutation = createGenericMutation(
     {
-      mutationFn: () => api.order.deleteAllOrders(),
+      mutationFn: (order_type?: WFMarketTypes.OrderType) => api.order.deleteAllOrders(order_type),
       successKey: "delete_all_orders",
       errorKey: "delete_all_orders",
     },
-    hooks
+    hooks,
   );
 
   const createStockMutation = createGenericMutation(
@@ -101,14 +101,14 @@ export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, ref
             sub_type: data,
             bought: data.platinum,
           },
-          "id"
+          "id",
         ),
       successKey: "create_stock_item",
       errorKey: "create_stock_item",
       translateCommon: true,
       getSuccessMessage: (data: any) => ({ name: data.item_name }),
     },
-    hooks
+    hooks,
   );
 
   const sellStockMutation = createGenericMutation(
@@ -122,7 +122,7 @@ export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, ref
             price: data.platinum,
             quantity: data.quantity,
           },
-          "id"
+          "id",
         ),
       successKey: "sell_stock_item",
       errorKey: "sell_stock_item",
@@ -130,7 +130,7 @@ export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, ref
       getLoadingId: (variables: WFMarketTypes.Order) => `${variables.id}`,
       getSuccessMessage: (data: any) => ({ name: data.item_name }),
     },
-    hooks
+    hooks,
   );
 
   const deleteStockMutation = createGenericMutation(
@@ -140,7 +140,7 @@ export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, ref
       errorKey: "delete_order",
       getLoadingId: (variables: string) => `${variables}`,
     },
-    hooks
+    hooks,
   );
 
   return {

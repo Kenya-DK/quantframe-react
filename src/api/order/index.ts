@@ -15,8 +15,8 @@ export class OrderModule {
     return await this.client.sendInvoke<any>("order_refresh");
   }
 
-  async deleteAllOrders(): Promise<any> {
-    return await this.client.sendInvoke<any>("order_delete_all");
+  async deleteAllOrders(order_type?: WFMarketTypes.OrderType): Promise<any> {
+    return await this.client.sendInvoke<any>("order_delete_all", { order_type });
   }
   async deleteById(id: string): Promise<any> {
     return await this.client.sendInvoke<any>("order_delete_by_id", { id });

@@ -1,13 +1,16 @@
 import { modals } from "@mantine/modals";
 import { Text } from "@mantine/core";
 import { WFMarketTypes } from "$types";
-import { useTranslateCommon } from "@hooks/useTranslate.hook";
+import { useTranslateCommon, useTranslateEnums } from "@hooks/useTranslate.hook";
 import { ItemDetailsModal, Operations } from "@components/Modals/ItemDetails";
 
 interface ModalHooks {
   useTranslateBasePrompt: (key: string, context?: { [key: string]: any }) => string;
   deleteStockMutation: {
     mutateAsync: (id: string) => Promise<any>;
+  };
+  deleteAllOrdersMutation: {
+    mutateAsync: (order_type?: WFMarketTypes.OrderType) => Promise<any>;
   };
   createStockMutation: {
     mutateAsync: (data: WFMarketTypes.Order) => Promise<any>;
@@ -17,7 +20,7 @@ interface ModalHooks {
   };
 }
 
-export const useStockModals = ({ deleteStockMutation, createStockMutation, sellStockMutation }: ModalHooks) => {
+export const useStockModals = ({ deleteStockMutation, deleteAllOrdersMutation, createStockMutation, sellStockMutation }: ModalHooks) => {
   const OpenSellModal = (order: WFMarketTypes.Order) => {
     modals.openContextModal({
       modal: "prompt",
@@ -108,6 +111,30 @@ export const useStockModals = ({ deleteStockMutation, createStockMutation, sellS
       onConfirm: async () => await deleteStockMutation.mutateAsync(id),
     });
   };
+  const OpenDeleteAllModal = () => {
+    modals.openContextModal({
+      modal: "prompt",
+      title: useTranslateCommon("prompts.delete_multiple_items.title"),
+      innerProps: {
+        fields: [
+          {
+            name: "type",
+            options: Object.entries([WFMarketTypes.OrderType.All, WFMarketTypes.OrderType.Sell, WFMarketTypes.OrderType.Buy]).map(([, value]) => ({
+              label: useTranslateEnums(`order_type.${value}`),
+              value,
+            })),
+            value: "all",
+            type: "select",
+          },
+        ],
+        onConfirm: async (data: { type: "all" | WFMarketTypes.OrderType }) => {
+          if (!data) return;
+          deleteAllOrdersMutation.mutateAsync(data.type === "all" ? undefined : data.type);
+        },
+        onCancel: (id: string) => modals.close(id),
+      },
+    });
+  };
   const OpenInfoModal = (item: WFMarketTypes.Order) => {
     modals.open({
       size: "100%",
@@ -118,6 +145,7 @@ export const useStockModals = ({ deleteStockMutation, createStockMutation, sellS
   return {
     HandleModalOrder,
     OpenDeleteModal,
+    OpenDeleteAllModal,
     OpenInfoModal,
   };
 };

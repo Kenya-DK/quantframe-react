@@ -2,6 +2,7 @@ import { PaginatedDto, RivenAttribute, UserStatus } from "./global.type";
 
 export namespace WFMarketTypes {
   export enum OrderType {
+    All = "all",
     Buy = "buy",
     Sell = "sell",
     Closed = "closed",

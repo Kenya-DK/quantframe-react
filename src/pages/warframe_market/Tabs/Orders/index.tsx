@@ -56,11 +56,12 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
   });
 
   // Modals
-  const { OpenDeleteModal, HandleModalOrder, OpenInfoModal } = useStockModals({
+  const { OpenDeleteModal, HandleModalOrder, OpenInfoModal, OpenDeleteAllModal } = useStockModals({
     createStockMutation,
     sellStockMutation,
     useTranslateBasePrompt,
     deleteStockMutation,
+    deleteAllOrdersMutation,
   });
   const handleRefresh = (_data: any) => {
     refetchQueries(true);
@@ -98,7 +99,7 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
               iconProps={{ size: "xs" }}
               onClick={(e) => {
                 e.stopPropagation();
-                deleteAllOrdersMutation.mutateAsync(1);
+                OpenDeleteAllModal();
               }}
             />
           </Group>

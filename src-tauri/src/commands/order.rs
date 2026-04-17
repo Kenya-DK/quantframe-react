@@ -6,7 +6,7 @@ use std::{
 use entity::{dto::*, enums::*};
 use serde_json::Value;
 use utils::{filters_by, get_location, group_by, sorting::SortDirection, Error, Properties};
-use wf_market::types::Order;
+use wf_market::{enums::OrderType, types::Order};
 
 use crate::{
     add_metric,
@@ -160,22 +160,22 @@ pub async fn get_wfm_orders_status_counts(
 
 #[tauri::command]
 pub async fn order_delete_all(
+    order_type: Option<OrderType>,
     live_scraper: tauri::State<'_, Arc<LiveScraperState>>,
-    app: tauri::State<'_, Mutex<AppState>>,
+    app_state: tauri::State<'_, Mutex<AppState>>,
+    cache_state: tauri::State<'_, Mutex<CacheState>>,
 ) -> Result<(), Error> {
-    let app = app.lock()?.clone();
+    let app = app_state.lock()?.clone();
+    order_refresh(app_state, cache_state).await?;
     live_scraper.stop();
-    let orders = match app.wfm_client.order().my_orders().await {
-        Ok(orders) => orders,
-        Err(e) => {
-            let err = Error::from_wfm("OrderDeleteAll", "Failed to get orders", e, get_location!());
-            err.log("order_delete_all.log");
-            return Err(err);
-        }
+
+    let orders = match order_type {
+        Some(OrderType::Buy) => app.wfm_client.order().cache_orders().buy_orders,
+        Some(OrderType::Sell) => app.wfm_client.order().cache_orders().sell_orders,
+        _ => app.wfm_client.order().cache_orders().to_vec(),
     };
-    let total = orders.total_orders();
-    let mut current = total;
-    for order in orders.to_vec() {
+    let mut current = orders.len();
+    for order in orders.iter() {
         if let Err(e) = app.wfm_client.order().delete(&order.id).await {
             let err = Error::from_wfm(
                 "OrderDeleteAll",
@@ -189,7 +189,7 @@ pub async fn order_delete_all(
         current -= 1;
         send_event!(
             UIEvent::OnDeleteWfmOrders,
-            json!({"source": "order_delete_all", "current": current, "total": total})
+            json!({"source": "order_delete_all", "current": current, "total": orders.len()})
         );
     }
     add_metric!("order_delete_all", "manual");

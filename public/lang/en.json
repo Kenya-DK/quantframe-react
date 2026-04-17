@@ -466,6 +466,7 @@
       }
     },
     "order_type": {
+      "all": "All Orders",
       "buy": "Buy Order",
       "sell": "Sell Order",
       "closed": "Closed Orders",
