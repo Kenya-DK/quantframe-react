@@ -4,6 +4,7 @@ use utils::{get_location, info, Error, SortDirection};
 use wf_market::{enums::OrderType, types::UpdateOrderParams};
 
 use crate::{
+    types::OperationSet,
     utils::{modules::states, ErrorFromExt, SubTypeExt},
     DATABASE,
 };
@@ -14,7 +15,7 @@ pub async fn handle_wfm_item(
     sub_type: &Option<SubType>,
     quantity: i64,
     operation: OrderType,
-    delete: bool,
+    operations: OperationSet,
 ) -> Result<String, Error> {
     let wfm_id = wfm_id.into();
     let log_options = utils::LoggerOptions::default();
@@ -22,11 +23,14 @@ pub async fn handle_wfm_item(
 
     let component = "HandleWFMItem";
     let file = "handle_wfm_item.log";
-
+    let delete = operations.has("ShouldDelete");
     let wf_sub_type: wf_market::types::SubType = SubTypeExt::from_entity(sub_type.to_owned());
 
     // Skip buy if reporting disabled
-    if operation == OrderType::Buy && !app.settings.live_scraper.report_to_wfm {
+    if operation == OrderType::Buy
+        && !app.settings.live_scraper.report_to_wfm
+        && !operations.has("ForceOrderSync")
+    {
         return Ok("SkippedBuyWfmReportDisabled".to_string());
     }
 

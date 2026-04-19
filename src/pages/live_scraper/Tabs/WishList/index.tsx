@@ -249,7 +249,7 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
                 hideButtons={["open_filter"]}
                 loadingRows={loadingRows}
                 onManual={() => OpenBoughtModal(row)}
-                onAuto={(price) => boughtMutation.mutateAsync({ ...row, price })}
+                onAuto={(price) => boughtMutation.mutateAsync({ ...row, price, quantity: 1 })}
                 onInfo={() => OpenInfoModal(row)}
                 onHide={(hide) => updateMutation.mutateAsync({ id: row.id, is_hidden: hide })}
                 onDelete={() => OpenDeleteModal(row.id)}

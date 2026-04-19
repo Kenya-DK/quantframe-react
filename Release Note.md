@@ -3,6 +3,7 @@
 ## Fix's
 
 ⚒️ - Items is missing when you log in
+⚒️ - Fix the wish list item wasn't removed from the WFM website when you delete the item from the wish list in the app.
 
 ## Dev Notes
 

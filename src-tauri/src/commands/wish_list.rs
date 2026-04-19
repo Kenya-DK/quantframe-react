@@ -87,9 +87,15 @@ pub async fn wish_list_delete(id: i64) -> Result<Model, Error> {
     }
     let item = item.unwrap();
 
-    handle_wfm_item(&item.wfm_id, &item.sub_type, 1, OrderType::Buy, true)
-        .await
-        .map_err(|e| e.with_location(get_location!()).log("wish_list_delete.log"))?;
+    handle_wfm_item(
+        &item.wfm_id,
+        &item.sub_type,
+        1,
+        OrderType::Buy,
+        OperationSet::from(vec!["ShouldDelete"]),
+    )
+    .await
+    .map_err(|e| e.with_location(get_location!()).log("wish_list_delete.log"))?;
     add_metric!("wish_list_delete", "manual");
     match WishListMutation::delete_by_id(conn, id).await {
         Ok(_) => {}

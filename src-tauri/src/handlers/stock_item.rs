@@ -200,7 +200,7 @@ pub async fn handle_item_by_entity(
             &item.sub_type,
             item.quantity,
             operation,
-            false,
+            OperationSet::new(),
         )
         .await
         .map_err(|e| e.with_location(get_location!()).log(file))?;

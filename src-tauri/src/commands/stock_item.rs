@@ -99,12 +99,18 @@ pub async fn stock_item_delete(id: i64) -> Result<stock_item::Model, Error> {
     }
     let item = item.unwrap();
 
-    handle_wfm_item(&item.wfm_id, &item.sub_type, 1, OrderType::Sell, true)
-        .await
-        .map_err(|e| {
-            e.with_location(get_location!())
-                .log("stock_item_delete.log")
-        })?;
+    handle_wfm_item(
+        &item.wfm_id,
+        &item.sub_type,
+        1,
+        OrderType::Sell,
+        OperationSet::from(vec!["ShouldDelete"]),
+    )
+    .await
+    .map_err(|e| {
+        e.with_location(get_location!())
+            .log("stock_item_delete.log")
+    })?;
     add_metric!("stock_item_delete", "manual");
     match StockItemMutation::delete_by_id(conn, id).await {
         Ok(_) => {}

@@ -110,6 +110,16 @@ export const useStockModals = ({ updateMutation, deleteMutation, boughtMutation,
       innerProps: {
         fields: [
           {
+            name: "quantity",
+            label: useTranslateCommon("prompts.sell_manual.fields.quantity.label"),
+            attributes: {
+              min: 0,
+              max: stock.quantity,
+            },
+            value: stock.quantity,
+            type: "number",
+          },
+          {
             name: "bought",
             label: useTranslateCommon("prompts.bought_manual.fields.bought.label"),
             attributes: {
@@ -119,10 +129,10 @@ export const useStockModals = ({ updateMutation, deleteMutation, boughtMutation,
             type: "number",
           },
         ],
-        onConfirm: async (data: { bought: number }) => {
+        onConfirm: async (data: { bought: number; quantity: number }) => {
           if (!stock) return;
-          const { bought } = data;
-          await boughtMutation.mutateAsync({ id: stock.id, wfm_url: stock.wfm_url, sub_type: stock.sub_type, price: bought, quantity: 1 });
+          const { bought, quantity } = data;
+          await boughtMutation.mutateAsync({ id: stock.id, wfm_url: stock.wfm_url, sub_type: stock.sub_type, price: bought, quantity });
         },
         onCancel: (id: string) => modals.close(id),
       },
