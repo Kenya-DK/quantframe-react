@@ -30,6 +30,8 @@ export namespace TauriTypes {
     // Live Scraper
     UpdateLiveScraperRunningState = "LiveScraper:UpdateRunningState",
     OnLiveScraperMessage = "LiveScraper:OnMessage",
+    // Cache
+    RefreshCache = "Cache:Refresh",
     // Stock
     RefreshStockItems = "LiveScraper:RefreshStockItems",
     RefreshStockRiven = "LiveScraper:RefreshStockRiven",
