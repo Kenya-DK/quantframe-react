@@ -14,7 +14,7 @@ pub async fn handle_wfm_item(
     wfm_id: impl Into<String>,
     sub_type: &Option<SubType>,
     quantity: i64,
-    operation: OrderType,
+    order_type: OrderType,
     operations: OperationSet,
 ) -> Result<String, Error> {
     let wfm_id = wfm_id.into();
@@ -27,7 +27,7 @@ pub async fn handle_wfm_item(
     let wf_sub_type: wf_market::types::SubType = SubTypeExt::from_entity(sub_type.to_owned());
 
     // Skip buy if reporting disabled
-    if operation == OrderType::Buy
+    if order_type == OrderType::Buy
         && !app.settings.live_scraper.report_to_wfm
         && !operations.has("ForceOrderSync")
     {
@@ -38,13 +38,13 @@ pub async fn handle_wfm_item(
         app.wfm_client
             .order()
             .cache_orders()
-            .find_order(&wfm_id, &wf_sub_type, operation)
+            .find_order(&wfm_id, &wf_sub_type, order_type)
     else {
         info(
             &format!("{component}:NoOrder"),
             &format!(
-                "No WFM order found for WFM ID: {} | SubType: {} | Operation: {:?}",
-                wfm_id, wf_sub_type, operation
+                "No WFM order found for WFM ID: {} | SubType: {} | OrderType: {:?}",
+                wfm_id, wf_sub_type, order_type
             ),
             &log_options,
         );

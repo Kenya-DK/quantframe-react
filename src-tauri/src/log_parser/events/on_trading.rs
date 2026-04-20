@@ -642,7 +642,7 @@ async fn process_trade_item(
         platinum,
         player_name,
         OrderType::Buy,
-        &["ReturnOn:NotFound", ""],
+        &OperationSet::from(vec!["ReturnOn:NotFound", ""]),
     )
     .await
     .map_err(|e| e.with_location(get_location!()))?;

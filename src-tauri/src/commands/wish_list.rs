@@ -48,7 +48,7 @@ pub async fn get_wish_list_status_counts(
 
 #[tauri::command]
 pub async fn wish_list_create(input: CreateWishListItem) -> Result<Model, Error> {
-    match handle_wish_list_by_entity(input, "", OrderType::Sell, &[]).await {
+    match handle_wish_list_by_entity(input, "", OrderType::Sell, &OperationSet::new()).await {
         Ok((_, item)) => return Ok(item),
         Err(e) => {
             return Err(e.with_location(get_location!()).log("wish_list_buy.log"));
@@ -63,7 +63,17 @@ pub async fn wish_list_bought(
     quantity: i64,
     price: i64,
 ) -> Result<Model, Error> {
-    match handle_wish_list(wfm_url, &sub_type, quantity, price, "", OrderType::Buy, &[]).await {
+    match handle_wish_list(
+        wfm_url,
+        &sub_type,
+        quantity,
+        price,
+        "",
+        OrderType::Buy,
+        &OperationSet::new(),
+    )
+    .await
+    {
         Ok((_, updated_item)) => return Ok(updated_item),
         Err(e) => {
             return Err(e.with_location(get_location!()).log("wish_list_buy.log"));

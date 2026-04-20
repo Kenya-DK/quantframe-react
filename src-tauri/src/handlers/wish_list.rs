@@ -16,63 +16,70 @@ fn log(
     item: &CreateWishListItem,
     updated: &Option<Model>,
     status: &str,
-    flags: &[&str],
+    flags: &OperationSet,
     operations: &OperationSet,
 ) {
     let log_opts = utils::LoggerOptions::default();
+    let sub_component = if operations.contains("WishListItemSold_") {
+        "SoldByUrlAndSubType"
+    } else if operations.contains("WishListItemBought_") {
+        "BoughtByUrlAndSubType"
+    } else {
+        "WishListItemOperation"
+    };
     match (status, updated) {
         ("NotFound", _) => info(
-            format!("{component}:BoughtByUrlAndSubType"),
+            format!("{component}:{sub_component}"),
             &format!(
                 "Wish list item not found for URL: {} | Operations: {:?}",
                 item.wfm_url, operations.operations
             ),
-            &log_opts.set_enable(!flags.contains(&"DisableNotFoundLog")),
+            &log_opts.set_enable(!flags.contains("DisableNotFoundLog")),
         ),
 
         (_, Some(updated)) => info(
-            format!("{component}:BoughtByUrlAndSubType"),
+            format!("{component}:{sub_component}"),
             &format!(
                 "Bought wish list item: {} | Quantity: {} | Status: {} | Operations: {:?}",
                 updated.item_name, updated.quantity, status, operations.operations
             ),
-            &log_opts.set_enable(!flags.contains(&"DisableBoughtLog")),
+            &log_opts.set_enable(!flags.contains("DisableBoughtLog")),
         ),
 
         ("Deleted", _) => info(
-            format!("{component}:BoughtByUrlAndSubType"),
+            format!("{component}:{sub_component}"),
             &format!(
                 "Deleted wish list item: {} | Quantity: {} | Status: {} | Operations: {:?}",
                 item.item_name, item.quantity, status, operations.operations
             ),
-            &log_opts.set_enable(!flags.contains(&"DisableDeletedLog")),
+            &log_opts.set_enable(!flags.contains("DisableDeletedLog")),
         ),
 
         ("Updated", _) => info(
-            format!("{component}:BoughtByUrlAndSubType"),
+            format!("{component}:{sub_component}"),
             &format!(
                 "Updated wish list item: {} | Quantity: {} | Status: {} | Operations: {:?}",
                 item.item_name, item.quantity, status, operations.operations
             ),
-            &log_opts.set_enable(!flags.contains(&"DisableUpdatedLog")),
+            &log_opts.set_enable(!flags.contains("DisableUpdatedLog")),
         ),
 
         ("Created", _) => info(
-            format!("{component}:BoughtByUrlAndSubType"),
+            format!("{component}:{sub_component}"),
             &format!(
                 "Created wish list item: {} | Quantity: {} | Status: {} | Operations: {:?}",
                 item.item_name, item.quantity, status, operations.operations
             ),
-            &log_opts.set_enable(!flags.contains(&"DisableCreatedLog")),
+            &log_opts.set_enable(!flags.contains("DisableCreatedLog")),
         ),
 
         ("Complete", _) => info(
-            format!("{component}:BoughtByUrlAndSubType"),
+            format!("{component}:{sub_component}"),
             &format!(
                 "Completed wish list item: {} | Quantity: {} | Status: {} | Operations: {:?}",
                 item.item_name, item.quantity, status, operations.operations
             ),
-            &log_opts.set_enable(!flags.contains(&"DisableCompleteLog")),
+            &log_opts.set_enable(!flags.contains("DisableCompleteLog")),
         ),
 
         _ => {}
@@ -80,7 +87,7 @@ fn log(
 }
 async fn sync_wfm(
     item: &CreateWishListItem,
-    operation: OrderType,
+    order_type: OrderType,
     operations: &mut OperationSet,
     file: &str,
 ) -> Result<(), Error> {
@@ -88,7 +95,7 @@ async fn sync_wfm(
         &item.wfm_id,
         &item.sub_type,
         item.quantity,
-        operation,
+        order_type,
         OperationSet::from(vec!["ForceOrderSync"]),
     )
     .await
@@ -102,8 +109,8 @@ async fn sync_wfm(
 pub async fn handle_wish_list_by_entity(
     mut item: CreateWishListItem,
     user_name: impl Into<String>,
-    operation: OrderType,
-    operation_flags: &[&str],
+    order_type: OrderType,
+    flags: &OperationSet,
 ) -> Result<(OperationSet, Model), Error> {
     let conn = DATABASE.get().unwrap();
     let component = "HandleWishListItem";
@@ -125,7 +132,7 @@ pub async fn handle_wish_list_by_entity(
     // --------------------------------------------------
     // Wishlist mutation (buy / sell)
     // --------------------------------------------------
-    match operation {
+    match order_type {
         OrderType::Buy => {
             let (s_operation, updated_item) = WishListMutation::bought_by_url_and_sub_type(
                 conn,
@@ -136,20 +143,18 @@ pub async fn handle_wish_list_by_entity(
             .await
             .map_err(|e| e.with_location(get_location!()).log(file))?;
 
+            operations.add(format!("WishListItemBought_{s_operation}"));
             log(
                 component,
                 &item,
                 &updated_item,
                 &s_operation,
-                operation_flags,
+                flags,
                 &operations,
             );
-
             if let Some(updated) = updated_item {
                 model = updated;
             }
-
-            operations.add(format!("WishListItemBought_{s_operation}"));
         }
 
         OrderType::Sell => {
@@ -157,45 +162,31 @@ pub async fn handle_wish_list_by_entity(
                 .await
                 .map_err(|e| e.with_location(get_location!()).log(file))?;
 
-            log(
-                component,
-                &item,
-                &None,
-                &s_operation,
-                operation_flags,
-                &operations,
-            );
+            operations.add(format!("WishListItemSold_{s_operation}"));
+            log(component, &item, &None, &s_operation, flags, &operations);
 
             model = created_item;
-            operations.add(format!("WishListItemSold_{s_operation}"));
         }
     }
 
     // --------------------------------------------------
     // Early return from flags
     // --------------------------------------------------
-    if operation_flags
+    if flags
         .iter()
         .find_map(|f| f.strip_prefix("ReturnOn:"))
         .map(|suffix| operations.ends_with(suffix))
         .unwrap_or(false)
     {
         operations.add("EarlyReturnFlagTriggered");
-        log(
-            component,
-            &item,
-            &None,
-            "Complete",
-            operation_flags,
-            &operations,
-        );
+        log(component, &item, &None, "Complete", flags, &operations);
         return Ok((operations, model));
     }
 
     // --------------------------------------------------
     // WFM sync
     // --------------------------------------------------
-    sync_wfm(&item, operation, &mut operations, file).await?;
+    sync_wfm(&item, order_type, &mut operations, file).await?;
 
     // --------------------------------------------------
     // Transaction
@@ -203,14 +194,7 @@ pub async fn handle_wish_list_by_entity(
 
     if item.bought.unwrap_or(0) <= 0 {
         operations.add("PriceZeroNoTransaction");
-        log(
-            component,
-            &item,
-            &None,
-            "Complete",
-            operation_flags,
-            &operations,
-        );
+        log(component, &item, &None, "Complete", flags, &operations);
         return Ok((operations, model));
     }
     let mut tx = item.to_transaction(user_name).map_err(|e| {
@@ -222,7 +206,7 @@ pub async fn handle_wish_list_by_entity(
         .log(file)
     })?;
 
-    if operation == OrderType::Sell {
+    if order_type == OrderType::Sell {
         tx.transaction_type = TransactionType::Sale;
     }
 
@@ -230,14 +214,7 @@ pub async fn handle_wish_list_by_entity(
         .await
         .map_err(|e| e.with_location(get_location!()).log(file))?;
 
-    log(
-        component,
-        &item,
-        &None,
-        "Complete",
-        operation_flags,
-        &operations,
-    );
+    log(component, &item, &None, "Complete", flags, &operations);
     Ok((operations, model))
 }
 
@@ -248,14 +225,14 @@ pub async fn handle_wish_list(
     quantity: i64,
     price: i64,
     user_name: impl Into<String>,
-    operation: OrderType,
-    operation_flags: &[&str],
+    order_type: OrderType,
+    flags: &OperationSet,
 ) -> Result<(OperationSet, Model), Error> {
     handle_wish_list_by_entity(
         CreateWishListItem::new(wfm_url, sub_type.clone(), quantity).set_bought(price),
         user_name,
-        operation,
-        operation_flags,
+        order_type,
+        flags,
     )
     .await
     .map_err(|e| e.with_location(get_location!()))
