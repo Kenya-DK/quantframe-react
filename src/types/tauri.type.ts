@@ -674,7 +674,7 @@ export namespace TauriTypes {
     price: number;
     user_name: string;
     order_type: string;
-    operation_set: string[];
+    flags: string[];
   }
   export interface SubType {
     rank?: number;

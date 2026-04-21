@@ -161,7 +161,7 @@ pub async fn handle_riven_by_model(
         tx.transaction_type = TransactionType::Sale;
     }
 
-    handle_transaction(tx, true)
+    handle_transaction(tx, &operations)
         .await
         .map_err(|e| e.with_location(get_location!()).log(file))?;
 

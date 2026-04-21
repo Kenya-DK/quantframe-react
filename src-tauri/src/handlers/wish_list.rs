@@ -2,7 +2,7 @@ use std::vec;
 
 use entity::{dto::*, enums::*, wish_list::*};
 use service::WishListMutation;
-use utils::{get_location, info, Error};
+use utils::{get_location, info, warning, Error};
 use wf_market::enums::OrderType;
 
 use crate::{handlers::*, types::*, utils::*, DATABASE};
@@ -31,8 +31,8 @@ fn log(
         ("NotFound", _) => info(
             format!("{component}:{sub_component}"),
             &format!(
-                "Wish list item not found for URL: {} | Operations: {:?}",
-                item.wfm_url, operations.operations
+                "Wish list item not found for URL: {} | Operations: {:?} | Flags: {:?}",
+                item.wfm_url, operations.operations, flags.operations
             ),
             &log_opts.set_enable(!flags.contains("DisableNotFoundLog")),
         ),
@@ -40,8 +40,8 @@ fn log(
         (_, Some(updated)) => info(
             format!("{component}:{sub_component}"),
             &format!(
-                "Bought wish list item: {} | Quantity: {} | Status: {} | Operations: {:?}",
-                updated.item_name, updated.quantity, status, operations.operations
+                "Bought wish list item: {} | Quantity: {} | Status: {} | Operations: {:?} | Flags: {:?}",
+                updated.item_name, updated.quantity, status, operations.operations, flags.operations
             ),
             &log_opts.set_enable(!flags.contains("DisableBoughtLog")),
         ),
@@ -49,8 +49,8 @@ fn log(
         ("Deleted", _) => info(
             format!("{component}:{sub_component}"),
             &format!(
-                "Deleted wish list item: {} | Quantity: {} | Status: {} | Operations: {:?}",
-                item.item_name, item.quantity, status, operations.operations
+                "Deleted wish list item: {} | Quantity: {} | Status: {} | Operations: {:?} | Flags: {:?}",
+                item.item_name, item.quantity, status, operations.operations, flags.operations
             ),
             &log_opts.set_enable(!flags.contains("DisableDeletedLog")),
         ),
@@ -58,8 +58,8 @@ fn log(
         ("Updated", _) => info(
             format!("{component}:{sub_component}"),
             &format!(
-                "Updated wish list item: {} | Quantity: {} | Status: {} | Operations: {:?}",
-                item.item_name, item.quantity, status, operations.operations
+                "Updated wish list item: {} | Quantity: {} | Status: {} | Operations: {:?} | Flags: {:?}",
+                item.item_name, item.quantity, status, operations.operations, flags.operations
             ),
             &log_opts.set_enable(!flags.contains("DisableUpdatedLog")),
         ),
@@ -67,8 +67,8 @@ fn log(
         ("Created", _) => info(
             format!("{component}:{sub_component}"),
             &format!(
-                "Created wish list item: {} | Quantity: {} | Status: {} | Operations: {:?}",
-                item.item_name, item.quantity, status, operations.operations
+                "Created wish list item: {} | Quantity: {} | Status: {} | Operations: {:?} | Flags: {:?}",
+                item.item_name, item.quantity, status, operations.operations, flags.operations
             ),
             &log_opts.set_enable(!flags.contains("DisableCreatedLog")),
         ),
@@ -76,13 +76,22 @@ fn log(
         ("Complete", _) => info(
             format!("{component}:{sub_component}"),
             &format!(
-                "Completed wish list item: {} | Quantity: {} | Status: {} | Operations: {:?}",
-                item.item_name, item.quantity, status, operations.operations
+                "Completed wish list item: {} | Quantity: {} | Status: {} | Operations: {:?} | Flags: {:?}",
+                item.item_name, item.quantity, status, operations.operations, flags.operations
             ),
             &log_opts.set_enable(!flags.contains("DisableCompleteLog")),
         ),
 
-        _ => {}
+        _ => {
+            warning(
+                format!("{component}:{sub_component}"),
+                &format!(
+                    "Unhandled status: {} for wish list item: {} | Operations: {:?} | Flags: {:?}",
+                    status, item.item_name, operations.operations, flags.operations
+                ),
+                &log_opts,
+            );
+        }
     }
 }
 async fn sync_wfm(
@@ -210,7 +219,7 @@ pub async fn handle_wish_list_by_entity(
         tx.transaction_type = TransactionType::Sale;
     }
 
-    handle_transaction(tx, true)
+    handle_transaction(tx, &operations)
         .await
         .map_err(|e| e.with_location(get_location!()).log(file))?;
 

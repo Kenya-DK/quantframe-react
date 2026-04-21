@@ -1,7 +1,7 @@
 use entity::{dto::*, enums::*, stock_item::*};
 use serde::{Deserialize, Serialize};
 use service::StockItemMutation;
-use utils::{get_location, info, Error};
+use utils::{get_location, info, warning, Error};
 use wf_market::enums::OrderType;
 
 use crate::{handlers::*, types::OperationSet, utils::CreateStockItemExt, DATABASE};
@@ -13,73 +13,89 @@ pub struct ItemEntity {
     pub price: i64,
     pub user_name: String,
     pub order_type: OrderType,
-    pub operation_set: Vec<String>,
+    pub flags: Vec<String>,
 }
 
 // --------------------------------------------------
 // Helper functions.
 // --------------------------------------------------
-fn log_sell_result(
+fn log(
     component: &str,
     item: &CreateStockItem,
     updated_item: &Option<Model>,
     status: &str,
     flags: &OperationSet,
+    operations: &OperationSet,
 ) {
     let log_opts = utils::LoggerOptions::default();
-
+    let sub_component = if operations.contains("ItemSell_") {
+        "SoldByUrlAndSubType"
+    } else if operations.contains("ItemBuy_") {
+        "BoughtByUrlAndSubType"
+    } else {
+        "StockItemOperation"
+    };
     match (status, updated_item) {
         ("NotFound", _) => info(
-            format!("{component}:SoldByUrlAndSubType"),
-            &format!("Stock item not found for URL: {}", item.wfm_url),
+            format!("{component}:{sub_component}"),
+            &format!("Stock item not found for URL: {} | Operations: {:?} | Flags: {:?}", item.wfm_url, operations.operations, flags.operations),
             &log_opts.set_enable(!flags.has("DisableNotFoundLog")),
         ),
 
         (_, Some(updated)) => info(
-            format!("{component}:SoldByUrlAndSubType"),
+            format!("{component}:{sub_component}"),
             &format!(
-                "Sold stock item {} | Owned: {} | Status: {}",
-                updated.item_name, updated.owned, status
+                "Sold stock item {} | Owned: {} | Status: {} | Operations: {:?} | Flags: {:?}",
+                updated.item_name, updated.owned, status, operations.operations, flags.operations
             ),
             &log_opts.set_enable(!flags.has("DisableUpdatedLog")),
         ),
 
         ("Deleted", _) => info(
-            format!("{component}:SoldByUrlAndSubType"),
+            format!("{component}:{sub_component}"),
             &format!(
-                "Deleted stock item {} | Quantity: {} | Status: {}",
-                item.item_name, item.quantity, status
+                "Deleted stock item {} | Quantity: {} | Status: {} | Operations: {:?} | Flags: {:?}",
+                item.item_name, item.quantity, status, operations.operations, flags.operations
             ),
             &log_opts.set_enable(!flags.has("DisableDeletedLog")),
         ),
 
         ("Updated", _) => info(
-            format!("{component}:SoldByUrlAndSubType"),
+            format!("{component}:{sub_component}"),
             &format!(
-                "Updated stock item: {} | Quantity: {} | Status: {}",
-                item.item_name, item.quantity, status
+                "Updated stock item: {} | Quantity: {} | Status: {} | Operations: {:?} | Flags: {:?}",
+                item.item_name, item.quantity, status, operations.operations, flags.operations
             ),
             &log_opts.set_enable(!flags.has("DisableUpdatedLog")),
         ),
 
-        _ => {}
-    }
-}
-fn log_buy_result(component: &str, item: &Model, status: &str, flags: &OperationSet) {
-    let log_opts = utils::LoggerOptions::default();
+        ("Created", _) => info(
+            format!("{component}:{sub_component}"),
+            &format!(
+                "Created stock item: {} | Quantity: {} | Status: {} | Operations: {:?} | Flags: {:?}",
+                item.item_name, item.quantity, status, operations.operations, flags.operations
+            ),
+            &log_opts.set_enable(!flags.contains("DisableCreatedLog")),
+        ),
 
-    match status {
-        "Created" => info(
-            format!("{component}:AddItem"),
-            &format!("Created stock item: {}", item.item_name),
-            &log_opts.set_enable(!flags.has("DisableCreatedLog")),
+        ("Complete", _) => info(
+            format!("{component}:{sub_component}"),
+            &format!(
+                "Completed stock item: {} | Quantity: {} | Status: {} | Operations: {:?} | Flags: {:?}",
+                item.item_name, item.quantity, status, operations.operations, flags.operations
+            ),
+            &log_opts.set_enable(!flags.contains("DisableCompleteLog")),
         ),
-        "Updated" => info(
-            format!("{component}:AddItem"),
-            &format!("Updated stock item: {}", item.item_name),
-            &log_opts.set_enable(!flags.has("DisableUpdatedLog")),
-        ),
-        _ => {}
+        _ => {
+            warning(
+                format!("{component}:{sub_component}"),
+                &format!(
+                    "Unhandled status: {} for stock item: {} | Operations: {:?} | Flags: {:?}",
+                    status, item.item_name, operations.operations, flags.operations
+                ),
+                &log_opts,
+            );
+        }
     }
 }
 fn should_run_wfm(flags: &OperationSet, operations: &OperationSet) -> bool {
@@ -89,49 +105,12 @@ fn should_run_wfm(flags: &OperationSet, operations: &OperationSet) -> bool {
         true
     }
 }
-fn create_transaction(
-    item: &CreateStockItem,
-    user_name: impl Into<String>,
-    operation: OrderType,
-    flags: &OperationSet,
-    component: &str,
-    file: &str,
-) -> Result<entity::transaction::Model, Error> {
-    let mut tx = item.to_transaction(user_name).map_err(|e| {
-        Error::new(
-            format!("{component}:ToTransaction"),
-            format!("Failed to create transaction: {e}"),
-            get_location!(),
-        )
-        .log(file)
-    })?;
-
-    if operation == OrderType::Sell {
-        tx.transaction_type = TransactionType::Sale;
-    }
-
-    // If SetDate flag is present, parse the date and set it on the transaction
-    if let Some(date) = flags.get_value_after("SetDate") {
-        tx.created_at = chrono::DateTime::parse_from_rfc3339(&date)
-            .map_err(|e| {
-                Error::new(
-                    format!("{component}:ParseDate"),
-                    format!("Failed to parse date: {e}"),
-                    get_location!(),
-                )
-                .log(file)
-            })?
-            .with_timezone(&chrono::Utc);
-    }
-
-    Ok(tx)
-}
 
 pub async fn handle_item_by_entity(
     mut item: CreateStockItem,
     user_name: impl Into<String>,
-    operation: OrderType,
-    operation_flags: OperationSet,
+    order_type: OrderType,
+    flags: OperationSet,
 ) -> Result<(OperationSet, Model), Error> {
     let con = DATABASE.get().unwrap();
     let component = "HandleItem";
@@ -153,7 +132,7 @@ pub async fn handle_item_by_entity(
     // --------------------------------------------------
     // Stock mutation (buy / sell)
     // --------------------------------------------------
-    match operation {
+    match order_type {
         OrderType::Sell => {
             let (s_operation, updated_item) = StockItemMutation::sold_by_url_and_sub_type(
                 con,
@@ -164,19 +143,19 @@ pub async fn handle_item_by_entity(
             .await
             .map_err(|e| e.with_location(get_location!()).log(file))?;
 
-            log_sell_result(
+            operations.add(format!("ItemSell_{s_operation}"));
+            log(
                 component,
                 &item,
                 &updated_item,
                 &s_operation,
-                &operation_flags,
+                &flags,
+                &operations,
             );
 
             if let Some(updated) = updated_item {
                 model = updated;
             }
-
-            operations.add(format!("ItemSell_{s_operation}"));
         }
 
         OrderType::Buy => {
@@ -184,22 +163,21 @@ pub async fn handle_item_by_entity(
                 .await
                 .map_err(|e| e.with_location(get_location!()).log(file))?;
 
-            log_buy_result(component, &created_item, &s_operation, &operation_flags);
-
             model = created_item;
             operations.add(format!("ItemBuy_{s_operation}"));
+            log(component, &item, &None, &s_operation, &flags, &operations);
         }
     }
 
     // --------------------------------------------------
     // WFM sync
     // --------------------------------------------------
-    if should_run_wfm(&operation_flags, &operations) {
+    if should_run_wfm(&flags, &operations) {
         let status = handle_wfm_item(
             &item.wfm_id,
             &item.sub_type,
             item.quantity,
-            operation,
+            order_type,
             OperationSet::new(),
         )
         .await
@@ -211,25 +189,31 @@ pub async fn handle_item_by_entity(
     }
 
     // --------------------------------------------------
-    // Transaction creation
+    // Transaction
     // --------------------------------------------------
     if item.bought.unwrap_or(0) <= 0 {
+        operations.add("PriceZeroNoTransaction");
+        log(component, &item, &None, "Complete", &flags, &operations);
         return Ok((operations, model));
     }
 
-    let transaction = create_transaction(
-        &item,
-        user_name,
-        operation,
-        &operation_flags,
-        component,
-        file,
-    )?;
+    let mut tx = item.to_transaction(user_name).map_err(|e| {
+        Error::new(
+            "{component}:ToTransaction",
+            format!("Failed to create transaction: {e}"),
+            get_location!(),
+        )
+        .log(file)
+    })?;
 
-    handle_transaction(transaction, !operation_flags.has("SetDate"))
+    if order_type == OrderType::Sell {
+        tx.transaction_type = TransactionType::Sale;
+    }
+
+    handle_transaction(tx, &flags)
         .await
         .map_err(|e| e.with_location(get_location!()).log(file))?;
-
+    log(component, &item, &None, "Complete", &flags, &operations);
     Ok((operations, model))
 }
 
@@ -239,14 +223,14 @@ pub async fn handle_item(
     quantity: i64,
     price: i64,
     user_name: impl Into<String>,
-    operation: OrderType,
-    operation_flags: OperationSet,
+    order_type: OrderType,
+    flags: OperationSet,
 ) -> Result<(OperationSet, Model), Error> {
     handle_item_by_entity(
         CreateStockItem::new(wfm_url, sub_type.clone(), quantity).set_bought(price),
         user_name,
-        operation,
-        operation_flags,
+        order_type,
+        flags,
     )
     .await
     .map_err(|e| e.with_location(get_location!()))
@@ -265,7 +249,7 @@ pub async fn handle_items(
             item.price,
             item.user_name,
             item.order_type,
-            OperationSet::from(item.operation_set.clone()),
+            OperationSet::from(item.flags.clone()),
         )
         .await
         {

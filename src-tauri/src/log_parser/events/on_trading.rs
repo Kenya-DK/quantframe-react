@@ -604,7 +604,7 @@ async fn process_trade_item(
                     "pet_name": item.sub_type.unwrap().variant.unwrap_or("Unknown".to_string())
                 })),
             ),
-            true,
+            &operations,
         )
         .await
         .map_err(|e| e.with_location(get_location!()))?;

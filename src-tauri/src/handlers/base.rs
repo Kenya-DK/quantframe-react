@@ -120,9 +120,12 @@ pub async fn handle_wfm_item(
 /// Handles transaction creation and database persistence
 pub async fn handle_transaction(
     mut transaction: entity::transaction::Model,
-    use_current_date: bool,
+    flags: &OperationSet,
 ) -> Result<entity::transaction::Model, Error> {
     let conn = DATABASE.get().unwrap();
+    let file = "handle_transaction.log";
+    let component = "HandleTransaction";
+    let mut use_current_date = true; // This can be made dynamic based on flags if needed
 
     // Find the existing transaction in the database
     if transaction.transaction_type == TransactionType::Sale {
@@ -151,8 +154,27 @@ pub async fn handle_transaction(
         transaction.set_credits(transaction.price * crate::enums::TradeItemType::Platinum.to_tax());
     }
 
+    // If SetDate flag is present, parse the date and set it on the transaction
+    if let Some(date) = flags.get_value_after("SetDate") {
+        use_current_date = false;
+        info(
+            format!("{component}:SetDate"),
+            &format!("Setting transaction date to: {}", date),
+            &utils::LoggerOptions::default().set_enable(!flags.contains("DisableSetDateLog")),
+        );
+        transaction.created_at = chrono::DateTime::parse_from_rfc3339(&date)
+            .map_err(|e| {
+                Error::new(
+                    format!("{component}:ParseDate"),
+                    format!("Failed to parse date: {e}"),
+                    get_location!(),
+                )
+                .log(file)
+            })?
+            .with_timezone(&chrono::Utc);
+    }
     match TransactionMutation::create(conn, &transaction, use_current_date).await {
         Ok(updated_item) => Ok(updated_item),
-        Err(e) => return Err(e.with_location(get_location!())),
+        Err(e) => return Err(e.with_location(get_location!()).log(file)),
     }
 }
