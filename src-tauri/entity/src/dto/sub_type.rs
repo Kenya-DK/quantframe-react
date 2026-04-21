@@ -5,21 +5,22 @@ use std::hash::{Hash, Hasher};
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct SubType {
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "rank")]
+    #[serde(rename = "rank", alias = "Rank")]
     pub rank: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "charges", alias = "Charges")]
     pub charges: Option<i64>, // Charges remaining (Requiem mods)
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "variant")]
+    #[serde(rename = "variant", alias = "subtype")]
     pub variant: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "amber_stars")]
+    #[serde(rename = "amber_stars", alias = "amberStars")]
     pub amber_stars: Option<i64>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "cyan_stars")]
+    #[serde(rename = "cyan_stars", alias = "cyanStars")]
     pub cyan_stars: Option<i64>,
 }
 impl Default for SubType {
