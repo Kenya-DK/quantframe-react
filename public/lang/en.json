@@ -567,14 +567,6 @@
       "minutes": "{{minutes}} minutes ago",
       "seconds": "{{seconds}} seconds ago"
     },
-    "wfm_order": {
-      "fields": {
-        "quantity": "<qty/> <blue>{{quantity}}</blue>",
-        "platinum": "<blue>{{platinum}}</blue> <plat/>",
-        "mod_rank": "Rank: <blue>{{mod_rank}}</blue>/<blue>{{mod_max_rank}}</blue>",
-        "subtype": "<blue>{{sub_type}}</blue>"
-      }
-    },
     "wfm_auction": {
       "fields": {
         "selling_price": "Selling Price: <blue>{{price}}</blue> <plat/>",
@@ -2028,6 +2020,17 @@
               "buy_tooltip": "Bought for listed price",
               "sell_tooltip": "Sold for listed price"
             }
+          },
+          "order_card": {
+            "header_left": "{{name}}",
+            "header_right": "<qty/> <blue>{{quantity}}</blue>",
+            "footer_left": "<blue>{{price}}</blue> <plat/>"
+          },
+          "fields": {
+            "quantity": "<qty/> <blue>{{quantity}}</blue>",
+            "platinum": "<blue>{{platinum}}</blue> <plat/>",
+            "mod_rank": "Rank: <blue>{{mod_rank}}</blue>/<blue>{{mod_max_rank}}</blue>",
+            "subtype": "<blue>{{sub_type}}</blue>"
           },
           "errors": {
             "refresh_orders": {

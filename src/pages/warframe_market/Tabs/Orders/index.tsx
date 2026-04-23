@@ -1,11 +1,10 @@
-import { ActionIcon, Box, Divider, Group, ScrollArea, Select, SimpleGrid, Tooltip } from "@mantine/core";
+import { ActionIcon, Box, Divider, Group, ScrollArea, Select, SimpleGrid, Tooltip, useMantineTheme, Image, Rating, Badge } from "@mantine/core";
 import { SearchField } from "@components/Forms/SearchField";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { faArrowDown, faArrowUp, faCartShopping, faInfoCircle, faPen, faRefresh, faSackDollar, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import classes from "../../WarframeMarket.module.css";
-import { WFMOrder } from "@components/DataDisplay/WFMOrder";
 import { TauriTypes, WFMarketTypes } from "$types"; // Adjust the path if needed
 import { ColorInfo } from "@components/Shared/ColorInfo";
 import { useStockQueries } from "./queries";
@@ -17,6 +16,11 @@ import { useStockModals } from "./modals";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { TextTranslate } from "@components/Shared/TextTranslate";
 import { PaginationFooter } from "@components/Shared/PaginationFooter";
+import { PreviewCard } from "@components/Shared/PreviewCard/PreviewCard";
+import { WFMThumbnail } from "../../../../api";
+import { faAmberStar, faCyanStar } from "../../../../icons";
+import { upperFirst } from "@mantine/hooks";
+import { notifications } from "@mantine/notifications";
 
 interface OrderPanelProps {
   isActive?: boolean;
@@ -29,6 +33,7 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
     sort_direction: "desc",
   });
   const [loadingRows, setLoadingRows] = useState<string[]>([]);
+  const theme = useMantineTheme();
   const [deletingOrders, setDeletingOrders] = useState<{ current: number; total: number }>({ current: 0, total: 0 });
   // Translate general
   const useTranslateTabOrder = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -39,6 +44,8 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
     useTranslateEnums(`order_type.${key}`, { ...context }, i18Key);
   const useTranslateBasePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTabOrder(`prompts.${key}`, { ...context }, i18Key);
+  const useTranslateFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateTabOrder(`fields.${key}`, { ...context }, i18Key);
   const useTranslateErrors = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTabOrder(`errors.${key}`, { ...context }, i18Key);
   const useTranslateSuccess = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -56,7 +63,7 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
   });
 
   // Modals
-  const { OpenDeleteModal, HandleModalOrder, OpenInfoModal, OpenDeleteAllModal } = useStockModals({
+  const { OpenDeleteAllModal, OpenInfoModal, OpenDeleteModal, HandleModalOrder } = useStockModals({
     createStockMutation,
     sellStockMutation,
     useTranslateBasePrompt,
@@ -168,15 +175,96 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
           </ActionIcon>
         </Group>
       </Group>
-      <ScrollArea mt={"md"} className={classes.orders} data-has-alert={useHasAlert()}>
+      <ScrollArea mt={"md"} className={classes.orders} data-has-alert={useHasAlert()} scrollbarSize={3}>
         {deleteAllOrdersMutation.isPending && <Loading text={`${deletingOrders.current} / ${deletingOrders.total}`} />}
         <SimpleGrid cols={4} spacing="sm">
-          {paginationQuery.data?.results?.map((order) => (
-            <WFMOrder
-              display_style="grid"
-              key={order.id}
-              order={order}
-              footer={
+          {paginationQuery.data?.results?.map((order, i) => (
+            <PreviewCard
+              key={i}
+              value={order}
+              headerLeft={{
+                fz: "lg",
+                fw: 700,
+                color: "white",
+                onClick: () => {
+                  let name = order?.properties?.name || "Unknown Item";
+                  navigator.clipboard.writeText(name);
+                  notifications.show({
+                    title: useTranslateCommon("notifications.copy_to_clipboard.title"),
+                    message: useTranslateCommon("notifications.copy_to_clipboard.message", { message: name }),
+                    color: "green.7",
+                  });
+                },
+                i18nKey: useTranslateTabOrder("order_card.header_left"),
+                values: { name: order?.properties?.name || "Unknown Item", mod_name: "" },
+              }}
+              headerRight={{
+                fz: "lg",
+                i18nKey: useTranslateTabOrder("order_card.header_right", undefined, true),
+                values: {
+                  quantity: order.quantity,
+                },
+              }}
+              renderBody={() => (
+                <Group grow>
+                  <Group>
+                    <Image
+                      w={"50%"}
+                      ml={"sm"}
+                      height={64}
+                      fit="contain"
+                      src={order?.properties?.image ? WFMThumbnail(order.properties.image) : undefined}
+                    />
+                  </Group>
+                  <Group justify="flex-end">
+                    <Box>
+                      {order.rank != undefined && (
+                        <TextTranslate
+                          size="lg"
+                          i18nKey={useTranslateFields("mod_rank", undefined, true)}
+                          values={{ mod_rank: order.rank, mod_max_rank: order.properties?.t_type?.max_rank || "?" }}
+                        />
+                      )}
+                      {order.amberStars != undefined && (
+                        <Rating
+                          fullSymbol={<FontAwesomeIcon icon={faAmberStar} color={theme.colors.yellow[7]} />}
+                          value={order.amberStars}
+                          count={order.amberStars}
+                          readOnly
+                        />
+                      )}
+                      {order.cyanStars != undefined && (
+                        <Rating
+                          fullSymbol={<FontAwesomeIcon icon={faCyanStar} color={theme.colors.blue[7]} />}
+                          value={order.cyanStars}
+                          count={order.cyanStars}
+                          readOnly
+                        />
+                      )}
+                      {order.subtype && (
+                        <TextTranslate
+                          size="lg"
+                          i18nKey={useTranslateFields("subtype", undefined, true)}
+                          values={{ sub_type: order.subtype ? `${upperFirst(order.subtype)}` : "" }}
+                        />
+                      )}
+                    </Box>
+                  </Group>
+                </Group>
+              )}
+              footerLeft={{
+                fz: "lg",
+                i18nKey: useTranslateTabOrder("order_card.footer_left"),
+                values: {
+                  price: order.platinum,
+                },
+              }}
+              footerCenter={
+                <Badge data-color-mode="bg" data-order-type={order.type}>
+                  {useTranslateOrderType(order.type)}
+                </Badge>
+              }
+              footerRight={
                 <Group gap={3}>
                   <ActionWithTooltip
                     tooltip={useTranslateButtons("sell_manual." + (order.type == WFMarketTypes.OrderType.Buy ? "buy_tooltip" : "sell_tooltip"))}

@@ -12,12 +12,13 @@ export type TextTranslateProps = TextProps & {
   content?: React.ReactNode;
   iconProps?: FontAwesomeIconProps;
   values?: { [key: string]: number | string };
+  onClick?: () => void;
 };
 export function TextTranslate(prop: TextTranslateProps) {
-  const { size, color, i18nKey, values, components, content, iconProps, ...textProps } = prop;
+  const { size, color, i18nKey, values, components, content, iconProps, onClick, ...textProps } = prop;
 
   return (
-    <Text size={size ? size : "sm"} c={color ? color : "gray.6"} {...textProps}>
+    <Text size={size ? size : "sm"} c={color ? color : "gray.6"} {...textProps} onClick={onClick}>
       <Trans
         i18nKey={i18nKey}
         values={values || {}}
