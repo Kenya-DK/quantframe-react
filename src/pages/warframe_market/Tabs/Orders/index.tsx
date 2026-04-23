@@ -199,13 +199,14 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
                     iconProps={{ size: "xs" }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      order.quantity = 1;
-                      switch (order.type) {
+                      let temp = { ...order };
+                      temp.quantity = 1;
+                      switch (temp.type) {
                         case WFMarketTypes.OrderType.Buy:
-                          createStockMutation.mutateAsync(order);
+                          createStockMutation.mutateAsync(temp);
                           break;
                         case WFMarketTypes.OrderType.Sell:
-                          sellStockMutation.mutateAsync(order);
+                          sellStockMutation.mutateAsync(temp);
                           break;
                       }
                     }}
