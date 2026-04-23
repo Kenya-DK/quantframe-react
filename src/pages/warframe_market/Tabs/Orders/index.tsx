@@ -46,18 +46,12 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
     useTranslateTabOrder(`prompts.${key}`, { ...context }, i18Key);
   const useTranslateFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTabOrder(`fields.${key}`, { ...context }, i18Key);
-  const useTranslateErrors = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateTabOrder(`errors.${key}`, { ...context }, i18Key);
-  const useTranslateSuccess = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateTabOrder(`success.${key}`, { ...context }, i18Key);
 
   // Queries
   const { refetchQueries, paginationQuery, statusCountsQuery } = useStockQueries({ queryData, isActive });
 
   // Mutations
   const { refreshOrdersMutation, deleteAllOrdersMutation, deleteStockMutation, createStockMutation, sellStockMutation } = useStockMutations({
-    useTranslateSuccess,
-    useTranslateErrors,
     refetchQueries,
     setLoadingRows,
   });

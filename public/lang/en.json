@@ -341,6 +341,36 @@
           "title": "Calculate Tax Success",
           "message": "Tax has been successfully calculated for transactions."
         }
+      },
+      "delete_order": {
+        "error": {
+          "title": "Delete Order Error",
+          "message": "An error occurred while trying to delete the order."
+        },
+        "success": {
+          "title": "Delete Order Success",
+          "message": "The order has been successfully deleted."
+        }
+      },
+      "delete_all_orders": {
+        "error": {
+          "title": "Delete All Orders Error",
+          "message": "An error occurred while trying to delete all orders."
+        },
+        "success": {
+          "title": "Delete All Orders Success",
+          "message": "All orders have been successfully deleted."
+        }
+      },
+      "refresh_orders": {
+        "error": {
+          "title": "Refresh Orders Error",
+          "message": "An error occurred while trying to refresh orders."
+        },
+        "success": {
+          "title": "Refresh Orders Success",
+          "message": "Orders have been successfully refreshed."
+        }
       }
     },
     "datatable_columns": {
@@ -2031,34 +2061,6 @@
             "platinum": "<blue>{{platinum}}</blue> <plat/>",
             "mod_rank": "Rank: <blue>{{mod_rank}}</blue>/<blue>{{mod_max_rank}}</blue>",
             "subtype": "<blue>{{sub_type}}</blue>"
-          },
-          "errors": {
-            "refresh_orders": {
-              "title": "Refresh Orders Error",
-              "message": "There was an error refreshing the order list."
-            },
-            "delete_all_orders": {
-              "title": "Delete All Orders Error",
-              "message": "There was an error deleting all orders."
-            },
-            "delete_order": {
-              "title": "Delete Order Error",
-              "message": "There was an error deleting the order."
-            }
-          },
-          "success": {
-            "refresh_orders": {
-              "title": "Refresh Orders Success",
-              "message": "The order list has been refreshed successfully."
-            },
-            "delete_all_orders": {
-              "title": "Delete All Orders Success",
-              "message": "All orders have been deleted successfully."
-            },
-            "delete_order": {
-              "title": "Delete Order Success",
-              "message": "The order has been deleted successfully."
-            }
           }
         },
         "auctions": {
