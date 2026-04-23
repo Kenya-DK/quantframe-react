@@ -371,6 +371,36 @@
           "title": "Refresh Orders Success",
           "message": "Orders have been successfully refreshed."
         }
+      },
+      "delete_auction": {
+        "error": {
+          "title": "Delete Auction Error",
+          "message": "An error occurred while trying to delete the auction."
+        },
+        "success": {
+          "title": "Delete Auction Success",
+          "message": "The auction has been successfully deleted."
+        }
+      },
+      "delete_all_auctions": {
+        "error": {
+          "title": "Delete All Auctions Error",
+          "message": "An error occurred while trying to delete all auctions."
+        },
+        "success": {
+          "title": "Delete All Auctions Success",
+          "message": "All auctions have been successfully deleted."
+        }
+      },
+      "refresh_auctions": {
+        "error": {
+          "title": "Refresh Auctions Error",
+          "message": "An error occurred while trying to refresh auctions."
+        },
+        "success": {
+          "title": "Refresh Auctions Success",
+          "message": "Auctions have been successfully refreshed."
+        }
       }
     },
     "datatable_columns": {
@@ -2076,34 +2106,6 @@
           },
           "auction_card": {
             "header_right": "{{price}} <plat/>"
-          },
-          "errors": {
-            "refresh_auctions": {
-              "title": "Refresh Auctions Error",
-              "message": "There was an error refreshing the auction list."
-            },
-            "delete_all_auctions": {
-              "title": "Delete All Auctions Error",
-              "message": "There was an error deleting all auctions."
-            },
-            "delete_auction": {
-              "title": "Delete Auction Error",
-              "message": "There was an error deleting the auction."
-            }
-          },
-          "success": {
-            "refresh_auctions": {
-              "title": "Refresh Auctions Success",
-              "message": "The auction list has been refreshed successfully."
-            },
-            "delete_all_auctions": {
-              "title": "Delete All Auctions Success",
-              "message": "All auctions have been deleted successfully."
-            },
-            "delete_auction": {
-              "title": "Delete Auction Success",
-              "message": "The auction has been deleted successfully."
-            }
           }
         }
       }
