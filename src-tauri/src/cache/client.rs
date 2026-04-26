@@ -284,18 +284,8 @@ impl CacheState {
 
         let extract_to = self.base_path.clone();
 
-        // Clear existing cache
-        if extract_to.exists() {
-            std::fs::remove_dir_all(&extract_to).map_err(|e| {
-                Error::from_io(
-                    "Cache",
-                    &extract_to,
-                    "Failed to clear existing cache directory",
-                    e,
-                    get_location!(),
-                )
-            })?;
-        }
+        // Clean the cache directory except for themePresets
+        clean_dir(&extract_to, &[std::path::Path::new("themePresets")])?;
 
         let mut total_size = 0u64;
         for i in 0..archive.len() {
