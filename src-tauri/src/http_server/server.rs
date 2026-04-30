@@ -7,13 +7,14 @@ use std::{
 };
 use utils::*;
 
-use crate::http_server::{respond_cors_preflight, StockItemRoute, StockRivenRoute};
+use crate::http_server::{respond_cors_preflight, StockItemRoute, StockRivenRoute, WishListRoute};
 
 #[derive(Debug)]
 pub struct HttpServer {
     self_arc: OnceLock<Arc<HttpServer>>,
     stock_item_route: OnceLock<Arc<StockItemRoute>>,
     stock_riven_route: OnceLock<Arc<StockRivenRoute>>,
+    wish_list_route: OnceLock<Arc<WishListRoute>>,
     server_thread: Mutex<Option<JoinHandle<()>>>,
     running: Arc<Mutex<bool>>,
     host: Mutex<String>,
@@ -25,6 +26,7 @@ impl HttpServer {
             self_arc: OnceLock::new(),
             stock_item_route: OnceLock::new(),
             stock_riven_route: OnceLock::new(),
+            wish_list_route: OnceLock::new(),
             server_thread: Mutex::new(None),
             running: Arc::new(Mutex::new(false)),
             host: Mutex::new(format!("{}:{}", host, port)),
@@ -41,6 +43,11 @@ impl HttpServer {
     pub fn stock_riven(&self) -> Arc<StockRivenRoute> {
         self.stock_riven_route
             .get_or_init(|| StockRivenRoute::new())
+            .clone()
+    }
+    pub fn wish_list(&self) -> Arc<WishListRoute> {
+        self.wish_list_route
+            .get_or_init(|| WishListRoute::new())
             .clone()
     }
     pub fn set_host(&self, new_host: impl Into<String>, port: u16) -> String {
@@ -238,6 +245,11 @@ async fn handle_client(mut stream: TcpStream, client: Arc<HttpServer>) {
 
         let stock_riven_route = client.stock_riven();
         stock_riven_route
+            .handle_request(method, path, body, &mut stream)
+            .await;
+
+        let wish_list_route = client.wish_list();
+        wish_list_route
             .handle_request(method, path, body, &mut stream)
             .await;
     }
