@@ -47,6 +47,13 @@ impl OperationSet {
             })
             .filter(|value| !value.is_empty())
     }
+    pub fn iter(&self) -> impl Iterator<Item = &String> {
+        self.operations.iter()
+    }
+    pub fn contains(&self, operation: impl Into<String>) -> bool {
+        let operation = operation.into();
+        self.operations.iter().any(|op| op.contains(&operation))
+    }
 }
 
 impl Default for OperationSet {
@@ -75,6 +82,15 @@ impl From<Vec<String>> for OperationSet {
         let mut op_set = OperationSet::new();
         for op in operations {
             op_set.add(op);
+        }
+        op_set
+    }
+}
+impl From<&[&str]> for OperationSet {
+    fn from(operations: &[&str]) -> Self {
+        let mut op_set = OperationSet::new();
+        for op in operations {
+            op_set.add(op.to_string());
         }
         op_set
     }

@@ -66,7 +66,7 @@ macro_rules! emit_startup {
     ($i18n_key:expr, $Option:expr) => {{
         use crate::types::*;
         use crate::send_event;
-        send_event!(UIEvent::OnStartingUp, Some(json!({"i18n_key": $i18n_key, "values": $Option})))        ;
+        send_event!(UIEvent::OnStartingUp, Some(json!({"i18n_key": $i18n_key, "values": $Option})));
     }};
 }
 

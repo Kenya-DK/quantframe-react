@@ -12,8 +12,8 @@ export class CacheModule {
   private readonly _cache: Map<string, any> = new Map();
   constructor(private readonly client: TauriClient) {}
 
-  async getTradableItems(): Promise<TauriTypes.CacheTradableItem[]> {
-    if (this._cache.has(CacheType.TradableItems)) return this._cache.get(CacheType.TradableItems);
+  async getTradableItems(forceRefresh = false): Promise<TauriTypes.CacheTradableItem[]> {
+    if (!forceRefresh && this._cache.has(CacheType.TradableItems)) return this._cache.get(CacheType.TradableItems);
     const items = await this.client.sendInvoke<TauriTypes.CacheTradableItem[]>("cache_get_tradable_items");
     this._cache.set(CacheType.TradableItems, items);
     return items;
@@ -35,20 +35,23 @@ export class CacheModule {
   openThemeFolder(): Promise<void> {
     return this.client.sendInvoke<void>("cache_open_theme_folder");
   }
-  async getRivenAttributes(): Promise<TauriTypes.CacheRivenAttribute[]> {
-    if (this._cache.has(CacheType.RivenAttributes)) return this._cache.get(CacheType.RivenAttributes);
+  clearCache() {
+    this._cache.clear();
+  }
+  async getRivenAttributes(forceRefresh = false): Promise<TauriTypes.CacheRivenAttribute[]> {
+    if (!forceRefresh && this._cache.has(CacheType.RivenAttributes)) return this._cache.get(CacheType.RivenAttributes);
     const items = await this.client.sendInvoke<TauriTypes.CacheRivenAttribute[]>("cache_get_riven_attributes");
     this._cache.set(CacheType.RivenAttributes, items);
     return items;
   }
-  async getChatIcons(): Promise<TauriTypes.CacheChatIcon[]> {
-    if (this._cache.has(CacheType.ChatIcons)) return this._cache.get(CacheType.ChatIcons);
+  async getChatIcons(forceRefresh = false): Promise<TauriTypes.CacheChatIcon[]> {
+    if (!forceRefresh && this._cache.has(CacheType.ChatIcons)) return this._cache.get(CacheType.ChatIcons);
     const items = await this.client.sendInvoke<TauriTypes.CacheChatIcon[]>("cache_get_chat_icons");
     this._cache.set(CacheType.ChatIcons, items);
     return items;
   }
-  async getRivenWeapons(): Promise<TauriTypes.CacheRivenWeapon[]> {
-    if (this._cache.has(CacheType.RivenWeapons)) return this._cache.get(CacheType.RivenWeapons);
+  async getRivenWeapons(forceRefresh = false): Promise<TauriTypes.CacheRivenWeapon[]> {
+    if (!forceRefresh && this._cache.has(CacheType.RivenWeapons)) return this._cache.get(CacheType.RivenWeapons);
     let items = await this.client.sendInvoke<TauriTypes.CacheRivenWeapon[]>("cache_get_riven_weapons");
     items = items.filter((i) => !i.is_variant);
     this._cache.set(CacheType.RivenWeapons, items);

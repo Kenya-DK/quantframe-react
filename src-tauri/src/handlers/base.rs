@@ -4,6 +4,7 @@ use utils::{get_location, info, Error, SortDirection};
 use wf_market::{enums::OrderType, types::UpdateOrderParams};
 
 use crate::{
+    types::OperationSet,
     utils::{modules::states, ErrorFromExt, SubTypeExt},
     DATABASE,
 };
@@ -13,8 +14,8 @@ pub async fn handle_wfm_item(
     wfm_id: impl Into<String>,
     sub_type: &Option<SubType>,
     quantity: i64,
-    operation: OrderType,
-    delete: bool,
+    order_type: OrderType,
+    operations: OperationSet,
 ) -> Result<String, Error> {
     let wfm_id = wfm_id.into();
     let log_options = utils::LoggerOptions::default();
@@ -22,11 +23,14 @@ pub async fn handle_wfm_item(
 
     let component = "HandleWFMItem";
     let file = "handle_wfm_item.log";
-
+    let delete = operations.has("ShouldDelete");
     let wf_sub_type: wf_market::types::SubType = SubTypeExt::from_entity(sub_type.to_owned());
 
     // Skip buy if reporting disabled
-    if operation == OrderType::Buy && !app.settings.live_scraper.report_to_wfm {
+    if order_type == OrderType::Buy
+        && !app.settings.live_scraper.report_to_wfm
+        && !operations.has("ForceOrderSync")
+    {
         return Ok("SkippedBuyWfmReportDisabled".to_string());
     }
 
@@ -34,13 +38,13 @@ pub async fn handle_wfm_item(
         app.wfm_client
             .order()
             .cache_orders()
-            .find_order(&wfm_id, &wf_sub_type, operation)
+            .find_order(&wfm_id, &wf_sub_type, order_type)
     else {
         info(
             &format!("{component}:NoOrder"),
             &format!(
-                "No WFM order found for WFM ID: {} | SubType: {} | Operation: {:?}",
-                wfm_id, wf_sub_type, operation
+                "No WFM order found for WFM ID: {} | SubType: {} | OrderType: {:?}",
+                wfm_id, wf_sub_type, order_type
             ),
             &log_options,
         );
@@ -116,9 +120,12 @@ pub async fn handle_wfm_item(
 /// Handles transaction creation and database persistence
 pub async fn handle_transaction(
     mut transaction: entity::transaction::Model,
-    use_current_date: bool,
+    flags: &OperationSet,
 ) -> Result<entity::transaction::Model, Error> {
     let conn = DATABASE.get().unwrap();
+    let file = "handle_transaction.log";
+    let component = "HandleTransaction";
+    let mut use_current_date = true; // This can be made dynamic based on flags if needed
 
     // Find the existing transaction in the database
     if transaction.transaction_type == TransactionType::Sale {
@@ -147,8 +154,27 @@ pub async fn handle_transaction(
         transaction.set_credits(transaction.price * crate::enums::TradeItemType::Platinum.to_tax());
     }
 
+    // If SetDate flag is present, parse the date and set it on the transaction
+    if let Some(date) = flags.get_value_after("SetDate") {
+        use_current_date = false;
+        info(
+            format!("{component}:SetDate"),
+            &format!("Setting transaction date to: {}", date),
+            &utils::LoggerOptions::default().set_enable(!flags.contains("DisableSetDateLog")),
+        );
+        transaction.created_at = chrono::DateTime::parse_from_rfc3339(&date)
+            .map_err(|e| {
+                Error::new(
+                    format!("{component}:ParseDate"),
+                    format!("Failed to parse date: {e}"),
+                    get_location!(),
+                )
+                .log(file)
+            })?
+            .with_timezone(&chrono::Utc);
+    }
     match TransactionMutation::create(conn, &transaction, use_current_date).await {
         Ok(updated_item) => Ok(updated_item),
-        Err(e) => return Err(e.with_location(get_location!())),
+        Err(e) => return Err(e.with_location(get_location!()).log(file)),
     }
 }

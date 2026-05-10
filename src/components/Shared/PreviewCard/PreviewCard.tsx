@@ -6,6 +6,7 @@ type SlotKey = "headerLeft" | "headerCenter" | "headerRight" | "footerLeft" | "f
 
 interface TextTranslatePropsExtended extends TextTranslateProps {
   hide?: boolean;
+  onClick?: () => void;
 }
 
 interface PreviewCardProps<T = any> extends CardProps {
@@ -80,13 +81,13 @@ export const PreviewCard = memo(function PreviewCard<T>({
     }
 
     const translateProps = slotValue as TextTranslatePropsExtended;
-    const { hide, ...textTranslateProps } = translateProps;
+    const { hide, onClick, ...textTranslateProps } = translateProps;
 
     if (hide) {
       return null;
     }
 
-    return <TextTranslate {...textTranslateProps} />;
+    return <TextTranslate {...textTranslateProps} onClick={onClick} />;
   };
 
   const renderSection = (section: "header" | "footer") => {
@@ -104,12 +105,18 @@ export const PreviewCard = memo(function PreviewCard<T>({
     const hasRight = rightSlot.content !== null && rightSlot.content !== false && rightSlot.content !== "";
     const hasCenter = centerSlot.content !== null && centerSlot.content !== false && centerSlot.content !== "";
     const isCenterOnly = hasCenter && !hasLeft && !hasRight;
+    const isSideOnly = !hasCenter && hasLeft && hasRight;
+    const isLeftOnly = !hasCenter && hasLeft && !hasRight;
+    const isRightOnly = !hasCenter && !hasLeft && hasRight;
+
+    const display = isCenterOnly || isLeftOnly || isRightOnly ? "flex" : "grid";
+    const gridTemplateColumns = isSideOnly ? "minmax(0, 1fr) auto" : hasCenter ? "minmax(0, 1fr) auto minmax(0, 1fr)" : undefined;
 
     return (
       <div
         style={{
-          display: isCenterOnly ? "flex" : "grid",
-          gridTemplateColumns: isCenterOnly ? undefined : "minmax(0, 1fr) auto minmax(0, 1fr)",
+          display,
+          gridTemplateColumns,
           alignItems: "center",
           gap: 8,
         }}
@@ -119,18 +126,32 @@ export const PreviewCard = memo(function PreviewCard<T>({
             return null;
           }
 
+          if (isLeftOnly && slot !== `${section}Left`) {
+            return null;
+          }
+
+          if (isRightOnly && slot !== `${section}Right`) {
+            return null;
+          }
+
+          if (isSideOnly && slot === `${section}Center`) {
+            return null;
+          }
+
           const config = slotConfig[slot];
+          const gridColumn = isSideOnly ? (slot === `${section}Left` ? "1" : "2") : config.gridColumn;
+          const justifyContent = isLeftOnly ? "flex-start" : isRightOnly ? "flex-end" : config.justify;
 
           return (
             <div
               key={slot}
               style={{
-                gridColumn: isCenterOnly ? undefined : config.gridColumn,
+                gridColumn: display === "grid" ? gridColumn : undefined,
                 display: "flex",
-                justifyContent: config.justify,
+                justifyContent,
                 minWidth: 0,
                 overflow: "hidden",
-                width: isCenterOnly ? "100%" : undefined,
+                width: display === "flex" ? "100%" : undefined,
               }}
             >
               {content}

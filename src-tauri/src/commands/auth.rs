@@ -7,7 +7,8 @@ use crate::{
     app::{client::AppState, User},
     cache::client::CacheState,
     live_scraper::LiveScraperState,
-    types::PermissionsFlags,
+    send_event,
+    types::{PermissionsFlags, UIEvent},
     utils::{AuctionListExt, ErrorFromExt, OrderListExt},
 };
 
@@ -88,6 +89,8 @@ pub async fn auth_login(
     app.qf_client = qf_client;
     app.wfm_socket = Some(ws);
     app.wfm_chat_socket = Some(ws_chat);
+
+    send_event!(UIEvent::RefreshCache, "Cache refreshed successfully");
 
     Ok(updated_user)
 }

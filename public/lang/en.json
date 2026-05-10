@@ -341,6 +341,66 @@
           "title": "Calculate Tax Success",
           "message": "Tax has been successfully calculated for transactions."
         }
+      },
+      "delete_order": {
+        "error": {
+          "title": "Delete Order Error",
+          "message": "An error occurred while trying to delete the order."
+        },
+        "success": {
+          "title": "Delete Order Success",
+          "message": "The order has been successfully deleted."
+        }
+      },
+      "delete_all_orders": {
+        "error": {
+          "title": "Delete All Orders Error",
+          "message": "An error occurred while trying to delete all orders."
+        },
+        "success": {
+          "title": "Delete All Orders Success",
+          "message": "All orders have been successfully deleted."
+        }
+      },
+      "refresh_orders": {
+        "error": {
+          "title": "Refresh Orders Error",
+          "message": "An error occurred while trying to refresh orders."
+        },
+        "success": {
+          "title": "Refresh Orders Success",
+          "message": "Orders have been successfully refreshed."
+        }
+      },
+      "delete_auction": {
+        "error": {
+          "title": "Delete Auction Error",
+          "message": "An error occurred while trying to delete the auction."
+        },
+        "success": {
+          "title": "Delete Auction Success",
+          "message": "The auction has been successfully deleted."
+        }
+      },
+      "delete_all_auctions": {
+        "error": {
+          "title": "Delete All Auctions Error",
+          "message": "An error occurred while trying to delete all auctions."
+        },
+        "success": {
+          "title": "Delete All Auctions Success",
+          "message": "All auctions have been successfully deleted."
+        }
+      },
+      "refresh_auctions": {
+        "error": {
+          "title": "Refresh Auctions Error",
+          "message": "An error occurred while trying to refresh auctions."
+        },
+        "success": {
+          "title": "Refresh Auctions Success",
+          "message": "Auctions have been successfully refreshed."
+        }
       }
     },
     "datatable_columns": {
@@ -566,14 +626,6 @@
       "hours": "{{hours}} hours ago",
       "minutes": "{{minutes}} minutes ago",
       "seconds": "{{seconds}} seconds ago"
-    },
-    "wfm_order": {
-      "fields": {
-        "quantity": "<qty/> <blue>{{quantity}}</blue>",
-        "platinum": "<blue>{{platinum}}</blue> <plat/>",
-        "mod_rank": "Rank: <blue>{{mod_rank}}</blue>/<blue>{{mod_max_rank}}</blue>",
-        "subtype": "<blue>{{sub_type}}</blue>"
-      }
     },
     "wfm_auction": {
       "fields": {
@@ -2029,33 +2081,16 @@
               "sell_tooltip": "Sold for listed price"
             }
           },
-          "errors": {
-            "refresh_orders": {
-              "title": "Refresh Orders Error",
-              "message": "There was an error refreshing the order list."
-            },
-            "delete_all_orders": {
-              "title": "Delete All Orders Error",
-              "message": "There was an error deleting all orders."
-            },
-            "delete_order": {
-              "title": "Delete Order Error",
-              "message": "There was an error deleting the order."
-            }
+          "order_card": {
+            "header_left": "{{name}}",
+            "header_right": "<qty/> <blue>{{quantity}}</blue>",
+            "footer_left": "<blue>{{price}}</blue> <plat/>"
           },
-          "success": {
-            "refresh_orders": {
-              "title": "Refresh Orders Success",
-              "message": "The order list has been refreshed successfully."
-            },
-            "delete_all_orders": {
-              "title": "Delete All Orders Success",
-              "message": "All orders have been deleted successfully."
-            },
-            "delete_order": {
-              "title": "Delete Order Success",
-              "message": "The order has been deleted successfully."
-            }
+          "fields": {
+            "quantity": "<qty/> <blue>{{quantity}}</blue>",
+            "platinum": "<blue>{{platinum}}</blue> <plat/>",
+            "mod_rank": "Rank: <blue>{{mod_rank}}</blue>/<blue>{{mod_max_rank}}</blue>",
+            "subtype": "<blue>{{sub_type}}</blue>"
           }
         },
         "auctions": {
@@ -2071,34 +2106,6 @@
           },
           "auction_card": {
             "header_right": "{{price}} <plat/>"
-          },
-          "errors": {
-            "refresh_auctions": {
-              "title": "Refresh Auctions Error",
-              "message": "There was an error refreshing the auction list."
-            },
-            "delete_all_auctions": {
-              "title": "Delete All Auctions Error",
-              "message": "There was an error deleting all auctions."
-            },
-            "delete_auction": {
-              "title": "Delete Auction Error",
-              "message": "There was an error deleting the auction."
-            }
-          },
-          "success": {
-            "refresh_auctions": {
-              "title": "Refresh Auctions Success",
-              "message": "The auction list has been refreshed successfully."
-            },
-            "delete_all_auctions": {
-              "title": "Delete All Auctions Success",
-              "message": "All auctions have been deleted successfully."
-            },
-            "delete_auction": {
-              "title": "Delete Auction Success",
-              "message": "The auction has been deleted successfully."
-            }
           }
         }
       }

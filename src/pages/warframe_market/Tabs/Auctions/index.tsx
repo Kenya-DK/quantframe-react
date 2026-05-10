@@ -38,18 +38,12 @@ export const AuctionPanel = ({ isActive }: AuctionPanelProps) => {
     useTranslateTabOrder(`buttons.${key}`, { ...context }, i18Key);
   const useTranslateBasePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTabOrder(`prompts.${key}`, { ...context }, i18Key);
-  const useTranslateErrors = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateTabOrder(`errors.${key}`, { ...context }, i18Key);
-  const useTranslateSuccess = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateTabOrder(`success.${key}`, { ...context }, i18Key);
 
   // Queries
   const { refetchQueries, paginationQuery, overviewQuery } = useStockQueries({ queryData, isActive });
 
   // Mutations
   const { refreshAuctionsMutation, importStockMutation, deleteAllAuctionsMutation, deleteStockMutation } = useStockMutations({
-    useTranslateSuccess,
-    useTranslateErrors,
     refetchQueries,
     setLoadingRows,
   });

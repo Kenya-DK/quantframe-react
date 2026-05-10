@@ -2,9 +2,12 @@
 
 ## Fix's
 
-⚒️ - Fix the message in the update notification to show newlines and not just a long string.
-⚒️ - Fix Similar Auctions to show the correct items and not just ,,.
-⚒️ - Fix when adding Bo Prime Set to the wishlist with Limbo Prime Set already in the wishlist, I only get another Limbo set added to the quantity
+⚒️ - Items is missing when you log in
+⚒️ - Fix the wish list item wasn't removed from the WFM website when you delete the item from the wish list in the app.
+⚒️ - Fix when selling Kymaeros Lage on WFM tab.
+⚒️ - Fix therme was deleted when you update the app.
+⚒️ - Fix live scraper riven name sorting
+✨ - Add a wish list endpoint to the http server, so that we can add items to the wish list from the app and have it automatically added to the WFM website.
 
 ## Dev Notes
 

@@ -570,3 +570,66 @@ pub fn merge_json(target: &mut Value, source: &Value) {
         }
     }
 }
+
+/// Cleans a directory by removing all files and subdirectories except those specified to keep
+/// # Arguments
+/// * `base_path` - The base directory to clean
+/// * `paths_to_keep` - A list of relative paths (from base_path) to keep (can be files or directories)
+/// # Returns
+/// `Result<(), Error>` - Ok if successful, or an Error if any file operations fail
+pub fn clean_dir(base_path: &PathBuf, paths_to_keep: &[&std::path::Path]) -> Result<(), Error> {
+    if !base_path.exists() {
+        return Ok(());
+    }
+
+    for entry in std::fs::read_dir(base_path).map_err(|e| {
+        Error::from_io(
+            "Cache",
+            base_path,
+            "Failed to read cache directory for extraction",
+            e,
+            get_location!(),
+        )
+    })? {
+        let entry = entry.map_err(|e| {
+            Error::from_io(
+                "Cache",
+                base_path,
+                "Failed to read cache directory item for extraction",
+                e,
+                get_location!(),
+            )
+        })?;
+
+        let path = entry.path();
+
+        // Compute relative path from base_path
+        let rel_path = path.strip_prefix(base_path).unwrap_or(&path);
+
+        let keep = paths_to_keep
+            .iter()
+            .any(|keep_path| rel_path == *keep_path || rel_path.starts_with(keep_path));
+
+        if keep {
+            continue;
+        }
+
+        let result = if path.is_dir() {
+            std::fs::remove_dir_all(&path)
+        } else {
+            std::fs::remove_file(&path)
+        };
+
+        result.map_err(|e| {
+            Error::from_io(
+                "Cache",
+                &path,
+                "Failed to remove item for cache extraction",
+                e,
+                get_location!(),
+            )
+        })?;
+    }
+
+    Ok(())
+}

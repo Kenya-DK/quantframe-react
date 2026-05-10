@@ -1,76 +1,8 @@
-import { useMutation } from "@tanstack/react-query";
-import { notifications } from "@mantine/notifications";
 import api from "@api/index";
-import { useTranslateCommon } from "@hooks/useTranslate.hook";
+import { createGenericMutation, MutationHooks } from "@utils/genericMutation.helper";
 
-interface MutationHooks {
-  useTranslateSuccess: (key: string, context?: { [key: string]: any }) => string;
-  useTranslateErrors: (key: string, context?: { [key: string]: any }) => string;
-  refetchQueries: (refetchStatus?: boolean) => void;
-  setLoadingRows: (callback: (prev: string[]) => string[]) => void;
-}
-
-// Generic mutation creator function
-const createGenericMutation = <TData, TVariables>(
-  config: {
-    mutationFn: (data: TVariables) => Promise<TData>;
-    successKey: string;
-    errorKey: string;
-    translateCommon?: boolean;
-    getLoadingId?: (variables: TVariables) => string | string[];
-    getSuccessMessage?: (data: TData, variables: TVariables) => { [key: string]: any };
-  },
-  hooks: MutationHooks
-) => {
-  return useMutation({
-    mutationFn: config.mutationFn,
-    onMutate: config.getLoadingId
-      ? (variables: TVariables) => {
-          const loadingIds = config.getLoadingId!(variables);
-          const ids = Array.isArray(loadingIds) ? loadingIds : [loadingIds];
-          hooks.setLoadingRows((prev: string[]) => [...prev, ...ids]);
-        }
-      : undefined,
-    onSettled: config.getLoadingId
-      ? (_data: TData | undefined, _error: any, variables: TVariables) => {
-          const loadingIds = config.getLoadingId!(variables);
-          const ids = Array.isArray(loadingIds) ? loadingIds : [loadingIds];
-          hooks.setLoadingRows((prev: string[]) => prev.filter((id: string) => !ids.includes(id)));
-        }
-      : undefined,
-    onSuccess: (data: TData, variables: TVariables) => {
-      let refetchStatusString = ["import_tooltip", "refresh_auctions", "delete_all_auctions"];
-      hooks.refetchQueries(refetchStatusString.includes(config.successKey));
-      notifications.show({
-        title: config.translateCommon
-          ? useTranslateCommon(`notifications.${config.successKey}.success.title`)
-          : hooks.useTranslateSuccess(`${config.successKey}.title`),
-        message: config.translateCommon
-          ? useTranslateCommon(
-              `notifications.${config.successKey}.success.message`,
-              config.getSuccessMessage ? config.getSuccessMessage(data, variables) : {}
-            )
-          : hooks.useTranslateSuccess(`${config.successKey}.message`, config.getSuccessMessage ? config.getSuccessMessage(data, variables) : {}),
-        color: "green.7",
-      });
-    },
-    onError: (e: any) => {
-      console.error(e);
-      notifications.show({
-        title: config.translateCommon
-          ? useTranslateCommon(`notifications.${config.errorKey}.error.title`)
-          : hooks.useTranslateErrors(`${config.errorKey}.title`),
-        message: config.translateCommon
-          ? useTranslateCommon(`notifications.${config.errorKey}.error.message`, { error: e })
-          : hooks.useTranslateErrors(`${config.errorKey}.message`, { error: e }),
-        color: "red.7",
-      });
-    },
-  });
-};
-
-export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, refetchQueries, setLoadingRows }: MutationHooks) => {
-  const hooks = { useTranslateSuccess, useTranslateErrors, refetchQueries, setLoadingRows };
+export const useStockMutations = ({ refetchQueries, setLoadingRows }: MutationHooks) => {
+  const hooks = { refetchQueries, setLoadingRows };
 
   const refreshAuctionsMutation = createGenericMutation(
     {
@@ -78,7 +10,7 @@ export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, ref
       successKey: "refresh_auctions",
       errorKey: "refresh_auctions",
     },
-    hooks
+    hooks,
   );
 
   const deleteAllAuctionsMutation = createGenericMutation(
@@ -87,7 +19,7 @@ export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, ref
       successKey: "delete_all_auctions",
       errorKey: "delete_all_auctions",
     },
-    hooks
+    hooks,
   );
 
   const deleteStockMutation = createGenericMutation(
@@ -97,18 +29,17 @@ export const useStockMutations = ({ useTranslateSuccess, useTranslateErrors, ref
       errorKey: "delete_auction",
       getLoadingId: (variables: string) => `${variables}`,
     },
-    hooks
+    hooks,
   );
   const importStockMutation = createGenericMutation(
     {
       mutationFn: (data: { id: string; bought: number }) => api.auction.importById(data.id, data.bought),
       successKey: "create_stock_riven",
       errorKey: "create_stock_riven",
-      translateCommon: true,
       getLoadingId: (variables: { id: string; bought: number }) => `${variables.id}`,
       getSuccessMessage: (data: any) => ({ name: `${data.weapon_name} ${data.mod_name}` }),
     },
-    hooks
+    hooks,
   );
 
   return {

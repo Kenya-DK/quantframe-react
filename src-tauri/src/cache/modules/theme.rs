@@ -72,15 +72,15 @@ impl ThemeModule {
             match read_json_file_optional::<CacheTheme>(&file.path()) {
                 Ok(items) => {
                     items_lock.push(items);
-                    info(
-                        "Cache:Theme:load",
-                        "Loaded Theme items from cache",
-                        &LoggerOptions::default(),
-                    );
                 }
                 Err(e) => return Err(e.with_location(get_location!())),
             }
         }
+        info(
+            "Cache:Theme:load",
+            &format!("Loaded {} themes", items_lock.len()),
+            &LoggerOptions::default(),
+        );
 
         Ok(())
     }

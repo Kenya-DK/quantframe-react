@@ -87,7 +87,7 @@ export function ProcessTradePopup() {
       wfm_url: item.properties?.wfm_url,
       price: item.properties?.price,
       order_type: currentTradeForm.values?.type === "purchase" ? "buy" : "sell",
-      operation_set: [`SetDate:${currentTradeForm.values?.tradeTime}`],
+      flags: [`SetDate:${currentTradeForm.values?.tradeTime}`],
     }));
     await createMutation.mutateAsync((items as any) || []);
     setCurrentStep(TradeProcessingStep.View);

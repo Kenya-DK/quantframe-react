@@ -69,7 +69,7 @@ impl StockRivenPaginationQueryDto {
                 };
                 // Only allow sorting by known columns for safety
                 match sort_by.as_str() {
-                    "item_name" => stmt = stmt.order_by(stock_riven::Column::WeaponName, order),
+                    "weapon_name" => stmt = stmt.order_by(stock_riven::Column::WeaponName, order),
                     "bought" => stmt = stmt.order_by(stock_riven::Column::Bought, order),
                     "status" => stmt = stmt.order_by(stock_riven::Column::Status, order),
                     "minimum_price" => {
