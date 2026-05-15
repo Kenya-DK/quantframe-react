@@ -1,15 +1,15 @@
-import { Box, Button, Grid, Group, NumberInput, Select, Text, SelectProps, Flex } from "@mantine/core";
-import { useTranslateForms } from "@hooks/useTranslate.hook";
-import { useForm } from "@mantine/form";
 import { TauriTypes } from "$types";
 import api from "@api/index";
-import { useQuery } from "@tanstack/react-query";
-import { CreateRivenAttributes } from "../CreateRivenAttributes";
-import { useEffect, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { SelectRivenWeapon } from "../SelectRivenWeapon";
-import { getPolarityIcon } from "@icons";
 import { TokenSearchSelect } from "@components/Forms/TokenSearchSelect";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useTranslateForms } from "@hooks/useTranslate.hook";
+import { getPolarityIcon } from "@icons";
+import { Box, Button, Flex, Grid, Group, NumberInput, Select, SelectProps, Text } from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { CreateRivenAttributes } from "../CreateRivenAttributes";
+import { SelectRivenWeapon } from "../SelectRivenWeapon";
 
 export type CreateRivenProps = {
   value?: TauriTypes.StockRiven;
@@ -62,7 +62,7 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
     validate: {
       attributes: (value?: TauriTypes.StockRiven["attributes"]) => {
         if (!value || value.length === 0) return null;
-        const hasZeroValue = value.some((item) => item && item.url_name && item.url_name !== "N/A" && item.value === 0);
+        const hasZeroValue = value.some((item) => item && item.wfmUrl && item.wfmUrl !== "N/A" && item.value === 0);
         if (hasZeroValue) return useTranslateFormFields("attribute.error");
         return null;
       },
@@ -79,9 +79,9 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
   useEffect(() => {
     if (!attributes) return;
 
-    const weapon = weapons?.find((item) => item.wfm_url_name == form.values.wfm_weapon_url);
+    const weapon = weapons?.find((item) => item.wfmRivenUrl == form.values.wfm_weapon_url);
 
-    const avAttributes = attributes.filter((item) => !item.exclusiveTo || item.exclusiveTo.includes(weapon?.riven_type || ""));
+    const avAttributes = attributes.filter((item) => !item.exclusiveTo || item.exclusiveTo.includes(weapon?.rivenType || ""));
     setAvailableAttributes(avAttributes);
   }, [form.values, attributes]);
   useEffect(() => {
@@ -89,7 +89,7 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
     const filteredArray = form.values.attributes?.filter((entry) => entry !== null && entry.positive);
     if (!filteredArray || filteredArray.length === 0) return;
     availableAttributes.forEach((item) => {
-      rivenIds[item.url_name] = { ...item };
+      rivenIds[item.wfmUrl] = { ...item };
     });
     function generatePermutations(inputArray: string[]): string[][] {
       let currentIndex: string, swapIndex: number;
@@ -117,7 +117,7 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
 
       return permutations;
     }
-    let selectedIds = generatePermutations(filteredArray.map((item) => item.url_name));
+    let selectedIds = generatePermutations(filteredArray.map((item) => item.wfmUrl));
 
     let modNames: string[] = [];
     selectedIds.forEach((item) => {
@@ -144,8 +144,8 @@ export function CreateRiven({ value, onSubmit }: CreateRivenProps) {
               <SelectRivenWeapon
                 value={form.values.wfm_weapon_url || ""}
                 onChange={(item) => {
-                  if (item.wfm_url_name === form.values.wfm_weapon_url) return;
-                  resetFormForWeapon(item.wfm_url_name);
+                  if (item.wfmRivenUrl === form.values.wfm_weapon_url) return;
+                  resetFormForWeapon(item.wfmRivenUrl);
                 }}
               />
             </Group>

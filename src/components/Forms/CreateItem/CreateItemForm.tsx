@@ -1,11 +1,11 @@
-import { Group, NumberInput, BoxProps, Box } from "@mantine/core";
-import { useTranslateForms } from "@hooks/useTranslate.hook";
-import { useForm } from "@mantine/form";
 import { TauriTypes } from "$types";
 import { SelectTradableItem } from "@components/Forms/SelectTradableItem";
+import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { useAppContext } from "@contexts/app.context";
 import { faShoppingCart } from "@fortawesome/free-solid-svg-icons";
-import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
+import { useTranslateForms } from "@hooks/useTranslate.hook";
+import { Box, BoxProps, Group, NumberInput } from "@mantine/core";
+import { useForm } from "@mantine/form";
 
 export type CreateItemFormProps = {
   onSubmit: (values: TauriTypes.CreateStockItem) => void;
@@ -53,8 +53,8 @@ export function CreateItemForm({ hide_quantity, hide_sub_type, idField, hide_bou
             value={form.values.wfm_url}
             hide_sub_type={hide_sub_type}
             onChange={(item) => {
-              form.setFieldValue("wfm_url", item.wfm_url_name);
-              form.setFieldValue("wfm_id", item.wfm_id);
+              form.setFieldValue("wfm_url", item.wfmUrl);
+              form.setFieldValue("wfm_id", item.wfmId);
               form.setFieldValue("sub_type", item.sub_type);
             }}
           />
@@ -71,7 +71,7 @@ export function CreateItemForm({ hide_quantity, hide_sub_type, idField, hide_bou
             rightSection={
               <ActionWithTooltip
                 tooltip={useTranslateButtons(
-                  `add.tooltip.${settings?.live_scraper.stock_item.report_to_wfm ? "description_with_report" : "description_without_report"}`
+                  `add.tooltip.${settings?.live_scraper.stock_item.report_to_wfm ? "description_with_report" : "description_without_report"}`,
                 )}
                 icon={faShoppingCart}
                 color="green.7"
@@ -98,7 +98,7 @@ export function CreateItemForm({ hide_quantity, hide_sub_type, idField, hide_bou
             rightSection={
               <ActionWithTooltip
                 tooltip={useTranslateButtons(
-                  `add.tooltip.${settings?.live_scraper.stock_item.report_to_wfm ? "description_with_report" : "description_without_report"}`
+                  `add.tooltip.${settings?.live_scraper.stock_item.report_to_wfm ? "description_with_report" : "description_without_report"}`,
                 )}
                 icon={faShoppingCart}
                 color="green.7"

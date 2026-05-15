@@ -229,9 +229,9 @@ impl TradeItem {
                     let ch = states::cache_client().expect("Cache not found");
                     let (weapon, att) = name_part.split_at(pos);
 
-                    match ch.riven().get_weapon_by(weapon) {
+                    match ch.weapon().get_by(format!("Name:{}", weapon.trim())) {
                         Ok(info) => {
-                            self.raw = info.wfm_url_name;
+                            self.raw = info.wfm_url.clone();
                             self.item_type = TradeItemType::RivenUnVeiled;
                         }
                         Err(e) => {
@@ -297,13 +297,13 @@ impl TradeItem {
     pub fn is_weapon(&mut self, line: &str, next_line: &str) -> Result<DetectionStatus, Error> {
         let ch = states::cache_client().expect("Cache not found");
 
-        if let Ok(info) = ch.riven().get_weapon_by(line) {
+        if let Ok(info) = ch.weapon().get_by(line) {
             self.unique_name = info.unique_name.clone();
             self.item_type = TradeItemType::Weapon;
             return Ok(DetectionStatus::Line);
         }
 
-        if let Ok(info) = ch.riven().get_weapon_by(line.to_string() + next_line) {
+        if let Ok(info) = ch.weapon().get_by(line.to_string() + next_line) {
             self.unique_name = info.unique_name.clone();
             self.item_type = TradeItemType::Weapon;
             return Ok(DetectionStatus::Combined);

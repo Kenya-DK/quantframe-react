@@ -1,3 +1,5 @@
+use std::{collections::HashMap, hash::Hash};
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -5,47 +7,43 @@ pub struct CacheTradableItem {
     #[serde(rename = "name")]
     pub name: String,
 
-    #[serde(rename = "unique_name")]
+    #[serde(rename = "uniqueName")]
     pub unique_name: String,
 
-    #[serde(rename = "wfm_id")]
+    #[serde(rename = "wfmId")]
     pub wfm_id: String,
 
-    #[serde(rename = "wfm_url_name")]
-    pub wfm_url_name: String,
+    #[serde(rename = "wfmUrl")]
+    pub wfm_url: String,
 
-    #[serde(rename = "trade_tax")]
+    #[serde(rename = "tradeTax")]
     pub trade_tax: i64,
 
-    #[serde(rename = "mr_requirement")]
+    #[serde(rename = "masteryReq")]
     pub mr_requirement: i64,
 
     #[serde(rename = "tags")]
     pub tags: Vec<String>,
 
-    #[serde(rename = "wiki_url")]
-    pub wiki_url: String,
+    #[serde(rename = "icon")]
+    pub icon: String,
 
-    #[serde(rename = "image_url")]
-    pub image_url: String,
-
-    #[serde(rename = "max_rank")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub max_rank: Option<i64>,
-
-    #[serde(rename = "bulk_tradable")]
+    #[serde(rename = "bulkTradable")]
     #[serde(default)]
     pub bulk_tradable: bool,
 
-    #[serde(rename = "sub_type")]
+    #[serde(rename = "subTypes")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sub_type: Option<SubType>,
+
+    #[serde(rename = "variantToUniqueName", default)]
+    pub variant_to_unique_name: HashMap<String, String>,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct SubType {
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "max_rank")]
+    #[serde(rename = "maxRank")]
     pub max_rank: Option<i64>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -53,11 +51,11 @@ pub struct SubType {
     pub variants: Option<Vec<String>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "amber_stars")]
+    #[serde(rename = "amberStars")]
     pub amber_stars: Option<i64>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "cyan_stars")]
+    #[serde(rename = "cyanStars")]
     pub cyan_stars: Option<i64>,
 }
 

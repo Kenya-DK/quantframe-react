@@ -1,6 +1,6 @@
-import { TauriClient } from "..";
 import { TauriTypes } from "$types";
 import { useQuery } from "@tanstack/react-query";
+import { TauriClient } from "..";
 enum CacheType {
   TradableItems = "tradable_items",
   RivenWeapons = "riven_weapons",
@@ -20,7 +20,7 @@ export class CacheModule {
   }
   async getTradableItemById(id: string): Promise<TauriTypes.CacheTradableItem | undefined> {
     let items = await this.getTradableItems();
-    return items.find((i) => i.wfm_id === id);
+    return items.find((i) => i.wfmId === id);
   }
   getThemePresets() {
     return useQuery({
@@ -59,11 +59,11 @@ export class CacheModule {
   }
   async getRivenWeaponsById(id: string): Promise<TauriTypes.CacheRivenWeapon | undefined> {
     let items = await this.getRivenWeapons();
-    return items.find((i) => i.wfm_id === id);
+    return items.find((i) => i.wfmId === id);
   }
   async getWeaponByUrl(id: string): Promise<TauriTypes.CacheRivenWeapon | undefined> {
     let items = await this.getRivenWeapons();
-    return items.find((i) => i.wfm_url_name === id);
+    return items.find((i) => i.wfmRivenUrl === id);
   }
   async get_chat_link(unique_name: string): Promise<TauriTypes.ChatLink> {
     return await this.client.sendInvoke<TauriTypes.ChatLink>("cache_get_chat_link", { unique_name });

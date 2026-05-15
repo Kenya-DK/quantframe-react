@@ -56,10 +56,11 @@ export interface PriceHistory {
   user_id: string;
 }
 export interface RivenAttribute<T = any> {
-  url_name: string;
+  wfmUrl: string;
+  url_name?: string;
   positive: boolean;
   value: number;
-  localized_text: string;
+  formattedValue: string;
   properties?: T;
 }
 

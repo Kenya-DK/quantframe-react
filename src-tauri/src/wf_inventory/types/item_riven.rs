@@ -4,9 +4,8 @@ use utils::{get_location, Error};
 
 use crate::{
     cache::{
-        build_riven_attributes_from_fingerprint, build_riven_mod_name, compute_riven_endo_cost,
-        compute_riven_kuva_cost, grade_riven, lookup_riven_multipliers, normalize_polarity,
-        normalize_weapon_unique_name, CacheState,
+        build_riven_mod_name, compute_riven_endo_cost, compute_riven_kuva_cost,
+        lookup_riven_multipliers, normalize_polarity, normalize_weapon_unique_name, CacheState,
     },
     types::ItemRivenBase,
     wf_inventory::*,
@@ -82,50 +81,50 @@ impl WFInvItemRiven {
             )
         })?;
 
-        let mod_data = cache.mods().get(raw.unique_name.clone())?;
-        let challenge_data = cache
-            .riven()
-            .get_challenge_by(challenge.challenge_type.clone())?;
+        // let mod_data = cache.mods().get(raw.unique_name.clone())?;
+        // let challenge_data = cache
+        //     .riven()
+        //     .get_challenge_by(challenge.challenge_type.clone())?;
 
-        self.base.name = mod_data.name.clone();
-        self.base.unique_name = raw.unique_name.clone();
-        self.base.quantity = raw.quantity;
-        self.base.sub_type = Some(SubType::variant("revealed"));
+        // self.base.name = mod_data.name.clone();
+        // self.base.unique_name = raw.unique_name.clone();
+        // self.base.quantity = raw.quantity;
+        // self.base.sub_type = Some(SubType::variant("revealed"));
 
-        self.base.properties.set_property_value(
-            "challenge_description",
-            challenge_data.description.replace("|COUNT| ", ""),
-        );
-        self.base.properties.set_property_value(
-            "challenge_description_with_complication",
-            challenge_data
-                .description
-                .replace("|COUNT|", &challenge.required.to_string()),
-        );
-        self.base
-            .properties
-            .set_property_value("required", challenge.required);
-        self.base
-            .properties
-            .set_property_value("progress", challenge.progress);
+        // self.base.properties.set_property_value(
+        //     "challenge_description",
+        //     challenge_data.description.replace("|COUNT| ", ""),
+        // );
+        // self.base.properties.set_property_value(
+        //     "challenge_description_with_complication",
+        //     challenge_data
+        //         .description
+        //         .replace("|COUNT|", &challenge.required.to_string()),
+        // );
+        // self.base
+        //     .properties
+        //     .set_property_value("required", challenge.required);
+        // self.base
+        //     .properties
+        //     .set_property_value("progress", challenge.progress);
 
         Ok(())
     }
     fn populate_pre_veiled(&mut self, raw: &WFInvItemRaw, cache: &CacheState) -> Result<(), Error> {
-        let mod_data = cache.mods().get(raw.unique_name.clone())?;
+        // let mod_data = cache.mods().get(raw.unique_name.clone())?;
 
-        self.base.name = mod_data.name.clone();
-        self.base.unique_name = raw.unique_name.clone();
-        self.base.quantity = raw.quantity;
-        self.base.sub_type = Some(SubType::variant("unrevealed"));
+        // self.base.name = mod_data.name.clone();
+        // self.base.unique_name = raw.unique_name.clone();
+        // self.base.quantity = raw.quantity;
+        // self.base.sub_type = Some(SubType::variant("unrevealed"));
 
-        const MSG: &str = "Riven is pre-veiled and has not been unveiled yet.";
-        self.base
-            .properties
-            .set_property_value("challenge_description", MSG);
-        self.base
-            .properties
-            .set_property_value("challenge_description_with_complication", MSG);
+        // const MSG: &str = "Riven is pre-veiled and has not been unveiled yet.";
+        // self.base
+        //     .properties
+        //     .set_property_value("challenge_description", MSG);
+        // self.base
+        //     .properties
+        //     .set_property_value("challenge_description_with_complication", MSG);
 
         Ok(())
     }
@@ -135,60 +134,60 @@ impl WFInvItemRiven {
         fingerprint: &UpgradeFingerprint,
         cache: &CacheState,
     ) -> Result<(), Error> {
-        let riven_cache = cache.riven();
+        // let riven_cache = cache.riven();
 
-        let weapon_key = normalize_weapon_unique_name(fingerprint.compatibility.clone());
+        // let weapon_key = normalize_weapon_unique_name(fingerprint.compatibility.clone());
 
-        let weapon = riven_cache
-            .get_weapon_by(&weapon_key)
-            .map_err(|e| e.with_location(get_location!()))?;
+        // let weapon = riven_cache
+        //     .get_weapon_by(&weapon_key)
+        //     .map_err(|e| e.with_location(get_location!()))?;
 
-        self.base.name = weapon.name.clone();
-        self.base.wfm_url = weapon.wfm_url_name.clone();
-        self.base.unique_name = raw.unique_name.clone();
-        self.base.sub_type = Some(SubType::rank(fingerprint.mod_rank));
-        self.base
-            .properties
-            .set_property_value("disposition", weapon.disposition);
+        // self.base.name = weapon.name.clone();
+        // self.base.wfm_url = weapon.wfm_url_name.clone();
+        // self.base.unique_name = raw.unique_name.clone();
+        // self.base.sub_type = Some(SubType::rank(fingerprint.mod_rank));
+        // self.base
+        //     .properties
+        //     .set_property_value("disposition", weapon.disposition);
 
-        let (buffs_total, curses_total) = fingerprint.riven_stat_totals();
-        let multipliers = lookup_riven_multipliers(buffs_total, curses_total)?;
+        // let (buffs_total, curses_total) = fingerprint.riven_stat_totals();
+        // let multipliers = lookup_riven_multipliers(buffs_total, curses_total)?;
 
-        self.base.attributes = build_riven_attributes_from_fingerprint(
-            &riven_cache,
-            &weapon,
-            fingerprint,
-            multipliers,
-        )?;
+        // self.base.attributes = build_riven_attributes_from_fingerprint(
+        //     &riven_cache,
+        //     &weapon,
+        //     fingerprint,
+        //     multipliers,
+        // )?;
 
-        sort_attributes_for_display(&mut self.base.attributes, "raw_value");
+        // sort_attributes_for_display(&mut self.base.attributes, "raw_value");
 
-        self.base.mod_name = build_riven_mod_name(&self.base.attributes, fingerprint.buffs.len());
+        // self.base.mod_name = build_riven_mod_name(&self.base.attributes, fingerprint.buffs.len());
 
-        sort_attributes_by_polarity(&mut self.base.attributes);
+        // sort_attributes_by_polarity(&mut self.base.attributes);
 
-        let grade = weapon
-            .god_roll
-            .as_ref()
-            .map(|rolls| grade_riven(rolls, &self.base.attributes, "tag").0)
-            .unwrap_or(RivenGrade::Unknown);
-        self.base.properties.set_property_value("grade", grade);
-        self.base.polarity = normalize_polarity(fingerprint.polarity.clone());
+        // let grade = weapon
+        //     .god_roll
+        //     .as_ref()
+        //     .map(|rolls| grade_riven(rolls, &self.base.attributes, "tag").0)
+        //     .unwrap_or(RivenGrade::Unknown);
+        // self.base.properties.set_property_value("grade", grade);
+        // self.base.polarity = normalize_polarity(fingerprint.polarity.clone());
 
-        self.base.mastery_rank = fingerprint.mastery_rank;
-        self.base.re_rolls = fingerprint.rerolls;
+        // self.base.mastery_rank = fingerprint.mastery_rank;
+        // self.base.re_rolls = fingerprint.rerolls;
 
-        let endo = compute_riven_endo_cost(
-            fingerprint.mastery_rank,
-            fingerprint.rerolls,
-            fingerprint.mod_rank as i32,
-        );
-        self.base.properties.set_property_value("endo_cost", endo);
+        // let endo = compute_riven_endo_cost(
+        //     fingerprint.mastery_rank,
+        //     fingerprint.rerolls,
+        //     fingerprint.mod_rank as i32,
+        // );
+        // self.base.properties.set_property_value("endo_cost", endo);
 
-        let kuva = compute_riven_kuva_cost(fingerprint.rerolls);
-        self.base.properties.set_property_value("kuva_cost", kuva);
+        // let kuva = compute_riven_kuva_cost(fingerprint.rerolls);
+        // self.base.properties.set_property_value("kuva_cost", kuva);
 
-        self.base.update_uuid();
+        // self.base.update_uuid();
         Ok(())
     }
 }

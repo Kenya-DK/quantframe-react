@@ -1,10 +1,10 @@
-import { Group, NumberInput, BoxProps, Box, MultiSelect } from "@mantine/core";
-import { useTranslateForms } from "@hooks/useTranslate.hook";
-import { useForm } from "@mantine/form";
 import { TauriTypes } from "$types";
 import { SelectTradableItem } from "@components/Forms/SelectTradableItem";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { useTranslateForms } from "@hooks/useTranslate.hook";
+import { Box, BoxProps, Group, MultiSelect, NumberInput } from "@mantine/core";
+import { useForm } from "@mantine/form";
 
 export type DebuggingLiveItemEntryFormProps = {
   onSubmit: (values: TauriTypes.DebuggingLiveItemEntry) => void;
@@ -62,8 +62,8 @@ export function DebuggingLiveItemEntryForm({ disabled, boxProps, onSubmit, initi
           <SelectTradableItem
             value={form.values.wfm_url}
             onChange={(item) => {
-              form.setFieldValue("wfm_url", item.wfm_url_name);
-              form.setFieldValue("wfm_id", item.wfm_id);
+              form.setFieldValue("wfm_url", item.wfmUrl);
+              form.setFieldValue("wfm_id", item.wfmId);
               form.setFieldValue("sub_type", item.sub_type);
             }}
           />

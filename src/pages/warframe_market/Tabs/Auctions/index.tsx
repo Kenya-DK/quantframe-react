@@ -1,23 +1,23 @@
-import { ActionIcon, Box, Divider, Group, ScrollArea, Select, SimpleGrid, Tooltip } from "@mantine/core";
+import { TauriTypes, WFMarketTypes } from "$types";
+import { RivenAttribute } from "@components/DataDisplay/RivenAttribute";
 import { SearchField } from "@components/Forms/SearchField";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faArrowDown, faArrowUp, faFileImport, faInfoCircle, faRefresh, faSackDollar, faTrashCan } from "@fortawesome/free-solid-svg-icons";
-import { useTranslateCommon, useTranslatePages } from "@hooks/useTranslate.hook";
-import { useHasAlert } from "@hooks/useHasAlert.hook";
-import classes from "../../WarframeMarket.module.css";
-import { TauriTypes, WFMarketTypes } from "$types";
-import { useStockQueries } from "./queries";
-import { useState } from "react";
-import { useStockMutations } from "./mutations";
-import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 import { Loading } from "@components/Shared/Loading";
-import { useStockModals } from "./modals";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { TextTranslate } from "@components/Shared/TextTranslate";
 import { PaginationFooter } from "@components/Shared/PaginationFooter";
 import { PreviewCard } from "@components/Shared/PreviewCard/PreviewCard";
-import { RivenAttribute } from "@components/DataDisplay/RivenAttribute";
+import { TextTranslate } from "@components/Shared/TextTranslate";
+import { faArrowDown, faArrowUp, faFileImport, faInfoCircle, faRefresh, faSackDollar, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useHasAlert } from "@hooks/useHasAlert.hook";
+import { useTauriEvent } from "@hooks/useTauriEvent.hook";
+import { useTranslateCommon, useTranslatePages } from "@hooks/useTranslate.hook";
+import { ActionIcon, Box, Divider, Group, ScrollArea, Select, SimpleGrid, Tooltip } from "@mantine/core";
 import { upperFirst } from "@mantine/hooks";
+import { useState } from "react";
+import classes from "../../WarframeMarket.module.css";
+import { useStockModals } from "./modals";
+import { useStockMutations } from "./mutations";
+import { useStockQueries } from "./queries";
 interface AuctionPanelProps {
   isActive?: boolean;
 }
@@ -154,7 +154,16 @@ export const AuctionPanel = ({ isActive }: AuctionPanelProps) => {
               }}
               renderBody={() =>
                 auction.item.attributes.map((attr) => (
-                  <RivenAttribute key={attr.url_name} i18nKey="full" groupProps={{ p: 1 }} value={attr} hideDetails centered hideGrade />
+                  <RivenAttribute
+                    key={attr.wfmUrl}
+                    i18nIdKey="url_name"
+                    i18nKey="formattedValue"
+                    groupProps={{ p: 1 }}
+                    value={attr}
+                    hideDetails
+                    centered
+                    hideGrade
+                  />
                 ))
               }
               footerCenter={

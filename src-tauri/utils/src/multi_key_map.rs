@@ -74,4 +74,7 @@ impl<V: Clone> MultiKeyMap<V> {
     pub fn get_all_keys(&self) -> Vec<String> {
         self.keys.keys().cloned().collect()
     }
+    pub fn has_key(&self, key: &str) -> bool {
+        self.keys.contains_key(&key.to_lowercase())
+    }
 }

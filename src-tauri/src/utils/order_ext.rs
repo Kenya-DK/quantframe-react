@@ -15,11 +15,11 @@ impl OrderExt for Order {
                 self.properties
                     .set_property_value("wfm_id", item_info.wfm_id.clone());
                 self.properties
-                    .set_property_value("wfm_url", item_info.wfm_url_name.clone());
+                    .set_property_value("wfm_url", item_info.wfm_url.clone());
                 self.properties
                     .set_property_value("name", item_info.name.clone());
                 self.properties
-                    .set_property_value("image", item_info.image_url.clone());
+                    .set_property_value("image", item_info.icon.clone());
                 self.properties
                     .set_property_value("t_type", item_info.sub_type.clone());
             }

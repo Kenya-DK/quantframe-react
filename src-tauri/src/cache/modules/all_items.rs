@@ -23,42 +23,41 @@ impl AllItemsModule {
     }
 
     pub fn load(&self) -> Result<(), Error> {
-        let client = self.client.upgrade().expect("Client should not be dropped");
-        let mut items = vec![];
-        items.append(&mut client.arcane().collect_all_items());
-        items.append(&mut client.archgun().collect_all_items());
-        items.append(&mut client.archmelee().collect_all_items());
-        items.append(&mut client.archwing().collect_all_items());
-        items.append(&mut client.fish().collect_all_items());
-        items.append(&mut client.melee().collect_all_items());
-        items.append(&mut client.misc().collect_all_items());
-        items.append(&mut client.mods().collect_all_items());
-        items.append(&mut client.pet().collect_all_items());
-        items.append(&mut client.primary().collect_all_items());
-        items.append(&mut client.relics().collect_all_items());
-        items.append(&mut client.resource().collect_all_items());
-        items.append(&mut client.secondary().collect_all_items());
-        items.append(&mut client.sentinel().collect_all_items());
-        items.append(&mut client.sentinel_weapon().collect_all_items());
-        items.append(&mut client.skin().collect_all_items());
-        items.append(&mut client.warframe().collect_all_items());
-        for item in items.iter() {
-            let mut item_lookup = self.item_lookup.lock().unwrap();
-            item_lookup.insert_value(
-                item.clone(),
-                vec![
-                    item.unique_name.clone(),
-                    item.name.clone(),
-                    format!("{}|{}", item.category, item.name),
-                    format!("{}|{}", item.category, item.unique_name),
-                ],
-            );
-        }
-        info(
-            "Cache:AllItemsModule:load",
-            &format!("Loaded {} items", items.len()),
-            &LoggerOptions::default(),
-        );
+        // let client = self.client.upgrade().expect("Client should not be dropped");
+        // let mut items = vec![];
+        // items.append(&mut client.arcane().collect_all_items());
+        // items.append(&mut client.archgun().collect_all_items());
+        // items.append(&mut client.archmelee().collect_all_items());
+        // items.append(&mut client.archwing().collect_all_items());
+        // items.append(&mut client.fish().collect_all_items());
+        // items.append(&mut client.melee().collect_all_items());
+        // items.append(&mut client.misc().collect_all_items());
+        // items.append(&mut client.mods().collect_all_items());
+        // items.append(&mut client.pet().collect_all_items());
+        // items.append(&mut client.relics().collect_all_items());
+        // items.append(&mut client.resource().collect_all_items());
+        // items.append(&mut client.secondary().collect_all_items());
+        // items.append(&mut client.sentinel().collect_all_items());
+        // items.append(&mut client.sentinel_weapon().collect_all_items());
+        // items.append(&mut client.skin().collect_all_items());
+        // items.append(&mut client.warframe().collect_all_items());
+        // for item in items.iter() {
+        //     let mut item_lookup = self.item_lookup.lock().unwrap();
+        //     item_lookup.insert_value(
+        //         item.clone(),
+        //         vec![
+        //             item.unique_name.clone(),
+        //             item.name.clone(),
+        //             format!("{}|{}", item.category, item.name),
+        //             format!("{}|{}", item.category, item.unique_name),
+        //         ],
+        //     );
+        // }
+        // info(
+        //     "Cache:AllItemsModule:load",
+        //     &format!("Loaded {} items", items.len()),
+        //     &LoggerOptions::default(),
+        // );
         Ok(())
     }
     /* -------------------------------------------------------------
@@ -107,18 +106,6 @@ impl AllItemsModule {
             suffix.push_str("Set");
         } else if tags.iter().any(|tag| tag == "relic") {
             name = format!("{}", trade_name);
-        }
-
-        if item.part_of_set.is_some() {
-            let main_part = self.get_chat_link(item.part_of_set.unwrap())?;
-            if name != "Blueprint" {
-                return Ok(ChatLink::new(
-                    format!("{} {}", main_part.link, name),
-                    &suffix,
-                ));
-            } else {
-                return Ok(ChatLink::new(format!("{}", main_part.link), &suffix));
-            }
         }
         return Ok(ChatLink::new(name.trim(), &suffix));
     }

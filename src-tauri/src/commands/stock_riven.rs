@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Mutex};
+use std::{collections::HashMap, fmt::format, sync::Mutex};
 
 use entity::{dto::*, stock_riven::*};
 use service::{StockRivenMutation, StockRivenQuery};
@@ -217,7 +217,7 @@ pub async fn stock_riven_get_by_id(
     };
     helper::populate_riven_market_properties(
         &mut item.properties,
-        &item.weapon_unique_name,
+        &format!("Unique:{}", item.weapon_unique_name),
         item.mastery_rank,
         item.re_rolls,
         item.sub_type.clone().unwrap_or_default().rank.unwrap_or(0) as i32,

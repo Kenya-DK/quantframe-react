@@ -265,10 +265,10 @@ pub fn populate_order_properties(
     entry: &ItemEntry,
 ) -> (String, OperationSet) {
     properties.set_property_value("wfm_id", item.wfm_id.clone());
-    properties.set_property_value("wfm_url", item.wfm_url_name.clone());
+    properties.set_property_value("wfm_url", item.wfm_url.clone());
     properties.set_property_value("name", item.name.clone());
     properties.set_property_value("sub_type", entry.sub_type.clone());
-    properties.set_property_value("image", item.image_url.clone());
+    properties.set_property_value("image", item.icon.clone());
     properties.set_property_value("t_type", item.sub_type.clone());
     let order_id = properties.get_property_value("id", String::new());
     let operations =

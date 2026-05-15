@@ -1,9 +1,9 @@
 import { TauriTypes } from "$types";
 import api from "@api/index";
-import { SelectSubType } from "@components/Forms/SelectSubType";
 import { TokenSearchSelect } from "@components/Forms/TokenSearchSelect";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
-import { Group } from "@mantine/core";
+import { Group, NumberInput, Select } from "@mantine/core";
+import { upperFirst } from "@mantine/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
@@ -42,8 +42,8 @@ export function SelectTradableItem({ hide_sub_type, value, onChange, description
     const mappedItems = data.map((item) => ({
       ...item,
       label: item.name,
-      value: item.wfm_url_name,
-      available_sub_types: item.sub_type,
+      value: item.wfmUrl,
+      available_sub_types: item.subTypes,
       sub_type: undefined,
     }));
     setItems(mappedItems);
@@ -52,15 +52,10 @@ export function SelectTradableItem({ hide_sub_type, value, onChange, description
   const handleSelect = (item: SelectCacheTradableItem) => {
     const new_item = { ...item };
     if (item.available_sub_types) {
-      debugger;
-
-      const available_sub_types = item.available_sub_types;
-      let subType: TauriTypes.SubType = {};
-      if (available_sub_types.variants) subType.variant = available_sub_types.variants[0];
-      if (available_sub_types.max_rank) subType.rank = available_sub_types.max_rank;
-      if (available_sub_types.amber_stars || available_sub_types.cyan_stars)
-        subType = { ...subType, cyan_stars: available_sub_types.cyan_stars, amber_stars: available_sub_types.amber_stars };
-      if (Object.keys(subType).length > 0) new_item.sub_type = subType;
+      const sub_type = item.available_sub_types;
+      if (sub_type.variants) new_item.sub_type = { variant: sub_type.variants[0] };
+      if (sub_type.maxRank) new_item.sub_type = { rank: sub_type.maxRank };
+      if (sub_type.amberStars || sub_type.cyanStars) new_item.sub_type = { cyan_stars: sub_type.cyanStars, amber_stars: sub_type.amberStars };
     }
     onChange(new_item);
     setSelectedItem(new_item);
@@ -68,9 +63,8 @@ export function SelectTradableItem({ hide_sub_type, value, onChange, description
 
   const handleSubTypeUpdate = (sub_type: TauriTypes.SubType) => {
     if (!selectedItem) return;
-    const updatedItem = { ...selectedItem, sub_type: { ...selectedItem.sub_type, ...sub_type } } as SelectCacheTradableItem;
-    setSelectedItem(updatedItem);
-    onChange(updatedItem);
+    setSelectedItem({ ...selectedItem, sub_type });
+    onChange({ ...selectedItem, sub_type });
   };
 
   return (
@@ -96,11 +90,71 @@ export function SelectTradableItem({ hide_sub_type, value, onChange, description
         }}
       />
       {selectedItem && selectedItem.available_sub_types && !hide_sub_type && (
-        <SelectSubType
-          value={selectedItem.sub_type}
-          availableSubTypes={selectedItem.available_sub_types}
-          onChange={(subType) => handleSubTypeUpdate(subType)}
-        />
+        <Group>
+          {selectedItem.available_sub_types.variants && (
+            <Select
+              label={useTranslateFormFields("variant.label")}
+              placeholder={useTranslateFormFields("variant.placeholder")}
+              description={description ? useTranslateFormFields("variant.description") : ""}
+              data={selectedItem.available_sub_types.variants.map((variant) => ({ label: upperFirst(variant), value: variant }))}
+              required
+              value={selectedItem.sub_type?.variant || selectedItem.available_sub_types.variants[0] || ""}
+              onChange={(variant) => {
+                if (!selectedItem || !variant) return;
+                handleSubTypeUpdate({ variant });
+              }}
+            />
+          )}
+          {selectedItem.available_sub_types.maxRank && (
+            <NumberInput
+              w={150}
+              required
+              label={useTranslateFormFields("rank.label")}
+              placeholder={useTranslateFormFields("rank.placeholder")}
+              description={description ? useTranslateFormFields("rank.description") : ""}
+              value={selectedItem.sub_type?.rank || 0}
+              min={0}
+              max={selectedItem.available_sub_types.maxRank}
+              onChange={(event) => handleSubTypeUpdate({ rank: Number(event) })}
+            />
+          )}
+          {selectedItem.available_sub_types.cyanStars && (
+            <NumberInput
+              w={150}
+              required
+              label={useTranslateFormFields("cyan_stars.label")}
+              placeholder={useTranslateFormFields("cyan_stars.placeholder")}
+              description={description ? useTranslateFormFields("cyan_stars.description") : ""}
+              value={selectedItem.sub_type?.cyan_stars || 0}
+              min={0}
+              max={selectedItem.available_sub_types.cyanStars}
+              onChange={(event) =>
+                handleSubTypeUpdate({
+                  cyan_stars: Number(event),
+                  amber_stars: selectedItem.available_sub_types?.amberStars ? selectedItem.sub_type?.amber_stars : undefined,
+                })
+              }
+            />
+          )}
+          {selectedItem.available_sub_types.amberStars && (
+            <NumberInput
+              w={150}
+              required
+              label={useTranslateFormFields("amber_stars.label")}
+              placeholder={useTranslateFormFields("amber_stars.placeholder")}
+              description={description ? useTranslateFormFields("amber_stars.description") : ""}
+              value={selectedItem.sub_type?.amber_stars || 0}
+              min={0}
+              max={selectedItem.available_sub_types.amberStars}
+              onChange={(event) =>
+                handleSubTypeUpdate({
+                  amber_stars: Number(event),
+                  cyan_stars: selectedItem.available_sub_types?.cyanStars ? selectedItem.sub_type?.cyan_stars : undefined,
+                })
+              }
+            />
+          )}
+        </Group>
       )}
     </Group>
   );

@@ -38,6 +38,17 @@ impl LogLevel {
             LogLevel::Critical => "critical.log",
         }
     }
+    pub fn from_str(level: &str) -> Self {
+        match level.to_lowercase().as_str() {
+            "info" => LogLevel::Info,
+            "warning" => LogLevel::Warning,
+            "error" => LogLevel::Error,
+            "debug" => LogLevel::Debug,
+            "trace" => LogLevel::Trace,
+            "critical" => LogLevel::Critical,
+            _ => LogLevel::Critical,
+        }
+    }
 }
 
 fn cache_log_entry(level: LogLevel, message: String) {

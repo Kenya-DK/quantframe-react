@@ -107,9 +107,9 @@ impl RivenModule {
             let settings = states::get_settings()?.live_scraper.stock_riven;
 
             // Get tradable item info from cache
-            let item_info = cache
-                .riven()
-                .get_weapon_by(&stock_riven.wfm_weapon_url)
+            let weapon_info = cache
+                .weapon()
+                .get_by(&stock_riven.wfm_weapon_url)
                 .map_err(|e| e.with_location(get_location!()))?;
 
             // Get auction details or use default if not found
@@ -232,7 +232,7 @@ impl RivenModule {
 
             // Prepare properties for auction creation or update
             let properties = json!({
-                "name": item_info.name,
+                "name": weapon_info.name,
                 "mod_name": stock_riven.mod_name,
                 "highest_price": highest_price,
                 "lowest_price": lowest_price,
@@ -260,10 +260,10 @@ impl RivenModule {
                                     .iter()
                                     .map(|attr| {
                                         ItemAttribute::new_with_properties(
-                                            &attr.url_name,
+                                            &attr.wfm_url,
                                             attr.positive,
                                             attr.value,
-                                            json!({"localized_text": attr.localized_text}),
+                                            json!({"formattedValue": attr.formatted_value}),
                                         )
                                     })
                                     .collect(),
@@ -466,7 +466,7 @@ fn get_filter(entity: &Model) -> AuctionFilter {
                 .attributes
                 .0
                 .iter()
-                .map(|a| ItemAttribute::new(&a.url_name, a.positive, a.value))
+                .map(|a| ItemAttribute::new(&a.wfm_url, a.positive, a.value))
                 .collect::<Vec<_>>();
             auction_filter = auction_filter.with_similarity(similarity as i64, attributes);
         }

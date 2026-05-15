@@ -1,11 +1,11 @@
-import { Flex, NumberInput } from "@mantine/core";
-import { useTranslateForms } from "@hooks/useTranslate.hook";
-import { useForm } from "@mantine/form";
 import { RivenAttribute, TauriTypes } from "$types";
-import { useEffect, useState } from "react";
+import { TokenSearchSelect } from "@components/Forms/TokenSearchSelect";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
-import { TokenSearchSelect } from "@components/Forms/TokenSearchSelect";
+import { useTranslateForms } from "@hooks/useTranslate.hook";
+import { Flex, NumberInput } from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { useEffect, useState } from "react";
 
 // warframe.market riven form limits (change if needed, or control from outside)
 const RIVEN_PERCENT_ABS_MAX = 699;
@@ -49,8 +49,7 @@ export function CreateRivenAttribute({
     return undefined;
   };
 
-  const invertSign = (sign: ExpectedSign): ExpectedSign =>
-    sign == "positive" ? "negative" : sign == "negative" ? "positive" : undefined;
+  const invertSign = (sign: ExpectedSign): ExpectedSign => (sign == "positive" ? "negative" : sign == "negative" ? "positive" : undefined);
 
   const getExpectedSign = (isPositiveAttribute?: boolean): ExpectedSign => {
     if (!currentValue || currentValue.unit == "multiply") return undefined;
@@ -98,20 +97,21 @@ export function CreateRivenAttribute({
       },
     },
     onValuesChange: (values) => {
+      console.log("Form values changed:", values);
       onChange && onChange(values);
     },
   });
 
   useEffect(() => {
-    if (value.url_name) {
-      const attr = availableAttributes.find((item) => item.url_name == value.url_name);
+    if (value.wfmUrl) {
+      const attr = availableAttributes.find((item) => item.wfmUrl == value.wfmUrl);
       setCurrentValue(attr);
     }
-  }, [value.url_name]);
+  }, [value.wfmUrl]);
 
   // Helper functions
   const getAvailableAttributes = () => {
-    return availableAttributes.map((item) => ({ label: item.name, value: item.url_name }));
+    return availableAttributes.map((item) => ({ label: item.label, value: item.wfmUrl }));
   };
 
   const expectedSign = getExpectedSign(form.values.positive);
@@ -155,16 +155,16 @@ export function CreateRivenAttribute({
         selectFirstOptionOnChange
         w={"100%"}
         limit={5}
-        value={form.values.url_name || ""}
+        value={form.values.wfmUrl || ""}
         onChange={(event) => {
-          form.setFieldValue("url_name", event || "");
+          form.setFieldValue("wfmUrl", event || "");
           form.setFieldValue("value", 0);
         }}
         data={getAvailableAttributes()}
       />
       <NumberInput
         w={150}
-        disabled={form.values.url_name == "N/A" || form.values.url_name == ""}
+        disabled={form.values.wfmUrl == "N/A" || form.values.wfmUrl == ""}
         step={currentValue?.unit == "multiply" ? 0.1 : 1}
         decimalScale={currentValue?.unit == "multiply" ? 2 : 1}
         max={range.max}

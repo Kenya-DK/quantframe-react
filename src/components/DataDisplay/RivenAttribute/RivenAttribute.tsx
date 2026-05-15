@@ -1,11 +1,11 @@
-import { Group, GroupProps, Image, Progress, Text } from "@mantine/core";
 import type { RivenAttribute, TauriTypes } from "$types";
-import classes from "./RivenAttribute.module.css";
-import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
-import { useEffect, useState } from "react";
 import { LocalizedDynamicMessage } from "@components/Shared/LocalizedDynamicMessage";
+import { Group, GroupProps, Image, Progress, Text } from "@mantine/core";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { RivenGrade } from "../RivenGrade/RivenGrade";
+import classes from "./RivenAttribute.module.css";
 export type RivenAttributeProps = {
   value: RivenAttribute;
   hideDetails?: boolean;
@@ -13,10 +13,21 @@ export type RivenAttributeProps = {
   compact?: boolean;
   groupProps?: GroupProps;
   centered?: boolean;
-  i18nKey?: "full" | "short" | "text";
+  i18nKey?: "formattedValue" | "highlightedLabel" | "label";
+  i18nIdKey?: "wfmUrl" | "url_name";
   textDecoration?: React.CSSProperties["textDecoration"];
 };
-export function RivenAttribute({ value, groupProps, hideDetails, hideGrade, compact, centered, i18nKey, textDecoration }: RivenAttributeProps) {
+export function RivenAttribute({
+  value,
+  groupProps,
+  hideDetails,
+  hideGrade,
+  compact,
+  centered,
+  i18nKey,
+  i18nIdKey,
+  textDecoration,
+}: RivenAttributeProps) {
   // Fetches detailed attribute metadata (like unit types) from the cache.
   // This query runs once and its data is cached by React Query.
   const { data: cacheAttributes } = useQuery<TauriTypes.CacheRivenAttribute[]>({
@@ -32,7 +43,7 @@ export function RivenAttribute({ value, groupProps, hideDetails, hideGrade, comp
     setUrlMapper(() =>
       cacheAttributes.reduce(
         (acc, attr) => {
-          acc[attr.url_name] = attr;
+          acc[attr.wfmUrl] = attr;
           return acc;
         },
         {} as { [key: string]: TauriTypes.CacheRivenAttribute },
@@ -41,15 +52,18 @@ export function RivenAttribute({ value, groupProps, hideDetails, hideGrade, comp
   }, [cacheAttributes]);
 
   const GetValueDisplay = (v: number) => {
-    return `${v > 0 ? "+" : ""}${v.toFixed(value.url_name.includes("damage_vs") ? 2 : 1).replace(/\.0$/, "")}`;
+    const attributeKey = value[i18nIdKey || "wfmUrl"] ?? value.wfmUrl;
+    return `${v > 0 ? "+" : ""}${v.toFixed(attributeKey.includes("damage_vs") ? 2 : 1).replace(/\.0$/, "")}`;
   };
   const calculateProgress = (min: number, current: number, max: number) => {
     return ((current - min) / (max - min)) * 100;
   };
   const getLocalizedText = () => {
-    if (value.localized_text) return value.localized_text;
-    if (!urlMapper[value.url_name]) return value.url_name;
-    return urlMapper[value.url_name][i18nKey || "full"];
+    if (value.formattedValue) return value.formattedValue;
+    const attributeKey = value[i18nIdKey || "wfmUrl"] ?? value.wfmUrl;
+    const localizedKey = i18nKey || "formattedValue";
+    if (!urlMapper[attributeKey]) return attributeKey;
+    return urlMapper[attributeKey][localizedKey];
   };
   return (
     <Group

@@ -5,7 +5,7 @@ use entity::{
 use utils::{get_location, Error};
 
 use crate::{
-    cache::{modules::RivenModule, types::*, CacheState},
+    cache::{types::*, CacheState},
     wf_inventory::UpgradeFingerprint,
 };
 
@@ -87,90 +87,90 @@ pub fn build_riven_mod_name(attrs: &Vec<RivenAttribute>, buffs: usize) -> String
 // ATTRIBUTE BUILDERS
 // --------------------------------------------------
 
-pub fn build_riven_attributes_from_fingerprint(
-    cache: &RivenModule,
-    weapon: &CacheRivenWeapon,
-    fingerprint: &UpgradeFingerprint,
-    multipliers: &Modifier,
-) -> Result<Vec<RivenAttribute>, Error> {
-    let mut out = Vec::with_capacity(fingerprint.buffs.len() + fingerprint.curses.len());
+// pub fn build_riven_attributes_from_fingerprint(
+//     cache: &RivenModule,
+//     weapon: &CacheWeaponBase,
+//     fingerprint: &UpgradeFingerprint,
+//     multipliers: &Modifier,
+// ) -> Result<Vec<RivenAttribute>, Error> {
+//     let mut out = Vec::with_capacity(fingerprint.buffs.len() + fingerprint.curses.len());
 
-    for (stats, is_buff) in [(&fingerprint.buffs, true), (&fingerprint.curses, false)] {
-        for raw in stats {
-            let upgrade = cache
-                .get_stat_tag_by(&weapon.upgrade_type, &raw.tag)
-                .map_err(|e| e.with_location(get_location!()))?;
+//     for (stats, is_buff) in [(&fingerprint.buffs, true), (&fingerprint.curses, false)] {
+//         for raw in stats {
+//             let upgrade = cache
+//                 .get_stat_tag_by(&weapon.upgrade_type, &raw.tag)
+//                 .map_err(|e| e.with_location(get_location!()))?;
 
-            let value = derive_riven_roll_value(
-                raw.value as f64,
-                &raw.tag,
-                upgrade.value,
-                &upgrade.localization_string,
-                weapon,
-                multipliers,
-                is_buff,
-            );
+//             let value = derive_riven_roll_value(
+//                 raw.value as f64,
+//                 &raw.tag,
+//                 upgrade.value,
+//                 &upgrade.localization_string,
+//                 weapon,
+//                 multipliers,
+//                 is_buff,
+//             );
 
-            let mut attr =
-                RivenAttribute::new(is_buff, value, upgrade.wfm_url, upgrade.localization_string);
-            attr.value = format_riven_stat_value(apply_rank_multiplier(
-                attr.value,
-                1.0,
-                (fingerprint.mod_rank) as f64,
-            ));
-            attr.properties
-                .set_property_value("suffix", upgrade.suffix.unwrap_or_default());
-            attr.properties
-                .set_property_value("prefix", upgrade.prefix.unwrap_or_default());
-            attr.properties.set_property_value("raw_value", raw.value);
-            attr.properties.set_property_value("tag", raw.tag.clone());
-            out.push(attr);
-        }
-    }
+//             let mut attr =
+//                 RivenAttribute::new(is_buff, value, upgrade.wfm_url, upgrade.localization_string);
+//             attr.value = format_riven_stat_value(apply_rank_multiplier(
+//                 attr.value,
+//                 1.0,
+//                 (fingerprint.mod_rank) as f64,
+//             ));
+//             attr.properties
+//                 .set_property_value("suffix", upgrade.suffix.unwrap_or_default());
+//             attr.properties
+//                 .set_property_value("prefix", upgrade.prefix.unwrap_or_default());
+//             attr.properties.set_property_value("raw_value", raw.value);
+//             attr.properties.set_property_value("tag", raw.tag.clone());
+//             out.push(attr);
+//         }
+//     }
 
-    Ok(out)
-}
+//     Ok(out)
+// }
 
 // --------------------------------------------------
 // ATTRIBUTE MATH (core engine)
 // --------------------------------------------------
 
-pub fn derive_riven_roll_value(
-    raw_value: f64,
-    tag: &str,
-    upgrade_base: f64,
-    localization: &str,
-    weapon: &CacheRivenWeapon,
-    multipliers: &Modifier,
-    is_buff: bool,
-) -> f64 {
-    let normalized = (0.9 + raw_value / RIVEN_DENOM / 100.0).clamp(0.9, 1.1);
+// pub fn derive_riven_roll_value(
+//     raw_value: f64,
+//     tag: &str,
+//     upgrade_base: f64,
+//     localization: &str,
+//     weapon: &CacheWeaponBase,
+//     multipliers: &Modifier,
+//     is_buff: bool,
+// ) -> f64 {
+//     let normalized = (0.9 + raw_value / RIVEN_DENOM / 100.0).clamp(0.9, 1.1);
 
-    let mut value = BASE_RIVEN
-        * upgrade_base
-        * weapon.disposition
-        * if is_buff {
-            multipliers.good
-        } else {
-            multipliers.bad
-        };
+//     let mut value = BASE_RIVEN
+//         * upgrade_base
+//         * weapon.disposition
+//         * if is_buff {
+//             multipliers.good
+//         } else {
+//             multipliers.bad
+//         };
 
-    if !is_buff && tag == "WeaponMeleeComboPointsOnHitMod" && value > 0.0 {
-        value = -value;
-    }
+//     if !is_buff && tag == "WeaponMeleeComboPointsOnHitMod" && value > 0.0 {
+//         value = -value;
+//     }
 
-    if localization.contains('%') {
-        value *= 100.0;
-    }
+//     if localization.contains('%') {
+//         value *= 100.0;
+//     }
 
-    value *= normalized;
+//     value *= normalized;
 
-    if TWO_DIGIT_TAGS.contains(&tag) {
-        value += TWO_DIGIT_BONUS;
-    }
+//     if TWO_DIGIT_TAGS.contains(&tag) {
+//         value += TWO_DIGIT_BONUS;
+//     }
 
-    value
-}
+//     value
+// }
 
 // --------------------------------------------------
 // DISPLAY
@@ -220,18 +220,18 @@ pub fn count_riven_positive_and_negative_stats(attrs: &[(String, f64, bool)]) ->
 
 pub fn derive_riven_summary_attributes(
     cache: &CacheState,
-    weapon: &CacheRivenWeapon,
+    weapon: &CacheWeaponBase,
     attributes: &[(String, f64, bool)],
     mut rank: i32,
 ) -> Result<Vec<RivenAttribute>, Error> {
-    let riven_cache = cache.riven();
     let mut out = Vec::with_capacity(attributes.len());
 
     let (total_buffs, total_curses) = count_riven_positive_and_negative_stats(&attributes);
     let multipliers = lookup_riven_multipliers(total_buffs, total_curses)?;
 
     for (tag, rolled, positive) in attributes {
-        let upgrade = riven_cache
+        let upgrade = cache
+            .mods()
             .get_stat_tag_by(&weapon.upgrade_type, tag)
             .map_err(|e| e.with_location(get_location!()))?;
 
@@ -244,7 +244,7 @@ pub fn derive_riven_summary_attributes(
                 multipliers.bad
             };
 
-        if upgrade.localization_string.contains('%') {
+        if upgrade.formatted_value.contains('%') {
             base *= 100.0;
         }
 
@@ -267,19 +267,19 @@ pub fn derive_riven_summary_attributes(
             *positive,
             scaled,
             upgrade.wfm_url.clone(),
-            upgrade.localization_string.clone(),
+            upgrade.formatted_value.clone(),
         );
 
         attr.properties
-            .set_property_value("suffix", upgrade.suffix.unwrap_or_default());
+            .set_property_value("suffix", upgrade.suffix.clone());
         attr.properties
-            .set_property_value("prefix", upgrade.prefix.unwrap_or_default());
+            .set_property_value("prefix", upgrade.prefix.clone());
         attr.properties.set_property_value("min", min);
         attr.properties.set_property_value("max", max);
         attr.properties
             .set_property_value("letter_grade", get_latter_grade(factor));
         attr.properties
-            .set_property_value("tag", upgrade.modifier_tag.clone());
+            .set_property_value("tag", upgrade.unique_name.clone());
         out.push(attr);
     }
 
@@ -309,7 +309,7 @@ pub fn normalize_polarity(polarity: impl Into<String>) -> String {
 }
 
 pub fn grade_riven(
-    roll: &CacheRivenRolls,
+    roll: &CacheRivenRoll,
     attrs: &Vec<RivenAttribute>,
     key: impl Into<String>,
 ) -> (RivenGrade, Vec<(bool, RivenAttributeGrade, String)>) {

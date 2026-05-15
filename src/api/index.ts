@@ -1,31 +1,31 @@
-import { invoke } from "@tauri-apps/api/core";
-import { AppModule } from "./app";
-import { AuthModule } from "./auth";
-import { EventModule } from "./events";
 import { TauriTypes } from "$types";
-import { UserModule } from "./user";
-import { AnalyticsModule } from "./analytics";
+import { invoke } from "@tauri-apps/api/core";
 import { AlertModule } from "./alert";
-import { DashboardModule } from "./dashboard";
-import { CacheModule } from "./cache";
-import { LogModule } from "./log";
-import { LiveScraperModule } from "./live_scraper";
-import { StockItemModule } from "./stack_item";
-import { DebugModule } from "./debug";
-import { OrderModule } from "./order";
-import { WishListModule } from "./wish_list";
-import { StockRivenModule } from "./stack_riven";
+import { AnalyticsModule } from "./analytics";
+import { AppModule } from "./app";
 import { AuctionModule } from "./auction";
+import { AuthModule } from "./auth";
+import { CacheModule } from "./cache";
 import { ChatModule } from "./chat";
-import { TransactionModule } from "./transaction";
-import { ItemModule } from "./item";
-import { RivenModule } from "./riven";
-import { MarketModule } from "./market";
-import { TradeEntryModule } from "./trade_entry";
-import { LogParserModule } from "./log_parser";
-import { SoundModule } from "./sound";
+import { DashboardModule } from "./dashboard";
+import { DebugModule } from "./debug";
+import { EventModule } from "./events";
 import { HandlesModule } from "./handles";
+import { ItemModule } from "./item";
+import { LiveScraperModule } from "./live_scraper";
+import { LogModule } from "./log";
+import { LogParserModule } from "./log_parser";
+import { MarketModule } from "./market";
+import { OrderModule } from "./order";
+import { RivenModule } from "./riven";
+import { SoundModule } from "./sound";
+import { StockItemModule } from "./stack_item";
+import { StockRivenModule } from "./stack_riven";
+import { TradeEntryModule } from "./trade_entry";
+import { TransactionModule } from "./transaction";
+import { UserModule } from "./user";
 import { WfInventoryModule } from "./wf_inventory";
+import { WishListModule } from "./wish_list";
 
 export class TauriClient {
   _logging: string[] = [];
@@ -91,6 +91,7 @@ export class TauriClient {
     if (data) console.log(`%cData:`, dataStyle, data);
     if (response != undefined) console.log(`%cResponse:`, responseStyle, response);
     if (error) console.error(`%cError:`, errorStyle, error);
+    if (error && error.stack) console.error(`%cStack Trace:`, errorStyle, error.stack);
     else console.log(`%cSuccess`, successStyle);
     console.groupEnd();
   }
@@ -232,14 +233,27 @@ const HasPermission = async (flag: TauriTypes.PermissionsFlags): Promise<boolean
   return await window.api.auth.hasPermission(flag);
 };
 export {
-  WFMThumbnail,
-  HasPermission,
-  OnTauriEvent,
-  OffTauriEvent,
-  SendTauriEvent,
-  OnTauriDataEvent,
-  OffTauriDataEvent,
-  SendTauriDataEvent,
   AddMetric,
+  HasPermission,
+  OffTauriDataEvent,
+  OffTauriEvent,
+  OnTauriDataEvent,
+  OnTauriEvent,
+  SendTauriDataEvent,
+  SendTauriEvent,
+  WFMThumbnail,
 };
 export default window.api;
+
+const SendErrorLog = async (error: any) => {
+  await invoke("log", {
+    cause: "",
+    component: error instanceof PromiseRejectionEvent ? "UI:UnhandledPromiseRejection" : "UI:GlobalError",
+    location: "unknown",
+    logLevel: "Critical",
+    message: `Unhandled Promise Rejection: ${error instanceof PromiseRejectionEvent ? (error.reason instanceof Error ? error.reason.message : String(error.reason)) : String(error)}`,
+    context: { reason: error instanceof PromiseRejectionEvent ? error.reason || "No reason provided" : "No reason provided" },
+  });
+};
+window.addEventListener("unhandledrejection", async (event) => await SendErrorLog(event));
+window.addEventListener("error", async (event) => await SendErrorLog(event));

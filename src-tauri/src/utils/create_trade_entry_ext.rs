@@ -22,7 +22,7 @@ impl CreateTradeEntryExt for CreateTradeEntry {
                 self.wfm_id = item.wfm_id.clone();
             }
             "riven" => {
-                let item = cache.riven().get_weapon_by(&self.raw).map_err(|e| {
+                let item = cache.weapon().get_by(&self.raw).map_err(|e| {
                     e.with_location(get_location!())
                         .set_log_level(LogLevel::Warning)
                 })?;
