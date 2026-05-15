@@ -26,9 +26,9 @@ pub async fn cache_get_tradable_items(
 #[tauri::command]
 pub async fn cache_get_riven_attributes(
     cache: tauri::State<'_, Mutex<CacheState>>,
-) -> Result<Vec<CacheRivenWFMAttribute>, Error> {
+) -> Result<Vec<CacheAttribute>, Error> {
     let cache = cache.lock()?;
-    match cache.riven().get_all_attributes() {
+    match cache.attribute().get_items() {
         Ok(items) => {
             return Ok(items);
         }
@@ -41,11 +41,15 @@ pub async fn cache_get_riven_attributes(
 #[tauri::command]
 pub async fn cache_get_riven_weapons(
     cache: tauri::State<'_, Mutex<CacheState>>,
-) -> Result<Vec<CacheRivenWeapon>, Error> {
+) -> Result<Vec<CacheWeaponBase>, Error> {
     let cache = cache.lock()?;
-    match cache.riven().get_all_weapons() {
+    match cache.weapon().get_all_items() {
         Ok(items) => {
-            return Ok(items);
+            let riven_weapons = items
+                .into_iter()
+                .filter(|item| item.wfm_riven_url != "")
+                .collect::<Vec<_>>();
+            return Ok(riven_weapons);
         }
         Err(e) => {
             e.log("cache_get_riven_weapons.log");

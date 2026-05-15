@@ -1,6 +1,6 @@
-import { Title, Button, Stack, Group } from "@mantine/core";
 import { RivenAttribute, TauriTypes } from "$types";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
+import { Button, Group, Stack, Title } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useState } from "react";
 import { CreateRivenAttribute } from "../CreateRivenAttribute";
@@ -14,7 +14,7 @@ export type CreateRivenAttributesProps = {
 };
 export function CreateRivenAttributes({ maxPositive, maxNegative, attributes, onSubmit }: CreateRivenAttributesProps) {
   // State
-  const defaultAttribute = { positive: true, url_name: "N/A", value: 0, localized_text: "N/A" } as RivenAttribute;
+  const defaultAttribute = { positive: true, wfmUrl: "N/A", value: 0, formattedValue: "N/A" } as RivenAttribute;
   const [showPositiveCount, setShowPositiveCount] = useState(2);
   // Translate general
   const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -34,19 +34,19 @@ export function CreateRivenAttributes({ maxPositive, maxNegative, attributes, on
     onValuesChange: (values) => {
       const items = [...values.positive_attributes, ...values.negative_attributes];
       setCurrentAttribute(items);
-      onSubmit && onSubmit(items.filter((item) => item.url_name != "N/A" && item.url_name != ""));
+      onSubmit && onSubmit(items.filter((item) => item.wfmUrl != "N/A" && item.wfmUrl != ""));
     },
   });
 
   const GetAvailableAttributes = (currentAttribute: RivenAttribute | undefined) => {
     if (!attributes) return [];
 
-    const formAttributes = currentAttributes.map((item) => item.url_name);
+    const formAttributes = currentAttributes.map((item) => item.wfmUrl);
 
-    let avAttributes = attributes.filter((item) => !formAttributes?.includes(item.url_name));
+    let avAttributes = attributes.filter((item) => !formAttributes?.includes(item.wfmUrl));
 
     if (currentAttribute) {
-      const attr = attributes.find((item) => item.url_name == currentAttribute.url_name);
+      const attr = attributes.find((item) => item.wfmUrl == currentAttribute.wfmUrl);
       if (attr && !avAttributes.includes(attr)) avAttributes.push(attr);
     }
     return avAttributes;
@@ -99,6 +99,7 @@ export function CreateRivenAttributes({ maxPositive, maxNegative, attributes, on
             negativeNumberOnly
             value={item}
             onChange={(v) => {
+              console.log(v);
               form.setFieldValue(`negative_attributes.${index}`, v);
             }}
           />

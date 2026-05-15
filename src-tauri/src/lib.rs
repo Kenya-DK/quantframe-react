@@ -231,6 +231,7 @@ pub fn run() {
             commands::cache::cache_get_chat_icons,
             // Log commands
             commands::logs::log_export,
+            commands::logs::log,
             // Live Scraper commands
             commands::live_scraper::live_scraper_get_state,
             commands::live_scraper::live_scraper_toggle,

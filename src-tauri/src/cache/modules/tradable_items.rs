@@ -48,7 +48,7 @@ impl TradableItemModule {
                         vec![
                             item.wfm_id.clone(),
                             item.name.clone(),
-                            item.wfm_url_name.clone(),
+                            item.wfm_url.clone(),
                             item.unique_name.clone(),
                         ],
                     );

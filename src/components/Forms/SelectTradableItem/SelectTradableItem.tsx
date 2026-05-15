@@ -1,11 +1,11 @@
-import { Group, NumberInput, Select } from "@mantine/core";
-import { useQuery } from "@tanstack/react-query";
-import api from "@api/index";
 import { TauriTypes } from "$types";
-import { useEffect, useState } from "react";
-import { useTranslateForms } from "@hooks/useTranslate.hook";
-import { upperFirst } from "@mantine/hooks";
+import api from "@api/index";
 import { TokenSearchSelect } from "@components/Forms/TokenSearchSelect";
+import { useTranslateForms } from "@hooks/useTranslate.hook";
+import { Group, NumberInput, Select } from "@mantine/core";
+import { upperFirst } from "@mantine/hooks";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 
 export type SelectTradableItemProps = {
   value: string;
@@ -42,8 +42,8 @@ export function SelectTradableItem({ hide_sub_type, value, onChange, description
     const mappedItems = data.map((item) => ({
       ...item,
       label: item.name,
-      value: item.wfm_url_name,
-      available_sub_types: item.sub_type,
+      value: item.wfmUrl,
+      available_sub_types: item.subTypes,
       sub_type: undefined,
     }));
     setItems(mappedItems);
@@ -54,8 +54,8 @@ export function SelectTradableItem({ hide_sub_type, value, onChange, description
     if (item.available_sub_types) {
       const sub_type = item.available_sub_types;
       if (sub_type.variants) new_item.sub_type = { variant: sub_type.variants[0] };
-      if (sub_type.max_rank) new_item.sub_type = { rank: sub_type.max_rank };
-      if (sub_type.amber_stars || sub_type.cyan_stars) new_item.sub_type = { cyan_stars: sub_type.cyan_stars, amber_stars: sub_type.amber_stars };
+      if (sub_type.maxRank) new_item.sub_type = { rank: sub_type.maxRank };
+      if (sub_type.amberStars || sub_type.cyanStars) new_item.sub_type = { cyan_stars: sub_type.cyanStars, amber_stars: sub_type.amberStars };
     }
     onChange(new_item);
     setSelectedItem(new_item);
@@ -105,7 +105,7 @@ export function SelectTradableItem({ hide_sub_type, value, onChange, description
               }}
             />
           )}
-          {selectedItem.available_sub_types.max_rank && (
+          {selectedItem.available_sub_types.maxRank && (
             <NumberInput
               w={150}
               required
@@ -114,11 +114,11 @@ export function SelectTradableItem({ hide_sub_type, value, onChange, description
               description={description ? useTranslateFormFields("rank.description") : ""}
               value={selectedItem.sub_type?.rank || 0}
               min={0}
-              max={selectedItem.available_sub_types.max_rank}
+              max={selectedItem.available_sub_types.maxRank}
               onChange={(event) => handleSubTypeUpdate({ rank: Number(event) })}
             />
           )}
-          {selectedItem.available_sub_types.cyan_stars && (
+          {selectedItem.available_sub_types.cyanStars && (
             <NumberInput
               w={150}
               required
@@ -127,16 +127,16 @@ export function SelectTradableItem({ hide_sub_type, value, onChange, description
               description={description ? useTranslateFormFields("cyan_stars.description") : ""}
               value={selectedItem.sub_type?.cyan_stars || 0}
               min={0}
-              max={selectedItem.available_sub_types.cyan_stars}
+              max={selectedItem.available_sub_types.cyanStars}
               onChange={(event) =>
                 handleSubTypeUpdate({
                   cyan_stars: Number(event),
-                  amber_stars: selectedItem.available_sub_types?.amber_stars ? selectedItem.sub_type?.amber_stars : undefined,
+                  amber_stars: selectedItem.available_sub_types?.amberStars ? selectedItem.sub_type?.amber_stars : undefined,
                 })
               }
             />
           )}
-          {selectedItem.available_sub_types.amber_stars && (
+          {selectedItem.available_sub_types.amberStars && (
             <NumberInput
               w={150}
               required
@@ -145,11 +145,11 @@ export function SelectTradableItem({ hide_sub_type, value, onChange, description
               description={description ? useTranslateFormFields("amber_stars.description") : ""}
               value={selectedItem.sub_type?.amber_stars || 0}
               min={0}
-              max={selectedItem.available_sub_types.amber_stars}
+              max={selectedItem.available_sub_types.amberStars}
               onChange={(event) =>
                 handleSubTypeUpdate({
                   amber_stars: Number(event),
-                  cyan_stars: selectedItem.available_sub_types?.cyan_stars ? selectedItem.sub_type?.cyan_stars : undefined,
+                  cyan_stars: selectedItem.available_sub_types?.cyanStars ? selectedItem.sub_type?.cyan_stars : undefined,
                 })
               }
             />

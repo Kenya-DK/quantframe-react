@@ -457,7 +457,7 @@ async fn process_mutable_items(
 
         item.properties.set_property_value("name", json!(info.name));
         item.properties
-            .set_property_value("wfm_url", json!(info.wfm_url_name));
+            .set_property_value("wfm_url", json!(info.wfm_url));
 
         let price = app
             .wfm_client

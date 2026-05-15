@@ -183,7 +183,7 @@ impl ItemModule {
 
             let order_path = PathBuf::from(utils::get_base_path())
                 .join("fake_orders")
-                .join(format!("order_{}.json", item_info.wfm_url_name));
+                .join(format!("order_{}.json", item_info.wfm_url));
 
             let mut orders = load_orders(
                 &comp("ProcessItem:LoadOrders:"),

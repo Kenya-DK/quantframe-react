@@ -17,8 +17,7 @@ use wf_market::{enums::OrderType, types::AuctionLike, Authenticated};
 
 use crate::{
     cache::{
-        derive_riven_summary_attributes, grade_riven, scale_attributes, CacheRivenWeapon,
-        CacheState,
+        derive_riven_summary_attributes, grade_riven, scale_attributes, CacheState, CacheWeaponBase,
     },
     types::OperationSet,
     utils::{auction_list_ext::AuctionWithOwnerListExt, ErrorFromExt, OrderListExt, SubTypeExt},
@@ -202,7 +201,7 @@ pub async fn populate_item_market_properties(
         .map_err(|e| e.with_location(get_location!()))?;
 
     properties.set_property_value("name", item_info.name.clone());
-    properties.set_property_value("image", item_info.image_url.clone());
+    properties.set_property_value("image", item_info.icon.clone());
     properties.set_property_value("t_type", item_info.sub_type.clone());
 
     // ---------------- Order Info ----------------
@@ -254,7 +253,7 @@ pub async fn populate_item_market_properties(
     if operations.has("MarketInfo") && !operations.has("MarketPopulated") {
         let mut orders = wfm
             .order()
-            .get_orders_by_item(&item_info.wfm_url_name)
+            .get_orders_by_item(&item_info.wfm_url)
             .await
             .map_err(|e| {
                 Error::from_wfm(
@@ -320,18 +319,18 @@ pub async fn populate_riven_market_properties(
     let raw = raw.into();
 
     // ---------------- Item Info ----------------
-    let riven_info = cache
-        .riven()
-        .get_weapon_by(&raw)
+    let weapon_info = cache
+        .weapon()
+        .get_by(&raw)
         .map_err(|e| e.with_location(get_location!()))?;
 
-    properties.set_property_value("name", riven_info.name.clone());
-    properties.set_property_value("image", riven_info.wfm_icon.clone());
-    properties.set_property_value("disposition_rank", riven_info.disposition_rank);
+    properties.set_property_value("name", weapon_info.name.clone());
+    properties.set_property_value("image", weapon_info.icon.clone());
+    properties.set_property_value("disposition_rank", weapon_info.disposition_rank);
 
     // ---------------- Attributes Info ----------------
     let mut attributes =
-        derive_riven_summary_attributes(&cache, &riven_info, &raw_attributes, rank)?;
+        derive_riven_summary_attributes(&cache, &weapon_info, &raw_attributes, rank)?;
     // ---------------- Auction Info ----------------
     let auction = wfm.auction().cache_auctions().get_by_uuid(&uuid);
 
@@ -362,19 +361,29 @@ pub async fn populate_riven_market_properties(
 
     // ---------------- Grade Info ----------------
     if operations.has("GradeInfo") {
-        let god_roll = &riven_info.god_roll;
-        if let Some(god_roll) = god_roll {
-            let (grade, grads) = grade_riven(&god_roll, &attributes, "tag");
+        match cache.riven_good_roll().get_by(&weapon_info.unique_name) {
+            Ok(god_roll) => {
+                let (grade, grads) = grade_riven(&god_roll, &attributes, "tag");
 
-            for i in 0..grads.len() {
-                attributes[i]
-                    .properties
-                    .set_property_value("grade", grads[i].1.clone());
+                for i in 0..grads.len() {
+                    attributes[i]
+                        .properties
+                        .set_property_value("grade", grads[i].1.clone());
+                }
+
+                properties.set_property_value("grade", grade);
             }
-
-            properties.set_property_value("grade", grade);
-        } else {
-            properties.set_property_value("grade", RivenGrade::Unknown);
+            Err(_) => {
+                warning(
+                    "GradeInfo",
+                    &format!(
+                        "Could not find good roll info for weapon: {}",
+                        weapon_info.unique_name
+                    ),
+                    &LoggerOptions::default(),
+                );
+                properties.set_property_value("grade", RivenGrade::Unknown);
+            }
         }
     }
 
@@ -382,7 +391,7 @@ pub async fn populate_riven_market_properties(
     if operations.has("VariantInfo") {
         let mut weapons = Vec::new();
 
-        let collect_weapon = |weapon: &CacheRivenWeapon| {
+        let collect_weapon = |weapon: &CacheWeaponBase| {
             Properties::from(json!({
                 "unique_name": weapon.unique_name,
                 "name": weapon.name,
@@ -390,16 +399,17 @@ pub async fn populate_riven_market_properties(
                 "disposition_rank": weapon.disposition_rank
             }))
         };
-        weapons.push(collect_weapon(&riven_info));
-
-        for variant in &riven_info.variants {
-            let v = cache.riven().get_weapon_by(&variant.unique_name)?;
-            weapons.push(collect_weapon(&v));
+        let variants = cache
+            .weapon()
+            .get_weapons_by_family(&weapon_info.family)
+            .unwrap_or_default();
+        for variant in variants {
+            weapons.push(collect_weapon(&variant));
         }
 
         for wea in &mut weapons {
             let disposition = wea.get_property_value("disposition", 0.0);
-            let ratio = disposition / riven_info.disposition;
+            let ratio = disposition / weapon_info.disposition;
 
             let ranks = (0..=8)
                 .map(|i| scale_attributes(&attributes, ratio, i))
@@ -419,17 +429,33 @@ pub async fn populate_riven_market_properties(
 
     // ---------------- Roll Evaluation Info ----------------
     if operations.has("RollEvaluation") {
-        let roll_evaluation = cache
-            .riven()
-            .fill_roll_evaluation(&riven_info.unique_name, raw_attributes)?;
-        properties.set_property_value("roll_evaluation", roll_evaluation);
+        match cache.riven_good_roll().get_by(&weapon_info.unique_name) {
+            Ok(god_roll) => {
+                let roll_evaluation = god_roll.fill_roll_evaluation(
+                    &weapon_info.upgrade_type,
+                    raw_attributes.clone(),
+                    cache,
+                )?;
+                properties.set_property_value("roll_evaluation", roll_evaluation);
+            }
+            Err(_) => {
+                warning(
+                    "RollEvaluation",
+                    &format!(
+                        "Could not find good roll info for weapon: {}",
+                        weapon_info.unique_name
+                    ),
+                    &LoggerOptions::default(),
+                );
+            }
+        }
     }
 
     // ---------------- Transaction Info ----------------
     if operations.has("TransactionInfo") {
         let transactions = TransactionQuery::get_all(
             conn,
-            TransactionPaginationQueryDto::new(1, -1).set_wfm_id(&riven_info.wfm_id),
+            TransactionPaginationQueryDto::new(1, -1).set_wfm_url(&weapon_info.wfm_riven_url),
         )
         .await
         .map_err(|e| e.with_location(get_location!()))?;
@@ -442,14 +468,14 @@ pub async fn populate_riven_market_properties(
     if operations.has("MarketInfo") && !operations.has("MarketPopulated") {
         let mut filter = wf_market::types::AuctionFilter::new(
             wf_market::enums::AuctionType::Riven,
-            &riven_info.wfm_url_name,
+            &weapon_info.wfm_riven_url,
         );
         filter.similarity_attributes = Some(
             attributes
                 .iter()
                 .map(|att| {
                     wf_market::types::ItemAttribute::new(
-                        att.url_name.clone(),
+                        att.wfm_url.clone(),
                         att.positive,
                         att.value,
                     )
@@ -513,5 +539,5 @@ pub async fn populate_riven_market_properties(
     }
     properties.set_property_value("attributes", scale_attributes(&attributes, 1.0, rank));
     properties.set_property_value("ui_operations", operations.operations.clone());
-    Ok(attributes)
+    Ok(vec![])
 }

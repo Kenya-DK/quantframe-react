@@ -23,11 +23,6 @@ impl RelicsModule {
     pub fn load(&self, language: &LanguageModule) -> Result<(), Error> {
         match read_json_file_optional::<Vec<CacheRelics>>(&self.path) {
             Ok(mut items) => {
-                for item in items.iter_mut() {
-                    item.name = language
-                        .translate(&item.unique_name, crate::cache::modules::LanguageKey::Name)
-                        .unwrap_or(item.name.clone());
-                }
                 let mut items_lock = self.items.lock().unwrap();
                 *items_lock = items;
                 info(
@@ -39,17 +34,6 @@ impl RelicsModule {
             Err(e) => return Err(e.with_location(get_location!())),
         }
         Ok(())
-    }
-    pub fn collect_all_items(&self) -> Vec<CacheItemBase> {
-        let items_lock = self.items.lock().unwrap();
-        let mut items: Vec<CacheItemBase> = Vec::new();
-        items.append(
-            &mut items_lock
-                .iter()
-                .map(|item| item.convert_to_base_item())
-                .collect(),
-        );
-        items
     }
     /**
      * Creates a new `RelicsModule` from an existing one, sharing the client.

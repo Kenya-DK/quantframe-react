@@ -11,16 +11,16 @@ export const useStockMutations = ({ refetchQueries, setLoadingRows }: MutationHo
       errorKey: "export_data",
       getSuccessMessage: (data: any) => ({ path: data }),
     },
-    hooks
+    hooks,
   );
   const createMutation = createGenericMutation(
     {
-      mutationFn: (data: TauriTypes.CreateStockRiven) => api.stock_riven.create(data),
+      mutationFn: (data: TauriTypes.CreateStockRiven) => api.stock_riven.create({ ...data, raw: `Wfm:${data.raw}` }),
       successKey: "create_stock_riven",
       errorKey: "create_stock_riven",
       getSuccessMessage: (data: any) => ({ name: `${data.weapon_name} ${data.mod_name}` }),
     },
-    hooks
+    hooks,
   );
 
   const updateMutation = createGenericMutation(
@@ -31,7 +31,7 @@ export const useStockMutations = ({ refetchQueries, setLoadingRows }: MutationHo
       getLoadingId: (variables: TauriTypes.UpdateStockRiven) => `${variables.id}`,
       getSuccessMessage: (data: any) => ({ name: `${data.weapon_name} ${data.mod_name}` }),
     },
-    hooks
+    hooks,
   );
   const updateMultipleMutation = createGenericMutation(
     {
@@ -42,7 +42,7 @@ export const useStockMutations = ({ refetchQueries, setLoadingRows }: MutationHo
       getLoadingId: (variables: { ids: number[]; input: TauriTypes.UpdateStockItem }) => variables.ids.map((id) => `${id}`),
       getSuccessMessage: (data: any) => ({ count: data.length }),
     },
-    hooks
+    hooks,
   );
   const sellMutation = createGenericMutation(
     {
@@ -52,7 +52,7 @@ export const useStockMutations = ({ refetchQueries, setLoadingRows }: MutationHo
       getLoadingId: (variables: TauriTypes.SellStockRiven) => `${variables.id}`,
       getSuccessMessage: (data: any) => ({ name: `${data.weapon_name} ${data.mod_name}` }),
     },
-    hooks
+    hooks,
   );
 
   const deleteMutation = createGenericMutation(
@@ -63,7 +63,7 @@ export const useStockMutations = ({ refetchQueries, setLoadingRows }: MutationHo
       getLoadingId: (variables: number) => `${variables}`,
       getSuccessMessage: (data: any) => ({ name: `${data.weapon_name} ${data.mod_name}` }),
     },
-    hooks
+    hooks,
   );
   const deleteMultipleMutation = createGenericMutation(
     {
@@ -74,7 +74,7 @@ export const useStockMutations = ({ refetchQueries, setLoadingRows }: MutationHo
       getLoadingId: (variables: number[]) => variables.map((id) => `${id}`),
       getSuccessMessage: (data: any) => ({ count: data }),
     },
-    hooks
+    hooks,
   );
   return {
     exportMutation,

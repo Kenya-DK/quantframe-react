@@ -4,27 +4,28 @@ use utils::Properties;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct RivenAttribute {
-    pub url_name: String,
+    #[serde(rename = "wfmUrl", alias = "url_name")]
+    pub wfm_url: String,
     pub positive: bool,
     pub value: f64,
-    #[serde(default)]
-    pub localized_text: String,
+    #[serde(rename = "formattedValue", alias = "localized_text", default)]
+    pub formatted_value: String,
     // Extra properties
     #[serde(flatten)]
     pub properties: Properties,
 }
 impl RivenAttribute {
-    pub fn new(positive: bool, value: f64, url_name: String, localized_text: String) -> Self {
+    pub fn new(positive: bool, value: f64, wfm_url: String, formatted_value: String) -> Self {
         Self {
-            localized_text,
-            url_name,
+            formatted_value,
+            wfm_url,
             positive,
             value,
             properties: Properties::default(),
         }
     }
     pub fn to_raw(&self) -> (String, f64, bool) {
-        (self.url_name.clone(), self.value, self.positive)
+        (self.wfm_url.clone(), self.value, self.positive)
     }
 }
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, FromJsonQueryResult)]

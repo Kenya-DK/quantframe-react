@@ -18,7 +18,8 @@ impl AuctionExt for Auction {
         match self.item.item_type {
             AuctionType::Riven => {
                 self.apply_uuid();
-                let riven = ItemRivenBase::try_from_auction(&self, cache)?;
+                let riven = ItemRivenBase::try_from_auction(&self, cache)
+                    .map_err(|e| e.with_location(get_location!()))?;
                 self.properties
                     .set_property_value("name", json!(riven.name));
                 self.properties
@@ -26,10 +27,10 @@ impl AuctionExt for Auction {
                 self.item.attributes = Some(vec![]);
                 for attr in riven.attributes {
                     let mut wf_attr =
-                        ItemAttribute::new(attr.url_name.clone(), attr.positive, attr.value);
+                        ItemAttribute::new(attr.wfm_url.clone(), attr.positive, attr.value);
                     wf_attr
                         .properties
-                        .set_property_value("localized_text", json!(attr.localized_text));
+                        .set_property_value("formattedValue", json!(attr.formatted_value));
                     self.item.attributes.as_mut().unwrap().push(wf_attr);
                 }
             }
@@ -50,17 +51,17 @@ impl AuctionExt for Auction {
 
         let mut attributes: Vec<RivenAttribute> = vec![];
         for attr in self.item.attributes.as_deref().unwrap_or(&[]) {
-            let c_attr = cache.riven().get_attribute_by(&attr.url_name)?;
+            let c_attr = cache.attribute().get_by(&attr.url_name)?;
             attributes.push(RivenAttribute::new(
                 attr.positive,
                 attr.value,
                 attr.url_name.clone(),
-                c_attr.full.clone(),
+                c_attr.formatted_value.clone(),
             ));
         }
 
         let item = CreateStockRiven::new(
-            self.item.weapon_url_name.clone(),
+            format!("Wfm:{}", self.item.weapon_url_name),
             self.item.mod_name.clone().unwrap_or(String::new()),
             self.item.mastery_level.unwrap_or(0).into(),
             self.item.re_rolls.unwrap_or(0).into(),

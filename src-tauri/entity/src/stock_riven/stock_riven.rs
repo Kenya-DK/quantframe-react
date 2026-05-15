@@ -193,9 +193,9 @@ impl Model {
         input.push_str(&format!("polarity:{};", self.polarity.to_lowercase()));
 
         let mut sorted_attrs = self.attributes.clone().0;
-        sorted_attrs.sort_by_key(|a| a.url_name.clone());
+        sorted_attrs.sort_by_key(|a| a.wfm_url.clone());
         for a in sorted_attrs {
-            input.push_str(&format!("attr:{}:{}:{};", a.url_name, a.positive, a.value));
+            input.push_str(&format!("attr:{}:{}:{};", a.wfm_url, a.positive, a.value));
         }
         generate_uuid_from_list(&[input])
     }

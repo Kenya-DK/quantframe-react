@@ -164,8 +164,8 @@ impl StockRivenMutation {
 
             let mut attributes = active.attributes.clone().unwrap().0;
             for att in attributes.iter_mut() {
-                if let Some(full) = attribute_mapper.get(&att.url_name) {
-                    att.localized_text = full.to_string();
+                if let Some(full) = attribute_mapper.get(&att.wfm_url) {
+                    att.formatted_value = full.to_string();
                 }
             }
             active.attributes = Set(RivenAttributeVec(attributes));

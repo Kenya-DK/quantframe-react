@@ -1,8 +1,8 @@
-import { upperFirst } from "@mantine/hooks";
 import { ItemWithMeta, ItemWithSubType, TauriTypes } from "$types";
 import api from "@api/index";
-import { resolveResource, join } from "@tauri-apps/api/path";
+import { upperFirst } from "@mantine/hooks";
 import { convertFileSrc } from "@tauri-apps/api/core";
+import { join, resolveResource } from "@tauri-apps/api/path";
 import { isCustomSound, stripCustomSoundPrefix } from "@utils/sound";
 
 export interface GroupByDateSettings {
@@ -277,10 +277,10 @@ export const GetItemDisplay = (
   if ("properties" in value && value.properties && "name" in value.properties) fullName = value.properties.name;
   if ("weapon_name" in value && !fullName) fullName = value.weapon_name;
   if ("item_name" in value && !fullName) fullName = value.item_name;
-  if ("wfm_id" in value && !fullName) fullName = tradableItems?.find((i) => i.wfm_id === value.wfm_id)?.name;
-  if ("wfm_id" in value && !fullName) fullName = weapons?.find((i) => i.wfm_id === value.wfm_id)?.name;
+  if ("wfm_id" in value && !fullName) fullName = tradableItems?.find((i) => i.wfmId === value.wfm_id)?.name;
+  if ("wfm_id" in value && !fullName) fullName = weapons?.find((i) => i.wfmId === value.wfm_id)?.name;
   if ("name" in value && !fullName) fullName = value.name;
-  if ("wfm_url" in value && !fullName) fullName = tradableItems?.find((i) => i.wfm_url_name === value.wfm_url)?.name;
+  if ("wfm_url" in value && !fullName) fullName = tradableItems?.find((i) => i.wfmUrl === value.wfm_url)?.name;
 
   if ("properties" in value && value.properties && "mod_name" in value.properties) fullName += ` ${value.properties.mod_name}`;
   if ("mod_name" in value) fullName += ` ${value.mod_name}`;

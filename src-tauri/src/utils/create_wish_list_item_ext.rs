@@ -18,7 +18,7 @@ impl CreateWishListItemExt for CreateWishListItem {
                 .set_log_level(LogLevel::Warning)
         })?;
         self.wfm_id = item.wfm_id.clone();
-        self.wfm_url = item.wfm_url_name.clone();
+        self.wfm_url = item.wfm_url.clone();
         self.item_name = item.name.clone();
         self.item_unique_name = item.unique_name.clone();
         self.tags = item.tags.clone();

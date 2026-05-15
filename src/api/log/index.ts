@@ -1,7 +1,7 @@
-import { useMutation } from "@tanstack/react-query";
-import { TauriClient } from "..";
 import { useTranslateCommon } from "@hooks/useTranslate.hook";
 import { notifications } from "@mantine/notifications";
+import { useMutation } from "@tanstack/react-query";
+import { TauriClient } from "..";
 
 export class LogModule {
   constructor(private readonly client: TauriClient) {}

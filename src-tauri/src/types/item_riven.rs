@@ -65,9 +65,9 @@ impl ItemRivenBase {
         input.push_str(&format!("polarity:{};", self.polarity.to_lowercase()));
 
         let mut sorted_attrs = self.attributes.clone();
-        sorted_attrs.sort_by_key(|a| a.url_name.clone());
+        sorted_attrs.sort_by_key(|a| a.wfm_url.clone());
         for a in sorted_attrs {
-            input.push_str(&format!("attr:{}:{}:{};", a.url_name, a.positive, a.value));
+            input.push_str(&format!("attr:{}:{}:{};", a.wfm_url, a.positive, a.value));
         }
         let uuid = generate_uuid_from_list(&[input]);
         self.uuid = uuid.0.clone();
@@ -87,11 +87,13 @@ impl ItemRivenBase {
         }
         let mut riven = Self::default();
 
-        if let Ok(weapon) = cache.riven().get_weapon_by(&auction.item.weapon_url_name) {
-            riven.name = weapon.name.clone();
-            riven.unique_name = weapon.unique_name.clone();
-            riven.wfm_url = weapon.wfm_url_name.clone();
-        }
+        let weapon = cache
+            .weapon()
+            .get_by(format!("Wfm:{}", auction.item.weapon_url_name))
+            .map_err(|e| e.with_location(get_location!()))?;
+        riven.name = weapon.name.clone();
+        riven.unique_name = weapon.unique_name.clone();
+        riven.wfm_url = weapon.wfm_url.clone();
         riven.sub_type = Some(SubType::rank(auction.item.mod_rank.unwrap_or(0) as i64));
         riven.mod_name = auction.item.mod_name.clone().unwrap_or(String::new());
         riven.mastery_rank = auction.item.mastery_level.unwrap_or(0) as i64;
@@ -99,15 +101,15 @@ impl ItemRivenBase {
         riven.polarity = auction.item.polarity.clone().unwrap_or(String::new());
         riven.uuid = auction.uuid.clone();
         for attr in auction.item.attributes.as_deref().unwrap_or(&[]) {
-            let localized_text = match cache.riven().get_attribute_by(&attr.url_name) {
-                Ok(c_attr) => c_attr.full.clone(),
+            let formatted_value = match cache.attribute().get_by(&attr.url_name) {
+                Ok(c_attr) => c_attr.formatted_value.clone(),
                 Err(_) => attr.url_name.clone(), // Fallback to URL name if not found in cache
             };
             riven.attributes.push(RivenAttribute::new(
                 attr.positive,
                 attr.value,
                 attr.url_name.clone(),
-                localized_text,
+                formatted_value,
             ));
         }
         Ok(riven)

@@ -1,26 +1,26 @@
-import { ActionIcon, Box, Divider, Group, ScrollArea, Select, SimpleGrid, Tooltip, useMantineTheme, Image, Rating, Badge } from "@mantine/core";
+import { TauriTypes, WFMarketTypes } from "$types"; // Adjust the path if needed
 import { SearchField } from "@components/Forms/SearchField";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faArrowDown, faArrowUp, faCartShopping, faInfoCircle, faPen, faRefresh, faSackDollar, faTrashCan } from "@fortawesome/free-solid-svg-icons";
-import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
-import { useHasAlert } from "@hooks/useHasAlert.hook";
-import classes from "../../WarframeMarket.module.css";
-import { TauriTypes, WFMarketTypes } from "$types"; // Adjust the path if needed
 import { ColorInfo } from "@components/Shared/ColorInfo";
-import { useStockQueries } from "./queries";
-import { useState } from "react";
-import { useStockMutations } from "./mutations";
-import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 import { Loading } from "@components/Shared/Loading";
-import { useStockModals } from "./modals";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { TextTranslate } from "@components/Shared/TextTranslate";
 import { PaginationFooter } from "@components/Shared/PaginationFooter";
 import { PreviewCard } from "@components/Shared/PreviewCard/PreviewCard";
-import { WFMThumbnail } from "../../../../api";
-import { faAmberStar, faCyanStar } from "../../../../icons";
+import { TextTranslate } from "@components/Shared/TextTranslate";
+import { faArrowDown, faArrowUp, faCartShopping, faInfoCircle, faPen, faRefresh, faSackDollar, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useHasAlert } from "@hooks/useHasAlert.hook";
+import { useTauriEvent } from "@hooks/useTauriEvent.hook";
+import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
+import { ActionIcon, Badge, Box, Divider, Group, Image, Rating, ScrollArea, Select, SimpleGrid, Tooltip, useMantineTheme } from "@mantine/core";
 import { upperFirst } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
+import { useState } from "react";
+import { WFMThumbnail } from "../../../../api";
+import { faAmberStar, faCyanStar } from "../../../../icons";
+import classes from "../../WarframeMarket.module.css";
+import { useStockModals } from "./modals";
+import { useStockMutations } from "./mutations";
+import { useStockQueries } from "./queries";
 
 interface OrderPanelProps {
   isActive?: boolean;
@@ -216,7 +216,7 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
                         <TextTranslate
                           size="lg"
                           i18nKey={useTranslateFields("mod_rank", undefined, true)}
-                          values={{ mod_rank: order.rank, mod_max_rank: order.properties?.t_type?.max_rank || "?" }}
+                          values={{ mod_rank: order.rank, mod_max_rank: order.properties?.t_type?.maxRank || "?" }}
                         />
                       )}
                       {order.amberStars != undefined && (

@@ -1,11 +1,11 @@
-import { Box, ScrollArea, SimpleGrid, Text } from "@mantine/core";
 import { TauriTypes, WFMarketTypes } from "$types";
-import { PreviewCard } from "@components/Shared/PreviewCard/PreviewCard";
-import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { RivenAttribute } from "@components/DataDisplay/RivenAttribute";
-import { useTranslateModals } from "@hooks/useTranslate.hook";
-import { open } from "@tauri-apps/plugin-shell";
+import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
+import { PreviewCard } from "@components/Shared/PreviewCard/PreviewCard";
 import { faGlobe } from "@fortawesome/free-solid-svg-icons";
+import { useTranslateModals } from "@hooks/useTranslate.hook";
+import { Box, ScrollArea, SimpleGrid, Text } from "@mantine/core";
+import { open } from "@tauri-apps/plugin-shell";
 export type WFMTabProps = {
   value: TauriTypes.StockItem<{
     auctions?: WFMarketTypes.Auction[];
@@ -56,7 +56,8 @@ export function WFMTab({ value }: WFMTabProps) {
                 riven.item.attributes.map((attr) => (
                   <RivenAttribute
                     key={attr.url_name}
-                    i18nKey="full"
+                    i18nIdKey="url_name"
+                    i18nKey="formattedValue"
                     groupProps={{ p: 1 }}
                     value={attr}
                     hideDetails

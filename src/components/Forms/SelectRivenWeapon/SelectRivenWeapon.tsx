@@ -1,10 +1,10 @@
+import { TauriTypes } from "$types";
+import api from "@api/index";
+import { TokenSearchSelect } from "@components/Forms/TokenSearchSelect";
+import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { Group } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
-import api from "@api/index";
-import { TauriTypes } from "$types";
 import { useEffect, useState } from "react";
-import { useTranslateForms } from "@hooks/useTranslate.hook";
-import { TokenSearchSelect } from "@components/Forms/TokenSearchSelect";
 
 export type SelectRivenWeaponProps = {
   value: string;
@@ -38,9 +38,9 @@ export function SelectRivenWeapon({ value, onChange, description }: SelectRivenW
       data.map((item) => ({
         ...item,
         label: item.name,
-        value: item.wfm_url_name,
+        value: item.wfmRivenUrl,
         sub_type: undefined,
-      }))
+      })),
     );
   }, [data]);
 

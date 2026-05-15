@@ -309,37 +309,35 @@ export namespace TauriTypes {
     properties: Record<string, any>;
   }
   export interface CacheRivenAttribute {
-    id: string;
-    uniqueName: string;
+    exclusiveTo?: unknown[];
+    formattedValue: string;
     group: string;
-    prefix: string;
-    suffix: string;
-    url_name: string;
-    unit: string;
-    full: string;
-    short: string;
-    name: string;
-    text: string;
-    exclusiveTo?: string[];
+    unit?: string;
+    highlightedLabel: string;
+    label: string;
+    negativeOnly?: boolean;
     positiveIsNegative?: boolean;
     positiveOnly?: boolean;
-    negativeOnly?: boolean;
+    prefix: string;
+    suffix: string;
+    uniqueName: string;
+    wfmId: string;
+    wfmUrl: string;
   }
 
   export interface CacheRivenWeapon {
-    disposition: number;
-    godRoll: RivenGodRoll;
+    uniqueName: string;
     name: string;
-    riven_type: string;
-    unique_name: string;
-    upgrade_type: string;
-    wfm_group: string;
-    wfm_icon: string;
-    wfm_icon_format: string;
-    wfm_id: string;
-    wfm_thumb: string;
-    wfm_url_name: string;
-    is_variant: boolean;
+    icon: string;
+    wfmUrl: string;
+    wfmRivenUrl: string;
+    rivenType: string;
+    wfmId: string;
+    category: string;
+    source: string;
+    disposition: number;
+    dispositionRank: number;
+    isVariant: boolean;
   }
   export interface CacheChatIcon {
     name: string;
@@ -357,14 +355,13 @@ export namespace TauriTypes {
   }
   export interface CacheTradableItem extends CacheItemBase {
     description: string;
-    wfm_id: string;
-    wfm_url_name: string;
-    trade_tax: number;
-    mr_requirement: number;
+    wfmId: string;
+    wfmUrl: string;
+    tradeTax: number;
+    masteryReq: number;
     tags: string[];
-    wiki_url: string;
-    image_url: string;
-    sub_type?: CacheTradableItemSubType;
+    icon: string;
+    subTypes?: CacheTradableItemSubType;
     components?: ItemComponent[];
   }
   export interface ItemComponent {
@@ -376,10 +373,10 @@ export namespace TauriTypes {
     wfm_item_url: string;
   }
   export interface CacheTradableItemSubType {
-    max_rank?: number;
+    maxRank?: number;
     variants?: string[];
-    amber_stars?: number;
-    cyan_stars?: number;
+    amberStars?: number;
+    cyanStars?: number;
   }
   export interface OnToggleControlPayload {
     id: string;

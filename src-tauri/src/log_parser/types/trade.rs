@@ -182,106 +182,108 @@ impl PlayerTrade {
         items.iter().find(|p| &p.item_type == item_type).cloned()
     }
     pub fn is_set(&mut self, trade_type: TradeClassification) {
-        let main_item = match self.get_item_by_type(&trade_type, &TradeItemType::MainBlueprint) {
-            Some(item) => item,
-            None => return,
-        };
+        TradeClassification::Unknown; // Placeholder until set detection is re-implemented
 
-        if self.get_valid_items(&self.trade_type, vec![]).is_empty() {
-            return;
-        }
+        // let main_item = match self.get_item_by_type(&trade_type, &TradeItemType::MainBlueprint) {
+        //     Some(item) => item,
+        //     None => return,
+        // };
 
-        let cache = match states::cache_client() {
-            Ok(c) => c,
-            Err(_) => {
-                log("Cache client not initialized".to_string(), None);
-                return;
-            }
-        };
+        // if self.get_valid_items(&self.trade_type, vec![]).is_empty() {
+        //     return;
+        // }
 
-        let component_key = format!("Component|{}", main_item.unique_name);
-        let component = match cache.all_items().get_by(&component_key) {
-            Ok(c) => c,
-            Err(_) => {
-                log(format!("Main part not found: {}", component_key), None);
-                return;
-            }
-        };
+        // let cache = match states::cache_client() {
+        //     Ok(c) => c,
+        //     Err(_) => {
+        //         log("Cache client not initialized".to_string(), None);
+        //         return;
+        //     }
+        // };
 
-        log(
-            format!("Found main part {} for set", component.display()),
-            None,
-        );
+        // let component_key = format!("Component|{}", main_item.unique_name);
+        // let component = match cache.all_items().get_by(&component_key) {
+        //     Ok(c) => c,
+        //     Err(_) => {
+        //         log(format!("Main part not found: {}", component_key), None);
+        //         return;
+        //     }
+        // };
 
-        let set_name = match &component.part_of_set {
-            Some(name) => name,
-            None => {
-                log(
-                    format!("Part-of-set missing for {}", component.display()),
-                    None,
-                );
-                return;
-            }
-        };
+        // log(
+        //     format!("Found main part {} for set", component.display()),
+        //     None,
+        // );
 
-        log(format!("Set unique name: {}", set_name), None);
+        // let set_name = match &component.part_of_set {
+        //     Some(name) => name,
+        //     None => {
+        //         log(
+        //             format!("Part-of-set missing for {}", component.display()),
+        //             None,
+        //         );
+        //         return;
+        //     }
+        // };
 
-        let set = match cache.all_items().get_by(set_name) {
-            Ok(s) => s,
-            Err(_) => {
-                log(format!("Set not found: {}", set_name), None);
-                return;
-            }
-        };
+        // log(format!("Set unique name: {}", set_name), None);
 
-        log(format!("Found set {}", set.display()), None);
+        // let set = match cache.all_items().get_by(set_name) {
+        //     Ok(s) => s,
+        //     Err(_) => {
+        //         log(format!("Set not found: {}", set_name), None);
+        //         return;
+        //     }
+        // };
 
-        let components = set.get_tradable_components();
-        if components.is_empty() {
-            log(format!("No components for set {}", set.display()), None);
-            return;
-        }
+        // log(format!("Found set {}", set.display()), None);
 
-        for component in components.iter() {
-            let found =
-                self.is_item_in_trade(&trade_type, &component.unique_name, component.item_count);
+        // let components = set.get_tradable_components();
+        // if components.is_empty() {
+        //     log(format!("No components for set {}", set.display()), None);
+        //     return;
+        // }
 
-            log(
-                format!(
-                    "Checking component <{}>: Found={}",
-                    component.display(),
-                    found
-                ),
-                None,
-            );
+        // for component in components.iter() {
+        //     let found =
+        //         self.is_item_in_trade(&trade_type, &component.unique_name, component.item_count);
 
-            if !found {
-                return;
-            }
-        }
+        //     log(
+        //         format!(
+        //             "Checking component <{}>: Found={}",
+        //             component.display(),
+        //             found
+        //         ),
+        //         None,
+        //     );
 
-        log(format!("Full set found: {}", set.display()), None);
+        //     if !found {
+        //         return;
+        //     }
+        // }
 
-        let target_items = match trade_type {
-            TradeClassification::Purchase => &mut self.offered_items,
-            TradeClassification::Sale => &mut self.received_items,
-            _ => return,
-        };
-        for component in components {
-            target_items.retain(|p| p.unique_name != component.unique_name);
-            log(
-                format!("Removed component from trade: {}", component.display()),
-                None,
-            );
-        }
-        let mut set_item = TradeItem::new(&set.unique_name, 1, TradeItemType::Set, None);
-        set_item
-            .properties
-            .set_property_value("tags", vec!["set".to_string()]);
-        set_item
-            .properties
-            .set_property_value("item_name", set.name);
-        target_items.push(set_item);
+        // log(format!("Full set found: {}", set.display()), None);
+
+        // let target_items = match trade_type {
+        //     TradeClassification::Purchase => &mut self.offered_items,
+        //     TradeClassification::Sale => &mut self.received_items,
+        //     _ => return,
+        // };
+        // for component in components {
+        //     target_items.retain(|p| p.unique_name != component.unique_name);
+        //     log(
+        //         format!("Removed component from trade: {}", component.display()),
+        //         None,
+        //     );
+        // }
+        // let mut set_item = TradeItem::new(&set.unique_name, 1, TradeItemType::Set, None);
+        // set_item
+        //     .properties
+        //     .set_property_value("tags", vec!["set".to_string()]);
+        // set_item
+        //     .properties
+        //     .set_property_value("item_name", set.name);
+        // target_items.push(set_item);
     }
 
     pub fn get_notify_variables(&self) -> HashMap<String, String> {
