@@ -42,7 +42,6 @@ pub struct CacheState {
     primary_module: OnceLock<Arc<PrimaryModule>>,
     relics_module: OnceLock<Arc<RelicsModule>>,
     resource_module: OnceLock<Arc<ResourceModule>>,
-    riven_module: OnceLock<Arc<RivenModule>>,
     secondary_module: OnceLock<Arc<SecondaryModule>>,
     sentinel_module: OnceLock<Arc<SentinelModule>>,
     sentinel_weapon_module: OnceLock<Arc<SentinelWeaponModule>>,
@@ -53,6 +52,10 @@ pub struct CacheState {
     chat_icon_module: OnceLock<Arc<ChatIconModule>>,
     theme_module: OnceLock<Arc<ThemeModule>>,
     language_module: OnceLock<Arc<LanguageModule>>,
+    weapon_module: OnceLock<Arc<WeaponModule>>,
+    recipe_module: OnceLock<Arc<RecipeModule>>,
+    riven_good_roll_module: OnceLock<Arc<RivenGoodRollModule>>,
+    attribute_module: OnceLock<Arc<AttributeModule>>,
 }
 
 impl CacheState {
@@ -77,7 +80,6 @@ impl CacheState {
                     primary_module: self.primary_module.clone(),
                     relics_module: self.relics_module.clone(),
                     resource_module: self.resource_module.clone(),
-                    riven_module: self.riven_module.clone(),
                     secondary_module: self.secondary_module.clone(),
                     sentinel_module: self.sentinel_module.clone(),
                     sentinel_weapon_module: self.sentinel_weapon_module.clone(),
@@ -88,6 +90,10 @@ impl CacheState {
                     chat_icon_module: self.chat_icon_module.clone(),
                     theme_module: self.theme_module.clone(),
                     language_module: self.language_module.clone(),
+                    weapon_module: self.weapon_module.clone(),
+                    recipe_module: self.recipe_module.clone(),
+                    riven_good_roll_module: self.riven_good_roll_module.clone(),
+                    attribute_module: self.attribute_module.clone(),
                 })
             })
             .clone()
@@ -119,7 +125,6 @@ impl CacheState {
             primary_module: OnceLock::new(),
             relics_module: OnceLock::new(),
             resource_module: OnceLock::new(),
-            riven_module: OnceLock::new(),
             secondary_module: OnceLock::new(),
             sentinel_module: OnceLock::new(),
             sentinel_weapon_module: OnceLock::new(),
@@ -130,6 +135,10 @@ impl CacheState {
             chat_icon_module: OnceLock::new(),
             theme_module: OnceLock::new(),
             language_module: OnceLock::new(),
+            weapon_module: OnceLock::new(),
+            recipe_module: OnceLock::new(),
+            riven_good_roll_module: OnceLock::new(),
+            attribute_module: OnceLock::new(),
         };
         if !user.verification || user.qf_banned || user.wfm_banned {
             warning(
@@ -252,15 +261,18 @@ impl CacheState {
         self.primary().load(language)?;
         self.relics().load(language)?;
         self.resource().load(language)?;
-        self.riven().load(language)?;
         self.secondary().load(language)?;
         self.sentinel().load(language)?;
+        self.attribute().load(language)?;
         self.sentinel_weapon().load(language)?;
         self.skin().load(language)?;
         self.warframe().load(language)?;
         self.theme().load()?;
         self.chat_icon().load()?;
+        self.riven_good_roll().load(language)?;
+        self.recipe().load(language)?;
         self.update_routes_client();
+        self.weapon().load()?;
         self.all_items().load()?;
         Ok((cache_version_id, price_version_id))
     }
@@ -392,12 +404,12 @@ impl CacheState {
         let wfm_name_mapper = self.language().get_mapper(LanguageKey::WfmName);
         let name_mapper = self.language().get_mapper(LanguageKey::Name);
 
-        let attribute_mapper = self
-            .riven()
-            .get_all_attributes()?
-            .iter()
-            .map(|att| (att.url_name.clone(), att.full.clone()))
-            .collect::<HashMap<String, String>>();
+        // let attribute_mapper = self
+        //     .riven()
+        //     .get_all_attributes()?
+        //     .iter()
+        //     .map(|att| (att.url_name.clone(), att.full.clone()))
+        //     .collect::<HashMap<String, String>>();
 
         fn send_progress(component: &str, progress: f64) {
             emit_startup!(
@@ -419,10 +431,10 @@ impl CacheState {
         .await?;
         log_info(&wa, "Transactions");
 
-        StockRivenMutation::update_names(conn, &name_mapper, &attribute_mapper, |progress| {
-            send_progress("stock_rivens", progress);
-        })
-        .await?;
+        // StockRivenMutation::update_names(conn, &name_mapper, &attribute_mapper, |progress| {
+        //     send_progress("stock_rivens", progress);
+        // })
+        // .await?;
         log_info(&wa, "StockRivens");
 
         WishListMutation::update_names(conn, &name_mapper, |progress| {
@@ -509,11 +521,6 @@ impl CacheState {
             .get_or_init(|| ResourceModule::new(self.arc()))
             .clone()
     }
-    pub fn riven(&self) -> Arc<RivenModule> {
-        self.riven_module
-            .get_or_init(|| RivenModule::new(self.arc()))
-            .clone()
-    }
     pub fn secondary(&self) -> Arc<SecondaryModule> {
         self.secondary_module
             .get_or_init(|| SecondaryModule::new(self.arc()))
@@ -557,6 +564,26 @@ impl CacheState {
     pub fn language(&self) -> Arc<LanguageModule> {
         self.language_module
             .get_or_init(|| LanguageModule::new(self.arc()))
+            .clone()
+    }
+    pub fn weapon(&self) -> Arc<WeaponModule> {
+        self.weapon_module
+            .get_or_init(|| WeaponModule::new(self.arc()))
+            .clone()
+    }
+    pub fn recipe(&self) -> Arc<RecipeModule> {
+        self.recipe_module
+            .get_or_init(|| RecipeModule::new(self.arc()))
+            .clone()
+    }
+    pub fn riven_good_roll(&self) -> Arc<RivenGoodRollModule> {
+        self.riven_good_roll_module
+            .get_or_init(|| RivenGoodRollModule::new(self.arc()))
+            .clone()
+    }
+    pub fn attribute(&self) -> Arc<AttributeModule> {
+        self.attribute_module
+            .get_or_init(|| AttributeModule::new(self.arc()))
             .clone()
     }
     /**
@@ -632,11 +659,6 @@ impl CacheState {
             self.resource_module = OnceLock::new();
             let _ = self.resource_module.set(new);
         }
-        if let Some(old) = self.riven_module.get().cloned() {
-            let new = RivenModule::from_existing(&old);
-            self.riven_module = OnceLock::new();
-            let _ = self.riven_module.set(new);
-        }
         if let Some(old) = self.secondary_module.get().cloned() {
             let new = SecondaryModule::from_existing(&old);
             self.secondary_module = OnceLock::new();
@@ -686,6 +708,26 @@ impl CacheState {
             let new = LanguageModule::from_existing(&old);
             self.language_module = OnceLock::new();
             let _ = self.language_module.set(new);
+        }
+        if let Some(old) = self.weapon_module.get().cloned() {
+            let new = WeaponModule::from_existing(&old);
+            self.weapon_module = OnceLock::new();
+            let _ = self.weapon_module.set(new);
+        }
+        if let Some(old) = self.recipe_module.get().cloned() {
+            let new = RecipeModule::from_existing(&old);
+            self.recipe_module = OnceLock::new();
+            let _ = self.recipe_module.set(new);
+        }
+        if let Some(old) = self.riven_good_roll_module.get().cloned() {
+            let new = RivenGoodRollModule::from_existing(&old);
+            self.riven_good_roll_module = OnceLock::new();
+            let _ = self.riven_good_roll_module.set(new);
+        }
+        if let Some(old) = self.attribute_module.get().cloned() {
+            let new = AttributeModule::from_existing(&old);
+            self.attribute_module = OnceLock::new();
+            let _ = self.attribute_module.set(new);
         }
     }
 }
