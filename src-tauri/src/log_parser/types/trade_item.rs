@@ -5,6 +5,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use utils::*;
 
+use crate::cache::{
+    CacheFish, CacheItemBase, CacheMisc, CacheMod, CacheRecipe, CacheRelics, CacheResource,
+};
 use crate::enums::TradeItemType;
 use crate::{cache::types::CacheTradableItem, log_parser::log, utils::modules::states};
 
@@ -63,7 +66,8 @@ impl TradeItem {
         let mut line = line.to_owned();
         let mut next_line = next_line.to_owned();
         let mut raw = line.to_owned();
-
+        let match_text = ", leftItem=/";
+        // let match_text = ", title= ";
         // Check if the item is platinum
         let (is_currency_combined, is_currency_status, is_currency_type) =
             detection.is_currency(&line, &next_line, false, false);
@@ -77,14 +81,13 @@ impl TradeItem {
         // Check if the item is the last item
         let (mut last_item_combined, last_item_status) =
             detection.is_last_item(&line, &next_line, false, false);
-
         if last_item_status == DetectionStatus::NextLine {
-            next_line.truncate(next_line.find(", title= ").unwrap());
+            next_line.truncate(next_line.find(match_text).unwrap());
         } else if last_item_status == DetectionStatus::Line {
-            line.truncate(line.find(", title= ").unwrap());
+            line.truncate(line.find(match_text).unwrap());
             raw = line.clone();
         } else if last_item_status.is_combined() {
-            last_item_combined.truncate(last_item_combined.find(", title= ").unwrap());
+            last_item_combined.truncate(last_item_combined.find(match_text).unwrap());
             line = last_item_combined.clone();
             raw = line.clone();
         }
@@ -131,9 +134,8 @@ impl TradeItem {
     // Helper function to extract logic used by both matching paths
     fn apply_item_info(&mut self, found: &CacheTradableItem) {
         let tags: Vec<&str> = found.tags.iter().map(|s| s.as_str()).collect();
-        self.unique_name = found.unique_name.clone();
-        self.item_type = tags_to_type(tags.clone());
 
+<<<<<<< HEAD
         let variants = found
             .sub_type
             .clone()
@@ -144,55 +146,33 @@ impl TradeItem {
         if tags.contains(&"relic") {
             self.sub_type = Some(SubType::variant("intact"));
         }
+=======
+>>>>>>> 8b8a01cc (Refactor `TradeItem` detection for improved accuracy and modularity)
         if tags.contains(&"arcane_enhancement") {
             if let Some(max_rank) = found.sub_type.as_ref().and_then(|st| st.max_rank) {
                 self.sub_type = Some(SubType::rank(max_rank));
             }
         }
+<<<<<<< HEAD
         // Some mods have variants that are not indicated in the name
         if variants.contains(&"regular".to_string()) && variants.contains(&"atragraph".to_string())
         {
             self.sub_type = Some(SubType::variant("regular"));
         }
+=======
+        self.unique_name = found.unique_name.clone();
+        self.item_type = tags_to_type(tags.clone());
+>>>>>>> 8b8a01cc (Refactor `TradeItem` detection for improved accuracy and modularity)
     }
-    fn detect_variant_or_rank(
-        &mut self,
-        line: &str,
-        next_line: &str,
-        open: &str,
-        close: &str,
-    ) -> Option<(String, DetectionStatus)> {
-        let start = contains_at_least(&line, open, 1, true);
-        let end = contains_at_least(&line, close, 1, true);
-        if start && end {
-            return Some((line.to_string(), DetectionStatus::Line));
-        }
-        let (combined, status) =
-            combine_and_detect_multiple_matches(line, next_line, &[open, close], false, false);
 
-        if status.is_found()
-            && contains_at_least(&combined, open, 1, true)
-            && contains_at_least(&combined, close, 1, true)
-        {
-            Some((combined, status))
-        } else {
-            None
-        }
-    }
-    fn split_name_and_enclosed(line: &str, open: char, close: char) -> (String, String) {
-        let index = line.find(open).unwrap_or(0);
-        let rank_str = line[index..].replace(&[open, close][..], "");
-        let name_part = line[..index].trim_end();
-        (name_part.to_string(), rank_str)
-    }
     pub fn is_variant_item(
         &mut self,
         line: &str,
         next_line: &str,
     ) -> Result<DetectionStatus, Error> {
         // Check if the item is a mod eg. "Serration (RIVEN RANK 0)"
-        if let Some((combine, status)) = self.detect_variant_or_rank(line, next_line, "(", ")") {
-            let (name_part, rank_str) = Self::split_name_and_enclosed(&combine, '(', ')');
+        if let Some((combine, status)) = detect_enclosed_text(line, next_line, "(", ")") {
+            let (name_part, rank_str) = split_base_name_and_enclosed_value(&combine, '(', ')');
             // Handle the rank or size of the fish.
             match rank_str.as_str() {
                 "S" => {
@@ -250,17 +230,16 @@ impl TradeItem {
             return Ok(status);
         }
 
-        if let Some((combine, status)) = self.detect_variant_or_rank(line, next_line, "[", "]") {
-            let (name_part, type_str) = Self::split_name_and_enclosed(&combine, '[', ']');
+        if let Some((combine, status)) = detect_enclosed_text(line, next_line, "[", "]") {
+            let (name_part, type_str) = split_base_name_and_enclosed_value(&combine, '[', ']');
+            self.sub_type = Some(SubType::variant(&type_str.to_lowercase()));
             if self.is_trade_item(&name_part, next_line)?.is_found() {
-                self.sub_type = Some(SubType::variant(&type_str));
                 return Ok(status);
             }
         }
 
         Ok(DetectionStatus::None)
     }
-
     pub fn is_arcane(&mut self, line: &str, next_line: &str) -> Result<DetectionStatus, Error> {
         let (combine, status) = contains_unicode(&line, next_line, false);
 
@@ -294,6 +273,205 @@ impl TradeItem {
         return Ok(status);
     }
 
+    pub fn is_relic(&mut self, line: &str, next_line: &str) -> Result<DetectionStatus, Error> {
+        let cache = states::cache_client().expect("Cache not found");
+
+        let relics = cache.relics();
+
+        let apply_relic = |this: &mut Self, info: &CacheRelics| {
+            this.unique_name = info.base.unique_name.clone();
+            this.sub_type = info.base.sub_type.clone();
+            this.item_type = TradeItemType::Relic;
+        };
+
+        if let Ok(info) = relics.get_by(line) {
+            apply_relic(self, &info);
+            return Ok(DetectionStatus::Line);
+        }
+
+        let combined_line = format!("{}{}", line, next_line);
+
+        if let Ok(info) = relics.get_by(&combined_line) {
+            apply_relic(self, &info);
+            return Ok(DetectionStatus::Combined);
+        }
+
+        let (status, name, tier) = extract_item_variant(line, next_line, '[', ']')?;
+        if status.is_found() {
+            let relic_name = format!("{} {}", name, tier.to_lowercase());
+            if let Ok(info) = relics.get_by(&relic_name) {
+                apply_relic(self, &info);
+                return Ok(status);
+            }
+        }
+        Ok(DetectionStatus::None)
+    }
+    pub fn is_misc(&mut self, line: &str, next_line: &str) -> Result<DetectionStatus, Error> {
+        let cache = states::cache_client().expect("Cache not found");
+
+        let misc = cache.misc();
+
+        let apply_misc = |this: &mut Self, info: &CacheMisc| {
+            this.unique_name = info.base.unique_name.clone();
+            this.sub_type = info.base.sub_type.clone();
+            this.item_type = TradeItemType::Misc;
+        };
+
+        if let Ok(info) = misc.get_by(line) {
+            apply_misc(self, &info);
+            return Ok(DetectionStatus::Line);
+        }
+
+        let combined_line = format!("{}{}", line, next_line);
+
+        if let Ok(info) = misc.get_by(&combined_line) {
+            apply_misc(self, &info);
+            return Ok(DetectionStatus::Combined);
+        }
+        Ok(DetectionStatus::None)
+    }
+    pub fn is_recipe(&mut self, line: &str, next_line: &str) -> Result<DetectionStatus, Error> {
+        let cache = states::cache_client().expect("Cache not found");
+
+        let recipes = cache.recipe();
+
+        let apply_recipe = |this: &mut Self, info: &CacheRecipe| {
+            this.unique_name = info.base.unique_name.clone();
+            this.sub_type = info.base.sub_type.clone();
+            this.item_type = TradeItemType::Recipe;
+        };
+
+        if let Ok(info) = recipes.get_by(line) {
+            apply_recipe(self, &info);
+            return Ok(DetectionStatus::Line);
+        }
+
+        let combined_line = format!("{}{}", line, next_line);
+
+        if let Ok(info) = recipes.get_by(&combined_line) {
+            apply_recipe(self, &info);
+            return Ok(DetectionStatus::Combined);
+        }
+        Ok(DetectionStatus::None)
+    }
+    pub fn is_mod(&mut self, line: &str, next_line: &str) -> Result<DetectionStatus, Error> {
+        let cache = states::cache_client().expect("Cache not found");
+
+        let (status, name, rank_str) = extract_item_variant(line, next_line, '(', ')')?;
+        if !status.is_found() {
+            return Ok(DetectionStatus::None);
+        }
+
+        let mods = cache.mods();
+
+        let mut rank = 0;
+        for s in rank_str.split(' ') {
+            if let Ok(result) = s.parse::<i64>() {
+                rank = result;
+                break;
+            }
+        }
+
+        let apply_mod = |this: &mut Self, info: &CacheMod| {
+            let variant = info
+                .base
+                .sub_type
+                .as_ref()
+                .and_then(|sub_type| sub_type.variant.as_deref())
+                .unwrap_or("");
+            this.unique_name = info.base.unique_name.clone();
+            this.item_type = TradeItemType::ModWithNoRank;
+            if info.fusion_limit > 0 && variant.is_empty() {
+                this.sub_type = Some(SubType::rank(rank));
+                this.item_type = TradeItemType::Mod;
+            } else {
+                this.sub_type = info.base.sub_type.clone();
+                this.properties.set_property_value("requireSubType", true);
+                this.item_type = TradeItemType::RivenUnVeiled;
+            }
+        };
+
+        if let Ok(info) = mods.get_by(format!("Name:{}", name)) {
+            apply_mod(self, &info);
+            return Ok(DetectionStatus::Line);
+        }
+        Ok(DetectionStatus::None)
+    }
+    pub fn is_riven_mod(&mut self, line: &str, next_line: &str) -> Result<DetectionStatus, Error> {
+        let cache = states::cache_client().expect("Cache not found");
+
+        let (status, name, rank_str) = extract_item_variant(line, next_line, '(', ')')?;
+        if !status.is_found() {
+            return Ok(DetectionStatus::None);
+        }
+
+        let mods = cache.mods();
+
+        let apply_mod = |this: &mut Self, info: &CacheMod| {
+            // let variant = info
+            //     .base
+            //     .sub_type
+            //     .as_ref()
+            //     .and_then(|sub_type| sub_type.variant.as_deref())
+            //     .unwrap_or("");
+            // this.unique_name = info.base.unique_name.clone();
+            // this.item_type = TradeItemType::ModWithNoRank;
+            // if info.fusion_limit > 0 && variant.is_empty() {
+            //     this.sub_type = Some(SubType::rank(rank));
+            //     this.item_type = TradeItemType::Mod;
+            // } else {
+            //     this.sub_type = info.base.sub_type.clone();
+            //     this.properties.set_property_value("requireSubType", true);
+            //     this.item_type = TradeItemType::RivenUnVeiled;
+            // }
+        };
+
+        if let Ok(info) = mods.get_by(format!("Name:{}", name)) {
+            apply_mod(self, &info);
+            return Ok(DetectionStatus::Line);
+        }
+        Ok(DetectionStatus::None)
+    }
+    pub fn is_fish(&mut self, line: &str, next_line: &str) -> Result<DetectionStatus, Error> {
+        let cache = states::cache_client().expect("Cache not found");
+        let fish = cache.fish();
+
+        let (status, name, size) = extract_item_variant(line, next_line, '(', ')')?;
+        if !status.is_found() {
+            return Ok(DetectionStatus::None);
+        }
+        // Check if size is one Char long
+        if size.len() != 1 {
+            return Ok(DetectionStatus::None);
+        }
+        let variant = match size.as_str() {
+            "S" => "small",
+            "M" => "medium|magnificent",
+            "L" => "large",
+            "B" => "basic",
+            "A" => "adorned",
+            _ => {
+                return Ok(DetectionStatus::None);
+            }
+        };
+
+        let variants = variant.split('|').collect::<Vec<&str>>();
+
+        let apply_mod = |this: &mut Self, info: &CacheFish| {
+            this.unique_name = info.base.unique_name.clone();
+            this.sub_type = info.base.sub_type.clone();
+            this.item_type = TradeItemType::Fish;
+        };
+
+        for var in variants {
+            let combined_name = format!("Name:{}|{}", name, var);
+            if let Ok(info) = fish.get_by(combined_name) {
+                apply_mod(self, &info);
+                return Ok(DetectionStatus::Line);
+            }
+        }
+        Ok(DetectionStatus::None)
+    }
     pub fn is_weapon(&mut self, line: &str, next_line: &str) -> Result<DetectionStatus, Error> {
         let ch = states::cache_client().expect("Cache not found");
 
@@ -311,27 +489,40 @@ impl TradeItem {
         Ok(DetectionStatus::None)
     }
     pub fn is_trade_item(&mut self, line: &str, next_line: &str) -> Result<DetectionStatus, Error> {
-        let ch = states::cache_client().expect("Cache not found");
+        let cache = states::cache_client().expect("Cache not found");
+        let tradable_items = cache.tradable_item();
 
-        if let Ok(info) = ch.tradable_item().get_by(line) {
+        if let Ok(info) = tradable_items.get_by(line) {
             self.apply_item_info(&info);
+
             return Ok(DetectionStatus::Line);
         }
 
-        if let Ok(info) = ch.tradable_item().get_by(line.to_string() + next_line) {
+        let combined_line = format!("{}{}", line, next_line);
+
+        if let Ok(info) = tradable_items.get_by(&combined_line) {
             self.apply_item_info(&info);
+
             return Ok(DetectionStatus::Combined);
         }
+
         Ok(DetectionStatus::None)
     }
 
     pub fn validate(&mut self, next_line: &str) -> Result<DetectionStatus, Error> {
         for check in [
-            Self::is_trade_item,
-            Self::is_variant_item,
+            Self::is_relic,
+            Self::is_recipe,
             Self::is_arcane,
-            Self::is_weapon,
-            Self::is_imprint,
+            Self::is_misc,
+            Self::is_fish,
+            // Self::is_riven_mod,
+            Self::is_mod,
+            // Self::is_raw_item,
+            // Self::is_trade_item,
+            // Self::is_variant_item,
+            // Self::is_weapon,
+            // Self::is_imprint,
         ] {
             let status = check(self, &self.raw.clone(), next_line)?;
             if status.is_found() {
@@ -402,10 +593,6 @@ impl Display for TradeItem {
 pub fn tags_to_type(tags: Vec<&str>) -> TradeItemType {
     match () {
         _ if tags.contains(&"ayatan_sculpture") => TradeItemType::Ayatan,
-        _ if tags.contains(&"main_part") => TradeItemType::MainBlueprint,
-        _ if tags.contains(&"blueprint") && !tags.contains(&"component") => {
-            TradeItemType::MainBlueprint
-        }
         _ if tags.contains(&"weapon") => TradeItemType::Weapon,
         _ if tags.contains(&"relic") => TradeItemType::Relic,
         _ if tags.contains(&"component") => TradeItemType::Component,
