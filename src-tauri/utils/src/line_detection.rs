@@ -1,11 +1,15 @@
 use regex::Regex;
 
+use crate::Error;
+
 #[derive(Debug, PartialEq)]
 pub enum DetectionStatus {
     None,
     Line,
     NextLine,
     Combined,
+    LineThenNextLine,
+    PreviousLineThenLine,
 }
 
 impl DetectionStatus {
@@ -14,7 +18,12 @@ impl DetectionStatus {
     }
 
     pub fn is_combined(&self) -> bool {
-        matches!(self, DetectionStatus::Combined)
+        matches!(
+            self,
+            DetectionStatus::Combined
+                | DetectionStatus::NextLine
+                | DetectionStatus::LineThenNextLine
+        )
     }
 }
 
@@ -96,30 +105,30 @@ pub fn combine_and_detect_match(
     line: &str,
     next_line: &str,
     match_pattern: &str,
-    use_previous_line: bool,
+    ignore_combined: bool,
     is_exact_match: bool,
 ) -> (String, DetectionStatus) {
-    if !use_previous_line && next_line.is_empty() {
-        return (line.to_string(), DetectionStatus::None);
-    } else if use_previous_line && line.is_empty() {
-        return (next_line.to_string(), DetectionStatus::None);
+    if contains_match(line, match_pattern, is_exact_match) {
+        return (line.to_string(), DetectionStatus::Line);
     }
 
-    let combined = if use_previous_line {
-        next_line.to_owned() + line
-    } else {
-        line.to_owned() + next_line
-    };
-
-    if contains_match(&combined, match_pattern, is_exact_match) {
-        return (combined, DetectionStatus::Combined);
+    if contains_match(next_line, match_pattern, is_exact_match) {
+        return (next_line.to_string(), DetectionStatus::NextLine);
     }
 
-    if use_previous_line {
-        (next_line.to_string(), DetectionStatus::None)
-    } else {
-        (line.to_string(), DetectionStatus::None)
+    if !ignore_combined {
+        let line_then_next = format!("{line}{next_line}");
+        if contains_match(&line_then_next, match_pattern, is_exact_match) {
+            return (line_then_next, DetectionStatus::LineThenNextLine);
+        }
+
+        let previous_then_line = format!("{next_line}{line}");
+        if contains_match(&previous_then_line, match_pattern, is_exact_match) {
+            return (previous_then_line, DetectionStatus::PreviousLineThenLine);
+        }
     }
+
+    (line.to_string(), DetectionStatus::None)
 }
 
 /// Combines two lines and detects if the result matches **all** given patterns.
@@ -197,4 +206,75 @@ pub fn is_match(
     } else {
         input == to_match
     }
+}
+
+pub fn detect_enclosed_text(
+    current_line: &str,
+    next_line: &str,
+    opening_delimiter: &str,
+    closing_delimiter: &str,
+) -> Option<(String, DetectionStatus)> {
+    let has_open = contains_at_least(&current_line, opening_delimiter, 1, true);
+    let has_close = contains_at_least(&current_line, closing_delimiter, 1, true);
+
+    if has_open && has_close {
+        return Some((current_line.to_string(), DetectionStatus::Line));
+    }
+
+    let (merged_text, detection_status) = combine_and_detect_multiple_matches(
+        current_line,
+        next_line,
+        &[opening_delimiter, closing_delimiter],
+        false,
+        false,
+    );
+
+    if detection_status.is_found()
+        && contains_at_least(&merged_text, opening_delimiter, 1, true)
+        && contains_at_least(&merged_text, closing_delimiter, 1, true)
+    {
+        Some((merged_text, detection_status))
+    } else {
+        None
+    }
+}
+
+pub fn split_base_name_and_enclosed_value(
+    text: &str,
+    opening_delimiter: char,
+    closing_delimiter: char,
+) -> (String, String) {
+    let start_index = text.find(opening_delimiter).unwrap_or(0);
+
+    let enclosed_value =
+        text[start_index..].replace(&[opening_delimiter, closing_delimiter][..], "");
+
+    let base_name = text[..start_index].trim_end();
+
+    (base_name.to_string(), enclosed_value)
+}
+
+pub fn extract_item_variant(
+    current_line: &str,
+    next_line: &str,
+    opening_delimiter: char,
+    closing_delimiter: char,
+) -> Result<(DetectionStatus, String, String), Error> {
+    // Example: "Serration (RIVEN RANK 0)"
+    if let Some((detected_text, detection_status)) = detect_enclosed_text(
+        current_line,
+        next_line,
+        &opening_delimiter.to_string(),
+        &closing_delimiter.to_string(),
+    ) {
+        let (item_name, enclosed_value) = split_base_name_and_enclosed_value(
+            &detected_text,
+            opening_delimiter,
+            closing_delimiter,
+        );
+
+        return Ok((detection_status, item_name, enclosed_value));
+    }
+
+    Ok((DetectionStatus::None, String::new(), String::new()))
 }

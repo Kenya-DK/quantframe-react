@@ -3,18 +3,25 @@ use std::thread;
 use std::time::Duration;
 use utils::*;
 
-#[derive(Clone, Debug)]
-pub struct OnConversationEvent {}
+pub struct OnTradeEvent {}
 
-impl OnConversationEvent {
-    pub fn new() -> Self {
-        OnConversationEvent {}
+impl LineHandler for OnTradeEvent {
+    fn process_line(&mut self, _entry: &LineEntry) -> Result<(bool, bool), Error> {
+        let com = _entry.line.contains("TradeEvent");
+        println!("Trade Entry: {} | Contains 'TradeEvent': {}", _entry, com);
+        Ok((com, com)) // no match → process normally
     }
 }
+pub struct OnConversationEvent {}
 
 impl LineHandler for OnConversationEvent {
     fn process_line(&mut self, _entry: &LineEntry) -> Result<(bool, bool), Error> {
-        Ok((false, false)) // no match → process normally
+        let com = _entry.line.contains("ConversationEvent");
+        println!(
+            "Conversation Entry: {} | Contains 'ConversationEvent': {}",
+            _entry, com
+        );
+        Ok((com, com)) // no match → process normally
     }
 }
 
@@ -32,7 +39,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // C:\Users\Kenya\AppData\Local\Warframe\EE.log
     let watcher = FileWatcher::new(paths[index]);
     // Add multiple dynamic handlers
-    watcher.add_handler(Box::new(OnConversationEvent::new()));
+    watcher.add_handler(Box::new(OnTradeEvent {}));
+    watcher.add_handler(Box::new(OnConversationEvent {}));
     println!("Watching file: {}", paths[index]);
     println!("FileWatcher will print any new lines added to the file...");
     match watcher.watch() {

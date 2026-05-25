@@ -1,5 +1,6 @@
 use std::{collections::HashMap, fmt::Display, vec};
 
+use crate::cache::CacheItemBase;
 use crate::enums::TradeItemType;
 use crate::{log_parser::*, utils::modules::states};
 use chrono::{DateTime, Local};
@@ -146,8 +147,11 @@ impl PlayerTrade {
             self.trade_type = TradeClassification::Purchase;
             log(
                 format!(
-                    "Classified Trade as Purchase | Item: {:?}",
-                    offered_items.first()
+                    "Classified Trade as Purchase | Item: {}",
+                    offered_items
+                        .first()
+                        .unwrap_or(&TradeItem::default())
+                        .item_name()
                 ),
                 None,
             );
@@ -155,8 +159,11 @@ impl PlayerTrade {
             self.trade_type = TradeClassification::Sale;
             log(
                 format!(
-                    "Classified Trade as Sale | Item: {:?}",
-                    received_items.first()
+                    "Classified Trade as Sale | Item: {}",
+                    received_items
+                        .first()
+                        .unwrap_or(&TradeItem::default())
+                        .item_name()
                 ),
                 None,
             );
@@ -173,117 +180,169 @@ impl PlayerTrade {
         self.is_set(TradeClassification::Sale);
     }
 
-    pub fn get_item_by_type(
-        &self,
-        trade_type: &TradeClassification,
-        item_type: &TradeItemType,
-    ) -> Option<TradeItem> {
-        let items = self.get_valid_items(trade_type, vec![]);
-        items.iter().find(|p| &p.item_type == item_type).cloned()
-    }
     pub fn is_set(&mut self, trade_type: TradeClassification) {
-        TradeClassification::Unknown; // Placeholder until set detection is re-implemented
+        // Build a lightweight list of tradable item identifiers + quantities from the selected side.
+        let items = self
+            .get_valid_items(&trade_type, vec![])
+            .iter()
+            .map(|item| CacheItemBase::new(&item.unique_name, item.quantity))
+            .collect::<Vec<_>>();
 
-        // let main_item = match self.get_item_by_type(&trade_type, &TradeItemType::MainBlueprint) {
-        //     Some(item) => item,
-        //     None => return,
-        // };
+        // A set requires multiple components, so skip if we only have one (or zero) items.
+        if items.len() <= 1 {
+            log(
+                format!(
+                    "Skipping side {:?} for set detection: not enough items",
+                    trade_type
+                ),
+                None,
+            );
+            return;
+        }
 
-        // if self.get_valid_items(&self.trade_type, vec![]).is_empty() {
-        //     return;
-        // }
+        // Resolve cache client for recipe and item lookups.
+        let cache = match states::cache_client() {
+            Ok(cache) => cache,
+            Err(_) => {
+                log("Cache client not initialized".to_string(), None);
+                return;
+            }
+        };
 
-        // let cache = match states::cache_client() {
-        //     Ok(c) => c,
-        //     Err(_) => {
-        //         log("Cache client not initialized".to_string(), None);
-        //         return;
-        //     }
-        // };
+        // Helper to query recipes, optionally enforcing "recipe-only" ingredient checks.
+        let get_buildable_set = |recipe_only| cache.recipe().can_craft(&items, true, recipe_only);
 
-        // let component_key = format!("Component|{}", main_item.unique_name);
-        // let component = match cache.all_items().get_by(&component_key) {
-        //     Ok(c) => c,
-        //     Err(_) => {
-        //         log(format!("Main part not found: {}", component_key), None);
-        //         return;
-        //     }
-        // };
+        // First pass: strict match. If that fails, do a second relaxed pass.
+        let mut recipes = match get_buildable_set(false) {
+            Ok(set) => set,
+            Err(err) => {
+                log(format!("Error checking buildable set: {}", err), None);
 
-        // log(
-        //     format!("Found main part {} for set", component.display()),
-        //     None,
-        // );
+                return;
+            }
+        };
 
-        // let set_name = match &component.part_of_set {
-        //     Some(name) => name,
-        //     None => {
-        //         log(
-        //             format!("Part-of-set missing for {}", component.display()),
-        //             None,
-        //         );
-        //         return;
-        //     }
-        // };
+        log(
+            format!("Set detection strict pass | matches: {}", recipes.len()),
+            None,
+        );
 
-        // log(format!("Set unique name: {}", set_name), None);
+        if recipes.is_empty() {
+            log(
+                "Set detection strict pass empty; trying relaxed pass".to_string(),
+                None,
+            );
+            recipes = match get_buildable_set(true) {
+                Ok(set) => set,
+                Err(err) => {
+                    log(
+                        format!("Error checking buildable set (recipe-only): {}", err),
+                        None,
+                    );
 
-        // let set = match cache.all_items().get_by(set_name) {
-        //     Ok(s) => s,
-        //     Err(_) => {
-        //         log(format!("Set not found: {}", set_name), None);
-        //         return;
-        //     }
-        // };
+                    return;
+                }
+            };
 
-        // log(format!("Found set {}", set.display()), None);
+            log(
+                format!("Set detection relaxed pass | matches: {}", recipes.len()),
+                None,
+            );
+        }
 
-        // let components = set.get_tradable_components();
-        // if components.is_empty() {
-        //     log(format!("No components for set {}", set.display()), None);
-        //     return;
-        // }
+        // Pick the mutable trade side we will transform (purchase uses offered, sale uses received).
+        let target_items = match trade_type {
+            TradeClassification::Purchase => &mut self.offered_items,
+            TradeClassification::Sale => &mut self.received_items,
+            _ => return,
+        };
 
-        // for component in components.iter() {
-        //     let found =
-        //         self.is_item_in_trade(&trade_type, &component.unique_name, component.item_count);
+        let initial_target_len = target_items.len();
+        let mut converted_sets = 0;
 
-        //     log(
-        //         format!(
-        //             "Checking component <{}>: Found={}",
-        //             component.display(),
-        //             found
-        //         ),
-        //         None,
-        //     );
+        log(
+            format!(
+                "Starting set detection | side: {:?} | candidate_recipes: {}",
+                trade_type,
+                recipes.len()
+            ),
+            None,
+        );
 
-        //     if !found {
-        //         return;
-        //     }
-        // }
+        // Replace each detected recipe + its components with a single synthetic Set item.
+        for recipe in &recipes {
+            log(format!("Found buildable recipe: {}", recipe.base), None);
 
-        // log(format!("Full set found: {}", set.display()), None);
+            let set_item_data = match cache
+                .all_items()
+                .get_by(format!("Unique:{}", recipe.result_type))
+            {
+                Ok(item) => item,
 
-        // let target_items = match trade_type {
-        //     TradeClassification::Purchase => &mut self.offered_items,
-        //     TradeClassification::Sale => &mut self.received_items,
-        //     _ => return,
-        // };
-        // for component in components {
-        //     target_items.retain(|p| p.unique_name != component.unique_name);
-        //     log(
-        //         format!("Removed component from trade: {}", component.display()),
-        //         None,
-        //     );
-        // }
-        // let mut set_item = TradeItem::new(&set.unique_name, 1, TradeItemType::Set, None);
-        // set_item
-        //     .properties
-        //     .set_property_value("tags", vec!["set".to_string()]);
-        // set_item
-        //     .properties
-        //     .set_property_value("item_name", set.name);
-        // target_items.push(set_item);
+                Err(err) => {
+                    log(format!("Set item not found in cache: {}", err), None);
+
+                    continue;
+                }
+            };
+
+            log(
+                format!("Resolved set item from cache: {}", set_item_data),
+                None,
+            );
+
+            // Remove blueprint entry itself.
+            if recipe.override_unique_name.is_empty() {
+                target_items.retain(|item| item.unique_name != recipe.base.unique_name);
+            } else {
+                target_items.retain(|item| item.unique_name != recipe.override_unique_name);
+            }
+
+            // Remove every recipe component (either direct ingredient item or sub-recipe blueprint).
+            for ingredient in &recipe.ingredients {
+                target_items.retain(|item| {
+                    item.unique_name != ingredient.from_recipe
+                        && item.unique_name != ingredient.base.unique_name
+                });
+
+                log(
+                    format!("Removed component from trade: {}", ingredient),
+                    None,
+                );
+            }
+
+            // Add the resolved crafted set item back into the trade list.
+            let mut set_item = TradeItem::new(
+                &set_item_data.unique_name,
+                1,
+                TradeItemType::Set,
+                set_item_data.sub_type.clone(),
+            );
+
+            set_item
+                .properties
+                .set_property_value("tags", vec!["set".to_string()]);
+
+            set_item
+                .properties
+                .set_property_value("item_name", set_item_data.name.clone());
+
+            target_items.push(set_item);
+            converted_sets += 1;
+
+            log(format!("Set item inserted {}", set_item_data), None);
+        }
+
+        log(
+            format!(
+                "Set detection completed | side: {:?} | converted_sets: {} | target_items: {} -> {}",
+                trade_type,
+                converted_sets,
+                initial_target_len,
+                target_items.len()
+            ),
+            None,
+        );
     }
 
     pub fn get_notify_variables(&self) -> HashMap<String, String> {
@@ -345,6 +404,19 @@ impl Display for PlayerTrade {
         write!(f, "Offered Items: {} | ", self.offered_items.len())?;
         write!(f, "Received Items: {} | ", self.received_items.len())?;
         write!(f, "Logs: {} entries", self.logs.len())?;
+        if self.trade_type == TradeClassification::Purchase && self.received_items.len() == 1 {
+            write!(
+                f,
+                " | Item: {}",
+                self.received_items.first().unwrap().item_name()
+            )?;
+        } else if self.trade_type == TradeClassification::Sale && self.offered_items.len() == 1 {
+            write!(
+                f,
+                " | Item: {}",
+                self.offered_items.first().unwrap().item_name()
+            )?;
+        }
         Ok(())
     }
 }
