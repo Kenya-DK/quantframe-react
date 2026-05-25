@@ -1,4 +1,5 @@
 use core::*;
+use std::fmt::Display;
 use std::fs::File;
 use std::io::{BufReader, Seek, SeekFrom};
 use std::path::Path;
@@ -32,6 +33,13 @@ impl LineEntry {
             date: chrono::Utc::now().timestamp_millis(),
         }
     }
+    pub fn get_combined(&self) -> String {
+        if self.prev_line.is_empty() {
+            self.line.clone()
+        } else {
+            self.prev_line.clone() + &self.line
+        }
+    }
 }
 
 pub struct FileWatcher {
@@ -40,6 +48,7 @@ pub struct FileWatcher {
     prev_line: Arc<Mutex<Option<String>>>,
     cache: Arc<Mutex<Vec<LineEntry>>>, // store cached lines
     handlers: Arc<Mutex<Vec<Box<dyn LineHandler + Send>>>>,
+    skip_empty_lines: bool,
 }
 
 impl FileWatcher {
@@ -56,6 +65,7 @@ impl FileWatcher {
             prev_line: Arc::new(Mutex::new(None)),
             cache: Arc::new(Mutex::new(Vec::new())),
             handlers: Arc::new(Mutex::new(Vec::new())),
+            skip_empty_lines: true,
         }
     }
     pub fn reset(&self) {
@@ -100,6 +110,7 @@ impl FileWatcher {
         handlers.push(handler);
     }
     pub fn watch(&self) -> Result<(), Error> {
+        let mut ignore_combined = false;
         loop {
             let path = { self.path.lock().unwrap().clone() };
 
@@ -151,7 +162,6 @@ impl FileWatcher {
                 file.seek(SeekFrom::Start(*pos))?;
 
                 let reader = BufReader::new(file);
-                let mut ignore_combined = false;
 
                 // Try to read lines, handling UTF-8 errors gracefully
                 let lines = match self.read_lines_lossy(reader) {
@@ -163,6 +173,9 @@ impl FileWatcher {
                 };
 
                 for line in lines {
+                    if self.skip_empty_lines && line.is_empty() {
+                        continue;
+                    }
                     let mut cache = self.cache.lock().unwrap();
                     let mut prev = self.prev_line.lock().unwrap();
 
@@ -174,15 +187,14 @@ impl FileWatcher {
                         prev_line_str.to_string(),
                         ignore_combined,
                     );
-
                     let mut handlers = self.handlers.lock().unwrap();
                     for handler in handlers.iter_mut() {
                         match handler.process_line(&entry) {
                             Ok((break_loop, combined)) => {
-                                if break_loop {
-                                    println!("Processing loop broken by handler");
-                                }
                                 ignore_combined = combined;
+                                if break_loop {
+                                    break;
+                                }
                             }
                             Err(e) => {
                                 println!("Error processing line in handler: {}", e);
@@ -307,6 +319,9 @@ impl FileWatcher {
 
                     // Add complete lines
                     for line in chunk_lines {
+                        if self.skip_empty_lines && line.is_empty() {
+                            continue;
+                        }
                         if !line.chars().all(|c| c == '�') {
                             lines.push(line.to_string());
                         }
@@ -332,5 +347,25 @@ impl FileWatcher {
         }
 
         Ok(lines)
+    }
+}
+
+impl Display for LineEntry {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut items: Vec<String> = vec![];
+
+        items.push(format!("Index: {}", self.index));
+        if !self.line.is_empty() {
+            items.push(format!("Line: {}", self.line.replace("\n", "\\n")));
+        }
+        if !self.prev_line.is_empty() {
+            items.push(format!(
+                "Prev Line: {}",
+                self.prev_line.replace("\n", "\\n")
+            ));
+        }
+        items.push(format!("Ignore Combined: {}", self.ignore_combined));
+        items.push(format!("Date: {}", self.date));
+        write!(f, "{}", items.join(" | "))
     }
 }

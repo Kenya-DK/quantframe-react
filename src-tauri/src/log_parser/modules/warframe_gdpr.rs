@@ -352,7 +352,7 @@ impl WarframeGDPRModule {
 
                     for attempt in validations {
                         item.raw = attempt;
-                        match item.validate("") {
+                        match item.validate("", &detection) {
                             Ok(status) => {
                                 if status.is_found() {
                                     break;

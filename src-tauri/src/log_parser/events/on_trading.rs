@@ -52,17 +52,18 @@ pub struct OnTradeEvent {
     getting_trade_message_multiline: bool,
     waiting_confirmation: bool,
     current_trade: PlayerTrade,
-    uuid: String,
 }
 
 impl OnTradeEvent {
     pub fn new(base_component: &str) -> Self {
+        delete_log("e.log").ok();
+        delete_log("trade.log").ok();
+
         let detections = DETECTIONS.get().unwrap();
         *COMPONENT.lock().unwrap() = format!("{}:OnTradeEvent", base_component);
         OnTradeEvent {
             detection: detections.get("en").unwrap().clone(),
             logs: Vec::new(),
-            uuid: String::new(),
             getting_trade_message_multiline: false,
             waiting_confirmation: false,
             current_trade: PlayerTrade::default(),
@@ -74,10 +75,12 @@ impl OnTradeEvent {
         self.waiting_confirmation = false;
         self.current_trade = PlayerTrade::default();
     }
-    pub fn trade_started(&mut self, line: &str, last_line: &str) {
-        self.reset();
-        self.add_trade_message(last_line);
-        self.add_trade_message(line);
+    pub fn trade_started(&mut self, entry: &LineEntry, line_detection: &DetectionStatus) {
+        if line_detection.is_combined() {
+            self.add_trade_message(entry.get_combined().as_str());
+        } else {
+            self.add_trade_message(&entry.line);
+        }
         log(
             "Started",
             Some(&BASE_LOG_OPTIONS.set_width(180).set_centered(true)),
@@ -90,8 +93,6 @@ impl OnTradeEvent {
         self.current_trade.logs = lines.clone();
         let mut i = 0;
 
-        log(format!("Processing {} Lines", lines.len()), None);
-
         while i < lines.len() {
             let line = lines[i].to_owned().replace("\r", "").replace("\n", "");
             let next_line = if i < lines.len() - 1 {
@@ -100,18 +101,19 @@ impl OnTradeEvent {
                 "N/A".to_string()
             };
 
-            let (is_irrelevant, status) =
-                self.detection.is_irrelevant_trade_line(&line, &next_line);
+            let (is_relevant, status) = self.detection.is_irrelevant_trade_line(&line, &next_line);
 
             log(
                 format!(
-                    "Analyzing Line: '{}' | Next: '{}' | Status: {:?} | Is Irrelevant: {}",
-                    line, next_line, status, !is_irrelevant
+                    "Line {} analyzed | status: {:?} | relevant: {}",
+                    i + 1,
+                    status,
+                    is_relevant
                 ),
                 None,
             );
 
-            if !is_irrelevant {
+            if !is_relevant {
                 i += if status.is_combined() { 2 } else { 1 };
                 continue;
             }
@@ -121,10 +123,7 @@ impl OnTradeEvent {
             if is_offer_line.is_found() {
                 i += if is_offer_line.is_combined() { 2 } else { 1 };
 
-                log(
-                    format!("Offer Line Detected: '{}' | Advancing Index", full_line),
-                    None,
-                );
+                log(format!("Offer line detected: {}", full_line), None);
 
                 // The - wil be cut off in -satumori- Fix it
                 let player_name = full_line
@@ -136,7 +135,7 @@ impl OnTradeEvent {
 
                 log(
                     format!(
-                        "Player Identified: '{}', Switching to Receiving Items",
+                        "Player identified: '{}' | switching to received items",
                         self.current_trade.player_name
                     ),
                     None,
@@ -149,10 +148,7 @@ impl OnTradeEvent {
 
                 if status.is_combined() {
                     log(
-                        format!(
-                            "Combined Line Detected (Status: {:?}) | Advancing Index",
-                            status
-                        ),
+                        format!("Combined line consumed | status: {:?}", status),
                         None,
                     );
                     i += 1;
@@ -160,7 +156,7 @@ impl OnTradeEvent {
 
                 if !item.is_valid() {
                     log(
-                        format!("Invalid Item Detected: '{}' | Status: {:?}", line, status),
+                        format!("Skipped invalid parsed item | status: {:?}", status),
                         None,
                     );
                     i += 1;
@@ -169,7 +165,7 @@ impl OnTradeEvent {
 
                 log(
                     format!(
-                        "Valid Item Parsed: {} | Status: {:?} | Offering? {}",
+                        "Parsed item: {} | status: {:?} | side: {}",
                         item, status, is_offering
                     ),
                     None,
@@ -189,16 +185,16 @@ impl OnTradeEvent {
                     trade.quantity += 1;
                     log(
                         format!(
-                            "Incremented Quantity for Item: {} | New Qty: {}",
+                            "Incremented item quantity: {} -> {}",
                             trade.unique_name, trade.quantity
                         ),
                         None,
                     );
                 } else if is_offering {
-                    log(format!("Adding New Offered Item: {}", item), None);
+                    log(format!("Added offered item: {}", item), None);
                     self.current_trade.offered_items.push(item);
                 } else {
-                    log(format!("Adding New Received Item: {}", item), None);
+                    log(format!("Added received item: {}", item), None);
                     self.current_trade.received_items.push(item);
                 }
             }
@@ -207,26 +203,22 @@ impl OnTradeEvent {
 
         self.current_trade.trade_time = chrono::Local::now().with_timezone(&chrono::Utc);
         log(
-            format!("Trade Time Set: {}", self.current_trade.trade_time),
+            format!("Trade time set: {}", self.current_trade.trade_time),
             None,
         );
 
         self.current_trade.calculate();
-        log("Trade Calculation Complete".to_string(), None);
+        log(
+            format!(
+                "Trade calculation complete | type: {:?}",
+                self.current_trade.trade_type
+            ),
+            None,
+        );
     }
 
-    pub fn trade_cancelled(&mut self) {
-        log("Cancelled".to_string(), None);
-        self.reset();
-        add_metric!("on_trade_event", "trade_cancelled");
-    }
-    pub fn trade_failed(&mut self) {
-        log("Failed".to_string(), None);
-        self.reset();
-        add_metric!("on_trade_event", "trade_failed");
-    }
     pub fn trade_accepted(&mut self) -> Result<(), Error> {
-        log("Trade Was Successful".to_string(), None);
+        log("Trade accepted".to_string(), None);
 
         let mut trade = self.current_trade.clone();
         let settings = states::get_settings()?.clone();
@@ -264,7 +256,7 @@ impl OnTradeEvent {
                 &LoggerOptions::default(),
             );
             log(
-                "Trade is a simple trade, no further processing.".to_string(),
+                "Simple trade detected; skipping auto-processing".to_string(),
                 None,
             );
             return Ok(());
@@ -278,7 +270,7 @@ impl OnTradeEvent {
                 if settings.live_scraper.auto_trade {
                     operations.add("AutoTrade");
                 }
-                log(format!("Found {} valid items", items.len()), None);
+                log(format!("Valid trade items found: {}", items.len()), None);
                 if item.is_none() {
                     warning(
                         "OnTradeEvent",
@@ -296,7 +288,7 @@ impl OnTradeEvent {
                     return;
                 }
                 let item = item.unwrap().clone();
-                if items.len() > 1 {
+                if items.len() > 1 || item.properties.get_property_value("requireSubType", false) {
                     operations.add("MultipleItems");
                     match process_mutable_items(&trade, trade_type, order_type).await {
                         Ok(op) => operations.merge(&op),
@@ -321,7 +313,10 @@ impl OnTradeEvent {
                         }
                     }
                 }
-                let msg = format!("Trade Processed: {}", operations.operations.join(", "));
+                let msg = format!(
+                    "Trade processed | operations: {}",
+                    operations.operations.join(", ")
+                );
                 log(msg, None);
                 process_operations(&trade, operations);
             }
@@ -337,77 +332,78 @@ impl OnTradeEvent {
 
 impl LineHandler for OnTradeEvent {
     fn process_line(&mut self, entry: &LineEntry) -> Result<(bool, bool), Error> {
-        while self.getting_trade_message_multiline {
-            if self
-                .detection
-                .is_end_of_trade(&entry.line, &entry.prev_line, true, entry.ignore_combined)
-                .is_found()
-            {
+        // Handle multiline trade message collection
+        if self.getting_trade_message_multiline {
+            // Detect start of trade
+            let trade_end = self.detection.is_end_of_trade(
+                &entry.line,
+                &entry.prev_line,
+                entry.ignore_combined,
+            );
+
+            if trade_end.is_found() {
                 self.getting_trade_message_multiline = false;
-                self.start_line_processing();
                 self.waiting_confirmation = true;
+                self.start_line_processing();
                 log(
                     "Waiting For Confirmation/Trade Failed/Trade Cancelled",
                     None,
                 );
+                return Ok((false, !trade_end.is_combined()));
             } else if !is_start_of_log(&entry.line) {
                 self.add_trade_message(&entry.line);
                 return Ok((false, false));
             } else {
                 return Ok((false, false));
             }
+
+            // return self.process_multiline_trade(entry);
         }
 
-        if entry.line.contains("UUID:") {
-            self.uuid = entry
-                .line
-                .split("UUID:")
-                .nth(1)
-                .unwrap_or("")
-                .trim()
-                .to_string();
-        }
+        // Detect start of trade
+        let trade_start = self.detection.is_beginning_of_trade(
+            &entry.line,
+            &entry.prev_line,
+            entry.ignore_combined,
+        );
 
-        // Start of a Trade
-        if self
-            .detection
-            .is_beginning_of_trade(&entry.line, &entry.prev_line, true, entry.ignore_combined)
-            .is_found()
-        {
-            self.trade_started(&entry.line, &entry.prev_line);
+        if trade_start.is_found() {
             self.getting_trade_message_multiline = true;
-            return Ok((false, true));
+            self.trade_started(entry, &trade_start);
+            return Ok((true, !trade_start.is_combined()));
         }
-        // Waiting for trade confirmation / trade failed
-        else if self.waiting_confirmation
-            && self
-                .detection
-                .is_trade_finished(&entry.line, &entry.prev_line, true)
-                .is_found()
+        // Nothing else to do unless we're waiting for confirmation
+        if !self.waiting_confirmation || entry.ignore_combined {
+            return Ok((false, false));
+        }
+
+        match self
+            .detection
+            .get_trade_result(&entry.line, &entry.prev_line, entry.ignore_combined)
         {
-            if self
-                .detection
-                .was_trade_successful(&entry.line, &entry.prev_line, true, entry.ignore_combined)
-                .is_found()
-            {
-                match self.trade_accepted() {
-                    Ok(_) => {}
-                    Err(_) => {}
-                }
-            } else if self
-                .detection
-                .was_trade_failed(&entry.line, &entry.prev_line, true, entry.ignore_combined)
-                .is_found()
-            {
-                self.trade_failed();
-            } else if self
-                .detection
-                .was_trade_cancelled(&entry.line, &entry.prev_line, true, entry.ignore_combined)
-                .is_found()
-            {
-                self.trade_cancelled();
+            (status, TradeResult::Success) => {
+                self.trade_accepted()?;
+                self.waiting_confirmation = false;
+                return Ok((
+                    true,
+                    matches!(status, DetectionStatus::Line | DetectionStatus::NextLine),
+                ));
             }
-            self.reset();
+            (status, TradeResult::Failed) => {
+                log("Failed".to_string(), None);
+                self.reset();
+                add_metric!("on_trade_event", "trade_failed");
+                self.waiting_confirmation = false;
+                return Ok((true, status.is_combined()));
+            }
+            (status, TradeResult::Cancelled) => {
+                log("Cancelled".to_string(), None);
+                self.reset();
+                add_metric!("on_trade_event", "trade_cancelled");
+                self.waiting_confirmation = false;
+                return Ok((true, status.is_combined()));
+            }
+            _ => {}
         }
         Ok((false, false))
     }
@@ -419,10 +415,7 @@ async fn process_mutable_items(
     order_type: OrderType,
 ) -> Result<OperationSet, Error> {
     let mut operations = OperationSet::new();
-    log(
-        format!("Starting to process mutable items for {}", trade),
-        None,
-    );
+    log("Processing mutable trade items".to_string(), None);
     let (is_open, window) = get_or_create_window(
         "processing-trades",
         "clean?type=process_trade",
@@ -441,21 +434,21 @@ async fn process_mutable_items(
     for item in &mut items {
         if !item.is_valid() {
             log(format!("Skipping invalid item {}", item), None);
+
             continue;
         }
 
         let info = match item.get_trade_item_info() {
             Ok(info) => info,
             Err(_) => {
-                log(
-                    format!("Skipping item {} due to missing trade item info", item),
-                    None,
-                );
+                log(format!("Skipped item (missing trade info): {}", item), None);
                 continue;
             }
         };
 
         item.properties.set_property_value("name", json!(info.name));
+        item.properties
+            .set_property_value("subTypes", json!(info.sub_type));
         item.properties
             .set_property_value("wfm_url", json!(info.wfm_url));
 
@@ -471,7 +464,7 @@ async fn process_mutable_items(
             .map(|order| order.platinum)
             .unwrap_or(0);
         log(
-            format!("Price for item {} | Price: {}", info.name, price),
+            format!("Resolved price | item: {} | platinum: {}", info.name, price),
             None,
         );
         item.properties.set_property_value("price", json!(price));
@@ -483,6 +476,8 @@ async fn process_mutable_items(
         obj.remove("receivedItems");
         obj.remove("logs");
     }
+    // Remove invalid item from the list
+    items.retain(|i| i.is_valid());
     payload["items"] = json!(items);
 
     let window_clone = window.clone();
@@ -490,12 +485,12 @@ async fn process_mutable_items(
 
     window.once("initialize", move |_| {
         let _ = window_clone.emit("add_trade", payload_clone);
-        log("Opened processing-trades window", None);
+        log("processing-trades window initialized", None);
     });
 
     if is_open {
         let _ = window.emit("add_trade", payload);
-        log("Emitted add_trade to processing-trades window", None);
+        log("Dispatched add_trade to processing-trades window", None);
     }
     operations.add(format!("Items:{}", items.len()));
     Ok(operations)
@@ -580,17 +575,15 @@ async fn process_trade_item(
     if item.item_type == TradeItemType::Imprint {
         let model = handle_transaction(
             entity::transaction::Model::new(
-                "manual_imprint",
-                "manual_imprint",
-                "Imprint",
+                item.properties
+                    .get_property_value("wfmUrl", "Unknown Imprint".to_string()),
+                item.properties
+                    .get_property_value("wfmUrl", "Unknown Imprint".to_string()),
+                item.properties.get_property_value("name", "".to_string()),
                 entity::enums::TransactionItemType::Item,
-                "/WF_Special/CreaturePet/Imprint",
+                item.unique_name.clone(),
                 item.sub_type.clone(),
-                vec![
-                    "imprint".to_string(),
-                    "creature".to_string(),
-                    "custom".to_string(),
-                ],
+                item.properties.get_property_value("tags", vec![]),
                 if order_type == OrderType::Buy {
                     TransactionType::Purchase
                 } else {
@@ -601,7 +594,7 @@ async fn process_trade_item(
                 platinum,
                 2000 * item.quantity,
                 Some(json!({
-                    "pet_name": item.sub_type.unwrap().variant.unwrap_or("Unknown".to_string())
+                    "petName": item.sub_type.unwrap().variant.unwrap_or("Unknown".to_string())
                 })),
             ),
             &operations,
