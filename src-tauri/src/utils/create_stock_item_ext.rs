@@ -28,7 +28,7 @@ impl CreateStockItemExt for CreateStockItem {
                     self.item_unique_name = unique_name.clone();
                 } else {
                     return Err(Error::new(
-                        "CreateStockItemExt:V",
+                        "CreateStockItemExt:SubTypeVariant",
                         format!("No unique name found for sub_type: {:?}", self.sub_type),
                         get_location!(),
                     ));
