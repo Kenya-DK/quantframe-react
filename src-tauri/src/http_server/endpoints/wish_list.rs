@@ -6,7 +6,7 @@ use wf_market::enums::OrderType;
 
 use crate::{
     add_metric,
-    handlers::{handle_riven_by_entity, handle_wish_list, handle_wish_list_by_entity},
+    handlers::handle_wish_list_by_entity,
     http_server::{respond_json, respond_text},
     send_event,
     types::{OperationSet, UIEvent},

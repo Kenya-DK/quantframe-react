@@ -1,12 +1,9 @@
-use entity::{dto::SubType, enums::RivenGrade, stock_riven::RivenAttribute};
+use entity::stock_riven::RivenAttribute;
 use serde::{Deserialize, Serialize};
 use utils::{get_location, Error};
 
 use crate::{
-    cache::{
-        build_riven_mod_name, compute_riven_endo_cost, compute_riven_kuva_cost,
-        lookup_riven_multipliers, normalize_polarity, normalize_weapon_unique_name, CacheState,
-    },
+    cache::CacheState,
     types::ItemRivenBase,
     wf_inventory::*,
 };
@@ -69,11 +66,11 @@ impl WFInvItemRiven {
 
     fn populate_unveiled(
         &mut self,
-        raw: &WFInvItemRaw,
+        _raw: &WFInvItemRaw,
         fingerprint: &UpgradeFingerprint,
-        cache: &CacheState,
+        _cache: &CacheState,
     ) -> Result<(), Error> {
-        let challenge = fingerprint.challenge.clone().ok_or_else(|| {
+        let _challenge = fingerprint.challenge.clone().ok_or_else(|| {
             Error::new(
                 format!("{}:Unveiled", COMPONENT),
                 "Unveiled riven missing challenge data",
@@ -110,7 +107,7 @@ impl WFInvItemRiven {
 
         Ok(())
     }
-    fn populate_pre_veiled(&mut self, raw: &WFInvItemRaw, cache: &CacheState) -> Result<(), Error> {
+    fn populate_pre_veiled(&mut self, _raw: &WFInvItemRaw, _cache: &CacheState) -> Result<(), Error> {
         // let mod_data = cache.mods().get(raw.unique_name.clone())?;
 
         // self.base.name = mod_data.name.clone();
@@ -130,9 +127,9 @@ impl WFInvItemRiven {
     }
     fn populate_veiled(
         &mut self,
-        raw: &WFInvItemRaw,
-        fingerprint: &UpgradeFingerprint,
-        cache: &CacheState,
+        _raw: &WFInvItemRaw,
+        _fingerprint: &UpgradeFingerprint,
+        _cache: &CacheState,
     ) -> Result<(), Error> {
         // let riven_cache = cache.riven();
 

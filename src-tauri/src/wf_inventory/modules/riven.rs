@@ -1,8 +1,7 @@
 use std::sync::{Arc, Weak};
 
 use entity::{dto::PaginatedResult, enums::FieldChange};
-use serde_json::json;
-use utils::{log_json_formatted, warning, Error, LoggerOptions, SortDirection};
+use utils::{warning, Error, LoggerOptions, SortDirection};
 static COMPONENT: &str = "WFInventory:RivenModule";
 
 use crate::{helper::paginate, utils::modules::states, wf_inventory::*};
