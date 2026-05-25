@@ -15,7 +15,7 @@ export const useStockMutations = ({ refetchQueries, setLoadingRows }: MutationHo
   );
   const createMutation = createGenericMutation(
     {
-      mutationFn: (data: TauriTypes.CreateStockRiven) => api.stock_riven.create({ ...data, raw: `Wfm:${data.raw}` }),
+      mutationFn: (data: TauriTypes.CreateStockRiven) => api.stock_riven.create(data),
       successKey: "create_stock_riven",
       errorKey: "create_stock_riven",
       getSuccessMessage: (data: any) => ({ name: `${data.weapon_name} ${data.mod_name}` }),

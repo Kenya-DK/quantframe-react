@@ -89,7 +89,7 @@ impl ItemRivenBase {
 
         let weapon = cache
             .weapon()
-            .get_by(format!("Wfm:{}", auction.item.weapon_url_name))
+            .get_by(&auction.item.weapon_url_name)
             .map_err(|e| e.with_location(get_location!()))?;
         riven.name = weapon.name.clone();
         riven.unique_name = weapon.unique_name.clone();
