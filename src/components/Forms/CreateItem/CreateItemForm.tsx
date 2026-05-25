@@ -51,7 +51,7 @@ export function CreateItemForm({ hide_quantity, hide_sub_type, idField, hide_bou
         <Group gap="md">
           <SelectTradableItem
             value={form.values.wfm_url}
-            hide_sub_type={hide_sub_type}
+            hideSubType={hide_sub_type}
             onChange={(item) => {
               form.setFieldValue("wfm_url", item.wfmUrl);
               form.setFieldValue("wfm_id", item.wfmId);

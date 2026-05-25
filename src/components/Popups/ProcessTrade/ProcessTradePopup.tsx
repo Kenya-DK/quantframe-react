@@ -1,16 +1,17 @@
-import { Box, Button, Table, Text, NumberInput, Divider, Group } from "@mantine/core";
+import { TauriTypes } from "$types";
+import { ItemName } from "@components/DataDisplay/ItemName";
+import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
+import { StatsWithSegments } from "@components/Shared/StatsWithSegments";
+import { faPlay } from "@fortawesome/free-solid-svg-icons";
+import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
+import { Box, Button, Divider, Group, NumberInput, Table, Text } from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { emit, listen } from "@tauri-apps/api/event";
 import dayjs from "dayjs";
 import { DataTable } from "mantine-datatable";
 import { useEffect, useState } from "react";
-import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faPlay } from "@fortawesome/free-solid-svg-icons";
-import { useForm } from "@mantine/form";
-import { ItemName } from "@components/DataDisplay/ItemName";
-import { StatsWithSegments } from "@components/Shared/StatsWithSegments";
-import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
-import { TauriTypes } from "$types";
+import { SelectSubType } from "../../Forms/SelectSubType";
 import { useMutations } from "./mutations";
-import { listen, emit } from "@tauri-apps/api/event";
 
 enum TradeProcessingStep {
   View = "view",
@@ -36,6 +37,8 @@ export interface TradeItem<T = any> {
 export interface TradeItemProperties {
   price: number;
   wfm_url: string;
+  requireSubType?: boolean;
+  subTypes?: TauriTypes.CacheTradableItemSubType;
 }
 
 export function ProcessTradePopup() {
@@ -93,6 +96,9 @@ export function ProcessTradePopup() {
     setCurrentStep(TradeProcessingStep.View);
     setTrades((prevTrades) => prevTrades.filter((trade) => trade.tradeTime !== currentTradeForm.values?.tradeTime));
   };
+
+  const ShowSubTypes = currentTradeForm.values?.items?.some((item) => item.properties?.requireSubType);
+
   return (
     <Box>
       {currentStep === TradeProcessingStep.View && (
@@ -192,6 +198,7 @@ export function ProcessTradePopup() {
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>{useTranslateDataGridColumns("item_name")}</Table.Th>
+                <Table.Th display={ShowSubTypes ? "table-cell" : "none"}>{useTranslateDataGridColumns("sub_type")}</Table.Th>
                 <Table.Th>{useTranslateDataGridColumns("quantity")}</Table.Th>
                 <Table.Th>{useTranslateDataGridColumns("price")}</Table.Th>
                 <Table.Th>{useTranslateDataGridColumns("total")}</Table.Th>
@@ -202,6 +209,18 @@ export function ProcessTradePopup() {
                 <Table.Tr key={`${item.wfm_url}-${index}`}>
                   <Table.Td>
                     <ItemName value={item as any} />
+                  </Table.Td>
+                  <Table.Td display={ShowSubTypes ? "table-cell" : "none"}>
+                    <div style={{ display: item.properties?.subTypes && item.properties.requireSubType ? "table-cell" : "none" }}>
+                      <SelectSubType
+                        showLabel={false}
+                        value={item.sub_type}
+                        availableSubTypes={item.properties?.subTypes}
+                        onChange={(subType) => {
+                          currentTradeForm.setFieldValue(`items.${index}.sub_type`, subType);
+                        }}
+                      />
+                    </div>
                   </Table.Td>
                   <Table.Td>{item.quantity}</Table.Td>
                   <Table.Td>
