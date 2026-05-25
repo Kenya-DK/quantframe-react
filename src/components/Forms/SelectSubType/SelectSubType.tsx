@@ -34,7 +34,7 @@ export function SelectSubType({ value, availableSubTypes, showLabel = true, onCh
             }}
           />
         )}
-        {availableSubTypes.max_rank && (
+        {availableSubTypes.maxRank && (
           <NumberInput
             w={150}
             required
@@ -42,14 +42,14 @@ export function SelectSubType({ value, availableSubTypes, showLabel = true, onCh
             placeholder={showLabel ? useTranslateFormFields("rank.placeholder") : undefined}
             value={value?.rank || 0}
             min={0}
-            max={availableSubTypes.max_rank}
+            max={availableSubTypes.maxRank}
             onChange={(event) => {
               if (!value) return;
               onChange({ ...value, rank: Number(event) });
             }}
           />
         )}
-        {availableSubTypes.cyan_stars && (
+        {availableSubTypes.cyanStars && (
           <NumberInput
             w={150}
             required
@@ -57,14 +57,14 @@ export function SelectSubType({ value, availableSubTypes, showLabel = true, onCh
             placeholder={useTranslateFormFields("cyan_stars.placeholder")}
             value={value?.cyan_stars || 0}
             min={0}
-            max={availableSubTypes.cyan_stars}
+            max={availableSubTypes.cyanStars}
             onChange={(event) => {
               if (!value) return;
               onChange({ ...value, cyan_stars: Number(event) });
             }}
           />
         )}
-        {availableSubTypes.amber_stars && (
+        {availableSubTypes.amberStars && (
           <NumberInput
             w={150}
             required
@@ -72,7 +72,7 @@ export function SelectSubType({ value, availableSubTypes, showLabel = true, onCh
             placeholder={useTranslateFormFields("amber_stars.placeholder")}
             value={value?.amber_stars || 0}
             min={0}
-            max={availableSubTypes.amber_stars}
+            max={availableSubTypes.amberStars}
             onChange={(event) => {
               if (!value) return;
               onChange({ ...value, amber_stars: Number(event) });

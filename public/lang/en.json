@@ -2425,6 +2425,7 @@
       "datatable": {
         "columns": {
           "item_name": "Name",
+          "sub_type": "Sub Type",
           "quantity": "Quantity",
           "price": "Price",
           "total": "Total",
