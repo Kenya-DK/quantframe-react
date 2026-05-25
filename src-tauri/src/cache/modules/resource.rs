@@ -3,31 +3,35 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions};
+use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions, MultiKeyMap};
 
 use crate::cache::{modules::LanguageModule, *};
 
 #[derive(Debug)]
 pub struct ResourceModule {
     path: PathBuf,
-    items: Mutex<Vec<CacheResource>>,
+    lookup: Mutex<MultiKeyMap<CacheResource>>,
 }
 
 impl ResourceModule {
     pub fn new(client: Arc<CacheState>) -> Arc<Self> {
         Arc::new(Self {
             path: client.base_path.join("items/Resources.json"),
-            items: Mutex::new(Vec::new()),
+            lookup: Mutex::new(MultiKeyMap::new()),
         })
     }
-    pub fn load(&self, language: &LanguageModule) -> Result<(), Error> {
+    pub fn load(&self, _language: &LanguageModule) -> Result<(), Error> {
         match read_json_file_optional::<Vec<CacheResource>>(&self.path) {
             Ok(mut items) => {
-                let mut items_lock = self.items.lock().unwrap();
-                *items_lock = items;
+                let mut lookup = self.lookup.lock().unwrap();
+                for item in items.iter_mut() {
+                    let mut keys = vec![item.base.name.clone(), item.base.unique_name.clone()];
+                    keys.extend(item.base.previous_names.clone());
+                    lookup.insert_value(item.clone(), keys);
+                }
                 info(
                     "Cache:Resource:load",
-                    format!("Loaded {} Resource items", items_lock.len()),
+                    format!("Loaded {} Resource items", lookup.len()),
                     &LoggerOptions::default(),
                 );
             }
@@ -35,14 +39,32 @@ impl ResourceModule {
         }
         Ok(())
     }
-    /**
-     * Creates a new `ResourceModule` from an existing one, sharing the client.
-     * This is useful for cloning modules when the client state changes.
-     */
-    pub fn from_existing(old: &ResourceModule) -> Arc<Self> {
-        Arc::new(Self {
-            path: old.path.clone(),
-            items: Mutex::new(old.items.lock().unwrap().clone()),
-        })
+
+    /* -------------------------------------------------------------
+        Lookup Functions
+    ------------------------------------------------------------- */
+    /// Get a resource item by various identifiers
+    ///  # Arguments
+    /// - `id`: The identifier to search for (name, url, unique name, or id)
+    ///
+    pub fn get_by(&self, id: impl Into<String>) -> Result<CacheResource, Error> {
+        let id: String = id.into().trim_end().to_string();
+        let lookup = self.lookup.lock().unwrap();
+        if let Some(item) = lookup.get(&id) {
+            Ok(item.clone())
+        } else {
+            Err(Error::new(
+                "Cache:Resources:GetBy",
+                format!("Resource item not found for id '{}'", id),
+                get_location!(),
+            ))
+        }
+    }
+    /* -------------------------------------------------------------
+        Vector Functions
+    ------------------------------------------------------------- */
+    pub fn get_all_items(&self) -> Result<Vec<CacheResource>, Error> {
+        let lookup = self.lookup.lock().unwrap();
+        Ok(lookup.get_all_values())
     }
 }

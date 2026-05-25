@@ -18,7 +18,7 @@ impl AttributeModule {
             lookup: Mutex::new(MultiKeyMap::new()),
         })
     }
-    pub fn load(&self, language: &LanguageModule) -> Result<(), Error> {
+    pub fn load(&self, _language: &LanguageModule) -> Result<(), Error> {
         match read_json_file_optional::<Vec<CacheAttribute>>(&self.path) {
             Ok(mut items) => {
                 let mut lookup = self.lookup.lock().unwrap();
@@ -66,15 +66,5 @@ impl AttributeModule {
     pub fn get_items(&self) -> Result<Vec<CacheAttribute>, Error> {
         let items_lock = self.lookup.lock().unwrap();
         Ok(items_lock.get_all_values())
-    }
-    /**
-     * Creates a new `AttributeModule` from an existing one, sharing the client.
-     * This is useful for cloning modules when the client state changes.
-     */
-    pub fn from_existing(old: &AttributeModule) -> Arc<Self> {
-        Arc::new(Self {
-            path: old.path.clone(),
-            lookup: Mutex::new(old.lookup.lock().unwrap().clone()),
-        })
     }
 }

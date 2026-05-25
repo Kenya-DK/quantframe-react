@@ -123,15 +123,4 @@ impl LanguageModule {
         }
         mapper
     }
-    /**
-     * Creates a new `LanguageModule` from an existing one, sharing the client.
-     * This is useful for cloning modules when the client state changes.
-     */
-    pub fn from_existing(old: &LanguageModule) -> Arc<Self> {
-        Arc::new(Self {
-            path: old.path.clone(),
-            current_language: Mutex::new(old.current_language.lock().unwrap().clone()),
-            languages: Mutex::new(old.languages.lock().unwrap().clone()),
-        })
-    }
 }

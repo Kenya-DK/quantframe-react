@@ -20,7 +20,7 @@ impl RivenGoodRollModule {
             lookup: Mutex::new(MultiKeyMap::new()),
         })
     }
-    pub fn load(&self, language: &LanguageModule) -> Result<(), Error> {
+    pub fn load(&self, _language: &LanguageModule) -> Result<(), Error> {
         match read_json_file_optional::<Vec<CacheRivenRoll>>(&self.path) {
             Ok(mut items) => {
                 let mut lookup = self.lookup.lock().unwrap();
@@ -57,15 +57,5 @@ impl RivenGoodRollModule {
                 get_location!(),
             ))
         }
-    }
-    /**
-     * Creates a new `RivenGoodRollModule` from an existing one, sharing the client.
-     * This is useful for cloning modules when the client state changes.
-     */
-    pub fn from_existing(old: &RivenGoodRollModule) -> Arc<Self> {
-        Arc::new(Self {
-            path: old.path.clone(),
-            lookup: Mutex::new(old.lookup.lock().unwrap().clone()),
-        })
     }
 }

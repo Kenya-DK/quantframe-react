@@ -20,9 +20,9 @@ impl SentinelModule {
             items: Mutex::new(Vec::new()),
         })
     }
-    pub fn load(&self, language: &LanguageModule) -> Result<(), Error> {
+    pub fn load(&self, _language: &LanguageModule) -> Result<(), Error> {
         match read_json_file_optional::<Vec<CacheSentinel>>(&self.path) {
-            Ok(mut items) => {
+            Ok(items) => {
                 let mut items_lock = self.items.lock().unwrap();
                 info(
                     "Cache:Sentinel:load",
@@ -35,14 +35,11 @@ impl SentinelModule {
         }
         Ok(())
     }
-    /**
-     * Creates a new `SentinelModule` from an existing one, sharing the client.
-     * This is useful for cloning modules when the client state changes.
-     */
-    pub fn from_existing(old: &SentinelModule) -> Arc<Self> {
-        Arc::new(Self {
-            path: old.path.clone(),
-            items: Mutex::new(old.items.lock().unwrap().clone()),
-        })
+    /* -------------------------------------------------------------
+        Lookup Functions
+    ------------------------------------------------------------- */
+    pub fn get_all_items(&self) -> Result<Vec<CacheSentinel>, Error> {
+        let items = self.items.lock().unwrap();
+        Ok(items.clone())
     }
 }

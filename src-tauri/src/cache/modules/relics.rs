@@ -3,31 +3,35 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions};
+use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions, MultiKeyMap};
 
 use crate::cache::{modules::LanguageModule, *};
 
 #[derive(Debug)]
 pub struct RelicsModule {
     path: PathBuf,
-    items: Mutex<Vec<CacheRelics>>,
+    lookup: Mutex<MultiKeyMap<CacheRelics>>,
 }
 
 impl RelicsModule {
     pub fn new(client: Arc<CacheState>) -> Arc<Self> {
         Arc::new(Self {
             path: client.base_path.join("items/Relics.json"),
-            items: Mutex::new(Vec::new()),
+            lookup: Mutex::new(MultiKeyMap::new()),
         })
     }
-    pub fn load(&self, language: &LanguageModule) -> Result<(), Error> {
+    pub fn load(&self, _language: &LanguageModule) -> Result<(), Error> {
         match read_json_file_optional::<Vec<CacheRelics>>(&self.path) {
             Ok(mut items) => {
-                let mut items_lock = self.items.lock().unwrap();
-                *items_lock = items;
+                let mut lookup_lock = self.lookup.lock().unwrap();
+                for item in items.iter_mut() {
+                    let mut keys = vec![item.base.name.clone(), item.base.unique_name.clone()];
+                    keys.extend(item.base.previous_names.clone());
+                    lookup_lock.insert_value(item.clone(), keys);
+                }
                 info(
                     "Cache:Relics:load",
-                    format!("Loaded {} Relic items", items_lock.len()),
+                    format!("Loaded {} Relic items", lookup_lock.len()),
                     &LoggerOptions::default(),
                 );
             }
@@ -35,14 +39,31 @@ impl RelicsModule {
         }
         Ok(())
     }
-    /**
-     * Creates a new `RelicsModule` from an existing one, sharing the client.
-     * This is useful for cloning modules when the client state changes.
-     */
-    pub fn from_existing(old: &RelicsModule) -> Arc<Self> {
-        Arc::new(Self {
-            path: old.path.clone(),
-            items: Mutex::new(old.items.lock().unwrap().clone()),
-        })
+    /* -------------------------------------------------------------
+    Lookup Functions
+    ------------------------------------------------------------- */
+    /// Get a relic item by various identifiers
+    ///  # Arguments
+    /// - `id`: The identifier to search for (name, url, unique name, or id)
+    ///
+    pub fn get_by(&self, id: impl Into<String>) -> Result<CacheRelics, Error> {
+        let id: String = id.into().trim_end().to_string();
+        let lookup = self.lookup.lock().unwrap();
+        if let Some(item) = lookup.get(&id) {
+            Ok(item.clone())
+        } else {
+            Err(Error::new(
+                "Cache:Relics:GetBy",
+                format!("Relic item not found for id '{}'", id),
+                get_location!(),
+            ))
+        }
+    }
+    /* -------------------------------------------------------------
+        Vector Functions
+    ------------------------------------------------------------- */
+    pub fn get_all_items(&self) -> Result<Vec<CacheRelics>, Error> {
+        let lookup = self.lookup.lock().unwrap();
+        Ok(lookup.get_all_values())
     }
 }

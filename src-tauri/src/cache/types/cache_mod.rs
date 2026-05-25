@@ -9,4 +9,7 @@ pub struct CacheMod {
 
     #[serde(rename = "upgradeEntries", default)]
     pub upgrade_entries: Vec<CacheUpgradeEntry>,
+
+    #[serde(rename = "fusionLimit", default)]
+    pub fusion_limit: u32,
 }

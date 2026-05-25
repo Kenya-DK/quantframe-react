@@ -43,15 +43,18 @@ impl TradableItemModule {
                             crate::cache::modules::LanguageKey::WfmName,
                         )
                         .unwrap_or(item.name.clone());
-                    item_lookup.insert_value(
-                        item.clone(),
-                        vec![
-                            item.wfm_id.clone(),
-                            item.name.clone(),
-                            item.wfm_url.clone(),
-                            item.unique_name.clone(),
-                        ],
-                    );
+
+                    let mut keys = vec![
+                        item.wfm_id.clone(),
+                        item.name.clone(),
+                        item.wfm_url.clone(),
+                        item.unique_name.clone(),
+                    ];
+                    if !item.variant_to_unique_name.is_empty() {
+                        keys.extend(item.variant_to_unique_name.values().cloned());
+                    }
+
+                    item_lookup.insert_value(item.clone(), keys);
                 }
 
                 let mut items_lock = self.items.lock().unwrap();
@@ -85,16 +88,5 @@ impl TradableItemModule {
                 get_location!(),
             ))
         }
-    }
-    /**
-     * Creates a new `TradableItemModule` from an existing one, sharing the client.
-     * This is useful for cloning modules when the client state changes.
-     */
-    pub fn from_existing(old: &TradableItemModule) -> Arc<Self> {
-        Arc::new(Self {
-            path: old.path.clone(),
-            items: Mutex::new(old.items.lock().unwrap().clone()),
-            item_lookup: Mutex::new(old.item_lookup.lock().unwrap().clone()),
-        })
     }
 }

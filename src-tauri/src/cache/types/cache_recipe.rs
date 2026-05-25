@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{collections::HashMap, fmt::Display};
 
 use serde::{Deserialize, Serialize};
 
@@ -20,38 +20,60 @@ pub struct CacheRecipe {
 }
 
 impl CacheRecipe {
-    pub fn keys(&self, tradeable_only: bool, from_recipe_only: bool) -> Vec<String> {
-        let mut keys = Vec::new();
-
-        let include_base =
-            (!tradeable_only || self.base.is_tradeable) && !self.base.unique_name.is_empty();
-
-        if include_base {
-            keys.push(format!("{}|{}", self.base.unique_name, 1));
+    pub fn can_craft(
+        &self,
+        tradeable_only: bool,
+        from_recipe_only: bool,
+        items: &[CacheItemBase],
+    ) -> bool {
+        let mut owned_counts: HashMap<String, i64> = HashMap::new();
+        for item in items {
+            *owned_counts.entry(item.unique_name.clone()).or_insert(0) += item.quantity;
         }
-
-        for ingredient in &self.ingredients {
-            if tradeable_only && !ingredient.base.is_tradeable {
-                continue;
-            }
-
+        // Only tradeable crafted parts
+        let required_parts: Vec<&CacheIngredient> = self
+            .ingredients
+            .iter()
+            .filter(|ingredient| tradeable_only == false || ingredient.base.is_tradeable)
+            .collect();
+        if required_parts.is_empty() {
+            return false;
+        }
+        let has_all_parts = required_parts.iter().all(|ingredient| {
             let ingredient_key = if from_recipe_only {
-                &ingredient.from_recipe
+                ingredient.from_recipe.clone()
             } else {
-                &ingredient.base.unique_name
+                ingredient.base.unique_name.clone()
             };
-
             if ingredient_key.is_empty() {
-                continue;
+                return false;
             }
+            let owned = owned_counts.get(&ingredient_key).copied().unwrap_or(0);
+            owned >= ingredient.base.quantity
+        });
 
-            keys.push(format!("{}|{}", ingredient_key, ingredient.base.quantity));
+        if !has_all_parts {
+            return false;
         }
 
-        // Ensure deterministic ordering
-        keys.sort();
+        if !self.base.is_tradeable && tradeable_only {
+            return false;
+        }
 
-        keys
+        // Check Main Blueprint requirement if needed
+        if self.base.is_tradeable && tradeable_only {
+            let main_blueprint_key = if self.override_unique_name.is_empty() {
+                self.base.unique_name.clone()
+            } else {
+                self.override_unique_name.clone()
+            };
+            let main_blueprint_owned = owned_counts.get(&main_blueprint_key).copied().unwrap_or(0);
+            if main_blueprint_owned < 1 {
+                return false;
+            }
+        }
+
+        true
     }
 }
 
