@@ -4,4 +4,6 @@ use serde::{Deserialize, Serialize};
 pub struct CacheArcane {
     #[serde(flatten)]
     pub base: super::cache_item_base::CacheItemBase,
+    #[serde(rename = "fusionLimit", default)]
+    pub fusion_limit: u32,
 }

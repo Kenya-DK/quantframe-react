@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
 
+use super::cache_item_base::CacheItemBase;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
-pub struct CachePet {
+pub struct CacheGear {
     #[serde(flatten)]
-    pub base: super::cache_item_base::CacheItemBase,
+    pub base: CacheItemBase,
 }

@@ -20,9 +20,9 @@ impl SecondaryModule {
             items: Mutex::new(Vec::new()),
         })
     }
-    pub fn load(&self, language: &LanguageModule) -> Result<(), Error> {
+    pub fn load(&self, _language: &LanguageModule) -> Result<(), Error> {
         match read_json_file_optional::<Vec<CacheSecondary>>(&self.path) {
-            Ok(mut items) => {
+            Ok(items) => {
                 let mut items_lock = self.items.lock().unwrap();
                 info(
                     "Cache:Secondary:load",
@@ -41,15 +41,5 @@ impl SecondaryModule {
     pub fn get_all_items(&self) -> Result<Vec<CacheSecondary>, Error> {
         let items_lock = self.items.lock().unwrap();
         Ok(items_lock.clone())
-    }
-    /**
-     * Creates a new `SecondaryModule` from an existing one, sharing the client.
-     * This is useful for cloning modules when the client state changes.
-     */
-    pub fn from_existing(old: &SecondaryModule) -> Arc<Self> {
-        Arc::new(Self {
-            path: old.path.clone(),
-            items: Mutex::new(old.items.lock().unwrap().clone()),
-        })
     }
 }

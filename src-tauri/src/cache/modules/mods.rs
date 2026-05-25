@@ -10,25 +10,36 @@ use crate::cache::{modules::LanguageModule, *};
 #[derive(Debug)]
 pub struct ModModule {
     path: PathBuf,
-    items: Mutex<Vec<CacheMod>>,
 
     upgrade_entries_lookup: Mutex<MultiKeyMap<CacheUpgradeEntry>>,
+    lookup: Mutex<MultiKeyMap<CacheMod>>,
 }
 
 impl ModModule {
     pub fn new(client: Arc<CacheState>) -> Arc<Self> {
         Arc::new(Self {
             path: client.base_path.join("items/Mods.json"),
-            items: Mutex::new(Vec::new()),
             upgrade_entries_lookup: Mutex::new(MultiKeyMap::new()),
+            lookup: Mutex::new(MultiKeyMap::new()),
         })
     }
-    pub fn load(&self, language: &LanguageModule) -> Result<(), Error> {
+    pub fn load(&self, _language: &LanguageModule) -> Result<(), Error> {
         match read_json_file_optional::<Vec<CacheMod>>(&self.path) {
             Ok(items) => {
-                let mut items_lock = self.items.lock().unwrap();
                 let mut upgrade_entries_lookup = self.upgrade_entries_lookup.lock().unwrap();
+                let mut lookup = self.lookup.lock().unwrap();
                 for item in items.iter() {
+                    let mut keys = vec![item.base.unique_name.clone(), item.base.name.clone()];
+
+                    if let Some(wfm_url) = &item.base.wfm_url {
+                        keys.push(wfm_url.clone());
+                    }
+
+                    keys.extend(item.base.previous_names.iter().cloned());
+
+                    lookup.insert_value(item.clone(), keys);
+
+                    // Create upgrade entry lookups for each upgrade entry in the mod
                     if !item.upgrade_entries.is_empty() {
                         for entry in item.upgrade_entries.iter() {
                             upgrade_entries_lookup.insert_value(
@@ -41,10 +52,9 @@ impl ModModule {
                         }
                     }
                 }
-                *items_lock = items.clone();
                 info(
                     "Cache:Mod:load",
-                    format!("Loaded {} Mod items", items_lock.len()),
+                    format!("Loaded {} Mod items", lookup.len()),
                     &LoggerOptions::default(),
                 );
             }
@@ -56,6 +66,25 @@ impl ModModule {
     /* -------------------------------------------------------------
         Lookup Functions
     ------------------------------------------------------------- */
+    /// Get Item by various identifiers
+    ///  # Arguments
+    /// - `id`: The identifier to search for (name, unique_name, category+name, category+unique_name)
+    ///
+    pub fn get_by(&self, id: impl Into<String>) -> Result<CacheMod, Error> {
+        let id: String = id.into();
+        self.lookup
+            .lock()
+            .unwrap()
+            .get(&id)
+            .cloned()
+            .ok_or_else(|| {
+                Error::new(
+                    "ModModule:GetBy",
+                    format!("Mod not found for id '{}'", id),
+                    get_location!(),
+                )
+            })
+    }
     /// Get Riven Stat Tag by Riven Type and Tag
     ///  # Arguments
     /// - `riven_type`: The type of the Riven (e.g., "/Lotus/Upgrades/Mods/Randomized/LotusPistolRandomModRare")
@@ -82,15 +111,11 @@ impl ModModule {
             ))
         }
     }
-    /**
-     * Creates a new `ModModule` from an existing one, sharing the client.
-     * This is useful for cloning modules when the client state changes.
-     */
-    pub fn from_existing(old: &ModModule) -> Arc<Self> {
-        Arc::new(Self {
-            path: old.path.clone(),
-            items: Mutex::new(old.items.lock().unwrap().clone()),
-            upgrade_entries_lookup: Mutex::new(old.upgrade_entries_lookup.lock().unwrap().clone()),
-        })
+    /* -------------------------------------------------------------
+        Vector Functions
+    ------------------------------------------------------------- */
+    pub fn get_all_items(&self) -> Result<Vec<CacheMod>, Error> {
+        let lookup = self.lookup.lock().unwrap();
+        Ok(lookup.get_all_values())
     }
 }

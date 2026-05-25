@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     fs::File,
     path::PathBuf,
     sync::{Arc, Mutex, OnceLock},
@@ -8,14 +7,13 @@ use std::{
 use ::utils::*;
 use qf_api::Client as QFClient;
 use service::{
-    SettingMutation, SettingQuery, StockItemMutation, StockRivenMutation, TransactionMutation,
-    WishListMutation,
+    SettingMutation, SettingQuery, StockItemMutation, TransactionMutation, WishListMutation,
 };
 use tauri::Manager;
 
 use crate::{
     app::{client::AppState, User},
-    cache::types::CacheVersion,
+    cache::{types::CacheVersion, CacheWeaponBase},
     emit_startup, helper,
     utils::{AuctionListExt, ErrorFromExt, OrderListExt},
     APP, DATABASE,
@@ -28,6 +26,8 @@ pub struct CacheState {
     self_arc: OnceLock<Arc<CacheState>>,
     pub base_path: PathBuf,
     pub version: CacheVersion,
+    //
+    weapons: Arc<Mutex<MultiKeyMap<CacheWeaponBase>>>,
     // Modules
     all_items_module: OnceLock<Arc<AllItemsModule>>,
     arcane_module: OnceLock<Arc<ArcaneModule>>,
@@ -56,6 +56,9 @@ pub struct CacheState {
     recipe_module: OnceLock<Arc<RecipeModule>>,
     riven_good_roll_module: OnceLock<Arc<RivenGoodRollModule>>,
     attribute_module: OnceLock<Arc<AttributeModule>>,
+    bundle_module: OnceLock<Arc<BundleModule>>,
+    quest_module: OnceLock<Arc<QuestModule>>,
+    gear_module: OnceLock<Arc<GearModule>>,
 }
 
 impl CacheState {
@@ -66,6 +69,7 @@ impl CacheState {
                     self_arc: OnceLock::new(),
                     base_path: self.base_path.clone(),
                     version: self.version.clone(),
+                    weapons: self.weapons.clone(),
                     // Initialize modules
                     all_items_module: self.all_items_module.clone(),
                     arcane_module: self.arcane_module.clone(),
@@ -94,6 +98,9 @@ impl CacheState {
                     recipe_module: self.recipe_module.clone(),
                     riven_good_roll_module: self.riven_good_roll_module.clone(),
                     attribute_module: self.attribute_module.clone(),
+                    bundle_module: self.bundle_module.clone(),
+                    quest_module: self.quest_module.clone(),
+                    gear_module: self.gear_module.clone(),
                 })
             })
             .clone()
@@ -112,6 +119,7 @@ impl CacheState {
             self_arc: OnceLock::new(),
             base_path: helper::get_app_storage_path().join("cache"),
             version,
+            weapons: Arc::new(Mutex::new(MultiKeyMap::new())),
             all_items_module: OnceLock::new(),
             arcane_module: OnceLock::new(),
             archgun_module: OnceLock::new(),
@@ -139,6 +147,9 @@ impl CacheState {
             recipe_module: OnceLock::new(),
             riven_good_roll_module: OnceLock::new(),
             attribute_module: OnceLock::new(),
+            bundle_module: OnceLock::new(),
+            quest_module: OnceLock::new(),
+            gear_module: OnceLock::new(),
         };
         if !user.verification || user.qf_banned || user.wfm_banned {
             warning(
@@ -267,13 +278,15 @@ impl CacheState {
         self.sentinel_weapon().load(language)?;
         self.skin().load(language)?;
         self.warframe().load(language)?;
+        self.quest().load(language)?;
         self.theme().load()?;
         self.chat_icon().load()?;
         self.riven_good_roll().load(language)?;
         self.recipe().load(language)?;
-        self.update_routes_client();
-        self.weapon().load()?;
-        self.all_items().load()?;
+        self.bundle().load(language)?;
+        self.gear().load(language)?;
+        self.weapon().load(&self)?;
+        self.all_items().load(&self)?;
         Ok((cache_version_id, price_version_id))
     }
 
@@ -458,7 +471,7 @@ impl CacheState {
     }
     pub fn all_items(&self) -> Arc<AllItemsModule> {
         self.all_items_module
-            .get_or_init(|| AllItemsModule::new(self.arc()))
+            .get_or_init(|| AllItemsModule::new())
             .clone()
     }
     pub fn arcane(&self) -> Arc<ArcaneModule> {
@@ -568,7 +581,7 @@ impl CacheState {
     }
     pub fn weapon(&self) -> Arc<WeaponModule> {
         self.weapon_module
-            .get_or_init(|| WeaponModule::new(self.arc()))
+            .get_or_init(|| WeaponModule::new())
             .clone()
     }
     pub fn recipe(&self) -> Arc<RecipeModule> {
@@ -586,148 +599,19 @@ impl CacheState {
             .get_or_init(|| AttributeModule::new(self.arc()))
             .clone()
     }
-    /**
-     * Updates the client reference in the modules.
-     * This is useful for cloning routes when the client state changes.
-     * This method resets the `self_arc` to force creation of a new Arc with updated data.
-     */
-    fn update_routes_client(&mut self) {
-        // Reset the self_arc to force creation of new Arc with updated data
-        self.self_arc = OnceLock::new();
-        if let Some(old) = self.all_items_module.get().cloned() {
-            let new = AllItemsModule::from_existing(&old, self.arc());
-            self.all_items_module = OnceLock::new();
-            let _ = self.all_items_module.set(new);
-        }
-        if let Some(old) = self.arcane_module.get().cloned() {
-            let new = ArcaneModule::from_existing(&old);
-            self.arcane_module = OnceLock::new();
-            let _ = self.arcane_module.set(new);
-        }
-        if let Some(old) = self.archgun_module.get().cloned() {
-            let new = ArchGunModule::from_existing(&old);
-            self.archgun_module = OnceLock::new();
-            let _ = self.archgun_module.set(new);
-        }
-        if let Some(old) = self.archmelee_module.get().cloned() {
-            let new = ArchMeleeModule::from_existing(&old);
-            self.archmelee_module = OnceLock::new();
-            let _ = self.archmelee_module.set(new);
-        }
-        if let Some(old) = self.archwing_module.get().cloned() {
-            let new = ArchwingModule::from_existing(&old);
-            self.archwing_module = OnceLock::new();
-            let _ = self.archwing_module.set(new);
-        }
-        if let Some(old) = self.fish_module.get().cloned() {
-            let new = FishModule::from_existing(&old);
-            self.fish_module = OnceLock::new();
-            let _ = self.fish_module.set(new);
-        }
-        if let Some(old) = self.melee_module.get().cloned() {
-            let new = MeleeModule::from_existing(&old);
-            self.melee_module = OnceLock::new();
-            let _ = self.melee_module.set(new);
-        }
-        if let Some(old) = self.misc_module.get().cloned() {
-            let new = MiscModule::from_existing(&old);
-            self.misc_module = OnceLock::new();
-            let _ = self.misc_module.set(new);
-        }
-        if let Some(old) = self.mod_module.get().cloned() {
-            let new = ModModule::from_existing(&old);
-            self.mod_module = OnceLock::new();
-            let _ = self.mod_module.set(new);
-        }
-        if let Some(old) = self.pet_module.get().cloned() {
-            let new = PetModule::from_existing(&old);
-            self.pet_module = OnceLock::new();
-            let _ = self.pet_module.set(new);
-        }
-        if let Some(old) = self.primary_module.get().cloned() {
-            let new = PrimaryModule::from_existing(&old);
-            self.primary_module = OnceLock::new();
-            let _ = self.primary_module.set(new);
-        }
-        if let Some(old) = self.relics_module.get().cloned() {
-            let new = RelicsModule::from_existing(&old);
-            self.relics_module = OnceLock::new();
-            let _ = self.relics_module.set(new);
-        }
-        if let Some(old) = self.resource_module.get().cloned() {
-            let new = ResourceModule::from_existing(&old);
-            self.resource_module = OnceLock::new();
-            let _ = self.resource_module.set(new);
-        }
-        if let Some(old) = self.secondary_module.get().cloned() {
-            let new = SecondaryModule::from_existing(&old);
-            self.secondary_module = OnceLock::new();
-            let _ = self.secondary_module.set(new);
-        }
-        if let Some(old) = self.sentinel_module.get().cloned() {
-            let new = SentinelModule::from_existing(&old);
-            self.sentinel_module = OnceLock::new();
-            let _ = self.sentinel_module.set(new);
-        }
-        if let Some(old) = self.sentinel_weapon_module.get().cloned() {
-            let new = SentinelWeaponModule::from_existing(&old);
-            self.sentinel_weapon_module = OnceLock::new();
-            let _ = self.sentinel_weapon_module.set(new);
-        }
-        if let Some(old) = self.skin_module.get().cloned() {
-            let new = SkinModule::from_existing(&old);
-            self.skin_module = OnceLock::new();
-            let _ = self.skin_module.set(new);
-        }
-        if let Some(old) = self.tradable_item_module.get().cloned() {
-            let new = TradableItemModule::from_existing(&old);
-            self.tradable_item_module = OnceLock::new();
-            let _ = self.tradable_item_module.set(new);
-        }
-        if let Some(old) = self.warframe_module.get().cloned() {
-            let new = WarframeModule::from_existing(&old);
-            self.warframe_module = OnceLock::new();
-            let _ = self.warframe_module.set(new);
-        }
-        if let Some(old) = self.item_price_module.get().cloned() {
-            let new = ItemPriceModule::from_existing(&old, self.arc());
-            self.item_price_module = OnceLock::new();
-            let _ = self.item_price_module.set(new);
-        }
-        if let Some(old) = self.chat_icon_module.get().cloned() {
-            let new = ChatIconModule::from_existing(&old);
-            self.chat_icon_module = OnceLock::new();
-            let _ = self.chat_icon_module.set(new);
-        }
-        if let Some(old) = self.theme_module.get().cloned() {
-            let new = ThemeModule::from_existing(&old, self.arc());
-            self.theme_module = OnceLock::new();
-            let _ = self.theme_module.set(new);
-        }
-        if let Some(old) = self.language_module.get().cloned() {
-            let new = LanguageModule::from_existing(&old);
-            self.language_module = OnceLock::new();
-            let _ = self.language_module.set(new);
-        }
-        if let Some(old) = self.weapon_module.get().cloned() {
-            let new = WeaponModule::from_existing(&old);
-            self.weapon_module = OnceLock::new();
-            let _ = self.weapon_module.set(new);
-        }
-        if let Some(old) = self.recipe_module.get().cloned() {
-            let new = RecipeModule::from_existing(&old);
-            self.recipe_module = OnceLock::new();
-            let _ = self.recipe_module.set(new);
-        }
-        if let Some(old) = self.riven_good_roll_module.get().cloned() {
-            let new = RivenGoodRollModule::from_existing(&old);
-            self.riven_good_roll_module = OnceLock::new();
-            let _ = self.riven_good_roll_module.set(new);
-        }
-        if let Some(old) = self.attribute_module.get().cloned() {
-            let new = AttributeModule::from_existing(&old);
-            self.attribute_module = OnceLock::new();
-            let _ = self.attribute_module.set(new);
-        }
+    pub fn bundle(&self) -> Arc<BundleModule> {
+        self.bundle_module
+            .get_or_init(|| BundleModule::new(self.arc()))
+            .clone()
+    }
+    pub fn quest(&self) -> Arc<QuestModule> {
+        self.quest_module
+            .get_or_init(|| QuestModule::new(self.arc()))
+            .clone()
+    }
+    pub fn gear(&self) -> Arc<GearModule> {
+        self.gear_module
+            .get_or_init(|| GearModule::new(self.arc()))
+            .clone()
     }
 }

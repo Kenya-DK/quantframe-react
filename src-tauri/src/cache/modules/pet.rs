@@ -3,31 +3,41 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions};
+use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions, MultiKeyMap};
 
 use crate::cache::{modules::LanguageModule, *};
 
 #[derive(Debug)]
 pub struct PetModule {
     path: PathBuf,
-    items: Mutex<Vec<CachePet>>,
+    lookup: Mutex<MultiKeyMap<CachePet>>,
 }
 
 impl PetModule {
     pub fn new(client: Arc<CacheState>) -> Arc<Self> {
         Arc::new(Self {
             path: client.base_path.join("items/Pets.json"),
-            items: Mutex::new(Vec::new()),
+            lookup: Mutex::new(MultiKeyMap::new()),
         })
     }
-    pub fn load(&self, language: &LanguageModule) -> Result<(), Error> {
+    pub fn load(&self, _language: &LanguageModule) -> Result<(), Error> {
         match read_json_file_optional::<Vec<CachePet>>(&self.path) {
             Ok(mut items) => {
-                let mut items_lock = self.items.lock().unwrap();
-                *items_lock = items;
+                let mut lookup = self.lookup.lock().unwrap();
+                for item in items.drain(..) {
+                    let mut keys = vec![item.base.unique_name.clone(), item.base.name.clone()];
+
+                    if let Some(wfm_url) = &item.base.wfm_url {
+                        keys.push(wfm_url.clone());
+                    }
+
+                    keys.extend(item.base.previous_names.iter().cloned());
+
+                    lookup.insert_value(item.clone(), keys);
+                }
                 info(
                     "Cache:Pet:load",
-                    format!("Loaded {} Pet items", items_lock.len()),
+                    format!("Loaded {} Pet items", lookup.len()),
                     &LoggerOptions::default(),
                 );
             }
@@ -35,14 +45,33 @@ impl PetModule {
         }
         Ok(())
     }
-    /**
-     * Creates a new `PetModule` from an existing one, sharing the client.
-     * This is useful for cloning modules when the client state changes.
-     */
-    pub fn from_existing(old: &PetModule) -> Arc<Self> {
-        Arc::new(Self {
-            path: old.path.clone(),
-            items: Mutex::new(old.items.lock().unwrap().clone()),
-        })
+    /* -------------------------------------------------------------
+        Lookup Functions
+    ------------------------------------------------------------- */
+
+    /// Lookup by any indexed key.
+    /// # Arguments
+    /// - `id`: The identifier to search for (name, unique_name, wfm_url)
+    pub fn get_by(&self, id: impl Into<String>) -> Result<CachePet, Error> {
+        let id = id.into();
+        self.lookup
+            .lock()
+            .unwrap()
+            .get(&id)
+            .cloned()
+            .ok_or_else(|| {
+                Error::new(
+                    "PetModule:GetBy",
+                    format!("Pet not found for id '{}'", id),
+                    get_location!(),
+                )
+            })
+    }
+    /* -------------------------------------------------------------
+        Vector Functions
+    ------------------------------------------------------------- */
+    pub fn get_all_items(&self) -> Result<Vec<CachePet>, Error> {
+        let lookup = self.lookup.lock().unwrap();
+        Ok(lookup.get_all_values())
     }
 }

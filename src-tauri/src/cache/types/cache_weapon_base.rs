@@ -1,4 +1,7 @@
+use entity::dto::SubType;
 use serde::{Deserialize, Serialize};
+
+use crate::cache::CacheItemBase;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CacheWeaponBase {
@@ -12,6 +15,8 @@ pub struct CacheWeaponBase {
     pub wfm_url: String,
     #[serde(rename = "wfmRivenUrl", default)]
     pub wfm_riven_url: String,
+    #[serde(rename = "subType")]
+    pub sub_type: Option<SubType>,
     #[serde(rename = "wfmRivenId", default)]
     pub wfm_riven_id: String,
     #[serde(rename = "wfmId", default)]
@@ -48,10 +53,27 @@ impl Default for CacheWeaponBase {
             category: String::new(),
             source: String::new(),
             family: String::new(),
+            sub_type: None,
             disposition: 0.0,
             disposition_rank: 0,
             is_variant: false,
             upgrade_type: String::new(),
+        }
+    }
+}
+impl From<CacheWeaponBase> for CacheItemBase {
+    fn from(item: CacheWeaponBase) -> Self {
+        Self {
+            unique_name: item.unique_name,
+            name: item.name,
+            category: item.category,
+            source: item.source,
+            previous_names: vec![],
+            is_tradeable: !item.wfm_url.is_empty(), // Assume non-tradeable if no WFM URL
+            wfm_url: Some(item.wfm_url),
+            sub_type: item.sub_type,
+            tags: vec![],
+            quantity: 1,
         }
     }
 }

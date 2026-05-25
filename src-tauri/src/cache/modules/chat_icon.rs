@@ -43,14 +43,4 @@ impl ChatIconModule {
         }
         Ok(())
     }
-    /**
-     * Creates a new `ChatIconModule` from an existing one, sharing the client.
-     * This is useful for cloning modules when the client state changes.
-     */
-    pub fn from_existing(old: &ChatIconModule) -> Arc<Self> {
-        Arc::new(Self {
-            path: old.path.clone(),
-            items: Mutex::new(old.items.lock().unwrap().clone()),
-        })
-    }
 }

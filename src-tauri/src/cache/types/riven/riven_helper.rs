@@ -4,10 +4,7 @@ use entity::{
 };
 use utils::{get_location, Error};
 
-use crate::{
-    cache::{types::*, CacheState},
-    wf_inventory::UpgradeFingerprint,
-};
+use crate::cache::{types::*, CacheState};
 
 const BASE_RIVEN: f64 = 90.0;
 const RIVEN_DENOM: f64 = 53687091.0;
