@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     fs::File,
     path::PathBuf,
     sync::{Arc, Mutex, OnceLock},
@@ -7,7 +8,8 @@ use std::{
 use ::utils::*;
 use qf_api::Client as QFClient;
 use service::{
-    SettingMutation, SettingQuery, StockItemMutation, TransactionMutation, WishListMutation,
+    SettingMutation, SettingQuery, StockItemMutation, StockRivenMutation, TransactionMutation,
+    WishListMutation,
 };
 use tauri::Manager;
 
@@ -414,15 +416,15 @@ impl CacheState {
             return Ok(());
         }
 
-        let wfm_name_mapper = self.language().get_mapper(LanguageKey::WfmName);
-        let name_mapper = self.language().get_mapper(LanguageKey::Name);
+        let wfm_name_mapper = self.language().get_mapper("wfmName");
+        let name_mapper = self.language().get_mapper("name");
 
-        // let attribute_mapper = self
-        //     .riven()
-        //     .get_all_attributes()?
-        //     .iter()
-        //     .map(|att| (att.url_name.clone(), att.full.clone()))
-        //     .collect::<HashMap<String, String>>();
+        let attribute_mapper = self
+            .attribute()
+            .get_items()?
+            .iter()
+            .map(|att| (att.wfm_url.clone(), att.formatted_value.clone()))
+            .collect::<HashMap<String, String>>();
 
         fn send_progress(component: &str, progress: f64) {
             emit_startup!(
@@ -444,10 +446,10 @@ impl CacheState {
         .await?;
         log_info(&wa, "Transactions");
 
-        // StockRivenMutation::update_names(conn, &name_mapper, &attribute_mapper, |progress| {
-        //     send_progress("stock_rivens", progress);
-        // })
-        // .await?;
+        StockRivenMutation::update_names(conn, &name_mapper, &attribute_mapper, |progress| {
+            send_progress("stock_rivens", progress);
+        })
+        .await?;
         log_info(&wa, "StockRivens");
 
         WishListMutation::update_names(conn, &name_mapper, |progress| {

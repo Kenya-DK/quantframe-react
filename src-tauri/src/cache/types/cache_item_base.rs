@@ -3,6 +3,8 @@ use std::fmt::Display;
 use entity::dto::sub_type;
 use serde::{Deserialize, Serialize};
 
+use crate::cache::modules::LanguageModule;
+
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CacheItemBase {
     #[serde(rename = "uniqueName")]
@@ -48,6 +50,13 @@ impl CacheItemBase {
             tags: vec![],
             quantity,
             is_tradeable: false,
+        }
+    }
+    pub fn translate(&mut self, language: &LanguageModule) {
+        if let Ok(translation) = language.get_by(&self.unique_name) {
+            if !translation.name.is_empty() {
+                self.name = translation.name.clone();
+            }
         }
     }
 }

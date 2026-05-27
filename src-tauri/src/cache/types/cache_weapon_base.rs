@@ -1,7 +1,7 @@
 use entity::dto::SubType;
 use serde::{Deserialize, Serialize};
 
-use crate::cache::CacheItemBase;
+use crate::cache::{modules::LanguageModule, CacheItemBase};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CacheWeaponBase {
@@ -38,7 +38,15 @@ pub struct CacheWeaponBase {
     #[serde(rename = "isVariant", default)]
     pub is_variant: bool,
 }
-
+impl CacheWeaponBase {
+    pub fn translate(&mut self, language: &LanguageModule) {
+        if let Ok(translation) = language.get_by(&self.unique_name) {
+            if !translation.name.is_empty() {
+                self.name = translation.name.clone();
+            }
+        }
+    }
+}
 impl Default for CacheWeaponBase {
     fn default() -> Self {
         Self {

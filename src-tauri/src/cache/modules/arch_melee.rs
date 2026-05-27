@@ -3,33 +3,38 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions};
+use utils::{get_location, info, read_json_file_optional, Error, LoggerOptions, MultiKeyMap};
 
 use crate::cache::{modules::LanguageModule, *};
 
 #[derive(Debug)]
 pub struct ArchMeleeModule {
     path: PathBuf,
-    items: Mutex<Vec<CacheArchMelee>>,
+    lookup: Mutex<MultiKeyMap<CacheArchMelee>>,
 }
 
 impl ArchMeleeModule {
     pub fn new(client: Arc<CacheState>) -> Arc<Self> {
         Arc::new(Self {
             path: client.base_path.join("items/Arch-Melee.json"),
-            items: Mutex::new(Vec::new()),
+            lookup: Mutex::new(MultiKeyMap::new()),
         })
     }
-    pub fn load(&self, _language: &LanguageModule) -> Result<(), Error> {
+    pub fn load(&self, language: &LanguageModule) -> Result<(), Error> {
         match read_json_file_optional::<Vec<CacheArchMelee>>(&self.path) {
-            Ok(items) => {
-                let mut items_lock = self.items.lock().unwrap();
+            Ok(mut items) => {
+                let mut lookup = self.lookup.lock().unwrap();
+                *lookup = MultiKeyMap::new();
+                for item in items.iter_mut() {
+                    item.base.translate(&language);
+                    let keys = vec![item.base.name.clone(), item.base.unique_name.clone()];
+                    lookup.insert_value(item.clone(), keys);
+                }
                 info(
                     "Cache:ArchMelee:load",
-                    format!("Loaded {} Arch-Melee items", items.len()),
+                    format!("Loaded {} Arch-Melee items", lookup.len()),
                     &LoggerOptions::default(),
                 );
-                *items_lock = items.clone();
             }
             Err(e) => return Err(e.with_location(get_location!())),
         }
@@ -40,7 +45,7 @@ impl ArchMeleeModule {
         Lookup Functions
     ------------------------------------------------------------- */
     pub fn get_all_items(&self) -> Result<Vec<CacheArchMelee>, Error> {
-        let items_lock = self.items.lock().unwrap();
-        Ok(items_lock.clone())
+        let items_lock = self.lookup.lock().unwrap();
+        Ok(items_lock.get_all_values())
     }
 }
