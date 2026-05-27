@@ -401,6 +401,16 @@
           "title": "Refresh Auctions Success",
           "message": "Auctions have been successfully refreshed."
         }
+      },
+      "calculate_tax_transaction": {
+        "error": {
+          "title": "Calculate Tax Error",
+          "message": "An error occurred while trying to calculate tax for the transaction."
+        },
+        "success": {
+          "title": "Calculate Tax Success",
+          "message": "Tax has been successfully calculated for the transaction."
+        }
       }
     },
     "datatable_columns": {
