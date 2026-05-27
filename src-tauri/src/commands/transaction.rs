@@ -184,9 +184,20 @@ pub async fn transaction_calculate_tax(
                 } else {
                     match cache.tradable_item().get_by(&item.wfm_id) {
                         Ok(tradable_item) => {
+                            let variant = item.sub_type.as_ref().and_then(|s| s.variant.as_deref());
+
+                            let unique_name = variant
+                                .and_then(|v| tradable_item.variant_to_unique_name.get(v))
+                                .cloned()
+                                .unwrap_or_else(|| tradable_item.unique_name.clone());
+
                             update_data.credits =
                                 entity::enums::FieldChange::Value(tradable_item.trade_tax);
+
+                            update_data.item_unique_name =
+                                entity::enums::FieldChange::Value(unique_name);
                         }
+
                         Err(e) => {
                             warning(
                                 "Command::TransactionCalculateTax",
