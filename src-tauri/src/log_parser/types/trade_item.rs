@@ -243,10 +243,6 @@ impl TradeItem {
                 .set_property_value("tags", info.base.tags.clone());
             return Ok(status);
         }
-
-        // self.item_type = TradeItemType::Imprint;
-        // self.unique_name = String::from("/WFSpecial/CreaturePet/Imprint");
-        // self.sub_type = Some(SubType::variant(&stripped));
         return Ok(status);
     }
     pub fn is_relic(
@@ -300,6 +296,10 @@ impl TradeItem {
         let apply_misc = |this: &mut Self, info: &CacheMisc| {
             this.unique_name = info.base.unique_name.clone();
             this.sub_type = info.base.sub_type.clone();
+            if info.base.unique_name.contains("FusionTreasures") {
+                this.properties.set_property_value("requireSubType", true);
+                this.sub_type = Some(SubType::ayatan(0, 0));
+            }
             this.item_type = TradeItemType::Misc;
         };
 
@@ -635,6 +635,34 @@ impl TradeItem {
         }
         Ok(DetectionStatus::None)
     }
+    pub fn is_sentinel(
+        &mut self,
+        line: &str,
+        next_line: &str,
+        _: &TradeDetection,
+    ) -> Result<DetectionStatus, Error> {
+        let cache = states::cache_client().expect("Cache not found");
+        let sentinels = cache.sentinel();
+
+        let apply_sentinel = |this: &mut Self, info: &CacheSentinel| {
+            this.unique_name = info.base.unique_name.clone();
+            this.sub_type = info.base.sub_type.clone();
+            this.item_type = TradeItemType::Sentinel;
+        };
+
+        if let Ok(info) = sentinels.get_by(line) {
+            apply_sentinel(self, &info);
+            return Ok(DetectionStatus::Line);
+        }
+
+        let combined_line = format!("{}{}", line, next_line);
+
+        if let Ok(info) = sentinels.get_by(&combined_line) {
+            apply_sentinel(self, &info);
+            return Ok(DetectionStatus::Combined);
+        }
+        Ok(DetectionStatus::None)
+    }
     pub fn validate(
         &mut self,
         next_line: &str,
@@ -655,6 +683,7 @@ impl TradeItem {
             Self::is_resource,
             Self::is_imprint,
             Self::is_gear,
+            Self::is_sentinel,
         ] {
             let status = check(self, &self.raw.clone(), next_line, detection)?;
             if status.is_found() {

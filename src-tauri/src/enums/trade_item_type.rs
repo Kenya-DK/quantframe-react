@@ -17,6 +17,7 @@ pub enum TradeItemType {
     Resource,
     Bundle,
     Gear,
+    Sentinel,
     Quest,
     Skin,
     Misc,
