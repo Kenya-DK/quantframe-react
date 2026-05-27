@@ -20,10 +20,11 @@ impl RivenGoodRollModule {
             lookup: Mutex::new(MultiKeyMap::new()),
         })
     }
-    pub fn load(&self, _language: &LanguageModule) -> Result<(), Error> {
+    pub fn load(&self, language: &LanguageModule) -> Result<(), Error> {
         match read_json_file_optional::<Vec<CacheRivenRoll>>(&self.path) {
             Ok(mut items) => {
                 let mut lookup = self.lookup.lock().unwrap();
+                lookup.clear();
                 info(
                     "Cache:RivenGoodRoll:load",
                     format!("Loaded {} Riven good rolls from cache", items.len()),

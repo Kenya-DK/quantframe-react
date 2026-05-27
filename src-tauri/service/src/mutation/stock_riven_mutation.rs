@@ -154,7 +154,7 @@ impl StockRivenMutation {
         let total = items.len();
         let mut last_progress = 0.0;
         for (i, item) in items.into_iter().enumerate() {
-            let updated_name = match mapper.get(&item.weapon_unique_name) {
+            let updated_name = match mapper.get(&item.weapon_unique_name.to_lowercase()) {
                 Some(name) => name.to_string(),
                 None => continue,
             };

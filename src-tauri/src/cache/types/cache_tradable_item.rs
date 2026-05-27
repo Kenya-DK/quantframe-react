@@ -2,6 +2,8 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
+use crate::cache::modules::{LanguageModule, TranslationEntry};
+
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CacheTradableItem {
     #[serde(rename = "name")]
@@ -38,6 +40,14 @@ pub struct CacheTradableItem {
 
     #[serde(rename = "variantToUniqueName", default)]
     pub variant_to_unique_name: HashMap<String, String>,
+}
+
+impl CacheTradableItem {
+    pub fn translate(&mut self, language: &LanguageModule) {
+        if let Ok(translation) = language.get_by(&self.unique_name) {
+            self.name = translation.wfm_name.clone();
+        }
+    }
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]

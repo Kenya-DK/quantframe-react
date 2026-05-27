@@ -20,18 +20,20 @@ impl RelicsModule {
             lookup: Mutex::new(MultiKeyMap::new()),
         })
     }
-    pub fn load(&self, _language: &LanguageModule) -> Result<(), Error> {
+    pub fn load(&self, language: &LanguageModule) -> Result<(), Error> {
         match read_json_file_optional::<Vec<CacheRelics>>(&self.path) {
             Ok(mut items) => {
-                let mut lookup_lock = self.lookup.lock().unwrap();
+                let mut lookup = self.lookup.lock().unwrap();
+                *lookup = MultiKeyMap::new();
                 for item in items.iter_mut() {
+                    item.base.translate(&language);
                     let mut keys = vec![item.base.name.clone(), item.base.unique_name.clone()];
                     keys.extend(item.base.previous_names.clone());
-                    lookup_lock.insert_value(item.clone(), keys);
+                    lookup.insert_value(item.clone(), keys);
                 }
                 info(
                     "Cache:Relics:load",
-                    format!("Loaded {} Relic items", lookup_lock.len()),
+                    format!("Loaded {} Relic items", lookup.len()),
                     &LoggerOptions::default(),
                 );
             }

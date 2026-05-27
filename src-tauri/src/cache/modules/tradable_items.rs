@@ -37,12 +37,7 @@ impl TradableItemModule {
             Ok(mut items) => {
                 let mut item_lookup = self.item_lookup.lock().unwrap();
                 for item in items.iter_mut() {
-                    item.name = language
-                        .translate(
-                            &item.unique_name,
-                            crate::cache::modules::LanguageKey::WfmName,
-                        )
-                        .unwrap_or(item.name.clone());
+                    item.translate(&language);
 
                     let mut keys = vec![
                         item.wfm_id.clone(),

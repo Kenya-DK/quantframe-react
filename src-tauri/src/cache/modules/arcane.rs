@@ -18,11 +18,13 @@ impl ArcaneModule {
             lookup: Mutex::new(MultiKeyMap::new()),
         })
     }
-    pub fn load(&self, _language: &LanguageModule) -> Result<(), Error> {
+    pub fn load(&self, language: &LanguageModule) -> Result<(), Error> {
         match read_json_file_optional::<Vec<CacheArcane>>(&self.path) {
             Ok(mut items) => {
                 let mut lookup = self.lookup.lock().unwrap();
                 for item in items.iter_mut() {
+                    item.base.translate(&language);
+
                     let mut keys = vec![item.base.unique_name.clone(), item.base.name.clone()];
 
                     if let Some(wfm_url) = &item.base.wfm_url {

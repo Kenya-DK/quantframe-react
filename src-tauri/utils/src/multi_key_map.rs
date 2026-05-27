@@ -77,4 +77,20 @@ impl<V: Clone> MultiKeyMap<V> {
     pub fn has_key(&self, key: &str) -> bool {
         self.keys.contains_key(&key.to_lowercase())
     }
+    pub fn from_hash_map(hash_map: HashMap<String, V>) -> Self {
+        let mut multi_key_map = MultiKeyMap::new();
+        for (key, value) in hash_map.into_iter() {
+            multi_key_map.insert_value(value, vec![key]);
+        }
+        multi_key_map
+    }
+    pub fn to_hash_map(&self) -> HashMap<String, V> {
+        let mut hash_map = HashMap::new();
+        for (key, id) in self.keys.iter() {
+            if let Some(value) = self.values.get(id) {
+                hash_map.insert(key.clone(), value.clone());
+            }
+        }
+        hash_map
+    }
 }

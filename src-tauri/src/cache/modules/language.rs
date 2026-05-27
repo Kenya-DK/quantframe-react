@@ -1,11 +1,12 @@
 use std::{
     collections::HashMap,
+    ops::Mul,
     path::PathBuf,
     sync::{Arc, Mutex},
 };
 
 use serde::{Deserialize, Serialize};
-use utils::{get_location, read_json_file_optional, Error};
+use utils::{get_location, read_json_file_optional, Error, MultiKeyMap};
 
 use crate::cache::*;
 
@@ -20,24 +21,16 @@ pub struct TranslationEntry {
     #[serde(default)]
     text: String,
     #[serde(default)]
-    name: String,
-    #[serde(default)]
-    wfm_name: String,
-}
-
-pub enum LanguageKey {
-    Full,
-    Short,
-    Text,
-    Name,
-    WfmName,
+    pub name: String,
+    #[serde(rename = "wfmName", default)]
+    pub wfm_name: String,
 }
 
 #[derive(Debug)]
 pub struct LanguageModule {
     path: PathBuf,
-    languages: Mutex<HashMap<String, HashMap<String, TranslationEntry>>>,
-    current_language: Mutex<HashMap<String, TranslationEntry>>,
+    languages: Mutex<HashMap<String, MultiKeyMap<TranslationEntry>>>,
+    current_language: Mutex<MultiKeyMap<TranslationEntry>>,
 }
 
 impl LanguageModule {
@@ -45,7 +38,7 @@ impl LanguageModule {
         Arc::new(Self {
             path: client.base_path.join("lang"),
             languages: Mutex::new(HashMap::new()),
-            current_language: Mutex::new(HashMap::new()),
+            current_language: Mutex::new(MultiKeyMap::new()),
         })
     }
 
@@ -59,7 +52,7 @@ impl LanguageModule {
     pub fn get_language(
         &self,
         lang: impl Into<String>,
-    ) -> Result<HashMap<String, TranslationEntry>, Error> {
+    ) -> Result<MultiKeyMap<TranslationEntry>, Error> {
         let lang = lang.into();
         let mut languages_lock = self.languages.lock().unwrap();
         if let Some(lang_content) = languages_lock.get(&lang) {
@@ -80,42 +73,49 @@ impl LanguageModule {
 
         match read_json_file_optional::<HashMap<String, TranslationEntry>>(&path) {
             Ok(data) => {
-                languages_lock.insert(lang.clone(), data.clone());
-                Ok(data)
+                let multi_key_map = MultiKeyMap::from_hash_map(data);
+                languages_lock.insert(lang.clone(), multi_key_map.clone());
+                Ok(multi_key_map)
             }
             Err(e) => return Err(e.with_location(get_location!())),
         }
     }
-    pub fn translate(&self, key: impl Into<String>, lang_key: LanguageKey) -> Option<String> {
-        let current_language_lock = self.current_language.lock().unwrap();
-        if let Some(entry) = current_language_lock.get(&key.into()) {
-            let value = match lang_key {
-                LanguageKey::Full => entry.full.clone(),
-                LanguageKey::Short => entry.short.clone(),
-                LanguageKey::Text => entry.text.clone(),
-                LanguageKey::Name => entry.name.clone(),
-                LanguageKey::WfmName => entry.wfm_name.clone(),
-            };
-            if !value.is_empty() {
-                Some(value)
-            } else {
-                None
-            }
+
+    /* -------------------------------------------------------------
+        Lookup Functions
+    ------------------------------------------------------------- */
+    /// Get a resource item by various identifiers
+    ///  # Arguments
+    /// - `id`: The identifier to search for (name, url, unique name, or id)
+    ///
+    pub fn get_by(&self, id: impl Into<String>) -> Result<TranslationEntry, Error> {
+        let id: String = id.into().trim_end().to_string();
+        let lookup = self.current_language.lock().unwrap();
+        if let Some(item) = lookup.get(&id) {
+            Ok(item.clone())
         } else {
-            None
+            Err(Error::new(
+                "Cache:Language:GetBy",
+                format!("Resource item not found for id '{}'", id),
+                get_location!(),
+            ))
         }
     }
-
-    pub fn get_mapper(&self, lang_key: LanguageKey) -> HashMap<String, String> {
+    /* -------------------------------------------------------------
+        Vector Functions
+    ------------------------------------------------------------- */
+    pub fn get_mapper(&self, lang_key: impl Into<String>) -> HashMap<String, String> {
+        let lang_key = lang_key.into();
         let current_language_lock = self.current_language.lock().unwrap();
         let mut mapper: HashMap<String, String> = HashMap::new();
-        for (key, entry) in current_language_lock.iter() {
-            let value = match lang_key {
-                LanguageKey::Full => entry.full.clone(),
-                LanguageKey::Short => entry.short.clone(),
-                LanguageKey::Text => entry.text.clone(),
-                LanguageKey::Name => entry.name.clone(),
-                LanguageKey::WfmName => entry.wfm_name.clone(),
+        for (key, entry) in current_language_lock.to_hash_map() {
+            let value = match lang_key.as_str() {
+                "full" => entry.full.clone(),
+                "short" => entry.short.clone(),
+                "text" => entry.text.clone(),
+                "name" => entry.name.clone(),
+                "wfmName" => entry.wfm_name.clone(),
+                _ => continue,
             };
             if !value.is_empty() {
                 mapper.insert(key.clone(), value);
