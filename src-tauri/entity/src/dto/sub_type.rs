@@ -55,19 +55,20 @@ impl SubType {
     pub fn rank(rank: i64) -> Self {
         Self {
             rank: Some(rank),
-            variant: None,
-            amber_stars: None,
-            cyan_stars: None,
-            charges: None,
+            ..Default::default()
         }
     }
     pub fn variant(variant: &str) -> Self {
         Self {
-            rank: None,
             variant: Some(variant.to_string()),
-            amber_stars: None,
-            cyan_stars: None,
-            charges: None,
+            ..Default::default()
+        }
+    }
+    pub fn ayatan(cyan_stars: i64, amber_stars: i64) -> Self {
+        Self {
+            amber_stars: Some(amber_stars),
+            cyan_stars: Some(cyan_stars),
+            ..Default::default()
         }
     }
     pub fn new_empty() -> Self {
