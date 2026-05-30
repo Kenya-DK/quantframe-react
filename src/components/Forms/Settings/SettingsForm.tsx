@@ -10,6 +10,9 @@ import { SummaryPanel } from "./Tabs/Summary";
 import { HttpServerPanel } from "./Tabs/HttpServer";
 import { GeneralPanel } from "./Tabs/General";
 import { useForm } from "@mantine/form";
+import api from "@api";
+import { useState, useEffect } from "react";
+import { confirm } from "@tauri-apps/plugin-dialog";
 
 export type SettingsFormProps = {
   value: TauriTypes.Settings & { has_error?: boolean; hide_save_button?: boolean };
@@ -33,6 +36,27 @@ export function SettingsForm({ onSubmit, value }: SettingsFormProps) {
       },
     },
   });
+
+  const [defaultSettings, setDefaultSettings] = useState<TauriTypes.Settings | null>(null);
+
+  useEffect(() => {
+    api.app.getDefaultSettings().then(setDefaultSettings).catch(console.error);
+  }, []);
+
+  const isNotDefault = defaultSettings && JSON.stringify({ ...value, has_error: undefined, hide_save_button: undefined }) !== JSON.stringify(defaultSettings);
+
+  const showButtons = isNotDefault || form.isDirty();
+
+  const handleReset = async () => {
+    const confirmed = await confirm("Reset all settings to default values?", { kind: "warning" });
+    if (!confirmed) return;
+    try {
+      const defaults = await api.app.getDefaultSettings();
+      form.setValues(defaults);
+    } catch (e) {
+      console.error("Failed to reset to defaults", e);
+    }
+  };
 
   const tabs = [
     {
@@ -93,7 +117,12 @@ export function SettingsForm({ onSubmit, value }: SettingsFormProps) {
           </Tabs.Panel>
         ))}
       </Tabs>
-      <Group justify="flex-end" mt="md" display={form.isDirty() ? "" : "none"}>
+      <Group justify="flex-end" mt="md" display={showButtons ? "" : "none"}>
+        {isNotDefault && (
+          <Button pos="absolute" bottom={10} right={130} onClick={handleReset} color="red" variant="outline">
+            {useTranslateCommon("buttons.reset_defaults.label")}
+          </Button>
+        )}
         <Button pos="absolute" bottom={10} right={10} onClick={() => onSubmit(form.values)} color="green">
           {useTranslateCommon("buttons.save.label")}
         </Button>

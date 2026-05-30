@@ -38,6 +38,11 @@ pub async fn app_get_settings(app: tauri::State<'_, Mutex<AppState>>) -> Result<
 }
 
 #[tauri::command]
+pub async fn app_get_default_settings() -> Result<Settings, Error> {
+    Ok(Settings::default())
+}
+
+#[tauri::command]
 pub async fn app_update_settings(
     mut settings: Settings,
     app: tauri::State<'_, Mutex<AppState>>,
