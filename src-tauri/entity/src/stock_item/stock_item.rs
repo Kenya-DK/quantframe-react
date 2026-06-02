@@ -162,6 +162,7 @@ impl Model {
             is_hidden: FieldChange::Value(self.is_hidden),
             status: FieldChange::Value(self.status.clone()),
             price_history: FieldChange::Value(self.price_history.0.clone()),
+            sub_type: FieldChange::Value(self.sub_type.clone()),
         }
     }
     pub fn update_gui(&self) -> bool {

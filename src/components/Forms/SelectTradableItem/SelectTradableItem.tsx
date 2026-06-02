@@ -53,8 +53,9 @@ export function SelectTradableItem({ hideSubType, value, onChange, description }
     const new_item = { ...item };
     if (item.available_sub_types) {
       const sub_type = item.available_sub_types;
-      if (sub_type.variants) new_item.sub_type = { variant: sub_type.variants[0] };
-      if (sub_type.maxRank) new_item.sub_type = { rank: sub_type.maxRank };
+      new_item.sub_type = {};
+      if (sub_type.variants) new_item.sub_type.variant = sub_type.variants[0];
+      if (sub_type.maxRank) new_item.sub_type.rank = sub_type.maxRank;
       if (sub_type.amberStars || sub_type.cyanStars) new_item.sub_type = { cyan_stars: sub_type.cyanStars, amber_stars: sub_type.amberStars };
     }
     onChange(new_item);

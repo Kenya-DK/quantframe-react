@@ -1,11 +1,16 @@
-import { Box, Button, Group, NumberInput } from "@mantine/core";
 import { TauriTypes } from "$types";
-import { useForm } from "@mantine/form";
-import { useTranslateModals, useTranslateCommon } from "@hooks/useTranslate.hook";
 import { TooltipIcon } from "@components/Shared/TooltipIcon";
+import { useTranslateCommon, useTranslateModals } from "@hooks/useTranslate.hook";
+import { Box, Button, Group, NumberInput } from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { SelectSubType } from "../../../../Forms/SelectSubType";
+interface Properties {
+  t_type?: TauriTypes.CacheTradableItemSubType;
+  [key: string]: any;
+}
 export type EditTabProps = {
   lookup: string;
-  value: TauriTypes.StockItem | TauriTypes.WishListItem;
+  value: TauriTypes.StockItem<Properties> | TauriTypes.WishListItem<Properties>;
   onSave?: (item: TauriTypes.UpdateStockItem | TauriTypes.UpdateWishListItem) => void;
 };
 
@@ -20,7 +25,7 @@ export function EditTab({ lookup, value, onSave }: EditTabProps) {
   });
 
   const GetProperty = (key: string) => {
-    return value[key as keyof typeof value] ?? value.properties?.[key];
+    return (form.values as any)[key] ?? value.properties?.[key];
   };
 
   const ShowField = (lookupKeys: string[]) => {
@@ -30,6 +35,13 @@ export function EditTab({ lookup, value, onSave }: EditTabProps) {
   return (
     <form onSubmit={form.onSubmit(async (values) => onSave?.(values))}>
       <Box>
+        {GetProperty("t_type") && value.sub_type && (
+          <SelectSubType
+            availableSubTypes={GetProperty("t_type")}
+            value={GetProperty("sub_type")}
+            onChange={(value) => form.setFieldValue("sub_type", value)}
+          />
+        )}
         <NumberInput
           min={0}
           display={ShowField(["stock_item"])}

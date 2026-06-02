@@ -392,8 +392,8 @@ impl TradeDetection {
         _is_previous: bool,
         ignore_combined: bool,
     ) -> (String, DetectionStatus) {
-        // let last_item_mach = ", leftItem=/Menu/Confirm_Item_Ok";
-        let last_item_mach = ", title= leftItem=/Menu/Confirm_Item_Ok";
+        let last_item_mach = ", leftItem=/Menu/Confirm_Item_Ok";
+        // let last_item_mach = ", title= leftItem=/Menu/Confirm_Item_Ok";
         if next_line.contains(last_item_mach) {
             return (next_line.to_string(), DetectionStatus::NextLine);
         }
