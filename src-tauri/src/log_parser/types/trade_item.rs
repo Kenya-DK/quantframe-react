@@ -64,8 +64,8 @@ impl TradeItem {
         let mut line = line.to_owned();
         let mut next_line = next_line.to_owned();
         let mut raw = line.to_owned();
-        // let match_text = ", leftItem=/";
-        let match_text = ", title= ";
+        let match_text = ", leftItem=/";
+        // let match_text = ", title= ";
         // Check if the item is platinum
         let (is_currency_combined, is_currency_status, is_currency_type) =
             detection.is_currency(&line, &next_line, false, false);
@@ -358,39 +358,53 @@ impl TradeItem {
             return Ok(DetectionStatus::None);
         }
 
+        let rank = rank_str
+            .split_whitespace()
+            .find_map(|s| s.parse::<i64>().ok())
+            .unwrap_or(0);
+
         let mods = cache.mods();
 
-        let mut rank = 0;
-        for s in rank_str.split(' ') {
-            if let Ok(result) = s.parse::<i64>() {
-                rank = result;
-                break;
-            }
-        }
-
         let apply_mod = |this: &mut Self, info: &CacheMod| {
+            let trade_item = cache.tradable_item().get_by(&info.base.unique_name).ok();
+
             let variant = info
                 .base
                 .sub_type
                 .as_ref()
-                .and_then(|sub_type| sub_type.variant.as_deref())
+                .and_then(|s| s.variant.as_deref())
                 .unwrap_or("");
+
+            let mut sub_type = SubType::default();
             this.unique_name = info.base.unique_name.clone();
             this.item_type = TradeItemType::ModWithNoRank;
-            if info.fusion_limit > 0 && variant.is_empty() {
-                this.sub_type = Some(SubType::rank(rank));
-                this.item_type = TradeItemType::Mod;
-            } else {
-                this.sub_type = info.base.sub_type.clone();
-                this.properties.set_property_value("requireSubType", true);
-                this.item_type = TradeItemType::RivenUnVeiled;
+
+            if let Some(trade_item) = trade_item {
+                if trade_item
+                    .sub_type
+                    .unwrap_or_default()
+                    .has_variants(&["regular", "atragraph"])
+                {
+                    sub_type.variant = Some("regular".to_string());
+                }
             }
+
+            if info.fusion_limit > 0 && variant.is_empty() {
+                sub_type.rank = Some(rank);
+                this.item_type = TradeItemType::Mod;
+                this.sub_type = Some(sub_type);
+                return;
+            }
+            this.sub_type = info.base.sub_type.clone();
+            this.properties.set_property_value("requireSubType", true);
+            this.item_type = TradeItemType::RivenUnVeiled;
         };
 
         if let Ok(info) = mods.get_by(name) {
             apply_mod(self, &info);
             return Ok(DetectionStatus::Line);
         }
+
         Ok(DetectionStatus::None)
     }
     pub fn is_riven_mod(

@@ -1,12 +1,16 @@
 import { TauriTypes } from "$types";
-import { SelectSubType } from "@components/Forms/SelectSubType";
 import { TooltipIcon } from "@components/Shared/TooltipIcon";
 import { useTranslateCommon, useTranslateModals } from "@hooks/useTranslate.hook";
 import { Box, Button, Group, NumberInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { SelectSubType } from "../../../../Forms/SelectSubType";
+interface Properties {
+  t_type?: TauriTypes.CacheTradableItemSubType;
+  [key: string]: any;
+}
 export type EditTabProps = {
   lookup: string;
-  value: TauriTypes.StockItem | TauriTypes.WishListItem;
+  value: TauriTypes.StockItem<Properties> | TauriTypes.WishListItem<Properties>;
   onSave?: (item: TauriTypes.UpdateStockItem | TauriTypes.UpdateWishListItem) => void;
 };
 

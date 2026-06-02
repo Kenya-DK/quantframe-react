@@ -2,7 +2,7 @@
 
 ## Fix's
 
-⚒️ - Fix the new regular/atragraph variant for mods, note all mods from the auto trade wil be regular V2
+✨ - You can now edit the item sub type when editing an item in the item details modal.
 
 ## Dev Notes
 
