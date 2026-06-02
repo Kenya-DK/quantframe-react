@@ -50,7 +50,7 @@ impl InsertAt for String {
 }
 
 const REQUESTS_PER_SECOND: NonZeroU32 = NonZero::new(3).unwrap();
-const DEVELOPMENT_URL: &str = "http://localhost:6969";
+const DEVELOPMENT_URL: &str = "https://api.quantframe.app";
 const PRODUCTION_URL: &str = "https://api.quantframe.app";
 // Callback types
 pub type ClientCallback = Box<dyn Fn(&str, &Value) + Send + Sync>;
