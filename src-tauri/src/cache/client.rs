@@ -196,7 +196,7 @@ impl CacheState {
 
     async fn check_update(&self, qf_client: &QFClient) -> Result<(bool, String), Error> {
         let current_version = self.version.id.clone();
-        let remote_version = match qf_client.cache().get_cache_id().await {
+        let remote_version = match qf_client.cache().get_cache_id("cache").await {
             Ok(id) => id,
             Err(e) => {
                 let err = Error::from_qf(
@@ -293,10 +293,11 @@ impl CacheState {
     }
 
     async fn extract(&self, qf_client: &QFClient) -> Result<(), Error> {
-        let zip_data =
-            qf_client.cache().download_cache().await.map_err(|e| {
-                Error::from_qf("Cache", "Failed to download cache", e, get_location!())
-            })?;
+        let zip_data = qf_client
+            .cache()
+            .download_cache("cache")
+            .await
+            .map_err(|e| Error::from_qf("Cache", "Failed to download cache", e, get_location!()))?;
 
         let reader = std::io::Cursor::new(zip_data);
         let mut archive = zip::ZipArchive::new(reader).map_err(|e| {

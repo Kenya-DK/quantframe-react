@@ -75,7 +75,6 @@ pub struct Client {
     analytics_route: OnceLock<Arc<AnalyticsRoute>>,
     alert_route: OnceLock<Arc<AlertRoute>>,
     cache_route: OnceLock<Arc<CacheRoute>>,
-    item_price_route: OnceLock<Arc<ItemPriceRoute>>,
     item_route: OnceLock<Arc<ItemRoute>>,
     riven_price_route: OnceLock<Arc<RivenPriceRoute>>,
     market_route: OnceLock<Arc<MarketRoute>>,
@@ -105,7 +104,6 @@ impl Client {
                     analytics_route: self.analytics_route.clone(),
                     alert_route: self.alert_route.clone(),
                     cache_route: self.cache_route.clone(),
-                    item_price_route: self.item_price_route.clone(),
                     item_route: self.item_route.clone(),
                     riven_price_route: self.riven_price_route.clone(),
                     market_route: self.market_route.clone(),
@@ -166,7 +164,6 @@ impl Client {
             analytics_route: OnceLock::new(),
             alert_route: OnceLock::new(),
             cache_route: OnceLock::new(),
-            item_price_route: OnceLock::new(),
             item_route: OnceLock::new(),
             riven_price_route: OnceLock::new(),
             market_route: OnceLock::new(),
@@ -400,11 +397,6 @@ impl Client {
             .get_or_init(|| CacheRoute::new(self.arc()))
             .clone()
     }
-    pub fn item_price(&self) -> Arc<ItemPriceRoute> {
-        self.item_price_route
-            .get_or_init(|| ItemPriceRoute::new(self.arc()))
-            .clone()
-    }
     pub fn item(&self) -> Arc<ItemRoute> {
         self.item_route
             .get_or_init(|| ItemRoute::new(self.arc()))
@@ -503,11 +495,6 @@ impl Client {
             let new_cache = CacheRoute::from_existing(&old_cache, self.arc());
             self.cache_route = OnceLock::new();
             let _ = self.cache_route.set(new_cache);
-        }
-        if let Some(old_item_price) = self.item_price_route.get().cloned() {
-            let new_item_price = ItemPriceRoute::from_existing(&old_item_price, self.arc());
-            self.item_price_route = OnceLock::new();
-            let _ = self.item_price_route.set(new_item_price);
         }
         if let Some(old_item) = self.item_route.get().cloned() {
             let new_item = ItemRoute::from_existing(&old_item, self.arc());

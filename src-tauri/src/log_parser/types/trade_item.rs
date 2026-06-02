@@ -64,8 +64,8 @@ impl TradeItem {
         let mut line = line.to_owned();
         let mut next_line = next_line.to_owned();
         let mut raw = line.to_owned();
-        let match_text = ", leftItem=/";
-        // let match_text = ", title= ";
+        // let match_text = ", leftItem=/";
+        let match_text = ", title= ";
         // Check if the item is platinum
         let (is_currency_combined, is_currency_status, is_currency_type) =
             detection.is_currency(&line, &next_line, false, false);
@@ -710,20 +710,6 @@ impl Display for TradeItem {
             write!(f, "Error: None")?;
         }
         Ok(())
-    }
-}
-
-pub fn tags_to_type(tags: Vec<&str>) -> TradeItemType {
-    match () {
-        _ if tags.contains(&"ayatan_sculpture") => TradeItemType::Ayatan,
-        _ if tags.contains(&"weapon") => TradeItemType::Weapon,
-        _ if tags.contains(&"relic") => TradeItemType::Relic,
-        _ if tags.contains(&"component") => TradeItemType::Component,
-        _ if tags.contains(&"lens") => TradeItemType::Lens,
-        _ if tags.contains(&"arcane_enhancement") => TradeItemType::Arcane,
-        _ if tags.contains(&"mod") => TradeItemType::Mod,
-        _ if tags.contains(&"fish") => TradeItemType::Fish,
-        _ => TradeItemType::Unknown,
     }
 }
 
