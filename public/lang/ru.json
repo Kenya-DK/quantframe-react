@@ -1,4 +1,12 @@
 {
+  "common": {
+    "dialogs": {
+      "reset_settings": {
+        "title": "Сбросить настройки",
+        "message": "Сбросить все настройки к значениям по умолчанию?"
+      }
+    }
+  },
   "context": {
     "app": {
       "starting_up": "Запуск...",
