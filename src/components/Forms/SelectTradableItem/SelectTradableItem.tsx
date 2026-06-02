@@ -1,11 +1,11 @@
-import { Group, NumberInput, Select } from "@mantine/core";
-import { useQuery } from "@tanstack/react-query";
-import api from "@api/index";
 import { TauriTypes } from "$types";
-import { useEffect, useState } from "react";
-import { useTranslateForms } from "@hooks/useTranslate.hook";
-import { upperFirst } from "@mantine/hooks";
+import api from "@api/index";
 import { TokenSearchSelect } from "@components/Forms/TokenSearchSelect";
+import { useTranslateForms } from "@hooks/useTranslate.hook";
+import { Group, NumberInput, Select } from "@mantine/core";
+import { upperFirst } from "@mantine/hooks";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 
 export type SelectTradableItemProps = {
   value: string;
@@ -52,10 +52,15 @@ export function SelectTradableItem({ hide_sub_type, value, onChange, description
   const handleSelect = (item: SelectCacheTradableItem) => {
     const new_item = { ...item };
     if (item.available_sub_types) {
-      const sub_type = item.available_sub_types;
-      if (sub_type.variants) new_item.sub_type = { variant: sub_type.variants[0] };
-      if (sub_type.max_rank) new_item.sub_type = { rank: sub_type.max_rank };
-      if (sub_type.amber_stars || sub_type.cyan_stars) new_item.sub_type = { cyan_stars: sub_type.cyan_stars, amber_stars: sub_type.amber_stars };
+      debugger;
+
+      const available_sub_types = item.available_sub_types;
+      let subType: TauriTypes.SubType = {};
+      if (available_sub_types.variants) subType.variant = available_sub_types.variants[0];
+      if (available_sub_types.max_rank) subType.rank = available_sub_types.max_rank;
+      if (available_sub_types.amber_stars || available_sub_types.cyan_stars)
+        subType = { ...subType, cyan_stars: available_sub_types.cyan_stars, amber_stars: available_sub_types.amber_stars };
+      if (Object.keys(subType).length > 0) new_item.sub_type = subType;
     }
     onChange(new_item);
     setSelectedItem(new_item);
