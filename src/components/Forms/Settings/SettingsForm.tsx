@@ -43,12 +43,20 @@ export function SettingsForm({ onSubmit, value }: SettingsFormProps) {
     api.app.getDefaultSettings().then(setDefaultSettings).catch(console.error);
   }, []);
 
-  const isNotDefault = defaultSettings && JSON.stringify({ ...value, has_error: undefined, hide_save_button: undefined }) !== JSON.stringify(defaultSettings);
+  const isNotDefault =
+    defaultSettings &&
+    JSON.stringify({ ...value, has_error: undefined, hide_save_button: undefined }) !== JSON.stringify(defaultSettings);
 
   const showButtons = isNotDefault || form.isDirty();
 
+  const resetSettingsDialogTitle = useTranslateCommon("dialogs.reset_settings.title");
+  const resetSettingsDialogMessage = useTranslateCommon("dialogs.reset_settings.message");
+
   const handleReset = async () => {
-    const confirmed = await confirm("Reset all settings to default values?", { kind: "warning" });
+    const confirmed = await confirm(resetSettingsDialogMessage, {
+      kind: "warning",
+      title: resetSettingsDialogTitle,
+    });
     if (!confirmed) return;
     try {
       const defaults = await api.app.getDefaultSettings();

@@ -26,6 +26,12 @@
         "label": "Delete"
       }
     },
+    "dialogs": {
+      "reset_settings": {
+        "title": "Reset settings",
+        "message": "Reset all settings to default values?"
+      }
+    },
     "notifications": {
       "copy_to_clipboard": {
         "title": "Copied to Clipboard",
