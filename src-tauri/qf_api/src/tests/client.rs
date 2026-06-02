@@ -52,7 +52,7 @@ async fn test_cache_extract() {
         "https://example.com",
         false,
     );
-    match client.cache().download_cache().await {
+    match client.cache().download_cache("cache").await {
         Ok(zip_data) => {
             println!("Successfully downloaded cache ({} bytes)", zip_data.len());
 

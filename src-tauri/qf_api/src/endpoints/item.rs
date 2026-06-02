@@ -34,7 +34,7 @@ impl ItemRoute {
             .as_ref()
             .call_api::<Paginated<ItemPrice>>(
                 Method::GET,
-                &format!("/items/prices?{}", query.get_query()),
+                &format!("/market/items?{}", query.get_query()),
                 None,
                 None,
                 ResponseFormat::Json,

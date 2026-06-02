@@ -32,7 +32,7 @@ impl ItemPriceModule {
     pub async fn check_update(&self, qf_client: &QFClient) -> Result<(bool, String), Error> {
         let client = self.client.upgrade().expect("Client should not be dropped");
         let current_version = client.version.id_price.clone();
-        let remote_version = match qf_client.item_price().get_cache_id().await {
+        let remote_version = match qf_client.cache().get_cache_id("item_price").await {
             Ok(id) => id,
             Err(e) => {
                 let err = Error::from_qf(
@@ -93,14 +93,18 @@ impl ItemPriceModule {
     }
     async fn extract(&self, qf_client: &QFClient) -> Result<(), Error> {
         emit_startup!("cache.item_price_updating", json!({}));
-        let content = qf_client.item_price().download_cache().await.map_err(|e| {
-            Error::from_qf(
-                "Cache:ItemPrice",
-                "Failed to download cache",
-                e,
-                get_location!(),
-            )
-        })?;
+        let content = qf_client
+            .cache()
+            .download_cache("item_price")
+            .await
+            .map_err(|e| {
+                Error::from_qf(
+                    "Cache:ItemPrice",
+                    "Failed to download cache",
+                    e,
+                    get_location!(),
+                )
+            })?;
 
         // Create parent directory if it doesn't exist
         if let Some(parent) = self.path.parent() {

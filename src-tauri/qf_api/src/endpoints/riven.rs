@@ -34,7 +34,7 @@ impl RivenPriceRoute {
             .as_ref()
             .call_api::<Paginated<RivenPrice>>(
                 Method::GET,
-                &format!("/rivens/prices?{}", query.get_query()),
+                &format!("/market/rivens?{}", query.get_query()),
                 None,
                 None,
                 ResponseFormat::Json,

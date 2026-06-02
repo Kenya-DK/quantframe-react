@@ -1,6 +1,4 @@
-use std::
-    sync::{Arc, Weak}
-;
+use std::sync::{Arc, Weak};
 
 use reqwest::Method;
 
@@ -26,14 +24,14 @@ impl CacheRoute {
         })
     }
 
-    pub async fn get_cache_id(&self) -> Result<String, ApiError> {
+    pub async fn get_cache_id(&self, cache_type: impl Into<String>) -> Result<String, ApiError> {
         let client = self.client.upgrade().expect("Client should not be dropped");
 
         match client
             .as_ref()
             .call_api::<String>(
                 Method::GET,
-                "/cache/md5",
+                &format!("/cache/md5?type={}", cache_type.into()),
                 None,
                 None,
                 ResponseFormat::String,
@@ -46,14 +44,14 @@ impl CacheRoute {
         }
     }
 
-    pub async fn download_cache(&self) -> Result<Vec<u8>, ApiError> {
+    pub async fn download_cache(&self, cache_type: impl Into<String>) -> Result<Vec<u8>, ApiError> {
         let client = self.client.upgrade().expect("Client should not be dropped");
 
         match client
             .as_ref()
             .call_api::<Vec<u8>>(
                 Method::GET,
-                "/cache/download",
+                &format!("/cache/download?type={}", cache_type.into()),
                 None,
                 None,
                 ResponseFormat::Bytes,
