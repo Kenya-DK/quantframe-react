@@ -1,0 +1,2458 @@
+{
+  "months": [
+    "1月",
+    "2月",
+    "行進",
+    "4月",
+    "5月",
+    "6月",
+    "7月",
+    "8月",
+    "9月",
+    "10月",
+    "11月",
+    "12月"
+  ],
+  "common": {
+    "not_found": "見つかりません",
+    "buttons": {
+      "save": {
+        "label": "保存"
+      },
+      "delete": {
+        "label": "消去"
+      }
+    },
+    "notifications": {
+      "copy_to_clipboard": {
+        "title": "クリップボードにコピーされました",
+        "message": "{{message}} がクリップボードにコピーされました。"
+      },
+      "on_trade_event": {
+        "multiple_items": {
+          "title": "{{player_name}} との取引は処理されませんでした",
+          "message": "{{player_name}} との取引は、アイテムが複数あるため処理されませんでした。"
+        },
+        "no_valid_items": {
+          "title": "{{player_name}} との取引は処理されませんでした",
+          "message": "有効なアイテムがないため、{{player_name}} との取引は処理されませんでした。"
+        },
+        "success": {
+          "title": "{{player_name}} との取引が完了しました",
+          "message": "<blue>{{item_name}}</blue> X<blue>{{quantity}}</blue> <blue>{{trade_type}}</blue> {{platinum}}p の場合"
+        }
+      },
+      "warframe_gdpr_data_loaded": {
+        "success": {
+          "title": "Warframe GDPR データがロードされました",
+          "message": "取引: {{trades}}、ログイン: {{logins}}、購入: {{purchases}}、トランザクション: {{transactions}}"
+        }
+      },
+      "log_export": {
+        "error": {
+          "title": "ログエクスポートエラー",
+          "message": "ログをエクスポートしようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "ログのエクスポートが成功しました",
+          "message": "ログは {{path}} に正常にエクスポートされました。"
+        }
+      },
+      "create_stock_item": {
+        "error": {
+          "title": "在庫作成エラー",
+          "message": "在庫を作成しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "ストックの作成が成功しました",
+          "message": "在庫品目 {{name}} が正常に作成されました。"
+        }
+      },
+      "update_stock_item": {
+        "error": {
+          "title": "在庫更新エラー",
+          "title_multiple": "在庫更新エラー",
+          "message": "在庫を更新しようとしたときにエラーが発生しました。",
+          "message_multiple": "複数の在庫アイテムを更新しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "在庫更新の成功",
+          "title_multiple": "在庫更新の成功",
+          "message": "在庫品目 {{name}} が正常に更新されました。",
+          "message_multiple": "{{count}} 個の在庫品目が正常に更新されました。"
+        }
+      },
+      "delete_stock_item": {
+        "error": {
+          "title": "在庫削除エラー",
+          "title_multiple": "在庫削除エラー",
+          "message": "在庫を削除しようとしたときにエラーが発生しました。",
+          "message_multiple": "複数の在庫アイテムを削除しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "在庫の削除に成功しました",
+          "title_multiple": "在庫の削除に成功しました",
+          "message": "在庫品目 {{name}} は正常に削除されました。",
+          "message_multiple": "{{count}} 個の在庫アイテムが正常に削除されました。"
+        }
+      },
+      "sell_stock_item": {
+        "error": {
+          "title": "在庫販売エラー",
+          "message": "在庫を売却しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "株の売却成功",
+          "message": "在庫品目 {{name}} は正常に販売されました。"
+        }
+      },
+      "create_stock_riven": {
+        "error": {
+          "title": "在庫作成エラー",
+          "message": "在庫を作成しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "ストックの作成が成功しました",
+          "message": "在庫品目 {{name}} が正常に作成されました。"
+        }
+      },
+      "update_stock_riven": {
+        "error": {
+          "title": "在庫更新エラー",
+          "title_multiple": "在庫更新エラー",
+          "message": "在庫を更新しようとしたときにエラーが発生しました。",
+          "message_multiple": "複数の在庫アイテムを更新しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "在庫更新の成功",
+          "title_multiple": "在庫更新の成功",
+          "message": "在庫品目 {{name}} が正常に更新されました。",
+          "message_multiple": "{{count}} 個の在庫品目が正常に更新されました。"
+        }
+      },
+      "delete_stock_riven": {
+        "error": {
+          "title": "在庫削除エラー",
+          "title_multiple": "在庫削除エラー",
+          "message": "在庫を削除しようとしたときにエラーが発生しました。",
+          "message_multiple": "複数の在庫アイテムを削除しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "在庫の削除に成功しました",
+          "title_multiple": "在庫の削除に成功しました",
+          "message": "在庫リブン {{name}} が正常に削除されました。",
+          "message_multiple": "{{count}} 株リヴェンが正常に削除されました。"
+        }
+      },
+      "delete_transaction": {
+        "error": {
+          "title": "トランザクション削除エラー",
+          "title_multiple": "トランザクション削除エラー",
+          "message": "トランザクションを削除しようとしたときにエラーが発生しました。",
+          "message_multiple": "複数のトランザクションを削除しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "トランザクションの削除成功",
+          "title_multiple": "トランザクションの削除成功",
+          "message": "トランザクション {{name}} は正常に削除されました。",
+          "message_multiple": "{{count}} トランザクションは正常に削除されました。"
+        }
+      },
+      "sell_stock_riven": {
+        "error": {
+          "title": "在庫販売エラー",
+          "message": "在庫を売却しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "株の売却成功",
+          "message": "在庫品目 {{name}} は正常に販売されました。"
+        }
+      },
+      "create_wish_list": {
+        "error": {
+          "title": "ウィッシュリスト作成エラー",
+          "message": "ウィッシュリストを作成しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "ウィッシュリストの作成が成功しました",
+          "message": "ウィッシュリストが正常に作成されました。"
+        }
+      },
+      "update_wish_list": {
+        "error": {
+          "title": "ウィッシュリスト更新エラー",
+          "title_multiple": "ウィッシュリスト更新エラー",
+          "message": "ウィッシュリストを更新しようとしたときにエラーが発生しました。",
+          "message_multiple": "複数のウィッシュリストを更新しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "ウィッシュリストの更新が成功しました",
+          "title_multiple": "ウィッシュリストの更新が成功しました",
+          "message": "ウィッシュリストが正常に更新されました。",
+          "message_multiple": "{{count}} ウィッシュリストは正常に更新されました。"
+        }
+      },
+      "delete_wish_list": {
+        "error": {
+          "title": "ウィッシュリスト削除エラー",
+          "title_multiple": "ウィッシュリスト削除エラー",
+          "message": "ウィッシュリストを削除しようとしたときにエラーが発生しました。",
+          "message_multiple": "複数のウィッシュリストを削除しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "ウィッシュリストの削除に成功しました",
+          "title_multiple": "ウィッシュリストの削除に成功しました",
+          "message": "ウィッシュリストは正常に削除されました。",
+          "message_multiple": "{{count}} ウィッシュリストは正常に削除されました。"
+        }
+      },
+      "bought_wish_list": {
+        "error": {
+          "title": "購入済みウィッシュリストエラー",
+          "message": "ウィッシュリストを購入済みとしてマークしようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "ウィッシュリストの購入に成功しました",
+          "message": "ウィッシュリストは購入済みとしてマークされました。"
+        }
+      },
+      "delete_chat": {
+        "error": {
+          "title": "チャット削除エラー",
+          "message": "チャットを削除しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "チャットの削除に成功しました",
+          "message": "チャットは正常に削除されました。"
+        }
+      },
+      "export_data": {
+        "error": {
+          "title": "データのエクスポートエラー",
+          "message": "データをエクスポートしようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "データのエクスポートに成功しました",
+          "message": "データは {{path}} に正常にエクスポートされました。"
+        }
+      },
+      "no_updates_available": {
+        "title": "利用可能なアップデートはありません",
+        "message": "すでに最新バージョンを使用しています。"
+      },
+      "update_settings": {
+        "error": {
+          "title": "設定更新エラー",
+          "message": "設定を更新しようとしたときにエラーが発生しました: \n{{message}}"
+        },
+        "success": {
+          "title": "設定の更新が成功しました",
+          "message": "設定が正常に更新されました"
+        }
+      },
+      "create_trade_entry": {
+        "error": {
+          "title": "トレードエントリー作成エラー",
+          "title_multiple": "トレードエントリー作成エラー",
+          "message": "トレードエントリーを作成しようとしたときにエラーが発生しました。",
+          "message_multiple": "複数の取引エントリを作成しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "貿易エントリーの作成を成功させる",
+          "title_multiple": "貿易エントリーの作成を成功させる",
+          "message": "取引エントリ {{name}} が正常に作成されました。",
+          "message_multiple": "{{count}} 取引エントリが正常に作成されました。"
+        }
+      },
+      "update_trade_entry": {
+        "error": {
+          "title": "トレードエントリー更新エラー",
+          "title_multiple": "トレードエントリー更新エラー",
+          "message": "取引エントリを更新しようとしたときにエラーが発生しました。",
+          "message_multiple": "複数の取引エントリを更新しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "トレードエントリーの更新成功",
+          "title_multiple": "トレードエントリーの更新成功",
+          "message": "取引エントリ {{name}} が正常に更新されました。",
+          "message_multiple": "{{count}} 取引エントリが正常に更新されました。"
+        }
+      },
+      "delete_trade_entry": {
+        "error": {
+          "title": "トレードエントリー削除エラー",
+          "title_multiple": "トレードエントリー削除エラー",
+          "message": "取引エントリを削除しようとしたときにエラーが発生しました。",
+          "message_multiple": "複数の取引エントリを削除しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "トレードエントリーの削除成功",
+          "title_multiple": "トレードエントリーの削除成功",
+          "message": "取引エントリ {{name}} は正常に削除されました。",
+          "message_multiple": "{{count}} 取引エントリが正常に削除されました。"
+        }
+      },
+      "create_trade_msg_template": {
+        "error": {
+          "title": "テンプレート作成エラー",
+          "message": "取引メッセージ テンプレートを作成しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "テンプレートの作成が成功しました",
+          "message": "トレードメッセージテンプレートが正常に作成されました。"
+        }
+      },
+      "delete_trade_msg_template": {
+        "error": {
+          "title": "テンプレート削除エラー",
+          "message": "取引メッセージ テンプレートを削除しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "テンプレートの削除に成功しました",
+          "message": "取引メッセージ テンプレートが正常に削除されました。"
+        }
+      },
+      "update_transaction": {
+        "error": {
+          "title": "更新トランザクションエラー",
+          "message": "トランザクションを更新しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "更新トランザクションの成功",
+          "message": "トランザクションは正常に更新されました。"
+        }
+      },
+      "processed_multiple_items": {
+        "error": {
+          "title": "複数アイテムの処理エラー",
+          "message": "複数の項目を処理しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "複数のアイテムの処理が成功しました",
+          "message": "{{count}} 個のアイテムが正常に処理されました。"
+        }
+      },
+      "calculate_tax_all_transactions": {
+        "error": {
+          "title": "税計算エラー",
+          "message": "トランザクションの税金を計算しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "税金の計算の成功",
+          "message": "トランザクションの税金が正常に計算されました。"
+        }
+      },
+      "delete_order": {
+        "error": {
+          "title": "注文削除エラー",
+          "message": "注文を削除しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "注文の削除が成功しました",
+          "message": "注文は正常に削除されました。"
+        }
+      },
+      "delete_all_orders": {
+        "error": {
+          "title": "すべての注文の削除エラー",
+          "message": "すべての注文を削除しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "すべての注文の削除に成功しました",
+          "message": "すべての注文が正常に削除されました。"
+        }
+      },
+      "refresh_orders": {
+        "error": {
+          "title": "注文の更新エラー",
+          "message": "注文を更新しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "注文の更新が成功しました",
+          "message": "注文は正常に更新されました。"
+        }
+      },
+      "delete_auction": {
+        "error": {
+          "title": "オークション削除エラー",
+          "message": "オークションを削除しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "オークションの削除成功",
+          "message": "オークションは正常に削除されました。"
+        }
+      },
+      "delete_all_auctions": {
+        "error": {
+          "title": "すべてのオークションを削除するエラー",
+          "message": "すべてのオークションを削除しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "すべてのオークションの削除に成功しました",
+          "message": "すべてのオークションは正常に削除されました。"
+        }
+      },
+      "refresh_auctions": {
+        "error": {
+          "title": "オークション更新エラー",
+          "message": "オークションを更新しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "オークションの更新が成功しました",
+          "message": "オークションは正常に更新されました。"
+        }
+      }
+    },
+    "datatable_columns": {
+      "list_price": "上場",
+      "maximum_price": {
+        "title": "最高価格",
+        "value": "{{maximum_price}} ({{currency}})",
+        "edit_tooltip": "最大価格の編集"
+      },
+      "minimum_price": {
+        "title": "最低価格",
+        "value": "{{minimum_price}} ({{currency}})",
+        "edit_tooltip": "最低価格の編集"
+      },
+      "actions": {
+        "title": "アクション",
+        "buttons": {
+          "manual_tooltip": "手動で販売する",
+          "auto_tooltip": "リストどおりに販売する",
+          "bought_manual_tooltip": "購入済みとしてマークする",
+          "bought_auto_tooltip": "表示価格で購入しました",
+          "hide": {
+            "disabled_tooltip": "見せる",
+            "enabled_tooltip": "隠れる"
+          },
+          "info_tooltip": "情報",
+          "delete_tooltip": "消去",
+          "edit_tooltip": "編集",
+          "open_filter_tooltip": "フィルターを開く"
+        }
+      },
+      "quantity": {
+        "title": "量"
+      },
+      "volume": {
+        "title": "音量"
+      }
+    },
+    "item_name": {
+      "title": "名前",
+      "value": "{{name}} {{quantity}} <blue>{{sub_type}}</blue>"
+    },
+    "pagination_total_items": "{{start}} - {{end}} / {{total}}",
+    "prompts": {
+      "delete_item": {
+        "title": "本気ですか？",
+        "message": "この操作は元に戻すことができません。",
+        "cancel": "キャンセル",
+        "confirm": "確認する"
+      },
+      "delete_multiple_items": {
+        "title": "本気ですか？",
+        "message": "これらの {{count}} アイテムを削除してもよろしいですか?この操作は元に戻すことができません。",
+        "cancel": "キャンセル",
+        "confirm": "確認する"
+      },
+      "sell_manual": {
+        "title": "販売価格",
+        "fields": {
+          "sell": {
+            "label": "価格"
+          },
+          "quantity": {
+            "label": "量"
+          }
+        }
+      },
+      "bought_manual": {
+        "title": "のために購入しました",
+        "fields": {
+          "bought": {
+            "label": "価格"
+          },
+          "quantity": {
+            "label": "量"
+          }
+        }
+      },
+      "minimum_price": {
+        "title": "最低価格",
+        "fields": {
+          "minimum_price": {
+            "label": "最低価格",
+            "description": "商品の最低価格"
+          }
+        }
+      },
+      "maximum_price": {
+        "title": "最高価格",
+        "fields": {
+          "maximum_price": {
+            "label": "最高価格",
+            "description": "商品の最高価格"
+          }
+        }
+      },
+      "save": {
+        "title": "保存",
+        "fields": {
+          "name": {
+            "label": "名前"
+          }
+        }
+      }
+    },
+    "sort_by": {
+      "created_at": "作成日",
+      "platinum": "白金",
+      "updated_at": "更新日",
+      "order_type": "注文タイプ",
+      "disposition": "配置",
+      "endo": "遠藤",
+      "riven_grade": "リブングレード"
+    }
+  },
+  "enums": {
+    "item_type": {
+      "riven": "リヴェン",
+      "item": "アイテム",
+      "details": {
+        "riven": "リヴェン",
+        "item": "アイテム"
+      }
+    },
+    "order_type": {
+      "all": "すべての注文",
+      "buy": "買い注文",
+      "sell": "売り注文",
+      "closed": "クローズされた注文",
+      "details": {
+        "buy": "買う",
+        "sell": "売る"
+      }
+    },
+    "transaction_type": {
+      "purchase": "購入",
+      "sale": "販売",
+      "trade": "貿易",
+      "details": {
+        "purchase": "購入",
+        "sale": "販売",
+        "trade": "貿易"
+      }
+    },
+    "stock_status": {
+      "pending": "保留中",
+      "live": "ライブ",
+      "to_low_profit": "低利益",
+      "no_sellers": "売り手がいない",
+      "no_buyers": "買い手がいない",
+      "inactive": "非アクティブ",
+      "sma_limit": "SMA制限",
+      "order_limit": "注文制限",
+      "overpriced": "高すぎる",
+      "underpriced": "低価格",
+      "details": {
+        "pending": "処理を待っています",
+        "live": "Warframe マーケットでライブ配信",
+        "to_low_profit": "設定上利益が少ないため処理されませんでした",
+        "no_sellers": "この商品の販売者は見つかりませんでした",
+        "no_buyers": "このアイテムの購入者が見つかりませんでした",
+        "inactive": "非アクティブなので処理されません",
+        "sma_limit": "SMA によって制限されます",
+        "order_limit": "注文制限により制限されます",
+        "overpriced": "高すぎる",
+        "underpriced": "割安です"
+      }
+    },
+    "stock_mode": {
+      "all": "全て",
+      "riven": "リヴェン",
+      "item": "アイテム"
+    },
+    "trade_mode": {
+      "buy": "買う",
+      "sell": "売る",
+      "wishlist": "ウィッシュリスト"
+    },
+    "user_status": {
+      "online": "オンライン",
+      "ingame": "ゲーム内",
+      "in_game": "ゲーム内",
+      "invisible": "オフライン"
+    },
+    "alert_type": {
+      "info": "情報",
+      "warning": "警告",
+      "error": "エラー",
+      "success": "成功"
+    }
+  },
+  "context": {
+    "app": {
+      "starting_up": "起動中...",
+      "database": {
+        "updating_names_transactions": "トランザクション項目名を更新しています {{progress}}%",
+        "updating_names_stock_items": "在庫品目の名前を更新しています {{progress}}%",
+        "updating_names_stock_rivens": "株のリヴン名を更新中 {{progress}}%",
+        "updating_names_wish_lists": "ウィッシュリスト名を更新中 {{progress}}%",
+        "update_names_completed": "すべての項目名が更新されました"
+      },
+      "cache": {
+        "initializing": "キャッシュを初期化しています...",
+        "updating": "キャッシュを更新しています...",
+        "item_price_updating": "商品価格を更新中..."
+      }
+    }
+  },
+  "components": {
+    "item_component": "<blue>{{name}}</blue> x<blue>{{count}}</blue>",
+    "item_components": "アイテムのコンポーネント",
+    "patreon_overlay": {
+      "title": "制限されたコンテンツ",
+      "description": "このコンテンツは、ティア <blue>{{tier}}</blue> 以上の Patreon サポーターに限定されています。",
+      "buttons": {
+        "become_a_patron": "パトロンになる"
+      }
+    },
+    "timer_stamp": {
+      "years": "{{years}}年前",
+      "months": "{{months}} か月前",
+      "days": "{{days}}日前",
+      "hours": "{{hours}} 時間前",
+      "minutes": "{{minutes}}分前",
+      "seconds": "{{seconds}} 秒前"
+    },
+    "wfm_auction": {
+      "fields": {
+        "selling_price": "販売価格: <blue>{{price}}</blue> <plat/>",
+        "left_footer": "<blue>{{mod_rank}}</blue>/<blue>{{max_rank}}</blue> <blue>{{drain}}</blue> <polarity/>",
+        "right_footer": "MR: <blue>{{mastery_level}}</blue> <roll/> <blue>{{re_rolls}}</blue>"
+      }
+    },
+    "live_scraper_control": {
+      "buttons": {
+        "start": "ライブスクレイパーを開始する",
+        "stop": "ライブスクレーパーを停止"
+      },
+      "prompts": {
+        "start": {
+          "title": "警告",
+          "message": "ライブスクレイピングを開始してもよろしいですか?このアクションにより、WFM 上のブラックリストに載っていない注文がすべて削除されます。",
+          "confirm": "始める",
+          "cancel": "キャンセル"
+        }
+      },
+      "item": {
+        "checking": "チェック項目: <blue>{{name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        "deleted": "注文の削除: <blue>{{current}}</blue>/<blue>{{total}}</blue>"
+      },
+      "riven": {
+        "cooldown": "リヴェンのクールダウン: 残り <blue>{{seconds}}</blue> 秒",
+        "checking": "Riven の確認: <blue>{{name}}</blue> <blue>{{mod_name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        "rate_limited": "レート制限: 続行する前に <blue>{{seconds}}</blue> 秒待機します"
+      }
+    },
+    "searchfield": {
+      "label": "検索",
+      "placeholder": "検索...",
+      "buttons": {
+        "filter": {
+          "tooltip": "フィルター"
+        },
+        "search": {
+          "tooltip": "検索"
+        },
+        "create": {
+          "tooltip": "作成する"
+        }
+      }
+    },
+    "user_menu": {
+      "items": {
+        "app_label": "応用",
+        "settings": "設定",
+        "logout": "ログアウト"
+      },
+      "errors": {
+        "logout": {
+          "title": "ログアウトエラー",
+          "message": "ログアウトしようとしたときにエラーが発生しました。"
+        }
+      },
+      "success": {
+        "logout": {
+          "title": "ログアウト成功",
+          "message": "正常にログアウトしました。"
+        }
+      },
+      "prompts": {
+        "logout": {
+          "title": "ログアウトの確認",
+          "message": "ログアウトしてもよろしいですか?",
+          "confirm": "はい",
+          "cancel": "いいえ"
+        }
+      }
+    },
+    "clock": {
+      "gmt": "GMT: <blue>{{time}}</blue>",
+      "time_until_midnight": "真夜中までの時間 (GMT): <blue>{{time}}</blue>"
+    },
+    "layout": {
+      "log_in": {
+        "navbar": {
+          "home": "家",
+          "debug": "デバッグ",
+          "live_scraper": "ライブスクレーパー",
+          "warframe_market": "Warframe マーケット",
+          "trading_analytics": "取引分析",
+          "trade_messages": "トレードメッセージ",
+          "chat": "チャット",
+          "wf_inventory": "WFの在庫",
+          "about": "について"
+        }
+      }
+    },
+    "select_item_tags": {
+      "tags": {
+        "label": "タグ",
+        "description": "タグを選択してアイテムをフィルタリングします"
+      }
+    },
+    "theme_editor": {
+      "chart_styles": {
+        "title": "グラフのスタイル",
+        "fields": {
+          "bgColor": "背景色",
+          "lineColor": "線の色",
+          "lastYearLineColor": "昨年の線の色",
+          "currentYearLineColor": "今年の線の色"
+        },
+        "total": "合計",
+        "today": "今日",
+        "last_days": "過去 7 日間"
+      },
+      "color_palettes": {
+        "title": "カラーパレット",
+        "base_colors": "ベースカラー",
+        "stock_status": "在庫状況",
+        "user_status": "ユーザーステータス",
+        "alert_type": "アラートの種類",
+        "transaction_type": "取引タイプ",
+        "item_type": "アイテムの種類",
+        "logo_color": "ロゴの色",
+        "positive": "ポジティブ",
+        "negative": "ネガティブ",
+        "profit": "利益"
+      },
+      "sharing": {
+        "title": "共有"
+      },
+      "buttons": {
+        "copy_to_clipboard": "クリップボードにコピー",
+        "import_from_clipboard": "クリップボードからインポート",
+        "open_themes_folder": "テーマフォルダーを開く"
+      },
+      "fields": {
+        "export_name": {
+          "label": "名前",
+          "placeholder": "テーマ名を入力してください",
+          "error": "テーマ名が無効です"
+        },
+        "export_author": {
+          "label": "著者",
+          "placeholder": "著者名を入力してください",
+          "error": "無効な著者名です",
+          "tooltip": "作成する"
+        }
+      },
+      "export_success": {
+        "title": "テーマのエクスポートが成功しました",
+        "message": "テーマは正常にエクスポートされました。"
+      },
+      "export_error": {
+        "title": "テーマのエクスポートエラー",
+        "message": "テーマのエクスポート中にエラーが発生しました: {{error}}"
+      }
+    },
+    "forms": {
+      "update_transaction": {
+        "buttons": {
+          "hide_properties": {
+            "label": "プロパティを非表示にする"
+          },
+          "show_properties": {
+            "label": "プロパティの表示"
+          }
+        },
+        "fields": {
+          "price": {
+            "label": "価格",
+            "placeholder": "価格を入力してください",
+            "description": "プラチナでの取引価格。"
+          },
+          "quantity": {
+            "label": "量",
+            "placeholder": "数量を入力してください",
+            "description": "取引される商品の数量。"
+          },
+          "user_name": {
+            "label": "ユーザー名",
+            "placeholder": "ユーザー名を入力してください",
+            "description": "トランザクションに関連付けられたユーザー名。"
+          },
+          "created_at": {
+            "label": "作成日",
+            "placeholder": "日付を選択してください",
+            "description": "取引の日付。"
+          },
+          "properties": {
+            "label": "プロパティ",
+            "placeholder": "プロパティを入力してください",
+            "description": "トランザクションの追加プロパティ。"
+          }
+        }
+      },
+      "generic_item_list": {
+        "add_all_tooltip": "すべての項目を追加"
+      },
+      "edit_notification_setting": {
+        "discord": {
+          "tooltip": "Discord の通知の切り替え",
+          "title": "Discordの通知",
+          "fields": {
+            "webhook": {
+              "label": "Webhook URL",
+              "placeholder": "Discord Webhook URL を入力してください"
+            },
+            "content": {
+              "label": "コンテンツ",
+              "placeholder": "通知内容を入力してください",
+              "reset_button": "デフォルトにリセットする"
+            },
+            "user_ids": {
+              "label": "ユーザーID",
+              "placeholder": "ユーザー ID を入力します (カンマ区切り)",
+              "description": "通知を受け取るユーザーIDを指定する"
+            }
+          }
+        },
+        "system": {
+          "tooltip": "システム通知の切り替え",
+          "title": "システム通知",
+          "fields": {
+            "title": {
+              "label": "タイトル",
+              "placeholder": "通知のタイトルを入力してください"
+            },
+            "content": {
+              "label": "コンテンツ",
+              "placeholder": "通知内容を入力してください"
+            },
+            "sound": {
+              "label": "音",
+              "placeholder": "通知音を選択する",
+              "play_tooltip": "サウンドを再生する",
+              "options": {
+                "none": "なし",
+                "cat_meow": "猫の鳴き声",
+                "windows_xp_error": "Windows XPのエラー",
+                "windows_xp_startup": "Windows XPのスタートアップ",
+                "iphone_notification": "クソ電話通知",
+                "windows_notification": "Windows通知"
+              }
+            },
+            "volume": {
+              "label": "音量",
+              "placeholder": "音量レベルを設定する"
+            }
+          }
+        },
+        "webhook": {
+          "tooltip": "Webhook 通知の切り替え",
+          "title": "Webhook 通知",
+          "fields": {
+            "url": {
+              "label": "Webhook URL",
+              "placeholder": "Webhook URL を入力してください"
+            }
+          }
+        },
+        "manage_sounds": {
+          "title": "カスタムサウンドの追加",
+          "buttons": {
+            "manage": "サウンドの管理",
+            "back": "戻る"
+          },
+          "fields": {
+            "name": {
+              "label": "サウンド名",
+              "placeholder": "サウンド名"
+            },
+            "file": {
+              "label": "サウンドファイル",
+              "placeholder": "ファイルを選択してください"
+            }
+          },
+          "tooltips": {
+            "add_sound": "サウンドを追加する",
+            "play": "遊ぶ",
+            "delete": "消去"
+          },
+          "notifications": {
+            "add_error": {
+              "title": "サウンド追加エラー",
+              "message": "サウンドを追加しようとしたときにエラーが発生しました。"
+            },
+            "delete_error": {
+              "title": "サウンド削除エラー",
+              "message": "サウンドを削除しようとしたときにエラーが発生しました。"
+            }
+          },
+          "table": {
+            "columns": {
+              "name": "名前",
+              "file_name": "ファイル名",
+              "actions": "アクション"
+            }
+          },
+          "dialog": {
+            "delete": {
+              "title": "{{name}} を削除",
+              "message": "このサウンドを削除してもよろしいですか?この操作は元に戻すことができません。",
+              "confirm": "消去",
+              "cancel": "キャンセル"
+            }
+          },
+          "file_picker": {
+            "filter_name": "オーディオ"
+          }
+        }
+      },
+      "riven_filter_attribute": {
+        "fields": {
+          "is_required": {
+            "tooltip": "が必要です"
+          }
+        }
+      },
+      "riven_filter": {
+        "fields": {
+          "enabled": {
+            "label": "有効"
+          },
+          "similarity": {
+            "label": "類似性"
+          },
+          "rank": {
+            "label": "ランク"
+          },
+          "mastery_rank": {
+            "label": "マスタリーランク"
+          },
+          "required_negative": {
+            "label": "必須のネガティブ"
+          },
+          "re_rolls": {
+            "label": "再ロール"
+          }
+        },
+        "buttons": {
+          "save": {
+            "label": "保存"
+          }
+        }
+      },
+      "create_riven_attributes": {
+        "fields": {
+          "positive": {
+            "title": "ポジティブな属性",
+            "add": "追加"
+          },
+          "negative": {
+            "title": "ネガティブな属性"
+          }
+        },
+        "buttons": {
+          "add": "+追加"
+        }
+      },
+      "create_riven_attribute": {
+        "fields": {
+          "value": {
+            "error": "無効な値"
+          }
+        },
+        "buttons": {
+          "remove": "取り除く"
+        }
+      },
+      "create_riven": {
+        "buttons": {
+          "submit": {
+            "label": "作成する"
+          }
+        },
+        "fields": {
+          "mastery_rank": {
+            "label": "マスタリーランク",
+            "placeholder": "8",
+            "error": "無効なマスタリーランクです"
+          },
+          "re_rolls": {
+            "label": "再ロール",
+            "placeholder": "0",
+            "error": "無効なリロール"
+          },
+          "rank": {
+            "label": "ランク",
+            "placeholder": "0",
+            "error": "無効なランク"
+          },
+          "polarity": {
+            "label": "極性",
+            "error": "無効な極性"
+          },
+          "weapon": {
+            "label": "武器名",
+            "placeholder": "武器",
+            "error": "無効な武器"
+          },
+          "bought": {
+            "label": "買った",
+            "placeholder": "買った",
+            "error": "無効な購入品"
+          },
+          "attributes": {
+            "label": "属性",
+            "error": "Riven には少なくとも 2 つのポジティブな属性が必要です"
+          },
+          "attribute": {
+            "label": "属性",
+            "error": "属性値を 0 にすることはできません"
+          },
+          "mod_name": {
+            "label": "MOD名",
+            "placeholder": "MOD名",
+            "error": "無効なMOD名です"
+          }
+        }
+      },
+      "debugging_live_item_entry": {
+        "fields": {
+          "wfm_url": {
+            "label": "アイテム",
+            "placeholder": "項目を選択...",
+            "error": "項目を選択してください"
+          },
+          "stock_id": {
+            "label": "ストックID",
+            "placeholder": "ストックIDを入力してください...",
+            "error": "無効な株式 ID"
+          },
+          "wish_list_id": {
+            "label": "ウィッシュリストID",
+            "placeholder": "ウィッシュリスト ID を入力してください...",
+            "error": "ウィッシュリストIDが無効です"
+          },
+          "priority": {
+            "label": "優先度",
+            "placeholder": "優先順位を入力してください...",
+            "error": "優先度は 0 以上である必要があります"
+          },
+          "buy_quantity": {
+            "label": "購入数量",
+            "placeholder": "購入数量を入力してください...",
+            "error": "購入数量は 0 以上である必要があります"
+          },
+          "sell_quantity": {
+            "label": "販売数量",
+            "placeholder": "販売数量を入力してください...",
+            "error": "販売数量は 0 以上である必要があります"
+          },
+          "operation": {
+            "label": "運営",
+            "placeholder": "操作を選択...",
+            "error": "少なくとも 1 つの操作を選択してください"
+          }
+        },
+        "buttons": {
+          "add": {
+            "tooltip": "デバッグライブアイテムエントリを追加"
+          }
+        }
+      },
+      "create_category_summary": {
+        "fields": {
+          "icon": {
+            "label": "アイコン",
+            "placeholder": "アイコン",
+            "description": "カテゴリのアイコン",
+            "tooltip": "カテゴリのアイコン",
+            "error": "無効なアイコン"
+          },
+          "name": {
+            "label": "名前",
+            "placeholder": "名前",
+            "description": "カテゴリの名前",
+            "tooltip": "カテゴリの名前",
+            "error": "無効な名前"
+          },
+          "types": {
+            "label": "種類",
+            "description": "カテゴリのタイプ"
+          }
+        },
+        "buttons": {
+          "submit": {
+            "label": "カテゴリの作成/保存"
+          }
+        }
+      },
+      "select_tradable_item": {
+        "fields": {
+          "item": {
+            "label": "アイテム",
+            "placeholder": "項目を選択..."
+          },
+          "variant": {
+            "label": "変異体",
+            "placeholder": "バリエーションを選択...",
+            "description": "バリエーションを選択してください"
+          },
+          "rank": {
+            "label": "ランク",
+            "placeholder": "ランクを選択してください...",
+            "description": "ランクを選択してください"
+          },
+          "cyan_stars": {
+            "label": "シアンスターズ",
+            "placeholder": "シアンの星を選択...",
+            "description": "シアンの星は何個"
+          },
+          "amber_stars": {
+            "label": "アンバースターズ",
+            "placeholder": "琥珀色の星を選択...",
+            "description": "琥珀の星は何個"
+          }
+        },
+        "messages": {
+          "nothing_found": "項目が見つかりませんでした"
+        }
+      },
+      "select_riven_weapon": {
+        "fields": {
+          "weapon": {
+            "label": "武器",
+            "placeholder": "武器を選択..."
+          }
+        }
+      },
+      "create_item": {
+        "fields": {
+          "quantity": {
+            "label": "量",
+            "placeholder": "量",
+            "error": "無効な数量"
+          },
+          "bought": {
+            "label": "買った",
+            "placeholder": "買った",
+            "error": "無効な購入品"
+          }
+        },
+        "buttons": {
+          "add": {
+            "tooltip": {
+              "description_with_report": "アイテムを在庫に追加し、Warframe マーケットに報告する",
+              "description_without_report": "アイテムを在庫に追加する"
+            }
+          }
+        }
+      },
+      "log_in": {
+        "title": "Warframe マーケット - ログイン",
+        "register": "アカウントをお持ちでない場合は、登録する",
+        "fields": {
+          "email": {
+            "label": "電子メール",
+            "placeholder": "電子メール",
+            "error": "無効な電子メール"
+          },
+          "password": {
+            "label": "パスワード",
+            "placeholder": "パスワード",
+            "error": "パスワードには少なくとも6文字を含める必要があります"
+          }
+        },
+        "buttons": {
+          "submit": "ログイン"
+        }
+      },
+      "settings": {
+        "tabs": {
+          "general": {
+            "title": "一般的な",
+            "fields": {
+              "language": {
+                "label": "言語",
+                "placeholder": "言語の選択",
+                "error": "無効な言語"
+              }
+            }
+          },
+          "themes": {
+            "title": "テーマ",
+            "community_themes": "コミュニティのテーマ",
+            "get_more_out_of_themes": "テーマエディターを使用してテーマをさらに活用するにはここをクリックしてください",
+            "theme_configuration": "テーマの構成"
+          },
+          "notifications": {
+            "title": "通知",
+            "on_new_conversation_title": "新しい会話について",
+            "on_new_trade_title": "新しい貿易について",
+            "on_wfm_chat_message_title": "WFM チャット メッセージについて"
+          },
+          "advanced": {
+            "title": "高度な",
+            "fields": {
+              "wf_log_path": {
+                "label": "Warframe ログ パス",
+                "placeholder": "デフォルトの Warframe ログ パス",
+                "errors": {
+                  "not_exists": "指定されたパスは存在しません。"
+                },
+                "tooltip": "Warframe ログ ファイルへのパス。デフォルトのパスの場合は空のままにします。"
+              }
+            },
+            "button_export_logs": "ログのエクスポート"
+          },
+          "summary": {
+            "title": "まとめ",
+            "fields": {
+              "recent_days": {
+                "label": "最近の日々",
+                "tooltip": "何日分のデータを表示するか"
+              },
+              "recent_transactions": {
+                "label": "最近の取引",
+                "tooltip": "表示するトランザクションの数"
+              }
+            },
+            "datatable": {
+              "columns": {
+                "name": "名前",
+                "tags": "タグ",
+                "types": "種類",
+                "actions": {
+                  "title": "アクション",
+                  "buttons": {
+                    "edit": {
+                      "tooltip": "項目の編集"
+                    },
+                    "delete": {
+                      "tooltip": "項目の削除"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "live_scraper": {
+            "title": "ライブスクレーパー",
+            "general": {
+              "title": "一般的な",
+              "fields": {
+                "auto_trade": {
+                  "label": "自動取引",
+                  "error": "無効な自動取引",
+                  "tooltip": "true の場合、在庫を自動的に追加/売却します"
+                },
+                "auto_delete": {
+                  "label": "自動削除",
+                  "error": "無効な自動削除",
+                  "tooltip": "在庫アイテムを自動的に削除する"
+                },
+                "should_delete_other_types": {
+                  "label": "他の取引タイプを削除する必要があります",
+                  "error": "無効な場合は他の取引タイプを削除する必要があります",
+                  "tooltip": "true の場合、他の取引タイプを削除します。例: 購入が有効な場合、ブラックリストに登録されていない場合、販売/ウィッシュリストのアイテムを削除します。"
+                },
+                "report_to_wfm": {
+                  "label": "Warframe マーケットへのレポート",
+                  "error": "Warframe マーケットへの無効なレポート",
+                  "tooltip": "Warframe マーケットにトランザクションを追加します"
+                },
+                "trade_modes": {
+                  "label": "トレードモード",
+                  "description": "取引モードの選択",
+                  "error": "無効な取引モードです"
+                },
+                "stock_mode": {
+                  "label": "ストックモード",
+                  "description": {
+                    "all": "すべてを通過します",
+                    "riven": "リヴェンのみを通過します",
+                    "item": "アイテムのみを通過します"
+                  },
+                  "placeholder": "ストックモード",
+                  "error": "無効なストックモードです"
+                }
+              },
+              "columns": {
+                "name": "名前",
+                "maximum_price": "最高価格"
+              },
+              "buttons": {
+                "edit_blacklist_label": "ブラックリストの編集 {{count}}",
+                "edit_buy_list_label": "購入リストを編集 {{count}}"
+              },
+              "black_list": {
+                "available_items_label": "入手可能なアイテム",
+                "selected_items_label": "ブラックリストに登録されたアイテム",
+                "name_title": "名前",
+                "trade_tax_title": "営業税",
+                "trade_tax_label": "営業税 {{min}} - {{max}}",
+                "mr_requirement_label": "MR 要件 {{min}} ～ {{max}}",
+                "mr_requirement_title": "MR要件",
+                "disabled_for_title": "無効な対象者",
+                "go_back_label": "戻る",
+                "set_trade_modes_tooltip": "現在選択されている取引モードを設定します {{modes}}",
+                "no_trade_selected": "取引モードが選択されていません。少なくとも 1 つの取引モードを選択してください"
+              }
+            },
+            "item": {
+              "title": "在庫品",
+              "wtb": {
+                "title": "WTB",
+                "fields": {
+                  "volume_threshold": {
+                    "label": "音量のしきい値",
+                    "placeholder": "音量のしきい値",
+                    "error": "無効なボリュームしきい値です",
+                    "tooltip": "取引時に考慮すべき最小量",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#volume-threshold"
+                  },
+                  "profit_threshold": {
+                    "label": "利益の閾値",
+                    "placeholder": "利益の閾値",
+                    "error": "利益のしきい値が無効です",
+                    "tooltip": "取引で考慮すべき最低利益",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#profit-threshold"
+                  },
+                  "avg_price_cap": {
+                    "label": "平均価格上限",
+                    "placeholder": "平均価格上限",
+                    "error": "平均価格上限が無効です",
+                    "tooltip": "取引時に考慮すべき最大平均価格",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#average-price-cap"
+                  },
+                  "trading_tax_cap": {
+                    "label": "貿易税の上限",
+                    "placeholder": "貿易税の上限",
+                    "error": "無効な取引税の上限",
+                    "tooltip": "取引時に考慮すべき最大税金",
+                    "link": "https://example.com/trading-tax-cap"
+                  },
+                  "max_total_price_cap": {
+                    "label": "最大合計価格上限",
+                    "placeholder": "最大合計価格上限",
+                    "error": "合計価格の上限が無効です",
+                    "tooltip": "取引で考慮すべき最大合計価格 -1 (制限なし)",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#max-total-price-cap"
+                  },
+                  "price_shift_threshold": {
+                    "label": "価格変動閾値",
+                    "placeholder": "価格変動閾値",
+                    "error": "無効な価格シフトしきい値です",
+                    "tooltip": "取引時に考慮すべき最小価格シフト",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#price-shift-threshold"
+                  },
+                  "buy_quantity": {
+                    "label": "商品の数量",
+                    "placeholder": "商品の数量",
+                    "error": "商品の数量が無効です",
+                    "tooltip": "購入する商品の数量",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#quantity-of-goods"
+                  },
+                  "min_wtb_profit_margin": {
+                    "label": "利益率のしきい値",
+                    "placeholder": "利益率のしきい値",
+                    "error": "利益率のしきい値が無効です",
+                    "tooltip": "WTBトレードの最低利益率",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#profit-margin-threshold"
+                  },
+                  "quantity_per_trade": {
+                    "label": "取引ごとの数量",
+                    "placeholder": "取引ごとの数量",
+                    "error": "取引ごとの数量が無効です",
+                    "tooltip": "取引ごとに取引する商品の数量: これは秘術などの一部のアイテムにのみ有効であることに注意してください。",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#quantity-per-trade"
+                  },
+                  "max_stock_quantity": {
+                    "label": "最大在庫数",
+                    "placeholder": "最大在庫数",
+                    "error": "最大在庫数量が無効です",
+                    "tooltip": "WTB 注文の作成を停止する前に在庫を持つアイテムの最大数量。この機能を無効にするには、-1 に設定します。",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#max-stock-quantity"
+                  },
+                  "wts": {
+                    "title": "WTS",
+                    "fields": {}
+                  }
+                }
+              },
+              "wts": {
+                "title": "WTS",
+                "fields": {
+                  "min_sma": {
+                    "label": "最小SMA",
+                    "placeholder": "最小SMA",
+                    "error": "無効な最小 SMA",
+                    "tooltip": "取引時に考慮すべき最小単純移動平均",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wts#min-sma"
+                  },
+                  "min_profit": {
+                    "label": "最低利益",
+                    "placeholder": "最低利益",
+                    "error": "最低利益が無効です",
+                    "tooltip": "取引で考慮すべき最低利益",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wts#min-profit"
+                  }
+                }
+              },
+              "summary": {
+                "title": "まとめ",
+                "datatable_columns": {
+                  "profit": "潜在的な利益",
+                  "trading_tax": "営業税"
+                },
+                "buttons": {
+                  "show_interesting_wtb_items": "興味深い WTB アイテムを表示"
+                }
+              }
+            },
+            "riven": {
+              "title": "ストックリヴェン",
+              "fields": {
+                "min_profit": {
+                  "label": "最低利益",
+                  "placeholder": "最低利益",
+                  "error": "最低利益が無効です",
+                  "tooltip": "取引で考慮すべき最低利益",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#min-profit"
+                },
+                "threshold_percentage": {
+                  "label": "しきい値パーセンテージ",
+                  "placeholder": "しきい値パーセンテージ",
+                  "error": "無効なしきい値パーセンテージ",
+                  "tooltip": "取引のパーセンテージしきい値",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#minimum-price-shift"
+                },
+                "limit_to": {
+                  "label": "制限する",
+                  "placeholder": "制限する",
+                  "error": "無効な制限です",
+                  "tooltip": "取引回数を制限する",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#limit-to"
+                },
+                "update_interval": {
+                  "label": "更新間隔 (秒)",
+                  "placeholder": "更新間隔",
+                  "error": "無効な更新間隔",
+                  "tooltip": "Riven取引を更新する間隔",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#update-interval"
+                }
+              }
+            }
+          },
+          "http_server": {
+            "title": "HTTPサーバー",
+            "general": {
+              "title": "一般的な",
+              "fields": {
+                "enabled": {
+                  "label": "有効",
+                  "tooltip": "HTTP サーバーを有効または無効にする"
+                },
+                "port": {
+                  "label": "ポート",
+                  "placeholder": "ポート",
+                  "tooltip": "HTTP サーバーが実行されるポート"
+                },
+                "host": {
+                  "label": "ホスト",
+                  "placeholder": "ホスト",
+                  "error": "無効なホスト",
+                  "tooltip": "HTTPサーバーが実行されるホスト"
+                }
+              }
+            }
+          }
+        }
+      },
+      "trade_entry_update": {
+        "fields": {
+          "price_label": "価格",
+          "tags_label": "タグ"
+        }
+      }
+    },
+    "modals": {
+      "base": {
+        "buttons": {
+          "confirm": "確認する",
+          "cancel": "キャンセル"
+        }
+      },
+      "generate_trade_message": {
+        "title": "{{count}} アイテムの取引メッセージを生成",
+        "button_add_key_tooltip": "ディスプレイの追加",
+        "button_copy_tooltip": "クリップボードにコピー",
+        "button_delete_template_tooltip": "テンプレートの削除",
+        "button_load_template_tooltip": "テンプレートのロード",
+        "button_save_template_tooltip": "テンプレートの保存",
+        "titles": {
+          "message_settings": "メッセージ設定",
+          "preview_with_icons": "アイコン付きのプレビュー",
+          "display_settings": "表示設定"
+        },
+        "fields": {
+          "prefix": {
+            "label": "プレフィックス",
+            "description": "取引メッセージに使用するプレフィックス",
+            "placeholder": "プレフィックス"
+          },
+          "suffix": {
+            "label": "サフィックス",
+            "description": "取引メッセージに使用するサフィックス",
+            "placeholder": "サフィックス"
+          },
+          "message": {
+            "label": "メッセージ",
+            "description": "生成されたトレードメッセージ",
+            "length_info": "{{current}} / {{max}} 文字"
+          },
+          "key": {
+            "label": "鍵",
+            "description": "メッセージ内の項目を区切るために使用するキー",
+            "placeholder": "鍵"
+          },
+          "template": {
+            "label": "トレードメッセージテンプレート",
+            "description": "メッセージの生成に使用するテンプレート。"
+          },
+          "chat_icon": {
+            "label": "チャットアイコン",
+            "description": "Warframe Market のチャット アイコンをメッセージに含める"
+          },
+          "group_by": {
+            "label": "グループ化",
+            "description": "メッセージ内の項目を種類ごとにグループ化する"
+          },
+          "load_template": {
+            "label": "テンプレートのロード",
+            "description": "保存したメッセージテンプレートをロードする"
+          }
+        },
+        "datatable": {
+          "columns": {
+            "key": "鍵",
+            "name": "名前",
+            "prefix": "プレフィックス",
+            "suffix": "サフィックス"
+          }
+        }
+      },
+      "patreon_modal": {
+        "title": "Quantframeの開発をサポート",
+        "description": "Patreon で私をサポートしてプレミアム機能にアクセスしてください",
+        "premium_content": "ユーザーアクティビティ | Rivenの価格検索 |データのエクスポート |アイテムの統計",
+        "join_the_community": "サポーターのコミュニティに参加して、Quantframe の未来の形成に貢献してください。",
+        "link_your_account": "2.Patreonアカウントをリンクする",
+        "buttons": {
+          "info": "パトレオン",
+          "link": "アカウントをリンクする"
+        }
+      },
+      "item_details": {
+        "tabs": {
+          "overview": {
+            "title": "概要",
+            "tooltips": {},
+            "labels": {
+              "created_at": "作成日: <date/>",
+              "updated_at": "更新日: <date/>",
+              "bought": "購入価格: {{price}} <plat/>",
+              "list_price": "定価: {{price}} <plat/>",
+              "potential_profit": "潜在的な利益: {{price}} <plat/>",
+              "minimum_profit": "最低利益: {{price}}",
+              "minimum_sma": "最小 SMA: {{price}}",
+              "quantity": "数量: {{quantity}}",
+              "is_hidden": "非表示: <hidden/>"
+            }
+          },
+          "analytics": {
+            "title": "分析",
+            "tooltips": {},
+            "labels": {},
+            "titles": {
+              "last_transactions": "最後のトランザクション",
+              "financial_summary": "財務概要"
+            }
+          },
+          "wfm": {
+            "title": "概要",
+            "tooltips": {
+              "buy_highest_price": "最高値を購入する",
+              "sell_highest_price": "最高値で売る",
+              "spread_percent": "スプレッドパーセント",
+              "supply": "供給"
+            },
+            "labels": {
+              "buy_lowest": "最安値で購入",
+              "sell_lowest": "最低価格で販売する",
+              "spread": "広める",
+              "demand": "要求",
+              "roi_percent": "ROI パーセント"
+            },
+            "buttons": {
+              "view_on_wfm": "Warframe マーケットを見る"
+            }
+          },
+          "edit": {
+            "title": "編集",
+            "fields": {
+              "bought": "購入目的",
+              "minimum_price": "最低価格",
+              "maximum_price": "最高価格",
+              "owned": "現在所有している",
+              "quantity": "量",
+              "minimum_sma": "最小SMA",
+              "minimum_profit": "最低利益"
+            },
+            "tooltips": {
+              "minimum_price": "このアイテムを販売することを希望する最低価格。無効にするには 0 に設定します。",
+              "minimum_profit": "このアイテムを販売するときに得たい最低限の利益。無効にするには 0 に設定します",
+              "minimum_sma": "このアイテムを販売するために考慮される最小の単純移動平均。無効にするには 0 に設定します",
+              "maximum_price": "このアイテムを購入することを希望する最高価格。無効にするには 0 に設定します。"
+            }
+          }
+        }
+      },
+      "riven_details": {
+        "tabs": {
+          "overview": {
+            "title": "概要",
+            "tooltips": {},
+            "labels": {
+              "created_at": "作成日: <date/>",
+              "updated_at": "更新日: <date/>",
+              "bought": "購入価格: {{price}} <plat/>",
+              "list_price": "定価: {{price}} <plat/>",
+              "potential_profit": "潜在的な利益: {{price}} <plat/>",
+              "minimum_profit": "最低利益: {{price}}",
+              "minimum_sma": "最小 SMA: {{price}}",
+              "kuva": "消費したクバ: {{kuva}}",
+              "endo": "遠藤: {{endo}}",
+              "is_hidden": "非表示: <hidden/>"
+            }
+          },
+          "modifiers": {
+            "title": "修飾子",
+            "tooltips": {},
+            "labels": {
+              "weapon": "武器",
+              "rank": "ランク"
+            },
+            "titles": {}
+          },
+          "roll_evaluation": {
+            "title": "ロール評価",
+            "tooltips": {},
+            "labels": {
+              "best_attributes": "最高の属性",
+              "mandatory": "必須",
+              "optional": "オプション",
+              "best_bad_attributes": "ベスト悪い属性"
+            },
+            "titles": {}
+          },
+          "analytics": {
+            "title": "分析",
+            "tooltips": {},
+            "labels": {},
+            "titles": {
+              "last_transactions": "最後のトランザクション",
+              "financial_summary": "財務概要"
+            }
+          },
+          "wfm": {
+            "title": "Warframe マーケット",
+            "tooltips": {},
+            "labels": {
+              "auction_header_left": "{{similarity}}%",
+              "auction_header_right": "{{price}} <plat/>"
+            },
+            "buttons": {
+              "view_on_wfm": "Warframe マーケットを見る"
+            }
+          },
+          "edit": {
+            "title": "編集",
+            "fields": {
+              "bought": "購入目的",
+              "minimum_price": "最低価格",
+              "mastery_rank": "マスタリーランク",
+              "re_rolls": "再ロール",
+              "minimum_profit": "最低利益"
+            },
+            "tooltips": {
+              "minimum_price": "このアイテムを販売することを希望する最低価格。無効にするには 0 に設定します。",
+              "minimum_profit": "このアイテムを販売するときに得たい最低限の利益。無効にするには 0 に設定します",
+              "minimum_sma": "このアイテムを販売するために考慮される最小の単純移動平均。無効にするには 0 に設定します",
+              "maximum_price": "このアイテムを購入することを希望する最高価格。無効にするには 0 に設定します。"
+            }
+          }
+        }
+      },
+      "update_available": {
+        "title": "新しいアップデートが利用可能 (v{{version}})",
+        "buttons": {
+          "download": "ダウンロードしてインストールする",
+          "download_manual": "手動でダウンロードする",
+          "read_more": "続きを読む"
+        }
+      },
+      "tos": {
+        "title": "利用規約",
+        "buttons": {
+          "accept": "受け入れる",
+          "decline": "衰退"
+        }
+      },
+      "app_error": {
+        "title": "{{component}} コンポーネントのエラー",
+        "version": "バージョン: {{version}}",
+        "cause": "原因: {{cause}}",
+        "message": "メッセージ: {{message}}",
+        "location": "場所: {{location}}",
+        "footer": "このエラーを開発者に報告してください。\nログ ファイルをエクスポートするには、下のボタンをクリックするだけでデスクトップにファイルが作成されます。",
+        "export_log": "エクスポートログ"
+      }
+    },
+    "chat_item": {
+      "delete_tooltip": "会話の削除",
+      "last_update": "最終更新"
+    },
+    "chat_rome": {
+      "fields": {
+        "message": {
+          "too_long": "メッセージが長すぎます",
+          "placeholder": "ここにメッセージを入力してください..."
+        }
+      },
+      "buttons": {
+        "back_label": "戻る",
+        "send_label": "送信",
+        "options": {
+          "label": "オプション",
+          "delete": "なぜここにいるのですか？"
+        }
+      }
+    },
+    "best_by_category_table": {
+      "datatable": {
+        "columns": {
+          "name": "名前",
+          "revenue": "収益",
+          "expense": "費用",
+          "profit": "利益",
+          "profit_margin": "利益率",
+          "quantity": "量"
+        }
+      }
+    },
+    "bar_chart_financial_summary": {
+      "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+      "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>",
+      "tooltips": {
+        "expense": "総経費",
+        "revenue": "総収益",
+        "profit": "総利益",
+        "trades": "取引数",
+        "sales": "販売数",
+        "purchases": "購入数"
+      }
+    },
+    "financial_report_card": {
+      "tooltips": {
+        "total_expenses": "総経費",
+        "total_revenue": "総収益",
+        "average_profit": "平均利益",
+        "total_credits": "総クレジット数",
+        "lowest_revenue": "最低収益",
+        "lowest_expense": "最低経費",
+        "highest_revenue": "最高の収益"
+      },
+      "labels": {
+        "trade_count": "取引数",
+        "highest_revenue": "最高の収益",
+        "highest_expense": "最高経費",
+        "total_transactions": "合計トランザクション数",
+        "revenue": "収益",
+        "expenses": "経費",
+        "total_profit": "総利益"
+      }
+    },
+    "riven_preview": {
+      "riven_name": "{{name}} <blue>{{mod_name}}</blue>",
+      "types": {
+        "unveiled": {
+          "footer_left": "{{progress}}/{{required}}"
+        },
+        "pre-veiled": {
+          "footer_left": "x{{quantity}}"
+        },
+        "veiled": {
+          "header_left": "{{price}} <plat/>",
+          "footer_left": "R: {{rank}}/8",
+          "footer_right": "MR: {{mastery}}"
+        }
+      }
+    },
+    "price_history_popover": {
+      "labels": {
+        "price_history": "価格履歴"
+      }
+    }
+  },
+  "pages": {
+    "home": {
+      "cards": {
+        "total": {
+          "title": "総利益",
+          "footer": "販売: <blue>{{sales}}</blue> |購入: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> |利益率: <blue>{{profit_margin}}</blue>%",
+          "bar_chart": {
+            "title": "総利益",
+            "datasets": {
+              "this_year": "今年",
+              "last_year": "去年"
+            }
+          }
+        },
+        "today": {
+          "title": "今日の利益",
+          "footer": "販売: <blue>{{sales}}</blue> |購入: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> |利益率: <blue>{{profit_margin}}</blue>%",
+          "bar_chart": {
+            "title": "今日の利益",
+            "datasets": {
+              "profit": "利益"
+            },
+            "footers": {
+              "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+              "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>"
+            }
+          }
+        },
+        "recent_days": {
+          "bar_chart": {
+            "title": "過去 {{days}} 日間",
+            "datasets": {
+              "profit": "利益"
+            },
+            "footers": {
+              "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+              "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>"
+            }
+          }
+        },
+        "best_seller": {
+          "title": "ベストセラーの利益",
+          "footer": "名前: <blue>{{name}}</blue> | S: <blue>{{sales}}</blue> | P: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> |午後: <blue>{{profit_margin}}</blue>%"
+        },
+        "last_transaction": {
+          "title": "最後の取引",
+          "info_box": {
+            "purchase": "{{count}} を購入",
+            "sale": "セール {{count}}"
+          }
+        }
+      }
+    },
+    "about": {
+      "cards": {
+        "coffee": {
+          "title": "コーヒー"
+        },
+        "patreon": {
+          "title": "Patreonでサポートしてください"
+        },
+        "discord": {
+          "title": "不和"
+        },
+        "guide": {
+          "title": "ウィキ/ガイド"
+        }
+      },
+      "text": {
+        "version": "バージョン: <blue>{{version}}</blue> 🇩🇰の❤️で作成されました。 © 2023-{{year}} ケニア-DK。無断転載を禁じます",
+        "patreon_thanks": "Quantframe を実現してくれた Patreon の「Quantframe ユーザー」サポーターに特別に感謝します: <blue>{{users}}</blue>。",
+        "disclaimer": "Quantframe はサードパーティのアプリであり、Digital Extremes とは提携していません。"
+      },
+      "button_check_for_updates": "アップデートをチェックする"
+    },
+    "debug": {
+      "tabs": {
+        "logging": {
+          "title": "ロギング",
+          "datatable": {
+            "columns": {
+              "command": "指示",
+              "count": "カウント",
+              "actions": {
+                "title": "アクション",
+                "buttons": {
+                  "remove_tooltip": "ログオンコマンドの削除"
+                }
+              }
+            }
+          },
+          "buttons": {
+            "add_log": "ログの追加"
+          },
+          "prompt": {
+            "name": {
+              "title": "ログの追加",
+              "fields": {
+                "name": {
+                  "label": "ログ名"
+                }
+              }
+            }
+          }
+        },
+        "states": {
+          "title": "州",
+          "accordions": {
+            "app_info": "アプリ情報",
+            "app_error": "アプリエラー",
+            "settings": "設定",
+            "alerts": "アラート",
+            "user": "ユーザー",
+            "live_scraper": "ライブスクレーパー",
+            "wfm_state": "WFM 状態",
+            "tauri_events": "タウリのイベント"
+          }
+        },
+        "debugging": {
+          "title": "デバッグ",
+          "fake_orders_tooltip": "Toggle ライブ取引の偽注文 (テスト目的のみ) は dev.kenya.quantframe\\fake_orders に保存されます",
+          "fake_orders_label": "偽の注文を使用する ライブ注文",
+          "datatable": {
+            "columns": {
+              "wfm_url": {
+                "title": "名前",
+                "value": "{{name}} <blue>{{sub_type}}</blue>"
+              },
+              "stock_id": "ストックID",
+              "wish_list_id": "ウィッシュリストID",
+              "priority": "優先度",
+              "buy_quantity": "購入数量",
+              "sell_quantity": "販売数量",
+              "operation": "手術",
+              "actions": {
+                "title": "アクション",
+                "buttons": {
+                  "delete_tooltip": "デバッグライブアイテムエントリの削除"
+                }
+              }
+            }
+          }
+        },
+        "ee_log": {
+          "title": "EEログ",
+          "hide_empty": "空行を非表示にする",
+          "export_json_tooltip": "アイテムを JSON にエクスポート",
+          "datatable": {
+            "columns": {
+              "line": "ライン",
+              "date": "タイムスタンプ"
+            }
+          }
+        }
+      }
+    },
+    "banned": {
+      "wfm": {
+        "title": "Warframe マーケット アカウントは次の理由により停止されました:",
+        "reason": "理由: {{reason}}",
+        "until": "それまで："
+      },
+      "qf": {
+        "title": "Quantframe アカウントは次の理由により停止されました:",
+        "reason": "理由: {{reason}}",
+        "until": "それまで："
+      }
+    },
+    "auth": {
+      "errors": {
+        "login": {
+          "title": "ログインエラー",
+          "TooManyRequests": "リクエストが多すぎます。後でもう一度お試しください",
+          "InvalidCredentials": "パスワードが無効です",
+          "InternalServerError": "ログイン サービスは現在利用できません。後でもう一度お試しください。",
+          "banned": "あなたは禁止されています",
+          "ban_reason": "<red>理由: {{reason}}</red>",
+          "verification": "アカウントを認証する必要があります。Warframe Market Web サイトでこれを行ってください。"
+        }
+      },
+      "success": {
+        "login": {
+          "title": "ログイン成功",
+          "message": "おかえり！ {{name}}"
+        }
+      }
+    },
+    "live_scraper": {
+      "export_json_tooltip": "アイテムを JSON にエクスポート (Patreon T1+)",
+      "update_multiple_tooltip": "複数のアイテムを更新する",
+      "delete_multiple_tooltip": "複数のアイテムを削除する",
+      "wts_multiple_tooltip": "WTSメッセージの生成",
+      "segments": {
+        "bought": "買った",
+        "listed": "上場",
+        "profit": "利益"
+      },
+      "prompts": {
+        "update_filter": {
+          "title": "フィルターを更新する"
+        },
+        "create_riven": {
+          "title": "リヴェンを作成する"
+        }
+      },
+      "tabs": {
+        "item": {
+          "title": "アイテム",
+          "datatable": {
+            "columns": {
+              "bought": "買った",
+              "owned": "所有"
+            }
+          }
+        },
+        "riven": {
+          "title": "リヴェン",
+          "datatable": {
+            "columns": {
+              "attributes": "属性",
+              "bought": "買った"
+            }
+          }
+        },
+        "wish_list": {
+          "title": "ウィッシュリスト"
+        }
+      }
+    },
+    "warframe_market": {
+      "tabs": {
+        "orders": {
+          "title": "注文",
+          "status": "<blue>{{type}}</blue> | <qty/> <blue>{{total}}</blue> | <plat/> <blue>{{platinum}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+          "tooltip_profit": "推定利益",
+          "buttons": {
+            "refresh_tooltip": "注文リストを更新する",
+            "delete_all_tooltip": "すべての注文を削除する",
+            "delete_tooltip": "この注文を削除する",
+            "info_tooltip": "注文の詳細を表示する",
+            "sell_manual": {
+              "buy_tooltip": "手動で購入",
+              "sell_tooltip": "手動販売"
+            },
+            "sell_auto": {
+              "buy_tooltip": "表示価格で購入しました",
+              "sell_tooltip": "表示価格で販売"
+            }
+          },
+          "order_card": {
+            "header_left": "{{name}}",
+            "header_right": "<qty/> <blue>{{quantity}}</blue>",
+            "footer_left": "<blue>{{price}}</blue> <plat/>"
+          },
+          "fields": {
+            "quantity": "<qty/> <blue>{{quantity}}</blue>",
+            "platinum": "<blue>{{platinum}}</blue> <plat/>",
+            "mod_rank": "ランク: <blue>{{mod_rank}}</blue>/<blue>{{mod_max_rank}}</blue>",
+            "subtype": "<blue>{{sub_type}}</blue>"
+          }
+        },
+        "auctions": {
+          "title": "オークション",
+          "overview": "<qty/> <blue>{{total}}</blue> | <plat/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+          "tooltip_profit": "推定利益",
+          "buttons": {
+            "refresh_tooltip": "オークションリストを更新する",
+            "delete_all_tooltip": "すべてのオークションを削除する",
+            "delete_tooltip": "このオークションを削除する",
+            "import_tooltip": "このオークションをインポートする",
+            "info_tooltip": "オークションの詳細を見る"
+          },
+          "auction_card": {
+            "header_right": "{{price}} <plat/>"
+          }
+        }
+      }
+    },
+    "chat": {
+      "prompts": {
+        "delete_chat": {
+          "title": "チャットの削除",
+          "message": "このチャットを削除してもよろしいですか?この操作は元に戻すことができません。",
+          "cancel": "キャンセル",
+          "confirm": "消去"
+        }
+      },
+      "buttons": {
+        "refresh_tooltip": "チャットリストを更新する",
+        "delete_all_tooltip": "すべてのチャットを削除する"
+      }
+    },
+    "trading_analytics": {
+      "tabs": {
+        "transaction": {
+          "title": "取引",
+          "date_range_label": "日付範囲",
+          "date_range_description": "トランザクションをフィルタリングする日付の範囲",
+          "date_range_placeholder": "日付範囲を選択してください",
+          "prompts": {
+            "update_title": "トランザクションの更新"
+          },
+          "buttons": {
+            "export_transactions_tooltip": "トランザクションを JSON にエクスポート (Patreon T1+)",
+            "show_financial_report_tooltip": "レポートを表示する",
+            "delete_all_tooltip": "すべてのトランザクションを削除します {{count}}",
+            "calculate_tax_tooltip": "すべての取引の取引税を計算します"
+          },
+          "datatable": {
+            "columns": {
+              "item_type": "アイテムの種類",
+              "price": "価格",
+              "created_at": "作成日",
+              "user_name": "ユーザー名",
+              "profit": "利益",
+              "credits": "クレジット",
+              "sale_count": "販売数",
+              "revenue": "収益",
+              "purchases_count": "購入数",
+              "expenses": "経費",
+              "total_transactions": "合計トランザクション数"
+            }
+          },
+          "titles": {
+            "most_purchased_items": "最も多く購入されたアイテム",
+            "most_sold_items": "最も売れた商品"
+          },
+          "table_headers": {
+            "item_name": "名前",
+            "quantity": "量"
+          }
+        },
+        "item": {
+          "title": "アイテム",
+          "export_json_tooltip": "アイテムを JSON にエクスポート (Patreon T1+)",
+          "open_table_options_tooltip": "テーブルオプションを開く",
+          "date_range_placeholder": "日付範囲を選択してください",
+          "volume_label": "音量",
+          "min_price_label": "最低価格",
+          "max_price_label": "最高価格",
+          "supply_label": "供給",
+          "demand_label": "要求",
+          "datatable": {
+            "columns": {
+              "volume": "音量",
+              "min_price": "最低価格",
+              "max_price": "最高価格",
+              "open_price": "オープン価格",
+              "closed_price": "クローズ価格",
+              "avg_price": "平均価格",
+              "wa_price": "西オーストラリア州の価格",
+              "median": "中央値",
+              "moving_avg": "移動平均",
+              "donch_top": "ドンチトップ",
+              "donch_bot": "ドンチボット",
+              "trading_tax": "営業税",
+              "supply": "供給",
+              "demand": "要求"
+            }
+          }
+        },
+        "riven": {
+          "title": "リヴェン",
+          "export_json_tooltip": "Riven を JSON にエクスポート (Patreon T1+)",
+          "open_table_options_tooltip": "テーブルオプションを開く",
+          "date_range_placeholder": "日付範囲を選択してください",
+          "volume_label": "音量",
+          "min_price_label": "最低価格",
+          "max_price_label": "最高価格",
+          "avg_price_label": "平均価格",
+          "datatable": {
+            "columns": {
+              "volume": "音量",
+              "min_price": "最低価格",
+              "max_price": "最高価格",
+              "avg_price": "平均価格",
+              "median_price": "中央価格"
+            }
+          }
+        },
+        "user": {
+          "title": "ユーザーアクティビティ",
+          "chart": {
+            "datasets": {
+              "registered_users": "登録ユーザー",
+              "active_users": "アクティブユーザー"
+            }
+          },
+          "fields": {
+            "group_by": {
+              "label": "グループ化",
+              "options": {
+                "day": "日",
+                "hour": "時間"
+              }
+            },
+            "date_range": {
+              "label": "日付範囲",
+              "placeholder": "日付範囲を選択してください"
+            }
+          }
+        },
+        "wfgdpr": {
+          "title": "Warframe GDPR パーサー",
+          "drag_and_drop_message": "GDPR テキスト ファイルをここにドラッグ アンド ドロップします。この機能の詳細については、Web サイトをご覧ください。",
+          "columns": {
+            "account": "アカウント名",
+            "logins": "ログイン数",
+            "purchases": "購入数",
+            "trades": "取引数",
+            "transactions": "トランザクション数",
+            "creation_date": "作成日"
+          },
+          "overview": {
+            "title": "概要",
+            "labels": {
+              "member_since": "メンバー歴",
+              "subscribed": "購読済み",
+              "trades": "取引",
+              "platinum_traded": "プラチナ取引",
+              "purchases": "購入品",
+              "total_spent": "総支出額",
+              "transactions": "トランザクション",
+              "unique_ips": "固有の IP",
+              "total_logins": "総ログイン数"
+            }
+          },
+          "trade": {
+            "title": "貿易",
+            "yearly_trade_overview": {
+              "title": "年間取引概要 ({{year}})",
+              "total_trades": "総取引数",
+              "total_purchases": "合計購入数",
+              "total_sales": "総売上高"
+            },
+            "columns": {
+              "created_at": "作成日",
+              "offered_items": "提供アイテム数",
+              "received_items": "受信アイテム数",
+              "credits": "クレジット"
+            },
+            "table_headers": {
+              "item_name": "名前",
+              "quantity": "量"
+            },
+            "titles": {
+              "most_sold_items": "最も売れた商品",
+              "most_purchased_items": "最も購入された商品"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "レポートを表示する"
+            }
+          },
+          "purchase": {
+            "title": "購入品",
+            "titles": {
+              "most_purchased_items": "最も購入された商品"
+            },
+            "table_headers": {
+              "item_name": "名前",
+              "price": "価格",
+              "quantity": "量"
+            },
+            "yearly_trade_overview": {
+              "title": "年間取引概要 ({{year}})",
+              "total_purchases": "合計購入数"
+            },
+            "columns": {
+              "date": "で購入",
+              "price": "価格",
+              "shop_id": "ショップID",
+              "items_received": "受け取ったアイテム"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "レポートを表示する"
+            }
+          },
+          "transaction": {
+            "title": "トランザクション",
+            "titles": {
+              "most_purchased_items": "最も購入された商品"
+            },
+            "table_headers": {
+              "item_name": "名前",
+              "price": "価格",
+              "quantity": "量"
+            },
+            "yearly_trade_overview": {
+              "title": "年間取引概要 ({{year}})",
+              "total_purchases": "合計購入数"
+            },
+            "columns": {
+              "date": "で購入",
+              "currency": "通貨",
+              "price": "価格",
+              "account": "アカウント",
+              "sku": "SKU"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "レポートを表示する"
+            }
+          }
+        }
+      }
+    },
+    "trade_messages": {
+      "fields": {
+        "price_label": "価格",
+        "price_placeholder": "価格を入力してください",
+        "tags_label": "タグ",
+        "tags_placeholder": "タグを入力してください"
+      },
+      "buttons": {
+        "generate_trade_messages_tooltip": "{{count}} アイテムの取引メッセージを生成します",
+        "update_multiple_tooltip": "複数の取引メッセージを更新する",
+        "export_json_tooltip": "取引メッセージを JSON にエクスポート (Patreon T1+)",
+        "delete_multiple_tooltip": "すべての取引を削除 {{count}}",
+        "add_tooltip": "トレードメッセージの追加",
+        "find_interesting_tooltip": "興味深いトレードメッセージを見つける (Patreon T2+)",
+        "calibrate_prices_tooltip": "価格の調整"
+      },
+      "datatable": {
+        "columns": {
+          "price": "価格",
+          "tags": "タグ",
+          "min_price": "最低価格",
+          "potential_profit": "潜在的な利益",
+          "updated_at": "更新日"
+        }
+      },
+      "tabs": {
+        "item": {
+          "title": "アイテム"
+        },
+        "riven": {
+          "title": "リヴェン",
+          "modals": {
+            "find_interesting_rivens": {
+              "title": "{{date}} の興味深いリヴェンを見つける",
+              "titles": {
+                "filtered": "フィルタリングされたリベンズ",
+                "discount_settings": "割引設定",
+                "export_settings": "設定のエクスポート"
+              },
+              "fields": {
+                "min_price_label": "最低価格",
+                "min_volume_label": "最小音量",
+                "discount_percentage_label": "割引率 %",
+                "round_to_nearest_label": "最も近い値に丸める",
+                "override_existing_prices_label": "既存の価格を上書きする",
+                "tags_label": "タグ"
+              },
+              "datatable_columns": {
+                "name": "名前",
+                "min_price": "最低価格",
+                "discount_price": "割引価格",
+                "potential_profit": "潜在的な利益",
+                "volume": "音量"
+              },
+              "buttons": {
+                "export_to_trade_messages": "取引メッセージへのエクスポート"
+              }
+            }
+          }
+        },
+        "custom": {
+          "title": "カスタム"
+        }
+      }
+    },
+    "process_trade": {
+      "stats": {
+        "user_name": "ユーザー名",
+        "trade_type": "取引タイプ",
+        "trade_price": "取引価格",
+        "price": "価格",
+        "difference": "違い"
+      },
+      "buttons": {
+        "process_trade_tooltip": "取引の処理を開始する",
+        "confirm_trade": "取引の確認",
+        "back_to_list": "リストに戻る"
+      },
+      "datatable": {
+        "columns": {
+          "item_name": "名前",
+          "quantity": "量",
+          "price": "価格",
+          "total": "合計",
+          "platinum": "白金",
+          "user_name": "ユーザー名",
+          "date": "日付"
+        }
+      }
+    },
+    "wf_inventory": {
+      "tabs": {
+        "riven": {
+          "title": "リベンズ",
+          "riven_card": {
+            "footer_left": "{{rank}}/8 <polarity/>",
+            "footer_right": "MR: {{mastery}}",
+            "footer_center": "<stock/>",
+            "stock_status": {
+              "found": "在庫から見つかりました",
+              "not_found": "在庫に見つかりません"
+            }
+          },
+          "filters": {
+            "all": "全て",
+            "rifle": "ライフル",
+            "shotgun": "ショットガン",
+            "melee": "近接攻撃",
+            "pistol": "ピストル",
+            "zaw": "ゾー",
+            "arch": "アーチウィング",
+            "veiled": "ベールに包まれた",
+            "unveiled": "明らかにされました"
+          }
+        }
+      }
+    }
+  }
+}

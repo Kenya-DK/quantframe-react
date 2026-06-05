@@ -1,0 +1,2458 @@
+{
+  "months": [
+    "Ocak",
+    "Şubat",
+    "Mart",
+    "Nisan",
+    "Mayıs",
+    "Haziran",
+    "Temmuz",
+    "Ağustos",
+    "Eylül",
+    "Ekim",
+    "Kasım",
+    "Aralık"
+  ],
+  "common": {
+    "not_found": "Bulunamadı",
+    "buttons": {
+      "save": {
+        "label": "Kaydetmek"
+      },
+      "delete": {
+        "label": "Silmek"
+      }
+    },
+    "notifications": {
+      "copy_to_clipboard": {
+        "title": "Panoya kopyalandı",
+        "message": "{{message}} panoya kopyalandı."
+      },
+      "on_trade_event": {
+        "multiple_items": {
+          "title": "{{player_name}} ile işlem yapılmadı",
+          "message": "{{player_name}} ile yapılan ticaret, birden fazla ürün nedeniyle işleme koyulamadı."
+        },
+        "no_valid_items": {
+          "title": "{{player_name}} ile işlem yapılmadı",
+          "message": "Geçerli öğe olmadığından {{player_name}} ile işlem yapılmadı."
+        },
+        "success": {
+          "title": "{{player_name}} ile işlem tamamlandı",
+          "message": "<blue>{{item_name}}</blue> X<blue>{{quantity}}</blue> <blue>{{trade_type}}</blue> {{platinum}}p için"
+        }
+      },
+      "warframe_gdpr_data_loaded": {
+        "success": {
+          "title": "Warframe GDPR Verileri Yüklendi",
+          "message": "İşlemler: {{trades}}, Girişler: {{logins}}, Satın Almalar: {{purchases}}, İşlemler: {{transactions}}"
+        }
+      },
+      "log_export": {
+        "error": {
+          "title": "Günlük Dışa Aktarma Hatası",
+          "message": "Günlükleri dışa aktarmaya çalışırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Günlük Dışa Aktarma Başarısı",
+          "message": "Günlükler başarıyla {{path}}'ye aktarıldı."
+        }
+      },
+      "create_stock_item": {
+        "error": {
+          "title": "Stok Hatası Oluştur",
+          "message": "Stok oluşturulmaya çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Hisse Senedi Başarısı Yaratın",
+          "message": "{{name}} stok kalemi başarıyla oluşturuldu."
+        }
+      },
+      "update_stock_item": {
+        "error": {
+          "title": "Stok Güncelleme Hatası",
+          "title_multiple": "Stok Güncelleme Hatası",
+          "message": "Stok güncellenmeye çalışılırken bir hata oluştu.",
+          "message_multiple": "Birden fazla stok öğesi güncellenmeye çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Stok Güncelleme Başarısı",
+          "title_multiple": "Stok Güncelleme Başarısı",
+          "message": "{{name}} stok kalemi başarıyla güncellendi.",
+          "message_multiple": "{{count}} stok kalemleri başarıyla güncellendi."
+        }
+      },
+      "delete_stock_item": {
+        "error": {
+          "title": "Stok Silme Hatası",
+          "title_multiple": "Stok Silme Hatası",
+          "message": "Stok silinmeye çalışılırken bir hata oluştu.",
+          "message_multiple": "Birden fazla stok öğesi silinmeye çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Hisse Senedi Başarısını Sil",
+          "title_multiple": "Hisse Senedi Başarısını Sil",
+          "message": "{{name}} stok kalemi başarıyla silindi.",
+          "message_multiple": "{{count}} stok kalemleri başarıyla silindi."
+        }
+      },
+      "sell_stock_item": {
+        "error": {
+          "title": "Hisse Senedi Satma Hatası",
+          "message": "Hisse senedi satılmaya çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Hisse Senedi Satış Başarısı",
+          "message": "{{name}} stok kalemi başarıyla satıldı."
+        }
+      },
+      "create_stock_riven": {
+        "error": {
+          "title": "Stok Hatası Oluştur",
+          "message": "Stok oluşturulmaya çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Hisse Senedi Başarısı Yaratın",
+          "message": "{{name}} stok kalemi başarıyla oluşturuldu."
+        }
+      },
+      "update_stock_riven": {
+        "error": {
+          "title": "Stok Güncelleme Hatası",
+          "title_multiple": "Stok Güncelleme Hatası",
+          "message": "Stok güncellenmeye çalışılırken bir hata oluştu.",
+          "message_multiple": "Birden fazla stok öğesi güncellenmeye çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Stok Güncelleme Başarısı",
+          "title_multiple": "Stok Güncelleme Başarısı",
+          "message": "{{name}} stok kalemi başarıyla güncellendi.",
+          "message_multiple": "{{count}} stok kalemleri başarıyla güncellendi."
+        }
+      },
+      "delete_stock_riven": {
+        "error": {
+          "title": "Stok Silme Hatası",
+          "title_multiple": "Stok Silme Hatası",
+          "message": "Stok silinmeye çalışılırken bir hata oluştu.",
+          "message_multiple": "Birden fazla stok öğesi silinmeye çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Hisse Senedi Başarısını Sil",
+          "title_multiple": "Hisse Senedi Başarısını Sil",
+          "message": "Stok parçalanmış {{name}} başarıyla silindi.",
+          "message_multiple": "{{count}} stok bölümleri başarıyla silindi."
+        }
+      },
+      "delete_transaction": {
+        "error": {
+          "title": "İşlem Hatasını Sil",
+          "title_multiple": "İşlem Hatasını Sil",
+          "message": "İşlem silinmeye çalışılırken bir hata oluştu.",
+          "message_multiple": "Birden fazla işlemi silmeye çalışırken bir hata oluştu."
+        },
+        "success": {
+          "title": "İşlem Başarısını Sil",
+          "title_multiple": "İşlem Başarısını Sil",
+          "message": "{{name}} işlemi başarıyla silindi.",
+          "message_multiple": "{{count}} işlemler başarıyla silindi."
+        }
+      },
+      "sell_stock_riven": {
+        "error": {
+          "title": "Hisse Senedi Satma Hatası",
+          "message": "Hisse senedi satılmaya çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Hisse Senedi Satış Başarısı",
+          "message": "{{name}} stok kalemi başarıyla satıldı."
+        }
+      },
+      "create_wish_list": {
+        "error": {
+          "title": "İstek Listesi Oluşturma Hatası",
+          "message": "İstek listesi oluşturulmaya çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "İstek Listesi Başarısı Oluşturun",
+          "message": "İstek listesi başarıyla oluşturuldu."
+        }
+      },
+      "update_wish_list": {
+        "error": {
+          "title": "İstek Listesini Güncelle Hatası",
+          "title_multiple": "İstek Listesini Güncelle Hatası",
+          "message": "İstek listesini güncellemeye çalışırken bir hata oluştu.",
+          "message_multiple": "Birden fazla istek listesi güncellenmeye çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "İstek Listesini Güncelle Başarılı",
+          "title_multiple": "İstek Listesini Güncelle Başarılı",
+          "message": "İstek listesi başarıyla güncellendi.",
+          "message_multiple": "{{count}} istek listeleri başarıyla güncellendi."
+        }
+      },
+      "delete_wish_list": {
+        "error": {
+          "title": "İstek Listesini Sil Hatası",
+          "title_multiple": "İstek Listesini Sil Hatası",
+          "message": "İstek listesini silmeye çalışırken bir hata oluştu.",
+          "message_multiple": "Birden fazla istek listesi silinmeye çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "İstek Listesini Sil Başarılı",
+          "title_multiple": "İstek Listesini Sil Başarılı",
+          "message": "İstek listesi başarıyla silindi.",
+          "message_multiple": "{{count}} istek listeleri başarıyla silindi."
+        }
+      },
+      "bought_wish_list": {
+        "error": {
+          "title": "Satın Alınan İstek Listesi Hatası",
+          "message": "İstek listesini satın alındı ​​olarak işaretlemeye çalışırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Satın Alındı ​​İstek Listesi Başarılı",
+          "message": "İstek listesi başarıyla satın alındı ​​olarak işaretlendi."
+        }
+      },
+      "delete_chat": {
+        "error": {
+          "title": "Sohbet Hatasını Sil",
+          "message": "Sohbeti silmeye çalışırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Başarılı Sohbeti Sil",
+          "message": "Sohbet başarıyla silindi."
+        }
+      },
+      "export_data": {
+        "error": {
+          "title": "Verileri Dışa Aktarma Hatası",
+          "message": "Veriler dışa aktarılmaya çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Verileri Dışa Aktarma Başarılı",
+          "message": "Veriler başarıyla {{path}}'ye aktarıldı."
+        }
+      },
+      "no_updates_available": {
+        "title": "Güncelleme Yok",
+        "message": "Zaten son sürümü kullanıyorsunuz."
+      },
+      "update_settings": {
+        "error": {
+          "title": "Ayarları Güncelleme Hatası",
+          "message": "Ayarları güncellemeye çalışırken bir hata oluştu: \n{{message}}"
+        },
+        "success": {
+          "title": "Ayarları Güncelleme Başarılı",
+          "message": "Ayarlar başarıyla güncellendi"
+        }
+      },
+      "create_trade_entry": {
+        "error": {
+          "title": "Ticari Giriş Hatası Oluştur",
+          "title_multiple": "Ticari Giriş Hatası Oluştur",
+          "message": "Ticari giriş oluşturulmaya çalışılırken bir hata oluştu.",
+          "message_multiple": "Birden fazla ticari giriş oluşturulmaya çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Ticarete Giriş Başarısı Yaratın",
+          "title_multiple": "Ticarete Giriş Başarısı Yaratın",
+          "message": "{{name}} ticari girişi başarıyla oluşturuldu.",
+          "message_multiple": "{{count}} ticari girişler başarıyla oluşturuldu."
+        }
+      },
+      "update_trade_entry": {
+        "error": {
+          "title": "Ticari Giriş Hatasını Güncelle",
+          "title_multiple": "Ticari Giriş Hatasını Güncelle",
+          "message": "Takas girişi güncellenmeye çalışılırken bir hata oluştu.",
+          "message_multiple": "Birden fazla ticari giriş güncellenmeye çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Ticari Giriş Başarısını Güncelle",
+          "title_multiple": "Ticari Giriş Başarısını Güncelle",
+          "message": "{{name}} ticari girişi başarıyla güncellendi.",
+          "message_multiple": "{{count}} ticari girişler başarıyla güncellendi."
+        }
+      },
+      "delete_trade_entry": {
+        "error": {
+          "title": "İşlem Giriş Hatasını Sil",
+          "title_multiple": "İşlem Giriş Hatasını Sil",
+          "message": "İşlem girişi silinmeye çalışılırken bir hata oluştu.",
+          "message_multiple": "Birden fazla işlem girişi silinmeye çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Ticari Giriş Başarısını Sil",
+          "title_multiple": "Ticari Giriş Başarısını Sil",
+          "message": "{{name}} ticari girişi başarıyla silindi.",
+          "message_multiple": "{{count}} ticari girişler başarıyla silindi."
+        }
+      },
+      "create_trade_msg_template": {
+        "error": {
+          "title": "Şablon Hatası Oluştur",
+          "message": "Ticari mesaj şablonunu oluşturmaya çalışırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Şablon Başarısı Oluşturun",
+          "message": "Ticari mesaj şablonu başarıyla oluşturuldu."
+        }
+      },
+      "delete_trade_msg_template": {
+        "error": {
+          "title": "Şablon Hatasını Sil",
+          "message": "Ticari mesaj şablonu silinmeye çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Şablon Başarısını Sil",
+          "message": "Ticari mesaj şablonu başarıyla silindi."
+        }
+      },
+      "update_transaction": {
+        "error": {
+          "title": "İşlem Hatasını Güncelle",
+          "message": "İşlem güncellenmeye çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "İşlem Başarısını Güncelle",
+          "message": "İşlem başarıyla güncellendi."
+        }
+      },
+      "processed_multiple_items": {
+        "error": {
+          "title": "Birden Çok Öğe İşlendi Hatası",
+          "message": "Birden fazla öğe işlenmeye çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Birden Çok Öğe Başarıyla İşlendi",
+          "message": "{{count}} öğe başarıyla işlendi."
+        }
+      },
+      "calculate_tax_all_transactions": {
+        "error": {
+          "title": "Vergi Hatasını Hesapla",
+          "message": "İşlemler için vergi hesaplanırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Vergi Başarısını Hesaplayın",
+          "message": "İşlemler için vergi başarıyla hesaplandı."
+        }
+      },
+      "delete_order": {
+        "error": {
+          "title": "Sipariş Hatasını Sil",
+          "message": "Sipariş silinmeye çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Sipariş Başarısını Sil",
+          "message": "Sipariş başarıyla silindi."
+        }
+      },
+      "delete_all_orders": {
+        "error": {
+          "title": "Tüm Siparişleri Sil Hatası",
+          "message": "Tüm siparişler silinmeye çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Tüm Siparişleri Sil Başarılı",
+          "message": "Tüm siparişler başarıyla silindi."
+        }
+      },
+      "refresh_orders": {
+        "error": {
+          "title": "Siparişleri Yenile Hatası",
+          "message": "Siparişler yenilenmeye çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Siparişleri Yenileme Başarılı",
+          "message": "Siparişler başarıyla yenilendi."
+        }
+      },
+      "delete_auction": {
+        "error": {
+          "title": "Açık Artırma Hatasını Sil",
+          "message": "Açık artırmayı silmeye çalışırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Açık Artırma Başarısını Sil",
+          "message": "Açık artırma başarıyla silindi."
+        }
+      },
+      "delete_all_auctions": {
+        "error": {
+          "title": "Tüm Açık Artırmaları Sil Hatası",
+          "message": "Tüm açık artırmalar silinmeye çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Tüm Açık Artırmaları Sil Başarılı",
+          "message": "Tüm açık artırmalar başarıyla silindi."
+        }
+      },
+      "refresh_auctions": {
+        "error": {
+          "title": "Açık Artırmaları Yenileme Hatası",
+          "message": "Açık artırmaları yenilemeye çalışırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Açık Artırma Başarısını Yenile",
+          "message": "Açık artırmalar başarıyla yenilendi."
+        }
+      }
+    },
+    "datatable_columns": {
+      "list_price": "Listelendi",
+      "maximum_price": {
+        "title": "Maksimum Fiyat",
+        "value": "{{maximum_price}} ({{currency}})",
+        "edit_tooltip": "Maksimum Fiyatı Düzenle"
+      },
+      "minimum_price": {
+        "title": "Asgari Fiyat",
+        "value": "{{minimum_price}} ({{currency}})",
+        "edit_tooltip": "Minimum Fiyatı Düzenle"
+      },
+      "actions": {
+        "title": "Eylemler",
+        "buttons": {
+          "manual_tooltip": "Manuel Satış",
+          "auto_tooltip": "Listelendiği gibi sat",
+          "bought_manual_tooltip": "Satın Alındı ​​Olarak İşaretle",
+          "bought_auto_tooltip": "Listelenen fiyata satın alındı",
+          "hide": {
+            "disabled_tooltip": "Göstermek",
+            "enabled_tooltip": "Saklamak"
+          },
+          "info_tooltip": "Bilgi",
+          "delete_tooltip": "Silmek",
+          "edit_tooltip": "Düzenlemek",
+          "open_filter_tooltip": "Filtreyi Aç"
+        }
+      },
+      "quantity": {
+        "title": "Miktar"
+      },
+      "volume": {
+        "title": "Hacim"
+      }
+    },
+    "item_name": {
+      "title": "İsim",
+      "value": "{{name}} {{quantity}} <blue>{{sub_type}}</blue>"
+    },
+    "pagination_total_items": "{{start}} - {{end}} / {{total}}",
+    "prompts": {
+      "delete_item": {
+        "title": "Emin misin?",
+        "message": "Bu eylem geri alınamaz.",
+        "cancel": "İptal etmek",
+        "confirm": "Onaylamak"
+      },
+      "delete_multiple_items": {
+        "title": "Emin misin?",
+        "message": "Bu {{count}} öğelerini silmek istediğinizden emin misiniz? Bu eylem geri alınamaz.",
+        "cancel": "İptal etmek",
+        "confirm": "Onaylamak"
+      },
+      "sell_manual": {
+        "title": "Şunun için satıldı:",
+        "fields": {
+          "sell": {
+            "label": "Fiyat"
+          },
+          "quantity": {
+            "label": "Miktar"
+          }
+        }
+      },
+      "bought_manual": {
+        "title": "Şunun için satın alındı:",
+        "fields": {
+          "bought": {
+            "label": "Fiyat"
+          },
+          "quantity": {
+            "label": "Miktar"
+          }
+        }
+      },
+      "minimum_price": {
+        "title": "Asgari Fiyat",
+        "fields": {
+          "minimum_price": {
+            "label": "Asgari Fiyat",
+            "description": "Ürün için minimum fiyat"
+          }
+        }
+      },
+      "maximum_price": {
+        "title": "Maksimum Fiyat",
+        "fields": {
+          "maximum_price": {
+            "label": "Maksimum Fiyat",
+            "description": "Ürün için maksimum fiyat"
+          }
+        }
+      },
+      "save": {
+        "title": "Kaydetmek",
+        "fields": {
+          "name": {
+            "label": "İsim"
+          }
+        }
+      }
+    },
+    "sort_by": {
+      "created_at": "Oluşturulma Tarihi",
+      "platinum": "Platin",
+      "updated_at": "Güncelleme Tarihi:",
+      "order_type": "Sipariş Türü",
+      "disposition": "Mevki",
+      "endo": "Endo",
+      "riven_grade": "Yarılmış Sınıf"
+    }
+  },
+  "enums": {
+    "item_type": {
+      "riven": "Yırtılmış",
+      "item": "Öğe",
+      "details": {
+        "riven": "Yırtılmış",
+        "item": "Öğe"
+      }
+    },
+    "order_type": {
+      "all": "Tüm Siparişler",
+      "buy": "Satın Alma Siparişi",
+      "sell": "Satış Emri",
+      "closed": "Kapalı Siparişler",
+      "details": {
+        "buy": "Satın almak",
+        "sell": "Satmak"
+      }
+    },
+    "transaction_type": {
+      "purchase": "Satın almak",
+      "sale": "Satış",
+      "trade": "Ticaret",
+      "details": {
+        "purchase": "Satın almak",
+        "sale": "Satış",
+        "trade": "Ticaret"
+      }
+    },
+    "stock_status": {
+      "pending": "Askıda olması",
+      "live": "Canlı",
+      "to_low_profit": "Düşük Kar",
+      "no_sellers": "Satıcı Yok",
+      "no_buyers": "Alıcı Yok",
+      "inactive": "Etkin değil",
+      "sma_limit": "SMA Sınırı",
+      "order_limit": "Sipariş Limiti",
+      "overpriced": "Aşırı pahalı",
+      "underpriced": "Düşük fiyatlı",
+      "details": {
+        "pending": "İşlenmeyi bekleyen",
+        "live": "Warframe Market'te Canlı",
+        "to_low_profit": "Ayarlara göre kârın düşük olması nedeniyle işleme koyulmadı",
+        "no_sellers": "Bu ürün için satıcı bulunamadı",
+        "no_buyers": "Bu ürün için alıcı bulunamadı",
+        "inactive": "Etkin değil ve işlenmeyecek",
+        "sma_limit": "SMA ile sınırlıdır",
+        "order_limit": "Sipariş limiti ile sınırlıdır",
+        "overpriced": "Aşırı pahalı",
+        "underpriced": "Düşük fiyatlı"
+      }
+    },
+    "stock_mode": {
+      "all": "Tüm",
+      "riven": "Yırtılmış",
+      "item": "Öğe"
+    },
+    "trade_mode": {
+      "buy": "Satın almak",
+      "sell": "Satmak",
+      "wishlist": "İstek listesi"
+    },
+    "user_status": {
+      "online": "Çevrimiçi",
+      "ingame": "oyunda",
+      "in_game": "oyunda",
+      "invisible": "Çevrimdışı"
+    },
+    "alert_type": {
+      "info": "Bilgi",
+      "warning": "Uyarı",
+      "error": "Hata",
+      "success": "Başarı"
+    }
+  },
+  "context": {
+    "app": {
+      "starting_up": "Başlatılıyor...",
+      "database": {
+        "updating_names_transactions": "İşlem öğesi adları güncelleniyor {{progress}}%",
+        "updating_names_stock_items": "Stok öğesi adları güncelleniyor {{progress}}%",
+        "updating_names_stock_rivens": "Hisse senedi parçalanmış adları güncelleniyor {{progress}}%",
+        "updating_names_wish_lists": "İstek listesi adları güncelleniyor {{progress}}%",
+        "update_names_completed": "Tüm öğe adları güncellendi"
+      },
+      "cache": {
+        "initializing": "Önbellek başlatılıyor...",
+        "updating": "Önbellek güncelleniyor...",
+        "item_price_updating": "Ürün fiyatları güncelleniyor..."
+      }
+    }
+  },
+  "components": {
+    "item_component": "<blue>{{name}}</blue> x<blue>{{count}}</blue>",
+    "item_components": "Öğe Bileşenleri",
+    "patreon_overlay": {
+      "title": "Kısıtlanmış İçerik",
+      "description": "Bu içerik <blue>{{tier}}</blue> veya daha yüksek seviyedeki Patreon destekçileriyle sınırlıdır.",
+      "buttons": {
+        "become_a_patron": "Kullanıcı Ol"
+      }
+    },
+    "timer_stamp": {
+      "years": "{{years}} yıl önce",
+      "months": "{{months}} ay önce",
+      "days": "{{days}} gün önce",
+      "hours": "{{hours}} saat önce",
+      "minutes": "{{minutes}} dakika önce",
+      "seconds": "{{seconds}} saniye önce"
+    },
+    "wfm_auction": {
+      "fields": {
+        "selling_price": "Satış Fiyatı: <blue>{{price}}</blue> <plat/>",
+        "left_footer": "<blue>{{mod_rank}}</blue>/<blue>{{max_rank}}</blue> <blue>{{drain}}</blue> <polarity/>",
+        "right_footer": "Bay: <blue>{{mastery_level}}</blue> <roll/> <blue>{{re_rolls}}</blue>"
+      }
+    },
+    "live_scraper_control": {
+      "buttons": {
+        "start": "Live Scraper'ı başlat",
+        "stop": "Live Kazıyıcıyı Durdur"
+      },
+      "prompts": {
+        "start": {
+          "title": "Uyarı",
+          "message": "Canlı kazımaya başlamak istediğinizden emin misiniz? Bu eylem, WFM'de kara listede olmayan tüm siparişleri silecektir.",
+          "confirm": "Başlangıç",
+          "cancel": "İptal etmek"
+        }
+      },
+      "item": {
+        "checking": "Öğeyi Kontrol Etme: <blue>{{name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        "deleted": "Siparişlerin Silinmesi: <blue>{{current}}</blue>/<blue>{{total}}</blue>"
+      },
+      "riven": {
+        "cooldown": "Riven Bekleme Süresi: <blue>{{seconds}}</blue> saniye kaldı",
+        "checking": "Riven kontrol ediliyor: <blue>{{name}}</blue> <blue>{{mod_name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        "rate_limited": "Hız Sınırlı: Devam etmeden önce <blue>{{seconds}}</blue> saniye bekleniyor"
+      }
+    },
+    "searchfield": {
+      "label": "Aramak",
+      "placeholder": "Aramak...",
+      "buttons": {
+        "filter": {
+          "tooltip": "Filtre"
+        },
+        "search": {
+          "tooltip": "Aramak"
+        },
+        "create": {
+          "tooltip": "Yaratmak"
+        }
+      }
+    },
+    "user_menu": {
+      "items": {
+        "app_label": "Başvuru",
+        "settings": "Ayarlar",
+        "logout": "Oturumu kapat"
+      },
+      "errors": {
+        "logout": {
+          "title": "Oturum Kapatma Hatası",
+          "message": "Oturumu kapatmaya çalışırken bir hata oluştu."
+        }
+      },
+      "success": {
+        "logout": {
+          "title": "Çıkış Başarılı",
+          "message": "Başarıyla çıkış yaptınız."
+        }
+      },
+      "prompts": {
+        "logout": {
+          "title": "Oturumu kapatmayı onaylayın",
+          "message": "Oturumu kapatmak istediğinizden emin misiniz?",
+          "confirm": "Evet",
+          "cancel": "HAYIR"
+        }
+      }
+    },
+    "clock": {
+      "gmt": "GMT: <blue>{{time}}</blue>",
+      "time_until_midnight": "Gece yarısına kalan süre (GMT): <blue>{{time}}</blue>"
+    },
+    "layout": {
+      "log_in": {
+        "navbar": {
+          "home": "Ev",
+          "debug": "Hata ayıklama",
+          "live_scraper": "Canlı Kazıyıcı",
+          "warframe_market": "Warframe Pazarı",
+          "trading_analytics": "Ticaret Analitiği",
+          "trade_messages": "Ticari Mesajlar",
+          "chat": "Sohbet",
+          "wf_inventory": "WF Envanteri",
+          "about": "Hakkında"
+        }
+      }
+    },
+    "select_item_tags": {
+      "tags": {
+        "label": "Etiketler",
+        "description": "Öğeleri filtrelemek için etiketleri seçin"
+      }
+    },
+    "theme_editor": {
+      "chart_styles": {
+        "title": "Grafik Stilleri",
+        "fields": {
+          "bgColor": "Arka Plan Rengi",
+          "lineColor": "Çizgi Rengi",
+          "lastYearLineColor": "Geçen Yıl Çizgi Rengi",
+          "currentYearLineColor": "Cari Yıl Çizgi Rengi"
+        },
+        "total": "Toplam",
+        "today": "Bugün",
+        "last_days": "Son 7 Gün"
+      },
+      "color_palettes": {
+        "title": "Renk Paletleri",
+        "base_colors": "Temel Renkler",
+        "stock_status": "Stok Durumu",
+        "user_status": "Kullanıcı Durumu",
+        "alert_type": "Uyarı Türü",
+        "transaction_type": "İşlem Türü",
+        "item_type": "Öğe Türü",
+        "logo_color": "Logo Rengi",
+        "positive": "Olumlu",
+        "negative": "Negatif",
+        "profit": "Kâr"
+      },
+      "sharing": {
+        "title": "Paylaşma"
+      },
+      "buttons": {
+        "copy_to_clipboard": "Panoya kopyala",
+        "import_from_clipboard": "Panodan içe aktar",
+        "open_themes_folder": "Temalar Klasörünü Aç"
+      },
+      "fields": {
+        "export_name": {
+          "label": "İsim",
+          "placeholder": "Tema adını girin",
+          "error": "Geçersiz tema adı"
+        },
+        "export_author": {
+          "label": "Yazar",
+          "placeholder": "Yazar adını girin",
+          "error": "Geçersiz yazar adı",
+          "tooltip": "Yaratmak"
+        }
+      },
+      "export_success": {
+        "title": "Temayı Dışa Aktarma Başarısı",
+        "message": "Tema başarıyla dışa aktarıldı."
+      },
+      "export_error": {
+        "title": "Temayı Dışa Aktarma Hatası",
+        "message": "Tema dışa aktarılırken bir hata oluştu: {{error}}"
+      }
+    },
+    "forms": {
+      "update_transaction": {
+        "buttons": {
+          "hide_properties": {
+            "label": "Özellikleri Gizle"
+          },
+          "show_properties": {
+            "label": "Özellikleri Göster"
+          }
+        },
+        "fields": {
+          "price": {
+            "label": "Fiyat",
+            "placeholder": "Fiyatı girin",
+            "description": "İşlemin platin cinsinden fiyatı."
+          },
+          "quantity": {
+            "label": "Miktar",
+            "placeholder": "Miktarı girin",
+            "description": "Ticareti yapılan ürünün miktarı."
+          },
+          "user_name": {
+            "label": "Kullanıcı adı",
+            "placeholder": "Kullanıcı adını girin",
+            "description": "İşlemle ilişkili kullanıcı adı."
+          },
+          "created_at": {
+            "label": "Oluşturulma Tarihi",
+            "placeholder": "Tarih seçin",
+            "description": "İşlemin tarihi."
+          },
+          "properties": {
+            "label": "Özellikler",
+            "placeholder": "Özellikleri girin",
+            "description": "İşlemin ek özellikleri."
+          }
+        }
+      },
+      "generic_item_list": {
+        "add_all_tooltip": "Tüm Öğeleri Ekle"
+      },
+      "edit_notification_setting": {
+        "discord": {
+          "tooltip": "Discord Bildirimlerini Aç/Kapat",
+          "title": "Anlaşmazlık Bildirimleri",
+          "fields": {
+            "webhook": {
+              "label": "Web kancası URL'si",
+              "placeholder": "Discord webhook URL'sini girin"
+            },
+            "content": {
+              "label": "İçerik",
+              "placeholder": "Bildirim içeriğini girin",
+              "reset_button": "Varsayılana sıfırla"
+            },
+            "user_ids": {
+              "label": "Kullanıcı kimlikleri",
+              "placeholder": "Kullanıcı kimliklerini girin (virgülle ayrılmış)",
+              "description": "Bildirim almak için kullanıcı kimliklerini belirtin"
+            }
+          }
+        },
+        "system": {
+          "tooltip": "Sistem Bildirimlerini Değiştir",
+          "title": "Sistem Bildirimleri",
+          "fields": {
+            "title": {
+              "label": "Başlık",
+              "placeholder": "Bildirim başlığını girin"
+            },
+            "content": {
+              "label": "İçerik",
+              "placeholder": "Bildirim içeriğini girin"
+            },
+            "sound": {
+              "label": "Ses",
+              "placeholder": "Bildirim sesini seçin",
+              "play_tooltip": "Ses Çal",
+              "options": {
+                "none": "Hiçbiri",
+                "cat_meow": "Kedi Miyav",
+                "windows_xp_error": "Windows XP Hatası",
+                "windows_xp_startup": "Windows XP'yi Başlatma",
+                "iphone_notification": "Lanet Telefon Bildirimi",
+                "windows_notification": "Windows Bildirimi"
+              }
+            },
+            "volume": {
+              "label": "Hacim",
+              "placeholder": "Ses seviyesini ayarla"
+            }
+          }
+        },
+        "webhook": {
+          "tooltip": "Web Kancası Bildirimlerini Aç/Kapat",
+          "title": "Web Kancası Bildirimleri",
+          "fields": {
+            "url": {
+              "label": "Web kancası URL'si",
+              "placeholder": "Web kancası URL'sini girin"
+            }
+          }
+        },
+        "manage_sounds": {
+          "title": "Özel Ses Ekle",
+          "buttons": {
+            "manage": "Sesleri Yönet",
+            "back": "Geri gitmek"
+          },
+          "fields": {
+            "name": {
+              "label": "Ses Adı",
+              "placeholder": "Ses Adı"
+            },
+            "file": {
+              "label": "Ses Dosyası",
+              "placeholder": "Bir dosya seçin"
+            }
+          },
+          "tooltips": {
+            "add_sound": "Ses Ekle",
+            "play": "Oynamak",
+            "delete": "Silmek"
+          },
+          "notifications": {
+            "add_error": {
+              "title": "Ses Hatası Ekle",
+              "message": "Sesi eklemeye çalışırken bir hata oluştu."
+            },
+            "delete_error": {
+              "title": "Ses Hatasını Sil",
+              "message": "Sesi silmeye çalışırken bir hata oluştu."
+            }
+          },
+          "table": {
+            "columns": {
+              "name": "İsim",
+              "file_name": "Dosya adı",
+              "actions": "Eylemler"
+            }
+          },
+          "dialog": {
+            "delete": {
+              "title": "{{name}}'yi sil",
+              "message": "Bu sesi silmek istediğinizden emin misiniz? Bu eylem geri alınamaz.",
+              "confirm": "Silmek",
+              "cancel": "İptal etmek"
+            }
+          },
+          "file_picker": {
+            "filter_name": "Ses"
+          }
+        }
+      },
+      "riven_filter_attribute": {
+        "fields": {
+          "is_required": {
+            "tooltip": "Gereklidir"
+          }
+        }
+      },
+      "riven_filter": {
+        "fields": {
+          "enabled": {
+            "label": "Etkinleştirilmiş"
+          },
+          "similarity": {
+            "label": "Benzerlik"
+          },
+          "rank": {
+            "label": "Rütbe"
+          },
+          "mastery_rank": {
+            "label": "Ustalık Sıralaması"
+          },
+          "required_negative": {
+            "label": "Gerekli Negatif"
+          },
+          "re_rolls": {
+            "label": "Yeniden Rulolar"
+          }
+        },
+        "buttons": {
+          "save": {
+            "label": "Kaydetmek"
+          }
+        }
+      },
+      "create_riven_attributes": {
+        "fields": {
+          "positive": {
+            "title": "Olumlu Nitelikler",
+            "add": "Eklemek"
+          },
+          "negative": {
+            "title": "Olumsuz Nitelikler"
+          }
+        },
+        "buttons": {
+          "add": "+ Ekle"
+        }
+      },
+      "create_riven_attribute": {
+        "fields": {
+          "value": {
+            "error": "Geçersiz değer"
+          }
+        },
+        "buttons": {
+          "remove": "Kaldırmak"
+        }
+      },
+      "create_riven": {
+        "buttons": {
+          "submit": {
+            "label": "Yaratmak"
+          }
+        },
+        "fields": {
+          "mastery_rank": {
+            "label": "Ustalık Sıralaması",
+            "placeholder": "8",
+            "error": "Geçersiz ustalık derecesi"
+          },
+          "re_rolls": {
+            "label": "Yeniden Rulolar",
+            "placeholder": "0",
+            "error": "Geçersiz yeniden oynatmalar"
+          },
+          "rank": {
+            "label": "Rütbe",
+            "placeholder": "0",
+            "error": "Geçersiz sıralama"
+          },
+          "polarity": {
+            "label": "Polarite",
+            "error": "Geçersiz polarite"
+          },
+          "weapon": {
+            "label": "Silah Adı",
+            "placeholder": "Silah",
+            "error": "Geçersiz silah"
+          },
+          "bought": {
+            "label": "Satın alınmış",
+            "placeholder": "Satın alınmış",
+            "error": "Geçersiz satın alma"
+          },
+          "attributes": {
+            "label": "Nitelikler",
+            "error": "Riven'ın en az 2 olumlu özelliği olmalı"
+          },
+          "attribute": {
+            "label": "Bağlanmak",
+            "error": "Özellik değerleri 0 olamaz"
+          },
+          "mod_name": {
+            "label": "Modun Adı",
+            "placeholder": "Modun Adı",
+            "error": "Geçersiz mod adı"
+          }
+        }
+      },
+      "debugging_live_item_entry": {
+        "fields": {
+          "wfm_url": {
+            "label": "Öğe",
+            "placeholder": "Öğeyi seç...",
+            "error": "Lütfen bir öğe seçin"
+          },
+          "stock_id": {
+            "label": "Stok Kimliği",
+            "placeholder": "Stok kimliğini girin...",
+            "error": "Geçersiz stok kimliği"
+          },
+          "wish_list_id": {
+            "label": "İstek Listesi Kimliği",
+            "placeholder": "İstek listesi kimliğini girin...",
+            "error": "Geçersiz istek listesi kimliği"
+          },
+          "priority": {
+            "label": "Öncelik",
+            "placeholder": "Önceliği girin...",
+            "error": "Öncelik 0 veya daha büyük olmalıdır"
+          },
+          "buy_quantity": {
+            "label": "Satın Alma Miktarı",
+            "placeholder": "Satın alma miktarını girin...",
+            "error": "Satın alma miktarı 0 veya daha büyük olmalıdır"
+          },
+          "sell_quantity": {
+            "label": "Satış Miktarı",
+            "placeholder": "Satış miktarını girin...",
+            "error": "Satış miktarı 0 veya daha büyük olmalıdır"
+          },
+          "operation": {
+            "label": "Operasyonlar",
+            "placeholder": "İşlemleri seç...",
+            "error": "Lütfen en az bir işlem seçin"
+          }
+        },
+        "buttons": {
+          "add": {
+            "tooltip": "Hata ayıklama canlı öğe girişi ekle"
+          }
+        }
+      },
+      "create_category_summary": {
+        "fields": {
+          "icon": {
+            "label": "Simge",
+            "placeholder": "Simge",
+            "description": "Kategorinin simgesi",
+            "tooltip": "Kategorinin simgesi",
+            "error": "Geçersiz simge"
+          },
+          "name": {
+            "label": "İsim",
+            "placeholder": "İsim",
+            "description": "Kategorinin adı",
+            "tooltip": "Kategorinin adı",
+            "error": "Geçersiz ad"
+          },
+          "types": {
+            "label": "Türler",
+            "description": "Kategoriye ilişkin türler"
+          }
+        },
+        "buttons": {
+          "submit": {
+            "label": "Kategori Oluştur/Kaydet"
+          }
+        }
+      },
+      "select_tradable_item": {
+        "fields": {
+          "item": {
+            "label": "Öğe",
+            "placeholder": "Öğeyi seç..."
+          },
+          "variant": {
+            "label": "Varyant",
+            "placeholder": "Varyant seçin...",
+            "description": "Lütfen bir varyant seçin"
+          },
+          "rank": {
+            "label": "Rütbe",
+            "placeholder": "Sıralamayı seç...",
+            "description": "Lütfen bir derece seçin"
+          },
+          "cyan_stars": {
+            "label": "Camgöbeği Yıldızlar",
+            "placeholder": "Camgöbeği yıldızları seçin...",
+            "description": "Kaç tane camgöbeği yıldız"
+          },
+          "amber_stars": {
+            "label": "Kehribar Yıldızları",
+            "placeholder": "Kehribar rengi yıldızları seç...",
+            "description": "Kaç tane kehribar yıldızı"
+          }
+        },
+        "messages": {
+          "nothing_found": "Hiçbir öğe bulunamadı"
+        }
+      },
+      "select_riven_weapon": {
+        "fields": {
+          "weapon": {
+            "label": "Silah",
+            "placeholder": "Silah seç..."
+          }
+        }
+      },
+      "create_item": {
+        "fields": {
+          "quantity": {
+            "label": "Miktar",
+            "placeholder": "Miktar",
+            "error": "Geçersiz miktar"
+          },
+          "bought": {
+            "label": "Satın alınmış",
+            "placeholder": "Satın alınmış",
+            "error": "Geçersiz satın alma"
+          }
+        },
+        "buttons": {
+          "add": {
+            "tooltip": {
+              "description_with_report": "Öğeyi stoğa ekleyin ve Warframe Market'e rapor verin",
+              "description_without_report": "Stoka ürün ekle"
+            }
+          }
+        }
+      },
+      "log_in": {
+        "title": "Warframe Market - Giriş Yap",
+        "register": "Hesabınız yok mu? Kayıt olmak",
+        "fields": {
+          "email": {
+            "label": "E-posta",
+            "placeholder": "E-posta",
+            "error": "Geçersiz e-posta"
+          },
+          "password": {
+            "label": "Şifre",
+            "placeholder": "Şifre",
+            "error": "Şifre en az 6 karakter içermelidir"
+          }
+        },
+        "buttons": {
+          "submit": "Giriş yapmak"
+        }
+      },
+      "settings": {
+        "tabs": {
+          "general": {
+            "title": "Genel",
+            "fields": {
+              "language": {
+                "label": "Dil",
+                "placeholder": "Dil Seçiniz",
+                "error": "Geçersiz dil"
+              }
+            }
+          },
+          "themes": {
+            "title": "Temalar",
+            "community_themes": "Topluluk Temaları",
+            "get_more_out_of_themes": "Tema Düzenleyiciyi kullanarak temalardan daha fazla yararlanın Buraya Tıklayın",
+            "theme_configuration": "Tema Yapılandırması"
+          },
+          "notifications": {
+            "title": "Bildirimler",
+            "on_new_conversation_title": "Yeni Konuşmada",
+            "on_new_trade_title": "Yeni Ticaret Üzerine",
+            "on_wfm_chat_message_title": "WFM Sohbet Mesajında"
+          },
+          "advanced": {
+            "title": "Gelişmiş",
+            "fields": {
+              "wf_log_path": {
+                "label": "Warframe Günlük Yolu",
+                "placeholder": "Varsayılan Warframe günlük yolu",
+                "errors": {
+                  "not_exists": "Belirtilen yol mevcut değil."
+                },
+                "tooltip": "Warframe günlük dosyasının yolu. varsayılan yol için boş bırakın."
+              }
+            },
+            "button_export_logs": "Günlük Dışa Aktarma"
+          },
+          "summary": {
+            "title": "Özet",
+            "fields": {
+              "recent_days": {
+                "label": "Son Günler",
+                "tooltip": "Kaç günlük veri gösterilecek"
+              },
+              "recent_transactions": {
+                "label": "Son İşlemler",
+                "tooltip": "Kaç işlem gösterilecek"
+              }
+            },
+            "datatable": {
+              "columns": {
+                "name": "İsim",
+                "tags": "Etiketler",
+                "types": "Türler",
+                "actions": {
+                  "title": "Eylemler",
+                  "buttons": {
+                    "edit": {
+                      "tooltip": "Öğeyi Düzenle"
+                    },
+                    "delete": {
+                      "tooltip": "Öğeyi Sil"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "live_scraper": {
+            "title": "Canlı Kazıyıcı",
+            "general": {
+              "title": "Genel",
+              "fields": {
+                "auto_trade": {
+                  "label": "Otomatik Ticaret",
+                  "error": "Geçersiz otomatik ticaret",
+                  "tooltip": "Doğruysa otomatik olarak stok ekle/sat"
+                },
+                "auto_delete": {
+                  "label": "Otomatik Sil",
+                  "error": "Geçersiz otomatik silme",
+                  "tooltip": "Stok öğelerini otomatik olarak sil"
+                },
+                "should_delete_other_types": {
+                  "label": "Diğer Ticaret Türlerini Silmeli",
+                  "error": "Geçersiz, diğer ticaret türlerini silmeli",
+                  "tooltip": "Doğruysa diğer ticaret türlerini silecektir örnek: satın alma etkinse, kara listede değilse satış/istek listesi öğeleri silinir"
+                },
+                "report_to_wfm": {
+                  "label": "Warframe Market'e rapor verin",
+                  "error": "Warframe Market'e geçersiz rapor",
+                  "tooltip": "Warframe Market'e bir işlem ekleyecek"
+                },
+                "trade_modes": {
+                  "label": "Ticaret Modu",
+                  "description": "Ticaret modlarını seçin",
+                  "error": "Geçersiz ticaret modu"
+                },
+                "stock_mode": {
+                  "label": "Stok Modu",
+                  "description": {
+                    "all": "Her şeyin içinden geçecek",
+                    "riven": "Sadece yarıklardan geçecek",
+                    "item": "Yalnızca öğeler üzerinden geçilecek"
+                  },
+                  "placeholder": "Stok Modu",
+                  "error": "Geçersiz stok modu"
+                }
+              },
+              "columns": {
+                "name": "İsim",
+                "maximum_price": "Maksimum Fiyat"
+              },
+              "buttons": {
+                "edit_blacklist_label": "Kara Listeyi Düzenle {{count}}",
+                "edit_buy_list_label": "Satın Alma Listesini Düzenle {{count}}"
+              },
+              "black_list": {
+                "available_items_label": "Mevcut Ürünler",
+                "selected_items_label": "Kara Listedeki Öğeler",
+                "name_title": "İsim",
+                "trade_tax_title": "Ticaret Vergisi",
+                "trade_tax_label": "Ticaret Vergisi {{min}} - {{max}}",
+                "mr_requirement_label": "MR Gereksinimi {{min}} - {{max}}",
+                "mr_requirement_title": "MR Gereksinimi",
+                "disabled_for_title": "Şunun için devre dışı bırakıldı:",
+                "go_back_label": "Geri gitmek",
+                "set_trade_modes_tooltip": "Şu anda seçili olan Ticaret Modlarını Ayarla {{modes}}",
+                "no_trade_selected": "Hiçbir ticaret modu seçilmedi, lütfen en az bir ticaret modu seçin"
+              }
+            },
+            "item": {
+              "title": "Stok Öğesi",
+              "wtb": {
+                "title": "WTB",
+                "fields": {
+                  "volume_threshold": {
+                    "label": "Hacim Eşiği",
+                    "placeholder": "Hacim Eşiği",
+                    "error": "Geçersiz ses eşiği",
+                    "tooltip": "Ticaret için dikkate alınması gereken minimum hacim",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#volume-threshold"
+                  },
+                  "profit_threshold": {
+                    "label": "Kâr Eşiği",
+                    "placeholder": "Kâr Eşiği",
+                    "error": "Geçersiz kâr eşiği",
+                    "tooltip": "Ticaret için dikkate alınması gereken minimum kar",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#profit-threshold"
+                  },
+                  "avg_price_cap": {
+                    "label": "Ortalama Fiyat Tavanı",
+                    "placeholder": "Ortalama Fiyat Tavanı",
+                    "error": "Geçersiz ortalama fiyat sınırı",
+                    "tooltip": "Ticaret için dikkate alınması gereken maksimum ortalama fiyat",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#average-price-cap"
+                  },
+                  "trading_tax_cap": {
+                    "label": "Ticaret Vergisi Tavanı",
+                    "placeholder": "Ticaret Vergisi Tavanı",
+                    "error": "Geçersiz ticari vergi tavanı",
+                    "tooltip": "Ticarette dikkate alınması gereken maksimum vergi",
+                    "link": "https://example.com/trading-tax-cap"
+                  },
+                  "max_total_price_cap": {
+                    "label": "Maksimum Toplam Fiyat Tavanı",
+                    "placeholder": "Maksimum Toplam Fiyat Tavanı",
+                    "error": "Geçersiz maksimum toplam fiyat sınırı",
+                    "tooltip": "Yatırım için göz önünde bulundurulacak maksimum toplam fiyat -1 (limitsiz)",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#max-total-price-cap"
+                  },
+                  "price_shift_threshold": {
+                    "label": "Fiyat Değişimi Eşiği",
+                    "placeholder": "Fiyat Değişimi Eşiği",
+                    "error": "Geçersiz fiyat değişimi eşiği",
+                    "tooltip": "Ticaret için dikkate alınması gereken minimum fiyat değişimi",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#price-shift-threshold"
+                  },
+                  "buy_quantity": {
+                    "label": "Mal miktarı",
+                    "placeholder": "Mal miktarı",
+                    "error": "Geçersiz miktarda mal",
+                    "tooltip": "Satın alınacak mal miktarı",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#quantity-of-goods"
+                  },
+                  "min_wtb_profit_margin": {
+                    "label": "Kâr Marjı Eşiği",
+                    "placeholder": "Kâr Marjı Eşiği",
+                    "error": "Geçersiz kar marjı eşiği",
+                    "tooltip": "WTB işlemleri için minimum kar marjı",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#profit-margin-threshold"
+                  },
+                  "quantity_per_trade": {
+                    "label": "İşlem Başına Miktar",
+                    "placeholder": "İşlem Başına Miktar",
+                    "error": "İşlem başına geçersiz miktar",
+                    "tooltip": "İşlem başına ticareti yapılacak mal miktarı: NOT bu yalnızca büyüler gibi bazı öğeler için geçerlidir.",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#quantity-per-trade"
+                  },
+                  "max_stock_quantity": {
+                    "label": "Maksimum Stok Miktarı",
+                    "placeholder": "Maksimum Stok Miktarı",
+                    "error": "Geçersiz maksimum stok miktarı",
+                    "tooltip": "WTB sipariş oluşturmayı durdurmadan önce stokta bulunması gereken maksimum öğe miktarı. Bu özelliği devre dışı bırakmak için -1'e ayarlayın.",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#max-stock-quantity"
+                  },
+                  "wts": {
+                    "title": "WTS",
+                    "fields": {}
+                  }
+                }
+              },
+              "wts": {
+                "title": "WTS",
+                "fields": {
+                  "min_sma": {
+                    "label": "Minimum SMA",
+                    "placeholder": "Minimum SMA",
+                    "error": "Geçersiz minimum SMA",
+                    "tooltip": "Ticaret için dikkate alınması gereken minimum Basit Hareketli Ortalama",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wts#min-sma"
+                  },
+                  "min_profit": {
+                    "label": "Asgari Kar",
+                    "placeholder": "Asgari Kar",
+                    "error": "Geçersiz minimum kâr",
+                    "tooltip": "Ticaret için dikkate alınması gereken minimum kar",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wts#min-profit"
+                  }
+                }
+              },
+              "summary": {
+                "title": "Özet",
+                "datatable_columns": {
+                  "profit": "Potansiyel Kâr",
+                  "trading_tax": "Ticaret Vergisi"
+                },
+                "buttons": {
+                  "show_interesting_wtb_items": "İlginç WTB Öğelerini Göster"
+                }
+              }
+            },
+            "riven": {
+              "title": "Stok Parçalanmış",
+              "fields": {
+                "min_profit": {
+                  "label": "Asgari Kar",
+                  "placeholder": "Asgari Kar",
+                  "error": "Geçersiz minimum kâr",
+                  "tooltip": "Ticaret için dikkate alınması gereken minimum kar",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#min-profit"
+                },
+                "threshold_percentage": {
+                  "label": "Eşik Yüzdesi",
+                  "placeholder": "Eşik Yüzdesi",
+                  "error": "Geçersiz eşik yüzdesi",
+                  "tooltip": "Ticaret için yüzde eşiği",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#minimum-price-shift"
+                },
+                "limit_to": {
+                  "label": "Sınırla",
+                  "placeholder": "Sınırla",
+                  "error": "Geçersiz sınır",
+                  "tooltip": "İşlem sayısını sınırlayın",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#limit-to"
+                },
+                "update_interval": {
+                  "label": "Güncelleme Aralığı (saniye)",
+                  "placeholder": "Güncelleme Aralığı",
+                  "error": "Geçersiz güncelleme aralığı",
+                  "tooltip": "Riven işlemlerini güncelleme aralığı",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#update-interval"
+                }
+              }
+            }
+          },
+          "http_server": {
+            "title": "HTTP Sunucusu",
+            "general": {
+              "title": "Genel",
+              "fields": {
+                "enabled": {
+                  "label": "Etkinleştirilmiş",
+                  "tooltip": "HTTP sunucusunu etkinleştirme veya devre dışı bırakma"
+                },
+                "port": {
+                  "label": "Liman",
+                  "placeholder": "Liman",
+                  "tooltip": "HTTP sunucusunun çalışacağı bağlantı noktası"
+                },
+                "host": {
+                  "label": "Ev sahibi",
+                  "placeholder": "Ev sahibi",
+                  "error": "Geçersiz ana makine",
+                  "tooltip": "HTTP sunucusunun çalışacağı ana bilgisayar"
+                }
+              }
+            }
+          }
+        }
+      },
+      "trade_entry_update": {
+        "fields": {
+          "price_label": "Fiyat",
+          "tags_label": "Etiketler"
+        }
+      }
+    },
+    "modals": {
+      "base": {
+        "buttons": {
+          "confirm": "Onaylamak",
+          "cancel": "İptal etmek"
+        }
+      },
+      "generate_trade_message": {
+        "title": "{{count}} Ürün(ler) için Ticari Mesaj Oluştur",
+        "button_add_key_tooltip": "Ekran Ekle",
+        "button_copy_tooltip": "Panoya kopyala",
+        "button_delete_template_tooltip": "Şablonu Sil",
+        "button_load_template_tooltip": "Şablonu Yükle",
+        "button_save_template_tooltip": "Şablonu Kaydet",
+        "titles": {
+          "message_settings": "Mesaj Ayarları",
+          "preview_with_icons": "Simgelerle Önizleme",
+          "display_settings": "Ekran Ayarları"
+        },
+        "fields": {
+          "prefix": {
+            "label": "Önek",
+            "description": "Ticari mesaj için kullanılacak önek",
+            "placeholder": "Önek"
+          },
+          "suffix": {
+            "label": "sonek",
+            "description": "Ticari mesaj için kullanılacak sonek",
+            "placeholder": "sonek"
+          },
+          "message": {
+            "label": "Mesaj",
+            "description": "Oluşturulan ticari mesaj",
+            "length_info": "{{current}} / {{max}} karakterler"
+          },
+          "key": {
+            "label": "Anahtar",
+            "description": "Mesajdaki öğeleri ayırmak için kullanılacak anahtar",
+            "placeholder": "Anahtar"
+          },
+          "template": {
+            "label": "Ticari Mesaj Şablonu",
+            "description": "Mesajı oluşturmak için kullanılacak şablon."
+          },
+          "chat_icon": {
+            "label": "Sohbet Simgeleri",
+            "description": "Mesajınıza Warframe Market sohbet simgelerini ekleyin"
+          },
+          "group_by": {
+            "label": "Gruplandırma Ölçütü",
+            "description": "Öğeleri iletideki türlerine göre gruplandırın"
+          },
+          "load_template": {
+            "label": "Şablonu Yükle",
+            "description": "Kaydedilmiş bir mesaj şablonunu yükle"
+          }
+        },
+        "datatable": {
+          "columns": {
+            "key": "Anahtar",
+            "name": "İsim",
+            "prefix": "Önek",
+            "suffix": "sonek"
+          }
+        }
+      },
+      "patreon_modal": {
+        "title": "Quantframe'in gelişimini destekleyin",
+        "description": "Beni Patreon'da destekleyerek premium özelliklere erişin",
+        "premium_content": "Kullanıcı etkinliği | Riven Fiyat Arama | Verileri Dışa Aktar | Öğe İstatistikleri",
+        "join_the_community": "Destekçi topluluğuna katılın ve Quantframe'in geleceğini şekillendirmeye yardımcı olun.",
+        "link_your_account": "2. Patreon hesabınızı bağlayın",
+        "buttons": {
+          "info": "Patreon",
+          "link": "Hesabınızı bağlayın"
+        }
+      },
+      "item_details": {
+        "tabs": {
+          "overview": {
+            "title": "Genel Bakış",
+            "tooltips": {},
+            "labels": {
+              "created_at": "Oluşturulma Tarihi: <date/>",
+              "updated_at": "Güncelleme Tarihi: <date/>",
+              "bought": "Alış Fiyatı: {{price}} <plat/>",
+              "list_price": "Listelenen Fiyat: {{price}} <plat/>",
+              "potential_profit": "Potansiyel Kâr: {{price}} <plat/>",
+              "minimum_profit": "Minimum Kar: {{price}}",
+              "minimum_sma": "Minimum SMA: {{price}}",
+              "quantity": "Adet: {{quantity}}",
+              "is_hidden": "Gizli: <hidden/>"
+            }
+          },
+          "analytics": {
+            "title": "Analitik",
+            "tooltips": {},
+            "labels": {},
+            "titles": {
+              "last_transactions": "Son İşlemler",
+              "financial_summary": "Finansal Özet"
+            }
+          },
+          "wfm": {
+            "title": "Genel Bakış",
+            "tooltips": {
+              "buy_highest_price": "En Yüksek Satın Al",
+              "sell_highest_price": "En Yüksek Satışı Yap",
+              "spread_percent": "Yayılma Yüzdesi",
+              "supply": "Tedarik"
+            },
+            "labels": {
+              "buy_lowest": "En Düşük Satın Al",
+              "sell_lowest": "En Düşük Satış",
+              "spread": "Yaymak",
+              "demand": "Talep etmek",
+              "roi_percent": "Yatırım Getirisi Yüzdesi"
+            },
+            "buttons": {
+              "view_on_wfm": "Warframe Market'te görüntüle"
+            }
+          },
+          "edit": {
+            "title": "Düzenlemek",
+            "fields": {
+              "bought": "Şunun için satın alındı:",
+              "minimum_price": "Asgari Fiyat",
+              "maximum_price": "Maksimum Fiyat",
+              "owned": "Şu anda sahip olunan",
+              "quantity": "Miktar",
+              "minimum_sma": "Minimum SMA",
+              "minimum_profit": "Asgari Kar"
+            },
+            "tooltips": {
+              "minimum_price": "Bu ürünü satmak istediğiniz minimum fiyat. Devre dışı bırakmak için 0'a ayarlayın.",
+              "minimum_profit": "Bu ürünü satarken elde etmek istediğiniz minimum kar. Devre dışı bırakmak için 0'a ayarlayın",
+              "minimum_sma": "Bu ürünün satışı için dikkate alınması gereken minimum basit hareketli ortalama. Devre dışı bırakmak için 0'a ayarlayın",
+              "maximum_price": "Bu ürünü satın almak istediğiniz maksimum fiyat. Devre dışı bırakmak için 0'a ayarlayın."
+            }
+          }
+        }
+      },
+      "riven_details": {
+        "tabs": {
+          "overview": {
+            "title": "Genel Bakış",
+            "tooltips": {},
+            "labels": {
+              "created_at": "Oluşturulma Tarihi: <date/>",
+              "updated_at": "Güncelleme Tarihi: <date/>",
+              "bought": "Alış Fiyatı: {{price}} <plat/>",
+              "list_price": "Listelenen Fiyat: {{price}} <plat/>",
+              "potential_profit": "Potansiyel Kâr: {{price}} <plat/>",
+              "minimum_profit": "Minimum Kar: {{price}}",
+              "minimum_sma": "Minimum SMA: {{price}}",
+              "kuva": "Harcanan Kuva: {{kuva}}",
+              "endo": "Endo: {{endo}}",
+              "is_hidden": "Gizli: <hidden/>"
+            }
+          },
+          "modifiers": {
+            "title": "Değiştiriciler",
+            "tooltips": {},
+            "labels": {
+              "weapon": "Silah",
+              "rank": "Rütbe"
+            },
+            "titles": {}
+          },
+          "roll_evaluation": {
+            "title": "Rulo Değerlendirmesi",
+            "tooltips": {},
+            "labels": {
+              "best_attributes": "En İyi Özellikler",
+              "mandatory": "Zorunlu",
+              "optional": "İsteğe bağlı",
+              "best_bad_attributes": "En İyi Kötü Özellikler"
+            },
+            "titles": {}
+          },
+          "analytics": {
+            "title": "Analitik",
+            "tooltips": {},
+            "labels": {},
+            "titles": {
+              "last_transactions": "Son İşlemler",
+              "financial_summary": "Finansal Özet"
+            }
+          },
+          "wfm": {
+            "title": "Warframe Pazarı",
+            "tooltips": {},
+            "labels": {
+              "auction_header_left": "{{similarity}}%",
+              "auction_header_right": "{{price}} <plat/>"
+            },
+            "buttons": {
+              "view_on_wfm": "Warframe Market'te görüntüle"
+            }
+          },
+          "edit": {
+            "title": "Düzenlemek",
+            "fields": {
+              "bought": "Şunun için satın alındı:",
+              "minimum_price": "Asgari Fiyat",
+              "mastery_rank": "Ustalık Sıralaması",
+              "re_rolls": "Yeniden Rulolar",
+              "minimum_profit": "Asgari Kar"
+            },
+            "tooltips": {
+              "minimum_price": "Bu ürünü satmak istediğiniz minimum fiyat. Devre dışı bırakmak için 0'a ayarlayın.",
+              "minimum_profit": "Bu ürünü satarken elde etmek istediğiniz minimum kar. Devre dışı bırakmak için 0'a ayarlayın",
+              "minimum_sma": "Bu ürünün satışı için dikkate alınması gereken minimum basit hareketli ortalama. Devre dışı bırakmak için 0'a ayarlayın",
+              "maximum_price": "Bu ürünü satın almak istediğiniz maksimum fiyat. Devre dışı bırakmak için 0'a ayarlayın."
+            }
+          }
+        }
+      },
+      "update_available": {
+        "title": "Yeni Güncelleme Mevcut (v{{version}})",
+        "buttons": {
+          "download": "İndirin ve Yükleyin",
+          "download_manual": "Manuel Olarak İndir",
+          "read_more": "Devamını oku"
+        }
+      },
+      "tos": {
+        "title": "Hizmet Şartları",
+        "buttons": {
+          "accept": "Kabul etmek",
+          "decline": "Reddetmek"
+        }
+      },
+      "app_error": {
+        "title": "{{component}} bileşeninde hata",
+        "version": "Sürüm: {{version}}",
+        "cause": "Sebep: {{cause}}",
+        "message": "Mesaj: {{message}}",
+        "location": "Konum: {{location}}",
+        "footer": "Lütfen bu hatayı geliştiricilere bildirin,\nGünlük dosyasını dışa aktararak aşağıdaki düğmeye tıklamanız yeterlidir; bu, masaüstünüzde bir dosya oluşturacaktır.",
+        "export_log": "Günlüğü Dışa Aktar"
+      }
+    },
+    "chat_item": {
+      "delete_tooltip": "Görüşmeyi Sil",
+      "last_update": "Son güncelleme"
+    },
+    "chat_rome": {
+      "fields": {
+        "message": {
+          "too_long": "Mesaj çok uzun",
+          "placeholder": "Mesajınızı buraya yazın..."
+        }
+      },
+      "buttons": {
+        "back_label": "Geri",
+        "send_label": "Göndermek",
+        "options": {
+          "label": "Seçenekler",
+          "delete": "Neden buradasın?"
+        }
+      }
+    },
+    "best_by_category_table": {
+      "datatable": {
+        "columns": {
+          "name": "İsim",
+          "revenue": "Hasılat",
+          "expense": "Gider",
+          "profit": "Kâr",
+          "profit_margin": "Kâr Marjı",
+          "quantity": "Miktar"
+        }
+      }
+    },
+    "bar_chart_financial_summary": {
+      "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+      "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>",
+      "tooltips": {
+        "expense": "Toplam giderler",
+        "revenue": "Toplam gelir",
+        "profit": "Toplam kâr",
+        "trades": "İşlem sayısı",
+        "sales": "Satış sayısı",
+        "purchases": "Satın alma sayısı"
+      }
+    },
+    "financial_report_card": {
+      "tooltips": {
+        "total_expenses": "Toplam Giderler",
+        "total_revenue": "Toplam Gelir",
+        "average_profit": "Ortalama Kâr",
+        "total_credits": "Toplam Kredi",
+        "lowest_revenue": "En Düşük Gelir",
+        "lowest_expense": "En Düşük Gider",
+        "highest_revenue": "En Yüksek Gelir"
+      },
+      "labels": {
+        "trade_count": "Ticaret Sayısı",
+        "highest_revenue": "En Yüksek Gelir",
+        "highest_expense": "En Yüksek Gider",
+        "total_transactions": "Toplam İşlemler",
+        "revenue": "Hasılat",
+        "expenses": "Giderler",
+        "total_profit": "Toplam Kâr"
+      }
+    },
+    "riven_preview": {
+      "riven_name": "{{name}} <blue>{{mod_name}}</blue>",
+      "types": {
+        "unveiled": {
+          "footer_left": "{{progress}}/{{required}}"
+        },
+        "pre-veiled": {
+          "footer_left": "x{{quantity}}"
+        },
+        "veiled": {
+          "header_left": "{{price}} <plat/>",
+          "footer_left": "R: {{rank}}/8",
+          "footer_right": "Bay: {{mastery}}"
+        }
+      }
+    },
+    "price_history_popover": {
+      "labels": {
+        "price_history": "Fiyat Geçmişi"
+      }
+    }
+  },
+  "pages": {
+    "home": {
+      "cards": {
+        "total": {
+          "title": "Toplam Kâr",
+          "footer": "Satış: <blue>{{sales}}</blue> | Satın Almalar: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | Kâr Marjı: <blue>{{profit_margin}}</blue>%",
+          "bar_chart": {
+            "title": "Toplam Kâr",
+            "datasets": {
+              "this_year": "Bu yıl",
+              "last_year": "Geçen sene"
+            }
+          }
+        },
+        "today": {
+          "title": "Bugünkü Kâr",
+          "footer": "Satış: <blue>{{sales}}</blue> | Satın Almalar: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | Kâr Marjı: <blue>{{profit_margin}}</blue>%",
+          "bar_chart": {
+            "title": "Bugünkü Kâr",
+            "datasets": {
+              "profit": "Kâr"
+            },
+            "footers": {
+              "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+              "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>"
+            }
+          }
+        },
+        "recent_days": {
+          "bar_chart": {
+            "title": "Son {{days}} gün",
+            "datasets": {
+              "profit": "Kâr"
+            },
+            "footers": {
+              "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+              "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>"
+            }
+          }
+        },
+        "best_seller": {
+          "title": "En Çok Satan Kar",
+          "footer": "Ad: <blue>{{name}}</blue> | S: <blue>{{sales}}</blue> | P: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | PM: <blue>{{profit_margin}}</blue>%"
+        },
+        "last_transaction": {
+          "title": "Son İşlem",
+          "info_box": {
+            "purchase": "{{count}} satın alın",
+            "sale": "Satış {{count}}"
+          }
+        }
+      }
+    },
+    "about": {
+      "cards": {
+        "coffee": {
+          "title": "Kahve"
+        },
+        "patreon": {
+          "title": "Beni Patreon'da destekleyin"
+        },
+        "discord": {
+          "title": "Anlaşmazlık"
+        },
+        "guide": {
+          "title": "Wiki/Rehber"
+        }
+      },
+      "text": {
+        "version": "Versiyon: <blue>{{version}}</blue> ❤️ ile 🇩🇰 yılında yapılmıştır. © 2023-{{year}} Kenya-DK. Her hakkı saklıdır",
+        "patreon_thanks": "Quantframe'i mümkün kıldıkları için Patreon 'Quantframe Kullanıcıları' destekçilerine özel teşekkürler: <blue>{{users}}</blue>.",
+        "disclaimer": "Quantframe bir üçüncü taraf uygulamasıdır ve Digital Extremes'e bağlı değildir."
+      },
+      "button_check_for_updates": "Güncellemeleri Kontrol Et"
+    },
+    "debug": {
+      "tabs": {
+        "logging": {
+          "title": "Günlüğe kaydetme",
+          "datatable": {
+            "columns": {
+              "command": "Emretmek",
+              "count": "Saymak",
+              "actions": {
+                "title": "Eylemler",
+                "buttons": {
+                  "remove_tooltip": "Oturum açma komutunu kaldır"
+                }
+              }
+            }
+          },
+          "buttons": {
+            "add_log": "Günlük Ekle"
+          },
+          "prompt": {
+            "name": {
+              "title": "Günlük Ekle",
+              "fields": {
+                "name": {
+                  "label": "Günlük Adı"
+                }
+              }
+            }
+          }
+        },
+        "states": {
+          "title": "Devletler",
+          "accordions": {
+            "app_info": "Uygulama Bilgisi",
+            "app_error": "Uygulama Hatası",
+            "settings": "Ayarlar",
+            "alerts": "Uyarılar",
+            "user": "Kullanıcı",
+            "live_scraper": "Canlı Kazıyıcı",
+            "wfm_state": "WFM Durumu",
+            "tauri_events": "Tauri Etkinlikleri"
+          }
+        },
+        "debugging": {
+          "title": "Hata ayıklama",
+          "fake_orders_tooltip": "Canlı Ticaret için Sahte Emirleri Kapat (Yalnızca Test Amaçlı) dev.kenya.quantframe\\fake_orders dizininde saklanacaktır.",
+          "fake_orders_label": "Sahte Siparişleri Kullan Canlı siparişler",
+          "datatable": {
+            "columns": {
+              "wfm_url": {
+                "title": "İsim",
+                "value": "{{name}} <blue>{{sub_type}}</blue>"
+              },
+              "stock_id": "Stok Kimliği",
+              "wish_list_id": "İstek Listesi Kimliği",
+              "priority": "Öncelik",
+              "buy_quantity": "Satın Alma Miktarı",
+              "sell_quantity": "Satış Miktarı",
+              "operation": "Operasyon",
+              "actions": {
+                "title": "Eylemler",
+                "buttons": {
+                  "delete_tooltip": "Hata Ayıklama Canlı Öğe Girişini Sil"
+                }
+              }
+            }
+          }
+        },
+        "ee_log": {
+          "title": "EE Günlüğü",
+          "hide_empty": "Boş Satırları Gizle",
+          "export_json_tooltip": "Öğeleri JSON'a Aktar",
+          "datatable": {
+            "columns": {
+              "line": "Astar",
+              "date": "Zaman damgası"
+            }
+          }
+        }
+      }
+    },
+    "banned": {
+      "wfm": {
+        "title": "Warframe Piyasa Hesabı Aşağıdaki Nedenlerle Askıya Alındı:",
+        "reason": "Sebep: {{reason}}",
+        "until": "Değin:"
+      },
+      "qf": {
+        "title": "Quantframe Hesabı şu nedenlerle askıya alındı:",
+        "reason": "Sebep: {{reason}}",
+        "until": "Değin:"
+      }
+    },
+    "auth": {
+      "errors": {
+        "login": {
+          "title": "Giriş Hatası",
+          "TooManyRequests": "Çok fazla istek var, lütfen daha sonra tekrar deneyin",
+          "InvalidCredentials": "Şifre geçersiz",
+          "InternalServerError": "Giriş hizmeti şu anda kullanılamıyor, lütfen daha sonra tekrar deneyin",
+          "banned": "Yasaklandın",
+          "ban_reason": "<red>Sebep: {{reason}}</red>",
+          "verification": "Hesabınızı doğrulamanız gerekiyor Bunu Warframe Market web sitesinde yapın"
+        }
+      },
+      "success": {
+        "login": {
+          "title": "Giriş Başarılı",
+          "message": "Tekrar hoşgeldiniz! {{name}}"
+        }
+      }
+    },
+    "live_scraper": {
+      "export_json_tooltip": "Öğeleri JSON'a Aktar (Patreon T1+)",
+      "update_multiple_tooltip": "Birden Çok Öğeyi Güncelle",
+      "delete_multiple_tooltip": "Birden Çok Öğeyi Sil",
+      "wts_multiple_tooltip": "WTS mesajı oluştur",
+      "segments": {
+        "bought": "Satın alınmış",
+        "listed": "Listelendi",
+        "profit": "Kâr"
+      },
+      "prompts": {
+        "update_filter": {
+          "title": "Filtreyi Güncelle"
+        },
+        "create_riven": {
+          "title": "Riven'ı oluştur"
+        }
+      },
+      "tabs": {
+        "item": {
+          "title": "Öğe",
+          "datatable": {
+            "columns": {
+              "bought": "Satın alınmış",
+              "owned": "Sahip olunan"
+            }
+          }
+        },
+        "riven": {
+          "title": "Yırtılmış",
+          "datatable": {
+            "columns": {
+              "attributes": "Nitelikler",
+              "bought": "Satın alınmış"
+            }
+          }
+        },
+        "wish_list": {
+          "title": "İstek listesi"
+        }
+      }
+    },
+    "warframe_market": {
+      "tabs": {
+        "orders": {
+          "title": "Siparişler",
+          "status": "<blue>{{type}}</blue> | <qty/> <blue>{{total}}</blue> | <plat/> <blue>{{platinum}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+          "tooltip_profit": "Tahmini Kâr",
+          "buttons": {
+            "refresh_tooltip": "Sipariş listesini yenile",
+            "delete_all_tooltip": "Tüm siparişleri sil",
+            "delete_tooltip": "Bu siparişi sil",
+            "info_tooltip": "Sipariş ayrıntılarını görüntüle",
+            "sell_manual": {
+              "buy_tooltip": "Manuel olarak satın alındı",
+              "sell_tooltip": "Manuel olarak satılır"
+            },
+            "sell_auto": {
+              "buy_tooltip": "Listelenen fiyata satın alındı",
+              "sell_tooltip": "Liste fiyatına satıldı"
+            }
+          },
+          "order_card": {
+            "header_left": "{{name}}",
+            "header_right": "<qty/> <blue>{{quantity}}</blue>",
+            "footer_left": "<blue>{{price}}</blue> <plat/>"
+          },
+          "fields": {
+            "quantity": "<qty/> <blue>{{quantity}}</blue>",
+            "platinum": "<blue>{{platinum}}</blue> <plat/>",
+            "mod_rank": "Sıralama: <blue>{{mod_rank}}</blue>/<blue>{{mod_max_rank}}</blue>",
+            "subtype": "<blue>{{sub_type}}</blue>"
+          }
+        },
+        "auctions": {
+          "title": "Açık artırmalar",
+          "overview": "<qty/> <blue>{{total}}</blue> | <plat/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+          "tooltip_profit": "Tahmini Kâr",
+          "buttons": {
+            "refresh_tooltip": "Açık artırma listesini yenile",
+            "delete_all_tooltip": "Tüm açık artırmaları sil",
+            "delete_tooltip": "Bu açık artırmayı sil",
+            "import_tooltip": "Bu açık artırmayı içe aktar",
+            "info_tooltip": "Açık artırma ayrıntılarını görüntüle"
+          },
+          "auction_card": {
+            "header_right": "{{price}} <plat/>"
+          }
+        }
+      }
+    },
+    "chat": {
+      "prompts": {
+        "delete_chat": {
+          "title": "Sohbeti Sil",
+          "message": "Bu sohbeti silmek istediğinizden emin misiniz? Bu eylem geri alınamaz.",
+          "cancel": "İptal etmek",
+          "confirm": "Silmek"
+        }
+      },
+      "buttons": {
+        "refresh_tooltip": "Sohbet listesini yenile",
+        "delete_all_tooltip": "Tüm sohbetleri sil"
+      }
+    },
+    "trading_analytics": {
+      "tabs": {
+        "transaction": {
+          "title": "İşlem",
+          "date_range_label": "Tarih Aralığı",
+          "date_range_description": "İşlemlerin filtreleneceği tarih aralığı",
+          "date_range_placeholder": "Tarih aralığını seçin",
+          "prompts": {
+            "update_title": "İşlemi Güncelle"
+          },
+          "buttons": {
+            "export_transactions_tooltip": "İşlemleri JSON'a aktar (Patreon T1+)",
+            "show_financial_report_tooltip": "Raporu göster",
+            "delete_all_tooltip": "Tüm işlemleri sil {{count}}",
+            "calculate_tax_tooltip": "Tüm işlemler için Ticaret Vergisini hesaplayın"
+          },
+          "datatable": {
+            "columns": {
+              "item_type": "Öğe Türü",
+              "price": "Fiyat",
+              "created_at": "Oluşturulma Tarihi",
+              "user_name": "Kullanıcı adı",
+              "profit": "Kâr",
+              "credits": "Kredi",
+              "sale_count": "Satış Sayısı",
+              "revenue": "Hasılat",
+              "purchases_count": "Satın Alma Sayısı",
+              "expenses": "Giderler",
+              "total_transactions": "Toplam İşlemler"
+            }
+          },
+          "titles": {
+            "most_purchased_items": "En Çok Satın Alınan Ürünler",
+            "most_sold_items": "En Çok Satılan Ürünler"
+          },
+          "table_headers": {
+            "item_name": "İsim",
+            "quantity": "Miktar"
+          }
+        },
+        "item": {
+          "title": "Öğe",
+          "export_json_tooltip": "Öğeleri JSON'a Aktar (Patreon T1+)",
+          "open_table_options_tooltip": "Tablo seçeneklerini aç",
+          "date_range_placeholder": "Tarih aralığını seçin",
+          "volume_label": "Hacim",
+          "min_price_label": "Minimum Fiyat",
+          "max_price_label": "Maksimum Fiyat",
+          "supply_label": "Tedarik",
+          "demand_label": "Talep etmek",
+          "datatable": {
+            "columns": {
+              "volume": "Hacim",
+              "min_price": "Minimum Fiyat",
+              "max_price": "Maksimum Fiyat",
+              "open_price": "Açık Fiyat",
+              "closed_price": "Kapanış Fiyatı",
+              "avg_price": "Ortalama Fiyat",
+              "wa_price": "WA Fiyatı",
+              "median": "Medyan",
+              "moving_avg": "Hareketli Ortalama",
+              "donch_top": "Donch Top",
+              "donch_bot": "Donch Botu",
+              "trading_tax": "Ticaret Vergisi",
+              "supply": "Tedarik",
+              "demand": "Talep etmek"
+            }
+          }
+        },
+        "riven": {
+          "title": "Yırtılmış",
+          "export_json_tooltip": "Riven'ı JSON'a aktar (Patreon T1+)",
+          "open_table_options_tooltip": "Tablo seçeneklerini aç",
+          "date_range_placeholder": "Tarih aralığını seçin",
+          "volume_label": "Hacim",
+          "min_price_label": "Minimum Fiyat",
+          "max_price_label": "Maksimum Fiyat",
+          "avg_price_label": "Ortalama Fiyat",
+          "datatable": {
+            "columns": {
+              "volume": "Hacim",
+              "min_price": "Minimum Fiyat",
+              "max_price": "Maksimum Fiyat",
+              "avg_price": "Ortalama Fiyat",
+              "median_price": "Medyan Fiyat"
+            }
+          }
+        },
+        "user": {
+          "title": "Kullanıcı Etkinliği",
+          "chart": {
+            "datasets": {
+              "registered_users": "Kayıtlı Kullanıcılar",
+              "active_users": "Aktif Kullanıcılar"
+            }
+          },
+          "fields": {
+            "group_by": {
+              "label": "Gruplandırma Ölçütü",
+              "options": {
+                "day": "Gün",
+                "hour": "Saat"
+              }
+            },
+            "date_range": {
+              "label": "Tarih Aralığı",
+              "placeholder": "Tarih aralığını seçin"
+            }
+          }
+        },
+        "wfgdpr": {
+          "title": "Warframe GDPR Ayrıştırıcı",
+          "drag_and_drop_message": "GDPR Metin dosyalarınızı buraya sürükleyip bırakın. Bu özellik hakkında daha fazla bilgiyi web sitesinde bulabilirsiniz.",
+          "columns": {
+            "account": "Hesap Adı",
+            "logins": "Giriş Sayısı",
+            "purchases": "Satın Alma Sayısı",
+            "trades": "İşlem Sayısı",
+            "transactions": "İşlem Sayısı",
+            "creation_date": "Oluşturulma Tarihi"
+          },
+          "overview": {
+            "title": "Genel Bakış",
+            "labels": {
+              "member_since": "Üyelik Tarihi",
+              "subscribed": "Abone olundu",
+              "trades": "İşlemler",
+              "platinum_traded": "Platin İşlemli",
+              "purchases": "Satın almalar",
+              "total_spent": "Toplam Harcanan",
+              "transactions": "İşlemler",
+              "unique_ips": "Benzersiz IP'ler",
+              "total_logins": "Toplam Giriş Sayısı"
+            }
+          },
+          "trade": {
+            "title": "Ticaret",
+            "yearly_trade_overview": {
+              "title": "Yıllık Ticarete Genel Bakış ({{year}})",
+              "total_trades": "Toplam İşlemler",
+              "total_purchases": "Toplam Satın Alma İşlemleri",
+              "total_sales": "Toplam Satışlar"
+            },
+            "columns": {
+              "created_at": "Oluşturulma Tarihi",
+              "offered_items": "Sunulan Ürün Sayısı",
+              "received_items": "Alınan Öğe Sayısı",
+              "credits": "Kredi"
+            },
+            "table_headers": {
+              "item_name": "İsim",
+              "quantity": "Miktar"
+            },
+            "titles": {
+              "most_sold_items": "En Çok Satılan Ürünler",
+              "most_purchased_items": "En Çok Satın Alınan Ürünler"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "Raporu göster"
+            }
+          },
+          "purchase": {
+            "title": "Satın almalar",
+            "titles": {
+              "most_purchased_items": "En Çok Satın Alınan Ürünler"
+            },
+            "table_headers": {
+              "item_name": "İsim",
+              "price": "Fiyat",
+              "quantity": "Miktar"
+            },
+            "yearly_trade_overview": {
+              "title": "Yıllık Ticarete Genel Bakış ({{year}})",
+              "total_purchases": "Toplam Satın Alma İşlemleri"
+            },
+            "columns": {
+              "date": "Satın Alma Tarihi:",
+              "price": "Fiyat",
+              "shop_id": "Mağaza kimliği",
+              "items_received": "Alınan Öğeler"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "Raporu göster"
+            }
+          },
+          "transaction": {
+            "title": "İşlemler",
+            "titles": {
+              "most_purchased_items": "En Çok Satın Alınan Ürünler"
+            },
+            "table_headers": {
+              "item_name": "İsim",
+              "price": "Fiyat",
+              "quantity": "Miktar"
+            },
+            "yearly_trade_overview": {
+              "title": "Yıllık Ticarete Genel Bakış ({{year}})",
+              "total_purchases": "Toplam Satın Alma İşlemleri"
+            },
+            "columns": {
+              "date": "Satın Alma Tarihi:",
+              "currency": "Para birimi",
+              "price": "Fiyat",
+              "account": "Hesap",
+              "sku": "Stok Kodu"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "Raporu göster"
+            }
+          }
+        }
+      }
+    },
+    "trade_messages": {
+      "fields": {
+        "price_label": "Fiyat",
+        "price_placeholder": "Fiyatı girin",
+        "tags_label": "Etiketler",
+        "tags_placeholder": "Etiketleri girin"
+      },
+      "buttons": {
+        "generate_trade_messages_tooltip": "{{count}} ürün(ler) için ticari mesajlar oluştur",
+        "update_multiple_tooltip": "Birden Fazla Takas Mesajını Güncelleyin",
+        "export_json_tooltip": "Ticari mesajları JSON'a aktar (Patreon T1+)",
+        "delete_multiple_tooltip": "Tüm işlemleri sil {{count}}",
+        "add_tooltip": "Ticari Mesaj Ekle",
+        "find_interesting_tooltip": "İlginç Takas Mesajlarını Bulun (Patreon T2+)",
+        "calibrate_prices_tooltip": "Fiyatları Kalibre Et"
+      },
+      "datatable": {
+        "columns": {
+          "price": "Fiyat",
+          "tags": "Etiketler",
+          "min_price": "Minimum Fiyat",
+          "potential_profit": "Potansiyel Kâr",
+          "updated_at": "Güncelleme Tarihi:"
+        }
+      },
+      "tabs": {
+        "item": {
+          "title": "Öğe"
+        },
+        "riven": {
+          "title": "Yırtılmış",
+          "modals": {
+            "find_interesting_rivens": {
+              "title": "{{date}} için İlginç Riven'lar Bulun",
+              "titles": {
+                "filtered": "Filtrelenmiş Rivenlar",
+                "discount_settings": "İndirim Ayarları",
+                "export_settings": "Ayarları Dışa Aktarma"
+              },
+              "fields": {
+                "min_price_label": "Asgari Fiyat",
+                "min_volume_label": "Minimum Hacim",
+                "discount_percentage_label": "İndirim Yüzdesi %",
+                "round_to_nearest_label": "En Yakına Yuvarla",
+                "override_existing_prices_label": "Mevcut Fiyatları Geçersiz Kıl",
+                "tags_label": "Etiketler"
+              },
+              "datatable_columns": {
+                "name": "İsim",
+                "min_price": "Asgari Fiyat",
+                "discount_price": "İndirimli Fiyat",
+                "potential_profit": "Potansiyel Kâr",
+                "volume": "Hacim"
+              },
+              "buttons": {
+                "export_to_trade_messages": "Ticari Mesajlara Aktar"
+              }
+            }
+          }
+        },
+        "custom": {
+          "title": "Gelenek"
+        }
+      }
+    },
+    "process_trade": {
+      "stats": {
+        "user_name": "Kullanıcı adı",
+        "trade_type": "Ticaret Türü",
+        "trade_price": "Ticaret Fiyatı",
+        "price": "Fiyat",
+        "difference": "Fark"
+      },
+      "buttons": {
+        "process_trade_tooltip": "İşlemleri işlemeye başlayın",
+        "confirm_trade": "Ticareti Onayla",
+        "back_to_list": "Listeye Geri Dön"
+      },
+      "datatable": {
+        "columns": {
+          "item_name": "İsim",
+          "quantity": "Miktar",
+          "price": "Fiyat",
+          "total": "Toplam",
+          "platinum": "Platin",
+          "user_name": "Kullanıcı adı",
+          "date": "Tarih"
+        }
+      }
+    },
+    "wf_inventory": {
+      "tabs": {
+        "riven": {
+          "title": "Yarıklar",
+          "riven_card": {
+            "footer_left": "{{rank}}/8 <polarity/>",
+            "footer_right": "Bay: {{mastery}}",
+            "footer_center": "<stock/>",
+            "stock_status": {
+              "found": "Envanterde bulunan",
+              "not_found": "Envanterde bulunamadı"
+            }
+          },
+          "filters": {
+            "all": "Tüm",
+            "rifle": "Tüfek",
+            "shotgun": "Av tüfeği",
+            "melee": "Yakın Dövüş",
+            "pistol": "Tabanca",
+            "zaw": "Zaw",
+            "arch": "Archwing",
+            "veiled": "örtülü",
+            "unveiled": "Açıklandı"
+          }
+        }
+      }
+    }
+  }
+}
