@@ -33,6 +33,9 @@ pub struct UpdateStockItem {
 
     #[serde(default)]
     pub price_history: FieldChange<Vec<PriceHistory>>,
+
+    #[serde(default)]
+    pub sub_type: FieldChange<Option<SubType>>,
 }
 
 impl UpdateStockItem {
@@ -101,6 +104,11 @@ impl UpdateStockItem {
             Null => item.minimum_sma = Set(None),
             _ => {}
         }
+        match self.sub_type {
+            Value(v) => item.sub_type = Set(v),
+            Null => item.sub_type = Set(None),
+            _ => {}
+        }
         item
     }
     pub fn new(id: i64) -> Self {
@@ -115,6 +123,7 @@ impl UpdateStockItem {
             minimum_profit: FieldChange::Ignore,
             minimum_sma: FieldChange::Ignore,
             price_history: FieldChange::Ignore,
+            sub_type: FieldChange::Ignore,
         }
     }
     pub fn with_owned(mut self, owned: i64) -> Self {

@@ -1,9 +1,9 @@
 import { TauriTypes } from "$types";
 import api from "@api/index";
+import { SelectSubType } from "@components/Forms/SelectSubType";
 import { TokenSearchSelect } from "@components/Forms/TokenSearchSelect";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
-import { Group, NumberInput, Select } from "@mantine/core";
-import { upperFirst } from "@mantine/hooks";
+import { Group } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
@@ -68,8 +68,9 @@ export function SelectTradableItem({ hide_sub_type, value, onChange, description
 
   const handleSubTypeUpdate = (sub_type: TauriTypes.SubType) => {
     if (!selectedItem) return;
-    setSelectedItem({ ...selectedItem, sub_type });
-    onChange({ ...selectedItem, sub_type });
+    const updatedItem = { ...selectedItem, sub_type: { ...selectedItem.sub_type, ...sub_type } } as SelectCacheTradableItem;
+    setSelectedItem(updatedItem);
+    onChange(updatedItem);
   };
 
   return (
@@ -95,71 +96,11 @@ export function SelectTradableItem({ hide_sub_type, value, onChange, description
         }}
       />
       {selectedItem && selectedItem.available_sub_types && !hide_sub_type && (
-        <Group>
-          {selectedItem.available_sub_types.variants && (
-            <Select
-              label={useTranslateFormFields("variant.label")}
-              placeholder={useTranslateFormFields("variant.placeholder")}
-              description={description ? useTranslateFormFields("variant.description") : ""}
-              data={selectedItem.available_sub_types.variants.map((variant) => ({ label: upperFirst(variant), value: variant }))}
-              required
-              value={selectedItem.sub_type?.variant || selectedItem.available_sub_types.variants[0] || ""}
-              onChange={(variant) => {
-                if (!selectedItem || !variant) return;
-                handleSubTypeUpdate({ variant });
-              }}
-            />
-          )}
-          {selectedItem.available_sub_types.max_rank && (
-            <NumberInput
-              w={150}
-              required
-              label={useTranslateFormFields("rank.label")}
-              placeholder={useTranslateFormFields("rank.placeholder")}
-              description={description ? useTranslateFormFields("rank.description") : ""}
-              value={selectedItem.sub_type?.rank || 0}
-              min={0}
-              max={selectedItem.available_sub_types.max_rank}
-              onChange={(event) => handleSubTypeUpdate({ rank: Number(event) })}
-            />
-          )}
-          {selectedItem.available_sub_types.cyan_stars && (
-            <NumberInput
-              w={150}
-              required
-              label={useTranslateFormFields("cyan_stars.label")}
-              placeholder={useTranslateFormFields("cyan_stars.placeholder")}
-              description={description ? useTranslateFormFields("cyan_stars.description") : ""}
-              value={selectedItem.sub_type?.cyan_stars || 0}
-              min={0}
-              max={selectedItem.available_sub_types.cyan_stars}
-              onChange={(event) =>
-                handleSubTypeUpdate({
-                  cyan_stars: Number(event),
-                  amber_stars: selectedItem.available_sub_types?.amber_stars ? selectedItem.sub_type?.amber_stars : undefined,
-                })
-              }
-            />
-          )}
-          {selectedItem.available_sub_types.amber_stars && (
-            <NumberInput
-              w={150}
-              required
-              label={useTranslateFormFields("amber_stars.label")}
-              placeholder={useTranslateFormFields("amber_stars.placeholder")}
-              description={description ? useTranslateFormFields("amber_stars.description") : ""}
-              value={selectedItem.sub_type?.amber_stars || 0}
-              min={0}
-              max={selectedItem.available_sub_types.amber_stars}
-              onChange={(event) =>
-                handleSubTypeUpdate({
-                  amber_stars: Number(event),
-                  cyan_stars: selectedItem.available_sub_types?.cyan_stars ? selectedItem.sub_type?.cyan_stars : undefined,
-                })
-              }
-            />
-          )}
-        </Group>
+        <SelectSubType
+          value={selectedItem.sub_type}
+          availableSubTypes={selectedItem.available_sub_types}
+          onChange={(subType) => handleSubTypeUpdate(subType)}
+        />
       )}
     </Group>
   );
