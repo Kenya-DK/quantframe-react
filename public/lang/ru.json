@@ -1,40 +1,2456 @@
 {
+  "months": [
+    "январь",
+    "февраль",
+    "Маршировать",
+    "апрель",
+    "Может",
+    "Июнь",
+    "Июль",
+    "Август",
+    "Сентябрь",
+    "Октябрь",
+    "ноябрь",
+    "декабрь"
+  ],
+  "common": {
+    "not_found": "Не найдено",
+    "buttons": {
+      "save": {
+        "label": "Сохранять"
+      },
+      "delete": {
+        "label": "Удалить"
+      }
+    },
+    "notifications": {
+      "copy_to_clipboard": {
+        "title": "Скопировано в буфер обмена",
+        "message": "{{message}} скопирован в буфер обмена."
+      },
+      "on_trade_event": {
+        "multiple_items": {
+          "title": "Сделка с {{player_name}} не обработана",
+          "message": "Сделка с {{player_name}} не обработана из-за нескольких товаров."
+        },
+        "no_valid_items": {
+          "title": "Сделка с {{player_name}} не обработана",
+          "message": "Сделка с {{player_name}} не обработана из-за отсутствия действительных товаров."
+        },
+        "success": {
+          "title": "Торговля с {{player_name}} завершена",
+          "message": "<blue>{{item_name}}</blue> X<blue>{{quantity}}</blue> <blue>{{trade_type}}</blue> Для {{platinum}}p"
+        }
+      },
+      "warframe_gdpr_data_loaded": {
+        "success": {
+          "title": "Данные GDPR Warframe загружены",
+          "message": "Сделки: {{trades}}, Логины: {{logins}}, Покупки: {{purchases}}, Сделки: {{transactions}}"
+        }
+      },
+      "log_export": {
+        "error": {
+          "title": "Ошибка экспорта журнала",
+          "message": "Произошла ошибка при попытке экспорта журналов."
+        },
+        "success": {
+          "title": "Журнал успеха экспорта",
+          "message": "Журналы успешно экспортированы в {{path}}."
+        }
+      },
+      "create_stock_item": {
+        "error": {
+          "title": "Создать ошибку запаса",
+          "message": "Произошла ошибка при попытке создать запас."
+        },
+        "success": {
+          "title": "Создать фондовый успех",
+          "message": "Товар на складе {{name}} успешно создан."
+        }
+      },
+      "update_stock_item": {
+        "error": {
+          "title": "Ошибка обновления запаса",
+          "title_multiple": "Ошибка обновления запаса",
+          "message": "Произошла ошибка при попытке обновить сток.",
+          "message_multiple": "Произошла ошибка при попытке обновить несколько позиций на складе."
+        },
+        "success": {
+          "title": "Обновить успех акций",
+          "title_multiple": "Обновить успех акций",
+          "message": "Товар на складе {{name}} успешно обновлен.",
+          "message_multiple": "{{count}} позиции на складе успешно обновлены."
+        }
+      },
+      "delete_stock_item": {
+        "error": {
+          "title": "Удалить ошибку запаса",
+          "title_multiple": "Удалить ошибку запаса",
+          "message": "Произошла ошибка при попытке удалить акцию.",
+          "message_multiple": "Произошла ошибка при попытке удалить несколько позиций на складе."
+        },
+        "success": {
+          "title": "Удалить успех акции",
+          "title_multiple": "Удалить успех акции",
+          "message": "Товар на складе {{name}} успешно удален.",
+          "message_multiple": "{{count}} позиций на складе были успешно удалены."
+        }
+      },
+      "sell_stock_item": {
+        "error": {
+          "title": "Ошибка продажи акций",
+          "message": "Произошла ошибка при попытке продать акции."
+        },
+        "success": {
+          "title": "Продать акции Успех",
+          "message": "Товар на складе {{name}} успешно продан."
+        }
+      },
+      "create_stock_riven": {
+        "error": {
+          "title": "Создать ошибку запаса",
+          "message": "Произошла ошибка при попытке создать запас."
+        },
+        "success": {
+          "title": "Создать фондовый успех",
+          "message": "Товар на складе {{name}} успешно создан."
+        }
+      },
+      "update_stock_riven": {
+        "error": {
+          "title": "Ошибка обновления запаса",
+          "title_multiple": "Ошибка обновления запаса",
+          "message": "Произошла ошибка при попытке обновить сток.",
+          "message_multiple": "Произошла ошибка при попытке обновить несколько позиций на складе."
+        },
+        "success": {
+          "title": "Обновить успех акций",
+          "title_multiple": "Обновить успех акций",
+          "message": "Товар на складе {{name}} успешно обновлен.",
+          "message_multiple": "{{count}} позиции на складе успешно обновлены."
+        }
+      },
+      "delete_stock_riven": {
+        "error": {
+          "title": "Удалить ошибку запаса",
+          "title_multiple": "Удалить ошибку запаса",
+          "message": "Произошла ошибка при попытке удалить акцию.",
+          "message_multiple": "Произошла ошибка при попытке удалить несколько позиций на складе."
+        },
+        "success": {
+          "title": "Удалить успех акции",
+          "title_multiple": "Удалить успех акции",
+          "message": "Стандартный ривен {{name}} успешно удален.",
+          "message_multiple": "{{count}} стандартные расколы успешно удалены."
+        }
+      },
+      "delete_transaction": {
+        "error": {
+          "title": "Удалить ошибку транзакции",
+          "title_multiple": "Удалить ошибку транзакции",
+          "message": "Произошла ошибка при попытке удалить транзакцию.",
+          "message_multiple": "Произошла ошибка при попытке удалить несколько транзакций."
+        },
+        "success": {
+          "title": "Удалить успешную транзакцию",
+          "title_multiple": "Удалить успешную транзакцию",
+          "message": "Транзакция {{name}} успешно удалена.",
+          "message_multiple": "Транзакции {{count}} успешно удалены."
+        }
+      },
+      "sell_stock_riven": {
+        "error": {
+          "title": "Ошибка продажи акций",
+          "message": "Произошла ошибка при попытке продать акции."
+        },
+        "success": {
+          "title": "Продать акции Успех",
+          "message": "Товар на складе {{name}} успешно продан."
+        }
+      },
+      "create_wish_list": {
+        "error": {
+          "title": "Ошибка создания списка желаний",
+          "message": "Произошла ошибка при попытке создать список желаний."
+        },
+        "success": {
+          "title": "Создать список желаний Успеха",
+          "message": "Список желаний успешно создан."
+        }
+      },
+      "update_wish_list": {
+        "error": {
+          "title": "Ошибка обновления списка желаний",
+          "title_multiple": "Ошибка обновления списка желаний",
+          "message": "Произошла ошибка при попытке обновить список желаний.",
+          "message_multiple": "Произошла ошибка при попытке обновить несколько списков желаний."
+        },
+        "success": {
+          "title": "Обновить список желаний успешно",
+          "title_multiple": "Обновить список желаний успешно",
+          "message": "Список желаний успешно обновлен.",
+          "message_multiple": "Списки желаний {{count}} успешно обновлены."
+        }
+      },
+      "delete_wish_list": {
+        "error": {
+          "title": "Ошибка удаления списка желаний",
+          "title_multiple": "Ошибка удаления списка желаний",
+          "message": "Произошла ошибка при попытке удалить список желаний.",
+          "message_multiple": "Произошла ошибка при попытке удалить несколько списков желаний."
+        },
+        "success": {
+          "title": "Удалить список желаний успешно",
+          "title_multiple": "Удалить список желаний успешно",
+          "message": "Список желаний успешно удален.",
+          "message_multiple": "Списки желаний {{count}} успешно удалены."
+        }
+      },
+      "bought_wish_list": {
+        "error": {
+          "title": "Куплено Ошибка списка желаний",
+          "message": "Произошла ошибка при попытке пометить список желаний как купленный."
+        },
+        "success": {
+          "title": "Купил Список желаний Успех",
+          "message": "Список желаний успешно помечен как купленный."
+        }
+      },
+      "delete_chat": {
+        "error": {
+          "title": "Удалить ошибку чата",
+          "message": "Произошла ошибка при попытке удалить чат."
+        },
+        "success": {
+          "title": "Удалить успех чата",
+          "message": "Чат успешно удален."
+        }
+      },
+      "export_data": {
+        "error": {
+          "title": "Ошибка экспорта данных",
+          "message": "Произошла ошибка при попытке экспорта данных."
+        },
+        "success": {
+          "title": "Успешный экспорт данных",
+          "message": "Данные успешно экспортированы в {{path}}."
+        }
+      },
+      "no_updates_available": {
+        "title": "Нет доступных обновлений",
+        "message": "Вы уже используете последнюю версию."
+      },
+      "update_settings": {
+        "error": {
+          "title": "Ошибка обновления настроек",
+          "message": "Произошла ошибка при попытке обновить настройки: \n{{message}}"
+        },
+        "success": {
+          "title": "Обновление настроек выполнено успешно",
+          "message": "Настройки успешно обновлены"
+        }
+      },
+      "create_trade_entry": {
+        "error": {
+          "title": "Создать ошибку входа в сделку",
+          "title_multiple": "Создать ошибку входа в сделку",
+          "message": "Произошла ошибка при попытке создать торговую запись.",
+          "message_multiple": "Произошла ошибка при попытке создать несколько торговых записей."
+        },
+        "success": {
+          "title": "Создать успешный вход в сделку",
+          "title_multiple": "Создать успешный вход в сделку",
+          "message": "Торговая запись {{name}} успешно создана.",
+          "message_multiple": "{{count}} торговые записи успешно созданы."
+        }
+      },
+      "update_trade_entry": {
+        "error": {
+          "title": "Обновить ошибку ввода сделки",
+          "title_multiple": "Обновить ошибку ввода сделки",
+          "message": "Произошла ошибка при попытке обновить запись сделки.",
+          "message_multiple": "Произошла ошибка при попытке обновить несколько торговых записей."
+        },
+        "success": {
+          "title": "Обновить успех входа в сделку",
+          "title_multiple": "Обновить успех входа в сделку",
+          "message": "Торговая запись {{name}} успешно обновлена.",
+          "message_multiple": "{{count}} торговые записи успешно обновлены."
+        }
+      },
+      "delete_trade_entry": {
+        "error": {
+          "title": "Удалить ошибку ввода сделки",
+          "title_multiple": "Удалить ошибку ввода сделки",
+          "message": "Произошла ошибка при попытке удалить торговую запись.",
+          "message_multiple": "Произошла ошибка при попытке удалить несколько торговых записей."
+        },
+        "success": {
+          "title": "Удалить успешную запись сделки",
+          "title_multiple": "Удалить успешную запись сделки",
+          "message": "Торговая запись {{name}} успешно удалена.",
+          "message_multiple": "{{count}} торговые записи были успешно удалены."
+        }
+      },
+      "create_trade_msg_template": {
+        "error": {
+          "title": "Ошибка создания шаблона",
+          "message": "Произошла ошибка при попытке создать шаблон торгового сообщения."
+        },
+        "success": {
+          "title": "Успех создания шаблона",
+          "message": "Шаблон торгового сообщения успешно создан."
+        }
+      },
+      "delete_trade_msg_template": {
+        "error": {
+          "title": "Ошибка удаления шаблона",
+          "message": "Произошла ошибка при попытке удалить шаблон торгового сообщения."
+        },
+        "success": {
+          "title": "Удалить шаблон успешно",
+          "message": "Шаблон торгового сообщения успешно удален."
+        }
+      },
+      "update_transaction": {
+        "error": {
+          "title": "Обновить ошибку транзакции",
+          "message": "Произошла ошибка при попытке обновить транзакцию."
+        },
+        "success": {
+          "title": "Обновить успех транзакции",
+          "message": "Транзакция успешно обновлена."
+        }
+      },
+      "processed_multiple_items": {
+        "error": {
+          "title": "Ошибка обработки нескольких элементов",
+          "message": "Произошла ошибка при попытке обработать несколько элементов."
+        },
+        "success": {
+          "title": "Успешно обработано несколько элементов",
+          "message": "{{count}} элементов успешно обработано."
+        }
+      },
+      "calculate_tax_all_transactions": {
+        "error": {
+          "title": "Рассчитать налоговую ошибку",
+          "message": "Произошла ошибка при попытке расчета налога для транзакций."
+        },
+        "success": {
+          "title": "Рассчитать налоговый успех",
+          "message": "Налог по транзакциям успешно рассчитан."
+        }
+      },
+      "delete_order": {
+        "error": {
+          "title": "Удалить ошибку заказа",
+          "message": "Произошла ошибка при попытке удалить заказ."
+        },
+        "success": {
+          "title": "Удалить успешный заказ",
+          "message": "Заказ успешно удален."
+        }
+      },
+      "delete_all_orders": {
+        "error": {
+          "title": "Ошибка удаления всех заказов",
+          "message": "Произошла ошибка при попытке удалить все заказы."
+        },
+        "success": {
+          "title": "Удалить все заказы успешно",
+          "message": "Все заказы успешно удалены."
+        }
+      },
+      "refresh_orders": {
+        "error": {
+          "title": "Ошибка обновления заказов",
+          "message": "Произошла ошибка при попытке обновить заказы."
+        },
+        "success": {
+          "title": "Обновить заказы успешно",
+          "message": "Заказы успешно обновлены."
+        }
+      },
+      "delete_auction": {
+        "error": {
+          "title": "Удалить ошибку аукциона",
+          "message": "Произошла ошибка при попытке удалить аукцион."
+        },
+        "success": {
+          "title": "Удалить успех аукциона",
+          "message": "Аукцион успешно удален."
+        }
+      },
+      "delete_all_auctions": {
+        "error": {
+          "title": "Ошибка удаления всех аукционов",
+          "message": "Произошла ошибка при попытке удалить все аукционы."
+        },
+        "success": {
+          "title": "Удалить все успешные аукционы",
+          "message": "Все аукционы успешно удалены."
+        }
+      },
+      "refresh_auctions": {
+        "error": {
+          "title": "Ошибка обновления аукционов",
+          "message": "Произошла ошибка при попытке обновить аукционы."
+        },
+        "success": {
+          "title": "Обновить успех аукционов",
+          "message": "Аукционы успешно обновлены."
+        }
+      }
+    },
+    "datatable_columns": {
+      "list_price": "Внесен в список",
+      "maximum_price": {
+        "title": "Максимальная цена",
+        "value": "{{maximum_price}} ({{currency}})",
+        "edit_tooltip": "Изменить максимальную цену"
+      },
+      "minimum_price": {
+        "title": "Минимальная цена",
+        "value": "{{minimum_price}} ({{currency}})",
+        "edit_tooltip": "Изменить минимальную цену"
+      },
+      "actions": {
+        "title": "Действия",
+        "buttons": {
+          "manual_tooltip": "Продавать вручную",
+          "auto_tooltip": "Продать по списку",
+          "bought_manual_tooltip": "Отметить как купленное",
+          "bought_auto_tooltip": "Купил по заявленной цене",
+          "hide": {
+            "disabled_tooltip": "Показывать",
+            "enabled_tooltip": "Скрывать"
+          },
+          "info_tooltip": "Информация",
+          "delete_tooltip": "Удалить",
+          "edit_tooltip": "Редактировать",
+          "open_filter_tooltip": "Открыть фильтр"
+        }
+      },
+      "quantity": {
+        "title": "Количество"
+      },
+      "volume": {
+        "title": "Объем"
+      }
+    },
+    "item_name": {
+      "title": "Имя",
+      "value": "{{name}} {{quantity}} <blue>{{sub_type}}</blue>"
+    },
+    "pagination_total_items": "{{start}} - {{end}} / {{total}}",
+    "prompts": {
+      "delete_item": {
+        "title": "Вы уверены?",
+        "message": "Это действие невозможно отменить.",
+        "cancel": "Отмена",
+        "confirm": "Подтверждать"
+      },
+      "delete_multiple_items": {
+        "title": "Вы уверены?",
+        "message": "Вы уверены, что хотите удалить эти элементы {{count}}? Это действие невозможно отменить.",
+        "cancel": "Отмена",
+        "confirm": "Подтверждать"
+      },
+      "sell_manual": {
+        "title": "Продано за",
+        "fields": {
+          "sell": {
+            "label": "Цена"
+          },
+          "quantity": {
+            "label": "Количество"
+          }
+        }
+      },
+      "bought_manual": {
+        "title": "Купил за",
+        "fields": {
+          "bought": {
+            "label": "Цена"
+          },
+          "quantity": {
+            "label": "Количество"
+          }
+        }
+      },
+      "minimum_price": {
+        "title": "Минимальная цена",
+        "fields": {
+          "minimum_price": {
+            "label": "Минимальная цена",
+            "description": "Минимальная цена за товар"
+          }
+        }
+      },
+      "maximum_price": {
+        "title": "Максимальная цена",
+        "fields": {
+          "maximum_price": {
+            "label": "Максимальная цена",
+            "description": "Максимальная цена за товар"
+          }
+        }
+      },
+      "save": {
+        "title": "Сохранять",
+        "fields": {
+          "name": {
+            "label": "Имя"
+          }
+        }
+      }
+    },
+    "sort_by": {
+      "created_at": "Создано в",
+      "platinum": "Платина",
+      "updated_at": "Обновлено в",
+      "order_type": "Тип заказа",
+      "disposition": "Расположение",
+      "endo": "Эндо",
+      "riven_grade": "Ривен Грейд"
+    }
+  },
+  "enums": {
+    "item_type": {
+      "riven": "Ривен",
+      "item": "Элемент",
+      "details": {
+        "riven": "Ривен",
+        "item": "Элемент"
+      }
+    },
+    "order_type": {
+      "all": "Все заказы",
+      "buy": "Купить Заказать",
+      "sell": "Ордер на продажу",
+      "closed": "Закрытые ордера",
+      "details": {
+        "buy": "Купить",
+        "sell": "Продавать"
+      }
+    },
+    "transaction_type": {
+      "purchase": "Покупка",
+      "sale": "Распродажа",
+      "trade": "Торговля",
+      "details": {
+        "purchase": "Покупка",
+        "sale": "Распродажа",
+        "trade": "Торговля"
+      }
+    },
+    "stock_status": {
+      "pending": "В ожидании",
+      "live": "Жить",
+      "to_low_profit": "Низкая прибыль",
+      "no_sellers": "Нет продавцов",
+      "no_buyers": "Нет покупателей",
+      "inactive": "Неактивный",
+      "sma_limit": "Лимит SMA",
+      "order_limit": "Лимит заказа",
+      "overpriced": "Завышенная цена",
+      "underpriced": "Заниженная цена",
+      "details": {
+        "pending": "Ожидание обработки",
+        "live": "В прямом эфире на Warframe Market",
+        "to_low_profit": "Не был обработан из-за низкой прибыли согласно настройкам",
+        "no_sellers": "Для этого товара продавцы не найдены",
+        "no_buyers": "Покупатели для этого товара не найдены",
+        "inactive": "Неактивен и не будет обработан",
+        "sma_limit": "Ограничено SMA",
+        "order_limit": "Ограничено лимитом заказа",
+        "overpriced": "Завышена цена",
+        "underpriced": "Занижена цена"
+      }
+    },
+    "stock_mode": {
+      "all": "Все",
+      "riven": "Ривен",
+      "item": "Элемент"
+    },
+    "trade_mode": {
+      "buy": "Купить",
+      "sell": "Продавать",
+      "wishlist": "Список желаний"
+    },
+    "user_status": {
+      "online": "Онлайн",
+      "ingame": "В игре",
+      "in_game": "В игре",
+      "invisible": "Оффлайн"
+    },
+    "alert_type": {
+      "info": "Информация",
+      "warning": "Предупреждение",
+      "error": "Ошибка",
+      "success": "Успех"
+    }
+  },
   "context": {
     "app": {
       "starting_up": "Запуск...",
       "database": {
-        "updating_names": "Обновление названий в базе данных, пожалуйста, подождите..."
+        "updating_names_transactions": "Обновление названий элементов транзакции {{progress}}%",
+        "updating_names_stock_items": "Обновление названий позиций на складе {{progress}}%",
+        "updating_names_stock_rivens": "Обновление названий акций {{progress}}%",
+        "updating_names_wish_lists": "Обновление названий списка желаний {{progress}}%",
+        "update_names_completed": "Названия всех предметов обновлены."
       },
       "cache": {
         "initializing": "Инициализация кэша...",
-        "updating": "Обновление кэша...",
-        "item_price_updating": "Обновление цен на предметы..."
+        "updating": "Обновление кеша...",
+        "item_price_updating": "Обновление цен на товары..."
       }
     }
   },
   "components": {
+    "item_component": "<blue>{{name}}</blue> x<blue>{{count}}</blue>",
+    "item_components": "Компоненты предмета",
+    "patreon_overlay": {
+      "title": "Ограниченный контент",
+      "description": "Этот контент предназначен только для сторонников Patreon уровня <blue>{{tier}}</blue> или выше.",
+      "buttons": {
+        "become_a_patron": "Стать покровителем"
+      }
+    },
+    "timer_stamp": {
+      "years": "{{years}} лет назад",
+      "months": "{{months}} месяцев назад",
+      "days": "{{days}} дней назад",
+      "hours": "{{hours}} часов назад",
+      "minutes": "{{minutes}} минут назад",
+      "seconds": "{{seconds}} секунд назад"
+    },
+    "wfm_auction": {
+      "fields": {
+        "selling_price": "Цена продажи: <blue>{{price}}</blue> <plat/>",
+        "left_footer": "<blue>{{mod_rank}}</blue>/<blue>{{max_rank}}</blue> <blue>{{drain}}</blue> <polarity/>",
+        "right_footer": "MR: <blue>{{mastery_level}}</blue> <roll/> <blue>{{re_rolls}}</blue>"
+      }
+    },
+    "live_scraper_control": {
+      "buttons": {
+        "start": "Запустить живой парсер",
+        "stop": "Остановить живой скребок"
+      },
+      "prompts": {
+        "start": {
+          "title": "Предупреждение",
+          "message": "Вы уверены, что хотите начать сбор данных в реальном времени? Это действие приведет к удалению всех заказов, не внесенных в черный список на WFM.",
+          "confirm": "Начинать",
+          "cancel": "Отмена"
+        }
+      },
+      "item": {
+        "checking": "Проверяемый элемент: <blue>{{name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        "deleted": "Удаление ордеров: <blue>{{current}}</blue>/<blue>{{total}}</blue>"
+      },
+      "riven": {
+        "cooldown": "Время восстановления Разлома: осталось <blue>{{seconds}}</blue> секунд.",
+        "checking": "Проверка Ривена: <blue>{{name}}</blue> <blue>{{mod_name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        "rate_limited": "Ограничение скорости: ожидание <blue>{{seconds}}</blue> секунд перед продолжением"
+      }
+    },
+    "searchfield": {
+      "label": "Поиск",
+      "placeholder": "Поиск...",
+      "buttons": {
+        "filter": {
+          "tooltip": "Фильтр"
+        },
+        "search": {
+          "tooltip": "Поиск"
+        },
+        "create": {
+          "tooltip": "Создавать"
+        }
+      }
+    },
+    "user_menu": {
+      "items": {
+        "app_label": "Приложение",
+        "settings": "Настройки",
+        "logout": "Выход из системы"
+      },
+      "errors": {
+        "logout": {
+          "title": "Ошибка выхода",
+          "message": "Произошла ошибка при попытке выйти из системы."
+        }
+      },
+      "success": {
+        "logout": {
+          "title": "Выход из системы успешный",
+          "message": "Вы успешно вышли из системы."
+        }
+      },
+      "prompts": {
+        "logout": {
+          "title": "Подтвердить выход",
+          "message": "Вы уверены, что хотите выйти?",
+          "confirm": "Да",
+          "cancel": "Нет"
+        }
+      }
+    },
     "clock": {
-      "gmt": "GMT: <blue>{{time}}</blue>",
+      "gmt": "Время по Гринвичу: <blue>{{time}}</blue>",
       "time_until_midnight": "Время до полуночи (GMT): <blue>{{time}}</blue>"
     },
-    "forms": {
+    "layout": {
       "log_in": {
-        "title": "Warframe Market - Вход",
-        "register": "Нет аккаунта? Зарегистрируйтесь",
+        "navbar": {
+          "home": "Дом",
+          "debug": "Отлаживать",
+          "live_scraper": "Живой скребок",
+          "warframe_market": "Рынок Варфреймов",
+          "trading_analytics": "Торговая аналитика",
+          "trade_messages": "Торговые сообщения",
+          "chat": "Чат",
+          "wf_inventory": "Инвентарь ВФ",
+          "about": "О"
+        }
+      }
+    },
+    "select_item_tags": {
+      "tags": {
+        "label": "Теги",
+        "description": "Выберите теги для фильтрации элементов"
+      }
+    },
+    "theme_editor": {
+      "chart_styles": {
+        "title": "Стили диаграмм",
+        "fields": {
+          "bgColor": "Цвет фона",
+          "lineColor": "Цвет линии",
+          "lastYearLineColor": "Цвет линии прошлого года",
+          "currentYearLineColor": "Цвет линии текущего года"
+        },
+        "total": "Общий",
+        "today": "Сегодня",
+        "last_days": "Последние 7 дней"
+      },
+      "color_palettes": {
+        "title": "Цветовые палитры",
+        "base_colors": "Базовые цвета",
+        "stock_status": "Статус запасов",
+        "user_status": "Статус пользователя",
+        "alert_type": "Тип оповещения",
+        "transaction_type": "Тип транзакции",
+        "item_type": "Тип элемента",
+        "logo_color": "Цвет логотипа",
+        "positive": "Позитивный",
+        "negative": "Отрицательный",
+        "profit": "Выгода"
+      },
+      "sharing": {
+        "title": "Совместное использование"
+      },
+      "buttons": {
+        "copy_to_clipboard": "Копировать в буфер обмена",
+        "import_from_clipboard": "Импорт из буфера обмена",
+        "open_themes_folder": "Открыть папку тем"
+      },
+      "fields": {
+        "export_name": {
+          "label": "Имя",
+          "placeholder": "Введите название темы",
+          "error": "Неверное название темы"
+        },
+        "export_author": {
+          "label": "Автор",
+          "placeholder": "Введите имя автора",
+          "error": "Неверное имя автора",
+          "tooltip": "Создавать"
+        }
+      },
+      "export_success": {
+        "title": "Успех экспорта темы",
+        "message": "Тема успешно экспортирована."
+      },
+      "export_error": {
+        "title": "Ошибка экспорта темы",
+        "message": "Произошла ошибка при экспорте темы: {{error}}."
+      }
+    },
+    "forms": {
+      "update_transaction": {
+        "buttons": {
+          "hide_properties": {
+            "label": "Скрыть свойства"
+          },
+          "show_properties": {
+            "label": "Показать свойства"
+          }
+        },
+        "fields": {
+          "price": {
+            "label": "Цена",
+            "placeholder": "Введите цену",
+            "description": "Цена сделки в платине."
+          },
+          "quantity": {
+            "label": "Количество",
+            "placeholder": "Введите количество",
+            "description": "Количество продаваемого предмета."
+          },
+          "user_name": {
+            "label": "Имя пользователя",
+            "placeholder": "Введите имя пользователя",
+            "description": "Имя пользователя, связанное с транзакцией."
+          },
+          "created_at": {
+            "label": "Дата создания",
+            "placeholder": "Выберите дату",
+            "description": "Дата сделки."
+          },
+          "properties": {
+            "label": "Характеристики",
+            "placeholder": "Введите свойства",
+            "description": "Дополнительные свойства транзакции."
+          }
+        }
+      },
+      "generic_item_list": {
+        "add_all_tooltip": "Добавить все элементы"
+      },
+      "edit_notification_setting": {
+        "discord": {
+          "tooltip": "Переключить уведомления Discord",
+          "title": "Уведомления о разногласиях",
+          "fields": {
+            "webhook": {
+              "label": "URL вебхука",
+              "placeholder": "Введите URL вебхука Discord"
+            },
+            "content": {
+              "label": "Содержание",
+              "placeholder": "Введите содержание уведомления",
+              "reset_button": "Сбросить настройки по умолчанию"
+            },
+            "user_ids": {
+              "label": "Идентификаторы пользователей",
+              "placeholder": "Введите идентификаторы пользователей (через запятую)",
+              "description": "Укажите идентификаторы пользователей для получения уведомлений"
+            }
+          }
+        },
+        "system": {
+          "tooltip": "Переключить системные уведомления",
+          "title": "Системные уведомления",
+          "fields": {
+            "title": {
+              "label": "Заголовок",
+              "placeholder": "Введите заголовок уведомления"
+            },
+            "content": {
+              "label": "Содержание",
+              "placeholder": "Введите содержание уведомления"
+            },
+            "sound": {
+              "label": "Звук",
+              "placeholder": "Выберите звук уведомления",
+              "play_tooltip": "Воспроизвести звук",
+              "options": {
+                "none": "Никто",
+                "cat_meow": "Кошачье мяу",
+                "windows_xp_error": "Ошибка Windows XP",
+                "windows_xp_startup": "Запуск Windows XP",
+                "iphone_notification": "Дерьмовое уведомление по телефону",
+                "windows_notification": "Уведомление Windows"
+              }
+            },
+            "volume": {
+              "label": "Объем",
+              "placeholder": "Установить уровень громкости"
+            }
+          }
+        },
+        "webhook": {
+          "tooltip": "Переключить уведомления веб-перехватчика",
+          "title": "Уведомления вебхука",
+          "fields": {
+            "url": {
+              "label": "URL вебхука",
+              "placeholder": "Введите URL вебхука"
+            }
+          }
+        },
+        "manage_sounds": {
+          "title": "Добавить собственный звук",
+          "buttons": {
+            "manage": "Управление звуками",
+            "back": "Возвращаться"
+          },
+          "fields": {
+            "name": {
+              "label": "Название звука",
+              "placeholder": "Название звука"
+            },
+            "file": {
+              "label": "Звуковой файл",
+              "placeholder": "Выберите файл"
+            }
+          },
+          "tooltips": {
+            "add_sound": "Добавить звук",
+            "play": "Играть",
+            "delete": "Удалить"
+          },
+          "notifications": {
+            "add_error": {
+              "title": "Добавить звуковую ошибку",
+              "message": "Произошла ошибка при попытке добавить звук."
+            },
+            "delete_error": {
+              "title": "Удалить звуковую ошибку",
+              "message": "Произошла ошибка при попытке удалить звук."
+            }
+          },
+          "table": {
+            "columns": {
+              "name": "Имя",
+              "file_name": "Имя файла",
+              "actions": "Действия"
+            }
+          },
+          "dialog": {
+            "delete": {
+              "title": "Удалить {{name}}",
+              "message": "Вы уверены, что хотите удалить этот звук? Это действие невозможно отменить.",
+              "confirm": "Удалить",
+              "cancel": "Отмена"
+            }
+          },
+          "file_picker": {
+            "filter_name": "Аудио"
+          }
+        }
+      },
+      "riven_filter_attribute": {
+        "fields": {
+          "is_required": {
+            "tooltip": "Требуется"
+          }
+        }
+      },
+      "riven_filter": {
+        "fields": {
+          "enabled": {
+            "label": "Включено"
+          },
+          "similarity": {
+            "label": "Сходство"
+          },
+          "rank": {
+            "label": "Классифицировать"
+          },
+          "mastery_rank": {
+            "label": "Ранг мастерства"
+          },
+          "required_negative": {
+            "label": "Требуется отрицательный"
+          },
+          "re_rolls": {
+            "label": "Рероллы"
+          }
+        },
+        "buttons": {
+          "save": {
+            "label": "Сохранять"
+          }
+        }
+      },
+      "create_riven_attributes": {
+        "fields": {
+          "positive": {
+            "title": "Положительные качества",
+            "add": "Добавлять"
+          },
+          "negative": {
+            "title": "Отрицательные атрибуты"
+          }
+        },
+        "buttons": {
+          "add": "+ Добавить"
+        }
+      },
+      "create_riven_attribute": {
+        "fields": {
+          "value": {
+            "error": "Недопустимое значение"
+          }
+        },
+        "buttons": {
+          "remove": "Удалять"
+        }
+      },
+      "create_riven": {
+        "buttons": {
+          "submit": {
+            "label": "Создавать"
+          }
+        },
+        "fields": {
+          "mastery_rank": {
+            "label": "Ранг мастерства",
+            "placeholder": "8",
+            "error": "Неверный ранг мастерства"
+          },
+          "re_rolls": {
+            "label": "Рероллы",
+            "placeholder": "0",
+            "error": "Неверные повторы"
+          },
+          "rank": {
+            "label": "Классифицировать",
+            "placeholder": "0",
+            "error": "Неверный ранг"
+          },
+          "polarity": {
+            "label": "Полярность",
+            "error": "Неверная полярность"
+          },
+          "weapon": {
+            "label": "Название оружия",
+            "placeholder": "Оружие",
+            "error": "Неверное оружие"
+          },
+          "bought": {
+            "label": "Купил",
+            "placeholder": "Купил",
+            "error": "Недействительная покупка"
+          },
+          "attributes": {
+            "label": "Атрибуты",
+            "error": "Ривен должен иметь как минимум 2 положительных атрибута."
+          },
+          "attribute": {
+            "label": "Атрибут",
+            "error": "Значения атрибутов не могут быть равны 0."
+          },
+          "mod_name": {
+            "label": "Имя мода",
+            "placeholder": "Имя мода",
+            "error": "Неверное название мода"
+          }
+        }
+      },
+      "debugging_live_item_entry": {
+        "fields": {
+          "wfm_url": {
+            "label": "Элемент",
+            "placeholder": "Выбрать элемент...",
+            "error": "Пожалуйста, выберите элемент"
+          },
+          "stock_id": {
+            "label": "Идентификатор акции",
+            "placeholder": "Введите идентификатор акции...",
+            "error": "Неверный идентификатор акции"
+          },
+          "wish_list_id": {
+            "label": "Идентификатор списка желаний",
+            "placeholder": "Введите идентификатор списка желаний...",
+            "error": "Неверный идентификатор списка желаний"
+          },
+          "priority": {
+            "label": "Приоритет",
+            "placeholder": "Введите приоритет...",
+            "error": "Приоритет должен быть 0 или выше."
+          },
+          "buy_quantity": {
+            "label": "Купить количество",
+            "placeholder": "Введите количество покупки...",
+            "error": "Количество покупки должно быть 0 или больше."
+          },
+          "sell_quantity": {
+            "label": "Продать количество",
+            "placeholder": "Введите количество продажи...",
+            "error": "Количество продаж должно быть 0 или больше."
+          },
+          "operation": {
+            "label": "Операции",
+            "placeholder": "Выберите операции...",
+            "error": "Пожалуйста, выберите хотя бы одну операцию"
+          }
+        },
+        "buttons": {
+          "add": {
+            "tooltip": "Добавить запись об отладочном элементе в реальном времени"
+          }
+        }
+      },
+      "create_category_summary": {
+        "fields": {
+          "icon": {
+            "label": "Икона",
+            "placeholder": "Икона",
+            "description": "Значок категории",
+            "tooltip": "Значок категории",
+            "error": "Неверный значок"
+          },
+          "name": {
+            "label": "Имя",
+            "placeholder": "Имя",
+            "description": "Название категории",
+            "tooltip": "Название категории",
+            "error": "Неверное имя"
+          },
+          "types": {
+            "label": "Типы",
+            "description": "Типы для категории"
+          }
+        },
+        "buttons": {
+          "submit": {
+            "label": "Создать/Сохранить категорию"
+          }
+        }
+      },
+      "select_tradable_item": {
+        "fields": {
+          "item": {
+            "label": "Элемент",
+            "placeholder": "Выбрать элемент..."
+          },
+          "variant": {
+            "label": "Вариант",
+            "placeholder": "Выберите вариант...",
+            "description": "Пожалуйста, выберите вариант"
+          },
+          "rank": {
+            "label": "Классифицировать",
+            "placeholder": "Выберите ранг...",
+            "description": "Пожалуйста, выберите ранг"
+          },
+          "cyan_stars": {
+            "label": "Голубые звезды",
+            "placeholder": "Выберите голубые звезды...",
+            "description": "Сколько голубых звезд"
+          },
+          "amber_stars": {
+            "label": "Янтарные звезды",
+            "placeholder": "Выберите янтарные звезды...",
+            "description": "Сколько янтарных звезд"
+          }
+        },
+        "messages": {
+          "nothing_found": "Элементы не найдены"
+        }
+      },
+      "select_riven_weapon": {
+        "fields": {
+          "weapon": {
+            "label": "Оружие",
+            "placeholder": "Выбрать оружие..."
+          }
+        }
+      },
+      "create_item": {
+        "fields": {
+          "quantity": {
+            "label": "Количество",
+            "placeholder": "Количество",
+            "error": "Неверное количество"
+          },
+          "bought": {
+            "label": "Купил",
+            "placeholder": "Купил",
+            "error": "Недействительная покупка"
+          }
+        },
+        "buttons": {
+          "add": {
+            "tooltip": {
+              "description_with_report": "Добавьте предмет на склад и сообщите об этом в Warframe Market.",
+              "description_without_report": "Добавить товар на склад"
+            }
+          }
+        }
+      },
+      "log_in": {
+        "title": "Warframe Market - Войти",
+        "register": "У вас нет учетной записи? Зарегистрироваться",
         "fields": {
           "email": {
-            "label": "Email",
-            "placeholder": "Email",
-            "error": "Некорректный email"
+            "label": "Электронная почта",
+            "placeholder": "Электронная почта",
+            "error": "Неверный адрес электронной почты"
           },
           "password": {
             "label": "Пароль",
             "placeholder": "Пароль",
-            "error": "Пароль должен содержать минимум 6 символов"
+            "error": "Пароль должен содержать не менее 6 символов"
           }
         },
         "buttons": {
-          "submit": "Войти"
+          "submit": "Авторизоваться"
+        }
+      },
+      "settings": {
+        "tabs": {
+          "general": {
+            "title": "Общий",
+            "fields": {
+              "language": {
+                "label": "Язык",
+                "placeholder": "Выберите язык",
+                "error": "Неверный язык"
+              }
+            }
+          },
+          "themes": {
+            "title": "Темы",
+            "community_themes": "Темы сообщества",
+            "get_more_out_of_themes": "Получите больше от тем с помощью редактора тем. Нажмите здесь.",
+            "theme_configuration": "Конфигурация темы"
+          },
+          "notifications": {
+            "title": "Уведомления",
+            "on_new_conversation_title": "При новом разговоре",
+            "on_new_trade_title": "О новой торговле",
+            "on_wfm_chat_message_title": "В сообщении чата WFM"
+          },
+          "advanced": {
+            "title": "Передовой",
+            "fields": {
+              "wf_log_path": {
+                "label": "Путь к журналу Warframe",
+                "placeholder": "Путь к журналу Warframe по умолчанию",
+                "errors": {
+                  "not_exists": "Указанный путь не существует."
+                },
+                "tooltip": "Путь к файлу журнала Warframe. оставьте пустым для пути по умолчанию."
+              }
+            },
+            "button_export_logs": "Экспорт журналов"
+          },
+          "summary": {
+            "title": "Краткое содержание",
+            "fields": {
+              "recent_days": {
+                "label": "Последние дни",
+                "tooltip": "За сколько дней показывать данные"
+              },
+              "recent_transactions": {
+                "label": "Недавние транзакции",
+                "tooltip": "Сколько транзакций показывать"
+              }
+            },
+            "datatable": {
+              "columns": {
+                "name": "Имя",
+                "tags": "Теги",
+                "types": "Типы",
+                "actions": {
+                  "title": "Действия",
+                  "buttons": {
+                    "edit": {
+                      "tooltip": "Редактировать элемент"
+                    },
+                    "delete": {
+                      "tooltip": "Удалить элемент"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "live_scraper": {
+            "title": "Живой скребок",
+            "general": {
+              "title": "Общий",
+              "fields": {
+                "auto_trade": {
+                  "label": "Авто Трейд",
+                  "error": "Неверная автоматическая сделка",
+                  "tooltip": "Автоматически добавлять/продавать акции, если это правда"
+                },
+                "auto_delete": {
+                  "label": "Автоматическое удаление",
+                  "error": "Неверное автоматическое удаление",
+                  "tooltip": "Автоматически удалять товары со склада"
+                },
+                "should_delete_other_types": {
+                  "label": "Следует удалить другие типы сделок",
+                  "error": "Недействительно, следует удалить другие типы сделок.",
+                  "tooltip": "Будут удаляться другие типы сделок, если это правда. Пример: если покупка включена, будут удалены элементы продажи/списка желаний, если они не занесены в черный список."
+                },
+                "report_to_wfm": {
+                  "label": "Сообщите в Warframe Market",
+                  "error": "Неверный отчет для Warframe Market",
+                  "tooltip": "Добавит транзакцию в Warframe Market."
+                },
+                "trade_modes": {
+                  "label": "Режим торговли",
+                  "description": "Выберите режимы торговли",
+                  "error": "Неверный режим торговли"
+                },
+                "stock_mode": {
+                  "label": "Стандартный режим",
+                  "description": {
+                    "all": "Пройду все",
+                    "riven": "Пройду только через разломы",
+                    "item": "Пройдусь только по пунктам"
+                  },
+                  "placeholder": "Стандартный режим",
+                  "error": "Неверный стандартный режим"
+                }
+              },
+              "columns": {
+                "name": "Имя",
+                "maximum_price": "Максимальная цена"
+              },
+              "buttons": {
+                "edit_blacklist_label": "Редактировать черный список {{count}}",
+                "edit_buy_list_label": "Редактировать список покупок {{count}}"
+              },
+              "black_list": {
+                "available_items_label": "Доступные предметы",
+                "selected_items_label": "Предметы из черного списка",
+                "name_title": "Имя",
+                "trade_tax_title": "Торговый налог",
+                "trade_tax_label": "Торговый налог {{min}} - {{max}}",
+                "mr_requirement_label": "Требование MR {{min}} - {{max}}",
+                "mr_requirement_title": "Требование к МРТ",
+                "disabled_for_title": "Отключено для",
+                "go_back_label": "Возвращаться",
+                "set_trade_modes_tooltip": "Установить выбранные в данный момент режимы торговли {{modes}}",
+                "no_trade_selected": "Режимы торговли не выбраны. Выберите хотя бы один режим торговли."
+              }
+            },
+            "item": {
+              "title": "Товар на складе",
+              "wtb": {
+                "title": "ВТБ",
+                "fields": {
+                  "volume_threshold": {
+                    "label": "Порог громкости",
+                    "placeholder": "Порог громкости",
+                    "error": "Неверный порог громкости",
+                    "tooltip": "Минимальный объем, который следует учитывать для торговли",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#volume-threshold"
+                  },
+                  "profit_threshold": {
+                    "label": "Порог прибыли",
+                    "placeholder": "Порог прибыли",
+                    "error": "Неверный порог прибыли",
+                    "tooltip": "Минимальная прибыль, которую следует учитывать при торговле",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#profit-threshold"
+                  },
+                  "avg_price_cap": {
+                    "label": "Предел средней цены",
+                    "placeholder": "Предел средней цены",
+                    "error": "Недопустимый верхний предел средней цены.",
+                    "tooltip": "Максимальная средняя цена, которую следует учитывать при торговле",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#average-price-cap"
+                  },
+                  "trading_tax_cap": {
+                    "label": "Торговый налоговый лимит",
+                    "placeholder": "Торговый налоговый лимит",
+                    "error": "Неверный верхний предел торгового налога",
+                    "tooltip": "Максимальный налог, который следует учитывать при торговле",
+                    "link": "https://example.com/trading-tax-cap"
+                  },
+                  "max_total_price_cap": {
+                    "label": "Максимальный предел общей цены",
+                    "placeholder": "Максимальный предел общей цены",
+                    "error": "Недопустимое максимальное ограничение общей цены.",
+                    "tooltip": "Максимальная общая цена, которую следует учитывать при торговле -1 без ограничений",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#max-total-price-cap"
+                  },
+                  "price_shift_threshold": {
+                    "label": "Порог ценового сдвига",
+                    "placeholder": "Порог ценового сдвига",
+                    "error": "Неверный порог изменения цены.",
+                    "tooltip": "Минимальный сдвиг цены, который следует учитывать при торговле",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#price-shift-threshold"
+                  },
+                  "buy_quantity": {
+                    "label": "Количество товаров",
+                    "placeholder": "Количество товаров",
+                    "error": "Неверное количество товара",
+                    "tooltip": "Количество товара для покупки",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#quantity-of-goods"
+                  },
+                  "min_wtb_profit_margin": {
+                    "label": "Порог прибыли",
+                    "placeholder": "Порог прибыли",
+                    "error": "Неверный порог размера прибыли",
+                    "tooltip": "Минимальная прибыль для сделок WTB",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#profit-margin-threshold"
+                  },
+                  "quantity_per_trade": {
+                    "label": "Количество в сделке",
+                    "placeholder": "Количество в сделке",
+                    "error": "Недопустимое количество в сделке",
+                    "tooltip": "Количество товаров для торговли за транзакцию: ПРИМЕЧАНИЕ. Это справедливо только для некоторых предметов, таких как арканы.",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#quantity-per-trade"
+                  },
+                  "max_stock_quantity": {
+                    "label": "Максимальное количество запасов",
+                    "placeholder": "Максимальное количество запасов",
+                    "error": "Неверное максимальное количество запасов",
+                    "tooltip": "Максимальное количество товара, которое должно быть на складе до прекращения создания заказа WTB. Установите значение -1, чтобы отключить эту функцию.",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#max-stock-quantity"
+                  },
+                  "wts": {
+                    "title": "WTS",
+                    "fields": {}
+                  }
+                }
+              },
+              "wts": {
+                "title": "WTS",
+                "fields": {
+                  "min_sma": {
+                    "label": "Минимальная SMA",
+                    "placeholder": "Минимальная SMA",
+                    "error": "Неверный минимальный SMA",
+                    "tooltip": "Минимальная простая скользящая средняя, ​​которую следует учитывать при торговле",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wts#min-sma"
+                  },
+                  "min_profit": {
+                    "label": "Минимальная прибыль",
+                    "placeholder": "Минимальная прибыль",
+                    "error": "Неверная минимальная прибыль",
+                    "tooltip": "Минимальная прибыль, которую следует учитывать при торговле",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wts#min-profit"
+                  }
+                }
+              },
+              "summary": {
+                "title": "Краткое содержание",
+                "datatable_columns": {
+                  "profit": "Потенциальная прибыль",
+                  "trading_tax": "Торговый налог"
+                },
+                "buttons": {
+                  "show_interesting_wtb_items": "Показать интересные предметы WTB"
+                }
+              }
+            },
+            "riven": {
+              "title": "Сток Ривен",
+              "fields": {
+                "min_profit": {
+                  "label": "Минимальная прибыль",
+                  "placeholder": "Минимальная прибыль",
+                  "error": "Неверная минимальная прибыль",
+                  "tooltip": "Минимальная прибыль, которую следует учитывать при торговле",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#min-profit"
+                },
+                "threshold_percentage": {
+                  "label": "Пороговый процент",
+                  "placeholder": "Пороговый процент",
+                  "error": "Неверный пороговый процент",
+                  "tooltip": "Процентный порог для торговли",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#minimum-price-shift"
+                },
+                "limit_to": {
+                  "label": "Ограничить до",
+                  "placeholder": "Ограничить до",
+                  "error": "Неверный предел",
+                  "tooltip": "Ограничьте количество сделок",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#limit-to"
+                },
+                "update_interval": {
+                  "label": "Интервал обновления (секунды)",
+                  "placeholder": "Интервал обновления",
+                  "error": "Неверный интервал обновления",
+                  "tooltip": "Интервал обновления разорванных сделок",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#update-interval"
+                }
+              }
+            }
+          },
+          "http_server": {
+            "title": "HTTP-сервер",
+            "general": {
+              "title": "Общий",
+              "fields": {
+                "enabled": {
+                  "label": "Включено",
+                  "tooltip": "Включить или отключить HTTP-сервер"
+                },
+                "port": {
+                  "label": "Порт",
+                  "placeholder": "Порт",
+                  "tooltip": "Порт, на котором будет работать HTTP-сервер."
+                },
+                "host": {
+                  "label": "Хозяин",
+                  "placeholder": "Хозяин",
+                  "error": "Неверный хост",
+                  "tooltip": "Хост, на котором будет работать HTTP-сервер."
+                }
+              }
+            }
+          }
+        }
+      },
+      "trade_entry_update": {
+        "fields": {
+          "price_label": "Цена",
+          "tags_label": "Теги"
+        }
+      }
+    },
+    "modals": {
+      "base": {
+        "buttons": {
+          "confirm": "Подтверждать",
+          "cancel": "Отмена"
+        }
+      },
+      "generate_trade_message": {
+        "title": "Создать торговое сообщение для товаров {{count}}",
+        "button_add_key_tooltip": "Добавить отображение",
+        "button_copy_tooltip": "Копировать в буфер обмена",
+        "button_delete_template_tooltip": "Удалить шаблон",
+        "button_load_template_tooltip": "Загрузить шаблон",
+        "button_save_template_tooltip": "Сохранить шаблон",
+        "titles": {
+          "message_settings": "Настройки сообщений",
+          "preview_with_icons": "Предварительный просмотр с иконками",
+          "display_settings": "Настройки дисплея"
+        },
+        "fields": {
+          "prefix": {
+            "label": "Префикс",
+            "description": "Префикс, используемый для торгового сообщения",
+            "placeholder": "Префикс"
+          },
+          "suffix": {
+            "label": "Суффикс",
+            "description": "Суффикс, используемый для торгового сообщения.",
+            "placeholder": "Суффикс"
+          },
+          "message": {
+            "label": "Сообщение",
+            "description": "Сгенерированное торговое сообщение",
+            "length_info": "{{current}} / {{max}} символов"
+          },
+          "key": {
+            "label": "Ключ",
+            "description": "Ключ, используемый для разделения элементов в сообщении.",
+            "placeholder": "Ключ"
+          },
+          "template": {
+            "label": "Шаблон торгового сообщения",
+            "description": "Шаблон, используемый для создания сообщения."
+          },
+          "chat_icon": {
+            "label": "Иконки чата",
+            "description": "Включить в сообщение значки чата Warframe Market."
+          },
+          "group_by": {
+            "label": "Группировать по",
+            "description": "Группируйте элементы по их типу в сообщении"
+          },
+          "load_template": {
+            "label": "Загрузить шаблон",
+            "description": "Загрузите сохраненный шаблон сообщения"
+          }
+        },
+        "datatable": {
+          "columns": {
+            "key": "Ключ",
+            "name": "Имя",
+            "prefix": "Префикс",
+            "suffix": "Суффикс"
+          }
+        }
+      },
+      "patreon_modal": {
+        "title": "Поддержите разработку Quantframe",
+        "description": "Получите доступ к премиум-функциям, поддержав меня на Patreon.",
+        "premium_content": "Активность пользователя | Поиск цен на Ривен | Экспорт данных | Статистика предмета",
+        "join_the_community": "Присоединяйтесь к сообществу сторонников и помогите сформировать будущее Quantframe.",
+        "link_your_account": "2. Привяжите свою учетную запись Patreon",
+        "buttons": {
+          "info": "Патреон",
+          "link": "Свяжите свой аккаунт"
+        }
+      },
+      "item_details": {
+        "tabs": {
+          "overview": {
+            "title": "Обзор",
+            "tooltips": {},
+            "labels": {
+              "created_at": "Создано: <date/>",
+              "updated_at": "Обновлено: <date/>",
+              "bought": "Цена покупки: {{price}} <plat/>",
+              "list_price": "Указанная цена: {{price}} <plat/>",
+              "potential_profit": "Потенциальная прибыль: {{price}} <plat/>",
+              "minimum_profit": "Минимальная прибыль: {{price}}",
+              "minimum_sma": "Минимальная SMA: {{price}}",
+              "quantity": "Количество: {{quantity}}",
+              "is_hidden": "Скрыто: <hidden/>"
+            }
+          },
+          "analytics": {
+            "title": "Аналитика",
+            "tooltips": {},
+            "labels": {},
+            "titles": {
+              "last_transactions": "Последние транзакции",
+              "financial_summary": "Финансовая сводка"
+            }
+          },
+          "wfm": {
+            "title": "Обзор",
+            "tooltips": {
+              "buy_highest_price": "Купить самый высокий",
+              "sell_highest_price": "Продать по самой высокой цене",
+              "spread_percent": "Процент распространения",
+              "supply": "Поставлять"
+            },
+            "labels": {
+              "buy_lowest": "Купить самый дешевый",
+              "sell_lowest": "Продать по самой низкой цене",
+              "spread": "Распространение",
+              "demand": "Требовать",
+              "roi_percent": "Процент рентабельности инвестиций"
+            },
+            "buttons": {
+              "view_on_wfm": "Посмотреть на Warframe Market"
+            }
+          },
+          "edit": {
+            "title": "Редактировать",
+            "fields": {
+              "bought": "Купил для",
+              "minimum_price": "Минимальная цена",
+              "maximum_price": "Максимальная цена",
+              "owned": "В настоящее время принадлежит",
+              "quantity": "Количество",
+              "minimum_sma": "Минимальная SMA",
+              "minimum_profit": "Минимальная прибыль"
+            },
+            "tooltips": {
+              "minimum_price": "Минимальная цена, за которую вы готовы продать этот товар. Установите значение 0, чтобы отключить.",
+              "minimum_profit": "Минимальная прибыль, которую вы хотите получить при продаже этого предмета. Установите значение 0, чтобы отключить",
+              "minimum_sma": "Минимальная простая скользящая средняя, ​​которую следует учитывать при продаже этого товара. Установите значение 0, чтобы отключить",
+              "maximum_price": "Максимальная цена, за которую вы готовы купить этот товар. Установите значение 0, чтобы отключить."
+            }
+          }
+        }
+      },
+      "riven_details": {
+        "tabs": {
+          "overview": {
+            "title": "Обзор",
+            "tooltips": {},
+            "labels": {
+              "created_at": "Создано: <date/>",
+              "updated_at": "Обновлено: <date/>",
+              "bought": "Цена покупки: {{price}} <plat/>",
+              "list_price": "Указанная цена: {{price}} <plat/>",
+              "potential_profit": "Потенциальная прибыль: {{price}} <plat/>",
+              "minimum_profit": "Минимальная прибыль: {{price}}",
+              "minimum_sma": "Минимальная SMA: {{price}}",
+              "kuva": "Потрачено Кувы: {{kuva}}",
+              "endo": "Эндо: {{endo}}",
+              "is_hidden": "Скрыто: <hidden/>"
+            }
+          },
+          "modifiers": {
+            "title": "Модификаторы",
+            "tooltips": {},
+            "labels": {
+              "weapon": "Оружие",
+              "rank": "Классифицировать"
+            },
+            "titles": {}
+          },
+          "roll_evaluation": {
+            "title": "Оценка броска",
+            "tooltips": {},
+            "labels": {
+              "best_attributes": "Лучшие качества",
+              "mandatory": "Обязательный",
+              "optional": "Необязательный",
+              "best_bad_attributes": "Лучшие плохие качества"
+            },
+            "titles": {}
+          },
+          "analytics": {
+            "title": "Аналитика",
+            "tooltips": {},
+            "labels": {},
+            "titles": {
+              "last_transactions": "Последние транзакции",
+              "financial_summary": "Финансовая сводка"
+            }
+          },
+          "wfm": {
+            "title": "Рынок Варфреймов",
+            "tooltips": {},
+            "labels": {
+              "auction_header_left": "{{similarity}}%",
+              "auction_header_right": "{{price}} <plat/>"
+            },
+            "buttons": {
+              "view_on_wfm": "Посмотреть на Warframe Market"
+            }
+          },
+          "edit": {
+            "title": "Редактировать",
+            "fields": {
+              "bought": "Купил для",
+              "minimum_price": "Минимальная цена",
+              "mastery_rank": "Ранг мастерства",
+              "re_rolls": "Рероллы",
+              "minimum_profit": "Минимальная прибыль"
+            },
+            "tooltips": {
+              "minimum_price": "Минимальная цена, за которую вы готовы продать этот товар. Установите значение 0, чтобы отключить.",
+              "minimum_profit": "Минимальная прибыль, которую вы хотите получить при продаже этого предмета. Установите значение 0, чтобы отключить",
+              "minimum_sma": "Минимальная простая скользящая средняя, ​​которую следует учитывать при продаже этого товара. Установите значение 0, чтобы отключить",
+              "maximum_price": "Максимальная цена, за которую вы готовы купить этот товар. Установите значение 0, чтобы отключить."
+            }
+          }
+        }
+      },
+      "update_available": {
+        "title": "Доступно новое обновление (v{{version}})",
+        "buttons": {
+          "download": "Загрузите и установите",
+          "download_manual": "Загрузить вручную",
+          "read_more": "Читать далее"
+        }
+      },
+      "tos": {
+        "title": "Условия использования",
+        "buttons": {
+          "accept": "Принимать",
+          "decline": "Отклонить"
+        }
+      },
+      "app_error": {
+        "title": "Ошибка в компоненте {{component}}",
+        "version": "Версия: {{version}}",
+        "cause": "Причина: {{cause}}",
+        "message": "Сообщение: {{message}}",
+        "location": "Местоположение: {{location}}",
+        "footer": "Пожалуйста, сообщите об этой ошибке разработчикам,\nЭкспортируя файл журнала, просто нажмите кнопку ниже, и на вашем рабочем столе будет создан файл.",
+        "export_log": "Экспорт журнала"
+      }
+    },
+    "chat_item": {
+      "delete_tooltip": "Удалить разговор",
+      "last_update": "Последнее обновление"
+    },
+    "chat_rome": {
+      "fields": {
+        "message": {
+          "too_long": "Сообщение слишком длинное",
+          "placeholder": "Введите здесь свое сообщение..."
+        }
+      },
+      "buttons": {
+        "back_label": "Назад",
+        "send_label": "Отправлять",
+        "options": {
+          "label": "Параметры",
+          "delete": "Почему ты здесь?"
+        }
+      }
+    },
+    "best_by_category_table": {
+      "datatable": {
+        "columns": {
+          "name": "Имя",
+          "revenue": "Доход",
+          "expense": "Расход",
+          "profit": "Выгода",
+          "profit_margin": "Размер прибыли",
+          "quantity": "Количество"
+        }
+      }
+    },
+    "bar_chart_financial_summary": {
+      "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+      "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>",
+      "tooltips": {
+        "expense": "Общие расходы",
+        "revenue": "Общий доход",
+        "profit": "Общая прибыль",
+        "trades": "Количество сделок",
+        "sales": "Количество продаж",
+        "purchases": "Количество покупок"
+      }
+    },
+    "financial_report_card": {
+      "tooltips": {
+        "total_expenses": "Общие расходы",
+        "total_revenue": "Общий доход",
+        "average_profit": "Средняя прибыль",
+        "total_credits": "Всего кредитов",
+        "lowest_revenue": "Самый низкий доход",
+        "lowest_expense": "Самый низкий расход",
+        "highest_revenue": "Самый высокий доход"
+      },
+      "labels": {
+        "trade_count": "Торговый счет",
+        "highest_revenue": "Самый высокий доход",
+        "highest_expense": "Самый высокий расход",
+        "total_transactions": "Всего транзакций",
+        "revenue": "Доход",
+        "expenses": "Затраты",
+        "total_profit": "Общая прибыль"
+      }
+    },
+    "riven_preview": {
+      "riven_name": "{{name}} <blue>{{mod_name}}</blue>",
+      "types": {
+        "unveiled": {
+          "footer_left": "{{progress}}/{{required}}"
+        },
+        "pre-veiled": {
+          "footer_left": "x{{quantity}}"
+        },
+        "veiled": {
+          "header_left": "{{price}} <plat/>",
+          "footer_left": "Р: {{rank}}/8",
+          "footer_right": "МР: {{mastery}}"
+        }
+      }
+    },
+    "price_history_popover": {
+      "labels": {
+        "price_history": "История цен"
+      }
+    }
+  },
+  "pages": {
+    "home": {
+      "cards": {
+        "total": {
+          "title": "Общая прибыль",
+          "footer": "Продажи: <blue>{{sales}}</blue> | Покупки: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | Размер прибыли: <blue>{{profit_margin}}</blue>%",
+          "bar_chart": {
+            "title": "Общая прибыль",
+            "datasets": {
+              "this_year": "В этом году",
+              "last_year": "В прошлом году"
+            }
+          }
+        },
+        "today": {
+          "title": "Сегодняшняя прибыль",
+          "footer": "Продажи: <blue>{{sales}}</blue> | Покупки: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | Размер прибыли: <blue>{{profit_margin}}</blue>%",
+          "bar_chart": {
+            "title": "Сегодняшняя прибыль",
+            "datasets": {
+              "profit": "Выгода"
+            },
+            "footers": {
+              "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+              "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>"
+            }
+          }
+        },
+        "recent_days": {
+          "bar_chart": {
+            "title": "Последние {{days}} дней",
+            "datasets": {
+              "profit": "Выгода"
+            },
+            "footers": {
+              "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+              "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>"
+            }
+          }
+        },
+        "best_seller": {
+          "title": "Прибыль от бестселлера",
+          "footer": "Имя: <blue>{{name}}</blue> | СУБЪЕКТ: <blue>{{sales}}</blue> | П: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | ПМ: <blue>{{profit_margin}}</blue>%"
+        },
+        "last_transaction": {
+          "title": "Последняя транзакция",
+          "info_box": {
+            "purchase": "Купить {{count}}",
+            "sale": "Продажа {{count}}"
+          }
+        }
+      }
+    },
+    "about": {
+      "cards": {
+        "coffee": {
+          "title": "Кофе"
+        },
+        "patreon": {
+          "title": "Поддержите меня на Patreon"
+        },
+        "discord": {
+          "title": "Раздор"
+        },
+        "guide": {
+          "title": "Вики/Руководство"
+        }
+      },
+      "text": {
+        "version": "Версия: <blue>{{version}}</blue> Сделано с ❤️ в 🇩🇰. © 2023-{{year}} Кения-ДК. Все права защищены",
+        "patreon_thanks": "Особая благодарность «Пользователям Quantframe» на Patreon за то, что они сделали возможным использование Quantframe: <blue>{{users}}</blue>.",
+        "disclaimer": "Quantframe — стороннее приложение, не связанное с Digital Extremes."
+      },
+      "button_check_for_updates": "Проверьте наличие обновлений"
+    },
+    "debug": {
+      "tabs": {
+        "logging": {
+          "title": "Ведение журнала",
+          "datatable": {
+            "columns": {
+              "command": "Команда",
+              "count": "Считать",
+              "actions": {
+                "title": "Действия",
+                "buttons": {
+                  "remove_tooltip": "Удалить команду входа в систему"
+                }
+              }
+            }
+          },
+          "buttons": {
+            "add_log": "Добавить журнал"
+          },
+          "prompt": {
+            "name": {
+              "title": "Добавить журнал",
+              "fields": {
+                "name": {
+                  "label": "Имя журнала"
+                }
+              }
+            }
+          }
+        },
+        "states": {
+          "title": "Штаты",
+          "accordions": {
+            "app_info": "Информация о приложении",
+            "app_error": "Ошибка приложения",
+            "settings": "Настройки",
+            "alerts": "Оповещения",
+            "user": "Пользователь",
+            "live_scraper": "Живой скребок",
+            "wfm_state": "Состояние WFM",
+            "tauri_events": "События Таури"
+          }
+        },
+        "debugging": {
+          "title": "Отладка",
+          "fake_orders_tooltip": "Toggle Поддельные ордера для реальной торговли (только для целей тестирования) будут храниться в dev.kenya.quantframe\\fake_orders",
+          "fake_orders_label": "Используйте поддельные ордера Реальные ордера",
+          "datatable": {
+            "columns": {
+              "wfm_url": {
+                "title": "Имя",
+                "value": "{{name}} <blue>{{sub_type}}</blue>"
+              },
+              "stock_id": "Идентификатор акции",
+              "wish_list_id": "Идентификатор списка желаний",
+              "priority": "Приоритет",
+              "buy_quantity": "Купить количество",
+              "sell_quantity": "Продать количество",
+              "operation": "Операция",
+              "actions": {
+                "title": "Действия",
+                "buttons": {
+                  "delete_tooltip": "Удалить запись текущего элемента отладки"
+                }
+              }
+            }
+          }
+        },
+        "ee_log": {
+          "title": "ЭЭ журнал",
+          "hide_empty": "Скрыть пустые строки",
+          "export_json_tooltip": "Экспортировать элементы в JSON",
+          "datatable": {
+            "columns": {
+              "line": "Линия",
+              "date": "Временная метка"
+            }
+          }
+        }
+      }
+    },
+    "banned": {
+      "wfm": {
+        "title": "Аккаунт Warframe Market заблокирован по причине:",
+        "reason": "Причина: {{reason}}",
+        "until": "До:"
+      },
+      "qf": {
+        "title": "Учетная запись Quantframe заблокирована из-за:",
+        "reason": "Причина: {{reason}}",
+        "until": "До:"
+      }
+    },
+    "auth": {
+      "errors": {
+        "login": {
+          "title": "Ошибка входа",
+          "TooManyRequests": "Слишком много запросов. Повторите попытку позже.",
+          "InvalidCredentials": "Пароль недействителен",
+          "InternalServerError": "Служба входа в настоящее время недоступна, повторите попытку позже.",
+          "banned": "Вы забанены",
+          "ban_reason": "<red>Причина: {{reason}}</red>",
+          "verification": "Вам необходимо подтвердить свою учетную запись. Сделайте это на сайте Warframe Market."
+        }
+      },
+      "success": {
+        "login": {
+          "title": "Успех входа в систему",
+          "message": "Добро пожаловать! {{name}}"
+        }
+      }
+    },
+    "live_scraper": {
+      "export_json_tooltip": "Экспорт элементов в JSON (Patreon T1+)",
+      "update_multiple_tooltip": "Обновить несколько элементов",
+      "delete_multiple_tooltip": "Удалить несколько элементов",
+      "wts_multiple_tooltip": "Создать сообщение WTS",
+      "segments": {
+        "bought": "Купил",
+        "listed": "Внесен в список",
+        "profit": "Выгода"
+      },
+      "prompts": {
+        "update_filter": {
+          "title": "Обновить фильтр"
+        },
+        "create_riven": {
+          "title": "Создать Разлом"
+        }
+      },
+      "tabs": {
+        "item": {
+          "title": "Элемент",
+          "datatable": {
+            "columns": {
+              "bought": "Купил",
+              "owned": "В собственности"
+            }
+          }
+        },
+        "riven": {
+          "title": "Ривен",
+          "datatable": {
+            "columns": {
+              "attributes": "Атрибуты",
+              "bought": "Купил"
+            }
+          }
+        },
+        "wish_list": {
+          "title": "Список желаний"
+        }
+      }
+    },
+    "warframe_market": {
+      "tabs": {
+        "orders": {
+          "title": "Заказы",
+          "status": "<blue>{{type}}</blue> | <qty/> <blue>{{total}}</blue> | <plat/> <blue>{{platinum}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+          "tooltip_profit": "Предполагаемая прибыль",
+          "buttons": {
+            "refresh_tooltip": "Обновить список заказов",
+            "delete_all_tooltip": "Удалить все заказы",
+            "delete_tooltip": "Удалить этот заказ",
+            "info_tooltip": "Посмотреть детали заказа",
+            "sell_manual": {
+              "buy_tooltip": "Покупается вручную",
+              "sell_tooltip": "Продается вручную"
+            },
+            "sell_auto": {
+              "buy_tooltip": "Купил за указанную цену",
+              "sell_tooltip": "Продано по указанной цене"
+            }
+          },
+          "order_card": {
+            "header_left": "{{name}}",
+            "header_right": "<qty/> <blue>{{quantity}}</blue>",
+            "footer_left": "<blue>{{price}}</blue> <plat/>"
+          },
+          "fields": {
+            "quantity": "<qty/> <blue>{{quantity}}</blue>",
+            "platinum": "<blue>{{platinum}}</blue> <plat/>",
+            "mod_rank": "Ранг: <blue>{{mod_rank}}</blue>/<blue>{{mod_max_rank}}</blue>",
+            "subtype": "<blue>{{sub_type}}</blue>"
+          }
+        },
+        "auctions": {
+          "title": "Аукционы",
+          "overview": "<qty/> <blue>{{total}}</blue> | <plat/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+          "tooltip_profit": "Предполагаемая прибыль",
+          "buttons": {
+            "refresh_tooltip": "Обновить список аукционов",
+            "delete_all_tooltip": "Удалить все аукционы",
+            "delete_tooltip": "Удалить этот аукцион",
+            "import_tooltip": "Импортировать этот аукцион",
+            "info_tooltip": "Посмотреть детали аукциона"
+          },
+          "auction_card": {
+            "header_right": "{{price}} <plat/>"
+          }
+        }
+      }
+    },
+    "chat": {
+      "prompts": {
+        "delete_chat": {
+          "title": "Удалить чат",
+          "message": "Вы уверены, что хотите удалить этот чат? Это действие невозможно отменить.",
+          "cancel": "Отмена",
+          "confirm": "Удалить"
+        }
+      },
+      "buttons": {
+        "refresh_tooltip": "Обновить список чатов",
+        "delete_all_tooltip": "Удалить все чаты"
+      }
+    },
+    "trading_analytics": {
+      "tabs": {
+        "transaction": {
+          "title": "Сделка",
+          "date_range_label": "Диапазон дат",
+          "date_range_description": "Диапазон дат для фильтрации транзакций",
+          "date_range_placeholder": "Выберите диапазон дат",
+          "prompts": {
+            "update_title": "Обновить транзакцию"
+          },
+          "buttons": {
+            "export_transactions_tooltip": "Экспорт транзакций в JSON (Patreon T1+)",
+            "show_financial_report_tooltip": "Показать отчет",
+            "delete_all_tooltip": "Удалить все транзакции {{count}}",
+            "calculate_tax_tooltip": "Рассчитать торговый налог для всех транзакций"
+          },
+          "datatable": {
+            "columns": {
+              "item_type": "Тип элемента",
+              "price": "Цена",
+              "created_at": "Создано в",
+              "user_name": "Имя пользователя",
+              "profit": "Выгода",
+              "credits": "Кредиты",
+              "sale_count": "Количество продаж",
+              "revenue": "Доход",
+              "purchases_count": "Количество покупок",
+              "expenses": "Затраты",
+              "total_transactions": "Всего транзакций"
+            }
+          },
+          "titles": {
+            "most_purchased_items": "Самые покупаемые товары",
+            "most_sold_items": "Самые продаваемые товары"
+          },
+          "table_headers": {
+            "item_name": "Имя",
+            "quantity": "Количество"
+          }
+        },
+        "item": {
+          "title": "Элемент",
+          "export_json_tooltip": "Экспорт элементов в JSON (Patreon T1+)",
+          "open_table_options_tooltip": "Варианты открытого стола",
+          "date_range_placeholder": "Выберите диапазон дат",
+          "volume_label": "Объем",
+          "min_price_label": "Минимальная цена",
+          "max_price_label": "Максимальная цена",
+          "supply_label": "Поставлять",
+          "demand_label": "Требовать",
+          "datatable": {
+            "columns": {
+              "volume": "Объем",
+              "min_price": "Минимальная цена",
+              "max_price": "Максимальная цена",
+              "open_price": "Цена открытия",
+              "closed_price": "Закрытая цена",
+              "avg_price": "Средняя цена",
+              "wa_price": "Вашингтон Цена",
+              "median": "медиана",
+              "moving_avg": "Перемещение среднего",
+              "donch_top": "Донч Топ",
+              "donch_bot": "Донч Бот",
+              "trading_tax": "Торговый налог",
+              "supply": "Поставлять",
+              "demand": "Требовать"
+            }
+          }
+        },
+        "riven": {
+          "title": "Ривен",
+          "export_json_tooltip": "Экспортировать Riven в JSON (Patreon T1+)",
+          "open_table_options_tooltip": "Варианты открытого стола",
+          "date_range_placeholder": "Выберите диапазон дат",
+          "volume_label": "Объем",
+          "min_price_label": "Минимальная цена",
+          "max_price_label": "Максимальная цена",
+          "avg_price_label": "Средняя цена",
+          "datatable": {
+            "columns": {
+              "volume": "Объем",
+              "min_price": "Минимальная цена",
+              "max_price": "Максимальная цена",
+              "avg_price": "Средняя цена",
+              "median_price": "Средняя цена"
+            }
+          }
+        },
+        "user": {
+          "title": "Активность пользователя",
+          "chart": {
+            "datasets": {
+              "registered_users": "Зарегистрированные пользователи",
+              "active_users": "Активные пользователи"
+            }
+          },
+          "fields": {
+            "group_by": {
+              "label": "Группировать по",
+              "options": {
+                "day": "День",
+                "hour": "Час"
+              }
+            },
+            "date_range": {
+              "label": "Диапазон дат",
+              "placeholder": "Выберите диапазон дат"
+            }
+          }
+        },
+        "wfgdpr": {
+          "title": "Парсер Warframe GDPR",
+          "drag_and_drop_message": "Перетащите сюда текстовые файлы GDPR. Подробную информацию об этой функции можно найти на веб-сайте.",
+          "columns": {
+            "account": "Имя учетной записи",
+            "logins": "Количество входов в систему",
+            "purchases": "Количество покупок",
+            "trades": "Количество сделок",
+            "transactions": "Количество транзакций",
+            "creation_date": "Дата создания"
+          },
+          "overview": {
+            "title": "Обзор",
+            "labels": {
+              "member_since": "Участник с",
+              "subscribed": "Подписан",
+              "trades": "Сделки",
+              "platinum_traded": "Платина продана",
+              "purchases": "Покупки",
+              "total_spent": "Всего потрачено",
+              "transactions": "Транзакции",
+              "unique_ips": "Уникальные IP-адреса",
+              "total_logins": "Всего входов"
+            }
+          },
+          "trade": {
+            "title": "Торговля",
+            "yearly_trade_overview": {
+              "title": "Годовой обзор торговли ({{year}})",
+              "total_trades": "Всего сделок",
+              "total_purchases": "Всего покупок",
+              "total_sales": "Общий объем продаж"
+            },
+            "columns": {
+              "created_at": "Создано в",
+              "offered_items": "Количество предлагаемых товаров",
+              "received_items": "Количество полученных товаров",
+              "credits": "Кредиты"
+            },
+            "table_headers": {
+              "item_name": "Имя",
+              "quantity": "Количество"
+            },
+            "titles": {
+              "most_sold_items": "Самые продаваемые товары",
+              "most_purchased_items": "Самые покупаемые товары"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "Показать отчет"
+            }
+          },
+          "purchase": {
+            "title": "Покупки",
+            "titles": {
+              "most_purchased_items": "Самые покупаемые товары"
+            },
+            "table_headers": {
+              "item_name": "Имя",
+              "price": "Цена",
+              "quantity": "Количество"
+            },
+            "yearly_trade_overview": {
+              "title": "Годовой обзор торговли ({{year}})",
+              "total_purchases": "Всего покупок"
+            },
+            "columns": {
+              "date": "Купить в",
+              "price": "Цена",
+              "shop_id": "Идентификатор магазина",
+              "items_received": "Полученные товары"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "Показать отчет"
+            }
+          },
+          "transaction": {
+            "title": "Транзакции",
+            "titles": {
+              "most_purchased_items": "Самые покупаемые товары"
+            },
+            "table_headers": {
+              "item_name": "Имя",
+              "price": "Цена",
+              "quantity": "Количество"
+            },
+            "yearly_trade_overview": {
+              "title": "Годовой обзор торговли ({{year}})",
+              "total_purchases": "Всего покупок"
+            },
+            "columns": {
+              "date": "Купить в",
+              "currency": "Валюта",
+              "price": "Цена",
+              "account": "Счет",
+              "sku": "Артикул"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "Показать отчет"
+            }
+          }
+        }
+      }
+    },
+    "trade_messages": {
+      "fields": {
+        "price_label": "Цена",
+        "price_placeholder": "Введите цену",
+        "tags_label": "Теги",
+        "tags_placeholder": "Введите теги"
+      },
+      "buttons": {
+        "generate_trade_messages_tooltip": "Создать торговые сообщения для товаров {{count}}",
+        "update_multiple_tooltip": "Обновить несколько торговых сообщений",
+        "export_json_tooltip": "Экспорт торговых сообщений в JSON (Patreon T1+)",
+        "delete_multiple_tooltip": "Удалить все сделки {{count}}",
+        "add_tooltip": "Добавить торговое сообщение",
+        "find_interesting_tooltip": "Найдите интересные торговые сообщения (Patreon T2+)",
+        "calibrate_prices_tooltip": "Калибровка цен"
+      },
+      "datatable": {
+        "columns": {
+          "price": "Цена",
+          "tags": "Теги",
+          "min_price": "Минимальная цена",
+          "potential_profit": "Потенциальная прибыль",
+          "updated_at": "Обновлено в"
+        }
+      },
+      "tabs": {
+        "item": {
+          "title": "Элемент"
+        },
+        "riven": {
+          "title": "Ривен",
+          "modals": {
+            "find_interesting_rivens": {
+              "title": "Найдите интересные разломы для {{date}}",
+              "titles": {
+                "filtered": "Отфильтрованные Разломы",
+                "discount_settings": "Настройки скидок",
+                "export_settings": "Экспорт настроек"
+              },
+              "fields": {
+                "min_price_label": "Минимальная цена",
+                "min_volume_label": "Минимальный объем",
+                "discount_percentage_label": "Процент скидки %",
+                "round_to_nearest_label": "Округлить до ближайшего",
+                "override_existing_prices_label": "Переопределить существующие цены",
+                "tags_label": "Теги"
+              },
+              "datatable_columns": {
+                "name": "Имя",
+                "min_price": "Минимальная цена",
+                "discount_price": "Цена со скидкой",
+                "potential_profit": "Потенциальная прибыль",
+                "volume": "Объем"
+              },
+              "buttons": {
+                "export_to_trade_messages": "Экспорт в торговые сообщения"
+              }
+            }
+          }
+        },
+        "custom": {
+          "title": "Обычай"
+        }
+      }
+    },
+    "process_trade": {
+      "stats": {
+        "user_name": "Имя пользователя",
+        "trade_type": "Тип сделки",
+        "trade_price": "Торговая цена",
+        "price": "Цена",
+        "difference": "Разница"
+      },
+      "buttons": {
+        "process_trade_tooltip": "Начать обработку сделок",
+        "confirm_trade": "Подтвердить сделку",
+        "back_to_list": "Вернуться к списку"
+      },
+      "datatable": {
+        "columns": {
+          "item_name": "Имя",
+          "quantity": "Количество",
+          "price": "Цена",
+          "total": "Общий",
+          "platinum": "Платина",
+          "user_name": "Имя пользователя",
+          "date": "Дата"
+        }
+      }
+    },
+    "wf_inventory": {
+      "tabs": {
+        "riven": {
+          "title": "Ривенс",
+          "riven_card": {
+            "footer_left": "{{rank}}/8 <polarity/>",
+            "footer_right": "МР: {{mastery}}",
+            "footer_center": "<stock/>",
+            "stock_status": {
+              "found": "Найден в инвентаре",
+              "not_found": "Не найден в инвентаре"
+            }
+          },
+          "filters": {
+            "all": "Все",
+            "rifle": "Винтовка",
+            "shotgun": "Дробовик",
+            "melee": "ближний бой",
+            "pistol": "Пистолет",
+            "zaw": "Зау",
+            "arch": "Арчвинг",
+            "veiled": "завуалированный",
+            "unveiled": "раскрытый"
+          }
         }
       }
     }

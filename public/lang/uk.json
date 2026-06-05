@@ -1,0 +1,2458 @@
+{
+  "months": [
+    "січня",
+    "Лютий",
+    "березень",
+    "квітень",
+    "травня",
+    "червень",
+    "липень",
+    "серпень",
+    "вересень",
+    "жовтень",
+    "Листопад",
+    "грудень"
+  ],
+  "common": {
+    "not_found": "Не знайдено",
+    "buttons": {
+      "save": {
+        "label": "зберегти"
+      },
+      "delete": {
+        "label": "Видалити"
+      }
+    },
+    "notifications": {
+      "copy_to_clipboard": {
+        "title": "Скопійовано в буфер обміну",
+        "message": "{{message}} скопійовано в буфер обміну."
+      },
+      "on_trade_event": {
+        "multiple_items": {
+          "title": "Торгівля з {{player_name}} не оброблена",
+          "message": "Торгівля з {{player_name}} не оброблена через наявність кількох елементів."
+        },
+        "no_valid_items": {
+          "title": "Торгівля з {{player_name}} не оброблена",
+          "message": "Торгівля з {{player_name}} не оброблена через відсутність дійсних елементів."
+        },
+        "success": {
+          "title": "Торгівля з {{player_name}} завершена",
+          "message": "<blue>{{item_name}}</blue> X<blue>{{quantity}}</blue> <blue>{{trade_type}}</blue> Для {{platinum}}p"
+        }
+      },
+      "warframe_gdpr_data_loaded": {
+        "success": {
+          "title": "Дані Warframe GDPR завантажено",
+          "message": "Торги: {{trades}}, Логіни: {{logins}}, Покупки: {{purchases}}, Трансакції: {{transactions}}"
+        }
+      },
+      "log_export": {
+        "error": {
+          "title": "Помилка експорту журналу",
+          "message": "Під час спроби експортувати журнали сталася помилка."
+        },
+        "success": {
+          "title": "Успішний експорт журналу",
+          "message": "Журнали успішно експортовано до {{path}}."
+        }
+      },
+      "create_stock_item": {
+        "error": {
+          "title": "Помилка створення запасу",
+          "message": "Під час спроби створити запас сталася помилка."
+        },
+        "success": {
+          "title": "Створіть успішний запас",
+          "message": "Складський товар {{name}} успішно створено."
+        }
+      },
+      "update_stock_item": {
+        "error": {
+          "title": "Помилка оновлення запасу",
+          "title_multiple": "Помилка оновлення запасу",
+          "message": "Під час спроби оновити запас сталася помилка.",
+          "message_multiple": "Сталася помилка під час спроби оновити кілька складських товарів."
+        },
+        "success": {
+          "title": "Успішне оновлення запасу",
+          "title_multiple": "Успішне оновлення запасу",
+          "message": "Складський товар {{name}} успішно оновлено.",
+          "message_multiple": "{{count}} складських позицій успішно оновлено."
+        }
+      },
+      "delete_stock_item": {
+        "error": {
+          "title": "Помилка видалення запасу",
+          "title_multiple": "Помилка видалення запасу",
+          "message": "Під час спроби видалити запас сталася помилка.",
+          "message_multiple": "Сталася помилка під час спроби видалити кілька запасів."
+        },
+        "success": {
+          "title": "Успіх видалення запасу",
+          "title_multiple": "Успіх видалення запасу",
+          "message": "Товар із запасу {{name}} успішно видалено.",
+          "message_multiple": "{{count}} стокових позицій успішно видалено."
+        }
+      },
+      "sell_stock_item": {
+        "error": {
+          "title": "Помилка продажу акцій",
+          "message": "Під час спроби продати акції сталася помилка."
+        },
+        "success": {
+          "title": "Успіх продажу акцій",
+          "message": "Складський товар {{name}} успішно продано."
+        }
+      },
+      "create_stock_riven": {
+        "error": {
+          "title": "Помилка створення запасу",
+          "message": "Під час спроби створити запас сталася помилка."
+        },
+        "success": {
+          "title": "Створіть успішний запас",
+          "message": "Складський товар {{name}} успішно створено."
+        }
+      },
+      "update_stock_riven": {
+        "error": {
+          "title": "Помилка оновлення запасу",
+          "title_multiple": "Помилка оновлення запасу",
+          "message": "Під час спроби оновити запас сталася помилка.",
+          "message_multiple": "Сталася помилка під час спроби оновити кілька складських товарів."
+        },
+        "success": {
+          "title": "Успішне оновлення запасу",
+          "title_multiple": "Успішне оновлення запасу",
+          "message": "Складський товар {{name}} успішно оновлено.",
+          "message_multiple": "{{count}} складських позицій успішно оновлено."
+        }
+      },
+      "delete_stock_riven": {
+        "error": {
+          "title": "Помилка видалення запасу",
+          "title_multiple": "Помилка видалення запасу",
+          "message": "Під час спроби видалити запас сталася помилка.",
+          "message_multiple": "Сталася помилка під час спроби видалити кілька запасів."
+        },
+        "success": {
+          "title": "Успіх видалення запасу",
+          "title_multiple": "Успіх видалення запасу",
+          "message": "Запас riven {{name}} успішно видалено.",
+          "message_multiple": "{{count}} акції rivens були успішно видалені."
+        }
+      },
+      "delete_transaction": {
+        "error": {
+          "title": "Помилка видалення транзакції",
+          "title_multiple": "Помилка видалення транзакції",
+          "message": "Під час спроби видалити трансакцію сталася помилка.",
+          "message_multiple": "Під час спроби видалити кілька транзакцій сталася помилка."
+        },
+        "success": {
+          "title": "Успішне видалення транзакції",
+          "title_multiple": "Успішне видалення транзакції",
+          "message": "Трансакцію {{name}} успішно видалено.",
+          "message_multiple": "{{count}} транзакцій успішно видалено."
+        }
+      },
+      "sell_stock_riven": {
+        "error": {
+          "title": "Помилка продажу акцій",
+          "message": "Під час спроби продати акції сталася помилка."
+        },
+        "success": {
+          "title": "Успіх продажу акцій",
+          "message": "Складський товар {{name}} успішно продано."
+        }
+      },
+      "create_wish_list": {
+        "error": {
+          "title": "Помилка створення списку бажань",
+          "message": "Під час спроби створити список бажань сталася помилка."
+        },
+        "success": {
+          "title": "Створення списку бажань. Успіх",
+          "message": "Список бажань успішно створено."
+        }
+      },
+      "update_wish_list": {
+        "error": {
+          "title": "Помилка оновлення списку бажань",
+          "title_multiple": "Помилка оновлення списку бажань",
+          "message": "Під час спроби оновити список бажань сталася помилка.",
+          "message_multiple": "Під час спроби оновити кілька списків бажань сталася помилка."
+        },
+        "success": {
+          "title": "Оновлення списку бажань успішно",
+          "title_multiple": "Оновлення списку бажань успішно",
+          "message": "Список бажань успішно оновлено.",
+          "message_multiple": "{{count}} списків бажань успішно оновлено."
+        }
+      },
+      "delete_wish_list": {
+        "error": {
+          "title": "Помилка видалення списку бажань",
+          "title_multiple": "Помилка видалення списку бажань",
+          "message": "Під час спроби видалити список бажань сталася помилка.",
+          "message_multiple": "Під час спроби видалити кілька списків бажань сталася помилка."
+        },
+        "success": {
+          "title": "Видалити список бажань успішно",
+          "title_multiple": "Видалити список бажань успішно",
+          "message": "Список бажань успішно видалено.",
+          "message_multiple": "{{count}} списків бажань успішно видалено."
+        }
+      },
+      "bought_wish_list": {
+        "error": {
+          "title": "Помилка купленого списку бажань",
+          "message": "Під час спроби позначити список бажань як куплений сталася помилка."
+        },
+        "success": {
+          "title": "Купив список бажань. Успіх",
+          "message": "Список бажань успішно позначено як куплений."
+        }
+      },
+      "delete_chat": {
+        "error": {
+          "title": "Помилка видалення чату",
+          "message": "Під час спроби видалити чат сталася помилка."
+        },
+        "success": {
+          "title": "Видалити успіх чату",
+          "message": "Чат успішно видалено."
+        }
+      },
+      "export_data": {
+        "error": {
+          "title": "Помилка експорту даних",
+          "message": "Під час спроби експортувати дані сталася помилка."
+        },
+        "success": {
+          "title": "Успішний експорт даних",
+          "message": "Дані успішно експортовано до {{path}}."
+        }
+      },
+      "no_updates_available": {
+        "title": "Немає оновлень",
+        "message": "Ви вже використовуєте останню версію."
+      },
+      "update_settings": {
+        "error": {
+          "title": "Помилка налаштувань оновлення",
+          "message": "Під час спроби оновити налаштування сталася помилка: \n{{message}}"
+        },
+        "success": {
+          "title": "Успішне оновлення налаштувань",
+          "message": "Налаштування успішно оновлено"
+        }
+      },
+      "create_trade_entry": {
+        "error": {
+          "title": "Помилка створення торгового запису",
+          "title_multiple": "Помилка створення торгового запису",
+          "message": "Сталася помилка під час спроби створити торговий запис.",
+          "message_multiple": "Сталася помилка під час спроби створити кілька торгових записів."
+        },
+        "success": {
+          "title": "Створіть успіх у торгових операціях",
+          "title_multiple": "Створіть успіх у торгових операціях",
+          "message": "Торговий запис {{name}} успішно створено.",
+          "message_multiple": "{{count}} торгових записів успішно створено."
+        }
+      },
+      "update_trade_entry": {
+        "error": {
+          "title": "Оновити помилку торгового запису",
+          "title_multiple": "Оновити помилку торгового запису",
+          "message": "Під час спроби оновити торговий запис сталася помилка.",
+          "message_multiple": "Під час спроби оновити кілька торгових записів сталася помилка."
+        },
+        "success": {
+          "title": "Оновити успішне відкриття торгової операції",
+          "title_multiple": "Оновити успішне відкриття торгової операції",
+          "message": "Торговий запис {{name}} успішно оновлено.",
+          "message_multiple": "{{count}} торгових записів успішно оновлено."
+        }
+      },
+      "delete_trade_entry": {
+        "error": {
+          "title": "Помилка видалення торгового запису",
+          "title_multiple": "Помилка видалення торгового запису",
+          "message": "Під час спроби видалити торговий запис сталася помилка.",
+          "message_multiple": "Під час спроби видалити кілька торгових записів сталася помилка."
+        },
+        "success": {
+          "title": "Видалити успішний запис торгівлі",
+          "title_multiple": "Видалити успішний запис торгівлі",
+          "message": "Торговий запис {{name}} успішно видалено.",
+          "message_multiple": "{{count}} торгових записів успішно видалено."
+        }
+      },
+      "create_trade_msg_template": {
+        "error": {
+          "title": "Помилка створення шаблону",
+          "message": "Під час спроби створити шаблон торгового повідомлення сталася помилка."
+        },
+        "success": {
+          "title": "Успіх створення шаблону",
+          "message": "Шаблон торгового повідомлення успішно створено."
+        }
+      },
+      "delete_trade_msg_template": {
+        "error": {
+          "title": "Помилка видалення шаблону",
+          "message": "Під час спроби видалити шаблон торгового повідомлення сталася помилка."
+        },
+        "success": {
+          "title": "Успішне видалення шаблону",
+          "message": "Шаблон торгового повідомлення успішно видалено."
+        }
+      },
+      "update_transaction": {
+        "error": {
+          "title": "Помилка транзакції оновлення",
+          "message": "Під час спроби оновити транзакцію сталася помилка."
+        },
+        "success": {
+          "title": "Успішне оновлення транзакції",
+          "message": "Транзакцію успішно оновлено."
+        }
+      },
+      "processed_multiple_items": {
+        "error": {
+          "title": "Помилка «Оброблено кілька елементів».",
+          "message": "Під час спроби обробити кілька елементів сталася помилка."
+        },
+        "success": {
+          "title": "Кілька елементів оброблено успішно",
+          "message": "{{count}} елементів успішно оброблено."
+        }
+      },
+      "calculate_tax_all_transactions": {
+        "error": {
+          "title": "Розрахунок податкової помилки",
+          "message": "Під час спроби обчислення податку для операцій сталася помилка."
+        },
+        "success": {
+          "title": "Розрахувати податковий успіх",
+          "message": "Податок успішно розраховано для операцій."
+        }
+      },
+      "delete_order": {
+        "error": {
+          "title": "Помилка видалення замовлення",
+          "message": "Під час спроби видалити замовлення сталася помилка."
+        },
+        "success": {
+          "title": "Успішне видалення замовлення",
+          "message": "Замовлення успішно видалено."
+        }
+      },
+      "delete_all_orders": {
+        "error": {
+          "title": "Помилка видалення всіх замовлень",
+          "message": "Під час спроби видалити всі замовлення сталася помилка."
+        },
+        "success": {
+          "title": "Видалити всі замовлення успішно",
+          "message": "Усі замовлення успішно видалено."
+        }
+      },
+      "refresh_orders": {
+        "error": {
+          "title": "Помилка оновлення замовлень",
+          "message": "Під час спроби оновити замовлення сталася помилка."
+        },
+        "success": {
+          "title": "Оновити замовлення успішно",
+          "message": "Замовлення успішно оновлено."
+        }
+      },
+      "delete_auction": {
+        "error": {
+          "title": "Видалити помилку аукціону",
+          "message": "Під час спроби видалити аукціон сталася помилка."
+        },
+        "success": {
+          "title": "Видалити успіх аукціону",
+          "message": "Аукціон успішно видалено."
+        }
+      },
+      "delete_all_auctions": {
+        "error": {
+          "title": "Помилка видалення всіх аукціонів",
+          "message": "Під час спроби видалити всі аукціони сталася помилка."
+        },
+        "success": {
+          "title": "Видалити всі аукціони успішно",
+          "message": "Усі аукціони успішно видалено."
+        }
+      },
+      "refresh_auctions": {
+        "error": {
+          "title": "Помилка оновлення аукціонів",
+          "message": "Під час спроби оновити аукціони сталася помилка."
+        },
+        "success": {
+          "title": "Оновити аукціони успішно",
+          "message": "Аукціони успішно оновлено."
+        }
+      }
+    },
+    "datatable_columns": {
+      "list_price": "Перераховано",
+      "maximum_price": {
+        "title": "Максимальна ціна",
+        "value": "{{maximum_price}} ({{currency}})",
+        "edit_tooltip": "Редагувати максимальну ціну"
+      },
+      "minimum_price": {
+        "title": "Мінімальна ціна",
+        "value": "{{minimum_price}} ({{currency}})",
+        "edit_tooltip": "Редагувати мінімальну ціну"
+      },
+      "actions": {
+        "title": "Дії",
+        "buttons": {
+          "manual_tooltip": "Продавати вручну",
+          "auto_tooltip": "Продам як вказано",
+          "bought_manual_tooltip": "Позначити як куплене",
+          "bought_auto_tooltip": "Куплено за вказаною ціною",
+          "hide": {
+            "disabled_tooltip": "Показати",
+            "enabled_tooltip": "Сховати"
+          },
+          "info_tooltip": "Інформація",
+          "delete_tooltip": "Видалити",
+          "edit_tooltip": "Редагувати",
+          "open_filter_tooltip": "Відкрити фільтр"
+        }
+      },
+      "quantity": {
+        "title": "Кількість"
+      },
+      "volume": {
+        "title": "Обсяг"
+      }
+    },
+    "item_name": {
+      "title": "Ім'я",
+      "value": "{{name}} {{quantity}} <blue>{{sub_type}}</blue>"
+    },
+    "pagination_total_items": "{{start}} - {{end}} / {{total}}",
+    "prompts": {
+      "delete_item": {
+        "title": "Ви впевнені?",
+        "message": "Цю дію не можна скасувати.",
+        "cancel": "Скасувати",
+        "confirm": "Підтвердити"
+      },
+      "delete_multiple_items": {
+        "title": "Ви впевнені?",
+        "message": "Ви впевнені, що хочете видалити ці {{count}} елементи? Цю дію не можна скасувати.",
+        "cancel": "Скасувати",
+        "confirm": "Підтвердити"
+      },
+      "sell_manual": {
+        "title": "Продано за",
+        "fields": {
+          "sell": {
+            "label": "Ціна"
+          },
+          "quantity": {
+            "label": "Кількість"
+          }
+        }
+      },
+      "bought_manual": {
+        "title": "Куплений за",
+        "fields": {
+          "bought": {
+            "label": "Ціна"
+          },
+          "quantity": {
+            "label": "Кількість"
+          }
+        }
+      },
+      "minimum_price": {
+        "title": "Мінімальна ціна",
+        "fields": {
+          "minimum_price": {
+            "label": "Мінімальна ціна",
+            "description": "Мінімальна ціна на товар"
+          }
+        }
+      },
+      "maximum_price": {
+        "title": "Максимальна ціна",
+        "fields": {
+          "maximum_price": {
+            "label": "Максимальна ціна",
+            "description": "Максимальна ціна на товар"
+          }
+        }
+      },
+      "save": {
+        "title": "зберегти",
+        "fields": {
+          "name": {
+            "label": "Ім'я"
+          }
+        }
+      }
+    },
+    "sort_by": {
+      "created_at": "Створено Ат",
+      "platinum": "Платина",
+      "updated_at": "Оновлено At",
+      "order_type": "Тип замовлення",
+      "disposition": "Розпорядження",
+      "endo": "Ендо",
+      "riven_grade": "Сорт Рівен"
+    }
+  },
+  "enums": {
+    "item_type": {
+      "riven": "Рівен",
+      "item": "Пункт",
+      "details": {
+        "riven": "Рівен",
+        "item": "Пункт"
+      }
+    },
+    "order_type": {
+      "all": "Всі замовлення",
+      "buy": "Купити замовлення",
+      "sell": "Замовлення на продаж",
+      "closed": "Закриті замовлення",
+      "details": {
+        "buy": "купити",
+        "sell": "Продати"
+      }
+    },
+    "transaction_type": {
+      "purchase": "Купівля",
+      "sale": "Розпродаж",
+      "trade": "Торгівля",
+      "details": {
+        "purchase": "Купівля",
+        "sale": "Розпродаж",
+        "trade": "Торгівля"
+      }
+    },
+    "stock_status": {
+      "pending": "В очікуванні",
+      "live": "Жити",
+      "to_low_profit": "Низький прибуток",
+      "no_sellers": "Немає продавців",
+      "no_buyers": "Немає покупців",
+      "inactive": "Неактивний",
+      "sma_limit": "Ліміт SMA",
+      "order_limit": "Ліміт замовлення",
+      "overpriced": "Завищена ціна",
+      "underpriced": "Занижена ціна",
+      "details": {
+        "pending": "Очікує на обробку",
+        "live": "Наживо на Warframe Market",
+        "to_low_profit": "Не оброблено через низький прибуток на основі налаштувань",
+        "no_sellers": "Немає продавців для цього товару",
+        "no_buyers": "На цей товар не знайдено покупців",
+        "inactive": "Неактивний і не оброблятиметься",
+        "sma_limit": "Обмежується SMA",
+        "order_limit": "Обмежується лімітом замовлення",
+        "overpriced": "Є завищеною ціною",
+        "underpriced": "Занижена ціна"
+      }
+    },
+    "stock_mode": {
+      "all": "всі",
+      "riven": "Рівен",
+      "item": "Пункт"
+    },
+    "trade_mode": {
+      "buy": "купити",
+      "sell": "Продати",
+      "wishlist": "Список бажань"
+    },
+    "user_status": {
+      "online": "Онлайн",
+      "ingame": "У грі",
+      "in_game": "У грі",
+      "invisible": "Офлайн"
+    },
+    "alert_type": {
+      "info": "Інформація",
+      "warning": "УВАГА",
+      "error": "Помилка",
+      "success": "Успіх"
+    }
+  },
+  "context": {
+    "app": {
+      "starting_up": "Запуск...",
+      "database": {
+        "updating_names_transactions": "Оновлення назв елементів транзакції {{progress}}%",
+        "updating_names_stock_items": "Оновлення назв запасних товарів {{progress}}%",
+        "updating_names_stock_rivens": "Оновлення розділених назв акцій {{progress}}%",
+        "updating_names_wish_lists": "Оновлення імен списку бажань {{progress}}%",
+        "update_names_completed": "Усі назви елементів оновлено"
+      },
+      "cache": {
+        "initializing": "Ініціалізація кешу...",
+        "updating": "Оновлення кешу...",
+        "item_price_updating": "Оновлення цін на товари..."
+      }
+    }
+  },
+  "components": {
+    "item_component": "<blue>{{name}}</blue> x<blue>{{count}}</blue>",
+    "item_components": "Компоненти предмета",
+    "patreon_overlay": {
+      "title": "Обмежений вміст",
+      "description": "Цей вміст доступний лише для прихильників Patreon рівня <blue>{{tier}}</blue> або вище.",
+      "buttons": {
+        "become_a_patron": "Стати патроном"
+      }
+    },
+    "timer_stamp": {
+      "years": "{{years}} років тому",
+      "months": "{{months}} місяців тому",
+      "days": "{{days}} днів тому",
+      "hours": "{{hours}} годин тому",
+      "minutes": "{{minutes}} хвилин тому",
+      "seconds": "{{seconds}} секунд тому"
+    },
+    "wfm_auction": {
+      "fields": {
+        "selling_price": "Ціна продажу: <blue>{{price}}</blue> <plat/>",
+        "left_footer": "<blue>{{mod_rank}}</blue>/<blue>{{max_rank}}</blue> <blue>{{drain}}</blue> <polarity/>",
+        "right_footer": "MR: <blue>{{mastery_level}}</blue> <roll/> <blue>{{re_rolls}}</blue>"
+      }
+    },
+    "live_scraper_control": {
+      "buttons": {
+        "start": "Запустіть Live Scraper",
+        "stop": "Зупинити Live Scraper"
+      },
+      "prompts": {
+        "start": {
+          "title": "УВАГА",
+          "message": "Ви впевнені, що хочете розпочати оперативне копіювання? Ця дія видалить усі замовлення на WFM, які не входять до чорного списку.",
+          "confirm": "старт",
+          "cancel": "Скасувати"
+        }
+      },
+      "item": {
+        "checking": "Елемент перевірки: <blue>{{name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        "deleted": "Видалення замовлень: <blue>{{current}}</blue>/<blue>{{total}}</blue>"
+      },
+      "riven": {
+        "cooldown": "Перезарядка Riven: залишилося <blue>{{seconds}}</blue> секунд",
+        "checking": "Перевірка Riven: <blue>{{name}}</blue> <blue>{{mod_name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        "rate_limited": "Швидкість обмежена: очікування <blue>{{seconds}}</blue> секунд перед продовженням"
+      }
+    },
+    "searchfield": {
+      "label": "Пошук",
+      "placeholder": "пошук...",
+      "buttons": {
+        "filter": {
+          "tooltip": "фільтр"
+        },
+        "search": {
+          "tooltip": "Пошук"
+        },
+        "create": {
+          "tooltip": "Створити"
+        }
+      }
+    },
+    "user_menu": {
+      "items": {
+        "app_label": "застосування",
+        "settings": "Налаштування",
+        "logout": "Вийти"
+      },
+      "errors": {
+        "logout": {
+          "title": "Помилка виходу",
+          "message": "Під час спроби вийти сталася помилка."
+        }
+      },
+      "success": {
+        "logout": {
+          "title": "Успішний вихід",
+          "message": "Ви успішно вийшли."
+        }
+      },
+      "prompts": {
+        "logout": {
+          "title": "Підтвердити вихід",
+          "message": "Ви впевнені, що бажаєте вийти?",
+          "confirm": "так",
+          "cancel": "немає"
+        }
+      }
+    },
+    "clock": {
+      "gmt": "GMT: <blue>{{time}}</blue>",
+      "time_until_midnight": "Час до півночі (GMT): <blue>{{time}}</blue>"
+    },
+    "layout": {
+      "log_in": {
+        "navbar": {
+          "home": "додому",
+          "debug": "Налагодження",
+          "live_scraper": "Живий скребок",
+          "warframe_market": "Ринок Warframe",
+          "trading_analytics": "Торгова аналітика",
+          "trade_messages": "Торгові повідомлення",
+          "chat": "Чат",
+          "wf_inventory": "Інвентар WF",
+          "about": "про"
+        }
+      }
+    },
+    "select_item_tags": {
+      "tags": {
+        "label": "Теги",
+        "description": "Виберіть теги для фільтрування елементів"
+      }
+    },
+    "theme_editor": {
+      "chart_styles": {
+        "title": "Стилі діаграм",
+        "fields": {
+          "bgColor": "Колір фону",
+          "lineColor": "Колір лінії",
+          "lastYearLineColor": "Колір лінії минулого року",
+          "currentYearLineColor": "Колір лінії поточного року"
+        },
+        "total": "Всього",
+        "today": "Сьогодні",
+        "last_days": "Останні 7 днів"
+      },
+      "color_palettes": {
+        "title": "Кольорові палітри",
+        "base_colors": "Базові кольори",
+        "stock_status": "Стан запасів",
+        "user_status": "Статус користувача",
+        "alert_type": "Тип сповіщення",
+        "transaction_type": "Тип транзакції",
+        "item_type": "Тип елемента",
+        "logo_color": "Колір логотипу",
+        "positive": "Позитивний",
+        "negative": "Негативний",
+        "profit": "Прибуток"
+      },
+      "sharing": {
+        "title": "Обмін"
+      },
+      "buttons": {
+        "copy_to_clipboard": "Копіювати в буфер обміну",
+        "import_from_clipboard": "Імпортувати з буфера обміну",
+        "open_themes_folder": "Відкрийте папку з темами"
+      },
+      "fields": {
+        "export_name": {
+          "label": "Ім'я",
+          "placeholder": "Введіть назву теми",
+          "error": "Недійсна назва теми"
+        },
+        "export_author": {
+          "label": "Автор",
+          "placeholder": "Введіть ім'я автора",
+          "error": "Недійсне ім'я автора",
+          "tooltip": "Створити"
+        }
+      },
+      "export_success": {
+        "title": "Успіх експорту теми",
+        "message": "Тему успішно експортовано."
+      },
+      "export_error": {
+        "title": "Помилка експорту теми",
+        "message": "Під час експорту теми сталася помилка: {{error}}"
+      }
+    },
+    "forms": {
+      "update_transaction": {
+        "buttons": {
+          "hide_properties": {
+            "label": "Приховати властивості"
+          },
+          "show_properties": {
+            "label": "Показати властивості"
+          }
+        },
+        "fields": {
+          "price": {
+            "label": "Ціна",
+            "placeholder": "Введіть ціну",
+            "description": "Ціна угоди в платині."
+          },
+          "quantity": {
+            "label": "Кількість",
+            "placeholder": "Введіть кількість",
+            "description": "Кількість товару, що продається."
+          },
+          "user_name": {
+            "label": "Ім'я користувача",
+            "placeholder": "Введіть ім'я користувача",
+            "description": "Ім’я користувача, пов’язане з транзакцією."
+          },
+          "created_at": {
+            "label": "Дата створення",
+            "placeholder": "Виберіть дату",
+            "description": "Дата транзакції."
+          },
+          "properties": {
+            "label": "Властивості",
+            "placeholder": "Введіть властивості",
+            "description": "Додаткові властивості транзакції."
+          }
+        }
+      },
+      "generic_item_list": {
+        "add_all_tooltip": "Додати всі елементи"
+      },
+      "edit_notification_setting": {
+        "discord": {
+          "tooltip": "Перемкнути сповіщення Discord",
+          "title": "Сповіщення Discord",
+          "fields": {
+            "webhook": {
+              "label": "URL-адреса вебхука",
+              "placeholder": "Введіть URL-адресу вебхуку Discord"
+            },
+            "content": {
+              "label": "Зміст",
+              "placeholder": "Введіть вміст сповіщення",
+              "reset_button": "Скинути до замовчування"
+            },
+            "user_ids": {
+              "label": "Ідентифікатори користувачів",
+              "placeholder": "Введіть ідентифікатори користувачів (через кому)",
+              "description": "Вкажіть ідентифікатори користувачів для отримання сповіщень"
+            }
+          }
+        },
+        "system": {
+          "tooltip": "Перемкнути системні сповіщення",
+          "title": "Системні сповіщення",
+          "fields": {
+            "title": {
+              "label": "Назва",
+              "placeholder": "Введіть назву сповіщення"
+            },
+            "content": {
+              "label": "Зміст",
+              "placeholder": "Введіть вміст сповіщення"
+            },
+            "sound": {
+              "label": "Звук",
+              "placeholder": "Виберіть звук сповіщення",
+              "play_tooltip": "Відтворення звуку",
+              "options": {
+                "none": "Жодного",
+                "cat_meow": "Кіт Мяу",
+                "windows_xp_error": "Помилка Windows XP",
+                "windows_xp_startup": "Запуск Windows XP",
+                "iphone_notification": "Чортове сповіщення на телефон",
+                "windows_notification": "Сповіщення Windows"
+              }
+            },
+            "volume": {
+              "label": "Обсяг",
+              "placeholder": "Встановити рівень гучності"
+            }
+          }
+        },
+        "webhook": {
+          "tooltip": "Перемкнути сповіщення Webhook",
+          "title": "Сповіщення Webhook",
+          "fields": {
+            "url": {
+              "label": "URL-адреса вебхука",
+              "placeholder": "Введіть URL-адресу веб-перехоплення"
+            }
+          }
+        },
+        "manage_sounds": {
+          "title": "Додати спеціальний звук",
+          "buttons": {
+            "manage": "Керування звуками",
+            "back": "Повернутися назад"
+          },
+          "fields": {
+            "name": {
+              "label": "Назва звуку",
+              "placeholder": "Назва звуку"
+            },
+            "file": {
+              "label": "Звуковий файл",
+              "placeholder": "Виберіть файл"
+            }
+          },
+          "tooltips": {
+            "add_sound": "Додати звук",
+            "play": "грати",
+            "delete": "Видалити"
+          },
+          "notifications": {
+            "add_error": {
+              "title": "Додати звукову помилку",
+              "message": "Під час спроби додати звук сталася помилка."
+            },
+            "delete_error": {
+              "title": "Видалити звукову помилку",
+              "message": "Під час спроби видалити звук сталася помилка."
+            }
+          },
+          "table": {
+            "columns": {
+              "name": "Ім'я",
+              "file_name": "Ім'я файлу",
+              "actions": "Дії"
+            }
+          },
+          "dialog": {
+            "delete": {
+              "title": "Видалити {{name}}",
+              "message": "Ви впевнені, що хочете видалити цей звук? Цю дію не можна скасувати.",
+              "confirm": "Видалити",
+              "cancel": "Скасувати"
+            }
+          },
+          "file_picker": {
+            "filter_name": "Аудіо"
+          }
+        }
+      },
+      "riven_filter_attribute": {
+        "fields": {
+          "is_required": {
+            "tooltip": "є обов'язковим"
+          }
+        }
+      },
+      "riven_filter": {
+        "fields": {
+          "enabled": {
+            "label": "Увімкнено"
+          },
+          "similarity": {
+            "label": "Подібність"
+          },
+          "rank": {
+            "label": "ранг"
+          },
+          "mastery_rank": {
+            "label": "Ранг майстерності"
+          },
+          "required_negative": {
+            "label": "Обов’язковий негативний"
+          },
+          "re_rolls": {
+            "label": "Re-Rolls"
+          }
+        },
+        "buttons": {
+          "save": {
+            "label": "зберегти"
+          }
+        }
+      },
+      "create_riven_attributes": {
+        "fields": {
+          "positive": {
+            "title": "Позитивні якості",
+            "add": "додати"
+          },
+          "negative": {
+            "title": "Негативні атрибути"
+          }
+        },
+        "buttons": {
+          "add": "+ Додати"
+        }
+      },
+      "create_riven_attribute": {
+        "fields": {
+          "value": {
+            "error": "Недійсне значення"
+          }
+        },
+        "buttons": {
+          "remove": "видалити"
+        }
+      },
+      "create_riven": {
+        "buttons": {
+          "submit": {
+            "label": "Створити"
+          }
+        },
+        "fields": {
+          "mastery_rank": {
+            "label": "Ранг майстерності",
+            "placeholder": "8",
+            "error": "Недійсний ранг майстерності"
+          },
+          "re_rolls": {
+            "label": "Re-Rolls",
+            "placeholder": "0",
+            "error": "Недійсні перекиди"
+          },
+          "rank": {
+            "label": "ранг",
+            "placeholder": "0",
+            "error": "Недійсний ранг"
+          },
+          "polarity": {
+            "label": "Полярність",
+            "error": "Неправильна полярність"
+          },
+          "weapon": {
+            "label": "Назва зброї",
+            "placeholder": "Зброя",
+            "error": "Недійсна зброя"
+          },
+          "bought": {
+            "label": "Купив",
+            "placeholder": "Купив",
+            "error": "Куплений недійсний"
+          },
+          "attributes": {
+            "label": "Атрибути",
+            "error": "Riven повинен мати принаймні 2 позитивних атрибути"
+          },
+          "attribute": {
+            "label": "Атрибут",
+            "error": "Значення атрибута не можуть дорівнювати 0"
+          },
+          "mod_name": {
+            "label": "Назва мода",
+            "placeholder": "Назва мода",
+            "error": "Недійсна назва мода"
+          }
+        }
+      },
+      "debugging_live_item_entry": {
+        "fields": {
+          "wfm_url": {
+            "label": "Пункт",
+            "placeholder": "Виберіть елемент...",
+            "error": "Будь ласка, виберіть товар"
+          },
+          "stock_id": {
+            "label": "ID акцій",
+            "placeholder": "Введіть ідентифікатор акції...",
+            "error": "Недійсний ідентифікатор запасу"
+          },
+          "wish_list_id": {
+            "label": "ID списку бажань",
+            "placeholder": "Введіть ідентифікатор списку бажань...",
+            "error": "Недійсний ідентифікатор списку бажань"
+          },
+          "priority": {
+            "label": "Пріоритет",
+            "placeholder": "Введіть пріоритет...",
+            "error": "Пріоритет має бути 0 або більше"
+          },
+          "buy_quantity": {
+            "label": "Купити Кількість",
+            "placeholder": "Введіть кількість покупки...",
+            "error": "Кількість покупки має бути 0 або більше"
+          },
+          "sell_quantity": {
+            "label": "Продати кількість",
+            "placeholder": "Введіть кількість продажу...",
+            "error": "Кількість продажу має бути 0 або більше"
+          },
+          "operation": {
+            "label": "Операції",
+            "placeholder": "Виберіть операції...",
+            "error": "Виберіть принаймні одну операцію"
+          }
+        },
+        "buttons": {
+          "add": {
+            "tooltip": "Додайте запис живого елемента налагодження"
+          }
+        }
+      },
+      "create_category_summary": {
+        "fields": {
+          "icon": {
+            "label": "значок",
+            "placeholder": "значок",
+            "description": "Значок категорії",
+            "tooltip": "Значок категорії",
+            "error": "Недійсний значок"
+          },
+          "name": {
+            "label": "Ім'я",
+            "placeholder": "Ім'я",
+            "description": "Назва категорії",
+            "tooltip": "Назва категорії",
+            "error": "Недійсне ім'я"
+          },
+          "types": {
+            "label": "Типи",
+            "description": "Типи для категорії"
+          }
+        },
+        "buttons": {
+          "submit": {
+            "label": "Створити/зберегти категорію"
+          }
+        }
+      },
+      "select_tradable_item": {
+        "fields": {
+          "item": {
+            "label": "Пункт",
+            "placeholder": "Виберіть елемент..."
+          },
+          "variant": {
+            "label": "Варіант",
+            "placeholder": "Виберіть варіант...",
+            "description": "Будь ласка, виберіть варіант"
+          },
+          "rank": {
+            "label": "ранг",
+            "placeholder": "Виберіть ранг...",
+            "description": "Виберіть ранг"
+          },
+          "cyan_stars": {
+            "label": "Блакитні зірки",
+            "placeholder": "Виберіть блакитні зірочки...",
+            "description": "Скільки блакитних зірок"
+          },
+          "amber_stars": {
+            "label": "Янтарні зірки",
+            "placeholder": "Виберіть бурштинові зірочки...",
+            "description": "Скільки бурштинових зірок"
+          }
+        },
+        "messages": {
+          "nothing_found": "Елементів не знайдено"
+        }
+      },
+      "select_riven_weapon": {
+        "fields": {
+          "weapon": {
+            "label": "Зброя",
+            "placeholder": "Виберіть зброю..."
+          }
+        }
+      },
+      "create_item": {
+        "fields": {
+          "quantity": {
+            "label": "Кількість",
+            "placeholder": "Кількість",
+            "error": "Недійсна кількість"
+          },
+          "bought": {
+            "label": "Купив",
+            "placeholder": "Купив",
+            "error": "Куплений недійсний"
+          }
+        },
+        "buttons": {
+          "add": {
+            "tooltip": {
+              "description_with_report": "Додайте предмет на склад і повідомте про це на Warframe Market",
+              "description_without_report": "Додати товар на склад"
+            }
+          }
+        }
+      },
+      "log_in": {
+        "title": "Warframe Market - Вхід",
+        "register": "Немає облікового запису? зареєструватися",
+        "fields": {
+          "email": {
+            "label": "Електронна пошта",
+            "placeholder": "Електронна пошта",
+            "error": "Недійсна електронна адреса"
+          },
+          "password": {
+            "label": "Пароль",
+            "placeholder": "Пароль",
+            "error": "Пароль має містити не менше 6 символів"
+          }
+        },
+        "buttons": {
+          "submit": "Увійти"
+        }
+      },
+      "settings": {
+        "tabs": {
+          "general": {
+            "title": "Загальний",
+            "fields": {
+              "language": {
+                "label": "Мова",
+                "placeholder": "Виберіть мову",
+                "error": "Недійсна мова"
+              }
+            }
+          },
+          "themes": {
+            "title": "Теми",
+            "community_themes": "Теми спільноти",
+            "get_more_out_of_themes": "Отримайте більше від тем за допомогою редактора тем Натисніть тут",
+            "theme_configuration": "Конфігурація теми"
+          },
+          "notifications": {
+            "title": "Сповіщення",
+            "on_new_conversation_title": "Про нову розмову",
+            "on_new_trade_title": "На Новий Трейд",
+            "on_wfm_chat_message_title": "Повідомлення чату WFM"
+          },
+          "advanced": {
+            "title": "Просунутий",
+            "fields": {
+              "wf_log_path": {
+                "label": "Шлях журналу Warframe",
+                "placeholder": "Шлях журналу Warframe за замовчуванням",
+                "errors": {
+                  "not_exists": "Зазначений шлях не існує."
+                },
+                "tooltip": "Шлях до файлу журналу Warframe. залиште пустим для шляху за замовчуванням."
+              }
+            },
+            "button_export_logs": "Експорт журналу"
+          },
+          "summary": {
+            "title": "Резюме",
+            "fields": {
+              "recent_days": {
+                "label": "Останні дні",
+                "tooltip": "Скільки днів показувати дані"
+              },
+              "recent_transactions": {
+                "label": "Останні транзакції",
+                "tooltip": "Скільки транзакцій показати"
+              }
+            },
+            "datatable": {
+              "columns": {
+                "name": "Ім'я",
+                "tags": "Теги",
+                "types": "Типи",
+                "actions": {
+                  "title": "Дії",
+                  "buttons": {
+                    "edit": {
+                      "tooltip": "Редагувати елемент"
+                    },
+                    "delete": {
+                      "tooltip": "Видалити елемент"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "live_scraper": {
+            "title": "Живий скребок",
+            "general": {
+              "title": "Загальний",
+              "fields": {
+                "auto_trade": {
+                  "label": "Авто Трейд",
+                  "error": "Недійсна торгівля авто",
+                  "tooltip": "Автоматично додавати/продавати акції, якщо це правда"
+                },
+                "auto_delete": {
+                  "label": "Автоматичне видалення",
+                  "error": "Недійсне автоматичне видалення",
+                  "tooltip": "Автоматично видаляти складські товари"
+                },
+                "should_delete_other_types": {
+                  "label": "Слід видалити інші типи торгівлі",
+                  "error": "Недійсний має видалити інші типи торгівлі",
+                  "tooltip": "Буде видалено інші типи торгівлі, якщо це правда. Приклад: якщо ввімкнено покупку, буде видалено елементи продажу/списку бажань, якщо вони не в чорному списку"
+                },
+                "report_to_wfm": {
+                  "label": "Звіт на Warframe Market",
+                  "error": "Недійсний звіт для Warframe Market",
+                  "tooltip": "Додасть транзакцію до Warframe Market"
+                },
+                "trade_modes": {
+                  "label": "Режим торгівлі",
+                  "description": "Виберіть режими торгівлі",
+                  "error": "Недійсний режим торгівлі"
+                },
+                "stock_mode": {
+                  "label": "Стоковий режим",
+                  "description": {
+                    "all": "Переживе все",
+                    "riven": "Пройде лише через розриви",
+                    "item": "Переглядатиме лише предмети"
+                  },
+                  "placeholder": "Стоковий режим",
+                  "error": "Недійсний режим запасу"
+                }
+              },
+              "columns": {
+                "name": "Ім'я",
+                "maximum_price": "Максимальна ціна"
+              },
+              "buttons": {
+                "edit_blacklist_label": "Редагувати чорний список {{count}}",
+                "edit_buy_list_label": "Редагувати список покупок {{count}}"
+              },
+              "black_list": {
+                "available_items_label": "Доступні елементи",
+                "selected_items_label": "Предмети з чорного списку",
+                "name_title": "Ім'я",
+                "trade_tax_title": "Податок на торгівлю",
+                "trade_tax_label": "Торговий податок {{min}} - {{max}}",
+                "mr_requirement_label": "Вимога MR {{min}} - {{max}}",
+                "mr_requirement_title": "Вимога MR",
+                "disabled_for_title": "Вимкнено для",
+                "go_back_label": "Повернутися назад",
+                "set_trade_modes_tooltip": "Установити вибрані режими торгівлі {{modes}}",
+                "no_trade_selected": "Режими торгівлі не вибрано, виберіть принаймні один режим торгівлі"
+              }
+            },
+            "item": {
+              "title": "Складський товар",
+              "wtb": {
+                "title": "WTB",
+                "fields": {
+                  "volume_threshold": {
+                    "label": "Порогове значення гучності",
+                    "placeholder": "Порогове значення гучності",
+                    "error": "Недійсний поріг обсягу",
+                    "tooltip": "Мінімальний обсяг для торгівлі",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#volume-threshold"
+                  },
+                  "profit_threshold": {
+                    "label": "Поріг прибутку",
+                    "placeholder": "Поріг прибутку",
+                    "error": "Недійсний поріг прибутку",
+                    "tooltip": "Мінімальний прибуток для торгівлі",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#profit-threshold"
+                  },
+                  "avg_price_cap": {
+                    "label": "Середня ціна Кап",
+                    "placeholder": "Середня ціна Кап",
+                    "error": "Недійсне обмеження середньої ціни",
+                    "tooltip": "Максимальна середня ціна для торгівлі",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#average-price-cap"
+                  },
+                  "trading_tax_cap": {
+                    "label": "Ліміт податку на торгівлю",
+                    "placeholder": "Ліміт податку на торгівлю",
+                    "error": "Недійсне обмеження податку на торгівлю",
+                    "tooltip": "Максимальний податок для торгівлі",
+                    "link": "https://example.com/trading-tax-cap"
+                  },
+                  "max_total_price_cap": {
+                    "label": "Макс. загальна ціна",
+                    "placeholder": "Макс. загальна ціна",
+                    "error": "Недійсне обмеження максимальної загальної ціни",
+                    "tooltip": "Максимальна загальна ціна для торгівлі -1 без обмежень",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#max-total-price-cap"
+                  },
+                  "price_shift_threshold": {
+                    "label": "Поріг зміни ціни",
+                    "placeholder": "Поріг зміни ціни",
+                    "error": "Недійсний поріг зміни ціни",
+                    "tooltip": "Мінімальна зміна ціни, яку слід враховувати для торгівлі",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#price-shift-threshold"
+                  },
+                  "buy_quantity": {
+                    "label": "Кількість товару",
+                    "placeholder": "Кількість товару",
+                    "error": "Недійсна кількість товару",
+                    "tooltip": "Кількість товару для покупки",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#quantity-of-goods"
+                  },
+                  "min_wtb_profit_margin": {
+                    "label": "Поріг маржі прибутку",
+                    "placeholder": "Поріг маржі прибутку",
+                    "error": "Недійсний поріг прибутку",
+                    "tooltip": "Мінімальна норма прибутку для торгів WTB",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#profit-margin-threshold"
+                  },
+                  "quantity_per_trade": {
+                    "label": "Кількість на угоду",
+                    "placeholder": "Кількість на угоду",
+                    "error": "Недійсна кількість на угоду",
+                    "tooltip": "Кількість товарів для обміну на транзакцію: ПРИМІТКА: це дійсне лише для деяких предметів, як-от аркани",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#quantity-per-trade"
+                  },
+                  "max_stock_quantity": {
+                    "label": "Максимальна кількість на складі",
+                    "placeholder": "Максимальна кількість на складі",
+                    "error": "Недійсна максимальна кількість на складі",
+                    "tooltip": "Максимальна кількість товару, яка має бути в наявності до припинення створення замовлення WTB. Встановіть -1, щоб вимкнути цю функцію.",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#max-stock-quantity"
+                  },
+                  "wts": {
+                    "title": "WTS",
+                    "fields": {}
+                  }
+                }
+              },
+              "wts": {
+                "title": "WTS",
+                "fields": {
+                  "min_sma": {
+                    "label": "Мінімальний SMA",
+                    "placeholder": "Мінімальний SMA",
+                    "error": "Недійсний мінімальний SMA",
+                    "tooltip": "Мінімальне просте ковзне середнє, яке слід враховувати для торгівлі",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wts#min-sma"
+                  },
+                  "min_profit": {
+                    "label": "Мінімальний прибуток",
+                    "placeholder": "Мінімальний прибуток",
+                    "error": "Недійсний мінімальний прибуток",
+                    "tooltip": "Мінімальний прибуток для торгівлі",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wts#min-profit"
+                  }
+                }
+              },
+              "summary": {
+                "title": "Резюме",
+                "datatable_columns": {
+                  "profit": "Потенційний прибуток",
+                  "trading_tax": "Податок на торгівлю"
+                },
+                "buttons": {
+                  "show_interesting_wtb_items": "Показати цікаві предмети WTB"
+                }
+              }
+            },
+            "riven": {
+              "title": "Сток Рівен",
+              "fields": {
+                "min_profit": {
+                  "label": "Мінімальний прибуток",
+                  "placeholder": "Мінімальний прибуток",
+                  "error": "Недійсний мінімальний прибуток",
+                  "tooltip": "Мінімальний прибуток для торгівлі",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#min-profit"
+                },
+                "threshold_percentage": {
+                  "label": "Пороговий відсоток",
+                  "placeholder": "Пороговий відсоток",
+                  "error": "Недійсний пороговий відсоток",
+                  "tooltip": "Відсотковий поріг для торгівлі",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#minimum-price-shift"
+                },
+                "limit_to": {
+                  "label": "Обмежити до",
+                  "placeholder": "Обмежити до",
+                  "error": "Недійсний ліміт до",
+                  "tooltip": "Обмежте кількість угод",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#limit-to"
+                },
+                "update_interval": {
+                  "label": "Інтервал оновлення (секунди)",
+                  "placeholder": "Інтервал оновлення",
+                  "error": "Недійсний інтервал оновлення",
+                  "tooltip": "Інтервал для оновлення розділених угод",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#update-interval"
+                }
+              }
+            }
+          },
+          "http_server": {
+            "title": "Сервер HTTP",
+            "general": {
+              "title": "Загальний",
+              "fields": {
+                "enabled": {
+                  "label": "Увімкнено",
+                  "tooltip": "Увімкніть або вимкніть HTTP-сервер"
+                },
+                "port": {
+                  "label": "Порт",
+                  "placeholder": "Порт",
+                  "tooltip": "Порт, на якому працюватиме сервер HTTP"
+                },
+                "host": {
+                  "label": "Хост",
+                  "placeholder": "Хост",
+                  "error": "Недійсний хост",
+                  "tooltip": "Хост, на якому працюватиме сервер HTTP"
+                }
+              }
+            }
+          }
+        }
+      },
+      "trade_entry_update": {
+        "fields": {
+          "price_label": "Ціна",
+          "tags_label": "Теги"
+        }
+      }
+    },
+    "modals": {
+      "base": {
+        "buttons": {
+          "confirm": "Підтвердити",
+          "cancel": "Скасувати"
+        }
+      },
+      "generate_trade_message": {
+        "title": "Створити комерційне повідомлення для {{count}} позицій(ів)",
+        "button_add_key_tooltip": "Додати дисплей",
+        "button_copy_tooltip": "Копіювати в буфер обміну",
+        "button_delete_template_tooltip": "Видалити шаблон",
+        "button_load_template_tooltip": "Завантажити шаблон",
+        "button_save_template_tooltip": "Зберегти шаблон",
+        "titles": {
+          "message_settings": "Налаштування повідомлень",
+          "preview_with_icons": "Попередній перегляд із значками",
+          "display_settings": "Налаштування дисплея"
+        },
+        "fields": {
+          "prefix": {
+            "label": "Префікс",
+            "description": "Префікс для торгового повідомлення",
+            "placeholder": "Префікс"
+          },
+          "suffix": {
+            "label": "Суфікс",
+            "description": "Суфікс для торгового повідомлення",
+            "placeholder": "Суфікс"
+          },
+          "message": {
+            "label": "повідомлення",
+            "description": "Згенероване торгове повідомлення",
+            "length_info": "{{current}} / {{max}} символів"
+          },
+          "key": {
+            "label": "ключ",
+            "description": "Ключ для розділення елементів у повідомленні",
+            "placeholder": "ключ"
+          },
+          "template": {
+            "label": "Шаблон торгового повідомлення",
+            "description": "Шаблон для створення повідомлення."
+          },
+          "chat_icon": {
+            "label": "Значки чату",
+            "description": "Додайте в повідомлення значки чату Warframe Market"
+          },
+          "group_by": {
+            "label": "Групувати за",
+            "description": "Групуйте елементи за типом у повідомленні"
+          },
+          "load_template": {
+            "label": "Завантажити шаблон",
+            "description": "Завантажте збережений шаблон повідомлення"
+          }
+        },
+        "datatable": {
+          "columns": {
+            "key": "ключ",
+            "name": "Ім'я",
+            "prefix": "Префікс",
+            "suffix": "Суфікс"
+          }
+        }
+      },
+      "patreon_modal": {
+        "title": "Підтримка розробки Quantframe",
+        "description": "Отримайте доступ до преміум-функцій, підтримавши мене на Patreon",
+        "premium_content": "Активність користувача | Пошук цін Riven | Експорт даних | Статистика предметів",
+        "join_the_community": "Приєднуйтеся до спільноти прихильників і допоможіть сформувати майбутнє Quantframe.",
+        "link_your_account": "2. Прив’яжіть свій обліковий запис Patreon",
+        "buttons": {
+          "info": "Patreon",
+          "link": "Прив’яжіть свій обліковий запис"
+        }
+      },
+      "item_details": {
+        "tabs": {
+          "overview": {
+            "title": "Огляд",
+            "tooltips": {},
+            "labels": {
+              "created_at": "Створено: <date/>",
+              "updated_at": "Оновлено: <date/>",
+              "bought": "Ціна придбання: {{price}} <plat/>",
+              "list_price": "Зазначена ціна: {{price}} <plat/>",
+              "potential_profit": "Потенційний прибуток: {{price}} <plat/>",
+              "minimum_profit": "Мінімальний прибуток: {{price}}",
+              "minimum_sma": "Мінімальний SMA: {{price}}",
+              "quantity": "Кількість: {{quantity}}",
+              "is_hidden": "Приховано: <hidden/>"
+            }
+          },
+          "analytics": {
+            "title": "Аналітика",
+            "tooltips": {},
+            "labels": {},
+            "titles": {
+              "last_transactions": "Останні транзакції",
+              "financial_summary": "Фінансове резюме"
+            }
+          },
+          "wfm": {
+            "title": "Огляд",
+            "tooltips": {
+              "buy_highest_price": "Купити Highest",
+              "sell_highest_price": "Продати Найвищий",
+              "spread_percent": "Відсоток поширення",
+              "supply": "Постачання"
+            },
+            "labels": {
+              "buy_lowest": "Купити Найнижче",
+              "sell_lowest": "Продавати найнижче",
+              "spread": "Поширення",
+              "demand": "Попит",
+              "roi_percent": "Відсоток ROI"
+            },
+            "buttons": {
+              "view_on_wfm": "Переглянути на Warframe Market"
+            }
+          },
+          "edit": {
+            "title": "Редагувати",
+            "fields": {
+              "bought": "Куплено для",
+              "minimum_price": "Мінімальна ціна",
+              "maximum_price": "Максимальна ціна",
+              "owned": "Наразі у власності",
+              "quantity": "Кількість",
+              "minimum_sma": "Мінімальний SMA",
+              "minimum_profit": "Мінімальний прибуток"
+            },
+            "tooltips": {
+              "minimum_price": "Мінімальна ціна, за яку ви готові продати цей товар. Встановіть 0, щоб вимкнути.",
+              "minimum_profit": "Мінімальний прибуток, який ви хочете отримати, продаючи цей товар. Встановіть 0, щоб вимкнути",
+              "minimum_sma": "Мінімальне просте ковзне середнє, яке слід враховувати для продажу цього товару. Встановіть 0, щоб вимкнути",
+              "maximum_price": "Максимальна ціна, за яку ви готові купити цей товар. Встановіть 0, щоб вимкнути."
+            }
+          }
+        }
+      },
+      "riven_details": {
+        "tabs": {
+          "overview": {
+            "title": "Огляд",
+            "tooltips": {},
+            "labels": {
+              "created_at": "Створено: <date/>",
+              "updated_at": "Оновлено: <date/>",
+              "bought": "Ціна придбання: {{price}} <plat/>",
+              "list_price": "Зазначена ціна: {{price}} <plat/>",
+              "potential_profit": "Потенційний прибуток: {{price}} <plat/>",
+              "minimum_profit": "Мінімальний прибуток: {{price}}",
+              "minimum_sma": "Мінімальний SMA: {{price}}",
+              "kuva": "Витрачено: {{kuva}}",
+              "endo": "Ендо: {{endo}}",
+              "is_hidden": "Приховано: <hidden/>"
+            }
+          },
+          "modifiers": {
+            "title": "Модифікатори",
+            "tooltips": {},
+            "labels": {
+              "weapon": "Зброя",
+              "rank": "ранг"
+            },
+            "titles": {}
+          },
+          "roll_evaluation": {
+            "title": "Оцінка рулону",
+            "tooltips": {},
+            "labels": {
+              "best_attributes": "Найкращі атрибути",
+              "mandatory": "Обов'язковий",
+              "optional": "Додатково",
+              "best_bad_attributes": "Кращі погані якості"
+            },
+            "titles": {}
+          },
+          "analytics": {
+            "title": "Аналітика",
+            "tooltips": {},
+            "labels": {},
+            "titles": {
+              "last_transactions": "Останні транзакції",
+              "financial_summary": "Фінансове резюме"
+            }
+          },
+          "wfm": {
+            "title": "Ринок Warframe",
+            "tooltips": {},
+            "labels": {
+              "auction_header_left": "{{similarity}}%",
+              "auction_header_right": "{{price}} <plat/>"
+            },
+            "buttons": {
+              "view_on_wfm": "Переглянути на Warframe Market"
+            }
+          },
+          "edit": {
+            "title": "Редагувати",
+            "fields": {
+              "bought": "Куплено для",
+              "minimum_price": "Мінімальна ціна",
+              "mastery_rank": "Ранг майстерності",
+              "re_rolls": "Re-Rolls",
+              "minimum_profit": "Мінімальний прибуток"
+            },
+            "tooltips": {
+              "minimum_price": "Мінімальна ціна, за яку ви готові продати цей товар. Встановіть 0, щоб вимкнути.",
+              "minimum_profit": "Мінімальний прибуток, який ви хочете отримати, продаючи цей товар. Встановіть 0, щоб вимкнути",
+              "minimum_sma": "Мінімальне просте ковзне середнє, яке слід враховувати для продажу цього товару. Встановіть 0, щоб вимкнути",
+              "maximum_price": "Максимальна ціна, за яку ви готові купити цей товар. Встановіть 0, щоб вимкнути."
+            }
+          }
+        }
+      },
+      "update_available": {
+        "title": "Доступне нове оновлення (v{{version}})",
+        "buttons": {
+          "download": "Завантажити та встановити",
+          "download_manual": "Завантажити вручну",
+          "read_more": "Детальніше"
+        }
+      },
+      "tos": {
+        "title": "Умови обслуговування",
+        "buttons": {
+          "accept": "прийняти",
+          "decline": "відхилити"
+        }
+      },
+      "app_error": {
+        "title": "Помилка в компоненті {{component}}",
+        "version": "Версія: {{version}}",
+        "cause": "Причина: {{cause}}",
+        "message": "Повідомлення: {{message}}",
+        "location": "Розташування: {{location}}",
+        "footer": "Будь ласка, повідомте про цю помилку розробникам,\nЯкщо експортувати файл журналу, просто клацніть кнопку під цим файлом буде створено на робочому столі",
+        "export_log": "Журнал експорту"
+      }
+    },
+    "chat_item": {
+      "delete_tooltip": "Видалити розмову",
+      "last_update": "Останнє оновлення"
+    },
+    "chat_rome": {
+      "fields": {
+        "message": {
+          "too_long": "Повідомлення занадто довге",
+          "placeholder": "Введіть своє повідомлення тут..."
+        }
+      },
+      "buttons": {
+        "back_label": "Назад",
+        "send_label": "Надіслати",
+        "options": {
+          "label": "Опції",
+          "delete": "чому ти тут?"
+        }
+      }
+    },
+    "best_by_category_table": {
+      "datatable": {
+        "columns": {
+          "name": "Ім'я",
+          "revenue": "Дохід",
+          "expense": "Витрати",
+          "profit": "Прибуток",
+          "profit_margin": "Маржа прибутку",
+          "quantity": "Кількість"
+        }
+      }
+    },
+    "bar_chart_financial_summary": {
+      "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+      "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>",
+      "tooltips": {
+        "expense": "Загальні витрати",
+        "revenue": "Загальний дохід",
+        "profit": "Загальний прибуток",
+        "trades": "Кількість угод",
+        "sales": "Кількість продажів",
+        "purchases": "Кількість покупок"
+      }
+    },
+    "financial_report_card": {
+      "tooltips": {
+        "total_expenses": "Загальні витрати",
+        "total_revenue": "Загальний дохід",
+        "average_profit": "Середній прибуток",
+        "total_credits": "Загальна кількість кредитів",
+        "lowest_revenue": "Найнижчий дохід",
+        "lowest_expense": "Найнижчі витрати",
+        "highest_revenue": "Найвищий дохід"
+      },
+      "labels": {
+        "trade_count": "Торговий граф",
+        "highest_revenue": "Найвищий дохід",
+        "highest_expense": "Найвищі витрати",
+        "total_transactions": "Загальна кількість транзакцій",
+        "revenue": "Дохід",
+        "expenses": "Витрати",
+        "total_profit": "Загальний прибуток"
+      }
+    },
+    "riven_preview": {
+      "riven_name": "{{name}} <blue>{{mod_name}}</blue>",
+      "types": {
+        "unveiled": {
+          "footer_left": "{{progress}}/{{required}}"
+        },
+        "pre-veiled": {
+          "footer_left": "x{{quantity}}"
+        },
+        "veiled": {
+          "header_left": "{{price}} <plat/>",
+          "footer_left": "Р: {{rank}}/8",
+          "footer_right": "MR: {{mastery}}"
+        }
+      }
+    },
+    "price_history_popover": {
+      "labels": {
+        "price_history": "Історія цін"
+      }
+    }
+  },
+  "pages": {
+    "home": {
+      "cards": {
+        "total": {
+          "title": "Загальний прибуток",
+          "footer": "Продажі: <blue>{{sales}}</blue> | Придбання: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | Маржа прибутку: <blue>{{profit_margin}}</blue>%",
+          "bar_chart": {
+            "title": "Загальний прибуток",
+            "datasets": {
+              "this_year": "Цього року",
+              "last_year": "Минулого року"
+            }
+          }
+        },
+        "today": {
+          "title": "Сьогоднішній прибуток",
+          "footer": "Продажі: <blue>{{sales}}</blue> | Придбання: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | Маржа прибутку: <blue>{{profit_margin}}</blue>%",
+          "bar_chart": {
+            "title": "Сьогоднішній прибуток",
+            "datasets": {
+              "profit": "Прибуток"
+            },
+            "footers": {
+              "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+              "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>"
+            }
+          }
+        },
+        "recent_days": {
+          "bar_chart": {
+            "title": "Останні {{days}} днів",
+            "datasets": {
+              "profit": "Прибуток"
+            },
+            "footers": {
+              "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+              "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>"
+            }
+          }
+        },
+        "best_seller": {
+          "title": "Прибуток кращого продавця",
+          "footer": "Назва: <blue>{{name}}</blue> | S: <blue>{{sales}}</blue> | P: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | PM: <blue>{{profit_margin}}</blue>%"
+        },
+        "last_transaction": {
+          "title": "Остання транзакція",
+          "info_box": {
+            "purchase": "Придбати {{count}}",
+            "sale": "Розпродаж {{count}}"
+          }
+        }
+      }
+    },
+    "about": {
+      "cards": {
+        "coffee": {
+          "title": "кава"
+        },
+        "patreon": {
+          "title": "Підтримайте мене на Patreon"
+        },
+        "discord": {
+          "title": "Розбрат"
+        },
+        "guide": {
+          "title": "Wiki/Посібник"
+        }
+      },
+      "text": {
+        "version": "Версія: <blue>{{version}}</blue> Зроблено за допомогою ❤️ у 🇩🇰. © 2023-{{year}} Kenya-DK. Всі права захищені",
+        "patreon_thanks": "Особлива подяка прихильникам Patreon «Користувачі Quantframe» за створення Quantframe: <blue>{{users}}</blue>.",
+        "disclaimer": "Quantframe є сторонньою програмою, яка не пов’язана з Digital Extremes."
+      },
+      "button_check_for_updates": "Перевірте наявність оновлень"
+    },
+    "debug": {
+      "tabs": {
+        "logging": {
+          "title": "Лісозаготівля",
+          "datatable": {
+            "columns": {
+              "command": "Команда",
+              "count": "Граф",
+              "actions": {
+                "title": "Дії",
+                "buttons": {
+                  "remove_tooltip": "Видалити команду входу"
+                }
+              }
+            }
+          },
+          "buttons": {
+            "add_log": "Додати журнал"
+          },
+          "prompt": {
+            "name": {
+              "title": "Додати журнал",
+              "fields": {
+                "name": {
+                  "label": "Ім'я журналу"
+                }
+              }
+            }
+          }
+        },
+        "states": {
+          "title": "держави",
+          "accordions": {
+            "app_info": "Інформація про додаток",
+            "app_error": "Помилка програми",
+            "settings": "Налаштування",
+            "alerts": "Оповіщення",
+            "user": "Користувач",
+            "live_scraper": "Живий скребок",
+            "wfm_state": "Держава WFM",
+            "tauri_events": "Таврійські події"
+          }
+        },
+        "debugging": {
+          "title": "Налагодження",
+          "fake_orders_tooltip": "Увімкнути підроблені замовлення для реальної торгівлі (тільки для тестування) зберігатимуться в dev.kenya.quantframe\\fake_orders",
+          "fake_orders_label": "Використовуйте Fake Orders Live Orders",
+          "datatable": {
+            "columns": {
+              "wfm_url": {
+                "title": "Ім'я",
+                "value": "{{name}} <blue>{{sub_type}}</blue>"
+              },
+              "stock_id": "ID акцій",
+              "wish_list_id": "ID списку бажань",
+              "priority": "Пріоритет",
+              "buy_quantity": "Купити Кількість",
+              "sell_quantity": "Продати кількість",
+              "operation": "Операція",
+              "actions": {
+                "title": "Дії",
+                "buttons": {
+                  "delete_tooltip": "Видалити запис живого елемента налагодження"
+                }
+              }
+            }
+          }
+        },
+        "ee_log": {
+          "title": "Журнал EE",
+          "hide_empty": "Приховати порожні рядки",
+          "export_json_tooltip": "Експортуйте елементи в JSON",
+          "datatable": {
+            "columns": {
+              "line": "лінія",
+              "date": "Мітка часу"
+            }
+          }
+        }
+      }
+    },
+    "banned": {
+      "wfm": {
+        "title": "Обліковий запис Warframe Market призупинено через:",
+        "reason": "Причина: {{reason}}",
+        "until": "до:"
+      },
+      "qf": {
+        "title": "Обліковий запис Quantframe призупинено через:",
+        "reason": "Причина: {{reason}}",
+        "until": "до:"
+      }
+    },
+    "auth": {
+      "errors": {
+        "login": {
+          "title": "Помилка входу",
+          "TooManyRequests": "Забагато запитів, спробуйте пізніше",
+          "InvalidCredentials": "Пароль недійсний",
+          "InternalServerError": "Служба входу наразі недоступна, повторіть спробу пізніше",
+          "banned": "Ви забанені",
+          "ban_reason": "<red>Причина: {{reason}}</red>",
+          "verification": "Вам потрібно підтвердити свій обліковий запис. Зробіть це на веб-сайті Warframe Market"
+        }
+      },
+      "success": {
+        "login": {
+          "title": "Успішний вхід",
+          "message": "Ласкаво просимо назад! {{name}}"
+        }
+      }
+    },
+    "live_scraper": {
+      "export_json_tooltip": "Експорт елементів у JSON (Patreon T1+)",
+      "update_multiple_tooltip": "Оновити кілька елементів",
+      "delete_multiple_tooltip": "Видалити кілька елементів",
+      "wts_multiple_tooltip": "Створити повідомлення WTS",
+      "segments": {
+        "bought": "Купив",
+        "listed": "Перераховано",
+        "profit": "Прибуток"
+      },
+      "prompts": {
+        "update_filter": {
+          "title": "Оновити фільтр"
+        },
+        "create_riven": {
+          "title": "Створіть Riven"
+        }
+      },
+      "tabs": {
+        "item": {
+          "title": "Пункт",
+          "datatable": {
+            "columns": {
+              "bought": "Купив",
+              "owned": "У власності"
+            }
+          }
+        },
+        "riven": {
+          "title": "Рівен",
+          "datatable": {
+            "columns": {
+              "attributes": "Атрибути",
+              "bought": "Купив"
+            }
+          }
+        },
+        "wish_list": {
+          "title": "Список бажань"
+        }
+      }
+    },
+    "warframe_market": {
+      "tabs": {
+        "orders": {
+          "title": "Замовлення",
+          "status": "<blue>{{type}}</blue> | <qty/> <blue>{{total}}</blue> | <plat/> <blue>{{platinum}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+          "tooltip_profit": "Розрахунковий прибуток",
+          "buttons": {
+            "refresh_tooltip": "Оновіть список замовлень",
+            "delete_all_tooltip": "Видалити всі замовлення",
+            "delete_tooltip": "Видалити це замовлення",
+            "info_tooltip": "Переглянути деталі замовлення",
+            "sell_manual": {
+              "buy_tooltip": "Куплена вручну",
+              "sell_tooltip": "Продається вручну"
+            },
+            "sell_auto": {
+              "buy_tooltip": "Куплено за вказаною ціною",
+              "sell_tooltip": "Продається за вказаною ціною"
+            }
+          },
+          "order_card": {
+            "header_left": "{{name}}",
+            "header_right": "<qty/> <blue>{{quantity}}</blue>",
+            "footer_left": "<blue>{{price}}</blue> <plat/>"
+          },
+          "fields": {
+            "quantity": "<qty/> <blue>{{quantity}}</blue>",
+            "platinum": "<blue>{{platinum}}</blue> <plat/>",
+            "mod_rank": "Ранг: <blue>{{mod_rank}}</blue>/<blue>{{mod_max_rank}}</blue>",
+            "subtype": "<blue>{{sub_type}}</blue>"
+          }
+        },
+        "auctions": {
+          "title": "Аукціони",
+          "overview": "<qty/> <blue>{{total}}</blue> | <plat/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+          "tooltip_profit": "Розрахунковий прибуток",
+          "buttons": {
+            "refresh_tooltip": "Оновити аукціонний список",
+            "delete_all_tooltip": "Видалити всі аукціони",
+            "delete_tooltip": "Видалити цей аукціон",
+            "import_tooltip": "Імпортуйте цей аукціон",
+            "info_tooltip": "Переглянути деталі аукціону"
+          },
+          "auction_card": {
+            "header_right": "{{price}} <plat/>"
+          }
+        }
+      }
+    },
+    "chat": {
+      "prompts": {
+        "delete_chat": {
+          "title": "Видалити чат",
+          "message": "Ви впевнені, що хочете видалити цей чат? Цю дію не можна скасувати.",
+          "cancel": "Скасувати",
+          "confirm": "Видалити"
+        }
+      },
+      "buttons": {
+        "refresh_tooltip": "Оновити список чату",
+        "delete_all_tooltip": "Видалити всі чати"
+      }
+    },
+    "trading_analytics": {
+      "tabs": {
+        "transaction": {
+          "title": "Транзакція",
+          "date_range_label": "Діапазон дат",
+          "date_range_description": "Діапазон дат для фільтрації транзакцій",
+          "date_range_placeholder": "Виберіть діапазон дат",
+          "prompts": {
+            "update_title": "Оновити транзакцію"
+          },
+          "buttons": {
+            "export_transactions_tooltip": "Експорт транзакцій у JSON (Patreon T1+)",
+            "show_financial_report_tooltip": "Показати звіт",
+            "delete_all_tooltip": "Видалити всі транзакції {{count}}",
+            "calculate_tax_tooltip": "Розрахуйте торговий податок для всіх операцій"
+          },
+          "datatable": {
+            "columns": {
+              "item_type": "Тип елемента",
+              "price": "Ціна",
+              "created_at": "Створено Ат",
+              "user_name": "Ім'я користувача",
+              "profit": "Прибуток",
+              "credits": "Кредити",
+              "sale_count": "Підрахунок продажів",
+              "revenue": "Дохід",
+              "purchases_count": "Підрахунок покупок",
+              "expenses": "Витрати",
+              "total_transactions": "Загальна кількість транзакцій"
+            }
+          },
+          "titles": {
+            "most_purchased_items": "Найпопулярніші предмети",
+            "most_sold_items": "Найбільш продавані товари"
+          },
+          "table_headers": {
+            "item_name": "Ім'я",
+            "quantity": "Кількість"
+          }
+        },
+        "item": {
+          "title": "Пункт",
+          "export_json_tooltip": "Експорт елементів у JSON (Patreon T1+)",
+          "open_table_options_tooltip": "Опції відкритої таблиці",
+          "date_range_placeholder": "Виберіть діапазон дат",
+          "volume_label": "Обсяг",
+          "min_price_label": "Мінімальна ціна",
+          "max_price_label": "Максимальна ціна",
+          "supply_label": "Постачання",
+          "demand_label": "Попит",
+          "datatable": {
+            "columns": {
+              "volume": "Обсяг",
+              "min_price": "Мінімальна ціна",
+              "max_price": "Максимальна ціна",
+              "open_price": "Відкрита ціна",
+              "closed_price": "Закрита ціна",
+              "avg_price": "Середня ціна",
+              "wa_price": "Ціна WA",
+              "median": "Медіана",
+              "moving_avg": "Переміщення сер",
+              "donch_top": "Донч Топ",
+              "donch_bot": "Донч Бот",
+              "trading_tax": "Податок на торгівлю",
+              "supply": "Постачання",
+              "demand": "Попит"
+            }
+          }
+        },
+        "riven": {
+          "title": "Рівен",
+          "export_json_tooltip": "Експорт Riven у JSON (Patreon T1+)",
+          "open_table_options_tooltip": "Опції відкритої таблиці",
+          "date_range_placeholder": "Виберіть діапазон дат",
+          "volume_label": "Обсяг",
+          "min_price_label": "Мінімальна ціна",
+          "max_price_label": "Максимальна ціна",
+          "avg_price_label": "Середня ціна",
+          "datatable": {
+            "columns": {
+              "volume": "Обсяг",
+              "min_price": "Мінімальна ціна",
+              "max_price": "Максимальна ціна",
+              "avg_price": "Середня ціна",
+              "median_price": "Середня ціна"
+            }
+          }
+        },
+        "user": {
+          "title": "Активність користувача",
+          "chart": {
+            "datasets": {
+              "registered_users": "Зареєстровані користувачі",
+              "active_users": "Активні користувачі"
+            }
+          },
+          "fields": {
+            "group_by": {
+              "label": "Групувати за",
+              "options": {
+                "day": "День",
+                "hour": "годину"
+              }
+            },
+            "date_range": {
+              "label": "Діапазон дат",
+              "placeholder": "Виберіть діапазон дат"
+            }
+          }
+        },
+        "wfgdpr": {
+          "title": "Парсер Warframe GDPR",
+          "drag_and_drop_message": "Перетягніть текстові файли GDPR сюди. Дізнайтеся більше про цю функцію на веб-сайті.",
+          "columns": {
+            "account": "Ім'я облікового запису",
+            "logins": "Кількість входів",
+            "purchases": "Підрахунок покупок",
+            "trades": "Підрахунок торгів",
+            "transactions": "Підрахунок транзакцій",
+            "creation_date": "Дата створення"
+          },
+          "overview": {
+            "title": "Огляд",
+            "labels": {
+              "member_since": "Член з",
+              "subscribed": "Підписався",
+              "trades": "Торги",
+              "platinum_traded": "Торгівля платиною",
+              "purchases": "покупки",
+              "total_spent": "Загальна сума витрат",
+              "transactions": "транзакції",
+              "unique_ips": "Унікальні IP-адреси",
+              "total_logins": "Загальна кількість входів"
+            }
+          },
+          "trade": {
+            "title": "Торгівля",
+            "yearly_trade_overview": {
+              "title": "Річний огляд торгівлі ({{year}})",
+              "total_trades": "Загальна кількість угод",
+              "total_purchases": "Загальна кількість покупок",
+              "total_sales": "Загальний обсяг продажів"
+            },
+            "columns": {
+              "created_at": "Створено Ат",
+              "offered_items": "Кількість пропонованих товарів",
+              "received_items": "Кількість отриманих предметів",
+              "credits": "Кредити"
+            },
+            "table_headers": {
+              "item_name": "Ім'я",
+              "quantity": "Кількість"
+            },
+            "titles": {
+              "most_sold_items": "Найбільш продавані товари",
+              "most_purchased_items": "Найпопулярніші товари"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "Показати звіт"
+            }
+          },
+          "purchase": {
+            "title": "покупки",
+            "titles": {
+              "most_purchased_items": "Найпопулярніші товари"
+            },
+            "table_headers": {
+              "item_name": "Ім'я",
+              "price": "Ціна",
+              "quantity": "Кількість"
+            },
+            "yearly_trade_overview": {
+              "title": "Річний огляд торгівлі ({{year}})",
+              "total_purchases": "Загальна кількість покупок"
+            },
+            "columns": {
+              "date": "Придбати у",
+              "price": "Ціна",
+              "shop_id": "ID магазину",
+              "items_received": "Товари отримані"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "Показати звіт"
+            }
+          },
+          "transaction": {
+            "title": "транзакції",
+            "titles": {
+              "most_purchased_items": "Найпопулярніші товари"
+            },
+            "table_headers": {
+              "item_name": "Ім'я",
+              "price": "Ціна",
+              "quantity": "Кількість"
+            },
+            "yearly_trade_overview": {
+              "title": "Річний огляд торгівлі ({{year}})",
+              "total_purchases": "Загальна кількість покупок"
+            },
+            "columns": {
+              "date": "Придбати у",
+              "currency": "Валюта",
+              "price": "Ціна",
+              "account": "Обліковий запис",
+              "sku": "SKU"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "Показати звіт"
+            }
+          }
+        }
+      }
+    },
+    "trade_messages": {
+      "fields": {
+        "price_label": "Ціна",
+        "price_placeholder": "Введіть ціну",
+        "tags_label": "Теги",
+        "tags_placeholder": "Введіть теги"
+      },
+      "buttons": {
+        "generate_trade_messages_tooltip": "Створити комерційні повідомлення для {{count}} позицій(ів)",
+        "update_multiple_tooltip": "Оновіть кілька торгових повідомлень",
+        "export_json_tooltip": "Експорт торгових повідомлень у JSON (Patreon T1+)",
+        "delete_multiple_tooltip": "Видалити всю торгівлю {{count}}",
+        "add_tooltip": "Додати торгове повідомлення",
+        "find_interesting_tooltip": "Знайдіть цікаві комерційні повідомлення (Patreon T2+)",
+        "calibrate_prices_tooltip": "Відкалібрувати ціни"
+      },
+      "datatable": {
+        "columns": {
+          "price": "Ціна",
+          "tags": "Теги",
+          "min_price": "Мінімальна ціна",
+          "potential_profit": "Потенційний прибуток",
+          "updated_at": "Оновлено At"
+        }
+      },
+      "tabs": {
+        "item": {
+          "title": "Пункт"
+        },
+        "riven": {
+          "title": "Рівен",
+          "modals": {
+            "find_interesting_rivens": {
+              "title": "Знайдіть цікаві Рівени для {{date}}",
+              "titles": {
+                "filtered": "Відфільтровані Рівни",
+                "discount_settings": "Налаштування знижки",
+                "export_settings": "Налаштування експорту"
+              },
+              "fields": {
+                "min_price_label": "Мінімальна ціна",
+                "min_volume_label": "Мінімальний обсяг",
+                "discount_percentage_label": "% знижки",
+                "round_to_nearest_label": "Округлення до найближчого",
+                "override_existing_prices_label": "Замінити існуючі ціни",
+                "tags_label": "Теги"
+              },
+              "datatable_columns": {
+                "name": "Ім'я",
+                "min_price": "Мінімальна ціна",
+                "discount_price": "Ціна зі знижкою",
+                "potential_profit": "Потенційний прибуток",
+                "volume": "Обсяг"
+              },
+              "buttons": {
+                "export_to_trade_messages": "Експорт до торгових повідомлень"
+              }
+            }
+          }
+        },
+        "custom": {
+          "title": "Custom"
+        }
+      }
+    },
+    "process_trade": {
+      "stats": {
+        "user_name": "Ім'я користувача",
+        "trade_type": "Тип торгівлі",
+        "trade_price": "Торгова ціна",
+        "price": "Ціна",
+        "difference": "Різниця"
+      },
+      "buttons": {
+        "process_trade_tooltip": "Почати обробку угод",
+        "confirm_trade": "Підтвердити торгівлю",
+        "back_to_list": "Назад до списку"
+      },
+      "datatable": {
+        "columns": {
+          "item_name": "Ім'я",
+          "quantity": "Кількість",
+          "price": "Ціна",
+          "total": "Всього",
+          "platinum": "Платина",
+          "user_name": "Ім'я користувача",
+          "date": "Дата"
+        }
+      }
+    },
+    "wf_inventory": {
+      "tabs": {
+        "riven": {
+          "title": "Рівенс",
+          "riven_card": {
+            "footer_left": "{{rank}}/8 <polarity/>",
+            "footer_right": "MR: {{mastery}}",
+            "footer_center": "<stock/>",
+            "stock_status": {
+              "found": "Знайдено в інвентарі",
+              "not_found": "Не знайдено в інвентарі"
+            }
+          },
+          "filters": {
+            "all": "всі",
+            "rifle": "Гвинтівка",
+            "shotgun": "Дробовик",
+            "melee": "Рукопашний бій",
+            "pistol": "пістолет",
+            "zaw": "Zaw",
+            "arch": "Archwing",
+            "veiled": "Завуальований",
+            "unveiled": "Розкритий"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,2458 @@
+{
+  "months": [
+    "一月",
+    "二月",
+    "行进",
+    "四月",
+    "可能",
+    "六月",
+    "七月",
+    "八月",
+    "九月",
+    "十月",
+    "十一月",
+    "十二月"
+  ],
+  "common": {
+    "not_found": "未找到",
+    "buttons": {
+      "save": {
+        "label": "节省"
+      },
+      "delete": {
+        "label": "删除"
+      }
+    },
+    "notifications": {
+      "copy_to_clipboard": {
+        "title": "已复制到剪贴板",
+        "message": "{{message}} 已复制到剪贴板。"
+      },
+      "on_trade_event": {
+        "multiple_items": {
+          "title": "与 {{player_name}} 的交易未处理",
+          "message": "由于存在多个项目，与 {{player_name}} 的交易未得到处理。"
+        },
+        "no_valid_items": {
+          "title": "与 {{player_name}} 的交易未处理",
+          "message": "由于没有有效物品，与 {{player_name}} 的交易未处理。"
+        },
+        "success": {
+          "title": "与 {{player_name}} 的交易已完成",
+          "message": "<blue>{{item_name}}</blue> X<blue>{{quantity}}</blue> <blue>{{trade_type}}</blue> 对于 {{platinum}}p"
+        }
+      },
+      "warframe_gdpr_data_loaded": {
+        "success": {
+          "title": "Warframe GDPR 数据已加载",
+          "message": "交易：{{trades}}，登录：{{logins}}，购买：{{purchases}}，交易：{{transactions}}"
+        }
+      },
+      "log_export": {
+        "error": {
+          "title": "日志导出错误",
+          "message": "尝试导出日志时发生错误。"
+        },
+        "success": {
+          "title": "日志导出成功",
+          "message": "日志已成功导出至{{path}}。"
+        }
+      },
+      "create_stock_item": {
+        "error": {
+          "title": "创建库存错误",
+          "message": "尝试创建库存时出错。"
+        },
+        "success": {
+          "title": "创造股票成功",
+          "message": "库存商品 {{name}} 已成功创建。"
+        }
+      },
+      "update_stock_item": {
+        "error": {
+          "title": "更新库存错误",
+          "title_multiple": "更新库存错误",
+          "message": "尝试更新库存时发生错误。",
+          "message_multiple": "尝试更新多个库存商品时发生错误。"
+        },
+        "success": {
+          "title": "更新库存成功",
+          "title_multiple": "更新库存成功",
+          "message": "库存商品 {{name}} 已成功更新。",
+          "message_multiple": "{{count}} 库存商品已成功更新。"
+        }
+      },
+      "delete_stock_item": {
+        "error": {
+          "title": "删除库存错误",
+          "title_multiple": "删除库存错误",
+          "message": "尝试删除库存时出错。",
+          "message_multiple": "尝试删除多个库存商品时出错。"
+        },
+        "success": {
+          "title": "删除库存成功",
+          "title_multiple": "删除库存成功",
+          "message": "库存商品 {{name}} 已成功删除。",
+          "message_multiple": "{{count}} 库存商品已成功删除。"
+        }
+      },
+      "sell_stock_item": {
+        "error": {
+          "title": "卖出库存错误",
+          "message": "尝试出售股票时发生错误。"
+        },
+        "success": {
+          "title": "卖出股票成功",
+          "message": "库存商品 {{name}} 已成功出售。"
+        }
+      },
+      "create_stock_riven": {
+        "error": {
+          "title": "创建库存错误",
+          "message": "尝试创建库存时出错。"
+        },
+        "success": {
+          "title": "创造股票成功",
+          "message": "库存商品 {{name}} 已成功创建。"
+        }
+      },
+      "update_stock_riven": {
+        "error": {
+          "title": "更新库存错误",
+          "title_multiple": "更新库存错误",
+          "message": "尝试更新库存时发生错误。",
+          "message_multiple": "尝试更新多个库存商品时发生错误。"
+        },
+        "success": {
+          "title": "更新库存成功",
+          "title_multiple": "更新库存成功",
+          "message": "库存商品 {{name}} 已成功更新。",
+          "message_multiple": "{{count}} 库存商品已成功更新。"
+        }
+      },
+      "delete_stock_riven": {
+        "error": {
+          "title": "删除库存错误",
+          "title_multiple": "删除库存错误",
+          "message": "尝试删除库存时出错。",
+          "message_multiple": "尝试删除多个库存商品时出错。"
+        },
+        "success": {
+          "title": "删除库存成功",
+          "title_multiple": "删除库存成功",
+          "message": "库存裂痕 {{name}} 已成功删除。",
+          "message_multiple": "{{count}} 库存裂痕已成功删除。"
+        }
+      },
+      "delete_transaction": {
+        "error": {
+          "title": "删除交易错误",
+          "title_multiple": "删除交易错误",
+          "message": "尝试删除交易时发生错误。",
+          "message_multiple": "尝试删除多个事务时发生错误。"
+        },
+        "success": {
+          "title": "删除交易成功",
+          "title_multiple": "删除交易成功",
+          "message": "事务 {{name}} 已成功删除。",
+          "message_multiple": "{{count}} 交易已成功删除。"
+        }
+      },
+      "sell_stock_riven": {
+        "error": {
+          "title": "卖出库存错误",
+          "message": "尝试出售股票时发生错误。"
+        },
+        "success": {
+          "title": "卖出股票成功",
+          "message": "库存商品 {{name}} 已成功出售。"
+        }
+      },
+      "create_wish_list": {
+        "error": {
+          "title": "创建愿望清单错误",
+          "message": "尝试创建愿望清单时出错。"
+        },
+        "success": {
+          "title": "创建愿望清单成功",
+          "message": "愿望清单已成功创建。"
+        }
+      },
+      "update_wish_list": {
+        "error": {
+          "title": "更新愿望清单错误",
+          "title_multiple": "更新愿望清单错误",
+          "message": "尝试更新愿望清单时出错。",
+          "message_multiple": "尝试更新多个愿望清单时出错。"
+        },
+        "success": {
+          "title": "更新心愿单成功",
+          "title_multiple": "更新心愿单成功",
+          "message": "愿望清单已成功更新。",
+          "message_multiple": "{{count}} 愿望清单已成功更新。"
+        }
+      },
+      "delete_wish_list": {
+        "error": {
+          "title": "删除愿望清单错误",
+          "title_multiple": "删除愿望清单错误",
+          "message": "尝试删除愿望清单时出错。",
+          "message_multiple": "尝试删除多个愿望清单时出错。"
+        },
+        "success": {
+          "title": "删除愿望清单成功",
+          "title_multiple": "删除愿望清单成功",
+          "message": "愿望清单已成功删除。",
+          "message_multiple": "{{count}} 愿望清单已成功删除。"
+        }
+      },
+      "bought_wish_list": {
+        "error": {
+          "title": "购买愿望清单错误",
+          "message": "尝试将心愿单标记为已购买时出错。"
+        },
+        "success": {
+          "title": "购买心愿单成功",
+          "message": "心愿单已成功标记为已购买。"
+        }
+      },
+      "delete_chat": {
+        "error": {
+          "title": "删除聊天错误",
+          "message": "尝试删除聊天时出错。"
+        },
+        "success": {
+          "title": "删除聊天成功",
+          "message": "聊天记录已成功删除。"
+        }
+      },
+      "export_data": {
+        "error": {
+          "title": "导出数据错误",
+          "message": "尝试导出数据时发生错误。"
+        },
+        "success": {
+          "title": "导出数据成功",
+          "message": "数据已成功导出至{{path}}。"
+        }
+      },
+      "no_updates_available": {
+        "title": "无可用更新",
+        "message": "您已经在使用最新版本。"
+      },
+      "update_settings": {
+        "error": {
+          "title": "更新设置错误",
+          "message": "尝试更新设置时发生错误： \n{{message}}"
+        },
+        "success": {
+          "title": "更新设置成功",
+          "message": "设置已成功更新"
+        }
+      },
+      "create_trade_entry": {
+        "error": {
+          "title": "创建交易输入错误",
+          "title_multiple": "创建交易输入错误",
+          "message": "尝试创建交易条目时发生错误。",
+          "message_multiple": "尝试创建多个交易条目时发生错误。"
+        },
+        "success": {
+          "title": "创造交易入场成功",
+          "title_multiple": "创造交易入场成功",
+          "message": "交易条目 {{name}} 已成功创建。",
+          "message_multiple": "{{count}} 交易条目已成功创建。"
+        }
+      },
+      "update_trade_entry": {
+        "error": {
+          "title": "更新交易输入错误",
+          "title_multiple": "更新交易输入错误",
+          "message": "尝试更新交易条目时发生错误。",
+          "message_multiple": "尝试更新多个交易条目时发生错误。"
+        },
+        "success": {
+          "title": "更新交易输入成功",
+          "title_multiple": "更新交易输入成功",
+          "message": "交易条目 {{name}} 已成功更新。",
+          "message_multiple": "{{count}} 交易条目已成功更新。"
+        }
+      },
+      "delete_trade_entry": {
+        "error": {
+          "title": "删除交易输入错误",
+          "title_multiple": "删除交易输入错误",
+          "message": "尝试删除交易条目时发生错误。",
+          "message_multiple": "尝试删除多个交易条目时发生错误。"
+        },
+        "success": {
+          "title": "删除交易条目成功",
+          "title_multiple": "删除交易条目成功",
+          "message": "交易条目 {{name}} 已成功删除。",
+          "message_multiple": "{{count}} 交易条目已成功删除。"
+        }
+      },
+      "create_trade_msg_template": {
+        "error": {
+          "title": "创建模板错误",
+          "message": "尝试创建交易消息模板时发生错误。"
+        },
+        "success": {
+          "title": "创建模板成功",
+          "message": "交易消息模板已成功创建。"
+        }
+      },
+      "delete_trade_msg_template": {
+        "error": {
+          "title": "删除模板错误",
+          "message": "尝试删除交易消息模板时发生错误。"
+        },
+        "success": {
+          "title": "删除模板成功",
+          "message": "交易消息模板已成功删除。"
+        }
+      },
+      "update_transaction": {
+        "error": {
+          "title": "更新交易错误",
+          "message": "尝试更新事务时发生错误。"
+        },
+        "success": {
+          "title": "更新交易成功",
+          "message": "交易已成功更新。"
+        }
+      },
+      "processed_multiple_items": {
+        "error": {
+          "title": "处理多个项目错误",
+          "message": "尝试处理多个项目时发生错误。"
+        },
+        "success": {
+          "title": "成功处理多个项目",
+          "message": "{{count}} 项已成功处理。"
+        }
+      },
+      "calculate_tax_all_transactions": {
+        "error": {
+          "title": "计算税收错误",
+          "message": "尝试计算交易税费时发生错误。"
+        },
+        "success": {
+          "title": "计算税务成功",
+          "message": "已成功计算交易税费。"
+        }
+      },
+      "delete_order": {
+        "error": {
+          "title": "删除订单错误",
+          "message": "尝试删除订单时发生错误。"
+        },
+        "success": {
+          "title": "删除订单成功",
+          "message": "订单已成功删除。"
+        }
+      },
+      "delete_all_orders": {
+        "error": {
+          "title": "删除所有订单错误",
+          "message": "尝试删除所有订单时发生错误。"
+        },
+        "success": {
+          "title": "删除所有订单成功",
+          "message": "所有订单均已成功删除。"
+        }
+      },
+      "refresh_orders": {
+        "error": {
+          "title": "刷新订单错误",
+          "message": "尝试刷新订单时出错。"
+        },
+        "success": {
+          "title": "刷新订单成功",
+          "message": "订单已成功刷新。"
+        }
+      },
+      "delete_auction": {
+        "error": {
+          "title": "删除拍卖错误",
+          "message": "尝试删除拍卖时发生错误。"
+        },
+        "success": {
+          "title": "删除拍卖成功",
+          "message": "拍卖已成功删除。"
+        }
+      },
+      "delete_all_auctions": {
+        "error": {
+          "title": "删除所有拍卖错误",
+          "message": "尝试删除所有拍卖时发生错误。"
+        },
+        "success": {
+          "title": "删除所有拍卖成功",
+          "message": "所有拍卖已成功删除。"
+        }
+      },
+      "refresh_auctions": {
+        "error": {
+          "title": "刷新拍卖错误",
+          "message": "尝试刷新拍卖时发生错误。"
+        },
+        "success": {
+          "title": "刷新拍卖成功",
+          "message": "拍卖已成功刷新。"
+        }
+      }
+    },
+    "datatable_columns": {
+      "list_price": "上市",
+      "maximum_price": {
+        "title": "最高价格",
+        "value": "{{maximum_price}} ({{currency}})",
+        "edit_tooltip": "编辑最高价格"
+      },
+      "minimum_price": {
+        "title": "最低价格",
+        "value": "{{minimum_price}} ({{currency}})",
+        "edit_tooltip": "编辑最低价格"
+      },
+      "actions": {
+        "title": "行动",
+        "buttons": {
+          "manual_tooltip": "手动销售",
+          "auto_tooltip": "按清单出售",
+          "bought_manual_tooltip": "标记为已购买",
+          "bought_auto_tooltip": "按标价购买",
+          "hide": {
+            "disabled_tooltip": "展示",
+            "enabled_tooltip": "隐藏"
+          },
+          "info_tooltip": "信息",
+          "delete_tooltip": "删除",
+          "edit_tooltip": "编辑",
+          "open_filter_tooltip": "打开过滤器"
+        }
+      },
+      "quantity": {
+        "title": "数量"
+      },
+      "volume": {
+        "title": "体积"
+      }
+    },
+    "item_name": {
+      "title": "姓名",
+      "value": "{{name}} {{quantity}} <blue>{{sub_type}}</blue>"
+    },
+    "pagination_total_items": "{{start}} - {{end}} / {{total}}",
+    "prompts": {
+      "delete_item": {
+        "title": "你确定吗？",
+        "message": "此操作无法撤消。",
+        "cancel": "取消",
+        "confirm": "确认"
+      },
+      "delete_multiple_items": {
+        "title": "你确定吗？",
+        "message": "您确定要删除这些 {{count}} 项目吗？此操作无法撤消。",
+        "cancel": "取消",
+        "confirm": "确认"
+      },
+      "sell_manual": {
+        "title": "售价",
+        "fields": {
+          "sell": {
+            "label": "价格"
+          },
+          "quantity": {
+            "label": "数量"
+          }
+        }
+      },
+      "bought_manual": {
+        "title": "买来的",
+        "fields": {
+          "bought": {
+            "label": "价格"
+          },
+          "quantity": {
+            "label": "数量"
+          }
+        }
+      },
+      "minimum_price": {
+        "title": "最低价格",
+        "fields": {
+          "minimum_price": {
+            "label": "最低价格",
+            "description": "该商品的最低价格"
+          }
+        }
+      },
+      "maximum_price": {
+        "title": "最高价格",
+        "fields": {
+          "maximum_price": {
+            "label": "最高价格",
+            "description": "商品的最高价格"
+          }
+        }
+      },
+      "save": {
+        "title": "节省",
+        "fields": {
+          "name": {
+            "label": "姓名"
+          }
+        }
+      }
+    },
+    "sort_by": {
+      "created_at": "创建于",
+      "platinum": "铂",
+      "updated_at": "更新于",
+      "order_type": "订单类型",
+      "disposition": "处置",
+      "endo": "远藤",
+      "riven_grade": "裂罅等级"
+    }
+  },
+  "enums": {
+    "item_type": {
+      "riven": "锐文",
+      "item": "物品",
+      "details": {
+        "riven": "锐文",
+        "item": "物品"
+      }
+    },
+    "order_type": {
+      "all": "所有订单",
+      "buy": "买单",
+      "sell": "卖单",
+      "closed": "已关闭订单",
+      "details": {
+        "buy": "买",
+        "sell": "卖"
+      }
+    },
+    "transaction_type": {
+      "purchase": "购买",
+      "sale": "销售",
+      "trade": "贸易",
+      "details": {
+        "purchase": "购买",
+        "sale": "销售",
+        "trade": "贸易"
+      }
+    },
+    "stock_status": {
+      "pending": "待办的",
+      "live": "居住",
+      "to_low_profit": "低利润",
+      "no_sellers": "没有卖家",
+      "no_buyers": "没有买家",
+      "inactive": "不活跃",
+      "sma_limit": "移动平均线限制",
+      "order_limit": "订单限制",
+      "overpriced": "价格过高",
+      "underpriced": "价格过低",
+      "details": {
+        "pending": "等待处理",
+        "live": "在 Warframe 市场上直播",
+        "to_low_profit": "由于基于设置的利润较低而未处理",
+        "no_sellers": "没有找到该商品的卖家",
+        "no_buyers": "没有找到该商品的买家",
+        "inactive": "处于非活动状态并且不会被处理",
+        "sma_limit": "受 SMA 限制",
+        "order_limit": "受订单限制",
+        "overpriced": "价格过高",
+        "underpriced": "价格被低估"
+      }
+    },
+    "stock_mode": {
+      "all": "全部",
+      "riven": "锐文",
+      "item": "物品"
+    },
+    "trade_mode": {
+      "buy": "买",
+      "sell": "卖",
+      "wishlist": "愿望清单"
+    },
+    "user_status": {
+      "online": "在线的",
+      "ingame": "游戏中",
+      "in_game": "游戏中",
+      "invisible": "离线"
+    },
+    "alert_type": {
+      "info": "信息",
+      "warning": "警告",
+      "error": "错误",
+      "success": "成功"
+    }
+  },
+  "context": {
+    "app": {
+      "starting_up": "正在启动...",
+      "database": {
+        "updating_names_transactions": "正在更新交易项目名称 {{progress}}%",
+        "updating_names_stock_items": "正在更新库存商品名称 {{progress}}%",
+        "updating_names_stock_rivens": "更新股票分裂名称 {{progress}}%",
+        "updating_names_wish_lists": "正在更新愿望清单名称 {{progress}}%",
+        "update_names_completed": "所有项目名称均已更新"
+      },
+      "cache": {
+        "initializing": "正在初始化缓存...",
+        "updating": "正在更新缓存...",
+        "item_price_updating": "正在更新商品价格..."
+      }
+    }
+  },
+  "components": {
+    "item_component": "<blue>{{name}}</blue> x<blue>{{count}}</blue>",
+    "item_components": "项目组件",
+    "patreon_overlay": {
+      "title": "受限内容",
+      "description": "此内容仅限 <blue>{{tier}}</blue> 或更高级别的 Patreon 支持者使用。",
+      "buttons": {
+        "become_a_patron": "成为赞助人"
+      }
+    },
+    "timer_stamp": {
+      "years": "{{years}} 年前",
+      "months": "{{months}} 个月前",
+      "days": "{{days}} 天前",
+      "hours": "{{hours}} 小时前",
+      "minutes": "{{minutes}} 分钟前",
+      "seconds": "{{seconds}} 秒前"
+    },
+    "wfm_auction": {
+      "fields": {
+        "selling_price": "售价：<blue>{{price}}</blue> <plat/>",
+        "left_footer": "<blue>{{mod_rank}}</blue>/<blue>{{max_rank}}</blue> <blue>{{drain}}</blue> <polarity/>",
+        "right_footer": "先生：<blue>{{mastery_level}}</blue> <roll/> <blue>{{re_rolls}}</blue>"
+      }
+    },
+    "live_scraper_control": {
+      "buttons": {
+        "start": "启动实时抓取",
+        "stop": "停止实时刮刀"
+      },
+      "prompts": {
+        "start": {
+          "title": "警告",
+          "message": "您确定要开始实时抓取吗？此操作将删除 WFM 上所有非黑名单订单。",
+          "confirm": "开始",
+          "cancel": "取消"
+        }
+      },
+      "item": {
+        "checking": "检查项目：<blue>{{name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        "deleted": "删除订单：<blue>{{current}}</blue>/<blue>{{total}}</blue>"
+      },
+      "riven": {
+        "cooldown": "裂痕冷却时间：剩余 <blue>{{seconds}}</blue> 秒",
+        "checking": "检查裂痕：<blue>{{name}}</blue> <blue>{{mod_name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        "rate_limited": "速率限制：等待 <blue>{{seconds}}</blue> 秒再继续"
+      }
+    },
+    "searchfield": {
+      "label": "搜索",
+      "placeholder": "搜索...",
+      "buttons": {
+        "filter": {
+          "tooltip": "筛选"
+        },
+        "search": {
+          "tooltip": "搜索"
+        },
+        "create": {
+          "tooltip": "创造"
+        }
+      }
+    },
+    "user_menu": {
+      "items": {
+        "app_label": "应用",
+        "settings": "设置",
+        "logout": "退出"
+      },
+      "errors": {
+        "logout": {
+          "title": "注销错误",
+          "message": "尝试注销时发生错误。"
+        }
+      },
+      "success": {
+        "logout": {
+          "title": "注销成功",
+          "message": "您已成功退出。"
+        }
+      },
+      "prompts": {
+        "logout": {
+          "title": "确认退出",
+          "message": "您确定要退出吗？",
+          "confirm": "是的",
+          "cancel": "不"
+        }
+      }
+    },
+    "clock": {
+      "gmt": "格林威治标准时间：<blue>{{time}}</blue>",
+      "time_until_midnight": "截止午夜时间 (GMT)：<blue>{{time}}</blue>"
+    },
+    "layout": {
+      "log_in": {
+        "navbar": {
+          "home": "家",
+          "debug": "调试",
+          "live_scraper": "直播刮刀",
+          "warframe_market": "Warframe 市场",
+          "trading_analytics": "交易分析",
+          "trade_messages": "贸易讯息",
+          "chat": "聊天",
+          "wf_inventory": "WF库存",
+          "about": "关于"
+        }
+      }
+    },
+    "select_item_tags": {
+      "tags": {
+        "label": "标签",
+        "description": "选择标签来过滤项目"
+      }
+    },
+    "theme_editor": {
+      "chart_styles": {
+        "title": "图表样式",
+        "fields": {
+          "bgColor": "背景颜色",
+          "lineColor": "线条颜色",
+          "lastYearLineColor": "去年线条颜色",
+          "currentYearLineColor": "当年线条颜色"
+        },
+        "total": "全部的",
+        "today": "今天",
+        "last_days": "过去 7 天"
+      },
+      "color_palettes": {
+        "title": "调色板",
+        "base_colors": "基色",
+        "stock_status": "库存状况",
+        "user_status": "用户状态",
+        "alert_type": "警报类型",
+        "transaction_type": "交易类型",
+        "item_type": "项目类型",
+        "logo_color": "标志颜色",
+        "positive": "积极的",
+        "negative": "消极的",
+        "profit": "利润"
+      },
+      "sharing": {
+        "title": "分享"
+      },
+      "buttons": {
+        "copy_to_clipboard": "复制到剪贴板",
+        "import_from_clipboard": "从剪贴板导入",
+        "open_themes_folder": "打开主题文件夹"
+      },
+      "fields": {
+        "export_name": {
+          "label": "姓名",
+          "placeholder": "输入主题名称",
+          "error": "主题名称无效"
+        },
+        "export_author": {
+          "label": "作者",
+          "placeholder": "输入作者姓名",
+          "error": "作者姓名无效",
+          "tooltip": "创造"
+        }
+      },
+      "export_success": {
+        "title": "导出主题成功",
+        "message": "主题已成功导出。"
+      },
+      "export_error": {
+        "title": "导出主题错误",
+        "message": "导出主题时出错：{{error}}"
+      }
+    },
+    "forms": {
+      "update_transaction": {
+        "buttons": {
+          "hide_properties": {
+            "label": "隐藏属性"
+          },
+          "show_properties": {
+            "label": "显示属性"
+          }
+        },
+        "fields": {
+          "price": {
+            "label": "价格",
+            "placeholder": "输入价格",
+            "description": "铂金交易价格。"
+          },
+          "quantity": {
+            "label": "数量",
+            "placeholder": "输入数量",
+            "description": "正在交易的物品的数量。"
+          },
+          "user_name": {
+            "label": "用户名",
+            "placeholder": "输入用户名",
+            "description": "与交易关联的用户名。"
+          },
+          "created_at": {
+            "label": "创建日期",
+            "placeholder": "选择日期",
+            "description": "交易日期。"
+          },
+          "properties": {
+            "label": "特性",
+            "placeholder": "输入属性",
+            "description": "交易的附加属性。"
+          }
+        }
+      },
+      "generic_item_list": {
+        "add_all_tooltip": "添加所有项目"
+      },
+      "edit_notification_setting": {
+        "discord": {
+          "tooltip": "切换不和谐通知",
+          "title": "不和谐通知",
+          "fields": {
+            "webhook": {
+              "label": "网络钩子 URL",
+              "placeholder": "输入 Discord Webhook URL"
+            },
+            "content": {
+              "label": "内容",
+              "placeholder": "输入通知内容",
+              "reset_button": "重置为默认值"
+            },
+            "user_ids": {
+              "label": "用户 ID",
+              "placeholder": "输入用户 ID（逗号分隔）",
+              "description": "指定接收通知的用户 ID"
+            }
+          }
+        },
+        "system": {
+          "tooltip": "切换系统通知",
+          "title": "系统通知",
+          "fields": {
+            "title": {
+              "label": "标题",
+              "placeholder": "输入通知标题"
+            },
+            "content": {
+              "label": "内容",
+              "placeholder": "输入通知内容"
+            },
+            "sound": {
+              "label": "声音",
+              "placeholder": "选择通知声音",
+              "play_tooltip": "播放声音",
+              "options": {
+                "none": "没有任何",
+                "cat_meow": "猫喵",
+                "windows_xp_error": "Windows XP 错误",
+                "windows_xp_startup": "Windows XP 启动",
+                "iphone_notification": "垃圾电话通知",
+                "windows_notification": "Windows 通知"
+              }
+            },
+            "volume": {
+              "label": "体积",
+              "placeholder": "设置音量级别"
+            }
+          }
+        },
+        "webhook": {
+          "tooltip": "Toggle Webhook 通知",
+          "title": "网络钩子通知",
+          "fields": {
+            "url": {
+              "label": "网络钩子 URL",
+              "placeholder": "输入网络钩子 URL"
+            }
+          }
+        },
+        "manage_sounds": {
+          "title": "添加自定义声音",
+          "buttons": {
+            "manage": "管理声音",
+            "back": "回去"
+          },
+          "fields": {
+            "name": {
+              "label": "声音名称",
+              "placeholder": "声音名称"
+            },
+            "file": {
+              "label": "声音文件",
+              "placeholder": "选择一个文件"
+            }
+          },
+          "tooltips": {
+            "add_sound": "添加声音",
+            "play": "玩",
+            "delete": "删除"
+          },
+          "notifications": {
+            "add_error": {
+              "title": "添加声音错误",
+              "message": "尝试添加声音时发生错误。"
+            },
+            "delete_error": {
+              "title": "删除声音错误",
+              "message": "尝试删除声音时出错。"
+            }
+          },
+          "table": {
+            "columns": {
+              "name": "姓名",
+              "file_name": "文件名",
+              "actions": "行动"
+            }
+          },
+          "dialog": {
+            "delete": {
+              "title": "删除 {{name}}",
+              "message": "您确定要删除该声音吗？此操作无法撤消。",
+              "confirm": "删除",
+              "cancel": "取消"
+            }
+          },
+          "file_picker": {
+            "filter_name": "声音的"
+          }
+        }
+      },
+      "riven_filter_attribute": {
+        "fields": {
+          "is_required": {
+            "tooltip": "是必须的"
+          }
+        }
+      },
+      "riven_filter": {
+        "fields": {
+          "enabled": {
+            "label": "启用"
+          },
+          "similarity": {
+            "label": "相似"
+          },
+          "rank": {
+            "label": "秩"
+          },
+          "mastery_rank": {
+            "label": "精通等级"
+          },
+          "required_negative": {
+            "label": "必需的负数"
+          },
+          "re_rolls": {
+            "label": "重新卷"
+          }
+        },
+        "buttons": {
+          "save": {
+            "label": "节省"
+          }
+        }
+      },
+      "create_riven_attributes": {
+        "fields": {
+          "positive": {
+            "title": "积极的属性",
+            "add": "添加"
+          },
+          "negative": {
+            "title": "负面属性"
+          }
+        },
+        "buttons": {
+          "add": "+ 添加"
+        }
+      },
+      "create_riven_attribute": {
+        "fields": {
+          "value": {
+            "error": "无效值"
+          }
+        },
+        "buttons": {
+          "remove": "消除"
+        }
+      },
+      "create_riven": {
+        "buttons": {
+          "submit": {
+            "label": "创造"
+          }
+        },
+        "fields": {
+          "mastery_rank": {
+            "label": "精通等级",
+            "placeholder": "8",
+            "error": "精通等级无效"
+          },
+          "re_rolls": {
+            "label": "重新卷",
+            "placeholder": "0",
+            "error": "重新掷骰无效"
+          },
+          "rank": {
+            "label": "秩",
+            "placeholder": "0",
+            "error": "排名无效"
+          },
+          "polarity": {
+            "label": "极性",
+            "error": "极性无效"
+          },
+          "weapon": {
+            "label": "武器名称",
+            "placeholder": "武器",
+            "error": "无效武器"
+          },
+          "bought": {
+            "label": "买",
+            "placeholder": "买",
+            "error": "无效购买"
+          },
+          "attributes": {
+            "label": "属性",
+            "error": "锐雯必须至少拥有 2 个正面属性"
+          },
+          "attribute": {
+            "label": "属性",
+            "error": "属性值不能为0"
+          },
+          "mod_name": {
+            "label": "模组名称",
+            "placeholder": "模组名称",
+            "error": "模组名称无效"
+          }
+        }
+      },
+      "debugging_live_item_entry": {
+        "fields": {
+          "wfm_url": {
+            "label": "物品",
+            "placeholder": "选择项目...",
+            "error": "请选择一个项目"
+          },
+          "stock_id": {
+            "label": "股票编号",
+            "placeholder": "输入股票编号...",
+            "error": "无效的库存 ID"
+          },
+          "wish_list_id": {
+            "label": "愿望清单 ID",
+            "placeholder": "输入愿望清单 ID...",
+            "error": "愿望清单 ID 无效"
+          },
+          "priority": {
+            "label": "优先事项",
+            "placeholder": "输入优先级...",
+            "error": "优先级必须为 0 或更大"
+          },
+          "buy_quantity": {
+            "label": "购买数量",
+            "placeholder": "输入购买数量...",
+            "error": "购买数量必须为 0 或更大"
+          },
+          "sell_quantity": {
+            "label": "销售数量",
+            "placeholder": "输入销售数量...",
+            "error": "销售数量必须为 0 或更大"
+          },
+          "operation": {
+            "label": "运营",
+            "placeholder": "选择操作...",
+            "error": "请至少选择一项操作"
+          }
+        },
+        "buttons": {
+          "add": {
+            "tooltip": "添加调试实时项条目"
+          }
+        }
+      },
+      "create_category_summary": {
+        "fields": {
+          "icon": {
+            "label": "图标",
+            "placeholder": "图标",
+            "description": "类别的图标",
+            "tooltip": "类别的图标",
+            "error": "无效的图标"
+          },
+          "name": {
+            "label": "姓名",
+            "placeholder": "姓名",
+            "description": "类别名称",
+            "tooltip": "类别名称",
+            "error": "名称无效"
+          },
+          "types": {
+            "label": "类型",
+            "description": "类别的类型"
+          }
+        },
+        "buttons": {
+          "submit": {
+            "label": "创建/保存类别"
+          }
+        }
+      },
+      "select_tradable_item": {
+        "fields": {
+          "item": {
+            "label": "物品",
+            "placeholder": "选择项目..."
+          },
+          "variant": {
+            "label": "变体",
+            "placeholder": "选择变体...",
+            "description": "请选择一个变体"
+          },
+          "rank": {
+            "label": "秩",
+            "placeholder": "选择排名...",
+            "description": "请选择等级"
+          },
+          "cyan_stars": {
+            "label": "青色星星",
+            "placeholder": "选择青色星星...",
+            "description": "青色星星有多少个"
+          },
+          "amber_stars": {
+            "label": "琥珀星",
+            "placeholder": "选择琥珀星...",
+            "description": "琥珀星有多少颗"
+          }
+        },
+        "messages": {
+          "nothing_found": "没有找到物品"
+        }
+      },
+      "select_riven_weapon": {
+        "fields": {
+          "weapon": {
+            "label": "武器",
+            "placeholder": "选择武器..."
+          }
+        }
+      },
+      "create_item": {
+        "fields": {
+          "quantity": {
+            "label": "数量",
+            "placeholder": "数量",
+            "error": "数量无效"
+          },
+          "bought": {
+            "label": "买",
+            "placeholder": "买",
+            "error": "无效购买"
+          }
+        },
+        "buttons": {
+          "add": {
+            "tooltip": {
+              "description_with_report": "将商品添加到库存并向 Warframe Market 报告",
+              "description_without_report": "将商品添加到库存"
+            }
+          }
+        }
+      },
+      "log_in": {
+        "title": "Warframe 市场 - 登录",
+        "register": "没有帐户？登记",
+        "fields": {
+          "email": {
+            "label": "电子邮件",
+            "placeholder": "电子邮件",
+            "error": "电子邮件无效"
+          },
+          "password": {
+            "label": "密码",
+            "placeholder": "密码",
+            "error": "密码必须包含至少 6 个字符"
+          }
+        },
+        "buttons": {
+          "submit": "登录"
+        }
+      },
+      "settings": {
+        "tabs": {
+          "general": {
+            "title": "一般的",
+            "fields": {
+              "language": {
+                "label": "语言",
+                "placeholder": "选择语言",
+                "error": "无效语言"
+              }
+            }
+          },
+          "themes": {
+            "title": "主题",
+            "community_themes": "社区主题",
+            "get_more_out_of_themes": "使用主题编辑器从主题中获得更多信息 单击此处",
+            "theme_configuration": "主题配置"
+          },
+          "notifications": {
+            "title": "通知",
+            "on_new_conversation_title": "关于新的对话",
+            "on_new_trade_title": "论新贸易",
+            "on_wfm_chat_message_title": "关于 WFM 聊天消息"
+          },
+          "advanced": {
+            "title": "先进的",
+            "fields": {
+              "wf_log_path": {
+                "label": "Warframe 日志路径",
+                "placeholder": "默认 Warframe 日志路径",
+                "errors": {
+                  "not_exists": "指定的路径不存在。"
+                },
+                "tooltip": "Warframe 日志文件的路径。默认路径留空。"
+              }
+            },
+            "button_export_logs": "日志导出"
+          },
+          "summary": {
+            "title": "概括",
+            "fields": {
+              "recent_days": {
+                "label": "最近几天",
+                "tooltip": "显示多少天的数据"
+              },
+              "recent_transactions": {
+                "label": "最近交易",
+                "tooltip": "显示多少笔交易"
+              }
+            },
+            "datatable": {
+              "columns": {
+                "name": "姓名",
+                "tags": "标签",
+                "types": "类型",
+                "actions": {
+                  "title": "行动",
+                  "buttons": {
+                    "edit": {
+                      "tooltip": "编辑项目"
+                    },
+                    "delete": {
+                      "tooltip": "删除项目"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "live_scraper": {
+            "title": "直播刮刀",
+            "general": {
+              "title": "一般的",
+              "fields": {
+                "auto_trade": {
+                  "label": "汽车贸易",
+                  "error": "汽车交易无效",
+                  "tooltip": "如果为 true，则自动添加/出售库存"
+                },
+                "auto_delete": {
+                  "label": "自动删除",
+                  "error": "自动删除无效",
+                  "tooltip": "自动删除库存商品"
+                },
+                "should_delete_other_types": {
+                  "label": "应删除其他交易类型",
+                  "error": "无效应删除其他交易类型",
+                  "tooltip": "如果属实，将删除其他交易类型示例：如果启用购买，则将删除未列入黑名单的出售/愿望清单项目"
+                },
+                "report_to_wfm": {
+                  "label": "向 Warframe 市场报告",
+                  "error": "向 Warframe 市场提交的报告无效",
+                  "tooltip": "将向 Warframe Market 添加交易"
+                },
+                "trade_modes": {
+                  "label": "贸易模式",
+                  "description": "选择贸易方式",
+                  "error": "交易模式无效"
+                },
+                "stock_mode": {
+                  "label": "库存模式",
+                  "description": {
+                    "all": "会经历一切",
+                    "riven": "只会穿过裂痕",
+                    "item": "将仅遍历项目"
+                  },
+                  "placeholder": "库存模式",
+                  "error": "库存模式无效"
+                }
+              },
+              "columns": {
+                "name": "姓名",
+                "maximum_price": "最高价格"
+              },
+              "buttons": {
+                "edit_blacklist_label": "编辑黑名单 {{count}}",
+                "edit_buy_list_label": "编辑购买清单 {{count}}"
+              },
+              "black_list": {
+                "available_items_label": "可用项目",
+                "selected_items_label": "列入黑名单的物品",
+                "name_title": "姓名",
+                "trade_tax_title": "贸易税",
+                "trade_tax_label": "贸易税 {{min}} - {{max}}",
+                "mr_requirement_label": "MR 要求 {{min}} - {{max}}",
+                "mr_requirement_title": "MR要求",
+                "disabled_for_title": "禁用于",
+                "go_back_label": "回去",
+                "set_trade_modes_tooltip": "设置当前选择的交易模式 {{modes}}",
+                "no_trade_selected": "未选择交易模式，请至少选择一种交易模式"
+              }
+            },
+            "item": {
+              "title": "库存商品",
+              "wtb": {
+                "title": "世界旅游银行",
+                "fields": {
+                  "volume_threshold": {
+                    "label": "音量阈值",
+                    "placeholder": "音量阈值",
+                    "error": "音量阈值无效",
+                    "tooltip": "交易时考虑的最小交易量",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#volume-threshold"
+                  },
+                  "profit_threshold": {
+                    "label": "利润门槛",
+                    "placeholder": "利润门槛",
+                    "error": "利润门槛无效",
+                    "tooltip": "交易时考虑的最低利润",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#profit-threshold"
+                  },
+                  "avg_price_cap": {
+                    "label": "平均价格上限",
+                    "placeholder": "平均价格上限",
+                    "error": "平均价格上限无效",
+                    "tooltip": "交易时考虑的最高平均价格",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#average-price-cap"
+                  },
+                  "trading_tax_cap": {
+                    "label": "交易税上限",
+                    "placeholder": "交易税上限",
+                    "error": "交易税上限无效",
+                    "tooltip": "交易时考虑的最高税额",
+                    "link": "https://example.com/trading-tax-cap"
+                  },
+                  "max_total_price_cap": {
+                    "label": "最高总价上限",
+                    "placeholder": "最高总价上限",
+                    "error": "最高总价上限无效",
+                    "tooltip": "交易时考虑的最高总价 -1 表示无限制",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#max-total-price-cap"
+                  },
+                  "price_shift_threshold": {
+                    "label": "价格变动阈值",
+                    "placeholder": "价格变动阈值",
+                    "error": "价格变动阈值无效",
+                    "tooltip": "交易时考虑的最小价格变动",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#price-shift-threshold"
+                  },
+                  "buy_quantity": {
+                    "label": "商品数量",
+                    "placeholder": "商品数量",
+                    "error": "商品数量无效",
+                    "tooltip": "购买商品数量",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#quantity-of-goods"
+                  },
+                  "min_wtb_profit_margin": {
+                    "label": "利润率阈值",
+                    "placeholder": "利润率阈值",
+                    "error": "利润率阈值无效",
+                    "tooltip": "WTB交易的最低利润率",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#profit-margin-threshold"
+                  },
+                  "quantity_per_trade": {
+                    "label": "每笔交易数量",
+                    "placeholder": "每笔交易数量",
+                    "error": "每笔交易数量无效",
+                    "tooltip": "每笔交易的商品数量：注意，这仅对某些物品有效，例如奥术",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#quantity-per-trade"
+                  },
+                  "max_stock_quantity": {
+                    "label": "最大库存数量",
+                    "placeholder": "最大库存数量",
+                    "error": "最大库存数量无效",
+                    "tooltip": "停止 WTB 订单创建之前库存商品的最大数量。设置为 -1 可禁用此功能。",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#max-stock-quantity"
+                  },
+                  "wts": {
+                    "title": "世界贸易组织",
+                    "fields": {}
+                  }
+                }
+              },
+              "wts": {
+                "title": "世界贸易组织",
+                "fields": {
+                  "min_sma": {
+                    "label": "最小SMA",
+                    "placeholder": "最小SMA",
+                    "error": "最小 SMA 无效",
+                    "tooltip": "交易时考虑的最小简单移动平均线",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wts#min-sma"
+                  },
+                  "min_profit": {
+                    "label": "最低利润",
+                    "placeholder": "最低利润",
+                    "error": "最低利润无效",
+                    "tooltip": "交易时考虑的最低利润",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wts#min-profit"
+                  }
+                }
+              },
+              "summary": {
+                "title": "概括",
+                "datatable_columns": {
+                  "profit": "潜在利润",
+                  "trading_tax": "交易税"
+                },
+                "buttons": {
+                  "show_interesting_wtb_items": "显示有趣的 WTB 项目"
+                }
+              }
+            },
+            "riven": {
+              "title": "股票裂痕",
+              "fields": {
+                "min_profit": {
+                  "label": "最低利润",
+                  "placeholder": "最低利润",
+                  "error": "最低利润无效",
+                  "tooltip": "交易时考虑的最低利润",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#min-profit"
+                },
+                "threshold_percentage": {
+                  "label": "阈值百分比",
+                  "placeholder": "阈值百分比",
+                  "error": "无效阈值百分比",
+                  "tooltip": "交易百分比阈值",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#minimum-price-shift"
+                },
+                "limit_to": {
+                  "label": "限制为",
+                  "placeholder": "限制为",
+                  "error": "无效限制为",
+                  "tooltip": "限制交易数量",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#limit-to"
+                },
+                "update_interval": {
+                  "label": "更新间隔（秒）",
+                  "placeholder": "更新间隔",
+                  "error": "更新间隔无效",
+                  "tooltip": "更新裂痕交易的时间间隔",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#update-interval"
+                }
+              }
+            }
+          },
+          "http_server": {
+            "title": "HTTP服务器",
+            "general": {
+              "title": "一般的",
+              "fields": {
+                "enabled": {
+                  "label": "启用",
+                  "tooltip": "启用或禁用 HTTP 服务器"
+                },
+                "port": {
+                  "label": "港口",
+                  "placeholder": "港口",
+                  "tooltip": "HTTP 服务器将运行的端口"
+                },
+                "host": {
+                  "label": "主持人",
+                  "placeholder": "主持人",
+                  "error": "无效主机",
+                  "tooltip": "HTTP 服务器将运行的主机"
+                }
+              }
+            }
+          }
+        }
+      },
+      "trade_entry_update": {
+        "fields": {
+          "price_label": "价格",
+          "tags_label": "标签"
+        }
+      }
+    },
+    "modals": {
+      "base": {
+        "buttons": {
+          "confirm": "确认",
+          "cancel": "取消"
+        }
+      },
+      "generate_trade_message": {
+        "title": "生成 {{count}} 商品的贸易消息",
+        "button_add_key_tooltip": "添加显示",
+        "button_copy_tooltip": "复制到剪贴板",
+        "button_delete_template_tooltip": "删除模板",
+        "button_load_template_tooltip": "加载模板",
+        "button_save_template_tooltip": "保存模板",
+        "titles": {
+          "message_settings": "消息设置",
+          "preview_with_icons": "带图标预览",
+          "display_settings": "显示设置"
+        },
+        "fields": {
+          "prefix": {
+            "label": "前缀",
+            "description": "用于贸易消息的前缀",
+            "placeholder": "前缀"
+          },
+          "suffix": {
+            "label": "后缀",
+            "description": "用于贸易消息的后缀",
+            "placeholder": "后缀"
+          },
+          "message": {
+            "label": "信息",
+            "description": "生成的交易消息",
+            "length_info": "{{current}} / {{max}} 个字符"
+          },
+          "key": {
+            "label": "钥匙",
+            "description": "用于分隔消息中的项目的键",
+            "placeholder": "钥匙"
+          },
+          "template": {
+            "label": "贸易消息模板",
+            "description": "用于生成消息的模板。"
+          },
+          "chat_icon": {
+            "label": "聊天图标",
+            "description": "在消息中包含 Warframe Market 聊天图标"
+          },
+          "group_by": {
+            "label": "分组依据",
+            "description": "按消息中的类型对项目进行分组"
+          },
+          "load_template": {
+            "label": "加载模板",
+            "description": "加载已保存的消息模板"
+          }
+        },
+        "datatable": {
+          "columns": {
+            "key": "钥匙",
+            "name": "姓名",
+            "prefix": "前缀",
+            "suffix": "后缀"
+          }
+        }
+      },
+      "patreon_modal": {
+        "title": "支持Quantframe的开发",
+        "description": "通过在 Patreon 上支持我来获取高级功能",
+        "premium_content": "用户活动 | Riven 价格查询 |导出数据|项目统计",
+        "join_the_community": "加入支持者社区，帮助塑造 Quantframe 的未来。",
+        "link_your_account": "2. 关联您的 Patreon 帐户",
+        "buttons": {
+          "info": "帕特雷恩",
+          "link": "关联您的帐户"
+        }
+      },
+      "item_details": {
+        "tabs": {
+          "overview": {
+            "title": "概述",
+            "tooltips": {},
+            "labels": {
+              "created_at": "创建于：<date/>",
+              "updated_at": "更新于：<date/>",
+              "bought": "购买价格：{{price}} <plat/>",
+              "list_price": "标价：{{price}} <plat/>",
+              "potential_profit": "潜在利润：{{price}} <plat/>",
+              "minimum_profit": "最低利润：{{price}}",
+              "minimum_sma": "最小 SMA：{{price}}",
+              "quantity": "数量：{{quantity}}",
+              "is_hidden": "隐藏：<hidden/>"
+            }
+          },
+          "analytics": {
+            "title": "分析",
+            "tooltips": {},
+            "labels": {},
+            "titles": {
+              "last_transactions": "最后交易",
+              "financial_summary": "财务摘要"
+            }
+          },
+          "wfm": {
+            "title": "概述",
+            "tooltips": {
+              "buy_highest_price": "买最高价",
+              "sell_highest_price": "卖出最高价",
+              "spread_percent": "点差百分比",
+              "supply": "供应"
+            },
+            "labels": {
+              "buy_lowest": "最低价购买",
+              "sell_lowest": "最低价卖出",
+              "spread": "传播",
+              "demand": "要求",
+              "roi_percent": "投资回报率"
+            },
+            "buttons": {
+              "view_on_wfm": "Warframe 市场视图"
+            }
+          },
+          "edit": {
+            "title": "编辑",
+            "fields": {
+              "bought": "购买目的",
+              "minimum_price": "最低价格",
+              "maximum_price": "最高价格",
+              "owned": "目前拥有",
+              "quantity": "数量",
+              "minimum_sma": "最小SMA",
+              "minimum_profit": "最低利润"
+            },
+            "tooltips": {
+              "minimum_price": "您愿意出售该商品的最低价格。设置为 0 以禁用。",
+              "minimum_profit": "出售该商品时您想要赚取的最低利润。设置为 0 禁用",
+              "minimum_sma": "销售该商品时考虑的最小简单移动平均线。设置为 0 禁用",
+              "maximum_price": "您愿意购买该商品的最高价格。设置为 0 以禁用。"
+            }
+          }
+        }
+      },
+      "riven_details": {
+        "tabs": {
+          "overview": {
+            "title": "概述",
+            "tooltips": {},
+            "labels": {
+              "created_at": "创建于：<date/>",
+              "updated_at": "更新于：<date/>",
+              "bought": "购买价格：{{price}} <plat/>",
+              "list_price": "标价：{{price}} <plat/>",
+              "potential_profit": "潜在利润：{{price}} <plat/>",
+              "minimum_profit": "最低利润：{{price}}",
+              "minimum_sma": "最小 SMA：{{price}}",
+              "kuva": "赤毒消耗：{{kuva}}",
+              "endo": "远藤：{{endo}}",
+              "is_hidden": "隐藏：<hidden/>"
+            }
+          },
+          "modifiers": {
+            "title": "修饰符",
+            "tooltips": {},
+            "labels": {
+              "weapon": "武器",
+              "rank": "秩"
+            },
+            "titles": {}
+          },
+          "roll_evaluation": {
+            "title": "滚动评估",
+            "tooltips": {},
+            "labels": {
+              "best_attributes": "最佳属性",
+              "mandatory": "强制的",
+              "optional": "选修的",
+              "best_bad_attributes": "最佳不良属性"
+            },
+            "titles": {}
+          },
+          "analytics": {
+            "title": "分析",
+            "tooltips": {},
+            "labels": {},
+            "titles": {
+              "last_transactions": "最后交易",
+              "financial_summary": "财务摘要"
+            }
+          },
+          "wfm": {
+            "title": "Warframe 市场",
+            "tooltips": {},
+            "labels": {
+              "auction_header_left": "{{similarity}}%",
+              "auction_header_right": "{{price}} <plat/>"
+            },
+            "buttons": {
+              "view_on_wfm": "Warframe 市场视图"
+            }
+          },
+          "edit": {
+            "title": "编辑",
+            "fields": {
+              "bought": "购买目的",
+              "minimum_price": "最低价格",
+              "mastery_rank": "精通等级",
+              "re_rolls": "重新卷",
+              "minimum_profit": "最低利润"
+            },
+            "tooltips": {
+              "minimum_price": "您愿意出售该商品的最低价格。设置为 0 以禁用。",
+              "minimum_profit": "出售该商品时您想要赚取的最低利润。设置为 0 禁用",
+              "minimum_sma": "销售该商品时考虑的最小简单移动平均线。设置为 0 禁用",
+              "maximum_price": "您愿意购买该商品的最高价格。设置为 0 以禁用。"
+            }
+          }
+        }
+      },
+      "update_available": {
+        "title": "新更新可用 (v{{version}})",
+        "buttons": {
+          "download": "下载并安装",
+          "download_manual": "手动下载",
+          "read_more": "阅读更多"
+        }
+      },
+      "tos": {
+        "title": "服务条款",
+        "buttons": {
+          "accept": "接受",
+          "decline": "衰退"
+        }
+      },
+      "app_error": {
+        "title": "{{component}} 组件错误",
+        "version": "版本：{{version}}",
+        "cause": "原因：{{cause}}",
+        "message": "消息：{{message}}",
+        "location": "地点：{{location}}",
+        "footer": "请将此错误报告给开发人员，\n通过导出日志文件，只需单击下面的按钮，这将在您的桌面上创建一个文件",
+        "export_log": "导出日志"
+      }
+    },
+    "chat_item": {
+      "delete_tooltip": "删除对话",
+      "last_update": "最后更新"
+    },
+    "chat_rome": {
+      "fields": {
+        "message": {
+          "too_long": "留言太长",
+          "placeholder": "在此输入您的消息..."
+        }
+      },
+      "buttons": {
+        "back_label": "后退",
+        "send_label": "发送",
+        "options": {
+          "label": "选项",
+          "delete": "你为什么在这里？"
+        }
+      }
+    },
+    "best_by_category_table": {
+      "datatable": {
+        "columns": {
+          "name": "姓名",
+          "revenue": "收入",
+          "expense": "费用",
+          "profit": "利润",
+          "profit_margin": "利润率",
+          "quantity": "数量"
+        }
+      }
+    },
+    "bar_chart_financial_summary": {
+      "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+      "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>",
+      "tooltips": {
+        "expense": "总费用",
+        "revenue": "总收入",
+        "profit": "利润总额",
+        "trades": "交易数量",
+        "sales": "销售数量",
+        "purchases": "购买数量"
+      }
+    },
+    "financial_report_card": {
+      "tooltips": {
+        "total_expenses": "总费用",
+        "total_revenue": "总收入",
+        "average_profit": "平均利润",
+        "total_credits": "总学分",
+        "lowest_revenue": "最低收入",
+        "lowest_expense": "最低费用",
+        "highest_revenue": "最高收入"
+      },
+      "labels": {
+        "trade_count": "交易数量",
+        "highest_revenue": "最高收入",
+        "highest_expense": "最高费用",
+        "total_transactions": "总交易量",
+        "revenue": "收入",
+        "expenses": "开支",
+        "total_profit": "利润总额"
+      }
+    },
+    "riven_preview": {
+      "riven_name": "{{name}} <blue>{{mod_name}}</blue>",
+      "types": {
+        "unveiled": {
+          "footer_left": "{{progress}}/{{required}}"
+        },
+        "pre-veiled": {
+          "footer_left": "x{{quantity}}"
+        },
+        "veiled": {
+          "header_left": "{{price}} <plat/>",
+          "footer_left": "R：{{rank}}/8",
+          "footer_right": "先生：{{mastery}}"
+        }
+      }
+    },
+    "price_history_popover": {
+      "labels": {
+        "price_history": "价格历史"
+      }
+    }
+  },
+  "pages": {
+    "home": {
+      "cards": {
+        "total": {
+          "title": "利润总额",
+          "footer": "销售：<blue>{{sales}}</blue> |购买：<blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> |利润率：<blue>{{profit_margin}}</blue>%",
+          "bar_chart": {
+            "title": "利润总额",
+            "datasets": {
+              "this_year": "今年",
+              "last_year": "去年"
+            }
+          }
+        },
+        "today": {
+          "title": "今日利润",
+          "footer": "销售：<blue>{{sales}}</blue> |购买：<blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> |利润率：<blue>{{profit_margin}}</blue>%",
+          "bar_chart": {
+            "title": "今日利润",
+            "datasets": {
+              "profit": "利润"
+            },
+            "footers": {
+              "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+              "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>"
+            }
+          }
+        },
+        "recent_days": {
+          "bar_chart": {
+            "title": "最后 {{days}} 天",
+            "datasets": {
+              "profit": "利润"
+            },
+            "footers": {
+              "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+              "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>"
+            }
+          }
+        },
+        "best_seller": {
+          "title": "畅销书利润",
+          "footer": "名称： <blue>{{name}}</blue> | S：<blue>{{sales}}</blue> |电话：<blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> |下午：<blue>{{profit_margin}}</blue>%"
+        },
+        "last_transaction": {
+          "title": "最后交易",
+          "info_box": {
+            "purchase": "购买{{count}}",
+            "sale": "销售 {{count}}"
+          }
+        }
+      }
+    },
+    "about": {
+      "cards": {
+        "coffee": {
+          "title": "咖啡"
+        },
+        "patreon": {
+          "title": "在 Patreon 上支持我"
+        },
+        "discord": {
+          "title": "不和谐"
+        },
+        "guide": {
+          "title": "维基/指南"
+        }
+      },
+      "text": {
+        "version": "版本：<blue>{{version}}</blue> 在 🇩🇰 中使用 ❤️ 制作。 © 2023-{{year}} Kenya-DK。版权所有",
+        "patreon_thanks": "特别感谢 Patreon“Quantframe 用户”支持者使 Quantframe 成为可能：<blue>{{users}}</blue>。",
+        "disclaimer": "Quantframe 是第三方应用程序，不隶属于 Digital Extremes。"
+      },
+      "button_check_for_updates": "检查更新"
+    },
+    "debug": {
+      "tabs": {
+        "logging": {
+          "title": "记录",
+          "datatable": {
+            "columns": {
+              "command": "命令",
+              "count": "数数",
+              "actions": {
+                "title": "行动",
+                "buttons": {
+                  "remove_tooltip": "删除登录命令"
+                }
+              }
+            }
+          },
+          "buttons": {
+            "add_log": "添加日志"
+          },
+          "prompt": {
+            "name": {
+              "title": "添加日志",
+              "fields": {
+                "name": {
+                  "label": "日志名称"
+                }
+              }
+            }
+          }
+        },
+        "states": {
+          "title": "州",
+          "accordions": {
+            "app_info": "应用程序信息",
+            "app_error": "应用程序错误",
+            "settings": "设置",
+            "alerts": "警报",
+            "user": "用户",
+            "live_scraper": "直播刮刀",
+            "wfm_state": "WFM状态",
+            "tauri_events": "金牛座活动"
+          }
+        },
+        "debugging": {
+          "title": "调试",
+          "fake_orders_tooltip": "Toggle 实时交易的假订单（仅用于测试目的）将存储在 dev.kenya.quantframe\\fake_orders 中",
+          "fake_orders_label": "使用假订单 真实订单",
+          "datatable": {
+            "columns": {
+              "wfm_url": {
+                "title": "姓名",
+                "value": "{{name}} <blue>{{sub_type}}</blue>"
+              },
+              "stock_id": "股票编号",
+              "wish_list_id": "愿望清单 ID",
+              "priority": "优先事项",
+              "buy_quantity": "购买数量",
+              "sell_quantity": "销售数量",
+              "operation": "手术",
+              "actions": {
+                "title": "行动",
+                "buttons": {
+                  "delete_tooltip": "删除调试活动项条目"
+                }
+              }
+            }
+          }
+        },
+        "ee_log": {
+          "title": "电子工程日志",
+          "hide_empty": "隐藏空行",
+          "export_json_tooltip": "将项目导出为 JSON",
+          "datatable": {
+            "columns": {
+              "line": "线",
+              "date": "时间戳"
+            }
+          }
+        }
+      }
+    },
+    "banned": {
+      "wfm": {
+        "title": "Warframe 市场账户因以下原因被暂停：",
+        "reason": "原因：{{reason}}",
+        "until": "直到："
+      },
+      "qf": {
+        "title": "Quantframe 账户因以下原因被暂停：",
+        "reason": "原因：{{reason}}",
+        "until": "直到："
+      }
+    },
+    "auth": {
+      "errors": {
+        "login": {
+          "title": "登录错误",
+          "TooManyRequests": "请求太多，请稍后重试",
+          "InvalidCredentials": "密码无效",
+          "InternalServerError": "目前无法登录，请稍后重试",
+          "banned": "你被禁止了",
+          "ban_reason": "<red>原因：{{reason}}</red>",
+          "verification": "您需要验证您的帐户 在 Warframe Market 网站上执行此操作"
+        }
+      },
+      "success": {
+        "login": {
+          "title": "登录成功",
+          "message": "欢迎回来！ {{name}}"
+        }
+      }
+    },
+    "live_scraper": {
+      "export_json_tooltip": "将项目导出为 JSON (Patreon T1+)",
+      "update_multiple_tooltip": "更新多个项目",
+      "delete_multiple_tooltip": "删除多个项目",
+      "wts_multiple_tooltip": "生成WTS消息",
+      "segments": {
+        "bought": "买",
+        "listed": "上市",
+        "profit": "利润"
+      },
+      "prompts": {
+        "update_filter": {
+          "title": "更新过滤器"
+        },
+        "create_riven": {
+          "title": "创建裂罅"
+        }
+      },
+      "tabs": {
+        "item": {
+          "title": "物品",
+          "datatable": {
+            "columns": {
+              "bought": "买",
+              "owned": "拥有"
+            }
+          }
+        },
+        "riven": {
+          "title": "锐文",
+          "datatable": {
+            "columns": {
+              "attributes": "属性",
+              "bought": "买"
+            }
+          }
+        },
+        "wish_list": {
+          "title": "愿望清单"
+        }
+      }
+    },
+    "warframe_market": {
+      "tabs": {
+        "orders": {
+          "title": "订单",
+          "status": "<blue>{{type}}</blue> | <qty/> <blue>{{total}}</blue> | <plat/> <blue>{{platinum}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+          "tooltip_profit": "预计利润",
+          "buttons": {
+            "refresh_tooltip": "刷新订单列表",
+            "delete_all_tooltip": "删除所有订单",
+            "delete_tooltip": "删除此订单",
+            "info_tooltip": "查看订单详情",
+            "sell_manual": {
+              "buy_tooltip": "手动购买",
+              "sell_tooltip": "手动出售"
+            },
+            "sell_auto": {
+              "buy_tooltip": "按标价购买",
+              "sell_tooltip": "按标价出售"
+            }
+          },
+          "order_card": {
+            "header_left": "{{name}}",
+            "header_right": "<qty/> <blue>{{quantity}}</blue>",
+            "footer_left": "<blue>{{price}}</blue> <plat/>"
+          },
+          "fields": {
+            "quantity": "<qty/> <blue>{{quantity}}</blue>",
+            "platinum": "<blue>{{platinum}}</blue> <plat/>",
+            "mod_rank": "等级：<blue>{{mod_rank}}</blue>/<blue>{{mod_max_rank}}</blue>",
+            "subtype": "<blue>{{sub_type}}</blue>"
+          }
+        },
+        "auctions": {
+          "title": "拍卖",
+          "overview": "<qty/> <blue>{{total}}</blue> | <plat/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+          "tooltip_profit": "预计利润",
+          "buttons": {
+            "refresh_tooltip": "刷新拍卖列表",
+            "delete_all_tooltip": "删除所有拍卖",
+            "delete_tooltip": "删除本次拍卖",
+            "import_tooltip": "导入此拍卖",
+            "info_tooltip": "查看拍卖详情"
+          },
+          "auction_card": {
+            "header_right": "{{price}} <plat/>"
+          }
+        }
+      }
+    },
+    "chat": {
+      "prompts": {
+        "delete_chat": {
+          "title": "删除聊天记录",
+          "message": "您确定要删除此聊天记录吗？此操作无法撤消。",
+          "cancel": "取消",
+          "confirm": "删除"
+        }
+      },
+      "buttons": {
+        "refresh_tooltip": "刷新聊天列表",
+        "delete_all_tooltip": "删除所有聊天记录"
+      }
+    },
+    "trading_analytics": {
+      "tabs": {
+        "transaction": {
+          "title": "交易",
+          "date_range_label": "日期范围",
+          "date_range_description": "过滤交易的日期范围",
+          "date_range_placeholder": "选择日期范围",
+          "prompts": {
+            "update_title": "更新交易"
+          },
+          "buttons": {
+            "export_transactions_tooltip": "将交易导出为 JSON (Patreon T1+)",
+            "show_financial_report_tooltip": "显示报告",
+            "delete_all_tooltip": "删除所有交易{{count}}",
+            "calculate_tax_tooltip": "计算所有交易的交易税"
+          },
+          "datatable": {
+            "columns": {
+              "item_type": "项目类型",
+              "price": "价格",
+              "created_at": "创建于",
+              "user_name": "用户名",
+              "profit": "利润",
+              "credits": "制作人员",
+              "sale_count": "销售数量",
+              "revenue": "收入",
+              "purchases_count": "购买数量",
+              "expenses": "开支",
+              "total_transactions": "总交易量"
+            }
+          },
+          "titles": {
+            "most_purchased_items": "最常购买的商品",
+            "most_sold_items": "最畅销的商品"
+          },
+          "table_headers": {
+            "item_name": "姓名",
+            "quantity": "数量"
+          }
+        },
+        "item": {
+          "title": "物品",
+          "export_json_tooltip": "将项目导出为 JSON (Patreon T1+)",
+          "open_table_options_tooltip": "打开表选项",
+          "date_range_placeholder": "选择日期范围",
+          "volume_label": "体积",
+          "min_price_label": "最低价格",
+          "max_price_label": "最高价格",
+          "supply_label": "供应",
+          "demand_label": "要求",
+          "datatable": {
+            "columns": {
+              "volume": "体积",
+              "min_price": "最低价格",
+              "max_price": "最高价格",
+              "open_price": "开盘价",
+              "closed_price": "收盘价",
+              "avg_price": "平均价格",
+              "wa_price": "西澳价格",
+              "median": "中位数",
+              "moving_avg": "移动平均",
+              "donch_top": "唐奇·托普",
+              "donch_bot": "唐奇机器人",
+              "trading_tax": "交易税",
+              "supply": "供应",
+              "demand": "要求"
+            }
+          }
+        },
+        "riven": {
+          "title": "锐文",
+          "export_json_tooltip": "将 Riven 导出为 JSON (Patreon T1+)",
+          "open_table_options_tooltip": "打开表选项",
+          "date_range_placeholder": "选择日期范围",
+          "volume_label": "体积",
+          "min_price_label": "最低价格",
+          "max_price_label": "最高价格",
+          "avg_price_label": "平均价格",
+          "datatable": {
+            "columns": {
+              "volume": "体积",
+              "min_price": "最低价格",
+              "max_price": "最高价格",
+              "avg_price": "平均价格",
+              "median_price": "中位价格"
+            }
+          }
+        },
+        "user": {
+          "title": "用户活动",
+          "chart": {
+            "datasets": {
+              "registered_users": "注册用户",
+              "active_users": "活跃用户"
+            }
+          },
+          "fields": {
+            "group_by": {
+              "label": "分组依据",
+              "options": {
+                "day": "天",
+                "hour": "小时"
+              }
+            },
+            "date_range": {
+              "label": "日期范围",
+              "placeholder": "选择日期范围"
+            }
+          }
+        },
+        "wfgdpr": {
+          "title": "Warframe GDPR 解析器",
+          "drag_and_drop_message": "将您的 GDPR 文本文件拖放到此处 在网站上了解有关此功能的更多信息。",
+          "columns": {
+            "account": "帐户名称",
+            "logins": "登录次数",
+            "purchases": "购买数量",
+            "trades": "交易计数",
+            "transactions": "交易数量",
+            "creation_date": "创建日期"
+          },
+          "overview": {
+            "title": "概述",
+            "labels": {
+              "member_since": "会员自",
+              "subscribed": "已订阅",
+              "trades": "交易",
+              "platinum_traded": "白金交易",
+              "purchases": "购买",
+              "total_spent": "总花费",
+              "transactions": "交易",
+              "unique_ips": "独特的IP",
+              "total_logins": "总登录次数"
+            }
+          },
+          "trade": {
+            "title": "贸易",
+            "yearly_trade_overview": {
+              "title": "年度贸易概览 ({{year}})",
+              "total_trades": "总交易数",
+              "total_purchases": "总购买量",
+              "total_sales": "总销售额"
+            },
+            "columns": {
+              "created_at": "创建于",
+              "offered_items": "提供的物品数量",
+              "received_items": "收到的物品数量",
+              "credits": "制作人员"
+            },
+            "table_headers": {
+              "item_name": "姓名",
+              "quantity": "数量"
+            },
+            "titles": {
+              "most_sold_items": "最畅销的商品",
+              "most_purchased_items": "最常购买的商品"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "显示报告"
+            }
+          },
+          "purchase": {
+            "title": "购买",
+            "titles": {
+              "most_purchased_items": "最常购买的商品"
+            },
+            "table_headers": {
+              "item_name": "姓名",
+              "price": "价格",
+              "quantity": "数量"
+            },
+            "yearly_trade_overview": {
+              "title": "年度贸易概览 ({{year}})",
+              "total_purchases": "总购买量"
+            },
+            "columns": {
+              "date": "购买于",
+              "price": "价格",
+              "shop_id": "店铺编号",
+              "items_received": "收到的物品"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "显示报告"
+            }
+          },
+          "transaction": {
+            "title": "交易",
+            "titles": {
+              "most_purchased_items": "最常购买的商品"
+            },
+            "table_headers": {
+              "item_name": "姓名",
+              "price": "价格",
+              "quantity": "数量"
+            },
+            "yearly_trade_overview": {
+              "title": "年度贸易概览 ({{year}})",
+              "total_purchases": "总购买量"
+            },
+            "columns": {
+              "date": "购买于",
+              "currency": "货币",
+              "price": "价格",
+              "account": "帐户",
+              "sku": "存货单位"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "显示报告"
+            }
+          }
+        }
+      }
+    },
+    "trade_messages": {
+      "fields": {
+        "price_label": "价格",
+        "price_placeholder": "输入价格",
+        "tags_label": "标签",
+        "tags_placeholder": "输入标签"
+      },
+      "buttons": {
+        "generate_trade_messages_tooltip": "生成 {{count}} 商品的交易消息",
+        "update_multiple_tooltip": "更新多条贸易消息",
+        "export_json_tooltip": "将交易消息导出为 JSON (Patreon T1+)",
+        "delete_multiple_tooltip": "删除所有交易 {{count}}",
+        "add_tooltip": "添加贸易留言",
+        "find_interesting_tooltip": "查找有趣的贸易消息 (Patreon T2+)",
+        "calibrate_prices_tooltip": "校准价格"
+      },
+      "datatable": {
+        "columns": {
+          "price": "价格",
+          "tags": "标签",
+          "min_price": "最低价格",
+          "potential_profit": "潜在利润",
+          "updated_at": "更新于"
+        }
+      },
+      "tabs": {
+        "item": {
+          "title": "物品"
+        },
+        "riven": {
+          "title": "锐文",
+          "modals": {
+            "find_interesting_rivens": {
+              "title": "为 {{date}} 寻找有趣的裂痕",
+              "titles": {
+                "filtered": "过滤裂痕",
+                "discount_settings": "折扣设置",
+                "export_settings": "导出设置"
+              },
+              "fields": {
+                "min_price_label": "最低价格",
+                "min_volume_label": "最小体积",
+                "discount_percentage_label": "折扣百分比%",
+                "round_to_nearest_label": "舍入到最接近的值",
+                "override_existing_prices_label": "覆盖现有价格",
+                "tags_label": "标签"
+              },
+              "datatable_columns": {
+                "name": "姓名",
+                "min_price": "最低价格",
+                "discount_price": "折扣价",
+                "potential_profit": "潜在利润",
+                "volume": "体积"
+              },
+              "buttons": {
+                "export_to_trade_messages": "导出至贸易消息"
+              }
+            }
+          }
+        },
+        "custom": {
+          "title": "风俗"
+        }
+      }
+    },
+    "process_trade": {
+      "stats": {
+        "user_name": "用户名",
+        "trade_type": "贸易类型",
+        "trade_price": "交易价格",
+        "price": "价格",
+        "difference": "不同之处"
+      },
+      "buttons": {
+        "process_trade_tooltip": "开始加工贸易",
+        "confirm_trade": "确认交易",
+        "back_to_list": "返回列表"
+      },
+      "datatable": {
+        "columns": {
+          "item_name": "姓名",
+          "quantity": "数量",
+          "price": "价格",
+          "total": "全部的",
+          "platinum": "铂",
+          "user_name": "用户名",
+          "date": "日期"
+        }
+      }
+    },
+    "wf_inventory": {
+      "tabs": {
+        "riven": {
+          "title": "锐文斯",
+          "riven_card": {
+            "footer_left": "{{rank}}/8 <polarity/>",
+            "footer_right": "先生：{{mastery}}",
+            "footer_center": "<stock/>",
+            "stock_status": {
+              "found": "在库存中找到",
+              "not_found": "库存中未找到"
+            }
+          },
+          "filters": {
+            "all": "全部",
+            "rifle": "步枪",
+            "shotgun": "霰弹枪",
+            "melee": "近战",
+            "pistol": "手枪",
+            "zaw": "佐乌",
+            "arch": "弓翼",
+            "veiled": "含蓄",
+            "unveiled": "揭幕"
+          }
+        }
+      }
+    }
+  }
+}

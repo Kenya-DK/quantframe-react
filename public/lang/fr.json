@@ -1,0 +1,2458 @@
+{
+  "months": [
+    "Janvier",
+    "Février",
+    "Mars",
+    "Avril",
+    "Peut",
+    "Juin",
+    "Juillet",
+    "Août",
+    "Septembre",
+    "Octobre",
+    "Novembre",
+    "Décembre"
+  ],
+  "common": {
+    "not_found": "Pas trouvé",
+    "buttons": {
+      "save": {
+        "label": "Sauvegarder"
+      },
+      "delete": {
+        "label": "Supprimer"
+      }
+    },
+    "notifications": {
+      "copy_to_clipboard": {
+        "title": "Copié dans le Presse-papiers",
+        "message": "{{message}} a été copié dans le presse-papiers."
+      },
+      "on_trade_event": {
+        "multiple_items": {
+          "title": "L'échange avec {{player_name}} n'a pas été traité",
+          "message": "L'échange avec {{player_name}} n'a pas été traité en raison de plusieurs articles."
+        },
+        "no_valid_items": {
+          "title": "L'échange avec {{player_name}} n'a pas été traité",
+          "message": "L'échange avec {{player_name}} n'a pas été traité car aucun article valide."
+        },
+        "success": {
+          "title": "Échange avec {{player_name}} terminé",
+          "message": "<blue>{{item_name}}</blue> X<blue>{{quantity}}</blue> <blue>{{trade_type}}</blue> Pour {{platinum}}p"
+        }
+      },
+      "warframe_gdpr_data_loaded": {
+        "success": {
+          "title": "Données Warframe GDPR chargées",
+          "message": "Transactions : {{trades}}, Connexions : {{logins}}, Achats : {{purchases}}, Transactions : {{transactions}}"
+        }
+      },
+      "log_export": {
+        "error": {
+          "title": "Erreur d'exportation du journal",
+          "message": "Une erreur s'est produite lors de la tentative d'exportation des journaux."
+        },
+        "success": {
+          "title": "Réussite de l'exportation du journal",
+          "message": "Les journaux ont été exportés avec succès vers {{path}}."
+        }
+      },
+      "create_stock_item": {
+        "error": {
+          "title": "Créer une erreur de stock",
+          "message": "Une erreur s'est produite lors de la tentative de création de stock."
+        },
+        "success": {
+          "title": "Créer du succès en matière de stock",
+          "message": "L'article de stock {{name}} a été créé avec succès."
+        }
+      },
+      "update_stock_item": {
+        "error": {
+          "title": "Erreur de mise à jour du stock",
+          "title_multiple": "Erreur de mise à jour du stock",
+          "message": "Une erreur s'est produite lors de la tentative de mise à jour du stock.",
+          "message_multiple": "Une erreur s'est produite lors de la tentative de mise à jour de plusieurs articles en stock."
+        },
+        "success": {
+          "title": "Mettre à jour le succès des stocks",
+          "title_multiple": "Mettre à jour le succès des stocks",
+          "message": "L'article en stock {{name}} a été mis à jour avec succès.",
+          "message_multiple": "{{count}} articles en stock ont ​​été mis à jour avec succès."
+        }
+      },
+      "delete_stock_item": {
+        "error": {
+          "title": "Supprimer l'erreur de stock",
+          "title_multiple": "Supprimer l'erreur de stock",
+          "message": "Une erreur s'est produite lors de la tentative de suppression du stock.",
+          "message_multiple": "Une erreur s'est produite lors de la tentative de suppression de plusieurs articles en stock."
+        },
+        "success": {
+          "title": "Supprimer le succès du stock",
+          "title_multiple": "Supprimer le succès du stock",
+          "message": "L'article de stock {{name}} a été supprimé avec succès.",
+          "message_multiple": "{{count}} articles en stock ont ​​été supprimés avec succès."
+        }
+      },
+      "sell_stock_item": {
+        "error": {
+          "title": "Erreur de vente de stock",
+          "message": "Une erreur s'est produite lors de la tentative de vente d'actions."
+        },
+        "success": {
+          "title": "Vendre des actions avec succès",
+          "message": "L'article en stock {{name}} a été vendu avec succès."
+        }
+      },
+      "create_stock_riven": {
+        "error": {
+          "title": "Créer une erreur de stock",
+          "message": "Une erreur s'est produite lors de la tentative de création de stock."
+        },
+        "success": {
+          "title": "Créer du succès en matière de stock",
+          "message": "L'article de stock {{name}} a été créé avec succès."
+        }
+      },
+      "update_stock_riven": {
+        "error": {
+          "title": "Erreur de mise à jour du stock",
+          "title_multiple": "Erreur de mise à jour du stock",
+          "message": "Une erreur s'est produite lors de la tentative de mise à jour du stock.",
+          "message_multiple": "Une erreur s'est produite lors de la tentative de mise à jour de plusieurs articles en stock."
+        },
+        "success": {
+          "title": "Mettre à jour le succès des stocks",
+          "title_multiple": "Mettre à jour le succès des stocks",
+          "message": "L'article en stock {{name}} a été mis à jour avec succès.",
+          "message_multiple": "{{count}} articles en stock ont ​​été mis à jour avec succès."
+        }
+      },
+      "delete_stock_riven": {
+        "error": {
+          "title": "Supprimer l'erreur de stock",
+          "title_multiple": "Supprimer l'erreur de stock",
+          "message": "Une erreur s'est produite lors de la tentative de suppression du stock.",
+          "message_multiple": "Une erreur s'est produite lors de la tentative de suppression de plusieurs articles en stock."
+        },
+        "success": {
+          "title": "Supprimer le succès du stock",
+          "title_multiple": "Supprimer le succès du stock",
+          "message": "Le stock déchiré {{name}} a été supprimé avec succès.",
+          "message_multiple": "Les flux de stock {{count}} ont été supprimés avec succès."
+        }
+      },
+      "delete_transaction": {
+        "error": {
+          "title": "Erreur de suppression de transaction",
+          "title_multiple": "Erreur de suppression de transaction",
+          "message": "Une erreur s'est produite lors de la tentative de suppression de la transaction.",
+          "message_multiple": "Une erreur s'est produite lors de la tentative de suppression de plusieurs transactions."
+        },
+        "success": {
+          "title": "Supprimer le succès de la transaction",
+          "title_multiple": "Supprimer le succès de la transaction",
+          "message": "La transaction {{name}} a été supprimée avec succès.",
+          "message_multiple": "{{count}} transactions ont été supprimées avec succès."
+        }
+      },
+      "sell_stock_riven": {
+        "error": {
+          "title": "Erreur de vente de stock",
+          "message": "Une erreur s'est produite lors de la tentative de vente d'actions."
+        },
+        "success": {
+          "title": "Vendre des actions avec succès",
+          "message": "L'article en stock {{name}} a été vendu avec succès."
+        }
+      },
+      "create_wish_list": {
+        "error": {
+          "title": "Erreur de création de liste de souhaits",
+          "message": "Une erreur s'est produite lors de la tentative de création de la liste de souhaits."
+        },
+        "success": {
+          "title": "Créer une liste de souhaits réussie",
+          "message": "La liste de souhaits a été créée avec succès."
+        }
+      },
+      "update_wish_list": {
+        "error": {
+          "title": "Erreur de mise à jour de la liste de souhaits",
+          "title_multiple": "Erreur de mise à jour de la liste de souhaits",
+          "message": "Une erreur s'est produite lors de la tentative de mise à jour de la liste de souhaits.",
+          "message_multiple": "Une erreur s'est produite lors de la tentative de mise à jour de plusieurs listes de souhaits."
+        },
+        "success": {
+          "title": "Succès de la mise à jour de la liste de souhaits",
+          "title_multiple": "Succès de la mise à jour de la liste de souhaits",
+          "message": "La liste de souhaits a été mise à jour avec succès.",
+          "message_multiple": "Les listes de souhaits {{count}} ont été mises à jour avec succès."
+        }
+      },
+      "delete_wish_list": {
+        "error": {
+          "title": "Erreur de suppression de la liste de souhaits",
+          "title_multiple": "Erreur de suppression de la liste de souhaits",
+          "message": "Une erreur s'est produite lors de la tentative de suppression de la liste de souhaits.",
+          "message_multiple": "Une erreur s'est produite lors de la tentative de suppression de plusieurs listes de souhaits."
+        },
+        "success": {
+          "title": "Supprimer la liste de souhaits avec succès",
+          "title_multiple": "Supprimer la liste de souhaits avec succès",
+          "message": "La liste de souhaits a été supprimée avec succès.",
+          "message_multiple": "{{count}} listes de souhaits ont été supprimées avec succès."
+        }
+      },
+      "bought_wish_list": {
+        "error": {
+          "title": "Erreur de liste de souhaits achetée",
+          "message": "Une erreur s'est produite lors de la tentative de marquer la liste de souhaits comme achetée."
+        },
+        "success": {
+          "title": "Succès de la liste de souhaits achetée",
+          "message": "La liste de souhaits a été marquée avec succès comme achetée."
+        }
+      },
+      "delete_chat": {
+        "error": {
+          "title": "Erreur de suppression du chat",
+          "message": "Une erreur s'est produite lors de la tentative de suppression du chat."
+        },
+        "success": {
+          "title": "Supprimer le succès du chat",
+          "message": "Le chat a été supprimé avec succès."
+        }
+      },
+      "export_data": {
+        "error": {
+          "title": "Erreur d'exportation de données",
+          "message": "Une erreur s'est produite lors de la tentative d'exportation des données."
+        },
+        "success": {
+          "title": "Succès de l'exportation des données",
+          "message": "Les données ont été exportées avec succès vers {{path}}."
+        }
+      },
+      "no_updates_available": {
+        "title": "Aucune mise à jour disponible",
+        "message": "Vous utilisez déjà la dernière version."
+      },
+      "update_settings": {
+        "error": {
+          "title": "Erreur de mise à jour des paramètres",
+          "message": "Une erreur s'est produite lors de la tentative de mise à jour des paramètres : \n{{message}}"
+        },
+        "success": {
+          "title": "Réussite de la mise à jour des paramètres",
+          "message": "Les paramètres ont été mis à jour avec succès"
+        }
+      },
+      "create_trade_entry": {
+        "error": {
+          "title": "Créer une erreur d'entrée de transaction",
+          "title_multiple": "Créer une erreur d'entrée de transaction",
+          "message": "Une erreur s'est produite lors de la tentative de création de l'entrée commerciale.",
+          "message_multiple": "Une erreur s'est produite lors de la tentative de création de plusieurs entrées commerciales."
+        },
+        "success": {
+          "title": "Créez le succès de votre entrée commerciale",
+          "title_multiple": "Créez le succès de votre entrée commerciale",
+          "message": "L'entrée commerciale {{name}} a été créée avec succès.",
+          "message_multiple": "{{count}} entrées commerciales ont été créées avec succès."
+        }
+      },
+      "update_trade_entry": {
+        "error": {
+          "title": "Mettre à jour l'erreur d'entrée de transaction",
+          "title_multiple": "Mettre à jour l'erreur d'entrée de transaction",
+          "message": "Une erreur s'est produite lors de la tentative de mise à jour de l'entrée commerciale.",
+          "message_multiple": "Une erreur s'est produite lors de la tentative de mise à jour de plusieurs entrées commerciales."
+        },
+        "success": {
+          "title": "Mettre à jour le succès de l'entrée commerciale",
+          "title_multiple": "Mettre à jour le succès de l'entrée commerciale",
+          "message": "L'entrée commerciale {{name}} a été mise à jour avec succès.",
+          "message_multiple": "Les entrées commerciales {{count}} ont été mises à jour avec succès."
+        }
+      },
+      "delete_trade_entry": {
+        "error": {
+          "title": "Supprimer l'erreur d'entrée de transaction",
+          "title_multiple": "Supprimer l'erreur d'entrée de transaction",
+          "message": "Une erreur s'est produite lors de la tentative de suppression de l'entrée commerciale.",
+          "message_multiple": "Une erreur s'est produite lors de la tentative de suppression de plusieurs entrées commerciales."
+        },
+        "success": {
+          "title": "Supprimer le succès de l'entrée commerciale",
+          "title_multiple": "Supprimer le succès de l'entrée commerciale",
+          "message": "L'entrée commerciale {{name}} a été supprimée avec succès.",
+          "message_multiple": "{{count}} entrées commerciales ont été supprimées avec succès."
+        }
+      },
+      "create_trade_msg_template": {
+        "error": {
+          "title": "Erreur de création de modèle",
+          "message": "Une erreur s'est produite lors de la tentative de création du modèle de message commercial."
+        },
+        "success": {
+          "title": "Créer un modèle réussi",
+          "message": "Le modèle de message commercial a été créé avec succès."
+        }
+      },
+      "delete_trade_msg_template": {
+        "error": {
+          "title": "Erreur de suppression du modèle",
+          "message": "Une erreur s'est produite lors de la tentative de suppression du modèle de message commercial."
+        },
+        "success": {
+          "title": "Succès de la suppression du modèle",
+          "message": "Le modèle de message commercial a été supprimé avec succès."
+        }
+      },
+      "update_transaction": {
+        "error": {
+          "title": "Erreur de transaction de mise à jour",
+          "message": "Une erreur s'est produite lors de la tentative de mise à jour de la transaction."
+        },
+        "success": {
+          "title": "Mettre à jour le succès de la transaction",
+          "message": "La transaction a été mise à jour avec succès."
+        }
+      },
+      "processed_multiple_items": {
+        "error": {
+          "title": "Erreur d'éléments multiples traités",
+          "message": "Une erreur s'est produite lors de la tentative de traitement de plusieurs éléments."
+        },
+        "success": {
+          "title": "Réussite du traitement de plusieurs éléments",
+          "message": "{{count}} éléments ont été traités avec succès."
+        }
+      },
+      "calculate_tax_all_transactions": {
+        "error": {
+          "title": "Calculer l'erreur fiscale",
+          "message": "Une erreur s'est produite lors de la tentative de calcul de la taxe sur les transactions."
+        },
+        "success": {
+          "title": "Calculer la réussite fiscale",
+          "message": "La taxe a été calculée avec succès pour les transactions."
+        }
+      },
+      "delete_order": {
+        "error": {
+          "title": "Supprimer l'erreur de commande",
+          "message": "Une erreur s'est produite lors de la tentative de suppression de la commande."
+        },
+        "success": {
+          "title": "Supprimer le succès de la commande",
+          "message": "La commande a été supprimée avec succès."
+        }
+      },
+      "delete_all_orders": {
+        "error": {
+          "title": "Erreur de suppression de toutes les commandes",
+          "message": "Une erreur s'est produite lors de la tentative de suppression de toutes les commandes."
+        },
+        "success": {
+          "title": "Supprimer toutes les commandes réussies",
+          "message": "Toutes les commandes ont été supprimées avec succès."
+        }
+      },
+      "refresh_orders": {
+        "error": {
+          "title": "Erreur d'actualisation des commandes",
+          "message": "Une erreur s'est produite lors de la tentative d'actualisation des commandes."
+        },
+        "success": {
+          "title": "Réussite des commandes d'actualisation",
+          "message": "Les commandes ont été actualisées avec succès."
+        }
+      },
+      "delete_auction": {
+        "error": {
+          "title": "Supprimer l'erreur d'enchère",
+          "message": "Une erreur s'est produite lors de la tentative de suppression de l'enchère."
+        },
+        "success": {
+          "title": "Supprimer le succès de l'enchère",
+          "message": "L'enchère a été supprimée avec succès."
+        }
+      },
+      "delete_all_auctions": {
+        "error": {
+          "title": "Erreur de suppression de toutes les enchères",
+          "message": "Une erreur s'est produite lors de la tentative de suppression de toutes les enchères."
+        },
+        "success": {
+          "title": "Supprimer tous les succès des enchères",
+          "message": "Toutes les enchères ont été supprimées avec succès."
+        }
+      },
+      "refresh_auctions": {
+        "error": {
+          "title": "Erreur d'actualisation des enchères",
+          "message": "Une erreur s'est produite lors de la tentative d'actualisation des enchères."
+        },
+        "success": {
+          "title": "Actualiser le succès des enchères",
+          "message": "Les enchères ont été actualisées avec succès."
+        }
+      }
+    },
+    "datatable_columns": {
+      "list_price": "Inscrit",
+      "maximum_price": {
+        "title": "Prix ​​maximum",
+        "value": "{{maximum_price}} ({{currency}})",
+        "edit_tooltip": "Modifier le prix maximum"
+      },
+      "minimum_price": {
+        "title": "Prix ​​minimum",
+        "value": "{{minimum_price}} ({{currency}})",
+        "edit_tooltip": "Modifier le prix minimum"
+      },
+      "actions": {
+        "title": "Actes",
+        "buttons": {
+          "manual_tooltip": "Vendre manuellement",
+          "auto_tooltip": "Vendre comme indiqué",
+          "bought_manual_tooltip": "Marquer comme acheté",
+          "bought_auto_tooltip": "Acheté au prix affiché",
+          "hide": {
+            "disabled_tooltip": "Montrer",
+            "enabled_tooltip": "Cacher"
+          },
+          "info_tooltip": "Informations",
+          "delete_tooltip": "Supprimer",
+          "edit_tooltip": "Modifier",
+          "open_filter_tooltip": "Ouvrir le filtre"
+        }
+      },
+      "quantity": {
+        "title": "Quantité"
+      },
+      "volume": {
+        "title": "Volume"
+      }
+    },
+    "item_name": {
+      "title": "Nom",
+      "value": "{{name}} {{quantity}} <blue>{{sub_type}}</blue>"
+    },
+    "pagination_total_items": "{{start}} - {{end}} / {{total}}",
+    "prompts": {
+      "delete_item": {
+        "title": "Es-tu sûr?",
+        "message": "Cette action ne peut pas être annulée.",
+        "cancel": "Annuler",
+        "confirm": "Confirmer"
+      },
+      "delete_multiple_items": {
+        "title": "Es-tu sûr?",
+        "message": "Êtes-vous sûr de vouloir supprimer ces éléments {{count}} ? Cette action ne peut pas être annulée.",
+        "cancel": "Annuler",
+        "confirm": "Confirmer"
+      },
+      "sell_manual": {
+        "title": "Vendu pour",
+        "fields": {
+          "sell": {
+            "label": "Prix"
+          },
+          "quantity": {
+            "label": "Quantité"
+          }
+        }
+      },
+      "bought_manual": {
+        "title": "Acheté pour",
+        "fields": {
+          "bought": {
+            "label": "Prix"
+          },
+          "quantity": {
+            "label": "Quantité"
+          }
+        }
+      },
+      "minimum_price": {
+        "title": "Prix ​​minimum",
+        "fields": {
+          "minimum_price": {
+            "label": "Prix ​​minimum",
+            "description": "Le prix minimum de l'article"
+          }
+        }
+      },
+      "maximum_price": {
+        "title": "Prix ​​maximum",
+        "fields": {
+          "maximum_price": {
+            "label": "Prix ​​maximum",
+            "description": "Le prix maximum de l'article"
+          }
+        }
+      },
+      "save": {
+        "title": "Sauvegarder",
+        "fields": {
+          "name": {
+            "label": "Nom"
+          }
+        }
+      }
+    },
+    "sort_by": {
+      "created_at": "Créé à",
+      "platinum": "Platine",
+      "updated_at": "Mis à jour à",
+      "order_type": "Type de commande",
+      "disposition": "Disposition",
+      "endo": "Endo",
+      "riven_grade": "Catégorie Riven"
+    }
+  },
+  "enums": {
+    "item_type": {
+      "riven": "Déchiré",
+      "item": "Article",
+      "details": {
+        "riven": "Déchiré",
+        "item": "Article"
+      }
+    },
+    "order_type": {
+      "all": "Toutes les commandes",
+      "buy": "Commande d'achat",
+      "sell": "Ordre de vente",
+      "closed": "Commandes clôturées",
+      "details": {
+        "buy": "Acheter",
+        "sell": "Vendre"
+      }
+    },
+    "transaction_type": {
+      "purchase": "Achat",
+      "sale": "Vente",
+      "trade": "Commerce",
+      "details": {
+        "purchase": "Achat",
+        "sale": "Vente",
+        "trade": "Commerce"
+      }
+    },
+    "stock_status": {
+      "pending": "En attente",
+      "live": "En direct",
+      "to_low_profit": "Faible profit",
+      "no_sellers": "Aucun vendeur",
+      "no_buyers": "Aucun acheteur",
+      "inactive": "Inactif",
+      "sma_limit": "Limite SMA",
+      "order_limit": "Limite de commande",
+      "overpriced": "Trop cher",
+      "underpriced": "Sous-évalué",
+      "details": {
+        "pending": "En attente d'être traité",
+        "live": "En direct sur le marché Warframe",
+        "to_low_profit": "N'a pas été traité en raison du faible profit basé sur les paramètres",
+        "no_sellers": "Aucun vendeur trouvé pour cet article",
+        "no_buyers": "Aucun acheteur trouvé pour cet article",
+        "inactive": "Est inactif et ne sera pas traité",
+        "sma_limit": "Est limité par le SMA",
+        "order_limit": "Est limité par la limite de commande",
+        "overpriced": "Est trop cher",
+        "underpriced": "Est sous-évalué"
+      }
+    },
+    "stock_mode": {
+      "all": "Tous",
+      "riven": "Déchiré",
+      "item": "Article"
+    },
+    "trade_mode": {
+      "buy": "Acheter",
+      "sell": "Vendre",
+      "wishlist": "Liste de souhaits"
+    },
+    "user_status": {
+      "online": "En ligne",
+      "ingame": "En jeu",
+      "in_game": "En jeu",
+      "invisible": "Hors ligne"
+    },
+    "alert_type": {
+      "info": "Information",
+      "warning": "Avertissement",
+      "error": "Erreur",
+      "success": "Succès"
+    }
+  },
+  "context": {
+    "app": {
+      "starting_up": "Démarrage...",
+      "database": {
+        "updating_names_transactions": "Mise à jour des noms d'éléments de transaction {{progress}}%",
+        "updating_names_stock_items": "Mise à jour des noms d'articles en stock {{progress}}%",
+        "updating_names_stock_rivens": "Mise à jour des noms de stock {{progress}}%",
+        "updating_names_wish_lists": "Mise à jour des noms des listes de souhaits {{progress}}%",
+        "update_names_completed": "Tous les noms d'éléments ont été mis à jour"
+      },
+      "cache": {
+        "initializing": "Initialisation du cache...",
+        "updating": "Mise à jour du cache...",
+        "item_price_updating": "Mise à jour des prix des articles..."
+      }
+    }
+  },
+  "components": {
+    "item_component": "<blue>{{name}}</blue> x<blue>{{count}}</blue>",
+    "item_components": "Composants de l'article",
+    "patreon_overlay": {
+      "title": "Contenu restreint",
+      "description": "Ce contenu est réservé aux supporters Patreon de niveau <blue>{{tier}}</blue> ou supérieur.",
+      "buttons": {
+        "become_a_patron": "Devenez mécène"
+      }
+    },
+    "timer_stamp": {
+      "years": "il y a {{years}} ans",
+      "months": "Il y a {{months}} mois",
+      "days": "Il y a {{days}} jours",
+      "hours": "Il y a {{hours}} heures",
+      "minutes": "Il y a {{minutes}} minutes",
+      "seconds": "Il y a {{seconds}} secondes"
+    },
+    "wfm_auction": {
+      "fields": {
+        "selling_price": "Prix ​​de vente : <blue>{{price}}</blue> <plat/>",
+        "left_footer": "<blue>{{mod_rank}}</blue>/<blue>{{max_rank}}</blue> <blue>{{drain}}</blue> <polarity/>",
+        "right_footer": "MR : <blue>{{mastery_level}}</blue> <roll/> <blue>{{re_rolls}}</blue>"
+      }
+    },
+    "live_scraper_control": {
+      "buttons": {
+        "start": "Démarrer Live Scraper",
+        "stop": "Arrêter le grattoir en direct"
+      },
+      "prompts": {
+        "start": {
+          "title": "Avertissement",
+          "message": "Êtes-vous sûr de vouloir commencer le live scraping ? Cette action supprimera toutes les commandes non blacklistées sur WFM.",
+          "confirm": "Commencer",
+          "cancel": "Annuler"
+        }
+      },
+      "item": {
+        "checking": "Article de vérification : <blue>{{name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        "deleted": "Suppression de commandes : <blue>{{current}}</blue>/<blue>{{total}}</blue>"
+      },
+      "riven": {
+        "cooldown": "Temps de recharge de Riven : <blue>{{seconds}}</blue> secondes restantes",
+        "checking": "Vérification de Riven : <blue>{{name}}</blue> <blue>{{mod_name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        "rate_limited": "Débit limité : attendre <blue>{{seconds}}</blue> secondes avant de continuer"
+      }
+    },
+    "searchfield": {
+      "label": "Recherche",
+      "placeholder": "Recherche...",
+      "buttons": {
+        "filter": {
+          "tooltip": "Filtre"
+        },
+        "search": {
+          "tooltip": "Recherche"
+        },
+        "create": {
+          "tooltip": "Créer"
+        }
+      }
+    },
+    "user_menu": {
+      "items": {
+        "app_label": "Application",
+        "settings": "Paramètres",
+        "logout": "Déconnexion"
+      },
+      "errors": {
+        "logout": {
+          "title": "Erreur de déconnexion",
+          "message": "Une erreur s'est produite lors de la tentative de déconnexion."
+        }
+      },
+      "success": {
+        "logout": {
+          "title": "Déconnexion réussie",
+          "message": "Vous vous êtes déconnecté avec succès."
+        }
+      },
+      "prompts": {
+        "logout": {
+          "title": "Confirmer la déconnexion",
+          "message": "Êtes-vous sûr de vouloir vous déconnecter ?",
+          "confirm": "Oui",
+          "cancel": "Non"
+        }
+      }
+    },
+    "clock": {
+      "gmt": "GMT : <blue>{{time}}</blue>",
+      "time_until_midnight": "Heure jusqu'à minuit (GMT) : <blue>{{time}}</blue>"
+    },
+    "layout": {
+      "log_in": {
+        "navbar": {
+          "home": "Maison",
+          "debug": "Déboguer",
+          "live_scraper": "Grattoir vivant",
+          "warframe_market": "Marché des Warframes",
+          "trading_analytics": "Analyses de trading",
+          "trade_messages": "Messages commerciaux",
+          "chat": "Chat",
+          "wf_inventory": "Inventaire WF",
+          "about": "À propos"
+        }
+      }
+    },
+    "select_item_tags": {
+      "tags": {
+        "label": "Balises",
+        "description": "Sélectionnez des balises pour filtrer les éléments"
+      }
+    },
+    "theme_editor": {
+      "chart_styles": {
+        "title": "Styles de graphique",
+        "fields": {
+          "bgColor": "Couleur d'arrière-plan",
+          "lineColor": "Couleur de ligne",
+          "lastYearLineColor": "Couleur de la ligne de l'année dernière",
+          "currentYearLineColor": "Couleur de la ligne de l'année en cours"
+        },
+        "total": "Total",
+        "today": "Aujourd'hui",
+        "last_days": "7 derniers jours"
+      },
+      "color_palettes": {
+        "title": "Palettes de couleurs",
+        "base_colors": "Couleurs de base",
+        "stock_status": "État des stocks",
+        "user_status": "Statut de l'utilisateur",
+        "alert_type": "Type d'alerte",
+        "transaction_type": "Type de transaction",
+        "item_type": "Type d'article",
+        "logo_color": "Couleur du logo",
+        "positive": "Positif",
+        "negative": "Négatif",
+        "profit": "Profit"
+      },
+      "sharing": {
+        "title": "Partage"
+      },
+      "buttons": {
+        "copy_to_clipboard": "Copier dans le Presse-papiers",
+        "import_from_clipboard": "Importer depuis le Presse-papiers",
+        "open_themes_folder": "Ouvrir le dossier Thèmes"
+      },
+      "fields": {
+        "export_name": {
+          "label": "Nom",
+          "placeholder": "Entrez le nom du thème",
+          "error": "Nom de thème invalide"
+        },
+        "export_author": {
+          "label": "Auteur",
+          "placeholder": "Entrez le nom de l'auteur",
+          "error": "Nom d'auteur invalide",
+          "tooltip": "Créer"
+        }
+      },
+      "export_success": {
+        "title": "Succès du thème d’exportation",
+        "message": "Le thème a été exporté avec succès."
+      },
+      "export_error": {
+        "title": "Erreur d'exportation du thème",
+        "message": "Une erreur s'est produite lors de l'export du thème : {{error}}"
+      }
+    },
+    "forms": {
+      "update_transaction": {
+        "buttons": {
+          "hide_properties": {
+            "label": "Masquer les propriétés"
+          },
+          "show_properties": {
+            "label": "Afficher les propriétés"
+          }
+        },
+        "fields": {
+          "price": {
+            "label": "Prix",
+            "placeholder": "Entrez le prix",
+            "description": "Le prix de la transaction en platine."
+          },
+          "quantity": {
+            "label": "Quantité",
+            "placeholder": "Entrez la quantité",
+            "description": "La quantité de l'article échangé."
+          },
+          "user_name": {
+            "label": "Nom d'utilisateur",
+            "placeholder": "Entrez le nom d'utilisateur",
+            "description": "Le nom d'utilisateur associé à la transaction."
+          },
+          "created_at": {
+            "label": "Date de création",
+            "placeholder": "Sélectionnez une date",
+            "description": "La date de la transaction."
+          },
+          "properties": {
+            "label": "Propriétés",
+            "placeholder": "Entrez les propriétés",
+            "description": "Propriétés supplémentaires de la transaction."
+          }
+        }
+      },
+      "generic_item_list": {
+        "add_all_tooltip": "Ajouter tous les éléments"
+      },
+      "edit_notification_setting": {
+        "discord": {
+          "tooltip": "Activer/Désactiver les notifications Discord",
+          "title": "Notifications de discorde",
+          "fields": {
+            "webhook": {
+              "label": "URL du webhook",
+              "placeholder": "Entrez l'URL du webhook Discord"
+            },
+            "content": {
+              "label": "Contenu",
+              "placeholder": "Saisir le contenu de la notification",
+              "reset_button": "Réinitialiser aux valeurs par défaut"
+            },
+            "user_ids": {
+              "label": "ID utilisateur",
+              "placeholder": "Saisissez les identifiants utilisateur (séparés par des virgules)",
+              "description": "Spécifier les ID utilisateur pour recevoir des notifications"
+            }
+          }
+        },
+        "system": {
+          "tooltip": "Activer/Désactiver les notifications système",
+          "title": "Notifications système",
+          "fields": {
+            "title": {
+              "label": "Titre",
+              "placeholder": "Saisissez le titre de la notification"
+            },
+            "content": {
+              "label": "Contenu",
+              "placeholder": "Saisir le contenu de la notification"
+            },
+            "sound": {
+              "label": "Son",
+              "placeholder": "Sélectionnez le son de notification",
+              "play_tooltip": "Jouer du son",
+              "options": {
+                "none": "Aucun",
+                "cat_meow": "Chat Miaou",
+                "windows_xp_error": "Erreur Windows XP",
+                "windows_xp_startup": "Démarrage de Windows XP",
+                "iphone_notification": "Notification téléphonique de merde",
+                "windows_notification": "Notification Windows"
+              }
+            },
+            "volume": {
+              "label": "Volume",
+              "placeholder": "Régler le niveau de volume"
+            }
+          }
+        },
+        "webhook": {
+          "tooltip": "Activer/Désactiver les notifications Webhook",
+          "title": "Notifications de webhooks",
+          "fields": {
+            "url": {
+              "label": "URL du webhook",
+              "placeholder": "Saisissez l'URL du webhook"
+            }
+          }
+        },
+        "manage_sounds": {
+          "title": "Ajouter un son personnalisé",
+          "buttons": {
+            "manage": "Gérer les sons",
+            "back": "Retourner"
+          },
+          "fields": {
+            "name": {
+              "label": "Nom du son",
+              "placeholder": "Nom du son"
+            },
+            "file": {
+              "label": "Fichier son",
+              "placeholder": "Sélectionnez un fichier"
+            }
+          },
+          "tooltips": {
+            "add_sound": "Ajouter du son",
+            "play": "Jouer",
+            "delete": "Supprimer"
+          },
+          "notifications": {
+            "add_error": {
+              "title": "Ajouter une erreur de son",
+              "message": "Une erreur s'est produite lors de la tentative d'ajout du son."
+            },
+            "delete_error": {
+              "title": "Erreur de suppression du son",
+              "message": "Une erreur s'est produite lors de la tentative de suppression du son."
+            }
+          },
+          "table": {
+            "columns": {
+              "name": "Nom",
+              "file_name": "Nom de fichier",
+              "actions": "Actes"
+            }
+          },
+          "dialog": {
+            "delete": {
+              "title": "Supprimer {{name}}",
+              "message": "Êtes-vous sûr de vouloir supprimer ce son ? Cette action ne peut pas être annulée.",
+              "confirm": "Supprimer",
+              "cancel": "Annuler"
+            }
+          },
+          "file_picker": {
+            "filter_name": "Audio"
+          }
+        }
+      },
+      "riven_filter_attribute": {
+        "fields": {
+          "is_required": {
+            "tooltip": "est obligatoire"
+          }
+        }
+      },
+      "riven_filter": {
+        "fields": {
+          "enabled": {
+            "label": "Activé"
+          },
+          "similarity": {
+            "label": "Similarité"
+          },
+          "rank": {
+            "label": "Rang"
+          },
+          "mastery_rank": {
+            "label": "Rang de maîtrise"
+          },
+          "required_negative": {
+            "label": "Négatif obligatoire"
+          },
+          "re_rolls": {
+            "label": "Relances"
+          }
+        },
+        "buttons": {
+          "save": {
+            "label": "Sauvegarder"
+          }
+        }
+      },
+      "create_riven_attributes": {
+        "fields": {
+          "positive": {
+            "title": "Attributs positifs",
+            "add": "Ajouter"
+          },
+          "negative": {
+            "title": "Attributs négatifs"
+          }
+        },
+        "buttons": {
+          "add": "+ Ajouter"
+        }
+      },
+      "create_riven_attribute": {
+        "fields": {
+          "value": {
+            "error": "Valeur invalide"
+          }
+        },
+        "buttons": {
+          "remove": "Retirer"
+        }
+      },
+      "create_riven": {
+        "buttons": {
+          "submit": {
+            "label": "Créer"
+          }
+        },
+        "fields": {
+          "mastery_rank": {
+            "label": "Rang de maîtrise",
+            "placeholder": "8",
+            "error": "Rang de maîtrise invalide"
+          },
+          "re_rolls": {
+            "label": "Relances",
+            "placeholder": "0",
+            "error": "Relances invalides"
+          },
+          "rank": {
+            "label": "Rang",
+            "placeholder": "0",
+            "error": "Classement invalide"
+          },
+          "polarity": {
+            "label": "Polarité",
+            "error": "Polarité invalide"
+          },
+          "weapon": {
+            "label": "Nom de l'arme",
+            "placeholder": "Arme",
+            "error": "Arme invalide"
+          },
+          "bought": {
+            "label": "Acheté",
+            "placeholder": "Acheté",
+            "error": "Achat invalide"
+          },
+          "attributes": {
+            "label": "Attributs",
+            "error": "Riven doit avoir au moins 2 attributs positifs"
+          },
+          "attribute": {
+            "label": "Attribut",
+            "error": "Les valeurs d'attribut ne peuvent pas être 0"
+          },
+          "mod_name": {
+            "label": "Nom du module",
+            "placeholder": "Nom du module",
+            "error": "Nom de module invalide"
+          }
+        }
+      },
+      "debugging_live_item_entry": {
+        "fields": {
+          "wfm_url": {
+            "label": "Article",
+            "placeholder": "Sélectionnez l'élément...",
+            "error": "Veuillez sélectionner un article"
+          },
+          "stock_id": {
+            "label": "Identifiant du stock",
+            "placeholder": "Entrez l'identifiant du stock...",
+            "error": "ID de stock invalide"
+          },
+          "wish_list_id": {
+            "label": "Identifiant de la liste de souhaits",
+            "placeholder": "Entrez l'ID de la liste de souhaits...",
+            "error": "ID de liste de souhaits invalide"
+          },
+          "priority": {
+            "label": "Priorité",
+            "placeholder": "Entrez la priorité...",
+            "error": "La priorité doit être 0 ou supérieure"
+          },
+          "buy_quantity": {
+            "label": "Acheter la quantité",
+            "placeholder": "Entrez la quantité achetée...",
+            "error": "La quantité achetée doit être égale ou supérieure à 0"
+          },
+          "sell_quantity": {
+            "label": "Vendre la quantité",
+            "placeholder": "Entrez la quantité vendue...",
+            "error": "La quantité vendue doit être égale ou supérieure à 0"
+          },
+          "operation": {
+            "label": "Opérations",
+            "placeholder": "Sélectionnez les opérations...",
+            "error": "Veuillez sélectionner au moins une opération"
+          }
+        },
+        "buttons": {
+          "add": {
+            "tooltip": "Ajouter une entrée d'élément actif de débogage"
+          }
+        }
+      },
+      "create_category_summary": {
+        "fields": {
+          "icon": {
+            "label": "Icône",
+            "placeholder": "Icône",
+            "description": "L'icône de la catégorie",
+            "tooltip": "L'icône de la catégorie",
+            "error": "Icône invalide"
+          },
+          "name": {
+            "label": "Nom",
+            "placeholder": "Nom",
+            "description": "Le nom de la catégorie",
+            "tooltip": "Le nom de la catégorie",
+            "error": "Nom invalide"
+          },
+          "types": {
+            "label": "Espèces",
+            "description": "Types pour la catégorie"
+          }
+        },
+        "buttons": {
+          "submit": {
+            "label": "Créer/Enregistrer une catégorie"
+          }
+        }
+      },
+      "select_tradable_item": {
+        "fields": {
+          "item": {
+            "label": "Article",
+            "placeholder": "Sélectionnez l'élément..."
+          },
+          "variant": {
+            "label": "Variante",
+            "placeholder": "Sélectionnez une variante...",
+            "description": "Veuillez sélectionner une variante"
+          },
+          "rank": {
+            "label": "Rang",
+            "placeholder": "Sélectionnez le classement...",
+            "description": "Veuillez sélectionner un classement"
+          },
+          "cyan_stars": {
+            "label": "Étoiles cyan",
+            "placeholder": "Sélectionnez les étoiles cyan...",
+            "description": "Combien d'étoiles cyan"
+          },
+          "amber_stars": {
+            "label": "Étoiles Ambrées",
+            "placeholder": "Sélectionnez les étoiles ambrées...",
+            "description": "Combien d'étoiles ambrées"
+          }
+        },
+        "messages": {
+          "nothing_found": "Aucun article trouvé"
+        }
+      },
+      "select_riven_weapon": {
+        "fields": {
+          "weapon": {
+            "label": "Arme",
+            "placeholder": "Sélectionnez l'arme..."
+          }
+        }
+      },
+      "create_item": {
+        "fields": {
+          "quantity": {
+            "label": "Quantité",
+            "placeholder": "Quantité",
+            "error": "Quantité invalide"
+          },
+          "bought": {
+            "label": "Acheté",
+            "placeholder": "Acheté",
+            "error": "Achat invalide"
+          }
+        },
+        "buttons": {
+          "add": {
+            "tooltip": {
+              "description_with_report": "Ajouter un article au stock et le signaler au marché Warframe",
+              "description_without_report": "Ajouter un article en stock"
+            }
+          }
+        }
+      },
+      "log_in": {
+        "title": "Marché Warframe - Connexion",
+        "register": "Vous n'avez pas de compte ? Registre",
+        "fields": {
+          "email": {
+            "label": "E-mail",
+            "placeholder": "E-mail",
+            "error": "E-mail invalide"
+          },
+          "password": {
+            "label": "Mot de passe",
+            "placeholder": "Mot de passe",
+            "error": "Le mot de passe doit comprendre au moins 6 caractères"
+          }
+        },
+        "buttons": {
+          "submit": "Se connecter"
+        }
+      },
+      "settings": {
+        "tabs": {
+          "general": {
+            "title": "Général",
+            "fields": {
+              "language": {
+                "label": "Langue",
+                "placeholder": "Sélectionnez la langue",
+                "error": "Langue invalide"
+              }
+            }
+          },
+          "themes": {
+            "title": "Thèmes",
+            "community_themes": "Thèmes communautaires",
+            "get_more_out_of_themes": "Tirez le meilleur parti des thèmes en utilisant l'éditeur de thèmes Cliquez ici",
+            "theme_configuration": "Configuration du thème"
+          },
+          "notifications": {
+            "title": "Notifications",
+            "on_new_conversation_title": "Sur une nouvelle conversation",
+            "on_new_trade_title": "Sur le nouveau commerce",
+            "on_wfm_chat_message_title": "Sur le message de discussion WFM"
+          },
+          "advanced": {
+            "title": "Avancé",
+            "fields": {
+              "wf_log_path": {
+                "label": "Chemin du journal Warframe",
+                "placeholder": "Chemin du journal Warframe par défaut",
+                "errors": {
+                  "not_exists": "Le chemin spécifié n'existe pas."
+                },
+                "tooltip": "Le chemin d'accès au fichier journal Warframe. laissez vide pour le chemin par défaut."
+              }
+            },
+            "button_export_logs": "Exportation de journaux"
+          },
+          "summary": {
+            "title": "Résumé",
+            "fields": {
+              "recent_days": {
+                "label": "Jours récents",
+                "tooltip": "Combien de jours de données afficher"
+              },
+              "recent_transactions": {
+                "label": "Transactions récentes",
+                "tooltip": "Combien de transactions afficher"
+              }
+            },
+            "datatable": {
+              "columns": {
+                "name": "Nom",
+                "tags": "Balises",
+                "types": "Espèces",
+                "actions": {
+                  "title": "Actes",
+                  "buttons": {
+                    "edit": {
+                      "tooltip": "Modifier l'élément"
+                    },
+                    "delete": {
+                      "tooltip": "Supprimer l'élément"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "live_scraper": {
+            "title": "Grattoir vivant",
+            "general": {
+              "title": "Général",
+              "fields": {
+                "auto_trade": {
+                  "label": "Commerce automobile",
+                  "error": "Commerce automobile invalide",
+                  "tooltip": "Ajouter/vendre automatiquement des actions si vrai"
+                },
+                "auto_delete": {
+                  "label": "Suppression automatique",
+                  "error": "Suppression automatique invalide",
+                  "tooltip": "Supprimer automatiquement les articles en stock"
+                },
+                "should_delete_other_types": {
+                  "label": "Devrait supprimer d'autres types de transactions",
+                  "error": "Invalide devrait supprimer les autres types de transactions",
+                  "tooltip": "Supprimera les autres types d'échanges si c'est vrai. Exemple : si l'achat est activé, les articles de vente/liste de souhaits seront supprimés s'ils ne sont pas sur la liste noire."
+                },
+                "report_to_wfm": {
+                  "label": "Rapport au marché Warframe",
+                  "error": "Rapport invalide au marché Warframe",
+                  "tooltip": "Ajoutera une transaction au marché Warframe"
+                },
+                "trade_modes": {
+                  "label": "Mode commercial",
+                  "description": "Sélectionnez les modes d'échange",
+                  "error": "Mode d'échange invalide"
+                },
+                "stock_mode": {
+                  "label": "Mode Stock",
+                  "description": {
+                    "all": "Passera par tout",
+                    "riven": "Ne traversera que des rives",
+                    "item": "Ne passera en revue que les éléments"
+                  },
+                  "placeholder": "Mode Stock",
+                  "error": "Mode stock invalide"
+                }
+              },
+              "columns": {
+                "name": "Nom",
+                "maximum_price": "Prix ​​maximum"
+              },
+              "buttons": {
+                "edit_blacklist_label": "Modifier la liste noire {{count}}",
+                "edit_buy_list_label": "Modifier la liste d'achat {{count}}"
+              },
+              "black_list": {
+                "available_items_label": "Articles disponibles",
+                "selected_items_label": "Articles sur liste noire",
+                "name_title": "Nom",
+                "trade_tax_title": "Taxe commerciale",
+                "trade_tax_label": "Taxe commerciale {{min}} - {{max}}",
+                "mr_requirement_label": "Exigence MR {{min}} - {{max}}",
+                "mr_requirement_title": "Exigence de MR",
+                "disabled_for_title": "Désactivé pour",
+                "go_back_label": "Retourner",
+                "set_trade_modes_tooltip": "Définir les modes commerciaux actuellement sélectionnés {{modes}}",
+                "no_trade_selected": "Aucun mode d'échange sélectionné, veuillez sélectionner au moins un mode d'échange"
+              }
+            },
+            "item": {
+              "title": "Article en stock",
+              "wtb": {
+                "title": "WTB",
+                "fields": {
+                  "volume_threshold": {
+                    "label": "Seuil de volume",
+                    "placeholder": "Seuil de volume",
+                    "error": "Seuil de volume invalide",
+                    "tooltip": "Volume minimum à considérer pour le trading",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#volume-threshold"
+                  },
+                  "profit_threshold": {
+                    "label": "Seuil de profit",
+                    "placeholder": "Seuil de profit",
+                    "error": "Seuil de profit invalide",
+                    "tooltip": "Bénéfice minimum à considérer pour le trading",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#profit-threshold"
+                  },
+                  "avg_price_cap": {
+                    "label": "Plafond de prix moyen",
+                    "placeholder": "Plafond de prix moyen",
+                    "error": "Plafond de prix moyen non valide",
+                    "tooltip": "Prix ​​moyen maximum à considérer pour le trading",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#average-price-cap"
+                  },
+                  "trading_tax_cap": {
+                    "label": "Plafond de taxe sur les échanges",
+                    "placeholder": "Plafond de taxe sur les échanges",
+                    "error": "Plafond de taxe sur les échanges invalide",
+                    "tooltip": "Taxe maximale à considérer pour le trading",
+                    "link": "https://example.com/trading-tax-cap"
+                  },
+                  "max_total_price_cap": {
+                    "label": "Plafond de prix total maximum",
+                    "placeholder": "Plafond de prix total maximum",
+                    "error": "Plafond de prix total maximum non valide",
+                    "tooltip": "Prix ​​total maximum à considérer pour le trading -1 sans limite",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#max-total-price-cap"
+                  },
+                  "price_shift_threshold": {
+                    "label": "Seuil de changement de prix",
+                    "placeholder": "Seuil de changement de prix",
+                    "error": "Seuil de changement de prix non valide",
+                    "tooltip": "Changement de prix minimum à considérer pour le trading",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#price-shift-threshold"
+                  },
+                  "buy_quantity": {
+                    "label": "Quantité de marchandises",
+                    "placeholder": "Quantité de marchandises",
+                    "error": "Quantité de marchandises invalide",
+                    "tooltip": "La quantité de biens à acheter",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#quantity-of-goods"
+                  },
+                  "min_wtb_profit_margin": {
+                    "label": "Seuil de marge bénéficiaire",
+                    "placeholder": "Seuil de marge bénéficiaire",
+                    "error": "Seuil de marge bénéficiaire invalide",
+                    "tooltip": "Marge bénéficiaire minimale pour les transactions WTB",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#profit-margin-threshold"
+                  },
+                  "quantity_per_trade": {
+                    "label": "Quantité par transaction",
+                    "placeholder": "Quantité par transaction",
+                    "error": "Quantité invalide par transaction",
+                    "tooltip": "La quantité de marchandises à échanger par transaction : REMARQUE, ceci n'est valable que pour certains objets comme les arcanes.",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#quantity-per-trade"
+                  },
+                  "max_stock_quantity": {
+                    "label": "Quantité maximale de stock",
+                    "placeholder": "Quantité maximale de stock",
+                    "error": "Quantité de stock maximale invalide",
+                    "tooltip": "Quantité maximale d'un article à avoir en stock avant d'arrêter la création de commande WTB. Réglez sur -1 pour désactiver cette fonctionnalité.",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#max-stock-quantity"
+                  },
+                  "wts": {
+                    "title": "WTS",
+                    "fields": {}
+                  }
+                }
+              },
+              "wts": {
+                "title": "WTS",
+                "fields": {
+                  "min_sma": {
+                    "label": "SMA minimale",
+                    "placeholder": "SMA minimale",
+                    "error": "SMA minimum non valide",
+                    "tooltip": "Moyenne mobile simple minimale à prendre en compte pour le trading",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wts#min-sma"
+                  },
+                  "min_profit": {
+                    "label": "Bénéfice minimum",
+                    "placeholder": "Bénéfice minimum",
+                    "error": "Bénéfice minimum invalide",
+                    "tooltip": "Bénéfice minimum à considérer pour le trading",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wts#min-profit"
+                  }
+                }
+              },
+              "summary": {
+                "title": "Résumé",
+                "datatable_columns": {
+                  "profit": "Bénéfice potentiel",
+                  "trading_tax": "Taxe commerciale"
+                },
+                "buttons": {
+                  "show_interesting_wtb_items": "Afficher les articles WTB intéressants"
+                }
+              }
+            },
+            "riven": {
+              "title": "Stock Riven",
+              "fields": {
+                "min_profit": {
+                  "label": "Bénéfice minimum",
+                  "placeholder": "Bénéfice minimum",
+                  "error": "Bénéfice minimum invalide",
+                  "tooltip": "Bénéfice minimum à considérer pour le trading",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#min-profit"
+                },
+                "threshold_percentage": {
+                  "label": "Pourcentage de seuil",
+                  "placeholder": "Pourcentage de seuil",
+                  "error": "Pourcentage de seuil invalide",
+                  "tooltip": "Seuil de pourcentage pour le trading",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#minimum-price-shift"
+                },
+                "limit_to": {
+                  "label": "Limiter à",
+                  "placeholder": "Limiter à",
+                  "error": "Limite invalide à",
+                  "tooltip": "Limiter le nombre de transactions",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#limit-to"
+                },
+                "update_interval": {
+                  "label": "Intervalle de mise à jour (secondes)",
+                  "placeholder": "Intervalle de mise à jour",
+                  "error": "Intervalle de mise à jour non valide",
+                  "tooltip": "Intervalle de mise à jour des transactions déchirées",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#update-interval"
+                }
+              }
+            }
+          },
+          "http_server": {
+            "title": "Serveur HTTP",
+            "general": {
+              "title": "Général",
+              "fields": {
+                "enabled": {
+                  "label": "Activé",
+                  "tooltip": "Activer ou désactiver le serveur HTTP"
+                },
+                "port": {
+                  "label": "Port",
+                  "placeholder": "Port",
+                  "tooltip": "Le port sur lequel le serveur HTTP s'exécutera"
+                },
+                "host": {
+                  "label": "Hôte",
+                  "placeholder": "Hôte",
+                  "error": "Hôte invalide",
+                  "tooltip": "L'hôte sur lequel le serveur HTTP s'exécutera"
+                }
+              }
+            }
+          }
+        }
+      },
+      "trade_entry_update": {
+        "fields": {
+          "price_label": "Prix",
+          "tags_label": "Balises"
+        }
+      }
+    },
+    "modals": {
+      "base": {
+        "buttons": {
+          "confirm": "Confirmer",
+          "cancel": "Annuler"
+        }
+      },
+      "generate_trade_message": {
+        "title": "Générer un message commercial pour {{count}} article(s)",
+        "button_add_key_tooltip": "Ajouter un affichage",
+        "button_copy_tooltip": "Copier dans le Presse-papiers",
+        "button_delete_template_tooltip": "Supprimer le modèle",
+        "button_load_template_tooltip": "Charger le modèle",
+        "button_save_template_tooltip": "Enregistrer le modèle",
+        "titles": {
+          "message_settings": "Paramètres des messages",
+          "preview_with_icons": "Aperçu avec des icônes",
+          "display_settings": "Paramètres d'affichage"
+        },
+        "fields": {
+          "prefix": {
+            "label": "Préfixe",
+            "description": "Le préfixe à utiliser pour le message commercial",
+            "placeholder": "Préfixe"
+          },
+          "suffix": {
+            "label": "Suffixe",
+            "description": "Le suffixe à utiliser pour le message commercial",
+            "placeholder": "Suffixe"
+          },
+          "message": {
+            "label": "Message",
+            "description": "Le message commercial généré",
+            "length_info": "{{current}} / {{max}} caractères"
+          },
+          "key": {
+            "label": "Clé",
+            "description": "La clé à utiliser pour séparer les éléments du message",
+            "placeholder": "Clé"
+          },
+          "template": {
+            "label": "Modèle de message commercial",
+            "description": "Le modèle à utiliser pour générer le message."
+          },
+          "chat_icon": {
+            "label": "Icônes de discussion",
+            "description": "Inclure les icônes de discussion de Warframe Market dans le message"
+          },
+          "group_by": {
+            "label": "Regrouper par",
+            "description": "Regrouper les éléments par leur type dans le message"
+          },
+          "load_template": {
+            "label": "Charger le modèle",
+            "description": "Charger un modèle de message enregistré"
+          }
+        },
+        "datatable": {
+          "columns": {
+            "key": "Clé",
+            "name": "Nom",
+            "prefix": "Préfixe",
+            "suffix": "Suffixe"
+          }
+        }
+      },
+      "patreon_modal": {
+        "title": "Soutenir le développement de Quantframe",
+        "description": "Accédez à des fonctionnalités premium en me soutenant sur Patreon",
+        "premium_content": "Activité des utilisateurs | Recherche de prix | Exporter des données | Statistiques des objets",
+        "join_the_community": "Rejoignez la communauté de supporters et contribuez à façonner l’avenir de Quantframe.",
+        "link_your_account": "2. Liez votre compte Patreon",
+        "buttons": {
+          "info": "Patréon",
+          "link": "Liez votre compte"
+        }
+      },
+      "item_details": {
+        "tabs": {
+          "overview": {
+            "title": "Aperçu",
+            "tooltips": {},
+            "labels": {
+              "created_at": "Créé à : <date/>",
+              "updated_at": "Mis à jour à : <date/>",
+              "bought": "Prix ​​d'achat : {{price}} <plat/>",
+              "list_price": "Prix ​​affiché : {{price}} <plat/>",
+              "potential_profit": "Bénéfice potentiel : {{price}} <plat/>",
+              "minimum_profit": "Bénéfice minimum : {{price}}",
+              "minimum_sma": "SMA minimum : {{price}}",
+              "quantity": "Quantité : {{quantity}}",
+              "is_hidden": "Masqué : <hidden/>"
+            }
+          },
+          "analytics": {
+            "title": "Analytique",
+            "tooltips": {},
+            "labels": {},
+            "titles": {
+              "last_transactions": "Dernières transactions",
+              "financial_summary": "Résumé financier"
+            }
+          },
+          "wfm": {
+            "title": "Aperçu",
+            "tooltips": {
+              "buy_highest_price": "Acheter le plus haut",
+              "sell_highest_price": "Vendre le plus haut",
+              "spread_percent": "Pourcentage de propagation",
+              "supply": "Fournir"
+            },
+            "labels": {
+              "buy_lowest": "Acheter le plus bas",
+              "sell_lowest": "Vendre le plus bas",
+              "spread": "Propagé",
+              "demand": "Demande",
+              "roi_percent": "Pourcentage de retour sur investissement"
+            },
+            "buttons": {
+              "view_on_wfm": "Vue sur le marché Warframe"
+            }
+          },
+          "edit": {
+            "title": "Modifier",
+            "fields": {
+              "bought": "Acheté pour",
+              "minimum_price": "Prix ​​minimum",
+              "maximum_price": "Prix ​​maximum",
+              "owned": "Actuellement détenu",
+              "quantity": "Quantité",
+              "minimum_sma": "SMA minimale",
+              "minimum_profit": "Bénéfice minimum"
+            },
+            "tooltips": {
+              "minimum_price": "Le prix minimum auquel vous êtes prêt à vendre cet article. Réglez sur 0 pour désactiver.",
+              "minimum_profit": "Le profit minimum que vous souhaitez réaliser en vendant cet article. Réglez sur 0 pour désactiver",
+              "minimum_sma": "La moyenne mobile simple minimale à prendre en compte pour vendre cet article. Réglez sur 0 pour désactiver",
+              "maximum_price": "Le prix maximum auquel vous êtes prêt à acheter cet article. Réglez sur 0 pour désactiver."
+            }
+          }
+        }
+      },
+      "riven_details": {
+        "tabs": {
+          "overview": {
+            "title": "Aperçu",
+            "tooltips": {},
+            "labels": {
+              "created_at": "Créé à : <date/>",
+              "updated_at": "Mis à jour à : <date/>",
+              "bought": "Prix ​​d'achat : {{price}} <plat/>",
+              "list_price": "Prix ​​affiché : {{price}} <plat/>",
+              "potential_profit": "Bénéfice potentiel : {{price}} <plat/>",
+              "minimum_profit": "Bénéfice minimum : {{price}}",
+              "minimum_sma": "SMA minimum : {{price}}",
+              "kuva": "Kuva dépensé : {{kuva}}",
+              "endo": "Fin : {{endo}}",
+              "is_hidden": "Masqué : <hidden/>"
+            }
+          },
+          "modifiers": {
+            "title": "Modificateurs",
+            "tooltips": {},
+            "labels": {
+              "weapon": "Arme",
+              "rank": "Rang"
+            },
+            "titles": {}
+          },
+          "roll_evaluation": {
+            "title": "Évaluation du rouleau",
+            "tooltips": {},
+            "labels": {
+              "best_attributes": "Meilleurs attributs",
+              "mandatory": "Obligatoire",
+              "optional": "Facultatif",
+              "best_bad_attributes": "Meilleurs mauvais attributs"
+            },
+            "titles": {}
+          },
+          "analytics": {
+            "title": "Analytique",
+            "tooltips": {},
+            "labels": {},
+            "titles": {
+              "last_transactions": "Dernières transactions",
+              "financial_summary": "Résumé financier"
+            }
+          },
+          "wfm": {
+            "title": "Marché des Warframes",
+            "tooltips": {},
+            "labels": {
+              "auction_header_left": "{{similarity}}%",
+              "auction_header_right": "{{price}} <plat/>"
+            },
+            "buttons": {
+              "view_on_wfm": "Vue sur le marché Warframe"
+            }
+          },
+          "edit": {
+            "title": "Modifier",
+            "fields": {
+              "bought": "Acheté pour",
+              "minimum_price": "Prix ​​minimum",
+              "mastery_rank": "Rang de maîtrise",
+              "re_rolls": "Relances",
+              "minimum_profit": "Bénéfice minimum"
+            },
+            "tooltips": {
+              "minimum_price": "Le prix minimum auquel vous êtes prêt à vendre cet article. Réglez sur 0 pour désactiver.",
+              "minimum_profit": "Le profit minimum que vous souhaitez réaliser en vendant cet article. Réglez sur 0 pour désactiver",
+              "minimum_sma": "La moyenne mobile simple minimale à prendre en compte pour vendre cet article. Réglez sur 0 pour désactiver",
+              "maximum_price": "Le prix maximum auquel vous êtes prêt à acheter cet article. Réglez sur 0 pour désactiver."
+            }
+          }
+        }
+      },
+      "update_available": {
+        "title": "Nouvelle mise à jour disponible (v{{version}})",
+        "buttons": {
+          "download": "Télécharger et installer",
+          "download_manual": "Télécharger manuellement",
+          "read_more": "En savoir plus"
+        }
+      },
+      "tos": {
+        "title": "Conditions d'utilisation",
+        "buttons": {
+          "accept": "Accepter",
+          "decline": "Déclin"
+        }
+      },
+      "app_error": {
+        "title": "Erreur dans le composant {{component}}",
+        "version": "Version : {{version}}",
+        "cause": "Cause : {{cause}}",
+        "message": "Message : {{message}}",
+        "location": "Emplacement : {{location}}",
+        "footer": "Veuillez signaler cette erreur aux développeurs,\nEn exportant le fichier journal, cliquez simplement sur le bouton ci-dessous pour créer un fichier sur votre bureau.",
+        "export_log": "Journal d'exportation"
+      }
+    },
+    "chat_item": {
+      "delete_tooltip": "Supprimer la conversation",
+      "last_update": "Dernière mise à jour"
+    },
+    "chat_rome": {
+      "fields": {
+        "message": {
+          "too_long": "Le message est trop long",
+          "placeholder": "Tapez votre message ici..."
+        }
+      },
+      "buttons": {
+        "back_label": "Dos",
+        "send_label": "Envoyer",
+        "options": {
+          "label": "Possibilités",
+          "delete": "Pourquoi es-tu ici ?"
+        }
+      }
+    },
+    "best_by_category_table": {
+      "datatable": {
+        "columns": {
+          "name": "Nom",
+          "revenue": "Revenu",
+          "expense": "Frais",
+          "profit": "Profit",
+          "profit_margin": "Marge bénéficiaire",
+          "quantity": "Quantité"
+        }
+      }
+    },
+    "bar_chart_financial_summary": {
+      "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+      "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>",
+      "tooltips": {
+        "expense": "Dépenses totales",
+        "revenue": "Revenu total",
+        "profit": "Bénéfice total",
+        "trades": "Nombre de transactions",
+        "sales": "Nombre de ventes",
+        "purchases": "Nombre d'achats"
+      }
+    },
+    "financial_report_card": {
+      "tooltips": {
+        "total_expenses": "Dépenses totales",
+        "total_revenue": "Revenu total",
+        "average_profit": "Bénéfice moyen",
+        "total_credits": "Crédits totaux",
+        "lowest_revenue": "Revenu le plus bas",
+        "lowest_expense": "Dépense la plus basse",
+        "highest_revenue": "Revenu le plus élevé"
+      },
+      "labels": {
+        "trade_count": "Nombre d'échanges",
+        "highest_revenue": "Revenu le plus élevé",
+        "highest_expense": "Dépense la plus élevée",
+        "total_transactions": "Total des transactions",
+        "revenue": "Revenu",
+        "expenses": "Dépenses",
+        "total_profit": "Bénéfice total"
+      }
+    },
+    "riven_preview": {
+      "riven_name": "{{name}} <blue>{{mod_name}}</blue>",
+      "types": {
+        "unveiled": {
+          "footer_left": "{{progress}}/{{required}}"
+        },
+        "pre-veiled": {
+          "footer_left": "x{{quantity}}"
+        },
+        "veiled": {
+          "header_left": "{{price}} <plat/>",
+          "footer_left": "R : {{rank}}/8",
+          "footer_right": "MR : {{mastery}}"
+        }
+      }
+    },
+    "price_history_popover": {
+      "labels": {
+        "price_history": "Historique des prix"
+      }
+    }
+  },
+  "pages": {
+    "home": {
+      "cards": {
+        "total": {
+          "title": "Bénéfice total",
+          "footer": "Ventes : <blue>{{sales}}</blue> | Achats : <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | Marge bénéficiaire : <blue>{{profit_margin}}</blue> %",
+          "bar_chart": {
+            "title": "Bénéfice total",
+            "datasets": {
+              "this_year": "Cette année",
+              "last_year": "L'année dernière"
+            }
+          }
+        },
+        "today": {
+          "title": "Le bénéfice d'aujourd'hui",
+          "footer": "Ventes : <blue>{{sales}}</blue> | Achats : <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | Marge bénéficiaire : <blue>{{profit_margin}}</blue> %",
+          "bar_chart": {
+            "title": "Le bénéfice d'aujourd'hui",
+            "datasets": {
+              "profit": "Profit"
+            },
+            "footers": {
+              "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+              "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>"
+            }
+          }
+        },
+        "recent_days": {
+          "bar_chart": {
+            "title": "{{days}} derniers jours",
+            "datasets": {
+              "profit": "Profit"
+            },
+            "footers": {
+              "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+              "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>"
+            }
+          }
+        },
+        "best_seller": {
+          "title": "Bénéfice du meilleur vendeur",
+          "footer": "Nom : <blue>{{name}}</blue> | S : <blue>{{sales}}</blue> | P : <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | PM : <blue>{{profit_margin}}</blue>%"
+        },
+        "last_transaction": {
+          "title": "Dernière transaction",
+          "info_box": {
+            "purchase": "Acheter {{count}}",
+            "sale": "Vente {{count}}"
+          }
+        }
+      }
+    },
+    "about": {
+      "cards": {
+        "coffee": {
+          "title": "Café"
+        },
+        "patreon": {
+          "title": "Soutenez-moi sur Patreon"
+        },
+        "discord": {
+          "title": "Discorde"
+        },
+        "guide": {
+          "title": "Wiki/Guide"
+        }
+      },
+      "text": {
+        "version": "Version : <blue>{{version}}</blue> Réalisé avec ❤️ en 🇩🇰. © 2023-{{year}} Kenya-DK. Tous droits réservés",
+        "patreon_thanks": "Un merci spécial aux supporters Patreon « Quantframe Users » pour avoir rendu Quantframe possible : <blue>{{users}}</blue>.",
+        "disclaimer": "Quantframe est une application tierce et n'est pas affiliée à Digital Extremes."
+      },
+      "button_check_for_updates": "Vérifier les mises à jour"
+    },
+    "debug": {
+      "tabs": {
+        "logging": {
+          "title": "Enregistrement",
+          "datatable": {
+            "columns": {
+              "command": "Commande",
+              "count": "Compter",
+              "actions": {
+                "title": "Actes",
+                "buttons": {
+                  "remove_tooltip": "Supprimer la commande de connexion"
+                }
+              }
+            }
+          },
+          "buttons": {
+            "add_log": "Ajouter un journal"
+          },
+          "prompt": {
+            "name": {
+              "title": "Ajouter un journal",
+              "fields": {
+                "name": {
+                  "label": "Nom du journal"
+                }
+              }
+            }
+          }
+        },
+        "states": {
+          "title": "États",
+          "accordions": {
+            "app_info": "Informations sur l'application",
+            "app_error": "Erreur d'application",
+            "settings": "Paramètres",
+            "alerts": "Alertes",
+            "user": "Utilisateur",
+            "live_scraper": "Grattoir vivant",
+            "wfm_state": "État WFM",
+            "tauri_events": "Événements Tauri"
+          }
+        },
+        "debugging": {
+          "title": "Débogage",
+          "fake_orders_tooltip": "Toggle Les fausses commandes pour le trading en direct (à des fins de test uniquement) seront stockées dans dev.kenya.quantframe\\fake_orders",
+          "fake_orders_label": "Utiliser de fausses commandes",
+          "datatable": {
+            "columns": {
+              "wfm_url": {
+                "title": "Nom",
+                "value": "{{name}} <blue>{{sub_type}}</blue>"
+              },
+              "stock_id": "Identifiant du stock",
+              "wish_list_id": "Identifiant de la liste de souhaits",
+              "priority": "Priorité",
+              "buy_quantity": "Acheter la quantité",
+              "sell_quantity": "Vendre la quantité",
+              "operation": "Opération",
+              "actions": {
+                "title": "Actes",
+                "buttons": {
+                  "delete_tooltip": "Supprimer l'entrée d'élément actif de débogage"
+                }
+              }
+            }
+          }
+        },
+        "ee_log": {
+          "title": "Journal EE",
+          "hide_empty": "Masquer les lignes vides",
+          "export_json_tooltip": "Exporter des éléments vers JSON",
+          "datatable": {
+            "columns": {
+              "line": "Doubler",
+              "date": "Horodatage"
+            }
+          }
+        }
+      }
+    },
+    "banned": {
+      "wfm": {
+        "title": "Compte de marché Warframe suspendu en raison de :",
+        "reason": "Raison : {{reason}}",
+        "until": "Jusqu'à:"
+      },
+      "qf": {
+        "title": "Compte Quantframe suspendu en raison de :",
+        "reason": "Raison : {{reason}}",
+        "until": "Jusqu'à:"
+      }
+    },
+    "auth": {
+      "errors": {
+        "login": {
+          "title": "Erreur de connexion",
+          "TooManyRequests": "Trop de demandes, veuillez réessayer plus tard",
+          "InvalidCredentials": "Mot de passe invalide",
+          "InternalServerError": "Le service de connexion est actuellement indisponible, veuillez réessayer plus tard",
+          "banned": "Vous êtes banni",
+          "ban_reason": "<red>Raison : {{reason}}</red>",
+          "verification": "Vous devez vérifier votre compte. Faites-le sur le site Web de Warframe Market"
+        }
+      },
+      "success": {
+        "login": {
+          "title": "Connexion réussie",
+          "message": "Content de te revoir! {{name}}"
+        }
+      }
+    },
+    "live_scraper": {
+      "export_json_tooltip": "Exporter des éléments vers JSON (Patreon T1+)",
+      "update_multiple_tooltip": "Mettre à jour plusieurs éléments",
+      "delete_multiple_tooltip": "Supprimer plusieurs éléments",
+      "wts_multiple_tooltip": "Générer un message WTS",
+      "segments": {
+        "bought": "Acheté",
+        "listed": "Inscrit",
+        "profit": "Profit"
+      },
+      "prompts": {
+        "update_filter": {
+          "title": "Mettre à jour le filtre"
+        },
+        "create_riven": {
+          "title": "Créer Riven"
+        }
+      },
+      "tabs": {
+        "item": {
+          "title": "Article",
+          "datatable": {
+            "columns": {
+              "bought": "Acheté",
+              "owned": "Possédé"
+            }
+          }
+        },
+        "riven": {
+          "title": "Déchiré",
+          "datatable": {
+            "columns": {
+              "attributes": "Attributs",
+              "bought": "Acheté"
+            }
+          }
+        },
+        "wish_list": {
+          "title": "Liste de souhaits"
+        }
+      }
+    },
+    "warframe_market": {
+      "tabs": {
+        "orders": {
+          "title": "Ordres",
+          "status": "<blue>{{type}}</blue> | <qty/> <blue>{{total}}</blue> | <plat/> <blue>{{platinum}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+          "tooltip_profit": "Bénéfice estimé",
+          "buttons": {
+            "refresh_tooltip": "Actualiser la liste des commandes",
+            "delete_all_tooltip": "Supprimer toutes les commandes",
+            "delete_tooltip": "Supprimer cette commande",
+            "info_tooltip": "Afficher les détails de la commande",
+            "sell_manual": {
+              "buy_tooltip": "Acheté manuellement",
+              "sell_tooltip": "Vendu manuellement"
+            },
+            "sell_auto": {
+              "buy_tooltip": "Acheté au prix indiqué",
+              "sell_tooltip": "Vendu au prix indiqué"
+            }
+          },
+          "order_card": {
+            "header_left": "{{name}}",
+            "header_right": "<qty/> <blue>{{quantity}}</blue>",
+            "footer_left": "<blue>{{price}}</blue> <plat/>"
+          },
+          "fields": {
+            "quantity": "<qty/> <blue>{{quantity}}</blue>",
+            "platinum": "<blue>{{platinum}}</blue> <plat/>",
+            "mod_rank": "Rang : <blue>{{mod_rank}}</blue>/<blue>{{mod_max_rank}}</blue>",
+            "subtype": "<blue>{{sub_type}}</blue>"
+          }
+        },
+        "auctions": {
+          "title": "Enchères",
+          "overview": "<qty/> <blue>{{total}}</blue> | <plat/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+          "tooltip_profit": "Bénéfice estimé",
+          "buttons": {
+            "refresh_tooltip": "Actualiser la liste des enchères",
+            "delete_all_tooltip": "Supprimer toutes les enchères",
+            "delete_tooltip": "Supprimer cette enchère",
+            "import_tooltip": "Importer cette enchère",
+            "info_tooltip": "Afficher les détails des enchères"
+          },
+          "auction_card": {
+            "header_right": "{{price}} <plat/>"
+          }
+        }
+      }
+    },
+    "chat": {
+      "prompts": {
+        "delete_chat": {
+          "title": "Supprimer le chat",
+          "message": "Etes-vous sûr de vouloir supprimer ce chat ? Cette action ne peut pas être annulée.",
+          "cancel": "Annuler",
+          "confirm": "Supprimer"
+        }
+      },
+      "buttons": {
+        "refresh_tooltip": "Actualiser la liste de discussion",
+        "delete_all_tooltip": "Supprimer toutes les discussions"
+      }
+    },
+    "trading_analytics": {
+      "tabs": {
+        "transaction": {
+          "title": "Transaction",
+          "date_range_label": "Plage de dates",
+          "date_range_description": "Plage de dates pour filtrer les transactions",
+          "date_range_placeholder": "Sélectionnez une plage de dates",
+          "prompts": {
+            "update_title": "Mettre à jour la transaction"
+          },
+          "buttons": {
+            "export_transactions_tooltip": "Exporter les transactions vers JSON (Patreon T1+)",
+            "show_financial_report_tooltip": "Afficher le rapport",
+            "delete_all_tooltip": "Supprimer toutes les transactions {{count}}",
+            "calculate_tax_tooltip": "Calculer la taxe commerciale pour toutes les transactions"
+          },
+          "datatable": {
+            "columns": {
+              "item_type": "Type d'article",
+              "price": "Prix",
+              "created_at": "Créé à",
+              "user_name": "Nom d'utilisateur",
+              "profit": "Profit",
+              "credits": "Crédits",
+              "sale_count": "Nombre de ventes",
+              "revenue": "Revenu",
+              "purchases_count": "Nombre d'achats",
+              "expenses": "Dépenses",
+              "total_transactions": "Total des transactions"
+            }
+          },
+          "titles": {
+            "most_purchased_items": "Articles les plus achetés",
+            "most_sold_items": "Articles les plus vendus"
+          },
+          "table_headers": {
+            "item_name": "Nom",
+            "quantity": "Quantité"
+          }
+        },
+        "item": {
+          "title": "Article",
+          "export_json_tooltip": "Exporter des éléments vers JSON (Patreon T1+)",
+          "open_table_options_tooltip": "Options de table ouverte",
+          "date_range_placeholder": "Sélectionnez une plage de dates",
+          "volume_label": "Volume",
+          "min_price_label": "Prix ​​minimum",
+          "max_price_label": "Prix ​​maximum",
+          "supply_label": "Fournir",
+          "demand_label": "Demande",
+          "datatable": {
+            "columns": {
+              "volume": "Volume",
+              "min_price": "Prix ​​minimum",
+              "max_price": "Prix ​​maximum",
+              "open_price": "Prix ​​ouvert",
+              "closed_price": "Prix ​​​​fermé",
+              "avg_price": "Prix ​​moyen",
+              "wa_price": "Prix ​​du WA",
+              "median": "Médian",
+              "moving_avg": "Moy. mobile",
+              "donch_top": "Haut de Donch",
+              "donch_bot": "Donch Bot",
+              "trading_tax": "Taxe commerciale",
+              "supply": "Fournir",
+              "demand": "Demande"
+            }
+          }
+        },
+        "riven": {
+          "title": "Déchiré",
+          "export_json_tooltip": "Exporter Riven vers JSON (Patreon T1+)",
+          "open_table_options_tooltip": "Options de table ouverte",
+          "date_range_placeholder": "Sélectionnez une plage de dates",
+          "volume_label": "Volume",
+          "min_price_label": "Prix ​​minimum",
+          "max_price_label": "Prix ​​maximum",
+          "avg_price_label": "Prix ​​moyen",
+          "datatable": {
+            "columns": {
+              "volume": "Volume",
+              "min_price": "Prix ​​minimum",
+              "max_price": "Prix ​​maximum",
+              "avg_price": "Prix ​​moyen",
+              "median_price": "Prix ​​médian"
+            }
+          }
+        },
+        "user": {
+          "title": "Activité de l'utilisateur",
+          "chart": {
+            "datasets": {
+              "registered_users": "Utilisateurs enregistrés",
+              "active_users": "Utilisateurs actifs"
+            }
+          },
+          "fields": {
+            "group_by": {
+              "label": "Regrouper par",
+              "options": {
+                "day": "Jour",
+                "hour": "Heure"
+              }
+            },
+            "date_range": {
+              "label": "Plage de dates",
+              "placeholder": "Sélectionnez une plage de dates"
+            }
+          }
+        },
+        "wfgdpr": {
+          "title": "Analyseur RGPD Warframe",
+          "drag_and_drop_message": "Faites glisser et déposez vos fichiers texte RGPD ici. En savoir plus sur cette fonctionnalité sur le site Web.",
+          "columns": {
+            "account": "Nom du compte",
+            "logins": "Nombre de connexions",
+            "purchases": "Nombre d'achats",
+            "trades": "Les échanges comptent",
+            "transactions": "Nombre de transactions",
+            "creation_date": "Date de création"
+          },
+          "overview": {
+            "title": "Aperçu",
+            "labels": {
+              "member_since": "Membre depuis",
+              "subscribed": "Abonné",
+              "trades": "Métiers",
+              "platinum_traded": "Platine négocié",
+              "purchases": "Achats",
+              "total_spent": "Total dépensé",
+              "transactions": "Transactions",
+              "unique_ips": "IP uniques",
+              "total_logins": "Nombre total de connexions"
+            }
+          },
+          "trade": {
+            "title": "Commerce",
+            "yearly_trade_overview": {
+              "title": "Aperçu annuel des échanges ({{year}})",
+              "total_trades": "Total des transactions",
+              "total_purchases": "Total des achats",
+              "total_sales": "Ventes totales"
+            },
+            "columns": {
+              "created_at": "Créé à",
+              "offered_items": "Nombre d'articles offerts",
+              "received_items": "Nombre d'articles reçus",
+              "credits": "Crédits"
+            },
+            "table_headers": {
+              "item_name": "Nom",
+              "quantity": "Quantité"
+            },
+            "titles": {
+              "most_sold_items": "Articles les plus vendus",
+              "most_purchased_items": "Articles les plus achetés"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "Afficher le rapport"
+            }
+          },
+          "purchase": {
+            "title": "Achats",
+            "titles": {
+              "most_purchased_items": "Articles les plus achetés"
+            },
+            "table_headers": {
+              "item_name": "Nom",
+              "price": "Prix",
+              "quantity": "Quantité"
+            },
+            "yearly_trade_overview": {
+              "title": "Aperçu annuel des échanges ({{year}})",
+              "total_purchases": "Total des achats"
+            },
+            "columns": {
+              "date": "Acheter à",
+              "price": "Prix",
+              "shop_id": "Identifiant de la boutique",
+              "items_received": "Articles reçus"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "Afficher le rapport"
+            }
+          },
+          "transaction": {
+            "title": "Transactions",
+            "titles": {
+              "most_purchased_items": "Articles les plus achetés"
+            },
+            "table_headers": {
+              "item_name": "Nom",
+              "price": "Prix",
+              "quantity": "Quantité"
+            },
+            "yearly_trade_overview": {
+              "title": "Aperçu annuel des échanges ({{year}})",
+              "total_purchases": "Total des achats"
+            },
+            "columns": {
+              "date": "Acheter à",
+              "currency": "Devise",
+              "price": "Prix",
+              "account": "Compte",
+              "sku": "UGS"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "Afficher le rapport"
+            }
+          }
+        }
+      }
+    },
+    "trade_messages": {
+      "fields": {
+        "price_label": "Prix",
+        "price_placeholder": "Entrez le prix",
+        "tags_label": "Balises",
+        "tags_placeholder": "Saisir des balises"
+      },
+      "buttons": {
+        "generate_trade_messages_tooltip": "Générer des messages commerciaux pour {{count}} article(s)",
+        "update_multiple_tooltip": "Mettre à jour plusieurs messages commerciaux",
+        "export_json_tooltip": "Exporter les messages commerciaux vers JSON (Patreon T1+)",
+        "delete_multiple_tooltip": "Supprimer tous les échanges {{count}}",
+        "add_tooltip": "Ajouter un message commercial",
+        "find_interesting_tooltip": "Trouver des messages commerciaux intéressants (Patreon T2+)",
+        "calibrate_prices_tooltip": "Calibrer les prix"
+      },
+      "datatable": {
+        "columns": {
+          "price": "Prix",
+          "tags": "Balises",
+          "min_price": "Prix ​​minimum",
+          "potential_profit": "Bénéfice potentiel",
+          "updated_at": "Mis à jour à"
+        }
+      },
+      "tabs": {
+        "item": {
+          "title": "Article"
+        },
+        "riven": {
+          "title": "Déchiré",
+          "modals": {
+            "find_interesting_rivens": {
+              "title": "Trouvez des Rivens intéressants pour {{date}}",
+              "titles": {
+                "filtered": "Rivens filtrés",
+                "discount_settings": "Paramètres de réduction",
+                "export_settings": "Paramètres d'exportation"
+              },
+              "fields": {
+                "min_price_label": "Prix ​​minimum",
+                "min_volume_label": "Volume minimal",
+                "discount_percentage_label": "Pourcentage de remise %",
+                "round_to_nearest_label": "Arrondir au plus proche",
+                "override_existing_prices_label": "Remplacer les prix existants",
+                "tags_label": "Balises"
+              },
+              "datatable_columns": {
+                "name": "Nom",
+                "min_price": "Prix ​​minimum",
+                "discount_price": "Prix ​​réduit",
+                "potential_profit": "Bénéfice potentiel",
+                "volume": "Volume"
+              },
+              "buttons": {
+                "export_to_trade_messages": "Exporter vers des messages commerciaux"
+              }
+            }
+          }
+        },
+        "custom": {
+          "title": "Coutume"
+        }
+      }
+    },
+    "process_trade": {
+      "stats": {
+        "user_name": "Nom d'utilisateur",
+        "trade_type": "Type de commerce",
+        "trade_price": "Prix ​​commercial",
+        "price": "Prix",
+        "difference": "Différence"
+      },
+      "buttons": {
+        "process_trade_tooltip": "Commencer à traiter les transactions",
+        "confirm_trade": "Confirmer l'échange",
+        "back_to_list": "Retour à la liste"
+      },
+      "datatable": {
+        "columns": {
+          "item_name": "Nom",
+          "quantity": "Quantité",
+          "price": "Prix",
+          "total": "Total",
+          "platinum": "Platine",
+          "user_name": "Nom d'utilisateur",
+          "date": "Date"
+        }
+      }
+    },
+    "wf_inventory": {
+      "tabs": {
+        "riven": {
+          "title": "Rivens",
+          "riven_card": {
+            "footer_left": "{{rank}}/8 <polarity/>",
+            "footer_right": "MR : {{mastery}}",
+            "footer_center": "<stock/>",
+            "stock_status": {
+              "found": "Trouvé dans l'inventaire",
+              "not_found": "Introuvable dans l'inventaire"
+            }
+          },
+          "filters": {
+            "all": "Tous",
+            "rifle": "Fusil",
+            "shotgun": "Fusil de chasse",
+            "melee": "Mêlée",
+            "pistol": "Pistolet",
+            "zaw": "Zaw",
+            "arch": "Aile arquée",
+            "veiled": "Voilé",
+            "unveiled": "Dévoilé"
+          }
+        }
+      }
+    }
+  }
+}

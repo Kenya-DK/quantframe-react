@@ -1,0 +1,2458 @@
+{
+  "months": [
+    "มกราคม",
+    "กุมภาพันธ์",
+    "มีนาคม",
+    "เมษายน",
+    "อาจ",
+    "มิถุนายน",
+    "กรกฎาคม",
+    "สิงหาคม",
+    "กันยายน",
+    "ตุลาคม",
+    "พฤศจิกายน",
+    "ธันวาคม"
+  ],
+  "common": {
+    "not_found": "ไม่พบ",
+    "buttons": {
+      "save": {
+        "label": "บันทึก"
+      },
+      "delete": {
+        "label": "ลบ"
+      }
+    },
+    "notifications": {
+      "copy_to_clipboard": {
+        "title": "คัดลอกไปยังคลิปบอร์ดแล้ว",
+        "message": "{{message}} ถูกคัดลอกไปยังคลิปบอร์ดแล้ว"
+      },
+      "on_trade_event": {
+        "multiple_items": {
+          "title": "ซื้อขายกับ {{player_name}} ไม่ได้รับการประมวลผล",
+          "message": "แลกเปลี่ยนกับ {{player_name}} ไม่ได้รับการประมวลผลเนื่องจากมีหลายรายการ"
+        },
+        "no_valid_items": {
+          "title": "ซื้อขายกับ {{player_name}} ไม่ได้รับการประมวลผล",
+          "message": "แลกเปลี่ยนกับ {{player_name}} ไม่ได้รับการประมวลผลเนื่องจากไม่มีรายการที่ถูกต้อง"
+        },
+        "success": {
+          "title": "ซื้อขายกับ {{player_name}} เสร็จสมบูรณ์",
+          "message": "<blue>{{item_name}}</blue> X<blue>{{quantity}}</blue> <blue>{{trade_type}}</blue> สำหรับ {{platinum}}p"
+        }
+      },
+      "warframe_gdpr_data_loaded": {
+        "success": {
+          "title": "โหลดข้อมูล GDPR ของ Warframe แล้ว",
+          "message": "การค้า: {{trades}} เข้าสู่ระบบ: {{logins}} การซื้อ: {{purchases}} ธุรกรรม: {{transactions}}"
+        }
+      },
+      "log_export": {
+        "error": {
+          "title": "บันทึกข้อผิดพลาดในการส่งออก",
+          "message": "เกิดข้อผิดพลาดขณะพยายามส่งออกบันทึก"
+        },
+        "success": {
+          "title": "บันทึกการส่งออกสำเร็จ",
+          "message": "บันทึกถูกส่งออกไปยัง {{path}} เรียบร้อยแล้ว"
+        }
+      },
+      "create_stock_item": {
+        "error": {
+          "title": "สร้างข้อผิดพลาดเกี่ยวกับสต็อก",
+          "message": "เกิดข้อผิดพลาดขณะพยายามสร้างสต็อก"
+        },
+        "success": {
+          "title": "สร้างความสำเร็จในสต๊อก",
+          "message": "สร้างรายการสต็อค {{name}} สำเร็จแล้ว"
+        }
+      },
+      "update_stock_item": {
+        "error": {
+          "title": "อัปเดตข้อผิดพลาดของสต็อก",
+          "title_multiple": "อัปเดตข้อผิดพลาดของสต็อก",
+          "message": "เกิดข้อผิดพลาดขณะพยายามอัปเดตสต็อก",
+          "message_multiple": "เกิดข้อผิดพลาดขณะพยายามอัปเดตสินค้าในสต็อคหลายรายการ"
+        },
+        "success": {
+          "title": "อัปเดตความสำเร็จของสต็อก",
+          "title_multiple": "อัปเดตความสำเร็จของสต็อก",
+          "message": "รายการในสต็อค {{name}} ได้รับการอัปเดตเรียบร้อยแล้ว",
+          "message_multiple": "{{count}} รายการสต็อกได้รับการอัปเดตเรียบร้อยแล้ว"
+        }
+      },
+      "delete_stock_item": {
+        "error": {
+          "title": "ลบข้อผิดพลาดเกี่ยวกับสต็อก",
+          "title_multiple": "ลบข้อผิดพลาดเกี่ยวกับสต็อก",
+          "message": "เกิดข้อผิดพลาดขณะพยายามลบสต็อก",
+          "message_multiple": "เกิดข้อผิดพลาดขณะพยายามลบสินค้าในสต๊อกหลายรายการ"
+        },
+        "success": {
+          "title": "ลบความสำเร็จของสต็อก",
+          "title_multiple": "ลบความสำเร็จของสต็อก",
+          "message": "ลบรายการในสต็อค {{name}} เรียบร้อยแล้ว",
+          "message_multiple": "{{count}} รายการในสต๊อกถูกลบเรียบร้อยแล้ว"
+        }
+      },
+      "sell_stock_item": {
+        "error": {
+          "title": "ขายหุ้นผิดพลาด",
+          "message": "เกิดข้อผิดพลาดขณะพยายามขายหุ้น"
+        },
+        "success": {
+          "title": "ขายหุ้นสำเร็จ",
+          "message": "รายการสต็อก {{name}} ขายสำเร็จแล้ว"
+        }
+      },
+      "create_stock_riven": {
+        "error": {
+          "title": "สร้างข้อผิดพลาดเกี่ยวกับสต็อก",
+          "message": "เกิดข้อผิดพลาดขณะพยายามสร้างสต็อก"
+        },
+        "success": {
+          "title": "สร้างความสำเร็จในสต๊อก",
+          "message": "สร้างรายการสต็อค {{name}} สำเร็จแล้ว"
+        }
+      },
+      "update_stock_riven": {
+        "error": {
+          "title": "อัปเดตข้อผิดพลาดของสต็อก",
+          "title_multiple": "อัปเดตข้อผิดพลาดของสต็อก",
+          "message": "เกิดข้อผิดพลาดขณะพยายามอัปเดตสต็อก",
+          "message_multiple": "เกิดข้อผิดพลาดขณะพยายามอัปเดตสินค้าในสต็อคหลายรายการ"
+        },
+        "success": {
+          "title": "อัปเดตความสำเร็จของสต็อก",
+          "title_multiple": "อัปเดตความสำเร็จของสต็อก",
+          "message": "รายการในสต็อค {{name}} ได้รับการอัปเดตเรียบร้อยแล้ว",
+          "message_multiple": "{{count}} รายการสต็อกได้รับการอัปเดตเรียบร้อยแล้ว"
+        }
+      },
+      "delete_stock_riven": {
+        "error": {
+          "title": "ลบข้อผิดพลาดเกี่ยวกับสต็อก",
+          "title_multiple": "ลบข้อผิดพลาดเกี่ยวกับสต็อก",
+          "message": "เกิดข้อผิดพลาดขณะพยายามลบสต็อก",
+          "message_multiple": "เกิดข้อผิดพลาดขณะพยายามลบสินค้าในสต๊อกหลายรายการ"
+        },
+        "success": {
+          "title": "ลบความสำเร็จของสต็อก",
+          "title_multiple": "ลบความสำเร็จของสต็อก",
+          "message": "ลบสต็อก riven {{name}} สำเร็จแล้ว",
+          "message_multiple": "{{count}} ลบสต๊อกสต๊อกเรียบร้อยแล้ว"
+        }
+      },
+      "delete_transaction": {
+        "error": {
+          "title": "ลบข้อผิดพลาดการทำธุรกรรม",
+          "title_multiple": "ลบข้อผิดพลาดการทำธุรกรรม",
+          "message": "เกิดข้อผิดพลาดขณะพยายามลบธุรกรรม",
+          "message_multiple": "เกิดข้อผิดพลาดขณะพยายามลบธุรกรรมหลายรายการ"
+        },
+        "success": {
+          "title": "ลบความสำเร็จของธุรกรรม",
+          "title_multiple": "ลบความสำเร็จของธุรกรรม",
+          "message": "ลบธุรกรรม {{name}} สำเร็จแล้ว",
+          "message_multiple": "ลบธุรกรรม {{count}} สำเร็จแล้ว"
+        }
+      },
+      "sell_stock_riven": {
+        "error": {
+          "title": "ขายหุ้นผิดพลาด",
+          "message": "เกิดข้อผิดพลาดขณะพยายามขายหุ้น"
+        },
+        "success": {
+          "title": "ขายหุ้นสำเร็จ",
+          "message": "รายการสต็อก {{name}} ขายสำเร็จแล้ว"
+        }
+      },
+      "create_wish_list": {
+        "error": {
+          "title": "เกิดข้อผิดพลาดในการสร้างสิ่งที่อยากได้",
+          "message": "เกิดข้อผิดพลาดขณะพยายามสร้างสิ่งที่อยากได้"
+        },
+        "success": {
+          "title": "สร้าง Wishlist สำเร็จ",
+          "message": "สร้างรายการสิ่งที่อยากได้สำเร็จแล้ว"
+        }
+      },
+      "update_wish_list": {
+        "error": {
+          "title": "อัปเดตข้อผิดพลาดของสิ่งที่อยากได้",
+          "title_multiple": "อัปเดตข้อผิดพลาดของสิ่งที่อยากได้",
+          "message": "เกิดข้อผิดพลาดขณะพยายามอัปเดตสิ่งที่อยากได้",
+          "message_multiple": "เกิดข้อผิดพลาดขณะพยายามอัปเดตรายการสิ่งที่อยากได้หลายรายการ"
+        },
+        "success": {
+          "title": "อัปเดตความสำเร็จของสิ่งที่อยากได้",
+          "title_multiple": "อัปเดตความสำเร็จของสิ่งที่อยากได้",
+          "message": "อัปเดตสิ่งที่อยากได้เรียบร้อยแล้ว",
+          "message_multiple": "{{count}} รายการสิ่งที่ปรารถนาได้รับการอัปเดตเรียบร้อยแล้ว"
+        }
+      },
+      "delete_wish_list": {
+        "error": {
+          "title": "ลบข้อผิดพลาดสิ่งที่อยากได้",
+          "title_multiple": "ลบข้อผิดพลาดสิ่งที่อยากได้",
+          "message": "เกิดข้อผิดพลาดขณะพยายามลบสิ่งที่อยากได้",
+          "message_multiple": "เกิดข้อผิดพลาดขณะพยายามลบสิ่งที่อยากได้หลายรายการ"
+        },
+        "success": {
+          "title": "ลบสิ่งที่อยากได้สำเร็จ",
+          "title_multiple": "ลบสิ่งที่อยากได้สำเร็จ",
+          "message": "ลบสิ่งที่อยากได้เรียบร้อยแล้ว",
+          "message_multiple": "ลบสิ่งที่ปรารถนา {{count}} เรียบร้อยแล้ว"
+        }
+      },
+      "bought_wish_list": {
+        "error": {
+          "title": "ซื้อสิ่งที่อยากได้ผิดพลาด",
+          "message": "เกิดข้อผิดพลาดขณะพยายามทำเครื่องหมายสิ่งที่อยากได้ว่าซื้อแล้ว"
+        },
+        "success": {
+          "title": "ซื้อ Wishlist สำเร็จแล้ว",
+          "message": "สิ่งที่ปรารถนาได้รับการทำเครื่องหมายว่าซื้อเรียบร้อยแล้ว"
+        }
+      },
+      "delete_chat": {
+        "error": {
+          "title": "ลบข้อผิดพลาดการแชท",
+          "message": "เกิดข้อผิดพลาดขณะพยายามลบแชท"
+        },
+        "success": {
+          "title": "ลบการแชทสำเร็จ",
+          "message": "ลบแชทสำเร็จแล้ว"
+        }
+      },
+      "export_data": {
+        "error": {
+          "title": "ข้อผิดพลาดในการส่งออกข้อมูล",
+          "message": "เกิดข้อผิดพลาดขณะพยายามส่งออกข้อมูล"
+        },
+        "success": {
+          "title": "ความสำเร็จในการส่งออกข้อมูล",
+          "message": "ข้อมูลได้ถูกส่งออกไปยัง {{path}} เรียบร้อยแล้ว"
+        }
+      },
+      "no_updates_available": {
+        "title": "ไม่มีการอัปเดต",
+        "message": "คุณกำลังใช้เวอร์ชันล่าสุดอยู่แล้ว"
+      },
+      "update_settings": {
+        "error": {
+          "title": "อัปเดตการตั้งค่าข้อผิดพลาด",
+          "message": "เกิดข้อผิดพลาดขณะพยายามอัปเดตการตั้งค่า: \n__คิวเอฟ_0__"
+        },
+        "success": {
+          "title": "อัปเดตการตั้งค่าสำเร็จ",
+          "message": "อัปเดตการตั้งค่าเรียบร้อยแล้ว"
+        }
+      },
+      "create_trade_entry": {
+        "error": {
+          "title": "สร้างข้อผิดพลาดรายการการค้า",
+          "title_multiple": "สร้างข้อผิดพลาดรายการการค้า",
+          "message": "เกิดข้อผิดพลาดขณะพยายามสร้างรายการการค้า",
+          "message_multiple": "เกิดข้อผิดพลาดขณะพยายามสร้างรายการซื้อขายหลายรายการ"
+        },
+        "success": {
+          "title": "สร้างความสำเร็จในการเข้าสู่การค้า",
+          "title_multiple": "สร้างความสำเร็จในการเข้าสู่การค้า",
+          "message": "สร้างรายการซื้อขาย {{name}} สำเร็จแล้ว",
+          "message_multiple": "{{count}} รายการซื้อขายได้ถูกสร้างขึ้นเรียบร้อยแล้ว"
+        }
+      },
+      "update_trade_entry": {
+        "error": {
+          "title": "อัปเดตข้อผิดพลาดรายการการค้า",
+          "title_multiple": "อัปเดตข้อผิดพลาดรายการการค้า",
+          "message": "เกิดข้อผิดพลาดขณะพยายามอัปเดตรายการการค้า",
+          "message_multiple": "เกิดข้อผิดพลาดขณะพยายามอัปเดตรายการการค้าหลายรายการ"
+        },
+        "success": {
+          "title": "อัปเดตความสำเร็จในการเข้าร่วมการค้า",
+          "title_multiple": "อัปเดตความสำเร็จในการเข้าร่วมการค้า",
+          "message": "รายการซื้อขาย {{name}} ได้รับการอัปเดตเรียบร้อยแล้ว",
+          "message_multiple": "{{count}} รายการซื้อขายได้รับการอัปเดตเรียบร้อยแล้ว"
+        }
+      },
+      "delete_trade_entry": {
+        "error": {
+          "title": "ลบข้อผิดพลาดรายการการค้า",
+          "title_multiple": "ลบข้อผิดพลาดรายการการค้า",
+          "message": "เกิดข้อผิดพลาดขณะพยายามลบรายการการค้า",
+          "message_multiple": "เกิดข้อผิดพลาดขณะพยายามลบรายการการค้าหลายรายการ"
+        },
+        "success": {
+          "title": "ลบความสำเร็จในการเข้าร่วมการค้า",
+          "title_multiple": "ลบความสำเร็จในการเข้าร่วมการค้า",
+          "message": "รายการการค้า {{name}} ถูกลบเรียบร้อยแล้ว",
+          "message_multiple": "{{count}} รายการซื้อขายถูกลบเรียบร้อยแล้ว"
+        }
+      },
+      "create_trade_msg_template": {
+        "error": {
+          "title": "สร้างข้อผิดพลาดของเทมเพลต",
+          "message": "เกิดข้อผิดพลาดขณะพยายามสร้างเทมเพลตข้อความการค้า"
+        },
+        "success": {
+          "title": "สร้างเทมเพลตสำเร็จ",
+          "message": "สร้างเทมเพลตข้อความการค้าสำเร็จแล้ว"
+        }
+      },
+      "delete_trade_msg_template": {
+        "error": {
+          "title": "ลบข้อผิดพลาดเทมเพลต",
+          "message": "เกิดข้อผิดพลาดขณะพยายามลบเทมเพลตข้อความการค้า"
+        },
+        "success": {
+          "title": "ลบเทมเพลตสำเร็จ",
+          "message": "ลบเทมเพลตข้อความการค้าเรียบร้อยแล้ว"
+        }
+      },
+      "update_transaction": {
+        "error": {
+          "title": "อัปเดตข้อผิดพลาดของธุรกรรม",
+          "message": "เกิดข้อผิดพลาดขณะพยายามอัปเดตธุรกรรม"
+        },
+        "success": {
+          "title": "อัปเดตความสำเร็จของธุรกรรม",
+          "message": "ธุรกรรมได้รับการอัปเดตเรียบร้อยแล้ว"
+        }
+      },
+      "processed_multiple_items": {
+        "error": {
+          "title": "ประมวลผลข้อผิดพลาดหลายรายการ",
+          "message": "เกิดข้อผิดพลาดขณะพยายามประมวลผลหลายรายการ"
+        },
+        "success": {
+          "title": "ประมวลผลหลายรายการสำเร็จ",
+          "message": "{{count}} รายการได้รับการประมวลผลเรียบร้อยแล้ว"
+        }
+      },
+      "calculate_tax_all_transactions": {
+        "error": {
+          "title": "คำนวณข้อผิดพลาดทางภาษี",
+          "message": "เกิดข้อผิดพลาดขณะพยายามคำนวณภาษีสำหรับธุรกรรม"
+        },
+        "success": {
+          "title": "คำนวณความสำเร็จด้านภาษี",
+          "message": "คำนวณภาษีสำหรับธุรกรรมเรียบร้อยแล้ว"
+        }
+      },
+      "delete_order": {
+        "error": {
+          "title": "ลบข้อผิดพลาดคำสั่งซื้อ",
+          "message": "เกิดข้อผิดพลาดขณะพยายามลบคำสั่งซื้อ"
+        },
+        "success": {
+          "title": "ลบคำสั่งซื้อสำเร็จ",
+          "message": "ลบคำสั่งซื้อเรียบร้อยแล้ว"
+        }
+      },
+      "delete_all_orders": {
+        "error": {
+          "title": "ลบข้อผิดพลาดคำสั่งซื้อทั้งหมด",
+          "message": "เกิดข้อผิดพลาดขณะพยายามลบคำสั่งซื้อทั้งหมด"
+        },
+        "success": {
+          "title": "ลบคำสั่งซื้อทั้งหมดสำเร็จ",
+          "message": "ลบคำสั่งซื้อทั้งหมดเรียบร้อยแล้ว"
+        }
+      },
+      "refresh_orders": {
+        "error": {
+          "title": "ข้อผิดพลาดในการรีเฟรชคำสั่งซื้อ",
+          "message": "เกิดข้อผิดพลาดขณะพยายามรีเฟรชคำสั่งซื้อ"
+        },
+        "success": {
+          "title": "รีเฟรชคำสั่งซื้อสำเร็จ",
+          "message": "รีเฟรชคำสั่งซื้อเรียบร้อยแล้ว"
+        }
+      },
+      "delete_auction": {
+        "error": {
+          "title": "ลบข้อผิดพลาดการประมูล",
+          "message": "เกิดข้อผิดพลาดขณะพยายามลบการประมูล"
+        },
+        "success": {
+          "title": "ลบความสำเร็จในการประมูล",
+          "message": "ลบการประมูลเรียบร้อยแล้ว"
+        }
+      },
+      "delete_all_auctions": {
+        "error": {
+          "title": "ลบข้อผิดพลาดการประมูลทั้งหมด",
+          "message": "เกิดข้อผิดพลาดขณะพยายามลบการประมูลทั้งหมด"
+        },
+        "success": {
+          "title": "ลบความสำเร็จในการประมูลทั้งหมด",
+          "message": "ลบการประมูลทั้งหมดเรียบร้อยแล้ว"
+        }
+      },
+      "refresh_auctions": {
+        "error": {
+          "title": "ข้อผิดพลาดในการประมูลรีเฟรช",
+          "message": "เกิดข้อผิดพลาดขณะพยายามรีเฟรชการประมูล"
+        },
+        "success": {
+          "title": "รีเฟรชความสำเร็จในการประมูล",
+          "message": "รีเฟรชการประมูลเรียบร้อยแล้ว"
+        }
+      }
+    },
+    "datatable_columns": {
+      "list_price": "จดทะเบียนแล้ว",
+      "maximum_price": {
+        "title": "ราคาสูงสุด",
+        "value": "{{maximum_price}} ({{currency}})",
+        "edit_tooltip": "แก้ไขราคาสูงสุด"
+      },
+      "minimum_price": {
+        "title": "ราคาขั้นต่ำ",
+        "value": "{{minimum_price}} ({{currency}})",
+        "edit_tooltip": "แก้ไขราคาขั้นต่ำ"
+      },
+      "actions": {
+        "title": "การดำเนินการ",
+        "buttons": {
+          "manual_tooltip": "ขายด้วยตนเอง",
+          "auto_tooltip": "ขายตามรายการครับ",
+          "bought_manual_tooltip": "ทำเครื่องหมายว่าซื้อแล้ว",
+          "bought_auto_tooltip": "ซื้อในราคาที่กำหนด",
+          "hide": {
+            "disabled_tooltip": "แสดง",
+            "enabled_tooltip": "ซ่อน"
+          },
+          "info_tooltip": "ข้อมูล",
+          "delete_tooltip": "ลบ",
+          "edit_tooltip": "แก้ไข",
+          "open_filter_tooltip": "เปิดตัวกรอง"
+        }
+      },
+      "quantity": {
+        "title": "ปริมาณ"
+      },
+      "volume": {
+        "title": "ปริมาณ"
+      }
+    },
+    "item_name": {
+      "title": "ชื่อ",
+      "value": "{{name}} {{quantity}} <blue>{{sub_type}}</blue>"
+    },
+    "pagination_total_items": "{{start}} - {{end}} / {{total}}",
+    "prompts": {
+      "delete_item": {
+        "title": "คุณแน่ใจเหรอ?",
+        "message": "การดำเนินการนี้ไม่สามารถยกเลิกได้",
+        "cancel": "ยกเลิก",
+        "confirm": "ยืนยัน"
+      },
+      "delete_multiple_items": {
+        "title": "คุณแน่ใจเหรอ?",
+        "message": "คุณแน่ใจหรือไม่ว่าต้องการลบ {{count}} รายการเหล่านี้ การดำเนินการนี้ไม่สามารถยกเลิกได้",
+        "cancel": "ยกเลิก",
+        "confirm": "ยืนยัน"
+      },
+      "sell_manual": {
+        "title": "ขายเพื่อ",
+        "fields": {
+          "sell": {
+            "label": "ราคา"
+          },
+          "quantity": {
+            "label": "ปริมาณ"
+          }
+        }
+      },
+      "bought_manual": {
+        "title": "ซื้อเพื่อ",
+        "fields": {
+          "bought": {
+            "label": "ราคา"
+          },
+          "quantity": {
+            "label": "ปริมาณ"
+          }
+        }
+      },
+      "minimum_price": {
+        "title": "ราคาขั้นต่ำ",
+        "fields": {
+          "minimum_price": {
+            "label": "ราคาขั้นต่ำ",
+            "description": "ราคาขั้นต่ำสำหรับรายการ"
+          }
+        }
+      },
+      "maximum_price": {
+        "title": "ราคาสูงสุด",
+        "fields": {
+          "maximum_price": {
+            "label": "ราคาสูงสุด",
+            "description": "ราคาสูงสุดสำหรับรายการ"
+          }
+        }
+      },
+      "save": {
+        "title": "บันทึก",
+        "fields": {
+          "name": {
+            "label": "ชื่อ"
+          }
+        }
+      }
+    },
+    "sort_by": {
+      "created_at": "สร้างเมื่อ",
+      "platinum": "แพลตตินัม",
+      "updated_at": "อัปเดตเมื่อ",
+      "order_type": "ประเภทการสั่งซื้อ",
+      "disposition": "การจัดการ",
+      "endo": "เอนโด",
+      "riven_grade": "ริเว่น เกรด"
+    }
+  },
+  "enums": {
+    "item_type": {
+      "riven": "ริเว่น",
+      "item": "รายการ",
+      "details": {
+        "riven": "ริเว่น",
+        "item": "รายการ"
+      }
+    },
+    "order_type": {
+      "all": "คำสั่งซื้อทั้งหมด",
+      "buy": "สั่งซื้อ",
+      "sell": "ขายออเดอร์",
+      "closed": "คำสั่งซื้อที่ปิดแล้ว",
+      "details": {
+        "buy": "ซื้อ",
+        "sell": "ขาย"
+      }
+    },
+    "transaction_type": {
+      "purchase": "ซื้อ",
+      "sale": "ขาย",
+      "trade": "ซื้อขาย",
+      "details": {
+        "purchase": "ซื้อ",
+        "sale": "ขาย",
+        "trade": "ซื้อขาย"
+      }
+    },
+    "stock_status": {
+      "pending": "รอดำเนินการ",
+      "live": "สด",
+      "to_low_profit": "กำไรต่ำ",
+      "no_sellers": "ไม่มีผู้ขาย",
+      "no_buyers": "ไม่มีผู้ซื้อ",
+      "inactive": "ไม่ได้ใช้งาน",
+      "sma_limit": "ขีดจำกัด SMA",
+      "order_limit": "ขีดจำกัดการสั่งซื้อ",
+      "overpriced": "เกินราคา",
+      "underpriced": "ราคาถูกเกินไป",
+      "details": {
+        "pending": "กำลังรอการประมวลผล",
+        "live": "ถ่ายทอดสดบน Warframe Market",
+        "to_low_profit": "ไม่ได้รับการประมวลผลเนื่องจากมีกำไรต่ำตามการตั้งค่า",
+        "no_sellers": "ไม่พบผู้ขายสำหรับรายการนี้",
+        "no_buyers": "ไม่พบผู้ซื้อสำหรับรายการนี้",
+        "inactive": "ไม่ได้ใช้งานและจะไม่ได้รับการประมวลผล",
+        "sma_limit": "ถูกจำกัดโดย SMA",
+        "order_limit": "ถูกจำกัดด้วยขีดจำกัดการสั่งซื้อ",
+        "overpriced": "มีราคาแพงเกินไป",
+        "underpriced": "มีราคาต่ำกว่าความเป็นจริง"
+      }
+    },
+    "stock_mode": {
+      "all": "ทั้งหมด",
+      "riven": "ริเว่น",
+      "item": "รายการ"
+    },
+    "trade_mode": {
+      "buy": "ซื้อ",
+      "sell": "ขาย",
+      "wishlist": "สิ่งที่ปรารถนา"
+    },
+    "user_status": {
+      "online": "ออนไลน์",
+      "ingame": "ในเกม",
+      "in_game": "ในเกม",
+      "invisible": "ออฟไลน์"
+    },
+    "alert_type": {
+      "info": "ข้อมูล",
+      "warning": "คำเตือน",
+      "error": "ข้อผิดพลาด",
+      "success": "ความสำเร็จ"
+    }
+  },
+  "context": {
+    "app": {
+      "starting_up": "กำลังเริ่มต้น...",
+      "database": {
+        "updating_names_transactions": "กำลังอัปเดตชื่อรายการธุรกรรม {{progress}}%",
+        "updating_names_stock_items": "กำลังอัปเดตชื่อรายการสต็อก {{progress}}%",
+        "updating_names_stock_rivens": "กำลังอัปเดตชื่อสต๊อกหุ้น {{progress}}%",
+        "updating_names_wish_lists": "กำลังอัปเดตชื่อรายการความปรารถนา {{progress}}%",
+        "update_names_completed": "อัปเดตชื่อรายการทั้งหมดแล้ว"
+      },
+      "cache": {
+        "initializing": "กำลังเริ่มต้นแคช...",
+        "updating": "กำลังอัปเดตแคช...",
+        "item_price_updating": "กำลังอัปเดตราคาสินค้า..."
+      }
+    }
+  },
+  "components": {
+    "item_component": "<blue>{{name}}</blue> x<blue>{{count}}</blue>",
+    "item_components": "ส่วนประกอบรายการ",
+    "patreon_overlay": {
+      "title": "เนื้อหาที่ถูกจำกัด",
+      "description": "เนื้อหานี้จำกัดไว้สำหรับผู้สนับสนุน Patreon ระดับ <blue>{{tier}}</blue> หรือสูงกว่า",
+      "buttons": {
+        "become_a_patron": "มาเป็นผู้อุปถัมภ์"
+      }
+    },
+    "timer_stamp": {
+      "years": "{{years}} ปีที่แล้ว",
+      "months": "{{months}} เดือนที่แล้ว",
+      "days": "{{days}} วันที่ผ่านมา",
+      "hours": "{{hours}} ชั่วโมงที่แล้ว",
+      "minutes": "{{minutes}} นาทีที่แล้ว",
+      "seconds": "{{seconds}} วินาทีที่แล้ว"
+    },
+    "wfm_auction": {
+      "fields": {
+        "selling_price": "ราคาขาย: <blue>{{price}}</blue> <plat/>",
+        "left_footer": "<blue>{{mod_rank}}</blue>/<blue>{{max_rank}}</blue> <blue>{{drain}}</blue> <polarity/>",
+        "right_footer": "นาย: <blue>{{mastery_level}}</blue> <roll/> <blue>{{re_rolls}}</blue>"
+      }
+    },
+    "live_scraper_control": {
+      "buttons": {
+        "start": "เริ่ม Live Scraper",
+        "stop": "หยุดมีดโกนสด"
+      },
+      "prompts": {
+        "start": {
+          "title": "คำเตือน",
+          "message": "คุณแน่ใจหรือไม่ว่าต้องการเริ่มการขูดแบบสด การดำเนินการนี้จะลบคำสั่งซื้อที่ไม่อยู่ในบัญชีดำทั้งหมดใน WFM",
+          "confirm": "เริ่ม",
+          "cancel": "ยกเลิก"
+        }
+      },
+      "item": {
+        "checking": "กำลังตรวจสอบรายการ: <blue>{{name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        "deleted": "การลบคำสั่งซื้อ: <blue>{{current}}</blue>/<blue>{{total}}</blue>"
+      },
+      "riven": {
+        "cooldown": "คูลดาวน์ Riven: เหลืออีก <blue>{{seconds}}</blue> วินาที",
+        "checking": "การตรวจสอบริเวน: <blue>{{name}}</blue> <blue>{{mod_name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        "rate_limited": "จำกัดอัตรา: รอ <blue>{{seconds}}</blue> วินาทีก่อนดำเนินการต่อ"
+      }
+    },
+    "searchfield": {
+      "label": "ค้นหา",
+      "placeholder": "ค้นหา...",
+      "buttons": {
+        "filter": {
+          "tooltip": "กรอง"
+        },
+        "search": {
+          "tooltip": "ค้นหา"
+        },
+        "create": {
+          "tooltip": "สร้าง"
+        }
+      }
+    },
+    "user_menu": {
+      "items": {
+        "app_label": "แอปพลิเคชัน",
+        "settings": "การตั้งค่า",
+        "logout": "ออกจากระบบ"
+      },
+      "errors": {
+        "logout": {
+          "title": "ข้อผิดพลาดในการออกจากระบบ",
+          "message": "เกิดข้อผิดพลาดขณะพยายามออกจากระบบ"
+        }
+      },
+      "success": {
+        "logout": {
+          "title": "ออกจากระบบสำเร็จ",
+          "message": "คุณออกจากระบบเรียบร้อยแล้ว"
+        }
+      },
+      "prompts": {
+        "logout": {
+          "title": "ยืนยันการออกจากระบบ",
+          "message": "คุณแน่ใจหรือไม่ว่าต้องการออกจากระบบ?",
+          "confirm": "ใช่",
+          "cancel": "เลขที่"
+        }
+      }
+    },
+    "clock": {
+      "gmt": "GMT: <blue>{{time}}</blue>",
+      "time_until_midnight": "เวลาจนถึงเที่ยงคืน (GMT): <blue>{{time}}</blue>"
+    },
+    "layout": {
+      "log_in": {
+        "navbar": {
+          "home": "บ้าน",
+          "debug": "ดีบัก",
+          "live_scraper": "มีดโกนสด",
+          "warframe_market": "ตลาดวอร์เฟรม",
+          "trading_analytics": "การวิเคราะห์การซื้อขาย",
+          "trade_messages": "ข้อความการค้า",
+          "chat": "แชท",
+          "wf_inventory": "สินค้าคงคลัง WF",
+          "about": "เกี่ยวกับ"
+        }
+      }
+    },
+    "select_item_tags": {
+      "tags": {
+        "label": "แท็ก",
+        "description": "เลือกแท็กเพื่อกรองรายการ"
+      }
+    },
+    "theme_editor": {
+      "chart_styles": {
+        "title": "ลักษณะแผนภูมิ",
+        "fields": {
+          "bgColor": "สีพื้นหลัง",
+          "lineColor": "สีของเส้น",
+          "lastYearLineColor": "สีของเส้นปีที่แล้ว",
+          "currentYearLineColor": "สีของเส้นปีปัจจุบัน"
+        },
+        "total": "ทั้งหมด",
+        "today": "วันนี้",
+        "last_days": "7 วันที่ผ่านมา"
+      },
+      "color_palettes": {
+        "title": "จานสี",
+        "base_colors": "สีฐาน",
+        "stock_status": "สถานะสต็อค",
+        "user_status": "สถานะผู้ใช้",
+        "alert_type": "ประเภทการแจ้งเตือน",
+        "transaction_type": "ประเภทธุรกรรม",
+        "item_type": "ประเภทรายการ",
+        "logo_color": "สีโลโก้",
+        "positive": "เชิงบวก",
+        "negative": "เชิงลบ",
+        "profit": "กำไร"
+      },
+      "sharing": {
+        "title": "การแบ่งปัน"
+      },
+      "buttons": {
+        "copy_to_clipboard": "คัดลอกไปยังคลิปบอร์ด",
+        "import_from_clipboard": "นำเข้าจากคลิปบอร์ด",
+        "open_themes_folder": "เปิดโฟลเดอร์ธีม"
+      },
+      "fields": {
+        "export_name": {
+          "label": "ชื่อ",
+          "placeholder": "ป้อนชื่อธีม",
+          "error": "ชื่อธีมไม่ถูกต้อง"
+        },
+        "export_author": {
+          "label": "ผู้เขียน",
+          "placeholder": "ป้อนชื่อผู้แต่ง",
+          "error": "ชื่อผู้แต่งไม่ถูกต้อง",
+          "tooltip": "สร้าง"
+        }
+      },
+      "export_success": {
+        "title": "ส่งออกธีมสำเร็จ",
+        "message": "ส่งออกธีมสำเร็จแล้ว"
+      },
+      "export_error": {
+        "title": "ข้อผิดพลาดในการส่งออกธีม",
+        "message": "เกิดข้อผิดพลาดขณะส่งออกธีม: {{error}}"
+      }
+    },
+    "forms": {
+      "update_transaction": {
+        "buttons": {
+          "hide_properties": {
+            "label": "ซ่อนคุณสมบัติ"
+          },
+          "show_properties": {
+            "label": "แสดงคุณสมบัติ"
+          }
+        },
+        "fields": {
+          "price": {
+            "label": "ราคา",
+            "placeholder": "ใส่ราคา",
+            "description": "ราคาของการทำธุรกรรมในแพลทินัม"
+          },
+          "quantity": {
+            "label": "ปริมาณ",
+            "placeholder": "ป้อนปริมาณ",
+            "description": "ปริมาณของสินค้าที่มีการแลกเปลี่ยน"
+          },
+          "user_name": {
+            "label": "ชื่อผู้ใช้",
+            "placeholder": "กรอกชื่อผู้ใช้",
+            "description": "ชื่อผู้ใช้ที่เกี่ยวข้องกับธุรกรรม"
+          },
+          "created_at": {
+            "label": "วันที่สร้าง",
+            "placeholder": "เลือกวันที่",
+            "description": "วันที่ทำรายการ"
+          },
+          "properties": {
+            "label": "คุณสมบัติ",
+            "placeholder": "ป้อนคุณสมบัติ",
+            "description": "คุณสมบัติเพิ่มเติมของธุรกรรม"
+          }
+        }
+      },
+      "generic_item_list": {
+        "add_all_tooltip": "เพิ่มรายการทั้งหมด"
+      },
+      "edit_notification_setting": {
+        "discord": {
+          "tooltip": "สลับการแจ้งเตือน Discord",
+          "title": "การแจ้งเตือนความไม่ลงรอยกัน",
+          "fields": {
+            "webhook": {
+              "label": "URL ของเว็บฮุค",
+              "placeholder": "ป้อน URL ของเว็บฮุค Discord"
+            },
+            "content": {
+              "label": "เนื้อหา",
+              "placeholder": "ป้อนเนื้อหาการแจ้งเตือน",
+              "reset_button": "รีเซ็ตเป็นค่าเริ่มต้น"
+            },
+            "user_ids": {
+              "label": "รหัสผู้ใช้",
+              "placeholder": "ป้อน ID ผู้ใช้ (คั่นด้วยเครื่องหมายจุลภาค)",
+              "description": "ระบุ ID ผู้ใช้เพื่อรับการแจ้งเตือน"
+            }
+          }
+        },
+        "system": {
+          "tooltip": "สลับการแจ้งเตือนของระบบ",
+          "title": "การแจ้งเตือนของระบบ",
+          "fields": {
+            "title": {
+              "label": "ชื่อ",
+              "placeholder": "ป้อนชื่อการแจ้งเตือน"
+            },
+            "content": {
+              "label": "เนื้อหา",
+              "placeholder": "ป้อนเนื้อหาการแจ้งเตือน"
+            },
+            "sound": {
+              "label": "เสียง",
+              "placeholder": "เลือกเสียงแจ้งเตือน",
+              "play_tooltip": "เล่นเสียง",
+              "options": {
+                "none": "ไม่มี",
+                "cat_meow": "แมวเหมียว",
+                "windows_xp_error": "ข้อผิดพลาดของ Windows XP",
+                "windows_xp_startup": "การเริ่มต้น Windows XP",
+                "iphone_notification": "การแจ้งเตือนทางโทรศัพท์อึ",
+                "windows_notification": "การแจ้งเตือนของ Windows"
+              }
+            },
+            "volume": {
+              "label": "ปริมาณ",
+              "placeholder": "ตั้งระดับเสียง"
+            }
+          }
+        },
+        "webhook": {
+          "tooltip": "สลับการแจ้งเตือน Webhook",
+          "title": "การแจ้งเตือนของเว็บฮุค",
+          "fields": {
+            "url": {
+              "label": "URL ของเว็บฮุค",
+              "placeholder": "ป้อน URL ของเว็บฮุค"
+            }
+          }
+        },
+        "manage_sounds": {
+          "title": "เพิ่มเสียงที่กำหนดเอง",
+          "buttons": {
+            "manage": "จัดการเสียง",
+            "back": "กลับไป"
+          },
+          "fields": {
+            "name": {
+              "label": "ชื่อเสียง",
+              "placeholder": "ชื่อเสียง"
+            },
+            "file": {
+              "label": "ไฟล์เสียง",
+              "placeholder": "เลือกไฟล์"
+            }
+          },
+          "tooltips": {
+            "add_sound": "เพิ่มเสียง",
+            "play": "เล่น",
+            "delete": "ลบ"
+          },
+          "notifications": {
+            "add_error": {
+              "title": "เพิ่มข้อผิดพลาดของเสียง",
+              "message": "เกิดข้อผิดพลาดขณะพยายามเพิ่มเสียง"
+            },
+            "delete_error": {
+              "title": "ลบข้อผิดพลาดเสียง",
+              "message": "เกิดข้อผิดพลาดขณะพยายามลบเสียง"
+            }
+          },
+          "table": {
+            "columns": {
+              "name": "ชื่อ",
+              "file_name": "ชื่อไฟล์",
+              "actions": "การดำเนินการ"
+            }
+          },
+          "dialog": {
+            "delete": {
+              "title": "ลบ {{name}}",
+              "message": "คุณแน่ใจหรือไม่ว่าต้องการลบเสียงนี้ การดำเนินการนี้ไม่สามารถยกเลิกได้",
+              "confirm": "ลบ",
+              "cancel": "ยกเลิก"
+            }
+          },
+          "file_picker": {
+            "filter_name": "เสียง"
+          }
+        }
+      },
+      "riven_filter_attribute": {
+        "fields": {
+          "is_required": {
+            "tooltip": "เป็นสิ่งจำเป็น"
+          }
+        }
+      },
+      "riven_filter": {
+        "fields": {
+          "enabled": {
+            "label": "เปิดใช้งานแล้ว"
+          },
+          "similarity": {
+            "label": "ความคล้ายคลึงกัน"
+          },
+          "rank": {
+            "label": "อันดับ"
+          },
+          "mastery_rank": {
+            "label": "อันดับความชำนาญ"
+          },
+          "required_negative": {
+            "label": "จำเป็น"
+          },
+          "re_rolls": {
+            "label": "ม้วนซ้ำ"
+          }
+        },
+        "buttons": {
+          "save": {
+            "label": "บันทึก"
+          }
+        }
+      },
+      "create_riven_attributes": {
+        "fields": {
+          "positive": {
+            "title": "คุณสมบัติเชิงบวก",
+            "add": "เพิ่ม"
+          },
+          "negative": {
+            "title": "คุณสมบัติเชิงลบ"
+          }
+        },
+        "buttons": {
+          "add": "+ เพิ่ม"
+        }
+      },
+      "create_riven_attribute": {
+        "fields": {
+          "value": {
+            "error": "ค่าไม่ถูกต้อง"
+          }
+        },
+        "buttons": {
+          "remove": "ลบ"
+        }
+      },
+      "create_riven": {
+        "buttons": {
+          "submit": {
+            "label": "สร้าง"
+          }
+        },
+        "fields": {
+          "mastery_rank": {
+            "label": "อันดับความชำนาญ",
+            "placeholder": "8",
+            "error": "ระดับความเชี่ยวชาญไม่ถูกต้อง"
+          },
+          "re_rolls": {
+            "label": "ม้วนซ้ำ",
+            "placeholder": "0",
+            "error": "ม้วนซ้ำไม่ถูกต้อง"
+          },
+          "rank": {
+            "label": "อันดับ",
+            "placeholder": "0",
+            "error": "อันดับไม่ถูกต้อง"
+          },
+          "polarity": {
+            "label": "ขั้ว",
+            "error": "ขั้วไม่ถูกต้อง"
+          },
+          "weapon": {
+            "label": "ชื่ออาวุธ",
+            "placeholder": "อาวุธ",
+            "error": "อาวุธไม่ถูกต้อง"
+          },
+          "bought": {
+            "label": "ซื้อแล้ว",
+            "placeholder": "ซื้อแล้ว",
+            "error": "ซื้อไม่ถูกต้อง"
+          },
+          "attributes": {
+            "label": "คุณสมบัติ",
+            "error": "Riven ต้องมีคุณลักษณะเชิงบวกอย่างน้อย 2 รายการ"
+          },
+          "attribute": {
+            "label": "คุณลักษณะ",
+            "error": "ค่าแอตทริบิวต์ต้องไม่เป็น 0"
+          },
+          "mod_name": {
+            "label": "ชื่อม็อด",
+            "placeholder": "ชื่อม็อด",
+            "error": "ชื่อม็อดไม่ถูกต้อง"
+          }
+        }
+      },
+      "debugging_live_item_entry": {
+        "fields": {
+          "wfm_url": {
+            "label": "รายการ",
+            "placeholder": "เลือกรายการ...",
+            "error": "กรุณาเลือกรายการ"
+          },
+          "stock_id": {
+            "label": "รหัสสต็อค",
+            "placeholder": "ใส่รหัสหุ้น...",
+            "error": "รหัสหุ้นไม่ถูกต้อง"
+          },
+          "wish_list_id": {
+            "label": "รหัสรายการความปรารถนา",
+            "placeholder": "ใส่รหัสรายการความปรารถนา...",
+            "error": "รหัสรายการความปรารถนาไม่ถูกต้อง"
+          },
+          "priority": {
+            "label": "ลำดับความสำคัญ",
+            "placeholder": "ป้อนลำดับความสำคัญ...",
+            "error": "ลำดับความสำคัญต้องเป็น 0 หรือมากกว่า"
+          },
+          "buy_quantity": {
+            "label": "ซื้อปริมาณ",
+            "placeholder": "กรอกปริมาณการซื้อ...",
+            "error": "ปริมาณการซื้อต้องเป็น 0 หรือมากกว่า"
+          },
+          "sell_quantity": {
+            "label": "ขายปริมาณ",
+            "placeholder": "ป้อนปริมาณการขาย...",
+            "error": "ปริมาณการขายต้องเป็น 0 หรือมากกว่า"
+          },
+          "operation": {
+            "label": "การดำเนินงาน",
+            "placeholder": "เลือกการดำเนินการ...",
+            "error": "โปรดเลือกอย่างน้อยหนึ่งการดำเนินการ"
+          }
+        },
+        "buttons": {
+          "add": {
+            "tooltip": "เพิ่มการดีบักรายการรายการสด"
+          }
+        }
+      },
+      "create_category_summary": {
+        "fields": {
+          "icon": {
+            "label": "ไอคอน",
+            "placeholder": "ไอคอน",
+            "description": "ไอคอนของหมวดหมู่",
+            "tooltip": "ไอคอนของหมวดหมู่",
+            "error": "ไอคอนไม่ถูกต้อง"
+          },
+          "name": {
+            "label": "ชื่อ",
+            "placeholder": "ชื่อ",
+            "description": "ชื่อของหมวดหมู่",
+            "tooltip": "ชื่อของหมวดหมู่",
+            "error": "ชื่อไม่ถูกต้อง"
+          },
+          "types": {
+            "label": "ประเภท",
+            "description": "ประเภทสำหรับหมวดหมู่"
+          }
+        },
+        "buttons": {
+          "submit": {
+            "label": "สร้าง/บันทึกหมวดหมู่"
+          }
+        }
+      },
+      "select_tradable_item": {
+        "fields": {
+          "item": {
+            "label": "รายการ",
+            "placeholder": "เลือกรายการ..."
+          },
+          "variant": {
+            "label": "ตัวแปร",
+            "placeholder": "เลือกรุ่น...",
+            "description": "โปรดเลือกรุ่น"
+          },
+          "rank": {
+            "label": "อันดับ",
+            "placeholder": "เลือกอันดับ...",
+            "description": "กรุณาเลือกอันดับ"
+          },
+          "cyan_stars": {
+            "label": "สีฟ้าดาว",
+            "placeholder": "เลือกดาวสีฟ้า...",
+            "description": "มีดาวสีฟ้ากี่ดวง"
+          },
+          "amber_stars": {
+            "label": "แอมเบอร์สตาร์",
+            "placeholder": "เลือกดาวอำพัน...",
+            "description": "มีดาวอำพันกี่ดวง"
+          }
+        },
+        "messages": {
+          "nothing_found": "ไม่พบรายการ"
+        }
+      },
+      "select_riven_weapon": {
+        "fields": {
+          "weapon": {
+            "label": "อาวุธ",
+            "placeholder": "เลือกอาวุธ..."
+          }
+        }
+      },
+      "create_item": {
+        "fields": {
+          "quantity": {
+            "label": "ปริมาณ",
+            "placeholder": "ปริมาณ",
+            "error": "ปริมาณไม่ถูกต้อง"
+          },
+          "bought": {
+            "label": "ซื้อแล้ว",
+            "placeholder": "ซื้อแล้ว",
+            "error": "ซื้อไม่ถูกต้อง"
+          }
+        },
+        "buttons": {
+          "add": {
+            "tooltip": {
+              "description_with_report": "เพิ่มรายการในสต็อกและรายงานไปยัง Warframe Market",
+              "description_without_report": "เพิ่มสินค้าเข้าสต๊อก"
+            }
+          }
+        }
+      },
+      "log_in": {
+        "title": "ตลาด Warframe - เข้าสู่ระบบ",
+        "register": "ยังไม่มีบัญชี? ลงทะเบียน",
+        "fields": {
+          "email": {
+            "label": "อีเมล",
+            "placeholder": "อีเมล",
+            "error": "อีเมลไม่ถูกต้อง"
+          },
+          "password": {
+            "label": "รหัสผ่าน",
+            "placeholder": "รหัสผ่าน",
+            "error": "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร"
+          }
+        },
+        "buttons": {
+          "submit": "เข้าสู่ระบบ"
+        }
+      },
+      "settings": {
+        "tabs": {
+          "general": {
+            "title": "ทั่วไป",
+            "fields": {
+              "language": {
+                "label": "ภาษา",
+                "placeholder": "เลือกภาษา",
+                "error": "ภาษาไม่ถูกต้อง"
+              }
+            }
+          },
+          "themes": {
+            "title": "ธีมส์",
+            "community_themes": "ธีมชุมชน",
+            "get_more_out_of_themes": "รับธีมเพิ่มเติมโดยใช้ตัวแก้ไขธีม คลิกที่นี่",
+            "theme_configuration": "การกำหนดค่าธีม"
+          },
+          "notifications": {
+            "title": "การแจ้งเตือน",
+            "on_new_conversation_title": "ในการสนทนาใหม่",
+            "on_new_trade_title": "เกี่ยวกับการค้าใหม่",
+            "on_wfm_chat_message_title": "ในข้อความแชท WFM"
+          },
+          "advanced": {
+            "title": "ขั้นสูง",
+            "fields": {
+              "wf_log_path": {
+                "label": "เส้นทางบันทึก Warframe",
+                "placeholder": "เส้นทางบันทึก Warframe เริ่มต้น",
+                "errors": {
+                  "not_exists": "ไม่มีเส้นทางที่ระบุ"
+                },
+                "tooltip": "เส้นทางไปยังไฟล์บันทึกของ Warframe เว้นว่างไว้สำหรับเส้นทางเริ่มต้น"
+              }
+            },
+            "button_export_logs": "บันทึกการส่งออก"
+          },
+          "summary": {
+            "title": "สรุป",
+            "fields": {
+              "recent_days": {
+                "label": "วันที่ผ่านมา",
+                "tooltip": "ข้อมูลจะแสดงกี่วัน"
+              },
+              "recent_transactions": {
+                "label": "การทำธุรกรรมล่าสุด",
+                "tooltip": "จำนวนธุรกรรมที่จะแสดง"
+              }
+            },
+            "datatable": {
+              "columns": {
+                "name": "ชื่อ",
+                "tags": "แท็ก",
+                "types": "ประเภท",
+                "actions": {
+                  "title": "การดำเนินการ",
+                  "buttons": {
+                    "edit": {
+                      "tooltip": "แก้ไขรายการ"
+                    },
+                    "delete": {
+                      "tooltip": "ลบรายการ"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "live_scraper": {
+            "title": "มีดโกนสด",
+            "general": {
+              "title": "ทั่วไป",
+              "fields": {
+                "auto_trade": {
+                  "label": "การค้าอัตโนมัติ",
+                  "error": "การค้ารถยนต์ไม่ถูกต้อง",
+                  "tooltip": "เพิ่ม/ขายหุ้นโดยอัตโนมัติหากเป็นจริง"
+                },
+                "auto_delete": {
+                  "label": "ลบอัตโนมัติ",
+                  "error": "ลบอัตโนมัติไม่ถูกต้อง",
+                  "tooltip": "ลบรายการสต็อกโดยอัตโนมัติ"
+                },
+                "should_delete_other_types": {
+                  "label": "ควรลบการค้าประเภทอื่น ๆ",
+                  "error": "ไม่ถูกต้องควรลบการค้าประเภทอื่น ๆ",
+                  "tooltip": "จะลบประเภทการค้าอื่น ๆ หากตัวอย่างจริง: หากเปิดใช้งานการซื้อจะลบรายการขาย/สิ่งที่อยากได้หากไม่อยู่ในบัญชีดำ"
+                },
+                "report_to_wfm": {
+                  "label": "รายงานไปยังตลาด Warframe",
+                  "error": "รายงานไปยัง Warframe Market ไม่ถูกต้อง",
+                  "tooltip": "จะเพิ่มธุรกรรมใน Warframe Market"
+                },
+                "trade_modes": {
+                  "label": "โหมดการค้า",
+                  "description": "เลือกโหมดการค้า",
+                  "error": "โหมดการค้าไม่ถูกต้อง"
+                },
+                "stock_mode": {
+                  "label": "โหมดสต็อก",
+                  "description": {
+                    "all": "จะผ่านไปได้หมด.",
+                    "riven": "จะผ่านไปได้เพียงลำธารเท่านั้น",
+                    "item": "จะผ่านแต่รายการเท่านั้น"
+                  },
+                  "placeholder": "โหมดสต็อก",
+                  "error": "โหมดสต็อกไม่ถูกต้อง"
+                }
+              },
+              "columns": {
+                "name": "ชื่อ",
+                "maximum_price": "ราคาสูงสุด"
+              },
+              "buttons": {
+                "edit_blacklist_label": "แก้ไขบัญชีดำ {{count}}",
+                "edit_buy_list_label": "แก้ไขรายการซื้อ {{count}}"
+              },
+              "black_list": {
+                "available_items_label": "รายการที่มีจำหน่าย",
+                "selected_items_label": "รายการที่ถูกขึ้นบัญชีดำ",
+                "name_title": "ชื่อ",
+                "trade_tax_title": "ภาษีการค้า",
+                "trade_tax_label": "ภาษีการค้า {{min}} - {{max}}",
+                "mr_requirement_label": "ข้อกำหนดนาย {{min}} - {{max}}",
+                "mr_requirement_title": "ข้อกำหนดนาย",
+                "disabled_for_title": "ปิดการใช้งานสำหรับ",
+                "go_back_label": "กลับไป",
+                "set_trade_modes_tooltip": "ตั้งค่าโหมดการซื้อขายที่เลือกอยู่ในปัจจุบัน {{modes}}",
+                "no_trade_selected": "ไม่ได้เลือกโหมดการค้า โปรดเลือกโหมดการค้าอย่างน้อยหนึ่งโหมด"
+              }
+            },
+            "item": {
+              "title": "รายการสต็อก",
+              "wtb": {
+                "title": "ยินดี",
+                "fields": {
+                  "volume_threshold": {
+                    "label": "เกณฑ์ปริมาณ",
+                    "placeholder": "เกณฑ์ปริมาณ",
+                    "error": "เกณฑ์ปริมาณไม่ถูกต้อง",
+                    "tooltip": "ปริมาณขั้นต่ำที่ต้องพิจารณาในการซื้อขาย",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#volume-threshold"
+                  },
+                  "profit_threshold": {
+                    "label": "เกณฑ์กำไร",
+                    "placeholder": "เกณฑ์กำไร",
+                    "error": "เกณฑ์กำไรไม่ถูกต้อง",
+                    "tooltip": "กำไรขั้นต่ำที่ต้องพิจารณาในการซื้อขาย",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#profit-threshold"
+                  },
+                  "avg_price_cap": {
+                    "label": "ขีดจำกัดราคาเฉลี่ย",
+                    "placeholder": "ขีดจำกัดราคาเฉลี่ย",
+                    "error": "การกำหนดราคาเฉลี่ยสูงสุดไม่ถูกต้อง",
+                    "tooltip": "ราคาเฉลี่ยสูงสุดที่ต้องพิจารณาในการซื้อขาย",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#average-price-cap"
+                  },
+                  "trading_tax_cap": {
+                    "label": "ภาษีการค้าสูงสุด",
+                    "placeholder": "ภาษีการค้าสูงสุด",
+                    "error": "ขีดจำกัดภาษีการซื้อขายไม่ถูกต้อง",
+                    "tooltip": "ภาษีสูงสุดที่ต้องพิจารณาในการซื้อขาย",
+                    "link": "https://example.com/trading-tax-cap"
+                  },
+                  "max_total_price_cap": {
+                    "label": "ขีดจำกัดราคารวมสูงสุด",
+                    "placeholder": "ขีดจำกัดราคารวมสูงสุด",
+                    "error": "การกำหนดราคาสูงสุดรวมไม่ถูกต้อง",
+                    "tooltip": "ราคารวมสูงสุดที่ต้องพิจารณาสำหรับการซื้อขาย -1 โดยไม่มีขีดจำกัด",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#max-total-price-cap"
+                  },
+                  "price_shift_threshold": {
+                    "label": "เกณฑ์การเปลี่ยนแปลงราคา",
+                    "placeholder": "เกณฑ์การเปลี่ยนแปลงราคา",
+                    "error": "เกณฑ์การเปลี่ยนแปลงราคาไม่ถูกต้อง",
+                    "tooltip": "การเปลี่ยนแปลงราคาขั้นต่ำที่ต้องพิจารณาในการซื้อขาย",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#price-shift-threshold"
+                  },
+                  "buy_quantity": {
+                    "label": "ปริมาณของสินค้า",
+                    "placeholder": "ปริมาณของสินค้า",
+                    "error": "ปริมาณสินค้าไม่ถูกต้อง",
+                    "tooltip": "ปริมาณของสินค้าที่จะซื้อ",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#quantity-of-goods"
+                  },
+                  "min_wtb_profit_margin": {
+                    "label": "เกณฑ์อัตรากำไร",
+                    "placeholder": "เกณฑ์อัตรากำไร",
+                    "error": "เกณฑ์อัตรากำไรไม่ถูกต้อง",
+                    "tooltip": "อัตรากำไรขั้นต่ำสำหรับการซื้อขาย WTB",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#profit-margin-threshold"
+                  },
+                  "quantity_per_trade": {
+                    "label": "ปริมาณต่อการค้า",
+                    "placeholder": "ปริมาณต่อการค้า",
+                    "error": "ปริมาณไม่ถูกต้องต่อการซื้อขาย",
+                    "tooltip": "ปริมาณของสินค้าที่จะแลกเปลี่ยนต่อธุรกรรม: โปรดทราบว่าสิ่งนี้ใช้ได้กับบางรายการเท่านั้น เช่น arcanes",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#quantity-per-trade"
+                  },
+                  "max_stock_quantity": {
+                    "label": "ปริมาณสต็อคสูงสุด",
+                    "placeholder": "ปริมาณสต็อคสูงสุด",
+                    "error": "ปริมาณสต็อคสูงสุดไม่ถูกต้อง",
+                    "tooltip": "ปริมาณสูงสุดของสินค้าที่ต้องมีในสต็อกก่อนที่จะหยุดการสร้างคำสั่งซื้อ WTB ตั้งค่าเป็น -1 เพื่อปิดใช้งานคุณสมบัตินี้",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#max-stock-quantity"
+                  },
+                  "wts": {
+                    "title": "WTS",
+                    "fields": {}
+                  }
+                }
+              },
+              "wts": {
+                "title": "WTS",
+                "fields": {
+                  "min_sma": {
+                    "label": "SMA ขั้นต่ำ",
+                    "placeholder": "SMA ขั้นต่ำ",
+                    "error": "SMA ขั้นต่ำไม่ถูกต้อง",
+                    "tooltip": "Simple Moving Average ขั้นต่ำที่ต้องพิจารณาสำหรับการซื้อขาย",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wts#min-sma"
+                  },
+                  "min_profit": {
+                    "label": "กำไรขั้นต่ำ",
+                    "placeholder": "กำไรขั้นต่ำ",
+                    "error": "กำไรขั้นต่ำไม่ถูกต้อง",
+                    "tooltip": "กำไรขั้นต่ำที่ต้องพิจารณาในการซื้อขาย",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wts#min-profit"
+                  }
+                }
+              },
+              "summary": {
+                "title": "สรุป",
+                "datatable_columns": {
+                  "profit": "ศักยภาพในการทำกำไร",
+                  "trading_tax": "ภาษีการค้า"
+                },
+                "buttons": {
+                  "show_interesting_wtb_items": "แสดงรายการ WTB ที่น่าสนใจ"
+                }
+              }
+            },
+            "riven": {
+              "title": "สต็อก ริเวน",
+              "fields": {
+                "min_profit": {
+                  "label": "กำไรขั้นต่ำ",
+                  "placeholder": "กำไรขั้นต่ำ",
+                  "error": "กำไรขั้นต่ำไม่ถูกต้อง",
+                  "tooltip": "กำไรขั้นต่ำที่ต้องพิจารณาในการซื้อขาย",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#min-profit"
+                },
+                "threshold_percentage": {
+                  "label": "เปอร์เซ็นต์เกณฑ์",
+                  "placeholder": "เปอร์เซ็นต์เกณฑ์",
+                  "error": "เปอร์เซ็นต์เกณฑ์ไม่ถูกต้อง",
+                  "tooltip": "เกณฑ์เปอร์เซ็นต์สำหรับการซื้อขาย",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#minimum-price-shift"
+                },
+                "limit_to": {
+                  "label": "จำกัดที่",
+                  "placeholder": "จำกัดที่",
+                  "error": "ขีดจำกัดไม่ถูกต้อง",
+                  "tooltip": "จำกัดจำนวนการซื้อขาย",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#limit-to"
+                },
+                "update_interval": {
+                  "label": "ช่วงเวลาอัปเดต (วินาที)",
+                  "placeholder": "ช่วงเวลาการอัพเดต",
+                  "error": "ช่วงเวลาการอัปเดตไม่ถูกต้อง",
+                  "tooltip": "ช่วงเวลาในการอัปเดตการซื้อขายที่มีชีวิตชีวา",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#update-interval"
+                }
+              }
+            }
+          },
+          "http_server": {
+            "title": "เซิร์ฟเวอร์ HTTP",
+            "general": {
+              "title": "ทั่วไป",
+              "fields": {
+                "enabled": {
+                  "label": "เปิดใช้งานแล้ว",
+                  "tooltip": "เปิดหรือปิดใช้งานเซิร์ฟเวอร์ HTTP"
+                },
+                "port": {
+                  "label": "ท่าเรือ",
+                  "placeholder": "ท่าเรือ",
+                  "tooltip": "พอร์ตที่เซิร์ฟเวอร์ HTTP จะทำงาน"
+                },
+                "host": {
+                  "label": "เจ้าภาพ",
+                  "placeholder": "เจ้าภาพ",
+                  "error": "โฮสต์ไม่ถูกต้อง",
+                  "tooltip": "โฮสต์ที่เซิร์ฟเวอร์ HTTP จะทำงาน"
+                }
+              }
+            }
+          }
+        }
+      },
+      "trade_entry_update": {
+        "fields": {
+          "price_label": "ราคา",
+          "tags_label": "แท็ก"
+        }
+      }
+    },
+    "modals": {
+      "base": {
+        "buttons": {
+          "confirm": "ยืนยัน",
+          "cancel": "ยกเลิก"
+        }
+      },
+      "generate_trade_message": {
+        "title": "สร้างข้อความการค้าสำหรับ {{count}} รายการ",
+        "button_add_key_tooltip": "เพิ่มการแสดงผล",
+        "button_copy_tooltip": "คัดลอกไปยังคลิปบอร์ด",
+        "button_delete_template_tooltip": "ลบเทมเพลต",
+        "button_load_template_tooltip": "โหลดเทมเพลต",
+        "button_save_template_tooltip": "บันทึกเทมเพลต",
+        "titles": {
+          "message_settings": "การตั้งค่าข้อความ",
+          "preview_with_icons": "ดูตัวอย่างด้วยไอคอน",
+          "display_settings": "การตั้งค่าการแสดงผล"
+        },
+        "fields": {
+          "prefix": {
+            "label": "คำนำหน้า",
+            "description": "คำนำหน้าที่จะใช้สำหรับข้อความการค้า",
+            "placeholder": "คำนำหน้า"
+          },
+          "suffix": {
+            "label": "คำต่อท้าย",
+            "description": "คำต่อท้ายที่จะใช้สำหรับข้อความการค้า",
+            "placeholder": "คำต่อท้าย"
+          },
+          "message": {
+            "label": "ข้อความ",
+            "description": "ข้อความการค้าที่สร้างขึ้น",
+            "length_info": "{{current}} / {{max}} อักขระ"
+          },
+          "key": {
+            "label": "สำคัญ",
+            "description": "คีย์ที่ใช้สำหรับแยกรายการในข้อความ",
+            "placeholder": "สำคัญ"
+          },
+          "template": {
+            "label": "เทมเพลตข้อความการค้า",
+            "description": "เทมเพลตที่ใช้สำหรับสร้างข้อความ"
+          },
+          "chat_icon": {
+            "label": "ไอคอนแชท",
+            "description": "รวมไอคอนแชท Warframe Market ไว้ในข้อความ"
+          },
+          "group_by": {
+            "label": "จัดกลุ่มตาม",
+            "description": "จัดกลุ่มรายการตามประเภทในข้อความ"
+          },
+          "load_template": {
+            "label": "โหลดเทมเพลต",
+            "description": "โหลดเทมเพลตข้อความที่บันทึกไว้"
+          }
+        },
+        "datatable": {
+          "columns": {
+            "key": "สำคัญ",
+            "name": "ชื่อ",
+            "prefix": "คำนำหน้า",
+            "suffix": "คำต่อท้าย"
+          }
+        }
+      },
+      "patreon_modal": {
+        "title": "สนับสนุนการพัฒนา Quantframe",
+        "description": "เข้าถึงฟีเจอร์พรีเมียมโดยสนับสนุนฉันบน Patreon",
+        "premium_content": "กิจกรรมของผู้ใช้ | การค้นหาราคา Riven | ส่งออกข้อมูล | สถิติรายการ",
+        "join_the_community": "เข้าร่วมชุมชนผู้สนับสนุนและช่วยกำหนดอนาคตของ Quantframe",
+        "link_your_account": "2. เชื่อมโยงบัญชี Patreon ของคุณ",
+        "buttons": {
+          "info": "แพทเรียน",
+          "link": "เชื่อมโยงบัญชีของคุณ"
+        }
+      },
+      "item_details": {
+        "tabs": {
+          "overview": {
+            "title": "ภาพรวม",
+            "tooltips": {},
+            "labels": {
+              "created_at": "สร้างเมื่อ: <date/>",
+              "updated_at": "อัปเดตเมื่อ: <date/>",
+              "bought": "ราคาที่ซื้อ: {{price}} <plat/>",
+              "list_price": "ราคาจดทะเบียน: {{price}} <plat/>",
+              "potential_profit": "กำไรที่เป็นไปได้: {{price}} <plat/>",
+              "minimum_profit": "กำไรขั้นต่ำ: {{price}}",
+              "minimum_sma": "SMA ขั้นต่ำ: {{price}}",
+              "quantity": "จำนวน: {{quantity}}",
+              "is_hidden": "ซ่อน: <hidden/>"
+            }
+          },
+          "analytics": {
+            "title": "การวิเคราะห์",
+            "tooltips": {},
+            "labels": {},
+            "titles": {
+              "last_transactions": "การทำธุรกรรมครั้งล่าสุด",
+              "financial_summary": "สรุปทางการเงิน"
+            }
+          },
+          "wfm": {
+            "title": "ภาพรวม",
+            "tooltips": {
+              "buy_highest_price": "ซื้อสูงสุด",
+              "sell_highest_price": "ขายสูงสุด",
+              "spread_percent": "เปอร์เซ็นต์การแพร่กระจาย",
+              "supply": "จัดหา"
+            },
+            "labels": {
+              "buy_lowest": "ซื้อต่ำสุด",
+              "sell_lowest": "ขายต่ำสุด",
+              "spread": "การแพร่กระจาย",
+              "demand": "ความต้องการ",
+              "roi_percent": "เปอร์เซ็นต์ผลตอบแทนการลงทุน"
+            },
+            "buttons": {
+              "view_on_wfm": "ดูในตลาด Warframe"
+            }
+          },
+          "edit": {
+            "title": "แก้ไข",
+            "fields": {
+              "bought": "ซื้อเพื่อ",
+              "minimum_price": "ราคาขั้นต่ำ",
+              "maximum_price": "ราคาสูงสุด",
+              "owned": "ปัจจุบันเป็นเจ้าของ",
+              "quantity": "ปริมาณ",
+              "minimum_sma": "SMA ขั้นต่ำ",
+              "minimum_profit": "กำไรขั้นต่ำ"
+            },
+            "tooltips": {
+              "minimum_price": "ราคาขั้นต่ำที่คุณยินดีขายสินค้าชิ้นนี้ ตั้งค่าเป็น 0 เพื่อปิดใช้งาน",
+              "minimum_profit": "กำไรขั้นต่ำที่คุณต้องการสร้างเมื่อขายสินค้าชิ้นนี้ ตั้งค่าเป็น 0 เพื่อปิดใช้งาน",
+              "minimum_sma": "ค่าเฉลี่ยเคลื่อนที่ขั้นต่ำที่ต้องพิจารณาในการขายรายการนี้ ตั้งค่าเป็น 0 เพื่อปิดใช้งาน",
+              "maximum_price": "ราคาสูงสุดที่คุณยินดีซื้อรายการนี้ ตั้งค่าเป็น 0 เพื่อปิดใช้งาน"
+            }
+          }
+        }
+      },
+      "riven_details": {
+        "tabs": {
+          "overview": {
+            "title": "ภาพรวม",
+            "tooltips": {},
+            "labels": {
+              "created_at": "สร้างเมื่อ: <date/>",
+              "updated_at": "อัปเดตเมื่อ: <date/>",
+              "bought": "ราคาที่ซื้อ: {{price}} <plat/>",
+              "list_price": "ราคาจดทะเบียน: {{price}} <plat/>",
+              "potential_profit": "กำไรที่เป็นไปได้: {{price}} <plat/>",
+              "minimum_profit": "กำไรขั้นต่ำ: {{price}}",
+              "minimum_sma": "SMA ขั้นต่ำ: {{price}}",
+              "kuva": "คูว่าใช้เวลา: {{kuva}}",
+              "endo": "เอนโด: {{endo}}",
+              "is_hidden": "ซ่อน: <hidden/>"
+            }
+          },
+          "modifiers": {
+            "title": "ตัวดัดแปลง",
+            "tooltips": {},
+            "labels": {
+              "weapon": "อาวุธ",
+              "rank": "อันดับ"
+            },
+            "titles": {}
+          },
+          "roll_evaluation": {
+            "title": "การประเมินม้วน",
+            "tooltips": {},
+            "labels": {
+              "best_attributes": "คุณสมบัติที่ดีที่สุด",
+              "mandatory": "บังคับ",
+              "optional": "ไม่จำเป็น",
+              "best_bad_attributes": "คุณสมบัติที่ไม่ดีที่ดีที่สุด"
+            },
+            "titles": {}
+          },
+          "analytics": {
+            "title": "การวิเคราะห์",
+            "tooltips": {},
+            "labels": {},
+            "titles": {
+              "last_transactions": "การทำธุรกรรมครั้งล่าสุด",
+              "financial_summary": "สรุปทางการเงิน"
+            }
+          },
+          "wfm": {
+            "title": "ตลาดวอร์เฟรม",
+            "tooltips": {},
+            "labels": {
+              "auction_header_left": "{{similarity}}%",
+              "auction_header_right": "{{price}} <plat/>"
+            },
+            "buttons": {
+              "view_on_wfm": "ดูในตลาด Warframe"
+            }
+          },
+          "edit": {
+            "title": "แก้ไข",
+            "fields": {
+              "bought": "ซื้อเพื่อ",
+              "minimum_price": "ราคาขั้นต่ำ",
+              "mastery_rank": "อันดับความชำนาญ",
+              "re_rolls": "ม้วนซ้ำ",
+              "minimum_profit": "กำไรขั้นต่ำ"
+            },
+            "tooltips": {
+              "minimum_price": "ราคาขั้นต่ำที่คุณยินดีขายสินค้าชิ้นนี้ ตั้งค่าเป็น 0 เพื่อปิดใช้งาน",
+              "minimum_profit": "กำไรขั้นต่ำที่คุณต้องการสร้างเมื่อขายสินค้าชิ้นนี้ ตั้งค่าเป็น 0 เพื่อปิดใช้งาน",
+              "minimum_sma": "ค่าเฉลี่ยเคลื่อนที่ขั้นต่ำที่ต้องพิจารณาในการขายรายการนี้ ตั้งค่าเป็น 0 เพื่อปิดใช้งาน",
+              "maximum_price": "ราคาสูงสุดที่คุณยินดีซื้อรายการนี้ ตั้งค่าเป็น 0 เพื่อปิดใช้งาน"
+            }
+          }
+        }
+      },
+      "update_available": {
+        "title": "มีการอัปเดตใหม่ (v{{version}})",
+        "buttons": {
+          "download": "ดาวน์โหลดและติดตั้ง",
+          "download_manual": "ดาวน์โหลดด้วยตนเอง",
+          "read_more": "อ่านเพิ่มเติม"
+        }
+      },
+      "tos": {
+        "title": "ข้อกำหนดในการให้บริการ",
+        "buttons": {
+          "accept": "ยอมรับ",
+          "decline": "ปฏิเสธ"
+        }
+      },
+      "app_error": {
+        "title": "เกิดข้อผิดพลาดในองค์ประกอบ {{component}}",
+        "version": "เวอร์ชัน: {{version}}",
+        "cause": "สาเหตุ: {{cause}}",
+        "message": "ข้อความ: {{message}}",
+        "location": "สถานที่: {{location}}",
+        "footer": "กรุณารายงานข้อผิดพลาดนี้ไปยังนักพัฒนา\nเมื่อส่งออกไฟล์บันทึก เพียงคลิกปุ่มด้านล่าง ระบบจะสร้างไฟล์บนเดสก์ท็อปของคุณ",
+        "export_log": "บันทึกการส่งออก"
+      }
+    },
+    "chat_item": {
+      "delete_tooltip": "ลบการสนทนา",
+      "last_update": "อัปเดตล่าสุด"
+    },
+    "chat_rome": {
+      "fields": {
+        "message": {
+          "too_long": "ข้อความยาวเกินไป",
+          "placeholder": "พิมพ์ข้อความของคุณที่นี่..."
+        }
+      },
+      "buttons": {
+        "back_label": "กลับ",
+        "send_label": "ส่ง",
+        "options": {
+          "label": "ตัวเลือก",
+          "delete": "ทำไมคุณถึงอยู่ที่นี่?"
+        }
+      }
+    },
+    "best_by_category_table": {
+      "datatable": {
+        "columns": {
+          "name": "ชื่อ",
+          "revenue": "รายได้",
+          "expense": "ค่าใช้จ่าย",
+          "profit": "กำไร",
+          "profit_margin": "อัตรากำไรขั้นต้น",
+          "quantity": "ปริมาณ"
+        }
+      }
+    },
+    "bar_chart_financial_summary": {
+      "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+      "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>",
+      "tooltips": {
+        "expense": "ค่าใช้จ่ายทั้งหมด",
+        "revenue": "รายได้รวม",
+        "profit": "กำไรรวม",
+        "trades": "จำนวนการซื้อขาย",
+        "sales": "จำนวนยอดขาย",
+        "purchases": "จำนวนการซื้อ"
+      }
+    },
+    "financial_report_card": {
+      "tooltips": {
+        "total_expenses": "ค่าใช้จ่ายทั้งหมด",
+        "total_revenue": "รายได้รวม",
+        "average_profit": "กำไรเฉลี่ย",
+        "total_credits": "เครดิตทั้งหมด",
+        "lowest_revenue": "รายได้ต่ำสุด",
+        "lowest_expense": "ค่าใช้จ่ายต่ำสุด",
+        "highest_revenue": "รายได้สูงสุด"
+      },
+      "labels": {
+        "trade_count": "จำนวนการค้า",
+        "highest_revenue": "รายได้สูงสุด",
+        "highest_expense": "ค่าใช้จ่ายสูงสุด",
+        "total_transactions": "ธุรกรรมทั้งหมด",
+        "revenue": "รายได้",
+        "expenses": "ค่าใช้จ่าย",
+        "total_profit": "กำไรรวม"
+      }
+    },
+    "riven_preview": {
+      "riven_name": "{{name}} <blue>{{mod_name}}</blue>",
+      "types": {
+        "unveiled": {
+          "footer_left": "{{progress}}/{{required}}"
+        },
+        "pre-veiled": {
+          "footer_left": "x{{quantity}}"
+        },
+        "veiled": {
+          "header_left": "{{price}} <plat/>",
+          "footer_left": "ตอบ: {{rank}}/8",
+          "footer_right": "นาย: {{mastery}}"
+        }
+      }
+    },
+    "price_history_popover": {
+      "labels": {
+        "price_history": "ประวัติราคา"
+      }
+    }
+  },
+  "pages": {
+    "home": {
+      "cards": {
+        "total": {
+          "title": "กำไรรวม",
+          "footer": "ยอดขาย: <blue>{{sales}}</blue> | การซื้อ: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | อัตรากำไร: <blue>{{profit_margin}}</blue>%",
+          "bar_chart": {
+            "title": "กำไรรวม",
+            "datasets": {
+              "this_year": "ปีนี้",
+              "last_year": "ปีที่แล้ว"
+            }
+          }
+        },
+        "today": {
+          "title": "กำไรวันนี้",
+          "footer": "ยอดขาย: <blue>{{sales}}</blue> | การซื้อ: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | อัตรากำไร: <blue>{{profit_margin}}</blue>%",
+          "bar_chart": {
+            "title": "กำไรวันนี้",
+            "datasets": {
+              "profit": "กำไร"
+            },
+            "footers": {
+              "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+              "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>"
+            }
+          }
+        },
+        "recent_days": {
+          "bar_chart": {
+            "title": "{{days}} วันที่ผ่านมา",
+            "datasets": {
+              "profit": "กำไร"
+            },
+            "footers": {
+              "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+              "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>"
+            }
+          }
+        },
+        "best_seller": {
+          "title": "กำไรขายดี",
+          "footer": "ชื่อ: <blue>{{name}}</blue> | ส: <blue>{{sales}}</blue> | ป: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | บ่ายโมง: <blue>{{profit_margin}}</blue>%"
+        },
+        "last_transaction": {
+          "title": "การทำธุรกรรมครั้งสุดท้าย",
+          "info_box": {
+            "purchase": "ซื้อ {{count}}",
+            "sale": "ลดราคา {{count}}"
+          }
+        }
+      }
+    },
+    "about": {
+      "cards": {
+        "coffee": {
+          "title": "กาแฟ"
+        },
+        "patreon": {
+          "title": "สนับสนุนฉันใน Patreon"
+        },
+        "discord": {
+          "title": "ความไม่ลงรอยกัน"
+        },
+        "guide": {
+          "title": "วิกิ/คำแนะนำ"
+        }
+      },
+      "text": {
+        "version": "เวอร์ชัน: <blue>{{version}}</blue> ทำด้วย ❤️ ใน 🇩🇰 © 2023-{{year}} เคนยา-DK สงวนลิขสิทธิ์",
+        "patreon_thanks": "ขอขอบคุณเป็นพิเศษสำหรับผู้สนับสนุน Patreon 'Quantframe Users' ที่ทำให้ Quantframe เป็นไปได้: <blue>{{users}}</blue>",
+        "disclaimer": "Quantframe เป็นแอปของบุคคลที่สามและไม่มีส่วนเกี่ยวข้องกับ Digital Extremes"
+      },
+      "button_check_for_updates": "ตรวจสอบการอัปเดต"
+    },
+    "debug": {
+      "tabs": {
+        "logging": {
+          "title": "การบันทึก",
+          "datatable": {
+            "columns": {
+              "command": "สั่งการ",
+              "count": "นับ",
+              "actions": {
+                "title": "การดำเนินการ",
+                "buttons": {
+                  "remove_tooltip": "ลบคำสั่งเข้าสู่ระบบ"
+                }
+              }
+            }
+          },
+          "buttons": {
+            "add_log": "เพิ่มบันทึก"
+          },
+          "prompt": {
+            "name": {
+              "title": "เพิ่มบันทึก",
+              "fields": {
+                "name": {
+                  "label": "ชื่อบันทึก"
+                }
+              }
+            }
+          }
+        },
+        "states": {
+          "title": "รัฐ",
+          "accordions": {
+            "app_info": "ข้อมูลแอพ",
+            "app_error": "ข้อผิดพลาดของแอป",
+            "settings": "การตั้งค่า",
+            "alerts": "การแจ้งเตือน",
+            "user": "ผู้ใช้",
+            "live_scraper": "มีดโกนสด",
+            "wfm_state": "รัฐ WFM",
+            "tauri_events": "เหตุการณ์ทอรี"
+          }
+        },
+        "debugging": {
+          "title": "การดีบัก",
+          "fake_orders_tooltip": "สลับคำสั่งซื้อปลอมสำหรับการซื้อขายสด (เพื่อการทดสอบเท่านั้น) จะถูกจัดเก็บไว้ใน dev.kenya.quantframe\\fake_orders",
+          "fake_orders_label": "ใช้คำสั่งซื้อปลอม คำสั่งซื้อสด",
+          "datatable": {
+            "columns": {
+              "wfm_url": {
+                "title": "ชื่อ",
+                "value": "{{name}} <blue>{{sub_type}}</blue>"
+              },
+              "stock_id": "รหัสสต็อค",
+              "wish_list_id": "รหัสรายการความปรารถนา",
+              "priority": "ลำดับความสำคัญ",
+              "buy_quantity": "ซื้อปริมาณ",
+              "sell_quantity": "ขายปริมาณ",
+              "operation": "การดำเนินการ",
+              "actions": {
+                "title": "การดำเนินการ",
+                "buttons": {
+                  "delete_tooltip": "ลบรายการรายการสดการดีบัก"
+                }
+              }
+            }
+          }
+        },
+        "ee_log": {
+          "title": "อีอีล็อก",
+          "hide_empty": "ซ่อนบรรทัดว่าง",
+          "export_json_tooltip": "ส่งออกรายการไปยัง JSON",
+          "datatable": {
+            "columns": {
+              "line": "เส้น",
+              "date": "การประทับเวลา"
+            }
+          }
+        }
+      }
+    },
+    "banned": {
+      "wfm": {
+        "title": "บัญชี Warframe Market ถูกระงับเนื่องจาก:",
+        "reason": "เหตุผล: {{reason}}",
+        "until": "จนกระทั่ง:"
+      },
+      "qf": {
+        "title": "บัญชี Quantframe ถูกระงับเนื่องจาก:",
+        "reason": "เหตุผล: {{reason}}",
+        "until": "จนกระทั่ง:"
+      }
+    },
+    "auth": {
+      "errors": {
+        "login": {
+          "title": "ข้อผิดพลาดในการเข้าสู่ระบบ",
+          "TooManyRequests": "มีคำขอมากเกินไป โปรดลองอีกครั้งในภายหลัง",
+          "InvalidCredentials": "รหัสผ่านไม่ถูกต้อง",
+          "InternalServerError": "บริการเข้าสู่ระบบไม่พร้อมใช้งานในขณะนี้ โปรดลองอีกครั้งในภายหลัง",
+          "banned": "คุณถูกแบน",
+          "ban_reason": "<red>เหตุผล: {{reason}}</red>",
+          "verification": "คุณต้องยืนยันบัญชีของคุณ ทำสิ่งนี้บนเว็บไซต์ Warframe Market"
+        }
+      },
+      "success": {
+        "login": {
+          "title": "เข้าสู่ระบบสำเร็จ",
+          "message": "ยินดีต้อนรับกลับมา! __คิวเอฟ_0__"
+        }
+      }
+    },
+    "live_scraper": {
+      "export_json_tooltip": "ส่งออกรายการไปยัง JSON (Patreon T1+)",
+      "update_multiple_tooltip": "อัพเดตหลายรายการ",
+      "delete_multiple_tooltip": "ลบหลายรายการ",
+      "wts_multiple_tooltip": "สร้างข้อความ WTS",
+      "segments": {
+        "bought": "ซื้อแล้ว",
+        "listed": "จดทะเบียนแล้ว",
+        "profit": "กำไร"
+      },
+      "prompts": {
+        "update_filter": {
+          "title": "อัปเดตตัวกรอง"
+        },
+        "create_riven": {
+          "title": "สร้างริเวน"
+        }
+      },
+      "tabs": {
+        "item": {
+          "title": "รายการ",
+          "datatable": {
+            "columns": {
+              "bought": "ซื้อแล้ว",
+              "owned": "เป็นเจ้าของ"
+            }
+          }
+        },
+        "riven": {
+          "title": "ริเว่น",
+          "datatable": {
+            "columns": {
+              "attributes": "คุณสมบัติ",
+              "bought": "ซื้อแล้ว"
+            }
+          }
+        },
+        "wish_list": {
+          "title": "สิ่งที่ปรารถนา"
+        }
+      }
+    },
+    "warframe_market": {
+      "tabs": {
+        "orders": {
+          "title": "คำสั่งซื้อ",
+          "status": "<blue>{{type}}</blue> | <qty/> <blue>{{total}}</blue> | <plat/> <blue>{{platinum}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+          "tooltip_profit": "กำไรโดยประมาณ",
+          "buttons": {
+            "refresh_tooltip": "รีเฟรชรายการคำสั่งซื้อ",
+            "delete_all_tooltip": "ลบคำสั่งซื้อทั้งหมด",
+            "delete_tooltip": "ลบคำสั่งซื้อนี้",
+            "info_tooltip": "ดูรายละเอียดการสั่งซื้อ",
+            "sell_manual": {
+              "buy_tooltip": "ซื้อด้วยตนเอง",
+              "sell_tooltip": "ขายด้วยตนเอง"
+            },
+            "sell_auto": {
+              "buy_tooltip": "ซื้อมาตามราคาที่ตั้งไว้",
+              "sell_tooltip": "ขายตามราคาที่แจ้งไว้"
+            }
+          },
+          "order_card": {
+            "header_left": "__คิวเอฟ_0__",
+            "header_right": "<qty/> <blue>{{quantity}}</blue>",
+            "footer_left": "<blue>{{price}}</blue> <plat/>"
+          },
+          "fields": {
+            "quantity": "<qty/> <blue>{{quantity}}</blue>",
+            "platinum": "<blue>{{platinum}}</blue> <plat/>",
+            "mod_rank": "อันดับ: <blue>{{mod_rank}}</blue>/<blue>{{mod_max_rank}}</blue>",
+            "subtype": "<blue>{{sub_type}}</blue>"
+          }
+        },
+        "auctions": {
+          "title": "การประมูล",
+          "overview": "<qty/> <blue>{{total}}</blue> | <plat/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+          "tooltip_profit": "กำไรโดยประมาณ",
+          "buttons": {
+            "refresh_tooltip": "รีเฟรชรายการประมูล",
+            "delete_all_tooltip": "ลบการประมูลทั้งหมด",
+            "delete_tooltip": "ลบการประมูลครั้งนี้",
+            "import_tooltip": "นำเข้าการประมูลครั้งนี้",
+            "info_tooltip": "ดูรายละเอียดการประมูล"
+          },
+          "auction_card": {
+            "header_right": "{{price}} <plat/>"
+          }
+        }
+      }
+    },
+    "chat": {
+      "prompts": {
+        "delete_chat": {
+          "title": "ลบแชท",
+          "message": "คุณแน่ใจหรือไม่ว่าต้องการลบการแชทนี้ การดำเนินการนี้ไม่สามารถยกเลิกได้",
+          "cancel": "ยกเลิก",
+          "confirm": "ลบ"
+        }
+      },
+      "buttons": {
+        "refresh_tooltip": "รีเฟรชรายการแชท",
+        "delete_all_tooltip": "ลบแชททั้งหมด"
+      }
+    },
+    "trading_analytics": {
+      "tabs": {
+        "transaction": {
+          "title": "ธุรกรรม",
+          "date_range_label": "ช่วงวันที่",
+          "date_range_description": "ช่วงวันที่ในการกรองธุรกรรม",
+          "date_range_placeholder": "เลือกช่วงวันที่",
+          "prompts": {
+            "update_title": "อัปเดตธุรกรรม"
+          },
+          "buttons": {
+            "export_transactions_tooltip": "ส่งออกธุรกรรมไปยัง JSON (Patreon T1+)",
+            "show_financial_report_tooltip": "แสดงรายงาน",
+            "delete_all_tooltip": "ลบธุรกรรมทั้งหมด {{count}}",
+            "calculate_tax_tooltip": "คำนวณภาษีการซื้อขายสำหรับธุรกรรมทั้งหมด"
+          },
+          "datatable": {
+            "columns": {
+              "item_type": "ประเภทรายการ",
+              "price": "ราคา",
+              "created_at": "สร้างเมื่อ",
+              "user_name": "ชื่อผู้ใช้",
+              "profit": "กำไร",
+              "credits": "เครดิต",
+              "sale_count": "จำนวนการขาย",
+              "revenue": "รายได้",
+              "purchases_count": "จำนวนการซื้อ",
+              "expenses": "ค่าใช้จ่าย",
+              "total_transactions": "ธุรกรรมทั้งหมด"
+            }
+          },
+          "titles": {
+            "most_purchased_items": "รายการที่ซื้อมากที่สุด",
+            "most_sold_items": "สินค้าที่ขายดีที่สุด"
+          },
+          "table_headers": {
+            "item_name": "ชื่อ",
+            "quantity": "ปริมาณ"
+          }
+        },
+        "item": {
+          "title": "รายการ",
+          "export_json_tooltip": "ส่งออกรายการไปยัง JSON (Patreon T1+)",
+          "open_table_options_tooltip": "เปิดตัวเลือกตาราง",
+          "date_range_placeholder": "เลือกช่วงวันที่",
+          "volume_label": "ปริมาณ",
+          "min_price_label": "ราคาขั้นต่ำ",
+          "max_price_label": "ราคาสูงสุด",
+          "supply_label": "จัดหา",
+          "demand_label": "ความต้องการ",
+          "datatable": {
+            "columns": {
+              "volume": "ปริมาณ",
+              "min_price": "ราคาขั้นต่ำ",
+              "max_price": "ราคาสูงสุด",
+              "open_price": "เปิดราคา",
+              "closed_price": "ราคาปิด",
+              "avg_price": "ราคาเฉลี่ย",
+              "wa_price": "ราคาวอ",
+              "median": "ค่ามัธยฐาน",
+              "moving_avg": "ค่าเฉลี่ยเคลื่อนที่",
+              "donch_top": "ดอนช์ท็อป",
+              "donch_bot": "ดอนช์ บอท",
+              "trading_tax": "ภาษีการค้า",
+              "supply": "จัดหา",
+              "demand": "ความต้องการ"
+            }
+          }
+        },
+        "riven": {
+          "title": "ริเว่น",
+          "export_json_tooltip": "ส่งออก Riven เป็น JSON (Patreon T1+)",
+          "open_table_options_tooltip": "เปิดตัวเลือกตาราง",
+          "date_range_placeholder": "เลือกช่วงวันที่",
+          "volume_label": "ปริมาณ",
+          "min_price_label": "ราคาขั้นต่ำ",
+          "max_price_label": "ราคาสูงสุด",
+          "avg_price_label": "ราคาเฉลี่ย",
+          "datatable": {
+            "columns": {
+              "volume": "ปริมาณ",
+              "min_price": "ราคาขั้นต่ำ",
+              "max_price": "ราคาสูงสุด",
+              "avg_price": "ราคาเฉลี่ย",
+              "median_price": "ราคากลาง"
+            }
+          }
+        },
+        "user": {
+          "title": "กิจกรรมของผู้ใช้",
+          "chart": {
+            "datasets": {
+              "registered_users": "ผู้ใช้ที่ลงทะเบียน",
+              "active_users": "ผู้ใช้ที่ใช้งานอยู่"
+            }
+          },
+          "fields": {
+            "group_by": {
+              "label": "จัดกลุ่มตาม",
+              "options": {
+                "day": "วัน",
+                "hour": "ชั่วโมง"
+              }
+            },
+            "date_range": {
+              "label": "ช่วงวันที่",
+              "placeholder": "เลือกช่วงวันที่"
+            }
+          }
+        },
+        "wfgdpr": {
+          "title": "ตัวแยกวิเคราะห์ GDPR ของ Warframe",
+          "drag_and_drop_message": "ลากและวางไฟล์ข้อความ GDPR ที่นี่ อ่านเพิ่มเติมเกี่ยวกับคุณสมบัตินี้บนเว็บไซต์",
+          "columns": {
+            "account": "ชื่อบัญชี",
+            "logins": "จำนวนการเข้าสู่ระบบ",
+            "purchases": "จำนวนการซื้อ",
+            "trades": "จำนวนการซื้อขาย",
+            "transactions": "จำนวนธุรกรรม",
+            "creation_date": "วันที่สร้าง"
+          },
+          "overview": {
+            "title": "ภาพรวม",
+            "labels": {
+              "member_since": "สมาชิกตั้งแต่",
+              "subscribed": "สมัครสมาชิกแล้ว",
+              "trades": "การค้าขาย",
+              "platinum_traded": "การซื้อขายแพลตตินัม",
+              "purchases": "การซื้อ",
+              "total_spent": "การใช้จ่ายทั้งหมด",
+              "transactions": "การทำธุรกรรม",
+              "unique_ips": "IP ที่ไม่ซ้ำ",
+              "total_logins": "จำนวนการเข้าสู่ระบบทั้งหมด"
+            }
+          },
+          "trade": {
+            "title": "ซื้อขาย",
+            "yearly_trade_overview": {
+              "title": "ภาพรวมการค้าประจำปี ({{year}})",
+              "total_trades": "การซื้อขายทั้งหมด",
+              "total_purchases": "การซื้อทั้งหมด",
+              "total_sales": "ยอดขายรวม"
+            },
+            "columns": {
+              "created_at": "สร้างเมื่อ",
+              "offered_items": "จำนวนรายการที่นำเสนอ",
+              "received_items": "จำนวนรายการที่ได้รับ",
+              "credits": "เครดิต"
+            },
+            "table_headers": {
+              "item_name": "ชื่อ",
+              "quantity": "ปริมาณ"
+            },
+            "titles": {
+              "most_sold_items": "สินค้าที่ขายดีที่สุด",
+              "most_purchased_items": "รายการที่ซื้อมากที่สุด"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "แสดงรายงาน"
+            }
+          },
+          "purchase": {
+            "title": "การซื้อ",
+            "titles": {
+              "most_purchased_items": "รายการที่ซื้อมากที่สุด"
+            },
+            "table_headers": {
+              "item_name": "ชื่อ",
+              "price": "ราคา",
+              "quantity": "ปริมาณ"
+            },
+            "yearly_trade_overview": {
+              "title": "ภาพรวมการค้าประจำปี ({{year}})",
+              "total_purchases": "การซื้อทั้งหมด"
+            },
+            "columns": {
+              "date": "ซื้อได้ที่",
+              "price": "ราคา",
+              "shop_id": "รหัสร้านค้า",
+              "items_received": "รายการที่ได้รับ"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "แสดงรายงาน"
+            }
+          },
+          "transaction": {
+            "title": "การทำธุรกรรม",
+            "titles": {
+              "most_purchased_items": "รายการที่ซื้อมากที่สุด"
+            },
+            "table_headers": {
+              "item_name": "ชื่อ",
+              "price": "ราคา",
+              "quantity": "ปริมาณ"
+            },
+            "yearly_trade_overview": {
+              "title": "ภาพรวมการค้าประจำปี ({{year}})",
+              "total_purchases": "การซื้อทั้งหมด"
+            },
+            "columns": {
+              "date": "ซื้อได้ที่",
+              "currency": "สกุลเงิน",
+              "price": "ราคา",
+              "account": "บัญชี",
+              "sku": "SKU"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "แสดงรายงาน"
+            }
+          }
+        }
+      }
+    },
+    "trade_messages": {
+      "fields": {
+        "price_label": "ราคา",
+        "price_placeholder": "ใส่ราคา",
+        "tags_label": "แท็ก",
+        "tags_placeholder": "ใส่แท็ก"
+      },
+      "buttons": {
+        "generate_trade_messages_tooltip": "สร้างข้อความการค้าสำหรับรายการ {{count}}",
+        "update_multiple_tooltip": "อัปเดตข้อความการค้าหลายรายการ",
+        "export_json_tooltip": "ส่งออกข้อความการค้าไปยัง JSON (Patreon T1+)",
+        "delete_multiple_tooltip": "ลบการซื้อขายทั้งหมด {{count}}",
+        "add_tooltip": "เพิ่มข้อความการค้า",
+        "find_interesting_tooltip": "ค้นหาข้อความการค้าที่น่าสนใจ (Patreon T2+)",
+        "calibrate_prices_tooltip": "ปรับเทียบราคา"
+      },
+      "datatable": {
+        "columns": {
+          "price": "ราคา",
+          "tags": "แท็ก",
+          "min_price": "ราคาขั้นต่ำ",
+          "potential_profit": "ศักยภาพในการทำกำไร",
+          "updated_at": "อัปเดตเมื่อ"
+        }
+      },
+      "tabs": {
+        "item": {
+          "title": "รายการ"
+        },
+        "riven": {
+          "title": "ริเว่น",
+          "modals": {
+            "find_interesting_rivens": {
+              "title": "ค้นหา Rivens ที่น่าสนใจสำหรับ {{date}}",
+              "titles": {
+                "filtered": "Rivens ที่ถูกกรอง",
+                "discount_settings": "การตั้งค่าส่วนลด",
+                "export_settings": "การตั้งค่าการส่งออก"
+              },
+              "fields": {
+                "min_price_label": "ราคาขั้นต่ำ",
+                "min_volume_label": "ปริมาณขั้นต่ำ",
+                "discount_percentage_label": "เปอร์เซ็นต์ส่วนลด %",
+                "round_to_nearest_label": "ปัดเศษให้ใกล้ที่สุด",
+                "override_existing_prices_label": "แทนที่ราคาที่มีอยู่",
+                "tags_label": "แท็ก"
+              },
+              "datatable_columns": {
+                "name": "ชื่อ",
+                "min_price": "ราคาขั้นต่ำ",
+                "discount_price": "ราคาส่วนลด",
+                "potential_profit": "ศักยภาพในการทำกำไร",
+                "volume": "ปริมาณ"
+              },
+              "buttons": {
+                "export_to_trade_messages": "ส่งออกไปยังข้อความการค้า"
+              }
+            }
+          }
+        },
+        "custom": {
+          "title": "กำหนดเอง"
+        }
+      }
+    },
+    "process_trade": {
+      "stats": {
+        "user_name": "ชื่อผู้ใช้",
+        "trade_type": "ประเภทการค้า",
+        "trade_price": "ราคาซื้อขาย",
+        "price": "ราคา",
+        "difference": "ความแตกต่าง"
+      },
+      "buttons": {
+        "process_trade_tooltip": "เริ่มการประมวลผลการซื้อขาย",
+        "confirm_trade": "ยืนยันการค้า",
+        "back_to_list": "กลับไปที่รายการ"
+      },
+      "datatable": {
+        "columns": {
+          "item_name": "ชื่อ",
+          "quantity": "ปริมาณ",
+          "price": "ราคา",
+          "total": "ทั้งหมด",
+          "platinum": "แพลตตินัม",
+          "user_name": "ชื่อผู้ใช้",
+          "date": "วันที่"
+        }
+      }
+    },
+    "wf_inventory": {
+      "tabs": {
+        "riven": {
+          "title": "ริเวนส์",
+          "riven_card": {
+            "footer_left": "{{rank}}/8 <polarity/>",
+            "footer_right": "นาย: {{mastery}}",
+            "footer_center": "__คิวเอฟ_0__",
+            "stock_status": {
+              "found": "พบในสินค้าคงคลัง",
+              "not_found": "ไม่พบในสินค้าคงคลัง"
+            }
+          },
+          "filters": {
+            "all": "ทั้งหมด",
+            "rifle": "ไรเฟิล",
+            "shotgun": "ปืนลูกซอง",
+            "melee": "ระยะประชิด",
+            "pistol": "ปืนพก",
+            "zaw": "ซอ",
+            "arch": "ปีกโค้ง",
+            "veiled": "สวมหน้ากาก",
+            "unveiled": "เปิดตัวแล้ว"
+          }
+        }
+      }
+    }
+  }
+}
